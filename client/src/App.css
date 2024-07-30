@@ -1,0 +1,45 @@
+* {
+  padding: 0rem;
+  margin: 0rem;
+  box-sizing: border-box;
+  font-family: sans-serif;
+}
+
+.shadow {
+  box-shadow: 0.2rem 0.2rem 0.2rem rgba(0, 0, 0, 0.2);
+  transition: 0.3s ease-in-out;
+}
+.shadow1 {
+  box-shadow: 0.1rem 0.1rem 0.1rem rgba(0, 0, 0, 0.1);
+  transition: 0.3s ease-in-out;
+}
+.shadow2 {
+  box-shadow: 0.2rem 0.2rem 0.2rem rgba(0, 0, 0, 0.3);
+  transition: 0.3s ease-in-out;
+}
+
+.shadow:hover {
+  box-shadow: 0.3rem 0.3rem 0.3rem rgba(0, 0, 0, 0.3);
+}
+
+.input-container {
+  position: relative;
+  width: 100%;
+}
+.custom-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 8px 12px;
+  color: #999;
+  pointer-events: none;
+  transition: 0.2s;
+}
+.input-container input:focus + .custom-placeholder,
+.input-container input:not(:placeholder-shown) + .custom-placeholder {
+  opacity: 0;
+}
+.input-container input {
+  width: 100%;
+  padding: 8px 12px;
+}

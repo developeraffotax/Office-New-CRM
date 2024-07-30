@@ -1,0 +1,58 @@
+# Ignore Node.js dependencies
+node_modules/
+
+# Ignore environment variables files
+.env
+
+# Ignore logs and debugging files
+logs/
+*.log
+npm-debug.log*
+
+# Ignore OS-specific files
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Ignore editor and IDE files
+# JetBrains IDEs
+.idea/
+*.iml
+
+# Visual Studio Code
+.vscode/
+
+# Sublime Text
+*.sublime*
+
+# Ignore build directories and files
+build/
+dist/
+
+# Ignore temporary files
+*.tmp
+*.swp
+*.swo
+*~
+
+# Ignore sensitive files
+# Any other files where sensitive data might be stored
+config.js
+credentials.json
+
+# Ignore compiled files
+*.out
+*.o
+
+# Ignore coverage reports
+coverage/
+
+# Ignore other specific files and directories
+# Add any other files or directories specific to your project here

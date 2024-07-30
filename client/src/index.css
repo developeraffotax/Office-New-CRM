@@ -1,0 +1,292 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+.hero-animation {
+  background: linear-gradient(
+    147.92deg,
+    hsla(239, 76%, 53%, 0, 456) 10.41%,
+    hsla(0, 0%, 100%, 0) 89.25%
+  );
+  animation: bganimation 8s infinite alternate;
+}
+
+@keyframes bganimation {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  16.67% {
+    opacity: 0.9;
+  }
+  33.33% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  66.67% {
+    opacity: 0.5;
+  }
+  83.33% {
+    opacity: 0.4;
+  }
+}
+
+.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-2px);
+  }
+  40% {
+    transform: translateX(2px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/*  */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Scroll */
+
+.hidden1::-webkit-scrollbar {
+  display: none;
+}
+::-webkit-scrollbar {
+  width: 0.2rem;
+  height: 0.1rem;
+}
+::-webkit-scrollbar-track {
+  background: #afadad;
+  border-radius: 1rem;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(255, 123, 0);
+  border-radius: 1rem;
+}
+
+.allMessages::-webkit-scrollbar {
+  width: 0.2rem;
+}
+.message::-webkit-scrollbar {
+  display: none;
+}
+/* Button */
+.btn {
+  font-size: 1rem;
+  font-weight: 500;
+  min-height: 2.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: sans-serif;
+  padding: 0.4rem 0rem;
+  background: rgb(0, 149, 255);
+  color: #fff;
+  cursor: pointer;
+  border-radius: 3rem;
+  box-shadow: 0.2rem 0.2rem 0.3rem rgba(0, 0, 0, 0.3);
+  border: none;
+  outline: none;
+  margin-top: 1rem;
+}
+.btn:hover {
+  background: rgb(0, 118, 202);
+  box-shadow: 0.2rem 0.2rem 0.3rem rgba(0, 0, 0, 0.5);
+}
+.btn:active {
+  background: rgb(0, 149, 255);
+  box-shadow: 0.2rem 0.2rem 0.3rem rgba(0, 0, 0, 0.2);
+}
+
+.btn1 {
+  font-size: 1rem;
+  font-family: sans-serif;
+  background: linear-gradient(
+    to bottom right,
+    rgb(0, 179, 255),
+    rgb(234, 0, 255)
+  );
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0.2rem 0.2rem 0.3rem rgba(0, 0, 0, 0.3);
+  border: none;
+  outline: none;
+  margin-top: 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn1:hover {
+  transform: scale(1.01);
+  box-shadow: 0 0 0.3rem 1px rgb(0, 242, 255);
+}
+.btn1:active {
+  transform: scale(1);
+}
+
+.shadow1 {
+  box-shadow: 0 0 0.2rem 0.1rem rgb(0, 217, 255);
+}
+
+.box {
+  box-shadow: 0.2rem 0.2rem 0.3rem rgba(0, 0, 0, 0.2);
+  transition: 0.1s all ease-in-out;
+  filter: drop-shadow(0.2rem 0.2rem 0.3rem rgba(0, 0, 0, 0.4));
+}
+.box:hover {
+  box-shadow: 0.3rem 0.3rem 0.4rem rgba(0, 0, 0, 0.3);
+}
+.box:active {
+  box-shadow: 0.2rem 0.2rem 0.1rem rgba(0, 0, 0, 0.1);
+}
+
+.sidebtn {
+  background: linear-gradient(to left, rgb(0, 162, 255), rgb(0, 255, 255));
+  filter: drop-shadow(0.2rem 0.2rem 0.3rem rgba(0, 0, 0, 0.3));
+  transition: all 0.3s ease-in-out;
+}
+.sidebtn:hover {
+  background: linear-gradient(to left, rgb(1, 144, 226), rgb(2, 225, 225));
+  filter: drop-shadow(0.2rem 0.2rem 0.3rem rgba(0, 0, 0, 0.3));
+}
+
+.darkbtn {
+  background: linear-gradient(to left, rgb(193, 0, 252), rgb(225, 76, 255));
+  filter: drop-shadow(0.2rem 0.2rem 0.3rem rgba(0, 0, 0, 0.3));
+}
+
+/* .pagination__page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 5px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.pagination__page:hover {
+  background-color: #f0f0f0;
+} */
+
+.pagination__link--active {
+  width: 1.5rem;
+  height: 1.5rem;
+  box-shadow: 0.1rem 0.2rem 0.2rem rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0080ff;
+  color: #fff;
+}
+
+.pagination__link--active:hover {
+  box-shadow: 0.1rem 0.2rem 0.2rem rgba(0, 0, 0, 0.4);
+  background-color: #007bff;
+}
+
+.borderRadius {
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  animation: borderRadus 5s linear infinite;
+}
+
+@keyframes borderRadus {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* -----------Input for date-- */
+/* imput fields */
+.inputBox {
+  width: 100%;
+  position: relative;
+}
+.inputBox > input,
+.inputBox > textarea {
+  width: 100%;
+  height: 2.5rem;
+  border: 2px solid #555;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #000;
+  cursor: pointer;
+  outline: none;
+  border-radius: 0.3rem;
+  padding: 10px;
+  overflow: none;
+  resize: none;
+}
+.inputBox > textarea {
+  height: 6rem;
+}
+
+.inputBox > span {
+  position: absolute;
+  left: 0;
+  padding: 12px;
+  pointer-events: none;
+  font-size: 1rem;
+  color: #888;
+  transition: 0.3s;
+}
+.inputBox > input:valid ~ span,
+.inputBox > textarea:valid ~ span,
+.inputBox > input:focus ~ span,
+inputBox > textarea:focus ~ span {
+  color: #000;
+  transform: translateX(10px) translateY(-6px);
+  font-size: 0.8rem;
+  padding: 0 7px;
+  background: #fff;
+  border-left: 2px solid #254e7f;
+  border-right: 2px solid #254e7f;
+}
+.inputBox > input:valid,
+.inputBox > input:focus {
+  border: 2px solid #254e7f;
+}
+.tgradient {
+  background: linear-gradient(to right, rgb(0, 157, 255), #a600bc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}

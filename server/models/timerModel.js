@@ -8,7 +8,26 @@ const timerSchema = new mongoose.Schema(
     endTime: {
       type: String,
     },
+    type: {
+      type: String,
+      default: "Timer",
+    },
     note: {
+      type: String,
+    },
+    department: {
+      type: String,
+    },
+    clientName: {
+      type: String,
+    },
+    JobHolderName: {
+      type: String,
+    },
+    projectName: {
+      type: String,
+    },
+    task: {
       type: String,
     },
     clientId: {
@@ -19,6 +38,11 @@ const timerSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Client",
     },
+    taskId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tasks",
+    },
+
     isRunning: { type: Boolean, default: false },
   },
   { timestamps: true }

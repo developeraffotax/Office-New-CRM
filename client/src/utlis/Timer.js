@@ -15,7 +15,21 @@ const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 export const Timer = forwardRef(
   (
-    { clientId, jobId, setIsShow, note, pageName, taskName, taskLink, setNote },
+    {
+      clientId,
+      jobId,
+      setIsShow,
+      note,
+      pageName,
+      taskName,
+      taskLink,
+      setNote,
+      department,
+      clientName,
+      JobHolderName,
+      projectName,
+      task,
+    },
     ref
   ) => {
     const { anyTimerRunning, setAnyTimerRunning, auth, setTime } = useAuth();
@@ -84,6 +98,12 @@ export const Timer = forwardRef(
             clientId,
             jobId,
             note: `Started work on ${pageName}`,
+            type: "Timer",
+            department,
+            clientName,
+            JobHolderName,
+            projectName,
+            task,
           }
         );
         setTimerId(response.data.timer._id);

@@ -235,6 +235,11 @@ export default function JobDetail({
                   taskLink={"/job-planning"}
                   pageName={"Jobs"}
                   taskName={clientDetail?.job?.jobName}
+                  department={clientDetail.job.jobName}
+                  clientName={clientDetail.clientName}
+                  JobHolderName={clientDetail.job.jobHolder}
+                  projectName={""}
+                  task={""}
                 />
               </span>
             </div>

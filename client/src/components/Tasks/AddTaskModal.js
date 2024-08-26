@@ -115,7 +115,6 @@ export default function AddTaskModal({
         <form onSubmit={handleTask} className="w-full flex flex-col gap-4 ">
           <select
             className={`${style.input}`}
-            required
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
           >

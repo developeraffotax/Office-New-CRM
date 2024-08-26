@@ -338,6 +338,11 @@ export default function TaskDetail({
                   taskLink={"/tasks"}
                   pageName={"Tasks"}
                   taskName={taskDetal?.project?.projectName}
+                  department={""}
+                  clientName={""}
+                  JobHolderName={taskDetal.jobHolder}
+                  projectName={taskDetal.project.projectName}
+                  task={taskDetal.task}
                 />
               </span>
             </div>

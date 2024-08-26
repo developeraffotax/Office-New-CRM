@@ -602,7 +602,7 @@ const AllTasks = () => {
               }}
               className="w-full h-[2rem] rounded-md bg-transparent border-none outline-none"
             >
-              {/* <option value="">Select Project</option> */}
+              <option value="">Select Project</option>
               {projects &&
                 projects.map((proj) => (
                   <option value={proj._id} key={proj._id}>
@@ -616,7 +616,6 @@ const AllTasks = () => {
         filterSelectOptions: projects?.map((project) => project?.projectName),
         filterVariant: "select",
       },
-
       {
         accessorKey: "jobHolder",
         header: "Job Holder",
@@ -626,12 +625,12 @@ const AllTasks = () => {
           return (
             <select
               value={jobholder || ""}
-              className="w-[6rem] h-[2rem] rounded-md border border-orange-300 outline-none"
+              className="w-[6rem] h-[2rem] rounded-md border-none  outline-none"
               onChange={(e) =>
                 updateTaskJLS(row.original?._id, e.target.value, "", "")
               }
             >
-              {/* <option value="">Select Job holder</option> */}
+              <option value=""></option>
               {users?.map((jobHold, i) => (
                 <option value={jobHold?.name} key={i}>
                   {jobHold.name}
@@ -1102,7 +1101,7 @@ const AllTasks = () => {
               }
               className="w-[5rem] h-[2rem] rounded-md border-none bg-transparent outline-none"
             >
-              {/* <option value="">Select Lead</option> */}
+              <option value=""></option>
               {users.map((lead, i) => (
                 <option value={lead?.name} key={i}>
                   {lead?.name}
@@ -1137,6 +1136,7 @@ const AllTasks = () => {
         accessorKey: "timertracker",
         header: "Time Tr.",
         Cell: ({ cell, row }) => {
+          console.log("rowTask", row.original);
           return (
             <div
               className="flex items-center justify-center gap-1 w-full h-full "
@@ -1153,6 +1153,11 @@ const AllTasks = () => {
                   pageName={"Tasks"}
                   taskName={row.original.project.projectName}
                   setNote={setNote}
+                  department={""}
+                  clientName={""}
+                  JobHolderName={row.original.jobHolder}
+                  projectName={row.original.project.projectName}
+                  task={row.original.task}
                 />
               </span>
             </div>

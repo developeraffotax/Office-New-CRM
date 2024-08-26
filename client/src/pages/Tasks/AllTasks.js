@@ -602,7 +602,7 @@ const AllTasks = () => {
               }}
               className="w-full h-[2rem] rounded-md bg-transparent border-none outline-none"
             >
-              <option value="">Select Project</option>
+              {/* <option value="">Select Project</option> */}
               {projects &&
                 projects.map((proj) => (
                   <option value={proj._id} key={proj._id}>
@@ -631,7 +631,7 @@ const AllTasks = () => {
                 updateTaskJLS(row.original?._id, e.target.value, "", "")
               }
             >
-              <option value="">Select Job holder</option>
+              {/* <option value="">Select Job holder</option> */}
               {users?.map((jobHold, i) => (
                 <option value={jobHold?.name} key={i}>
                   {jobHold.name}
@@ -1102,7 +1102,7 @@ const AllTasks = () => {
               }
               className="w-[5rem] h-[2rem] rounded-md border-none bg-transparent outline-none"
             >
-              <option value="">Select Lead</option>
+              {/* <option value="">Select Lead</option> */}
               {users.map((lead, i) => (
                 <option value={lead?.name} key={i}>
                   {lead?.name}

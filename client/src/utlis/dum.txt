@@ -1,0 +1,449 @@
+// const columns = [
+  //   {
+  //     headerName: "Sr",
+  //     filter: false,
+  //     checkboxSelection: true,
+  //     headerCheckboxSelection: true,
+  //     editable: false,
+  //     valueGetter: (params) => params.node.rowIndex + 1,
+  //   },
+  //   {
+  //     headerName: "Company Name",
+  //     field: "companyName",
+  //     editable: false,
+  //     filter: true,
+  //   },
+  //   {
+  //     headerName: "Client Name",
+  //     field: "clientName",
+  //     filter: true,
+  //   },
+  //   {
+  //     headerName: "Job Holder",
+  //     field: "job.jobHolder",
+  //     filter: "agSetColumnFilter",
+  //     filterParams: {
+  //       values: jobHolders,
+  //       suppressMiniFilter: true,
+  //       suppressSelectAll: true,
+  //     },
+  //     floatingFilterComponent: "agSetColumnFloatingFilter",
+  //     floatingFilterComponentParams: {
+  //       values: jobHolders,
+  //       suppressFilterButton: true,
+  //       suppressInput: true,
+  //     },
+  //   },
+  //   {
+  //     headerName: "Departments",
+  //     field: "job.jobName",
+  //     filter: true,
+  //   },
+  //   {
+  //     headerName: "Hours",
+  //     field: "totalHours",
+  //     filter: true,
+  //   },
+  //   {
+  //     headerName: "Year End",
+  //     field: "job.yearEnd",
+  //     filter: true,
+  //   },
+  //   {
+  //     headerName: "Deadline",
+  //     field: "job.jobDeadline",
+  //     filter: true,
+  //   },
+  //   {
+  //     headerName: "Job Date",
+  //     field: "currentDate",
+  //     filter: true,
+  //   },
+  //   {
+  //     headerName: "Status",
+  //     field: "job.jobStatus",
+  //     filter: true,
+  //   },
+  //   {
+  //     headerName: "Note",
+  //     field: "job.note",
+  //     filter: true,
+  //   },
+  //   {
+  //     headerName: "Job Status",
+  //     field: "job.jobStatus",
+  //     cellEditor: "agSelectCellEditor",
+  //     cellEditorParams: {
+  //       values: [
+  //         "Select",
+  //         "Data",
+  //         "Progress",
+  //         "Queries",
+  //         "Approval",
+  //         "Submission",
+  //         "Billing",
+  //         "Feedback",
+  //       ],
+  //     },
+  //     floatingFilterComponent: "selectFloatingFilter",
+  //     floatingFilterComponentParams: {
+  //       options: [
+  //         "Data",
+  //         "Progress",
+  //         "Queries",
+  //         "Approval",
+  //         "Submission",
+  //         "Billing",
+  //         "Feedback",
+  //       ],
+  //       suppressFilterButton: true,
+  //       suppressInput: true,
+  //     },
+  //   },
+  //   {
+  //     headerName: "Lead",
+  //     field: "job.lead",
+  //     filter: true,
+  //   },
+  //   {
+  //     headerName: "Timer",
+  //     field: "job.timer",
+  //     filter: true,
+  //   },
+  //   {
+  //     headerName: "Chat",
+  //     field: "job.chat",
+  //     filter: true,
+  //   },
+  // ];
+
+  // const defaultColDef = useMemo(
+  //   () => ({
+  //     sortable: true,
+  //     filter: true,
+  //     floatingFilter: true,
+  //     editable: true,
+  //     resizable: true,
+  //   }),
+  //   []
+  // );
+
+  // const cellClickedListener = useCallback((event) => {}, []);
+
+
+<div
+            className="ag-theme-alpine"
+            style={{ height: 600, width: "100%" }}
+          >
+            {/* <AgGridReact
+              rowData={clientJobs}
+              columnDefs={columns}
+              editType={"fullRow"}
+              rowSelection="multiple"
+              defaultColDef={defaultColDef}
+              animateRows={true}
+              pagination={true}
+              paginationPageSize={25}
+              onCellClicked={cellClickedListener}
+              suppressDragLeaveHidesColumns={true}
+            /> */}
+          </div>
+
+          ----------------------Material Table-------->
+            const table = useMaterialReactTable({
+    columns,
+    data: tableData,
+    columnFilterDisplayMode: "popover",
+    enableColumnFilterModes: true,
+    enableColumnOrdering: true,
+    enableGrouping: true,
+    enableColumnPinning: true,
+    enableFacetedValues: true,
+    enableRowActions: true,
+    enableRowSelection: true,
+    initialState: {
+      showColumnFilters: true,
+      showGlobalFilter: true,
+      columnPinning: {
+        left: ["mrt-row-expand", "mrt-row-select"],
+        right: ["mrt-row-actions"],
+      },
+    },
+    paginationDisplayMode: "pages",
+    positionToolbarAlertBanner: "bottom",
+    muiSearchTextFieldProps: {
+      size: "small",
+      variant: "outlined",
+    },
+    rowVirtualizerOptions: { overscan: 4 },
+  });
+
+
+  //filter
+    // const filterByDep = (value) => {
+  //   let filteredData = [];
+
+  //   if (
+  //     activeBtn === "due" ||
+  //     activeBtn === "status" ||
+  //     activeBtn === "jobHolder"
+  //   ) {
+  //     filteredData = tableData.filter(
+  //       (item) =>
+  //         (activeBtn === "due" &&
+  //           getStatus(item.job.jobDeadline, item.job.yearEnd) === "Due") ||
+  //         (activeBtn === "overdue" &&
+  //           getStatus(item.job.jobDeadline, item.job.yearEnd) === "Overdue") ||
+  //         item.job.jobName === value ||
+  //         item.job.jobStatus === value ||
+  //         item.job.jobHolder === value
+  //     );
+  //   } else {
+  //     filteredData = tableData.filter(
+  //       (item) =>
+  //         item.job.jobName === value ||
+  //         item.job.jobStatus === value ||
+  //         item.job.jobHolder === value
+  //     );
+  //   }
+
+  //   setFilterData([...filteredData]);
+  // };
+
+
+  --------------------------Table Data---------->
+   const table = useMaterialReactTable({
+    columns,
+    data: active === "All" && !active1 ? tableData : filterData,
+    getRowId: (originalRow) => originalRow.id,
+    enableStickyHeader: true,
+    enableStickyFooter: true,
+    muiTableContainerProps: { sx: { maxHeight: "700px" } },
+    enableColumnActions: false,
+    enableColumnFilters: true,
+    enableSorting: true,
+    enableGlobalFilter: true,
+    enableRowNumbers: true,
+    state: { isLoading: loading },
+    enablePagination: true,
+    initialState: {
+      pagination: { pageSize: 25, pageIndex: 2 },
+      density: "compact",
+    },
+    sx: {
+      minWidth: 650,
+      flex: 1,
+      display: "flex",
+      flexDirection: "column",
+      height: "94vh",
+    },
+    muiTableHeadCellProps: {
+      style: {
+        fontWeight: "bold",
+        fontSize: "14px",
+        backgroundColor: "#f0f0f0",
+        color: "#000",
+      },
+    },
+    muiTableProps: {
+      sx: {
+        "& .MuiTableHead-root": {
+          backgroundColor: "#f0f0f0",
+        },
+        tableLayout: "auto",
+        fontSize: "14px",
+      },
+    },
+  });
+
+  ------------Date--------
+    {
+        accessorKey: "job.jobDeadline",
+        header: "Deadline",
+
+        Cell: ({ cell, row }) => {
+          const [date, setDate] = useState(
+            format(new Date(cell.getValue()), "dd-MMM-yyyy")
+          );
+
+          const handleDateChange = (newDate) => {
+            setDate(newDate);
+            handleUpdateDates(row.original._id, newDate, "yearEnd");
+          };
+          //  cell.getValue()
+          const cellDate = new Date(date);
+          const today = new Date();
+          const isExpired = cellDate < today;
+
+          return (
+            <div className="w-full flex items-center justify-center">
+              <input
+                type="text"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                onBlur={(e) => handleDateChange(e.target.value)}
+                className={`h-[2rem] w-[6rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none ${
+                  isExpired ? "text-red-500" : ""
+                }`}
+              />
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+          if (!cellValue) return false;
+
+          const cellDate = new Date(cellValue);
+          const today = new Date();
+
+          switch (filterValue) {
+            case "Expired":
+              return cellDate < today;
+            case "Today":
+              return cellDate.toDateString() === today.toDateString();
+            case "Tomorrow":
+              const tomorrow = new Date(today);
+              tomorrow.setDate(today.getDate() + 1);
+              return cellDate.toDateString() === tomorrow.toDateString();
+            case "In 7 days":
+              const in7Days = new Date(today);
+              in7Days.setDate(today.getDate() + 7);
+              return cellDate <= in7Days && cellDate > today;
+            case "In 15 days":
+              const in15Days = new Date(today);
+              in15Days.setDate(today.getDate() + 15);
+              return cellDate <= in15Days && cellDate > today;
+            case "30 Days":
+              const in30Days = new Date(today);
+              in30Days.setDate(today.getDate() + 30);
+              return cellDate <= in30Days && cellDate > today;
+            case "60 Days":
+              const in60Days = new Date(today);
+              in60Days.setDate(today.getDate() + 60);
+              return cellDate <= in60Days && cellDate > today;
+            case "Last 12 months":
+              const lastYear = new Date(today);
+              lastYear.setFullYear(today.getFullYear() - 1);
+              return cellDate >= lastYear && cellDate <= today;
+            case "Month Wise":
+              return (
+                cellDate.getFullYear() === today.getFullYear() &&
+                cellDate.getMonth() === today.getMonth()
+              );
+            default:
+              return false;
+          }
+        },
+        filterSelectOptions: [
+          "Expired",
+          "Today",
+          "Tomorrow",
+          "In 7 days",
+          "In 15 days",
+          "30 Days",
+          "60 Days",
+          "Last 12 months",
+        ],
+        filterVariant: "select",
+        size: 110,
+        minSize: 80,
+        maxSize: 140,
+        grow: true,
+      },
+
+
+      ------------
+      // {
+      //   accessorKey: "job.yearEnd",
+      //   header: "Year End",
+
+      //   Cell: ({ cell, row }) => {
+      //     const [date, setDate] = useState(
+      //       format(new Date(cell.getValue()), "dd-MMM-yyyy")
+      //     );
+
+      //     const handleDateChange = (newDate) => {
+      //       setDate(newDate);
+      //       handleUpdateDates(row.original._id, newDate, "yearEnd");
+      //     };
+      //     //  cell.getValue()
+      //     const cellDate = new Date(date);
+      //     const today = new Date();
+      //     const isExpired = cellDate < today;
+
+      //     return (
+      //       <div className="w-full flex items-center justify-center">
+      //         <input
+      //           type="text"
+      //           value={date}
+      //           onChange={(e) => setDate(e.target.value)}
+      //           onBlur={(e) => handleDateChange(e.target.value)}
+      //           className={`h-[2rem] w-[6rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none ${
+      //             isExpired ? "text-red-500" : ""
+      //           }`}
+      //         />
+      //       </div>
+      //     );
+      //   },
+      //   filterFn: (row, columnId, filterValue) => {
+      //     const cellValue = row.getValue(columnId);
+      //     if (!cellValue) return false;
+
+      //     const cellDate = new Date(cellValue);
+      //     const today = new Date();
+
+      //     switch (filterValue) {
+      //       case "Expired":
+      //         return cellDate < today;
+      //       case "Today":
+      //         return cellDate.toDateString() === today.toDateString();
+      //       case "Tomorrow":
+      //         const tomorrow = new Date(today);
+      //         tomorrow.setDate(today.getDate() + 1);
+      //         return cellDate.toDateString() === tomorrow.toDateString();
+      //       case "In 7 days":
+      //         const in7Days = new Date(today);
+      //         in7Days.setDate(today.getDate() + 7);
+      //         return cellDate <= in7Days && cellDate > today;
+      //       case "In 15 days":
+      //         const in15Days = new Date(today);
+      //         in15Days.setDate(today.getDate() + 15);
+      //         return cellDate <= in15Days && cellDate > today;
+      //       case "30 Days":
+      //         const in30Days = new Date(today);
+      //         in30Days.setDate(today.getDate() + 30);
+      //         return cellDate <= in30Days && cellDate > today;
+      //       case "60 Days":
+      //         const in60Days = new Date(today);
+      //         in60Days.setDate(today.getDate() + 60);
+      //         return cellDate <= in60Days && cellDate > today;
+      //       case "Last 12 months":
+      //         const lastYear = new Date(today);
+      //         lastYear.setFullYear(today.getFullYear() - 1);
+      //         return cellDate >= lastYear && cellDate <= today;
+      //       // case "Month Wise":
+      //       //   return (
+      //       //     cellDate.getFullYear() === today.getFullYear() &&
+      //       //     cellDate.getMonth() === today.getMonth()
+      //       //   );
+      //       default:
+      //         return false;
+      //     }
+      //   },
+      //   filterSelectOptions: [
+      //     "Expired",
+      //     "Today",
+      //     "Tomorrow",
+      //     "In 7 days",
+      //     "In 15 days",
+      //     "30 Days",
+      //     "60 Days",
+      //     "Last 12 months",
+      //     "Custom date",
+      //   ],
+      //   filterVariant: "select",
+      //   size: 110,
+      //   minSize: 80,
+      //   maxSize: 140,
+      //   grow: true,
+      // },

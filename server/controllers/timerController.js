@@ -6,10 +6,29 @@ import timerStatusModel from "../models/timerStatusModel.js";
 // Start Timer
 export const startTimer = async (req, res) => {
   try {
-    const { clientId, jobId, note } = req.body;
+    const {
+      clientId,
+      jobId,
+      type,
+      department,
+      clientName,
+      JobHolderName,
+      projectName,
+      task,
+    } = req.body;
     const startTime = new Date().toISOString();
 
-    const newTimer = new timerModel({ clientId, jobId, note, startTime });
+    const newTimer = new timerModel({
+      clientId,
+      jobId,
+      startTime,
+      type,
+      department,
+      clientName,
+      JobHolderName,
+      projectName,
+      task,
+    });
     await newTimer.save();
 
     const updatedJob = await jobsModel.findByIdAndUpdate(
@@ -259,3 +278,17 @@ export const getTimerStatus = async (req, res) => {
     });
   }
 };
+
+// --------------Get All Timers----------->
+// export const getAllTimers = async(req,res)=>{
+//   try {
+
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).send({
+//       success: false,
+//       message: "Error in get all timers",
+//       error,
+//     });
+//   }
+// }

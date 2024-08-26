@@ -604,9 +604,9 @@ export default function AllJobs() {
               onChange={(e) =>
                 handleUpdateJobHolder(row.original._id, e.target.value)
               }
-              className="w-[6rem] h-[2rem] rounded-md border border-orange-300 outline-none"
+              className="w-[6rem] h-[2rem] rounded-md border-none outline-none"
             >
-              {/* <option value="">Select</option> */}
+              <option value=""></option>
               {users.map((jobHold, i) => (
                 <option value={jobHold} key={i}>
                   {jobHold}
@@ -1120,7 +1120,7 @@ export default function AllJobs() {
               }
               className="w-[6rem] h-[2rem] rounded-md border border-sky-300 outline-none"
             >
-              {/* <option value="">Select</option> */}
+              <option value=""></option>
               <option value="Data">Data</option>
               <option value="Progress">Progress</option>
               <option value="Queries">Queries</option>
@@ -1159,7 +1159,7 @@ export default function AllJobs() {
               }
               className="w-[6rem] h-[2rem] rounded-md border-none bg-transparent outline-none"
             >
-              {/* <option value="">Select</option> */}
+              <option value=""></option>
               {users.map((lead, i) => (
                 <option value={lead} key={i}>
                   {lead}
@@ -1195,7 +1195,7 @@ export default function AllJobs() {
         header: "Timer",
         Cell: ({ cell, row }) => {
           // const statusValue = cell.getValue();
-          // console.log("row", row.original.job.jobName);
+          // console.log("row", row.original, row.original.job.jobName);
 
           return (
             <div
@@ -1213,6 +1213,11 @@ export default function AllJobs() {
                   pageName={"Jobs"}
                   taskName={row.original.companyName}
                   setNote={setNote}
+                  department={row.original.job.jobName}
+                  clientName={row.original.clientName}
+                  JobHolderName={row.original.job.jobHolder}
+                  projectName={""}
+                  task={""}
                 />
               </span>
             </div>

@@ -21,12 +21,6 @@ export const createTask = async (req, res) => {
         message: "Project Id is required!",
       });
     }
-    if (!jobHolder || !lead) {
-      return res.status(400).send({
-        success: false,
-        message: "JobHolder & Lead are required!",
-      });
-    }
 
     const project = await projectModel.findById(projectId);
     if (!project) {

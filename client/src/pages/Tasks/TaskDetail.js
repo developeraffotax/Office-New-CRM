@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { GoGoal } from "react-icons/go";
-import { MdDateRange, MdInsertComment } from "react-icons/md";
+import { MdDateRange } from "react-icons/md";
 import { RiTimerLine } from "react-icons/ri";
 import { format } from "date-fns";
 // import { MdOutlineInsertComment } from "react-icons/md";
@@ -11,7 +11,6 @@ import { Timer } from "../../utlis/Timer";
 import { useAuth } from "../../context/authContext";
 import { FaRegUser } from "react-icons/fa";
 import { FaEdit } from "react-icons/fa";
-import { CgClose } from "react-icons/cg";
 import { AiFillDelete } from "react-icons/ai";
 import { IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
@@ -266,7 +265,7 @@ export default function TaskDetail({
             </span>
             <span
               className=""
-              title="Complete Job"
+              title="Complete Task"
               onClick={() => {
                 handleUpdateStatus(taskDetal._id);
               }}
@@ -275,7 +274,7 @@ export default function TaskDetail({
             </span>
             <span
               className=""
-              title="Delete Job"
+              title="Delete Task"
               onClick={() => handleDeleteConfirmation(taskDetal._id)}
             >
               <AiFillDelete className="h-5 w-5 cursor-pointer text-red-500 hover:text-red-600" />

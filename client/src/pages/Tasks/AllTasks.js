@@ -1065,7 +1065,7 @@ const AllTasks = () => {
               }
               className="w-[6rem] h-[2rem] rounded-md border border-sky-300 outline-none"
             >
-              {/* <option value="">Select Status</option> */}
+              <option value=""></option>
               <option value="To do">To do</option>
               <option value="Progress">Progress</option>
               <option value="Review">Review</option>

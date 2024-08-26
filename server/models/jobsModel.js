@@ -23,7 +23,7 @@ const jobSchema = new mongoose.Schema(
     },
     jobStatus: {
       type: String,
-      default: "Progress",
+      default: "",
     },
     notes: {
       type: String,
@@ -85,7 +85,7 @@ const clientSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      default: "process",
+      default: "",
     },
     clientType: {
       type: String,

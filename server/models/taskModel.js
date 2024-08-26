@@ -75,7 +75,7 @@ const taskSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      default: "Progress",
+      default: "",
     },
     lead: {
       type: String,

@@ -218,6 +218,15 @@ export const updateJobHolder = async (req, res) => {
 
     // Create Notification
     const user = await userModel.findOne({ name: jobHolder });
+    if (!user) {
+      res.status(200).send({
+        success: true,
+        message: "Job holder updated successfully!",
+        clientJob: clientJob,
+      });
+
+      return;
+    }
 
     const notification = await notificationModel.create({
       title: "New Job Assigned",

@@ -185,7 +185,7 @@ export default function JobDetail({
                 }}
                 className="w-[8rem] h-[2rem] rounded-md border border-sky-500 outline-none"
               >
-                <option value="">Select</option>
+                <option value="empty"></option>
                 <option value="Data">Data</option>
                 <option value="Progress">Progress</option>
                 <option value="Queries">Queries</option>
@@ -234,10 +234,10 @@ export default function JobDetail({
                   setNote={setNote}
                   taskLink={"/job-planning"}
                   pageName={"Jobs"}
-                  taskName={clientDetail?.job?.jobName}
-                  department={clientDetail.job.jobName}
-                  clientName={clientDetail.clientName}
-                  JobHolderName={clientDetail.job.jobHolder}
+                  taskName={clientDetail?.job?.jobName || " "}
+                  department={clientDetail?.job?.jobName || " "}
+                  clientName={clientDetail?.clientName || " "}
+                  JobHolderName={clientDetail?.job?.jobHolder || " "}
                   projectName={""}
                   task={""}
                 />

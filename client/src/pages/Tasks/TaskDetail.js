@@ -337,12 +337,12 @@ export default function TaskDetail({
                   setNote={setNote}
                   taskLink={"/tasks"}
                   pageName={"Tasks"}
-                  taskName={taskDetal?.project?.projectName}
+                  taskName={taskDetal?.project?.projectName || ""}
                   department={""}
                   clientName={""}
-                  JobHolderName={taskDetal.jobHolder}
-                  projectName={taskDetal.project.projectName}
-                  task={taskDetal.task}
+                  JobHolderName={taskDetal?.jobHolder || ""}
+                  projectName={taskDetal?.project?.projectName || ""}
+                  task={taskDetal?.task || ""}
                 />
               </span>
             </div>

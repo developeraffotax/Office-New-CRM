@@ -280,15 +280,74 @@ export const getTimerStatus = async (req, res) => {
 };
 
 // --------------Get All Timers----------->
-// export const getAllTimers = async(req,res)=>{
-//   try {
+export const getAllTimers = async (req, res) => {
+  try {
+    let timers;
+    if (req.user.user.role === "Admin") {
+      timers = await timerModel.find({});
+    } else {
+      timers = await timerModel.find({ clientId: req.user.user._id });
+    }
 
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).send({
-//       success: false,
-//       message: "Error in get all timers",
-//       error,
-//     });
-//   }
-// }
+    res.status(200).send({
+      success: true,
+      message: "All Timers",
+      timers: timers,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in get all timers",
+      error,
+    });
+  }
+};
+
+// Add Timer Manually
+
+export const addTimerMannually = async (req, res) => {
+  try {
+    const {
+      startTime,
+      endTime,
+      department,
+      clientName,
+      JobHolderName,
+      projectName,
+      task,
+      clientId,
+      jobId,
+      taskId,
+    } = req.body;
+
+    const timer = await timerModel.create({
+      startTime,
+      endTime,
+      department,
+      clientName,
+      JobHolderName,
+      projectName,
+      task,
+      clientId,
+      jobId,
+      taskId,
+    });
+    res.status(200).send({
+      success: true,
+      message: "Timer added Successfully!",
+      timer: timer,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in add timer manually!",
+      error,
+    });
+  }
+};
+
+// Update timer
+
+// Delete Timer

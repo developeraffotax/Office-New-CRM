@@ -606,7 +606,7 @@ export default function AllJobs() {
               }
               className="w-[6rem] h-[2rem] rounded-md border-none outline-none"
             >
-              <option value=""></option>
+              <option value="empty"></option>
               {users.map((jobHold, i) => (
                 <option value={jobHold} key={i}>
                   {jobHold}
@@ -1120,7 +1120,7 @@ export default function AllJobs() {
               }
               className="w-[6rem] h-[2rem] rounded-md border border-sky-300 outline-none"
             >
-              <option value=""></option>
+              <option value="empty"></option>
               <option value="Data">Data</option>
               <option value="Progress">Progress</option>
               <option value="Queries">Queries</option>
@@ -1159,7 +1159,7 @@ export default function AllJobs() {
               }
               className="w-[6rem] h-[2rem] rounded-md border-none bg-transparent outline-none"
             >
-              <option value=""></option>
+              <option value="empty"></option>
               {users.map((lead, i) => (
                 <option value={lead} key={i}>
                   {lead}

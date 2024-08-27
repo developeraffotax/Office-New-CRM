@@ -73,15 +73,14 @@ export const createTask = async (req, res) => {
   }
 };
 
-// Get ALl Projects
+// Get ALl Tasks
 export const getAllTasks = async (req, res) => {
   try {
     const tasks = await taskModel
       .find({ status: { $ne: "completed" } })
       .select(
         "project jobHolder task hours startDate deadline status lead  estimate_Time comments._id label"
-      )
-      .sort({ updatedAt: -1 });
+      );
 
     res.status(200).send({
       success: true,

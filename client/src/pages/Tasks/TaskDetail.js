@@ -94,7 +94,7 @@ export default function TaskDetail({
         setTaskDetal(updateTask);
         toast.success("Task updated successfully!");
         setTasksData((prevData) =>
-          prevData.map((item) =>
+          prevData?.map((item) =>
             item._id === updateTask._id ? updateTask : item
           )
         );

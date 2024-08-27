@@ -477,3 +477,38 @@
   //     }
   //   }
   // };
+
+
+    // -----------Update JobHolder -/- Lead | Status-------->
+  // const updateTaskJLS = async (taskId, jobHolder, lead, status) => {
+  //   if (!taskId) {
+  //     toast.error("Project/Task id is required!");
+  //     return;
+  //   }
+  //   try {
+  //     const { data } = await axios.put(
+  //       `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/task/JLS/${taskId}`,
+  //       { jobHolder, lead, status }
+  //     );
+  //     if (data?.success) {
+  //       const updateTask = data?.task;
+  //       toast.success("Task updated successfully!");
+  //       if (filterId || active || active1) {
+  //         setFilterData((prevData) =>
+  //           prevData?.map((item) =>
+  //             item._id === updateTask._id ? updateTask : item
+  //           )
+  //         );
+  //       }
+
+  //       setTasksData((prevData) =>
+  //         prevData?.map((item) =>
+  //           item._id === updateTask._id ? updateTask : item
+  //         )
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     toast.error(error.response.data.message);
+  //   }
+  // };

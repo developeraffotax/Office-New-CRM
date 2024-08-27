@@ -1,13 +1,17 @@
 import express from "express";
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
+  addTimerMannually,
   addTimerStatus,
+  deleteTimer,
+  getAllTimers,
   getTimerStatus,
   removeTimerStatus,
   startTimer,
   stopTimer,
   timerStatus,
   totalTime,
+  updateTimer,
 } from "../controllers/timerController.js";
 
 const router = express.Router();
@@ -32,5 +36,17 @@ router.delete("/remove/timer_task/Status/:id", removeTimerStatus);
 
 // Get Task Timer Status
 router.get("/get/timer_task/Status/:id", getTimerStatus);
+
+// Get All Timers data
+router.get("/get/all/timers", getAllTimers);
+
+// Add Timer Manually
+router.post("/add/timer/manually", requiredSignIn, addTimerMannually);
+
+// Update Timer
+router.put("/update/timer/:id", requiredSignIn, updateTimer);
+
+// Delete Timer
+router.delete("/delete/timer/:id", requiredSignIn, deleteTimer);
 
 export default router;

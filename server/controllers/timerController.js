@@ -279,15 +279,10 @@ export const getTimerStatus = async (req, res) => {
   }
 };
 
-// --------------Get All Timers----------->
+// --------------Get All Timers data----------->
 export const getAllTimers = async (req, res) => {
   try {
-    let timers;
-    if (req.user.user.role === "Admin") {
-      timers = await timerModel.find({});
-    } else {
-      timers = await timerModel.find({ clientId: req.user.user._id });
-    }
+    const timers = await timerModel.find({});
 
     res.status(200).send({
       success: true,
@@ -349,5 +344,64 @@ export const addTimerMannually = async (req, res) => {
 };
 
 // Update timer
+export const updateTimer = async (req, res) => {
+  try {
+    const timerId = req.params.id;
+    const { department, clientName, JobHolderName, projectName, task } =
+      req.body;
+
+    const isExist = await timerModel.findById(timerId);
+
+    if (!isExist) {
+      return res.status(400).send({
+        success: false,
+        message: "Timer not found!",
+      });
+    }
+
+    const timer = await timerModel.findByIdAndUpdate(
+      { _id: timerId },
+      {
+        department: department || isExist.department,
+        clientName: clientName || isExist.clientName,
+        JobHolderName: JobHolderName || isExist.JobHolderName,
+        projectName: projectName || isExist.projectName,
+        task: task || isExist.task,
+      },
+      { new: true }
+    );
+    res.status(200).send({
+      success: true,
+      message: "Timer updated successfully!",
+      timer: timer,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in update timer!",
+      error,
+    });
+  }
+};
 
 // Delete Timer
+export const deleteTimer = async (req, res) => {
+  try {
+    const timerId = req.params.id;
+
+    await timerModel.findByIdAndDelete(timerId);
+
+    res.status(200).send({
+      success: true,
+      message: "Timer deleted successfully!",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in delete timer!",
+      error,
+    });
+  }
+};

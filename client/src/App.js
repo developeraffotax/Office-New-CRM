@@ -10,6 +10,8 @@ import AllUsers from "./pages/Auth/AllUsers";
 import Profile from "./pages/Auth/Profile";
 import { useEffect } from "react";
 import socketIO from "socket.io-client";
+import TimeSheet from "./pages/TimerSheet/TimeSheet";
+import Tickets from "./pages/Tickets/Tickets";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -28,6 +30,8 @@ function App() {
           <Route path="/job-planning" element={<AllJobs />} />
           <Route path="/users" element={<AllUsers />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/timesheet" element={<TimeSheet />} />
+          <Route path="/tickets" element={<Tickets />} />
         </Routes>
         <Toaster />
       </BrowserRouter>

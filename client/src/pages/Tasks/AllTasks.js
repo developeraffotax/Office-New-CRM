@@ -35,6 +35,7 @@ import { GrCopy } from "react-icons/gr";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import TaskDetail from "./TaskDetail";
+import { GrUpdate } from "react-icons/gr";
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -85,6 +86,7 @@ const AllTasks = () => {
   const [taskID, setTaskID] = useState("");
   const [projectName, setProjectName] = useState("");
   const [totalHours, setTotalHours] = useState("0");
+  const [allProjects, setAllProjects] = useState([]);
 
   const dateStatus = ["Due", "Overdue"];
 
@@ -116,6 +118,7 @@ const AllTasks = () => {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/projects/get_all/project`
       );
+      setAllProjects(data?.projects);
       if (auth.user.role === "Admin") {
         setProjects(data?.projects);
       } else {
@@ -259,6 +262,29 @@ const AllTasks = () => {
     }
   }, [filterData, tasksData, active, active1]);
 
+  // ---------------Get Task on Cross Filter-----
+  const getTasks1 = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/all`
+      );
+
+      setTasksData(data?.tasks);
+      if (auth.user.role === "Admin") {
+        setTasksData(data?.tasks);
+      } else {
+        const filteredTasks = data?.tasks?.filter(
+          (item) => item.jobHolder.trim() === auth.user.name.trim()
+        );
+
+        setTasksData(filteredTasks);
+      }
+      toast.success("Updated!");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   // ------------Filter By Projects---------->
   const getProjectsCount = (project) => {
     if (project === "All") {
@@ -376,7 +402,7 @@ const AllTasks = () => {
         const updateTask = data?.task;
         toast.success("Project updated!");
         setTasksData((prevData) =>
-          prevData.map((item) =>
+          prevData?.map((item) =>
             item._id === updateTask._id ? updateTask : item
           )
         );
@@ -387,7 +413,8 @@ const AllTasks = () => {
     }
   };
 
-  // -----------Update JobHolder -/- Lead | Status-------->
+  // -----------Update Job Holder, Lead, Status------->
+
   const updateTaskJLS = async (taskId, jobHolder, lead, status) => {
     if (!taskId) {
       toast.error("Project/Task id is required!");
@@ -401,23 +428,32 @@ const AllTasks = () => {
       if (data?.success) {
         const updateTask = data?.task;
         toast.success("Task updated successfully!");
+
         if (filterId || active || active1) {
-          setFilterData((prevData) =>
-            prevData.map((item) =>
-              item._id === updateTask._id ? updateTask : item
-            )
-          );
+          setFilterData((prevData) => {
+            if (Array.isArray(prevData)) {
+              return prevData.map((item) =>
+                item._id === updateTask._id ? updateTask : item
+              );
+            } else {
+              return [updateTask];
+            }
+          });
         }
 
-        setTasksData((prevData) =>
-          prevData.map((item) =>
-            item._id === updateTask._id ? updateTask : item
-          )
-        );
+        setTasksData((prevData) => {
+          if (Array.isArray(prevData)) {
+            return prevData.map((item) =>
+              item._id === updateTask._id ? updateTask : item
+            );
+          } else {
+            return [updateTask];
+          }
+        });
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "An error occurred");
     }
   };
 
@@ -441,7 +477,7 @@ const AllTasks = () => {
         const updateTask = data?.task;
         toast.success("Task updated successfully!");
         setTasksData((prevData) =>
-          prevData.map((item) =>
+          prevData?.map((item) =>
             item._id === updateTask._id ? updateTask : item
           )
         );
@@ -549,6 +585,23 @@ const AllTasks = () => {
     download(csvConfig)(csv);
   };
   // ---------Handle Delete Task-------------
+
+  const handleDeleteTaskConfirmation = (taskId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleDeleteTask(taskId);
+        Swal.fire("Deleted!", "Your task has been deleted.", "success");
+      }
+    });
+  };
   const handleDeleteTask = async (id) => {
     const filteredData = tasksData?.filter((item) => item._id !== id);
     setTasksData(filteredData);
@@ -596,8 +649,8 @@ const AllTasks = () => {
               className="w-full h-[2rem] rounded-md bg-transparent border-none outline-none"
             >
               <option value="">Select Project</option>
-              {projects &&
-                projects.map((proj) => (
+              {allProjects &&
+                allProjects.map((proj) => (
                   <option value={proj._id} key={proj._id}>
                     {proj?.projectName}
                   </option>
@@ -606,7 +659,9 @@ const AllTasks = () => {
           );
         },
         filterFn: "equals",
-        filterSelectOptions: projects?.map((project) => project?.projectName),
+        filterSelectOptions: allProjects?.map(
+          (project) => project?.projectName
+        ),
         filterVariant: "select",
       },
       {
@@ -669,17 +724,17 @@ const AllTasks = () => {
                 />
               ) : (
                 <div
-                  className="w-full h-full cursor-pointer flex items-center justify-start "
+                  className="w-full h-full flex items-center justify-start "
                   onDoubleClick={() => setShowEdit(true)}
-                  onClick={() => {
-                    setTaskID(row.original._id);
-                    setProjectName(row.original.project.projectName);
-                    setShowDetail(true);
-                  }}
                 >
                   <p
                     className="text-sky-500 cursor-pointer text-start hover:text-sky-600 "
                     onDoubleClick={() => setShowEdit(true)}
+                    onClick={() => {
+                      setTaskID(row.original._id);
+                      setProjectName(row.original.project.projectName);
+                      setShowDetail(true);
+                    }}
                   >
                     {allocateTask}
                   </p>
@@ -1190,15 +1245,21 @@ const AllTasks = () => {
         header: "Copy",
         Cell: ({ cell, row }) => {
           return (
-            <div
-              className="flex items-center justify-center gap-1 w-full h-full"
-              title="Copy this column"
-            >
+            <div className="flex items-center justify-center gap-2 w-full h-full">
               <span
                 className="text-[1rem] cursor-pointer"
                 onClick={() => copyTask(row.original)}
+                title="Copy this column"
               >
                 <GrCopy className="h-5 w-5 text-cyan-600 " />
+              </span>
+
+              <span
+                className="text-[1rem] cursor-pointer"
+                onClick={() => handleDeleteTaskConfirmation(row.original._id)}
+                title="Delete Task!"
+              >
+                <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
               </span>
             </div>
           );
@@ -1216,7 +1277,7 @@ const AllTasks = () => {
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "720px" } },
+    muiTableContainerProps: { sx: { maxHeight: "800px" } },
     enableColumnActions: false,
     enableColumnFilters: true,
     enableSorting: true,
@@ -1489,6 +1550,8 @@ const AllTasks = () => {
               <span
                 className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
                 onClick={() => {
+                  getTasks1();
+                  getAllProjects();
                   setActive("All");
                   setActiveBtn("");
                   setShowStatus(false);
@@ -1500,6 +1563,16 @@ const AllTasks = () => {
                 title="Clear filters"
               >
                 <IoClose className="h-6 w-6  cursor-pointer" />
+              </span>
+              <span
+                className={` p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+                onClick={() => {
+                  getTasks1();
+                  getAllProjects();
+                }}
+                title="Update Data"
+              >
+                <GrUpdate className="h-5 w-5  cursor-pointer" />
               </span>
             </div>
             {/*  */}

@@ -36,6 +36,7 @@ import { IoMdDownload } from "react-icons/io";
 
 import socketIO from "socket.io-client";
 import CompletedJobs from "./CompletedJobs";
+import { GrUpdate } from "react-icons/gr";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -137,11 +138,6 @@ export default function AllJobs() {
       );
       if (data) {
         setTableData(data?.clients);
-        // const totalHours = data.clients.reduce(
-        //   (sum, client) => sum + Number(client.totalHours),
-        //   0
-        // );
-        // setTotalHours(totalHours.toFixed(0));
         setLoading(false);
       }
     } catch (error) {
@@ -155,6 +151,30 @@ export default function AllJobs() {
     allClientJobData();
     // eslint-disable-next-line
   }, []);
+
+  // -----------Get Client without Showing Loading-------->
+  const allClientData = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/job`
+      );
+      if (data) {
+        setTableData(data?.clients);
+        toast.success("Updated!");
+
+        if (active !== "All") {
+          setFilterData((prevData) => {
+            if (Array.isArray(prevData)) {
+              return [...prevData, data.clients];
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message || "Error in client Jobs");
+    }
+  };
 
   // -----------Handle Custom date filter------
   const getCurrentMonthYear = () => {
@@ -302,7 +322,7 @@ export default function AllJobs() {
       if (data) {
         if (filterId || active || active1) {
           setFilterData((prevData) =>
-            prevData.map((item) =>
+            prevData?.map((item) =>
               item._id === rowId
                 ? { ...item, job: { ...item.job, jobStatus: newStatus } }
                 : item
@@ -310,7 +330,7 @@ export default function AllJobs() {
           );
         }
         setTableData((prevData) =>
-          prevData.map((item) =>
+          prevData?.map((item) =>
             item._id === rowId
               ? { ...item, job: { ...item.job, jobStatus: newStatus } }
               : item
@@ -338,7 +358,7 @@ export default function AllJobs() {
       if (data) {
         if (filterId || active || active1) {
           setFilterData((prevData) =>
-            prevData.map((item) =>
+            prevData?.map((item) =>
               item._id === rowId
                 ? { ...item, job: { ...item.job, lead: lead } }
                 : item
@@ -346,7 +366,7 @@ export default function AllJobs() {
           );
         }
         setTableData((prevData) =>
-          prevData.map((item) =>
+          prevData?.map((item) =>
             item._id === rowId
               ? { ...item, job: { ...item.job, lead: lead } }
               : item
@@ -374,7 +394,7 @@ export default function AllJobs() {
       if (data) {
         if (filterId || active || active1) {
           setFilterData((prevData) =>
-            prevData.map((item) =>
+            prevData?.map((item) =>
               item._id === rowId
                 ? { ...item, job: { ...item.job, jobHolder: jobHolder } }
                 : item
@@ -382,7 +402,7 @@ export default function AllJobs() {
           );
         }
         setTableData((prevData) =>
-          prevData.map((item) =>
+          prevData?.map((item) =>
             item._id === rowId
               ? { ...item, job: { ...item.job, jobHolder: jobHolder } }
               : item
@@ -488,7 +508,7 @@ export default function AllJobs() {
         const clientJob = data.clientJob;
         toast.success("Date updated successfully!");
         setTableData((prevData) =>
-          prevData.map((item) =>
+          prevData?.map((item) =>
             item._id === clientJob._id ? clientJob : item
           )
         );
@@ -1262,7 +1282,7 @@ export default function AllJobs() {
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "720px" } },
+    muiTableContainerProps: { sx: { maxHeight: "800px" } },
     enableColumnActions: false,
     enableColumnFilters: true,
     enableSorting: true,
@@ -1475,6 +1495,7 @@ export default function AllJobs() {
           <span
             className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
             onClick={() => {
+              allClientData();
               setActive("All");
               setActiveBtn("");
               setShowStatus(false);
@@ -1486,6 +1507,15 @@ export default function AllJobs() {
             title="Clear filters"
           >
             <IoClose className="h-6 w-6  cursor-pointer" />
+          </span>
+          <span
+            className={` p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+            onClick={() => {
+              allClientData();
+            }}
+            title="Update Date"
+          >
+            <GrUpdate className="h-5 w-5  cursor-pointer" />
           </span>
         </div>
         {/*  */}

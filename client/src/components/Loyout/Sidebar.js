@@ -17,6 +17,7 @@ import { MdTaskAlt } from "react-icons/md";
 import { LiaClipboardListSolid } from "react-icons/lia";
 import ProfileModal from "../Modals/ProfileModal";
 import { FaUsers } from "react-icons/fa";
+import { SlCalender } from "react-icons/sl";
 
 export default function Sidebar({ hide, setHide }) {
   const router = useNavigate();
@@ -205,13 +206,13 @@ export default function Sidebar({ hide, setHide }) {
           <div
             className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
             onClick={() => {
-              router("/blogs");
+              router("/tickets");
             }}
           >
             <div
               className="adminbtn absolute h-full  sidebtn z-[20]"
               style={{
-                width: active === "blogs" && "100%",
+                width: active === "tickets" && "100%",
                 background: `rgb(2, 68, 2)`,
               }}
             ></div>
@@ -219,19 +220,55 @@ export default function Sidebar({ hide, setHide }) {
               {hide ? (
                 <BsFileEarmarkText
                   className="h-5 w-5 cursor-pointer ml-2"
-                  style={{ color: active === "blogs" && "#fff" }}
+                  style={{ color: active === "tickets" && "#fff" }}
                 />
               ) : (
                 <div className="flex items-center gap-2">
                   <BsFileEarmarkText
                     className="h-5 w-5 cursor-pointer ml-2"
-                    style={{ color: active === "blogs" && "#fff" }}
+                    style={{ color: active === "tickets" && "#fff" }}
                   />
                   <span
                     className="text-[14px] font-[400]"
-                    style={{ color: active === "blogs" && "#fff" }}
+                    style={{ color: active === "tickets" && "#fff" }}
                   >
                     Tickets
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+          {/* Timer Sheet */}
+          <div
+            className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+            onClick={() => {
+              router("/timesheet");
+            }}
+          >
+            <div
+              className="adminbtn absolute h-full  sidebtn z-[20]"
+              style={{
+                width: active === "timesheet" && "100%",
+                background: `rgb(2, 68, 2)`,
+              }}
+            ></div>
+            <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+              {hide ? (
+                <SlCalender
+                  className="h-5 w-5 cursor-pointer ml-2"
+                  style={{ color: active === "timesheet" && "#fff" }}
+                />
+              ) : (
+                <div className="flex items-center gap-2">
+                  <SlCalender
+                    className="h-5 w-5 cursor-pointer ml-2"
+                    style={{ color: active === "timesheet" && "#fff" }}
+                  />
+                  <span
+                    className="text-[14px] font-[400]"
+                    style={{ color: active === "timesheet" && "#fff" }}
+                  >
+                    Time Sheet
                   </span>
                 </div>
               )}

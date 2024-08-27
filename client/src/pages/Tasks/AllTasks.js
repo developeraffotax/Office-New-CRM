@@ -550,15 +550,19 @@ const AllTasks = () => {
   };
   // ---------Handle Delete Task-------------
   const handleDeleteTask = async (id) => {
-    const filteredData = tasksData.filter((item) => item._id !== id);
+    const filteredData = tasksData?.filter((item) => item._id !== id);
+    setTasksData(filteredData);
 
+    if (active !== "All" && filterData) {
+      const filterData1 = filterData?.filter((item) => item._id !== id);
+      setFilterData(filterData1);
+    }
     try {
       const { data } = await axios.delete(
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/delete/task/${id}`
       );
       if (data) {
-        setTasksData(filteredData);
-        getAllTasks();
+        // getAllTasks();
         setShowDetail(false);
         toast.success("Task deleted successfully!");
       }
@@ -1203,7 +1207,7 @@ const AllTasks = () => {
       },
     ],
     // eslint-disable-next-line
-    [users, play, note, auth, currentPath, projects]
+    [users, play, note, auth, currentPath, projects, filterData]
   );
 
   const table = useMaterialReactTable({
@@ -1251,7 +1255,7 @@ const AllTasks = () => {
           backgroundColor: "#f0f0f0",
         },
         tableLayout: "auto",
-        fontSize: "14px",
+        fontSize: "13px",
         border: "1px solid rgba(81, 81, 81, .5)",
         caption: {
           captionSide: "top",

@@ -458,6 +458,7 @@ export default function AllJobs() {
   const handleDeleteJob = async (id) => {
     const filterData = tableData.filter((item) => item._id !== id);
     setTableData(filterData);
+
     try {
       const { data } = await axios.delete(
         `${process.env.REACT_APP_API_URL}/api/v1/client/delete/job/${id}`
@@ -1300,7 +1301,7 @@ export default function AllJobs() {
           backgroundColor: "#f0f0f0",
         },
         tableLayout: "auto",
-        fontSize: "14px",
+        fontSize: "13px",
         border: "1px solid rgba(81, 81, 81, .5)",
         caption: {
           captionSide: "top",

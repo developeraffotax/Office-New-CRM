@@ -447,3 +447,33 @@
       //   maxSize: 140,
       //   grow: true,
       // },
+
+      -----------Copy data-----
+      
+  // const copyTask = async (originalTask) => {
+  //   const taskCopy = { ...originalTask };
+  //   taskCopy.task = "";
+
+  //   // delete taskCopy._id;
+  //   // setTasksData((prevData) => [...prevData, taskCopy]);
+
+  //   const { data } = await axios.post(
+  //     `${process.env.REACT_APP_API_URL}/api/v1/tasks/create/task`,
+  //     {
+  //       projectId: taskCopy.project._id,
+  //       jobHolder: taskCopy.jobHolder,
+  //       task: taskCopy.task,
+  //       hours: taskCopy.hours,
+  //       startDate: taskCopy.startDate,
+  //       deadline: taskCopy.deadline,
+  //       lead: taskCopy.lead,
+  //       label: taskCopy.label,
+  //     }
+  //   );
+  //   if (data) {
+  //     setTasksData((prevData) => [...prevData, data.task]);
+  //     if (active !== "All") {
+  //       setFilterData((prevData) => [...prevData, data.task]);
+  //     }
+  //   }
+  // };

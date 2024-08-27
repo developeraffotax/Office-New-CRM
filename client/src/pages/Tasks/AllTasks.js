@@ -85,17 +85,12 @@ const AllTasks = () => {
   const [taskID, setTaskID] = useState("");
   const [projectName, setProjectName] = useState("");
   const [totalHours, setTotalHours] = useState("0");
-  const [tableKey, setTableKey] = useState(0);
-
-  useEffect(() => {
-    setTableKey((prevKey) => prevKey + 1);
-  }, [tasksData]);
 
   const dateStatus = ["Due", "Overdue"];
 
   const status = ["To do", "Progress", "Review", "Onhold"];
 
-  console.log("tasksData:", tasksData);
+  console.log("filterData:", filterData);
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
@@ -148,6 +143,7 @@ const AllTasks = () => {
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/all`
       );
 
+      setTasksData(data?.tasks);
       if (auth.user.role === "Admin") {
         setTasksData(data?.tasks);
       } else {
@@ -155,7 +151,6 @@ const AllTasks = () => {
           (item) => item.jobHolder.trim() === auth.user.name.trim()
         );
 
-        // console.log("filteredData:", filteredTasks);
         setTasksData(filteredTasks);
       }
 
@@ -168,8 +163,9 @@ const AllTasks = () => {
 
   useEffect(() => {
     getAllTasks();
+
     // eslint-disable-next-line
-  }, [auth]);
+  }, []);
 
   // ---------Delete Project-------->
   const handleDeleteConfirmation = (projectId) => {
@@ -310,17 +306,21 @@ const AllTasks = () => {
   // --------------Filter Data By Department ----------->
 
   const filterByDep = (value) => {
-    const filteredData = tasksData.filter(
-      (item) =>
-        item.project?.projectName === value ||
-        item.status === value ||
-        item.jobHolder === value ||
-        item._id === value
-    );
+    setFilterData("");
 
-    // console.log("FilterData", filteredData);
+    if (value !== "All") {
+      const filteredData = tasksData.filter(
+        (item) =>
+          item.project?.projectName === value ||
+          item.status === value ||
+          item.jobHolder === value ||
+          item._id === value
+      );
 
-    setFilterData([...filteredData]);
+      // console.log("FilterData", filteredData);
+
+      setFilterData([...filteredData]);
+    }
   };
 
   useEffect(() => {
@@ -460,30 +460,6 @@ const AllTasks = () => {
     return `${year}-${month}`;
   };
 
-  // <-----------Task Status------------->
-  // const getStatus = (jobDeadline, yearEnd) => {
-  //   const deadline = new Date(jobDeadline);
-  //   const yearEndDate = new Date(yearEnd);
-  //   const today = new Date();
-  //   today.setHours(0, 0, 0, 0);
-
-  //   const deadlineDate = new Date(deadline);
-  //   deadlineDate.setHours(0, 0, 0, 0);
-
-  //   const yearEndDateOnly = new Date(yearEndDate);
-  //   yearEndDateOnly.setHours(0, 0, 0, 0);
-
-  //   if (deadlineDate < today || yearEndDateOnly < today) {
-  //     return "Overdue";
-  //   } else if (
-  //     deadlineDate.getTime() === today.getTime() ||
-  //     yearEndDateOnly.getTime() === today.getTime()
-  //   ) {
-  //     return "Due";
-  //   }
-  //   return "";
-  // };
-
   const getStatus = (startDate, deadline) => {
     const startDates = new Date(startDate);
     const deadlines = new Date(deadline);
@@ -528,6 +504,19 @@ const AllTasks = () => {
     );
     if (data) {
       setTasksData((prevData) => [...prevData, data.task]);
+      if (active !== "All") {
+        setFilterData((prevData) => {
+          const taskExists = prevData.some(
+            (task) => task._id === data.task._id
+          );
+
+          if (!taskExists) {
+            return [...prevData, data.task];
+          }
+
+          return prevData;
+        });
+      }
     }
   };
 
@@ -651,9 +640,13 @@ const AllTasks = () => {
         accessorKey: "task",
         header: "Tasks",
         Cell: ({ cell, row }) => {
-          const task = cell.getValue();
+          const task = row.original.task;
           const [allocateTask, setAllocateTask] = useState(task);
           const [showEdit, setShowEdit] = useState(false);
+
+          useEffect(() => {
+            setAllocateTask(row.original.task);
+          }, [row.original]);
 
           const updateAllocateTask = (task) => {
             updateAlocateTask(row.original._id, allocateTask, "", "");
@@ -1136,7 +1129,7 @@ const AllTasks = () => {
         accessorKey: "timertracker",
         header: "Time Tr.",
         Cell: ({ cell, row }) => {
-          console.log("rowTask", row.original);
+          // console.log("rowTask", row.original);
           return (
             <div
               className="flex items-center justify-center gap-1 w-full h-full "
@@ -1214,7 +1207,6 @@ const AllTasks = () => {
   );
 
   const table = useMaterialReactTable({
-    key: tableKey,
     columns,
     data: active === "All" && !active1 && !filterId ? tasksData : filterData,
     enableStickyHeader: true,
@@ -1411,6 +1403,7 @@ const AllTasks = () => {
                   setShowCompleted(false);
                   setActive1("");
                   setFilterId("");
+                  setFilterData("");
                 }}
               >
                 All ({getProjectsCount("All")})
@@ -1425,6 +1418,7 @@ const AllTasks = () => {
                     }`}
                     key={i}
                     onClick={() => {
+                      setFilterData("");
                       setActive(proj?.projectName);
                       filterByDep(proj?.projectName);
                       setShowCompleted(false);

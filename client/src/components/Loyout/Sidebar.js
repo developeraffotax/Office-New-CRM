@@ -569,41 +569,43 @@ export default function Sidebar({ hide, setHide }) {
 
           {/* <hr className="my-2" />
           <h4 className="text-[16] font-semibold px-2">Settings</h4> */}
-          <div
-            className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
-            onClick={() => {
-              router("/users");
-            }}
-          >
+          {auth.user.role === "Admin" && (
             <div
-              className="adminbtn absolute h-full  sidebtn z-[20]"
-              style={{
-                width: active === "users" && "100%",
-                background: `rgb(2, 68, 2)`,
+              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              onClick={() => {
+                router("/users");
               }}
-            ></div>
-            <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-              {hide ? (
-                <FaUsers
-                  className="h-5 w-5 cursor-pointer ml-2"
-                  style={{ color: active === "users" && "#fff" }}
-                />
-              ) : (
-                <div className="flex items-center gap-2">
+            >
+              <div
+                className="adminbtn absolute h-full  sidebtn z-[20]"
+                style={{
+                  width: active === "users" && "100%",
+                  background: `rgb(2, 68, 2)`,
+                }}
+              ></div>
+              <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                {hide ? (
                   <FaUsers
                     className="h-5 w-5 cursor-pointer ml-2"
                     style={{ color: active === "users" && "#fff" }}
                   />
-                  <span
-                    className="text-[14px] font-[400] "
-                    style={{ color: active === "users" && "#fff" }}
-                  >
-                    Users
-                  </span>
-                </div>
-              )}
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <FaUsers
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "users" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400] "
+                      style={{ color: active === "users" && "#fff" }}
+                    >
+                      Users
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/*  */}
         </div>

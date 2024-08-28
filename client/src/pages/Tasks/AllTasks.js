@@ -166,7 +166,6 @@ const AllTasks = () => {
 
   useEffect(() => {
     getAllTasks();
-
     // eslint-disable-next-line
   }, []);
 
@@ -406,6 +405,14 @@ const AllTasks = () => {
             item._id === updateTask._id ? updateTask : item
           )
         );
+
+        if (active !== "All") {
+          setFilterData((prevData) =>
+            prevData?.map((item) =>
+              item._id === updateTask._id ? updateTask : item
+            )
+          );
+        }
       }
     } catch (error) {
       console.log(error);
@@ -602,6 +609,7 @@ const AllTasks = () => {
       }
     });
   };
+
   const handleDeleteTask = async (id) => {
     const filteredData = tasksData?.filter((item) => item._id !== id);
     setTasksData(filteredData);
@@ -673,7 +681,7 @@ const AllTasks = () => {
           return (
             <select
               value={jobholder || ""}
-              className="w-[6rem] h-[2rem] rounded-md border-none  outline-none"
+              className="w-full h-[2rem] rounded-md border-none  outline-none"
               onChange={(e) =>
                 updateTaskJLS(row.original?._id, e.target.value, "", "")
               }
@@ -690,9 +698,9 @@ const AllTasks = () => {
         filterFn: "equals",
         filterSelectOptions: users.map((jobhold) => jobhold.name),
         filterVariant: "select",
-        size: 120,
-        minSize: 100,
-        maxSize: 150,
+        size: 90,
+        minSize: 80,
+        maxSize: 130,
         grow: true,
       },
       {
@@ -745,9 +753,9 @@ const AllTasks = () => {
         },
         filterFn: "equals",
         filterVariant: "select",
-        size: 320,
+        size: 360,
         minSize: 200,
-        maxSize: 350,
+        maxSize: 400,
         grow: true,
       },
       {
@@ -863,7 +871,7 @@ const AllTasks = () => {
           "Custom date",
         ],
         filterVariant: "custom",
-        size: 110,
+        size: 90,
         minSize: 80,
         maxSize: 140,
         grow: true,
@@ -1016,7 +1024,7 @@ const AllTasks = () => {
           "Custom date",
         ],
         filterVariant: "custom",
-        size: 110,
+        size: 90,
         minSize: 80,
         maxSize: 140,
         grow: true,
@@ -1074,17 +1082,19 @@ const AllTasks = () => {
           );
 
           return (
-            <span
-              className={`text-white text-[14px]  rounded-[2rem] ${
-                status === "Due"
-                  ? "bg-green-500  py-[6px] px-4 "
-                  : status === "Overdue"
-                  ? "bg-red-500  py-[6px] px-3 "
-                  : "bg-transparent"
-              }`}
-            >
-              {status}
-            </span>
+            <div className="flex items-center justify-center w-full">
+              <span
+                className={`text-white text-[14px]  rounded-[2rem] ${
+                  status === "Due"
+                    ? "bg-green-500  py-[6px] px-4 "
+                    : status === "Overdue"
+                    ? "bg-red-500  py-[6px] px-3 "
+                    : "bg-transparent"
+                }`}
+              >
+                {status}
+              </span>
+            </div>
           );
         },
         filterFn: (row, id, filterValue) => {
@@ -1097,8 +1107,8 @@ const AllTasks = () => {
         },
         filterSelectOptions: ["Overdue", "Due"],
         filterVariant: "select",
-        size: 90,
-        minSize: 90,
+        size: 80,
+        minSize: 60,
         maxSize: 120,
         grow: true,
       },
@@ -1110,19 +1120,21 @@ const AllTasks = () => {
           const statusValue = cell.getValue();
 
           return (
-            <select
-              value={statusValue}
-              onChange={(e) =>
-                updateTaskJLS(row.original?._id, "", "", e.target.value)
-              }
-              className="w-[6rem] h-[2rem] rounded-md border border-sky-300 outline-none"
-            >
-              <option value="empty"></option>
-              <option value="To do">To do</option>
-              <option value="Progress">Progress</option>
-              <option value="Review">Review</option>
-              <option value="On hold">On hold</option>
-            </select>
+            <div className="flex items-center justify-center w-full">
+              <select
+                value={statusValue}
+                onChange={(e) =>
+                  updateTaskJLS(row.original?._id, "", "", e.target.value)
+                }
+                className="w-[6rem] h-[2rem] rounded-md border border-sky-300 outline-none"
+              >
+                <option value="empty"></option>
+                <option value="To do">To do</option>
+                <option value="Progress">Progress</option>
+                <option value="Review">Review</option>
+                <option value="On hold">On hold</option>
+              </select>
+            </div>
           );
         },
         filterFn: "equals",
@@ -1134,8 +1146,8 @@ const AllTasks = () => {
           "On hold",
         ],
         filterVariant: "select",
-        minSize: 100,
-        size: 120,
+        minSize: 90,
+        size: 100,
         maxSize: 140,
         grow: true,
       },
@@ -1146,27 +1158,29 @@ const AllTasks = () => {
           const leadValue = cell.getValue();
 
           return (
-            <select
-              value={leadValue || ""}
-              onChange={(e) =>
-                updateTaskJLS(row.original?._id, "", e.target.value, "")
-              }
-              className="w-[5rem] h-[2rem] rounded-md border-none bg-transparent outline-none"
-            >
-              <option value="empty"></option>
-              {users.map((lead, i) => (
-                <option value={lead?.name} key={i}>
-                  {lead?.name}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center justify-center w-full">
+              <select
+                value={leadValue || ""}
+                onChange={(e) =>
+                  updateTaskJLS(row.original?._id, "", e.target.value, "")
+                }
+                className="w-full h-[2rem] rounded-md border-none bg-transparent outline-none"
+              >
+                <option value="empty"></option>
+                {users.map((lead, i) => (
+                  <option value={lead?.name} key={i}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           );
         },
         filterFn: "equals",
         filterSelectOptions: users.map((lead) => lead),
         filterVariant: "select",
-        size: 90,
-        minSize: 70,
+        size: 70,
+        minSize: 60,
         maxSize: 120,
         grow: true,
       },
@@ -1245,7 +1259,7 @@ const AllTasks = () => {
         header: "Copy",
         Cell: ({ cell, row }) => {
           return (
-            <div className="flex items-center justify-center gap-2 w-full h-full">
+            <div className="flex items-center justify-center gap-3 w-full h-full">
               <span
                 className="text-[1rem] cursor-pointer"
                 onClick={() => copyTask(row.original)}
@@ -1264,7 +1278,7 @@ const AllTasks = () => {
             </div>
           );
         },
-        size: 60,
+        size: 100,
       },
     ],
     // eslint-disable-next-line
@@ -1277,7 +1291,7 @@ const AllTasks = () => {
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "800px" } },
+    muiTableContainerProps: { sx: { maxHeight: "820px" } },
     enableColumnActions: false,
     enableColumnFilters: true,
     enableSorting: true,
@@ -1550,14 +1564,11 @@ const AllTasks = () => {
               <span
                 className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
                 onClick={() => {
-                  getTasks1();
-                  getAllProjects();
                   setActive("All");
                   setActiveBtn("");
                   setShowStatus(false);
                   setShowJobHolder(false);
                   setShowDue(false);
-                  setActive1("");
                   setFilterId("");
                 }}
                 title="Clear filters"
@@ -1569,6 +1580,12 @@ const AllTasks = () => {
                 onClick={() => {
                   getTasks1();
                   getAllProjects();
+                  setActive("All");
+                  setActiveBtn("");
+                  setActive1("");
+                  setFilterId("");
+                  setShowStatus(false);
+                  setShowJobHolder(false);
                 }}
                 title="Update Data"
               >

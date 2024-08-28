@@ -36,6 +36,9 @@ import { mkConfig, generateCsv, download } from "export-to-csv";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import TaskDetail from "./TaskDetail";
 import { GrUpdate } from "react-icons/gr";
+import socketIO from "socket.io-client";
+const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
+const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -169,6 +172,39 @@ const AllTasks = () => {
     // eslint-disable-next-line
   }, []);
 
+  // ---------------Get Task on Cross Filter-----
+  const getTasks1 = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/all`
+      );
+
+      setTasksData(data?.tasks);
+      if (auth.user.role === "Admin") {
+        setTasksData(data?.tasks);
+      } else {
+        const filteredTasks = data?.tasks?.filter(
+          (item) => item.jobHolder.trim() === auth.user.name.trim()
+        );
+
+        setTasksData(filteredTasks);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    socketId.on("newtask", () => {
+      getTasks1();
+    });
+
+    return () => {
+      socketId.off("newtask", getTasks1);
+    };
+    // eslint-disable-next-line
+  }, [socketId]);
+
   // ---------Delete Project-------->
   const handleDeleteConfirmation = (projectId) => {
     Swal.fire({
@@ -194,6 +230,10 @@ const AllTasks = () => {
       if (data) {
         getAllProjects();
         // toast.success("Project Deleted!");
+        // Send Socket Timer
+        socketId.emit("addTask", {
+          note: "New Task Added",
+        });
       }
     } catch (error) {
       console.log(error);
@@ -232,6 +272,10 @@ const AllTasks = () => {
         getAllTasks();
         setShowProject(false);
         // toast.success("Project completed!");
+        // Send Socket Timer
+        socketId.emit("addTask", {
+          note: "New Task Added",
+        });
       }
     } catch (error) {
       console.log(error);
@@ -260,29 +304,6 @@ const AllTasks = () => {
       }
     }
   }, [filterData, tasksData, active, active1]);
-
-  // ---------------Get Task on Cross Filter-----
-  const getTasks1 = async () => {
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/all`
-      );
-
-      setTasksData(data?.tasks);
-      if (auth.user.role === "Admin") {
-        setTasksData(data?.tasks);
-      } else {
-        const filteredTasks = data?.tasks?.filter(
-          (item) => item.jobHolder.trim() === auth.user.name.trim()
-        );
-
-        setTasksData(filteredTasks);
-      }
-      toast.success("Updated!");
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   // ------------Filter By Projects---------->
   const getProjectsCount = (project) => {
@@ -414,6 +435,10 @@ const AllTasks = () => {
           );
         }
       }
+      // Send Socket Timer
+      socketId.emit("addTask", {
+        note: "New Task Added",
+      });
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
@@ -458,6 +483,11 @@ const AllTasks = () => {
           }
         });
       }
+
+      // Send Socket Timer
+      socketId.emit("addTask", {
+        note: "New Task Added",
+      });
     } catch (error) {
       console.log(error);
       toast.error(error.response?.data?.message || "An error occurred");
@@ -489,6 +519,10 @@ const AllTasks = () => {
           )
         );
       }
+      // Send Socket Timer
+      socketId.emit("addTask", {
+        note: "New Task Added",
+      });
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
@@ -546,6 +580,10 @@ const AllTasks = () => {
       }
     );
     if (data) {
+      // Send Socket Timer
+      socketId.emit("addTask", {
+        note: "New Task Added",
+      });
       setTasksData((prevData) => [...prevData, data.task]);
       if (active !== "All") {
         setFilterData((prevData) => {
@@ -626,6 +664,11 @@ const AllTasks = () => {
         // getAllTasks();
         setShowDetail(false);
         toast.success("Task deleted successfully!");
+
+        // Send Socket Timer
+        socketId.emit("addTask", {
+          note: "New Task Added",
+        });
       }
     } catch (error) {
       console.log(error);

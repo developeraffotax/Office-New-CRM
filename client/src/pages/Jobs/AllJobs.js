@@ -34,8 +34,8 @@ import { Box, Button } from "@mui/material";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import { IoMdDownload } from "react-icons/io";
 
-import socketIO from "socket.io-client";
 import CompletedJobs from "./CompletedJobs";
+import socketIO from "socket.io-client";
 import { GrUpdate } from "react-icons/gr";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -160,7 +160,6 @@ export default function AllJobs() {
       );
       if (data) {
         setTableData(data?.clients);
-        toast.success("Updated!");
 
         if (active !== "All") {
           setFilterData((prevData) => {
@@ -175,6 +174,18 @@ export default function AllJobs() {
       toast.error(error?.response?.data?.message || "Error in client Jobs");
     }
   };
+
+  // Socket
+  useEffect(() => {
+    socketId.on("newJob", () => {
+      allClientData();
+    });
+
+    return () => {
+      socketId.off("newJob", allClientData);
+    };
+    // eslint-disable-next-line
+  }, [socketId]);
 
   // -----------Handle Custom date filter------
   const getCurrentMonthYear = () => {
@@ -337,6 +348,10 @@ export default function AllJobs() {
           )
         );
         toast.success("Job status updated!");
+        // Socket
+        socketId.emit("addJob", {
+          note: "New Task Added",
+        });
       }
     } catch (error) {
       console.error("Error updating status", error);
@@ -373,6 +388,10 @@ export default function AllJobs() {
           )
         );
         toast.success("Job lead updated!");
+        // Socket
+        socketId.emit("addJob", {
+          note: "New Task Added",
+        });
       }
     } catch (error) {
       console.error("Error updating status", error);
@@ -410,6 +429,10 @@ export default function AllJobs() {
         );
 
         toast.success("Job holder updated!");
+        // Socket
+        socketId.emit("addJob", {
+          note: "New Task Added",
+        });
         // Send Socket Notification
         socketId.emit("notification", {
           title: "New Job Assigned",
@@ -426,28 +449,7 @@ export default function AllJobs() {
   };
 
   // <-----------Job Status------------->
-  // const getStatus = (jobDeadline, yearEnd) => {
-  //   const deadline = new Date(jobDeadline);
-  //   const yearEndDate = new Date(yearEnd);
-  //   const today = new Date();
-  //   today.setHours(0, 0, 0, 0);
 
-  //   const deadlineDate = new Date(deadline);
-  //   deadlineDate.setHours(0, 0, 0, 0);
-
-  //   const yearEndDateOnly = new Date(yearEndDate);
-  //   yearEndDateOnly.setHours(0, 0, 0, 0);
-
-  //   if (deadlineDate < today || yearEndDateOnly < today) {
-  //     return "Overdue";
-  //   } else if (
-  //     deadlineDate.getTime() === today.getTime() ||
-  //     yearEndDateOnly.getTime() === today.getTime()
-  //   ) {
-  //     return "Due";
-  //   }
-  //   return "";
-  // };
   const getStatus = (jobDeadline, yearEnd) => {
     const deadline = new Date(jobDeadline);
     const yearEndDate = new Date(yearEnd);
@@ -486,6 +488,10 @@ export default function AllJobs() {
       if (data) {
         setShowDetail(false);
         toast.success("Client job deleted successfully!");
+        // Socket
+        socketId.emit("addJob", {
+          note: "New Task Added",
+        });
       }
     } catch (error) {
       console.log(error);
@@ -506,6 +512,10 @@ export default function AllJobs() {
       );
       if (data) {
         const clientJob = data.clientJob;
+        // Socket
+        socketId.emit("addJob", {
+          note: "New Task Added",
+        });
         toast.success("Date updated successfully!");
         setTableData((prevData) =>
           prevData?.map((item) =>

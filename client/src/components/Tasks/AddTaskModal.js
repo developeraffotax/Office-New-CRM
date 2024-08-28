@@ -5,6 +5,9 @@ import { IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import { TbLoader2 } from "react-icons/tb";
 import format from "date-fns/format";
+import socketIO from "socket.io-client";
+const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
+const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 export default function AddTaskModal({
   users,
@@ -88,6 +91,10 @@ export default function AddTaskModal({
           toast.success("Task created successfully!");
         }
       }
+      // Send Socket Timer
+      socketId.emit("addTask", {
+        note: "New Task Added",
+      });
     } catch (error) {
       console.log(error);
       setLoading(false);

@@ -13,7 +13,7 @@ import { BsEmojiSmile } from "react-icons/bs";
 import { format } from "date-fns";
 import { AiFillLike, AiOutlineLike } from "react-icons/ai";
 import Loader from "../../utlis/Loader";
-import { MentionsInput, Mention } from "react-mentions";
+// import { MentionsInput, Mention } from "react-mentions";
 import socketIO from "socket.io-client";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -119,6 +119,42 @@ export default function JobCommentModal({
     // eslint-disable-next-line
   }, [jobId]);
 
+  // ----------Get Comment Without Load--------->
+  const getSingleComment = async () => {
+    try {
+      if (type === "Jobs") {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/client/job/comments/${jobId}`
+        );
+        if (data) {
+          setCommentData(data.comments.comments);
+        }
+      } else {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/tasks/task/comments/${jobId}`
+        );
+        if (data) {
+          setCommentData(data.comments.comments);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
+  };
+
+  // Socket
+  useEffect(() => {
+    socketId.on("addnewTaskComment", () => {
+      getSingleComment();
+    });
+
+    return () => {
+      socketId.off("addnewTaskComment", getSingleComment);
+    };
+    // eslint-disable-next-line
+  }, [socketId]);
+
   //   Add Comment
   const handleComment = async (e) => {
     setLoading(true);
@@ -137,7 +173,7 @@ export default function JobCommentModal({
       );
       if (data) {
         setComment("");
-        getSingleJobComment();
+        getSingleComment();
         setLoading(false);
         toast.success("Comment Posted!");
         // Send Socket Notification
@@ -150,6 +186,13 @@ export default function JobCommentModal({
           status: "unread",
         });
       }
+      // Send Socket Timer
+      socketId.emit("addTask", {
+        note: "New Task Added",
+      });
+      socketId.emit("addTaskComment", {
+        note: "New Task Added",
+      });
     } catch (error) {
       console.log(error);
       setLoading(false);
@@ -170,7 +213,7 @@ export default function JobCommentModal({
       if (data) {
         setReplyLoading(false);
         setCommentReply("");
-        getSingleJobComment();
+        getSingleComment();
         toast.success("Reply added successfully!");
         // Send Socket Notification
         socketId.emit("notification", {
@@ -182,6 +225,14 @@ export default function JobCommentModal({
           status: "unread",
         });
       }
+
+      // Send Socket Timer
+      socketId.emit("addTask", {
+        note: "New Task Added",
+      });
+      socketId.emit("addTaskComment", {
+        note: "New Task Added",
+      });
     } catch (error) {
       console.log(error);
       setReplyLoading(false);

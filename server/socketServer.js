@@ -16,6 +16,21 @@ export const initSocketServer = (server) => {
       io.emit("newTimer", data);
     });
 
+    // Listen Add task
+    socket.on("addTask", (data) => {
+      io.emit("newtask", data);
+    });
+
+    // Add Comment
+    socket.on("addTaskComment", (data) => {
+      io.emit("addnewTaskComment", data);
+    });
+
+    // Listen Add/Update Job
+    socket.on("addJob", (data) => {
+      io.emit("newJob", data);
+    });
+
     // Disconnect
     socket.on("disconnect", () => {
       console.log("User disconnected!");

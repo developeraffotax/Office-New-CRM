@@ -586,8 +586,8 @@ export default function AllJobs() {
         accessorKey: "companyName",
         header: "Company Name",
         minSize: 170,
-        maxSize: 220,
-        size: 210,
+        maxSize: 300,
+        size: 230,
         grow: true,
         Cell: ({ cell, row }) => {
           const companyName = cell.getValue();
@@ -620,26 +620,28 @@ export default function AllJobs() {
           const jobholder = cell.getValue();
 
           return (
-            <select
-              value={jobholder || ""}
-              onChange={(e) =>
-                handleUpdateJobHolder(row.original._id, e.target.value)
-              }
-              className="w-[6rem] h-[2rem] rounded-md border-none outline-none"
-            >
-              <option value="empty"></option>
-              {users.map((jobHold, i) => (
-                <option value={jobHold} key={i}>
-                  {jobHold}
-                </option>
-              ))}
-            </select>
+            <div className="w-full flex items-center justify-center">
+              <select
+                value={jobholder || ""}
+                onChange={(e) =>
+                  handleUpdateJobHolder(row.original._id, e.target.value)
+                }
+                className="w-full h-[2rem] rounded-md border-none outline-none"
+              >
+                <option value="empty"></option>
+                {users.map((jobHold, i) => (
+                  <option value={jobHold} key={i}>
+                    {jobHold}
+                  </option>
+                ))}
+              </select>
+            </div>
           );
         },
         filterFn: "equals",
         filterSelectOptions: users.map((jobhold) => jobhold),
         filterVariant: "select",
-        size: 130,
+        size: 100,
         minSize: 80,
         maxSize: 150,
         grow: true,
@@ -1098,17 +1100,20 @@ export default function AllJobs() {
           );
 
           return (
-            <span
-              className={`text-white px-4  rounded-[2rem] ${
-                status === "Due"
-                  ? "bg-green-500  py-[6px] "
-                  : status === "Overdue"
-                  ? "bg-red-500  py-[6px] "
-                  : "bg-transparent"
-              }`}
-            >
-              {status}
-            </span>
+            <div className="w-full flex items-center justify-center">
+              <span
+                className={`text-white   rounded-[2rem] ${
+                  status === "Due"
+                    ? "bg-green-500  py-[6px] px-4 "
+                    : status === "Overdue"
+                    ? "bg-red-500  py-[6px] px-3 "
+                    : "bg-transparent"
+                }`}
+              >
+                {status}
+              </span>
+              .
+            </div>
           );
         },
         filterFn: (row, id, filterValue) => {
@@ -1121,8 +1126,8 @@ export default function AllJobs() {
         },
         filterSelectOptions: ["Overdue", "Due"],
         filterVariant: "select",
-        size: 100,
-        minSize: 100,
+        size: 90,
+        minSize: 70,
         maxSize: 120,
         grow: true,
       },
@@ -1173,27 +1178,29 @@ export default function AllJobs() {
           const leadValue = cell.getValue(); // Get the current lead value for the row
 
           return (
-            <select
-              value={leadValue || ""}
-              onChange={(e) =>
-                handleUpdateLead(row.original._id, e.target.value)
-              }
-              className="w-[6rem] h-[2rem] rounded-md border-none bg-transparent outline-none"
-            >
-              <option value="empty"></option>
-              {users.map((lead, i) => (
-                <option value={lead} key={i}>
-                  {lead}
-                </option>
-              ))}
-            </select>
+            <div className="w-full flex items-center justify-center">
+              <select
+                value={leadValue || ""}
+                onChange={(e) =>
+                  handleUpdateLead(row.original._id, e.target.value)
+                }
+                className="w-full h-[2rem] rounded-md border-none bg-transparent outline-none"
+              >
+                <option value="empty"></option>
+                {users.map((lead, i) => (
+                  <option value={lead} key={i}>
+                    {lead}
+                  </option>
+                ))}
+              </select>
+            </div>
           );
         },
         filterFn: "equals",
         filterSelectOptions: users.map((lead) => lead),
         filterVariant: "select",
-        size: 110,
-        minSize: 100,
+        size: 90,
+        minSize: 70,
         maxSize: 140,
         grow: true,
       },
@@ -1267,7 +1274,7 @@ export default function AllJobs() {
             </div>
           );
         },
-        size: 100,
+        size: 110,
       },
     ],
     // eslint-disable-next-line
@@ -1282,7 +1289,7 @@ export default function AllJobs() {
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "800px" } },
+    muiTableContainerProps: { sx: { maxHeight: "820px" } },
     enableColumnActions: false,
     enableColumnFilters: true,
     enableSorting: true,
@@ -1495,7 +1502,6 @@ export default function AllJobs() {
           <span
             className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
             onClick={() => {
-              allClientData();
               setActive("All");
               setActiveBtn("");
               setShowStatus(false);
@@ -1512,6 +1518,13 @@ export default function AllJobs() {
             className={` p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
             onClick={() => {
               allClientData();
+              setActive("All");
+              setActiveBtn("");
+              setShowStatus(false);
+              setShowJobHolder(false);
+              setShowDue(false);
+              setActive1("");
+              setFilterId("");
             }}
             title="Update Date"
           >

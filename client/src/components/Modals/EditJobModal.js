@@ -463,7 +463,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
   }, []);
 
   return (
-    <div className="relative h-[100%] w-full sm:w-[85%]  mt-[1rem] py-3 pb-6  px-3 sm:px-4 bg-gray-200 hidden1 overflow-y-scroll ">
+    <div className="relative h-[107vh] w-full sm:w-[85%]  py-3 pb-4  px-3 sm:px-4 bg-gray-200 hidden1 overflow-y-scroll ">
       <div className="w-full py-1 bg-orange-500/35 flex items-center justify-center">
         <img src="/logo.png" alt="Logo" className="h-[3rem] w-[8rem]" />
       </div>

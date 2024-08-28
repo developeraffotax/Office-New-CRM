@@ -6,6 +6,7 @@ const commentsSchema = new mongoose.Schema(
     user: Object,
     comment: String,
     commentReplies: [Object],
+    senderId: { type: String },
     likes: [
       {
         type: mongoose.Schema.Types.ObjectId,

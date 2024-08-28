@@ -644,7 +644,7 @@ export default function JobDetail({
 
           {/* Edit Modal */}
           {isOpen && (
-            <div className="fixed top-0 left-0 w-full h-screen z-[999] bg-gray-100 flex items-center justify-center py-6  px-4">
+            <div className="fixed top-0 left-0 w-full min-h-screen overflow-y-auto z-[999] bg-gray-100 flex items-center justify-center py-6  px-4">
               <span
                 className="absolute top-[4px] right-[.8rem] cursor-pointer z-10 p-1 rounded-lg bg-white/50 hover:bg-gray-300/70 transition-all duration-150 flex items-center justify-center"
                 onClick={() => setIsOpen(false)}

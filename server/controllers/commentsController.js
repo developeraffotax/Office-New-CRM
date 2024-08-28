@@ -5,8 +5,11 @@ import userModel from "../models/userModel.js";
 
 // Create Comment
 export const createComment = async (req, res) => {
+  const senderId = req.user.user._id;
   try {
     const { comment, jobId, type } = req.body;
+
+    console.log("Sender Id", senderId);
 
     if (type === "Jobs") {
       const job = await jobsModel.findById(jobId);
@@ -20,6 +23,7 @@ export const createComment = async (req, res) => {
       const newComment = {
         user: req.user.user,
         comment: comment,
+        senderId: senderId,
         commentReplies: [],
         likes: [],
       };
@@ -58,6 +62,7 @@ export const createComment = async (req, res) => {
         user: req.user.user,
         comment: comment,
         commentReplies: [],
+        senderId: senderId,
         likes: [],
       };
 
@@ -71,7 +76,7 @@ export const createComment = async (req, res) => {
       const notification = await notificationModel.create({
         title: "New comment received!",
         redirectLink: "/tasks",
-        description: `${req.user.user.name} add a new comment of task "${task.task}". ${comment}`,
+        description: `${req.user.user.name} add a new comment in task "${task.task}". ${comment}`,
         taskId: jobId,
         userId: user._id,
       });
@@ -132,9 +137,9 @@ export const commentReply = async (req, res) => {
       const notification = await notificationModel.create({
         title: "New comment reply received!",
         redirectLink: "/job-planning",
-        description: `${req.user.user.name} add a new comment reply of "${job.job.jobName}". ${commentReply}`,
+        description: `${req.user.user.name} add a new comment reply in "${job.job.jobName}". ${commentReply}`,
         taskId: jobId,
-        userId: user._id,
+        userId: comment.senderId,
       });
 
       res.status(200).send({
@@ -179,7 +184,7 @@ export const commentReply = async (req, res) => {
         redirectLink: "/tasks",
         description: `${req.user.user.name} add a new comment reply of task "${task.task}". ${commentReply}`,
         taskId: jobId,
-        userId: user._id,
+        userId: comment.senderId,
       });
 
       res.status(200).send({

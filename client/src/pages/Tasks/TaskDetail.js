@@ -251,7 +251,7 @@ export default function TaskDetail({
       {loading ? (
         <Loader />
       ) : (
-        <div className="w-full relative  mt-2 overflow-y-scroll h-[calc(100vh-7rem)] pb-4 hidden1 ">
+        <div className="w-full relative  mt-2 overflow-y-scroll h-[calc(100vh-3rem)] pb-4 hidden1 ">
           <div className="absolute top-[.5rem] right-[1rem] flex items-center gap-4">
             <span
               className=""
@@ -586,18 +586,27 @@ export default function TaskDetail({
                                             {subTask}
                                           </p>
                                         </div>
-                                        <span
-                                          className="p-1 cursor-pointer"
-                                          onClick={() =>
-                                            handleDeleteSubTask(_id)
-                                          }
-                                        >
-                                          <IoCloseCircleOutline
-                                            size={24}
-                                            className="cursor-pointer hover:text-red-500 "
-                                            title="Delete Subtask"
-                                          />
-                                        </span>
+
+                                        <div className="flex items-center gap-1">
+                                          <span
+                                            className="p-1 cursor-pointer"
+                                            onClick={() => setSubtask(subTask)}
+                                          >
+                                            <FaEdit className="h-5 w-5 cursor-pointer text-gray-800 hover:text-sky-600" />
+                                          </span>
+                                          <span
+                                            className="p-1 cursor-pointer"
+                                            onClick={() =>
+                                              handleDeleteSubTask(_id)
+                                            }
+                                          >
+                                            <IoCloseCircleOutline
+                                              size={24}
+                                              className="cursor-pointer hover:text-red-500 "
+                                              title="Delete Subtask"
+                                            />
+                                          </span>
+                                        </div>
                                       </li>
                                     )}
                                   </Draggable>

@@ -14,15 +14,6 @@ import socketIO from "socket.io-client";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
-const stringToColor = (string) => {
-  let hash = 0;
-  for (let i = 0; i < string.length; i++) {
-    hash = string.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const color = `#${(hash & 0x00ffffff).toString(16).padStart(6, "0")}`;
-  return color;
-};
-
 const formatElapsedTime = (createdAt) => {
   const now = new Date();
   const createdTime = new Date(createdAt);
@@ -144,11 +135,11 @@ export default function Header() {
   //   }
   // };
 
-  // useEffect(() => {
-  //   getNotifications();
+  useEffect(() => {
+    getNotifications();
 
-  //   // eslint-disable-next-line
-  // }, []);
+    // eslint-disable-next-line
+  }, []);
 
   useEffect(() => {
     socketId.on("newNotification", () => {

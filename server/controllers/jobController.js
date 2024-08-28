@@ -28,7 +28,7 @@ export const createJob = async (req, res) => {
     } = req.body;
 
     // Check for required fields
-    if (!clientName || !companyName || !email || !totalHours || !currentDate) {
+    if (!clientName || !companyName) {
       return res.status(400).send({
         success: false,
         message: "Please fill the required fields!",

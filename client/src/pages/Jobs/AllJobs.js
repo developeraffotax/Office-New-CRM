@@ -1666,7 +1666,7 @@ export default function AllJobs() {
 
       {/* ------------Add Client_Job Modal -------------*/}
       {isOpen && (
-        <div className="fixed top-0 left-0 w-full h-screen z-[999] bg-gray-100 flex items-center justify-center py-6  px-4">
+        <div className="fixed top-0 left-0 w-full min-h-screen overflow-y-auto z-[999] bg-gray-100 flex items-center justify-center py-6  px-4">
           <span
             className="absolute  top-[4px] right-[.8rem]  cursor-pointer z-10 p-1 rounded-lg bg-white/50 hover:bg-gray-300/70 transition-all duration-150 flex items-center justify-center"
             onClick={() => setIsOpen(false)}
@@ -1683,7 +1683,7 @@ export default function AllJobs() {
       {/*---------------Job Details---------------*/}
 
       {showDetail && (
-        <div className="fixed right-0 top-[3.8rem] z-[999] bg-gray-100 w-[35%] 2xl:w-[27%] h-[calc(100vh-3.8rem)] py-3 px-3 ">
+        <div className="fixed right-0 top-[3.8rem] z-[999] bg-gray-100 w-[35%] 2xl:w-[27%] h-[calc(103vh-0rem)] py-3 px-3 ">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">{companyName}</h3>
             <span

@@ -53,6 +53,10 @@ const commentsSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    status: {
+      type: String,
+      default: "unread",
+    },
   },
   { timestamps: true }
 );
@@ -98,13 +102,25 @@ const clientSchema = new mongoose.Schema(
     ctLogin: {
       type: String,
     },
+    ctPassword: {
+      type: String,
+    },
     pyeLogin: {
+      type: String,
+    },
+    pyePassword: {
       type: String,
     },
     trLogin: {
       type: String,
     },
+    trPassword: {
+      type: String,
+    },
     vatLogin: {
+      type: String,
+    },
+    vatPassword: {
       type: String,
     },
     authCode: {

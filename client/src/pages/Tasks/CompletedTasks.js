@@ -524,25 +524,15 @@ const CompletedTasks = ({
         size: 160,
         grow: true,
         Cell: ({ cell, row }) => {
-          const projectId = row.original.project._id;
+          const projectName = row.original.project.projectName;
 
           return (
-            <select
-              value={projectId}
-              onChange={(e) => {
-                const selectedProjectId = e.target.value;
-                updateTaskProject(row.original._id, selectedProjectId); // Update the task with the selected project ID
-              }}
-              className="w-full h-[2rem] rounded-md bg-transparent border-none outline-none"
+            <div
+              className="flex items-start w-full cursor-pointer"
+              title={projectName}
             >
-              <option value="">Select Project</option>
-              {projects &&
-                projects.map((proj) => (
-                  <option value={proj._id} key={proj._id}>
-                    {proj?.projectName}
-                  </option>
-                ))}
-            </select>
+              <span>{projectName}</span>
+            </div>
           );
         },
         filterFn: "equals",
@@ -613,6 +603,7 @@ const CompletedTasks = ({
                     setProjectName(row.original.project.projectName);
                     setShowDetail(true);
                   }}
+                  title={allocateTask}
                 >
                   <p
                     className="text-sky-500 cursor-pointer hover:text-sky-600 "

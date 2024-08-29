@@ -29,6 +29,7 @@ export default function TaskDetail({
   setShowDetail,
   users,
   projects,
+  setFilterData,
 }) {
   const [taskDetal, setTaskDetal] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -140,6 +141,9 @@ export default function TaskDetail({
         toast.success("Status completed successfully!");
 
         setTasksData((prevData) =>
+          prevData.filter((item) => item._id !== updateTask._id)
+        );
+        setFilterData((prevData) =>
           prevData.filter((item) => item._id !== updateTask._id)
         );
       }
@@ -325,7 +329,7 @@ export default function TaskDetail({
             {/*  */}
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1 text-gray-500 w-[30%]">
-                <RiTimerLine className="h-4 w-4 text-gray-500" /> Stack Timer
+                <RiTimerLine className="h-4 w-4 text-gray-500" /> Start Timer
               </span>
               <span className="text-[17px] font-medium text-gray-800">
                 <Timer
@@ -566,17 +570,19 @@ export default function TaskDetail({
                                         className="flex items-center justify-between gap-2"
                                       >
                                         <div className="flex items-center gap-2 w-full">
-                                          <input
-                                            type="checkbox"
-                                            checked={status === "complete"}
-                                            onChange={() =>
-                                              updateSubtaskStatus(_id)
-                                            }
-                                            style={{
-                                              accentColor: "orangered",
-                                            }}
-                                            className="h-5 w-5 cursor-pointer  checked:bg-orange-600"
-                                          />
+                                          <div className="w-6 h-full">
+                                            <input
+                                              type="checkbox"
+                                              checked={status === "complete"}
+                                              onChange={() =>
+                                                updateSubtaskStatus(_id)
+                                              }
+                                              style={{
+                                                accentColor: "orangered",
+                                              }}
+                                              className="h-5 w-5 cursor-pointer  checked:bg-orange-600"
+                                            />
+                                          </div>
                                           <p
                                             className={`text-[15px] ${
                                               status === "complete" &&

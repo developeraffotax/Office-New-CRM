@@ -13,7 +13,12 @@ const commentsSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    status: {
+      type: String,
+      default: "unread",
+    },
   },
+
   { timestamps: true }
 );
 
@@ -76,7 +81,6 @@ const taskSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      default: "",
     },
     lead: {
       type: String,

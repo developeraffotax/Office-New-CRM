@@ -186,9 +186,85 @@ export default function Header() {
   return (
     <div className="w-full h-[3.8rem] bg-gray-200">
       <div className="w-full h-full flex items-center justify-between sm:px-4 px-6 py-2">
-        <Link to={"/dashboard"} className="">
-          <img src="/logo.png" alt="Logo" className="h-[3.3rem] w-[8rem]" />
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link to={"/dashboard"} className="">
+            <img src="/logo.png" alt="Logo" className="h-[3.3rem] w-[8rem]" />
+          </Link>
+          {/* ------------Notification-----> */}
+          <div className="relative mt-1">
+            <div
+              className="relative cursor-pointer m-2"
+              onClick={() => {
+                getNotifications();
+                setOpen(!open);
+              }}
+            >
+              <IoNotifications className="text-2xl container text-black " />
+              {notificationData.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-orange-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
+                  {notificationData && notificationData.length}
+                </span>
+              )}
+            </div>
+            {open && (
+              <div className="shadow-xl  bg-gray-100 absolute z-[999] top-[2rem] left-[1.6rem] rounded-md overflow-hidden">
+                <h5 className="text-[20px] text-center font-medium text-black bg-orange-400  p-3 font-Poppins">
+                  Notifications
+                </h5>
+                <div className="w-[350px] min-h-[40vh] max-h-[60vh]  overflow-y-scroll   ">
+                  {notificationData &&
+                    notificationData?.map((item, index) => (
+                      <div className="dark:bg-[#2d3a4ea1] bg-[#00000013] hover:bg-gray-300 transition-all duration-200 font-Poppins border-b dark:border-b-[#ffffff47] border-b-[#fff]">
+                        <div className="w-full flex items-center justify-between p-2">
+                          <p className="text-black ">{item?.title}</p>
+                          <p
+                            className="text-sky-500 hover:text-sky-600 text-[14px] transition-all duration-200  cursor-pointer"
+                            onClick={() => updateNotification(item._id)}
+                          >
+                            Mark as read
+                          </p>
+                        </div>
+                        <Link
+                          to={item?.redirectLink}
+                          key={item?._id}
+                          onClick={() => setFilterId(item?.taskId)}
+                          className="cursor-pointer"
+                        >
+                          <p className="p-2 text-gray-700  text-[14px]">
+                            {item?.description}
+                          </p>
+                          <p className="p-2 text-black  text-[14px] ">
+                            {format(item?.createdAt)}
+                          </p>
+                        </Link>
+                      </div>
+                    ))}
+
+                  {notificationData.length === 0 && (
+                    <div className="w-full h-[30vh] text-black  flex items-center justify-center flex-col gap-2">
+                      <span className="text-[19px]">🤯</span>
+                      Notifications not available!.
+                    </div>
+                  )}
+                </div>
+                <div
+                  className="w-full  cursor-pointer bg-gray-200    px-2 flex  items-center justify-end"
+                  onClick={() => updateAllNotification(auth.user.id)}
+                >
+                  <button
+                    disabled={notificationData.length === 0}
+                    className={`text-[14px] py-2 cursor-pointer text-sky-500 hover:text-sky-600 disabled:cursor-not-allowed  ${
+                      notificationData.length === 0 && "cursor-not-allowed"
+                    }`}
+                  >
+                    Mark all as read
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Search */}
         <div className=" hidden sm:flex">
           <form onSubmit={handleSearch} className="relative">
@@ -291,7 +367,7 @@ export default function Header() {
               )}
             </div>
             {/* --------Notifications------ */}
-            <div className="relative">
+            {/* <div className="relative">
               <div
                 className="relative cursor-pointer m-2"
                 onClick={() => {
@@ -360,7 +436,7 @@ export default function Header() {
                   </div>
                 </div>
               )}
-            </div>
+            </div> */}
           </div>
           {/* ----------Profile Image-------- */}
           <div className="relative">

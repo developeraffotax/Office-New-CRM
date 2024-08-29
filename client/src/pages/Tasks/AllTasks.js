@@ -172,7 +172,7 @@ const AllTasks = () => {
     // eslint-disable-next-line
   }, []);
 
-  // ---------------Get Task on Cross Filter-----
+  // ---------------Get Task on WithoutLoad-----
   const getTasks1 = async () => {
     try {
       const { data } = await axios.get(
@@ -331,10 +331,10 @@ const AllTasks = () => {
     );
 
     const dueCount = filteredData.filter(
-      (item) => getStatus(item.deadline, item.startDate) === "Due"
+      (item) => getStatus(item.startDate, item.deadline) === "Due"
     ).length;
     const overdueCount = filteredData.filter(
-      (item) => getStatus(item.deadline, item.startDate) === "Overdue"
+      (item) => getStatus(item.startDate, item.deadline) === "Overdue"
     ).length;
 
     return { due: dueCount, overdue: overdueCount };
@@ -386,8 +386,8 @@ const AllTasks = () => {
         (item) =>
           item.status === value ||
           item.jobHolder === value ||
-          getStatus(item.deadline, item.startDate) === value ||
-          getStatus(item.deadline, item.startDate) === value
+          getStatus(item.startDate, item.deadline) === value ||
+          getStatus(item.startDate, item.deadline) === value
       );
     } else {
       filteredData = tasksData.filter((item) => {
@@ -398,8 +398,8 @@ const AllTasks = () => {
         return (
           (holderMatches && jobMatches) ||
           (statusMatches && jobMatches) ||
-          (jobMatches && getStatus(item.deadline, item.startDate) === value) ||
-          (jobMatches && getStatus(item.deadline, item.startDate) === value)
+          (jobMatches && getStatus(item.startDate, item.deadline) === value) ||
+          (jobMatches && getStatus(item.startDate, item.deadline) === value)
         );
       });
     }
@@ -577,6 +577,7 @@ const AllTasks = () => {
         deadline: taskCopy.deadline,
         lead: taskCopy.lead,
         label: taskCopy.label,
+        status: "Progress",
       }
     );
     if (data) {
@@ -687,6 +688,25 @@ const AllTasks = () => {
         maxSize: 200,
         size: 160,
         grow: true,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span className="ml-1">Project</span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select Project</option>
+                {allProjects?.map((proj) => (
+                  <option key={proj._id} value={proj.projectName}>
+                    {proj.projectName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const projectId = row.original.project._id;
 
@@ -695,7 +715,7 @@ const AllTasks = () => {
               value={projectId}
               onChange={(e) => {
                 const selectedProjectId = e.target.value;
-                updateTaskProject(row.original._id, selectedProjectId); // Update the task with the selected project ID
+                updateTaskProject(row.original._id, selectedProjectId);
               }}
               className="w-full h-[2rem] rounded-md bg-transparent border-none outline-none"
             >
@@ -718,6 +738,25 @@ const AllTasks = () => {
       {
         accessorKey: "jobHolder",
         header: "Job Holder",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span className="ml-1">Job Holder</span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select JobHolder</option>
+                {users?.map((jobhold, i) => (
+                  <option key={i} value={jobhold?.name}>
+                    {jobhold?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const jobholder = cell.getValue();
 
@@ -746,9 +785,24 @@ const AllTasks = () => {
         maxSize: 130,
         grow: true,
       },
+      // Task
       {
         accessorKey: "task",
         header: "Tasks",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span className="ml-1">Tasks</span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                placeholder="Search task..."
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const task = row.original.task;
           const [allocateTask, setAllocateTask] = useState(task);
@@ -777,6 +831,7 @@ const AllTasks = () => {
                 <div
                   className="w-full h-full flex items-center justify-start "
                   onDoubleClick={() => setShowEdit(true)}
+                  title={allocateTask}
                 >
                   <p
                     className="text-sky-500 cursor-pointer text-start hover:text-sky-600 "
@@ -794,16 +849,34 @@ const AllTasks = () => {
             </div>
           );
         },
-        filterFn: "equals",
-        filterVariant: "select",
-        size: 360,
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+
+          return cellValue.startsWith(filterValue.toLowerCase());
+        },
+        size: 390,
         minSize: 200,
-        maxSize: 400,
+        maxSize: 450,
         grow: true,
       },
+      // Hours
       {
         accessorKey: "hours",
-        header: "Hrs",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span className="">Hrs</span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                placeholder="Search Hours"
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const hours = cell.getValue();
           return (
@@ -812,13 +885,71 @@ const AllTasks = () => {
             </div>
           );
         },
-        filterFn: "equals",
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+
+          return cellValue.startsWith(filterValue.toLowerCase());
+        },
         size: 80,
       },
-      // End  year
+      // Start Date
+
       {
         accessorKey: "startDate",
-        header: "Start Date",
+        Header: ({ column }) => {
+          const [filterValue, setFilterValue] = useState("");
+          const [customDate, setCustomDate] = useState(getCurrentMonthYear());
+
+          useEffect(() => {
+            if (filterValue === "Custom date") {
+              column.setFilterValue(customDate);
+            }
+            //eslint-disable-next-line
+          }, [customDate, filterValue]);
+
+          const handleFilterChange = (e) => {
+            setFilterValue(e.target.value);
+            column.setFilterValue(e.target.value);
+          };
+
+          const handleCustomDateChange = (e) => {
+            setCustomDate(e.target.value);
+            column.setFilterValue(e.target.value);
+          };
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="cursor-pointer"
+                title="Clear Filter"
+                onClick={() => setFilterValue("")}
+              >
+                Start Date
+              </span>
+              {filterValue === "Custom date" ? (
+                <input
+                  type="month"
+                  value={customDate}
+                  onChange={handleCustomDateChange}
+                  className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
+                />
+              ) : (
+                <select
+                  value={filterValue}
+                  onChange={handleFilterChange}
+                  className="h-[1.8rem] font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select Date</option>
+                  {column.columnDef.filterSelectOptions.map((option, idx) => (
+                    <option key={idx} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const [date, setDate] = useState(() => {
             const cellDate = new Date(cell.getValue());
@@ -903,7 +1034,6 @@ const AllTasks = () => {
           }
         },
         filterSelectOptions: [
-          "Select",
           "Expired",
           "Today",
           "Tomorrow",
@@ -914,12 +1044,18 @@ const AllTasks = () => {
           "Custom date",
         ],
         filterVariant: "custom",
-        size: 90,
+        size: 110,
         minSize: 80,
         maxSize: 140,
         grow: true,
-        Filter: ({ column }) => {
-          const [filterValue, setFilterValue] = useState("Select");
+      },
+
+      // Task DeadLine
+      {
+        accessorKey: "deadline",
+        header: "Deadline",
+        Header: ({ column }) => {
+          const [filterValue, setFilterValue] = useState("");
           const [customDate, setCustomDate] = useState(getCurrentMonthYear());
 
           useEffect(() => {
@@ -938,33 +1074,39 @@ const AllTasks = () => {
             setCustomDate(e.target.value);
             column.setFilterValue(e.target.value);
           };
-
-          return filterValue === "Custom date" ? (
-            <input
-              type="month"
-              value={customDate}
-              onChange={handleCustomDateChange}
-              className="h-[2rem] w-[9rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none"
-            />
-          ) : (
-            <select
-              value={filterValue}
-              onChange={handleFilterChange}
-              className="h-[2rem] w-[9rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none"
-            >
-              {column.columnDef.filterSelectOptions.map((option, idx) => (
-                <option key={idx} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="cursor-pointer"
+                title="Clear Filter"
+                onClick={() => setFilterValue("")}
+              >
+                Deadline
+              </span>
+              {filterValue === "Custom date" ? (
+                <input
+                  type="month"
+                  value={customDate}
+                  onChange={handleCustomDateChange}
+                  className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
+                />
+              ) : (
+                <select
+                  value={filterValue}
+                  onChange={handleFilterChange}
+                  className="h-[1.8rem] font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select Date</option>
+                  {column.columnDef.filterSelectOptions.map((option, idx) => (
+                    <option key={idx} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
           );
         },
-      },
-      // Job DeadLine
-      {
-        accessorKey: "deadline",
-        header: "Deadline",
         Cell: ({ cell, row }) => {
           const [date, setDate] = useState(() => {
             const cellDate = new Date(cell.getValue());
@@ -1071,53 +1213,72 @@ const AllTasks = () => {
         minSize: 80,
         maxSize: 140,
         grow: true,
-        Filter: ({ column }) => {
-          const [filterValue, setFilterValue] = useState("Select");
-          const [customDate, setCustomDate] = useState(getCurrentMonthYear());
+        // Filter: ({ column }) => {
+        //   const [filterValue, setFilterValue] = useState("Select");
+        //   const [customDate, setCustomDate] = useState(getCurrentMonthYear());
 
-          useEffect(() => {
-            if (filterValue === "Custom date") {
-              column.setFilterValue(customDate);
-            }
-            //eslint-disable-next-line
-          }, [customDate, filterValue]);
+        //   useEffect(() => {
+        //     if (filterValue === "Custom date") {
+        //       column.setFilterValue(customDate);
+        //     }
+        //     //eslint-disable-next-line
+        //   }, [customDate, filterValue]);
 
-          const handleFilterChange = (e) => {
-            setFilterValue(e.target.value);
-            column.setFilterValue(e.target.value);
-          };
+        //   const handleFilterChange = (e) => {
+        //     setFilterValue(e.target.value);
+        //     column.setFilterValue(e.target.value);
+        //   };
 
-          const handleCustomDateChange = (e) => {
-            setCustomDate(e.target.value);
-            column.setFilterValue(e.target.value);
-          };
+        //   const handleCustomDateChange = (e) => {
+        //     setCustomDate(e.target.value);
+        //     column.setFilterValue(e.target.value);
+        //   };
 
-          return filterValue === "Custom date" ? (
-            <input
-              type="month"
-              value={customDate}
-              onChange={handleCustomDateChange}
-              className="h-[2rem] w-[9rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none"
-            />
-          ) : (
-            <select
-              value={filterValue}
-              onChange={handleFilterChange}
-              className="h-[2rem] w-[9rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none"
-            >
-              {column.columnDef.filterSelectOptions.map((option, idx) => (
-                <option key={idx} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          );
-        },
+        //   return filterValue === "Custom date" ? (
+        //     <input
+        //       type="month"
+        //       value={customDate}
+        //       onChange={handleCustomDateChange}
+        //       className="h-[2rem] w-[9rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none"
+        //     />
+        //   ) : (
+        //     <select
+        //       value={filterValue}
+        //       onChange={handleFilterChange}
+        //       className="h-[2rem] w-[9rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none"
+        //     >
+        //       {column.columnDef.filterSelectOptions.map((option, idx) => (
+        //         <option key={idx} value={option}>
+        //           {option}
+        //         </option>
+        //       ))}
+        //     </select>
+        //   );
+        // },
       },
       //  -----Due & Over Due Status----->
       {
         accessorKey: "datestatus",
-        header: "Status",
+        Header: ({ column }) => {
+          const dateStatus = ["Overdue", "Due"];
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span className="ml-1">Status</span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select Status</option>
+                {dateStatus?.map((status, i) => (
+                  <option key={i} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
         Cell: ({ row }) => {
           const status = getStatus(
             row.original.startDate,
@@ -1150,7 +1311,7 @@ const AllTasks = () => {
         },
         filterSelectOptions: ["Overdue", "Due"],
         filterVariant: "select",
-        size: 80,
+        size: 100,
         minSize: 60,
         maxSize: 120,
         grow: true,
@@ -1159,6 +1320,26 @@ const AllTasks = () => {
       {
         accessorKey: "status",
         header: "Task Status",
+        Header: ({ column }) => {
+          const statusData = ["To do", "Progress", "Review", "On hold"];
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span className="ml-1">Task Status</span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select Status</option>
+                {statusData?.map((status, i) => (
+                  <option key={i} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const statusValue = cell.getValue();
 
@@ -1196,7 +1377,25 @@ const AllTasks = () => {
       },
       {
         accessorKey: "lead",
-        header: "Lead",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span className="ml-1">Lead</span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select Lead</option>
+                {users?.map((lead, i) => (
+                  <option key={i} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const leadValue = cell.getValue();
 
@@ -1222,7 +1421,7 @@ const AllTasks = () => {
         filterFn: "equals",
         filterSelectOptions: users.map((lead) => lead),
         filterVariant: "select",
-        size: 70,
+        size: 90,
         minSize: 60,
         maxSize: 120,
         grow: true,
@@ -1239,7 +1438,7 @@ const AllTasks = () => {
             </div>
           );
         },
-        size: 90,
+        size: 80,
       },
       {
         accessorKey: "timertracker",
@@ -1272,26 +1471,41 @@ const AllTasks = () => {
             </div>
           );
         },
-        size: 110,
+        size: 70,
       },
       {
         accessorKey: "comments",
         header: "Comments",
         Cell: ({ cell, row }) => {
           const comments = cell.getValue();
+          const [readComments, setReadComments] = useState([]);
+
+          useEffect(() => {
+            const filterComments = comments.filter(
+              (item) => item.status === "unread"
+            );
+            setReadComments(filterComments);
+            // eslint-disable-next-line
+          }, [comments]);
 
           return (
             <div
-              className="flex items-center justify-center gap-1 w-full h-full"
+              className="flex items-center justify-center gap-1 relative w-full h-full"
               onClick={() => {
                 setCommentTaskId(row.original._id);
                 setIsComment(true);
               }}
             >
-              <span className="text-[1rem] cursor-pointer">
-                <MdInsertComment className="h-5 w-5 text-orange-600 " />
-              </span>
-              {comments?.length > 0 && <span>({comments?.length})</span>}
+              <div className="relative">
+                <span className="text-[1rem] cursor-pointer relative">
+                  <MdInsertComment className="h-5 w-5 text-orange-600 " />
+                </span>
+                {readComments?.length > 0 && (
+                  <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
+                    {readComments?.length}
+                  </span>
+                )}
+              </div>
             </div>
           );
         },
@@ -1299,7 +1513,7 @@ const AllTasks = () => {
       },
       {
         accessorKey: "actions",
-        header: "Copy",
+        header: "Actions",
         Cell: ({ cell, row }) => {
           return (
             <div className="flex items-center justify-center gap-3 w-full h-full">
@@ -1321,7 +1535,7 @@ const AllTasks = () => {
             </div>
           );
         },
-        size: 100,
+        size: 90,
       },
     ],
     // eslint-disable-next-line
@@ -1333,11 +1547,11 @@ const AllTasks = () => {
     data: active === "All" && !active1 && !filterId ? tasksData : filterData,
     enableStickyHeader: true,
     enableStickyFooter: true,
-    columnFilterDisplayMode: "popover",
+    // columnFilterDisplayMode: "popover",
     muiTableContainerProps: { sx: { maxHeight: "820px" } },
     enableColumnActions: false,
-    enableColumnFilters: true,
-    enableSorting: true,
+    enableColumnFilters: false,
+    enableSorting: false,
     enableGlobalFilter: true,
     enableRowNumbers: true,
     enableColumnResizing: true,
@@ -1788,6 +2002,7 @@ const AllTasks = () => {
                 setJobId={setCommentTaskId}
                 users={userName}
                 type={"Task"}
+                getTasks1={getTasks1}
               />
             </div>
           )}
@@ -1852,6 +2067,7 @@ const AllTasks = () => {
                 setShowDetail={setShowDetail}
                 users={users}
                 projects={projects}
+                setFilterData={setFilterData}
               />
             </div>
           )}

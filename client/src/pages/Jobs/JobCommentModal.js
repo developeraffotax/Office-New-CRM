@@ -24,6 +24,7 @@ export default function JobCommentModal({
   setJobId,
   users,
   type,
+  getTasks1,
 }) {
   const { auth } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -274,6 +275,7 @@ export default function JobCommentModal({
         { jobId: jobId, commentId: commentId, type }
       );
       if (data) {
+        getTasks1();
         toast.success("Liked!");
       }
     } catch (error) {
@@ -439,7 +441,7 @@ export default function JobCommentModal({
                               onSubmit={handleCommentReply}
                               className="w-full border border-orange-500 rounded-md px-2 py-1"
                             >
-                              <textarea
+                              <input
                                 placeholder="Enter your reply here..."
                                 onClick={() => setShowReplyEmoji(false)}
                                 value={commentReply}
@@ -448,7 +450,7 @@ export default function JobCommentModal({
                                   setCommentReply(e.target.value)
                                 }
                                 className="h-[2.4rem] w-full rounded-md  outline-none  resize-none py-1 px-2"
-                              ></textarea>
+                              ></input>
                               <div className="flex items-center justify-between  ">
                                 <div className="relative " title="Add Emoji">
                                   <span
@@ -546,13 +548,13 @@ export default function JobCommentModal({
               className="w-full border border-orange-500 rounded-md px-2 py-1"
             >
               <div className="relative w-full">
-                <textarea
+                <input
                   placeholder="Enter your comment here... 🙄"
                   value={comment}
                   required
                   onChange={handleInputChange}
                   className="h-[3.3rem] w-full rounded-md outline-none resize-none py-1 px-2"
-                ></textarea>
+                ></input>
 
                 {showSuggestions && (
                   <ul className="absolute top-[-8rem] w-[8rem] bg-gray-50   rounded-md mt-1 shadow-md   max-h-40 overflow-y-auto z-10">
@@ -568,70 +570,6 @@ export default function JobCommentModal({
                   </ul>
                 )}
               </div>
-
-              {/* <MentionsInput
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="mentions w-full h-[3.5rem] rounded-md border-none resize-none py-1 px-2"
-                placeholder="Enter your comment here... "
-                required
-                style={{
-                  control: {
-                    backgroundColor: "#fff",
-                    fontSize: 15,
-                    fontWeight: "normal",
-                  },
-                  "&multiLine": {
-                    control: {
-                      fontFamily: "monospace",
-                      border: "none",
-                    },
-                    highlighter: {
-                      padding: 9,
-                      border: "none",
-                    },
-                    input: {
-                      padding: 9,
-                      height: "100%",
-                      width: "100%",
-                      outline: 0,
-                      border: 0,
-                    },
-                  },
-                  suggestions: {
-                    list: {
-                      backgroundColor: "white",
-                      border: "none",
-                      fontSize: 14,
-                      boxShadow: "0px 0px 10px rgba(0,0,0,0.15)",
-                    },
-                    item: {
-                      padding: "5px 15px",
-                      borderBottom: "none",
-                      "&focused": {
-                        backgroundColor: "#cee4e5",
-                      },
-                    },
-                  },
-                }}
-              >
-                <Mention
-                  trigger="@"
-                  data={users.map((user, i) => ({
-                    id: i,
-                    display: user,
-                  }))}
-                  // appendSpaceOnAdd={true}
-                  className="mention"
-                  style={{
-                    backgroundColor: "#e8f4ff",
-                    color: "#1d9bf0",
-                    padding: "0 4px",
-                    borderRadius: "3px",
-                    fontWeight: "bold",
-                  }}
-                />
-              </MentionsInput> */}
 
               <div className="flex items-center justify-between  ">
                 <div className="relative " title="Add Emoji">

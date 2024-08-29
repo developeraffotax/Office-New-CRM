@@ -21,6 +21,10 @@ export const createJob = async (req, res) => {
       pyeLogin,
       trLogin,
       vatLogin,
+      ctPassword,
+      pyePassword,
+      trPassword,
+      vatPassword,
       authCode,
       utr,
       isActive,
@@ -59,6 +63,10 @@ export const createJob = async (req, res) => {
           pyeLogin,
           trLogin,
           vatLogin,
+          ctPassword,
+          pyePassword,
+          trPassword,
+          vatPassword,
           authCode,
           utr,
           isActive,
@@ -91,7 +99,7 @@ export const getAllClients = async (req, res) => {
     const clients = await jobsModel
       .find({ status: { $ne: "completed" } })
       .select(
-        "clientName companyName email currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id"
+        "clientName companyName email currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status"
       )
       .sort({ updatedAt: -1 });
 
@@ -384,6 +392,10 @@ export const updateClientJob = async (req, res) => {
       trLogin,
       vatLogin,
       authCode,
+      ctPassword,
+      pyePassword,
+      trPassword,
+      vatPassword,
       utr,
       isActive,
       jobs,
@@ -428,6 +440,10 @@ export const updateClientJob = async (req, res) => {
             pyeLogin,
             trLogin,
             vatLogin,
+            ctPassword,
+            pyePassword,
+            trPassword,
+            vatPassword,
             authCode,
             utr,
             isActive,
@@ -451,6 +467,10 @@ export const updateClientJob = async (req, res) => {
           pyeLogin,
           trLogin,
           vatLogin,
+          ctPassword,
+          pyePassword,
+          trPassword,
+          vatPassword,
           authCode,
           utr,
           isActive,

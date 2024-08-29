@@ -233,6 +233,7 @@ export const likeComment = async (req, res) => {
       }
 
       comment.likes.push(req.user.id);
+      comment.status = "read";
       await job.save();
 
       res.status(200).send({
@@ -263,6 +264,7 @@ export const likeComment = async (req, res) => {
       }
 
       comment.likes.push(req.user.id);
+      comment.status = "read";
       await task.save();
 
       res.status(200).send({

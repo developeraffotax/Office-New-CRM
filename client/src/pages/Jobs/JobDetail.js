@@ -222,7 +222,7 @@ export default function JobDetail({
             {/*  */}
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1 text-gray-500 w-[30%]">
-                <RiTimerLine className="h-4 w-4 text-gray-500" /> Stack Timer
+                <RiTimerLine className="h-4 w-4 text-gray-500" /> Start Timer
               </span>
               <span className="text-[17px] font-medium text-gray-800">
                 <Timer
@@ -451,48 +451,96 @@ export default function JobDetail({
                   <span className="border border-gray-300 text-black font-medium py-2 px-2 rounded-tl-md">
                     CT Login
                   </span>
-                  <span className="border border-gray-300 text-gray-600 py-2 px-2 rounded-tr-md">
-                    {clientDetail?.ctLogin ? (
-                      clientDetail?.ctLogin
-                    ) : (
-                      <span className="text-red-500">N/A</span>
-                    )}
+                  <span className="border flex items-center gap-1 border-gray-300 text-gray-600 py-2 px-2 rounded-tr-md">
+                    <>
+                      <span className="w-full">
+                        {clientDetail?.ctLogin ? (
+                          clientDetail?.ctLogin
+                        ) : (
+                          <span className="text-red-500">N/A</span>
+                        )}
+                      </span>
+                      <hr className="w-[2px] h-full bg-gray-300" />
+                      <span className="w-full">
+                        {clientDetail?.ctPassword ? (
+                          clientDetail?.ctPassword
+                        ) : (
+                          <span className="text-red-500">N/A</span>
+                        )}
+                      </span>
+                    </>
                   </span>
                 </div>
                 <div className="grid grid-cols-2">
-                  <span className="border border-gray-300 text-black font-medium  py-2 px-2 ">
+                  <span className="border  border-gray-300 text-black font-medium  py-2 px-2 ">
                     PYE Login
                   </span>
-                  <span className="border border-gray-300 text-gray-600 py-2 px-2">
-                    {clientDetail?.pyeLogin ? (
-                      clientDetail?.pyeLogin
-                    ) : (
-                      <span className="text-red-500">N/A</span>
-                    )}
+                  <span className="border flex items-center gap-1 border-gray-300 text-gray-600 py-2 px-2">
+                    <>
+                      <span className="w-full">
+                        {clientDetail?.pyeLogin ? (
+                          clientDetail?.pyeLogin
+                        ) : (
+                          <span className="text-red-500">N/A</span>
+                        )}
+                      </span>
+                      <hr className="w-[2px] h-full bg-gray-300" />
+                      <span className="w-full">
+                        {clientDetail?.pyePassword ? (
+                          clientDetail?.pyePassword
+                        ) : (
+                          <span className="text-red-500">N/A</span>
+                        )}
+                      </span>
+                    </>
                   </span>
                 </div>
                 <div className="grid grid-cols-2">
                   <span className="border border-gray-300 text-black font-medium py-2 px-2 ">
                     TR Login
                   </span>
-                  <span className="border border-gray-300 text-gray-600 py-2 px-2  ">
-                    {clientDetail?.trLogin ? (
-                      clientDetail?.trLogin
-                    ) : (
-                      <span className="text-red-500">N/A</span>
-                    )}
+                  <span className="border flex items-center gap-1 border-gray-300 text-gray-600 py-2 px-2  ">
+                    <>
+                      <span className="w-full">
+                        {clientDetail?.trLogin ? (
+                          clientDetail?.trLogin
+                        ) : (
+                          <span className="text-red-500">N/A</span>
+                        )}
+                      </span>
+                      <hr className="w-[2px] h-full bg-gray-300" />
+                      <span className="w-full">
+                        {clientDetail?.trPassword ? (
+                          clientDetail?.trPassword
+                        ) : (
+                          <span className="text-red-500">N/A</span>
+                        )}
+                      </span>
+                    </>
                   </span>
                 </div>
                 <div className="grid grid-cols-2">
                   <span className="border border-gray-300 text-black font-medium py-2 px-2 ">
                     VAT Login
                   </span>
-                  <span className="border border-gray-300 text-gray-600 py-2 px-2 ">
-                    {clientDetail?.vatLogin ? (
-                      clientDetail?.vatLogin
-                    ) : (
-                      <span className="text-red-500">N/A</span>
-                    )}
+                  <span className="border flex items-center gap-1 border-gray-300 text-gray-600 py-2 px-2 ">
+                    <>
+                      <span className="w-full">
+                        {clientDetail?.vatLogin ? (
+                          clientDetail?.vatLogin
+                        ) : (
+                          <span className="text-red-500">N/A</span>
+                        )}
+                      </span>
+                      <hr className="w-[2px] h-full bg-gray-300" />
+                      <span className="w-full">
+                        {clientDetail?.vatPassword ? (
+                          clientDetail?.vatPassword
+                        ) : (
+                          <span className="text-red-500">N/A</span>
+                        )}
+                      </span>
+                    </>
                   </span>
                 </div>
                 <div className="grid grid-cols-2">

@@ -44,12 +44,19 @@ export default function Login() {
   return (
     <div className="w-full min-h-screen flex items-center justify-center py-6 px-4">
       <div className="rounded-md shadow1 py-4 px-4 w-[30rem] backgroundC ">
-        <h3
+        <div className="flex items-center justify-center flex-col">
+          <img
+            src="/logo.png"
+            alt="Logo"
+            className="w-[6] h-[6rem] drop-shadow-2xl shadow-gray-200 shadow-opacity-50 shadow-offset-2"
+          />
+        </div>
+        {/* <h3
           className="text-2xl font-semibold text-white text-center w-full mb-[1.2rem] "
           style={{ textShadow: "-1px 0px 1px #000" }}
         >
           Sign In to Affotax
-        </h3>
+        </h3> */}
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <div className="inputBox">

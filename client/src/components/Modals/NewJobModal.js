@@ -20,9 +20,13 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
   const [country, setCountry] = useState("");
   const [fee, setFee] = useState("");
   const [ctLogin, setCtLogin] = useState("");
+  const [ctPassword, setCtPassowrd] = useState("");
   const [pyeLogin, setPyeLogin] = useState("");
+  const [pyePassword, setPyePassowrd] = useState("");
   const [trLogin, setTrLogin] = useState("");
+  const [trPassword, setTrPassowrd] = useState("");
   const [vatLogin, setVatLogin] = useState("");
+  const [vatPassword, setVatPassowrd] = useState("");
   const [authCode, setAuthCode] = useState("");
   const [utr, setUtr] = useState("");
   const [clientBookKeepingFormData, setClientBookKeepingFormData] = useState({
@@ -186,9 +190,13 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
           country,
           fee,
           ctLogin,
+          ctPassword,
           pyeLogin,
+          pyePassword,
           trLogin,
+          trPassword,
           vatLogin,
+          vatPassword,
           authCode,
           utr,
           jobs,
@@ -346,34 +354,72 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
               <h3 className="w-full h-[2.7rem] rounded-md text-white bg-[#254e7f] flex items-center justify-center text-[16px] sm:text-[18px] font-[300] ">
                 Login Information
               </h3>
-              <input
-                type="test"
-                placeholder="CT Login"
-                className={`${style.input}`}
-                value={ctLogin}
-                onChange={(e) => setCtLogin(e.target.value)}
-              />
-              <input
-                type="test"
-                placeholder="PYE Login"
-                className={`${style.input}`}
-                value={pyeLogin}
-                onChange={(e) => setPyeLogin(e.target.value)}
-              />
-              <input
-                type="test"
-                placeholder="TR Login"
-                className={`${style.input}`}
-                value={trLogin}
-                onChange={(e) => setTrLogin(e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="VAT Login"
-                className={`${style.input}`}
-                value={vatLogin}
-                onChange={(e) => setVatLogin(e.target.value)}
-              />
+              <div className="grid grid-cols-2 gap-1">
+                <input
+                  type="test"
+                  placeholder="CT User"
+                  className={`${style.input}`}
+                  value={ctLogin}
+                  onChange={(e) => setCtLogin(e.target.value)}
+                />
+                <input
+                  type="test"
+                  placeholder="CT Password"
+                  className={`${style.input}`}
+                  value={ctPassword}
+                  onChange={(e) => setCtPassowrd(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-1">
+                <input
+                  type="test"
+                  placeholder="PYE User"
+                  className={`${style.input}`}
+                  value={pyeLogin}
+                  onChange={(e) => setPyeLogin(e.target.value)}
+                />
+                <input
+                  type="test"
+                  placeholder="PYE Password"
+                  className={`${style.input}`}
+                  value={pyePassword}
+                  onChange={(e) => setPyePassowrd(e.target.value)}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-1">
+                <input
+                  type="test"
+                  placeholder="TR User"
+                  className={`${style.input}`}
+                  value={trLogin}
+                  onChange={(e) => setTrLogin(e.target.value)}
+                />
+                <input
+                  type="test"
+                  placeholder="TR Password"
+                  className={`${style.input}`}
+                  value={trPassword}
+                  onChange={(e) => setTrPassowrd(e.target.value)}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-1">
+                <input
+                  type="text"
+                  placeholder="VAT User"
+                  className={`${style.input}`}
+                  value={vatLogin}
+                  onChange={(e) => setVatLogin(e.target.value)}
+                />
+                <input
+                  type="text"
+                  placeholder="VAT Password"
+                  className={`${style.input}`}
+                  value={vatPassword}
+                  onChange={(e) => setVatPassowrd(e.target.value)}
+                />
+              </div>
             </div>
             {/* 4 */}
             <div className="flex flex-col gap-3">

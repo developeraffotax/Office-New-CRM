@@ -594,11 +594,24 @@ export default function AllJobs() {
     () => [
       {
         accessorKey: "companyName",
-        header: "Company Name",
         minSize: 170,
         maxSize: 300,
         size: 230,
         grow: true,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span className="ml-1">Company Name</span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                placeholder="Search Company..."
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const companyName = cell.getValue();
 
@@ -614,18 +627,63 @@ export default function AllJobs() {
             </div>
           );
         },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+
+          return cellValue.startsWith(filterValue.toLowerCase());
+        },
       },
       {
         accessorKey: "clientName",
         header: "Client",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span className="ml-1">Client</span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                placeholder="Search Company..."
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+
+          return cellValue.startsWith(filterValue.toLowerCase());
+        },
         size: 110,
         minSize: 80,
         maxSize: 150,
         grow: true,
       },
+
       {
         accessorKey: "job.jobHolder",
-        header: "Job Holder",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span className="ml-1">Job Holder</span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select JobHolder</option>
+                {users?.map((jobhold, i) => (
+                  <option key={i} value={jobhold}>
+                    {jobhold}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const jobholder = cell.getValue();
 
@@ -660,6 +718,34 @@ export default function AllJobs() {
         accessorKey: "job.jobName",
         header: "Departments",
         filterFn: "equals",
+        Header: ({ column }) => {
+          const deparments = [
+            "Bookkeeping",
+            "Payroll",
+            "Vat Return",
+            "Personal Tax",
+            "Accounts",
+            "Company Sec",
+            "Address",
+          ];
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span className="ml-1">Departments</span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select Departments</option>
+                {deparments?.map((depart, i) => (
+                  <option key={i} value={depart}>
+                    {depart}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
         filterSelectOptions: [
           "Bookkeeping",
           "Payroll",
@@ -669,6 +755,7 @@ export default function AllJobs() {
           "Company Sec",
           "Address",
         ],
+
         filterVariant: "select",
         size: 120,
         minSize: 100,
@@ -677,7 +764,20 @@ export default function AllJobs() {
       },
       {
         accessorKey: "totalHours",
-        header: "Hrs",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span className="">Hrs</span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                placeholder="Search Hours"
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const hours = cell.getValue();
           return (
@@ -692,7 +792,59 @@ export default function AllJobs() {
       // End  year
       {
         accessorKey: "job.yearEnd",
-        header: "Year End",
+        Header: ({ column }) => {
+          const [filterValue, setFilterValue] = useState("");
+          const [customDate, setCustomDate] = useState(getCurrentMonthYear());
+
+          useEffect(() => {
+            if (filterValue === "Custom date") {
+              column.setFilterValue(customDate);
+            }
+            //eslint-disable-next-line
+          }, [customDate, filterValue]);
+
+          const handleFilterChange = (e) => {
+            setFilterValue(e.target.value);
+            column.setFilterValue(e.target.value);
+          };
+
+          const handleCustomDateChange = (e) => {
+            setCustomDate(e.target.value);
+            column.setFilterValue(e.target.value);
+          };
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="cursor-pointer"
+                title="Clear Filter"
+                onClick={() => setFilterValue("")}
+              >
+                Year End
+              </span>
+              {filterValue === "Custom date" ? (
+                <input
+                  type="month"
+                  value={customDate}
+                  onChange={handleCustomDateChange}
+                  className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
+                />
+              ) : (
+                <select
+                  value={filterValue}
+                  onChange={handleFilterChange}
+                  className="h-[1.8rem] font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select Date</option>
+                  {column.columnDef.filterSelectOptions.map((option, idx) => (
+                    <option key={idx} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const [date, setDate] = useState(() => {
             const cellDate = new Date(cell.getValue());
@@ -737,16 +889,6 @@ export default function AllJobs() {
             const cellMonth = (cellDate.getMonth() + 1)
               .toString()
               .padStart(2, "0");
-
-            // Log for debugging
-            // console.log(
-            //   "Filter Value:",
-            //   filterValue,
-            //   "Cell Year:",
-            //   cellYear,
-            //   "Cell Month:",
-            //   cellMonth
-            // );
 
             return year === cellYear && month === cellMonth;
           }
@@ -803,8 +945,14 @@ export default function AllJobs() {
         minSize: 80,
         maxSize: 140,
         grow: true,
-        Filter: ({ column }) => {
-          const [filterValue, setFilterValue] = useState("Select");
+      },
+
+      // Job DeadLine
+      {
+        accessorKey: "job.jobDeadline",
+        header: "Deadline",
+        Header: ({ column }) => {
+          const [filterValue, setFilterValue] = useState("");
           const [customDate, setCustomDate] = useState(getCurrentMonthYear());
 
           useEffect(() => {
@@ -823,34 +971,39 @@ export default function AllJobs() {
             setCustomDate(e.target.value);
             column.setFilterValue(e.target.value);
           };
-
-          return filterValue === "Custom date" ? (
-            <input
-              type="month"
-              value={customDate}
-              onChange={handleCustomDateChange}
-              className="h-[2rem] w-[9rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none"
-            />
-          ) : (
-            <select
-              value={filterValue}
-              onChange={handleFilterChange}
-              className="h-[2rem] w-[9rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none"
-            >
-              {column.columnDef.filterSelectOptions.map((option, idx) => (
-                <option key={idx} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="cursor-pointer"
+                title="Clear Filter"
+                onClick={() => setFilterValue("")}
+              >
+                Deadline
+              </span>
+              {filterValue === "Custom date" ? (
+                <input
+                  type="month"
+                  value={customDate}
+                  onChange={handleCustomDateChange}
+                  className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
+                />
+              ) : (
+                <select
+                  value={filterValue}
+                  onChange={handleFilterChange}
+                  className="h-[1.8rem] font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select Date</option>
+                  {column.columnDef.filterSelectOptions.map((option, idx) => (
+                    <option key={idx} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
           );
         },
-      },
-
-      // Job DeadLine
-      {
-        accessorKey: "job.jobDeadline",
-        header: "Deadline",
         Cell: ({ cell, row }) => {
           const [date, setDate] = useState(() => {
             const cellDate = new Date(cell.getValue());
@@ -957,8 +1110,13 @@ export default function AllJobs() {
         minSize: 80,
         maxSize: 140,
         grow: true,
-        Filter: ({ column }) => {
-          const [filterValue, setFilterValue] = useState("Select");
+      },
+
+      //  Current Date
+      {
+        accessorKey: "currentDate",
+        Header: ({ column }) => {
+          const [filterValue, setFilterValue] = useState("");
           const [customDate, setCustomDate] = useState(getCurrentMonthYear());
 
           useEffect(() => {
@@ -977,34 +1135,39 @@ export default function AllJobs() {
             setCustomDate(e.target.value);
             column.setFilterValue(e.target.value);
           };
-
-          return filterValue === "Custom date" ? (
-            <input
-              type="month"
-              value={customDate}
-              onChange={handleCustomDateChange}
-              className="h-[2rem] w-[9rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none"
-            />
-          ) : (
-            <select
-              value={filterValue}
-              onChange={handleFilterChange}
-              className="h-[2rem] w-[9rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none"
-            >
-              {column.columnDef.filterSelectOptions.map((option, idx) => (
-                <option key={idx} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="cursor-pointer"
+                title="Clear Filter"
+                onClick={() => setFilterValue("")}
+              >
+                Job Date
+              </span>
+              {filterValue === "Custom date" ? (
+                <input
+                  type="month"
+                  value={customDate}
+                  onChange={handleCustomDateChange}
+                  className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
+                />
+              ) : (
+                <select
+                  value={filterValue}
+                  onChange={handleFilterChange}
+                  className="h-[1.8rem] font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select Date</option>
+                  {column.columnDef.filterSelectOptions.map((option, idx) => (
+                    <option key={idx} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
           );
         },
-      },
-
-      //  Current Date
-      {
-        accessorKey: "currentDate",
-        header: "Job Date",
         Cell: ({ cell, row }) => {
           const [date, setDate] = useState(() => {
             const cellDate = new Date(cell.getValue());
@@ -1102,7 +1265,26 @@ export default function AllJobs() {
       //  -----Due & Over Due Status----->
       {
         accessorKey: "status",
-        header: "Status",
+        Header: ({ column }) => {
+          const dateStatus = ["Overdue", "Due"];
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span className="ml-1">Status</span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select Status</option>
+                {dateStatus?.map((status, i) => (
+                  <option key={i} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
         Cell: ({ row }) => {
           const status = getStatus(
             row.original.job.jobDeadline,
@@ -1144,7 +1326,34 @@ export default function AllJobs() {
       //
       {
         accessorKey: "job.jobStatus",
-        header: "Job Status",
+        Header: ({ column }) => {
+          const jobStatus = [
+            "Data",
+            "Progress",
+            "Queries",
+            "Approval",
+            "Submission",
+            "Billing",
+            "Feedback",
+          ];
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span className="ml-1">Job Status</span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select Status</option>
+                {jobStatus?.map((status, i) => (
+                  <option key={i} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const statusValue = cell.getValue();
 
@@ -1183,7 +1392,25 @@ export default function AllJobs() {
       },
       {
         accessorKey: "job.lead",
-        header: "Lead",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span className="ml-1">Lead</span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select Lead</option>
+                {users?.map((lead, i) => (
+                  <option key={i} value={lead}>
+                    {lead}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const leadValue = cell.getValue(); // Get the current lead value for the row
 
@@ -1220,7 +1447,7 @@ export default function AllJobs() {
         Cell: ({ cell, row }) => {
           const statusValue = cell.getValue();
           return (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 w-full justify-center">
               <span className="text-[1rem]">⏳</span>
               <span>{statusValue}</span>
             </div>
@@ -1261,13 +1488,22 @@ export default function AllJobs() {
             </div>
           );
         },
-        size: 110,
+        size: 80,
       },
       {
         accessorKey: "comments",
         header: "Comments",
         Cell: ({ cell, row }) => {
           const comments = cell.getValue();
+          const [readComments, setReadComments] = useState([]);
+
+          useEffect(() => {
+            const filterComments = comments.filter(
+              (item) => item.status === "unread"
+            );
+            setReadComments(filterComments);
+            // eslint-disable-next-line
+          }, [comments]);
 
           return (
             <div
@@ -1277,14 +1513,20 @@ export default function AllJobs() {
                 setIsComment(true);
               }}
             >
-              <span className="text-[1rem] cursor-pointer">
-                <MdInsertComment className="h-5 w-5 text-orange-600 " />
-              </span>
-              {comments?.length > 0 && <span>({comments?.length})</span>}
+              <div className="relative">
+                <span className="text-[1rem] cursor-pointer relative">
+                  <MdInsertComment className="h-5 w-5 text-orange-600 " />
+                </span>
+                {readComments?.length > 0 && (
+                  <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
+                    {readComments?.length}
+                  </span>
+                )}
+              </div>
             </div>
           );
         },
-        size: 110,
+        size: 100,
       },
     ],
     // eslint-disable-next-line
@@ -1301,8 +1543,8 @@ export default function AllJobs() {
     columnFilterDisplayMode: "popover",
     muiTableContainerProps: { sx: { maxHeight: "820px" } },
     enableColumnActions: false,
-    enableColumnFilters: true,
-    enableSorting: true,
+    enableColumnFilters: false,
+    enableSorting: false,
     enableGlobalFilter: true,
     enableRowNumbers: true,
     enableColumnResizing: true,
@@ -1721,6 +1963,7 @@ export default function AllJobs() {
             setJobId={setJobId}
             users={users}
             type={"Jobs"}
+            getTasks1={allClientData}
           />
         </div>
       )}

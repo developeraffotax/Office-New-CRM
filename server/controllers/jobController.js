@@ -54,7 +54,7 @@ export const createJob = async (req, res) => {
           companyName,
           email,
           totalHours,
-          currentDate,
+          currentDate: currentDate || undefined,
           source,
           clientType,
           country,

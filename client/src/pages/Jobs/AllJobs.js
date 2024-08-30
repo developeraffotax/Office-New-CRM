@@ -601,7 +601,15 @@ export default function AllJobs() {
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">
-              <span className="ml-1">Company Name</span>
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Company Name
+              </span>
               <input
                 type="search"
                 value={column.getFilterValue() || ""}
@@ -640,7 +648,15 @@ export default function AllJobs() {
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">
-              <span className="ml-1">Client</span>
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Client
+              </span>
               <input
                 type="search"
                 value={column.getFilterValue() || ""}
@@ -668,13 +684,21 @@ export default function AllJobs() {
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">
-              <span className="ml-1">Job Holder</span>
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Job Holder
+              </span>
               <select
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
                 className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
-                <option value="">Select JobHolder</option>
+                <option value="">Select</option>
                 {users?.map((jobhold, i) => (
                   <option key={i} value={jobhold}>
                     {jobhold}
@@ -730,13 +754,21 @@ export default function AllJobs() {
           ];
           return (
             <div className=" flex flex-col gap-[2px]">
-              <span className="ml-1">Departments</span>
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Departments
+              </span>
               <select
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
                 className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
-                <option value="">Select Departments</option>
+                <option value="">Select</option>
                 {deparments?.map((depart, i) => (
                   <option key={i} value={depart}>
                     {depart}
@@ -767,7 +799,15 @@ export default function AllJobs() {
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">
-              <span className="">Hrs</span>
+              <span
+                className="ml-1 w-full text-center cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Hrs
+              </span>
               <input
                 type="search"
                 value={column.getFilterValue() || ""}
@@ -815,9 +855,12 @@ export default function AllJobs() {
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
-                className="cursor-pointer"
+                className="ml-1 w-full text-center cursor-pointer"
                 title="Clear Filter"
-                onClick={() => setFilterValue("")}
+                onClick={() => {
+                  setFilterValue("");
+                  column.setFilterValue("");
+                }}
               >
                 Year End
               </span>
@@ -834,7 +877,7 @@ export default function AllJobs() {
                   onChange={handleFilterChange}
                   className="h-[1.8rem] font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
                 >
-                  <option value="">Select Date</option>
+                  <option value="">Select</option>
                   {column.columnDef.filterSelectOptions.map((option, idx) => (
                     <option key={idx} value={option}>
                       {option}
@@ -941,7 +984,7 @@ export default function AllJobs() {
           "Custom date",
         ],
         filterVariant: "custom",
-        size: 110,
+        size: 90,
         minSize: 80,
         maxSize: 140,
         grow: true,
@@ -974,9 +1017,12 @@ export default function AllJobs() {
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
-                className="cursor-pointer"
+                className="ml-1 w-full text-center cursor-pointer"
                 title="Clear Filter"
-                onClick={() => setFilterValue("")}
+                onClick={() => {
+                  setFilterValue("");
+                  column.setFilterValue("");
+                }}
               >
                 Deadline
               </span>
@@ -993,7 +1039,7 @@ export default function AllJobs() {
                   onChange={handleFilterChange}
                   className="h-[1.8rem] font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
                 >
-                  <option value="">Select Date</option>
+                  <option value="">Select</option>
                   {column.columnDef.filterSelectOptions.map((option, idx) => (
                     <option key={idx} value={option}>
                       {option}
@@ -1106,7 +1152,7 @@ export default function AllJobs() {
           "Custom date",
         ],
         filterVariant: "custom",
-        size: 110,
+        size: 90,
         minSize: 80,
         maxSize: 140,
         grow: true,
@@ -1138,9 +1184,12 @@ export default function AllJobs() {
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
-                className="cursor-pointer"
+                className="ml-1 w-full text-center cursor-pointer"
                 title="Clear Filter"
-                onClick={() => setFilterValue("")}
+                onClick={() => {
+                  setFilterValue("");
+                  column.setFilterValue("");
+                }}
               >
                 Job Date
               </span>
@@ -1157,7 +1206,7 @@ export default function AllJobs() {
                   onChange={handleFilterChange}
                   className="h-[1.8rem] font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
                 >
-                  <option value="">Select Date</option>
+                  <option value="">Select</option>
                   {column.columnDef.filterSelectOptions.map((option, idx) => (
                     <option key={idx} value={option}>
                       {option}
@@ -1257,7 +1306,7 @@ export default function AllJobs() {
           // "Custom Date",
         ],
         filterVariant: "select",
-        size: 110,
+        size: 90,
         minSize: 80,
         maxSize: 140,
         grow: true,
@@ -1269,13 +1318,21 @@ export default function AllJobs() {
           const dateStatus = ["Overdue", "Due"];
           return (
             <div className=" flex flex-col gap-[2px]">
-              <span className="ml-1">Status</span>
+              <span
+                className="ml-1 w-full text-center cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Status
+              </span>
               <select
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className="font-normal ml-1 h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
-                <option value="">Select Status</option>
+                <option value="">Select</option>
                 {dateStatus?.map((status, i) => (
                   <option key={i} value={status}>
                     {status}
@@ -1338,13 +1395,21 @@ export default function AllJobs() {
           ];
           return (
             <div className=" flex flex-col gap-[2px]">
-              <span className="ml-1">Job Status</span>
+              <span
+                className="ml-1 w-full text-center cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Job Status
+              </span>
               <select
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className="font-normal h-[1.8rem] ml-1 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
-                <option value="">Select Status</option>
+                <option value="">Select</option>
                 {jobStatus?.map((status, i) => (
                   <option key={i} value={status}>
                     {status}
@@ -1395,13 +1460,21 @@ export default function AllJobs() {
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">
-              <span className="ml-1">Lead</span>
+              <span
+                className="ml-1 w-full text-center cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Lead
+              </span>
               <select
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className="font-normal h-[1.8rem] ml-1 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
-                <option value="">Select Lead</option>
+                <option value="">Select</option>
                 {users?.map((lead, i) => (
                   <option key={i} value={lead}>
                     {lead}
@@ -1443,7 +1516,13 @@ export default function AllJobs() {
       },
       {
         accessorKey: "totalTime",
-        header: "Est. Time",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]  ml w-[5rem]">
+              <span className="w-full text-center ">Budget</span>
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const statusValue = cell.getValue();
           return (
@@ -1457,7 +1536,13 @@ export default function AllJobs() {
       },
       {
         accessorKey: "timertracker",
-        header: "Timer",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]  ml w-[5rem]">
+              <span className="w-full text-center ">Timer</span>
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           // const statusValue = cell.getValue();
           // console.log("row", row.original, row.original.job.jobName);
@@ -1488,7 +1573,7 @@ export default function AllJobs() {
             </div>
           );
         },
-        size: 80,
+        size: 90,
       },
       {
         accessorKey: "comments",

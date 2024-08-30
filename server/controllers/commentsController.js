@@ -128,6 +128,7 @@ export const commentReply = async (req, res) => {
       };
 
       comment.commentReplies.push(newReply);
+      comment.status = "read";
 
       await job.save();
 
@@ -173,6 +174,7 @@ export const commentReply = async (req, res) => {
       };
 
       comment.commentReplies.push(newReply);
+      comment.status = "read";
 
       await task.save();
 

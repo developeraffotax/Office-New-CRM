@@ -4,6 +4,9 @@ import { IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import { TbLoader2 } from "react-icons/tb";
 import axios from "axios";
+import socketIO from "socket.io-client";
+const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
+const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 export default function AddProjectModal({
   users,
@@ -53,6 +56,9 @@ export default function AddProjectModal({
           setUserList([]);
           setOpenAddProject(false);
           toast.success("Project Updated!");
+          socketId.emit("addproject", {
+            note: "New Project Added",
+          });
         }
       } else {
         const { data } = await axios.post(
@@ -66,6 +72,9 @@ export default function AddProjectModal({
           setUserList([]);
           setOpenAddProject(false);
           toast.success("Project Created successfully!");
+          socketId.emit("addproject", {
+            note: "New Project Added",
+          });
         }
       }
     } catch (error) {

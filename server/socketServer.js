@@ -26,6 +26,11 @@ export const initSocketServer = (server) => {
       io.emit("addnewTaskComment", data);
     });
 
+    // Project
+    socket.on("addproject", (data) => {
+      io.emit("newProject", data);
+    });
+
     // Listen Add/Update Job
     socket.on("addJob", (data) => {
       io.emit("newJob", data);

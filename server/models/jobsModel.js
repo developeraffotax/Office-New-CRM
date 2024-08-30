@@ -8,12 +8,15 @@ const jobSchema = new mongoose.Schema(
     },
     yearEnd: {
       type: Date,
+      default: () => new Date(),
     },
     jobDeadline: {
       type: Date,
+      default: () => new Date(),
     },
     workDeadline: {
       type: Date,
+      default: () => new Date(),
     },
     hours: {
       type: String,
@@ -82,7 +85,8 @@ const clientSchema = new mongoose.Schema(
       type: String,
     },
     currentDate: {
-      type: String,
+      type: Date,
+      default: () => new Date(),
     },
     source: {
       type: String,

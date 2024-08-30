@@ -162,15 +162,15 @@ const AllTasks = () => {
       );
 
       setTasksData(data?.tasks);
-      // if (auth.user.role === "Admin") {
-      //   setTasksData(data?.tasks);
-      // } else {
-      //   const filteredTasks = data?.tasks?.filter(
-      //     (item) => item.jobHolder.trim() === auth.user.name.trim()
-      //   );
+      if (auth.user.role === "Admin") {
+        setTasksData(data?.tasks);
+      } else {
+        const filteredTasks = data?.tasks?.filter(
+          (item) => item.jobHolder.trim() === auth.user.name.trim()
+        );
 
-      //   setTasksData(filteredTasks);
-      // }
+        setTasksData(filteredTasks);
+      }
 
       setLoading(false);
     } catch (error) {
@@ -184,26 +184,26 @@ const AllTasks = () => {
     // eslint-disable-next-line
   }, []);
 
-  useEffect(() => {
-    if (auth && auth?.user) {
-      if (auth.user.role === "Admin") {
-        setUserTaskData(tasksData);
-      } else {
-        // const filteredTasks = tasksData?.filter(
-        //   (item) => item.jobHolder.trim() === auth.user.name.trim()
-        // );
+  // useEffect(() => {
+  //   if (auth && auth?.user) {
+  //     if (auth.user.role === "Admin") {
+  //       setUserTaskData(tasksData);
+  //     } else {
+  //       // const filteredTasks = tasksData?.filter(
+  //       //   (item) => item.jobHolder.trim() === auth.user.name.trim()
+  //       // );
 
-        const filteredTasks = tasksData.filter((task) => {
-          return task.project?.users_list?.some(
-            (user) => user._id === auth.user.id
-          );
-        });
+  //       const filteredTasks = tasksData.filter((task) => {
+  //         return task.project?.users_list?.some(
+  //           (user) => user._id === auth.user.id
+  //         );
+  //       });
 
-        setUserTaskData(filteredTasks);
-      }
-    }
-    //eslint-disable-next-line
-  }, [auth, tasksData]);
+  //       setUserTaskData(filteredTasks);
+  //     }
+  //   }
+  //   //eslint-disable-next-line
+  // }, [auth, tasksData]);
 
   // ---------------Get Task on WithoutLoad-----
   const getTasks1 = async () => {
@@ -213,6 +213,15 @@ const AllTasks = () => {
       );
 
       setTasksData(data?.tasks);
+      if (auth.user.role === "Admin") {
+        setTasksData(data?.tasks);
+      } else {
+        const filteredTasks = data?.tasks?.filter(
+          (item) => item.jobHolder.trim() === auth.user.name.trim()
+        );
+
+        setTasksData(filteredTasks);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -228,6 +237,23 @@ const AllTasks = () => {
     };
     // eslint-disable-next-line
   }, [socketId]);
+
+  useEffect(() => {
+    if (auth && auth?.user) {
+      if (auth.user.role === "Admin") {
+        setTasksData(tasksData);
+      } else {
+        const filteredTasks = tasksData.filter((task) => {
+          return task.project?.users_list?.some(
+            (user) => user._id === auth.user.id
+          );
+        });
+
+        setTasksData(filteredTasks);
+      }
+    }
+    //eslint-disable-next-line
+  }, [auth]);
 
   // ---------Delete Project-------->
   const handleDeleteConfirmation = (projectId) => {
@@ -318,7 +344,7 @@ const AllTasks = () => {
   useEffect(() => {
     if (active === "All") {
       if (filterData) {
-        const totalHours = userTaskData.reduce(
+        const totalHours = tasksData.reduce(
           (sum, client) => sum + Number(client.hours),
           0
         );
@@ -326,19 +352,19 @@ const AllTasks = () => {
       }
     } else {
       if (filterData) {
-        const totalHours = userTaskData.reduce(
+        const totalHours = filterData.reduce(
           (sum, client) => sum + Number(client.hours),
           0
         );
         setTotalHours(totalHours.toFixed(0));
       }
     }
-  }, [userTaskData, filterData, active, active1, activeBtn]);
+  }, [tasksData, filterData, active, active1, activeBtn]);
 
   // ------------Filter By Projects---------->
   const getProjectsCount = (project) => {
     if (project === "All") {
-      return userTaskData?.length;
+      return tasksData?.length;
     }
     return tasksData.filter((item) => item?.project?.projectName === project)
       ?.length;
@@ -735,7 +761,7 @@ const AllTasks = () => {
                 onChange={(e) => column.setFilterValue(e.target.value)}
                 className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
-                <option value="">Select Project</option>
+                <option value="">Select</option>
                 {allProjects?.map((proj) => (
                   <option key={proj._id} value={proj.projectName}>
                     {proj.projectName}
@@ -826,10 +852,10 @@ const AllTasks = () => {
         filterFn: "equals",
         filterSelectOptions: users.map((jobhold) => jobhold.name),
         filterVariant: "select",
-        size: 90,
+        size: 100,
         minSize: 80,
         maxSize: 130,
-        grow: true,
+        grow: false,
       },
       // Task
       {
@@ -851,7 +877,6 @@ const AllTasks = () => {
                 type="search"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                placeholder="Search task..."
                 className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               />
             </div>
@@ -933,7 +958,6 @@ const AllTasks = () => {
                 type="search"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                placeholder="Search Hours"
                 className="font-normal  h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               />
             </div>
@@ -980,9 +1004,9 @@ const AllTasks = () => {
             column.setFilterValue(e.target.value);
           };
           return (
-            <div className=" flex flex-col gap-[2px]">
+            <div className="w-full flex flex-col gap-[2px]">
               <span
-                className="cursor-pointer w-full text-center"
+                className="cursor-pointer "
                 title="Clear Filter"
                 onClick={() => {
                   setFilterValue("");
@@ -991,6 +1015,7 @@ const AllTasks = () => {
               >
                 Start Date
               </span>
+
               {filterValue === "Custom date" ? (
                 <input
                   type="month"
@@ -1002,9 +1027,9 @@ const AllTasks = () => {
                 <select
                   value={filterValue}
                   onChange={handleFilterChange}
-                  className="h-[1.8rem] font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
+                  className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
                 >
-                  <option value="">Select Date</option>
+                  <option value="">Select</option>
                   {column.columnDef.filterSelectOptions.map((option, idx) => (
                     <option key={idx} value={option}>
                       {option}
@@ -1030,7 +1055,7 @@ const AllTasks = () => {
           };
 
           return (
-            <div className="w-full flex items-center justify-center">
+            <div className="w-full flex  ">
               {!showStartDate ? (
                 <p onDoubleClick={() => setShowStartDate(true)}>
                   {format(new Date(date), "dd-MMM-yyyy")}
@@ -1041,7 +1066,7 @@ const AllTasks = () => {
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   onBlur={(e) => handleDateChange(e.target.value)}
-                  className={`h-[2rem] w-[6rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none `}
+                  className={`h-[2rem] w-full cursor-pointer rounded-md border border-gray-200 outline-none `}
                 />
               )}
             </div>
@@ -1109,10 +1134,10 @@ const AllTasks = () => {
           "Custom date",
         ],
         filterVariant: "custom",
-        size: 90,
+        size: 100,
         minSize: 90,
-        maxSize: 140,
-        grow: true,
+        maxSize: 110,
+        grow: false,
       },
 
       // Task DeadLine
@@ -1142,7 +1167,7 @@ const AllTasks = () => {
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
-                className=" w-full text-center cursor-pointer"
+                className=" w-full cursor-pointer"
                 title="Clear Filter"
                 onClick={() => {
                   setFilterValue("");
@@ -1156,15 +1181,15 @@ const AllTasks = () => {
                   type="month"
                   value={customDate}
                   onChange={handleCustomDateChange}
-                  className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
+                  className="h-[1.8rem] font-normal   cursor-pointer rounded-md border border-gray-200 outline-none"
                 />
               ) : (
                 <select
                   value={filterValue}
                   onChange={handleFilterChange}
-                  className="h-[1.8rem] font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
+                  className="h-[1.8rem]  font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
                 >
-                  <option value="">Select Date</option>
+                  <option value="">Select</option>
                   {column.columnDef.filterSelectOptions.map((option, idx) => (
                     <option key={idx} value={option}>
                       {option}
@@ -1194,7 +1219,7 @@ const AllTasks = () => {
           const isExpired = cellDate < today;
 
           return (
-            <div className="w-full flex items-center justify-center">
+            <div className="w-full ">
               {!showDeadline ? (
                 <p onDoubleClick={() => setShowDeadline(true)}>
                   {format(new Date(date), "dd-MMM-yyyy")}
@@ -1205,7 +1230,7 @@ const AllTasks = () => {
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   onBlur={(e) => handleDateChange(e.target.value)}
-                  className={`h-[2rem] w-[6rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none ${
+                  className={`h-[2rem] w-full cursor-pointer rounded-md border border-gray-200 outline-none ${
                     isExpired ? "text-red-500" : ""
                   }`}
                 />
@@ -1277,10 +1302,10 @@ const AllTasks = () => {
           "Custom date",
         ],
         filterVariant: "custom",
-        size: 90,
+        size: 100,
         minSize: 80,
         maxSize: 140,
-        grow: true,
+        grow: false,
       },
       //  -----Due & Over Due Status----->
       {
@@ -1290,7 +1315,7 @@ const AllTasks = () => {
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
-                className="ml-1 cursor-pointer w-full text-center"
+                className="ml-1 cursor-pointer "
                 title="Clear Filter"
                 onClick={() => {
                   column.setFilterValue("");
@@ -1298,18 +1323,20 @@ const AllTasks = () => {
               >
                 Status
               </span>
-              <select
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] w-full 1500px: ml-1 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              >
-                <option value="">Select </option>
-                {dateStatus?.map((status, i) => (
-                  <option key={i} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
+              <form className="w-full flex ">
+                <select
+                  value={column.getFilterValue() || ""}
+                  onChange={(e) => column.setFilterValue(e.target.value)}
+                  className="font-normal h-[1.8rem] w-full  cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select </option>
+                  {dateStatus?.map((status, i) => (
+                    <option key={i} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </form>
             </div>
           );
         },
@@ -1320,7 +1347,7 @@ const AllTasks = () => {
           );
 
           return (
-            <div className="flex items-center justify-center w-full">
+            <div className="w-full">
               <span
                 className={`text-white text-[14px]  rounded-[2rem] ${
                   status === "Due"
@@ -1345,10 +1372,10 @@ const AllTasks = () => {
         },
         filterSelectOptions: ["Overdue", "Due"],
         filterVariant: "select",
-        size: 100,
-        minSize: 60,
-        maxSize: 120,
-        grow: true,
+        size: 90,
+        minSize: 90,
+        maxSize: 110,
+        grow: false,
       },
       //
       {
@@ -1359,7 +1386,7 @@ const AllTasks = () => {
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
-                className="ml-1 cursor-pointer w-full text-center"
+                className=" text-center"
                 title="Clear Filter "
                 onClick={() => {
                   column.setFilterValue("");
@@ -1367,11 +1394,11 @@ const AllTasks = () => {
               >
                 Task Status
               </span>
-              <div className="flex items-center justify-center w-full">
+              <div className="flex ">
                 <select
                   value={column.getFilterValue() || ""}
                   onChange={(e) => column.setFilterValue(e.target.value)}
-                  className="ml-1 w-[8rem] font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                  className="ml-1 font-normal w-full  h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
                 >
                   <option value="">Select</option>
                   {statusData?.map((status, i) => (
@@ -1417,15 +1444,15 @@ const AllTasks = () => {
         minSize: 90,
         size: 100,
         maxSize: 140,
-        grow: true,
+        grow: false,
       },
       {
         accessorKey: "lead",
         Header: ({ column }) => {
           return (
-            <div className=" flex flex-col gap-[2px]">
+            <div className=" flex flex-col gap-[2px] ml-1">
               <span
-                className="ml-1 cursor-pointer w-full text-center"
+                className="ml-1 cursor-pointer "
                 title="Clear Filter"
                 onClick={() => {
                   column.setFilterValue("");
@@ -1436,7 +1463,7 @@ const AllTasks = () => {
               <select
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                className=" ml-2 font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className=" font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
                 <option value="">Select</option>
                 {users?.map((lead, i) => (
@@ -1473,10 +1500,10 @@ const AllTasks = () => {
         filterFn: "equals",
         filterSelectOptions: users.map((lead) => lead),
         filterVariant: "select",
-        size: 90,
+        size: 80,
         minSize: 60,
         maxSize: 120,
-        grow: true,
+        grow: false,
       },
       {
         accessorKey: "estimate_Time",
@@ -1608,7 +1635,7 @@ const AllTasks = () => {
     columns,
     // data: active === "All" && !active1 && !filterId ? userTaskData : filterData,
     data:
-      (active === "All" && !active1 && !filterId ? userTaskData : filterData) ||
+      (active === "All" && !active1 && !filterId ? tasksData : filterData) ||
       [],
     enableStickyHeader: true,
     enableStickyFooter: true,

@@ -594,10 +594,10 @@ export default function AllJobs() {
     () => [
       {
         accessorKey: "companyName",
-        minSize: 170,
+        minSize: 190,
         maxSize: 300,
         size: 230,
-        grow: true,
+        grow: false,
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">
@@ -614,7 +614,6 @@ export default function AllJobs() {
                 type="search"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                placeholder="Search Company..."
                 className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               />
             </div>
@@ -661,7 +660,6 @@ export default function AllJobs() {
                 type="search"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                placeholder="Search Company..."
                 className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               />
             </div>
@@ -673,10 +671,10 @@ export default function AllJobs() {
 
           return cellValue.startsWith(filterValue.toLowerCase());
         },
-        size: 110,
+        size: 120,
         minSize: 80,
         maxSize: 150,
-        grow: true,
+        grow: false,
       },
 
       {
@@ -733,10 +731,10 @@ export default function AllJobs() {
         filterFn: "equals",
         filterSelectOptions: users.map((jobhold) => jobhold),
         filterVariant: "select",
-        size: 100,
+        size: 110,
         minSize: 80,
         maxSize: 150,
-        grow: true,
+        grow: false,
       },
       {
         accessorKey: "job.jobName",
@@ -789,7 +787,7 @@ export default function AllJobs() {
         ],
 
         filterVariant: "select",
-        size: 120,
+        size: 110,
         minSize: 100,
         maxSize: 140,
         grow: true,
@@ -812,7 +810,6 @@ export default function AllJobs() {
                 type="search"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                placeholder="Search Hours"
                 className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               />
             </div>
@@ -855,7 +852,7 @@ export default function AllJobs() {
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
-                className="ml-1 w-full text-center cursor-pointer"
+                className="ml-1 cursor-pointer"
                 title="Clear Filter"
                 onClick={() => {
                   setFilterValue("");
@@ -869,13 +866,13 @@ export default function AllJobs() {
                   type="month"
                   value={customDate}
                   onChange={handleCustomDateChange}
-                  className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
+                  className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
                 />
               ) : (
                 <select
                   value={filterValue}
                   onChange={handleFilterChange}
-                  className="h-[1.8rem] font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
+                  className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
                 >
                   <option value="">Select</option>
                   {column.columnDef.filterSelectOptions.map((option, idx) => (
@@ -903,7 +900,7 @@ export default function AllJobs() {
           };
 
           return (
-            <div className="w-full flex items-center justify-center">
+            <div className="w-full ">
               {!showYearend ? (
                 <p onDoubleClick={() => setShowYearend(true)}>
                   {format(new Date(date), "dd-MMM-yyyy")}
@@ -914,7 +911,7 @@ export default function AllJobs() {
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   onBlur={(e) => handleDateChange(e.target.value)}
-                  className={`h-[2rem] w-[6rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none `}
+                  className={`h-[2rem]  cursor-pointer w-full text-center rounded-md border border-gray-200 outline-none `}
                 />
               )}
             </div>
@@ -984,10 +981,10 @@ export default function AllJobs() {
           "Custom date",
         ],
         filterVariant: "custom",
-        size: 90,
+        size: 100,
         minSize: 80,
         maxSize: 140,
-        grow: true,
+        grow: false,
       },
 
       // Job DeadLine
@@ -1017,7 +1014,7 @@ export default function AllJobs() {
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
-                className="ml-1 w-full text-center cursor-pointer"
+                className="ml-1 cursor-pointer"
                 title="Clear Filter"
                 onClick={() => {
                   setFilterValue("");
@@ -1031,13 +1028,13 @@ export default function AllJobs() {
                   type="month"
                   value={customDate}
                   onChange={handleCustomDateChange}
-                  className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
+                  className="h-[1.8rem] font-normal w-full   cursor-pointer rounded-md border border-gray-200 outline-none"
                 />
               ) : (
                 <select
                   value={filterValue}
                   onChange={handleFilterChange}
-                  className="h-[1.8rem] font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
+                  className="h-[1.8rem] font-normal w-full  cursor-pointer rounded-md border border-gray-200 outline-none"
                 >
                   <option value="">Select</option>
                   {column.columnDef.filterSelectOptions.map((option, idx) => (
@@ -1069,7 +1066,7 @@ export default function AllJobs() {
           const isExpired = cellDate < today;
 
           return (
-            <div className="w-full flex items-center justify-center">
+            <div className="w-full ">
               {!showDeadline ? (
                 <p onDoubleClick={() => setShowDeadline(true)}>
                   {format(new Date(date), "dd-MMM-yyyy")}
@@ -1080,7 +1077,7 @@ export default function AllJobs() {
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   onBlur={(e) => handleDateChange(e.target.value)}
-                  className={`h-[2rem] w-[6rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none ${
+                  className={`h-[2rem] cursor-pointer w-full text-center rounded-md border border-gray-200 outline-none ${
                     isExpired ? "text-red-500" : ""
                   }`}
                 />
@@ -1152,10 +1149,10 @@ export default function AllJobs() {
           "Custom date",
         ],
         filterVariant: "custom",
-        size: 90,
+        size: 100,
         minSize: 80,
         maxSize: 140,
-        grow: true,
+        grow: false,
       },
 
       //  Current Date
@@ -1184,7 +1181,7 @@ export default function AllJobs() {
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
-                className="ml-1 w-full text-center cursor-pointer"
+                className="ml-1 cursor-pointer"
                 title="Clear Filter"
                 onClick={() => {
                   setFilterValue("");
@@ -1198,13 +1195,13 @@ export default function AllJobs() {
                   type="month"
                   value={customDate}
                   onChange={handleCustomDateChange}
-                  className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
+                  className="h-[1.8rem] font-normal w-full    cursor-pointer rounded-md border border-gray-200 outline-none"
                 />
               ) : (
                 <select
                   value={filterValue}
                   onChange={handleFilterChange}
-                  className="h-[1.8rem] font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
+                  className="h-[1.8rem] font-normal w-full  cursor-pointer rounded-md border border-gray-200 outline-none"
                 >
                   <option value="">Select</option>
                   {column.columnDef.filterSelectOptions.map((option, idx) => (
@@ -1232,7 +1229,7 @@ export default function AllJobs() {
           };
 
           return (
-            <div className="w-full flex items-center justify-center">
+            <div className="w-full ">
               {!showCurrentDate ? (
                 <p onDoubleClick={() => setShowCurrentDate(true)}>
                   {format(new Date(date), "dd-MMM-yyyy")}
@@ -1243,7 +1240,7 @@ export default function AllJobs() {
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   onBlur={(e) => handleDateChange(e.target.value)}
-                  className={`h-[2rem] w-[6rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none `}
+                  className={`h-[2rem] w-full  cursor-pointer text-center rounded-md border border-gray-200 outline-none `}
                 />
               )}
             </div>
@@ -1302,14 +1299,14 @@ export default function AllJobs() {
           "In 15 days",
           "30 Days",
           "60 Days",
-          "Last 12 months",
-          // "Custom Date",
+          // "Last 12 months",
+          "Custom Date",
         ],
         filterVariant: "select",
-        size: 90,
+        size: 100,
         minSize: 80,
         maxSize: 140,
-        grow: true,
+        grow: false,
       },
       //  -----Due & Over Due Status----->
       {
@@ -1319,7 +1316,7 @@ export default function AllJobs() {
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
-                className="ml-1 w-full text-center cursor-pointer"
+                className="ml-1 cursor-pointer"
                 title="Clear Filter"
                 onClick={() => {
                   column.setFilterValue("");
@@ -1349,7 +1346,7 @@ export default function AllJobs() {
           );
 
           return (
-            <div className="w-full flex items-center justify-center">
+            <div className="w-full ">
               <span
                 className={`text-white   rounded-[2rem] ${
                   status === "Due"
@@ -1361,7 +1358,6 @@ export default function AllJobs() {
               >
                 {status}
               </span>
-              .
             </div>
           );
         },
@@ -1378,7 +1374,7 @@ export default function AllJobs() {
         size: 90,
         minSize: 70,
         maxSize: 120,
-        grow: true,
+        grow: false,
       },
       //
       {
@@ -1396,7 +1392,7 @@ export default function AllJobs() {
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
-                className="ml-1 w-full text-center cursor-pointer"
+                className="ml-1 cursor-pointer"
                 title="Clear Filter"
                 onClick={() => {
                   column.setFilterValue("");
@@ -1454,6 +1450,7 @@ export default function AllJobs() {
         ],
         filterVariant: "select",
         size: 110,
+        grow: false,
       },
       {
         accessorKey: "job.lead",
@@ -1461,7 +1458,7 @@ export default function AllJobs() {
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
-                className="ml-1 w-full text-center cursor-pointer"
+                className="  cursor-pointer"
                 title="Clear Filter"
                 onClick={() => {
                   column.setFilterValue("");
@@ -1472,7 +1469,7 @@ export default function AllJobs() {
               <select
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] ml-1 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className="font-normal h-[1.8rem] w-full cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
                 <option value="">Select</option>
                 {users?.map((lead, i) => (
@@ -1485,10 +1482,10 @@ export default function AllJobs() {
           );
         },
         Cell: ({ cell, row }) => {
-          const leadValue = cell.getValue(); // Get the current lead value for the row
+          const leadValue = cell.getValue();
 
           return (
-            <div className="w-full flex items-center justify-center">
+            <div className="w-full">
               <select
                 value={leadValue || ""}
                 onChange={(e) =>
@@ -1512,7 +1509,7 @@ export default function AllJobs() {
         size: 90,
         minSize: 70,
         maxSize: 140,
-        grow: true,
+        grow: false,
       },
       {
         accessorKey: "totalTime",

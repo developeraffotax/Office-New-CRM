@@ -790,7 +790,7 @@ export default function AllJobs() {
         size: 110,
         minSize: 100,
         maxSize: 140,
-        grow: true,
+        grow: false,
       },
       {
         accessorKey: "totalHours",
@@ -1371,7 +1371,7 @@ export default function AllJobs() {
         },
         filterSelectOptions: ["Overdue", "Due"],
         filterVariant: "select",
-        size: 90,
+        size: 100,
         minSize: 70,
         maxSize: 120,
         grow: false,

@@ -743,7 +743,7 @@ const AllTasks = () => {
         minSize: 150,
         maxSize: 200,
         size: 160,
-        grow: true,
+        grow: false,
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">
@@ -936,7 +936,7 @@ const AllTasks = () => {
         },
         size: 390,
         minSize: 200,
-        maxSize: 450,
+        maxSize: 400,
         grow: true,
       },
       // Hours
@@ -978,6 +978,7 @@ const AllTasks = () => {
           return cellValue.startsWith(filterValue.toLowerCase());
         },
         size: 70,
+        grow: false,
       },
       // Start Date
 
@@ -1372,7 +1373,7 @@ const AllTasks = () => {
         },
         filterSelectOptions: ["Overdue", "Due"],
         filterVariant: "select",
-        size: 90,
+        size: 100,
         minSize: 90,
         maxSize: 110,
         grow: false,

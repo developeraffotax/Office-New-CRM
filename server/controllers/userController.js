@@ -132,6 +132,7 @@ export const loginUser = async (req, res) => {
         isActive: user.isActive,
         role: user.role,
         avatar: user.avatar,
+        access: user.access,
       },
       token: token,
     });

@@ -153,11 +153,12 @@ export default function Profile() {
                 <input
                   type="text"
                   required
+                  disabled
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className={`${style.input} w-full`}
+                  className={`${style.input} w-full pointer-events-none cursor-not-allowed`}
                 />
-                <span>Name</span>
+                {/* <span>Name</span> */}
               </div>
 
               <div className="inputBox">

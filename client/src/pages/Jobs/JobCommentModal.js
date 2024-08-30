@@ -175,6 +175,7 @@ export default function JobCommentModal({
       if (data) {
         setComment("");
         getSingleComment();
+        getTasks1();
         setLoading(false);
         toast.success("Comment Posted!");
         // Send Socket Notification

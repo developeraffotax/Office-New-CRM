@@ -167,6 +167,7 @@ export default function Sidebar({ hide, setHide }) {
             </div>
           </div>
           {/* 4 */}
+          {/* {auth.user.access === undefined && auth.user.role !== "Admin" && ( )} */}
           <div
             className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
             onClick={() => {
@@ -202,6 +203,7 @@ export default function Sidebar({ hide, setHide }) {
               )}
             </div>
           </div>
+
           {/* 5 */}
           <div
             className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"

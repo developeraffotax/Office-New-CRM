@@ -73,11 +73,11 @@ const taskSchema = new mongoose.Schema(
     },
     startDate: {
       type: Date,
-      default: new Date(),
+      default: () => new Date(),
     },
     deadline: {
       type: Date,
-      default: new Date(),
+      default: () => new Date(),
     },
     status: {
       type: String,

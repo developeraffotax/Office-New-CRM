@@ -68,6 +68,7 @@ const AllTasks = () => {
   const [showCompleted, setShowCompleted] = useState(false);
   const [taskId, setTaskId] = useState("");
   const [tasksData, setTasksData] = useState([]);
+  const [userTaskData, setUserTaskData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [note, setNote] = useState("");
   // Timer
@@ -103,7 +104,7 @@ const AllTasks = () => {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers(data?.users);
+      setUsers(data?.users.filter((item) => item.access === "task"));
       setUserName(data?.users.map((user) => user.name));
     } catch (error) {
       console.log(error);
@@ -141,6 +142,17 @@ const AllTasks = () => {
     // eslint-disable-next-line
   }, [auth]);
 
+  useEffect(() => {
+    socketId.on("newProject", () => {
+      getAllProjects();
+    });
+
+    return () => {
+      socketId.off("newProject", getAllProjects);
+    };
+    // eslint-disable-next-line
+  }, [socketId]);
+
   // -------Get All Tasks----->
   const getAllTasks = async () => {
     setLoading(true);
@@ -150,15 +162,15 @@ const AllTasks = () => {
       );
 
       setTasksData(data?.tasks);
-      if (auth.user.role === "Admin") {
-        setTasksData(data?.tasks);
-      } else {
-        const filteredTasks = data?.tasks?.filter(
-          (item) => item.jobHolder.trim() === auth.user.name.trim()
-        );
+      // if (auth.user.role === "Admin") {
+      //   setTasksData(data?.tasks);
+      // } else {
+      //   const filteredTasks = data?.tasks?.filter(
+      //     (item) => item.jobHolder.trim() === auth.user.name.trim()
+      //   );
 
-        setTasksData(filteredTasks);
-      }
+      //   setTasksData(filteredTasks);
+      // }
 
       setLoading(false);
     } catch (error) {
@@ -172,6 +184,27 @@ const AllTasks = () => {
     // eslint-disable-next-line
   }, []);
 
+  useEffect(() => {
+    if (auth && auth?.user) {
+      if (auth.user.role === "Admin") {
+        setUserTaskData(tasksData);
+      } else {
+        // const filteredTasks = tasksData?.filter(
+        //   (item) => item.jobHolder.trim() === auth.user.name.trim()
+        // );
+
+        const filteredTasks = tasksData.filter((task) => {
+          return task.project?.users_list?.some(
+            (user) => user._id === auth.user.id
+          );
+        });
+
+        setUserTaskData(filteredTasks);
+      }
+    }
+    //eslint-disable-next-line
+  }, [auth, tasksData]);
+
   // ---------------Get Task on WithoutLoad-----
   const getTasks1 = async () => {
     try {
@@ -180,15 +213,6 @@ const AllTasks = () => {
       );
 
       setTasksData(data?.tasks);
-      if (auth.user.role === "Admin") {
-        setTasksData(data?.tasks);
-      } else {
-        const filteredTasks = data?.tasks?.filter(
-          (item) => item.jobHolder.trim() === auth.user.name.trim()
-        );
-
-        setTasksData(filteredTasks);
-      }
     } catch (error) {
       console.log(error);
     }
@@ -234,6 +258,9 @@ const AllTasks = () => {
         socketId.emit("addTask", {
           note: "New Task Added",
         });
+        socketId.emit("addproject", {
+          note: "New Project Added",
+        });
       }
     } catch (error) {
       console.log(error);
@@ -276,6 +303,9 @@ const AllTasks = () => {
         socketId.emit("addTask", {
           note: "New Task Added",
         });
+        socketId.emit("addproject", {
+          note: "New Project Added",
+        });
       }
     } catch (error) {
       console.log(error);
@@ -286,9 +316,9 @@ const AllTasks = () => {
 
   // ---------Total Hours-------->
   useEffect(() => {
-    if (active === "All" && !active1) {
+    if (active === "All") {
       if (filterData) {
-        const totalHours = tasksData.reduce(
+        const totalHours = userTaskData.reduce(
           (sum, client) => sum + Number(client.hours),
           0
         );
@@ -296,19 +326,19 @@ const AllTasks = () => {
       }
     } else {
       if (filterData) {
-        const totalHours = filterData.reduce(
+        const totalHours = userTaskData.reduce(
           (sum, client) => sum + Number(client.hours),
           0
         );
         setTotalHours(totalHours.toFixed(0));
       }
     }
-  }, [filterData, tasksData, active, active1]);
+  }, [userTaskData, filterData, active, active1, activeBtn]);
 
   // ------------Filter By Projects---------->
   const getProjectsCount = (project) => {
     if (project === "All") {
-      return tasksData?.length;
+      return userTaskData?.length;
     }
     return tasksData.filter((item) => item?.project?.projectName === project)
       ?.length;
@@ -326,23 +356,23 @@ const AllTasks = () => {
 
   // -------Due & Overdue count------->
   const getDueAndOverdueCountByDepartment = (project) => {
-    const filteredData = tasksData.filter(
+    const filteredData = tasksData?.filter(
       (item) => item.project?.projectName === project || project === "All"
     );
 
-    const dueCount = filteredData.filter(
+    const dueCount = filteredData?.filter(
       (item) => getStatus(item.startDate, item.deadline) === "Due"
-    ).length;
-    const overdueCount = filteredData.filter(
+    )?.length;
+    const overdueCount = filteredData?.filter(
       (item) => getStatus(item.startDate, item.deadline) === "Overdue"
-    ).length;
+    )?.length;
 
     return { due: dueCount, overdue: overdueCount };
   };
 
   // --------------Status Length---------->
   const getStatusCount = (status, projectName) => {
-    return tasksData.filter((item) =>
+    return tasksData?.filter((item) =>
       projectName === "All"
         ? item?.status === status
         : item?.status === status && item?.project?.projectName === projectName
@@ -355,7 +385,7 @@ const AllTasks = () => {
     setFilterData("");
 
     if (value !== "All") {
-      const filteredData = tasksData.filter(
+      const filteredData = tasksData?.filter(
         (item) =>
           item.project?.projectName === value ||
           item.status === value ||
@@ -390,7 +420,7 @@ const AllTasks = () => {
           getStatus(item.startDate, item.deadline) === value
       );
     } else {
-      filteredData = tasksData.filter((item) => {
+      filteredData = tasksData?.filter((item) => {
         const jobMatches = item.project?.projectName === proj;
         const statusMatches = item.status === value;
         const holderMatches = item.jobHolder === value;
@@ -691,7 +721,15 @@ const AllTasks = () => {
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">
-              <span className="ml-1">Project</span>
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Project
+              </span>
               <select
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
@@ -719,7 +757,7 @@ const AllTasks = () => {
               }}
               className="w-full h-[2rem] rounded-md bg-transparent border-none outline-none"
             >
-              <option value="">Select Project</option>
+              <option value="">Select</option>
               {allProjects &&
                 allProjects.map((proj) => (
                   <option value={proj._id} key={proj._id}>
@@ -741,13 +779,21 @@ const AllTasks = () => {
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">
-              <span className="ml-1">Job Holder</span>
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Job Holder
+              </span>
               <select
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
                 className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
-                <option value="">Select JobHolder</option>
+                <option value="">Select</option>
                 {users?.map((jobhold, i) => (
                   <option key={i} value={jobhold?.name}>
                     {jobhold?.name}
@@ -792,7 +838,15 @@ const AllTasks = () => {
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">
-              <span className="ml-1">Tasks</span>
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Tasks
+              </span>
               <input
                 type="search"
                 value={column.getFilterValue() || ""}
@@ -865,14 +919,22 @@ const AllTasks = () => {
         accessorKey: "hours",
         Header: ({ column }) => {
           return (
-            <div className=" flex flex-col gap-[2px]">
-              <span className="">Hrs</span>
+            <div className=" flex flex-col  w-full gap-[2px]">
+              <span
+                className="cursor-pointer w-full text-center"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Hrs
+              </span>
               <input
                 type="search"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
                 placeholder="Search Hours"
-                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className="font-normal  h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               />
             </div>
           );
@@ -891,7 +953,7 @@ const AllTasks = () => {
 
           return cellValue.startsWith(filterValue.toLowerCase());
         },
-        size: 80,
+        size: 70,
       },
       // Start Date
 
@@ -920,9 +982,12 @@ const AllTasks = () => {
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
-                className="cursor-pointer"
+                className="cursor-pointer w-full text-center"
                 title="Clear Filter"
-                onClick={() => setFilterValue("")}
+                onClick={() => {
+                  setFilterValue("");
+                  column.setFilterValue("");
+                }}
               >
                 Start Date
               </span>
@@ -1044,8 +1109,8 @@ const AllTasks = () => {
           "Custom date",
         ],
         filterVariant: "custom",
-        size: 110,
-        minSize: 80,
+        size: 90,
+        minSize: 90,
         maxSize: 140,
         grow: true,
       },
@@ -1077,9 +1142,12 @@ const AllTasks = () => {
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
-                className="cursor-pointer"
+                className=" w-full text-center cursor-pointer"
                 title="Clear Filter"
-                onClick={() => setFilterValue("")}
+                onClick={() => {
+                  setFilterValue("");
+                  column.setFilterValue("");
+                }}
               >
                 Deadline
               </span>
@@ -1213,48 +1281,6 @@ const AllTasks = () => {
         minSize: 80,
         maxSize: 140,
         grow: true,
-        // Filter: ({ column }) => {
-        //   const [filterValue, setFilterValue] = useState("Select");
-        //   const [customDate, setCustomDate] = useState(getCurrentMonthYear());
-
-        //   useEffect(() => {
-        //     if (filterValue === "Custom date") {
-        //       column.setFilterValue(customDate);
-        //     }
-        //     //eslint-disable-next-line
-        //   }, [customDate, filterValue]);
-
-        //   const handleFilterChange = (e) => {
-        //     setFilterValue(e.target.value);
-        //     column.setFilterValue(e.target.value);
-        //   };
-
-        //   const handleCustomDateChange = (e) => {
-        //     setCustomDate(e.target.value);
-        //     column.setFilterValue(e.target.value);
-        //   };
-
-        //   return filterValue === "Custom date" ? (
-        //     <input
-        //       type="month"
-        //       value={customDate}
-        //       onChange={handleCustomDateChange}
-        //       className="h-[2rem] w-[9rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none"
-        //     />
-        //   ) : (
-        //     <select
-        //       value={filterValue}
-        //       onChange={handleFilterChange}
-        //       className="h-[2rem] w-[9rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none"
-        //     >
-        //       {column.columnDef.filterSelectOptions.map((option, idx) => (
-        //         <option key={idx} value={option}>
-        //           {option}
-        //         </option>
-        //       ))}
-        //     </select>
-        //   );
-        // },
       },
       //  -----Due & Over Due Status----->
       {
@@ -1263,13 +1289,21 @@ const AllTasks = () => {
           const dateStatus = ["Overdue", "Due"];
           return (
             <div className=" flex flex-col gap-[2px]">
-              <span className="ml-1">Status</span>
+              <span
+                className="ml-1 cursor-pointer w-full text-center"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Status
+              </span>
               <select
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className="font-normal h-[1.8rem] w-full 1500px: ml-1 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
-                <option value="">Select Status</option>
+                <option value="">Select </option>
                 {dateStatus?.map((status, i) => (
                   <option key={i} value={status}>
                     {status}
@@ -1324,19 +1358,29 @@ const AllTasks = () => {
           const statusData = ["To do", "Progress", "Review", "On hold"];
           return (
             <div className=" flex flex-col gap-[2px]">
-              <span className="ml-1">Task Status</span>
-              <select
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              <span
+                className="ml-1 cursor-pointer w-full text-center"
+                title="Clear Filter "
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
               >
-                <option value="">Select Status</option>
-                {statusData?.map((status, i) => (
-                  <option key={i} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
+                Task Status
+              </span>
+              <div className="flex items-center justify-center w-full">
+                <select
+                  value={column.getFilterValue() || ""}
+                  onChange={(e) => column.setFilterValue(e.target.value)}
+                  className="ml-1 w-[8rem] font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select</option>
+                  {statusData?.map((status, i) => (
+                    <option key={i} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           );
         },
@@ -1380,13 +1424,21 @@ const AllTasks = () => {
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">
-              <span className="ml-1">Lead</span>
+              <span
+                className="ml-1 cursor-pointer w-full text-center"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Lead
+              </span>
               <select
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className=" ml-2 font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
-                <option value="">Select Lead</option>
+                <option value="">Select</option>
                 {users?.map((lead, i) => (
                   <option key={i} value={lead?.name}>
                     {lead?.name}
@@ -1428,7 +1480,7 @@ const AllTasks = () => {
       },
       {
         accessorKey: "estimate_Time",
-        header: "Est. Time",
+        header: "Budget",
         Cell: ({ cell, row }) => {
           const estimateTime = cell.getValue();
           return (
@@ -1442,7 +1494,17 @@ const AllTasks = () => {
       },
       {
         accessorKey: "timertracker",
-        header: "Time Tr.",
+        header: "Timer",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px] w-[5rem]">
+              <span className="ml-1 cursor-pointer w-full text-center">
+                Timer
+              </span>
+            </div>
+          );
+        },
+
         Cell: ({ cell, row }) => {
           // console.log("rowTask", row.original);
           return (
@@ -1471,7 +1533,7 @@ const AllTasks = () => {
             </div>
           );
         },
-        size: 70,
+        size: 90,
       },
       {
         accessorKey: "comments",
@@ -1544,11 +1606,14 @@ const AllTasks = () => {
 
   const table = useMaterialReactTable({
     columns,
-    data: active === "All" && !active1 && !filterId ? tasksData : filterData,
+    // data: active === "All" && !active1 && !filterId ? userTaskData : filterData,
+    data:
+      (active === "All" && !active1 && !filterId ? userTaskData : filterData) ||
+      [],
     enableStickyHeader: true,
     enableStickyFooter: true,
     // columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "820px" } },
+    muiTableContainerProps: { sx: { maxHeight: "809px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -1822,7 +1887,9 @@ const AllTasks = () => {
                 className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
                 onClick={() => {
                   setActive("All");
+                  setFilterData("");
                   setActiveBtn("");
+                  setActive1("");
                   setShowStatus(false);
                   setShowJobHolder(false);
                   setShowDue(false);

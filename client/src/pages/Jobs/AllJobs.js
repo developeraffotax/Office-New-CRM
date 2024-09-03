@@ -81,6 +81,7 @@ export default function AllJobs() {
   const [showCompleted, setShowCompleted] = useState(false);
   const [totalHours, setTotalHours] = useState("0");
   const [fLoading, setFLoading] = useState(false);
+  const commentStatusRef = useRef(null);
 
   // Extract the current path
   const currentPath = location.pathname;
@@ -306,7 +307,15 @@ export default function AllJobs() {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers(data?.users.map((user) => user.name));
+      // setUsers(data?.users.map((user) => user.name));
+      // setUsers(
+      //   data?.users?.filter((item) => item.access.includes("job")) || []
+      // );
+      setUsers(
+        data?.users
+          ?.filter((item) => item.access.includes("job"))
+          .map((user) => user.name) || []
+      );
     } catch (error) {
       console.log(error);
     }
@@ -589,6 +598,21 @@ export default function AllJobs() {
     download(csvConfig)(csv);
   };
 
+  // Close Comment Box to click anywhere
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        commentStatusRef.current &&
+        !commentStatusRef.current.contains(event.target)
+      ) {
+        setIsComment(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   //  --------------Table Columns Data--------->
   const columns = useMemo(
     () => [
@@ -796,7 +820,7 @@ export default function AllJobs() {
         accessorKey: "totalHours",
         Header: ({ column }) => {
           return (
-            <div className=" flex flex-col gap-[2px]">
+            <div className=" flex flex-col gap-[2px] w-[5.5rem] items-center justify-center pr-2 ">
               <span
                 className="ml-1 w-full text-center cursor-pointer"
                 title="Clear Filter"
@@ -806,12 +830,15 @@ export default function AllJobs() {
               >
                 Hrs
               </span>
-              <input
+              <span className="font-medium w-full text-center  px-1 py-1 rounded-md bg-gray-300/30 text-black">
+                {totalHours}
+              </span>
+              {/* <input
                 type="search"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
                 className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              />
+              /> */}
             </div>
           );
         },
@@ -1612,8 +1639,14 @@ export default function AllJobs() {
       },
     ],
     // eslint-disable-next-line
-    [users, play, auth, note]
+    [users, play, auth, note, totalHours]
   );
+
+  // Clear table Filter
+  const handleClearFilters = () => {
+    table.setColumnFilters([]);
+    table.setGlobalFilter("");
+  };
 
   const table = useMaterialReactTable({
     columns,
@@ -1623,7 +1656,7 @@ export default function AllJobs() {
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "820px" } },
+    muiTableContainerProps: { sx: { maxHeight: "810px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -1843,6 +1876,7 @@ export default function AllJobs() {
               setShowDue(false);
               setActive1("");
               setFilterId("");
+              handleClearFilters();
             }}
             title="Clear filters"
           >
@@ -1872,9 +1906,9 @@ export default function AllJobs() {
         {showJobHolder && activeBtn === "jobHolder" && (
           <>
             <div className="w-full  py-2 ">
-              <h3 className="text-[19px] font-semibold text-black">
+              {/* <h3 className="text-[19px] font-semibold text-black">
                 Job Holder Summary
-              </h3>
+              </h3> */}
               <div className="flex items-center flex-wrap gap-4">
                 {users?.map((user, i) => (
                   <div
@@ -1901,9 +1935,9 @@ export default function AllJobs() {
         {showDue && activeBtn === "due" && (
           <>
             <div className="w-full py-2">
-              <h3 className="text-[19px] font-semibold text-black">
+              {/* <h3 className="text-[19px] font-semibold text-black">
                 Date Status Summary
-              </h3>
+              </h3> */}
               <div className="flex items-center flex-wrap gap-4">
                 {dateStatus?.map((stat, i) => {
                   const { due, overdue } =
@@ -1938,9 +1972,9 @@ export default function AllJobs() {
         {showStatus && activeBtn === "status" && (
           <>
             <div className="w-full  py-2 ">
-              <h3 className="text-[19px] font-semibold text-black">
+              {/* <h3 className="text-[19px] font-semibold text-black">
                 Status Summary
-              </h3>
+              </h3> */}
               <div className="flex items-center flex-wrap gap-4">
                 {status?.map((stat, i) => (
                   <div
@@ -1975,9 +2009,9 @@ export default function AllJobs() {
                 <div className="h-full hidden1 overflow-y-scroll relative">
                   <MaterialReactTable table={table} />
                 </div>
-                <span className="absolute bottom-4 left-[34.5%] z-10 font-semibold text-[15px] text-gray-900">
+                {/* <span className="absolute bottom-4 left-[30.5%] z-10 font-semibold text-[15px] text-gray-900">
                   Total Hrs: {totalHours}
-                </span>
+                </span> */}
               </div>
             )}
           </>
@@ -2038,7 +2072,10 @@ export default function AllJobs() {
       {/* ------------Comment Modal---------*/}
 
       {isComment && (
-        <div className="fixed bottom-4 right-4 w-[30rem] max-h-screen z-[999]  flex items-center justify-center">
+        <div
+          ref={commentStatusRef}
+          className="fixed bottom-4 right-4 w-[30rem] max-h-screen z-[999]  flex items-center justify-center"
+        >
           <JobCommentModal
             setIsComment={setIsComment}
             jobId={jobId}

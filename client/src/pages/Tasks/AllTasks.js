@@ -91,6 +91,7 @@ const AllTasks = () => {
   const [projectName, setProjectName] = useState("");
   const [totalHours, setTotalHours] = useState("0");
   const [allProjects, setAllProjects] = useState([]);
+  const commentStatusRef = useRef(null);
 
   const dateStatus = ["Due", "Overdue"];
 
@@ -104,7 +105,10 @@ const AllTasks = () => {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers(data?.users.filter((item) => item.access === "task"));
+      setUsers(
+        data?.users?.filter((item) => item.access.includes("task")) || []
+      );
+
       setUserName(data?.users.map((user) => user.name));
     } catch (error) {
       console.log(error);
@@ -733,6 +737,21 @@ const AllTasks = () => {
     }
   };
 
+  // Close Comment Box to click anywhere
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        commentStatusRef.current &&
+        !commentStatusRef.current.contains(event.target)
+      ) {
+        setIsComment(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // ----------------------Table Data--------->
 
   const columns = useMemo(
@@ -944,7 +963,7 @@ const AllTasks = () => {
         accessorKey: "hours",
         Header: ({ column }) => {
           return (
-            <div className=" flex flex-col  w-full gap-[2px]">
+            <div className=" flex flex-col items-center justify-center  w-[4rem] pr-2  gap-[2px]">
               <span
                 className="cursor-pointer w-full text-center"
                 title="Clear Filter"
@@ -954,12 +973,15 @@ const AllTasks = () => {
               >
                 Hrs
               </span>
-              <input
+              <span className="font-medium w-full text-center px-1 py-1 ml-1 rounded-md bg-gray-300/30 text-black">
+                {totalHours}
+              </span>
+              {/* <input
                 type="search"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
                 className="font-normal  h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              />
+              /> */}
             </div>
           );
         },
@@ -1629,8 +1651,16 @@ const AllTasks = () => {
       },
     ],
     // eslint-disable-next-line
-    [users, play, note, auth, currentPath, projects, filterData]
+    [users, play, note, auth, currentPath, projects, filterData, totalHours]
   );
+
+  // Clear table Filter
+  const handleClearFilters = () => {
+    table.setColumnFilters([]);
+
+    table.setGlobalFilter("");
+    // table.resetColumnFilters();
+  };
 
   const table = useMaterialReactTable({
     columns,
@@ -1641,7 +1671,7 @@ const AllTasks = () => {
     enableStickyHeader: true,
     enableStickyFooter: true,
     // columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "809px" } },
+    muiTableContainerProps: { sx: { maxHeight: "805px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -1922,6 +1952,7 @@ const AllTasks = () => {
                   setShowJobHolder(false);
                   setShowDue(false);
                   setFilterId("");
+                  handleClearFilters();
                 }}
                 title="Clear filters"
               >
@@ -1951,9 +1982,9 @@ const AllTasks = () => {
             {showJobHolder && activeBtn === "jobHolder" && (
               <>
                 <div className="w-full  py-2 ">
-                  <h3 className="text-[19px] font-semibold text-black">
+                  {/* <h3 className="text-[19px] font-semibold text-black">
                     Job Holder Summary
-                  </h3>
+                  </h3> */}
                   <div className="flex items-center flex-wrap gap-4">
                     {users?.map((user, i) => (
                       <div
@@ -1980,9 +2011,9 @@ const AllTasks = () => {
             {showDue && activeBtn === "due" && (
               <>
                 <div className="w-full py-2">
-                  <h3 className="text-[19px] font-semibold text-black">
+                  {/* <h3 className="text-[19px] font-semibold text-black">
                     Date Status Summary
-                  </h3>
+                  </h3> */}
                   <div className="flex items-center flex-wrap gap-4">
                     {dateStatus?.map((stat, i) => {
                       const { due, overdue } =
@@ -2017,9 +2048,9 @@ const AllTasks = () => {
             {showStatus && activeBtn === "status" && (
               <>
                 <div className="w-full  py-2 ">
-                  <h3 className="text-[19px] font-semibold text-black">
+                  {/* <h3 className="text-[19px] font-semibold text-black">
                     Status Summary
-                  </h3>
+                  </h3> */}
                   <div className="flex items-center flex-wrap gap-4">
                     {status?.map((stat, i) => (
                       <div
@@ -2052,9 +2083,9 @@ const AllTasks = () => {
                 <div className="h-full hidden1 overflow-y-scroll relative">
                   <MaterialReactTable table={table} />
                 </div>
-                <span className="absolute bottom-4 left-[38%] z-10 font-semibold text-[15px] text-gray-900">
+                {/* <span className="absolute bottom-4 left-[42.6%] z-10 font-semibold text-[15px] text-gray-900">
                   Total Hrs: {totalHours}
-                </span>
+                </span> */}
               </div>
             )}
           </div>
@@ -2090,7 +2121,10 @@ const AllTasks = () => {
           {/* ------------Comment Modal---------*/}
 
           {isComment && (
-            <div className="fixed bottom-4 right-4 w-[30rem] max-h-screen z-[999]  flex items-center justify-center">
+            <div
+              ref={commentStatusRef}
+              className="fixed bottom-4 right-4 w-[30rem] max-h-screen z-[999]  flex items-center justify-center"
+            >
               <JobCommentModal
                 setIsComment={setIsComment}
                 jobId={commentTaskId}

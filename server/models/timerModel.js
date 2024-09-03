@@ -5,8 +5,13 @@ const timerSchema = new mongoose.Schema(
     startTime: {
       type: String,
     },
+
     endTime: {
       type: String,
+    },
+    date: {
+      type: Date,
+      default: () => new Date(),
     },
     type: {
       type: String,

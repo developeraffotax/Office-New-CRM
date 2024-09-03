@@ -11,9 +11,9 @@ import {
   useMaterialReactTable,
 } from "material-react-table";
 import { mkConfig, generateCsv, download } from "export-to-csv";
-import { format } from "date-fns";
-import { GrCopy } from "react-icons/gr";
+import { differenceInSeconds, format } from "date-fns";
 import { AiTwotoneDelete } from "react-icons/ai";
+import { AiOutlineEdit } from "react-icons/ai";
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -39,8 +39,20 @@ export default function TimeSheet() {
   const [selectedCompany, setSelectedComapany] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [selectedDay, setSelectedDay] = useState("");
-  const [active, setActive] = useState("");
-  console.log("selectedUser:", selectedUser);
+  const [active, setActive] = useState("All");
+  const [filterData, setFilterData] = useState([]);
+  console.log("timerData:", timerData);
+
+  const departments = [
+    "All",
+    "Bookkeeping",
+    "Payroll",
+    "Vat Return",
+    "Personal Tax",
+    "Accounts",
+    "Company Sec",
+    "Address",
+  ];
 
   //   Get All Timer Data
   const getAllTimeSheetData = async () => {
@@ -110,49 +122,87 @@ export default function TimeSheet() {
   const columns = useMemo(
     () => [
       {
-        accessorKey: "project.createdAt",
+        accessorKey: "createdAt",
         header: "Date",
-        minSize: 70,
-        maxSize: 150,
-        size: 90,
-        grow: true,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Date
+              </span>
+              <input
+                type="date"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const date = row.original.createdAt;
-          // console.log("Date", date);
-
           return (
             <div className="w-full flex items-center justify-center">
               <span>{format(new Date(date), "dd-MMM-yyyy")}</span>
             </div>
           );
         },
-        filterFn: "equals",
-        // filterSelectOptions: allProjects?.map(
-        //   (project) => project?.projectName
-        // ),
-        filterVariant: "select",
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.startsWith(filterValue.toLowerCase());
+        },
+
+        size: 100,
+        minSize: 70,
+        maxSize: 110,
+        grow: false,
       },
       {
-        accessorKey: "jobHolder",
+        accessorKey: "JobHolderName",
         header: "Job Holder",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Job Holder
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {users?.map((jobhold, i) => (
+                  <option key={i} value={jobhold?.name}>
+                    {jobhold?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const jobholder = cell.getValue();
 
           return (
-            <select
-              value={jobholder || ""}
-              className="w-full h-[2rem] rounded-md border-none  outline-none"
-              // onChange={(e) =>
-              //   updateTaskJLS(row.original?._id, e.target.value, "", "")
-              // }
-            >
-              <option value="empty"></option>
-              {/* {users?.map((jobHold, i) => (
-                <option value={jobHold?.name} key={i}>
-                  {jobHold.name}
-                </option>
-              ))} */}
-            </select>
+            <div className="w-full flex ">
+              <div className="">
+                <span className="text-center">{jobholder}</span>
+              </div>
+            </div>
           );
         },
         filterFn: "equals",
@@ -161,11 +211,377 @@ export default function TimeSheet() {
         size: 90,
         minSize: 80,
         maxSize: 130,
-        grow: true,
+        grow: false,
       },
+      {
+        accessorKey: "clientName",
+        header: "Client",
+        minSize: 120,
+        maxSize: 200,
+        size: 150,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Client
+              </span>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const clientName = cell.getValue();
+          const projectName = row.original.projectName;
+
+          return (
+            <div className="w-full flex ">
+              <span>{clientName || projectName}</span>
+            </div>
+          );
+        },
+        filterFn: "equals",
+
+        filterVariant: "select",
+      },
+      {
+        accessorKey: "department",
+        filterFn: "equals",
+        Header: ({ column }) => {
+          const deparments = [
+            "Bookkeeping",
+            "Payroll",
+            "Vat Return",
+            "Personal Tax",
+            "Accounts",
+            "Company Sec",
+            "Address",
+          ];
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Departments
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {deparments?.map((depart, i) => (
+                  <option key={i} value={depart}>
+                    {depart}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        filterSelectOptions: [
+          "Bookkeeping",
+          "Payroll",
+          "Vat Return",
+          "Personal Tax",
+          "Accounts",
+          "Company Sec",
+          "Address",
+        ],
+
+        filterVariant: "select",
+        size: 100,
+        minSize: 90,
+        maxSize: 140,
+        grow: false,
+      },
+      {
+        accessorKey: "time",
+        header: "Time",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Time
+              </span>
+              <input
+                type="date"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const startTime = row.original.startTime;
+          const endTime = row.original.endTime;
+          return (
+            <div className="w-full flex ">
+              <span>
+                {format(new Date(startTime), "hh:mm:ss a")} -{" "}
+                {format(new Date(endTime), "hh:mm:ss a")}
+              </span>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.startsWith(filterValue.toLowerCase());
+        },
+
+        size: 190,
+        minSize: 100,
+        maxSize: 220,
+        grow: false,
+      },
+      // Days
+      // {
+      //   accessorKey: "monday",
+      //   header: "Mon",
+      //   Header: ({ column }) => {
+      //     return (
+      //       <div className=" flex flex-col gap-[2px]">
+      //         <span
+      //           className="ml-1 cursor-pointer"
+      //           title="Clear Filter"
+      //           onClick={() => {
+      //             column.setFilterValue("");
+      //           }}
+      //         >
+      //           Mon
+      //         </span>
+      //       </div>
+      //     );
+      //   },
+      //   Cell: ({ cell, row }) => {
+      //     const createdDate = row.original.createdAt;
+      //     const startTime = new Date(row.original.startTime);
+      //     const endTime = new Date(row.original.endTime);
+
+      //     // Calculate the difference in seconds
+      //     const differenceInSecondsTotal = differenceInSeconds(
+      //       endTime,
+      //       startTime
+      //     );
+
+      //     let formattedTime = "";
+
+      //     if (differenceInSecondsTotal < 60) {
+      //       formattedTime = "";
+      //     } else if (differenceInSecondsTotal < 3600) {
+      //       const minutes = Math.floor(differenceInSecondsTotal / 60);
+      //       formattedTime = `${minutes}m`;
+      //     } else {
+      //       const hours = Math.floor(differenceInSecondsTotal / 3600);
+      //       const minutes = Math.floor((differenceInSecondsTotal % 3600) / 60);
+      //       formattedTime = `${hours}:${String(minutes).padStart(2, "0")}h`;
+      //     }
+      //     return (
+      //       <div className="w-full flex items-center justify-center">
+      //         <span>{formattedTime}</span>
+      //       </div>
+      //     );
+      //   },
+      //   filterFn: (row, columnId, filterValue) => {
+      //     const cellValue =
+      //       row.original[columnId]?.toString().toLowerCase() || "";
+      //     return cellValue.startsWith(filterValue.toLowerCase());
+      //   },
+
+      //   size: 50,
+      //   minSize: 40,
+      //   maxSize: 100,
+      //   grow: false,
+      // },
+      {
+        accessorKey: "monday",
+        header: "Mon",
+        Cell: ({ row }) => {
+          const createdDate = new Date(row.original.createdAt);
+          const startTime = row.original.startTime;
+          const endTime = row.original.endTime;
+
+          const dayOfWeek = createdDate.getDay();
+
+          if (dayOfWeek === 1 && startTime) {
+            return renderTime(startTime, endTime);
+          }
+
+          return null;
+        },
+        size: 50,
+        minSize: 40,
+        maxSize: 100,
+        grow: false,
+      },
+      {
+        accessorKey: "tuesday",
+        header: "Tue",
+        Cell: ({ row }) => {
+          const createdDate = new Date(row.original.createdAt);
+          const startTime = row.original.startTime;
+          const endTime = row.original.endTime;
+
+          const dayOfWeek = createdDate.getDay();
+
+          if (dayOfWeek === 2 && startTime) {
+            return renderTime(startTime, endTime);
+          }
+
+          return null;
+        },
+        size: 50,
+        minSize: 40,
+        maxSize: 100,
+        grow: false,
+      },
+      {
+        accessorKey: "wednesday",
+        header: "Wed",
+        Cell: ({ row }) => {
+          const createdDate = new Date(row.original.createdAt);
+          const startTime = row.original.startTime;
+          const endTime = row.original.endTime;
+
+          const dayOfWeek = createdDate.getDay();
+
+          if (dayOfWeek === 3 && startTime) {
+            return renderTime(startTime, endTime);
+          }
+
+          return null;
+        },
+        size: 50,
+        minSize: 40,
+        maxSize: 100,
+        grow: false,
+      },
+      {
+        accessorKey: "thursday",
+        header: "Thu",
+        Cell: ({ row }) => {
+          const createdDate = new Date(row.original.createdAt);
+          const startTime = row.original.startTime;
+          const endTime = row.original.endTime;
+
+          const dayOfWeek = createdDate.getDay();
+
+          if (dayOfWeek === 4 && startTime) {
+            return renderTime(startTime, endTime);
+          }
+
+          return null;
+        },
+        size: 50,
+        minSize: 40,
+        maxSize: 100,
+        grow: false,
+      },
+      {
+        accessorKey: "friday",
+        header: "Fri",
+        Cell: ({ row }) => {
+          const createdDate = new Date(row.original.createdAt);
+          const startTime = row.original.startTime;
+          const endTime = row.original.endTime;
+
+          const dayOfWeek = createdDate.getDay();
+
+          if (dayOfWeek === 5 && startTime) {
+            return renderTime(startTime, endTime);
+          }
+
+          return null;
+        },
+        size: 50,
+        minSize: 40,
+        maxSize: 100,
+        grow: false,
+      },
+      {
+        accessorKey: "saturday",
+        header: "Sat",
+        Cell: ({ row }) => {
+          const createdDate = new Date(row.original.createdAt);
+          const startTime = row.original.startTime;
+          const endTime = row.original.endTime;
+
+          const dayOfWeek = createdDate.getDay();
+
+          if (dayOfWeek === 6 && startTime) {
+            return renderTime(startTime, endTime);
+          }
+
+          return null;
+        },
+        size: 50,
+        minSize: 40,
+        maxSize: 100,
+        grow: false,
+      },
+      {
+        accessorKey: "sunday",
+        header: "Sun",
+        Cell: ({ row }) => {
+          const createdDate = new Date(row.original.createdAt);
+          const startTime = row.original.startTime;
+          const endTime = row.original.endTime;
+
+          const dayOfWeek = createdDate.getDay();
+
+          if (dayOfWeek === 0 && startTime) {
+            return renderTime(startTime, endTime);
+          }
+
+          return null;
+        },
+        size: 50,
+        minSize: 40,
+        maxSize: 100,
+        grow: false,
+      },
+      // Task
       {
         accessorKey: "task",
         header: "Tasks",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Tasks
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const task = row.original.task;
           const [allocateTask, setAllocateTask] = useState(task);
@@ -175,10 +591,6 @@ export default function TimeSheet() {
             setAllocateTask(row.original.task);
           }, [row.original]);
 
-          const updateAllocateTask = (task) => {
-            // updateAlocateTask(row.original._id, allocateTask, "", "");
-            setShowEdit(false);
-          };
           return (
             <div className="w-full h-full ">
               {showEdit ? (
@@ -187,22 +599,16 @@ export default function TimeSheet() {
                   placeholder="Enter Task..."
                   value={allocateTask}
                   onChange={(e) => setAllocateTask(e.target.value)}
-                  onBlur={(e) => updateAllocateTask(e.target.value)}
                   className="w-full h-[2.3rem] focus:border border-gray-300 px-1 outline-none rounded"
                 />
               ) : (
                 <div
                   className="w-full h-full flex items-center justify-start "
-                  onDoubleClick={() => setShowEdit(true)}
+                  title={allocateTask}
                 >
                   <p
-                    className="text-sky-500 cursor-pointer text-start hover:text-sky-600 "
+                    className="text-black cursor-pointer text-start  "
                     onDoubleClick={() => setShowEdit(true)}
-                    // onClick={() => {
-                    //   setTaskID(row.original._id);
-                    //   setProjectName(row.original.project.projectName);
-                    //   setShowDetail(true);
-                    // }}
                   >
                     {allocateTask}
                   </p>
@@ -211,28 +617,212 @@ export default function TimeSheet() {
             </div>
           );
         },
-        filterFn: "equals",
-        filterVariant: "select",
-        size: 360,
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+
+          return cellValue.startsWith(filterValue.toLowerCase());
+        },
+        size: 300,
         minSize: 200,
         maxSize: 400,
-        grow: true,
+        grow: false,
+      },
+      // Note
+      {
+        accessorKey: "note",
+        header: "Note",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Note
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const note = row.original.note;
+          // const notes = cell.getValue();
+          const [allocateNote, setAllocateNote] = useState(note);
+          const [showEdit, setShowEdit] = useState(false);
+
+          useEffect(() => {
+            setAllocateNote(row.original.task);
+          }, [row.original]);
+
+          return (
+            <div className="w-full h-full ">
+              {showEdit ? (
+                <input
+                  type="text"
+                  placeholder="Enter Task..."
+                  value={allocateNote}
+                  onChange={(e) => setAllocateNote(e.target.value)}
+                  className="w-full h-[2.3rem] focus:border border-gray-300 px-1 outline-none rounded"
+                />
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-start "
+                  onDoubleClick={() => setShowEdit(true)}
+                  title={note}
+                >
+                  <p
+                    className="text-black cursor-pointer text-start  "
+                    onDoubleClick={() => setShowEdit(true)}
+                  >
+                    {note}
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+
+          return cellValue.startsWith(filterValue.toLowerCase());
+        },
+        size: 200,
+        minSize: 150,
+        maxSize: 300,
+        grow: false,
+      },
+      {
+        accessorKey: "type",
+        header: "Type",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px] w-full items-center justify-center">
+              <span
+                className="ml-2 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Type
+              </span>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const type = row.original.type;
+          return (
+            <div className="w-full flex items-center justify-center">
+              <span>
+                {type === "Timer" ? (
+                  <span className="text-green-600 font-medium">{type}</span>
+                ) : (
+                  <span className="text-orange-600 font-medium">{type}</span>
+                )}
+              </span>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.startsWith(filterValue.toLowerCase());
+        },
+
+        size: 60,
+        minSize: 60,
+        maxSize: 90,
+        grow: false,
+      },
+      {
+        accessorKey: "actions",
+        header: "Actions",
+        Cell: ({ cell, row }) => {
+          return (
+            <div className="flex items-center justify-center gap-3 w-full h-full">
+              <span
+                className="text-[1rem] cursor-pointer"
+                title="Edit this column"
+              >
+                <AiOutlineEdit className="h-5 w-5 text-cyan-600 " />
+              </span>
+
+              <span className="text-[1rem] cursor-pointer" title="Delete Task!">
+                <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
+              </span>
+            </div>
+          );
+        },
+        size: 90,
       },
     ],
     // eslint-disable-next-line
     [auth]
   );
 
+  // Display Time in Correct Day
+  const renderTime = (startTime, endTime) => {
+    if (!startTime) {
+      return <span>No Start Time</span>;
+    }
+
+    // Convert startTime to Date object
+    const start = new Date(startTime);
+    if (isNaN(start.getTime())) {
+      return <span>Invalid Start Time</span>;
+    }
+
+    // If endTime is not available, use the current time
+    const end = endTime ? new Date(endTime) : new Date();
+    if (isNaN(end.getTime())) {
+      return <span>Invalid End Time</span>;
+    }
+
+    // Calculate the difference in seconds
+    const differenceInSecondsTotal = differenceInSeconds(end, start);
+
+    let formattedTime = "";
+
+    if (differenceInSecondsTotal < 60) {
+      // Display nothing if less than 1 minute
+      return null;
+    } else if (differenceInSecondsTotal < 3600) {
+      const minutes = Math.floor(differenceInSecondsTotal / 60);
+      formattedTime = `${minutes}m`; // Display in minutes if less than 1 hour
+    } else {
+      const hours = Math.floor(differenceInSecondsTotal / 3600);
+      const minutes = Math.floor((differenceInSecondsTotal % 3600) / 60);
+      formattedTime = `${hours}:${String(minutes).padStart(2, "0")}h`; // Display in hours and minutes if 1 hour or more
+    }
+
+    return (
+      <div className="w-full flex items-center justify-center">
+        <span>{formattedTime}</span>
+      </div>
+    );
+  };
+
   const table = useMaterialReactTable({
     columns,
-    data: timerData,
+    // data: active === "All" && !active1 && !filterId ? userTaskData : filterData,
+    data: (active === "All" ? timerData : filterData) || [],
     enableStickyHeader: true,
     enableStickyFooter: true,
-    columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "820px" } },
+    // columnFilterDisplayMode: "popover",
+    muiTableContainerProps: { sx: { maxHeight: "805px" } },
     enableColumnActions: false,
-    enableColumnFilters: true,
-    enableSorting: true,
+    enableColumnFilters: false,
+    enableSorting: false,
     enableGlobalFilter: true,
     enableRowNumbers: true,
     enableColumnResizing: true,

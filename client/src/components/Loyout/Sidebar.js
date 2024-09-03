@@ -270,7 +270,7 @@ export default function Sidebar({ hide, setHide }) {
                     className="text-[14px] font-[400]"
                     style={{ color: active === "timesheet" && "#fff" }}
                   >
-                    Time Sheet
+                    TimeSheet
                   </span>
                 </div>
               )}

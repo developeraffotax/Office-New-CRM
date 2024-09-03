@@ -100,8 +100,7 @@ export const getAllClients = async (req, res) => {
       .find({ status: { $ne: "completed" } })
       .select(
         "clientName companyName email currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status"
-      )
-      .sort({ updatedAt: -1 });
+      );
 
     res.status(200).send({
       success: true,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { IoSearch } from "react-icons/io5";
 import { IoNotifications } from "react-icons/io5";
@@ -43,6 +43,8 @@ export default function Header() {
   const [audio] = useState(
     typeof window !== "undefined" ? new Audio("/level-up-191997.mp3") : null
   );
+  const notificationRef = useRef(null);
+  const timerStatusRef = useRef(null);
 
   useEffect(() => {
     if (audio) {
@@ -183,10 +185,41 @@ export default function Header() {
     }
   };
 
+  // Handle Close Notification
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Close Timer Status to click anywhere
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        timerStatusRef.current &&
+        !timerStatusRef.current.contains(event.target)
+      ) {
+        setShowTimerStatus(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="w-full h-[3.8rem] bg-gray-200">
       <div className="w-full h-full flex items-center justify-between sm:px-4 px-6 py-2">
-        <div className="flex items-center gap-4">
+        {/* Logo/Notification */}
+        <div className="flex items-center gap-4" ref={notificationRef}>
           <Link to={"/dashboard"} className="">
             <img src="/logo.png" alt="Logo" className="h-[3.3rem] w-[8rem]" />
           </Link>
@@ -283,7 +316,7 @@ export default function Header() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             {/* --------Timer Status------ */}
-            <div className="relative">
+            <div className="relative" ref={timerStatusRef}>
               <div className="flex items-center">
                 <div
                   className="relative cursor-pointer m-2"

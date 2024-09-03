@@ -98,6 +98,11 @@ export default function JobCommentModal({
         if (data) {
           setIsLoading(false);
           setCommentData(data.comments.comments);
+
+          // Socket
+          socketId.emit("addJob", {
+            note: "New Task Added",
+          });
         }
       } else {
         const { data } = await axios.get(
@@ -106,6 +111,10 @@ export default function JobCommentModal({
         if (data) {
           setIsLoading(false);
           setCommentData(data.comments.comments);
+          // Send Socket Timer
+          socketId.emit("addTask", {
+            note: "New Task Added",
+          });
         }
       }
     } catch (error) {

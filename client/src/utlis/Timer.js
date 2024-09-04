@@ -29,6 +29,7 @@ export const Timer = forwardRef(
       JobHolderName,
       projectName,
       task,
+      companyName,
     },
     ref
   ) => {
@@ -104,6 +105,7 @@ export const Timer = forwardRef(
             JobHolderName,
             projectName,
             task,
+            companyName,
           }
         );
         setTimerId(response.data.timer._id);
@@ -191,6 +193,34 @@ export const Timer = forwardRef(
         console.log(error);
       }
     };
+
+    //----------------- Display time in Favicon right side--------------
+    useEffect(() => {
+      let intervalId;
+
+      if (isRunning) {
+        intervalId = setInterval(() => {
+          setElapsedTime((prevTime) => prevTime + 1);
+        }, 1000);
+      }
+
+      return () => clearInterval(intervalId);
+    }, [isRunning]);
+
+    useEffect(() => {
+      if (isRunning) {
+        const hours = Math.floor(elapsedTime / 3600)
+          .toString()
+          .padStart(2, "0");
+        const minutes = Math.floor((elapsedTime % 3600) / 60)
+          .toString()
+          .padStart(2, "0");
+        const seconds = (elapsedTime % 60).toString().padStart(2, "0");
+        document.title = `${hours}:${minutes}:${seconds}`;
+      } else {
+        document.title = "Affotax-CRM";
+      }
+    }, [isRunning, elapsedTime]);
 
     return (
       <>

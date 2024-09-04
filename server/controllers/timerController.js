@@ -12,11 +12,13 @@ export const startTimer = async (req, res) => {
       type,
       department,
       clientName,
-      JobHolderName,
       projectName,
       task,
+      companyName,
     } = req.body;
     const startTime = new Date().toISOString();
+
+    const user = req.user.user.name;
 
     const newTimer = new timerModel({
       clientId,
@@ -25,9 +27,10 @@ export const startTimer = async (req, res) => {
       type,
       department,
       clientName,
-      JobHolderName,
+      jobHolderName: user,
       projectName,
       task,
+      companyName,
     });
     await newTimer.save();
 
@@ -282,7 +285,9 @@ export const getTimerStatus = async (req, res) => {
 // --------------Get All Timers data----------->
 export const getAllTimers = async (req, res) => {
   try {
-    const timers = await timerModel.find({ endTime: { $ne: null } });
+    const timers = await timerModel
+      .find({ endTime: { $ne: null } })
+      .sort({ date: -1 });
 
     res.status(200).send({
       success: true,
@@ -304,29 +309,31 @@ export const getAllTimers = async (req, res) => {
 export const addTimerMannually = async (req, res) => {
   try {
     const {
+      date,
       startTime,
       endTime,
       department,
       clientName,
-      JobHolderName,
       projectName,
       task,
-      clientId,
-      jobId,
-      taskId,
+      note,
+      companyName,
     } = req.body;
 
+    const user = req.user.user.name;
+
     const timer = await timerModel.create({
+      date,
       startTime,
       endTime,
       department,
       clientName,
-      JobHolderName,
+      jobHolderName: user,
       projectName,
       task,
-      clientId,
-      jobId,
-      taskId,
+      note,
+      companyName,
+      type: "Manual",
     });
     res.status(200).send({
       success: true,
@@ -347,7 +354,7 @@ export const addTimerMannually = async (req, res) => {
 export const updateTimer = async (req, res) => {
   try {
     const timerId = req.params.id;
-    const { department, clientName, JobHolderName, projectName, task } =
+    const { department, clientName, JobHolderName, projectName, task, note } =
       req.body;
 
     const isExist = await timerModel.findById(timerId);
@@ -367,6 +374,7 @@ export const updateTimer = async (req, res) => {
         JobHolderName: JobHolderName || isExist.JobHolderName,
         projectName: projectName || isExist.projectName,
         task: task || isExist.task,
+        note: note || note,
       },
       { new: true }
     );

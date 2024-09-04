@@ -92,6 +92,7 @@ const AllTasks = () => {
   const [totalHours, setTotalHours] = useState("0");
   const [allProjects, setAllProjects] = useState([]);
   const commentStatusRef = useRef(null);
+  console.log("totalHours", totalHours);
 
   const dateStatus = ["Due", "Overdue"];
 
@@ -346,7 +347,12 @@ const AllTasks = () => {
 
   // ---------Total Hours-------->
   useEffect(() => {
-    if (active === "All") {
+    const totalHours = tasksData.reduce(
+      (sum, client) => sum + Number(client.hours),
+      0
+    );
+    setTotalHours(totalHours.toFixed(0));
+    if (active === "All" && !active1) {
       if (filterData) {
         const totalHours = tasksData.reduce(
           (sum, client) => sum + Number(client.hours),
@@ -1313,7 +1319,6 @@ const AllTasks = () => {
           }
         },
         filterSelectOptions: [
-          "Select",
           "Expired",
           "Today",
           "Tomorrow",
@@ -1523,7 +1528,7 @@ const AllTasks = () => {
         filterFn: "equals",
         filterSelectOptions: users.map((lead) => lead),
         filterVariant: "select",
-        size: 80,
+        size: 100,
         minSize: 60,
         maxSize: 120,
         grow: false,
@@ -1575,6 +1580,7 @@ const AllTasks = () => {
                   setNote={setNote}
                   department={""}
                   clientName={""}
+                  companyName={""}
                   JobHolderName={row.original.jobHolder}
                   projectName={row.original.project.projectName}
                   task={row.original.task}
@@ -1858,7 +1864,7 @@ const AllTasks = () => {
                 }`}
                 onClick={() => {
                   setActive("All");
-                  filterByDep("All");
+                  filterByDep("");
                   setShowCompleted(false);
                   setActive1("");
                   setFilterId("");

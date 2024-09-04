@@ -97,6 +97,9 @@ const clientSchema = new mongoose.Schema(
     clientType: {
       type: String,
     },
+    partner: {
+      type: String,
+    },
     country: {
       type: String,
     },

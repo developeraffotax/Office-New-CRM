@@ -105,22 +105,6 @@ export default function JobDetail({
   };
 
   // Update Job Status
-  const updateJobStatus = async () => {
-    try {
-      const { data } = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/dublicate/job/complete`,
-        { ...clientDetail }
-      );
-      if (data) {
-        allClientJobData();
-        toast.success("Status updated!");
-      }
-    } catch (error) {
-      console.error("Error updating complete status", error);
-      toast.error(error.response.data.message);
-    }
-  };
-
   const handleUpdateStatus = () => {
     Swal.fire({
       title: "Are you sure?",
@@ -136,6 +120,22 @@ export default function JobDetail({
         Swal.fire("Updated!", "Your job completed successfully!.", "success");
       }
     });
+  };
+
+  const updateJobStatus = async () => {
+    try {
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/dublicate/job/complete`,
+        { ...clientDetail }
+      );
+      if (data) {
+        allClientJobData();
+        toast.success("Status updated!");
+      }
+    } catch (error) {
+      console.error("Error updating complete status", error);
+      toast.error(error.response.data.message);
+    }
   };
 
   return (
@@ -414,6 +414,20 @@ export default function JobDetail({
                     <span className=" py-1 px-5 rounded-[1.5rem] shadow-md bg-yellow-500 text-white">
                       {clientDetail?.clientType ? (
                         clientDetail?.clientType
+                      ) : (
+                        <span className="text-red-500">N/A</span>
+                      )}
+                    </span>
+                  </span>
+                </div>
+                <div className="grid grid-cols-2">
+                  <span className="border border-gray-300 text-black font-medium py-2 px-2 ">
+                    Partner
+                  </span>
+                  <span className="border border-gray-300 text-gray-600 py-2 px-2  ">
+                    <span className="   ">
+                      {clientDetail?.partner ? (
+                        clientDetail?.partner
                       ) : (
                         <span className="text-red-500">N/A</span>
                       )}

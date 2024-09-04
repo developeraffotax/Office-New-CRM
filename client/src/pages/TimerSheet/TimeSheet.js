@@ -14,6 +14,10 @@ import { mkConfig, generateCsv, download } from "export-to-csv";
 import { differenceInSeconds, format } from "date-fns";
 import { AiTwotoneDelete } from "react-icons/ai";
 import { AiOutlineEdit } from "react-icons/ai";
+import Loader from "../../utlis/Loader";
+import Swal from "sweetalert2";
+import toast from "react-hot-toast";
+import AddTimerModal from "./AddTimerModal";
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -23,7 +27,7 @@ const csvConfig = mkConfig({
   decimalSeparator: ".",
   showLabels: true,
   showTitle: true,
-  title: "Exported Tasks Table Data",
+  title: "Exported Timer Table Data",
   useTextFile: false,
   useBom: true,
   useKeysAsHeaders: true,
@@ -33,26 +37,16 @@ export default function TimeSheet() {
   const { auth } = useAuth();
   const [timerData, setTimerData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState("");
-  const [selectedCompany, setSelectedComapany] = useState("");
-  const [selectedDepartment, setSelectedDepartment] = useState("");
-  const [selectedDay, setSelectedDay] = useState("");
-  const [active, setActive] = useState("All");
-  const [filterData, setFilterData] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [note, setNote] = useState("");
+  // const [selectedUser, setSelectedUser] = useState("");
+  // const [selectedCompany, setSelectedComapany] = useState("");
+  // const [selectedDepartment, setSelectedDepartment] = useState("");
+  // const [selectedDay, setSelectedDay] = useState("");
+  // const [active, setActive] = useState("All");
+  // const [filterData, setFilterData] = useState([]);
   console.log("timerData:", timerData);
-
-  const departments = [
-    "All",
-    "Bookkeeping",
-    "Payroll",
-    "Vat Return",
-    "Personal Tax",
-    "Accounts",
-    "Company Sec",
-    "Address",
-  ];
 
   //   Get All Timer Data
   const getAllTimeSheetData = async () => {
@@ -96,19 +90,38 @@ export default function TimeSheet() {
     // eslint-disable-next-line
   }, []);
 
+  // -------------- Filter Data By Department || Jobholder || Date ----------->
+  // const filterByDep = (value) => {
+  //   setFilterData("");
+
+  //   if (value !== "All") {
+  //     const filteredData = timerData?.filter(
+  //       (item) =>
+  //         item?.JobHolderName === value ||
+  //         item.department === value ||
+  //         item.company === value
+  //     );
+
+  //     // console.log("FilterData", filteredData);
+
+  //     setFilterData([...filteredData]);
+  //   }
+  // };
+
   // -----------Download in CSV------>
   const flattenData = (data) => {
     return data.map((row) => ({
-      projectName: row.project.projectName,
-      projectId: row.project?._id,
-      jobHolder: row.jobHolder,
-      task: row.task,
-      hours: row.hours,
-      startDate: row.startDate,
-      deadline: row.deadline || "",
-      status: row.status || "",
-      lead: row.lead || "",
-      estimate_Time: row.estimate_Time || "",
+      date: row.date || "",
+      JobHolderName: row.JobHolderName || "",
+      companyName: row.companyName || "",
+      clientName: row.clientName || "",
+      projectName: row.projectName || "",
+      department: row.department || "",
+      startTime: row.startTime || "",
+      endTime: row.endTime || "",
+      type: row.type || "",
+      note: row.note || "",
+      task: row.task || "",
     }));
   };
 
@@ -118,54 +131,219 @@ export default function TimeSheet() {
     download(csvConfig)(csv);
   };
 
+  const getCurrentMonthYear = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, "0");
+    return `${year}-${month}`;
+  };
+
+  // ------------------Delete Timer------------->
+
+  const handleDeleteTaskConfirmation = (taskId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleDeleteTimer(taskId);
+        Swal.fire("Deleted!", "Your timer has been deleted.", "success");
+      }
+    });
+  };
+
+  const handleDeleteTimer = async (id) => {
+    const filteredData = timerData?.filter((item) => item._id !== id);
+    setTimerData(filteredData);
+
+    try {
+      const { data } = await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/v1/timer/delete/timer/${id}`
+      );
+      if (data) {
+        toast.success("Timer deleted successfully!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    }
+  };
+
+  // -----------Update Alocate Task-------->
+  const updateAlocateTask = async (taskId, note) => {
+    if (!taskId) {
+      toast.error("Project/Task id is required!");
+      return;
+    }
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/timer/update/timer/${taskId}`,
+        { note }
+      );
+      if (data?.success) {
+        const updateTimer = data?.timer;
+        toast.success("Task updated successfully!");
+        setTimerData((prevData) =>
+          prevData?.map((item) =>
+            item._id === updateTimer._id ? updateTimer : item
+          )
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
+  };
+
   // --------------Table Data--------->
   const columns = useMemo(
     () => [
       {
-        accessorKey: "createdAt",
-        header: "Date",
+        accessorKey: "date",
         Header: ({ column }) => {
+          const [filterValue, setFilterValue] = useState("");
+          const [customDate, setCustomDate] = useState(getCurrentMonthYear());
+
+          useEffect(() => {
+            if (filterValue === "Custom date") {
+              column.setFilterValue(customDate);
+            }
+            //eslint-disable-next-line
+          }, [customDate, filterValue]);
+
+          const handleFilterChange = (e) => {
+            setFilterValue(e.target.value);
+            column.setFilterValue(e.target.value);
+          };
+
+          const handleCustomDateChange = (e) => {
+            setCustomDate(e.target.value);
+            column.setFilterValue(e.target.value);
+          };
+
           return (
-            <div className=" flex flex-col gap-[2px]">
+            <div className="w-full flex flex-col gap-[2px]">
               <span
-                className="ml-1 cursor-pointer"
+                className="cursor-pointer"
                 title="Clear Filter"
                 onClick={() => {
+                  setFilterValue("");
                   column.setFilterValue("");
                 }}
               >
                 Date
               </span>
-              <input
-                type="date"
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              />
+
+              {filterValue === "Custom date" ? (
+                <input
+                  type="month"
+                  value={customDate}
+                  onChange={handleCustomDateChange}
+                  className="h-[1.8rem] font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
+                />
+              ) : (
+                <select
+                  value={filterValue}
+                  onChange={handleFilterChange}
+                  className="h-[1.8rem] font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select</option>
+                  {column.columnDef.filterSelectOptions.map((option, idx) => (
+                    <option key={idx} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           );
         },
         Cell: ({ cell, row }) => {
-          const date = row.original.createdAt;
+          const date = row.original.date;
+
           return (
-            <div className="w-full flex items-center justify-center">
-              <span>{format(new Date(date), "dd-MMM-yyyy")}</span>
+            <div className="w-full flex">
+              <p>{format(new Date(date), "dd-MMM-yyyy")}</p>
             </div>
           );
         },
         filterFn: (row, columnId, filterValue) => {
-          const cellValue =
-            row.original[columnId]?.toString().toLowerCase() || "";
-          return cellValue.startsWith(filterValue.toLowerCase());
-        },
+          const cellValue = row.getValue(columnId);
+          if (!cellValue) return false;
 
+          const cellDate = new Date(cellValue);
+
+          if (filterValue.includes("-")) {
+            const [year, month] = filterValue.split("-");
+            const cellYear = cellDate.getFullYear().toString();
+            const cellMonth = (cellDate.getMonth() + 1)
+              .toString()
+              .padStart(2, "0");
+
+            return year === cellYear && month === cellMonth;
+          }
+
+          const today = new Date();
+
+          switch (filterValue) {
+            case "Today":
+              return cellDate.toDateString() === today.toDateString();
+            case "Yesterday":
+              const yesterday = new Date(today);
+              yesterday.setDate(today.getDate() - 1);
+              return cellDate.toDateString() === yesterday.toDateString();
+            case "Last 7 days":
+              const last7Days = new Date(today);
+              last7Days.setDate(today.getDate() - 7);
+              return cellDate >= last7Days && cellDate <= today;
+            case "Last 15 days":
+              const last15Days = new Date(today);
+              last15Days.setDate(today.getDate() - 15);
+              return cellDate >= last15Days && cellDate <= today;
+            case "Last 30 Days":
+              const last30Days = new Date(today);
+              last30Days.setDate(today.getDate() - 30);
+              return cellDate >= last30Days && cellDate <= today;
+            case "Last 60 Days":
+              const last60Days = new Date(today);
+              last60Days.setDate(today.getDate() - 60);
+              return cellDate >= last60Days && cellDate <= today;
+            case "Custom date":
+              if (!filterValue.includes("-")) return false;
+              const [year, month] = filterValue.split("-");
+              const cellYear = cellDate.getFullYear().toString();
+              const cellMonth = (cellDate.getMonth() + 1)
+                .toString()
+                .padStart(2, "0");
+
+              return year === cellYear && month === cellMonth;
+            default:
+              return false;
+          }
+        },
+        filterSelectOptions: [
+          "Today",
+          "Yesterday",
+          "Last 7 days",
+          "Last 15 days",
+          "Last 30 Days",
+          "Last 60 Days",
+          "Custom date",
+        ],
+        filterVariant: "custom",
         size: 100,
-        minSize: 70,
+        minSize: 90,
         maxSize: 110,
         grow: false,
       },
+
       {
-        accessorKey: "JobHolderName",
+        accessorKey: "jobHolderName",
         header: "Job Holder",
         Header: ({ column }) => {
           return (
@@ -214,8 +392,95 @@ export default function TimeSheet() {
         grow: false,
       },
       {
+        accessorKey: "companyName",
+        minSize: 120,
+        maxSize: 200,
+        size: 180,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Company
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const clientName = cell.getValue();
+
+          return (
+            <div className="w-full flex cursor-pointer" title={clientName}>
+              <span>{clientName}</span>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+
+          return cellValue.startsWith(filterValue.toLowerCase());
+        },
+      },
+      {
         accessorKey: "clientName",
         header: "Client",
+        minSize: 120,
+        maxSize: 200,
+        size: 130,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Client
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const clientName = cell.getValue();
+
+          return (
+            <div className="w-full flex cursor-pointer " title={clientName}>
+              <span>{clientName}</span>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+
+          return cellValue.startsWith(filterValue.toLowerCase());
+        },
+      },
+      {
+        accessorKey: "projectName",
+        header: "Project",
         minSize: 120,
         maxSize: 200,
         size: 150,
@@ -230,24 +495,32 @@ export default function TimeSheet() {
                   column.setFilterValue("");
                 }}
               >
-                Client
+                Project
               </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
             </div>
           );
         },
         Cell: ({ cell, row }) => {
-          const clientName = cell.getValue();
-          const projectName = row.original.projectName;
+          const projectName = cell.getValue();
 
           return (
-            <div className="w-full flex ">
-              <span>{clientName || projectName}</span>
+            <div className="w-full flex " title={projectName}>
+              <span>{projectName}</span>
             </div>
           );
         },
-        filterFn: "equals",
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
 
-        filterVariant: "select",
+          return cellValue.startsWith(filterValue.toLowerCase());
+        },
       },
       {
         accessorKey: "department",
@@ -319,12 +592,6 @@ export default function TimeSheet() {
               >
                 Time
               </span>
-              <input
-                type="date"
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              />
             </div>
           );
         },
@@ -414,7 +681,7 @@ export default function TimeSheet() {
         accessorKey: "monday",
         header: "Mon",
         Cell: ({ row }) => {
-          const createdDate = new Date(row.original.createdAt);
+          const createdDate = new Date(row.original.date);
           const startTime = row.original.startTime;
           const endTime = row.original.endTime;
 
@@ -435,7 +702,7 @@ export default function TimeSheet() {
         accessorKey: "tuesday",
         header: "Tue",
         Cell: ({ row }) => {
-          const createdDate = new Date(row.original.createdAt);
+          const createdDate = new Date(row.original.date);
           const startTime = row.original.startTime;
           const endTime = row.original.endTime;
 
@@ -456,7 +723,7 @@ export default function TimeSheet() {
         accessorKey: "wednesday",
         header: "Wed",
         Cell: ({ row }) => {
-          const createdDate = new Date(row.original.createdAt);
+          const createdDate = new Date(row.original.date);
           const startTime = row.original.startTime;
           const endTime = row.original.endTime;
 
@@ -477,7 +744,7 @@ export default function TimeSheet() {
         accessorKey: "thursday",
         header: "Thu",
         Cell: ({ row }) => {
-          const createdDate = new Date(row.original.createdAt);
+          const createdDate = new Date(row.original.date);
           const startTime = row.original.startTime;
           const endTime = row.original.endTime;
 
@@ -498,7 +765,7 @@ export default function TimeSheet() {
         accessorKey: "friday",
         header: "Fri",
         Cell: ({ row }) => {
-          const createdDate = new Date(row.original.createdAt);
+          const createdDate = new Date(row.original.date);
           const startTime = row.original.startTime;
           const endTime = row.original.endTime;
 
@@ -519,7 +786,7 @@ export default function TimeSheet() {
         accessorKey: "saturday",
         header: "Sat",
         Cell: ({ row }) => {
-          const createdDate = new Date(row.original.createdAt);
+          const createdDate = new Date(row.original.date);
           const startTime = row.original.startTime;
           const endTime = row.original.endTime;
 
@@ -540,7 +807,7 @@ export default function TimeSheet() {
         accessorKey: "sunday",
         header: "Sun",
         Cell: ({ row }) => {
-          const createdDate = new Date(row.original.createdAt);
+          const createdDate = new Date(row.original.date);
           const startTime = row.original.startTime;
           const endTime = row.original.endTime;
 
@@ -623,7 +890,7 @@ export default function TimeSheet() {
 
           return cellValue.startsWith(filterValue.toLowerCase());
         },
-        size: 300,
+        size: 220,
         minSize: 200,
         maxSize: 400,
         grow: false,
@@ -660,8 +927,13 @@ export default function TimeSheet() {
           const [showEdit, setShowEdit] = useState(false);
 
           useEffect(() => {
-            setAllocateNote(row.original.task);
+            setAllocateNote(row.original.note);
           }, [row.original]);
+
+          const updateAllocateNote = (task) => {
+            updateAlocateTask(row.original._id, allocateNote);
+            setShowEdit(false);
+          };
 
           return (
             <div className="w-full h-full ">
@@ -671,6 +943,7 @@ export default function TimeSheet() {
                   placeholder="Enter Task..."
                   value={allocateNote}
                   onChange={(e) => setAllocateNote(e.target.value)}
+                  onBlur={(e) => updateAllocateNote(e.target.value)}
                   className="w-full h-[2.3rem] focus:border border-gray-300 px-1 outline-none rounded"
                 />
               ) : (
@@ -696,7 +969,7 @@ export default function TimeSheet() {
 
           return cellValue.startsWith(filterValue.toLowerCase());
         },
-        size: 200,
+        size: 280,
         minSize: 150,
         maxSize: 300,
         grow: false,
@@ -739,7 +1012,7 @@ export default function TimeSheet() {
           return cellValue.startsWith(filterValue.toLowerCase());
         },
 
-        size: 60,
+        size: 65,
         minSize: 60,
         maxSize: 90,
         grow: false,
@@ -748,26 +1021,31 @@ export default function TimeSheet() {
         accessorKey: "actions",
         header: "Actions",
         Cell: ({ cell, row }) => {
+          const deleteId = row.original._id;
           return (
             <div className="flex items-center justify-center gap-3 w-full h-full">
-              <span
+              {/* <span
                 className="text-[1rem] cursor-pointer"
                 title="Edit this column"
               >
                 <AiOutlineEdit className="h-5 w-5 text-cyan-600 " />
-              </span>
+              </span> */}
 
-              <span className="text-[1rem] cursor-pointer" title="Delete Task!">
+              <span
+                className="text-[1rem] cursor-pointer"
+                title="Delete Task!"
+                onClick={() => handleDeleteTaskConfirmation(deleteId)}
+              >
                 <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
               </span>
             </div>
           );
         },
-        size: 90,
+        size: 60,
       },
     ],
     // eslint-disable-next-line
-    [auth]
+    [auth, users]
   );
 
   // Display Time in Correct Day
@@ -812,10 +1090,17 @@ export default function TimeSheet() {
     );
   };
 
+  // Clear table Filter
+  const handleClearFilters = () => {
+    table.setColumnFilters([]);
+
+    table.setGlobalFilter("");
+    // table.resetColumnFilters();
+  };
+
   const table = useMaterialReactTable({
     columns,
-    // data: active === "All" && !active1 && !filterId ? userTaskData : filterData,
-    data: (active === "All" ? timerData : filterData) || [],
+    data: timerData || [],
     enableStickyHeader: true,
     enableStickyFooter: true,
     // columnFilterDisplayMode: "popover",
@@ -904,8 +1189,25 @@ export default function TimeSheet() {
     <Layout>
       <div className=" relative w-full min-h-screen py-4 px-2 sm:px-4 flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <h1 className=" text-xl sm:text-2xl font-semibold ">Timesheet</h1>
+            <div className="flex items-center gap-2">
+              <span
+                className={` p-[2px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+                onClick={() => {
+                  // setActive("All");
+                  // setSelectedUser("");
+                  // setSelectedComapany("");
+                  // setSelectedDepartment("");
+                  // setSelectedDay("");
+                  // setFilterData("");
+                  handleClearFilters();
+                }}
+                title="Clear filters"
+              >
+                <IoClose className="h-6 w-6  cursor-pointer" />
+              </span>
+            </div>
           </div>
           {/* Project Buttons */}
           <div className="flex items-center gap-4">
@@ -919,16 +1221,18 @@ export default function TimeSheet() {
           </div>
         </div>
         {/* ---------------Filters---------- */}
-        <div className="flex items-center flex-wrap gap-2 mt">
-          {/* ------------Filter By User ---------*/}
+        {/* <div className="flex items-center flex-wrap gap-2 mt">
           <div className="">
             <select
               value={selectedUser}
               className="w-[8.5rem] h-[2rem] rounded-md border-2 cursor-pointer border-gray-300  outline-none"
-              onChange={(e) => setSelectedUser(e.target.value)}
+              onChange={(e) => {
+                filterByDep(e.target.value);
+                setSelectedUser(e.target.value);
+              }}
               title="Filter by Users"
             >
-              <option value="All">Filter By Employees</option>
+              <option value="All">Employees</option>
               {users?.map((user, i) => (
                 <option value={user?.name} key={i}>
                   {user.name}
@@ -936,7 +1240,6 @@ export default function TimeSheet() {
               ))}
             </select>
           </div>
-          {/* ------------Filter By Company Name----------- */}
           <div className="">
             <select
               value={selectedCompany}
@@ -944,7 +1247,7 @@ export default function TimeSheet() {
               onChange={(e) => setSelectedComapany(e.target.value)}
               title="Filter by Company"
             >
-              <option value="All">Filter By Company</option>
+              <option value="All">Company</option>
               {users?.map((user, i) => (
                 <option value={user?.name} key={i}>
                   {user.name}
@@ -952,23 +1255,24 @@ export default function TimeSheet() {
               ))}
             </select>
           </div>
-          {/* ------------Filter By Department Name----------- */}
           <div className="">
             <select
               value={selectedDepartment}
               className="w-[8.5rem] h-[2rem] rounded-md border-2 cursor-pointer border-gray-300  outline-none"
-              onChange={(e) => setSelectedDepartment(e.target.value)}
+              onChange={(e) => {
+                filterByDep(e.target.value);
+                setSelectedDepartment(e.target.value);
+              }}
               title="Filter by Department"
             >
-              <option value="All">Filter By Department</option>
-              {users?.map((user, i) => (
-                <option value={user?.name} key={i}>
-                  {user.name}
+              <option value="All">Department</option>
+              {departments?.map((department, i) => (
+                <option value={department} key={i}>
+                  {department}
                 </option>
               ))}
             </select>
           </div>
-          {/* ------------Filter By Days----------- */}
           <div className="">
             <select
               value={selectedDay}
@@ -988,22 +1292,41 @@ export default function TimeSheet() {
               onClick={() => {
                 setActive("All");
                 setSelectedUser("");
-                setSelectedComapany(false);
-                setSelectedDepartment(false);
-                setSelectedDay(false);
+                setSelectedComapany("");
+                setSelectedDepartment("");
+                setSelectedDay("");
+                setFilterData("");
+                handleClearFilters();
               }}
               title="Clear filters"
             >
               <IoClose className="h-6 w-6  cursor-pointer" />
             </span>
           </div>
-        </div>
+        </div> */}
         {/* -----------Tabledata--------------- */}
-        <div className="w-full min-h-[10vh] relative -mt-[10px] ">
-          <div className="h-full hidden1 overflow-y-scroll relative">
-            <MaterialReactTable table={table} />
+        {loading ? (
+          <div className="flex items-center justify-center w-full h-screen px-4 py-4">
+            <Loader />
           </div>
-        </div>
+        ) : (
+          <div className="w-full min-h-[10vh] relative ">
+            <div className="h-full hidden1 overflow-y-scroll relative">
+              <MaterialReactTable table={table} />
+            </div>
+          </div>
+        )}
+
+        {/* -----------Add Task-------------- */}
+        {isOpen && (
+          <div className="fixed top-0 left-0 w-full h-[112vh] z-[999] bg-gray-300/70 flex items-center justify-center py-6  px-4">
+            <AddTimerModal
+              setIsOpen={setIsOpen}
+              users={users}
+              setTimerData={setTimerData}
+            />
+          </div>
+        )}
       </div>
     </Layout>
   );

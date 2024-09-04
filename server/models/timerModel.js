@@ -26,7 +26,7 @@ const timerSchema = new mongoose.Schema(
     clientName: {
       type: String,
     },
-    JobHolderName: {
+    jobHolderName: {
       type: String,
     },
     projectName: {
@@ -46,6 +46,9 @@ const timerSchema = new mongoose.Schema(
     taskId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Tasks",
+    },
+    companyName: {
+      type: String,
     },
 
     isRunning: { type: Boolean, default: false },

@@ -1164,7 +1164,6 @@ export default function AllJobs() {
           }
         },
         filterSelectOptions: [
-          "Select",
           "Expired",
           "Today",
           "Tomorrow",
@@ -1533,7 +1532,7 @@ export default function AllJobs() {
         filterFn: "equals",
         filterSelectOptions: users.map((lead) => lead),
         filterVariant: "select",
-        size: 90,
+        size: 100,
         minSize: 70,
         maxSize: 140,
         grow: false,
@@ -1592,6 +1591,7 @@ export default function AllJobs() {
                   JobHolderName={row.original.job.jobHolder}
                   projectName={""}
                   task={""}
+                  companyName={row.original.companyName}
                 />
               </span>
             </div>

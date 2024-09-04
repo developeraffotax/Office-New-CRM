@@ -17,6 +17,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
   const [currentDate, setCurrentDate] = useState("");
   const [source, setSource] = useState("");
   const [clientType, setClientType] = useState("");
+  const [partner, setPartner] = useState("");
   const [country, setCountry] = useState("");
   const [fee, setFee] = useState("");
   const [ctLogin, setCtLogin] = useState("");
@@ -108,6 +109,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
 
   const sources = ["AIV", "UPW", "PPH", "Website", "Referal", "Partner"];
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
+  const partners = ["Affotax", "Outsource", "OTL"];
 
   // Get All Users
 
@@ -187,6 +189,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
           currentDate,
           source,
           clientType,
+          partner,
           country,
           fee,
           ctLogin,
@@ -333,14 +336,18 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   </option>
                 ))}
               </select>
-
-              <input
-                type="text"
-                placeholder="Country"
-                className={`${style.input}`}
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-              />
+              <select
+                className={`${style.input} h-[2.5rem] `}
+                value={partner}
+                onChange={(e) => setPartner(e.target.value)}
+              >
+                <option value="">Partner</option>
+                {partners?.map((part, i) => (
+                  <option value={part} key={i}>
+                    {part}
+                  </option>
+                ))}
+              </select>
               <input
                 type="text"
                 placeholder="Fee"
@@ -439,6 +446,13 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 className={`${style.input}`}
                 value={utr}
                 onChange={(e) => setUtr(e.target.value)}
+              />
+              <input
+                type="text"
+                placeholder="Country"
+                className={`${style.input}`}
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
               />
             </div>
           </div>

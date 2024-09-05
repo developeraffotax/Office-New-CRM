@@ -39,7 +39,17 @@ export default function TimeSheet() {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [note, setNote] = useState("");
+  const [timerId, setTimerId] = useState("");
+  const [times, setTimes] = useState({
+    monTotal: 0,
+    tueTotal: 0,
+    wedTotal: 0,
+    thuTotal: 0,
+    friTotal: 0,
+    satTotal: 0,
+    sunTotal: 0,
+    weekTotal: 0,
+  });
   // const [selectedUser, setSelectedUser] = useState("");
   // const [selectedCompany, setSelectedComapany] = useState("");
   // const [selectedDepartment, setSelectedDepartment] = useState("");
@@ -395,7 +405,7 @@ export default function TimeSheet() {
         accessorKey: "companyName",
         minSize: 120,
         maxSize: 200,
-        size: 180,
+        size: 160,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -1017,32 +1027,40 @@ export default function TimeSheet() {
         maxSize: 90,
         grow: false,
       },
-      {
-        accessorKey: "actions",
-        header: "Actions",
-        Cell: ({ cell, row }) => {
-          const deleteId = row.original._id;
-          return (
-            <div className="flex items-center justify-center gap-3 w-full h-full">
-              {/* <span
-                className="text-[1rem] cursor-pointer"
-                title="Edit this column"
-              >
-                <AiOutlineEdit className="h-5 w-5 text-cyan-600 " />
-              </span> */}
+      ...(auth?.user?.role === "Admin"
+        ? [
+            {
+              accessorKey: "actions",
+              header: "Actions",
+              Cell: ({ cell, row }) => {
+                const timerId = row.original._id;
+                return (
+                  <div className="flex items-center justify-center gap-3 w-full h-full">
+                    <span
+                      className="text-[1rem] cursor-pointer"
+                      title="Edit this column"
+                      onClick={() => {
+                        setTimerId(timerId);
+                        setIsOpen(true);
+                      }}
+                    >
+                      <AiOutlineEdit className="h-5 w-5 text-cyan-600 " />
+                    </span>
 
-              <span
-                className="text-[1rem] cursor-pointer"
-                title="Delete Task!"
-                onClick={() => handleDeleteTaskConfirmation(deleteId)}
-              >
-                <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
-              </span>
-            </div>
-          );
-        },
-        size: 60,
-      },
+                    <span
+                      className="text-[1rem] cursor-pointer"
+                      title="Delete Task!"
+                      onClick={() => handleDeleteTaskConfirmation(timerId)}
+                    >
+                      <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
+                    </span>
+                  </div>
+                );
+              },
+              size: 60,
+            },
+          ]
+        : []),
     ],
     // eslint-disable-next-line
     [auth, users]
@@ -1104,7 +1122,7 @@ export default function TimeSheet() {
     enableStickyHeader: true,
     enableStickyFooter: true,
     // columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "805px" } },
+    muiTableContainerProps: { sx: { maxHeight: "620px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -1317,6 +1335,41 @@ export default function TimeSheet() {
           </div>
         )}
 
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">Monday</h4>
+            <span className="text-[15px]">00:00</span>
+          </div>
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">Tuesday</h4>
+            <span className="text-[15px]">00:00</span>
+          </div>
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">Wednesday</h4>
+            <span className="text-[15px]">00:00</span>
+          </div>
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">Thursday</h4>
+            <span className="text-[15px]">00:00</span>
+          </div>
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">Friday</h4>
+            <span className="text-[15px]">00:00</span>
+          </div>
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">Saturday</h4>
+            <span className="text-[15px]">00:00</span>
+          </div>
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">Sunday</h4>
+            <span className="text-[15px]">00:00</span>
+          </div>
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-orange-500 hover:bg-orange-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">W-Total</h4>
+            <span className="text-[15px]">00:00</span>
+          </div>
+        </div>
+
         {/* -----------Add Task-------------- */}
         {isOpen && (
           <div className="fixed top-0 left-0 w-full h-[112vh] z-[999] bg-gray-300/70 flex items-center justify-center py-6  px-4">
@@ -1324,6 +1377,9 @@ export default function TimeSheet() {
               setIsOpen={setIsOpen}
               users={users}
               setTimerData={setTimerData}
+              timerId={timerId}
+              setTimerId={setTimerId}
+              getAllTimeSheetData={getAllTimeSheetData}
             />
           </div>
         )}

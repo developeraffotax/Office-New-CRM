@@ -107,7 +107,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
   const [users, setUsers] = useState([]);
   console.log("Jobs:", jobs);
 
-  const sources = ["AIV", "UPW", "PPH", "Website", "Referal", "Partner"];
+  const sources = ["FIV", "UPW", "PPH", "Website", "Referal", "Partner"];
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
   const partners = ["Affotax", "Outsource", "OTL"];
 

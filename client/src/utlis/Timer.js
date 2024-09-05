@@ -52,6 +52,7 @@ export const Timer = forwardRef(
             }
           );
           const { _id, startTime, endTime } = response.data.timer;
+          console.log("Timer:", response.data.timer);
 
           if (startTime && !endTime) {
             setTimerId(_id);

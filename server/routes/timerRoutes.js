@@ -7,6 +7,7 @@ import {
   getAllTimers,
   getTimerStatus,
   removeTimerStatus,
+  singleTimer,
   startTimer,
   stopTimer,
   timerStatus,
@@ -48,5 +49,8 @@ router.put("/update/timer/:id", requiredSignIn, updateTimer);
 
 // Delete Timer
 router.delete("/delete/timer/:id", requiredSignIn, deleteTimer);
+
+// Single timer
+router.get("/single/timer/:id", requiredSignIn, singleTimer);
 
 export default router;

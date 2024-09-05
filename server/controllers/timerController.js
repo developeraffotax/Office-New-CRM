@@ -94,9 +94,13 @@ export const stopTimer = async (req, res) => {
 // Get Timer Status
 export const timerStatus = async (req, res) => {
   try {
-    const { jobId } = req.query;
+    const { jobId, clientId } = req.query;
 
-    const timer = await timerModel.findOne({ jobId }).sort({ createdAt: -1 });
+    const timer = await timerModel.findOne({
+      jobId,
+      clientId,
+      $or: [{ endTime: null }, { endTime: "" }],
+    });
 
     if (!timer) {
       return res.status(404).json({ message: "No timer found" });
@@ -354,8 +358,17 @@ export const addTimerMannually = async (req, res) => {
 export const updateTimer = async (req, res) => {
   try {
     const timerId = req.params.id;
-    const { department, clientName, JobHolderName, projectName, task, note } =
-      req.body;
+    const {
+      date,
+      startTime,
+      endTime,
+      department,
+      clientName,
+      projectName,
+      task,
+      note,
+      companyName,
+    } = req.body;
 
     const isExist = await timerModel.findById(timerId);
 
@@ -369,9 +382,12 @@ export const updateTimer = async (req, res) => {
     const timer = await timerModel.findByIdAndUpdate(
       { _id: timerId },
       {
+        date: date || isExist.date,
+        startTime: startTime || isExist.startTime,
+        endTime: endTime || isExist.endTime,
+        companyName: companyName || isExist.companyName,
         department: department || isExist.department,
         clientName: clientName || isExist.clientName,
-        JobHolderName: JobHolderName || isExist.JobHolderName,
         projectName: projectName || isExist.projectName,
         task: task || isExist.task,
         note: note || note,
@@ -409,6 +425,27 @@ export const deleteTimer = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in delete timer!",
+      error,
+    });
+  }
+};
+
+// Get Single Timer
+export const singleTimer = async (req, res) => {
+  try {
+    const timerId = req.params.id;
+    const timer = await timerModel.findById(timerId);
+
+    res.status(200).send({
+      success: true,
+      message: "Single timer!",
+      timer: timer,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in single timer!",
       error,
     });
   }

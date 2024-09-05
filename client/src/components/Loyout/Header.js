@@ -260,7 +260,10 @@ export default function Header() {
                         <Link
                           to={item?.redirectLink}
                           key={item?._id}
-                          onClick={() => setFilterId(item?.taskId)}
+                          onClick={() => {
+                            setFilterId(item?.taskId);
+                            updateNotification(item._id);
+                          }}
                           className="cursor-pointer"
                         >
                           <p className="p-2 text-gray-700  text-[14px]">

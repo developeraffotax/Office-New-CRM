@@ -1,5 +1,7 @@
+import notificationModel from "../models/notificationModel.js";
 import projectModel from "../models/projectModel.js";
 import taskModel from "../models/taskModel.js";
+import userModel from "../models/userModel.js";
 
 // Create Task
 export const createTask = async (req, res) => {
@@ -59,6 +61,27 @@ export const createTask = async (req, res) => {
     }
 
     await tasks.save();
+
+    // Create Notification
+    const notiUser = await userModel.findOne({ name: jobHolder });
+    if (!notiUser) {
+      res.status(200).send({
+        success: true,
+        message: "Notification User not found while create task!",
+      });
+
+      return;
+    }
+
+    const notification = await notificationModel.create({
+      title: "New Task Assigned",
+      redirectLink: "/tasks",
+      description: `${req.user.user.name} assign a new task of "${tasks.task}"`,
+      taskId: `${tasks._id}`,
+      userId: notiUser._id,
+    });
+
+    //  -------------------Noti End---------
 
     res.status(200).send({
       success: true,
@@ -206,6 +229,27 @@ export const updateJobHolderLS = async (req, res) => {
         { jobHolder: jobHolder },
         { new: true }
       );
+
+      // Create Notification
+      const notiUser = await userModel.findOne({ name: jobHolder });
+      if (!notiUser) {
+        res.status(200).send({
+          success: true,
+          message: "Notification User not found while create task!",
+        });
+
+        return;
+      }
+
+      const notification = await notificationModel.create({
+        title: "New Task Assigned",
+        redirectLink: "/tasks",
+        description: `${req.user.user.name} assign a new task of "${updateTask.task}"`,
+        taskId: `${updateTask._id}`,
+        userId: notiUser._id,
+      });
+
+      //  -------------------Noti End---------
     } else if (lead) {
       updateTask = await taskModel.findByIdAndUpdate(
         task._id,

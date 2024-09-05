@@ -112,7 +112,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
 
   console.log("jobs:", jobs);
 
-  const sources = ["AIV", "UPW", "PPH", "Website", "Referal", "Partner"];
+  const sources = ["FIV", "UPW", "PPH", "Website", "Referal", "Partner"];
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
   const partners = ["Affotax", "Outsource", "OTL"];
 

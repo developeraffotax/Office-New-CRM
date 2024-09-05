@@ -69,6 +69,10 @@ export default function AddTaskModal({
           setLoading(false);
           setIsOpen(false);
           toast.success("Task Updated!");
+          // Send Socket Notification
+          socketId.emit("notification", {
+            title: "Task  Updated",
+          });
         }
       } else {
         const { data } = await axios.post(
@@ -89,6 +93,10 @@ export default function AddTaskModal({
           setLoading(false);
           setIsOpen(false);
           toast.success("Task created successfully!");
+          // Send Socket Notification
+          socketId.emit("notification", {
+            title: "Task  added",
+          });
         }
       }
       // Send Socket Timer

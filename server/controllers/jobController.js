@@ -743,7 +743,7 @@ export const createDublicateJob = async (req, res) => {
     console.error(error);
     res.status(500).send({
       success: false,
-      message: "Error while creating job!",
+      message: "Error while complete job!",
       error: error.message,
     });
   }

@@ -733,3 +733,63 @@
             </select>
           );
         },
+
+        --------------------------------------
+         // {
+      //   accessorKey: "monday",
+      //   header: "Mon",
+      //   Header: ({ column }) => {
+      //     return (
+      //       <div className=" flex flex-col gap-[2px]">
+      //         <span
+      //           className="ml-1 cursor-pointer"
+      //           title="Clear Filter"
+      //           onClick={() => {
+      //             column.setFilterValue("");
+      //           }}
+      //         >
+      //           Mon
+      //         </span>
+      //       </div>
+      //     );
+      //   },
+      //   Cell: ({ cell, row }) => {
+      //     const createdDate = row.original.createdAt;
+      //     const startTime = new Date(row.original.startTime);
+      //     const endTime = new Date(row.original.endTime);
+
+      //     // Calculate the difference in seconds
+      //     const differenceInSecondsTotal = differenceInSeconds(
+      //       endTime,
+      //       startTime
+      //     );
+
+      //     let formattedTime = "";
+
+      //     if (differenceInSecondsTotal < 60) {
+      //       formattedTime = "";
+      //     } else if (differenceInSecondsTotal < 3600) {
+      //       const minutes = Math.floor(differenceInSecondsTotal / 60);
+      //       formattedTime = `${minutes}m`;
+      //     } else {
+      //       const hours = Math.floor(differenceInSecondsTotal / 3600);
+      //       const minutes = Math.floor((differenceInSecondsTotal % 3600) / 60);
+      //       formattedTime = `${hours}:${String(minutes).padStart(2, "0")}h`;
+      //     }
+      //     return (
+      //       <div className="w-full flex items-center justify-center">
+      //         <span>{formattedTime}</span>
+      //       </div>
+      //     );
+      //   },
+      //   filterFn: (row, columnId, filterValue) => {
+      //     const cellValue =
+      //       row.original[columnId]?.toString().toLowerCase() || "";
+      //     return cellValue.startsWith(filterValue.toLowerCase());
+      //   },
+
+      //   size: 50,
+      //   minSize: 40,
+      //   maxSize: 100,
+      //   grow: false,
+      // },

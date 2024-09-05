@@ -40,6 +40,7 @@ export default function TimeSheet() {
   const [users, setUsers] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [timerId, setTimerId] = useState("");
+  const [tableFilterData, setTableFilterDate] = useState([]);
   const [times, setTimes] = useState({
     monTotal: 0,
     tueTotal: 0,
@@ -50,6 +51,7 @@ export default function TimeSheet() {
     sunTotal: 0,
     weekTotal: 0,
   });
+
   // const [selectedUser, setSelectedUser] = useState("");
   // const [selectedCompany, setSelectedComapany] = useState("");
   // const [selectedDepartment, setSelectedDepartment] = useState("");
@@ -283,6 +285,7 @@ export default function TimeSheet() {
           );
         },
         filterFn: (row, columnId, filterValue) => {
+          console.log("Filter Data:=>", row, columnId, filterValue);
           const cellValue = row.getValue(columnId);
           if (!cellValue) return false;
 
@@ -356,6 +359,13 @@ export default function TimeSheet() {
         accessorKey: "jobHolderName",
         header: "Job Holder",
         Header: ({ column }) => {
+          const user = auth?.user?.name;
+
+          useEffect(() => {
+            column.setFilterValue(user);
+
+            // eslint-disable-next-line
+          }, [user]);
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -367,23 +377,25 @@ export default function TimeSheet() {
               >
                 Job Holder
               </span>
-              <select
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              >
-                <option value="">Select</option>
-                {users?.map((jobhold, i) => (
-                  <option key={i} value={jobhold?.name}>
-                    {jobhold?.name}
-                  </option>
-                ))}
-              </select>
+              {auth?.user?.role === "Admin" && (
+                <select
+                  value={column.getFilterValue()}
+                  onChange={(e) => column.setFilterValue(e.target.value)}
+                  className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select</option>
+                  {users?.map((jobhold, i) => (
+                    <option key={i} value={jobhold?.name}>
+                      {jobhold?.name}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           );
         },
         Cell: ({ cell, row }) => {
-          const jobholder = cell.getValue();
+          const jobholder = cell.getValue() || "";
 
           return (
             <div className="w-full flex ">
@@ -393,8 +405,11 @@ export default function TimeSheet() {
             </div>
           );
         },
-        filterFn: "equals",
-        filterSelectOptions: users.map((jobhold) => jobhold.name),
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+          return (cellValue || "").toString() === filterValue.toString();
+        },
+        filterSelectOptions: users.map((jobhold) => jobhold?.name || ""),
         filterVariant: "select",
         size: 90,
         minSize: 80,
@@ -488,50 +503,50 @@ export default function TimeSheet() {
           return cellValue.startsWith(filterValue.toLowerCase());
         },
       },
-      {
-        accessorKey: "projectName",
-        header: "Project",
-        minSize: 120,
-        maxSize: 200,
-        size: 150,
-        grow: false,
-        Header: ({ column }) => {
-          return (
-            <div className=" flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                Project
-              </span>
-              <input
-                type="search"
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              />
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const projectName = cell.getValue();
+      // {
+      //   accessorKey: "projectName",
+      //   header: "Project",
+      //   minSize: 120,
+      //   maxSize: 200,
+      //   size: 150,
+      //   grow: false,
+      //   Header: ({ column }) => {
+      //     return (
+      //       <div className=" flex flex-col gap-[2px]">
+      //         <span
+      //           className="ml-1 cursor-pointer"
+      //           title="Clear Filter"
+      //           onClick={() => {
+      //             column.setFilterValue("");
+      //           }}
+      //         >
+      //           Project
+      //         </span>
+      //         <input
+      //           type="search"
+      //           value={column.getFilterValue() || ""}
+      //           onChange={(e) => column.setFilterValue(e.target.value)}
+      //           className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+      //         />
+      //       </div>
+      //     );
+      //   },
+      //   Cell: ({ cell, row }) => {
+      //     const projectName = cell.getValue();
 
-          return (
-            <div className="w-full flex " title={projectName}>
-              <span>{projectName}</span>
-            </div>
-          );
-        },
-        filterFn: (row, columnId, filterValue) => {
-          const cellValue =
-            row.original[columnId]?.toString().toLowerCase() || "";
+      //     return (
+      //       <div className="w-full flex " title={projectName}>
+      //         <span>{projectName}</span>
+      //       </div>
+      //     );
+      //   },
+      //   filterFn: (row, columnId, filterValue) => {
+      //     const cellValue =
+      //       row.original[columnId]?.toString().toLowerCase() || "";
 
-          return cellValue.startsWith(filterValue.toLowerCase());
-        },
-      },
+      //     return cellValue.startsWith(filterValue.toLowerCase());
+      //   },
+      // },
       {
         accessorKey: "department",
         filterFn: "equals",
@@ -629,64 +644,7 @@ export default function TimeSheet() {
         grow: false,
       },
       // Days
-      // {
-      //   accessorKey: "monday",
-      //   header: "Mon",
-      //   Header: ({ column }) => {
-      //     return (
-      //       <div className=" flex flex-col gap-[2px]">
-      //         <span
-      //           className="ml-1 cursor-pointer"
-      //           title="Clear Filter"
-      //           onClick={() => {
-      //             column.setFilterValue("");
-      //           }}
-      //         >
-      //           Mon
-      //         </span>
-      //       </div>
-      //     );
-      //   },
-      //   Cell: ({ cell, row }) => {
-      //     const createdDate = row.original.createdAt;
-      //     const startTime = new Date(row.original.startTime);
-      //     const endTime = new Date(row.original.endTime);
 
-      //     // Calculate the difference in seconds
-      //     const differenceInSecondsTotal = differenceInSeconds(
-      //       endTime,
-      //       startTime
-      //     );
-
-      //     let formattedTime = "";
-
-      //     if (differenceInSecondsTotal < 60) {
-      //       formattedTime = "";
-      //     } else if (differenceInSecondsTotal < 3600) {
-      //       const minutes = Math.floor(differenceInSecondsTotal / 60);
-      //       formattedTime = `${minutes}m`;
-      //     } else {
-      //       const hours = Math.floor(differenceInSecondsTotal / 3600);
-      //       const minutes = Math.floor((differenceInSecondsTotal % 3600) / 60);
-      //       formattedTime = `${hours}:${String(minutes).padStart(2, "0")}h`;
-      //     }
-      //     return (
-      //       <div className="w-full flex items-center justify-center">
-      //         <span>{formattedTime}</span>
-      //       </div>
-      //     );
-      //   },
-      //   filterFn: (row, columnId, filterValue) => {
-      //     const cellValue =
-      //       row.original[columnId]?.toString().toLowerCase() || "";
-      //     return cellValue.startsWith(filterValue.toLowerCase());
-      //   },
-
-      //   size: 50,
-      //   minSize: 40,
-      //   maxSize: 100,
-      //   grow: false,
-      // },
       {
         accessorKey: "monday",
         header: "Mon",
@@ -1122,7 +1080,7 @@ export default function TimeSheet() {
     enableStickyHeader: true,
     enableStickyFooter: true,
     // columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "620px" } },
+    muiTableContainerProps: { sx: { maxHeight: "633px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -1205,7 +1163,7 @@ export default function TimeSheet() {
 
   return (
     <Layout>
-      <div className=" relative w-full min-h-screen py-4 px-2 sm:px-4 flex flex-col gap-2">
+      <div className=" relative w-full h-screen py-4 px-2 sm:px-4 flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h1 className=" text-xl sm:text-2xl font-semibold ">Timesheet</h1>
@@ -1328,47 +1286,50 @@ export default function TimeSheet() {
             <Loader />
           </div>
         ) : (
-          <div className="w-full min-h-[10vh] relative ">
-            <div className="h-full hidden1 overflow-y-scroll relative">
+          <div
+            className={`w-full ${
+              timerData.length >= 14 ? "min-h-[10vh]" : "min-h-[60vh]"
+            } relative `}
+          >
+            <div className="h-full hidden1 overflow-y-scroll  relative">
               <MaterialReactTable table={table} />
+            </div>
+            <div className="w-full mt-0 2xl:mt-[-2rem] grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-8 gap-4 2xl:gap-5">
+              <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+                <h4 className="text-[16px] font-medium">Monday</h4>
+                <span className="text-[15px]">00:00</span>
+              </div>
+              <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+                <h4 className="text-[16px] font-medium">Tuesday</h4>
+                <span className="text-[15px]">00:00</span>
+              </div>
+              <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+                <h4 className="text-[16px] font-medium">Wednesday</h4>
+                <span className="text-[15px]">00:00</span>
+              </div>
+              <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+                <h4 className="text-[16px] font-medium">Thursday</h4>
+                <span className="text-[15px]">00:00</span>
+              </div>
+              <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+                <h4 className="text-[16px] font-medium">Friday</h4>
+                <span className="text-[15px]">00:00</span>
+              </div>
+              <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+                <h4 className="text-[16px] font-medium">Saturday</h4>
+                <span className="text-[15px]">00:00</span>
+              </div>
+              <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+                <h4 className="text-[16px] font-medium">Sunday</h4>
+                <span className="text-[15px]">00:00</span>
+              </div>
+              <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-orange-500 hover:bg-orange-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+                <h4 className="text-[16px] font-medium">W-Total</h4>
+                <span className="text-[15px]">00:00</span>
+              </div>
             </div>
           </div>
         )}
-
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">Monday</h4>
-            <span className="text-[15px]">00:00</span>
-          </div>
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">Tuesday</h4>
-            <span className="text-[15px]">00:00</span>
-          </div>
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">Wednesday</h4>
-            <span className="text-[15px]">00:00</span>
-          </div>
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">Thursday</h4>
-            <span className="text-[15px]">00:00</span>
-          </div>
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">Friday</h4>
-            <span className="text-[15px]">00:00</span>
-          </div>
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">Saturday</h4>
-            <span className="text-[15px]">00:00</span>
-          </div>
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">Sunday</h4>
-            <span className="text-[15px]">00:00</span>
-          </div>
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-orange-500 hover:bg-orange-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">W-Total</h4>
-            <span className="text-[15px]">00:00</span>
-          </div>
-        </div>
 
         {/* -----------Add Task-------------- */}
         {isOpen && (

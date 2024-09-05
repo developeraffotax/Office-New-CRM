@@ -343,9 +343,10 @@ export default function TaskDetail({
                   pageName={"Tasks"}
                   taskName={taskDetal?.project?.projectName || ""}
                   department={""}
-                  clientName={""}
+                  clientName={taskDetal?.project?.projectName || ""}
+                  companyName={taskDetal?.project?.projectName || ""}
                   JobHolderName={taskDetal?.jobHolder || ""}
-                  projectName={taskDetal?.project?.projectName || ""}
+                  projectName={""}
                   task={taskDetal?.task || ""}
                 />
               </span>

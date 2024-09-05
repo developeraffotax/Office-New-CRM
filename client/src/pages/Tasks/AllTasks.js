@@ -828,6 +828,14 @@ const AllTasks = () => {
         accessorKey: "jobHolder",
         header: "Job Holder",
         Header: ({ column }) => {
+          const user = auth?.user?.name;
+
+          useEffect(() => {
+            column.setFilterValue(user);
+
+            // eslint-disable-next-line
+          }, []);
+
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -1579,10 +1587,10 @@ const AllTasks = () => {
                   taskName={row.original.project.projectName}
                   setNote={setNote}
                   department={""}
-                  clientName={""}
-                  companyName={""}
+                  clientName={row.original.project.projectName}
+                  companyName={row.original.project.projectName}
                   JobHolderName={row.original.jobHolder}
-                  projectName={row.original.project.projectName}
+                  projectName={""}
                   task={row.original.task}
                 />
               </span>

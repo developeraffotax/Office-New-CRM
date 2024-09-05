@@ -26,10 +26,10 @@ export const Timer = forwardRef(
       setNote,
       department,
       clientName,
+      companyName,
       JobHolderName,
       projectName,
       task,
-      companyName,
     },
     ref
   ) => {
@@ -40,7 +40,6 @@ export const Timer = forwardRef(
     const [startTime, setStartTime] = useState(null);
     const [totalTime, setTotalTime] = useState(null);
     const isInitialMount = useRef(true);
-    console.log("Note:", note);
 
     useEffect(() => {
       const fetchTimerStatus = async () => {
@@ -52,7 +51,7 @@ export const Timer = forwardRef(
             }
           );
           const { _id, startTime, endTime } = response.data.timer;
-          console.log("Timer:", response.data.timer);
+          // console.log("Timer:", response.data.timer);
 
           if (startTime && !endTime) {
             setTimerId(_id);
@@ -103,10 +102,10 @@ export const Timer = forwardRef(
             type: "Timer",
             department,
             clientName,
+            companyName,
             JobHolderName,
             projectName,
             task,
-            companyName,
           }
         );
         setTimerId(response.data.timer._id);

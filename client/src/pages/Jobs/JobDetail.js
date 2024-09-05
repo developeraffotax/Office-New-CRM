@@ -240,6 +240,7 @@ export default function JobDetail({
                   JobHolderName={clientDetail?.job?.jobHolder || " "}
                   projectName={""}
                   task={""}
+                  companyName={clientDetail?.companyName}
                 />
               </span>
             </div>

@@ -146,7 +146,7 @@ const clientSchema = new mongoose.Schema(
       default: "O m",
     },
     label: {
-      name: { type: String, required: true },
+      name: { type: String },
       color: { type: String },
     },
     comments: [commentsSchema],

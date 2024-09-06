@@ -195,17 +195,17 @@ export const Timer = forwardRef(
     };
 
     //----------------- Display time in Favicon right side--------------
-    useEffect(() => {
-      let intervalId;
+    // useEffect(() => {
+    //   let intervalId;
 
-      if (isRunning) {
-        intervalId = setInterval(() => {
-          setElapsedTime((prevTime) => prevTime + 1);
-        }, 1000);
-      }
+    //   if (isRunning) {
+    //     intervalId = setInterval(() => {
+    //       setElapsedTime((prevTime) => prevTime + 1);
+    //     }, 1000);
+    //   }
 
-      return () => clearInterval(intervalId);
-    }, [isRunning]);
+    //   return () => clearInterval(intervalId);
+    // }, [isRunning]);
 
     useEffect(() => {
       if (isRunning) {

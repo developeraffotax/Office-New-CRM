@@ -91,6 +91,11 @@ export const Timer = forwardRef(
       return () => clearInterval(intervalId);
     }, [isRunning]);
 
+    // useEffect(() => {
+    //   const timeId = localStorage.getItem("timer_Id");
+    //   setTimerId(JSON.parse(timeId));
+    // }, []);
+
     const startTimer = async () => {
       try {
         const response = await axios.post(
@@ -134,15 +139,15 @@ export const Timer = forwardRef(
           `${process.env.REACT_APP_API_URL}/api/v1/timer/stop/timer/${timerId}`,
           { note }
         );
-        setIsRunning(false);
+        localStorage.removeItem("timer_Id");
         setAnyTimerRunning(false);
         setNote("");
         removeTimerStatus();
         setIsShow(false);
+        gettotalTime(timerId);
         setTimerId(null);
         setElapsedTime(0);
-        gettotalTime(timerId);
-        localStorage.removeItem("timer_Id");
+        setIsRunning(false);
         // Send Socket Timer
         socketId.emit("timer", {
           timerId: timerId,
@@ -195,17 +200,6 @@ export const Timer = forwardRef(
     };
 
     //----------------- Display time in Favicon right side--------------
-    // useEffect(() => {
-    //   let intervalId;
-
-    //   if (isRunning) {
-    //     intervalId = setInterval(() => {
-    //       setElapsedTime((prevTime) => prevTime + 1);
-    //     }, 1000);
-    //   }
-
-    //   return () => clearInterval(intervalId);
-    // }, [isRunning]);
 
     useEffect(() => {
       if (isRunning) {
@@ -216,10 +210,12 @@ export const Timer = forwardRef(
           .toString()
           .padStart(2, "0");
         const seconds = (elapsedTime % 60).toString().padStart(2, "0");
+        // setTime(`${hours}:${minutes}:${seconds}`);
         document.title = `${hours}:${minutes}:${seconds}`;
       } else {
         document.title = "Affotax-CRM";
       }
+      // eslint-disable-next-line
     }, [isRunning, elapsedTime]);
 
     return (

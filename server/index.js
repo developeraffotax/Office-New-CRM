@@ -10,6 +10,7 @@ import timerRoute from "./routes/timerRoutes.js";
 import commentRoute from "./routes/commentRoutes.js";
 import projectRoute from "./routes/projectRoutes.js";
 import taskRoute from "./routes/taskRoutes.js";
+import labelRoute from "./routes/labelRoutes.js";
 import http from "http";
 import notificationRoute from "./routes/notificationRoutes.js";
 import { initSocketServer } from "./socketServer.js";
@@ -38,6 +39,7 @@ app.use("/api/v1/comments", commentRoute);
 app.use("/api/v1/notification", notificationRoute);
 app.use("/api/v1/projects", projectRoute);
 app.use("/api/v1/tasks", taskRoute);
+app.use("/api/v1/label", labelRoute);
 
 // Rest API's
 app.use("/", (req, res) => {

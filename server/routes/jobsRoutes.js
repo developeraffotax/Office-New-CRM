@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  addlabel,
   createDublicateJob,
   createJob,
   deleteClientJob,
@@ -65,6 +66,9 @@ router.post("/dublicate/job/complete", requiredSignIn, createDublicateJob);
 
 // Update Client Status
 router.put("/update/client/status/:id", requiredSignIn, updateClientStatus);
+
+// Add Label
+router.put("/add/job/labe/:id", requiredSignIn, addlabel);
 
 router.post("/import/data", upload.single("file"), requiredSignIn, importData);
 

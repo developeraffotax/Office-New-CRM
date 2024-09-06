@@ -793,3 +793,37 @@
       //   maxSize: 100,
       //   grow: false,
       // },
+
+
+      ----------------User Name Filter----------->
+       {/* {users?.map((user, i) => (
+                      <div
+                        className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                          active1 === user.name &&
+                          "  border-b-2 text-orange-600 border-orange-600"
+                        }`}
+                        key={i}
+                        onClick={() => {
+                          setActive1(user?.name);
+                          filterByProjStat(user?.name, active);
+                        }}
+                      >
+                        {user.name} ({getJobHolderCount(user?.name, active)})
+                      </div>
+                    ))} */}
+
+
+                    ------------------Timer--------------
+
+                    
+                     useEffect(() => {
+      let intervalId;
+
+      if (isRunning) {
+        intervalId = setInterval(() => {
+          setElapsedTime((prevTime) => prevTime + 1);
+        }, 1000);
+      }
+
+      return () => clearInterval(intervalId);
+    }, [isRunning]);

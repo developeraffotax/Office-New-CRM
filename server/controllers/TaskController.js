@@ -14,7 +14,6 @@ export const createTask = async (req, res) => {
       startDate,
       deadline,
       lead,
-      label,
       status,
     } = req.body;
 
@@ -46,7 +45,6 @@ export const createTask = async (req, res) => {
       startDate: startDate || undefined,
       deadline: deadline || undefined,
       lead,
-      label,
       status,
     });
 
@@ -104,7 +102,7 @@ export const getAllTasks = async (req, res) => {
     const tasks = await taskModel
       .find({ status: { $ne: "completed" } })
       .select(
-        "project jobHolder task hours startDate deadline status lead  estimate_Time comments._id comments.status label"
+        "project jobHolder task hours startDate deadline status lead  estimate_Time comments._id comments.status labal"
       );
 
     res.status(200).send({
@@ -390,16 +388,8 @@ export const deleteTask = async (req, res) => {
 export const updateTask = async (req, res) => {
   try {
     const taskId = req.params.id;
-    const {
-      projectId,
-      jobHolder,
-      task,
-      hours,
-      startDate,
-      deadline,
-      lead,
-      label,
-    } = req.body;
+    const { projectId, jobHolder, task, hours, startDate, deadline, lead } =
+      req.body;
 
     if (!projectId) {
       return res.status(400).send({
@@ -445,7 +435,6 @@ export const updateTask = async (req, res) => {
         startDate,
         deadline,
         lead,
-        label,
       },
       { new: true }
     );
@@ -646,6 +635,42 @@ export const getAllCompletedTasks = async (req, res) => {
     res.status(500).send({
       success: false,
       messsage: "Error in get all tasks!",
+      error: error,
+    });
+  }
+};
+
+// Adding Label in Jobs
+export const addlabel = async (req, res) => {
+  try {
+    const taskId = req.params.id;
+    const { name, color } = req.body;
+
+    const task = await taskModel.findById(taskId);
+
+    if (!task) {
+      return res.status(400).send({
+        success: false,
+        message: "Task not found!",
+      });
+    }
+
+    const updateTask = await taskModel.findByIdAndUpdate(
+      { _id: task._id },
+      { "labal.name": name, "labal.color": color },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Label added!",
+      task: updateTask,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in add task label!",
       error: error,
     });
   }

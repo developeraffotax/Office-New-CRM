@@ -64,6 +64,11 @@ const commentsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const labelSchema = new mongoose.Schema({
+  name: { type: String },
+  color: { type: String },
+});
+
 // Client Schema
 const clientSchema = new mongoose.Schema(
   {
@@ -145,10 +150,7 @@ const clientSchema = new mongoose.Schema(
       type: String,
       default: "O m",
     },
-    label: {
-      name: { type: String },
-      color: { type: String },
-    },
+    label: labelSchema,
     comments: [commentsSchema],
   },
   { timestamps: true }

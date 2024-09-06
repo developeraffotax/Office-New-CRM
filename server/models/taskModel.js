@@ -49,6 +49,11 @@ const subtask = new mongoose.Schema(
   { timestamps: true }
 );
 
+const labelSchema = new mongoose.Schema({
+  name: { type: String },
+  color: { type: String },
+});
+
 const taskSchema = new mongoose.Schema(
   {
     project: {
@@ -90,9 +95,7 @@ const taskSchema = new mongoose.Schema(
       default: "Om",
     },
     comments: [commentsSchema],
-    label: {
-      type: String,
-    },
+    labal: labelSchema,
     activities: [activitySchema],
     subtasks: [subtask],
   },

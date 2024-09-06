@@ -1016,9 +1016,15 @@ export default function AllJobs() {
 
           // Other filter cases
           const today = new Date();
+          const startOfToday = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate()
+          );
+
           switch (filterValue) {
             case "Expired":
-              return cellDate < today;
+              return cellDate < startOfToday;
             case "Today":
               return cellDate.toDateString() === today.toDateString();
             case "Tomorrow":
@@ -1184,9 +1190,15 @@ export default function AllJobs() {
 
           // Other filter cases
           const today = new Date();
+          const startOfToday = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate()
+          );
+
           switch (filterValue) {
             case "Expired":
-              return cellDate < today;
+              return cellDate < startOfToday;
             case "Today":
               return cellDate.toDateString() === today.toDateString();
             case "Tomorrow":
@@ -1332,10 +1344,15 @@ export default function AllJobs() {
 
           const cellDate = new Date(cellValue);
           const today = new Date();
+          const startOfToday = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate()
+          );
 
           switch (filterValue) {
             case "Expired":
-              return cellDate < today;
+              return cellDate < startOfToday;
             case "Today":
               return cellDate.toDateString() === today.toDateString();
             case "Tomorrow":

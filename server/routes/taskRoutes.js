@@ -1,6 +1,7 @@
 import express from "express";
 import { isAdmin, requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
+  addlabel,
   createSubTask,
   createTask,
   deleteSubTask,
@@ -60,5 +61,8 @@ router.delete(
 
 // Completed Tasks
 router.get("/get/completed", getAllCompletedTasks);
+
+// Add Label
+router.put("/add/label/:id", requiredSignIn, addlabel);
 
 export default router;

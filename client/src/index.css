@@ -414,3 +414,12 @@ inputBox > textarea:focus ~ span {
   inherits: true;
   initial-value: 0turn;
 }
+
+/*  */
+.delete {
+  opacity: 0;
+  transition: 0.4s ease-in-out;
+}
+.label:hover .delete {
+  opacity: 1;
+}

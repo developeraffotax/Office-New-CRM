@@ -71,6 +71,12 @@
   background-image: linear-gradient(-20deg, #fc6076 0%, #e4a976 100%);
 }
 
+/* --------- */
+
+/* .css-wsew38 {
+  display: none !important;
+} */
+
 /* Remove date Icon */
 /* input[type="date"]::-webkit-calendar-picker-indicator {
   display: none;

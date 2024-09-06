@@ -31,7 +31,7 @@ const formatElapsedTime = (createdAt) => {
 
 export default function Header() {
   const [search, setSearch] = useState("");
-  const { auth, setAuth, setFilterId } = useAuth();
+  const { auth, setAuth, setFilterId, time } = useAuth();
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
   const navigate = useNavigate();

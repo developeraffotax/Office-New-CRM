@@ -41,6 +41,7 @@ export default function TimeSheet() {
   const [isOpen, setIsOpen] = useState(false);
   const [timerId, setTimerId] = useState("");
   const [tableFilterData, setTableFilterDate] = useState([]);
+
   const [times, setTimes] = useState({
     monTotal: 0,
     tueTotal: 0,
@@ -58,7 +59,7 @@ export default function TimeSheet() {
   // const [selectedDay, setSelectedDay] = useState("");
   // const [active, setActive] = useState("All");
   // const [filterData, setFilterData] = useState([]);
-  console.log("timerData:", timerData);
+  console.log("tableFilterData:", tableFilterData);
 
   //   Get All Timer Data
   const getAllTimeSheetData = async () => {
@@ -1160,6 +1161,10 @@ export default function TimeSheet() {
       );
     },
   });
+
+  // // Access the row data
+  // const allRowData = table.getRowModel().rows.map((row) => row.original);
+  // console.log("allRowData:", allRowData);
 
   return (
     <Layout>

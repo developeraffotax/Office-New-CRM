@@ -101,7 +101,7 @@ export const getAllClients = async (req, res) => {
     const clients = await jobsModel
       .find({ status: { $ne: "completed" } })
       .select(
-        "clientName companyName email currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status"
+        "clientName companyName email currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label"
       );
 
     res.status(200).send({
@@ -841,4 +841,38 @@ export const importData = async (req, res) => {
   }
 };
 
-// Delete
+// Adding Label in Jobs
+export const addlabel = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const { name, color } = req.body;
+
+    const job = await jobsModel.findById(jobId);
+
+    if (!job) {
+      return res.status(400).send({
+        success: false,
+        message: "Job not found!",
+      });
+    }
+
+    const updateJob = await jobsModel.findByIdAndUpdate(
+      { _id: job._id },
+      { "label.name": name, "label.color": color },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Label added!",
+      job: updateJob,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in add job label!",
+      error: error,
+    });
+  }
+};

@@ -37,6 +37,7 @@ import { IoMdDownload } from "react-icons/io";
 import CompletedJobs from "./CompletedJobs";
 import socketIO from "socket.io-client";
 import { GrUpdate } from "react-icons/gr";
+import AddLabel from "../../components/Modals/AddLabel";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -82,6 +83,8 @@ export default function AllJobs() {
   const [totalHours, setTotalHours] = useState("0");
   const [fLoading, setFLoading] = useState(false);
   const commentStatusRef = useRef(null);
+  const [showlabel, setShowlabel] = useState(false);
+  const [labelData, setLabelData] = useState([]);
 
   // Extract the current path
   const currentPath = location.pathname;
@@ -187,6 +190,24 @@ export default function AllJobs() {
     };
     // eslint-disable-next-line
   }, [socketId]);
+
+  //   Get All Labels
+  const getlabel = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels`
+      );
+      if (data.success) {
+        setLabelData(data.labels);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getlabel();
+  }, []);
 
   // -----------Handle Custom date filter------
   const getCurrentMonthYear = () => {
@@ -613,6 +634,39 @@ export default function AllJobs() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Add label in Jobs
+  const addJoblabel = async (id, name, color) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/add/job/labe/${id}`,
+        { name, color }
+      );
+      if (data) {
+        if (filterId || active || active1) {
+          setFilterData((prevData) =>
+            prevData?.map((item) =>
+              item._id === id ? { ...item, label: { name, color } } : item
+            )
+          );
+        }
+        setTableData((prevData) =>
+          prevData?.map((item) =>
+            item._id === id ? { ...item, label: { name, color } } : item
+          )
+        );
+
+        toast.success("label added!");
+        // Socket
+        socketId.emit("addJob", {
+          note: "New Task Added",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Error while add label");
+    }
+  };
+
   //  --------------Table Columns Data--------->
   const columns = useMemo(
     () => [
@@ -648,7 +702,7 @@ export default function AllJobs() {
 
           return (
             <div
-              className="cursor-pointer text-sky-500 hover:text-sky-600 w-full h-full"
+              className="cursor-pointer text-[#0078c8] hover:text-[#0053c8] w-full h-full"
               onClick={() => {
                 getSingleJobDetail(row.original._id);
                 setCompanyName(companyName);
@@ -1537,6 +1591,7 @@ export default function AllJobs() {
         maxSize: 140,
         grow: false,
       },
+      //
       {
         accessorKey: "totalTime",
         Header: ({ column }) => {
@@ -1636,6 +1691,106 @@ export default function AllJobs() {
           );
         },
         size: 100,
+      },
+      // Label
+      {
+        accessorKey: "label",
+
+        Header: ({ column }) => {
+          return (
+            <div className="flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Labels
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {labelData?.map((label, i) => (
+                  <option key={i} value={label?.name}>
+                    {label?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+
+        Cell: ({ cell, row }) => {
+          const [show, setShow] = useState(false);
+          const jobLabel = row.original.label || {};
+          const { name, color } = jobLabel;
+
+          const handleLabelChange = (labelName) => {
+            const selectedLabel = labelData.find(
+              (label) => label.name === labelName
+            );
+            if (selectedLabel) {
+              addJoblabel(row.original._id, labelName, selectedLabel.color);
+            }
+            setShow(false);
+          };
+
+          return (
+            <div className="w-full flex items-center justify-center">
+              {show ? (
+                <select
+                  value={name || ""}
+                  onChange={(e) => handleLabelChange(e.target.value)}
+                  className="w-full h-[2rem] rounded-md border-none outline-none"
+                >
+                  <option value="">Select Label</option>
+                  {labelData?.map((label, i) => (
+                    <option value={label?.name} key={i}>
+                      {label?.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div
+                  className="cursor-pointer h-full min-w-full "
+                  onDoubleClick={() => setShow(true)}
+                >
+                  {name ? (
+                    <span
+                      className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
+                      style={{ background: `${color}` }}
+                    >
+                      {name}
+                    </span>
+                  ) : (
+                    <span
+                      className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
+                      style={{ background: `${color}` }}
+                    >
+                      .
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        },
+
+        filterFn: (row, columnId, filterValue) => {
+          const labelName = row.original?.label?.name || "";
+          return labelName === filterValue;
+        },
+
+        filterVariant: "select",
+        filterSelectOptions: labelData.map((label) => label.name),
+        size: 160,
+        minSize: 100,
+        maxSize: 210,
+        grow: false,
       },
     ],
     // eslint-disable-next-line
@@ -1766,7 +1921,7 @@ export default function AllJobs() {
                 htmlFor="importJobs"
                 className={`${
                   style.button1
-                } !bg-gray-50 !shadow-none text-black hover:bg-orange-500 text-[15px] ${
+                } !bg-gray-100 !shadow-none text-black hover:bg-orange-500 text-[15px] ${
                   fLoading ? "cursor-not-allowed opacity-90" : ""
                 }`}
                 style={{ padding: ".4rem 1.1rem", color: "#000" }}
@@ -1780,6 +1935,13 @@ export default function AllJobs() {
                 )}
               </label>
             </form>
+            <button
+              className={`${style.button1} text-[15px] `}
+              onClick={() => setShowlabel(true)}
+              style={{ padding: ".4rem 1rem" }}
+            >
+              Add Label
+            </button>
             <button
               className={`${style.button1} text-[15px] `}
               onClick={() => setIsOpen(true)}
@@ -1910,7 +2072,7 @@ export default function AllJobs() {
                 Job Holder Summary
               </h3> */}
               <div className="flex items-center flex-wrap gap-4">
-                {users?.map((user, i) => (
+                {/* {users?.map((user, i) => (
                   <div
                     className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
                       active1 === user &&
@@ -1924,7 +2086,27 @@ export default function AllJobs() {
                   >
                     {user} ({getJobHolderCount(user, active)})
                   </div>
-                ))}
+                ))} */}
+
+                <div className="flex items-center flex-wrap gap-4">
+                  {users
+                    ?.filter((user) => getJobHolderCount(user, active) > 0)
+                    .map((user, i) => (
+                      <div
+                        className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                          active1 === user &&
+                          "  border-b-2 text-orange-600 border-orange-600"
+                        }`}
+                        key={i}
+                        onClick={() => {
+                          setActive1(user);
+                          filterByDepStat(user, active);
+                        }}
+                      >
+                        {user} ({getJobHolderCount(user, active)})
+                      </div>
+                    ))}
+                </div>
               </div>
             </div>
             <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
@@ -2120,6 +2302,13 @@ export default function AllJobs() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ---------------Add label------------- */}
+      {showlabel && (
+        <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
+          <AddLabel setShowlabel={setShowlabel} />
         </div>
       )}
     </Layout>

@@ -68,7 +68,6 @@ const AllTasks = () => {
   const [showCompleted, setShowCompleted] = useState(false);
   const [taskId, setTaskId] = useState("");
   const [tasksData, setTasksData] = useState([]);
-  const [userTaskData, setUserTaskData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [note, setNote] = useState("");
   // Timer
@@ -91,6 +90,7 @@ const AllTasks = () => {
   const [projectName, setProjectName] = useState("");
   const [totalHours, setTotalHours] = useState("0");
   const [allProjects, setAllProjects] = useState([]);
+  const [labelData, setLabelData] = useState([]);
   const commentStatusRef = useRef(null);
   console.log("totalHours", totalHours);
 
@@ -189,26 +189,23 @@ const AllTasks = () => {
     // eslint-disable-next-line
   }, []);
 
-  // useEffect(() => {
-  //   if (auth && auth?.user) {
-  //     if (auth.user.role === "Admin") {
-  //       setUserTaskData(tasksData);
-  //     } else {
-  //       // const filteredTasks = tasksData?.filter(
-  //       //   (item) => item.jobHolder.trim() === auth.user.name.trim()
-  //       // );
+  //   Get All Labels
+  const getlabel = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels`
+      );
+      if (data.success) {
+        setLabelData(data.labels);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-  //       const filteredTasks = tasksData.filter((task) => {
-  //         return task.project?.users_list?.some(
-  //           (user) => user._id === auth.user.id
-  //         );
-  //       });
-
-  //       setUserTaskData(filteredTasks);
-  //     }
-  //   }
-  //   //eslint-disable-next-line
-  // }, [auth, tasksData]);
+  useEffect(() => {
+    getlabel();
+  }, []);
 
   // ---------------Get Task on WithoutLoad-----
   const getTasks1 = async () => {
@@ -758,6 +755,39 @@ const AllTasks = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Add label in Task
+  const addlabelTask = async (id, name, color) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/add/label/${id}`,
+        { name, color }
+      );
+      if (data) {
+        if (filterId || active || active1) {
+          setFilterData((prevData) =>
+            prevData?.map((item) =>
+              item._id === id ? { ...item, labal: { name, color } } : item
+            )
+          );
+        }
+        setTasksData((prevData) =>
+          prevData?.map((item) =>
+            item._id === id ? { ...item, labal: { name, color } } : item
+          )
+        );
+
+        toast.success("label added!");
+        // // Socket
+        // socketId.emit("addTask", {
+        //   note: "New Task Added",
+        // });
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Error while add label");
+    }
+  };
+
   // ----------------------Table Data--------->
 
   const columns = useMemo(
@@ -946,7 +976,7 @@ const AllTasks = () => {
                   title={allocateTask}
                 >
                   <p
-                    className="text-sky-500 cursor-pointer text-start hover:text-sky-600 "
+                    className="text-[#0078c8] hover:text-[#0053c8] cursor-pointer text-start  "
                     onDoubleClick={() => setShowEdit(true)}
                     onClick={() => {
                       setTaskID(row.original._id);
@@ -1663,6 +1693,106 @@ const AllTasks = () => {
         },
         size: 90,
       },
+      // Label
+      {
+        accessorKey: "labal",
+
+        Header: ({ column }) => {
+          return (
+            <div className="flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Labels
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {labelData?.map((label, i) => (
+                  <option key={i} value={label?.name}>
+                    {label?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+
+        Cell: ({ cell, row }) => {
+          const [show, setShow] = useState(false);
+          const jobLabel = row.original.labal || {};
+          const { name, color } = jobLabel;
+
+          const handleLabelChange = (labelName) => {
+            const selectedLabel = labelData.find(
+              (label) => label.name === labelName
+            );
+            if (selectedLabel) {
+              addlabelTask(row.original._id, labelName, selectedLabel.color);
+            }
+            setShow(false);
+          };
+
+          return (
+            <div className="w-full flex items-center justify-center">
+              {show ? (
+                <select
+                  value={name || ""}
+                  onChange={(e) => handleLabelChange(e.target.value)}
+                  className="w-full h-[2rem] rounded-md border-none outline-none"
+                >
+                  <option value="">Select Label</option>
+                  {labelData?.map((label, i) => (
+                    <option value={label?.name} key={i}>
+                      {label?.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div
+                  className="cursor-pointer h-full min-w-full "
+                  onDoubleClick={() => setShow(true)}
+                >
+                  {name ? (
+                    <span
+                      className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
+                      style={{ background: `${color}` }}
+                    >
+                      {name}
+                    </span>
+                  ) : (
+                    <span
+                      className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
+                      style={{ background: `${color}` }}
+                    >
+                      .
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        },
+
+        filterFn: (row, columnId, filterValue) => {
+          const labelName = row.original?.labal?.name || "";
+          return labelName === filterValue;
+        },
+
+        filterVariant: "select",
+        filterSelectOptions: labelData.map((label) => label.name),
+        size: 160,
+        minSize: 100,
+        maxSize: 210,
+        grow: false,
+      },
     ],
     // eslint-disable-next-line
     [users, play, note, auth, currentPath, projects, filterData, totalHours]
@@ -1765,6 +1895,16 @@ const AllTasks = () => {
       );
     },
   });
+
+  // useEffect(() => {
+  //   // Fetch all row data from the table model
+  //   const allRowData = table.getRowModel().rows.map((row) => row.original);
+
+  //   // Set the filter data when the table data changes
+  //   setFilterData(allRowData);
+
+  //   // eslint-disable-next-line
+  // }, [table.getState().filters]);
 
   return (
     <Layout>
@@ -2000,21 +2140,25 @@ const AllTasks = () => {
                     Job Holder Summary
                   </h3> */}
                   <div className="flex items-center flex-wrap gap-4">
-                    {users?.map((user, i) => (
-                      <div
-                        className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                          active1 === user.name &&
-                          "  border-b-2 text-orange-600 border-orange-600"
-                        }`}
-                        key={i}
-                        onClick={() => {
-                          setActive1(user?.name);
-                          filterByProjStat(user?.name, active);
-                        }}
-                      >
-                        {user.name} ({getJobHolderCount(user?.name, active)})
-                      </div>
-                    ))}
+                    {users
+                      ?.filter(
+                        (user) => getJobHolderCount(user?.name, active) > 0
+                      )
+                      .map((user, i) => (
+                        <div
+                          className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                            active1 === user.name &&
+                            "  border-b-2 text-orange-600 border-orange-600"
+                          }`}
+                          key={i}
+                          onClick={() => {
+                            setActive1(user?.name);
+                            filterByProjStat(user?.name, active);
+                          }}
+                        >
+                          {user.name} ({getJobHolderCount(user?.name, active)})
+                        </div>
+                      ))}
                   </div>
                 </div>
                 <hr className="mb-1 bg-gray-300 w-full h-[1px]" />

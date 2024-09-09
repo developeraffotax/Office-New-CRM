@@ -3,7 +3,8 @@ import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
   createLabel,
   deleteLabel,
-  getAllLabels,
+  getAllLabelsByJob,
+  getAllLabelsByTask,
 } from "../controllers/labelController.js";
 
 const router = express.Router();
@@ -12,7 +13,8 @@ const router = express.Router();
 router.post("/create/label", requiredSignIn, createLabel);
 
 // Get
-router.get("/get/labels", getAllLabels);
+router.get("/get/labels", getAllLabelsByJob);
+router.get("/get/labels/task", getAllLabelsByTask);
 
 // Delete
 router.delete("/delete/label/:id", requiredSignIn, deleteLabel);

@@ -655,7 +655,12 @@ export default function AllJobs() {
           )
         );
 
-        toast.success("label added!");
+        if (name) {
+          toast.success("label added!");
+        } else {
+          toast.success("label updated!");
+        }
+
         // Socket
         socketId.emit("addJob", {
           note: "New Task Added",
@@ -1534,9 +1539,12 @@ export default function AllJobs() {
             </select>
           );
         },
-        filterFn: "equals",
+        // filterFn: "equals",
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+          return (cellValue || "").toString() === filterValue.toString();
+        },
         filterSelectOptions: [
-          "Select",
           "Data",
           "Progress",
           "Queries",
@@ -1752,6 +1760,8 @@ export default function AllJobs() {
             );
             if (selectedLabel) {
               addJoblabel(row.original._id, labelName, selectedLabel.color);
+            } else {
+              addJoblabel(row.original._id, "", "");
             }
             setShow(false);
           };
@@ -1764,7 +1774,7 @@ export default function AllJobs() {
                   onChange={(e) => handleLabelChange(e.target.value)}
                   className="w-full h-[2rem] rounded-md border-none outline-none"
                 >
-                  <option value="">Select Label</option>
+                  <option value="empty">Select Label</option>
                   {labelData?.map((label, i) => (
                     <option value={label?.name} key={i}>
                       {label?.name}
@@ -1786,7 +1796,7 @@ export default function AllJobs() {
                   ) : (
                     <span
                       className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
-                      style={{ background: `${color}` }}
+                      // style={{ background: `${color}` }}
                     >
                       .
                     </span>
@@ -2325,7 +2335,11 @@ export default function AllJobs() {
       {/* ---------------Add label------------- */}
       {showlabel && (
         <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
-          <AddLabel setShowlabel={setShowlabel} />
+          <AddLabel
+            setShowlabel={setShowlabel}
+            type={"job"}
+            getLabels={getlabel}
+          />
         </div>
       )}
     </Layout>

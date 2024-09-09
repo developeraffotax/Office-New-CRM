@@ -37,6 +37,7 @@ import JobCommentModal from "../Jobs/JobCommentModal";
 import TaskDetail from "./TaskDetail";
 import { GrUpdate } from "react-icons/gr";
 import socketIO from "socket.io-client";
+import AddLabel from "../../components/Modals/AddLabel";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -92,6 +93,7 @@ const AllTasks = () => {
   const [allProjects, setAllProjects] = useState([]);
   const [labelData, setLabelData] = useState([]);
   const commentStatusRef = useRef(null);
+  const [showlabel, setShowlabel] = useState(false);
   console.log("totalHours", totalHours);
 
   const dateStatus = ["Due", "Overdue"];
@@ -193,7 +195,7 @@ const AllTasks = () => {
   const getlabel = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels`
+        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels/task`
       );
       if (data.success) {
         setLabelData(data.labels);
@@ -763,20 +765,27 @@ const AllTasks = () => {
         { name, color }
       );
       if (data) {
-        if (filterId || active || active1) {
-          setFilterData((prevData) =>
+        if (filterId || active !== "All" || filterData || active1) {
+          setFilterData((prevData = []) =>
             prevData?.map((item) =>
-              item._id === id ? { ...item, labal: { name, color } } : item
+              item._id === id ? { ...item, label: { name, color } } : item
             )
           );
         }
-        setTasksData((prevData) =>
+        setTasksData((prevData = []) =>
           prevData?.map((item) =>
-            item._id === id ? { ...item, labal: { name, color } } : item
+            item._id === id ? { ...item, label: { name, color } } : item
           )
         );
 
-        toast.success("label added!");
+        if (name) {
+          toast.success("label added!");
+        } else {
+          toast.success("label Updated!");
+        }
+
+        getTasks1();
+
         // // Socket
         // socketId.emit("addTask", {
         //   note: "New Task Added",
@@ -1020,20 +1029,67 @@ const AllTasks = () => {
               <span className="font-medium w-full text-center px-1 py-1 ml-1 rounded-md bg-gray-300/30 text-black">
                 {totalHours}
               </span>
-              {/* <input
-                type="search"
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal  h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              /> */}
             </div>
           );
         },
         Cell: ({ cell, row }) => {
           const hours = cell.getValue();
+          const [show, setShow] = useState(false);
+          const [hour, setHour] = useState(hours);
+          const [showId, setShowId] = useState("");
+
+          const updateHours = async (e) => {
+            e.preventDefault();
+            try {
+              const { data } = await axios.put(
+                `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/hours/${showId}`,
+                { hours: hour }
+              );
+              if (data) {
+                if (filterId || active || active1) {
+                  setFilterData((prevData) =>
+                    prevData?.map((item) =>
+                      item._id === taskId ? { ...item, hours: hours } : item
+                    )
+                  );
+                }
+                setTasksData((prevData) =>
+                  prevData?.map((item) =>
+                    item._id === taskId ? { ...item, hours: hours } : item
+                  )
+                );
+                setHour("");
+                setShow(false);
+                getTasks1();
+                toast.success("Hours Updated!");
+              }
+            } catch (error) {
+              console.log(error);
+              toast.error("Error in update hours!");
+            }
+          };
           return (
             <div className="w-full flex items-center justify-center">
-              <span className="text-[15px] font-medium">{hours}</span>
+              {show && row.original._id === showId ? (
+                <form onSubmit={updateHours}>
+                  <input
+                    type="text"
+                    value={hour}
+                    onChange={(e) => setHour(e.target.value)}
+                    className="w-full h-[1.7rem] px-[2px] outline-none rounded-md cursor-pointer"
+                  />
+                </form>
+              ) : (
+                <span
+                  className="text-[15px] font-medium"
+                  onDoubleClick={() => {
+                    setShowId(row.original._id);
+                    setShow(true);
+                  }}
+                >
+                  {hours}
+                </span>
+              )}
             </div>
           );
         },
@@ -1510,7 +1566,11 @@ const AllTasks = () => {
             </div>
           );
         },
-        filterFn: "equals",
+        // filterFn: "equals",
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+          return (cellValue || "").toString() === filterValue.toString();
+        },
         filterSelectOptions: [
           "Select",
           "To do",
@@ -1747,7 +1807,9 @@ const AllTasks = () => {
               (label) => label.name === labelName
             );
             if (selectedLabel) {
-              addlabelTask(row.original._id, labelName, selectedLabel.color);
+              addlabelTask(row.original._id, labelName, selectedLabel?.color);
+            } else {
+              addlabelTask(row.original._id, "", "");
             }
             setShow(false);
           };
@@ -1760,7 +1822,7 @@ const AllTasks = () => {
                   onChange={(e) => handleLabelChange(e.target.value)}
                   className="w-full h-[2rem] rounded-md border-none outline-none"
                 >
-                  <option value="">Select Label</option>
+                  <option value="clear">Select Label</option>
                   {labelData?.map((label, i) => (
                     <option value={label?.name} key={i}>
                       {label?.name}
@@ -1782,7 +1844,6 @@ const AllTasks = () => {
                   ) : (
                     <span
                       className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
-                      style={{ background: `${color}` }}
                     >
                       .
                     </span>
@@ -1997,6 +2058,13 @@ const AllTasks = () => {
                   )}
                 </div>
               )}
+              <button
+                className={`${style.button1} text-[15px] `}
+                onClick={() => setShowlabel(true)}
+                style={{ padding: ".4rem 1rem" }}
+              >
+                Add Label
+              </button>
               <button
                 className={`${style.button1} text-[15px] `}
                 onClick={() => setOpenAddProject(true)}
@@ -2380,6 +2448,17 @@ const AllTasks = () => {
           getTasks={getAllTasks}
           getAllProj1={getAllProjects}
         />
+      )}
+
+      {/* ---------------Add label------------- */}
+      {showlabel && (
+        <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
+          <AddLabel
+            setShowlabel={setShowlabel}
+            type={"task"}
+            getLabels={getlabel}
+          />
+        </div>
       )}
     </Layout>
   );

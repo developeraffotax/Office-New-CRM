@@ -18,6 +18,8 @@ import Loader from "../../utlis/Loader";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 import AddTimerModal from "./AddTimerModal";
+import { FaAngleLeft } from "react-icons/fa6";
+import { FaAngleRight } from "react-icons/fa6";
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -41,7 +43,6 @@ export default function TimeSheet() {
   const [isOpen, setIsOpen] = useState(false);
   const [timerId, setTimerId] = useState("");
   const [tableFilterData, setTableFilterDate] = useState([]);
-
   const [times, setTimes] = useState({
     monTotal: 0,
     tueTotal: 0,
@@ -52,13 +53,21 @@ export default function TimeSheet() {
     sunTotal: 0,
     weekTotal: 0,
   });
+  const [week, setWeek] = useState(new Date());
+  const [firstDayOfWeek, setFirstDayOfWeek] = useState(null);
+  const [lastDayOfWeek, setLastDayOfWeek] = useState(null);
+  const [firstDayOfPrevWeek, setFirstDayOfPrevWeek] = useState(null);
+  const [lastDayOfPrevWeek, setLastDayOfPrevWeek] = useState(null);
+  const [firstDayOfNextWeek, setFirstDayOfNextWeek] = useState(null);
+  const [lastDayOfNextWeek, setLastDayOfNextWeek] = useState(null);
+  const [strfdow, setStrfdow] = useState("");
+  const [strldow, setStrldow] = useState("");
+  const [strfdopw, setStrfdopw] = useState("");
+  const [strldopw, setStrldopw] = useState("");
+  const [strfdonw, setStrfdonw] = useState("");
+  const [strldonw, setStrldonw] = useState("");
+  const [userName, setUsername] = useState("");
 
-  // const [selectedUser, setSelectedUser] = useState("");
-  // const [selectedCompany, setSelectedComapany] = useState("");
-  // const [selectedDepartment, setSelectedDepartment] = useState("");
-  // const [selectedDay, setSelectedDay] = useState("");
-  // const [active, setActive] = useState("All");
-  // const [filterData, setFilterData] = useState([]);
   console.log("tableFilterData:", tableFilterData);
 
   //   Get All Timer Data
@@ -103,23 +112,192 @@ export default function TimeSheet() {
     // eslint-disable-next-line
   }, []);
 
-  // -------------- Filter Data By Department || Jobholder || Date ----------->
+  // ------------------------Getting Week wise Count------->
+  const formatTime = (milliseconds) => {
+    const totalMinutes = Math.floor(milliseconds / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    // Format with leading zeros
+    const formattedHours = String(hours).padStart(2, "0");
+    const formattedMinutes = String(minutes).padStart(2, "0");
+
+    return `${formattedHours}:${formattedMinutes}`;
+  };
+
+  useEffect(() => {
+    let monTotal = 0;
+    let tueTotal = 0;
+    let wedTotal = 0;
+    let thuTotal = 0;
+    let friTotal = 0;
+    let satTotal = 0;
+    let sunTotal = 0;
+
+    tableFilterData?.forEach((entry) => {
+      const startTime = new Date(entry.startTime);
+      const endTime = new Date(entry.endTime);
+
+      if (!isNaN(startTime) && !isNaN(endTime)) {
+        const diffMs = Math.abs(endTime - startTime);
+        const day = startTime.getDay();
+
+        switch (day) {
+          case 1: // Monday
+            monTotal += diffMs;
+            break;
+          case 2: // Tuesday
+            tueTotal += diffMs;
+            break;
+          case 3: // Wednesday
+            wedTotal += diffMs;
+            break;
+          case 4: // Thursday
+            thuTotal += diffMs;
+            break;
+          case 5: // Friday
+            friTotal += diffMs;
+            break;
+          case 6: // Saturday
+            satTotal += diffMs;
+            break;
+          case 0: // Sunday
+            sunTotal += diffMs;
+            break;
+          default:
+            break;
+        }
+      }
+    });
+
+    const weekTotal =
+      monTotal +
+      tueTotal +
+      wedTotal +
+      thuTotal +
+      friTotal +
+      satTotal +
+      sunTotal;
+
+    setTimes({
+      monTotal: formatTime(monTotal), // converting ms to hours
+      tueTotal: formatTime(tueTotal),
+      wedTotal: formatTime(wedTotal),
+      thuTotal: formatTime(thuTotal),
+      friTotal: formatTime(friTotal),
+      satTotal: formatTime(satTotal),
+      sunTotal: formatTime(sunTotal),
+      weekTotal: formatTime(weekTotal),
+    });
+  }, [timerData, tableFilterData]);
+
+  // ----------------Filter By Timer Data by User, Dep, Date------------>
   // const filterByDep = (value) => {
-  //   setFilterData("");
+  //   const filteredData = timerData.filter((item) => {
+  //     // Convert item.date to a comparable format if necessary
+  //     const itemDate = item.date
+  //       ? new Date(item.date).toLocaleDateString()
+  //       : "";
 
-  //   if (value !== "All") {
-  //     const filteredData = timerData?.filter(
-  //       (item) =>
-  //         item?.JobHolderName === value ||
-  //         item.department === value ||
-  //         item.company === value
+  //     return (
+  //       item.jobHolderName === value ||
+  //       itemDate === value ||
+  //       item.department === value
   //     );
+  //   });
 
-  //     // console.log("FilterData", filteredData);
-
-  //     setFilterData([...filteredData]);
-  //   }
+  //   // Update the state with the filtered data
+  //   setTableFilterDate(filteredData);
   // };
+
+  // -------------------Filter By Week---------->
+  useEffect(() => {
+    if (week) {
+      // Calculate the first and last day of the current week
+      const today = week;
+      const fdow = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - today.getDay() + 1
+      );
+      const ldow = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - today.getDay() + 7
+      );
+
+      setFirstDayOfWeek(fdow);
+      setLastDayOfWeek(ldow);
+
+      const formattedFdow = formatDate(fdow);
+      const formattedLdow = formatDate(ldow);
+
+      setStrfdow(formattedFdow);
+      setStrldow(formattedLdow);
+
+      // Previous week
+      const fdopw = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - today.getDay() - 6
+      );
+      const ldopw = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - today.getDay()
+      );
+
+      setFirstDayOfPrevWeek(fdopw);
+      setLastDayOfPrevWeek(ldopw);
+
+      setStrfdopw(formatDate(fdopw));
+      setStrldopw(formatDate(ldopw));
+
+      // Next week
+      const fdonw = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - today.getDay() + 8
+      );
+      const ldonw = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - today.getDay() + 14
+      );
+
+      setFirstDayOfNextWeek(fdonw);
+      setLastDayOfNextWeek(ldonw);
+
+      setStrfdonw(formatDate(fdonw));
+      setStrldonw(formatDate(ldonw));
+
+      // Filter `timerData` for the current week
+      const filteredData = timerData.filter((entry) => {
+        const entryDate = new Date(entry.date);
+
+        // Convert first and last day to only date (ignore time)
+        const fdowWithoutTime = new Date(fdow).setHours(0, 0, 0, 0);
+        const ldowWithoutTime = new Date(ldow).setHours(23, 59, 59, 999);
+        const entryDateWithoutTime = entryDate.setHours(0, 0, 0, 0);
+
+        // Check if entryDate is within the current week's range
+        return (
+          entryDateWithoutTime >= fdowWithoutTime &&
+          entryDateWithoutTime <= ldowWithoutTime &&
+          (!userName || entry.jobHolderName === userName)
+        );
+      });
+
+      setTableFilterDate(filteredData); // Update the filtered data for the table
+    }
+  }, [week, timerData, userName]);
+
+  const formatDate = (date) => {
+    const ye = new Intl.DateTimeFormat("en", { year: "numeric" }).format(date);
+    const mo = new Intl.DateTimeFormat("en", { month: "short" }).format(date);
+    const da = new Intl.DateTimeFormat("en", { day: "2-digit" }).format(date);
+    return `${da}-${mo}-${ye}`;
+  };
 
   // -----------Download in CSV------>
   const flattenData = (data) => {
@@ -232,6 +410,7 @@ export default function TimeSheet() {
           const handleFilterChange = (e) => {
             setFilterValue(e.target.value);
             column.setFilterValue(e.target.value);
+            // filterByDep(e.target.value);
           };
 
           const handleCustomDateChange = (e) => {
@@ -364,6 +543,8 @@ export default function TimeSheet() {
 
           useEffect(() => {
             column.setFilterValue(user);
+            setUsername(user);
+            // filterByDep(user);
 
             // eslint-disable-next-line
           }, [user]);
@@ -381,7 +562,11 @@ export default function TimeSheet() {
               {auth?.user?.role === "Admin" && (
                 <select
                   value={column.getFilterValue()}
-                  onChange={(e) => column.setFilterValue(e.target.value)}
+                  onChange={(e) => {
+                    column.setFilterValue(e.target.value);
+                    setUsername(e.target.value);
+                    // filterByDep(e.target.value);
+                  }}
                   className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
                 >
                   <option value="">Select</option>
@@ -574,7 +759,10 @@ export default function TimeSheet() {
               </span>
               <select
                 value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                  // filterByDep(e.target.value);
+                }}
                 className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
                 <option value="">Select</option>
@@ -1022,7 +1210,7 @@ export default function TimeSheet() {
         : []),
     ],
     // eslint-disable-next-line
-    [auth, users]
+    [auth, users, tableFilterData, userName]
   );
 
   // Display Time in Correct Day
@@ -1077,7 +1265,7 @@ export default function TimeSheet() {
 
   const table = useMaterialReactTable({
     columns,
-    data: timerData || [],
+    data: !tableFilterData && !userName ? timerData : tableFilterData || [],
     enableStickyHeader: true,
     enableStickyFooter: true,
     // columnFilterDisplayMode: "popover",
@@ -1182,6 +1370,7 @@ export default function TimeSheet() {
                   // setSelectedDepartment("");
                   // setSelectedDay("");
                   // setFilterData("");
+                  setUsername("");
                   handleClearFilters();
                 }}
                 title="Clear filters"
@@ -1189,8 +1378,48 @@ export default function TimeSheet() {
                 <IoClose className="h-6 w-6  cursor-pointer" />
               </span>
             </div>
+            {/*-------- Week Wise Filter---------- */}
+
+            <div className="flex items-center justify-center">
+              <div
+                className="mx-2"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {/* Previous Week Button */}
+                <button
+                  title={`${strfdopw && strfdopw} to ${strldopw && strldopw}`}
+                  onClick={() => {
+                    setWeek(new Date(firstDayOfPrevWeek));
+                  }}
+                  className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
+                >
+                  <FaAngleLeft className="h-5 w-5 text-white" />
+                </button>
+
+                <div className="mx-2">
+                  <p>
+                    Entries From {strfdow && strfdow} to {strldow && strldow}
+                  </p>
+                </div>
+
+                {/* Next Week Button */}
+                <button
+                  title={`${strfdonw && strfdonw} to ${strldonw && strldonw}`}
+                  onClick={() => {
+                    setWeek(new Date(firstDayOfNextWeek));
+                  }}
+                  className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
+                >
+                  <FaAngleRight className="h-5 w-5 text-white" />
+                </button>
+              </div>
+            </div>
           </div>
-          {/* Project Buttons */}
+          {/* ----------Add Manual Buttons---------- */}
           <div className="flex items-center gap-4">
             <button
               className={`${style.button1} text-[15px] `}
@@ -1202,89 +1431,7 @@ export default function TimeSheet() {
           </div>
         </div>
         {/* ---------------Filters---------- */}
-        {/* <div className="flex items-center flex-wrap gap-2 mt">
-          <div className="">
-            <select
-              value={selectedUser}
-              className="w-[8.5rem] h-[2rem] rounded-md border-2 cursor-pointer border-gray-300  outline-none"
-              onChange={(e) => {
-                filterByDep(e.target.value);
-                setSelectedUser(e.target.value);
-              }}
-              title="Filter by Users"
-            >
-              <option value="All">Employees</option>
-              {users?.map((user, i) => (
-                <option value={user?.name} key={i}>
-                  {user.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="">
-            <select
-              value={selectedCompany}
-              className="w-[8.5rem] h-[2rem] rounded-md border-2 cursor-pointer border-gray-300  outline-none"
-              onChange={(e) => setSelectedComapany(e.target.value)}
-              title="Filter by Company"
-            >
-              <option value="All">Company</option>
-              {users?.map((user, i) => (
-                <option value={user?.name} key={i}>
-                  {user.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="">
-            <select
-              value={selectedDepartment}
-              className="w-[8.5rem] h-[2rem] rounded-md border-2 cursor-pointer border-gray-300  outline-none"
-              onChange={(e) => {
-                filterByDep(e.target.value);
-                setSelectedDepartment(e.target.value);
-              }}
-              title="Filter by Department"
-            >
-              <option value="All">Department</option>
-              {departments?.map((department, i) => (
-                <option value={department} key={i}>
-                  {department}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="">
-            <select
-              value={selectedDay}
-              className="w-[8.5rem] h-[2rem] rounded-md border-2 cursor-pointer border-gray-300  outline-none"
-              onChange={(e) => setSelectedDay(e.target.value)}
-              title="Filter by days"
-            >
-              <option value="All">-----</option>
 
-              <option value="week">Weekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-2">
-            <span
-              className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
-              onClick={() => {
-                setActive("All");
-                setSelectedUser("");
-                setSelectedComapany("");
-                setSelectedDepartment("");
-                setSelectedDay("");
-                setFilterData("");
-                handleClearFilters();
-              }}
-              title="Clear filters"
-            >
-              <IoClose className="h-6 w-6  cursor-pointer" />
-            </span>
-          </div>
-        </div> */}
         {/* -----------Tabledata--------------- */}
         {loading ? (
           <div className="flex items-center justify-center w-full h-screen px-4 py-4">
@@ -1299,42 +1446,45 @@ export default function TimeSheet() {
             <div className="h-full hidden1 overflow-y-scroll  relative">
               <MaterialReactTable table={table} />
             </div>
-            <div className="w-full mt-0 2xl:mt-[-2rem] grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-8 gap-4 2xl:gap-5">
-              <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-                <h4 className="text-[16px] font-medium">Monday</h4>
-                <span className="text-[15px]">00:00</span>
-              </div>
-              <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-                <h4 className="text-[16px] font-medium">Tuesday</h4>
-                <span className="text-[15px]">00:00</span>
-              </div>
-              <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-                <h4 className="text-[16px] font-medium">Wednesday</h4>
-                <span className="text-[15px]">00:00</span>
-              </div>
-              <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-                <h4 className="text-[16px] font-medium">Thursday</h4>
-                <span className="text-[15px]">00:00</span>
-              </div>
-              <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-                <h4 className="text-[16px] font-medium">Friday</h4>
-                <span className="text-[15px]">00:00</span>
-              </div>
-              <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-                <h4 className="text-[16px] font-medium">Saturday</h4>
-                <span className="text-[15px]">00:00</span>
-              </div>
-              <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-500 hover:bg-green-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-                <h4 className="text-[16px] font-medium">Sunday</h4>
-                <span className="text-[15px]">00:00</span>
-              </div>
-              <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-orange-500 hover:bg-orange-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-                <h4 className="text-[16px] font-medium">W-Total</h4>
-                <span className="text-[15px]">00:00</span>
-              </div>
-            </div>
           </div>
         )}
+
+        {/* ---------------Total Time---------------- */}
+
+        <div className="w-full absolute bottom-0 left-0 px-4 z-[20] grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-8 gap-4 2xl:gap-5">
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">Monday</h4>
+            <span className="text-[15px]">{times?.monTotal}</span>
+          </div>
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">Tuesday</h4>
+            <span className="text-[15px]">{times?.tueTotal}</span>
+          </div>
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">Wednesday</h4>
+            <span className="text-[15px]">{times?.wedTotal}</span>
+          </div>
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">Thursday</h4>
+            <span className="text-[15px]">{times?.thuTotal}</span>
+          </div>
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">Friday</h4>
+            <span className="text-[15px]">{times?.friTotal}</span>
+          </div>
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">Saturday</h4>
+            <span className="text-[15px]">{times?.satTotal}</span>
+          </div>
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">Sunday</h4>
+            <span className="text-[15px]">{times?.sunTotal}</span>
+          </div>
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-orange-500 hover:bg-orange-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">W-Total</h4>
+            <span className="text-[15px]">{times?.weekTotal}</span>
+          </div>
+        </div>
 
         {/* -----------Add Task-------------- */}
         {isOpen && (

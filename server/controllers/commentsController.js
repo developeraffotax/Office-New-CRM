@@ -7,7 +7,7 @@ import userModel from "../models/userModel.js";
 export const createComment = async (req, res) => {
   const senderId = req.user.user._id;
   try {
-    const { comment, jobId, type } = req.body;
+    const { comment, jobId, type, mentionUser } = req.body;
 
     console.log("Sender Id", senderId);
 
@@ -33,14 +33,20 @@ export const createComment = async (req, res) => {
       await job.save();
 
       // Create Notification
-      const user = await userModel.findOne({ name: job.job.jobHolder });
+      const user = await userModel
+        .findOne({
+          name: mentionUser ? mentionUser : job.job.jobHolder,
+        })
+        .exec();
+
+      console.log("user:", user);
 
       const notification = await notificationModel.create({
         title: "New comment received!",
         redirectLink: "/job-planning",
         description: `${req.user.user.name} add a new comment of "${job.job.jobName}". ${comment}`,
         taskId: jobId,
-        userId: user._id,
+        userId: user?._id,
       });
 
       res.status(200).send({

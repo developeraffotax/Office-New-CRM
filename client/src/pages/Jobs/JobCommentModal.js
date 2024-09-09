@@ -42,6 +42,7 @@ export default function JobCommentModal({
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [mentionStart, setMentionStart] = useState(-1);
+  const [selectedUser, setSelectedUser] = useState("");
 
   // -----------Mention User----->
   const handleInputChange = (e) => {
@@ -74,6 +75,8 @@ export default function JobCommentModal({
       user +
       " " +
       comment.slice(comment.length);
+
+    setSelectedUser(user);
 
     setComment(newText);
     setShowSuggestions(false);
@@ -179,6 +182,7 @@ export default function JobCommentModal({
           comment: comment,
           jobId: jobId,
           type,
+          mentionUser: selectedUser,
         }
       );
       if (data) {

@@ -5,7 +5,7 @@ import { IoClose } from "react-icons/io5";
 import { TbLoader2 } from "react-icons/tb";
 import { style } from "../../utlis/CommonStyle";
 
-export default function AddLabel({ setShowlabel }) {
+export default function AddLabel({ setShowlabel, type, getLabels }) {
   const [name, setName] = useState("");
   const [color, setColor] = useState("#40E0D0");
   const [loading, setLoading] = useState(false);
@@ -15,11 +15,22 @@ export default function AddLabel({ setShowlabel }) {
   //   Get All Labels
   const getlabel = async () => {
     try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels`
-      );
-      if (data.success) {
-        setLabelData(data.labels);
+      if (type === "job") {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels`
+        );
+        if (data.success) {
+          setLabelData(data.labels);
+          getLabels();
+        }
+      } else {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels/task`
+        );
+        if (data.success) {
+          setLabelData(data.labels);
+          getLabels();
+        }
       }
     } catch (error) {
       console.log(error);
@@ -28,6 +39,8 @@ export default function AddLabel({ setShowlabel }) {
 
   useEffect(() => {
     getlabel();
+
+    // eslint-disable-next-line
   }, []);
 
   // Add Label
@@ -37,7 +50,7 @@ export default function AddLabel({ setShowlabel }) {
     try {
       const { data } = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/label/create/label`,
-        { name, color }
+        { name, color, type }
       );
       if (data.success) {
         getlabel();

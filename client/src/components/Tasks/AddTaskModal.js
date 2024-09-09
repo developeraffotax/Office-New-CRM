@@ -29,6 +29,7 @@ export default function AddTaskModal({
   const [lead, setLead] = useState("");
   const [label, setLabel] = useState("");
   const [projectName, setProjectName] = useState("");
+  const [recurring, setRecurring] = useState("");
 
   useEffect(() => {
     if (taskDetal) {
@@ -41,6 +42,7 @@ export default function AddTaskModal({
       setDeadline(format(new Date(taskDetal.deadline), "yyyy-MM-dd"));
       setLead(taskDetal.lead);
       setLabel(taskDetal.label);
+      setRecurring(taskDetal.recurring);
     }
   }, [taskId, taskDetal]);
 
@@ -61,6 +63,7 @@ export default function AddTaskModal({
             deadline,
             lead,
             label,
+            recurring,
           }
         );
         if (data?.success) {
@@ -86,6 +89,7 @@ export default function AddTaskModal({
             deadline,
             lead,
             label,
+            recurring,
           }
         );
         if (data?.success) {
@@ -214,13 +218,17 @@ export default function AddTaskModal({
                 </option>
               ))}
           </select>
-          <input
-            type="text"
-            placeholder="Lable"
-            className={`${style.input} w-full`}
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-          />
+          <select
+            value={recurring}
+            onChange={(e) => setRecurring(e.target.value)}
+            className={`${style.input}`}
+          >
+            <option value="">Select Recurring</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="quarterly">Quarterly</option>
+          </select>
           <div className="flex items-center justify-end">
             <button
               className={`${style.button1} text-[15px] `}

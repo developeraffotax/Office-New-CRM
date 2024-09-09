@@ -827,3 +827,84 @@
 
       return () => clearInterval(intervalId);
     }, [isRunning]);
+
+
+
+
+
+
+  // const [selectedUser, setSelectedUser] = useState("");
+  // const [selectedCompany, setSelectedComapany] = useState("");
+  // const [selectedDepartment, setSelectedDepartment] = useState("");
+  // const [selectedDay, setSelectedDay] = useState("");
+  // const [active, setActive] = useState("All");
+  // const [filterData, setFilterData] = useState([]);
+
+
+    {/* <div className="flex items-center flex-wrap gap-2 mt">
+          <div className="">
+            <select
+              value={selectedUser}
+              className="w-[8.5rem] h-[2rem] rounded-md border-2 cursor-pointer border-gray-300  outline-none"
+              onChange={(e) => {
+                filterByDep(e.target.value);
+                setSelectedUser(e.target.value);
+              }}
+              title="Filter by Users"
+            >
+              <option value="All">Employees</option>
+              {users?.map((user, i) => (
+                <option value={user?.name} key={i}>
+                  {user.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="">
+            <select
+              value={selectedCompany}
+              className="w-[8.5rem] h-[2rem] rounded-md border-2 cursor-pointer border-gray-300  outline-none"
+              onChange={(e) => setSelectedComapany(e.target.value)}
+              title="Filter by Company"
+            >
+              <option value="All">Company</option>
+              {users?.map((user, i) => (
+                <option value={user?.name} key={i}>
+                  {user.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="">
+            <select
+              value={selectedDepartment}
+              className="w-[8.5rem] h-[2rem] rounded-md border-2 cursor-pointer border-gray-300  outline-none"
+              onChange={(e) => {
+                filterByDep(e.target.value);
+                setSelectedDepartment(e.target.value);
+              }}
+              title="Filter by Department"
+            >
+              <option value="All">Department</option>
+              {departments?.map((department, i) => (
+                <option value={department} key={i}>
+                  {department}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="">
+            <select
+              value={selectedDay}
+              className="w-[8.5rem] h-[2rem] rounded-md border-2 cursor-pointer border-gray-300  outline-none"
+              onChange={(e) => setSelectedDay(e.target.value)}
+              title="Filter by days"
+            >
+              <option value="All">-----</option>
+
+              <option value="week">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+         
+        </div> */}

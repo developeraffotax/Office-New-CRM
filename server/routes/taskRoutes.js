@@ -14,6 +14,7 @@ import {
   updateJobHolderLS,
   updateSubTaskStaus,
   updateTask,
+  updateTaskHours,
   updatetaskProject,
 } from "../controllers/TaskController.js";
 
@@ -64,5 +65,7 @@ router.get("/get/completed", getAllCompletedTasks);
 
 // Add Label
 router.put("/add/label/:id", requiredSignIn, addlabel);
+// Update Hours
+router.put("/update/hours/:id", requiredSignIn, updateTaskHours);
 
 export default router;

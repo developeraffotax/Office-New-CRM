@@ -98,6 +98,15 @@ const taskSchema = new mongoose.Schema(
     labal: labelSchema,
     activities: [activitySchema],
     subtasks: [subtask],
+    recurring: {
+      type: String,
+      enum: ["2_minutes", "daily", "weekly", "monthly", "quarterly"],
+      default: null,
+    },
+    nextRecurringDate: {
+      type: Date,
+      default: null,
+    },
   },
 
   { timestamps: true }

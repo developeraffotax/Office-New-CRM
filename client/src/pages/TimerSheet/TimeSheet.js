@@ -67,8 +67,11 @@ export default function TimeSheet() {
   const [strfdonw, setStrfdonw] = useState("");
   const [strldonw, setStrldonw] = useState("");
   const [userName, setUsername] = useState("");
+  const [monthFilter, setMonthFilter] = useState("");
+  const [filterData, setFilterData] = useState([]);
+  const [call, setCall] = useState(false);
 
-  console.log("tableFilterData:", tableFilterData);
+  console.log("Filter Data:", filterData);
 
   //   Get All Timer Data
   const getAllTimeSheetData = async () => {
@@ -134,7 +137,7 @@ export default function TimeSheet() {
     let satTotal = 0;
     let sunTotal = 0;
 
-    tableFilterData?.forEach((entry) => {
+    (filterData ? filterData : timerData)?.forEach((entry) => {
       const startTime = new Date(entry.startTime);
       const endTime = new Date(entry.endTime);
 
@@ -189,26 +192,7 @@ export default function TimeSheet() {
       sunTotal: formatTime(sunTotal),
       weekTotal: formatTime(weekTotal),
     });
-  }, [timerData, tableFilterData]);
-
-  // ----------------Filter By Timer Data by User, Dep, Date------------>
-  // const filterByDep = (value) => {
-  //   const filteredData = timerData.filter((item) => {
-  //     // Convert item.date to a comparable format if necessary
-  //     const itemDate = item.date
-  //       ? new Date(item.date).toLocaleDateString()
-  //       : "";
-
-  //     return (
-  //       item.jobHolderName === value ||
-  //       itemDate === value ||
-  //       item.department === value
-  //     );
-  //   });
-
-  //   // Update the state with the filtered data
-  //   setTableFilterDate(filteredData);
-  // };
+  }, [timerData, filterData]);
 
   // -------------------Filter By Week---------->
   useEffect(() => {
@@ -298,6 +282,90 @@ export default function TimeSheet() {
     const da = new Intl.DateTimeFormat("en", { day: "2-digit" }).format(date);
     return `${da}-${mo}-${ye}`;
   };
+
+  // ----------------Filter By Timer Data by User, Dep, Date------------>
+
+  const filterByDep = (dateFilter, user, dep) => {
+    const today = new Date();
+
+    // Helper function to normalize the date (remove time information)
+    const normalizeDate = (date) => {
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    };
+
+    let startDate, endDate;
+
+    // Convert the date filter into a date range
+    switch (dateFilter) {
+      case "Today":
+        startDate = normalizeDate(new Date());
+        endDate = normalizeDate(new Date());
+        break;
+      case "Yesterday":
+        startDate = endDate = normalizeDate(
+          new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1)
+        );
+        break;
+      case "Last 7 days":
+        startDate = normalizeDate(
+          new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7)
+        );
+        endDate = normalizeDate(new Date());
+        break;
+      case "Last 15 days":
+        startDate = normalizeDate(
+          new Date(today.getFullYear(), today.getMonth(), today.getDate() - 15)
+        );
+        endDate = normalizeDate(new Date());
+        break;
+      case "Last 30 days":
+        startDate = normalizeDate(
+          new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30)
+        );
+        endDate = normalizeDate(new Date());
+        break;
+      case "Last 60 days":
+        startDate = normalizeDate(
+          new Date(today.getFullYear(), today.getMonth(), today.getDate() - 60)
+        );
+        endDate = normalizeDate(new Date());
+        break;
+      case "Custom date":
+        startDate = normalizeDate(new Date(dateFilter.startDate));
+        endDate = normalizeDate(new Date(dateFilter.endDate));
+        break;
+      default:
+        // No filter
+        startDate = null;
+        endDate = null;
+    }
+
+    const filteredData = tableFilterData.filter((item) => {
+      const itemDate = item.date ? normalizeDate(new Date(item.date)) : null;
+
+      console.log("Filter Date:", itemDate);
+
+      // Check if the item date falls within the startDate and endDate range
+      const matchDate =
+        itemDate && startDate && endDate
+          ? itemDate >= startDate && itemDate <= endDate
+          : true; // If no valid date filter, return true
+
+      const matchUser = user ? item.jobHolderName === user : true;
+      const matchDep = dep ? item.department === dep : true;
+
+      return matchDate && matchUser && matchDep;
+    });
+
+    setFilterData(filteredData);
+  };
+
+  useEffect(() => {
+    filterByDep();
+    setCall(false);
+
+    // eslint-disable-next-line
+  }, [tableFilterData, call]);
 
   // -----------Download in CSV------>
   const flattenData = (data) => {
@@ -410,7 +478,8 @@ export default function TimeSheet() {
           const handleFilterChange = (e) => {
             setFilterValue(e.target.value);
             column.setFilterValue(e.target.value);
-            // filterByDep(e.target.value);
+            filterByDep(e.target.value, "", "");
+            setMonthFilter(e.target.value);
           };
 
           const handleCustomDateChange = (e) => {
@@ -426,6 +495,7 @@ export default function TimeSheet() {
                 onClick={() => {
                   setFilterValue("");
                   column.setFilterValue("");
+                  setCall(true);
                 }}
               >
                 Date
@@ -457,10 +527,16 @@ export default function TimeSheet() {
         },
         Cell: ({ cell, row }) => {
           const date = row.original.date;
+          const [allocateDate, setAllocateDate] = useState(date);
+          // console.log("date", date);
+
+          useEffect(() => {
+            setAllocateDate(row.original.date);
+          }, [row.original]);
 
           return (
             <div className="w-full flex">
-              <p>{format(new Date(date), "dd-MMM-yyyy")}</p>
+              <p>{format(new Date(allocateDate), "dd-MMM-yyyy")}</p>
             </div>
           );
         },
@@ -544,7 +620,6 @@ export default function TimeSheet() {
           useEffect(() => {
             column.setFilterValue(user);
             setUsername(user);
-            // filterByDep(user);
 
             // eslint-disable-next-line
           }, [user]);
@@ -555,6 +630,7 @@ export default function TimeSheet() {
                 title="Clear Filter"
                 onClick={() => {
                   column.setFilterValue("");
+                  setCall(true);
                 }}
               >
                 Job Holder
@@ -565,7 +641,7 @@ export default function TimeSheet() {
                   onChange={(e) => {
                     column.setFilterValue(e.target.value);
                     setUsername(e.target.value);
-                    // filterByDep(e.target.value);
+                    filterByDep("", e.target.value, "");
                   }}
                   className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
                 >
@@ -753,6 +829,7 @@ export default function TimeSheet() {
                 title="Clear Filter"
                 onClick={() => {
                   column.setFilterValue("");
+                  setCall(true);
                 }}
               >
                 Departments
@@ -761,7 +838,7 @@ export default function TimeSheet() {
                 value={column.getFilterValue() || ""}
                 onChange={(e) => {
                   column.setFilterValue(e.target.value);
-                  // filterByDep(e.target.value);
+                  filterByDep("", "", e.target.value);
                 }}
                 className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >

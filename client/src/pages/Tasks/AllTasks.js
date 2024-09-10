@@ -1335,6 +1335,11 @@ const AllTasks = () => {
             const cellDate = new Date(cell.getValue());
             return cellDate.toISOString().split("T")[0];
           });
+          const [allocateDate, setAllocateDate] = useState(date);
+
+          useEffect(() => {
+            setAllocateDate(date);
+          }, [date]);
 
           const [showDeadline, setShowDeadline] = useState(false);
 
@@ -1352,7 +1357,7 @@ const AllTasks = () => {
             <div className="w-full ">
               {!showDeadline ? (
                 <p onDoubleClick={() => setShowDeadline(true)}>
-                  {format(new Date(date), "dd-MMM-yyyy")}
+                  {format(new Date(allocateDate), "dd-MMM-yyyy")}
                 </p>
               ) : (
                 <input
@@ -1728,11 +1733,11 @@ const AllTasks = () => {
                 <span className="text-[1rem] cursor-pointer relative">
                   <MdInsertComment className="h-5 w-5 text-orange-600 " />
                 </span>
-                {readComments?.length > 0 && (
+                {/* {readComments?.length > 0 && (
                   <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
                     {readComments?.length}
                   </span>
-                )}
+                )} */}
               </div>
             </div>
           );
@@ -1993,6 +1998,23 @@ const AllTasks = () => {
                   <IoIosArrowDropdown className="h-5 w-5 cursor-pointer" />
                 )}
               </span>
+              <span
+                className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+                onClick={() => {
+                  setActive("All");
+                  setFilterData("");
+                  setActiveBtn("");
+                  setActive1("");
+                  setShowStatus(false);
+                  setShowJobHolder(false);
+                  setShowDue(false);
+                  setFilterId("");
+                  handleClearFilters();
+                }}
+                title="Clear filters"
+              >
+                <IoClose className="h-6 w-6  cursor-pointer" />
+              </span>
             </div>
 
             {/* Project Buttons */}
@@ -2175,23 +2197,7 @@ const AllTasks = () => {
               >
                 <MdAutoGraph className="h-6 w-6  cursor-pointer" />
               </span>
-              <span
-                className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
-                onClick={() => {
-                  setActive("All");
-                  setFilterData("");
-                  setActiveBtn("");
-                  setActive1("");
-                  setShowStatus(false);
-                  setShowJobHolder(false);
-                  setShowDue(false);
-                  setFilterId("");
-                  handleClearFilters();
-                }}
-                title="Clear filters"
-              >
-                <IoClose className="h-6 w-6  cursor-pointer" />
-              </span>
+
               <span
                 className={` p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
                 onClick={() => {

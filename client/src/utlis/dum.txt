@@ -908,3 +908,20 @@
           </div>
          
         </div> */}
+
+        ----------------------------Date Filter ------------
+          // const filterByDep = (date, user, dep) => {
+  //   const filteredData = tableFilterData.filter((item) => {
+  //     const itemDate = item.date
+  //       ? new Date(item.date).toLocaleDateString()
+  //       : "";
+
+  //     const matchDate = date ? itemDate === date : true;
+  //     const matchUser = user ? item.jobHolderName === user : true;
+  //     const matchDep = dep ? item.department === dep : true;
+
+  //     return matchDate && matchUser && matchDep;
+  //   });
+
+  //   setFilterData(filteredData);
+  // };

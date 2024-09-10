@@ -17,6 +17,7 @@ export const createTask = async (req, res) => {
       lead,
       status,
       recurring,
+      nextRecurringDate,
     } = req.body;
 
     if (!projectId) {
@@ -48,7 +49,8 @@ export const createTask = async (req, res) => {
       deadline: deadline || new Date().toISOString(),
       lead,
       status,
-      recurring,
+      recurring: recurring ? recurring : null,
+      nextRecurringDate: nextRecurringDate ? nextRecurringDate : null,
     });
 
     const user = req.user.user;
@@ -400,6 +402,7 @@ export const updateTask = async (req, res) => {
       deadline,
       lead,
       recurring,
+      nextRecurringDate,
     } = req.body;
 
     if (!projectId) {
@@ -446,7 +449,8 @@ export const updateTask = async (req, res) => {
         startDate,
         deadline,
         lead,
-        recurring,
+        recurring: recurring ? recurring : null,
+        nextRecurringDate: nextRecurringDate ? nextRecurringDate : null,
       },
       { new: true }
     );
@@ -747,34 +751,38 @@ const calculateNextRecurringDate = (currentDate, recurring) => {
 // Auto-create recurring tasks based on their schedule
 const autoCreateRecurringTasks = async () => {
   try {
-    // Find all tasks that have a recurring field and a nextRecurringDate
+    const now = new Date();
+
+    // Find tasks with a recurring field set and nextRecurringDate <= now
     const tasks = await taskModel.find({
       recurring: { $ne: null },
-      nextRecurringDate: { $lte: new Date() }, // Only tasks with a nextRecurringDate that's passed or today
+      nextRecurringDate: { $lte: now },
     });
 
     for (const task of tasks) {
-      // Create a new task with the same data but new start and deadline dates
+      // Create a new task with updated dates
       const newTask = await taskModel.create({
         project: task.project,
         jobHolder: task.jobHolder,
         task: task.task,
         hours: task.hours,
-        startDate: new Date().toISOString(),
-        deadline: task.deadline,
-        status: task.status,
+        startDate: new Date(), // Set to the current date/time
+        deadline: task.deadline, // Or adjust based on your needs
         lead: task.lead,
         recurring: task.recurring,
         nextRecurringDate: calculateNextRecurringDate(
-          new Date().toISOString(),
+          new Date(),
           task.recurring
-        ), // Set next recurring date
+        ),
+        // Copy other fields as needed
       });
 
       // Add activity log for the newly created recurring task
       newTask.activities.push({
-        userName: "System", // Indicate that it was created automatically
-        activity: `Auto-created a recurring task: ${task.task} for project: ${task.project.projectName}`,
+        userName: "System", // Indicates it was created automatically
+        activity: `Auto-created recurring task: ${task.task} for project: ${task.project.projectName}`,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
 
       await newTask.save();
@@ -791,13 +799,13 @@ const autoCreateRecurringTasks = async () => {
   }
 };
 
-// Schedule the cron job to run daily at midnight
-// cron.schedule("0 0 * * *", () => {
+// Schedule the task to run every 2 minutes
+// cron.schedule("*/2 * * * *", () => {
 //   console.log("Running task scheduler for recurring tasks...");
 //   autoCreateRecurringTasks();
 // });
-
-cron.schedule("* * * * *", () => {
-  console.log("Running task scheduler for recurring tasks every 1 minute...");
+// Schedule the task to run daily at midnight
+cron.schedule("0 0 * * *", () => {
+  console.log("Running task scheduler for recurring tasks...");
   autoCreateRecurringTasks();
 });

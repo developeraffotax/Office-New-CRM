@@ -14,7 +14,12 @@ import {
   IoCheckmarkDoneCircleSharp,
   IoClose,
 } from "react-icons/io5";
-import { MdAutoGraph, MdInsertComment, MdOutlineEdit } from "react-icons/md";
+import {
+  MdAutoGraph,
+  MdCheckCircle,
+  MdInsertComment,
+  MdOutlineEdit,
+} from "react-icons/md";
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
@@ -37,6 +42,7 @@ import JobCommentModal from "../Jobs/JobCommentModal";
 import TaskDetail from "./TaskDetail";
 import { GrUpdate } from "react-icons/gr";
 import socketIO from "socket.io-client";
+import { LuImport } from "react-icons/lu";
 import AddLabel from "../../components/Modals/AddLabel";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -795,6 +801,52 @@ const AllTasks = () => {
       console.log(error);
       toast.error("Error while add label");
     }
+  };
+
+  // Update Job Status(Completed)
+  const handleStatusComplete = async (taskId) => {
+    if (!taskId) {
+      toast.error("Project/Task id is required!");
+      return;
+    }
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/task/JLS/${taskId}`,
+        { status: "completed" }
+      );
+      if (data?.success) {
+        const updateTask = data?.task;
+        setShowDetail(false);
+        toast.success("Status completed successfully!");
+
+        setTasksData((prevData) =>
+          prevData.filter((item) => item._id !== updateTask._id)
+        );
+        setFilterData((prevData) =>
+          prevData.filter((item) => item._id !== updateTask._id)
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
+  };
+
+  const handleCompleteStatus = (taskId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this job!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, complete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleStatusComplete(taskId);
+        Swal.fire("Updated!", "Your task completed successfully!.", "success");
+      }
+    });
   };
 
   // ----------------------Table Data--------->
@@ -1693,7 +1745,7 @@ const AllTasks = () => {
                   pageName={"Tasks"}
                   taskName={row.original.project.projectName}
                   setNote={setNote}
-                  department={""}
+                  department={row.original.project.projectName}
                   clientName={row.original.project.projectName}
                   companyName={row.original.project.projectName}
                   JobHolderName={row.original.jobHolder}
@@ -1759,6 +1811,15 @@ const AllTasks = () => {
               </span>
 
               <span
+                className=""
+                title="Complete Task"
+                onClick={() => {
+                  handleCompleteStatus(row.original._id);
+                }}
+              >
+                <MdCheckCircle className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
+              </span>
+              <span
                 className="text-[1rem] cursor-pointer"
                 onClick={() => handleDeleteTaskConfirmation(row.original._id)}
                 title="Delete Task!"
@@ -1768,7 +1829,7 @@ const AllTasks = () => {
             </div>
           );
         },
-        size: 90,
+        size: 130,
       },
       // Label
       {
@@ -1939,39 +2000,6 @@ const AllTasks = () => {
         },
       },
     },
-
-    renderTopToolbarCustomActions: ({ table }) => {
-      const handleClearFilters = () => {
-        table.setColumnFilters([]);
-        table.setGlobalFilter("");
-      };
-
-      return (
-        <Box
-          sx={{
-            display: "flex",
-            gap: "7px",
-            padding: "2px",
-            flexWrap: "wrap",
-          }}
-        >
-          <Button
-            onClick={handleExportData}
-            // startIcon={<FileDownloadIcon />}
-            className="w-[2rem] rounded-full"
-          >
-            <IoMdDownload className="h-5 w-5 text-gray-700" />
-          </Button>
-          <Button
-            onClick={handleClearFilters}
-            // startIcon={<ClearIcon />}
-            className="w-[2rem] rounded-full"
-          >
-            <IoClose className="h-5 w-5 text-gray-700" />
-          </Button>
-        </Box>
-      );
-    },
   });
 
   // useEffect(() => {
@@ -2080,6 +2108,14 @@ const AllTasks = () => {
                   )}
                 </div>
               )}
+
+              <button
+                className={`w-[3rem] h-[2.2rem] flex items-center justify-center rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
+                onClick={handleExportData}
+                title="Import Date"
+              >
+                <LuImport className="h-6 w-6 " />
+              </button>
               <button
                 className={`${style.button1} text-[15px] `}
                 onClick={() => setShowlabel(true)}

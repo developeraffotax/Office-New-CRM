@@ -925,3 +925,37 @@
 
   //   setFilterData(filteredData);
   // };
+
+  ------------------------------table Head Buttons------------------>
+    // renderTopToolbarCustomActions: ({ table }) => {
+    //   const handleClearFilters = () => {
+    //     table.setColumnFilters([]);
+    //     table.setGlobalFilter("");
+    //   };
+
+    //   return (
+    //     <Box
+    //       sx={{
+    //         display: "flex",
+    //         gap: "7px",
+    //         padding: "2px",
+    //         flexWrap: "wrap",
+    //       }}
+    //     >
+    //       <Button
+    //         onClick={handleExportData}
+    //         // startIcon={<FileDownloadIcon />}
+    //         className="w-[2rem] rounded-full"
+    //       >
+    //         <IoMdDownload className="h-5 w-5 text-gray-700" />
+    //       </Button>
+    //       <Button
+    //         onClick={handleClearFilters}
+    //         // startIcon={<ClearIcon />}
+    //         className="w-[2rem] rounded-full"
+    //       >
+    //         <IoClose className="h-5 w-5 text-gray-700" />
+    //       </Button>
+    //     </Box>
+    //   );
+    // },

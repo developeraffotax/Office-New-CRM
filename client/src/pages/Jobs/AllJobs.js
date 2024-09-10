@@ -38,6 +38,7 @@ import CompletedJobs from "./CompletedJobs";
 import socketIO from "socket.io-client";
 import { GrUpdate } from "react-icons/gr";
 import AddLabel from "../../components/Modals/AddLabel";
+import { LuImport } from "react-icons/lu";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -1979,6 +1980,13 @@ export default function AllJobs() {
               </label>
             </form>
             <button
+              className={`w-[3rem] h-[2.2rem] flex items-center justify-center rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
+              onClick={handleExportData}
+              title="Import Date"
+            >
+              <LuImport className="h-5 w-5" />
+            </button>
+            <button
               className={`${style.button1} text-[15px] `}
               onClick={() => setShowlabel(true)}
               style={{ padding: ".4rem 1rem" }}
@@ -2090,7 +2098,7 @@ export default function AllJobs() {
           </span>
         </div>
         {/*  */}
-        <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
+        <hr className="mb-1 bg-gray-200 w-full h-[1px]" />
 
         {/* ----------Job_Holder Summery Filters---------- */}
         {showJobHolder && activeBtn === "jobHolder" && (
@@ -2215,7 +2223,7 @@ export default function AllJobs() {
                 <Loader />
               </div>
             ) : (
-              <div className="w-full min-h-[20vh] relative -mt-[6px] border-t border-gray-300">
+              <div className="w-full min-h-[20vh] relative border-t border-gray-300">
                 <div className="h-full hidden1 overflow-y-scroll relative">
                   <MaterialReactTable table={table} />
                 </div>

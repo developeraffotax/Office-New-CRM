@@ -423,3 +423,9 @@ inputBox > textarea:focus ~ span {
 .label:hover .delete {
   opacity: 1;
 }
+
+/* -----------------------Table Header------------- */
+.css-1tbggly {
+  min-height: 0rem !important;
+  height: 0px !important;
+}

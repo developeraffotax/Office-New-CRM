@@ -342,7 +342,7 @@ export default function TaskDetail({
                   taskLink={"/tasks"}
                   pageName={"Tasks"}
                   taskName={taskDetal?.project?.projectName || ""}
-                  department={""}
+                  department={taskDetal?.project?.projectName || ""}
                   clientName={taskDetal?.project?.projectName || ""}
                   companyName={taskDetal?.project?.projectName || ""}
                   JobHolderName={taskDetal?.jobHolder || ""}

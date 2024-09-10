@@ -118,13 +118,16 @@ export default function TimeSheet() {
   }, []);
 
   // ---------------Get All Projects---------->
-
+  //---------- Get All Projects-----------
   const getAllProjects = async () => {
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/projects/get_all/project`
       );
-
+      // setProjects((prevData) => [
+      //   ...prevData,
+      //   ...(data?.projects || []).map((project) => project.projectName),
+      // ]);
       setProjects((prevProjects) => {
         const projectNamesFromData = (data?.projects || []).map(
           (project) => project.projectName
@@ -391,7 +394,7 @@ export default function TimeSheet() {
       const matchDate =
         itemDate && startDate && endDate
           ? itemDate >= startDate && itemDate <= endDate
-          : true;
+          : true; // If no valid date filter, return true
 
       const matchUser = user ? item.jobHolderName === user : true;
       const matchDep = dep ? item.department === dep : true;

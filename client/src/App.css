@@ -71,6 +71,11 @@
   background-image: linear-gradient(-20deg, #fc6076 0%, #e4a976 100%);
 }
 
+select {
+  max-height: 15rem;
+  overflow-y: auto;
+}
+
 /* --------- */
 
 /* .css-wsew38 {

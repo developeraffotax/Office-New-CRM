@@ -30,6 +30,7 @@ export default function AddTaskModal({
   const [label, setLabel] = useState("");
   const [projectName, setProjectName] = useState("");
   const [recurring, setRecurring] = useState("");
+  const [nextRecurringDate, setNextRecurringDate] = useState("");
 
   useEffect(() => {
     if (taskDetal) {
@@ -43,6 +44,9 @@ export default function AddTaskModal({
       setLead(taskDetal.lead);
       setLabel(taskDetal.label);
       setRecurring(taskDetal.recurring);
+      setNextRecurringDate(
+        format(new Date(taskDetal.nextRecurringDate), "yyyy-MM-dd")
+      );
     }
   }, [taskId, taskDetal]);
 
@@ -64,6 +68,7 @@ export default function AddTaskModal({
             lead,
             label,
             recurring,
+            nextRecurringDate,
           }
         );
         if (data?.success) {
@@ -90,6 +95,7 @@ export default function AddTaskModal({
             lead,
             label,
             recurring,
+            nextRecurringDate,
           }
         );
         if (data?.success) {
@@ -229,6 +235,15 @@ export default function AddTaskModal({
             <option value="monthly">Monthly</option>
             <option value="quarterly">Quarterly</option>
           </select>
+          <div className="inputBox">
+            <input
+              type="date"
+              value={nextRecurringDate}
+              onChange={(e) => setNextRecurringDate(e.target.value)}
+              className={`${style.input} w-full `}
+            />
+            <span>Recurring Date</span>
+          </div>
           <div className="flex items-center justify-end">
             <button
               className={`${style.button1} text-[15px] `}

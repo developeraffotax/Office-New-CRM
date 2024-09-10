@@ -1706,11 +1706,11 @@ export default function AllJobs() {
                 <span className="text-[1rem] cursor-pointer relative">
                   <MdInsertComment className="h-5 w-5 text-orange-600 " />
                 </span>
-                {readComments?.length > 0 && (
+                {/* {readComments?.length > 0 && (
                   <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
                     {readComments?.length}
                   </span>
-                )}
+                )} */}
               </div>
             </div>
           );
@@ -1932,6 +1932,22 @@ export default function AllJobs() {
                 <IoIosArrowDropdown className="h-5 w-5 cursor-pointer" />
               )}
             </span>
+            <span
+              className={` p-1 ml-2 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+              onClick={() => {
+                setActive("All");
+                setActiveBtn("");
+                setShowStatus(false);
+                setShowJobHolder(false);
+                setShowDue(false);
+                setActive1("");
+                setFilterId("");
+                handleClearFilters();
+              }}
+              title="Clear filters"
+            >
+              <IoClose className="h-6 w-6  cursor-pointer" />
+            </span>
           </div>
 
           <div className="flex items-center gap-4">
@@ -2055,22 +2071,7 @@ export default function AllJobs() {
           >
             <MdAutoGraph className="h-6 w-6  cursor-pointer" />
           </span>
-          <span
-            className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
-            onClick={() => {
-              setActive("All");
-              setActiveBtn("");
-              setShowStatus(false);
-              setShowJobHolder(false);
-              setShowDue(false);
-              setActive1("");
-              setFilterId("");
-              handleClearFilters();
-            }}
-            title="Clear filters"
-          >
-            <IoClose className="h-6 w-6  cursor-pointer" />
-          </span>
+
           <span
             className={` p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
             onClick={() => {

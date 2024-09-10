@@ -72,7 +72,16 @@ export const createJob = async (req, res) => {
           authCode,
           utr,
           isActive,
-          job: job,
+          job: {
+            jobName: job.jobName,
+            yearEnd: job.yearEnd || new Date().toISOString(),
+            jobDeadline: job.jobDeadline || new Date().toISOString(),
+            workDeadline: job.workDeadline || new Date().toISOString(),
+            hours: job.hours,
+            fee: job.fee,
+            lead: job.lead,
+            jobHolder: job.jobHolder,
+          },
         });
 
         // Save the client with the current job

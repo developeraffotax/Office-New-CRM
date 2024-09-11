@@ -69,6 +69,20 @@ const labelSchema = new mongoose.Schema({
   color: { type: String },
 });
 
+const subtask = new mongoose.Schema(
+  {
+    subTask: {
+      type: String,
+      trim: true,
+    },
+    status: {
+      type: String,
+      default: "process",
+    },
+  },
+  { timestamps: true }
+);
+
 // Client Schema
 const clientSchema = new mongoose.Schema(
   {
@@ -152,6 +166,7 @@ const clientSchema = new mongoose.Schema(
     },
     label: labelSchema,
     comments: [commentsSchema],
+    subtasks: [subtask],
   },
   { timestamps: true }
 );

@@ -885,3 +885,164 @@ export const addlabel = async (req, res) => {
     });
   }
 };
+
+// Create Subtask
+export const createSubTask = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const { subTask } = req.body;
+    if (!jobId) {
+      return res.status(400).send({
+        success: false,
+        message: "Job Id is required!",
+      });
+    }
+    if (!subTask) {
+      return res.status(400).send({
+        success: false,
+        message: "Subtask is required!",
+      });
+    }
+
+    const job = await jobsModel.findById(jobId);
+
+    if (!job) {
+      return res.status(400).send({
+        success: false,
+        message: "Job not found!",
+      });
+    }
+
+    job.subtasks.push({ subTask: subTask });
+
+    await job.save();
+
+    res.status(200).send({
+      success: true,
+      message: "Subtask added successfully!",
+      job: job,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      messsage: "Error in create subtask!",
+      error: error,
+    });
+  }
+};
+
+// Update SubTask Status
+export const updateSubTaskStaus = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    const { subTaskId } = req.body;
+    if (!jobId) {
+      return res.status(400).send({
+        success: false,
+        message: "Job Id is required!",
+      });
+    }
+    if (!subTaskId) {
+      return res.status(400).send({
+        success: false,
+        message: "Subtask id is required!",
+      });
+    }
+
+    const job = await jobsModel.findById(jobId);
+
+    if (!job) {
+      return res.status(400).send({
+        success: false,
+        message: "Job not found!",
+      });
+    }
+
+    const subtaskIndex = job.subtasks.findIndex(
+      (item) => item._id.toString() === subTaskId
+    );
+    if (subtaskIndex === -1) {
+      return res.status(400).send({
+        success: false,
+        message: "Subtask not found!",
+      });
+    }
+
+    job.subtasks[subtaskIndex].status =
+      job.subtasks[subtaskIndex].status === "process" ? "complete" : "process";
+
+    await job.save();
+
+    res.status(200).send({
+      success: true,
+      message: "Subtask status updated!",
+      job: job,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      messsage: "Error in update subtask!",
+      error: error,
+    });
+  }
+};
+
+// Delete Subtask
+export const deleteSubTask = async (req, res) => {
+  try {
+    const { jobId, subTaskId } = req.params;
+
+    if (!jobId) {
+      return res.status(400).send({
+        success: false,
+        message: "Job Id is required!",
+      });
+    }
+    if (!subTaskId) {
+      return res.status(400).send({
+        success: false,
+        message: "Subtask id is required!",
+      });
+    }
+
+    const job = await jobsModel.findById(jobId);
+
+    if (!job) {
+      return res.status(400).send({
+        success: false,
+        message: "Job not found!",
+      });
+    }
+
+    const subtaskIndex = job.subtasks.findIndex(
+      (subtask) => subtask._id.toString() === subTaskId
+    );
+
+    // If the subtask is not found
+    if (subtaskIndex === -1) {
+      return res.status(400).send({
+        success: false,
+        message: "Subtask not found!",
+      });
+    }
+
+    job.subtasks.splice(subtaskIndex, 1);
+    await job.save();
+
+    res.status(200).send({
+      success: true,
+      message: "Subtask deleted!",
+      job: job,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      messsage: "Error in delete subtask!",
+      error: error,
+    });
+  }
+};

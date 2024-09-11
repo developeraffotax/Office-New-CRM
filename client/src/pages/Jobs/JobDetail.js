@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { GoGoal } from "react-icons/go";
 import { MdDateRange, MdInsertComment } from "react-icons/md";
-import { RiTimerLine } from "react-icons/ri";
+import { RiLoaderFill, RiTimerLine } from "react-icons/ri";
 import { format } from "date-fns";
 // import { MdOutlineInsertComment } from "react-icons/md";
 import Loader from "../../utlis/Loader";
@@ -14,26 +14,33 @@ import { FaEdit } from "react-icons/fa";
 import { CgClose } from "react-icons/cg";
 import EditJobModal from "../../components/Modals/EditJobModal";
 import { AiFillDelete } from "react-icons/ai";
-import { IoClose } from "react-icons/io5";
+import { IoClose, IoCloseCircleOutline } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import Swal from "sweetalert2";
 import { MdCheckCircle } from "react-icons/md";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import JobCommentModal from "./JobCommentModal";
 
 export default function JobDetail({
   clientId,
   handleStatus,
   allClientJobData,
   handleDeleteJob,
+  users,
+  allClientData,
 }) {
   const [clientDetail, setClientDetail] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("jobDetail");
+  const [activeTab, setActiveTab] = useState("subtasks");
   const { auth } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [jobId, setJobId] = useState("");
   const [isShow, setIsShow] = useState(false);
   const [note, setNote] = useState("");
   const timerRef = useRef();
+  const [subTask, setSubtask] = useState("");
+  const [subTaskLoading, setSubTaskLoading] = useState(false);
+  const [subTaskData, setSubTaskData] = useState([]);
 
   // ---------Stop Timer ----------->
   const handleStopTimer = () => {
@@ -53,6 +60,11 @@ export default function JobDetail({
       if (data) {
         setLoading(false);
         setClientDetail(data.clientJob);
+        setSubTaskData(
+          data?.clientJob?.subtasks?.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          )
+        );
       }
     } catch (error) {
       console.log(error);
@@ -138,12 +150,92 @@ export default function JobDetail({
     }
   };
 
+  // ----------Crate Subtask---------->
+  const handleCreateSubtask = async (e) => {
+    e.preventDefault();
+    setSubTaskLoading(true);
+    try {
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/create/subTask/${clientId}`,
+        { subTask }
+      );
+      if (data) {
+        setClientDetail(data?.job);
+        setSubTaskData(
+          data?.job?.subtasks?.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          )
+        );
+        setSubtask("");
+        toast.success("Subtask added successfully!");
+        setSubTaskLoading(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setSubTaskLoading(false);
+      toast.error(error.response.data.message);
+    }
+  };
+
+  //  Handle drag end
+  const handleOnDragEnd = (result) => {
+    const { destination, source } = result;
+
+    if (!destination || destination.index === source.index) return;
+
+    const newTodos = Array.from(subTaskData);
+    const [movedTodo] = newTodos.splice(source.index, 1);
+    newTodos.splice(destination.index, 0, movedTodo);
+
+    setSubTaskData(newTodos);
+  };
+
+  // Update Subtask Status
+  const updateSubtaskStatus = async (subTaskId) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/update/subtask/status/${clientId}`,
+        { subTaskId }
+      );
+      if (data) {
+        setClientDetail(data?.job);
+        setSubTaskData(
+          data?.job?.subtasks?.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          )
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
+  };
+
+  const handleDeleteSubTask = async (subTaskId) => {
+    try {
+      const { data } = await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/delete/subtask/${clientId}/${subTaskId}`
+      );
+      if (data.success) {
+        setClientDetail(data?.job);
+        setSubTaskData(
+          data?.job?.subtasks?.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          )
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
+  };
+
   return (
     <>
       {loading ? (
         <Loader />
       ) : (
-        <div className="w-full relative  mt-2 overflow-y-scroll h-[calc(100vh-7rem)] pb-4 hidden1 ">
+        <div className="w-full relative  mt-2 overflow-y-scroll h-[calc(100vh-3rem)] pb-4 hidden1  ">
           <div className="absolute top-[.5rem] right-[1rem] flex items-center gap-4">
             <span
               className=""
@@ -266,7 +358,15 @@ export default function JobDetail({
           </div>
           <hr className="h-[1.5px] w-full bg-gray-400 my-3" />
           {/* ------------Tabs---------- */}
-          <div className="flex items-center  gap-4 ">
+          <div className="flex items-center  gap-3 3xl:gap-4 ">
+            <button
+              className={` text-[14px] font-medium cursor-pointer py-1  ${
+                activeTab === "subtasks" && "border-b-2 border-orange-600"
+              } `}
+              onClick={() => setActiveTab("subtasks")}
+            >
+              Sub Tasks
+            </button>
             <button
               className={` text-[14px] font-medium cursor-pointer py-1  ${
                 activeTab === "jobDetail" && "border-b-2 border-orange-600"
@@ -299,11 +399,162 @@ export default function JobDetail({
             >
               Department Detail
             </button>
+            <button
+              className={` text-[14px] font-medium cursor-pointer py-1  ${
+                activeTab === "comments" && "border-b-2 border-orange-600"
+              } `}
+              onClick={() => setActiveTab("comments")}
+            >
+              comments
+            </button>
           </div>
           <hr className="h-[1.5px] w-full bg-gray-400 my-3" />
 
           <div className="w-full">
-            {activeTab === "jobDetail" ? (
+            {activeTab === "subtasks" ? (
+              <div className="flex flex-col w-full px-2">
+                <div className="flex items-center gap-2 w-full ">
+                  <form
+                    onSubmit={handleCreateSubtask}
+                    className="flex items-center gap-2 w-full py-1 px-2 border bg-gray-50 border-gray-300 rounded-lg  "
+                  >
+                    <input
+                      type="text"
+                      value={subTask}
+                      onChange={(e) => setSubtask(e.target.value)}
+                      placeholder="Add Subtask..."
+                      className="py-2 px-1 border-none bg-transparent outline-none w-full"
+                    />
+                    <button
+                      type="submit"
+                      className="py-[7px] px-4 rounded-md shadow cursor-pointer bg-orange-500 hover:bg-orange-600 text-white"
+                    >
+                      {subTaskLoading ? (
+                        <RiLoaderFill className="h-6 w-6 animate-spin text-white" />
+                      ) : (
+                        "Add"
+                      )}
+                    </button>
+                  </form>
+                </div>
+                <div className="mt-2 py-1  rounded-md border border-gray-300 flex flex-col gap-3">
+                  <h3 className="text-[17px] w-full font-semibold py-2 text-gray-900 border-b-[1px] px-2 border-gray-300">
+                    Checklist (
+                    {
+                      subTaskData.filter(
+                        (subtask) => subtask.status === "complete"
+                      ).length
+                    }
+                    /{subTaskData?.length})
+                  </h3>
+                  <div className="px-2">
+                    {subTaskData.length > 0 ? (
+                      <DragDropContext onDragEnd={handleOnDragEnd}>
+                        <Droppable droppableId="subTaskData">
+                          {(provided) => (
+                            <ul
+                              {...provided.droppableProps}
+                              ref={provided.innerRef}
+                              style={{ listStyle: "none", padding: 0 }}
+                            >
+                              {subTaskData?.map(
+                                ({ _id, subTask, status }, index) => (
+                                  <Draggable
+                                    key={_id}
+                                    draggableId={_id}
+                                    index={index}
+                                  >
+                                    {(provided) => (
+                                      <li
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        {...provided.dragHandleProps}
+                                        style={{
+                                          ...provided.draggableProps.style,
+                                          padding: "8px",
+                                          marginBottom: "4px",
+                                          backgroundColor:
+                                            status === "complete"
+                                              ? "#d4edda"
+                                              : "#f3f3f3",
+                                          borderRadius: "4px",
+                                          border: "1px solid #ddd",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "space-between",
+                                        }}
+                                        className="flex items-center justify-between gap-2"
+                                      >
+                                        <div className="flex items-center gap-2 w-full">
+                                          <div className="w-6 h-full">
+                                            <input
+                                              type="checkbox"
+                                              checked={status === "complete"}
+                                              onChange={() =>
+                                                updateSubtaskStatus(_id)
+                                              }
+                                              style={{
+                                                accentColor: "orangered",
+                                              }}
+                                              className="h-5 w-5 cursor-pointer  checked:bg-orange-600"
+                                            />
+                                          </div>
+                                          <p
+                                            className={`text-[15px] ${
+                                              status === "complete" &&
+                                              "line-through"
+                                            }`}
+                                          >
+                                            {subTask}
+                                          </p>
+                                        </div>
+
+                                        <div className="flex items-center gap-1">
+                                          <span
+                                            className="p-1 cursor-pointer"
+                                            onClick={() => setSubtask(subTask)}
+                                          >
+                                            <FaEdit className="h-5 w-5 cursor-pointer text-gray-800 hover:text-sky-600" />
+                                          </span>
+                                          <span
+                                            className="p-1 cursor-pointer"
+                                            onClick={() =>
+                                              handleDeleteSubTask(_id)
+                                            }
+                                          >
+                                            <IoCloseCircleOutline
+                                              size={24}
+                                              className="cursor-pointer hover:text-red-500 "
+                                              title="Delete Subtask"
+                                            />
+                                          </span>
+                                        </div>
+                                      </li>
+                                    )}
+                                  </Draggable>
+                                )
+                              )}
+                              {provided.placeholder}
+                            </ul>
+                          )}
+                        </Droppable>
+                      </DragDropContext>
+                    ) : (
+                      <div className="w-full py-8 flex items-center flex-col justify-center">
+                        <img
+                          src="/notask1.png"
+                          alt="No_Task"
+                          className="h-[12rem] w-[16rem] animate-pulse"
+                        />
+                        <span className="text-center text-[14px] text-gray-500">
+                          Subtask not available!
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : activeTab === "jobDetail" ? (
               <div className="flex flex-col">
                 <div className="grid grid-cols-2">
                   <span className="border border-gray-300 text-black font-medium py-2 px-2 rounded-tl-md">
@@ -701,7 +952,15 @@ export default function JobDetail({
                 </div>
               </div>
             ) : (
-              "Comments"
+              <JobCommentModal
+                setIsComment={""}
+                jobId={clientId}
+                setJobId={""}
+                users={users}
+                type={"Jobs"}
+                getTasks1={allClientData}
+                page={"detail"}
+              />
             )}
           </div>
 

@@ -289,7 +289,9 @@ export const getTimerStatus = async (req, res) => {
 // --------------Get All Timers data----------->
 export const getAllTimers = async (req, res) => {
   try {
-    const timers = await timerModel.find({ endTime: { $ne: null } });
+    const timers = await timerModel
+      .find({ endTime: { $ne: null } })
+      .sort({ date: 1 });
 
     res.status(200).send({
       success: true,

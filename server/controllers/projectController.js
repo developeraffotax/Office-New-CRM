@@ -24,7 +24,13 @@ export const createProject = async (req, res) => {
       });
     }
 
-    const project = await projectModel.create({ projectName, users_list });
+    const projectCount = await projectModel.countDocuments();
+
+    const project = await projectModel.create({
+      projectName,
+      users_list,
+      order: projectCount,
+    });
 
     res.status(200).send({
       success: true,
@@ -95,7 +101,7 @@ export const getAllProjects = async (req, res) => {
   try {
     const projects = await projectModel
       .find({ status: { $ne: "completed" } })
-      .sort({ createdAt: -1 });
+      .sort({ order: 1 });
 
     res.status(200).send({
       success: true,
@@ -231,6 +237,30 @@ export const getCompleteProjects = async (req, res) => {
     res.status(200).send({
       success: false,
       message: "Error in get completed projects!",
+      error: error,
+    });
+  }
+};
+
+// Reordering
+export const reordering = async (req, res) => {
+  try {
+    const { projects } = req.body;
+    await Promise.all(
+      projects.map((project, index) =>
+        projectModel.findByIdAndUpdate(
+          project._id,
+          { order: index + 1 },
+          { new: true }
+        )
+      )
+    );
+    res.status(200).json({ message: "Project order updated successfully!" });
+  } catch (error) {
+    console.log(error);
+    res.status(200).send({
+      success: false,
+      message: "Error while reordering projects!",
       error: error,
     });
   }

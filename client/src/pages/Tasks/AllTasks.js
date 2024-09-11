@@ -39,11 +39,13 @@ import { useLocation } from "react-router-dom";
 import { GrCopy } from "react-icons/gr";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import JobCommentModal from "../Jobs/JobCommentModal";
+import AddLabel from "../../components/Modals/AddLabel";
 import TaskDetail from "./TaskDetail";
 import { GrUpdate } from "react-icons/gr";
-import socketIO from "socket.io-client";
 import { LuImport } from "react-icons/lu";
-import AddLabel from "../../components/Modals/AddLabel";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+
+import socketIO from "socket.io-client";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -847,6 +849,36 @@ const AllTasks = () => {
         Swal.fire("Updated!", "Your task completed successfully!.", "success");
       }
     });
+  };
+
+  // ----------------------Handle Drag & Drop Features-------->
+  const handleOnDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const updatedProjects = Array.from(projects);
+    const [reorderedProject] = updatedProjects.splice(result.source.index, 1);
+    updatedProjects.splice(result.destination.index, 0, reorderedProject);
+
+    console.log("updatedProjects", updatedProjects);
+    setProjects(updatedProjects);
+
+    // Save the new order to the backend
+    updateProjectOrderInDB(updatedProjects);
+  };
+
+  const updateProjectOrderInDB = async (updatedProjects) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/projects/reordering`,
+        { projects: updatedProjects }
+      );
+
+      if (data) {
+        toast.success("Reordering successfully!");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // ----------------------Table Data--------->
@@ -2159,7 +2191,7 @@ const AllTasks = () => {
               >
                 All ({getProjectsCount("All")})
               </div>
-              {projects?.map((proj, i) => {
+              {/* {projects?.map((proj, i) => {
                 getDueAndOverdueCountByDepartment(proj?.projectName);
                 return (
                   <div
@@ -2180,7 +2212,48 @@ const AllTasks = () => {
                     {proj?.projectName} ({getProjectsCount(proj?.projectName)})
                   </div>
                 );
-              })}
+              })} */}
+              <DragDropContext onDragEnd={handleOnDragEnd}>
+                <Droppable droppableId="projects" direction="horizontal">
+                  {(provided) => (
+                    <div
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className="flex items-center gap-2 flex-wrap"
+                    >
+                      {projects?.map((proj, index) => (
+                        <Draggable
+                          key={proj._id}
+                          draggableId={proj._id}
+                          index={index}
+                        >
+                          {(provided) => (
+                            <div
+                              className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                                proj.active &&
+                                "border-2 border-b-0 text-orange-600 border-gray-300"
+                              }`}
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              onClick={() => {
+                                setActive(proj?.projectName);
+                                filterByDep(proj?.projectName);
+                                setShowCompleted(false);
+                              }}
+                            >
+                              {proj?.projectName} (
+                              {getProjectsCount(proj?.projectName)})
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
+
               <div
                 className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
                   activeBtn === "completed" &&
@@ -2412,6 +2485,7 @@ const AllTasks = () => {
                 users={userName}
                 type={"Task"}
                 getTasks1={getTasks1}
+                page={"task"}
               />
             </div>
           )}

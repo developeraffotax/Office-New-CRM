@@ -11,6 +11,9 @@ const projectSchema = new mongoose.Schema(
       type: String,
       default: "processing",
     },
+    order: {
+      type: Number,
+    },
   },
   { timestamps: true }
 );

@@ -3,7 +3,9 @@ import {
   addlabel,
   createDublicateJob,
   createJob,
+  createSubTask,
   deleteClientJob,
+  deleteSubTask,
   getAllClients,
   getClientJobs,
   getClientWithJobs,
@@ -16,6 +18,7 @@ import {
   updateJobHolder,
   updateLead,
   updateStatus,
+  updateSubTaskStaus,
 } from "../controllers/jobController.js";
 import { isAdmin, requiredSignIn } from "../middlewares/authMiddleware.js";
 import multer from "multer";
@@ -71,5 +74,19 @@ router.put("/update/client/status/:id", requiredSignIn, updateClientStatus);
 router.put("/add/job/labe/:id", requiredSignIn, addlabel);
 
 router.post("/import/data", upload.single("file"), requiredSignIn, importData);
+
+// <-----Subtask----->
+// Create subTask
+router.post("/create/subTask/:id", requiredSignIn, createSubTask);
+
+// Update Task
+router.put("/update/subtask/status/:id", requiredSignIn, updateSubTaskStaus);
+
+// Delete Task
+router.delete(
+  "/delete/subtask/:jobId/:subTaskId",
+  requiredSignIn,
+  deleteSubTask
+);
 
 export default router;

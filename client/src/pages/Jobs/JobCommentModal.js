@@ -25,6 +25,7 @@ export default function JobCommentModal({
   users,
   type,
   getTasks1,
+  page,
 }) {
   const { auth } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -100,7 +101,7 @@ export default function JobCommentModal({
         );
         if (data) {
           setIsLoading(false);
-          setCommentData(data.comments.comments);
+          setCommentData(data?.comments?.comments);
 
           // Socket
           socketId.emit("addJob", {
@@ -113,7 +114,7 @@ export default function JobCommentModal({
         );
         if (data) {
           setIsLoading(false);
-          setCommentData(data.comments.comments);
+          setCommentData(data?.comments?.comments);
           // Send Socket Timer
           socketId.emit("addTask", {
             note: "New Task Added",
@@ -123,7 +124,7 @@ export default function JobCommentModal({
     } catch (error) {
       setIsLoading(false);
       console.log(error);
-      toast.error(error.response.data.message);
+      toast.error(error?.response?.data?.message);
     }
   };
 
@@ -140,19 +141,20 @@ export default function JobCommentModal({
           `${process.env.REACT_APP_API_URL}/api/v1/client/job/comments/${jobId}`
         );
         if (data) {
-          setCommentData(data.comments.comments);
+          console.log("data", data);
+          setCommentData(data?.comments?.comments);
         }
       } else {
         const { data } = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/v1/tasks/task/comments/${jobId}`
         );
         if (data) {
-          setCommentData(data.comments.comments);
+          setCommentData(data?.comments?.comments);
         }
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.response.data.message);
+      toast.error(error?.response?.data?.message);
     }
   };
 
@@ -212,7 +214,7 @@ export default function JobCommentModal({
       console.log(error);
       setLoading(false);
 
-      toast.error(error.response.data.message);
+      toast.error(error?.response?.data?.message);
     }
   };
 
@@ -251,7 +253,7 @@ export default function JobCommentModal({
     } catch (error) {
       console.log(error);
       setReplyLoading(false);
-      toast.error(error.response.data.message);
+      toast.error(error?.response?.data?.message);
     }
   };
 
@@ -328,7 +330,7 @@ export default function JobCommentModal({
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.response.data.message);
+      toast.error(error?.response?.data?.message);
       setCommentLikes((prevLikes) => ({
         ...prevLikes,
         [commentId]: true,
@@ -353,8 +355,18 @@ export default function JobCommentModal({
 
   return (
     <div className="w-full h-full flex items-center justify-center">
-      <div className="w-[45rem] max-h-[36rem] rounded-md shadow-md bg-gray-50 border flex flex-col gap-2">
-        <div className="flex items-center justify-between py-2 px-3">
+      <div
+        className={`w-[45rem]  ${
+          page === "detail"
+            ? " bg-gray-50 h-[33rem] 2xl:h-[40rem]"
+            : " bg-gray-50 max-h-[36rem]"
+        } rounded-md shadow-md  border flex flex-col gap-2`}
+      >
+        <div
+          className={`flex items-center justify-between py-2 px-3 ${
+            page === "detail" && "hidden"
+          }`}
+        >
           <h3 className="text-[18px] font-semibold text-black">Comments</h3>
           <span
             onClick={() => {
@@ -547,8 +559,8 @@ export default function JobCommentModal({
             )}
           </>
         </div>
-        {/* Add Comm... */}
-        <div className="flex flex-col gap-4 px-4 py-1 mb-2">
+        {/* --------Add Comm... */}
+        <div className={`flex flex-col gap-4 px-4 py-1 mb-2`}>
           <div className="flex items-start gap-1 w-full  ">
             <div className="w-[3.7rem] h-[3.7rem]">
               <img

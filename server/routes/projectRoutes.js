@@ -4,6 +4,7 @@ import {
   getAllProjects,
   getCompleteProjects,
   getSingleProjects,
+  reordering,
   updateProject,
   updateProjectStatus,
 } from "../controllers/projectController.js";
@@ -32,5 +33,8 @@ router.put("/update/status/:id", requiredSignIn, isAdmin, updateProjectStatus);
 
 // Completed Project
 router.get("/get/completed/project", getCompleteProjects);
+
+// Reordering Project
+router.put("/reordering", requiredSignIn, reordering);
 
 export default router;

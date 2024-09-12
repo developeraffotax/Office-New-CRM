@@ -387,7 +387,7 @@ export default function Template() {
       },
       {
         accessorKey: "template",
-        header: "Status",
+        header: "Copy",
         Cell: ({ cell, row }) => {
           const template = row.original.template;
 

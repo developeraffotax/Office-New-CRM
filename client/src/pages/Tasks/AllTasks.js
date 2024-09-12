@@ -2225,16 +2225,19 @@ const AllTasks = () => {
                           {(provided) => (
                             <div
                               className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                                proj.active &&
-                                "border-2 border-b-0 text-orange-600 border-gray-300"
+                                active === proj?.projectName &&
+                                " border-2 border-b-0 text-orange-600 border-gray-300"
                               }`}
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
                               onClick={() => {
+                                setFilterData("");
                                 setActive(proj?.projectName);
                                 filterByDep(proj?.projectName);
                                 setShowCompleted(false);
+                                setActive1("");
+                                setFilterId("");
                               }}
                             >
                               {proj?.projectName} (

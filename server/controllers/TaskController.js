@@ -806,11 +806,11 @@ const autoCreateRecurringTasks = async () => {
       await newTask.save();
 
       // Update the original task with the next recurring date
-      task.nextRecurringDate = calculateNextRecurringDate(
-        task.nextRecurringDate,
-        task.recurring
-      );
-      await task.save();
+      // task.nextRecurringDate = calculateNextRecurringDate(
+      //   task.nextRecurringDate,
+      //   task.recurring
+      // );
+      // await task.save();
     }
   } catch (error) {
     console.error("Error in auto-creating recurring tasks:", error);
@@ -818,12 +818,13 @@ const autoCreateRecurringTasks = async () => {
 };
 
 // Schedule the task to run every 2 minutes
-cron.schedule("*/5 * * * *", () => {
-  console.log("Running task scheduler for recurring tasks...");
-  autoCreateRecurringTasks();
-});
-// Schedule the task to run daily at midnight
-// cron.schedule("0 0 * * *", () => {
+// cron.schedule("*/5 * * * *", () => {
 //   console.log("Running task scheduler for recurring tasks...");
 //   autoCreateRecurringTasks();
 // });
+
+// Schedule the task to run daily at midnight
+cron.schedule("0 0 * * *", () => {
+  console.log("Running task scheduler for recurring tasks...");
+  autoCreateRecurringTasks();
+});

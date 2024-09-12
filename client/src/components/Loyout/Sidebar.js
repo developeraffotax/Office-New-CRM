@@ -240,6 +240,42 @@ export default function Sidebar({ hide, setHide }) {
               )}
             </div>
           </div>
+          {/* --------Template */}
+          <div
+            className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+            onClick={() => {
+              router("/templates");
+            }}
+          >
+            <div
+              className="adminbtn absolute h-full  sidebtn z-[20]"
+              style={{
+                width: active === "templates" && "100%",
+                background: `rgb(2, 68, 2)`,
+              }}
+            ></div>
+            <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+              {hide ? (
+                <BsCashCoin
+                  className="h-5 w-5 cursor-pointer ml-2"
+                  style={{ color: active === "templates" && "#fff" }}
+                />
+              ) : (
+                <div className="flex items-center gap-2">
+                  <BsCashCoin
+                    className="h-5 w-5 cursor-pointer ml-2"
+                    style={{ color: active === "templates" && "#fff" }}
+                  />
+                  <span
+                    className="text-[14px] font-[400] "
+                    style={{ color: active === "templates" && "#fff" }}
+                  >
+                    Templates
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
           {/* Timer Sheet */}
           <div
             className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
@@ -385,104 +421,9 @@ export default function Sidebar({ hide, setHide }) {
             </div>
           </div>
           {/*  */}
-          <div
-            className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
-            onClick={() => {
-              router("/subscription");
-            }}
-          >
-            <div
-              className="adminbtn absolute h-full  sidebtn z-[20]"
-              style={{
-                width: active === "subscription" && "100%",
-                background: `rgb(2, 68, 2)`,
-              }}
-            ></div>
-            <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-              {hide ? (
-                <BsCashCoin
-                  className="h-5 w-5 cursor-pointer ml-2"
-                  style={{ color: active === "subscription" && "#fff" }}
-                />
-              ) : (
-                <div className="flex items-center gap-2">
-                  <BsCashCoin
-                    className="h-5 w-5 cursor-pointer ml-2"
-                    style={{ color: active === "subscription" && "#fff" }}
-                  />
-                  <span
-                    className="text-[14px] font-[400] "
-                    style={{ color: active === "subscription" && "#fff" }}
-                  >
-                    Templates
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-              {hide ? (
-                <BsCashCoin
-                  className="h-5 w-5 cursor-pointer ml-2"
-                  style={{ color: active === "subscription" && "#fff" }}
-                />
-              ) : (
-                <div className="flex items-center gap-2">
-                  <BsCashCoin
-                    className="h-5 w-5 cursor-pointer ml-2"
-                    style={{ color: active === "subscription" && "#fff" }}
-                  />
-                  <span
-                    className="text-[14px] font-[400] "
-                    style={{ color: active === "subscription" && "#fff" }}
-                  >
-                    Goals
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-              {hide ? (
-                <BsCashCoin
-                  className="h-5 w-5 cursor-pointer ml-2"
-                  style={{ color: active === "subscription" && "#fff" }}
-                />
-              ) : (
-                <div className="flex items-center gap-2">
-                  <BsCashCoin
-                    className="h-5 w-5 cursor-pointer ml-2"
-                    style={{ color: active === "subscription" && "#fff" }}
-                  />
-                  <span
-                    className="text-[14px] font-[400] "
-                    style={{ color: active === "subscription" && "#fff" }}
-                  >
-                    Subscription
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-              {hide ? (
-                <BsCashCoin
-                  className="h-5 w-5 cursor-pointer ml-2"
-                  style={{ color: active === "subscription" && "#fff" }}
-                />
-              ) : (
-                <div className="flex items-center gap-2">
-                  <BsCashCoin
-                    className="h-5 w-5 cursor-pointer ml-2"
-                    style={{ color: active === "subscription" && "#fff" }}
-                  />
-                  <span
-                    className="text-[14px] font-[400] "
-                    style={{ color: active === "subscription" && "#fff" }}
-                  >
-                    Recurring Tasks
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
+
+          {/* --------- */}
+
           {/* HR */}
 
           {/* <div

@@ -701,7 +701,7 @@ export const createDublicateJob = async (req, res) => {
       if (isExisting.job.jobName === "Personal Tax") {
         jobDeadline.setDate(jobDeadline.getDate() + 301); // Add 301 days
       } else if (isExisting.job.jobName === "Accounts") {
-        jobDeadline.setMonth(jobDeadline.getMonth() + 8); // Add 8 months
+        jobDeadline.setMonth(jobDeadline.getMonth() + 12); // Add 12 months
       } else if (isExisting.job.jobName === "Company Sec") {
         jobDeadline.setDate(jobDeadline.getDate() + 14); // Add 14 days
       } else if (isExisting.job.jobName === "Address") {

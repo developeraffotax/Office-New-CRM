@@ -76,6 +76,10 @@ select {
   overflow-y: auto;
 }
 
+.selected-image {
+  border: 2px solid blue;
+}
+
 /* --------- */
 
 /* .css-wsew38 {

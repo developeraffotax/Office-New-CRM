@@ -1,11 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import { style } from "../../utlis/CommonStyle";
-import {
-  IoIosArrowDropdown,
-  IoIosArrowDropup,
-  IoMdDownload,
-} from "react-icons/io";
+import { IoIosArrowDropdown, IoIosArrowDropup } from "react-icons/io";
 import axios from "axios";
 import AddProjectModal from "../../components/Tasks/AddProjectModal";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
@@ -27,7 +23,6 @@ import { useAuth } from "../../context/authContext";
 import { TbCalendarDue } from "react-icons/tb";
 import CompletedTasks from "./CompletedTasks";
 import AddTaskModal from "../../components/Tasks/AddTaskModal";
-import { Box, Button } from "@mui/material";
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -280,7 +275,7 @@ const AllTasks = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         deleteProject(projectId);
-        Swal.fire("Deleted!", "Your job has been deleted.", "success");
+        Swal.fire("Deleted!", "Your project has been deleted.", "success");
       }
     });
   };
@@ -1019,7 +1014,7 @@ const AllTasks = () => {
         header: "Tasks",
         Header: ({ column }) => {
           return (
-            <div className=" flex flex-col gap-[2px]">
+            <div className=" w-[380px] flex flex-col gap-[2px]">
               <span
                 className="ml-1 cursor-pointer"
                 title="Clear Filter"
@@ -1033,7 +1028,7 @@ const AllTasks = () => {
                 type="search"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               />
             </div>
           );
@@ -2144,7 +2139,7 @@ const AllTasks = () => {
               <button
                 className={`w-[3rem] h-[2.2rem] flex items-center justify-center rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
                 onClick={handleExportData}
-                title="Import Date"
+                title="Export Data"
               >
                 <LuImport className="h-6 w-6 " />
               </button>

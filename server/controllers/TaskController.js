@@ -759,6 +759,25 @@ const autoCreateRecurringTasks = async () => {
       nextRecurringDate: { $lte: now },
     });
 
+    const calculateStartDate = (recurringType) => {
+      const currentDate = new Date();
+
+      switch (recurringType) {
+        case "2_minutes":
+          return new Date(currentDate.getTime() + 2 * 60 * 1000);
+        case "daily":
+          return new Date(currentDate.setDate(currentDate.getDate() + 1));
+        case "weekly":
+          return new Date(currentDate.setDate(currentDate.getDate() + 7));
+        case "monthly":
+          return new Date(currentDate.setMonth(currentDate.getMonth() + 1));
+        case "quarterly":
+          return new Date(currentDate.setMonth(currentDate.getMonth() + 3));
+        default:
+          return currentDate;
+      }
+    };
+
     for (const task of tasks) {
       // Create a new task with updated dates
       const newTask = await taskModel.create({
@@ -766,8 +785,8 @@ const autoCreateRecurringTasks = async () => {
         jobHolder: task.jobHolder,
         task: task.task,
         hours: task.hours,
-        startDate: new Date(), // Set to the current date/time
-        deadline: task.deadline, // Or adjust based on your needs
+        startDate: calculateStartDate(task.recurring),
+        deadline: task.deadline,
         lead: task.lead,
         recurring: task.recurring,
         nextRecurringDate: calculateNextRecurringDate(
@@ -777,9 +796,8 @@ const autoCreateRecurringTasks = async () => {
         // Copy other fields as needed
       });
 
-      // Add activity log for the newly created recurring task
       newTask.activities.push({
-        userName: "System", // Indicates it was created automatically
+        userName: "System",
         activity: `Auto-created recurring task: ${task.task} for project: ${task.project.projectName}`,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -800,12 +818,12 @@ const autoCreateRecurringTasks = async () => {
 };
 
 // Schedule the task to run every 2 minutes
-// cron.schedule("*/2 * * * *", () => {
-//   console.log("Running task scheduler for recurring tasks...");
-//   autoCreateRecurringTasks();
-// });
-// Schedule the task to run daily at midnight
-cron.schedule("0 0 * * *", () => {
+cron.schedule("*/5 * * * *", () => {
   console.log("Running task scheduler for recurring tasks...");
   autoCreateRecurringTasks();
 });
+// Schedule the task to run daily at midnight
+// cron.schedule("0 0 * * *", () => {
+//   console.log("Running task scheduler for recurring tasks...");
+//   autoCreateRecurringTasks();
+// });

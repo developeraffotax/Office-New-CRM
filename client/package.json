@@ -37,6 +37,7 @@
     "react-mentions": "^4.4.10",
     "react-paginate": "^8.2.0",
     "react-pro-sidebar": "^1.1.0",
+    "react-quill": "^2.0.0",
     "react-responsive": "^10.0.0",
     "react-router-dom": "^6.23.1",
     "react-scripts": "5.0.1",

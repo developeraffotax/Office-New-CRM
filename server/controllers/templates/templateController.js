@@ -58,7 +58,7 @@ export const getAllTemplate = async (req, res) => {
 // Get Single Template
 export const getSingleTemplate = async (req, res) => {
   try {
-    const templateId = req.pamams.id;
+    const templateId = req.params.id;
 
     if (!templateId) {
       return res.status(400).send({
@@ -86,7 +86,7 @@ export const getSingleTemplate = async (req, res) => {
 // Update Template
 export const updateTemplate = async (req, res) => {
   try {
-    const templateId = req.pamams.id;
+    const templateId = req.params.id;
     const { name, description, template, category, userList } = req.body;
 
     if (!templateId) {
@@ -135,7 +135,7 @@ export const updateTemplate = async (req, res) => {
 // Delete Template
 export const deleteTemplate = async (req, res) => {
   try {
-    const templateId = req.pamams.id;
+    const templateId = req.params.id;
 
     if (!templateId) {
       return res.status(400).send({
@@ -143,12 +143,11 @@ export const deleteTemplate = async (req, res) => {
         message: "Template id is required!",
       });
     }
-    const template = await templateModel.findById({ _id: templateId });
+    await templateModel.findByIdAndDelete({ _id: templateId });
 
     res.status(200).send({
       success: true,
-      message: "Template List!",
-      template: template,
+      message: "Template deleted successfully!",
     });
   } catch (error) {
     console.log(error);

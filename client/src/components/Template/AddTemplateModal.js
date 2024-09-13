@@ -27,11 +27,13 @@ export default function AddTemplateModal({
   const getSingleTemplate = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/projects/get_single/project/${templateId}`
+        `${process.env.REACT_APP_API_URL}/api/v1/templates/get/single/template/${templateId}`
       );
-      console.log("Project Data:", data);
-      setName(data?.project?.projectName);
-      setUserList(data?.project?.users_list);
+      setName(data?.template?.name);
+      setDescription(data?.template?.description);
+      setCategory(data?.template?.category);
+      setTemplate(data?.template?.template);
+      setUserList(data?.template?.userList);
     } catch (error) {
       console.log(error);
     }

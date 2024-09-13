@@ -1,0 +1,23 @@
+// const calculateNextRecurringDate = (currentDate, recurring) => {
+//   const date = new Date(currentDate);
+//   switch (recurring) {
+//     case "daily":
+//       date.setDate(date.getDate() + 1);
+//       break;
+//     case "weekly":
+//       date.setDate(date.getDate() + 7);
+//       break;
+//     case "monthly":
+//       date.setMonth(date.getMonth() + 1);
+//       break;
+//     case "quarterly":
+//       date.setMonth(date.getMonth() + 3);
+//       break;
+//     case "2_minutes":
+//       date.setMinutes(date.getMinutes() + 2);
+//       break;
+//     default:
+//       return null;
+//   }
+//   return date;
+// };

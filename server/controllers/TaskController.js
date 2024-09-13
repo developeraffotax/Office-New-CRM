@@ -723,60 +723,34 @@ export const updateTaskHours = async (req, res) => {
 };
 
 // --------------------------------Recurring Task---------------------------------------->
-// Utility function to calculate the next recurring date
-const calculateNextRecurringDate = (currentDate, recurring) => {
-  const date = new Date(currentDate);
-  switch (recurring) {
-    case "daily":
-      date.setDate(date.getDate() + 1);
-      break;
-    case "weekly":
-      date.setDate(date.getDate() + 7);
-      break;
-    case "monthly":
-      date.setMonth(date.getMonth() + 1);
-      break;
-    case "quarterly":
-      date.setMonth(date.getMonth() + 3);
-      break;
+
+const calculateStartDate = (date, recurringType) => {
+  const currentDate = new Date(date);
+
+  switch (recurringType) {
     case "2_minutes":
-      date.setMinutes(date.getMinutes() + 2);
-      break;
+      return new Date(currentDate.getTime() + 2 * 60 * 1000);
+    case "daily":
+      return new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+    case "weekly":
+      return new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+    case "monthly":
+      return new Date(currentDate.setMonth(currentDate.getMonth() + 1));
+    case "quarterly":
+      return new Date(currentDate.setMonth(currentDate.getMonth() + 3));
     default:
-      return null;
+      return currentDate;
   }
-  return date;
 };
 
-// Auto-create recurring tasks based on their schedule
 const autoCreateRecurringTasks = async () => {
   try {
     const now = new Date();
 
-    // Find tasks with a recurring field set and nextRecurringDate <= now
     const tasks = await taskModel.find({
       recurring: { $ne: null },
       nextRecurringDate: { $lte: now },
     });
-
-    const calculateStartDate = (recurringType) => {
-      const currentDate = new Date();
-
-      switch (recurringType) {
-        case "2_minutes":
-          return new Date(currentDate.getTime() + 2 * 60 * 1000);
-        case "daily":
-          return new Date(currentDate.setDate(currentDate.getDate() + 1));
-        case "weekly":
-          return new Date(currentDate.setDate(currentDate.getDate() + 7));
-        case "monthly":
-          return new Date(currentDate.setMonth(currentDate.getMonth() + 1));
-        case "quarterly":
-          return new Date(currentDate.setMonth(currentDate.getMonth() + 3));
-        default:
-          return currentDate;
-      }
-    };
 
     for (const task of tasks) {
       // Create a new task with updated dates
@@ -785,15 +759,15 @@ const autoCreateRecurringTasks = async () => {
         jobHolder: task.jobHolder,
         task: task.task,
         hours: task.hours,
-        startDate: calculateStartDate(task.recurring),
+        startDate: calculateStartDate(task.startDate, task.recurring),
         deadline: task.deadline,
         lead: task.lead,
         recurring: task.recurring,
-        nextRecurringDate: calculateNextRecurringDate(
-          new Date(),
+        labal: task.labal,
+        nextRecurringDate: calculateStartDate(
+          task.nextRecurringDate,
           task.recurring
         ),
-        // Copy other fields as needed
       });
 
       newTask.activities.push({
@@ -818,13 +792,13 @@ const autoCreateRecurringTasks = async () => {
 };
 
 // Schedule the task to run every 2 minutes
-// cron.schedule("*/5 * * * *", () => {
-//   console.log("Running task scheduler for recurring tasks...");
-//   autoCreateRecurringTasks();
-// });
-
-// Schedule the task to run daily at midnight
-cron.schedule("0 0 * * *", () => {
+cron.schedule("*/2 * * * *", () => {
   console.log("Running task scheduler for recurring tasks...");
   autoCreateRecurringTasks();
 });
+
+// Schedule the task to run daily at midnight
+// cron.schedule("0 0 * * *", () => {
+//   console.log("Running task scheduler for recurring tasks...");
+//   autoCreateRecurringTasks();
+// });

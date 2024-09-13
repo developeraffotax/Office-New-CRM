@@ -39,6 +39,8 @@ export default function Template() {
   const [templateId, setTemplateId] = useState("");
   const [isloading, setIsLoading] = useState(false);
   const [selectedTab, setSelectedTab] = useState("templates");
+  const [showTemplate, setShowTemplate] = useState(false);
+  const [template, setTemplate] = useState("");
 
   console.log("templateData:", templateData);
 
@@ -181,6 +183,89 @@ export default function Template() {
     }
   };
   // -----------------------Templates------------------>
+  const handleDeleteTemplateConfirmation = (tempId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteTemplate(tempId);
+        Swal.fire("Deleted!", "Your template has been deleted.", "success");
+      }
+    });
+  };
+  const deleteTemplate = async (id) => {
+    try {
+      const { data } = await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/v1/templates/delete/template/${id}`
+      );
+      if (data) {
+        const filterTemplate = templateData.filter((item) => item._id !== id);
+        setTemplateData(filterTemplate);
+        getTemplates();
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    }
+  };
+
+  // --------Copy Template--------->
+  const duplicateTemplate = async (originalTemplate) => {
+    const taskCopy = { ...originalTemplate };
+
+    const { data } = await axios.post(
+      `${process.env.REACT_APP_API_URL}/api/v1/templates/create/template`,
+      {
+        ...taskCopy,
+      }
+    );
+    if (data) {
+      setTemplateData((prevData) => [...prevData, data.template]);
+      getTemplates();
+      toast.success("Template copy successfully!");
+    }
+  };
+
+  const convertQuillHtmlToPlainText = (html) => {
+    html = html.replace(/<strong>|<b>/g, "**");
+    html = html.replace(/<\/strong>|<\/b>/g, "**");
+
+    html = html.replace(/<em>|<i>/g, "_");
+    html = html.replace(/<\/em>|<\/i>/g, "_");
+
+    html = html.replace(/<u>/g, "__");
+    html = html.replace(/<\/u>/g, "__");
+
+    html = html.replace(/<a.*?href="(.*?)".*?>(.*?)<\/a>/g, "[$2]($1)");
+
+    html = html.replace(/<br\s*\/?>/g, "");
+
+    html = html.replace(/<\/p>/g, "\n");
+
+    html = html.replace(/<[^>]*>/g, "");
+
+    return html;
+  };
+
+  const copyTemplate = (template) => {
+    const cleanText = convertQuillHtmlToPlainText(template);
+
+    navigator.clipboard.writeText(cleanText).then(
+      () => {
+        toast.success("Copied!");
+      },
+      (err) => {
+        console.log("Failed to copy the template!:", err);
+        toast.error("Failed to copy the template!");
+      }
+    );
+  };
 
   // ---------------------Table Data-------------------->
   const columns = useMemo(
@@ -189,7 +274,7 @@ export default function Template() {
         accessorKey: "category",
         minSize: 100,
         maxSize: 200,
-        size: 130,
+        size: 170,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -302,7 +387,7 @@ export default function Template() {
             row.original[columnId]?.toString().toLowerCase() || "";
           return cellValue.startsWith(filterValue.toLowerCase());
         },
-        size: 150,
+        size: 180,
         minSize: 120,
         maxSize: 200,
         grow: false,
@@ -312,7 +397,7 @@ export default function Template() {
         header: "Description",
         Header: ({ column }) => {
           return (
-            <div className=" w-[380px] flex flex-col gap-[2px]">
+            <div className=" w-[480px] flex flex-col gap-[2px]">
               <span
                 className="ml-1 cursor-pointer"
                 title="Clear Filter"
@@ -362,11 +447,10 @@ export default function Template() {
                   <p
                     className="text-blue-600 hover:text-blue-700 cursor-pointer text-start  "
                     onDoubleClick={() => setShowEdit(true)}
-                    // onClick={() => {
-                    //   setTaskID(row.original._id);
-                    //   setProjectName(row.original.project.projectName);
-                    //   setShowDetail(true);
-                    // }}
+                    onClick={() => {
+                      setTemplate(row.original.template);
+                      setShowTemplate(true);
+                    }}
                   >
                     {allocateDescription}
                   </p>
@@ -380,9 +464,9 @@ export default function Template() {
             row.original[columnId]?.toString().toLowerCase() || "";
           return cellValue.startsWith(filterValue.toLowerCase());
         },
-        size: 400,
-        minSize: 300,
-        maxSize: 450,
+        size: 500,
+        minSize: 350,
+        maxSize: 560,
         grow: false,
       },
       {
@@ -391,63 +475,12 @@ export default function Template() {
         Cell: ({ cell, row }) => {
           const template = row.original.template;
 
-          const convertQuillHtmlToPlainText = (html) => {
-            html = html.replace(/<strong>|<b>/g, "**");
-            html = html.replace(/<\/strong>|<\/b>/g, "**");
-
-            html = html.replace(/<em>|<i>/g, "_");
-            html = html.replace(/<\/em>|<\/i>/g, "_");
-
-            html = html.replace(/<u>/g, "__");
-            html = html.replace(/<\/u>/g, "__");
-
-            html = html.replace(/<s>|<strike>/g, "~~");
-            html = html.replace(/<\/s>|<\/strike>/g, "~~");
-
-            html = html.replace(/<blockquote>/g, "> ");
-            html = html.replace(/<\/blockquote>/g, "");
-
-            html = html.replace(/<li>/g, "* ");
-            html = html.replace(/<\/li>/g, "\n");
-            html = html.replace(/<\/ul>|<\/ol>/g, "");
-
-            html = html.replace(/<a.*?href="(.*?)".*?>(.*?)<\/a>/g, "[$2]($1)");
-
-            html = html.replace(
-              /<img.*?alt="(.*?)".*?src="(.*?)".*?>/g,
-              "![$1]($2)"
-            );
-
-            html = html.replace(/<br\s*\/?>/g, "\n");
-            html = html.replace(/<\/p>/g, "\n");
-
-            // Remove all remaining HTML tags
-            html = html.replace(/<[^>]*>/g, "");
-
-            return html.trim();
-          };
-
-          const copyTemplate = (template) => {
-            const cleanText = convertQuillHtmlToPlainText(template);
-
-            navigator.clipboard.writeText(cleanText).then(
-              () => {
-                toast.success("Copied!");
-              },
-              (err) => {
-                console.log("Failed to copy the template!:", err);
-                toast.error("Failed to copy the template!");
-              }
-            );
-          };
-
           return (
             <div className="flex items-center justify-center gap-3 w-full h-full">
               <span
                 className="text-[1rem] cursor-pointer"
                 onClick={() => copyTemplate(template)}
                 title="Copy Template"
-                // dangerouslySetInnerHTML={template}
               >
                 <RxClipboardCopy className="h-5 w-5 text-cyan-500 hover:text-cyan-600 " />
               </span>
@@ -464,40 +497,43 @@ export default function Template() {
         Cell: ({ cell, row }) => {
           return (
             <div className="flex items-center justify-center gap-4 w-full h-full">
-              <span
+              {/* <span
                 className="text-[1rem] cursor-pointer"
                 // onClick={() => copyTask(row.original)}
                 title="Users in this Template"
               >
                 <FaUsers className="h-5 w-5 text-orange-500 hover:text-orange-600 " />
-              </span>
+              </span> */}
               <span
                 className="text-[1rem] cursor-pointer"
-                // onClick={() => copyTask(row.original)}
+                onClick={() => duplicateTemplate(row.original)}
                 title="Copy Template"
               >
                 <GrCopy className="h-5 w-5 text-cyan-500 hover:text-cyan-600 " />
               </span>
               <span
                 className=""
-                title="Complete Task"
-                // onClick={() => {
-                //   handleCompleteStatus(row.original._id);
-                // }}
+                title="Edit Template"
+                onClick={() => {
+                  setTemplateId(row.original._id);
+                  setAddTemplate(true);
+                }}
               >
                 <RiEdit2Line className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
               </span>
               <span
                 className="text-[1rem] cursor-pointer"
-                // onClick={() => handleDeleteTaskConfirmation(row.original._id)}
-                title="Delete Task!"
+                onClick={() =>
+                  handleDeleteTemplateConfirmation(row.original._id)
+                }
+                title="Delete Template!"
               >
                 <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
               </span>
             </div>
           );
         },
-        size: 160,
+        size: 140,
       },
     ],
     // eslint-disable-next-line
@@ -706,7 +742,8 @@ export default function Template() {
           )}
         </div>
 
-        {/* -----------------Models------------------------ */}
+        {/* -----------------Create Categories------------------------ */}
+
         {showCategory && (
           <div className="fixed top-0 left-0 z-[999] w-full h-full py-4 px-4 bg-gray-300/70 flex items-center justify-center">
             <form
@@ -767,6 +804,50 @@ export default function Template() {
               categoryData={categoryData}
               getTemplates={getTemplates}
             />
+          </div>
+        )}
+
+        {/* -----------------template Details----------- */}
+        {showTemplate && (
+          <div className="fixed top-0 left-0 z-[999] w-full h-full py-4 px-4 bg-gray-300/70 flex items-center justify-center">
+            <div className="flex flex-col gap-2 bg-white rounded-md shadow-md w-[35rem] max-h-[95vh] ">
+              <div className="flex items-center justify-between px-4 pt-2">
+                <h1 className="text-[20px] font-semibold text-black">
+                  Template View
+                </h1>
+                <span
+                  className=" cursor-pointer"
+                  onClick={() => {
+                    setTemplate("");
+                    setShowTemplate(false);
+                  }}
+                >
+                  <IoClose className="h-6 w-6 " />
+                </span>
+              </div>
+              <hr className="h-[1px] w-full bg-gray-400 " />
+              <div
+                onClick={() => copyTemplate(template)}
+                className="py-4 px-4 w-full max-h-[80vh] text-[14px] overflow-y-auto cursor-pointer"
+                dangerouslySetInnerHTML={{ __html: template }}
+              ></div>
+              <hr className="h-[1px] w-full bg-gray-400 " />
+              <div className="flex items-center justify-end px-4 py-2 pb-4">
+                <button
+                  className={`${style.button1} text-[15px] `}
+                  type="button"
+                  style={{ padding: ".4rem 1rem" }}
+                >
+                  <span
+                    className="text-[1rem] cursor-pointer"
+                    onClick={() => copyTemplate(template)}
+                    title="Copy Template"
+                  >
+                    <GrCopy className="h-5 w-5 text-white " />
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

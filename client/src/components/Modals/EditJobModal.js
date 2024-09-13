@@ -135,13 +135,16 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
 
       const clientDetail = data.clientJob;
       console.log("JobDetails", clientDetail);
+      const formattedDate = new Date(
+        clientDetail.currentDate
+      ).toLocaleDateString("en-CA");
 
       setClientName(clientDetail.clientName);
       setRegNumber(clientDetail.regNumber);
       setCompanyName(clientDetail.companyName);
       setEmail(clientDetail.email);
       setTotalHours(clientDetail.totalHours);
-      setCurrentDate(clientDetail.currentDate);
+      setCurrentDate(formattedDate);
       setSource(clientDetail.source);
       setClientType(clientDetail.clientType);
       setCountry(clientDetail.country);

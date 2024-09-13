@@ -959,3 +959,38 @@
     //     </Box>
     //   );
     // },
+
+    --------------------------------Correct Styling-----------
+     const convertQuillHtmlToPlainText = (html) => {
+    html = html.replace(/<strong>|<b>/g, "**");
+    html = html.replace(/<\/strong>|<\/b>/g, "**");
+
+    html = html.replace(/<em>|<i>/g, "_");
+    html = html.replace(/<\/em>|<\/i>/g, "_");
+
+    html = html.replace(/<u>/g, "__");
+    html = html.replace(/<\/u>/g, "__");
+
+    html = html.replace(/<s>|<strike>/g, "~~");
+    html = html.replace(/<\/s>|<\/strike>/g, "~~");
+
+    html = html.replace(/<blockquote>/g, "> ");
+    html = html.replace(/<\/blockquote>/g, "");
+
+    html = html.replace(/<li>/g, "* ");
+    html = html.replace(/<\/li>/g, "\n");
+    html = html.replace(/<\/ul>|<\/ol>/g, "");
+
+    html = html.replace(/<a.*?href="(.*?)".*?>(.*?)<\/a>/g, "[$2]($1)");
+
+    html = html.replace(/<img.*?alt="(.*?)".*?src="(.*?)".*?>/g, "![$1]($2)");
+
+    // html = html.replace(/<br\s*\/?>/g, "\n");
+    html = html.replace(/<br\s*\/?>/g, "\n").replace(/\n\s*\n/g, "\n");
+    html = html.replace(/<\/p>/g, "\n");
+
+    // Remove all remaining HTML tags
+    html = html.replace(/<[^>]*>/g, "");
+
+    return html.trim();
+  };

@@ -33,10 +33,16 @@ export const createJob = async (req, res) => {
     } = req.body;
 
     // Check for required fields
-    if (!clientName || !companyName) {
+    if (!clientName) {
       return res.status(400).send({
         success: false,
-        message: "Please fill the required fields!",
+        message: "Client name is required!",
+      });
+    }
+    if (!companyName) {
+      return res.status(400).send({
+        success: false,
+        message: "Company name is required!",
       });
     }
 
@@ -638,10 +644,16 @@ export const createDublicateJob = async (req, res) => {
     } = req.body;
 
     // Check for required fields
-    if (!clientName || !companyName || !email || !totalHours || !currentDate) {
+    if (!clientName) {
       return res.status(400).send({
         success: false,
-        message: "Please fill the required fields!",
+        message: "Client name is required!",
+      });
+    }
+    if (!companyName) {
+      return res.status(400).send({
+        success: false,
+        message: "Company name is required!",
       });
     }
 

@@ -83,6 +83,8 @@ const CompletedTasks = ({
   const [showDetail, setShowDetail] = useState(false);
   const [taskID, setTaskID] = useState("");
   const [projectName, setProjectName] = useState("");
+  const [labelData, setLabelData] = useState([]);
+  const [totalHours, setTotalHours] = useState("0");
 
   const dateStatus = ["Due", "Overdue"];
 
@@ -143,6 +145,24 @@ const CompletedTasks = ({
     // eslint-disable-next-line
   }, []);
 
+  //   Get All Labels
+  const getlabel = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels/task`
+      );
+      if (data.success) {
+        setLabelData(data.labels);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getlabel();
+  }, []);
+
   // ---------Delete Project-------->
   const handleDeleteConfirmation = (projectId) => {
     Swal.fire({
@@ -174,6 +194,31 @@ const CompletedTasks = ({
       toast.error(error?.response?.data?.message);
     }
   };
+
+  useEffect(() => {
+    const totalHours = tasksData.reduce(
+      (sum, client) => sum + Number(client.hours),
+      0
+    );
+    setTotalHours(totalHours.toFixed(0));
+    if (active === "All" && !active1) {
+      if (filterData) {
+        const totalHours = tasksData.reduce(
+          (sum, client) => sum + Number(client.hours),
+          0
+        );
+        setTotalHours(totalHours.toFixed(0));
+      }
+    } else {
+      if (filterData) {
+        const totalHours = filterData.reduce(
+          (sum, client) => sum + Number(client.hours),
+          0
+        );
+        setTotalHours(totalHours.toFixed(0));
+      }
+    }
+  }, [tasksData, filterData, active, active1, activeBtn]);
 
   const handleUpdateStatus = (projectId) => {
     Swal.fire({
@@ -522,16 +567,40 @@ const CompletedTasks = ({
         minSize: 150,
         maxSize: 200,
         size: 160,
-        grow: true,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Project
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {projects?.map((proj) => (
+                  <option key={proj._id} value={proj.projectName}>
+                    {proj.projectName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
-          const projectName = row.original.project.projectName;
+          const projectId = row.original.project._id;
 
           return (
-            <div
-              className="flex items-start w-full cursor-pointer"
-              title={projectName}
-            >
-              <span>{projectName}</span>
+            <div className="flex">
+              <span>{row.original.project.projectName}</span>
             </div>
           );
         },
@@ -539,22 +608,56 @@ const CompletedTasks = ({
         filterSelectOptions: projects?.map((project) => project?.projectName),
         filterVariant: "select",
       },
-
       {
         accessorKey: "jobHolder",
         header: "Job Holder",
+        Header: ({ column }) => {
+          const user = auth?.user?.name;
+
+          useEffect(() => {
+            column.setFilterValue(user);
+
+            // eslint-disable-next-line
+          }, []);
+
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Job Holder
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {users?.map((jobhold, i) => (
+                  <option key={i} value={jobhold?.name}>
+                    {jobhold?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const jobholder = cell.getValue();
 
           return (
             <select
               value={jobholder || ""}
-              className="w-[6rem] h-[2rem] rounded-md border border-orange-300 outline-none"
+              className="w-full h-[2rem] rounded-md border-none  outline-none"
               onChange={(e) =>
                 updateTaskJLS(row.original?._id, e.target.value, "", "")
               }
             >
-              <option value="">Select Job holder</option>
+              <option value="empty"></option>
               {users?.map((jobHold, i) => (
                 <option value={jobHold?.name} key={i}>
                   {jobHold.name}
@@ -566,25 +669,51 @@ const CompletedTasks = ({
         filterFn: "equals",
         filterSelectOptions: users.map((jobhold) => jobhold.name),
         filterVariant: "select",
-        size: 120,
-        minSize: 100,
-        maxSize: 150,
-        grow: true,
+        size: 100,
+        minSize: 80,
+        maxSize: 130,
+        grow: false,
       },
+      // Task
       {
         accessorKey: "task",
         header: "Tasks",
+        Header: ({ column }) => {
+          return (
+            <div className=" w-[380px] flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Tasks
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
-          const task = cell.getValue();
+          const task = row.original.task;
           const [allocateTask, setAllocateTask] = useState(task);
           const [showEdit, setShowEdit] = useState(false);
+
+          useEffect(() => {
+            setAllocateTask(row.original.task);
+          }, [row.original]);
 
           const updateAllocateTask = (task) => {
             updateAlocateTask(row.original._id, allocateTask, "", "");
             setShowEdit(false);
           };
           return (
-            <div className="w-full h-full">
+            <div className="w-full h-full ">
               {showEdit ? (
                 <input
                   type="text"
@@ -596,18 +725,18 @@ const CompletedTasks = ({
                 />
               ) : (
                 <div
-                  className="w-full h-full cursor-pointer "
+                  className="w-full h-full flex items-center justify-start "
                   onDoubleClick={() => setShowEdit(true)}
-                  onClick={() => {
-                    setTaskID(row.original._id);
-                    setProjectName(row.original.project.projectName);
-                    setShowDetail(true);
-                  }}
                   title={allocateTask}
                 >
                   <p
-                    className="text-sky-500 cursor-pointer hover:text-sky-600 "
+                    className="text-[#0078c8] hover:text-[#0053c8] cursor-pointer text-start  "
                     onDoubleClick={() => setShowEdit(true)}
+                    onClick={() => {
+                      setTaskID(row.original._id);
+                      setProjectName(row.original.project.projectName);
+                      setShowDetail(true);
+                    }}
                   >
                     {allocateTask}
                   </p>
@@ -616,114 +745,114 @@ const CompletedTasks = ({
             </div>
           );
         },
-        filterFn: "equals",
-        filterVariant: "select",
-        size: 320,
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+
+          return cellValue.startsWith(filterValue.toLowerCase());
+        },
+        size: 390,
         minSize: 200,
-        maxSize: 350,
+        maxSize: 400,
         grow: true,
       },
+      // Hours
       {
         accessorKey: "hours",
-        header: "Hrs",
-        filterFn: "equals",
-        size: 80,
-      },
-      // End  year
-      {
-        accessorKey: "startDate",
-        header: "Start Date",
-        Cell: ({ cell, row }) => {
-          const [date, setDate] = useState(
-            format(new Date(cell.getValue()), "dd-MMM-yyyy")
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col items-center justify-center  w-[4rem] pr-2  gap-[2px]">
+              <span
+                className="cursor-pointer w-full text-center"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Hrs
+              </span>
+              <span className="font-medium w-full text-center px-1 py-1 ml-1 rounded-md bg-gray-300/30 text-black">
+                {totalHours}
+              </span>
+            </div>
           );
+        },
+        Cell: ({ cell, row }) => {
+          const hours = cell.getValue();
+          const [show, setShow] = useState(false);
+          const [hour, setHour] = useState(hours);
+          const [showId, setShowId] = useState("");
 
-          const handleDateChange = (newDate) => {
-            setDate(newDate);
-            updateAlocateTask(row.original._id, "", date, "");
+          const updateHours = async (e) => {
+            e.preventDefault();
+            try {
+              const { data } = await axios.put(
+                `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/hours/${showId}`,
+                { hours: hour }
+              );
+              if (data) {
+                if (filterId || active || active1) {
+                  setFilterData((prevData) =>
+                    prevData?.map((item) =>
+                      item._id === taskId ? { ...item, hours: hours } : item
+                    )
+                  );
+                }
+                setTasksData((prevData) =>
+                  prevData?.map((item) =>
+                    item._id === taskId ? { ...item, hours: hours } : item
+                  )
+                );
+                setHour("");
+                setShow(false);
+                // getTasks1();
+                toast.success("Hours Updated!");
+              }
+            } catch (error) {
+              console.log(error);
+              toast.error("Error in update hours!");
+            }
           };
-
           return (
             <div className="w-full flex items-center justify-center">
-              <input
-                type="text"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                onBlur={(e) => handleDateChange(e.target.value)}
-                className={`h-[2rem] w-[6rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none `}
-              />
+              {show && row.original._id === showId ? (
+                <form onSubmit={updateHours}>
+                  <input
+                    type="text"
+                    value={hour}
+                    onChange={(e) => setHour(e.target.value)}
+                    className="w-full h-[1.7rem] px-[2px] outline-none rounded-md cursor-pointer"
+                  />
+                </form>
+              ) : (
+                <span
+                  className="text-[15px] font-medium"
+                  onDoubleClick={() => {
+                    setShowId(row.original._id);
+                    setShow(true);
+                  }}
+                >
+                  {hours}
+                </span>
+              )}
             </div>
           );
         },
         filterFn: (row, columnId, filterValue) => {
-          const cellValue = row.getValue(columnId);
-          if (!cellValue) return false;
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
 
-          const cellDate = new Date(cellValue);
-
-          if (filterValue.includes("-")) {
-            const [year, month] = filterValue.split("-");
-            const cellYear = cellDate.getFullYear().toString();
-            const cellMonth = (cellDate.getMonth() + 1)
-              .toString()
-              .padStart(2, "0");
-
-            return year === cellYear && month === cellMonth;
-          }
-
-          // Other filter cases
-          const today = new Date();
-          switch (filterValue) {
-            case "Expired":
-              return cellDate < today;
-            case "Today":
-              return cellDate.toDateString() === today.toDateString();
-            case "Tomorrow":
-              const tomorrow = new Date(today);
-              tomorrow.setDate(today.getDate() + 1);
-              return cellDate.toDateString() === tomorrow.toDateString();
-            case "In 7 days":
-              const in7Days = new Date(today);
-              in7Days.setDate(today.getDate() + 7);
-              return cellDate <= in7Days && cellDate > today;
-            case "In 15 days":
-              const in15Days = new Date(today);
-              in15Days.setDate(today.getDate() + 15);
-              return cellDate <= in15Days && cellDate > today;
-            case "30 Days":
-              const in30Days = new Date(today);
-              in30Days.setDate(today.getDate() + 30);
-              return cellDate <= in30Days && cellDate > today;
-            case "60 Days":
-              const in60Days = new Date(today);
-              in60Days.setDate(today.getDate() + 60);
-              return cellDate <= in60Days && cellDate > today;
-            case "Last 12 months":
-              const lastYear = new Date(today);
-              lastYear.setFullYear(today.getFullYear() - 1);
-              return cellDate >= lastYear && cellDate <= today;
-            default:
-              return false;
-          }
+          return cellValue.startsWith(filterValue.toLowerCase());
         },
-        filterSelectOptions: [
-          "Select",
-          "Expired",
-          "Today",
-          "Tomorrow",
-          "In 7 days",
-          "In 15 days",
-          "30 Days",
-          "60 Days",
-          "Custom date",
-        ],
-        filterVariant: "custom",
-        size: 110,
-        minSize: 80,
-        maxSize: 140,
-        grow: true,
-        Filter: ({ column }) => {
-          const [filterValue, setFilterValue] = useState("Select");
+        size: 70,
+        grow: false,
+      },
+      // Start Date
+
+      {
+        accessorKey: "startDate",
+        Header: ({ column }) => {
+          const [filterValue, setFilterValue] = useState("");
           const [customDate, setCustomDate] = useState(getCurrentMonthYear());
 
           useEffect(() => {
@@ -742,58 +871,72 @@ const CompletedTasks = ({
             setCustomDate(e.target.value);
             column.setFilterValue(e.target.value);
           };
+          return (
+            <div className="w-full flex flex-col gap-[2px]">
+              <span
+                className="cursor-pointer "
+                title="Clear Filter"
+                onClick={() => {
+                  setFilterValue("");
+                  column.setFilterValue("");
+                }}
+              >
+                Start Date
+              </span>
 
-          return filterValue === "Custom date" ? (
-            <input
-              type="month"
-              value={customDate}
-              onChange={handleCustomDateChange}
-              className="h-[2rem] w-[9rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none"
-            />
-          ) : (
-            <select
-              value={filterValue}
-              onChange={handleFilterChange}
-              className="h-[2rem] w-[9rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none"
-            >
-              {column.columnDef.filterSelectOptions.map((option, idx) => (
-                <option key={idx} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
+              {filterValue === "Custom date" ? (
+                <input
+                  type="month"
+                  value={customDate}
+                  onChange={handleCustomDateChange}
+                  className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
+                />
+              ) : (
+                <select
+                  value={filterValue}
+                  onChange={handleFilterChange}
+                  className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select</option>
+                  {column.columnDef.filterSelectOptions.map((option, idx) => (
+                    <option key={idx} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
           );
         },
-      },
-      // Job DeadLine
-      {
-        accessorKey: "deadline",
-        header: "Deadline",
         Cell: ({ cell, row }) => {
-          const [date, setDate] = useState(
-            format(new Date(cell.getValue()), "dd-MMM-yyyy")
-          );
+          const [date, setDate] = useState(() => {
+            const cellDate = new Date(cell.getValue());
+            return cellDate.toISOString().split("T")[0];
+          });
+
+          const [showStartDate, setShowStartDate] = useState(false);
 
           const handleDateChange = (newDate) => {
             setDate(newDate);
-            updateAlocateTask(row.original._id, "", "", date);
+            updateAlocateTask(row.original._id, "", date, "");
+            setShowStartDate(false);
           };
 
-          const cellDate = new Date(date);
-          const today = new Date();
-          const isExpired = cellDate < today;
-
           return (
-            <div className="w-full flex items-center justify-center">
-              <input
-                type="text"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                onBlur={(e) => handleDateChange(e.target.value)}
-                className={`h-[2rem] w-[6rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none ${
-                  isExpired ? "text-red-500" : ""
-                }`}
-              />
+            <div className="w-full flex  ">
+              {!showStartDate ? (
+                <p onDoubleClick={() => setShowStartDate(true)}>
+                  {format(new Date(date), "dd-MMM-yyyy")}
+                </p>
+              ) : (
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  onBlur={(e) => handleDateChange(e.target.value)}
+                  className={`h-[2rem] w-full cursor-pointer rounded-md border border-gray-200 outline-none `}
+                />
+              )}
             </div>
           );
         },
@@ -815,9 +958,16 @@ const CompletedTasks = ({
 
           // Other filter cases
           const today = new Date();
+
+          const startOfToday = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate()
+          );
+
           switch (filterValue) {
             case "Expired":
-              return cellDate < today;
+              return cellDate < startOfToday;
             case "Today":
               return cellDate.toDateString() === today.toDateString();
             case "Tomorrow":
@@ -849,7 +999,182 @@ const CompletedTasks = ({
           }
         },
         filterSelectOptions: [
-          "Select",
+          "Expired",
+          "Today",
+          "Tomorrow",
+          "In 7 days",
+          "In 15 days",
+          "30 Days",
+          "60 Days",
+          "Custom date",
+        ],
+        filterVariant: "custom",
+        size: 100,
+        minSize: 90,
+        maxSize: 110,
+        grow: false,
+      },
+
+      // Task DeadLine
+      {
+        accessorKey: "deadline",
+        header: "Deadline",
+        Header: ({ column }) => {
+          const [filterValue, setFilterValue] = useState("");
+          const [customDate, setCustomDate] = useState(getCurrentMonthYear());
+
+          useEffect(() => {
+            if (filterValue === "Custom date") {
+              column.setFilterValue(customDate);
+            }
+            //eslint-disable-next-line
+          }, [customDate, filterValue]);
+
+          const handleFilterChange = (e) => {
+            setFilterValue(e.target.value);
+            column.setFilterValue(e.target.value);
+          };
+
+          const handleCustomDateChange = (e) => {
+            setCustomDate(e.target.value);
+            column.setFilterValue(e.target.value);
+          };
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className=" w-full cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  setFilterValue("");
+                  column.setFilterValue("");
+                }}
+              >
+                Deadline
+              </span>
+              {filterValue === "Custom date" ? (
+                <input
+                  type="month"
+                  value={customDate}
+                  onChange={handleCustomDateChange}
+                  className="h-[1.8rem] font-normal   cursor-pointer rounded-md border border-gray-200 outline-none"
+                />
+              ) : (
+                <select
+                  value={filterValue}
+                  onChange={handleFilterChange}
+                  className="h-[1.8rem]  font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select</option>
+                  {column.columnDef.filterSelectOptions.map((option, idx) => (
+                    <option key={idx} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const [date, setDate] = useState(() => {
+            const cellDate = new Date(cell.getValue());
+            return cellDate.toISOString().split("T")[0];
+          });
+          const [allocateDate, setAllocateDate] = useState(date);
+
+          useEffect(() => {
+            setAllocateDate(date);
+          }, [date]);
+
+          const [showDeadline, setShowDeadline] = useState(false);
+
+          const handleDateChange = (newDate) => {
+            setDate(newDate);
+            updateAlocateTask(row.original._id, "", "", date);
+            setShowDeadline(false);
+          };
+
+          const cellDate = new Date(date);
+          const today = new Date();
+          const isExpired = cellDate < today;
+
+          return (
+            <div className="w-full ">
+              {!showDeadline ? (
+                <p onDoubleClick={() => setShowDeadline(true)}>
+                  {format(new Date(allocateDate), "dd-MMM-yyyy")}
+                </p>
+              ) : (
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  onBlur={(e) => handleDateChange(e.target.value)}
+                  className={`h-[2rem] w-full cursor-pointer rounded-md border border-gray-200 outline-none ${
+                    isExpired ? "text-red-500" : ""
+                  }`}
+                />
+              )}
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+          if (!cellValue) return false;
+
+          const cellDate = new Date(cellValue);
+
+          if (filterValue.includes("-")) {
+            const [year, month] = filterValue.split("-");
+            const cellYear = cellDate.getFullYear().toString();
+            const cellMonth = (cellDate.getMonth() + 1)
+              .toString()
+              .padStart(2, "0");
+
+            return year === cellYear && month === cellMonth;
+          }
+
+          // Other filter cases
+          const today = new Date();
+          const startOfToday = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate()
+          );
+          switch (filterValue) {
+            case "Expired":
+              return cellDate < startOfToday;
+            case "Today":
+              return cellDate.toDateString() === today.toDateString();
+            case "Tomorrow":
+              const tomorrow = new Date(today);
+              tomorrow.setDate(today.getDate() + 1);
+              return cellDate.toDateString() === tomorrow.toDateString();
+            case "In 7 days":
+              const in7Days = new Date(today);
+              in7Days.setDate(today.getDate() + 7);
+              return cellDate <= in7Days && cellDate > today;
+            case "In 15 days":
+              const in15Days = new Date(today);
+              in15Days.setDate(today.getDate() + 15);
+              return cellDate <= in15Days && cellDate > today;
+            case "30 Days":
+              const in30Days = new Date(today);
+              in30Days.setDate(today.getDate() + 30);
+              return cellDate <= in30Days && cellDate > today;
+            case "60 Days":
+              const in60Days = new Date(today);
+              in60Days.setDate(today.getDate() + 60);
+              return cellDate <= in60Days && cellDate > today;
+            case "Last 12 months":
+              const lastYear = new Date(today);
+              lastYear.setFullYear(today.getFullYear() - 1);
+              return cellDate >= lastYear && cellDate <= today;
+            default:
+              return false;
+          }
+        },
+        filterSelectOptions: [
           "Expired",
           "Today",
           "Tomorrow",
@@ -861,57 +1186,44 @@ const CompletedTasks = ({
           "Custom date",
         ],
         filterVariant: "custom",
-        size: 110,
+        size: 100,
         minSize: 80,
         maxSize: 140,
-        grow: true,
-        Filter: ({ column }) => {
-          const [filterValue, setFilterValue] = useState("Select");
-          const [customDate, setCustomDate] = useState(getCurrentMonthYear());
-
-          useEffect(() => {
-            if (filterValue === "Custom date") {
-              column.setFilterValue(customDate);
-            }
-            //eslint-disable-next-line
-          }, [customDate, filterValue]);
-
-          const handleFilterChange = (e) => {
-            setFilterValue(e.target.value);
-            column.setFilterValue(e.target.value);
-          };
-
-          const handleCustomDateChange = (e) => {
-            setCustomDate(e.target.value);
-            column.setFilterValue(e.target.value);
-          };
-
-          return filterValue === "Custom date" ? (
-            <input
-              type="month"
-              value={customDate}
-              onChange={handleCustomDateChange}
-              className="h-[2rem] w-[9rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none"
-            />
-          ) : (
-            <select
-              value={filterValue}
-              onChange={handleFilterChange}
-              className="h-[2rem] w-[9rem] cursor-pointer text-center rounded-md border border-gray-200 outline-none"
-            >
-              {column.columnDef.filterSelectOptions.map((option, idx) => (
-                <option key={idx} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          );
-        },
+        grow: false,
       },
       //  -----Due & Over Due Status----->
       {
         accessorKey: "datestatus",
-        header: "Status",
+        Header: ({ column }) => {
+          const dateStatus = ["Overdue", "Due"];
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer "
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Status
+              </span>
+              <form className="w-full flex ">
+                <select
+                  value={column.getFilterValue() || ""}
+                  onChange={(e) => column.setFilterValue(e.target.value)}
+                  className="font-normal h-[1.8rem] w-full  cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select </option>
+                  {dateStatus?.map((status, i) => (
+                    <option key={i} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </form>
+            </div>
+          );
+        },
         Cell: ({ row }) => {
           const status = getStatus(
             row.original.startDate,
@@ -919,17 +1231,19 @@ const CompletedTasks = ({
           );
 
           return (
-            <span
-              className={`text-white text-[14px]  rounded-[2rem] ${
-                status === "Due"
-                  ? "bg-green-500  py-[6px] px-4 "
-                  : status === "Overdue"
-                  ? "bg-red-500  py-[6px] px-3 "
-                  : "bg-transparent"
-              }`}
-            >
-              {status}
-            </span>
+            <div className="w-full">
+              <span
+                className={`text-white text-[14px]  rounded-[2rem] ${
+                  status === "Due"
+                    ? "bg-green-500  py-[6px] px-4 "
+                    : status === "Overdue"
+                    ? "bg-red-500  py-[6px] px-3 "
+                    : "bg-transparent"
+                }`}
+              >
+                {status}
+              </span>
+            </div>
           );
         },
         filterFn: (row, id, filterValue) => {
@@ -942,82 +1256,146 @@ const CompletedTasks = ({
         },
         filterSelectOptions: ["Overdue", "Due"],
         filterVariant: "select",
-        size: 90,
+        size: 100,
         minSize: 90,
-        maxSize: 120,
-        grow: true,
+        maxSize: 110,
+        grow: false,
       },
       //
       {
         accessorKey: "status",
         header: "Task Status",
+        Header: ({ column }) => {
+          const statusData = ["To do", "Progress", "Review", "On hold"];
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className=" text-center"
+                title="Clear Filter "
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Task Status
+              </span>
+              <div className="flex ">
+                <select
+                  value={column.getFilterValue() || ""}
+                  onChange={(e) => column.setFilterValue(e.target.value)}
+                  className="ml-1 font-normal w-full  h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select</option>
+                  {statusData?.map((status, i) => (
+                    <option key={i} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const statusValue = cell.getValue();
 
           return (
-            <select
-              value={statusValue}
-              onChange={(e) =>
-                updateTaskJLS(row.original?._id, "", "", e.target.value)
-              }
-              className="w-[6rem] h-[2rem] rounded-md border border-sky-300 outline-none"
-            >
-              {/* <option value="">Select Status</option> */}
-              <option value="Todo">Todo</option>
-              <option value="Progress">Progress</option>
-              <option value="Review">Review</option>
-              <option value="completed">Completed</option>
-            </select>
+            <div className="flex items-center justify-center w-full">
+              <select
+                value={statusValue}
+                onChange={(e) =>
+                  updateTaskJLS(row.original?._id, "", "", e.target.value)
+                }
+                className="w-[6rem] h-[2rem] rounded-md border border-sky-300 outline-none"
+              >
+                <option value="empty"></option>
+                <option value="To do">To do</option>
+                <option value="Progress">Progress</option>
+                <option value="Review">Review</option>
+                <option value="On hold">On hold</option>
+              </select>
+            </div>
           );
         },
-        filterFn: "equals",
+        // filterFn: "equals",
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+          return (cellValue || "").toString() === filterValue.toString();
+        },
         filterSelectOptions: [
-          "Todo",
+          "Select",
+          "To do",
           "Progress",
           "Review",
           "On hold",
-          "Completed",
         ],
         filterVariant: "select",
-        minSize: 100,
-        size: 120,
+        minSize: 90,
+        size: 100,
         maxSize: 140,
-        grow: true,
+        grow: false,
       },
       {
         accessorKey: "lead",
-        header: "Lead",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px] ml-1">
+              <span
+                className="ml-1 cursor-pointer "
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Lead
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className=" font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {users?.map((lead, i) => (
+                  <option key={i} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
         Cell: ({ cell, row }) => {
           const leadValue = cell.getValue();
 
           return (
-            <select
-              value={leadValue || ""}
-              onChange={(e) =>
-                updateTaskJLS(row.original?._id, "", e.target.value, "")
-              }
-              className="w-[5rem] h-[2rem] rounded-md border-none bg-transparent outline-none"
-            >
-              <option value="">Select Lead</option>
-              {users.map((lead, i) => (
-                <option value={lead?.name} key={i}>
-                  {lead?.name}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center justify-center w-full">
+              <select
+                value={leadValue || ""}
+                onChange={(e) =>
+                  updateTaskJLS(row.original?._id, "", e.target.value, "")
+                }
+                className="w-full h-[2rem] rounded-md border-none bg-transparent outline-none"
+              >
+                <option value="empty"></option>
+                {users.map((lead, i) => (
+                  <option value={lead?.name} key={i}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           );
         },
         filterFn: "equals",
         filterSelectOptions: users.map((lead) => lead),
         filterVariant: "select",
-        size: 90,
-        minSize: 70,
+        size: 100,
+        minSize: 60,
         maxSize: 120,
-        grow: true,
+        grow: false,
       },
       {
         accessorKey: "estimate_Time",
-        header: "Est. Time",
+        header: "Budget",
         Cell: ({ cell, row }) => {
           const estimateTime = cell.getValue();
           return (
@@ -1027,93 +1405,154 @@ const CompletedTasks = ({
             </div>
           );
         },
-        size: 90,
+        size: 80,
       },
-      {
-        accessorKey: "timertracker",
-        header: "Time Tr.",
-        Cell: ({ cell, row }) => {
-          return (
-            <div
-              className="flex items-center justify-center gap-1 w-full h-full "
-              onClick={() => setPlay(!play)}
-            >
-              <span className="text-[1rem] cursor-pointer  ">
-                <Timer
-                  ref={timerRef}
-                  clientId={auth?.user?.id}
-                  jobId={row?.original?._id}
-                  setIsShow={setIsShow}
-                  note={note}
-                  taskLink={currentPath}
-                  pageName={"Tasks"}
-                  taskName={row.original.project.projectName}
-                  setNote={setNote}
-                />
-              </span>
-            </div>
-          );
-        },
-        size: 110,
-      },
+
       {
         accessorKey: "comments",
         header: "Comments",
         Cell: ({ cell, row }) => {
           const comments = cell.getValue();
+          const [readComments, setReadComments] = useState([]);
+
+          useEffect(() => {
+            const filterComments = comments.filter(
+              (item) => item.status === "unread"
+            );
+            setReadComments(filterComments);
+            // eslint-disable-next-line
+          }, [comments]);
 
           return (
             <div
-              className="flex items-center justify-center gap-1 w-full h-full"
+              className="flex items-center justify-center gap-1 relative w-full h-full"
               onClick={() => {
                 setCommentTaskId(row.original._id);
                 setIsComment(true);
               }}
             >
-              <span className="text-[1rem] cursor-pointer">
-                <MdInsertComment className="h-5 w-5 text-orange-600 " />
-              </span>
-              {comments?.length > 0 && <span>({comments?.length})</span>}
+              <div className="relative">
+                <span className="text-[1rem] cursor-pointer relative">
+                  <MdInsertComment className="h-5 w-5 text-orange-600 " />
+                </span>
+                {/* {readComments?.length > 0 && (
+                  <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
+                    {readComments?.length}
+                  </span>
+                )} */}
+              </div>
             </div>
           );
         },
         size: 90,
       },
+
+      // Label
       {
-        accessorKey: "actions",
-        header: "Copy",
-        Cell: ({ cell, row }) => {
+        accessorKey: "labal",
+
+        Header: ({ column }) => {
           return (
-            <div
-              className="flex items-center justify-center gap-1 w-full h-full"
-              title="Copy this column"
-            >
+            <div className="flex flex-col gap-[2px]">
               <span
-                className="text-[1rem] cursor-pointer"
-                onClick={() => copyTask(row.original)}
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
               >
-                <GrCopy className="h-5 w-5 text-cyan-600 " />
+                Labels
               </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {labelData?.map((label, i) => (
+                  <option key={i} value={label?.name}>
+                    {label?.name}
+                  </option>
+                ))}
+              </select>
             </div>
           );
         },
-        size: 60,
+
+        Cell: ({ cell, row }) => {
+          const [show, setShow] = useState(false);
+          const jobLabel = row.original.labal || {};
+          const { name, color } = jobLabel;
+
+          return (
+            <div className="w-full flex items-center justify-center">
+              {show ? (
+                <select
+                  value={name || ""}
+                  className="w-full h-[2rem] rounded-md border-none outline-none"
+                >
+                  <option value="clear">Select Label</option>
+                  {labelData?.map((label, i) => (
+                    <option value={label?.name} key={i}>
+                      {label?.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div
+                  className="cursor-pointer h-full min-w-full "
+                  // onDoubleClick={() => setShow(true)}
+                >
+                  {name ? (
+                    <span
+                      className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
+                      style={{ background: `${color}` }}
+                    >
+                      {name}
+                    </span>
+                  ) : (
+                    <span
+                      className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
+                    >
+                      .
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        },
+
+        filterFn: (row, columnId, filterValue) => {
+          const labelName = row.original?.labal?.name || "";
+          return labelName === filterValue;
+        },
+
+        filterVariant: "select",
+        filterSelectOptions: labelData.map((label) => label.name),
+        size: 160,
+        minSize: 100,
+        maxSize: 210,
+        grow: false,
       },
     ],
     // eslint-disable-next-line
-    [projects, auth?.user?.id, currentPath, users, play, note]
+    [users, play, note, auth, currentPath, projects, filterData, totalHours]
   );
 
   const table = useMaterialReactTable({
     columns,
-    data: active === "All" && !active1 && !filterId ? tasksData : filterData,
+    // data: active === "All" && !active1 && !filterId ? tasksData : filterData,
+    data:
+      (active === "All" && !active1 && !filterId ? tasksData : filterData) ||
+      [],
     enableStickyHeader: true,
     enableStickyFooter: true,
-    columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "720px" } },
+    // columnFilterDisplayMode: "popover",
+    muiTableContainerProps: { sx: { maxHeight: "805px" } },
     enableColumnActions: false,
-    enableColumnFilters: true,
-    enableSorting: true,
+    enableColumnFilters: false,
+    enableSorting: false,
     enableGlobalFilter: true,
     enableRowNumbers: true,
     enableColumnResizing: true,
@@ -1149,45 +1588,12 @@ const CompletedTasks = ({
           backgroundColor: "#f0f0f0",
         },
         tableLayout: "auto",
-        fontSize: "14px",
+        fontSize: "13px",
         border: "1px solid rgba(81, 81, 81, .5)",
         caption: {
           captionSide: "top",
         },
       },
-    },
-
-    renderTopToolbarCustomActions: ({ table }) => {
-      const handleClearFilters = () => {
-        table.setColumnFilters([]);
-        table.setGlobalFilter("");
-      };
-
-      return (
-        <Box
-          sx={{
-            display: "flex",
-            gap: "7px",
-            padding: "2px",
-            flexWrap: "wrap",
-          }}
-        >
-          <Button
-            onClick={handleExportData}
-            // startIcon={<FileDownloadIcon />}
-            className="w-[2rem] rounded-full"
-          >
-            <IoMdDownload className="h-5 w-5 text-gray-700" />
-          </Button>
-          <Button
-            onClick={handleClearFilters}
-            // startIcon={<ClearIcon />}
-            className="w-[2rem] rounded-full"
-          >
-            <IoClose className="h-5 w-5 text-gray-700" />
-          </Button>
-        </Box>
-      );
     },
   });
 

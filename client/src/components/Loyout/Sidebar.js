@@ -18,6 +18,7 @@ import { LiaClipboardListSolid } from "react-icons/lia";
 import ProfileModal from "../Modals/ProfileModal";
 import { FaUsers } from "react-icons/fa";
 import { SlCalender } from "react-icons/sl";
+import { GoRepoTemplate } from "react-icons/go";
 
 export default function Sidebar({ hide, setHide }) {
   const router = useNavigate();
@@ -256,13 +257,13 @@ export default function Sidebar({ hide, setHide }) {
             ></div>
             <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
               {hide ? (
-                <BsCashCoin
+                <GoRepoTemplate
                   className="h-5 w-5 cursor-pointer ml-2"
                   style={{ color: active === "templates" && "#fff" }}
                 />
               ) : (
                 <div className="flex items-center gap-2">
-                  <BsCashCoin
+                  <GoRepoTemplate
                     className="h-5 w-5 cursor-pointer ml-2"
                     style={{ color: active === "templates" && "#fff" }}
                   />

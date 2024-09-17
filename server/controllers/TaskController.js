@@ -637,7 +637,7 @@ export const getAllCompletedTasks = async (req, res) => {
     const tasks = await taskModel
       .find({ status: "completed" })
       .select(
-        "project jobHolder task hours startDate deadline status lead  estimate_Time comments._id label"
+        "project jobHolder task hours startDate deadline status lead  estimate_Time comments._id labal"
       )
       .sort({ updatedAt: -1 });
 
@@ -764,6 +764,7 @@ const autoCreateRecurringTasks = async () => {
         lead: task.lead,
         recurring: task.recurring,
         labal: task.labal,
+        status: task.status,
         nextRecurringDate: calculateStartDate(
           task.nextRecurringDate,
           task.recurring

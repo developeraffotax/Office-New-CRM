@@ -34,7 +34,7 @@ export default function TaskDetail({
   const [taskDetal, setTaskDetal] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("subtasks");
-  const { auth } = useAuth();
+  const { auth, anyTimerRunning } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isShow, setIsShow] = useState(false);
   const [note, setNote] = useState("");
@@ -43,6 +43,9 @@ export default function TaskDetail({
   const [subTask, setSubtask] = useState("");
   const [subTaskLoading, setSubTaskLoading] = useState(false);
   const [subTaskData, setSubTaskData] = useState([]);
+  const [timerId, setTimerId] = useState("");
+
+  console.log("timerId:", timerId, anyTimerRunning, taskDetal?._id);
 
   // ---------Stop Timer ----------->
   const handleStopTimer = () => {
@@ -105,6 +108,12 @@ export default function TaskDetail({
       toast.error(error.response.data.message);
     }
   };
+
+  // Get Running Timer JobId
+  useEffect(() => {
+    const timeId = localStorage.getItem("jobId");
+    setTimerId(JSON.parse(timeId));
+  }, []);
 
   // ------------Delete Conformation-------->
   const handleDeleteConfirmation = (taskId) => {
@@ -261,7 +270,7 @@ export default function TaskDetail({
               className=""
               title="Edit Job"
               onClick={() => {
-                setEditId(taskDetal._id);
+                setEditId(taskDetal?._id);
                 setIsOpen(true);
               }}
             >
@@ -271,18 +280,30 @@ export default function TaskDetail({
               className=""
               title="Complete Task"
               onClick={() => {
-                handleUpdateStatus(taskDetal._id);
+                handleUpdateStatus(taskDetal?._id);
               }}
             >
               <MdCheckCircle className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
             </span>
-            <span
-              className=""
+            <button
+              disabled={anyTimerRunning && timerId === taskDetal?._id}
+              className={`${
+                anyTimerRunning && timerId === taskDetal?._id
+                  ? "cursor-not-allowed"
+                  : "cursor-pointer"
+              }`}
+              type="button"
               title="Delete Task"
-              onClick={() => handleDeleteConfirmation(taskDetal._id)}
+              onClick={() => handleDeleteConfirmation(taskDetal?._id)}
             >
-              <AiFillDelete className="h-5 w-5 cursor-pointer text-red-500 hover:text-red-600" />
-            </span>
+              <AiFillDelete
+                className={`h-5 w-5 text-red-500 hover:text-red-600 ${
+                  anyTimerRunning && timerId === taskDetal?._id
+                    ? "cursor-not-allowed"
+                    : "cursor-pointer"
+                }`}
+              />
+            </button>
           </div>
           <div className="w-full flex flex-col gap-3">
             <div className="flex items-center gap-4">

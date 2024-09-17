@@ -8,6 +8,9 @@ const FAQSchema = new mongoose.Schema(
     answer: {
       type: String,
     },
+    category: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

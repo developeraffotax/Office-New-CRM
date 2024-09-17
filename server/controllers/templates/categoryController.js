@@ -4,7 +4,7 @@ import categoryModel from "../../models/templates/categoryModel.js";
 
 export const createCategory = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, type } = req.body;
 
     if (!name) {
       return res.status(400).send({
@@ -13,7 +13,7 @@ export const createCategory = async (req, res) => {
       });
     }
 
-    const category = await categoryModel.create({ name });
+    const category = await categoryModel.create({ name, type });
 
     res.status(200).send({
       success: true,
@@ -33,7 +33,30 @@ export const createCategory = async (req, res) => {
 // Get All Category
 export const getAllCategory = async (req, res) => {
   try {
-    const categories = await categoryModel.find({}).sort({ createdAt: -1 });
+    const categories = await categoryModel
+      .find({ type: { $ne: "faq" } })
+      .sort({ createdAt: -1 });
+
+    res.status(200).send({
+      success: true,
+      message: "Categories list!",
+      categories: categories,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get all categories!",
+      error: error,
+    });
+  }
+};
+
+export const getAllFAQCategory = async (req, res) => {
+  try {
+    const categories = await categoryModel
+      .find({ type: "faq" })
+      .sort({ createdAt: -1 });
 
     res.status(200).send({
       success: true,

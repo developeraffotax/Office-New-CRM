@@ -59,7 +59,7 @@ const csvConfig = mkConfig({
 });
 
 const AllTasks = () => {
-  const { auth, filterId, setFilterId } = useAuth();
+  const { auth, filterId, setFilterId, anyTimerRunning } = useAuth();
   const [show, setShow] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [users, setUsers] = useState([]);
@@ -97,6 +97,7 @@ const AllTasks = () => {
   const [labelData, setLabelData] = useState([]);
   const commentStatusRef = useRef(null);
   const [showlabel, setShowlabel] = useState(false);
+  const [timerId, setTimerId] = useState("");
   console.log("totalHours", totalHours);
 
   const dateStatus = ["Due", "Overdue"];
@@ -125,6 +126,11 @@ const AllTasks = () => {
     getAllUsers();
     // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    const timeId = localStorage.getItem("jobId");
+    setTimerId(JSON.parse(timeId));
+  }, [anyTimerRunning]);
 
   //---------- Get All Projects-----------
   const getAllProjects = async () => {
@@ -1182,7 +1188,6 @@ const AllTasks = () => {
         grow: false,
       },
       // Start Date
-
       {
         accessorKey: "startDate",
         Header: ({ column }) => {
@@ -1243,10 +1248,17 @@ const AllTasks = () => {
           );
         },
         Cell: ({ cell, row }) => {
+          const startDate = row.original.startDate;
           const [date, setDate] = useState(() => {
             const cellDate = new Date(cell.getValue());
             return cellDate.toISOString().split("T")[0];
           });
+
+          console.log(
+            "Start Date:",
+            format(new Date(date), "dd-MMM-yyyy"),
+            format(new Date(startDate), "dd-MMM-yyyy")
+          );
 
           const [showStartDate, setShowStartDate] = useState(false);
 
@@ -1260,7 +1272,7 @@ const AllTasks = () => {
             <div className="w-full flex  ">
               {!showStartDate ? (
                 <p onDoubleClick={() => setShowStartDate(true)}>
-                  {format(new Date(date), "dd-MMM-yyyy")}
+                  {format(new Date(startDate), "dd-MMM-yyyy")}
                 </p>
               ) : (
                 <input
@@ -1410,10 +1422,16 @@ const AllTasks = () => {
           );
         },
         Cell: ({ cell, row }) => {
+          const deadline = row.original.deadline;
           const [date, setDate] = useState(() => {
             const cellDate = new Date(cell.getValue());
             return cellDate.toISOString().split("T")[0];
           });
+          console.log(
+            "Deadline Date:",
+            format(new Date(date), "dd-MMM-yyyy"),
+            format(new Date(deadline), "dd-MMM-yyyy")
+          );
           const [allocateDate, setAllocateDate] = useState(date);
 
           useEffect(() => {
@@ -1436,7 +1454,7 @@ const AllTasks = () => {
             <div className="w-full ">
               {!showDeadline ? (
                 <p onDoubleClick={() => setShowDeadline(true)}>
-                  {format(new Date(allocateDate), "dd-MMM-yyyy")}
+                  {format(new Date(deadline), "dd-MMM-yyyy")}
                 </p>
               ) : (
                 <input
@@ -1827,6 +1845,7 @@ const AllTasks = () => {
         accessorKey: "actions",
         header: "Actions",
         Cell: ({ cell, row }) => {
+          console.log("Id:", row.original._id);
           return (
             <div className="flex items-center justify-center gap-3 w-full h-full">
               <span
@@ -1846,13 +1865,19 @@ const AllTasks = () => {
               >
                 <MdCheckCircle className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
               </span>
-              <span
-                className="text-[1rem] cursor-pointer"
+              <button
+                disabled={anyTimerRunning && timerId === row.original._id}
+                className={`text-[1rem] ${
+                  anyTimerRunning && timerId === row.original._id
+                    ? "cursor-not-allowed"
+                    : "cursor-pointer"
+                }`}
+                type="button"
                 onClick={() => handleDeleteTaskConfirmation(row.original._id)}
                 title="Delete Task!"
               >
-                <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
-              </span>
+                <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600" />
+              </button>
             </div>
           );
         },
@@ -1961,7 +1986,17 @@ const AllTasks = () => {
       },
     ],
     // eslint-disable-next-line
-    [users, play, note, auth, currentPath, projects, filterData, totalHours]
+    [
+      users,
+      play,
+      note,
+      auth,
+      currentPath,
+      projects,
+      filterData,
+      totalHours,
+      tasksData,
+    ]
   );
 
   // Clear table Filter

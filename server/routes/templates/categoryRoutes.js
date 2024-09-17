@@ -4,6 +4,7 @@ import {
   createCategory,
   deleteCategory,
   getAllCategory,
+  getAllFAQCategory,
   getSingleCategory,
   updateCategory,
 } from "../../controllers/templates/categoryController.js";
@@ -15,6 +16,8 @@ router.post("/create/template/category", requiredSignIn, createCategory);
 
 // Get All Category
 router.get("/get/all/category", getAllCategory);
+
+router.get("/get/faq/category", getAllFAQCategory);
 
 // Get Single Category
 router.get("/get/single/category/:id", getSingleCategory);

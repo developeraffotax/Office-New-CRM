@@ -97,6 +97,7 @@ export const Timer = forwardRef(
     // }, []);
 
     const startTimer = async () => {
+      localStorage.setItem("jobId", JSON.stringify(jobId));
       try {
         const response = await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/timer/start/timer`,
@@ -118,6 +119,7 @@ export const Timer = forwardRef(
           "timer_Id",
           JSON.stringify(response.data.timer._id)
         );
+
         addTimerTaskStatus();
         setIsRunning(true);
         setStartTime(new Date());
@@ -140,6 +142,7 @@ export const Timer = forwardRef(
           { note }
         );
         localStorage.removeItem("timer_Id");
+
         setAnyTimerRunning(false);
         setNote("");
         removeTimerStatus();
@@ -153,6 +156,7 @@ export const Timer = forwardRef(
           timerId: timerId,
           note: note,
         });
+        localStorage.removeItem("jobId");
       } catch (error) {
         console.error("Error stopping timer:", error);
       }

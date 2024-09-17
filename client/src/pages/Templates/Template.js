@@ -695,33 +695,37 @@ export default function Template() {
         )}
 
         {/* ------------------ */}
-        <div className="flex items-center  border-none rounded overflow-hidden mt-2 transition-all duration-300 w-fit">
-          <button
-            className={`py-1 px-2 outline-none transition-all duration-300  w-full ${
-              selectedTab === "templates"
-                ? "bg-orange-500 text-white"
-                : "text-black bg-gray-100"
-            }`}
-            onClick={() => setSelectedTab("templates")}
-          >
-            Templates
-          </button>
-          <button
-            className={`py-1 px-2 outline-none transition-all duration-300 w-full  ${
-              selectedTab === "faq"
-                ? "bg-orange-500 text-white"
-                : "text-black bg-gray-100 hover:bg-slate-200"
-            }`}
-            onClick={() => setSelectedTab("faq")}
-          >
-            FAQ's
-          </button>
-        </div>
-        <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
+        {selectedTab === "templates" && (
+          <>
+            <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-2 transition-all duration-300 w-fit">
+              <button
+                className={`py-1 px-2 outline-none transition-all duration-300  w-full ${
+                  selectedTab === "templates"
+                    ? "bg-orange-500 text-white border-r-2 border-orange-500"
+                    : "text-black bg-gray-100"
+                }`}
+                onClick={() => setSelectedTab("templates")}
+              >
+                Templates
+              </button>
+              <button
+                className={`py-1 px-2 outline-none transition-all duration-300 w-full  ${
+                  selectedTab === "faq"
+                    ? "bg-orange-500 text-white"
+                    : "text-black bg-gray-100 hover:bg-slate-200"
+                }`}
+                onClick={() => setSelectedTab("faq")}
+              >
+                FAQ's
+              </button>
+            </div>
+            <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
+          </>
+        )}
         <div className="w-full h-full">
           {selectedTab === "templates" ? (
             <div className="w-full h-full">
-              {loading ? (
+              {isloading ? (
                 <div className="flex items-center justify-center w-full h-screen px-4 py-4">
                   <Loader />
                 </div>

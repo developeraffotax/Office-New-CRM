@@ -32,7 +32,7 @@ export default function JobDetail({
   const [clientDetail, setClientDetail] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("subtasks");
-  const { auth } = useAuth();
+  const { auth, anyTimerRunning } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [jobId, setJobId] = useState("");
   const [isShow, setIsShow] = useState(false);
@@ -41,6 +41,7 @@ export default function JobDetail({
   const [subTask, setSubtask] = useState("");
   const [subTaskLoading, setSubTaskLoading] = useState(false);
   const [subTaskData, setSubTaskData] = useState([]);
+  const [timerId, setTimerId] = useState("");
 
   // ---------Stop Timer ----------->
   const handleStopTimer = () => {
@@ -77,6 +78,12 @@ export default function JobDetail({
     getClient();
     // eslint-disable-next-line
   }, [clientId]);
+
+  // Get Running Timer JobId
+  useEffect(() => {
+    const timeId = localStorage.getItem("jobId");
+    setTimerId(JSON.parse(timeId));
+  }, []);
 
   // ---------------Handle Status Change---------->
   const handleStatusChange = async (rowId, newStatus) => {
@@ -256,13 +263,25 @@ export default function JobDetail({
             >
               <MdCheckCircle className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
             </span>
-            <span
-              className=""
+            <button
+              disabled={anyTimerRunning && timerId === clientDetail?._id}
+              className={`${
+                anyTimerRunning && timerId === clientDetail?._id
+                  ? "cursor-not-allowed"
+                  : "cursor-pointer"
+              }`}
+              type="button"
               title="Delete Job"
-              onClick={() => handleDeleteConfirmation(clientDetail._id)}
+              onClick={() => handleDeleteConfirmation(clientDetail?._id)}
             >
-              <AiFillDelete className="h-5 w-5 cursor-pointer text-red-500 hover:text-red-600" />
-            </span>
+              <AiFillDelete
+                className={`h-5 w-5 text-red-500 hover:text-red-600 ${
+                  anyTimerRunning && timerId === clientDetail?._id
+                    ? "cursor-not-allowed"
+                    : "cursor-pointer"
+                }`}
+              />
+            </button>
           </div>
           <div className="w-full flex flex-col gap-3">
             <div className="flex items-center gap-4">

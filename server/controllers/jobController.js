@@ -597,9 +597,7 @@ export const singleClientComments = async (req, res) => {
 // Get Only Status (Completed) Jobs
 export const getClientJobs = async (req, res) => {
   try {
-    const clients = await jobsModel
-      .find({ status: "completed" })
-      .sort({ updatedAt: -1 });
+    const clients = await jobsModel.find({ status: "completed" });
 
     res.status(200).send({
       success: true,

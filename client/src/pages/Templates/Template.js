@@ -385,7 +385,7 @@ export default function Template() {
         filterFn: (row, columnId, filterValue) => {
           const cellValue =
             row.original[columnId]?.toString().toLowerCase() || "";
-          return cellValue.startsWith(filterValue.toLowerCase());
+          return cellValue.includes(filterValue.toLowerCase());
         },
         size: 180,
         minSize: 120,
@@ -462,7 +462,7 @@ export default function Template() {
         filterFn: (row, columnId, filterValue) => {
           const cellValue =
             row.original[columnId]?.toString().toLowerCase() || "";
-          return cellValue.startsWith(filterValue.toLowerCase());
+          return cellValue.includes(filterValue.toLowerCase());
         },
         size: 500,
         minSize: 350,

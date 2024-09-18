@@ -367,7 +367,7 @@ export default function FAQ({ setSelectedTab, selectedTab }) {
         {/* ------------Filter FAQ---------*/}
         <div className="flex items-center gap-4 translate-y-1">
           <select
-            className={`border border-gray-400 focus:border-orange-600 rounded-md w-[8rem] h-[2rem] outline-none`}
+            className={`border border-gray-400 focus:border-orange-600 rounded-md w-[8rem] h-[2.1rem] outline-none`}
             value={category}
             required
             onChange={(e) => {
@@ -395,7 +395,7 @@ export default function FAQ({ setSelectedTab, selectedTab }) {
               setSearch(e.target.value);
               filterFAQData(category, e.target.value);
             }}
-            className=" w-[14rem] focus:border-orange-600 rounded-[2rem] border border-gray-400 outline-none px-4 h-[2rem] "
+            className=" w-[17rem] focus:border-orange-600 rounded-md border border-gray-400 outline-none px-4 h-[2.1rem] "
           />
         </div>
       </div>
@@ -406,7 +406,7 @@ export default function FAQ({ setSelectedTab, selectedTab }) {
           <Loader />
         </div>
       ) : (
-        <div className="w-full flex flex-col gap-2 items-center justify-center mt-4 ">
+        <div className="w-full flex flex-col gap-2 items-start ml-[17%] mt-4  ">
           {(filteredFaq?.length || category || search
             ? filteredFaq
             : faqData

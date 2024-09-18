@@ -50,7 +50,9 @@ export const createTask = async (req, res) => {
       lead,
       status,
       recurring: recurring ? recurring : null,
-      nextRecurringDate: nextRecurringDate ? nextRecurringDate : null,
+      nextRecurringDate: nextRecurringDate
+        ? nextRecurringDate
+        : new Date().toISOString(),
     });
 
     const user = req.user.user;
@@ -260,11 +262,19 @@ export const updateJobHolderLS = async (req, res) => {
         { new: true }
       );
     } else {
-      updateTask = await taskModel.findByIdAndUpdate(
-        task._id,
-        { status: status },
-        { new: true }
-      );
+      if (status === "completed") {
+        updateTask = await taskModel.findByIdAndUpdate(
+          task._id,
+          { status: status, recurring: "", nextRecurringDate: "" },
+          { new: true }
+        );
+      } else {
+        updateTask = await taskModel.findByIdAndUpdate(
+          task._id,
+          { status: status },
+          { new: true }
+        );
+      }
     }
 
     res.status(200).send({
@@ -760,7 +770,7 @@ const autoCreateRecurringTasks = async () => {
         task: task.task,
         hours: task.hours,
         startDate: calculateStartDate(task.startDate, task.recurring),
-        deadline: task.deadline,
+        deadline: calculateStartDate(task.deadline, task.recurring),
         lead: task.lead,
         recurring: task.recurring,
         labal: task.labal,

@@ -101,11 +101,11 @@ const taskSchema = new mongoose.Schema(
     recurring: {
       type: String,
       enum: ["2_minutes", "daily", "weekly", "monthly", "quarterly"],
-      default: null,
+      default: "",
     },
     nextRecurringDate: {
       type: Date,
-      default: null,
+      default: () => new Date(),
     },
   },
 

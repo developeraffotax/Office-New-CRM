@@ -860,7 +860,7 @@ const AllTasks = () => {
     const [reorderedProject] = updatedProjects.splice(result.source.index, 1);
     updatedProjects.splice(result.destination.index, 0, reorderedProject);
 
-    console.log("updatedProjects", updatedProjects);
+    // console.log("updatedProjects", updatedProjects);
     setProjects(updatedProjects);
 
     // Save the new order to the backend
@@ -1089,7 +1089,7 @@ const AllTasks = () => {
           const cellValue =
             row.original[columnId]?.toString().toLowerCase() || "";
 
-          return cellValue.startsWith(filterValue.toLowerCase());
+          return cellValue.includes(filterValue.toLowerCase());
         },
         size: 390,
         minSize: 200,
@@ -1117,7 +1117,7 @@ const AllTasks = () => {
             </div>
           );
         },
-        Cell: ({ cell, row }) => {
+        Cell: ({ cell, row, data }) => {
           const hours = cell.getValue();
           const [show, setShow] = useState(false);
           const [hour, setHour] = useState(hours);
@@ -1254,11 +1254,11 @@ const AllTasks = () => {
             return cellDate.toISOString().split("T")[0];
           });
 
-          console.log(
-            "Start Date:",
-            format(new Date(date), "dd-MMM-yyyy"),
-            format(new Date(startDate), "dd-MMM-yyyy")
-          );
+          // console.log(
+          //   "Start Date:",
+          //   format(new Date(date), "dd-MMM-yyyy"),
+          //   format(new Date(startDate), "dd-MMM-yyyy")
+          // );
 
           const [showStartDate, setShowStartDate] = useState(false);
 
@@ -1427,11 +1427,11 @@ const AllTasks = () => {
             const cellDate = new Date(cell.getValue());
             return cellDate.toISOString().split("T")[0];
           });
-          console.log(
-            "Deadline Date:",
-            format(new Date(date), "dd-MMM-yyyy"),
-            format(new Date(deadline), "dd-MMM-yyyy")
-          );
+          // console.log(
+          //   "Deadline Date:",
+          //   format(new Date(date), "dd-MMM-yyyy"),
+          //   format(new Date(deadline), "dd-MMM-yyyy")
+          // );
           const [allocateDate, setAllocateDate] = useState(date);
 
           useEffect(() => {
@@ -1845,7 +1845,7 @@ const AllTasks = () => {
         accessorKey: "actions",
         header: "Actions",
         Cell: ({ cell, row }) => {
-          console.log("Id:", row.original._id);
+          // console.log("Id:", row.original._id);
           return (
             <div className="flex items-center justify-center gap-3 w-full h-full">
               <span
@@ -2068,11 +2068,13 @@ const AllTasks = () => {
   //   // Fetch all row data from the table model
   //   const allRowData = table.getRowModel().rows.map((row) => row.original);
 
+  //   console.log("allRowData", allRowData);
+
   //   // Set the filter data when the table data changes
   //   setFilterData(allRowData);
 
   //   // eslint-disable-next-line
-  // }, [table.getState().filters]);
+  // }, [table]);
 
   return (
     <Layout>

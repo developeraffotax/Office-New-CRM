@@ -164,7 +164,7 @@ export const totalTime = async (req, res) => {
     // Update Time in Job
     await jobsModel.findByIdAndUpdate(
       { _id: jobId },
-      { $set: { totalTime: responseMessage } },
+      { $set: { estimate_Time: responseMessage } },
       { new: true }
     );
 

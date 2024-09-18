@@ -758,7 +758,7 @@ export default function TimeSheet() {
           const cellValue =
             row.original[columnId]?.toString().toLowerCase() || "";
 
-          return cellValue.startsWith(filterValue.toLowerCase());
+          return cellValue.includes(filterValue.toLowerCase());
         },
       },
       {
@@ -802,7 +802,7 @@ export default function TimeSheet() {
           const cellValue =
             row.original[columnId]?.toString().toLowerCase() || "";
 
-          return cellValue.startsWith(filterValue.toLowerCase());
+          return cellValue.includes(filterValue.toLowerCase());
         },
       },
       {

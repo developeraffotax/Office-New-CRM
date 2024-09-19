@@ -8,14 +8,14 @@ dotenv.config();
 // Get Affotax Access Token
 const getAccessToken = async () => {
   try {
-    var data = qs.stringify({
+    const data = qs.stringify({
       client_id: process.env.CLIENT_ID,
       client_secret: process.env.CLIENT_SECRET,
       refresh_token: process.env.REFRESH_TOKEN,
       grant_type: "refresh_token",
     });
 
-    var config = {
+    const config = {
       method: "post",
       maxBodyLength: Infinity,
       url: process.env.GMAIL_API,
@@ -26,13 +26,12 @@ const getAccessToken = async () => {
     };
 
     const response = await axios(config);
-    var accessToken = await response.data.access_token;
-
-    console.log("Access token1:", accessToken);
+    const accessToken = response.data.access_token;
 
     return accessToken;
   } catch (error) {
     console.log("Error in access token:", error);
+    throw error;
   }
 };
 
@@ -66,16 +65,15 @@ const getOutsourceAccessToken = async () => {
 
 // Send Email (With Attachments)
 export const sendEmailWithAttachments = async (emailData) => {
+  console.log("emailData:", emailData);
   try {
-    var accessToken = "";
-    var fromEmail = "";
+    let accessToken = "";
+    let fromEmail = "";
 
-    console.log("Access token:", getAccessToken);
-
-    if (emailData.company_name === "Affotax") {
+    if (emailData.company === "Affotax") {
       accessToken = await getAccessToken();
       fromEmail = "Affotax <info@affotax.com>";
-    } else if (emailData.company_name === "Outsource") {
+    } else if (emailData.company === "Outsource") {
       accessToken = await getOutsourceAccessToken();
       fromEmail = "Outsource Accountings <admin@outsourceaccountings.co.uk>";
     }
@@ -98,18 +96,21 @@ export const sendEmailWithAttachments = async (emailData) => {
     emailMessageParts.push(emailData.message);
     emailMessageParts.push("");
 
-    for (const attachment of emailData.attachments) {
-      emailMessageParts.push("--boundary_example");
-      emailMessageParts.push("Content-Type: application/octet-stream");
-      emailMessageParts.push(
-        'Content-Disposition: attachment; filename="' +
-          attachment.filename +
-          '"'
-      );
-      emailMessageParts.push("Content-Transfer-Encoding: base64");
-      emailMessageParts.push("");
-      emailMessageParts.push(attachment.content);
-      emailMessageParts.push("");
+    // Attachments
+    if (emailData.attachments && emailData.attachments.length > 0) {
+      for (const attachment of emailData.attachments) {
+        emailMessageParts.push("--boundary_example");
+        emailMessageParts.push("Content-Type: application/octet-stream");
+        emailMessageParts.push(
+          'Content-Disposition: attachment; filename="' +
+            attachment.filename +
+            '"'
+        );
+        emailMessageParts.push("Content-Transfer-Encoding: base64");
+        emailMessageParts.push("");
+        emailMessageParts.push(attachment.content);
+        emailMessageParts.push("");
+      }
     }
 
     emailMessageParts.push("--boundary_example--");

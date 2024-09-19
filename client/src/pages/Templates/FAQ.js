@@ -406,7 +406,7 @@ export default function FAQ({ setSelectedTab, selectedTab }) {
           <Loader />
         </div>
       ) : (
-        <div className="w-full flex flex-col gap-2 items-start ml-[17%] mt-4  ">
+        <div className="w-full flex flex-col gap-2 items-start ml-[15%] mt-4  ">
           {(filteredFaq?.length || category || search
             ? filteredFaq
             : faqData

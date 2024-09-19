@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";

@@ -133,6 +133,47 @@ export const getAllClients = async (req, res) => {
     });
   }
 };
+// Get Ticket Clients
+export const getTicketClients = async (req, res) => {
+  try {
+    // const clients = await jobsModel
+    //   .find({ status: { $ne: "completed" } })
+    //   .select("clientName companyName ");
+    const uniqueCompanies = await jobsModel.aggregate([
+      {
+        $match: { status: { $ne: "completed" } },
+      },
+      {
+        $group: {
+          _id: "$companyName",
+          clientName: { $first: "$clientName" },
+          id: { $first: "$_id" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          companyName: "$_id",
+          clientName: 1,
+          id: 1,
+        },
+      },
+    ]);
+
+    res.status(200).send({
+      success: true,
+      message: "All clients",
+      clients: uniqueCompanies,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get all job!",
+      error: error,
+    });
+  }
+};
 
 // Update Client Status
 

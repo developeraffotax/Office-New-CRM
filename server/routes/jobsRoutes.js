@@ -9,6 +9,7 @@ import {
   getAllClients,
   getClientJobs,
   getClientWithJobs,
+  getTicketClients,
   importData,
   singleClientComments,
   singleClientJob,
@@ -88,5 +89,8 @@ router.delete(
   requiredSignIn,
   deleteSubTask
 );
+
+// Get All Tickets Routes
+router.get("/tickets/clients", getTicketClients);
 
 export default router;

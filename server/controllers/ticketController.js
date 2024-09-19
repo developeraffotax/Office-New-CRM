@@ -6,8 +6,16 @@ import { sendEmailWithAttachments } from "../utils/gmailApi.js";
 export const sendEmail = async (req, res) => {
   try {
     const { clientId, company, subject, message } = req.body;
-    const userName = "M Salman";
+
+    const userName = req.user.user.name;
     const client = await jobsModel.findById(clientId);
+
+    if (!client.email) {
+      return res.status(400).send({
+        success: false,
+        message: "Client email not found!",
+      });
+    }
 
     if (!client) {
       return res.status(400).send({
@@ -29,17 +37,16 @@ export const sendEmail = async (req, res) => {
     }));
 
     const emailData = {
-      email: "msalmansadiq121@gmail.com",
+      email: client.email,
       subject: subject,
       message: message,
       attachments: attachments,
-      company_name: client.companyName,
+      company: company,
       company_email: company_email,
     };
 
     const resp = await sendEmailWithAttachments(emailData);
 
-    const userId = req.user.user._id;
     const threadId = resp.data.threadId;
 
     const sendEmail = await ticketModel.create({

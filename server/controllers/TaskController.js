@@ -81,7 +81,7 @@ export const createTask = async (req, res) => {
     const notification = await notificationModel.create({
       title: "New Task Assigned",
       redirectLink: "/tasks",
-      description: `${req.user.user.name} assign a new task of "${tasks.task}"`,
+      description: `${req.user.user.name} assign a new task of "${task}"`,
       taskId: `${tasks._id}`,
       userId: notiUser._id,
     });

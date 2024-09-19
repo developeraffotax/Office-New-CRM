@@ -3,6 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import colors from "colors";
 import dotenv from "dotenv";
+import bodyParser from "body-parser";
 import { connectDB } from "./config/db.js";
 import userRoute from "./routes/userRoutes.js";
 import jobRoute from "./routes/jobsRoutes.js";
@@ -30,6 +31,8 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(morgan("dev"));
+app.use(bodyParser.json({ limit: "50mb" }));
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
 // Init Socket Server
 const server = http.createServer(app);

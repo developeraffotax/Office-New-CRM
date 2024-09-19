@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import { style } from "../../utlis/CommonStyle";
 import { LuImport } from "react-icons/lu";
@@ -41,8 +41,22 @@ export default function Template() {
   const [selectedTab, setSelectedTab] = useState("templates");
   const [showTemplate, setShowTemplate] = useState(false);
   const [template, setTemplate] = useState("");
+  const templateDetailref = useRef(null);
 
   console.log("templateData:", templateData);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        templateDetailref.current &&
+        !templateDetailref.current.contains(event.target)
+      ) {
+        setShowTemplate(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // --------------Get All Templates---------->
   const getAllTemplates = async () => {
@@ -814,7 +828,10 @@ export default function Template() {
         {/* -----------------template Details----------- */}
         {showTemplate && (
           <div className="fixed top-0 left-0 z-[999] w-full h-full py-4 px-4 bg-gray-300/70 flex items-center justify-center">
-            <div className="flex flex-col gap-2 bg-white rounded-md shadow-md w-[35rem] max-h-[95vh] ">
+            <div
+              ref={templateDetailref}
+              className="flex flex-col gap-2 bg-white rounded-md shadow-md w-[35rem] max-h-[95vh] "
+            >
               <div className="flex items-center justify-between px-4 pt-2">
                 <h1 className="text-[20px] font-semibold text-black">
                   Template View

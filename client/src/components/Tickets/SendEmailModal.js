@@ -8,7 +8,7 @@ import CustomEditor from "../../utlis/CustomEditor";
 import { TbLoader2 } from "react-icons/tb";
 import { RiUploadCloud2Fill } from "react-icons/ri";
 
-export default function SendEmailModal({ setShowSendModal }) {
+export default function SendEmailModal({ setShowSendModal, getEmails }) {
   const [company, setCompany] = useState("");
   const [clientId, setClientId] = useState("");
   const [subject, setSubject] = useState("");
@@ -62,6 +62,7 @@ export default function SendEmailModal({ setShowSendModal }) {
       ...provided,
       border: "none",
       boxShadow: "none",
+      width: "100%",
     }),
     menu: (provided) => ({
       ...provided,
@@ -141,6 +142,7 @@ export default function SendEmailModal({ setShowSendModal }) {
         emailData
       );
       if (data) {
+        getEmails();
         toast.success("Email send successfully!");
         setLoading(false);
         setShowSendModal(false);
@@ -160,7 +162,7 @@ export default function SendEmailModal({ setShowSendModal }) {
 
   return (
     <div className="w-full h-[100%] flex items-center justify-center py-3 px-4 overflow-y-auto rounded-md ">
-      <div className="w-[48rem] rounded-md  border flex flex-col gap-4 bg-white mt-[5rem] 3xl:mt-0">
+      <div className="w-[55rem] rounded-md  border flex flex-col gap-4 bg-white mt-[5rem] 3xl:mt-0">
         <div className="flex items-center justify-between px-4 pt-2">
           <h1 className="text-[20px] font-semibold text-black">
             Create New Ticket
@@ -193,7 +195,7 @@ export default function SendEmailModal({ setShowSendModal }) {
           </select>
           {/*  */}
           <Select
-            className={`${style.input} px-0 py-0`}
+            className={`${style.input} h-[2.6rem] flex items-center justify-center px-0 py-0`}
             value={selectedOption}
             onChange={handleChange}
             options={options}
@@ -212,7 +214,7 @@ export default function SendEmailModal({ setShowSendModal }) {
           />
           {/*  */}
           <Select
-            className={`${style.input} px-0 py-0`}
+            className={`${style.input} h-[2.6rem] flex items-center justify-center px-0 py-0`}
             value={selectedTemplateOption}
             onChange={handleTemplateChange}
             options={templateOptions}

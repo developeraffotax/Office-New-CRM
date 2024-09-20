@@ -65,7 +65,6 @@ const getOutsourceAccessToken = async () => {
 
 // Send Email (With Attachments)
 export const sendEmailWithAttachments = async (emailData) => {
-  console.log("emailData:", emailData);
   try {
     let accessToken = "";
     let fromEmail = "";
@@ -134,5 +133,197 @@ export const sendEmailWithAttachments = async (emailData) => {
     return resp;
   } catch (error) {
     console.log("Error while send email!:", error);
+  }
+};
+
+// Get All Emails
+
+export const getAllEmails = async (ticketsList) => {
+  try {
+    let threadIds = ticketsList;
+
+    const accessToken = await getAccessToken();
+    const outSourcingAccessToken = await getOutsourceAccessToken();
+
+    if (!accessToken || !outSourcingAccessToken) {
+      getAllEmails(ticketsList);
+    } else {
+      const detailedThreads = await Promise.all(
+        threadIds.map(async (threadId) => {
+          const response = await getDetailedThreads(
+            threadId.thread_id,
+            threadId.company_name === "Affotax"
+              ? accessToken
+              : threadId.company_name === "Outsource"
+              ? outSourcingAccessToken
+              : ""
+          );
+          return response;
+        })
+      );
+
+      // Filter out null values (skipped thread IDs)
+      detailedThreads = detailedThreads.filter((thread) => thread !== null);
+      const unreadCount = detailedThreads.reduce((count, thread) => {
+        if (thread.readStatus === "Unread") {
+          return count + 1;
+        }
+        return count;
+      }, 0);
+
+      return {
+        detailedThreads: detailedThreads,
+        unreadCount: unreadCount,
+      };
+    }
+  } catch (error) {
+    console.log("Error while get all email's to Gmail", error);
+  }
+};
+
+// Get Thread Details
+const getDetailedThreads = async (threadId, accessToken) => {
+  try {
+    const config = {
+      method: "get",
+      url: `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}?format=full`,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    };
+
+    const response = await axios(config);
+    const threadData = response.data;
+
+    const latestMessage = threadData.messages[threadData.messages.length - 1];
+    const date = new Date(parseInt(latestMessage.internalDate));
+    const formattedDate = date.toLocaleDateString();
+    const formattedTime = date.toLocaleTimeString();
+
+    const subject =
+      threadData.messages[0]?.payload.headers.find(
+        (header) => header.name.toLowerCase() === "subject"
+      )?.value || "No Subject Found";
+    const readStatus = threadData.messages[
+      threadData.messages.length - 1
+    ]?.labelIds?.includes("UNREAD")
+      ? "Unread"
+      : threadData.messages[threadData.messages.length - 1]?.labelIds?.includes(
+          "SENT"
+        )
+      ? "Sent"
+      : "Read" || "No Status Found";
+
+    const recipientHeaders = threadData.messages[0]?.payload.headers.filter(
+      (header) => ["to", "cc", "bcc"].includes(header.name.toLowerCase())
+    );
+    const recipients =
+      recipientHeaders?.map((header) => header.value) || "No Recipient Found";
+
+    const decryptedMessages = await Promise.all(
+      threadData.messages.map(async (message) => {
+        let decodedMessage = "";
+
+        if (message.payload.body?.data) {
+          decodedMessage = Buffer.from(message.payload.body.data, "base64")
+            .toString("utf-8")
+            .replace(/(\r\n|\r|\n)/g, "<br/>")
+            .split("\n\n")[0]
+            .replace(/On .*/, "");
+        } else if (message.payload.parts && message.payload.parts.length > 0) {
+          for (const part of message.payload.parts) {
+            if (part.mimeType === "text/html" && part.body?.data) {
+              decodedMessage += Buffer.from(part.body.data, "base64").toString(
+                "utf-8"
+              );
+            }
+          }
+          decodedMessage = decodedMessage.replace(
+            /<p class=MsoNormal><o:p>&nbsp;<\/o:p><\/p><div style='border:none;border-top:solid #E1E1E1 1.0pt;padding:3.0pt 0cm 0cm 0cm'>[\s\S]*?<\/div><p class=MsoNormal>[\s\S]*?<o:p><\/o:p><\/p><\/div>/gs,
+            ""
+          );
+        }
+
+        const sentByMe = [
+          "info@affotax.com",
+          "Affotax Team <info@affotax.com>",
+          "Affotax <info@affotax.com>",
+          "Outsource Accountings <admin@outsourceaccountings.co.uk>",
+          "admin@outsourceaccountings.co.uk",
+        ].includes(
+          message.payload.headers.find(
+            (header) => header.name.toLowerCase() === "from"
+          )?.value || ""
+        );
+
+        const attachments = (message.payload.parts || []).filter(
+          (part) => part.filename && part.body?.attachmentId
+        );
+
+        const messageAttachments = attachments.map((attachment) => ({
+          attachmentId: attachment.body.attachmentId,
+          attachmentMessageId: message.id,
+          attachmentFileName: attachment.filename,
+        }));
+
+        return {
+          ...message,
+          payload: {
+            ...message.payload,
+            body: {
+              ...message.payload.body,
+              data: decodedMessage,
+              sentByMe: sentByMe,
+              messageAttachments: messageAttachments,
+            },
+          },
+        };
+      })
+    );
+
+    return {
+      decryptedMessages: decryptedMessages,
+      threadData: threadData,
+      threadId: threadId,
+      subject: subject,
+      readStatus: readStatus,
+      recipients: recipients,
+      formattedDate: formattedDate,
+      formattedTime: formattedTime,
+    };
+  } catch (error) {
+    console.log("Error while getting Thread details:", error);
+    if (error.response && error.response.status === 404) {
+      // Mail not found, skip this thread ID
+      return [];
+    } else {
+      throw new Error(error.message);
+    }
+  }
+};
+
+// Get Single Email Detail based on It's Thread Id
+
+export const getSingleEmail = async (ticketDetail) => {
+  try {
+    const accessToken = await getAccessToken();
+    const outSourcingAccessToken = await getOutsourceAccessToken();
+    let response;
+
+    if (ticketDetail.companyName === "Affotax") {
+      response = await getDetailedThreads(ticketDetail.threadId, accessToken);
+    } else {
+      response = await getDetailedThreads(
+        ticketDetail.threadId,
+        outSourcingAccessToken
+      );
+    }
+
+    console.log("Single Email Details:", response);
+
+    return response;
+  } catch (error) {
+    console.log("Error in getSingleEmail:", error);
+    throw new Error("Error while fetching email details");
   }
 };

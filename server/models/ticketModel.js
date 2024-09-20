@@ -24,6 +24,9 @@ const commentsSchema = new mongoose.Schema(
 
 const ticketSchema = new mongoose.Schema(
   {
+    clientId: {
+      type: String,
+    },
     companyName: {
       type: String,
     },
@@ -42,7 +45,11 @@ const ticketSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["Read", "Unread", "Send"],
-      default: "Unread",
+      default: "Send",
+    },
+    state: {
+      type: String,
+      default: "progress",
     },
     jobDate: {
       type: String,

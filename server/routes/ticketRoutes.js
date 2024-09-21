@@ -4,7 +4,9 @@ import {
   deleteTicket,
   getAllSendTickets,
   getSingleEmailDetail,
+  getTicketAttachments,
   sendEmail,
+  singleTicket,
   updateTickets,
 } from "../controllers/ticketController.js";
 import multer from "multer";
@@ -17,7 +19,7 @@ const router = express.Router();
 router.post("/send/email", requiredSignIn, upload.array("files"), sendEmail);
 
 // Get Single Email Detail
-router.get("/single/email/detail", getSingleEmailDetail);
+router.get("/single/email/detail/:mailThreadId/:company", getSingleEmailDetail);
 
 // Get All Send Tickets
 router.get("/all/tickets", getAllSendTickets);
@@ -27,5 +29,15 @@ router.delete("/delete/ticket/:id", requiredSignIn, deleteTicket);
 
 // Update Ticket
 router.put("/update/ticket/:id", requiredSignIn, updateTickets);
+
+// Get Single Ticket
+router.get("/single/ticket/:id", singleTicket);
+
+// Get Attachment
+router.get(
+  "/get/attachments/:attachmentId/:messageId/:companyName",
+  requiredSignIn,
+  getTicketAttachments
+);
 
 export default router;

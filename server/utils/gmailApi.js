@@ -319,11 +319,62 @@ export const getSingleEmail = async (ticketDetail) => {
       );
     }
 
-    console.log("Single Email Details:", response);
-
     return response;
   } catch (error) {
     console.log("Error in getSingleEmail:", error);
     throw new Error("Error while fetching email details");
+  }
+};
+
+// Get Attachments
+
+export const getAttachments = async (attachmentId, messageId, companyName) => {
+  try {
+    // console.log("Send Attachment data:", attachmentId, messageId, companyName);
+    let accessToken = "";
+
+    if (companyName === "Affotax") {
+      accessToken = await getAccessToken();
+    } else {
+      accessToken = await getOutsourceAccessToken();
+    }
+
+    const url = `https://www.googleapis.com/gmail/v1/users/me/messages/${messageId}/attachments/${attachmentId}`;
+
+    const config = {
+      method: "get",
+      url: url,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      responseType: "arraybuffer",
+    };
+
+    const { data } = await axios(config);
+
+    console.log("Attachment:", data);
+
+    return data;
+  } catch (error) {
+    console.log("Error while get attachment from gmail!", error);
+  }
+};
+
+// Email Replay
+
+export const emailReply = async (emailData) => {
+  try {
+    let accessToken = "";
+    let fromEmail = "";
+
+    if (emailData.company === "Affotax") {
+      accessToken = await getAccessToken();
+      fromEmail = "Affotax <info@affotax.com>";
+    } else if (emailData.company === "Outsource") {
+      accessToken = await getOutsourceAccessToken();
+      fromEmail = "Outsource Accountings <admin@outsourceaccountings.co.uk>";
+    }
+  } catch (error) {
+    console.log("Error while email reply!", error);
   }
 };

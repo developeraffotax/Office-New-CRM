@@ -13,6 +13,7 @@ import socketIO from "socket.io-client";
 import TimeSheet from "./pages/TimerSheet/TimeSheet";
 import Tickets from "./pages/Tickets/Tickets";
 import Template from "./pages/Templates/Template";
+import EmailDetail from "./pages/Tickets/EmailDetail";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -32,8 +33,9 @@ function App() {
           <Route path="/users" element={<AllUsers />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/timesheet" element={<TimeSheet />} />
-          <Route path="/tickets" element={<Tickets />} />
           <Route path="/templates" element={<Template />} />
+          <Route path="/tickets" element={<Tickets />} />
+          <Route path="/ticket/detail/:id" element={<EmailDetail />} />
         </Routes>
         <Toaster />
       </BrowserRouter>

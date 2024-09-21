@@ -17,6 +17,7 @@ import { useAuth } from "../../context/authContext";
 import { MdCheckCircle, MdInsertComment } from "react-icons/md";
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
+import { useNavigate, useRoutes } from "react-router-dom";
 
 export default function Tickets() {
   const { auth } = useAuth();
@@ -29,6 +30,7 @@ export default function Tickets() {
   const [userName, setUserName] = useState([]);
   const companyData = ["Affotax", "Outsource"];
   const status = ["Read", "Unread", "Send"];
+  const navigate = useNavigate();
 
   console.log("Email Data", emailData);
 
@@ -394,7 +396,10 @@ export default function Tickets() {
           const subject = row.original.subject;
           return (
             <div className="w-full px-1">
-              <span className="cursor-pointer text-blue-500 hover:text-blue-600 font-medium">
+              <span
+                onClick={() => navigate(`/ticket/detail/${row.original._id}`)}
+                className="cursor-pointer text-blue-500 hover:text-blue-600 font-medium"
+              >
                 {subject}
               </span>
             </div>

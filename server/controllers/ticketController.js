@@ -2,7 +2,11 @@ import axios from "axios";
 import jobsModel from "../models/jobsModel.js";
 import messageModel from "../models/messageModel.js";
 import ticketModel from "../models/ticketModel.js";
-import { getSingleEmail, sendEmailWithAttachments } from "../utils/gmailApi.js";
+import {
+  getAttachments,
+  getSingleEmail,
+  sendEmailWithAttachments,
+} from "../utils/gmailApi.js";
 
 // Create Ticket \
 export const sendEmail = async (req, res) => {
@@ -106,7 +110,8 @@ export const getAllSendTickets = async (req, res) => {
 
 export const getSingleEmailDetail = async (req, res) => {
   try {
-    const { mailThreadId, company } = req.body;
+    const { mailThreadId, company } = req.params;
+    console.log(req.params);
 
     if (!mailThreadId || !company) {
       return res.status(400).json({
@@ -208,6 +213,61 @@ export const deleteTicket = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error while delete ticket!",
+      error: error,
+    });
+  }
+};
+
+// Single Ticket
+export const singleTicket = async (req, res) => {
+  try {
+    const ticketId = req.params.id;
+
+    const ticket = await ticketModel.findById(ticketId);
+
+    if (!ticket) {
+      return res.status(400).send({
+        success: false,
+        message: "Ticket not found!",
+      });
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Single ticket!",
+      ticket: ticket,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while delete ticket!",
+      error: error,
+    });
+  }
+};
+
+// Get Attachments
+export const getTicketAttachments = async (req, res) => {
+  try {
+    const { attachmentId, messageId, companyName } = req.params;
+
+    const attachment = await getAttachments(
+      attachmentId,
+      messageId,
+      companyName
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Ticket attachments!",
+      attachment: attachment,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get ticket attachments!",
       error: error,
     });
   }

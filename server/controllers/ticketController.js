@@ -3,8 +3,10 @@ import jobsModel from "../models/jobsModel.js";
 import messageModel from "../models/messageModel.js";
 import ticketModel from "../models/ticketModel.js";
 import {
+  emailReply,
   getAttachments,
   getSingleEmail,
+  markThreadAsRead,
   sendEmailWithAttachments,
 } from "../utils/gmailApi.js";
 
@@ -91,6 +93,11 @@ export const getAllSendTickets = async (req, res) => {
         "clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt"
       );
 
+    const ticketList = emails.map((email) => ({
+      threadId: email.mailThreadId,
+      companyName: email.company,
+    }));
+
     res.status(200).send({
       success: true,
       message: "All email list!",
@@ -110,7 +117,7 @@ export const getAllSendTickets = async (req, res) => {
 
 export const getSingleEmailDetail = async (req, res) => {
   try {
-    const { mailThreadId, company } = req.params;
+    const { ticketId, mailThreadId, company } = req.params;
     console.log(req.params);
 
     if (!mailThreadId || !company) {
@@ -135,6 +142,12 @@ export const getSingleEmailDetail = async (req, res) => {
       });
     }
 
+    await ticketModel.findByIdAndUpdate(
+      { _id: ticketId },
+      { status: "Unread" },
+      { new: true }
+    );
+
     // Process and return the email details along with attachments
     res.status(200).json({
       success: true,
@@ -156,6 +169,8 @@ export const updateTickets = async (req, res) => {
     const ticketId = req.params.id;
     const { jobDate, state } = req.body;
 
+    console.log("State:", state);
+
     const existingTicket = await ticketModel.findById(ticketId);
     if (!existingTicket) {
       return res.status(400).send({
@@ -168,8 +183,11 @@ export const updateTickets = async (req, res) => {
       {
         _id: existingTicket._id,
       },
-      { jobDate: jobDate || existingTicket.jobDate },
-      { state: state || existingTicket.state },
+      {
+        jobDate: jobDate || existingTicket.jobDate,
+        state: state ? state : existingTicket.state,
+      },
+
       { new: true }
     );
 
@@ -268,6 +286,145 @@ export const getTicketAttachments = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error while get ticket attachments!",
+      error: error,
+    });
+  }
+};
+
+// Ticket Reply
+export const sendTicketReply = async (req, res) => {
+  try {
+    const userName = req.user.user.name;
+    const {
+      ticketId,
+      company,
+      threadId,
+      messageId,
+      message,
+      subject,
+      emailSendTo,
+    } = req.body;
+
+    const attachments = req.files.map((file) => ({
+      filename: file.originalname,
+      content: file.buffer.toString("base64"),
+    }));
+
+    const emailData = {
+      company: company,
+      threadId: threadId,
+      messageId: messageId,
+      message: message,
+      subject: subject,
+      emailSendTo: emailSendTo,
+      attachments: attachments,
+    };
+
+    await emailReply(emailData);
+
+    await ticketModel.findByIdAndUpdate(
+      { _id: ticketId },
+      { lastMessageSentBy: userName },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Email reply successfully!",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      messaeg: "Error while send ticket reply!",
+      error: error,
+    });
+  }
+};
+
+// Mark As Read
+export const markAsRead = async (req, res) => {
+  try {
+    const ticketId = req.params.id;
+    const { messageId, companyName } = req.body;
+
+    if (!companyName) {
+      return;
+    }
+
+    console.log("Thread Detail:", messageId, companyName);
+
+    await markThreadAsRead(messageId, companyName);
+
+    await ticketModel.findByIdAndUpdate(
+      { _id: ticketId },
+      { status: "Read" },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Email Read",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while mark as read!",
+      error: error,
+    });
+  }
+};
+
+// Get Comments
+export const singleTicketComments = async (req, res) => {
+  try {
+    const ticketId = req.params.id;
+
+    if (!ticketId) {
+      return res.status(400).send({
+        success: false,
+        message: "Ticket Id is required!",
+      });
+    }
+
+    const ticketComments = await ticketModel
+      .findById({ _id: ticketId })
+      .select("comments");
+
+    res.status(200).send({
+      success: true,
+      comments: ticketComments,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in get single ticket comment!",
+      error: error,
+    });
+  }
+};
+
+// Get Complete Tickets
+export const getCompleteTickets = async (req, res) => {
+  try {
+    const emails = await ticketModel
+      .find({ state: { $ne: "progress" } })
+      .select(
+        "clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt"
+      );
+
+    res.status(200).send({
+      success: true,
+      message: "All complete email list!",
+      emails: emails,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get emails!",
       error: error,
     });
   }

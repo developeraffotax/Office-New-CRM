@@ -1,6 +1,7 @@
 import jobsModel from "../models/jobsModel.js";
 import notificationModel from "../models/notificationModel.js";
 import taskModel from "../models/taskModel.js";
+import ticketModel from "../models/ticketModel.js";
 import userModel from "../models/userModel.js";
 
 // Create Comment
@@ -55,7 +56,7 @@ export const createComment = async (req, res) => {
         job: job,
         notification: notification,
       });
-    } else {
+    } else if (type === "Task") {
       const task = await taskModel.findById(jobId);
       if (!task) {
         return res.status(400).send({
@@ -91,6 +92,48 @@ export const createComment = async (req, res) => {
         success: true,
         message: "Comment Posted!",
         job: task,
+        notification: notification,
+      });
+    } else {
+      const ticket = await ticketModel.findById(jobId);
+      if (!ticket) {
+        return res.status(400).send({
+          success: false,
+          message: "Ticket not found!",
+        });
+      }
+
+      const newComment = {
+        user: req.user.user,
+        comment: comment,
+        commentReplies: [],
+        senderId: senderId,
+        likes: [],
+      };
+
+      ticket.comments.push(newComment);
+
+      await ticket.save();
+
+      // Create Notification
+      const user = await userModel
+        .findOne({
+          name: mentionUser ? mentionUser : ticket.jobHolder,
+        })
+        .exec();
+
+      const notification = await notificationModel.create({
+        title: "New comment received!",
+        redirectLink: "/tickets",
+        description: `${req.user.user.name} add a new comment in ticket "${ticket.subject}". ${comment}`,
+        taskId: jobId,
+        userId: user._id,
+      });
+
+      res.status(200).send({
+        success: true,
+        message: "Comment Posted!",
+        job: ticket,
         notification: notification,
       });
     }
@@ -155,7 +198,7 @@ export const commentReply = async (req, res) => {
         job: job,
         notification: notification,
       });
-    } else {
+    } else if (type === "Task") {
       const task = await taskModel.findById(jobId);
       if (!task) {
         return res.status(400).send({
@@ -199,6 +242,54 @@ export const commentReply = async (req, res) => {
         success: true,
         message: "Reply Posted!",
         job: task,
+        notification: notification,
+      });
+    } else {
+      const ticket = await ticketModel.findById(jobId);
+      if (!ticket) {
+        return res.status(400).send({
+          success: false,
+          message: "Ticket not found!",
+        });
+      }
+      const comment = ticket.comments.find((item) =>
+        item._id.equals(commentId)
+      );
+      if (!comment) {
+        return res.status(400).send({
+          success: false,
+          message: "Invalid comment id!",
+        });
+      }
+
+      // Replay
+      const newReply = {
+        user: req.user.user,
+        reply: commentReply,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      comment.commentReplies.push(newReply);
+      comment.status = "read";
+
+      await ticket.save();
+
+      // Create Notification
+      const user = await userModel.findOne({ name: ticket.jobHolder });
+
+      const notification = await notificationModel.create({
+        title: "New comment reply received!",
+        redirectLink: "/tickets",
+        description: `${req.user.user.name} add a new comment reply of ticket "${ticket.subject}". ${commentReply}`,
+        taskId: jobId,
+        userId: comment.senderId,
+      });
+
+      res.status(200).send({
+        success: true,
+        message: "Reply Posted!",
+        job: ticket,
         notification: notification,
       });
     }
@@ -248,7 +339,7 @@ export const likeComment = async (req, res) => {
         success: true,
         message: "Comment liked successfully!",
       });
-    } else {
+    } else if (type === "Task") {
       const task = await taskModel.findById(jobId);
       if (!task) {
         return res.status(400).send({
@@ -274,6 +365,39 @@ export const likeComment = async (req, res) => {
       comment.likes.push(req.user.id);
       comment.status = "read";
       await task.save();
+
+      res.status(200).send({
+        success: true,
+        message: "Comment liked successfully!",
+      });
+    } else {
+      const ticket = await ticketModel.findById(jobId);
+      if (!ticket) {
+        return res.status(400).send({
+          success: false,
+          message: "Ticket not found!",
+        });
+      }
+      const comment = ticket.comments.find((item) =>
+        item._id.equals(commentId)
+      );
+      if (!comment) {
+        return res.status(400).send({
+          success: false,
+          message: "Invalid comment id!",
+        });
+      }
+
+      if (comment.likes.includes(req.user.id)) {
+        return res.status(400).send({
+          success: false,
+          message: "Comment already liked!",
+        });
+      }
+
+      comment.likes.push(req.user.id);
+      comment.status = "read";
+      await ticket.save();
 
       res.status(200).send({
         success: true,
@@ -327,7 +451,7 @@ export const unLikeComment = async (req, res) => {
         success: true,
         message: "Comment unliked successfully!",
       });
-    } else {
+    } else if (type === "Task") {
       const task = await taskModel.findById(jobId);
       if (!task) {
         return res.status(400).send({
@@ -354,6 +478,40 @@ export const unLikeComment = async (req, res) => {
         (id) => id.toString() !== req.user.id
       );
       await task.save();
+
+      res.status(200).send({
+        success: true,
+        message: "Comment unliked successfully!",
+      });
+    } else {
+      const ticket = await ticketModel.findById(jobId);
+      if (!ticket) {
+        return res.status(400).send({
+          success: false,
+          message: "Ticket not found!",
+        });
+      }
+      const comment = ticket.comments.find((item) =>
+        item._id.equals(commentId)
+      );
+      if (!comment) {
+        return res.status(400).send({
+          success: false,
+          message: "Invalid comment id!",
+        });
+      }
+
+      if (!comment.likes.includes(req.user.id)) {
+        return res.status(400).send({
+          success: false,
+          message: "Post not liked yet!",
+        });
+      }
+
+      comment.likes = comment.likes.filter(
+        (id) => id.toString() !== req.user.id
+      );
+      await ticket.save();
 
       res.status(200).send({
         success: true,

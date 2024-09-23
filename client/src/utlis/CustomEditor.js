@@ -9,7 +9,7 @@ const CustomEditor = ({ template, setTemplate }) => {
       <div className="form-group col-md-12 editor">
         <label className="font-weight-bold">
           {" "}
-          Description <span className="required"> * </span>{" "}
+          {/* Description <span className="required"> * </span>{" "} */}
         </label>
         <QuillToolbar toolbarId={"t1"} />
 

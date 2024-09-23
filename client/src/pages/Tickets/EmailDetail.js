@@ -14,6 +14,7 @@ import { FaRegFileLines } from "react-icons/fa6";
 import { LuDownload } from "react-icons/lu";
 import { ImAttachment } from "react-icons/im";
 import { TbLoader2 } from "react-icons/tb";
+import SendEmailReply from "../../components/Tickets/SendEmailReply";
 
 export default function EmailDetail() {
   const navigate = useNavigate();
@@ -23,8 +24,9 @@ export default function EmailDetail() {
   const [loading, setLoading] = useState(false);
   const [isloading, setIsLoading] = useState(false);
   const [attachmentId, setAttachmentId] = useState("");
+  const [showReplay, setShowReply] = useState(false);
 
-  console.log("Email Detail:", emailDetail);
+  console.log("Ticket Detail:", ticketDetail);
 
   //   Get Single Ticket
   const getSingleTicket = async () => {
@@ -52,11 +54,17 @@ export default function EmailDetail() {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/email/detail/${mailThreadId}/${company}`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/email/detail/${mailThreadId}/${company}/${params.id}`
       );
       if (data) {
         setLoading(false);
         setEmailDetail(data.emailDetails);
+        //
+        markAsRead(
+          data.emailDetails.threadData.messages[
+            data.emailDetails.threadData.messages.length - 1
+          ].id
+        );
       }
     } catch (error) {
       setLoading(false);
@@ -67,7 +75,7 @@ export default function EmailDetail() {
   const emailData = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/email/detail/${ticketDetail.mailThreadId}/${ticketDetail.company}`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/email/detail/${ticketDetail.mailThreadId}/${ticketDetail.company}/${params.id}`
       );
       if (data) {
         setEmailDetail(data.emailDetails);
@@ -118,7 +126,6 @@ export default function EmailDetail() {
   };
 
   //   Download Attachments
-
   const downloadAttachments = async (
     attachmentId,
     messageId,
@@ -145,13 +152,11 @@ export default function EmailDetail() {
         });
         const url = URL.createObjectURL(blob);
 
-        // Create a link element and set its attributes
         const link = document.createElement("a");
         link.href = url;
         link.download = fileName;
         link.click();
 
-        // Clean up the URL object
         URL.revokeObjectURL(url);
 
         setIsLoading(false);
@@ -187,6 +192,21 @@ export default function EmailDetail() {
     );
   };
 
+  // Mark as Read
+  const markAsRead = async (messageId) => {
+    if (!ticketDetail) {
+      return;
+    }
+    try {
+      await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/markAsRead/${params.id}`,
+        { messageId, companyName: ticketDetail.company }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <Layout>
       <div className=" relative w-full h-[100%] flex flex-col bg-gray-50">
@@ -204,7 +224,7 @@ export default function EmailDetail() {
           </div>
           <button
             className={`${style.button1} text-[15px] flex items-center gap-1 `}
-            // onClick={() => setAddTemplate(true)}
+            onClick={() => setShowReply(true)}
             style={{ padding: ".4rem 1rem" }}
           >
             <HiReply className="h-4 w-4" /> Reply
@@ -217,7 +237,7 @@ export default function EmailDetail() {
           </div>
         ) : (
           <div className="flex flex-col gap-4  bg-white py-2 pb-4 px-4 w-full h-[100%] overflow-y-auto">
-            {emailDetail.decryptedMessages &&
+            {emailDetail?.decryptedMessages &&
               emailDetail?.decryptedMessages?.map((message, i) => (
                 <div className="flex flex-col gap-4" key={i}>
                   {message.payload.body.sentByMe ? (
@@ -383,6 +403,21 @@ export default function EmailDetail() {
                   )}
                 </div>
               ))}
+          </div>
+        )}
+
+        {/* ----------------Email Reply-------------- */}
+        {showReplay && (
+          <div className="fixed top-0 left-0 z-[999] w-full h-full py-1 bg-gray-700/70 flex items-center justify-center">
+            <SendEmailReply
+              setShowReply={setShowReply}
+              subject={emailDetail.subject}
+              threadId={emailDetail.threadId}
+              company={ticketDetail.company}
+              ticketId={ticketDetail._id}
+              emailSendTo={emailDetail.recipients[0]}
+              getEmailDetail={emailData}
+            />
           </div>
         )}
       </div>

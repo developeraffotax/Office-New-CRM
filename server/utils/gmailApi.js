@@ -350,9 +350,8 @@ export const getAttachments = async (attachmentId, messageId, companyName) => {
       responseType: "arraybuffer",
     };
 
-    const { data } = await axios(config);
-
-    console.log("Attachment:", data);
+    const response = await axios(config);
+    const data = response.data;
 
     return data;
   } catch (error) {
@@ -374,7 +373,100 @@ export const emailReply = async (emailData) => {
       accessToken = await getOutsourceAccessToken();
       fromEmail = "Outsource Accountings <admin@outsourceaccountings.co.uk>";
     }
+
+    const threadId = emailData.threadId;
+    const messageId = emailData.messageId;
+    const message = emailData.message;
+    const subjectToReply = emailData.subject;
+    const emailSendTo = emailData.emailSendTo;
+
+    const emailMessageParts = [];
+
+    emailMessageParts.push("From: " + fromEmail);
+    emailMessageParts.push("To: " + emailSendTo);
+    emailMessageParts.push("Subject: " + subjectToReply);
+    emailMessageParts.push("MIME-Version: 1.0");
+    emailMessageParts.push(
+      'Content-Type: multipart/mixed; boundary="boundary_example"'
+    );
+    emailMessageParts.push("");
+
+    emailMessageParts.push("--boundary_example");
+    emailMessageParts.push('Content-Type: text/html; charset="UTF-8"');
+    emailMessageParts.push("Content-Transfer-Encoding: 7bit");
+    emailMessageParts.push("");
+    emailMessageParts.push(message);
+    emailMessageParts.push("");
+
+    // Attachments
+    if (emailData.attachments && emailData.attachments.length > 0) {
+      for (const attachment of emailData.attachments) {
+        emailMessageParts.push("--boundary_example");
+        emailMessageParts.push("Content-Type: application/octet-stream");
+        emailMessageParts.push(
+          'Content-Disposition: attachment; filename="' +
+            attachment.filename +
+            '"'
+        );
+        emailMessageParts.push("Content-Transfer-Encoding: base64");
+        emailMessageParts.push("");
+        emailMessageParts.push(attachment.content);
+        emailMessageParts.push("");
+      }
+    }
+
+    emailMessageParts.push("--boundary_example--");
+
+    const emailMessage = emailMessageParts.join("\n");
+    const encodedMessage = Buffer.from(emailMessage).toString("base64");
+
+    const config = {
+      method: "post",
+      url: `https://gmail.googleapis.com/gmail/v1/users/me/messages/send`,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      data: JSON.stringify({
+        raw: encodedMessage,
+        threadId: threadId,
+      }),
+    };
+
+    const resp = await axios(config);
+    return resp;
   } catch (error) {
     console.log("Error while email reply!", error);
+  }
+};
+
+// Mark Thread as Read
+export const markThreadAsRead = async (messageId, companyName) => {
+  try {
+    let accessToken = "";
+    if (companyName === "Affotax") {
+      accessToken = await getAccessToken();
+      fromEmail = "Affotax <info@affotax.com>";
+    } else if (companyName === "Outsource") {
+      accessToken = await getOutsourceAccessToken();
+      fromEmail = "Outsource Accountings <admin@outsourceaccountings.co.uk>";
+    }
+
+    var config = {
+      method: "post",
+      url: `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/modify`,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      data: JSON.stringify({
+        removeLabelIds: ["UNREAD"],
+      }),
+    };
+
+    await axios(config);
+    return "Success";
+  } catch (error) {
+    console.log("Error while mark thread as read!", error);
   }
 };

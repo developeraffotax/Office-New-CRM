@@ -10,7 +10,6 @@ import { format } from "date-fns";
 import Layout from "../../components/Loyout/Layout";
 import { style } from "../../utlis/CommonStyle";
 import { IoClose } from "react-icons/io5";
-import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useAuth } from "../../context/authContext";
@@ -20,13 +19,12 @@ import Swal from "sweetalert2";
 import { useNavigate, useRoutes } from "react-router-dom";
 import JobCommentModal from "../Jobs/JobCommentModal";
 
-export default function Tickets() {
+export default function CompleteTickets() {
   const { auth } = useAuth();
-  const [showSendModal, setShowSendModal] = useState(false);
   const [emailData, setEmailData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedTab, setSelectedTab] = useState("progress");
+  const [selectedTab, setSelectedTab] = useState("complete");
   const [users, setUsers] = useState([]);
   const [userName, setUserName] = useState([]);
   const companyData = ["Affotax", "Outsource"];
@@ -36,14 +34,12 @@ export default function Tickets() {
   const commentStatusRef = useRef(null);
   const [commentTicketId, setCommentTicketId] = useState("");
 
-  console.log("Email Data", emailData);
-
   // -------Get All Emails-------
   const getAllEmails = async () => {
     setIsLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/complete/tickets`
       );
       if (data) {
         setEmailData(data.emails);
@@ -186,15 +182,11 @@ export default function Tickets() {
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, Complete it!",
+      confirmButtonText: "Yes, Update it!",
     }).then((result) => {
       if (result.isConfirmed) {
         handleStatusComplete(ticketId);
-        Swal.fire(
-          "Complete!",
-          "Your ticket completed successfully!",
-          "success"
-        );
+        Swal.fire("Update!", "Your ticket update successfully!", "success");
       }
     });
   };
@@ -207,11 +199,11 @@ export default function Tickets() {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
-        { state: "complete" }
+        { state: "progress" }
       );
       if (data?.success) {
         const updateTicket = data?.ticket;
-        toast.success("Status completed successfully!");
+        toast.success("Status update successfully!");
 
         setEmailData((prevData) =>
           prevData.filter((item) => item._id !== updateTicket._id)
@@ -987,7 +979,9 @@ export default function Tickets() {
       <div className=" relative w-full min-h-screen py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h1 className=" text-xl sm:text-2xl font-semibold ">Tickets</h1>
+            <h1 className=" text-xl sm:text-2xl font-semibold ">
+              Complete Tickets
+            </h1>
 
             <span
               className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
@@ -999,17 +993,6 @@ export default function Tickets() {
               <IoClose className="h-6 w-6  cursor-pointer" />
             </span>
           </div>
-
-          {/* ---------Template Buttons */}
-          <div className="flex items-center gap-4">
-            <button
-              className={`${style.button1} text-[15px] `}
-              onClick={() => setShowSendModal(true)}
-              style={{ padding: ".4rem 1rem" }}
-            >
-              New Ticket
-            </button>
-          </div>
         </div>
 
         <>
@@ -1020,7 +1003,10 @@ export default function Tickets() {
                   ? "bg-orange-500 text-white border-r-2 border-orange-500"
                   : "text-black bg-gray-100"
               }`}
-              onClick={() => setSelectedTab("progress")}
+              onClick={() => {
+                setSelectedTab("progress");
+                navigate("/tickets");
+              }}
             >
               Progress
             </button>
@@ -1030,10 +1016,7 @@ export default function Tickets() {
                   ? "bg-orange-500 text-white"
                   : "text-black bg-gray-100 hover:bg-slate-200"
               }`}
-              onClick={() => {
-                setSelectedTab("complete");
-                // navigate("/tickets/complete");
-              }}
+              onClick={() => setSelectedTab("complete")}
             >
               Completed
             </button>
@@ -1057,16 +1040,6 @@ export default function Tickets() {
             </div>
           )}
         </div>
-
-        {/* ---------------------Send Email Modal------------------ */}
-        {showSendModal && (
-          <div className="fixed top-0 left-0 z-[999] w-full h-full py-1 bg-gray-700/70 flex items-center justify-center">
-            <SendEmailModal
-              setShowSendModal={setShowSendModal}
-              getEmails={getEmails}
-            />
-          </div>
-        )}
 
         {/* ------------Comment Modal---------*/}
 

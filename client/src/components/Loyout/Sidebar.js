@@ -205,78 +205,82 @@ export default function Sidebar({ hide, setHide }) {
             </div>
           </div>
 
-          {/* 5 */}
-          <div
-            className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
-            onClick={() => {
-              router("/tickets");
-            }}
-          >
-            <div
-              className="adminbtn absolute h-full  sidebtn z-[20]"
-              style={{
-                width: active === "tickets" && "100%",
-                background: `rgb(2, 68, 2)`,
-              }}
-            ></div>
-            <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-              {hide ? (
-                <BsFileEarmarkText
-                  className="h-5 w-5 cursor-pointer ml-2"
-                  style={{ color: active === "tickets" && "#fff" }}
-                />
-              ) : (
-                <div className="flex items-center gap-2">
-                  <BsFileEarmarkText
-                    className="h-5 w-5 cursor-pointer ml-2"
-                    style={{ color: active === "tickets" && "#fff" }}
-                  />
-                  <span
-                    className="text-[14px] font-[400]"
-                    style={{ color: active === "tickets" && "#fff" }}
-                  >
-                    Tickets
-                  </span>
+          {auth.user.access.includes("ticket") && (
+            <>
+              <div
+                className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+                onClick={() => {
+                  router("/tickets");
+                }}
+              >
+                <div
+                  className="adminbtn absolute h-full  sidebtn z-[20]"
+                  style={{
+                    width: active === "tickets" && "100%",
+                    background: `rgb(2, 68, 2)`,
+                  }}
+                ></div>
+                <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                  {hide ? (
+                    <BsFileEarmarkText
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "tickets" && "#fff" }}
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <BsFileEarmarkText
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "tickets" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400]"
+                        style={{ color: active === "tickets" && "#fff" }}
+                      >
+                        Tickets
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-          {/* --------Template */}
-          <div
-            className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
-            onClick={() => {
-              router("/templates");
-            }}
-          >
-            <div
-              className="adminbtn absolute h-full  sidebtn z-[20]"
-              style={{
-                width: active === "templates" && "100%",
-                background: `rgb(2, 68, 2)`,
-              }}
-            ></div>
-            <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-              {hide ? (
-                <GoRepoTemplate
-                  className="h-5 w-5 cursor-pointer ml-2"
-                  style={{ color: active === "templates" && "#fff" }}
-                />
-              ) : (
-                <div className="flex items-center gap-2">
-                  <GoRepoTemplate
-                    className="h-5 w-5 cursor-pointer ml-2"
-                    style={{ color: active === "templates" && "#fff" }}
-                  />
-                  <span
-                    className="text-[14px] font-[400] "
-                    style={{ color: active === "templates" && "#fff" }}
-                  >
-                    Templates
-                  </span>
+              </div>
+              {/* --------Template */}
+              <div
+                className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+                onClick={() => {
+                  router("/templates");
+                }}
+              >
+                <div
+                  className="adminbtn absolute h-full  sidebtn z-[20]"
+                  style={{
+                    width: active === "templates" && "100%",
+                    background: `rgb(2, 68, 2)`,
+                  }}
+                ></div>
+                <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                  {hide ? (
+                    <GoRepoTemplate
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "templates" && "#fff" }}
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <GoRepoTemplate
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "templates" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{ color: active === "templates" && "#fff" }}
+                      >
+                        Templates
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
+            </>
+          )}
+
           {/* Timer Sheet */}
           <div
             className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"

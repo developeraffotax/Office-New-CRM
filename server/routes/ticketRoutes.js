@@ -3,10 +3,14 @@ import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
   deleteTicket,
   getAllSendTickets,
+  getCompleteTickets,
   getSingleEmailDetail,
   getTicketAttachments,
+  markAsRead,
   sendEmail,
+  sendTicketReply,
   singleTicket,
+  singleTicketComments,
   updateTickets,
 } from "../controllers/ticketController.js";
 import multer from "multer";
@@ -19,7 +23,10 @@ const router = express.Router();
 router.post("/send/email", requiredSignIn, upload.array("files"), sendEmail);
 
 // Get Single Email Detail
-router.get("/single/email/detail/:mailThreadId/:company", getSingleEmailDetail);
+router.get(
+  "/single/email/detail/:mailThreadId/:company/:ticketId",
+  getSingleEmailDetail
+);
 
 // Get All Send Tickets
 router.get("/all/tickets", getAllSendTickets);
@@ -39,5 +46,22 @@ router.get(
   requiredSignIn,
   getTicketAttachments
 );
+
+// Ticket Reply
+router.post(
+  "/reply/email",
+  requiredSignIn,
+  upload.array("files"),
+  sendTicketReply
+);
+
+// Mark as Read
+router.put("/markAsRead/:id", markAsRead);
+
+// Get Comments
+router.get("/ticket/comments/:id", singleTicketComments);
+
+// Get Complete Ticket
+router.get("/complete/tickets", getCompleteTickets);
 
 export default router;

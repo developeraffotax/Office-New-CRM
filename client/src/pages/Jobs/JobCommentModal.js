@@ -91,7 +91,7 @@ export default function JobCommentModal({
     setCommentReply((prevComment) => prevComment + event.emoji);
   };
 
-  //  ------------- Get Single Job ||  Task  Comments-----------
+  //  ------------- Get Single Job ||  Task || Ticket Comments-----------
   const getSingleJobComment = async () => {
     setIsLoading(true);
     try {
@@ -108,7 +108,7 @@ export default function JobCommentModal({
             note: "New Task Added",
           });
         }
-      } else {
+      } else if (type === "Task") {
         const { data } = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/v1/tasks/task/comments/${jobId}`
         );
@@ -119,6 +119,14 @@ export default function JobCommentModal({
           socketId.emit("addTask", {
             note: "New Task Added",
           });
+        }
+      } else {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/tickets/ticket/comments/${jobId}`
+        );
+        if (data) {
+          setIsLoading(false);
+          setCommentData(data?.comments?.comments);
         }
       }
     } catch (error) {
@@ -144,11 +152,19 @@ export default function JobCommentModal({
           console.log("data", data);
           setCommentData(data?.comments?.comments);
         }
-      } else {
+      } else if (type === "Task") {
         const { data } = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/v1/tasks/task/comments/${jobId}`
         );
         if (data) {
+          setCommentData(data?.comments?.comments);
+        }
+      } else {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/tickets/ticket/comments/${jobId}`
+        );
+        if (data) {
+          setIsLoading(false);
           setCommentData(data?.comments?.comments);
         }
       }

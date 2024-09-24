@@ -1032,7 +1032,7 @@ export default function Tickets() {
               }`}
               onClick={() => {
                 setSelectedTab("complete");
-                // navigate("/tickets/complete");
+                navigate("/tickets/complete");
               }}
             >
               Completed

@@ -126,6 +126,49 @@ export default function EmailDetail() {
   };
 
   //   Download Attachments
+  // const downloadAttachments = async (
+  //   attachmentId,
+  //   messageId,
+  //   companyName,
+  //   fileName
+  // ) => {
+  //   if (!attachmentId || !messageId || !companyName) {
+  //     toast.error("Attachment detail missing!");
+  //     return;
+  //   }
+  //   setIsLoading(true);
+  //   try {
+  //     const { data } = await axios.get(
+  //       `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`
+  //     );
+  //     if (data) {
+  //       const encodedData = data.attachment.data;
+  //       console.log("encodedData:", encodedData);
+  //       const decodedData = Buffer.from(encodedData, "base64");
+  //       const byteArray = new Uint8Array(decodedData.buffer);
+
+  //       const blob = new Blob([byteArray], {
+  //         type: "application/octet-stream",
+  //       });
+
+  //       const url = URL.createObjectURL(blob);
+
+  //       const link = document.createElement("a");
+  //       link.href = url;
+  //       link.download = fileName;
+  //       link.click();
+
+  //       URL.revokeObjectURL(url);
+
+  //       setIsLoading(false);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     setIsLoading(false);
+  //     toast.error("Error download attachments!");
+  //   }
+  // };
+
   const downloadAttachments = async (
     attachmentId,
     messageId,
@@ -136,35 +179,74 @@ export default function EmailDetail() {
       toast.error("Attachment detail missing!");
       return;
     }
+
     setIsLoading(true);
+
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`
       );
-      if (data) {
-        const encodedData = data.attachment.data;
-        console.log("encodedData:", encodedData);
-        const decodedData = Buffer.from(encodedData, "base64");
-        const byteArray = new Uint8Array(decodedData.buffer);
 
-        const blob = new Blob([byteArray], {
-          type: "application/octet-stream",
-        });
+      if (data && data.attachment && data.attachment.data) {
+        const encodedData = data.attachment.data;
+
+        // Since encodedData is an array of bytes, we convert it directly to Uint8Array
+        const byteArray = new Uint8Array(encodedData);
+
+        // Dynamically detect MIME type if possible (based on file extension)
+        const fileExtension = fileName?.split(".").pop();
+        let mimeType = "application/octet-stream"; // Default type
+
+        if (fileExtension) {
+          switch (fileExtension.toLowerCase()) {
+            case "pdf":
+              mimeType = "application/pdf";
+              break;
+            case "jpg":
+            case "jpeg":
+              mimeType = "image/jpeg";
+              break;
+            case "png":
+              mimeType = "image/png";
+              break;
+            case "doc":
+            case "docx":
+              mimeType = "application/msword";
+              break;
+            case "xls":
+            case "xlsx":
+              mimeType = "application/vnd.ms-excel";
+              break;
+            // Add more cases as needed for other file types
+            default:
+              mimeType = "application/octet-stream";
+          }
+        }
+
+        // Create Blob from the byteArray
+        const blob = new Blob([byteArray], { type: mimeType });
         const url = URL.createObjectURL(blob);
 
+        // Create an anchor element to trigger the download
         const link = document.createElement("a");
         link.href = url;
-        link.download = fileName;
+        link.download = fileName || "attachment";
+        document.body.appendChild(link);
         link.click();
 
+        // Clean up
+        document.body.removeChild(link);
         URL.revokeObjectURL(url);
 
         setIsLoading(false);
+      } else {
+        toast.error("Attachment data is missing or incorrect!");
+        setIsLoading(false);
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error downloading attachment:", error);
+      toast.error("Error downloading attachment!");
       setIsLoading(false);
-      toast.error("Error download attachments!");
     }
   };
 
@@ -200,7 +282,7 @@ export default function EmailDetail() {
     try {
       await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/markAsRead/${params.id}`,
-        { messageId, companyName: ticketDetail.company }
+        { messageId, companyName: ticketDetail.company || "Affotax" }
       );
     } catch (error) {
       console.log(error);

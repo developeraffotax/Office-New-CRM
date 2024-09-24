@@ -50,6 +50,9 @@ export default function Header() {
     if (audio) {
       audio.load();
     }
+    socketId.emit("notification", {
+      title: "New Job Assigned",
+    });
   }, [audio]);
 
   const handleSearch = async () => {

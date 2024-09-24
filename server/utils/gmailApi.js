@@ -140,21 +140,19 @@ export const sendEmailWithAttachments = async (emailData) => {
 
 export const getAllEmails = async (ticketsList) => {
   try {
-    let threadIds = ticketsList;
-
     const accessToken = await getAccessToken();
     const outSourcingAccessToken = await getOutsourceAccessToken();
 
     if (!accessToken || !outSourcingAccessToken) {
       getAllEmails(ticketsList);
     } else {
-      const detailedThreads = await Promise.all(
-        threadIds.map(async (threadId) => {
+      let detailedThreads = await Promise.all(
+        ticketsList.map(async (thread) => {
           const response = await getDetailedThreads(
-            threadId.thread_id,
-            threadId.company_name === "Affotax"
+            thread.threadId,
+            thread.companyName === "Affotax"
               ? accessToken
-              : threadId.company_name === "Outsource"
+              : thread.companyName === "Outsource"
               ? outSourcingAccessToken
               : ""
           );
@@ -164,6 +162,7 @@ export const getAllEmails = async (ticketsList) => {
 
       // Filter out null values (skipped thread IDs)
       detailedThreads = detailedThreads.filter((thread) => thread !== null);
+
       const unreadCount = detailedThreads.reduce((count, thread) => {
         if (thread.readStatus === "Unread") {
           return count + 1;
@@ -330,7 +329,7 @@ export const getSingleEmail = async (ticketDetail) => {
 
 export const getAttachments = async (attachmentId, messageId, companyName) => {
   try {
-    // console.log("Send Attachment data:", attachmentId, messageId, companyName);
+    console.log("Send Attachment data:", attachmentId, messageId, companyName);
     let accessToken = "";
 
     if (companyName === "Affotax") {
@@ -353,6 +352,7 @@ export const getAttachments = async (attachmentId, messageId, companyName) => {
     const response = await axios(config);
     const data = response.data;
 
+    console.log("Reponse:", data);
     return data;
   } catch (error) {
     console.log("Error while get attachment from gmail!", error);
@@ -446,10 +446,8 @@ export const markThreadAsRead = async (messageId, companyName) => {
     let accessToken = "";
     if (companyName === "Affotax") {
       accessToken = await getAccessToken();
-      fromEmail = "Affotax <info@affotax.com>";
     } else if (companyName === "Outsource") {
       accessToken = await getOutsourceAccessToken();
-      fromEmail = "Outsource Accountings <admin@outsourceaccountings.co.uk>";
     }
 
     var config = {
@@ -465,6 +463,7 @@ export const markThreadAsRead = async (messageId, companyName) => {
     };
 
     await axios(config);
+
     return "Success";
   } catch (error) {
     console.log("Error while mark thread as read!", error);

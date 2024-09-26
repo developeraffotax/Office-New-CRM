@@ -6,7 +6,7 @@ import {
 } from "material-react-table";
 import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
-
+import { IoRemoveCircle } from "react-icons/io5";
 import Layout from "../../components/Loyout/Layout";
 import { style } from "../../utlis/CommonStyle";
 import { IoClose } from "react-icons/io5";
@@ -882,7 +882,7 @@ export default function CompleteTickets() {
                   handleUpdateTicketStatusConfirmation(row.original._id);
                 }}
               >
-                <MdCheckCircle className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
+                <IoRemoveCircle className="h-6 w-6 cursor-pointer text-red-500 hover:text-red-600" />
               </span>
               <span
                 className="text-[1rem] cursor-pointer"

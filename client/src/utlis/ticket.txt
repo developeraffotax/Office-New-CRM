@@ -33,3 +33,50 @@ export default function Tickets() {
     </Layout>
   );
 }
+
+<-------------------------------------Total Hours Task----------->
+ // useEffect(() => {
+  //   const totalHours = tasksData.reduce(
+  //     (sum, client) => sum + Number(client.hours),
+  //     0
+  //   );
+  //   setTotalHours(totalHours.toFixed(0));
+  //   if (active === "All" && !active1) {
+  //     if (filterData) {
+  //       const totalHours = tasksData.reduce(
+  //         (sum, client) => sum + Number(client.hours),
+  //         0
+  //       );
+  //       setTotalHours(totalHours.toFixed(0));
+  //     }
+  //   } else {
+  //     if (filterData) {
+  //       const totalHours = filterData.reduce(
+  //         (sum, client) => sum + Number(client.hours),
+  //         0
+  //       );
+  //       setTotalHours(totalHours.toFixed(0));
+  //     }
+  //   }
+  // }, [tasksData, filterData, active, active1, activeBtn]);
+
+  <-------------------------------------Total Hours Job----------------->
+    // useEffect(() => {
+  //   if (active === "All" && !active1) {
+  //     if (filterData) {
+  //       const totalHours = tableData.reduce(
+  //         (sum, client) => sum + Number(client.totalHours),
+  //         0
+  //       );
+  //       setTotalHours(totalHours.toFixed(0));
+  //     }
+  //   } else {
+  //     if (filterData) {
+  //       const totalHours = filterData.reduce(
+  //         (sum, client) => sum + Number(client.totalHours),
+  //         0
+  //       );
+  //       setTotalHours(totalHours.toFixed(0));
+  //     }
+  //   }
+  // }, [filterData, tableData, active, active1]);

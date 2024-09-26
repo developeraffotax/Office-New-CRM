@@ -19,6 +19,8 @@ import ProfileModal from "../Modals/ProfileModal";
 import { FaUsers } from "react-icons/fa";
 import { SlCalender } from "react-icons/sl";
 import { GoRepoTemplate } from "react-icons/go";
+import { BiLayer } from "react-icons/bi";
+import { FaRegCreditCard } from "react-icons/fa6";
 
 export default function Sidebar({ hide, setHide }) {
   const router = useNavigate();
@@ -207,6 +209,7 @@ export default function Sidebar({ hide, setHide }) {
 
           {auth.user.access.includes("ticket") && (
             <>
+              {/* ------Ticket------ */}
               <div
                 className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
                 onClick={() => {
@@ -242,7 +245,7 @@ export default function Sidebar({ hide, setHide }) {
                   )}
                 </div>
               </div>
-              {/* --------Template */}
+              {/* --------Template------ */}
               <div
                 className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
                 onClick={() => {
@@ -273,6 +276,42 @@ export default function Sidebar({ hide, setHide }) {
                         style={{ color: active === "templates" && "#fff" }}
                       >
                         Templates
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {/* ---------Lead-------- */}
+              <div
+                className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+                onClick={() => {
+                  router("/leads");
+                }}
+              >
+                <div
+                  className="adminbtn absolute h-full  sidebtn z-[20]"
+                  style={{
+                    width: active === "leads" && "100%",
+                    background: `rgb(2, 68, 2)`,
+                  }}
+                ></div>
+                <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                  {hide ? (
+                    <BiLayer
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "leads" && "#fff" }}
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <BiLayer
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "leads" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{ color: active === "leads" && "#fff" }}
+                      >
+                        Leads
                       </span>
                     </div>
                   )}
@@ -333,13 +372,13 @@ export default function Sidebar({ hide, setHide }) {
             ></div>
             <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
               {hide ? (
-                <BsBell
+                <FaRegCreditCard
                   className="h-5 w-5 cursor-pointer ml-2"
                   style={{ color: active === "notifications" && "#fff" }}
                 />
               ) : (
                 <div className="flex items-center gap-2">
-                  <BsBell
+                  <FaRegCreditCard
                     className="h-5 w-5 cursor-pointer ml-2"
                     style={{ color: active === "notifications" && "#fff" }}
                   />
@@ -347,7 +386,7 @@ export default function Sidebar({ hide, setHide }) {
                     className="text-[14px] font-[400]"
                     style={{ color: active === "notifications" && "#fff" }}
                   >
-                    Leads
+                    Subscription
                   </span>
                 </div>
               )}

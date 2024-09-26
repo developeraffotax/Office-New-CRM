@@ -16,6 +16,8 @@ import categoryRoute from "./routes/templates/categoryRoutes.js";
 import templateRoute from "./routes/templates/templateRoutes.js";
 import faqRoute from "./routes/templates/faqRoutes.js";
 import ticketRoute from "./routes/ticketRoutes.js";
+import leadRoute from "./routes/leadRoute.js";
+
 import http from "http";
 import notificationRoute from "./routes/notificationRoutes.js";
 import { initSocketServer } from "./socketServer.js";
@@ -51,6 +53,7 @@ app.use("/api/v1/categories", categoryRoute);
 app.use("/api/v1/templates", templateRoute);
 app.use("/api/v1/faqs", faqRoute);
 app.use("/api/v1/tickets", ticketRoute);
+app.use("/api/v1/leads", leadRoute);
 
 // Rest API's
 app.use("/", (req, res) => {

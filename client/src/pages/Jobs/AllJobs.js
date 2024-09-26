@@ -113,26 +113,23 @@ export default function AllJobs() {
     "Feedback",
   ];
 
-  // -----------Date-------->
+  // -----------Total Hours-------->
+
   useEffect(() => {
+    const calculateTotalHours = (data) => {
+      return data.reduce((sum, client) => sum + Number(client.totalHours), 0);
+    };
+
     if (active === "All" && !active1) {
-      if (filterData) {
-        const totalHours = tableData.reduce(
-          (sum, client) => sum + Number(client.totalHours),
-          0
-        );
-        setTotalHours(totalHours.toFixed(0));
-      }
-    } else {
-      if (filterData) {
-        const totalHours = filterData.reduce(
-          (sum, client) => sum + Number(client.totalHours),
-          0
-        );
-        setTotalHours(totalHours.toFixed(0));
-      }
+      setTotalHours(calculateTotalHours(tableData).toFixed(0));
+    } else if (filterData) {
+      setTotalHours(calculateTotalHours(filterData).toFixed(0));
     }
-  }, [filterData, tableData, active, active1]);
+
+    if (filterData) {
+      setTotalHours(calculateTotalHours(filterData).toFixed(0));
+    }
+  }, [tableData, filterData, active, active1]);
 
   // ---------------All Client_Job Data----------->
   const allClientJobData = async () => {
@@ -615,7 +612,7 @@ export default function AllJobs() {
   };
 
   const handleExportData = () => {
-    const csvData = flattenData(tableData);
+    const csvData = flattenData(filterData ? filterData : tableData);
     const csv = generateCsv(csvConfig)(csvData);
     download(csvConfig)(csv);
   };
@@ -1919,6 +1916,16 @@ export default function AllJobs() {
       );
     },
   });
+
+  useEffect(() => {
+    const filteredRows = table
+      .getFilteredRowModel()
+      .rows.map((row) => row.original);
+
+    console.log("Filtered Data:", filteredRows);
+    setFilterData(filteredRows);
+    // eslint-disable-next-line
+  }, [table.getFilteredRowModel().rows]);
 
   return (
     <Layout>

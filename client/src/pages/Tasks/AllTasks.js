@@ -99,12 +99,11 @@ const AllTasks = () => {
   const [showlabel, setShowlabel] = useState(false);
   const [timerId, setTimerId] = useState("");
   console.log("totalHours", totalHours);
+  console.log("filterData", filterData);
 
   const dateStatus = ["Due", "Overdue"];
 
   const status = ["To do", "Progress", "Review", "Onhold"];
-
-  console.log("filterData:", filterData);
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
@@ -354,28 +353,20 @@ const AllTasks = () => {
   // ------------------------------Tasks----------------->
 
   // ---------Total Hours-------->
+
   useEffect(() => {
-    const totalHours = tasksData.reduce(
-      (sum, client) => sum + Number(client.hours),
-      0
-    );
-    setTotalHours(totalHours.toFixed(0));
+    const calculateTotalHours = (data) => {
+      return data.reduce((sum, client) => sum + Number(client.hours), 0);
+    };
+
     if (active === "All" && !active1) {
-      if (filterData) {
-        const totalHours = tasksData.reduce(
-          (sum, client) => sum + Number(client.hours),
-          0
-        );
-        setTotalHours(totalHours.toFixed(0));
-      }
-    } else {
-      if (filterData) {
-        const totalHours = filterData.reduce(
-          (sum, client) => sum + Number(client.hours),
-          0
-        );
-        setTotalHours(totalHours.toFixed(0));
-      }
+      setTotalHours(calculateTotalHours(tasksData).toFixed(0));
+    } else if (filterData) {
+      setTotalHours(calculateTotalHours(filterData).toFixed(0));
+    }
+
+    if (filterData) {
+      setTotalHours(calculateTotalHours(filterData).toFixed(0));
     }
   }, [tasksData, filterData, active, active1, activeBtn]);
 
@@ -700,7 +691,7 @@ const AllTasks = () => {
   };
 
   const handleExportData = () => {
-    const csvData = flattenData(tasksData);
+    const csvData = flattenData(filterData ? filterData : tasksData);
     const csv = generateCsv(csvConfig)(csvData);
     download(csvConfig)(csv);
   };
@@ -2064,17 +2055,16 @@ const AllTasks = () => {
     },
   });
 
-  // useEffect(() => {
-  //   // Fetch all row data from the table model
-  //   const allRowData = table.getRowModel().rows.map((row) => row.original);
+  useEffect(() => {
+    const filteredRows = table
+      .getFilteredRowModel()
+      .rows.map((row) => row.original);
 
-  //   console.log("allRowData", allRowData);
+    console.log("Filtered Data:", filteredRows);
+    setFilterData(filteredRows);
 
-  //   // Set the filter data when the table data changes
-  //   setFilterData(allRowData);
-
-  //   // eslint-disable-next-line
-  // }, [table]);
+    // eslint-disable-next-line
+  }, [table.getFilteredRowModel().rows]);
 
   return (
     <Layout>

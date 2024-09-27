@@ -6,9 +6,7 @@ export default function Dashboard() {
   const { auth } = useAuth();
   return (
     <Layout title="CRM_Dashboard">
-      <div>
-        Dashboard
-      </div>
+      <div>Dashboard</div>
     </Layout>
   );
 }

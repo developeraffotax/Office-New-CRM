@@ -8,7 +8,6 @@ export default function Dashboard() {
     <Layout title="CRM_Dashboard">
       <div>
         Dashboard
-        <pre>{JSON.stringify(auth, 0, 4)}</pre>
       </div>
     </Layout>
   );

@@ -21,6 +21,7 @@ import { SlCalender } from "react-icons/sl";
 import { GoRepoTemplate } from "react-icons/go";
 import { BiLayer } from "react-icons/bi";
 import { FaRegCreditCard } from "react-icons/fa6";
+import { LuClipboardSignature } from "react-icons/lu";
 
 export default function Sidebar({ hide, setHide }) {
   const router = useNavigate();
@@ -317,6 +318,42 @@ export default function Sidebar({ hide, setHide }) {
                   )}
                 </div>
               </div>
+              {/* ---------Proposal----- */}
+              <div
+                className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+                onClick={() => {
+                  router("/proposals");
+                }}
+              >
+                <div
+                  className="adminbtn absolute h-full  sidebtn z-[20]"
+                  style={{
+                    width: active === "proposals" && "100%",
+                    background: `rgb(2, 68, 2)`,
+                  }}
+                ></div>
+                <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                  {hide ? (
+                    <LuClipboardSignature
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "proposals" && "#fff" }}
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <LuClipboardSignature
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "proposals" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{ color: active === "proposals" && "#fff" }}
+                      >
+                        Proposals
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </>
           )}
 
@@ -392,42 +429,7 @@ export default function Sidebar({ hide, setHide }) {
               )}
             </div>
           </div>
-          {/* 7 */}
-          <div
-            className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
-            onClick={() => {
-              router("/subscription");
-            }}
-          >
-            <div
-              className="adminbtn absolute h-full  sidebtn z-[20]"
-              style={{
-                width: active === "subscription" && "100%",
-                background: `rgb(2, 68, 2)`,
-              }}
-            ></div>
-            <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-              {hide ? (
-                <BsCashCoin
-                  className="h-5 w-5 cursor-pointer ml-2"
-                  style={{ color: active === "subscription" && "#fff" }}
-                />
-              ) : (
-                <div className="flex items-center gap-2">
-                  <BsCashCoin
-                    className="h-5 w-5 cursor-pointer ml-2"
-                    style={{ color: active === "subscription" && "#fff" }}
-                  />
-                  <span
-                    className="text-[14px] font-[400] "
-                    style={{ color: active === "subscription" && "#fff" }}
-                  >
-                    Proposals
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
+
           {/*  */}
           <div
             className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
@@ -464,132 +466,6 @@ export default function Sidebar({ hide, setHide }) {
               )}
             </div>
           </div>
-          {/*  */}
-
-          {/* --------- */}
-
-          {/* HR */}
-
-          {/* <div
-            className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
-            onClick={() => {
-              router("/user-analytics");
-            }}
-          >
-            <div
-              className="adminbtn absolute h-full  sidebtn z-[20]"
-              style={{
-                width: active === "user-analytics" && "100%",
-                background: `rgb(2, 68, 2)`,
-              }}
-            ></div>
-            <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-              {hide ? (
-                <LiaUsersCogSolid
-                  className="h-5 w-5 cursor-pointer ml-2"
-                  style={{ color: active === "user-analytics" && "#fff" }}
-                />
-              ) : (
-                <div className="flex items-center gap-2">
-                  <LiaUsersCogSolid
-                    className="h-5 w-5 cursor-pointer ml-2"
-                    style={{ color: active === "user-analytics" && "#fff" }}
-                  />
-                  <span
-                    className="text-[14px] font-[400] "
-                    style={{ color: active === "user-analytics" && "#fff" }}
-                  >
-                    User Analytics
-                  </span>
-                </div>
-              )}
-            </div>
-          </div> */}
-
-          {/* 2 */}
-          {/* <div
-            className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
-            onClick={() => {
-              router("/channel-analytics");
-            }}
-          >
-            <div
-              className="adminbtn absolute h-full  sidebtn z-[20]"
-              style={{
-                width: active === "channel-analytics" && "100%",
-                background: `rgb(2, 68, 2)`,
-              }}
-            ></div>
-            <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-              {hide ? (
-                <TbBrandGoogleAnalytics
-                  className="h-5 w-5 cursor-pointer ml-2"
-                  style={{ color: active === "channel-analytics" && "#fff" }}
-                />
-              ) : (
-                <div className="flex items-center gap-2">
-                  <TbBrandGoogleAnalytics
-                    className="h-5 w-5 cursor-pointer ml-2"
-                    style={{
-                      color: active === "channel-analytics" && "#fff",
-                    }}
-                  />
-                  <span
-                    className="text-[14px] font-[400] "
-                    style={{
-                      color: active === "channel-analytics" && "#fff",
-                    }}
-                  >
-                    Channels Analytics
-                  </span>
-                </div>
-              )}
-            </div>
-          </div> */}
-
-          {/* 3 */}
-          {/* <div
-            className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
-            onClick={() => {
-              router("/subscription-analytics");
-            }}
-          >
-            <div
-              className="adminbtn absolute h-full  sidebtn z-[20]"
-              style={{
-                width: active === "subscription-analytics" && "100%",
-                background: `rgb(2, 68, 2)`,
-              }}
-            ></div>
-            <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-              {hide ? (
-                <TbFileAnalytics
-                  className="h-5 w-5 cursor-pointer ml-1"
-                  style={{
-                    color: active === "subscription-analytics" && "#fff",
-                  }}
-                />
-              ) : (
-                <div className="flex items-center gap-1">
-                  <TbFileAnalytics
-                    className="h-5 w-5 cursor-pointer ml-2"
-                    style={{
-                      color: active === "subscription-analytics" && "#fff",
-                    }}
-                  />
-                  <span
-                    className="text-[14px] font-[400] "
-                    style={{
-                      color: active === "subscription-analytics" && "#fff",
-                    }}
-                  >
-                    Subscription Analytic
-                  </span>
-                </div>
-              )}
-            </div>
-          </div> */}
-          {/* 4 */}
 
           {/* <hr className="my-2" />
           <h4 className="text-[16] font-semibold px-2">Settings</h4> */}

@@ -1,46 +1,37 @@
 import mongoose from "mongoose";
 
-const leadSchema = new mongoose.Schema(
+const proposalSchema = new mongoose.Schema(
   {
-    companyName: {
-      type: String,
-    },
     clientName: {
       type: String,
     },
     jobHolder: {
       type: String,
     },
-    department: {
+    subject: {
       type: String,
+    },
+    mail: {
+      type: String,
+      trim: true,
+    },
+    jobDate: {
+      type: Date,
+    },
+    deadline: {
+      type: Date,
     },
     source: {
       type: String,
     },
-    brand: {
-      type: String,
-    },
-    lead_Source: {
-      type: String,
-    },
-    followUpDate: {
-      type: Date,
-    },
-    JobDate: {
-      type: Date,
-    },
-    Note: {
-      type: String,
-    },
-    stage: {
+    note: {
       type: String,
     },
     status: {
       type: String,
-      default: "progress",
     },
   },
   { timestamps: true }
 );
 
-export default mongoose.model("Lead", leadSchema);
+export default mongoose.model("Proposal", proposalSchema);

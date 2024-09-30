@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import { IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
-import { useNavigate } from "react-router-dom";
 import Loader from "../../utlis/Loader";
 import {
   MaterialReactTable,
@@ -13,62 +12,37 @@ import { AiTwotoneDelete } from "react-icons/ai";
 import { useAuth } from "../../context/authContext";
 import { format } from "date-fns";
 import { GrCopy } from "react-icons/gr";
-import { FaTrophy } from "react-icons/fa6";
-import { GiBrokenHeart } from "react-icons/gi";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
-import { MdOutlineAnalytics } from "react-icons/md";
 import AddProposal from "./AddProposal";
+import { CiEdit } from "react-icons/ci";
 
 export default function Proposal() {
   const { auth } = useAuth();
   const [show, setShow] = useState(false);
-  const [selectedTab, setSelectedTab] = useState("progress");
   const [isLoading, setIsLoading] = useState(false);
-  const [leadData, setLeadData] = useState([]);
+  const [proposalData, setProposalData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [users, setUsers] = useState([]);
   const [userName, setUserName] = useState([]);
   const [load, setLoad] = useState(false);
-  const leadSource = [
-    "Upwork",
-    "Fiverr",
-    "PPH",
-    "Referral",
-    "Partner",
-    "Google",
-    "Facebook",
-    "LinkedIn",
-    "Other",
-  ];
-  const stages = ["Interest", "Decision", "Action"];
-  const brands = ["Affotax", "Outsource", "OTL"];
-  const sources = ["Invitation", "Proposal", "Website"];
-  const departments = [
-    "Bookkeeping",
-    "Payroll",
-    "VAT Return",
-    "Accounts",
-    "Personal Tax",
-    "Company Sec",
-    "Address",
-    "Billing",
-  ];
   const [formData, setFormData] = useState({
-    companyName: "",
     clientName: "",
     jobHolder: "",
-    department: "",
+    subject: "",
+    jobDate: "",
+    deadline: "",
     source: "",
-    brand: "",
-    lead_Source: "",
-    followUpDate: "",
-    JobDate: "",
-    Note: "",
-    stage: "",
+    note: "",
+    status: "",
   });
-  const [active, setActive] = useState(false);
   const [selectFilter, setSelectFilter] = useState("");
+  const [proposalId, setProposalId] = useState("");
+  const sources = ["Email", "UPW", "PPH", "Other"];
+  const status = ["Proposal", "Lead", "Client"];
+  const [showMail, setShowMail] = useState(false);
+  const [mail, setMail] = useState("");
+  const mailDetailref = useRef(null);
 
   console.log("filteredData:", filteredData);
 
@@ -80,7 +54,7 @@ export default function Proposal() {
         `${process.env.REACT_APP_API_URL}/api/v1/proposal/fetch/proposal`
       );
       if (data) {
-        setLeadData(data.proposals);
+        setProposalData(data.proposals);
         setIsLoading(false);
       }
     } catch (error) {
@@ -93,14 +67,14 @@ export default function Proposal() {
     getAllProposal();
   }, []);
 
-  const getLeads = async () => {
+  const getProposal = async () => {
     setLoad(true);
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/proposal/fetch/proposal`
       );
       if (data) {
-        setLeadData(data.leads);
+        setProposalData(data.proposals);
         setIsLoading(false);
       }
     } catch (error) {
@@ -128,18 +102,17 @@ export default function Proposal() {
     // eslint-disable-next-line
   }, []);
 
-  //   Create New Lead
-  const handleCreateLead = async () => {
+  //   Create Copy Proposal
+  const handleCopyProposal = async (id) => {
     try {
       const { data } = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/v1/leads/create/lead`,
-        { ...formData }
+        `${process.env.REACT_APP_API_URL}/api/v1/proposal/copy/proposal/${id}`
       );
       if (data) {
-        setLeadData((prevData) =>
-          prevData ? [...prevData, data.lead] : [data.lead]
+        setProposalData((prevData) =>
+          prevData ? [...prevData, data.proposal] : [data.proposal]
         );
-        getLeads();
+        getProposal();
       }
     } catch (error) {
       console.log(error);
@@ -179,17 +152,17 @@ export default function Proposal() {
         { status: status }
       );
       if (data?.success) {
-        const updateLead = data?.lead;
+        const updateProposal = data?.proposal;
 
-        setLeadData((prevData) =>
-          prevData.filter((item) => item._id !== updateLead._id)
+        setProposalData((prevData) =>
+          prevData.filter((item) => item._id !== updateProposal._id)
         );
         if (filteredData) {
           setFilteredData((prevData) =>
-            prevData.filter((item) => item._id !== updateLead._id)
+            prevData.filter((item) => item._id !== updateProposal._id)
           );
         }
-        getLeads();
+        getProposal();
       }
     } catch (error) {
       console.log(error);
@@ -198,7 +171,7 @@ export default function Proposal() {
   };
 
   //  ------------Delete Lead------------>
-  const handleDeleteLeadConfirmation = (taskId) => {
+  const handleDeleteLeadConfirmation = (propId) => {
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -209,26 +182,26 @@ export default function Proposal() {
       confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {
-        handleDeleteLead(taskId);
-        Swal.fire("Deleted!", "Your lead has been deleted.", "success");
+        handleDeleteProposal(propId);
+        Swal.fire("Deleted!", "Your proposal has been deleted.", "success");
       }
     });
   };
 
-  const handleDeleteLead = async (id) => {
+  const handleDeleteProposal = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/leads/delete/lead/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/proposal/delete/proposal/${id}`
       );
       if (data) {
-        const filteredData = leadData?.filter((item) => item._id !== id);
-        setLeadData(filteredData);
+        const filteredData = proposalData?.filter((item) => item._id !== id);
+        setProposalData(filteredData);
 
         if (filteredData) {
           const filterData1 = filteredData?.filter((item) => item._id !== id);
           setFilteredData(filterData1);
         }
-        getLeads();
+        getProposal();
       }
     } catch (error) {
       console.log(error);
@@ -237,45 +210,39 @@ export default function Proposal() {
   };
 
   //   Update Form Data
-  const handleUpdateData = async (leadId, updateData) => {
-    if (!leadId) {
-      toast.error("Lead id is required!");
+  const handleUpdateData = async (propId, updateData) => {
+    if (!propId) {
+      toast.error("Proposal id is required!");
       return;
     }
 
-    console.log("updateData", updateData);
-
     try {
       const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/leads/update/lead/${leadId}`,
+        `${process.env.REACT_APP_API_URL}/api/v1/proposal/update/proposal/${propId}`,
         { ...updateData }
       );
       if (data?.success) {
-        const updateLead = data?.lead;
+        const updateProposal = data?.proposal;
 
-        setLeadData((prevData) =>
-          prevData.filter((item) => item._id !== updateLead._id)
+        setProposalData((prevData) =>
+          prevData.filter((item) => item._id !== updateProposal._id)
         );
         if (filteredData) {
           setFilteredData((prevData) =>
-            prevData.filter((item) => item._id !== updateLead._id)
+            prevData.filter((item) => item._id !== updateProposal._id)
           );
         }
         setFormData({
-          companyName: "",
           clientName: "",
           jobHolder: "",
-          department: "",
+          jobDate: "",
+          deadline: "",
           source: "",
-          brand: "",
-          lead_Source: "",
-          followUpDate: "",
-          JobDate: "",
-          Note: "",
-          stage: "",
+          note: "",
+          status: "",
         });
-        toast.success("Lead data updated!");
-        getLeads();
+        toast.success("Proposal data updated!");
+        getProposal();
       }
     } catch (error) {
       console.log(error);
@@ -293,178 +260,6 @@ export default function Proposal() {
 
   const columns = useMemo(
     () => [
-      {
-        accessorKey: "companyName",
-        minSize: 100,
-        maxSize: 200,
-        size: 170,
-        grow: false,
-        Header: ({ column }) => {
-          return (
-            <div className=" flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                  setSelectFilter("");
-                }}
-              >
-                Company Name
-              </span>
-              <input
-                type="search"
-                value={column.getFilterValue() || ""}
-                onChange={(e) => {
-                  column.setFilterValue(e.target.value);
-                  setSelectFilter(e.target.value);
-                }}
-                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              />
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const companyName = row.original.companyName;
-          const [show, setShow] = useState(false);
-          const [localCompanyName, setLocalCompanyName] = useState(companyName);
-
-          const handleSubmit = (e) => {
-            e.preventDefault();
-
-            setFormData((prevData) => ({
-              ...prevData,
-              companyName: localCompanyName,
-            }));
-
-            handleUpdateData(row.original._id, {
-              ...formData,
-              companyName: localCompanyName,
-            });
-
-            setShow(false);
-          };
-
-          return (
-            <div className="w-full px-1">
-              {show ? (
-                <form onSubmit={handleSubmit}>
-                  <input
-                    type="text"
-                    value={localCompanyName}
-                    autoFocus
-                    onChange={(e) => setLocalCompanyName(e.target.value)}
-                    className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
-                  />
-                </form>
-              ) : (
-                <div
-                  onDoubleClick={() => setShow(true)}
-                  className="cursor-pointer w-full"
-                >
-                  {companyName ? (
-                    companyName
-                  ) : (
-                    <div className="text-white w-full h-full">.</div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        },
-        filterFn: (row, columnId, filterValue) => {
-          const cellValue =
-            row.original[columnId]?.toString().toLowerCase() || "";
-          return cellValue.includes(filterValue.toLowerCase());
-        },
-        filterVariant: "select",
-      },
-      {
-        accessorKey: "clientName",
-        minSize: 100,
-        maxSize: 200,
-        size: 160,
-        grow: false,
-        Header: ({ column }) => {
-          return (
-            <div className=" flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                  setSelectFilter("");
-                }}
-              >
-                Client Name
-              </span>
-              <input
-                type="search"
-                value={column.getFilterValue() || ""}
-                onChange={(e) => {
-                  column.setFilterValue(e.target.value);
-                  setSelectFilter(e.target.value);
-                }}
-                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              />
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const clientName = row.original.clientName;
-          const [show, setShow] = useState(false);
-          const [localClientName, setLocalClientName] = useState(clientName);
-
-          const handleSubmit = (e) => {
-            e.preventDefault();
-            setFormData((prevData) => ({
-              ...prevData,
-              clientName: localClientName,
-            }));
-
-            handleUpdateData(row.original._id, {
-              ...formData,
-              clientName: localClientName,
-            });
-
-            setShow(false);
-          };
-
-          return (
-            <div className="w-full px-1">
-              {show ? (
-                <form onSubmit={handleSubmit}>
-                  <input
-                    type="text"
-                    value={localClientName}
-                    autoFocus
-                    onChange={(e) => setLocalClientName(e.target.value)}
-                    className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
-                  />
-                </form>
-              ) : (
-                <div
-                  onDoubleClick={() => setShow(true)}
-                  className="cursor-pointer w-full"
-                >
-                  {clientName ? (
-                    clientName
-                  ) : (
-                    <div className="text-white w-full h-full">.</div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        },
-
-        filterFn: (row, columnId, filterValue) => {
-          const cellValue =
-            row.original[columnId]?.toString().toLowerCase() || "";
-          return cellValue.includes(filterValue.toLowerCase());
-        },
-        filterVariant: "select",
-      },
       {
         accessorKey: "jobHolder",
         header: "Job Holder",
@@ -567,10 +362,10 @@ export default function Proposal() {
         grow: false,
       },
       {
-        accessorKey: "department",
+        accessorKey: "clientName",
         minSize: 100,
         maxSize: 200,
-        size: 120,
+        size: 160,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -583,354 +378,158 @@ export default function Proposal() {
                   setSelectFilter("");
                 }}
               >
-                Department
+                Client Name
               </span>
-              <select
+              <input
+                type="search"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => {
                   column.setFilterValue(e.target.value);
                   setSelectFilter(e.target.value);
                 }}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              >
-                <option value="">Select</option>
-                {departments.map((dep) => (
-                  <option value={dep}>{dep}</option>
-                ))}
-              </select>
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
             </div>
           );
         },
         Cell: ({ cell, row }) => {
-          const department = row.original.department;
+          const clientName = row.original.clientName;
           const [show, setShow] = useState(false);
+          const [localClientName, setLocalClientName] = useState(clientName);
 
-          const [localDepartment, setLocalDepartment] = useState(
-            department || ""
-          );
-
-          const handleChange = (e) => {
-            const selectedValue = e.target.value;
-            setLocalDepartment(selectedValue);
-
+          const handleSubmit = (e) => {
+            e.preventDefault();
             setFormData((prevData) => ({
               ...prevData,
-              department: localDepartment,
+              clientName: localClientName,
             }));
 
             handleUpdateData(row.original._id, {
               ...formData,
-              department: selectedValue,
+              clientName: localClientName,
             });
 
             setShow(false);
           };
 
           return (
-            <div className="w-full ">
-              {!show ? (
+            <div className="w-full px-1">
+              {show ? (
+                <form onSubmit={handleSubmit}>
+                  <input
+                    type="text"
+                    value={localClientName}
+                    autoFocus
+                    onChange={(e) => setLocalClientName(e.target.value)}
+                    className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
+                  />
+                </form>
+              ) : (
                 <div
-                  className="w-full cursor-pointer"
                   onDoubleClick={() => setShow(true)}
+                  className="cursor-pointer w-full"
                 >
-                  {department ? (
-                    <span>{department}</span>
+                  {clientName ? (
+                    clientName
                   ) : (
-                    <span className="text-white">.</span>
+                    <div className="text-white w-full h-full">.</div>
                   )}
                 </div>
-              ) : (
-                <select
-                  value={localDepartment || ""}
-                  className="w-full h-[2rem] rounded-md border-none  outline-none"
-                  onChange={handleChange}
-                >
-                  <option value="empty"></option>
-                  {departments?.map((depart, i) => (
-                    <option value={depart} key={i}>
-                      {depart}
-                    </option>
-                  ))}
-                </select>
               )}
             </div>
           );
         },
-        filterFn: "equals",
-        filterSelectOptions: departments?.map((dep) => dep),
+
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
         filterVariant: "select",
       },
       {
-        accessorKey: "source",
-        minSize: 90,
-        maxSize: 200,
-        size: 100,
-        grow: false,
+        accessorKey: "subject",
+        header: "Subject",
         Header: ({ column }) => {
           return (
-            <div className=" flex flex-col gap-[2px]">
+            <div className=" w-[290px] flex flex-col gap-[2px]">
               <span
                 className="ml-1 cursor-pointer"
                 title="Clear Filter"
                 onClick={() => {
                   column.setFilterValue("");
-                  setSelectFilter("");
                 }}
               >
-                Source
+                Subject
               </span>
-              <select
+              <input
+                type="search"
                 value={column.getFilterValue() || ""}
-                onChange={(e) => {
-                  column.setFilterValue(e.target.value);
-                  setSelectFilter(e.target.value);
-                }}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              >
-                <option value="">Select</option>
-                {sources.map((source) => (
-                  <option value={source}>{source}</option>
-                ))}
-              </select>
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
             </div>
           );
         },
         Cell: ({ cell, row }) => {
-          const source = row.original.source;
-          const [show, setShow] = useState(false);
-          const [localSource, setLocalSource] = useState(source || "");
+          const subject = row.original.subject;
+          const [showEdit, setShowEdit] = useState(false);
+          const [localSubject, setSubject] = useState(subject);
 
-          const handleChange = (e) => {
-            const selectedValue = e.target.value;
-            setLocalSource(selectedValue);
-
+          const handleSubmit = (e) => {
             setFormData((prevData) => ({
               ...prevData,
-              source: localSource,
+              subject: localSubject,
             }));
 
             handleUpdateData(row.original._id, {
               ...formData,
-              source: selectedValue,
+              subject: localSubject,
             });
 
-            setShow(false);
+            setShowEdit(false);
           };
           return (
-            <div className="w-full ">
-              {!show ? (
-                <div
-                  className="w-full cursor-pointer"
-                  onDoubleClick={() => setShow(true)}
-                >
-                  {source ? (
-                    <span>{source}</span>
-                  ) : (
-                    <span className="text-white">.</span>
-                  )}
-                </div>
+            <div className="w-full h-full ">
+              {showEdit ? (
+                <input
+                  type="text"
+                  placeholder="Enter Task..."
+                  value={localSubject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  onBlur={(e) => handleSubmit(e.target.value)}
+                  className="w-full h-[2.3rem] focus:border border-gray-300 px-1 outline-none rounded"
+                />
               ) : (
-                <select
-                  value={localSource || ""}
-                  className="w-full h-[2rem] rounded-md border-none  outline-none"
-                  onChange={handleChange}
+                <div
+                  className="w-full h-full flex items-center justify-start "
+                  onDoubleClick={() => setShowEdit(true)}
+                  title={subject}
                 >
-                  <option value="empty"></option>
-                  {sources?.map((sour, i) => (
-                    <option value={sour} key={i}>
-                      {sour}
-                    </option>
-                  ))}
-                </select>
+                  <p
+                    className="text-blue-600 hover:text-blue-700 cursor-pointer text-start  "
+                    onDoubleClick={() => setShowEdit(true)}
+                    onClick={() => {
+                      setMail(row.original.mail);
+                      setShowMail(true);
+                    }}
+                  >
+                    {subject}
+                  </p>
+                </div>
               )}
             </div>
           );
         },
-        filterFn: "equals",
-        filterSelectOptions: sources?.map((source) => source),
-        filterVariant: "select",
-      },
-      {
-        accessorKey: "brand",
-        minSize: 80,
-        maxSize: 150,
-        size: 90,
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
+        size: 400,
+        minSize: 350,
+        maxSize: 560,
         grow: false,
-        Header: ({ column }) => {
-          return (
-            <div className=" flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                  setSelectFilter("");
-                }}
-              >
-                Brand
-              </span>
-              <select
-                value={column.getFilterValue() || ""}
-                onChange={(e) => {
-                  column.setFilterValue(e.target.value);
-                  setSelectFilter(e.target.value);
-                }}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              >
-                <option value="">Select</option>
-                {brands.map((brand) => (
-                  <option value={brand}>{brand}</option>
-                ))}
-              </select>
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const brand = row.original.brand;
-          const [show, setShow] = useState(false);
-          const [localBrand, setLocalBrand] = useState(brand || "");
-
-          const handleChange = (e) => {
-            const selectedValue = e.target.value;
-            setLocalBrand(selectedValue);
-
-            setFormData((prevData) => ({
-              ...prevData,
-              brand: localBrand,
-            }));
-
-            handleUpdateData(row.original._id, {
-              ...formData,
-              brand: selectedValue,
-            });
-
-            setShow(false);
-          };
-
-          return (
-            <div className="w-full ">
-              {!show ? (
-                <div
-                  className="w-full cursor-pointer"
-                  onDoubleClick={() => setShow(true)}
-                >
-                  {brand ? (
-                    <span>{brand}</span>
-                  ) : (
-                    <span className="text-white">.</span>
-                  )}
-                </div>
-              ) : (
-                <select
-                  value={localBrand || ""}
-                  className="w-full h-[2rem] rounded-md border-none  outline-none"
-                  onChange={handleChange}
-                >
-                  <option value="empty"></option>
-                  {brands?.map((brand, i) => (
-                    <option value={brand} key={i}>
-                      {brand}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-          );
-        },
-        filterFn: "equals",
-        filterSelectOptions: brands?.map((brand) => brand),
-        filterVariant: "select",
-      },
-      {
-        accessorKey: "lead_Source",
-        minSize: 100,
-        maxSize: 150,
-        size: 110,
-        grow: false,
-        Header: ({ column }) => {
-          return (
-            <div className=" flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                  setSelectFilter("");
-                }}
-              >
-                Lead Source
-              </span>
-              <select
-                value={column.getFilterValue() || ""}
-                onChange={(e) => {
-                  column.setFilterValue(e.target.value);
-                  setSelectFilter(e.target.value);
-                }}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              >
-                <option value="">Select</option>
-                {leadSource.map((leadS) => (
-                  <option value={leadS}>{leadS}</option>
-                ))}
-              </select>
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const lead_Source = row.original.lead_Source;
-          const [show, setShow] = useState(false);
-          const [localLead, setLocalLead] = useState(lead_Source || "");
-
-          const handleChange = (e) => {
-            const selectedValue = e.target.value;
-            setLocalLead(selectedValue);
-
-            setFormData((prevData) => ({
-              ...prevData,
-              lead_Source: localLead,
-            }));
-
-            handleUpdateData(row.original._id, {
-              ...formData,
-              lead_Source: selectedValue,
-            });
-
-            setShow(false);
-          };
-
-          return (
-            <div className="w-full ">
-              {!show ? (
-                <div
-                  className="w-full cursor-pointer"
-                  onDoubleClick={() => setShow(true)}
-                >
-                  {lead_Source ? (
-                    <span>{lead_Source}</span>
-                  ) : (
-                    <span className="text-white">.</span>
-                  )}
-                </div>
-              ) : (
-                <select
-                  value={localLead || ""}
-                  className="w-full h-[2rem] rounded-md border-none  outline-none"
-                  onChange={handleChange}
-                >
-                  <option value="empty"></option>
-                  {leadSource?.map((leads, i) => (
-                    <option value={leads} key={i}>
-                      {leads}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-          );
-        },
-        filterFn: "equals",
-        filterSelectOptions: leadSource?.map((leads) => leads),
-        filterVariant: "select",
       },
       //   Created At
       {
@@ -1076,9 +675,9 @@ export default function Proposal() {
         maxSize: 110,
         grow: false,
       },
-      //   Follow Up
+      //   Job date
       {
-        accessorKey: "followUpDate",
+        accessorKey: "jobDate",
         Header: ({ column }) => {
           const [filterValue, setFilterValue] = useState("");
           const [customDate, setCustomDate] = useState(getCurrentMonthYear());
@@ -1109,7 +708,7 @@ export default function Proposal() {
                   column.setFilterValue("");
                 }}
               >
-                Followup Date
+                Job Date
               </span>
 
               {filterValue === "Custom date" ? (
@@ -1137,7 +736,7 @@ export default function Proposal() {
           );
         },
         Cell: ({ cell, row }) => {
-          const followUpDate = row.original.followUpDate;
+          const jobDate = row.original.jobDate;
           const [date, setDate] = useState(() => {
             const cellDate = new Date(
               cell.getValue() || "2024-09-20T12:43:36.002+00:00"
@@ -1151,7 +750,7 @@ export default function Proposal() {
             setDate(newDate);
             handleUpdateData(row.original._id, {
               ...formData,
-              followUpDate: newDate,
+              jobDate: newDate,
             });
             setShowStartDate(false);
           };
@@ -1163,8 +762,8 @@ export default function Proposal() {
                   onDoubleClick={() => setShowStartDate(true)}
                   className="w-full"
                 >
-                  {followUpDate ? (
-                    format(new Date(followUpDate), "dd-MMM-yyyy")
+                  {jobDate ? (
+                    format(new Date(jobDate), "dd-MMM-yyyy")
                   ) : (
                     <span className="text-white">.</span>
                   )}
@@ -1257,7 +856,7 @@ export default function Proposal() {
       },
       //   Job Date
       {
-        accessorKey: "JobDate",
+        accessorKey: "deadline",
         Header: ({ column }) => {
           const [filterValue, setFilterValue] = useState("");
           const [customDate, setCustomDate] = useState(getCurrentMonthYear());
@@ -1288,7 +887,7 @@ export default function Proposal() {
                   column.setFilterValue("");
                 }}
               >
-                Job Date
+                Deadline
               </span>
 
               {filterValue === "Custom date" ? (
@@ -1316,7 +915,7 @@ export default function Proposal() {
           );
         },
         Cell: ({ cell, row }) => {
-          const JobDate = row.original.JobDate;
+          const deadline = row.original.deadline;
           const [date, setDate] = useState(() => {
             const cellDate = new Date(
               cell.getValue() || "2024-09-20T12:43:36.002+00:00"
@@ -1330,7 +929,7 @@ export default function Proposal() {
             setDate(newDate);
             handleUpdateData(row.original._id, {
               ...formData,
-              JobDate: newDate,
+              deadline: newDate,
             });
             setShowStartDate(false);
           };
@@ -1342,8 +941,8 @@ export default function Proposal() {
                   onDoubleClick={() => setShowStartDate(true)}
                   className="w-full"
                 >
-                  {JobDate ? (
-                    format(new Date(JobDate), "dd-MMM-yyyy")
+                  {deadline ? (
+                    format(new Date(deadline), "dd-MMM-yyyy")
                   ) : (
                     <span className="text-white">.</span>
                   )}
@@ -1436,7 +1035,7 @@ export default function Proposal() {
       },
       //  --- Note--->
       {
-        accessorKey: "Note",
+        accessorKey: "note",
         minSize: 200,
         maxSize: 500,
         size: 350,
@@ -1467,7 +1066,7 @@ export default function Proposal() {
           );
         },
         Cell: ({ cell, row }) => {
-          const note = row.original.Note;
+          const note = row.original.note;
           const [show, setShow] = useState(false);
           const [localNote, setLocalNote] = useState(note);
 
@@ -1475,11 +1074,11 @@ export default function Proposal() {
             e.preventDefault();
             setFormData((prevData) => ({
               ...prevData,
-              Note: localNote,
+              note: localNote,
             }));
             handleUpdateData(row.original._id, {
               ...formData,
-              Note: localNote,
+              note: localNote,
             });
             setShow(false);
           };
@@ -1518,9 +1117,100 @@ export default function Proposal() {
         },
         filterVariant: "select",
       },
-      //   Stages
+
       {
-        accessorKey: "stage",
+        accessorKey: "source",
+        minSize: 90,
+        maxSize: 200,
+        size: 100,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                  setSelectFilter("");
+                }}
+              >
+                Source
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                  setSelectFilter(e.target.value);
+                }}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {sources.map((source) => (
+                  <option value={source}>{source}</option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const source = row.original.source;
+          const [show, setShow] = useState(false);
+          const [localSource, setLocalSource] = useState(source || "");
+
+          const handleChange = (e) => {
+            const selectedValue = e.target.value;
+            setLocalSource(selectedValue);
+
+            setFormData((prevData) => ({
+              ...prevData,
+              source: localSource,
+            }));
+
+            handleUpdateData(row.original._id, {
+              ...formData,
+              source: selectedValue,
+            });
+
+            setShow(false);
+          };
+          return (
+            <div className="w-full ">
+              {!show ? (
+                <div
+                  className="w-full cursor-pointer"
+                  onDoubleClick={() => setShow(true)}
+                >
+                  {source ? (
+                    <span>{source}</span>
+                  ) : (
+                    <span className="text-white">.</span>
+                  )}
+                </div>
+              ) : (
+                <select
+                  value={localSource || ""}
+                  className="w-full h-[2rem] rounded-md border-none  outline-none"
+                  onChange={handleChange}
+                >
+                  <option value="empty"></option>
+                  {sources?.map((sour, i) => (
+                    <option value={sour} key={i}>
+                      {sour}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          );
+        },
+        filterFn: "equals",
+        filterSelectOptions: sources?.map((source) => source),
+        filterVariant: "select",
+      },
+      //   Status
+      {
+        accessorKey: "status",
         minSize: 80,
         maxSize: 150,
         size: 90,
@@ -1536,7 +1226,7 @@ export default function Proposal() {
                   setSelectFilter("");
                 }}
               >
-                Stages
+                Status
               </span>
               <select
                 value={column.getFilterValue() || ""}
@@ -1547,17 +1237,17 @@ export default function Proposal() {
                 className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
                 <option value="">Select</option>
-                {stages.map((stage) => (
-                  <option value={stage}>{stage}</option>
+                {status.map((stat) => (
+                  <option value={stat}>{stat}</option>
                 ))}
               </select>
             </div>
           );
         },
         Cell: ({ cell, row }) => {
-          const stage = row.original.stage;
+          const state = row.original.status;
           const [show, setShow] = useState(false);
-          const [localStage, setLocalStage] = useState(stage || "");
+          const [localStage, setLocalStage] = useState(state || "");
 
           const handleChange = (e) => {
             const selectedValue = e.target.value;
@@ -1565,12 +1255,12 @@ export default function Proposal() {
 
             setFormData((prevData) => ({
               ...prevData,
-              stage: localStage,
+              status: localStage,
             }));
 
             handleUpdateData(row.original._id, {
               ...formData,
-              stage: selectedValue,
+              status: selectedValue,
             });
 
             setShow(false);
@@ -1582,8 +1272,8 @@ export default function Proposal() {
                   className="w-full cursor-pointer"
                   onDoubleClick={() => setShow(true)}
                 >
-                  {stage ? (
-                    <span>{stage}</span>
+                  {state ? (
+                    <span>{state}</span>
                   ) : (
                     <span className="text-white">.</span>
                   )}
@@ -1595,9 +1285,9 @@ export default function Proposal() {
                   onChange={handleChange}
                 >
                   <option value="empty"></option>
-                  {stages?.map((stage, i) => (
-                    <option value={stage} key={i}>
-                      {stage}
+                  {status?.map((stat, i) => (
+                    <option value={stat} key={i}>
+                      {stat}
                     </option>
                   ))}
                 </select>
@@ -1606,7 +1296,7 @@ export default function Proposal() {
           );
         },
         filterFn: "equals",
-        filterSelectOptions: stages?.map((stage) => stage),
+        filterSelectOptions: status?.map((stat) => stat),
         filterVariant: "select",
       },
 
@@ -1619,28 +1309,20 @@ export default function Proposal() {
             <div className="flex items-center justify-center gap-4 w-full h-full">
               <span
                 className="text-[1rem] cursor-pointer"
-                onClick={() => handleCreateLead()}
-                title="Copy Lead"
+                onClick={() => handleCopyProposal(row.original._id)}
+                title="Copy Proposal"
               >
                 <GrCopy className="h-5 w-5 text-cyan-500 hover:text-cyan-600 " />
               </span>
               <span
                 className=""
-                title="Won Lead"
+                title="Edit Proposal"
                 onClick={() => {
-                  handleLeadStatus(row.original._id, "won");
+                  setProposalId(row.original._id);
+                  setShow(true);
                 }}
               >
-                <FaTrophy className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
-              </span>
-              <span
-                className=""
-                title="Lost Lead"
-                onClick={() => {
-                  handleLeadStatus(row.original._id, "lost");
-                }}
-              >
-                <GiBrokenHeart className="h-6 w-6 cursor-pointer text-red-500 hover:text-red-600" />
+                <CiEdit className="h-7 w-7 cursor-pointer text-green-500 hover:text-green-600" />
               </span>
 
               <span
@@ -1648,16 +1330,16 @@ export default function Proposal() {
                 onClick={() => handleDeleteLeadConfirmation(row.original._id)}
                 title="Delete Lead!"
               >
-                <AiTwotoneDelete className="h-5 w-5 text-pink-500 hover:text-pink-600 " />
+                <AiTwotoneDelete className="h-6 w-6 text-pink-500 hover:text-pink-600 " />
               </span>
             </div>
           );
         },
-        size: 160,
+        size: 120,
       },
     ],
     // eslint-disable-next-line
-    [users, auth, leadData, filteredData, load]
+    [users, auth, proposalData, filteredData, load]
   );
 
   // Clear table Filter
@@ -1669,7 +1351,7 @@ export default function Proposal() {
 
   const table = useMaterialReactTable({
     columns,
-    data: leadData || [],
+    data: proposalData || [],
     enableStickyHeader: true,
     enableStickyFooter: true,
     muiTableContainerProps: { sx: { maxHeight: "805px" } },
@@ -1726,6 +1408,54 @@ export default function Proposal() {
     setFilteredData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        mailDetailref.current &&
+        !mailDetailref.current.contains(event.target)
+      ) {
+        setShowMail(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const convertQuillHtmlToPlainText = (html) => {
+    html = html.replace(/<strong>|<b>/g, "**");
+    html = html.replace(/<\/strong>|<\/b>/g, "**");
+
+    html = html.replace(/<em>|<i>/g, "_");
+    html = html.replace(/<\/em>|<\/i>/g, "_");
+
+    html = html.replace(/<u>/g, "__");
+    html = html.replace(/<\/u>/g, "__");
+
+    html = html.replace(/<a.*?href="(.*?)".*?>(.*?)<\/a>/g, "[$2]($1)");
+
+    html = html.replace(/<br\s*\/?>/g, "");
+
+    html = html.replace(/<\/p>/g, "\n");
+
+    html = html.replace(/<[^>]*>/g, "");
+
+    return html;
+  };
+
+  const copyTemplate = (template) => {
+    const cleanText = convertQuillHtmlToPlainText(template);
+
+    navigator.clipboard.writeText(cleanText).then(
+      () => {
+        toast.success("Copied!");
+      },
+      (err) => {
+        console.log("Failed to copy the template!:", err);
+        toast.error("Failed to copy the template!");
+      }
+    );
+  };
+
   return (
     <Layout>
       <div className=" relative w-full min-h-screen py-4 px-2 sm:px-4">
@@ -1759,7 +1489,7 @@ export default function Proposal() {
         {/*  */}
 
         {/* ---------Table Detail---------- */}
-        {/* <div className="w-full h-full">
+        <div className="w-full h-full">
           {isLoading ? (
             <div className="flex items-center justify-center w-full h-screen px-4 py-4">
               <Loader />
@@ -1771,12 +1501,65 @@ export default function Proposal() {
               </div>
             </div>
           )}
-        </div> */}
+        </div>
 
         {/* --------Add Proposal-------- */}
         {show && (
           <div className="fixed top-0 left-0 w-full h-screen z-[999] bg-gray-100/70 flex items-center justify-center py-6  px-4">
-            <AddProposal setShow={setShow} />
+            <AddProposal
+              setShow={setShow}
+              user={userName}
+              setProposalId={setProposalId}
+              proposalId={proposalId}
+              getProposal={getProposal}
+            />
+          </div>
+        )}
+
+        {/* ------Mail Detail----- */}
+        {showMail && (
+          <div className="fixed top-0 left-0 z-[999] w-full h-full py-4 px-4 bg-gray-300/70 flex items-center justify-center">
+            <div
+              ref={mailDetailref}
+              className="flex flex-col gap-2 bg-white rounded-md shadow-md w-[35rem] max-h-[95vh] "
+            >
+              <div className="flex items-center justify-between px-4 pt-2">
+                <h1 className="text-[20px] font-semibold text-black">
+                  Mail View
+                </h1>
+                <span
+                  className=" cursor-pointer"
+                  onClick={() => {
+                    setMail("");
+                    setShowMail(false);
+                  }}
+                >
+                  <IoClose className="h-6 w-6 " />
+                </span>
+              </div>
+              <hr className="h-[1px] w-full bg-gray-400 " />
+              <div
+                onClick={() => copyTemplate(mail)}
+                className="py-4 px-4 w-full max-h-[80vh] text-[14px] overflow-y-auto cursor-pointer"
+                dangerouslySetInnerHTML={{ __html: mail }}
+              ></div>
+              <hr className="h-[1px] w-full bg-gray-400 " />
+              <div className="flex items-center justify-end px-4 py-2 pb-4">
+                <button
+                  className={`${style.button1} text-[15px] `}
+                  type="button"
+                  style={{ padding: ".4rem 1rem" }}
+                >
+                  <span
+                    className="text-[1rem] cursor-pointer"
+                    onClick={() => copyTemplate(mail)}
+                    title="Copy Template"
+                  >
+                    <GrCopy className="h-5 w-5 text-white " />
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

@@ -17,6 +17,7 @@ import EmailDetail from "./pages/Tickets/EmailDetail";
 import CompleteTickets from "./pages/Tickets/CompleteTickets";
 import Lead from "./pages/Lead/Lead";
 import Proposal from "./pages/Proposal/Proposal";
+import Roles from "./pages/role/Roles";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -42,6 +43,7 @@ function App() {
           <Route path="/ticket/detail/:id" element={<EmailDetail />} />
           <Route path="/leads" element={<Lead />} />
           <Route path="/proposals" element={<Proposal />} />
+          <Route path="/roles" element={<Roles />} />
         </Routes>
         <Toaster />
       </BrowserRouter>

@@ -122,6 +122,79 @@ export const timerStatus = async (req, res) => {
 };
 
 // Get Total Time
+// export const totalTime = async (req, res) => {
+//   try {
+//     const timerId = req.params.id;
+//     const { jobId } = req.query;
+
+//     if (!timerId) {
+//       return res.status(400).send({
+//         success: false,
+//         message: "Timer Id is required!",
+//       });
+//     }
+
+//     const timer = await timerModel.findById({ _id: timerId });
+//     if (!timer) {
+//       return res.status(400).send({
+//         success: false,
+//         message: "Timer not found!",
+//       });
+//     }
+
+//     if (!timer.startTime || !timer.endTime) {
+//       return res.status(400).json({ message: "Timer has not ended" });
+//     }
+
+//     const startTime = new Date(timer.startTime);
+//     const endTime = new Date(timer.endTime);
+//     const totalTimeInSeconds = (endTime - startTime) / 1000;
+
+//     let newTime;
+//     if (totalTimeInSeconds < 3600) {
+//       const totalTimeInMinutes = totalTimeInSeconds / 60;
+//       newTime = `${totalTimeInMinutes.toFixed(0)}m`;
+//     } else {
+//       const totalTimeInHours = totalTimeInSeconds / 3600;
+//       newTime = `${totalTimeInHours.toFixed(0)}h`;
+//     }
+
+//     const job = await jobsModel.findById(jobId);
+
+//     if (job) {
+//       // Update Time in Job
+//       await jobsModel.findByIdAndUpdate(
+//         { _id: jobId },
+//         { $set: { totalTime: newTime } },
+//         { new: true }
+//       );
+//     }
+
+//     const task = await taskModel.findById(jobId);
+
+//     if (task) {
+//       // Update Total Time in Task
+//       await taskModel.findByIdAndUpdate(
+//         { _id: jobId },
+//         { $set: { estimate_Time: newTime } },
+//         { new: true }
+//       );
+//     }
+
+//     res.status(200).send({
+//       success: true,
+//       message: "Total time calculated successfully!",
+//       totalTime: responseMessage,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).send({
+//       success: false,
+//       message: "Error in total time controller",
+//       error,
+//     });
+//   }
+// };
 export const totalTime = async (req, res) => {
   try {
     const timerId = req.params.id;
@@ -150,35 +223,69 @@ export const totalTime = async (req, res) => {
     const endTime = new Date(timer.endTime);
     const totalTimeInSeconds = (endTime - startTime) / 1000;
 
-    let responseMessage;
-    // if (totalTimeInSeconds < 60) {
-    //   responseMessage = `${totalTimeInSeconds.toFixed(0)} s`;
-    // } else
-    if (totalTimeInSeconds < 3600) {
-      const totalTimeInMinutes = totalTimeInSeconds / 60;
-      responseMessage = `${totalTimeInMinutes.toFixed(0)}m`;
-    } else {
-      const totalTimeInHours = totalTimeInSeconds / 3600;
-      responseMessage = `${totalTimeInHours.toFixed(0)}h`;
-    }
-    // Update Time in Job
-    await jobsModel.findByIdAndUpdate(
-      { _id: jobId },
-      { $set: { estimate_Time: responseMessage } },
-      { new: true }
-    );
+    // Helper function to convert time strings like '2m', '2h' into seconds
+    const convertTimeToSeconds = (timeStr) => {
+      if (!timeStr) return 0;
 
-    // Update Total Time in Task
-    await taskModel.findByIdAndUpdate(
-      { _id: jobId },
-      { $set: { estimate_Time: responseMessage } },
-      { new: true }
-    );
+      const timeValue = parseInt(timeStr.slice(0, -1));
+      const timeUnit = timeStr.slice(-1);
+
+      if (timeUnit === "m") {
+        return timeValue * 60; // Convert minutes to seconds
+      } else if (timeUnit === "h") {
+        return timeValue * 3600; // Convert hours to seconds
+      }
+      return 0;
+    };
+
+    // Convert seconds back to human-readable time (either minutes or hours)
+    const convertSecondsToReadableTime = (seconds) => {
+      if (seconds < 3600) {
+        const minutes = (seconds / 60).toFixed(0);
+        return `${minutes}m`;
+      } else {
+        const hours = (seconds / 3600).toFixed(0);
+        return `${hours}h`;
+      }
+    };
+
+    const job = await jobsModel.findById(jobId);
+
+    if (job) {
+      const prevJobTimeInSeconds = convertTimeToSeconds(job.totalTime);
+      const updatedJobTimeInSeconds = prevJobTimeInSeconds + totalTimeInSeconds;
+      const updatedJobTime = convertSecondsToReadableTime(
+        updatedJobTimeInSeconds
+      );
+
+      await jobsModel.findByIdAndUpdate(
+        { _id: jobId },
+        { $set: { totalTime: updatedJobTime } },
+        { new: true }
+      );
+    }
+
+    // Get task and update its estimated time
+    const task = await taskModel.findById(jobId);
+
+    if (task) {
+      const prevTaskTimeInSeconds = convertTimeToSeconds(task.estimate_Time);
+      const updatedTaskTimeInSeconds =
+        prevTaskTimeInSeconds + totalTimeInSeconds;
+      const updatedTaskTime = convertSecondsToReadableTime(
+        updatedTaskTimeInSeconds
+      );
+
+      await taskModel.findByIdAndUpdate(
+        { _id: jobId },
+        { $set: { estimate_Time: updatedTaskTime } },
+        { new: true }
+      );
+    }
 
     res.status(200).send({
       success: true,
-      message: "Total time calculated successfully!",
-      totalTime: responseMessage,
+      message: "Total time calculated and updated successfully!",
     });
   } catch (error) {
     console.log(error);

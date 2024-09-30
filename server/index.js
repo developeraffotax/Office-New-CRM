@@ -18,12 +18,13 @@ import faqRoute from "./routes/templates/faqRoutes.js";
 import ticketRoute from "./routes/ticketRoutes.js";
 import leadRoute from "./routes/leadRoute.js";
 import proposalRoute from "./routes/proposalRoute.js";
+import roleRoute from "./routes/roleRoute.js";
 
 import http from "http";
 import notificationRoute from "./routes/notificationRoutes.js";
 import { initSocketServer } from "./socketServer.js";
 
-// Dotenv COnfig
+// Dotenv Config
 dotenv.config();
 
 // DB Config
@@ -56,6 +57,7 @@ app.use("/api/v1/faqs", faqRoute);
 app.use("/api/v1/tickets", ticketRoute);
 app.use("/api/v1/leads", leadRoute);
 app.use("/api/v1/proposal", proposalRoute);
+app.use("/api/v1/roles", roleRoute);
 
 // Rest API's
 app.use("/", (req, res) => {

@@ -65,7 +65,7 @@ export const updateProposal = async (req, res) => {
       status,
     } = req.body;
 
-    const existingProposal = await proposal.findById(proposalId);
+    const existingProposal = await proposalModel.findById(proposalId);
     if (!existingProposal) {
       return res.status(400).send({
         success: false,
@@ -98,7 +98,7 @@ export const updateProposal = async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error while create proposal!",
+      message: "Error while update proposal!",
       error: error,
     });
   }
@@ -162,7 +162,7 @@ export const copyProposal = async (req, res) => {
       });
     }
 
-    const existingProposal = await proposal.findById(proposalId);
+    const existingProposal = await proposalModel.findById(proposalId);
     if (!existingProposal) {
       return res.status(400).send({
         success: false,
@@ -192,6 +192,29 @@ export const copyProposal = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error while create proposal copy!",
+      error: error,
+    });
+  }
+};
+
+// Get Single Proposal
+export const fetchSingleProposal = async (req, res) => {
+  try {
+    const proposalId = req.params.id;
+    console.log("PropId:", proposalId);
+
+    const proposal = await proposalModel.findById({ _id: proposalId });
+
+    res.status(200).send({
+      success: true,
+      message: "Single Proposal",
+      proposal: proposal,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while fetch single proposal!",
       error: error,
     });
   }

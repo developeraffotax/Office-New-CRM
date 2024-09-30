@@ -6,9 +6,6 @@ import { LuLayoutDashboard } from "react-icons/lu";
 import { BsBell, BsFileEarmarkText } from "react-icons/bs";
 import { BsBriefcase } from "react-icons/bs";
 import { BsCashCoin } from "react-icons/bs";
-// import { TbBrandGoogleAnalytics } from "react-icons/tb";
-// import { LiaUsersCogSolid } from "react-icons/lia";
-// import { TbFileAnalytics } from "react-icons/tb";
 import { GoGear } from "react-icons/go";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
@@ -22,6 +19,8 @@ import { GoRepoTemplate } from "react-icons/go";
 import { BiLayer } from "react-icons/bi";
 import { FaRegCreditCard } from "react-icons/fa6";
 import { LuClipboardSignature } from "react-icons/lu";
+import { MdSecurity } from "react-icons/md";
+import { RiSettings4Fill } from "react-icons/ri";
 
 export default function Sidebar({ hide, setHide }) {
   const router = useNavigate();
@@ -431,80 +430,89 @@ export default function Sidebar({ hide, setHide }) {
           </div>
 
           {/*  */}
-          <div
-            className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
-            onClick={() => {
-              router("/subscription");
-            }}
-          >
-            <div
-              className="adminbtn absolute h-full  sidebtn z-[20]"
-              style={{
-                width: active === "subscription" && "100%",
-                background: `rgb(2, 68, 2)`,
-              }}
-            ></div>
-            <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-              {hide ? (
-                <BsCashCoin
-                  className="h-5 w-5 cursor-pointer ml-2"
-                  style={{ color: active === "subscription" && "#fff" }}
-                />
-              ) : (
-                <div className="flex items-center gap-2">
-                  <BsCashCoin
-                    className="h-5 w-5 cursor-pointer ml-2"
-                    style={{ color: active === "subscription" && "#fff" }}
-                  />
-                  <span
-                    className="text-[14px] font-[400] "
-                    style={{ color: active === "subscription" && "#fff" }}
-                  >
-                    Sales
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
 
-          {/* <hr className="my-2" />
-          <h4 className="text-[16] font-semibold px-2">Settings</h4> */}
           {auth.user.role === "Admin" && (
-            <div
-              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
-              onClick={() => {
-                router("/users");
-              }}
-            >
+            <>
+              <hr className="my-1" />
+              <h4 className="text-[16] font-semibold px-2 flex items-center gap-1">
+                {" "}
+                <span>
+                  <RiSettings4Fill className="h-7 w-7 text-gray-900 animate-spin" />
+                </span>
+                Settings
+              </h4>{" "}
               <div
-                className="adminbtn absolute h-full  sidebtn z-[20]"
-                style={{
-                  width: active === "users" && "100%",
-                  background: `rgb(2, 68, 2)`,
+                className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+                onClick={() => {
+                  router("/roles");
                 }}
-              ></div>
-              <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-                {hide ? (
-                  <FaUsers
-                    className="h-5 w-5 cursor-pointer ml-2"
-                    style={{ color: active === "users" && "#fff" }}
-                  />
-                ) : (
-                  <div className="flex items-center gap-2">
+              >
+                <div
+                  className="adminbtn absolute h-full  sidebtn z-[20]"
+                  style={{
+                    width: active === "roles" && "100%",
+                    background: `rgb(2, 68, 2)`,
+                  }}
+                ></div>
+                <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                  {hide ? (
+                    <MdSecurity
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "roles" && "#fff" }}
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <MdSecurity
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "roles" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{ color: active === "roles" && "#fff" }}
+                      >
+                        Roles
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {/* User Info */}
+              <div
+                className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+                onClick={() => {
+                  router("/users");
+                }}
+              >
+                <div
+                  className="adminbtn absolute h-full  sidebtn z-[20]"
+                  style={{
+                    width: active === "users" && "100%",
+                    background: `rgb(2, 68, 2)`,
+                  }}
+                ></div>
+                <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                  {hide ? (
                     <FaUsers
                       className="h-5 w-5 cursor-pointer ml-2"
                       style={{ color: active === "users" && "#fff" }}
                     />
-                    <span
-                      className="text-[14px] font-[400] "
-                      style={{ color: active === "users" && "#fff" }}
-                    >
-                      Users
-                    </span>
-                  </div>
-                )}
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <FaUsers
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "users" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{ color: active === "users" && "#fff" }}
+                      >
+                        Users
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            </>
           )}
 
           {/*  */}

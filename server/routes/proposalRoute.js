@@ -5,6 +5,7 @@ import {
   createProposal,
   deleteProposal,
   fetchProposals,
+  fetchSingleProposal,
   updateProposal,
 } from "../controllers/proposalController.js";
 
@@ -23,6 +24,9 @@ router.get("/fetch/proposal", fetchProposals);
 router.delete("/delete/proposal/:id", requiredSignIn, deleteProposal);
 
 // Copy Proposal
-router.post("/copy/proposal", requiredSignIn, copyProposal);
+router.post("/copy/proposal/:id", requiredSignIn, copyProposal);
+
+// Fetch Single Proposal
+router.get("/fetch/proposal/:id", fetchSingleProposal);
 
 export default router;

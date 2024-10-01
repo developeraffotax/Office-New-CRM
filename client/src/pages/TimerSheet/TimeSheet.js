@@ -1332,7 +1332,24 @@ export default function TimeSheet() {
     enableStickyHeader: true,
     enableStickyFooter: true,
     // columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "633px" } },
+    muiTableContainerProps: {
+      sx: {
+        maxHeight: {
+          xs: "490px",
+          sm: "490px",
+          md: "490px",
+          lg: "490px",
+          xl: "490px",
+        },
+        "@media (min-width: 1500px) and (max-width: 1800px)": {
+          maxHeight: "550px",
+        },
+
+        "@media (min-width: 1800px)": {
+          maxHeight: "720px",
+        },
+      },
+    },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -1419,7 +1436,7 @@ export default function TimeSheet() {
 
   return (
     <Layout>
-      <div className=" relative w-full h-screen py-4 px-2 sm:px-4 flex flex-col gap-2">
+      <div className=" relative w-full h-[100%] py-4 px-2 sm:px-4 flex flex-col gap-2  ">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h1 className=" text-xl sm:text-2xl font-semibold ">Timesheet</h1>
@@ -1521,7 +1538,7 @@ export default function TimeSheet() {
 
         {/* ---------------Total Time---------------- */}
 
-        <div className="w-full absolute bottom-0 left-0 px-4 z-[20] grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-8 gap-4 2xl:gap-5">
+        <div className="w-full absolute bottom-4 left-0 px-4 z-[20] grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-8 gap-4 2xl:gap-5">
           <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
             <h4 className="text-[16px] font-medium">Monday</h4>
             <span className="text-[15px]">{times?.monTotal}</span>

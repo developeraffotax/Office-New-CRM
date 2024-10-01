@@ -25,6 +25,7 @@ function App() {
   useEffect(() => {
     socketId.on("connection", () => {});
   }, []);
+
   return (
     <div>
       <BrowserRouter>

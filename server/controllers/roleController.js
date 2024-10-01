@@ -57,7 +57,10 @@ export const updateRole = async (req, res) => {
 
     const role = await roleModel.findByIdAndUpdate(
       { _id: roleId },
-      { name: name ? name : existingRole.name, access },
+      {
+        name: name ? name : existingRole.name,
+        access: access !== undefined ? access : existingRole.access,
+      },
       { new: true }
     );
 

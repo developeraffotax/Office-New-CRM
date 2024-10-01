@@ -93,7 +93,7 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    const user = await userModel.findOne({ email: email });
+    const user = await userModel.findOne({ email: email }).populate("role");
     if (!user) {
       return res.status(400).send({
         success: false,
@@ -148,7 +148,7 @@ export const loginUser = async (req, res) => {
 // Get All Users
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await userModel.find({}).select("-password");
+    const users = await userModel.find({}).select("-password").populate("role");
 
     res.status(200).send({
       total: users.length,
@@ -176,7 +176,10 @@ export const singleUser = async (req, res) => {
         message: "UserId is required!",
       });
     }
-    const user = await userModel.findOne({ _id: userId }).select("-password");
+    const user = await userModel
+      .findOne({ _id: userId })
+      .select("-password")
+      .populate("role");
     if (!user) {
       return res.status(400).send({
         success: false,

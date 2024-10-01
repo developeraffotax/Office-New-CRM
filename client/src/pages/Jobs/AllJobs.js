@@ -1836,7 +1836,7 @@ export default function AllJobs() {
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "810px" } },
+    muiTableContainerProps: { sx: { maxHeight: "770px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -1929,7 +1929,7 @@ export default function AllJobs() {
 
   return (
     <Layout>
-      <div className="w-full min-h-screen py-4 px-2 sm:px-4 ">
+      <div className="w-full h-[100%] py-4 px-2 sm:px-4 overflow-y-auto ">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h1 className=" text-xl sm:text-2xl font-semibold ">Job</h1>

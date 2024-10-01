@@ -207,7 +207,7 @@ export default function Sidebar({ hide, setHide }) {
             </div>
           </div>
 
-          {auth.user.access.includes("ticket") && (
+          {auth?.user?.access?.includes("ticket") && (
             <>
               {/* ------Ticket------ */}
               <div

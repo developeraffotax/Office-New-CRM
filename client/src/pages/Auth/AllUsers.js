@@ -24,6 +24,7 @@ export default function AllUsers() {
   const [show, setShow] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [index, setIndex] = useState("");
+  const [userRoles, setUserRoles] = useState([]);
   const roles = [
     "Accountant",
     "Admin",
@@ -53,6 +54,24 @@ export default function AllUsers() {
 
   useEffect(() => {
     getAllUsers();
+
+    //eslint-disable-next-line
+  }, []);
+
+  // Get All Roles
+  const getAllRoles = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/roles/fetch/all/roles`
+      );
+      setUserRoles(data?.roles);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllRoles();
 
     //eslint-disable-next-line
   }, []);
@@ -103,9 +122,9 @@ export default function AllUsers() {
               onChange={(e) => handleChange(e, params.row.id)}
               value={params?.row.role || ""}
             >
-              {roles?.map((p, i) => (
-                <option value={p} className="capitalize" key={i}>
-                  {p}
+              {userRoles?.map((role, i) => (
+                <option value={role.name} className="capitalize" key={i}>
+                  {role.name}
                 </option>
               ))}
             </select>

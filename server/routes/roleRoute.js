@@ -23,6 +23,6 @@ router.put("/update/role/:id", requiredSignIn, isAdmin, updateRole);
 router.get("/fetch/single/role/:id", getSingleRole);
 
 // Delete Role
-router.put("/delete/role/:id", requiredSignIn, isAdmin, deleteRole);
+router.delete("/delete/role/:id", requiredSignIn, isAdmin, deleteRole);
 
 export default router;

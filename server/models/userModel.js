@@ -5,10 +5,12 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
+      trim: true,
     },
     email: {
       type: String,
       required: true,
+      unique: true,
     },
     password: {
       type: String,
@@ -16,6 +18,8 @@ const userSchema = new mongoose.Schema(
     },
     username: {
       type: String,
+      unique: true,
+      sparse: true,
     },
     phone: {
       type: String,
@@ -37,7 +41,11 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
     },
-    access: [Object],
+    access: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Roles",
+      required: true,
+    },
   },
   { timestamps: true }
 );

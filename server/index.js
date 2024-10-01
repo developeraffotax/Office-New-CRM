@@ -19,9 +19,9 @@ import ticketRoute from "./routes/ticketRoutes.js";
 import leadRoute from "./routes/leadRoute.js";
 import proposalRoute from "./routes/proposalRoute.js";
 import roleRoute from "./routes/roleRoute.js";
+import notificationRoute from "./routes/notificationRoutes.js";
 
 import http from "http";
-import notificationRoute from "./routes/notificationRoutes.js";
 import { initSocketServer } from "./socketServer.js";
 
 // Dotenv Config

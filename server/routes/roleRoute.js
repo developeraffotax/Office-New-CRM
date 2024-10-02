@@ -11,18 +11,18 @@ import {
 const router = express.Router();
 
 // Create Role
-router.post("/create/role", requiredSignIn,  postRole);
+router.post("/create/role", requiredSignIn, isAdmin, postRole);
 
 // Get All Routes
 router.get("/fetch/all/roles", getAllRole);
 
 // Update Role
-router.put("/update/role/:id", requiredSignIn,  updateRole);
+router.put("/update/role/:id", requiredSignIn, isAdmin, updateRole);
 
 // Get Single Role
 router.get("/fetch/single/role/:id", getSingleRole);
 
 // Delete Role
-router.delete("/delete/role/:id", requiredSignIn,  deleteRole);
+router.delete("/delete/role/:id", requiredSignIn, isAdmin, deleteRole);
 
 export default router;

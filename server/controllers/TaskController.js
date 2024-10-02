@@ -813,3 +813,32 @@ const autoCreateRecurringTasks = async () => {
 //   console.log("Running task scheduler for recurring tasks...");
 //   autoCreateRecurringTasks();
 // });
+
+export const deleteDailyRecurringTasks = async (req, res) => {
+  try {
+    const tasksToDelete = await taskModel.find({ recurring: "daily" });
+
+    const taskCount = tasksToDelete.length;
+
+    if (taskCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No daily recurring tasks found",
+      });
+    }
+
+    // Delete the tasks
+    await taskModel.deleteMany({ recurring: "daily" });
+
+    return res.status(200).json({
+      success: true,
+      message: `Successfully deleted ${taskCount} daily recurring tasks`,
+    });
+  } catch (error) {
+    console.error("Error deleting daily recurring tasks:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while deleting tasks",
+    });
+  }
+};

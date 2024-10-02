@@ -326,13 +326,12 @@ export default function AllJobs() {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      // setUsers(data?.users.map((user) => user.name));
-      // setUsers(
-      //   data?.users?.filter((item) => item.access.includes("job")) || []
-      // );
-      console.log("Users:", data?.users);
+
+      // setUsers(data?.users.map((user) => user.name) || []);
       setUsers(
-        data?.users.map((user) => user.name) || []
+        data?.users
+          ?.filter((user) => user.access.includes("job"))
+          .map((user) => user.name) || []
       );
     } catch (error) {
       console.log(error);

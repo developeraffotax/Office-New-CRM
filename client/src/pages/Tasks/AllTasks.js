@@ -112,7 +112,7 @@ const AllTasks = () => {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
       setUsers(
-        data?.users?.filter((item) => item.role.access.includes("Tasks")) || []
+        data?.users?.filter((user) => user.role.access.includes("Tasks")) || []
       );
 
       setUserName(data?.users.map((user) => user.name));

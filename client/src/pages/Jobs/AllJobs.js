@@ -330,9 +330,10 @@ export default function AllJobs() {
       // setUsers(
       //   data?.users?.filter((item) => item.access.includes("job")) || []
       // );
+      console.log("Users:", data?.users);
       setUsers(
         data?.users
-          ?.filter((item) => item.role.access.includes("Jobs"))
+          ?.filter((user) => user.role.access.includes("Jobs"))
           .map((user) => user.name) || []
       );
     } catch (error) {

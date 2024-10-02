@@ -17,16 +17,25 @@ export default function Register({ setIsOpen, getAllUsers, userId }) {
   const [emergency_contact, setEmergency_contact] = useState("");
   const [address, setAddress] = useState("");
   const [role, setRole] = useState("");
-  const roles = [
-    "Accountant",
-    "Admin",
-    "Accountant+Admin",
-    "Assistant",
-    "SEO",
-    "PA",
-    "Developer",
-    "Developer Product",
-  ];
+  const [userRoles, setUserRoles] = useState([]);
+  console.log("role:", role);
+  // Get All Roles
+  const getAllRoles = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/roles/fetch/all/roles`
+      );
+      setUserRoles(data?.roles);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllRoles();
+
+    //eslint-disable-next-line
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -238,9 +247,9 @@ export default function Register({ setIsOpen, getAllUsers, userId }) {
               onChange={(e) => setRole(e.target.value)}
             >
               <option value="">Role</option>
-              {roles?.map((p, i) => (
-                <option value={p} className="capitalize" key={i}>
-                  {p}
+              {userRoles?.map((role, i) => (
+                <option value={role._id} className="capitalize" key={i}>
+                  {role.name}
                 </option>
               ))}
             </select>

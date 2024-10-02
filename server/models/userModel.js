@@ -35,17 +35,14 @@ const userSchema = new mongoose.Schema(
       default: true,
     },
     role: {
-      type: String,
-      default: "user",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Role",
+      required: true,
     },
     avatar: {
       type: String,
     },
-    access: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Roles",
-      required: true,
-    },
+    access: [String],
   },
   { timestamps: true }
 );

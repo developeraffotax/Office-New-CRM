@@ -25,16 +25,6 @@ export default function AllUsers() {
   const [deleting, setDeleting] = useState(false);
   const [index, setIndex] = useState("");
   const [userRoles, setUserRoles] = useState([]);
-  const roles = [
-    "Accountant",
-    "Admin",
-    "Accountant+Admin",
-    "Assistant",
-    "SEO",
-    "PA",
-    "Developer",
-    "Developer Product",
-  ];
 
   // Get all Users
   const getAllUsers = async () => {
@@ -77,6 +67,7 @@ export default function AllUsers() {
   }, []);
 
   const handleChange = (e, id) => {
+    console.log("ROle", e.target.value, id);
     UpdateRole(e.target.value, id);
   };
 
@@ -120,10 +111,10 @@ export default function AllUsers() {
             <select
               className={`${style.input} h-[2.5rem] w-full border-gray-900`}
               onChange={(e) => handleChange(e, params.row.id)}
-              value={params?.row.role || ""}
+              value={params?.row.role._id || ""}
             >
               {userRoles?.map((role, i) => (
-                <option value={role.name} className="capitalize" key={i}>
+                <option value={role._id} className="capitalize" key={i}>
                   {role.name}
                 </option>
               ))}

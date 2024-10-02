@@ -332,7 +332,7 @@ export default function AllJobs() {
       // );
       setUsers(
         data?.users
-          ?.filter((item) => item.access.includes("job"))
+          ?.filter((item) => item.role.access.includes("Jobs"))
           .map((user) => user.name) || []
       );
     } catch (error) {

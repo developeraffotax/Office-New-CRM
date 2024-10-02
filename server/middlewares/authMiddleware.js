@@ -41,7 +41,7 @@ export const isAdmin = async (req, res, next) => {
       });
     }
 
-    if (user.role !== "Admin") {
+    if (user.role.name !== "Admin") {
       return res.status(401).send({
         success: false,
         message: "Forbidden! User does not have admin privileges.!",

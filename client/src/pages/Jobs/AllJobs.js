@@ -332,9 +332,7 @@ export default function AllJobs() {
       // );
       console.log("Users:", data?.users);
       setUsers(
-        data?.users
-          ?.filter((user) => user.role.access.includes("Jobs"))
-          .map((user) => user.name) || []
+        data?.users.map((user) => user.name) || []
       );
     } catch (error) {
       console.log(error);

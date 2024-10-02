@@ -252,7 +252,7 @@ export const totalTime = async (req, res) => {
     const job = await jobsModel.findById(jobId);
 
     if (job) {
-      const prevJobTimeInSeconds = convertTimeToSeconds(job.totalTime);
+      const prevJobTimeInSeconds = convertTimeToSeconds(job.totalTime || "0m");
       const updatedJobTimeInSeconds = prevJobTimeInSeconds + totalTimeInSeconds;
       const updatedJobTime = convertSecondsToReadableTime(
         updatedJobTimeInSeconds
@@ -269,7 +269,9 @@ export const totalTime = async (req, res) => {
     const task = await taskModel.findById(jobId);
 
     if (task) {
-      const prevTaskTimeInSeconds = convertTimeToSeconds(task.estimate_Time);
+      const prevTaskTimeInSeconds = convertTimeToSeconds(
+        task.estimate_Time || "0m"
+      );
       const updatedTaskTimeInSeconds =
         prevTaskTimeInSeconds + totalTimeInSeconds;
       const updatedTaskTime = convertSecondsToReadableTime(

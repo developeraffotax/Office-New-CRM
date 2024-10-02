@@ -809,7 +809,7 @@ const autoCreateRecurringTasks = async () => {
 // });
 
 // Schedule the task to run daily at midnight
-cron.schedule("0 0 * * *", () => {
-  console.log("Running task scheduler for recurring tasks...");
-  autoCreateRecurringTasks();
-});
+// cron.schedule("0 0 * * *", () => {
+//   console.log("Running task scheduler for recurring tasks...");
+//   autoCreateRecurringTasks();
+// });

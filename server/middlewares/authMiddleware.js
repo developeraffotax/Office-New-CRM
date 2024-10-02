@@ -1,5 +1,6 @@
 import JWT from "jsonwebtoken";
 import userModel from "../models/userModel.js";
+import roleModel from "../models/roleModel.js";
 
 export const requiredSignIn = async (req, res, next) => {
   const token = req.headers.authorization;

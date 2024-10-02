@@ -28,8 +28,27 @@ const AuthProvider = ({ children }) => {
         token: parseData?.token,
       }));
     }
+
     // eslint-disable-next-line
   }, []);
+
+  // const getUserDetail = async (id) => {
+  //   if (!id) {
+  //     return;
+  //   }
+  //   try {
+  //     const { data } = await axios.get(
+  //       `${process.env.REACT_APP_API_URL}/api/v1/user/get_user/${id}`
+  //     );
+  //     console.log("UserData1:", data.user);
+  //     if (data) {
+  //       console.log("UserData:", data.user);
+  //       localStorage.setItem("auth", JSON.stringify(data.user));
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   return (
     <AuthContext.Provider

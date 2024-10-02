@@ -4,6 +4,7 @@ import {
   addlabel,
   createSubTask,
   createTask,
+  deleteDailyRecurringTasks,
   deleteSubTask,
   deleteTask,
   getAllCompletedTasks,
@@ -67,5 +68,8 @@ router.get("/get/completed", getAllCompletedTasks);
 router.put("/add/label/:id", requiredSignIn, addlabel);
 // Update Hours
 router.put("/update/hours/:id", requiredSignIn, updateTaskHours);
+
+// Delet Many Task
+router.delete("/delete/many", deleteDailyRecurringTasks);
 
 export default router;

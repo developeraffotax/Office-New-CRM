@@ -7,6 +7,7 @@ import userModel from "../models/userModel.js";
 // Create Comment
 export const createComment = async (req, res) => {
   const senderId = req.user.user._id;
+  console.log("senderId:", senderId);
   try {
     const { comment, jobId, type, mentionUser } = req.body;
 
@@ -65,6 +66,8 @@ export const createComment = async (req, res) => {
         });
       }
 
+      console.log("task:", task);
+
       const newComment = {
         user: req.user.user,
         comment: comment,
@@ -77,8 +80,18 @@ export const createComment = async (req, res) => {
 
       await task.save();
 
+      const taskHolderName = task.jobHolder;
+      console.log("Task User Name:", taskHolderName);
+
       // Create Notification
-      const user = await userModel.findOne({ name: task.jobHolder });
+      const user = await userModel.findOne({ name: taskHolderName });
+
+      if (!user) {
+        console.log("Task User: null");
+        return res.status(404).json({ error: "Task holder not found" });
+      }
+
+      console.log("Task User:", user);
 
       const notification = await notificationModel.create({
         title: "New comment received!",

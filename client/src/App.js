@@ -21,6 +21,7 @@ import Roles from "./pages/role/Roles";
 
 import { useAuth } from "./context/authContext";
 import NotFound from "./pages/NotFound/NotFound";
+import Users from "./pages/Auth/Users";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -31,7 +32,7 @@ function App() {
 
   const routeAccess = {
     Dashboard: <Route path="/dashboard" element={<Dashboard />} />,
-    Users: <Route path="/users" element={<AllUsers />} />,
+    Users: <Route path="/users" element={<Users />} />,
     Roles: <Route path="/roles" element={<Roles />} />,
     Timesheet: <Route path="/timesheet" element={<TimeSheet />} />,
     Proposals: <Route path="/proposals" element={<Proposal />} />,

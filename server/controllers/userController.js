@@ -101,6 +101,14 @@ export const loginUser = async (req, res) => {
       });
     }
 
+    if (user.isActive === false) {
+      return res.status(400).send({
+        success: false,
+        message:
+          "Access Denied: Your account has been temporarily blocked by the administrator. Please contact support for Admin.",
+      });
+    }
+
     // Compare Password
     const isPassword = await comparePassword(password, user.password);
     if (!isPassword) {
@@ -204,8 +212,16 @@ export const singleUser = async (req, res) => {
 export const updateUserProfile = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { name, username, phone, emergency_contact, address, avatar } =
-      req.body;
+    const {
+      name,
+      username,
+      email,
+      phone,
+      emergency_contact,
+      address,
+      avatar,
+      isActive,
+    } = req.body;
 
     // Check if userId is provided
     if (!userId) {
@@ -224,7 +240,7 @@ export const updateUserProfile = async (req, res) => {
     }
 
     // Find the existing user by userId
-    const isExisting = await userModel.findById(userId).select("-avatar");
+    const isExisting = await userModel.findById(userId).select("-password");
 
     if (!isExisting) {
       return res.status(404).send({
@@ -240,6 +256,7 @@ export const updateUserProfile = async (req, res) => {
       userId,
       {
         name: name !== undefined ? name : isExisting.name,
+        email: email !== undefined ? email : isExisting.email,
         username: username !== undefined ? username : isExisting.username,
         phone: phone !== undefined ? phone : isExisting.phone,
         emergency_contact:
@@ -248,6 +265,7 @@ export const updateUserProfile = async (req, res) => {
             : isExisting.emergency_contact,
         address: address !== undefined ? address : isExisting.address,
         avatar: avatar || isExisting.avatar,
+        isActive: isActive !== undefined ? isActive : isExisting.isActive,
       },
       { new: true }
     );

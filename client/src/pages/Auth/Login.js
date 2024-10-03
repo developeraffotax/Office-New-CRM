@@ -31,7 +31,7 @@ export default function Login() {
       if (data?.success) {
         setAuth({ ...auth, user: data?.user, token: data?.token });
         localStorage.setItem("auth", JSON.stringify(data));
-        navigate("/dashboard");
+        navigate("/tasks");
         toast.success("Login successfully!", { duration: 2000 });
         setLoading(false);
       }
@@ -42,8 +42,8 @@ export default function Login() {
     }
   };
   return (
-    <div className="w-full min-h-screen flex items-center justify-center py-6 px-4">
-      <div className="rounded-md shadow1 py-4 px-4 w-[30rem] backgroundC ">
+    <div className="w-full h-[111vh] flex items-center justify-center py-6 px-4 backgroundC">
+      <div className="rounded-md shadow1 py-4 px-4 w-[30rem] bg-white">
         <div className="flex items-center justify-center flex-col">
           <img
             src="/logo.png"
@@ -107,7 +107,9 @@ export default function Login() {
             <div className=" w-full flex items-center justify-end mt-4">
               <button
                 type="submit"
-                className={`py-[.5rem] px-[1.6rem]  flex items-center justify-center text-white shadow cursor-pointer rounded-[2rem] bg-sky-500 hover:bg-sky-600  ${
+                className={`py-[.5rem] px-[1.6rem] ${
+                  style.btn
+                }  flex items-center justify-center text-white shadow cursor-pointer  ${
                   loading && "animate-pulse pointer-events-none "
                 }`}
               >

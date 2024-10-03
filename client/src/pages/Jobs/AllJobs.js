@@ -976,6 +976,12 @@ export default function AllJobs() {
           const [showYearend, setShowYearend] = useState(false);
 
           const handleDateChange = (newDate) => {
+            const date = new Date(newDate);
+            // Check if the date is valid
+            if (isNaN(date.getTime())) {
+              toast.error("Please enter a valid date.");
+              return;
+            }
             setDate(newDate);
             handleUpdateDates(row?.original?._id, newDate, "yearEnd");
             setShowYearend(false);
@@ -1144,6 +1150,12 @@ export default function AllJobs() {
           const [showDeadline, setShowDeadline] = useState(false);
 
           const handleDateChange = (newDate) => {
+            const date = new Date(newDate);
+            // Check if the date is valid
+            if (isNaN(date.getTime())) {
+              toast.error("Please enter a valid date.");
+              return;
+            }
             setDate(newDate);
             handleUpdateDates(row.original._id, newDate, "jobDeadline");
             setShowDeadline(false);
@@ -1316,6 +1328,13 @@ export default function AllJobs() {
           const [showCurrentDate, setShowCurrentDate] = useState(false);
 
           const handleDateChange = (newDate) => {
+            const date = new Date(newDate);
+            // Check if the date is valid
+            if (isNaN(date.getTime())) {
+              toast.error("Please enter a valid date.");
+              return;
+            }
+
             setDate(newDate);
             handleUpdateDates(row.original._id, newDate, "currentDate");
             setShowCurrentDate(false);
@@ -1915,15 +1934,15 @@ export default function AllJobs() {
     },
   });
 
-  useEffect(() => {
-    const filteredRows = table
-      .getFilteredRowModel()
-      .rows.map((row) => row.original);
+  // useEffect(() => {
+  //   const filteredRows = table
+  //     .getFilteredRowModel()
+  //     .rows.map((row) => row.original);
 
-    console.log("Filtered Data:", filteredRows);
-    setFilterData(filteredRows);
-    // eslint-disable-next-line
-  }, [table.getFilteredRowModel().rows]);
+  //   console.log("Filtered Data:", filteredRows);
+  //   setFilterData(filteredRows);
+  //   // eslint-disable-next-line
+  // }, [table.getFilteredRowModel().rows]);
 
   return (
     <Layout>

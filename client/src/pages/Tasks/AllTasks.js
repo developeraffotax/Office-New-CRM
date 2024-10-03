@@ -139,7 +139,7 @@ const AllTasks = () => {
         `${process.env.REACT_APP_API_URL}/api/v1/projects/get_all/project`
       );
       setAllProjects(data?.projects);
-      if (auth.user.role === "Admin") {
+      if (auth.user.role.name === "Admin") {
         setProjects(data?.projects);
       } else {
         const filteredProjects = data.projects.filter((project) =>
@@ -628,6 +628,7 @@ const AllTasks = () => {
   const copyTask = async (originalTask) => {
     const taskCopy = { ...originalTask };
     taskCopy.task = "";
+    console.log("taskCopy", taskCopy);
 
     // delete taskCopy._id;
     // setTasksData((prevData) => [...prevData, taskCopy]);
@@ -635,14 +636,14 @@ const AllTasks = () => {
     const { data } = await axios.post(
       `${process.env.REACT_APP_API_URL}/api/v1/tasks/create/task`,
       {
-        projectId: taskCopy.project._id,
-        jobHolder: taskCopy.jobHolder,
-        task: taskCopy.task,
-        hours: taskCopy.hours,
-        startDate: taskCopy.startDate,
-        deadline: taskCopy.deadline,
-        lead: taskCopy.lead,
-        label: taskCopy.label,
+        projectId: taskCopy?.project._id,
+        jobHolder: taskCopy?.jobHolder,
+        task: taskCopy?.task,
+        hours: taskCopy?.hours,
+        startDate: taskCopy?.startDate,
+        deadline: taskCopy?.deadline,
+        lead: taskCopy?.lead,
+        label: taskCopy?.label,
         status: "Progress",
       }
     );
@@ -651,20 +652,20 @@ const AllTasks = () => {
       socketId.emit("addTask", {
         note: "New Task Added",
       });
-      setTasksData((prevData) => [...prevData, data.task]);
-      if (active !== "All") {
-        setFilterData((prevData) => {
-          const taskExists = prevData.some(
-            (task) => task._id === data.task._id
-          );
+      // setTasksData((prevData) => [...prevData, data.task]);
+      // if (active !== "All") {
+      //   setFilterData((prevData) => {
+      //     const taskExists = prevData.some(
+      //       (task) => task._id === data.task._id
+      //     );
 
-          if (!taskExists) {
-            return [...prevData, data.task];
-          }
+      //     if (!taskExists) {
+      //       return [...prevData, data.task];
+      //     }
 
-          return prevData;
-        });
-      }
+      //     return prevData;
+      //   });
+      // }
     }
   };
 

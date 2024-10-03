@@ -1256,6 +1256,13 @@ const AllTasks = () => {
           const [showStartDate, setShowStartDate] = useState(false);
 
           const handleDateChange = (newDate) => {
+            const date = new Date(newDate);
+            // Check if the date is valid
+            if (isNaN(date.getTime())) {
+              toast.error("Please enter a valid date.");
+              return;
+            }
+
             setDate(newDate);
             updateAlocateTask(row.original._id, "", date, "");
             setShowStartDate(false);
@@ -1434,6 +1441,13 @@ const AllTasks = () => {
           const [showDeadline, setShowDeadline] = useState(false);
 
           const handleDateChange = (newDate) => {
+            const date = new Date(newDate);
+            // Check if the date is valid
+            if (isNaN(date.getTime())) {
+              toast.error("Please enter a valid date.");
+              return;
+            }
+
             setDate(newDate);
             updateAlocateTask(row.original._id, "", "", date);
             setShowDeadline(false);
@@ -2057,16 +2071,16 @@ const AllTasks = () => {
     },
   });
 
-  useEffect(() => {
-    const filteredRows = table
-      .getFilteredRowModel()
-      .rows.map((row) => row.original);
+  // useEffect(() => {
+  //   const filteredRows = table
+  //     .getFilteredRowModel()
+  //     .rows.map((row) => row.original);
 
-    console.log("Filtered Data:", filteredRows);
-    setFilterData(filteredRows);
+  //   console.log("Filtered Data:", filteredRows);
+  //   setFilterData(filteredRows);
 
-    // eslint-disable-next-line
-  }, [table.getFilteredRowModel().rows]);
+  //   // eslint-disable-next-line
+  // }, [table.getFilteredRowModel().rows]);
 
   return (
     <Layout>
@@ -2103,7 +2117,7 @@ const AllTasks = () => {
 
             {/* Project Buttons */}
             <div className="flex items-center gap-4">
-              {auth?.user?.role === "Admin" && (
+              {auth?.user?.role?.name === "Admin" && (
                 <div
                   className=" relative w-[8rem]  border-2 border-gray-200 rounded-md py-1 px-2 flex items-center justify-between gap-1"
                   onClick={() => setShowProject(!showProject)}

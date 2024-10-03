@@ -523,11 +523,11 @@ export default function Users() {
             <div className="w-full ">
               <select
                 className={`${style.input} h-[2.5rem] w-full border border-orange-200`}
-                onChange={(e) => handleChange(e, row.original._id)}
-                value={role._id || ""}
+                onChange={(e) => handleChange(e, row.original?._id)}
+                value={role?._id || ""}
               >
                 {userRoles?.map((role, i) => (
-                  <option value={role._id} className="capitalize" key={i}>
+                  <option value={role?._id} className="capitalize" key={i}>
                     {role.name}
                   </option>
                 ))}
@@ -588,7 +588,7 @@ export default function Users() {
                   <button
                     className={`${style.btn} bg-green-500 hover:bg-green-600`}
                     style={{ background: "green" }}
-                    onClick={() => updateStatus(row.original._id, false)}
+                    onClick={() => updateStatus(row.original?._id, false)}
                   >
                     Active
                   </button>
@@ -596,7 +596,7 @@ export default function Users() {
                   <button
                     className={`${style.btn} bg-red-500 hover:bg-red-600`}
                     style={{ background: "red" }}
-                    onClick={() => updateStatus(row.original._id, true)}
+                    onClick={() => updateStatus(row.original?._id, true)}
                   >
                     Blocked
                   </button>
@@ -712,7 +712,7 @@ export default function Users() {
                 className=""
                 title="Edit User"
                 onClick={() => {
-                  setUserId(row.original._id);
+                  setUserId(row.original?._id);
                   setIsOpen(true);
                 }}
               >
@@ -720,7 +720,7 @@ export default function Users() {
               </span>
               <span
                 className="text-[1rem] cursor-pointer"
-                onClick={() => handleDeleteConfirmation(row.original._id)}
+                onClick={() => handleDeleteConfirmation(row.original?._id)}
                 title="Delete User!"
               >
                 <AiTwotoneDelete className="h-5 w-5 text-pink-500 hover:text-pink-600 " />
@@ -732,7 +732,7 @@ export default function Users() {
       },
     ],
     // eslint-disable-next-line
-    [auth, userData]
+    [auth, userData, userRoles]
   );
 
   // Clear table Filter

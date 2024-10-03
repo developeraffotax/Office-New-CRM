@@ -221,19 +221,24 @@ export const totalTime = async (req, res) => {
 
     const startTime = new Date(timer.startTime);
     const endTime = new Date(timer.endTime);
+
+    if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+      return res.status(400).json({ message: "Invalid start or end time!" });
+    }
+
     const totalTimeInSeconds = (endTime - startTime) / 1000;
 
     // Helper function to convert time strings like '2m', '2h' into seconds
     const convertTimeToSeconds = (timeStr) => {
-      if (!timeStr) return 0;
+      if (!timeStr || isNaN(parseInt(timeStr))) return 0;
 
       const timeValue = parseInt(timeStr.slice(0, -1));
       const timeUnit = timeStr.slice(-1);
 
       if (timeUnit === "m") {
-        return timeValue * 60; // Convert minutes to seconds
+        return timeValue * 60;
       } else if (timeUnit === "h") {
-        return timeValue * 3600; // Convert hours to seconds
+        return timeValue * 3600;
       }
       return 0;
     };
@@ -249,10 +254,13 @@ export const totalTime = async (req, res) => {
       }
     };
 
+    // Update job's total time
     const job = await jobsModel.findById(jobId);
 
     if (job) {
-      const prevJobTimeInSeconds = convertTimeToSeconds(job.totalTime || "0m");
+      const prevJobTimeInSeconds = convertTimeToSeconds(
+        job.totalTime === "NaNh" ? "0m" : job.totalTime
+      );
       const updatedJobTimeInSeconds = prevJobTimeInSeconds + totalTimeInSeconds;
       const updatedJobTime = convertSecondsToReadableTime(
         updatedJobTimeInSeconds
@@ -265,12 +273,12 @@ export const totalTime = async (req, res) => {
       );
     }
 
-    // Get task and update its estimated time
+    // Update task's estimated time
     const task = await taskModel.findById(jobId);
 
     if (task) {
       const prevTaskTimeInSeconds = convertTimeToSeconds(
-        task.estimate_Time || "0m"
+        task.estimate_Time === "NaNh" ? "0m" : task.estimate_Time
       );
       const updatedTaskTimeInSeconds =
         prevTaskTimeInSeconds + totalTimeInSeconds;

@@ -1354,7 +1354,7 @@ export default function Proposal() {
     data: proposalData || [],
     enableStickyHeader: true,
     enableStickyFooter: true,
-    muiTableContainerProps: { sx: { maxHeight: "805px" } },
+    muiTableContainerProps: { sx: { maxHeight: "720px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -1458,7 +1458,7 @@ export default function Proposal() {
 
   return (
     <Layout>
-      <div className=" relative w-full min-h-screen py-4 px-2 sm:px-4">
+      <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h1 className=" text-xl sm:text-2xl font-semibold ">Proposal</h1>

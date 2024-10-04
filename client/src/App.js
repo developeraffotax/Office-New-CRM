@@ -54,8 +54,8 @@ function App() {
     socketId.on("connection", () => {});
   }, []);
 
-  const userAccessRoutes = user?.role.access
-    .map((accessItem) => {
+  const userAccessRoutes = user?.role?.access
+    ?.map((accessItem) => {
       return routeAccess[accessItem];
     })
     .filter(Boolean);

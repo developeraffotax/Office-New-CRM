@@ -420,17 +420,17 @@ export default function Sidebar({ hide, setHide }) {
           )}
 
           {/* 6 */}
-          {hasAccess("Roles") && (
+          {hasAccess("Subscription") && (
             <div
               className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
               onClick={() => {
-                router("/notifications");
+                router("/subscriptions");
               }}
             >
               <div
                 className="adminbtn absolute h-full  sidebtn z-[20]"
                 style={{
-                  width: active === "notifications" && "100%",
+                  width: active === "subscriptions" && "100%",
                   background: `rgb(2, 68, 2)`,
                 }}
               ></div>
@@ -438,17 +438,17 @@ export default function Sidebar({ hide, setHide }) {
                 {hide ? (
                   <FaRegCreditCard
                     className="h-5 w-5 cursor-pointer ml-2"
-                    style={{ color: active === "notifications" && "#fff" }}
+                    style={{ color: active === "subscriptions" && "#fff" }}
                   />
                 ) : (
                   <div className="flex items-center gap-2">
                     <FaRegCreditCard
                       className="h-5 w-5 cursor-pointer ml-2"
-                      style={{ color: active === "notifications" && "#fff" }}
+                      style={{ color: active === "subscriptions" && "#fff" }}
                     />
                     <span
                       className="text-[14px] font-[400]"
-                      style={{ color: active === "notifications" && "#fff" }}
+                      style={{ color: active === "subscriptions" && "#fff" }}
                     >
                       Subscription
                     </span>

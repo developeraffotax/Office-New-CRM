@@ -20,6 +20,7 @@ import leadRoute from "./routes/leadRoute.js";
 import proposalRoute from "./routes/proposalRoute.js";
 import roleRoute from "./routes/roleRoute.js";
 import notificationRoute from "./routes/notificationRoutes.js";
+import subscriptionRoute from "./routes/subscriptionRoutes.js";
 
 import http from "http";
 import { initSocketServer } from "./socketServer.js";
@@ -58,6 +59,7 @@ app.use("/api/v1/tickets", ticketRoute);
 app.use("/api/v1/leads", leadRoute);
 app.use("/api/v1/proposal", proposalRoute);
 app.use("/api/v1/roles", roleRoute);
+app.use("/api/v1/subscriptions", subscriptionRoute);
 
 // Rest API's
 app.use("/", (req, res) => {

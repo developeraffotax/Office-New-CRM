@@ -226,7 +226,7 @@ const AllTasks = () => {
       );
 
       setTasksData(data?.tasks);
-      if (auth.user.role === "Admin") {
+      if (auth?.user?.role?.name === "Admin") {
         setTasksData(data?.tasks);
       } else {
         const filteredTasks = data?.tasks?.filter(

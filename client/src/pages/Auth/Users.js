@@ -195,14 +195,14 @@ export default function Users() {
         filterFn: "equals",
 
         filterVariant: "select",
-        size: 100,
+        size: 110,
         minSize: 80,
         maxSize: 130,
         grow: false,
       },
       {
         accessorKey: "name",
-        size: 130,
+        size: 140,
         minSize: 80,
         maxSize: 180,
         grow: false,
@@ -298,7 +298,7 @@ export default function Users() {
         accessorKey: "email",
         minSize: 100,
         maxSize: 200,
-        size: 180,
+        size: 190,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -438,8 +438,8 @@ export default function Users() {
       {
         accessorKey: "address",
         minSize: 100,
-        maxSize: 200,
-        size: 160,
+        maxSize: 250,
+        size: 200,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -482,12 +482,12 @@ export default function Users() {
         },
         filterVariant: "select",
       },
-      //   Status
+      //   Role
       {
         accessorKey: "role.name",
         minSize: 120,
-        maxSize: 150,
-        size: 90,
+        maxSize: 200,
+        size: 170,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -746,7 +746,7 @@ export default function Users() {
     data: userData || [],
     enableStickyHeader: true,
     enableStickyFooter: true,
-    muiTableContainerProps: { sx: { maxHeight: "780px" } },
+    muiTableContainerProps: { sx: { maxHeight: "800px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,

@@ -46,7 +46,7 @@ export default function Proposal() {
 
   console.log("filteredData:", filteredData);
 
-  // -------Get All Leads-------
+  // -------Get All Proposal-------
   const getAllProposal = async () => {
     setIsLoading(true);
     try {

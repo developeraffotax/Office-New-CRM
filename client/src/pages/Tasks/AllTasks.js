@@ -226,7 +226,7 @@ const AllTasks = () => {
       );
 
       setTasksData(data?.tasks);
-      if (auth?.user?.role?.name === "Admin") {
+      if (auth.user.role.name === "Admin") {
         setTasksData(data?.tasks);
       } else {
         const filteredTasks = data?.tasks?.filter(
@@ -2016,7 +2016,6 @@ const AllTasks = () => {
 
   const table = useMaterialReactTable({
     columns,
-    // data: active === "All" && !active1 && !filterId ? userTaskData : filterData,
     data:
       (active === "All" && !active1 && !filterId ? tasksData : filterData) ||
       [],

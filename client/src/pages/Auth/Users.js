@@ -732,7 +732,7 @@ export default function Users() {
       },
     ],
     // eslint-disable-next-line
-    [auth, userData, userRoles]
+    [auth, userData]
   );
 
   // Clear table Filter

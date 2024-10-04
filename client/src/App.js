@@ -1,12 +1,11 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Auth/Login";
 import { Toaster } from "react-hot-toast";
 import Dashboard from "./pages/dashboard/Dashboard";
 import AllJobs from "./pages/Jobs/AllJobs";
 import AllTasks from "./pages/Tasks/AllTasks";
-import AllLists from "./pages/lists/AllLists";
-import AllUsers from "./pages/Auth/AllUsers";
+// import AllLists from "./pages/lists/AllLists";
 import Profile from "./pages/Auth/Profile";
 import { useEffect } from "react";
 import socketIO from "socket.io-client";
@@ -22,6 +21,7 @@ import Roles from "./pages/role/Roles";
 import { useAuth } from "./context/authContext";
 import NotFound from "./pages/NotFound/NotFound";
 import Users from "./pages/Auth/Users";
+import Subscription from "./pages/Subscription/Subscription";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -47,6 +47,7 @@ function App() {
       </>
     ),
     Templates: <Route path="/templates" element={<Template />} />,
+    Subscription: <Route path="/subscriptions" element={<Subscription />} />,
   };
 
   useEffect(() => {

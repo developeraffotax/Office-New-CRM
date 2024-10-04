@@ -33,7 +33,8 @@ export default function Roles() {
     "Timesheet",
     "Roles",
     "Users",
-    "My List",
+    "MyList",
+    "Subscription",
   ];
   const [isLoading, setIsLoading] = useState(false);
   console.log("active", active);

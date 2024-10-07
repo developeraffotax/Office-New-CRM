@@ -31,7 +31,7 @@ export default function Users() {
     try {
       setLoading(true);
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all`
       );
       setUserData(data?.users);
       console.log("users", data?.users);
@@ -51,7 +51,7 @@ export default function Users() {
   const getUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all`
       );
       setUserData(data?.users);
     } catch (error) {

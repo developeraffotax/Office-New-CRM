@@ -32,23 +32,40 @@ const AuthProvider = ({ children }) => {
     // eslint-disable-next-line
   }, []);
 
-  // const getUserDetail = async (id) => {
-  //   if (!id) {
-  //     return;
-  //   }
-  //   try {
-  //     const { data } = await axios.get(
-  //       `${process.env.REACT_APP_API_URL}/api/v1/user/get_user/${id}`
-  //     );
-  //     console.log("UserData1:", data.user);
-  //     if (data) {
-  //       console.log("UserData:", data.user);
-  //       localStorage.setItem("auth", JSON.stringify(data.user));
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  const getUserDetail = async (id) => {
+    if (!id) {
+      return;
+    }
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_user/${id}`
+      );
+
+      console.log("SingleUserData:", data.user);
+
+      const updatedUser = {
+        ...data.user,
+        id: data.user._id,
+      };
+      delete updatedUser._id;
+
+      const updateAuthData = {
+        user: updatedUser,
+        token: auth.token,
+      };
+      localStorage.setItem("auth", JSON.stringify(updateAuthData));
+      setAuth(updateAuthData);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    const userId = auth?.user?.id;
+    if (userId) {
+      getUserDetail(userId);
+    }
+  }, [auth?.user?.id]);
 
   return (
     <AuthContext.Provider

@@ -1,10 +1,5 @@
 import mongoose from "mongoose";
 
-const labelSchema = new mongoose.Schema({
-  name: { type: String },
-  color: { type: String },
-});
-
 const jobSchema = new mongoose.Schema({
   jobName: {
     type: String,
@@ -115,8 +110,15 @@ const subScriptionSchema = new mongoose.Schema(
     utr: {
       type: String,
     },
+    subscription: {
+      type: String,
+      default: "",
+    },
+    note: {
+      type: String,
+      default: "",
+    },
     job: jobSchema,
-    label: labelSchema,
   },
   { timestamps: true }
 );

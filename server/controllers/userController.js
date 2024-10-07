@@ -153,7 +153,7 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// Get All Users
+// Get All User
 export const getAllUsers = async (req, res) => {
   try {
     const users = await userModel.find({}).select("-password").populate("role");
@@ -172,6 +172,31 @@ export const getAllUsers = async (req, res) => {
     });
   }
 };
+
+// Get All Users(wothout InActive)
+export const getAllActiveUsers = async (req, res) => {
+  try {
+    const users = await userModel
+      .find({ isActive: { $ne: false } })
+      .select("-password")
+      .populate("role");
+
+    res.status(200).send({
+      total: users.length,
+      success: true,
+      message: "All users list",
+      users: users,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get all users!",
+    });
+  }
+};
+
+//
 
 // Get Single User
 export const singleUser = async (req, res) => {

@@ -5,6 +5,7 @@ import {
   deleteSubscription,
   fetchAllSubscription,
   fetchSingleSubscription,
+  updateSingleField,
   updateSubscription,
 } from "../controllers/subscriptionController.js";
 
@@ -16,6 +17,9 @@ router.post("/create/subscription", requiredSignIn, createSubscription);
 // Update Subscription
 router.put("/update/subscription/:id", requiredSignIn, updateSubscription);
 
+// Update Single Subscription
+router.put("/update/single/:id", requiredSignIn, updateSingleField);
+
 // Get All Scubscription
 router.get("/fetch/all", fetchAllSubscription);
 
@@ -23,6 +27,6 @@ router.get("/fetch/all", fetchAllSubscription);
 router.get("/fetch/single/:id", fetchSingleSubscription);
 
 // Delete Scubscription
-router.delete("/delete/all", requiredSignIn, deleteSubscription);
+router.delete("/delete/:id", requiredSignIn, deleteSubscription);
 
 export default router;

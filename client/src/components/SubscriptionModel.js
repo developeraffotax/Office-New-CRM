@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-
 import { BiLoaderCircle } from "react-icons/bi";
 import axios from "axios";
-
 import { style } from "../utlis/CommonStyle";
 import { IoClose } from "react-icons/io5";
+import Select from "react-select";
 
 export default function SubscriptionModel({
   setIsOpen,
@@ -35,7 +34,8 @@ export default function SubscriptionModel({
   const [vatPassword, setVatPassowrd] = useState("");
   const [authCode, setAuthCode] = useState("");
   const [utr, setUtr] = useState("");
-
+  const [clientData, setClientData] = useState([]);
+  const [clientId, setClientId] = useState("");
   const [job, setJob] = useState({
     jobName: "Subscription",
     billingStart: "",
@@ -52,8 +52,115 @@ export default function SubscriptionModel({
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
   const partners = ["Affotax", "Outsource", "OTL"];
 
-  //   Get Single Subscription
+  const allClientJobData = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/tickets/clients`
+      );
+      if (data) {
+        setClientData(data?.clients);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message || "Error in client Jobs");
+    }
+  };
 
+  useEffect(() => {
+    allClientJobData();
+    // eslint-disable-next-line
+  }, []);
+
+  // Fetching Client Detail
+  const fetchClientDetail = async () => {
+    if (!clientId) {
+      return;
+    }
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/single/client/${clientId}`
+      );
+      if (data) {
+        console.log("Client Detail:", data?.clientJob);
+        setClientName(data?.clientJob?.clientName);
+        setRegNumber(data?.clientJob?.regNumber);
+        setCompanyName(data?.clientJob?.companyName);
+        setEmail(data?.clientJob?.email);
+        setTotalHours(data?.clientJob?.totalHours);
+        setSource(data?.clientJob?.source);
+        setClientType(data?.clientJob?.clientType);
+        setPartner(data?.clientJob?.partner);
+        setFee(data?.clientJob?.fee);
+        setVatLogin(data?.clientJob?.vatLogin);
+        setVatPassowrd(data?.clientJob?.vatPassword);
+        setPyeLogin(data?.clientJob?.pyeLogin);
+        setPyePassowrd(data?.clientJob?.pyePassword);
+        setTrLogin(data?.clientJob?.trLogin);
+        setCtLogin(data?.clientJob?.ctLogin);
+        setCtPassowrd(data?.clientJob?.ctPassword);
+        setAuthCode(data?.clientJob?.authCode);
+        setUtr(data?.clientJob?.utr);
+        setCountry(data?.clientJob?.country);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message || "Error in client Jobs");
+    }
+  };
+
+  useEffect(() => {
+    fetchClientDetail();
+    // eslint-disable-next-line
+  }, [clientId]);
+
+  //   Select Client
+  const options = clientData.map((item) => ({
+    value: item.id,
+    label: `${item.companyName} - ${item.clientName} `,
+  }));
+
+  const selectedOption = options.find((option) => option.value === clientId);
+
+  const handleChange = (selectedOption) => {
+    if (selectedOption) {
+      setClientId(selectedOption.value);
+    } else {
+      setClientId("");
+    }
+  };
+
+  const customStyles = {
+    control: (provided) => ({
+      ...provided,
+      border: "none",
+      boxShadow: "none",
+      width: "100%",
+    }),
+    menu: (provided) => ({
+      ...provided,
+      border: "1px solid #ccc",
+    }),
+    menuList: (provided) => ({
+      ...provided,
+      padding: 0,
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? "#f0f0f0" : "white",
+      color: state.isSelected ? "black" : "black",
+      cursor: "pointer",
+    }),
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  //   Get Single Subscription
   const singleSubscription = async () => {
     if (!subscriptionId) {
       return;
@@ -69,7 +176,7 @@ export default function SubscriptionModel({
         setCompanyName(subscription.companyName);
         setEmail(subscription.email);
         setTotalHours(subscription.totalHours);
-        setCurrentDate(subscription.currentDate);
+        setCurrentDate(formatDate(subscription.currentDate));
         setSource(subscription.source);
         setClientType(subscription.clientType);
         setPartner(subscription.partner);
@@ -88,9 +195,9 @@ export default function SubscriptionModel({
         //
         setJob({
           jobName: "Subscription",
-          billingStart: subscription.job.billingStart,
-          billingEnd: subscription.job.billingEnd,
-          deadline: subscription.job.deadline,
+          billingStart: formatDate(subscription.job.billingStart),
+          billingEnd: formatDate(subscription.job.billingEnd),
+          deadline: formatDate(subscription.job.deadline),
           hours: subscription.job.hours,
           fee: subscription.job.fee,
           lead: subscription.job.lead,
@@ -104,6 +211,8 @@ export default function SubscriptionModel({
 
   useEffect(() => {
     singleSubscription();
+
+    // eslint-disable-next-line
   }, [subscriptionId]);
 
   // Get All Users
@@ -114,7 +223,6 @@ export default function SubscriptionModel({
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
       setUsers(data?.users);
-      console.log("users", data?.users);
     } catch (error) {
       console.log(error);
     }
@@ -131,41 +239,78 @@ export default function SubscriptionModel({
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/create/subscription`,
-        {
-          clientName,
-          regNumber,
-          companyName,
-          email,
-          totalHours,
-          currentDate,
-          source,
-          clientType,
-          partner,
-          country,
-          fee,
-          ctLogin,
-          ctPassword,
-          pyeLogin,
-          pyePassword,
-          trLogin,
-          trPassword,
-          vatLogin,
-          vatPassword,
-          authCode,
-          utr,
-          job,
+      if (subscriptionId) {
+        const { data } = await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/update/subscription/${subscriptionId}`,
+          {
+            clientName,
+            regNumber,
+            companyName,
+            email,
+            totalHours,
+            currentDate,
+            source,
+            clientType,
+            partner,
+            country,
+            fee,
+            ctLogin,
+            ctPassword,
+            pyeLogin,
+            pyePassword,
+            trLogin,
+            trPassword,
+            vatLogin,
+            vatPassword,
+            authCode,
+            utr,
+            job,
+          }
+        );
+        if (data) {
+          fetchSubscriptions();
+          toast.success("Subscription update successfully!");
+          setIsOpen(false);
         }
-      );
-      if (data) {
-        fetchSubscriptions();
 
-        toast.success("Subscription added successfully!");
-        setIsOpen(false);
+        setLoading(false);
+      } else {
+        const { data } = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/create/subscription`,
+          {
+            clientName,
+            regNumber,
+            companyName,
+            email,
+            totalHours,
+            currentDate,
+            source,
+            clientType,
+            partner,
+            country,
+            fee,
+            ctLogin,
+            ctPassword,
+            pyeLogin,
+            pyePassword,
+            trLogin,
+            trPassword,
+            vatLogin,
+            vatPassword,
+            authCode,
+            utr,
+            job,
+          }
+        );
+        if (data) {
+          fetchSubscriptions();
+
+          toast.success("Subscription added successfully!");
+          setIsOpen(false);
+        }
+
+        setLoading(false);
       }
-
-      setLoading(false);
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
@@ -190,12 +335,24 @@ export default function SubscriptionModel({
   }, []);
 
   return (
-    <div className="w-full sm:w-[85%] min-h-[30vh]  py-3 pb-4  px-3 sm:px-4 bg-gray-200 hidden1 overflow-y-auto rounded-md ">
+    <div className="w-full sm:w-[75%] min-h-[30vh]  py-3 pb-4  px-3 sm:px-4 bg-gray-200 hidden1 overflow-y-auto rounded-md ">
       <div className="flex flex-col gap-4">
         <div className="w-full flex items-center justify-between">
-          <h1 className="text-lg font-medium my-3 w-fit py-2 px-4 rounded-md text-white bg-[#254e7f]">
-            {subscriptionId ? "Update Subscription" : " Add New Subscription"}
-          </h1>
+          <div className="flex items-center gap-4 sm:gap-6 flex-wrap ">
+            <h1 className="text-lg font-medium my-3 w-fit py-2 px-4 rounded-md text-white bg-[#254e7f]">
+              {subscriptionId ? "Update Subscription" : " Add New Subscription"}
+            </h1>
+            <Select
+              className={`${style.input} h-[2.6rem] w-[17rem] flex items-center justify-center px-0 py-0`}
+              value={selectedOption}
+              onChange={handleChange}
+              options={options}
+              placeholder="Select Client"
+              styles={customStyles}
+              isClearable
+            />
+          </div>
+
           <span
             onClick={() => {
               setIsOpen(false);

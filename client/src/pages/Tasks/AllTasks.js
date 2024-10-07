@@ -98,12 +98,13 @@ const AllTasks = () => {
   const commentStatusRef = useRef(null);
   const [showlabel, setShowlabel] = useState(false);
   const [timerId, setTimerId] = useState("");
-  console.log("totalHours", totalHours);
   console.log("filterData", filterData);
-
   const dateStatus = ["Due", "Overdue"];
-
   const status = ["To do", "Progress", "Review", "Onhold"];
+  const closeProject = useRef(null);
+  const [state, setState] = useState("");
+
+  console.log("tasksData:", tasksData);
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
@@ -541,15 +542,16 @@ const AllTasks = () => {
         }
 
         setTasksData((prevData) => {
-          if (Array.isArray(prevData)) {
+          if (Array?.isArray(prevData)) {
             return prevData.map((item) =>
-              item._id === updateTask._id ? updateTask : item
+              item?._id === updateTask?._id ? updateTask : item
             );
           } else {
             return [updateTask];
           }
         });
       }
+      getTasks1();
 
       // Send Socket Timer
       socketId.emit("addTask", {
@@ -1627,6 +1629,9 @@ const AllTasks = () => {
         header: "Task Status",
         Header: ({ column }) => {
           const statusData = ["To do", "Progress", "Review", "On hold"];
+          useEffect(() => {
+            column.setFilterValue(state);
+          }, [state]);
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -1641,7 +1646,9 @@ const AllTasks = () => {
               <div className="flex ">
                 <select
                   value={column.getFilterValue() || ""}
-                  onChange={(e) => column.setFilterValue(e.target.value)}
+                  onChange={(e) =>
+                    column.setFilterValue(e.target.value || state)
+                  }
                   className="ml-1 font-normal w-full  h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
                 >
                   <option value="">Select</option>
@@ -2004,6 +2011,7 @@ const AllTasks = () => {
       filterData,
       totalHours,
       tasksData,
+      state,
     ]
   );
 
@@ -2082,6 +2090,20 @@ const AllTasks = () => {
   //   // eslint-disable-next-line
   // }, [table.getFilteredRowModel().rows]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        closeProject.current &&
+        !closeProject.current.contains(event.target)
+      ) {
+        setShowProject(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <Layout>
       {!showCompleted ? (
@@ -2108,6 +2130,7 @@ const AllTasks = () => {
                   setShowDue(false);
                   setFilterId("");
                   handleClearFilters();
+                  setState("Progress");
                 }}
                 title="Clear filters"
               >
@@ -2117,6 +2140,24 @@ const AllTasks = () => {
 
             {/* Project Buttons */}
             <div className="flex items-center gap-4">
+              {/* Status Filter */}
+              <div className="">
+                <select
+                  className=" w-[8rem] h-[2rem] text-[14px] border-2 border-gray-200 rounded-md cursor-pointer"
+                  value={state}
+                  onChange={(e) => {
+                    setState(e.target.value);
+                  }}
+                >
+                  <option value="">Select Status</option>
+                  {status?.map((stat, i) => (
+                    <option key={i} value={stat}>
+                      {stat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/*  */}
               {auth?.user?.role?.name === "Admin" && (
                 <div
                   className=" relative w-[8rem]  border-2 border-gray-200 rounded-md py-1 px-2 flex items-center justify-between gap-1"
@@ -2137,7 +2178,10 @@ const AllTasks = () => {
                   </span>
                   {/* -----------Projects------- */}
                   {showProject && (
-                    <div className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto hidden1 z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]">
+                    <div
+                      ref={closeProject}
+                      className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto hidden1 z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]"
+                    >
                       {projects &&
                         projects?.map((project) => (
                           <div
@@ -2442,9 +2486,6 @@ const AllTasks = () => {
             {showStatus && activeBtn === "status" && (
               <>
                 <div className="w-full  py-2 ">
-                  {/* <h3 className="text-[19px] font-semibold text-black">
-                    Status Summary
-                  </h3> */}
                   <div className="flex items-center flex-wrap gap-4">
                     {status?.map((stat, i) => (
                       <div

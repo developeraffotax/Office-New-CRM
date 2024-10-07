@@ -675,7 +675,7 @@ export default function AllJobs() {
         accessorKey: "companyName",
         minSize: 190,
         maxSize: 300,
-        size: 230,
+        size: 260,
         grow: false,
         Header: ({ column }) => {
           return (

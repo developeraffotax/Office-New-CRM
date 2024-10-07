@@ -176,6 +176,62 @@ export const updateSubscription = async (req, res) => {
   }
 };
 
+// Update Single field
+export const updateSingleField = async (req, res) => {
+  try {
+    const subId = req.params.id;
+    const {
+      jobHolder,
+      billingStart,
+      billingEnd,
+      deadline,
+      lead,
+      fee,
+      note,
+      status,
+      subscription,
+    } = req.body;
+
+    const existingSub = await subscriptionModel.findById(subId);
+
+    if (!existingSub) {
+      return res.status(200).send({
+        success: false,
+        message: "Subscription not found!",
+      });
+    }
+
+    const subscriptionData = await subscriptionModel.findByIdAndUpdate(
+      { _id: existingSub._id },
+      {
+        "job.jobHolder": jobHolder || existingSub.job.jobHolder,
+        "job.billingStart": billingStart || existingSub.job.billingStart,
+        "job.billingEnd": billingEnd || existingSub.job.billingEnd,
+        "job.deadline": deadline || existingSub.job.deadline,
+        "job.lead": lead || existingSub.job.lead,
+        "job.fee": fee || existingSub.job.fee,
+        note: note || existingSub.note,
+        status: status || existingSub.status,
+        subscription: subscription || existingSub.subscription,
+      },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Subscription update successfully!",
+      subscription: subscriptionData,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while update subscription!",
+      error: error,
+    });
+  }
+};
+
 // Get All Subcription
 export const fetchAllSubscription = async (req, res) => {
   try {

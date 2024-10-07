@@ -1,6 +1,7 @@
 import express from "express";
 import {
   deleteUser,
+  getAllActiveUsers,
   getAllUsers,
   loginUser,
   registerUser,
@@ -19,7 +20,10 @@ router.post("/register/user", registerUser);
 router.post("/login/user", loginUser);
 
 // Get All Users
-router.get("/get_all/users", getAllUsers);
+router.get("/get_all", getAllUsers);
+
+// Get All
+router.get("/get_all/users", getAllActiveUsers);
 
 // Get Single User
 router.get("/get_user/:id", requiredSignIn, singleUser);

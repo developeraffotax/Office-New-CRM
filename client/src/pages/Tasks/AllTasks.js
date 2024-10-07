@@ -177,7 +177,6 @@ const AllTasks = () => {
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/all`
       );
 
-      setTasksData(data?.tasks);
       if (auth.user.role.name === "Admin") {
         setTasksData(data?.tasks);
       } else {
@@ -187,6 +186,8 @@ const AllTasks = () => {
 
         setTasksData(filteredTasks);
       }
+
+      setTasksData(data?.tasks);
 
       setLoading(false);
     } catch (error) {

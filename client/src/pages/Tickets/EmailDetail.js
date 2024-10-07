@@ -35,8 +35,8 @@ export default function EmailDetail() {
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/ticket/${params.id}`
       );
       if (data) {
-        setTicketDetail(data.ticket);
-        getEmailDetail(data.ticket.mailThreadId, data.ticket.company);
+        setTicketDetail(data?.ticket);
+        getEmailDetail(data?.ticket?.mailThreadId, data?.ticket?.company);
       }
     } catch (error) {
       console.log(error);
@@ -78,7 +78,7 @@ export default function EmailDetail() {
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/email/detail/${ticketDetail.mailThreadId}/${ticketDetail.company}/${params.id}`
       );
       if (data) {
-        setEmailDetail(data.emailDetails);
+        setEmailDetail(data?.emailDetails);
       }
     } catch (error) {
       console.log(error);
@@ -89,11 +89,11 @@ export default function EmailDetail() {
 
   const separate = (email) => {
     const emailRegex = /(.*)<(.*)>/;
-    const match = email.match(emailRegex);
+    const match = email?.match(emailRegex);
 
-    const name = match ? match[1].trim() : "";
+    const name = match ? match[1]?.trim() : "";
 
-    const emailAddress = match ? match[2].trim() : "";
+    const emailAddress = match ? match[2]?.trim() : "";
 
     return (
       <>
@@ -322,7 +322,7 @@ export default function EmailDetail() {
             {emailDetail?.decryptedMessages &&
               emailDetail?.decryptedMessages?.map((message, i) => (
                 <div className="flex flex-col gap-4" key={i}>
-                  {message.payload.body.sentByMe ? (
+                  {message?.payload?.body?.sentByMe ? (
                     <div className="flex flex-col gap-2 bg-orange-50 px-2 py-2 rounded-md">
                       {/* Header */}
                       <div className="flex items-center justify-between">
@@ -335,9 +335,10 @@ export default function EmailDetail() {
                             />
                           </div>
                           <div className="flex flex-col gap-0">
-                            {separate(message.payload.headers[1].value)}
+                            {separate(message?.payload?.headers[1]?.value)}
                             <span className="text-[12px] text-gray-600 flex items-center gap-2 ">
-                              to {message.payload.headers[2].value.slice(0, 12)}{" "}
+                              to{" "}
+                              {message?.payload?.headers[2]?.value.slice(0, 12)}{" "}
                               <span>
                                 <FaCaretDown className="h-4 w-4 cursor-pointer" />
                               </span>
@@ -346,7 +347,7 @@ export default function EmailDetail() {
                         </div>
                         <div className="">
                           {EmailTimeDisplay({
-                            internalDate: message.internalDate,
+                            internalDate: message?.internalDate,
                           })}
                         </div>
                       </div>
@@ -354,20 +355,21 @@ export default function EmailDetail() {
                       <div
                         className=" ml-10 text-[15px]"
                         dangerouslySetInnerHTML={{
-                          __html: message.payload.body.data,
+                          __html: message?.payload?.body?.data,
                         }}
                       ></div>
                       {/* ------------Attachments----------- */}
-                      {message.payload.body.messageAttachments.length > 0 && (
+                      {message?.payload?.body?.messageAttachments.length >
+                        0 && (
                         <>
                           <hr />
                           <h3 className="text-[18px] font-medium flex items-center gap-2">
                             <ImAttachment className="h-6 w-6 text-black" />
                             Attachments
-                            {`(${message.payload.body.messageAttachments.length})`}
+                            {`(${message?.payload?.body?.messageAttachments.length})`}
                           </h3>
                           <div className="flex items-center flex-wrap gap-4 py-3">
-                            {message.payload.body?.messageAttachments?.map(
+                            {message?.payload?.body?.messageAttachments?.map(
                               (item) => (
                                 <div
                                   className=" flex items-center gap-4 border bg-gray-50 hover:bg-gray-100 cursor-pointer px-3 py-2 transition-all duration-300 rounded-md hover:shadow-md font-medium text-[13px] "
@@ -410,11 +412,14 @@ export default function EmailDetail() {
                         <div className="flex items-center gap-1">
                           <div className=" flex items-center justify-center w-[2.3rem] h-[2.3rem] border border-sky-600 bg-green-800 rounded-full overflow-hidden object-cover">
                             <span className="text-2xl font-medium uppercase text-white">
-                              {message.payload?.headers[18]?.value?.slice(0, 1)}
+                              {message?.payload?.headers[18]?.value?.slice(
+                                0,
+                                1
+                              )}
                             </span>
                           </div>
                           <div className="flex flex-col gap-0">
-                            {separate(message.payload.headers[18].value)}
+                            {separate(message?.payload?.headers[18]?.value)}
                             <span className="text-[12px] text-gray-600 flex items-center gap-2 ">
                               to me
                               <span>
@@ -425,7 +430,7 @@ export default function EmailDetail() {
                         </div>
                         <div className="">
                           {EmailTimeDisplay({
-                            internalDate: message.internalDate,
+                            internalDate: message?.internalDate,
                           })}
                         </div>
                       </div>
@@ -433,20 +438,21 @@ export default function EmailDetail() {
                       <div
                         className=" ml-10 text-[15px]"
                         dangerouslySetInnerHTML={{
-                          __html: cleanEmailBody(message.payload.body.data),
+                          __html: cleanEmailBody(message?.payload?.body?.data),
                         }}
                       ></div>
                       {/* Attachments */}
-                      {message.payload.body.messageAttachments.length > 0 && (
+                      {message?.payload?.body?.messageAttachments.length >
+                        0 && (
                         <>
                           <hr />
                           <h3 className="text-[18px] font-medium flex items-center gap-2">
                             <ImAttachment className="h-6 w-6 text-black" />
                             Attachments
-                            {`(${message.payload.body.messageAttachments.length})`}
+                            {`(${message?.payload?.body?.messageAttachments.length})`}
                           </h3>
                           <div className="flex items-center flex-wrap gap-4 py-3">
-                            {message.payload.body?.messageAttachments?.map(
+                            {message?.payload.body?.messageAttachments?.map(
                               (item) => (
                                 <div
                                   className=" flex items-center gap-4 border bg-gray-50 hover:bg-gray-100 cursor-pointer px-3 py-2 transition-all duration-300 rounded-md hover:shadow-md font-medium text-[13px] "
@@ -463,7 +469,7 @@ export default function EmailDetail() {
                                 >
                                   <div className="flex items-center gap-1">
                                     <span className="bg-gray-500/30 rounded-full p-[7px]">
-                                      {FileIcon(item.attachmentFileName)}
+                                      {FileIcon(item?.attachmentFileName)}
                                     </span>
                                     <span>{item?.attachmentFileName}</span>
                                   </div>

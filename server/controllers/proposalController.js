@@ -12,7 +12,9 @@ export const createProposal = async (req, res) => {
       deadline,
       source,
       note,
-      status,
+      propos,
+      lead,
+      client,
     } = req.body;
 
     const proposal = await proposalModel.create({
@@ -24,7 +26,9 @@ export const createProposal = async (req, res) => {
       deadline,
       source,
       note,
-      status,
+      propos,
+      lead,
+      client,
     });
 
     res.status(200).send({
@@ -62,7 +66,9 @@ export const updateProposal = async (req, res) => {
       deadline,
       source,
       note,
-      status,
+      propos,
+      lead,
+      client,
     } = req.body;
 
     const existingProposal = await proposalModel.findById(proposalId);
@@ -84,7 +90,9 @@ export const updateProposal = async (req, res) => {
         deadline: deadline ? deadline : existingProposal.deadline,
         source: source ? source : existingProposal.source,
         note: note ? note : existingProposal.note,
-        status: status ? status : existingProposal.status,
+        propos: propos ? propos : existingProposal.propos,
+        lead: lead ? lead : existingProposal.lead,
+        client: client ? client : existingProposal.client,
       },
       { new: true }
     );
@@ -179,7 +187,9 @@ export const copyProposal = async (req, res) => {
       deadline: "",
       source: existingProposal.source,
       note: "",
-      status: existingProposal.status,
+      propos: existingProposal.propos,
+      lead: existingProposal.lead,
+      client: existingProposal.client,
     });
 
     res.status(200).send({

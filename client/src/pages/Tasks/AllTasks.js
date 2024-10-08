@@ -39,6 +39,7 @@ import TaskDetail from "./TaskDetail";
 import { GrUpdate } from "react-icons/gr";
 import { LuImport } from "react-icons/lu";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { BiLoaderCircle } from "react-icons/bi";
 
 import socketIO from "socket.io-client";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
@@ -103,33 +104,10 @@ const AllTasks = () => {
   const status = ["To do", "Progress", "Review", "Onhold"];
   const closeProject = useRef(null);
   const [state, setState] = useState("");
+  const [recurrLoad, setRecurrLoad] = useState(false);
+  const [stateData, setStateData] = useState([]);
 
   console.log("tasksData:", tasksData);
-
-  //---------- Get All Users-----------
-  const getAllUsers = async () => {
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
-      );
-      setUsers(
-        data?.users?.filter((user) => user.role?.access.includes("Tasks")) || []
-      );
-
-      setUserName(
-        data?.users
-          ?.filter((user) => user.role?.access.includes("Tasks"))
-          .map((user) => user.name)
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    getAllUsers();
-    // eslint-disable-next-line
-  }, []);
 
   useEffect(() => {
     const timeId = localStorage.getItem("jobId");
@@ -225,6 +203,31 @@ const AllTasks = () => {
 
   useEffect(() => {
     getlabel();
+  }, []);
+
+  //---------- Get All Users-----------
+  const getAllUsers = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+      );
+      setUsers(
+        data?.users?.filter((user) => user.role?.access.includes("Tasks")) || []
+      );
+
+      setUserName(
+        data?.users
+          ?.filter((user) => user.role?.access.includes("Tasks"))
+          .map((user) => user.name)
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllUsers();
+    // eslint-disable-next-line
   }, []);
 
   // ---------------Get Task on WithoutLoad-----
@@ -486,6 +489,21 @@ const AllTasks = () => {
     setFilterData([...filteredData]);
   };
 
+  // Filter By State
+  const filterByState = (state) => {
+    if (!state) {
+      return;
+    }
+    setStateData("");
+
+    const filteredData = tasksData?.filter((item) => item.status === state);
+
+    // console.log("FilterData", filteredData);
+
+    setStateData([...filteredData]);
+    console.log("stateData:", stateData);
+  };
+
   // -----------Update Task-Project-------->
   const updateTaskProject = async (taskId, projectId) => {
     if (!taskId || !projectId) {
@@ -536,15 +554,15 @@ const AllTasks = () => {
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/task/JLS/${taskId}`,
         { jobHolder, lead, status }
       );
-      if (data?.success) {
+      if (data) {
         const updateTask = data?.task;
         toast.success("Task updated successfully!");
 
         if (filterId || active || active1) {
           setFilterData((prevData) => {
-            if (Array.isArray(prevData)) {
-              return prevData.map((item) =>
-                item._id === updateTask._id ? updateTask : item
+            if (Array?.isArray(prevData)) {
+              return prevData?.map((item) =>
+                item?._id === updateTask?._id ? updateTask : item
               );
             } else {
               return [updateTask];
@@ -561,13 +579,14 @@ const AllTasks = () => {
             return [updateTask];
           }
         });
+
+        getTasks1();
       }
-      getTasks1();
 
       // Send Socket Timer
-      socketId.emit("addTask", {
-        note: "New Task Added",
-      });
+      // socketId.emit("addTask", {
+      //   note: "New Task Added",
+      // });
     } catch (error) {
       console.log(error);
       toast.error(error.response?.data?.message || "An error occurred");
@@ -2099,6 +2118,7 @@ const AllTasks = () => {
       totalHours,
       tasksData,
       state,
+      stateData,
     ]
   );
 
@@ -2115,6 +2135,7 @@ const AllTasks = () => {
     data:
       (active === "All" && !active1 && !filterId ? tasksData : filterData) ||
       [],
+
     enableStickyHeader: true,
     enableStickyFooter: true,
     // columnFilterDisplayMode: "popover",
@@ -2192,14 +2213,19 @@ const AllTasks = () => {
   }, []);
 
   const handleRecurring = async () => {
+    setRecurrLoad(true);
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/call/recurring`
       );
-      getTasks1();
+      if (data) {
+        getTasks1();
+        setRecurrLoad(false);
+      }
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message);
+      setRecurrLoad(false);
     }
   };
 
@@ -2229,7 +2255,7 @@ const AllTasks = () => {
                   setShowDue(false);
                   setFilterId("");
                   handleClearFilters();
-                  setState("Progress");
+                  filterByState(state);
                 }}
                 title="Clear filters"
               >
@@ -2246,6 +2272,7 @@ const AllTasks = () => {
                   value={state}
                   onChange={(e) => {
                     setState(e.target.value);
+                    filterByState(e.target.value);
                   }}
                 >
                   <option value="">Select Status</option>
@@ -2336,7 +2363,11 @@ const AllTasks = () => {
                   style={{ padding: ".4rem 1rem" }}
                   title="Call Recurring"
                 >
-                  Recurring
+                  {recurrLoad ? (
+                    <BiLoaderCircle className="h-5 w-5 animate-spin" />
+                  ) : (
+                    "Recurring"
+                  )}
                 </button>
               )}
               <button

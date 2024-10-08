@@ -367,7 +367,7 @@ export default function FAQ({ setSelectedTab, selectedTab }) {
         {/* ------------Filter FAQ---------*/}
         <div className="flex items-center gap-4 translate-y-1">
           <select
-            className={`border border-gray-400 focus:border-orange-600 rounded-md w-[8rem] h-[2.1rem] outline-none`}
+            className={`border border-gray-400 focus:border-orange-600 rounded-md w-[12rem] h-[2.1rem] outline-none`}
             value={category}
             required
             onChange={(e) => {

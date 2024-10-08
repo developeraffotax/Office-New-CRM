@@ -6,6 +6,7 @@ import {
   createSubTask,
   createTask,
   deleteDailyRecurringTasks,
+  deleteDuplicateTasks,
   deleteSubTask,
   deleteTask,
   getAllCompletedTasks,
@@ -72,6 +73,9 @@ router.put("/update/hours/:id", requiredSignIn, updateTaskHours);
 
 // Delet Many Task
 router.delete("/delete/many", deleteDailyRecurringTasks);
+
+// Duplicate Task
+router.delete("/delete/diplicate", deleteDuplicateTasks);
 
 // Call Recurring Function
 router.get(

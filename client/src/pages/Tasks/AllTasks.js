@@ -376,7 +376,7 @@ const AllTasks = () => {
       return data.reduce((sum, client) => sum + Number(client.hours), 0);
     };
 
-    if (active === "All" && !active1) {
+    if (active === "All" ) {
       setTotalHours(calculateTotalHours(tasksData).toFixed(0));
     } else if (filterData) {
       setTotalHours(calculateTotalHours(filterData).toFixed(0));

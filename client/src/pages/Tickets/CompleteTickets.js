@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { mkConfig, generateCsv, download } from "export-to-csv";
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -13,10 +12,10 @@ import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useAuth } from "../../context/authContext";
-import { MdCheckCircle, MdInsertComment } from "react-icons/md";
+import { MdInsertComment } from "react-icons/md";
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
-import { useNavigate, useRoutes } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import JobCommentModal from "../Jobs/JobCommentModal";
 
 export default function CompleteTickets() {
@@ -75,9 +74,16 @@ export default function CompleteTickets() {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers(data?.users);
+      setUsers(
+        data?.users?.filter((user) => user.role?.access.includes("Tickets")) ||
+          []
+      );
 
-      setUserName(data?.users.map((user) => user.name));
+      setUserName(
+        data?.users
+          ?.filter((user) => user.role?.access.includes("Tickets"))
+          .map((user) => user.name)
+      );
     } catch (error) {
       console.log(error);
     }

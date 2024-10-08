@@ -120,13 +120,9 @@ export default function AllJobs() {
       return data.reduce((sum, client) => sum + Number(client.totalHours), 0);
     };
 
-    if (active === "All" && !active1) {
+    if (active === "All") {
       setTotalHours(calculateTotalHours(tableData).toFixed(0));
     } else if (filterData) {
-      setTotalHours(calculateTotalHours(filterData).toFixed(0));
-    }
-
-    if (filterData) {
       setTotalHours(calculateTotalHours(filterData).toFixed(0));
     }
   }, [tableData, filterData, active, active1]);
@@ -330,7 +326,7 @@ export default function AllJobs() {
       // setUsers(data?.users.map((user) => user.name) || []);
       setUsers(
         data?.users
-          ?.filter((user) => user.access.includes("job"))
+          ?.filter((user) => user.role?.access.includes("Jobs"))
           .map((user) => user.name) || []
       );
     } catch (error) {
@@ -2251,9 +2247,9 @@ export default function AllJobs() {
                 <div className="h-full hidden1 overflow-y-scroll relative">
                   <MaterialReactTable table={table} />
                 </div>
-                {/* <span className="absolute bottom-4 left-[30.5%] z-10 font-semibold text-[15px] text-gray-900">
+                <span className="absolute bottom-4 left-[33%] z-10 font-semibold text-[15px] text-gray-900">
                   Total Hrs: {totalHours}
-                </span> */}
+                </span>
               </div>
             )}
           </>

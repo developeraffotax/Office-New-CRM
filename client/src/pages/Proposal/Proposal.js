@@ -34,12 +34,14 @@ export default function Proposal() {
     deadline: "",
     source: "",
     note: "",
-    status: "",
+    propos: "",
+    lead: "",
+    client: "",
   });
   const [selectFilter, setSelectFilter] = useState("");
   const [proposalId, setProposalId] = useState("");
   const sources = ["Email", "UPW", "PPH", "Other"];
-  const status = ["Proposal", "Lead", "Client"];
+  const status = ["Yes", "No"];
   const [showMail, setShowMail] = useState(false);
   const [mail, setMail] = useState("");
   const mailDetailref = useRef(null);
@@ -534,7 +536,7 @@ export default function Proposal() {
             row.original[columnId]?.toString().toLowerCase() || "";
           return cellValue.includes(filterValue.toLowerCase());
         },
-        size: 400,
+        size: 500,
         minSize: 350,
         maxSize: 560,
         grow: false,
@@ -1218,7 +1220,7 @@ export default function Proposal() {
       },
       //   Status
       {
-        accessorKey: "status",
+        accessorKey: "propos",
         minSize: 80,
         maxSize: 150,
         size: 90,
@@ -1234,7 +1236,7 @@ export default function Proposal() {
                   setSelectFilter("");
                 }}
               >
-                Status
+                Proposal
               </span>
               <select
                 value={column.getFilterValue() || ""}
@@ -1253,7 +1255,7 @@ export default function Proposal() {
           );
         },
         Cell: ({ cell, row }) => {
-          const state = row.original.status;
+          const state = row.original.propos;
           const [show, setShow] = useState(false);
           const [localStage, setLocalStage] = useState(state || "");
 
@@ -1263,12 +1265,194 @@ export default function Proposal() {
 
             setFormData((prevData) => ({
               ...prevData,
-              status: localStage,
+              propos: localStage,
             }));
 
             handleUpdateData(row.original._id, {
               ...formData,
-              status: selectedValue,
+              propos: selectedValue,
+            });
+
+            setShow(false);
+          };
+          return (
+            <div className="w-full ">
+              {!show ? (
+                <div
+                  className="w-full cursor-pointer"
+                  onDoubleClick={() => setShow(true)}
+                >
+                  {state ? (
+                    <span>{state}</span>
+                  ) : (
+                    <span className="text-white">.</span>
+                  )}
+                </div>
+              ) : (
+                <select
+                  value={localStage || ""}
+                  className="w-full h-[2rem] rounded-md border-none  outline-none"
+                  onChange={handleChange}
+                >
+                  <option value="empty"></option>
+                  {status?.map((stat, i) => (
+                    <option value={stat} key={i}>
+                      {stat}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          );
+        },
+        filterFn: "equals",
+        filterSelectOptions: status?.map((stat) => stat),
+        filterVariant: "select",
+      },
+      // Lead
+      {
+        accessorKey: "lead",
+        minSize: 80,
+        maxSize: 150,
+        size: 90,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                  setSelectFilter("");
+                }}
+              >
+                Lead
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                  setSelectFilter(e.target.value);
+                }}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {status.map((stat) => (
+                  <option value={stat}>{stat}</option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const state = row.original.lead;
+          const [show, setShow] = useState(false);
+          const [localStage, setLocalStage] = useState(state || "");
+
+          const handleChange = (e) => {
+            const selectedValue = e.target.value;
+            setLocalStage(selectedValue);
+
+            setFormData((prevData) => ({
+              ...prevData,
+              lead: localStage,
+            }));
+
+            handleUpdateData(row.original._id, {
+              ...formData,
+              lead: selectedValue,
+            });
+
+            setShow(false);
+          };
+          return (
+            <div className="w-full ">
+              {!show ? (
+                <div
+                  className="w-full cursor-pointer"
+                  onDoubleClick={() => setShow(true)}
+                >
+                  {state ? (
+                    <span>{state}</span>
+                  ) : (
+                    <span className="text-white">.</span>
+                  )}
+                </div>
+              ) : (
+                <select
+                  value={localStage || ""}
+                  className="w-full h-[2rem] rounded-md border-none  outline-none"
+                  onChange={handleChange}
+                >
+                  <option value="empty"></option>
+                  {status?.map((stat, i) => (
+                    <option value={stat} key={i}>
+                      {stat}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          );
+        },
+        filterFn: "equals",
+        filterSelectOptions: status?.map((stat) => stat),
+        filterVariant: "select",
+      },
+      // Client
+      {
+        accessorKey: "client",
+        minSize: 80,
+        maxSize: 150,
+        size: 90,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                  setSelectFilter("");
+                }}
+              >
+                Client
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                  setSelectFilter(e.target.value);
+                }}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {status.map((stat) => (
+                  <option value={stat}>{stat}</option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const state = row.original.client;
+          const [show, setShow] = useState(false);
+          const [localStage, setLocalStage] = useState(state || "");
+
+          const handleChange = (e) => {
+            const selectedValue = e.target.value;
+            setLocalStage(selectedValue);
+
+            setFormData((prevData) => ({
+              ...prevData,
+              client: localStage,
+            }));
+
+            handleUpdateData(row.original._id, {
+              ...formData,
+              client: selectedValue,
             });
 
             setShow(false);

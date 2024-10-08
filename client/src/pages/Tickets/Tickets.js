@@ -243,8 +243,8 @@ export default function Tickets() {
       {
         accessorKey: "companyName",
         minSize: 100,
-        maxSize: 200,
-        size: 170,
+        maxSize: 300,
+        size: 280,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -425,7 +425,7 @@ export default function Tickets() {
         accessorKey: "subject",
         minSize: 200,
         maxSize: 500,
-        size: 400,
+        size: 460,
         grow: false,
         Header: ({ column }) => {
           return (

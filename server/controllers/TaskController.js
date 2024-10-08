@@ -753,13 +753,18 @@ const calculateStartDate = (date, recurringType) => {
   }
 };
 
-export const autoCreateRecurringTasks = async () => {
+export const autoCreateRecurringTasks = async (req, res) => {
   try {
     const now = new Date();
+    const startOfToday = new Date(now.setHours(0, 0, 0, 0));
+    const endOfToday = new Date(now.setHours(23, 59, 59, 999));
 
     const tasks = await taskModel.find({
-      recurring: { $ne: "" },
-      nextRecurringDate: { $lte: now },
+      recurring: { $exists: true, $ne: "", $ne: null },
+      nextRecurringDate: {
+        $gte: startOfToday,
+        $lte: endOfToday,
+      },
     });
 
     for (const task of tasks) {
@@ -797,6 +802,11 @@ export const autoCreateRecurringTasks = async () => {
       // );
       // await task.save();
     }
+
+    res.status(200).send({
+      success: true,
+      message: "Recurring function call...",
+    });
   } catch (error) {
     console.error("Error in auto-creating recurring tasks:", error);
   }
@@ -839,6 +849,41 @@ export const deleteDailyRecurringTasks = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "An error occurred while deleting tasks",
+    });
+  }
+};
+
+// Delete Duplicate tasks
+export const deleteDuplicateTasks = async (req, res) => {
+  try {
+    const tasks = await taskModel.find();
+
+    const uniqueTasks = new Map();
+    const duplicatesToDelete = [];
+
+    tasks.forEach((task) => {
+      const uniqueKey = `${task.task}_${task.jobHolder}`;
+
+      if (!uniqueTasks.has(uniqueKey)) {
+        uniqueTasks.set(uniqueKey, task._id);
+      } else {
+        duplicatesToDelete.push(task._id);
+      }
+    });
+
+    if (duplicatesToDelete.length > 0) {
+      await taskModel.deleteMany({ _id: { $in: duplicatesToDelete } });
+    }
+
+    res.status(200).json({
+      message: "Duplicate tasks have been deleted successfully.",
+      deletedCount: duplicatesToDelete.length,
+    });
+  } catch (error) {
+    console.error("Error deleting duplicate tasks:", error);
+    res.status(500).json({
+      message: "An error occurred while deleting duplicate tasks.",
+      error: error.message,
     });
   }
 };

@@ -27,7 +27,13 @@ const proposalSchema = new mongoose.Schema(
     note: {
       type: String,
     },
-    status: {
+    propos: {
+      type: String,
+    },
+    lead: {
+      type: String,
+    },
+    client: {
       type: String,
     },
   },

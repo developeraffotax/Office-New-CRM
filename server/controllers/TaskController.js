@@ -265,7 +265,7 @@ export const updateJobHolderLS = async (req, res) => {
       if (status === "completed") {
         updateTask = await taskModel.findByIdAndUpdate(
           task._id,
-          { status: status, recurring: "", nextRecurringDate: "" },
+          { status: status },
           { new: true }
         );
       } else {
@@ -753,12 +753,12 @@ const calculateStartDate = (date, recurringType) => {
   }
 };
 
-const autoCreateRecurringTasks = async () => {
+export const autoCreateRecurringTasks = async () => {
   try {
     const now = new Date();
 
     const tasks = await taskModel.find({
-      recurring: { $ne: null },
+      recurring: { $ne: "" },
       nextRecurringDate: { $lte: now },
     });
 
@@ -774,7 +774,7 @@ const autoCreateRecurringTasks = async () => {
         lead: task.lead,
         recurring: task.recurring,
         labal: task.labal,
-        status: task.status,
+        status: "Progress",
         nextRecurringDate: calculateStartDate(
           task.nextRecurringDate,
           task.recurring

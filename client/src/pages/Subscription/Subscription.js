@@ -71,9 +71,17 @@ export default function Subscription() {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers(data?.users);
+      setUsers(
+        data?.users?.filter((user) =>
+          user.role?.access.includes("Subscription")
+        ) || []
+      );
 
-      setUserName(data?.users.map((user) => user.name));
+      setUserName(
+        data?.users
+          ?.filter((user) => user.role?.access.includes("Subscription"))
+          .map((user) => user.name)
+      );
     } catch (error) {
       console.log(error);
     }
@@ -979,7 +987,7 @@ export default function Subscription() {
         Cell: ({ row }) => {
           const status = getStatus(
             row.original.job.deadline,
-            row.original.job.billingStart
+            row.original.job.billingEnd
           );
 
           return (
@@ -1001,7 +1009,7 @@ export default function Subscription() {
         filterFn: (row, id, filterValue) => {
           const status = getStatus(
             row.original.job.deadline,
-            row.original.job.billingStart
+            row.original.job.billingEnd
           );
           if (status === undefined || status === null) return false;
           return status.toString().toLowerCase() === filterValue.toLowerCase();

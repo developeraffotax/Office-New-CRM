@@ -2,6 +2,7 @@ import express from "express";
 import { isAdmin, requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
   addlabel,
+  autoCreateRecurringTasks,
   createSubTask,
   createTask,
   deleteDailyRecurringTasks,
@@ -71,5 +72,13 @@ router.put("/update/hours/:id", requiredSignIn, updateTaskHours);
 
 // Delet Many Task
 router.delete("/delete/many", deleteDailyRecurringTasks);
+
+// Call Recurring Function
+router.get(
+  "/call/recurring",
+  requiredSignIn,
+  isAdmin,
+  autoCreateRecurringTasks
+);
 
 export default router;

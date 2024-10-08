@@ -344,7 +344,7 @@ export default function FAQ({ setSelectedTab, selectedTab }) {
       <div className="flex items-center flex-wrap gap-6">
         <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-2 transition-all duration-300 w-fit">
           <button
-            className={`py-1 px-2 outline-none transition-all  duration-300   w-full ${
+            className={`py-1 px-2 outline-none transition-all  duration-300   w-[6.5rem] ${
               selectedTab === "templates"
                 ? "bg-orange-500 text-white "
                 : "text-black bg-gray-100"
@@ -354,7 +354,7 @@ export default function FAQ({ setSelectedTab, selectedTab }) {
             Templates
           </button>
           <button
-            className={`py-1 px-2 outline-none transition-all duration-300 w-full  ${
+            className={`py-1 px-2 outline-none transition-all duration-300 w-[6.5rem]  ${
               selectedTab === "faq"
                 ? "bg-orange-500 text-white border-l-2 border-orange-500"
                 : "text-black bg-gray-100 hover:bg-slate-200"

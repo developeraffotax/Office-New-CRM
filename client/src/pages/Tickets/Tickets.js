@@ -79,9 +79,16 @@ export default function Tickets() {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers(data?.users);
+      setUsers(
+        data?.users?.filter((user) => user.role?.access.includes("Tickets")) ||
+          []
+      );
 
-      setUserName(data?.users.map((user) => user.name));
+      setUserName(
+        data?.users
+          ?.filter((user) => user.role?.access.includes("Tickets"))
+          .map((user) => user.name)
+      );
     } catch (error) {
       console.log(error);
     }

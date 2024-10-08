@@ -113,9 +113,17 @@ export default function Template() {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers(data?.users);
+      setUsers(
+        data?.users?.filter((user) =>
+          user.role?.access.includes("Templates")
+        ) || []
+      );
 
-      setUserName(data?.users.map((user) => user.name));
+      setUserName(
+        data?.users
+          ?.filter((user) => user.role?.access.includes("Templates"))
+          .map((user) => user.name)
+      );
     } catch (error) {
       console.log(error);
     }
@@ -713,7 +721,7 @@ export default function Template() {
           <>
             <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-2 transition-all duration-300 w-fit">
               <button
-                className={`py-1 px-2 outline-none transition-all duration-300  w-full ${
+                className={`py-1 px-2 w-[6.5rem] outline-none transition-all duration-300 ${
                   selectedTab === "templates"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
                     : "text-black bg-gray-100"
@@ -723,7 +731,7 @@ export default function Template() {
                 Templates
               </button>
               <button
-                className={`py-1 px-2 outline-none transition-all duration-300 w-full  ${
+                className={`py-1 px-2 w-[6.5rem] outline-none transition-all duration-300   ${
                   selectedTab === "faq"
                     ? "bg-orange-500 text-white"
                     : "text-black bg-gray-100 hover:bg-slate-200"

@@ -113,11 +113,14 @@ const AllTasks = () => {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
       setUsers(
-        data?.users?.filter((user) => user.access.includes("task")) || []
+        data?.users?.filter((user) => user.role?.access.includes("Tasks")) || []
       );
-      // setUsers(data?.users);
 
-      setUserName(data?.users.map((user) => user.name));
+      setUserName(
+        data?.users
+          ?.filter((user) => user.role?.access.includes("Tasks"))
+          .map((user) => user.name)
+      );
     } catch (error) {
       console.log(error);
     }
@@ -178,17 +181,21 @@ const AllTasks = () => {
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/all`
       );
 
-      if (auth.user.role.name === "Admin") {
+      setTasksData(data?.tasks);
+
+      if (
+        auth.user.role.name === "Admin" ||
+        auth.user.role.name === "SEO Manager" ||
+        auth.user.role.name === "Accountant-Lead"
+      ) {
         setTasksData(data?.tasks);
       } else {
-        const filteredTasks = data?.tasks?.filter(
-          (item) => item.jobHolder.trim() === auth.user.name.trim()
+        const filteredTasks = data?.tasks?.filter((item) =>
+          item?.jobHolder?.includes(auth?.user?.name)
         );
 
-        setTasksData(filteredTasks);
+        setTasksData(filteredTasks || []);
       }
-
-      setTasksData(data?.tasks);
 
       setLoading(false);
     } catch (error) {
@@ -228,11 +235,15 @@ const AllTasks = () => {
       );
 
       setTasksData(data?.tasks);
-      if (auth.user.role.name === "Admin") {
+      if (
+        auth.user.role.name === "Admin" ||
+        auth.user.role.name === "SEO Manager" ||
+        auth.user.role.name === "Accountant-Lead"
+      ) {
         setTasksData(data?.tasks);
       } else {
         const filteredTasks = data?.tasks?.filter(
-          (item) => item.jobHolder.trim() === auth.user.name.trim()
+          (item) => item.jobHolder === auth.user.name
         );
 
         setTasksData(filteredTasks);
@@ -587,7 +598,16 @@ const AllTasks = () => {
             item._id === updateTask._id ? updateTask : item
           )
         );
+
+        if (filterData) {
+          setFilterData((prevData) =>
+            prevData?.map((item) =>
+              item?._id === updateTask?._id ? updateTask : item
+            )
+          );
+        }
       }
+
       // Send Socket Timer
       socketId.emit("addTask", {
         note: "New Task Added",
@@ -1130,13 +1150,17 @@ const AllTasks = () => {
                 if (filterId || active || active1) {
                   setFilterData((prevData) =>
                     prevData?.map((item) =>
-                      item._id === taskId ? { ...item, hours: hours } : item
+                      item._id === data?.task?._id
+                        ? { ...item, hours: hour }
+                        : item
                     )
                   );
                 }
                 setTasksData((prevData) =>
                   prevData?.map((item) =>
-                    item._id === taskId ? { ...item, hours: hours } : item
+                    item._id === data?.task?._id
+                      ? { ...item, hours: hour }
+                      : item
                   )
                 );
                 setHour("");
@@ -1994,9 +2018,72 @@ const AllTasks = () => {
 
         filterVariant: "select",
         filterSelectOptions: labelData.map((label) => label.name),
-        size: 160,
+        size: 140,
         minSize: 100,
         maxSize: 210,
+        grow: false,
+      },
+      // Recurring
+      {
+        accessorKey: "recurring",
+        Header: ({ column }) => {
+          const recurringData = ["daily", "weekly", "monthly", "quarterly"];
+          return (
+            <div className=" flex flex-col items-center justify-center  w-full pr-2  gap-[2px]">
+              <span
+                className="cursor-pointer w-full text-center"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Recurring
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal w-full h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {recurringData?.map((recurr, i) => (
+                  <option key={i} value={recurr} className="capitalize">
+                    {recurr}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row, data }) => {
+          const recurring = row.original.recurring;
+
+          return (
+            <div className="w-full flex items-center justify-center">
+              <span
+                className={`text-[15px] font-medium capitalize py-1 px-2 rounded-md  ${
+                  recurring === "daily"
+                    ? "bg-orange-600 text-white"
+                    : recurring === "weekly"
+                    ? "bg-green-600 text-white"
+                    : recurring === "monthly"
+                    ? "bg-sky-600 text-white"
+                    : recurring === "quarterly"
+                    ? "bg-pink-600 text-white"
+                    : ""
+                } `}
+              >
+                {recurring}
+              </span>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+
+          return cellValue.startsWith(filterValue.toLowerCase());
+        },
+        size: 100,
         grow: false,
       },
     ],
@@ -2103,6 +2190,18 @@ const AllTasks = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleRecurring = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/call/recurring`
+      );
+      getTasks1();
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    }
+  };
 
   return (
     <Layout>
@@ -2230,6 +2329,16 @@ const AllTasks = () => {
               >
                 <LuImport className="h-6 w-6 " />
               </button>
+              {auth?.user?.role?.name === "Admin" && (
+                <button
+                  className={`${style.button1} text-[15px] `}
+                  onClick={handleRecurring}
+                  style={{ padding: ".4rem 1rem" }}
+                  title="Call Recurring"
+                >
+                  Recurring
+                </button>
+              )}
               <button
                 className={`${style.button1} text-[15px] `}
                 onClick={() => setShowlabel(true)}
@@ -2518,9 +2627,9 @@ const AllTasks = () => {
                 <div className="h-full hidden1 overflow-y-scroll relative">
                   <MaterialReactTable table={table} />
                 </div>
-                {/* <span className="absolute bottom-4 left-[42.6%] z-10 font-semibold text-[15px] text-gray-900">
+                <span className="absolute bottom-4 left-[35%] z-10 font-semibold text-[15px] text-gray-900">
                   Total Hrs: {totalHours}
-                </span> */}
+                </span>
               </div>
             )}
           </div>

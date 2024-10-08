@@ -168,9 +168,15 @@ export default function Lead() {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers(data?.users);
+      setUsers(
+        data?.users?.filter((user) => user.role?.access.includes("Leads")) || []
+      );
 
-      setUserName(data?.users.map((user) => user.name));
+      setUserName(
+        data?.users
+          ?.filter((user) => user.role?.access.includes("Leads"))
+          .map((user) => user.name)
+      );
     } catch (error) {
       console.log(error);
     }
@@ -1813,7 +1819,7 @@ export default function Lead() {
           <div className="flex items-center gap-5">
             <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-2 transition-all duration-300 w-fit">
               <button
-                className={`py-1 px-4 outline-none transition-all duration-300  w-full ${
+                className={`py-1 px-4  outline-none transition-all duration-300  w-[6rem] ${
                   selectedTab === "progress"
                     ? "bg-orange-500 text-white "
                     : "text-black bg-gray-100"
@@ -1823,7 +1829,7 @@ export default function Lead() {
                 Progress
               </button>
               <button
-                className={`py-1 px-4 outline-none border-l-2 border-orange-500 transition-all duration-300 w-full  ${
+                className={`py-1 px-4 outline-none border-l-2 border-orange-500 transition-all duration-300 w-[6rem]  ${
                   selectedTab === "won"
                     ? "bg-orange-500 text-white"
                     : "text-black bg-gray-100 hover:bg-slate-200"
@@ -1836,7 +1842,7 @@ export default function Lead() {
                 Won
               </button>
               <button
-                className={`py-1 px-4 outline-none border-l-2 border-orange-500 transition-all duration-300 w-full  ${
+                className={`py-1 px-4 outline-none border-l-2 border-orange-500 transition-all duration-300 w-[6rem]  ${
                   selectedTab === "lost"
                     ? "bg-orange-500 text-white"
                     : "text-black bg-gray-100 hover:bg-slate-200"

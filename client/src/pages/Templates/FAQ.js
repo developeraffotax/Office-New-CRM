@@ -266,7 +266,7 @@ export default function FAQ({ setSelectedTab, selectedTab }) {
 
           {/* ---------FAQ's Buttons------------*/}
           <div className="flex items-center gap-4">
-            {auth?.user?.role === "Admin" && (
+            
               <div
                 className={`relative w-[8rem]  border-2 rounded-md py-1 px-2 flex items-center justify-between gap-1 ${
                   showAllCategories ? "border-orange-600" : "border-gray-200 "
@@ -314,7 +314,7 @@ export default function FAQ({ setSelectedTab, selectedTab }) {
                   </div>
                 )}
               </div>
-            )}
+            
 
             {/* <button
               className={`w-[3rem] h-[2.2rem] flex items-center justify-center rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}

@@ -30,8 +30,8 @@ const formatElapsedTime = (createdAt) => {
 };
 
 export default function Header() {
-  const [search, setSearch] = useState("");
-  const { auth, setAuth, setFilterId, time } = useAuth();
+  const { auth, setAuth, setFilterId, time, searchValue, setSearchValue } =
+    useAuth();
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
   const navigate = useNavigate();
@@ -312,9 +312,9 @@ export default function Header() {
             </span>
             <input
               type="search"
-              name="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
               className="w-[20rem] h-[2.5rem] rounded-[2.5rem] pl-7 pr-3 outline-none border-[1.5px] border-gray-400 focus:border-orange-600"
             />
           </form>

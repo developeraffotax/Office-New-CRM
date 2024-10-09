@@ -1780,7 +1780,7 @@ export default function Lead() {
     data: leadData || [],
     enableStickyHeader: true,
     enableStickyFooter: true,
-    muiTableContainerProps: { sx: { maxHeight: "805px" } },
+    muiTableContainerProps: { sx: { maxHeight: "850px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -1836,7 +1836,7 @@ export default function Lead() {
 
   return (
     <Layout>
-      <div className=" relative w-full min-h-screen py-4 px-2 sm:px-4">
+      <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h1 className=" text-xl sm:text-2xl font-semibold ">Leads</h1>

@@ -1240,7 +1240,7 @@ export default function CompletedJobs({
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "810px" } },
+    muiTableContainerProps: { sx: { maxHeight: "850px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -1289,7 +1289,7 @@ export default function CompletedJobs({
   });
 
   return (
-    <div className="w-full min-h-screen overflow-hidden">
+    <div className="w-full h-full overflow-y-auto">
       {loading ? (
         <Loader />
       ) : (

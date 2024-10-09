@@ -575,7 +575,7 @@ export default function Template() {
     data: templateData || [],
     enableStickyHeader: true,
     enableStickyFooter: true,
-    muiTableContainerProps: { sx: { maxHeight: "805px" } },
+    muiTableContainerProps: { sx: { maxHeight: "850px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -622,7 +622,7 @@ export default function Template() {
 
   return (
     <Layout>
-      <div className=" relative w-full min-h-screen py-4 px-2 sm:px-4">
+      <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
         {selectedTab === "templates" && (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

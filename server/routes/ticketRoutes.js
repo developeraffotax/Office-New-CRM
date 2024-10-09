@@ -2,6 +2,7 @@ import express from "express";
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
   deleteTicket,
+  getAllInbox,
   getAllSendTickets,
   getCompleteTickets,
   getSingleEmailDetail,
@@ -63,5 +64,8 @@ router.get("/ticket/comments/:id", singleTicketComments);
 
 // Get Complete Ticket
 router.get("/complete/tickets", getCompleteTickets);
+
+// Fetch All Inbox
+router.get("/fetch/inbox/:selectedCompany/:pageNo", getAllInbox);
 
 export default router;

@@ -267,22 +267,22 @@ const AllTasks = () => {
     // eslint-disable-next-line
   }, [socketId]);
 
-  useEffect(() => {
-    if (auth && auth?.user) {
-      if (auth.user.role.name === "Admin") {
-        setTasksData(tasksData);
-      } else {
-        const filteredTasks = tasksData.filter((task) => {
-          return task.project?.users_list?.some(
-            (user) => user._id === auth.user.id
-          );
-        });
+  // useEffect(() => {
+  //   if (auth && auth?.user) {
+  //     if (auth.user.role.name === "Admin") {
+  //       setTasksData(tasksData);
+  //     } else {
+  //       const filteredTasks = tasksData.filter((task) => {
+  //         return task.project?.users_list?.some(
+  //           (user) => user._id === auth.user.id
+  //         );
+  //       });
 
-        setTasksData(filteredTasks);
-      }
-    }
-    //eslint-disable-next-line
-  }, [auth]);
+  //       setTasksData(filteredTasks);
+  //     }
+  //   }
+  //   //eslint-disable-next-line
+  // }, [auth]);
 
   // ---------Delete Project-------->
   const handleDeleteConfirmation = (projectId) => {
@@ -1000,7 +1000,7 @@ const AllTasks = () => {
                   column.setFilterValue("");
                 }}
               >
-                Job Holder
+                Assign
               </span>
               <select
                 value={column.getFilterValue() || ""}
@@ -1752,7 +1752,7 @@ const AllTasks = () => {
                   column.setFilterValue("");
                 }}
               >
-                Lead
+                Owner
               </span>
               <select
                 value={column.getFilterValue() || ""}

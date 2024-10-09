@@ -764,7 +764,7 @@ export default function AllJobs() {
                   column.setFilterValue("");
                 }}
               >
-                Job Holder
+                Assign
               </span>
               <select
                 value={column.getFilterValue() || ""}
@@ -1580,7 +1580,7 @@ export default function AllJobs() {
                   column.setFilterValue("");
                 }}
               >
-                Lead
+                Owner
               </span>
               <select
                 value={column.getFilterValue() || ""}
@@ -1830,6 +1830,63 @@ export default function AllJobs() {
         maxSize: 210,
         grow: false,
       },
+      // Source
+
+      ...(auth?.user?.role?.name === "Admin"
+        ? [
+            {
+              accessorKey: "source",
+              Header: ({ column }) => {
+                const sources = [
+                  "FIV",
+                  "UPW",
+                  "PPH",
+                  "Website",
+                  "Referal",
+                  "Partner",
+                ];
+                return (
+                  <div className=" flex flex-col gap-[2px] w-[5.5rem] items-center justify-center  ">
+                    <span
+                      className="ml-1 w-full text-center cursor-pointer pr-6"
+                      title="Clear Filter"
+                      onClick={() => {
+                        column.setFilterValue("");
+                      }}
+                    >
+                      Source
+                    </span>
+
+                    <select
+                      value={column.getFilterValue() || ""}
+                      onChange={(e) => column.setFilterValue(e.target.value)}
+                      className="font-normal w-full max-w-[5rem] h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                    >
+                      <option value="">Select</option>
+                      {sources?.map((sour, i) => (
+                        <option key={i} value={sour}>
+                          {sour}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              },
+              Cell: ({ cell, row }) => {
+                const source = row.original.source;
+                return (
+                  <div className="w-full flex items-center justify-center">
+                    <span className="text-[15px] font-medium">
+                      {source && source}
+                    </span>
+                  </div>
+                );
+              },
+              filterFn: "equals",
+              size: 90,
+            },
+          ]
+        : []),
     ],
     // eslint-disable-next-line
     [users, play, auth, note, totalHours]
@@ -1872,7 +1929,7 @@ export default function AllJobs() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "#ececec",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -2247,9 +2304,9 @@ export default function AllJobs() {
                 <div className="h-full hidden1 overflow-y-scroll relative">
                   <MaterialReactTable table={table} />
                 </div>
-                <span className="absolute bottom-4 left-[33%] z-10 font-semibold text-[15px] text-gray-900">
+                {/* <span className="absolute bottom-4 left-[33%] z-10 font-semibold text-[15px] text-gray-900">
                   Total Hrs: {totalHours}
-                </span>
+                </span> */}
               </div>
             )}
           </>

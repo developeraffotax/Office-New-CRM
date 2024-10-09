@@ -269,7 +269,7 @@ const AllTasks = () => {
 
   useEffect(() => {
     if (auth && auth?.user) {
-      if (auth.user.role === "Admin") {
+      if (auth.user.role.name === "Admin") {
         setTasksData(tasksData);
       } else {
         const filteredTasks = tasksData.filter((task) => {
@@ -376,13 +376,9 @@ const AllTasks = () => {
       return data.reduce((sum, client) => sum + Number(client.hours), 0);
     };
 
-    if (active === "All" ) {
+    if (active === "All") {
       setTotalHours(calculateTotalHours(tasksData).toFixed(0));
     } else if (filterData) {
-      setTotalHours(calculateTotalHours(filterData).toFixed(0));
-    }
-
-    if (filterData) {
       setTotalHours(calculateTotalHours(filterData).toFixed(0));
     }
   }, [tasksData, filterData, active, active1, activeBtn]);
@@ -2118,7 +2114,6 @@ const AllTasks = () => {
       totalHours,
       tasksData,
       state,
-      stateData,
     ]
   );
 
@@ -2658,9 +2653,9 @@ const AllTasks = () => {
                 <div className="h-full hidden1 overflow-y-scroll relative">
                   <MaterialReactTable table={table} />
                 </div>
-                <span className="absolute bottom-4 left-[35%] z-10 font-semibold text-[15px] text-gray-900">
+                {/* <span className="absolute bottom-4 left-[35%] z-10 font-semibold text-[15px] text-gray-900">
                   Total Hrs: {totalHours}
-                </span>
+                </span> */}
               </div>
             )}
           </div>

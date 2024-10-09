@@ -300,7 +300,7 @@ export const getSingleEmailDetail = async (req, res) => {
 export const updateTickets = async (req, res) => {
   try {
     const ticketId = req.params.id;
-    const { jobDate, state } = req.body;
+    const { jobDate, state, jobHolder } = req.body;
 
     console.log("State:", state);
 
@@ -319,6 +319,7 @@ export const updateTickets = async (req, res) => {
       {
         jobDate: jobDate || existingTicket.jobDate,
         state: state ? state : existingTicket.state,
+        jobHolder: jobHolder ? jobHolder : existingTicket.jobHolder,
       },
 
       { new: true }

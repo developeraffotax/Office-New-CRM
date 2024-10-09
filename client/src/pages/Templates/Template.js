@@ -20,7 +20,7 @@ import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
 import { GrCopy } from "react-icons/gr";
 import { RxClipboardCopy } from "react-icons/rx";
-import { FaUsers } from "react-icons/fa";
+
 import { RiEdit2Line } from "react-icons/ri";
 
 export default function Template() {
@@ -641,55 +641,53 @@ export default function Template() {
 
             {/* ---------Template Buttons */}
             <div className="flex items-center gap-4">
-              
-                <div
-                  className={`relative w-[8rem]  border-2 rounded-md py-1 px-2 flex items-center justify-between gap-1 ${
-                    showAllCategories ? "border-orange-600" : "border-gray-200 "
-                  }`}
-                  onClick={() => setShowAllCategories(!showAllCategories)}
-                >
-                  <span className="text-[15px] select-none text-gray-900 cursor-pointer">
-                    Categories
-                  </span>
+              <div
+                className={`relative w-[8rem]  border-2 rounded-md py-1 px-2 flex items-center justify-between gap-1 ${
+                  showAllCategories ? "border-orange-600" : "border-gray-200 "
+                }`}
+                onClick={() => setShowAllCategories(!showAllCategories)}
+              >
+                <span className="text-[15px] select-none text-gray-900 cursor-pointer">
+                  Categories
+                </span>
 
-                  {/* -----------Categories------- */}
-                  {showAllCategories && (
-                    <div className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto hidden1 z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]">
-                      {categoryData &&
-                        categoryData?.map((category) => (
-                          <div
-                            key={category._id}
-                            className="w-full flex items-center justify-between gap-1 rounded-md bg-white border py-1 px-1 hover:bg-gray-100"
-                          >
-                            <p className="text-[13px] w-[8rem] ">
-                              {category?.name}
-                            </p>
-                            <div className="flex items-center gap-1">
-                              <span
-                                onClick={() => {
-                                  setCategoryId(category._id);
-                                  setShowCategory(true);
-                                  setName(category?.name);
-                                }}
-                                title="Edit Categroy"
-                              >
-                                <MdOutlineEdit className="h-5 w-5 cursor-pointer hover:text-sky-500 transition-all duration-200" />
-                              </span>
-                              <span
-                                title="Delete Categroy"
-                                onClick={() =>
-                                  handleDeleteConfirmation(category._id)
-                                }
-                              >
-                                <AiTwotoneDelete className="h-5 w-5 cursor-pointer hover:text-red-500 transition-all duration-200" />
-                              </span>
-                            </div>
+                {/* -----------Categories------- */}
+                {showAllCategories && (
+                  <div className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto hidden1 z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]">
+                    {categoryData &&
+                      categoryData?.map((category) => (
+                        <div
+                          key={category._id}
+                          className="w-full flex items-center justify-between gap-1 rounded-md bg-white border py-1 px-1 hover:bg-gray-100"
+                        >
+                          <p className="text-[13px] w-[8rem] ">
+                            {category?.name}
+                          </p>
+                          <div className="flex items-center gap-1">
+                            <span
+                              onClick={() => {
+                                setCategoryId(category._id);
+                                setShowCategory(true);
+                                setName(category?.name);
+                              }}
+                              title="Edit Categroy"
+                            >
+                              <MdOutlineEdit className="h-5 w-5 cursor-pointer hover:text-sky-500 transition-all duration-200" />
+                            </span>
+                            <span
+                              title="Delete Categroy"
+                              onClick={() =>
+                                handleDeleteConfirmation(category._id)
+                              }
+                            >
+                              <AiTwotoneDelete className="h-5 w-5 cursor-pointer hover:text-red-500 transition-all duration-200" />
+                            </span>
                           </div>
-                        ))}
-                    </div>
-                  )}
-                </div>
-            
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
 
               <button
                 className={`w-[3rem] h-[2.2rem] flex items-center justify-center rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}

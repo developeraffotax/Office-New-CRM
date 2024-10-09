@@ -142,18 +142,13 @@ export default function Tickets() {
   };
 
   // ------------Update Date ------------>
-  const updateJobDate = async (ticketId, jobDate) => {
-    if (!jobDate) {
-      toast.error("Job Date is required!");
-      return;
-    }
+  const updateJobDate = async (ticketId, jobDate, jobHolder) => {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
-        { jobDate }
+        { jobDate, jobHolder }
       );
       if (data) {
-        getEmails();
         const updateTicket = data?.ticket;
         toast.success("Date updated successfully!");
         if (filteredData) {
@@ -177,6 +172,8 @@ export default function Tickets() {
             return [updateTicket];
           }
         });
+
+        getEmails();
       }
     } catch (error) {
       console.log(error);
@@ -406,10 +403,40 @@ export default function Tickets() {
         },
         Cell: ({ cell, row }) => {
           const jobholder = cell.getValue();
+          const [show, setShow] = useState(false);
+          const [employee, setEmployee] = useState(jobholder);
 
           return (
             <div className="w-full">
-              <span>{jobholder}</span>
+              {show ? (
+                <select
+                  value={employee || ""}
+                  className="w-full h-[2rem] rounded-md border-none  outline-none"
+                  onChange={(e) => {
+                    updateJobDate(row.original._id, "", e.target.value);
+                    setEmployee(e.target.value);
+                    setShow(false);
+                  }}
+                >
+                  <option value="empty"></option>
+                  {users?.map((jobHold, i) => (
+                    <option value={jobHold?.name} key={i}>
+                      {jobHold.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span
+                  onDoubleClick={() => setShow(true)}
+                  className="w-full cursor-pointer"
+                >
+                  {jobholder ? (
+                    jobholder
+                  ) : (
+                    <span className="text-white">.</span>
+                  )}
+                </span>
+              )}
             </div>
           );
         },
@@ -741,7 +768,7 @@ export default function Tickets() {
 
           const handleDateChange = (newDate) => {
             setDate(newDate);
-            updateJobDate(row.original._id, newDate);
+            updateJobDate(row.original._id, newDate, "");
             setShowStartDate(false);
           };
 

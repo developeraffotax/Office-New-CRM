@@ -1294,7 +1294,7 @@ export default function Proposal() {
                   className="w-full h-[2rem] rounded-md border-none  outline-none"
                   onChange={handleChange}
                 >
-                  <option value="empty"></option>
+                  <option value="." className="text-white"></option>
                   {status?.map((stat, i) => (
                     <option value={stat} key={i}>
                       {stat}
@@ -1385,7 +1385,7 @@ export default function Proposal() {
                   className="w-full h-[2rem] rounded-md border-none  outline-none"
                   onChange={handleChange}
                 >
-                  <option value="empty"></option>
+                  <option value="." className="text-white"></option>
                   {status?.map((stat, i) => (
                     <option value={stat} key={i}>
                       {stat}
@@ -1476,7 +1476,7 @@ export default function Proposal() {
                   className="w-full h-[2rem] rounded-md border-none  outline-none"
                   onChange={handleChange}
                 >
-                  <option value="empty"></option>
+                  <option value="." className="text-white"></option>
                   {status?.map((stat, i) => (
                     <option value={stat} key={i}>
                       {stat}

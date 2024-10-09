@@ -469,3 +469,324 @@ export const markThreadAsRead = async (messageId, companyName) => {
     console.log("Error while mark thread as read!", error);
   }
 };
+
+// ------------------------Inbox---------------->
+// Decrypt Email Message
+const decryptEmail = async (emailData) => {
+  let decodedMessage = "";
+
+  if (emailData.payload.body?.data) {
+    decodedMessage = Buffer.from(emailData.payload.body.data, "base64")
+      .toString("utf-8")
+      .replace(/(\r\n|\r|\n)/g, "<br/>")
+      .split("\n\n")[0]
+      .replace(/On .*/, "");
+  } else if (emailData.payload.parts && emailData.payload.parts.length > 0) {
+    for (const part of emailData.payload.parts) {
+      if (part.mimeType === "text/html" && part.body?.data) {
+        decodedMessage += Buffer.from(part.body.data, "base64").toString(
+          "utf-8"
+        );
+      }
+    }
+    decodedMessage = decodedMessage.replace(
+      /<p class=MsoNormal><o:p>&nbsp;<\/o:p><\/p><div style='border:none;border-top:solid #E1E1E1 1.0pt;padding:3.0pt 0cm 0cm 0cm'>[\s\S]*?<\/div><p class=MsoNormal>[\s\S]*?<o:p><\/o:p><\/p><\/div>/gs,
+      ""
+    );
+  }
+
+  return decodedMessage;
+};
+
+// Get Detailed Email with retry logic for handling 429 Too Many Requests error
+const getDetailedEmail = async (emailId, accessToken, retries = 3) => {
+  try {
+    const config = {
+      method: "get",
+      url: `https://gmail.googleapis.com/gmail/v1/users/me/messages/${emailId}?format=full`,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    };
+
+    const response = await axios(config);
+    const emailData = response.data;
+
+    const date = new Date(parseInt(emailData.internalDate));
+    const formattedDate = date.toLocaleDateString();
+    const formattedTime = date.toLocaleTimeString();
+
+    const subject =
+      emailData.payload.headers.find(
+        (header) => header.name.toLowerCase() === "subject"
+      )?.value || "No Subject Found";
+
+    const readStatus = emailData.labelIds.includes("UNREAD")
+      ? "Unread"
+      : emailData.labelIds.includes("SENT")
+      ? "Sent"
+      : "Read";
+
+    const recipientHeaders = emailData.payload.headers.filter((header) =>
+      ["to", "cc", "bcc"].includes(header.name.toLowerCase())
+    );
+    const recipients =
+      recipientHeaders?.map((header) => header.value) || "No Recipient Found";
+
+    const decryptedMessage = await decryptEmail(emailData);
+
+    return {
+      decryptedMessage: decryptedMessage,
+      emailData: emailData,
+      emailId: emailId,
+      subject: subject,
+      readStatus: readStatus,
+      recipients: recipients,
+      formattedDate: formattedDate,
+      formattedTime: formattedTime,
+    };
+  } catch (error) {
+    if (error.response?.status === 429 && retries > 0) {
+      const retryAfter = error.response.headers["retry-after"];
+      const waitTime = retryAfter ? retryAfter * 1000 : 2000; // Wait time from Retry-After or default 2 seconds
+      console.log(
+        `Too many requests. Retrying in ${waitTime / 1000} seconds...`
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
+      return getDetailedEmail(emailId, accessToken, retries - 1);
+    } else {
+      console.log("Error while getting email details:", error.message);
+      return null;
+    }
+  }
+};
+
+// Fetch emails based on company (Affotax or Outsource) with pagination
+const fetchEmails = async (accessToken, pageNo = 1, pageSize = 30) => {
+  try {
+    const config = {
+      method: "get",
+      url: `https://gmail.googleapis.com/gmail/v1/users/me/messages?pageToken=${pageNo}&maxResults=${pageSize}`,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    };
+
+    const response = await axios(config);
+    const emailIds = response.data.messages.map((message) => message.id);
+
+    // Fetch detailed email data for each email ID
+    const emails = await Promise.all(
+      emailIds.map(async (emailId) => {
+        const detailedEmail = await getDetailedEmail(emailId, accessToken);
+        return detailedEmail;
+      })
+    );
+
+    return emails.filter((email) => email !== null); // Filter out failed emails
+  } catch (error) {
+    console.log("Error while fetching emails:", error.message);
+    return [];
+  }
+};
+
+// Fetch all emails based on the selected company with pagination
+export const getAllEmailInbox = async (selectedCompany, pageNo) => {
+  try {
+    console.log(selectedCompany, pageNo);
+    const accessToken = await getAccessToken();
+    const outSourcingAccessToken = await getOutsourceAccessToken();
+
+    if (!accessToken || !outSourcingAccessToken) {
+      throw new Error("Access tokens are missing.");
+    } else {
+      let emails = [];
+
+      // Fetch emails based on the selected company
+      if (selectedCompany === "Affotax") {
+        emails = await fetchEmails(accessToken, pageNo);
+      } else if (selectedCompany === "Outsource") {
+        emails = await fetchEmails(outSourcingAccessToken, pageNo);
+      }
+
+      const unreadCount = emails.reduce((count, email) => {
+        if (email.readStatus === "Unread") {
+          return count + 1;
+        }
+        return count;
+      }, 0);
+
+      console.log("detailedEmails:", emails, "unreadCount:", unreadCount);
+
+      return {
+        detailedEmails: emails,
+        length: emails.length,
+        unreadCount: unreadCount,
+      };
+    }
+  } catch (error) {
+    console.log("Error while getting all emails", error);
+    return null;
+  }
+};
+
+// -----------------------------------Error------------------->
+
+// // Decrypt Email Message
+// const decryptEmail = async (emailData) => {
+//   let decodedMessage = "";
+
+//   if (emailData.payload.body?.data) {
+//     decodedMessage = Buffer.from(emailData.payload.body.data, "base64")
+//       .toString("utf-8")
+//       .replace(/(\r\n|\r|\n)/g, "<br/>")
+//       .split("\n\n")[0]
+//       .replace(/On .*/, "");
+//   } else if (emailData.payload.parts && emailData.payload.parts.length > 0) {
+//     for (const part of emailData.payload.parts) {
+//       if (part.mimeType === "text/html" && part.body?.data) {
+//         decodedMessage += Buffer.from(part.body.data, "base64").toString(
+//           "utf-8"
+//         );
+//       }
+//     }
+//     decodedMessage = decodedMessage.replace(
+//       /<p class=MsoNormal><o:p>&nbsp;<\/o:p><\/p><div style='border:none;border-top:solid #E1E1E1 1.0pt;padding:3.0pt 0cm 0cm 0cm'>[\s\S]*?<\/div><p class=MsoNormal>[\s\S]*?<o:p><\/o:p><\/p><\/div>/gs,
+//       ""
+//     );
+//   }
+
+//   return decodedMessage;
+// };
+
+// // Get Detailed Email with retry logic for handling 429 Too Many Requests error
+// const getDetailedEmail = async (emailId, accessToken, retries = 3) => {
+//   try {
+//     const config = {
+//       method: "get",
+//       url: `https://gmail.googleapis.com/gmail/v1/users/me/messages/${emailId}?format=full`,
+//       headers: {
+//         Authorization: `Bearer ${accessToken}`,
+//       },
+//     };
+
+//     const response = await axios(config);
+//     const emailData = response.data;
+
+//     const date = new Date(parseInt(emailData.internalDate));
+//     const formattedDate = date.toLocaleDateString();
+//     const formattedTime = date.toLocaleTimeString();
+
+//     const subject =
+//       emailData.payload.headers.find(
+//         (header) => header.name.toLowerCase() === "subject"
+//       )?.value || "No Subject Found";
+
+//     const readStatus = emailData.labelIds.includes("UNREAD")
+//       ? "Unread"
+//       : emailData.labelIds.includes("SENT")
+//       ? "Sent"
+//       : "Read";
+
+//     const recipientHeaders = emailData.payload.headers.filter((header) =>
+//       ["to", "cc", "bcc"].includes(header.name.toLowerCase())
+//     );
+//     const recipients =
+//       recipientHeaders?.map((header) => header.value) || "No Recipient Found";
+
+//     const decryptedMessage = await decryptEmail(emailData);
+
+//     return {
+//       decryptedMessage: decryptedMessage,
+//       emailData: emailData,
+//       emailId: emailId,
+//       subject: subject,
+//       readStatus: readStatus,
+//       recipients: recipients,
+//       formattedDate: formattedDate,
+//       formattedTime: formattedTime,
+//     };
+//   } catch (error) {
+//     if (error.response?.status === 429 && retries > 0) {
+//       const retryAfter = error.response.headers["retry-after"];
+//       const waitTime = retryAfter ? retryAfter * 1000 : 2000; // Wait time from Retry-After or default 2 seconds
+//       console.log(
+//         `Too many requests. Retrying in ${waitTime / 1000} seconds...`
+//       );
+
+//       await new Promise((resolve) => setTimeout(resolve, waitTime));
+//       return getDetailedEmail(emailId, accessToken, retries - 1);
+//     } else {
+//       console.log("Error while getting email details:", error.message);
+//       return null;
+//     }
+//   }
+// };
+
+// // Fetch emails based on company (Affotax or Outsource)
+// const fetchEmails = async (accessToken) => {
+//   try {
+//     const config = {
+//       method: "get",
+//       url: `https://gmail.googleapis.com/gmail/v1/users/me/messages`,
+//       headers: {
+//         Authorization: `Bearer ${accessToken}`,
+//       },
+//     };
+
+//     const response = await axios(config);
+//     const emailIds = response.data.messages.map((message) => message.id);
+
+//     // Fetch detailed email data for each email ID
+//     const emails = await Promise.all(
+//       emailIds.map(async (emailId) => {
+//         const detailedEmail = await getDetailedEmail(emailId, accessToken);
+//         return detailedEmail;
+//       })
+//     );
+
+//     return emails.filter((email) => email !== null); // Filter out failed emails
+//   } catch (error) {
+//     console.log("Error while fetching emails:", error.message);
+//     return [];
+//   }
+// };
+
+// // Fetch all emails based on the selected company
+// export const getAllEmailInbox = async (selectedCompany, pageNo) => {
+//   try {
+//     const accessToken = await getAccessToken();
+//     const outSourcingAccessToken = await getOutsourceAccessToken();
+
+//     if (!accessToken || !outSourcingAccessToken) {
+//       throw new Error("Access tokens are missing.");
+//     } else {
+//       let emails = [];
+
+//       // Fetch emails based on the selected company
+//       if (selectedCompany === "Affotax") {
+//         emails = await fetchEmails(accessToken);
+//       } else if (selectedCompany === "Outsource") {
+//         emails = await fetchEmails(outSourcingAccessToken);
+//       }
+
+//       const unreadCount = emails.reduce((count, email) => {
+//         if (email.readStatus === "Unread") {
+//           return count + 1;
+//         }
+//         return count;
+//       }, 0);
+
+//       console.log("detailedEmails:", emails, "unreadCount:", unreadCount);
+
+//       return {
+//         detailedEmails: emails,
+//         unreadCount: unreadCount,
+//       };
+//     }
+//   } catch (error) {
+//     console.log("Error while getting all emails", error);
+//     return null;
+//   }
+// };

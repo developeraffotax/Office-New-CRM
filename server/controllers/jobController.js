@@ -116,7 +116,7 @@ export const getAllClients = async (req, res) => {
     const clients = await jobsModel
       .find({ status: { $ne: "completed" } })
       .select(
-        "clientName companyName email currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label"
+        "clientName companyName email currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source"
       );
 
     res.status(200).send({

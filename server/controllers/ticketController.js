@@ -4,6 +4,7 @@ import messageModel from "../models/messageModel.js";
 import ticketModel from "../models/ticketModel.js";
 import {
   emailReply,
+  getAllEmailInbox,
   getAllEmails,
   getAttachments,
   getSingleEmail,
@@ -559,6 +560,27 @@ export const getCompleteTickets = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error while get emails!",
+      error: error,
+    });
+  }
+};
+
+// Get ALl Inbox Data
+export const getAllInbox = async (req, res) => {
+  try {
+    const { selectedCompany, pageNo } = req.params;
+    const reponse = await getAllEmailInbox("Affotax", pageNo);
+
+    res.status(200).send({
+      success: true,
+      message: "All Inbox",
+      email: reponse,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get all email inbox data!",
       error: error,
     });
   }

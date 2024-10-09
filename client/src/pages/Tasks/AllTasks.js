@@ -2134,7 +2134,7 @@ const AllTasks = () => {
     enableStickyHeader: true,
     enableStickyFooter: true,
     // columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "805px" } },
+    muiTableContainerProps: { sx: { maxHeight: "860px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -2227,7 +2227,7 @@ const AllTasks = () => {
   return (
     <Layout>
       {!showCompleted ? (
-        <div className=" relative w-full min-h-screen py-4 px-2 sm:px-4">
+        <div className=" relative w-full h-full overflow-auto py-4 px-2 sm:px-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h1 className=" text-xl sm:text-2xl font-semibold ">Tasks</h1>

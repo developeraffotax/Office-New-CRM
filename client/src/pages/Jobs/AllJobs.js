@@ -1906,7 +1906,7 @@ export default function AllJobs() {
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "770px" } },
+    muiTableContainerProps: { sx: { maxHeight: "850px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,

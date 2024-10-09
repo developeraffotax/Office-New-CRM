@@ -1546,7 +1546,7 @@ export default function Proposal() {
     data: proposalData || [],
     enableStickyHeader: true,
     enableStickyFooter: true,
-    muiTableContainerProps: { sx: { maxHeight: "720px" } },
+    muiTableContainerProps: { sx: { maxHeight: "840px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,

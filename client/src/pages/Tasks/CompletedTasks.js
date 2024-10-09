@@ -1620,7 +1620,7 @@ const CompletedTasks = ({
     enableStickyHeader: true,
     enableStickyFooter: true,
     // columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "805px" } },
+    muiTableContainerProps: { sx: { maxHeight: "850px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -1669,7 +1669,7 @@ const CompletedTasks = ({
   });
 
   return (
-    <div className=" relative w-full min-h-screen py-4 px-2 sm:px-4">
+    <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
       <button
         className=" absolute top-1  p-[2px] rounded-full left-2 bg-gray-300/30 hover:bg-gray-300/50"
         onClick={() => {

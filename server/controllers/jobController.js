@@ -116,7 +116,7 @@ export const getAllClients = async (req, res) => {
     const clients = await jobsModel
       .find({ status: { $ne: "completed" } })
       .select(
-        "clientName companyName email currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source"
+        "clientName companyName email currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data"
       );
 
     res.status(200).send({
@@ -407,6 +407,8 @@ export const getClientWithJobs = async (req, res) => {
     const clientJobs = await jobsModel
       .find({ companyName: companyName, status: { $ne: "completed" } })
       .select("job");
+
+    console.log("clientJobs", clientJobs);
 
     if (!clientJobs) {
       return res.status(400).send({
@@ -1093,6 +1095,42 @@ export const deleteSubTask = async (req, res) => {
     res.status(500).send({
       success: false,
       messsage: "Error in delete subtask!",
+      error: error,
+    });
+  }
+};
+
+// Add data Label
+export const addDatalabel = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const { name, color } = req.body;
+
+    const job = await jobsModel.findById(jobId);
+
+    if (!job) {
+      return res.status(400).send({
+        success: false,
+        message: "Job not found!",
+      });
+    }
+
+    const updateJob = await jobsModel.findByIdAndUpdate(
+      { _id: job._id },
+      { "data.name": name, "data.color": color },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Data Label added!",
+      job: updateJob,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in add job label!",
       error: error,
     });
   }

@@ -155,11 +155,12 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
       setVatLogin(clientDetail.vatLogin);
       setAuthCode(clientDetail.authCode);
       setUtr(clientDetail.utr);
-      getJobs(clientDetail.companyName);
       setCtPassowrd(clientDetail.ctPassword);
       setPyePassowrd(clientDetail.pyePassword);
       setTrPassowrd(clientDetail.trPassword);
       setVatPassowrd(clientDetail.vatPassword);
+
+      getJobs(clientDetail.companyName);
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message || "Error in client Jobs");
@@ -176,8 +177,9 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
   //   Get ALl Jobs
   const getJobs = async (companyName) => {
     try {
+      const encodedCompanyName = encodeURIComponent(companyName);
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/jobs?companyName=${companyName}`
+        `${process.env.REACT_APP_API_URL}/api/v1/client/jobs?companyName=${encodedCompanyName}`
       );
 
       const clientJobs = data.clientJobs;

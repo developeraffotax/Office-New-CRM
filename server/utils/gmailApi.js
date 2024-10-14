@@ -79,6 +79,13 @@ export const sendEmailWithAttachments = async (emailData) => {
 
     const emailMessageParts = [];
 
+    // Clean the message to remove unnecessary <br> tags
+    const cleanedMessage = emailData.message.replace(/<br\s*\/?>/gi, "");
+    const trimmedMessage = cleanedMessage.replace(
+      /<\/?p>\s*<\/?p>/g,
+      "</p><p>"
+    );
+
     emailMessageParts.push("From: " + fromEmail);
     emailMessageParts.push("To: " + emailData.email);
     emailMessageParts.push("Subject: " + emailData.subject);
@@ -92,7 +99,7 @@ export const sendEmailWithAttachments = async (emailData) => {
     emailMessageParts.push('Content-Type: text/html; charset="UTF-8"');
     emailMessageParts.push("Content-Transfer-Encoding: 7bit");
     emailMessageParts.push("");
-    emailMessageParts.push(emailData.message);
+    emailMessageParts.push(trimmedMessage.trim());
     emailMessageParts.push("");
 
     // Attachments
@@ -380,6 +387,12 @@ export const emailReply = async (emailData) => {
     const subjectToReply = emailData.subject;
     const emailSendTo = emailData.emailSendTo;
 
+    const cleanedMessage = message.replace(/<br\s*\/?>/gi, "");
+    const trimmedMessage = cleanedMessage.replace(
+      /<\/?p>\s*<\/?p>/g,
+      "</p><p>"
+    );
+
     const emailMessageParts = [];
 
     emailMessageParts.push("From: " + fromEmail);
@@ -395,7 +408,7 @@ export const emailReply = async (emailData) => {
     emailMessageParts.push('Content-Type: text/html; charset="UTF-8"');
     emailMessageParts.push("Content-Transfer-Encoding: 7bit");
     emailMessageParts.push("");
-    emailMessageParts.push(message);
+    emailMessageParts.push(trimmedMessage.trim());
     emailMessageParts.push("");
 
     // Attachments

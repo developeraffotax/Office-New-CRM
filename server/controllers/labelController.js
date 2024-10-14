@@ -70,6 +70,28 @@ export const getAllLabelsByTask = async (req, res) => {
   }
 };
 
+// Get Data Lable
+export const getDataLabels = async (req, res) => {
+  try {
+    const labels = await labelModel
+      .find({ type: "data" })
+      .sort({ createdAt: -1 });
+
+    res.status(200).send({
+      success: true,
+      message: "All label list!",
+      labels: labels,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error in get labels!",
+      error,
+    });
+  }
+};
+
 // Delete Label
 export const deleteLabel = async (req, res) => {
   try {
@@ -91,6 +113,38 @@ export const deleteLabel = async (req, res) => {
     res.status(400).send({
       success: false,
       message: "Error in delete label!",
+      error,
+    });
+  }
+};
+
+// Update Label
+export const updateLabel = async (req, res) => {
+  try {
+    const labelId = req.params.id;
+    const { name, color } = req.body;
+    if (!labelId) {
+      return res.status(400).send({
+        success: false,
+        message: "label id is required!",
+      });
+    }
+    const updateLabel = await labelModel.findByIdAndUpdate(
+      labelId,
+      { name, color },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "label updated!",
+      label: updateLabel,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error in update label!",
       error,
     });
   }

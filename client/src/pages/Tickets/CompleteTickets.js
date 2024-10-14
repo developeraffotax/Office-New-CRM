@@ -1004,7 +1004,7 @@ export default function CompleteTickets() {
         <>
           <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-2 transition-all duration-300 w-fit">
             <button
-              className={`py-1 px-2 outline-none transition-all duration-300  w-full ${
+              className={`py-1 px-2 outline-none transition-all duration-300  w-[6rem] ${
                 selectedTab === "progress"
                   ? "bg-orange-500 text-white border-r-2 border-orange-500"
                   : "text-black bg-gray-100"
@@ -1017,7 +1017,7 @@ export default function CompleteTickets() {
               Progress
             </button>
             <button
-              className={`py-1 px-2 outline-none transition-all duration-300 w-full  ${
+              className={`py-1 px-2 outline-none transition-all duration-300 w-[6rem]  ${
                 selectedTab === "complete"
                   ? "bg-orange-500 text-white"
                   : "text-black bg-gray-100 hover:bg-slate-200"
@@ -1025,6 +1025,19 @@ export default function CompleteTickets() {
               onClick={() => setSelectedTab("complete")}
             >
               Completed
+            </button>
+            <button
+              className={`py-1 px-2 outline-none transition-all border-l-2  border-orange-500 duration-300 w-[6rem]  ${
+                selectedTab === "inbox"
+                  ? "bg-orange-500 text-white"
+                  : "text-black bg-gray-100 hover:bg-slate-200"
+              }`}
+              onClick={() => {
+                // setSelectedTab("inbox");
+                navigate("/tickets/inbox");
+              }}
+            >
+              Inbox
             </button>
           </div>
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />

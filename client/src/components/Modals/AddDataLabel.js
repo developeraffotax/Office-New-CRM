@@ -8,7 +8,7 @@ import { MdOutlineModeEditOutline } from "react-icons/md";
 
 export default function AddDataLabel({ setShowDataLable, getDatalable }) {
   const [name, setName] = useState("");
-  const [color, setColor] = useState("#40E0D0");
+  const [color, setColor] = useState("#fff");
   const [loading, setLoading] = useState(false);
   const [labelData, setLabelData] = useState([]);
   const [labelId, setlabelId] = useState("");
@@ -104,6 +104,14 @@ export default function AddDataLabel({ setShowDataLable, getDatalable }) {
       <form onSubmit={handelAddlabel} className="  py-4 px-3 sm:px-4 mt-3">
         <div className="w-full border rounded-md py-2 px-2">
           <div className="flex flex-wrap gap-3 w-full items-center justify-center">
+            <span
+              className={`w-6 h-6 rounded-md hover:rounded-2xl border border-gray-300 transition-all duration-700 ${
+                color === "#fff" && "w-[3rem]  rounded-2xl"
+              }  bg-[#fff] cursor-pointer hover:shadow-md`}
+              onClick={() => {
+                setColor("#fff");
+              }}
+            ></span>
             <span
               className={`w-6 h-6 rounded-md    hover:rounded-2xl transition-all duration-700 ${
                 color === "#40E0D0" && "w-[3rem]  rounded-2xl"
@@ -223,7 +231,9 @@ export default function AddDataLabel({ setShowDataLable, getDatalable }) {
               {labelData &&
                 labelData?.map((item) => (
                   <div
-                    className={`label relative py-[2px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
+                    className={`label relative py-[2px] px-2 rounded-md hover:shadow  cursor-pointer  ${
+                      item.color === "#fff" ? "text-gray-950" : "text-white"
+                    }`}
                     style={{ background: `${item.color}` }}
                   >
                     <span>{item?.name}</span>

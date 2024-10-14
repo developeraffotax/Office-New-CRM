@@ -2021,7 +2021,9 @@ export default function AllJobs() {
                       >
                         {name ? (
                           <span
-                            className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
+                            className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-black ${
+                              color === "#fff" ? "text-gray-950" : "text-white"
+                            }`}
                             style={{ background: `${color}` }}
                           >
                             {name}

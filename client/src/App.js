@@ -22,6 +22,7 @@ import { useAuth } from "./context/authContext";
 import NotFound from "./pages/NotFound/NotFound";
 import Users from "./pages/Auth/Users";
 import Subscription from "./pages/Subscription/Subscription";
+import Inbox from "./pages/Tickets/Inbox";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -44,6 +45,7 @@ function App() {
         <Route path="/tickets" element={<Tickets />} />
         <Route path="/tickets/complete" element={<CompleteTickets />} />
         <Route path="/ticket/detail/:id" element={<EmailDetail />} />
+        <Route path="/tickets/inbox" element={<Inbox />} />
       </>
     ),
     Templates: <Route path="/templates" element={<Template />} />,

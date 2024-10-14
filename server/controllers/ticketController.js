@@ -569,7 +569,8 @@ export const getCompleteTickets = async (req, res) => {
 export const getAllInbox = async (req, res) => {
   try {
     const { selectedCompany, pageNo } = req.params;
-    const reponse = await getAllEmailInbox("Affotax", pageNo);
+    console.log(selectedCompany, pageNo);
+    const reponse = await getAllEmailInbox(selectedCompany, pageNo);
 
     res.status(200).send({
       success: true,

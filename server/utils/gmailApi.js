@@ -77,14 +77,18 @@ export const sendEmailWithAttachments = async (emailData) => {
       fromEmail = "Outsource Accountings <admin@outsourceaccountings.co.uk>";
     }
 
-    const emailMessageParts = [];
+    const cleanedMessage = emailData.message;
 
-    // Clean the message to remove unnecessary <br> tags
-    const cleanedMessage = emailData.message.replace(/<br\s*\/?>/gi, "");
     const trimmedMessage = cleanedMessage.replace(
       /<\/?p>\s*<\/?p>/g,
       "</p><p>"
     );
+    const styledMessage = trimmedMessage.replace(
+      /<p>/g,
+      '<p style="margin: 0; padding: 0;">'
+    );
+
+    const emailMessageParts = [];
 
     emailMessageParts.push("From: " + fromEmail);
     emailMessageParts.push("To: " + emailData.email);
@@ -99,7 +103,7 @@ export const sendEmailWithAttachments = async (emailData) => {
     emailMessageParts.push('Content-Type: text/html; charset="UTF-8"');
     emailMessageParts.push("Content-Transfer-Encoding: 7bit");
     emailMessageParts.push("");
-    emailMessageParts.push(trimmedMessage.trim());
+    emailMessageParts.push(styledMessage.trim());
     emailMessageParts.push("");
 
     // Attachments
@@ -387,10 +391,18 @@ export const emailReply = async (emailData) => {
     const subjectToReply = emailData.subject;
     const emailSendTo = emailData.emailSendTo;
 
-    const cleanedMessage = message.replace(/<br\s*\/?>/gi, "");
+    const cleanedMessage = message;
+
+    // Optional cleanup for empty <p> tags
     const trimmedMessage = cleanedMessage.replace(
       /<\/?p>\s*<\/?p>/g,
       "</p><p>"
+    );
+
+    // Add inline CSS to <p> tags to remove extra space
+    const styledMessage = trimmedMessage.replace(
+      /<p>/g,
+      '<p style="margin: 0; padding: 0;">'
     );
 
     const emailMessageParts = [];
@@ -408,8 +420,8 @@ export const emailReply = async (emailData) => {
     emailMessageParts.push('Content-Type: text/html; charset="UTF-8"');
     emailMessageParts.push("Content-Transfer-Encoding: 7bit");
     emailMessageParts.push("");
-    emailMessageParts.push(trimmedMessage.trim());
-    emailMessageParts.push("");
+    emailMessageParts.push(styledMessage.trim());
+    // emailMessageParts.push("");
 
     // Attachments
     if (emailData.attachments && emailData.attachments.length > 0) {
@@ -576,11 +588,16 @@ const getDetailedEmail = async (emailId, accessToken, retries = 3) => {
 };
 
 // Fetch emails based on company (Affotax or Outsource) with pagination
-const fetchEmails = async (accessToken, pageNo = 1, pageSize = 30) => {
+
+const fetchEmails = async (accessToken, pageNo, pageSize = 20) => {
+  console.log("pageNo:", pageNo);
   try {
+    const query = "after:2024/10/01";
     const config = {
       method: "get",
-      url: `https://gmail.googleapis.com/gmail/v1/users/me/messages?pageToken=${pageNo}&maxResults=${pageSize}`,
+      url: `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(
+        query
+      )}&pageToken=${pageNo}&maxResults=${pageSize}`,
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -630,7 +647,7 @@ export const getAllEmailInbox = async (selectedCompany, pageNo) => {
         return count;
       }, 0);
 
-      console.log("detailedEmails:", emails, "unreadCount:", unreadCount);
+      // console.log("detailedEmails:", emails, "unreadCount:", unreadCount);
 
       return {
         detailedEmails: emails,
@@ -645,6 +662,7 @@ export const getAllEmailInbox = async (selectedCompany, pageNo) => {
 };
 
 // -----------------------------------Error------------------->
+// url: `https://gmail.googleapis.com/gmail/v1/users/me/messages?pageToken=${pageNo}&maxResults=${pageSize}`,
 
 // // Decrypt Email Message
 // const decryptEmail = async (emailData) => {

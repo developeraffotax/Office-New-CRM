@@ -4,8 +4,9 @@ import toast from "react-hot-toast";
 import { IoClose } from "react-icons/io5";
 import { TbLoader2 } from "react-icons/tb";
 import { style } from "../../utlis/CommonStyle";
+import { MdOutlineModeEditOutline } from "react-icons/md";
 
-export default function AddLabel({ setShowlabel, type, getLabels }) {
+export default function AddDataLabel({ setShowDataLable, getDatalable }) {
   const [name, setName] = useState("");
   const [color, setColor] = useState("#40E0D0");
   const [loading, setLoading] = useState(false);
@@ -16,22 +17,12 @@ export default function AddLabel({ setShowlabel, type, getLabels }) {
   //   Get All Labels
   const getlabel = async () => {
     try {
-      if (type === "job") {
-        const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels`
-        );
-        if (data.success) {
-          setLabelData(data.labels);
-          getLabels();
-        }
-      } else {
-        const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels/task`
-        );
-        if (data.success) {
-          setLabelData(data.labels);
-          getLabels();
-        }
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/label/data/labels`
+      );
+      if (data) {
+        setLabelData(data.labels);
+        getDatalable();
       }
     } catch (error) {
       console.log(error);
@@ -49,15 +40,31 @@ export default function AddLabel({ setShowlabel, type, getLabels }) {
     setLoading(true);
     e.preventDefault();
     try {
-      const { data } = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/v1/label/create/label`,
-        { name, color, type }
-      );
-      if (data.success) {
-        getlabel();
-        setLoading(false);
-        setName("");
-        setColor("#40E0D0");
+      if (labelId) {
+        const { data } = await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/v1/label/update/label/${labelId}`,
+          { name, color }
+        );
+        if (data) {
+          getlabel();
+          setlabelId("");
+          toast.success("Data label updated!");
+          setName("");
+          setColor("#40E0D0");
+          setLoading(false);
+        }
+      } else {
+        const { data } = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/v1/label/create/label`,
+          { name, color, type: "data" }
+        );
+        if (data.success) {
+          getlabel();
+          setLoading(false);
+          setName("");
+          setColor("#40E0D0");
+          setlabelId("");
+        }
       }
     } catch (error) {
       console.log(error);
@@ -84,10 +91,10 @@ export default function AddLabel({ setShowlabel, type, getLabels }) {
   return (
     <div className="flex flex-col w-[21rem] sm:w-[38rem] bg-white shadow-md rounded-md">
       <div className="flex items-center justify-between py-4 px-3 sm:px-4 border-b border-gray-300">
-        <h1 className="text-xl font-semibold">Manage Labels</h1>
+        <h1 className="text-xl font-semibold">Manage Data Label</h1>
         <span
           onClick={() => {
-            setShowlabel(false);
+            setShowDataLable(false);
           }}
         >
           <IoClose className="h-6 w-6 cursor-pointer" />
@@ -225,6 +232,16 @@ export default function AddLabel({ setShowlabel, type, getLabels }) {
                       className=" delete w-[1.2rem] h-[1.2rem] flex items-center justify-center absolute  top-[-.7rem] right-[-.7rem] bg-gray-500/50 border rounded-full p-[3px] cursor-pointer z-[10]"
                     >
                       <IoClose className="h-4 w-4 cursor-pointer" />
+                    </span>
+                    <span
+                      onClick={() => {
+                        setlabelId(item._id);
+                        setName(item?.name);
+                        setColor(item?.color);
+                      }}
+                      className=" delete w-[1.2rem] h-[1.2rem] flex items-center justify-center absolute  top-[-.7rem] right-[1rem] bg-gray-500/50 border rounded-full p-[3px] cursor-pointer z-[10]"
+                    >
+                      <MdOutlineModeEditOutline className="h-5 w-5 cursor-pointer text-sky-600" />
                     </span>
                   </div>
                 ))}

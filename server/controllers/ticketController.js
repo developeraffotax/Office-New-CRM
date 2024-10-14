@@ -585,3 +585,22 @@ export const getAllInbox = async (req, res) => {
     });
   }
 };
+
+// Assign Email to Employees
+export const assignEmail = async (req, res) => {
+  try {
+    const {} = req.body;
+
+    res.status(200).send({
+      success: true,
+      message: "Email allocate successfully!",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while allocate email!",
+      error: error,
+    });
+  }
+};

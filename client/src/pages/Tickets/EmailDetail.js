@@ -353,11 +353,16 @@ export default function EmailDetail() {
                       </div>
                       {/* -------------Message------------ */}
                       <div
-                        className=" ml-10 text-[15px]"
+                        className="ml-10 text-[15px]"
+                        style={{ lineHeight: "1rem" }}
                         dangerouslySetInnerHTML={{
-                          __html: message?.payload?.body?.data,
+                          __html: (message?.payload?.body?.data || "").replace(
+                            /<\/p>\s*<p>/g,
+                            "</p><br><p>"
+                          ),
                         }}
                       ></div>
+
                       {/* ------------Attachments----------- */}
                       {message?.payload?.body?.messageAttachments.length >
                         0 && (
@@ -435,12 +440,20 @@ export default function EmailDetail() {
                         </div>
                       </div>
                       {/* Message */}
+
                       <div
                         className=" ml-10 text-[15px]"
+                        style={{ lineHeight: "1rem" }}
                         dangerouslySetInnerHTML={{
-                          __html: cleanEmailBody(message?.payload?.body?.data),
+                          __html: cleanEmailBody(
+                            message?.payload?.body?.data.replace(
+                              /<\/p>\s*<p>/g,
+                              "</p><br><p>"
+                            )
+                          ),
                         }}
                       ></div>
+
                       {/* Attachments */}
                       {message?.payload?.body?.messageAttachments.length >
                         0 && (

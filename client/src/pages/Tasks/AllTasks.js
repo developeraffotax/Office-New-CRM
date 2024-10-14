@@ -1671,10 +1671,16 @@ const AllTasks = () => {
           useEffect(() => {
             column.setFilterValue(state);
           }, [state]);
+
+          useEffect(() => {
+            column.setFilterValue("Progress");
+
+            // eslint-disable-next-line
+          }, []);
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
-                className=" text-center"
+                className=" text-center cursor-pointer"
                 title="Clear Filter "
                 onClick={() => {
                   column.setFilterValue("");

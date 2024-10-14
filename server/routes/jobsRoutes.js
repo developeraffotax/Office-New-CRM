@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  addDatalabel,
   addlabel,
   createDublicateJob,
   createJob,
@@ -92,5 +93,8 @@ router.delete(
 
 // Get All Tickets Routes
 router.get("/tickets/clients", getTicketClients);
+
+// Add Label
+router.put("/add/job/data/:id", requiredSignIn, addDatalabel);
 
 export default router;

@@ -39,6 +39,7 @@ import socketIO from "socket.io-client";
 import { GrUpdate } from "react-icons/gr";
 import AddLabel from "../../components/Modals/AddLabel";
 import { LuImport } from "react-icons/lu";
+import AddDataLabel from "../../components/Modals/AddDataLabel";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -86,6 +87,8 @@ export default function AllJobs() {
   const commentStatusRef = useRef(null);
   const [showlabel, setShowlabel] = useState(false);
   const [labelData, setLabelData] = useState([]);
+  const [showDataLable, setShowDataLable] = useState(false);
+  const [dataLable, setDataLabel] = useState([]);
 
   // Extract the current path
   const currentPath = location.pathname;
@@ -201,6 +204,24 @@ export default function AllJobs() {
 
   useEffect(() => {
     getlabel();
+  }, []);
+
+  //   Get All Data Labels
+  const getDatalable = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/label/data/labels`
+      );
+      if (data.success) {
+        setDataLabel(data.labels);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getDatalable();
   }, []);
 
   // -----------Handle Custom date filter------
@@ -651,6 +672,45 @@ export default function AllJobs() {
           toast.success("label added!");
         } else {
           toast.success("label updated!");
+        }
+
+        // Socket
+        socketId.emit("addJob", {
+          note: "New Task Added",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Error while add label");
+    }
+  };
+
+  // Add Data
+  const addDatalabel1 = async (id, name, color) => {
+    console.log("Data:", id, name, color);
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/add/job/data/${id}`,
+        { name, color }
+      );
+      if (data) {
+        if (filterId || active || active1) {
+          setFilterData((prevData) =>
+            prevData?.map((item) =>
+              item._id === id ? { ...item, data: { name, color } } : item
+            )
+          );
+        }
+        setTableData((prevData) =>
+          prevData?.map((item) =>
+            item._id === id ? { ...item, data: { name, color } } : item
+          )
+        );
+
+        if (name) {
+          toast.success("Data label added!");
+        } else {
+          toast.success("Data label updated!");
         }
 
         // Socket
@@ -1885,6 +1945,113 @@ export default function AllJobs() {
               filterFn: "equals",
               size: 90,
             },
+            // Data Label
+            {
+              accessorKey: "data",
+
+              Header: ({ column }) => {
+                return (
+                  <div className="flex flex-col gap-[2px]">
+                    <span
+                      className="ml-1 cursor-pointer"
+                      title="Clear Filter"
+                      onClick={() => {
+                        column.setFilterValue("");
+                      }}
+                    >
+                      Data
+                    </span>
+                    <select
+                      value={column.getFilterValue() || ""}
+                      onChange={(e) => column.setFilterValue(e.target.value)}
+                      className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                    >
+                      <option value="">Select</option>
+                      {dataLable?.map((label, i) => (
+                        <option key={i} value={label?.name}>
+                          {label?.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              },
+
+              Cell: ({ cell, row }) => {
+                const [show, setShow] = useState(false);
+                const jobLabel = row.original.data || {};
+                const { name, color } = jobLabel;
+
+                const handleLabelChange = (labelName) => {
+                  const selectedLabel = dataLable.find(
+                    (label) => label.name === labelName
+                  );
+                  console.log("selectedLabel:", selectedLabel);
+                  if (selectedLabel) {
+                    addDatalabel1(
+                      row.original._id,
+                      labelName,
+                      selectedLabel.color
+                    );
+                  } else {
+                    addDatalabel1(row.original._id, "", "");
+                  }
+                  setShow(false);
+                };
+
+                return (
+                  <div className="w-full flex items-center justify-center">
+                    {show ? (
+                      <select
+                        value={name || ""}
+                        onChange={(e) => handleLabelChange(e.target.value)}
+                        className="w-full h-[2rem] rounded-md border-none outline-none"
+                      >
+                        <option value="empty">Select Data</option>
+                        {dataLable?.map((label, i) => (
+                          <option value={label?.name} key={i}>
+                            {label?.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div
+                        className="cursor-pointer h-full min-w-full "
+                        onDoubleClick={() => setShow(true)}
+                      >
+                        {name ? (
+                          <span
+                            className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
+                            style={{ background: `${color}` }}
+                          >
+                            {name}
+                          </span>
+                        ) : (
+                          <span
+                            className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
+                            // style={{ background: `${color}` }}
+                          >
+                            .
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              },
+
+              filterFn: (row, columnId, filterValue) => {
+                const labelName = row.original?.label?.name || "";
+                return labelName === filterValue;
+              },
+
+              filterVariant: "select",
+              filterSelectOptions: dataLable.map((label) => label.name),
+              size: 120,
+              minSize: 100,
+              maxSize: 210,
+              grow: false,
+            },
           ]
         : []),
     ],
@@ -2056,12 +2223,20 @@ export default function AllJobs() {
                 )}
               </label>
             </form>
+
             <button
               className={`w-[3rem] h-[2.2rem] flex items-center justify-center rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
               onClick={handleExportData}
               title="Import Date"
             >
               <LuImport className="h-5 w-5" />
+            </button>
+            <button
+              className={`${style.button1} text-[15px] `}
+              onClick={() => setShowDataLable(true)}
+              style={{ padding: ".4rem 1rem" }}
+            >
+              Add Data
             </button>
             <button
               className={`${style.button1} text-[15px] `}
@@ -2428,6 +2603,16 @@ export default function AllJobs() {
             setShowlabel={setShowlabel}
             type={"job"}
             getLabels={getlabel}
+          />
+        </div>
+      )}
+
+      {/* ---------------Add Data label------------- */}
+      {showDataLable && (
+        <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
+          <AddDataLabel
+            setShowDataLable={setShowDataLable}
+            getDatalable={getDatalable}
           />
         </div>
       )}

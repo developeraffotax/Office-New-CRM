@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import { IoArrowBackOutline, IoSearch } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
@@ -6,18 +6,29 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Loader from "../../utlis/Loader";
-// import { IoCaretBackCircleOutline } from "react-icons/io5";
-// import { IoCaretForwardCircleOutline } from "react-icons/io5";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { FaUserPlus } from "react-icons/fa";
+import { AiTwotoneDelete } from "react-icons/ai";
+import InboxDetail from "./InboxDetail";
+import AssignToUserModal from "../../components/Tickets/AssignToUserModal";
 
 export default function Inbox() {
   const [selectedCompany, setSelectedCompany] = useState("Affotax");
-  const [inboxData, setInboxData] = useState([]);
+  const [inboxData, setInboxData] = useState([]); // All inbox data
   const [loading, setLoading] = useState(false);
   const [pageNo, setPageNo] = useState(1);
   const [startIndex, setStartIndex] = useState(0);
-  const [totalEmails, setTotalEmails] = useState(200);
-  const pageSize = 20;
+  const [totalEmails, setTotalEmails] = useState(0);
+  const pageSize = 17;
+  const [show, setShow] = useState(false);
+  const [emailId, setEmailId] = useState("");
+  const emailRef = useRef(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showEmailDetail, setShowEmailDetail] = useState(false);
+  const [singleEmail, setSingleEmail] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
+  // console.log("Email:", totalEmails, inboxData);
   const navigate = useNavigate();
 
   const getEmail = async () => {
@@ -28,6 +39,7 @@ export default function Inbox() {
       );
       if (data) {
         setInboxData(data.email.detailedEmails);
+        setTotalEmails(data?.email?.detailedEmails?.length || 0);
         setLoading(false);
       }
     } catch (error) {
@@ -39,22 +51,94 @@ export default function Inbox() {
 
   useEffect(() => {
     getEmail();
-  }, [selectedCompany, startIndex]);
+  }, [selectedCompany]);
 
-  // Handle next page click (moves forward by 20 emails)
-  const handleNextPage = () => {
-    if (startIndex + pageSize < totalEmails) {
-      setStartIndex((prev) => prev + pageSize);
+  // Get Email without load
+  const getInboxEmail = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/fetch/inbox/${selectedCompany}/${pageNo}`
+      );
+      if (data) {
+        setInboxData(data.email.detailedEmails);
+        setTotalEmails(data?.email?.detailedEmails?.length || 0);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Error fetching emails!");
     }
-    setPageNo(pageNo + 1);
   };
 
-  // Handle previous page click (moves back by 20 emails)
+  const filteredEmails = inboxData.filter((email) => {
+    const fromHeader =
+      email.emailData.payload.headers.find((header) => header.name === "From")
+        ?.value || "No Sender";
+
+    const [name] = fromHeader.includes("<")
+      ? fromHeader.split(/(?=<)/)
+      : [fromHeader, ""];
+
+    const cleanedName = name.replace(/["<>]/g, "").trim();
+    const subject = email.subject || "";
+
+    const nameMatches = cleanedName
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const subjectMatches = subject
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    return nameMatches || subjectMatches;
+  });
+
+  const paginatedEmails = filteredEmails.slice(
+    startIndex,
+    startIndex + pageSize
+  );
+
+  // Handle next
+  const handleNextPage = () => {
+    if (startIndex + pageSize < filteredEmails.length) {
+      setStartIndex((prev) => prev + pageSize);
+    }
+    setPageNo((prev) => prev + 1);
+  };
+
+  // Handle previous
   const handlePreviousPage = () => {
     if (startIndex - pageSize >= 0) {
       setStartIndex((prev) => prev - pageSize);
     }
-    setPageNo(pageNo - 1);
+    setPageNo((prev) => prev - 1);
+  };
+
+  // Close Timer Status to click anywhere
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (emailRef.current && !emailRef.current.contains(event.target)) {
+        setShow(false);
+        setEmailId("");
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const deleteEmail = async (id) => {
+    try {
+      const { data } = await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/delete/inbox/email/${id}/${selectedCompany}`
+      );
+      if (data) {
+        getInboxEmail();
+        setEmailId("");
+        toast.success("Email delete successfully!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Error in delete email!");
+    }
   };
 
   return (
@@ -74,7 +158,12 @@ export default function Inbox() {
               </span>
               <input
                 type="search"
-                className="w-[15rem] sm:w-[23rem] h-[2.5rem] rounded-[2rem] border-2 border-gray-600 focus:border-orange-500 pl-[2rem] px-4 outline-none cursor-pointer"
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setStartIndex(0); // Reset startIndex when searching
+                }}
+                className="w-[18rem] sm:w-[35rem] h-[2.5rem] rounded-[2rem] border-2 border-gray-600 focus:border-orange-500 pl-[2rem] px-4 outline-none cursor-pointer"
               />
             </div>
           </div>
@@ -83,13 +172,16 @@ export default function Inbox() {
               className={`${style.input}`}
               value={selectedCompany}
               required
-              onChange={(e) => setSelectedCompany(e.target.value)}
-              style={{ width: "19rem" }}
+              onChange={(e) => {
+                setSelectedCompany(e.target.value);
+                setStartIndex(0); // Reset startIndex when changing company
+              }}
+              style={{ width: "16rem" }}
             >
               <option>Select Company</option>
-              <option value="Affotax">Affotax-info@affotax.com</option>
+              <option value="Affotax">info@affotax.com</option>
               <option value="Outsource">
-                Outsource-admin@outsourceaccountings.co.uk
+                admin@outsourceaccountings.co.uk
               </option>
             </select>
           </div>
@@ -102,42 +194,146 @@ export default function Inbox() {
             <Loader />
           ) : (
             <div className="flex flex-col gap-2">
-              {inboxData?.map((email, i) => (
+              {paginatedEmails.map((email, i) => (
                 <div
-                  className="w-full flex items-center justify-between py-2 px-4 rounded-md hover:shadow-md cursor-pointer bg-gray-100 border border-gray-200 hover:border-orange-200 hover:bg-orange-100 transition-all duration-300"
-                  key={i}
+                  className="w-full flex items-center justify-between py-2 px-4 rounded-md hover:shadow-md  bg-gray-100 border border-gray-100 hover:border-orange-200 hover:bg-orange-50 transition-all duration-300"
+                  key={email.emailId}
                 >
-                  {startIndex + i + 1}. {email.subject || "No Subject"}
+                  <div
+                    className="flex items-center gap-5 cursor-pointer"
+                    onClick={() => {
+                      setSingleEmail(email);
+                      setShowEmailDetail(true);
+                    }}
+                  >
+                    <h3 className="capitalize w-[17rem]">
+                      {(() => {
+                        const fromHeader =
+                          email.emailData.payload.headers.find(
+                            (header) => header.name === "From"
+                          )?.value || "No Sender";
+
+                        const [name] = fromHeader.includes("<")
+                          ? fromHeader.split(/(?=<)/)
+                          : [fromHeader, ""];
+
+                        const cleanedName = name.replace(/["<>]/g, "").trim();
+
+                        return `${cleanedName}`;
+                      })()}
+                    </h3>
+
+                    <p
+                      className={`text-[16px] ${
+                        email?.readStatus === "Unread"
+                          ? "font-semibold text-black"
+                          : "text-gray-600"
+                      }`}
+                    >
+                      {email.subject || "No Subject"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-[14px] font-medium">
+                      {email?.formattedDate}
+                    </span>
+
+                    <span
+                      className="rounded-full relative hover:bg-gray-200/70 cursor-pointer shadow-sm p-1"
+                      onClick={() => {
+                        setShow(!show);
+                        setEmailId(email.emailId);
+                      }}
+                    >
+                      <BsThreeDotsVertical className="h-5 w-5 text-black" />
+                      {show && emailId === email.emailId && (
+                        <div
+                          ref={emailRef}
+                          className="absolute top-4 right-[1.5rem] z-10 w-[12rem] py-2 px-2 rounded-md border bg-white flex flex-col gap-2"
+                        >
+                          <div
+                            onClick={() => {
+                              setShowModal(true);
+                              setSingleEmail(email);
+                            }}
+                            className="flex items-center gap-2 hover:bg-gray-100 transition-all duration-300 cursor-pointer border py-2 px-2 rounded-md hover:shadow-md"
+                          >
+                            <FaUserPlus className="h-5 w-5 text-sky-600" />
+                            <span className="text-black text-[14px]">
+                              Assign User
+                            </span>
+                          </div>
+                          {/*  */}
+                          <div
+                            onClick={() => deleteEmail(email.emailId)}
+                            className="flex items-center gap-2 hover:bg-gray-100 transition-all duration-300 cursor-pointer border py-2 px-2 rounded-md hover:shadow-md"
+                          >
+                            <AiTwotoneDelete className="h-5 w-5 text-red-600" />
+                            <span className="text-black text-[14px]">
+                              Delete
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
           )}
-
-          {/* Pagination */}
-          <div className="flex justify-between items-center mt-4">
-            <button
-              onClick={handlePreviousPage}
-              disabled={startIndex === 0}
-              className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400 disabled:opacity-50"
-            >
-              Previous
-            </button>
-
-            <span>
-              Showing {startIndex + 1} -{" "}
-              {Math.min(startIndex + pageSize, totalEmails)} of {totalEmails}{" "}
-              emails
-            </span>
-
-            <button
-              onClick={handleNextPage}
-              disabled={startIndex + pageSize >= totalEmails}
-              className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400 disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
         </div>
+
+        <div className="flex items-center justify-between mt-5">
+          <button
+            onClick={handlePreviousPage}
+            disabled={startIndex === 0}
+            className={`  px-4 py-2 rounded-md ${
+              startIndex === 0
+                ? "bg-gray-300 text-black"
+                : "bg-orange-500 text-white"
+            }`}
+          >
+            Previous
+          </button>
+          <span>
+            Page {Math.floor(startIndex / pageSize) + 1} of{" "}
+            {Math.ceil(filteredEmails.length / pageSize)}
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={startIndex + pageSize >= filteredEmails.length}
+            className={`  px-4 py-2 rounded-md ${
+              startIndex + pageSize >= filteredEmails.length
+                ? "bg-gray-300 text-black"
+                : "bg-orange-500 text-white"
+            }`}
+          >
+            Next
+          </button>
+        </div>
+
+        {/* ----------------Email Details------------- */}
+        {showEmailDetail && (
+          <div className="absolute top-0 left-0 z-[999] w-full h-full py-1 bg-gray-700/70 flex items-center justify-center">
+            <InboxDetail
+              setShowEmailDetail={setShowEmailDetail}
+              singleEmail={singleEmail}
+              company={selectedCompany}
+            />
+          </div>
+        )}
+
+        {/* -------------Assign to User------------ */}
+        {showModal && (
+          <div className="fixed top-0 left-0 z-[999] w-full h-full py-1 bg-gray-300/70 flex items-center justify-center">
+            <AssignToUserModal
+              setShowModal={setShowModal}
+              singleEmail={singleEmail}
+              setSingleEmail={setSingleEmail}
+              selectedCompany={selectedCompany}
+            />
+          </div>
+        )}
       </div>
     </Layout>
   );

@@ -31,6 +31,7 @@ export const startTimer = async (req, res) => {
       projectName,
       task,
       companyName,
+      isRunning: true,
     });
     await newTimer.save();
 
@@ -72,7 +73,7 @@ export const stopTimer = async (req, res) => {
 
     const updateTimer = await timerModel.findByIdAndUpdate(
       { _id: isExisting._id },
-      { endTime: endTime, note: note },
+      { endTime: endTime, note: note, isRunning: false },
       { new: true }
     );
 
@@ -97,9 +98,14 @@ export const timerStatus = async (req, res) => {
     const { jobId, clientId } = req.query;
 
     const timer = await timerModel.findOne({
-      jobId,
       clientId,
-      $or: [{ endTime: null }, { endTime: "" }],
+      jobId,
+      isRunning: true,
+      $or: [
+        { endTime: { $exists: false } },
+        { endTime: null },
+        { endTime: "" },
+      ],
     });
 
     if (!timer) {
@@ -563,6 +569,39 @@ export const singleTimer = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in single timer!",
+      error,
+    });
+  }
+};
+
+// Update Jobholder name
+export const updateJobHolderName = async (req, res) => {
+  try {
+    const { prevJobHolderName, newJobHolderName } = req.body;
+
+    // Check if both previous and new jobHolderName are provided
+    if (!prevJobHolderName || !newJobHolderName) {
+      return res.status(400).send({
+        success: false,
+        message: "Both previous and new jobHolderName must be provided.",
+      });
+    }
+
+    // Find all timers with the previous jobHolderName and update to the new jobHolderName
+    const updatedTimers = await timerModel.updateMany(
+      { jobHolderName: prevJobHolderName },
+      { $set: { jobHolderName: newJobHolderName } }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: `Updated jobHolderName from ${prevJobHolderName} to ${newJobHolderName} for ${updatedTimers.nModified} timers.`,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error updating jobHolderName for timers!",
       error,
     });
   }

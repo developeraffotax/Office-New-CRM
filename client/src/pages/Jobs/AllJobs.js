@@ -2043,7 +2043,7 @@ export default function AllJobs() {
               },
 
               filterFn: (row, columnId, filterValue) => {
-                const labelName = row.original?.label?.name || "";
+                const labelName = row.original?.data?.name || "";
                 return labelName === filterValue;
               },
 

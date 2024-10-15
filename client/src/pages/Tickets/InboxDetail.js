@@ -16,8 +16,11 @@ import { ImAttachment } from "react-icons/im";
 import { TbLoader2 } from "react-icons/tb";
 import SendEmailReply from "../../components/Tickets/SendEmailReply";
 
-export default function EmailDetail() {
-  const navigate = useNavigate();
+export default function InboxDetail({
+  singleEmail,
+  setShowEmailDetail,
+  company,
+}) {
   const params = useParams();
   const [ticketDetail, setTicketDetail] = useState([]);
   const [emailDetail, setEmailDetail] = useState([]);
@@ -26,35 +29,14 @@ export default function EmailDetail() {
   const [attachmentId, setAttachmentId] = useState("");
   const [showReplay, setShowReply] = useState(false);
 
-  console.log("Ticket Detail:", ticketDetail);
-
-  //   Get Single Ticket
-  const getSingleTicket = async () => {
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/ticket/${params.id}`
-      );
-      if (data) {
-        setTicketDetail(data?.ticket);
-        getEmailDetail(data?.ticket?.mailThreadId, data?.ticket?.company);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    getSingleTicket();
-
-    //eslint-disable-next-line
-  }, []);
+  console.log("emailDetail:", emailDetail);
 
   //   Email Detail
-  const getEmailDetail = async (mailThreadId, company) => {
+  const getEmailDetail = async () => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/email/detail/${mailThreadId}/${company}/${params.id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/inbox/detail/${singleEmail.emailData.threadId}/${company}`
       );
       if (data) {
         setLoading(false);
@@ -72,18 +54,9 @@ export default function EmailDetail() {
     }
   };
 
-  const emailData = async () => {
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/email/detail/${ticketDetail.mailThreadId}/${ticketDetail.company}/${params.id}`
-      );
-      if (data) {
-        setEmailDetail(data?.emailDetails);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  useEffect(() => {
+    getEmailDetail();
+  }, [singleEmail, company]);
 
   // Regex to extract the name and email address
   const separate = (email) => {
@@ -123,50 +96,6 @@ export default function EmailDetail() {
 
     return <span className="text-[12px] text-gray-600">{formattedDate}</span>;
   };
-
-  //   Download Attachments
-  // const downloadAttachments = async (
-  //   attachmentId,
-  //   messageId,
-  //   companyName,
-  //   fileName
-  // ) => {
-  //   if (!attachmentId || !messageId || !companyName) {
-  //     toast.error("Attachment detail missing!");
-  //     return;
-  //   }
-  //   setIsLoading(true);
-  //   try {
-  //     const { data } = await axios.get(
-  //       `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`
-  //     );
-  //     if (data) {
-  //       const encodedData = data.attachment.data;
-  //       console.log("encodedData:", encodedData);
-  //       const decodedData = Buffer.from(encodedData, "base64");
-  //       const byteArray = new Uint8Array(decodedData.buffer);
-
-  //       const blob = new Blob([byteArray], {
-  //         type: "application/octet-stream",
-  //       });
-
-  //       const url = URL.createObjectURL(blob);
-
-  //       const link = document.createElement("a");
-  //       link.href = url;
-  //       link.download = fileName;
-  //       link.click();
-
-  //       URL.revokeObjectURL(url);
-
-  //       setIsLoading(false);
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //     setIsLoading(false);
-  //     toast.error("Error download attachments!");
-  //   }
-  // };
 
   const downloadAttachments = async (
     attachmentId,
@@ -275,13 +204,14 @@ export default function EmailDetail() {
 
   // Mark as Read
   const markAsRead = async (messageId) => {
-    if (!ticketDetail) {
+    console.log("MessageId:", messageId);
+    if (!messageId) {
       return;
     }
     try {
       await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/markAsRead/${params.id}`,
-        { messageId, companyName: ticketDetail.company || "Affotax" }
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/markAsRead/inbox/email`,
+        { messageId: messageId.toString(), companyName: company }
       );
     } catch (error) {
       console.log(error);
@@ -294,23 +224,22 @@ export default function EmailDetail() {
         <div className="w-full flex items-center justify-between bg-white px-4 py-3 border-b border-gray-200  ">
           <div className="flex items-center justify-center gap-3">
             <span
-              // onClick={() => navigate("/tickets")}
-              onClick={() => navigate(-1)}
+              onClick={() => setShowEmailDetail(false)}
               className="rounded-full p-1 bg-gray-100 hover:bg-orange-500 hover:text-white transition-all duration-300"
             >
               <IoArrowBackOutline className="h-5 w-5 cursor-pointer" />
             </span>
-            <h2 className="text-[2xl] font-semibold text-black">
-              {ticketDetail?.subject}
+            <h2 className="text-[2xl] font-semibold  text-black">
+              {singleEmail?.subject}
             </h2>
           </div>
-          <button
+          {/* <button
             className={`${style.button1} text-[15px] flex items-center gap-1 `}
             onClick={() => setShowReply(true)}
             style={{ padding: ".4rem 1rem" }}
           >
             <HiReply className="h-4 w-4" /> Reply
-          </button>
+          </button> */}
         </div>
         {/* Email Detail */}
         {loading ? (
@@ -424,7 +353,24 @@ export default function EmailDetail() {
                             </span>
                           </div>
                           <div className="flex flex-col gap-0">
-                            {separate(message?.payload?.headers[18]?.value)}
+                            {/* {separate(message?.payload?.headers[18]?.value)} */}
+                            <h3 className="capitalize text-[14px] flex items-center gap-1">
+                              {(() => {
+                                const fromHeader =
+                                  message?.payload?.headers?.find(
+                                    (header) => header.name === "From"
+                                  )?.value || "No Sender";
+                                const [name, email] = fromHeader.split(/(?=<)/); // Split on the angle bracket before the email
+                                return (
+                                  <>
+                                    <span class="font-semibold text-[16px]">
+                                      {name.trim()}
+                                    </span>{" "}
+                                    {email}
+                                  </>
+                                );
+                              })()}
+                            </h3>
                             <span className="text-[12px] text-gray-600 flex items-center gap-2 ">
                               to me
                               <span>
@@ -508,7 +454,7 @@ export default function EmailDetail() {
         )}
 
         {/* ----------------Email Reply-------------- */}
-        {showReplay && (
+        {/* {showReplay && (
           <div className="fixed top-0 left-0 z-[999] w-full h-full py-1 bg-gray-700/70 flex items-center justify-center">
             <SendEmailReply
               setShowReply={setShowReply}
@@ -520,7 +466,7 @@ export default function EmailDetail() {
               getEmailDetail={emailData}
             />
           </div>
-        )}
+        )} */}
       </div>
     </Layout>
   );

@@ -1,13 +1,17 @@
 import express from "express";
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
+  assignEmail,
+  deleteinboxEmail,
   deleteTicket,
   getAllInbox,
   getAllSendTickets,
   getCompleteTickets,
+  getInboxDetail,
   getSingleEmailDetail,
   getTicketAttachments,
   markAsRead,
+  markAsReadInboxEmail,
   sendEmail,
   sendTicketReply,
   singleTicket,
@@ -67,5 +71,21 @@ router.get("/complete/tickets", getCompleteTickets);
 
 // Fetch All Inbox
 router.get("/fetch/inbox/:selectedCompany/:pageNo", getAllInbox);
+
+// Delete Email
+router.delete(
+  "/delete/inbox/email/:id/:companyName",
+  requiredSignIn,
+  deleteinboxEmail
+);
+
+// Get Single Email Detail
+router.get("/single/inbox/detail/:mailThreadId/:company", getInboxDetail);
+
+// Mark as Read Inbox
+router.put("/markAsRead/inbox/email", markAsReadInboxEmail);
+
+// Assign Inbox email to User
+router.post("/assign/email", requiredSignIn, assignEmail);
 
 export default router;

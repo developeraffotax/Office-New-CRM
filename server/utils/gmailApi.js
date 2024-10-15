@@ -487,7 +487,9 @@ export const markThreadAsRead = async (messageId, companyName) => {
       }),
     };
 
-    await axios(config);
+    const response = await axios(config);
+
+    console.log("Mark as Read:", response.data);
 
     return "Success";
   } catch (error) {
@@ -589,7 +591,7 @@ const getDetailedEmail = async (emailId, accessToken, retries = 3) => {
 
 // Fetch emails based on company (Affotax or Outsource) with pagination
 
-const fetchEmails = async (accessToken, pageNo, pageSize = 20) => {
+const fetchEmails = async (accessToken, pageNo, pageSize = 100) => {
   console.log("pageNo:", pageNo);
   try {
     const query = "after:2024/10/01";
@@ -658,6 +660,35 @@ export const getAllEmailInbox = async (selectedCompany, pageNo) => {
   } catch (error) {
     console.log("Error while getting all emails", error);
     return null;
+  }
+};
+
+// Delete Email
+
+export const deleteEmail = async (emailId, companyName) => {
+  try {
+    let accessToken;
+
+    if (companyName === "Affotax") {
+      accessToken = await getAccessToken();
+    } else {
+      accessToken = await getOutsourceAccessToken();
+    }
+
+    const config = {
+      method: "delete",
+      url: `https://gmail.googleapis.com/gmail/v1/users/me/messages/${emailId}`,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    };
+
+    await axios(config);
+    console.log(`Email with ID ${emailId} has been deleted successfully.`);
+    return true; // Return true if deletion is successful
+  } catch (error) {
+    console.error("Error while deleting the email:", error.message);
+    return false; // Return false if deletion failed
   }
 };
 

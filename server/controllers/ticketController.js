@@ -3,6 +3,7 @@ import jobsModel from "../models/jobsModel.js";
 import messageModel from "../models/messageModel.js";
 import ticketModel from "../models/ticketModel.js";
 import {
+  deleteEmail,
   emailReply,
   getAllEmailInbox,
   getAllEmails,
@@ -590,17 +591,137 @@ export const getAllInbox = async (req, res) => {
 // Assign Email to Employees
 export const assignEmail = async (req, res) => {
   try {
-    const {} = req.body;
+    const { companyName, clientName, company, jobHolder, subject, threadId } =
+      req.body;
+
+    const userName = req.user.user.name;
+    // const client = await jobsModel.findById(clientId);
+
+    const sendEmail = await ticketModel.create({
+      clientId: clientId,
+      companyName: client.companyName,
+      clientName: client.clientName,
+      company: company,
+      jobHolder: jobHolder,
+      subject: subject,
+      mailThreadId: threadId,
+      lastMessageSentBy: userName,
+    });
 
     res.status(200).send({
       success: true,
       message: "Email allocate successfully!",
+      ticket: sendEmail,
     });
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
       message: "Error while allocate email!",
+      error: error,
+    });
+  }
+};
+
+// Delete Email from Inbox
+export const deleteinboxEmail = async (req, res) => {
+  try {
+    const { id, companyName } = req.params;
+
+    console.log(req.body, companyName);
+
+    if (!companyName) {
+      return res.status(400).send({
+        success: false,
+        message: "Company name is required!",
+      });
+    }
+
+    if (!id) {
+      return res.status(400).send({
+        success: false,
+        message: "Email id is required!",
+      });
+    }
+
+    await deleteEmail(id, companyName);
+
+    // Delete Email From DB
+    // const email = await ticketModel.findById({});
+
+    res.status(200).send({
+      success: true,
+      message: "Email delete successfully!",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while delete email!",
+      error: error,
+    });
+  }
+};
+
+// Get Inbox Detail
+export const getInboxDetail = async (req, res) => {
+  try {
+    const { mailThreadId, company } = req.params;
+
+    if (!mailThreadId || !company) {
+      return res.status(400).json({
+        success: false,
+        message: "mailThreadId and company are required",
+      });
+    }
+
+    const ticketDetail = {
+      threadId: mailThreadId,
+      companyName: company,
+    };
+
+    // Fetch the email thread details based on the mailThreadId
+    const threadDetails = await getSingleEmail(ticketDetail);
+
+    if (!threadDetails || threadDetails.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No email found for this mailThreadId",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      emailDetails: threadDetails,
+    });
+  } catch (error) {
+    console.log("Error while getting single email details:", error);
+    res.status(500).send({
+      success: false,
+      message: "Error while getting email details!",
+      error: error,
+    });
+  }
+};
+
+// Inbox Mark As Read
+export const markAsReadInboxEmail = async (req, res) => {
+  try {
+    const { messageId, companyName } = req.body;
+
+    // console.log("Thread Detail:", messageId, companyName);
+
+    await markThreadAsRead(messageId, companyName);
+
+    res.status(200).send({
+      success: true,
+      message: "Email Read",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while mark as read inbox!",
       error: error,
     });
   }

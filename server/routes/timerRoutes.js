@@ -12,6 +12,7 @@ import {
   stopTimer,
   timerStatus,
   totalTime,
+  updateJobHolderName,
   updateTimer,
 } from "../controllers/timerController.js";
 
@@ -52,5 +53,8 @@ router.delete("/delete/timer/:id", requiredSignIn, deleteTimer);
 
 // Single timer
 router.get("/single/timer/:id", requiredSignIn, singleTimer);
+
+// Update Name
+router.put("/update/jobholder", updateJobHolderName);
 
 export default router;

@@ -15,19 +15,20 @@ import { LuDownload } from "react-icons/lu";
 import { ImAttachment } from "react-icons/im";
 import { TbLoader2 } from "react-icons/tb";
 import SendEmailReply from "../../components/Tickets/SendEmailReply";
+// import SendEmailReply from "../../components/Tickets/SendEmailReply";
 
 export default function InboxDetail({
   singleEmail,
   setShowEmailDetail,
   company,
 }) {
-  const params = useParams();
   const [ticketDetail, setTicketDetail] = useState([]);
   const [emailDetail, setEmailDetail] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isloading, setIsLoading] = useState(false);
   const [attachmentId, setAttachmentId] = useState("");
   const [showReplay, setShowReply] = useState(false);
+  const [sendToEmail, setSendToEmail] = useState("");
 
   console.log("emailDetail:", emailDetail);
 
@@ -57,6 +58,42 @@ export default function InboxDetail({
   useEffect(() => {
     getEmailDetail();
   }, [singleEmail, company]);
+
+  // Get Email Detail without load
+  const getEmail = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/inbox/detail/${singleEmail.emailData.threadId}/${company}`
+      );
+      if (data) {
+        setEmailDetail(data.emailDetails);
+        //
+        markAsRead(
+          data.emailDetails.threadData.messages[
+            data.emailDetails.threadData.messages.length - 1
+          ].id
+        );
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    const fromHeader =
+      singleEmail.emailData.payload.headers.find(
+        (header) => header.name === "From"
+      )?.value || "No Sender";
+
+    // Check if 'fromHeader' contains an email
+    const [name, emailAddress] = fromHeader.includes("<")
+      ? fromHeader.split(/<|>/)
+      : [fromHeader, ""];
+
+    // Clean the email address
+    const cleanedEmail = emailAddress ? emailAddress.trim() : "";
+    setSendToEmail(cleanedEmail);
+  }, [singleEmail]);
 
   // Regex to extract the name and email address
   const separate = (email) => {
@@ -233,13 +270,13 @@ export default function InboxDetail({
               {singleEmail?.subject}
             </h2>
           </div>
-          {/* <button
+          <button
             className={`${style.button1} text-[15px] flex items-center gap-1 `}
             onClick={() => setShowReply(true)}
             style={{ padding: ".4rem 1rem" }}
           >
             <HiReply className="h-4 w-4" /> Reply
-          </button> */}
+          </button>
         </div>
         {/* Email Detail */}
         {loading ? (
@@ -454,19 +491,19 @@ export default function InboxDetail({
         )}
 
         {/* ----------------Email Reply-------------- */}
-        {/* {showReplay && (
+        {showReplay && (
           <div className="fixed top-0 left-0 z-[999] w-full h-full py-1 bg-gray-700/70 flex items-center justify-center">
             <SendEmailReply
               setShowReply={setShowReply}
               subject={emailDetail.subject}
               threadId={emailDetail.threadId}
-              company={ticketDetail.company}
+              company={company}
               ticketId={ticketDetail._id}
-              emailSendTo={emailDetail.recipients[0]}
-              getEmailDetail={emailData}
+              emailSendTo={sendToEmail}
+              getEmailDetail={getEmail}
             />
           </div>
-        )} */}
+        )}
       </div>
     </Layout>
   );

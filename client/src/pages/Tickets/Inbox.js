@@ -12,6 +12,7 @@ import { AiTwotoneDelete } from "react-icons/ai";
 import InboxDetail from "./InboxDetail";
 import AssignToUserModal from "../../components/Tickets/AssignToUserModal";
 import { TbLoader2 } from "react-icons/tb";
+import { IoReload } from "react-icons/io5";
 
 export default function Inbox() {
   const [selectedCompany, setSelectedCompany] = useState("Affotax");
@@ -29,6 +30,7 @@ export default function Inbox() {
   const [singleEmail, setSingleEmail] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [loadInbox, setLoadInbox] = useState(false);
+  const [type, setType] = useState("received");
 
   // console.log("Email:", totalEmails, inboxData);
   const navigate = useNavigate();
@@ -37,7 +39,7 @@ export default function Inbox() {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/fetch/inbox/${selectedCompany}/${pageNo}`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/fetch/inbox/${selectedCompany}/${pageNo}/${type}`
       );
       if (data) {
         setInboxData(data.email.detailedEmails);
@@ -54,7 +56,7 @@ export default function Inbox() {
 
   useEffect(() => {
     getEmail();
-  }, [selectedCompany]);
+  }, [selectedCompany, type]);
 
   const filteredEmails = inboxData.filter((email) => {
     const fromHeader =
@@ -101,11 +103,12 @@ export default function Inbox() {
 
   // Get Email without load
   const getInboxEmail = async () => {
+    setLoadInbox(true);
     try {
       const { data } = await axios.get(
         `${
           process.env.REACT_APP_API_URL
-        }/api/v1/tickets/fetch/inbox/${selectedCompany}/${50}`
+        }/api/v1/tickets/fetch/inbox/${selectedCompany}/${50}/${type}`
       );
       if (data) {
         setInboxData(data.email.detailedEmails);
@@ -158,7 +161,35 @@ export default function Inbox() {
             >
               <IoArrowBackOutline className="h-5 w-5 cursor-pointer" />
             </span>
-            <div className="relative">
+
+            {/*  */}
+            <div className="flex  items-center  border-2 border-orange-500 rounded-sm overflow-hidden  transition-all duration-300 w-fit">
+              <button
+                className={`py-1 px-2 outline-none transition-all duration-300  w-[6rem] ${
+                  type === "received"
+                    ? "bg-orange-500 text-white border-r-2 border-orange-500"
+                    : "text-black bg-gray-100"
+                }`}
+                onClick={() => {
+                  setType("received");
+                }}
+              >
+                Inbox
+              </button>
+              <button
+                className={`py-1 px-2 outline-none transition-all duration-300 w-[6rem]  ${
+                  type === "send"
+                    ? "bg-orange-500 text-white"
+                    : "text-black bg-gray-100 hover:bg-slate-200"
+                }`}
+                onClick={() => setType("send")}
+              >
+                Send
+              </button>
+            </div>
+
+            {/*  */}
+            <div className="relative ">
               <span className="absolute top-[.6rem] left-2 z-10">
                 <IoSearch className="h-5 w-5 text-orange-500" />
               </span>
@@ -167,11 +198,23 @@ export default function Inbox() {
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
-                  setStartIndex(0); // Reset startIndex when searching
+                  setStartIndex(0);
                 }}
                 className="w-[18rem] sm:w-[35rem] h-[2.5rem] rounded-[2rem] border-2 border-gray-600 focus:border-orange-500 pl-[2rem] px-4 outline-none cursor-pointer"
               />
             </div>
+            {/*  */}
+            <span
+              onClick={getInboxEmail}
+              title="Refresh"
+              className="p-1 rounded-full bg-gray-200/50 hover:bg-gray-300/50 hover:shadow-md"
+            >
+              {loadInbox ? (
+                <TbLoader2 className="h-5 w-5 animate-spin text-red-500" />
+              ) : (
+                <IoReload className="h-5 w-5 text-orange-500 hover:text-orange-600" />
+              )}
+            </span>
           </div>
           <div className="">
             <select
@@ -180,7 +223,7 @@ export default function Inbox() {
               required
               onChange={(e) => {
                 setSelectedCompany(e.target.value);
-                setStartIndex(0); // Reset startIndex when changing company
+                setStartIndex(0);
               }}
               style={{ width: "16rem" }}
             >
@@ -314,11 +357,7 @@ export default function Inbox() {
                 : "bg-orange-500 text-white"
             }`}
           >
-            {loadInbox ? (
-              <TbLoader2 className="h-5 w-5 animate-spin text-white" />
-            ) : (
-              <span>Next</span>
-            )}
+            <span>Next</span>
           </button>
         </div>
 

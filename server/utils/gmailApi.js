@@ -624,7 +624,7 @@ const getDetailedEmail = async (
 };
 
 // Fetch emails based on company with pagination
-const fetchEmails = async (accessToken, pageNo) => {
+const fetchEmails = async (accessToken, pageNo, type) => {
   let pageSize = 17;
   const startIndex = (pageNo - 1) * pageSize;
 
@@ -632,7 +632,11 @@ const fetchEmails = async (accessToken, pageNo) => {
 
   console.log("startIndex:", startIndex, pageSize);
   try {
-    const query = "after:2024/10/01";
+    // const query = "after:2024/10/01";
+    const query =
+      type === "received"
+        ? "in:inbox -label:sent after:2024/10/01"
+        : "label:sent OR has:reply after:2024/10/01";
     const config = {
       method: "get",
       url: `https://gmail.googleapis.com/gmail/v1/users/me/messages`,
@@ -666,7 +670,7 @@ const fetchEmails = async (accessToken, pageNo) => {
 };
 
 // Fetch all emails based on the selected company with pagination
-export const getAllEmailInbox = async (selectedCompany, pageNo) => {
+export const getAllEmailInbox = async (selectedCompany, pageNo, type) => {
   try {
     const accessToken = await getAccessToken();
     const outSourcingAccessToken = await getOutsourceAccessToken();
@@ -678,9 +682,9 @@ export const getAllEmailInbox = async (selectedCompany, pageNo) => {
     let emails = [];
 
     if (selectedCompany === "Affotax") {
-      emails = await fetchEmails(accessToken, pageNo);
+      emails = await fetchEmails(accessToken, pageNo, type);
     } else if (selectedCompany === "Outsource") {
-      emails = await fetchEmails(outSourcingAccessToken, pageNo);
+      emails = await fetchEmails(outSourcingAccessToken, pageNo, type);
     }
 
     const unreadCount = emails.reduce((count, email) => {

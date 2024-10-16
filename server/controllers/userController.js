@@ -93,11 +93,19 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    const user = await userModel.findOne({ email: email });
+    const user = await userModel.findOne({ email: email }).populate("role");
     if (!user) {
       return res.status(400).send({
         success: false,
         message: "Invalid email or password!",
+      });
+    }
+
+    if (user.isActive === false) {
+      return res.status(400).send({
+        success: false,
+        message:
+          "Access Denied: Your account has been temporarily blocked by the administrator. Please contact support for Admin.",
       });
     }
 
@@ -110,9 +118,13 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    const token = await jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "29d",
-    });
+    const token = await jwt.sign(
+      { id: user._id, user: user },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "29d",
+      }
+    );
 
     res.status(200).send({
       success: true,
@@ -128,6 +140,7 @@ export const loginUser = async (req, res) => {
         isActive: user.isActive,
         role: user.role,
         avatar: user.avatar,
+        access: user.access,
       },
       token: token,
     });
@@ -140,10 +153,10 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// Get All Users
+// Get All User
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await userModel.find({}).select("-password");
+    const users = await userModel.find({}).select("-password").populate("role");
 
     res.status(200).send({
       total: users.length,
@@ -160,6 +173,31 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+// Get All Users(wothout InActive)
+export const getAllActiveUsers = async (req, res) => {
+  try {
+    const users = await userModel
+      .find({ isActive: { $ne: false } })
+      .select("-password")
+      .populate("role");
+
+    res.status(200).send({
+      total: users.length,
+      success: true,
+      message: "All users list",
+      users: users,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get all users!",
+    });
+  }
+};
+
+//
+
 // Get Single User
 export const singleUser = async (req, res) => {
   try {
@@ -171,7 +209,10 @@ export const singleUser = async (req, res) => {
         message: "UserId is required!",
       });
     }
-    const user = await userModel.findOne({ _id: userId }).select("-password");
+    const user = await userModel
+      .findOne({ _id: userId })
+      .select("-password")
+      .populate("role");
     if (!user) {
       return res.status(400).send({
         success: false,
@@ -196,8 +237,16 @@ export const singleUser = async (req, res) => {
 export const updateUserProfile = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { name, username, phone, emergency_contact, address, avatar } =
-      req.body;
+    const {
+      name,
+      username,
+      email,
+      phone,
+      emergency_contact,
+      address,
+      avatar,
+      isActive,
+    } = req.body;
 
     // Check if userId is provided
     if (!userId) {
@@ -216,7 +265,7 @@ export const updateUserProfile = async (req, res) => {
     }
 
     // Find the existing user by userId
-    const isExisting = await userModel.findById(userId).select("-avatar");
+    const isExisting = await userModel.findById(userId).select("-password");
 
     if (!isExisting) {
       return res.status(404).send({
@@ -232,6 +281,7 @@ export const updateUserProfile = async (req, res) => {
       userId,
       {
         name: name !== undefined ? name : isExisting.name,
+        email: email !== undefined ? email : isExisting.email,
         username: username !== undefined ? username : isExisting.username,
         phone: phone !== undefined ? phone : isExisting.phone,
         emergency_contact:
@@ -240,6 +290,7 @@ export const updateUserProfile = async (req, res) => {
             : isExisting.emergency_contact,
         address: address !== undefined ? address : isExisting.address,
         avatar: avatar || isExisting.avatar,
+        isActive: isActive !== undefined ? isActive : isExisting.isActive,
       },
       { new: true }
     );

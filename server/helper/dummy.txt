@@ -1,0 +1,66 @@
+// Find if the client already exists by companyName
+    // const existingClient = await jobsModel.findOne({ companyName });
+
+    // if (existingClient) {
+    //   // If the client exists, update the existing client's jobs
+    //   existingClient.jobs.push(...jobs);
+
+    //   await existingClient.save(); // Save the updated client
+
+    //   return res.status(200).send({
+    //     success: true,
+    //     message: "Jobs added successfully to the existing client",
+    //     jobs: existingClient.jobs,
+    //   });
+    // } else {
+    //   // Create a new client if it doesn't exist
+    //   const newClient = await jobsModel.create({
+    //     clientName,
+    //     regNumber,
+    //     companyName,
+    //     email,
+    //     totalHours,
+    //     currentDate,
+    //     source,
+    //     clientType,
+    //     country,
+    //     fee,
+    //     ctLogin,
+    //     pyeLogin,
+    //     trLogin,
+    //     vatLogin,
+    //     authCode,
+    //     utr,
+    //     isActive,
+    //     jobs,
+    //   });
+    }
+
+
+    Apply Aggregate 
+     const clients = await jobsModel.aggregate([
+      {
+        $match: { status: { $ne: "completed" } },
+      },
+      {
+        $project: {
+          clientName: 1,
+          companyName: 1,
+          email: 1,
+          currentDate: 1,
+          totalHours: 1,
+          totalTime: 1,
+          "job.jobName": 1,
+          "job.yearEnd": 1,
+          "job.jobDeadline": 1,
+          "job.workDeadline": 1,
+          "job.jobStatus": 1,
+          "job.lead": 1,
+          "job.jobHolder": 1,
+          commentsLength: { $size: "$comments" }, // Get the length of the comments array
+        },
+      },
+      {
+        $sort: { updatedAt: -1 },
+      },
+    ]);

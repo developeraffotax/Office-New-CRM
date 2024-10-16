@@ -1,5 +1,6 @@
 import JWT from "jsonwebtoken";
 import userModel from "../models/userModel.js";
+import roleModel from "../models/roleModel.js";
 
 export const requiredSignIn = async (req, res, next) => {
   const token = req.headers.authorization;
@@ -41,7 +42,9 @@ export const isAdmin = async (req, res, next) => {
       });
     }
 
-    if (user.role !== "admin") {
+    const role = await roleModel.findById(user.role);
+
+    if (role.name !== "Admin") {
       return res.status(401).send({
         success: false,
         message: "Forbidden! User does not have admin privileges.!",

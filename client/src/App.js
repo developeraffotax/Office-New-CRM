@@ -5,23 +5,74 @@ import { Toaster } from "react-hot-toast";
 import Dashboard from "./pages/dashboard/Dashboard";
 import AllJobs from "./pages/Jobs/AllJobs";
 import AllTasks from "./pages/Tasks/AllTasks";
-import AllLists from "./pages/lists/AllLists";
-import AllUsers from "./pages/Auth/AllUsers";
-import Header from "./components/Loyout/Header";
+// import AllLists from "./pages/lists/AllLists";
 import Profile from "./pages/Auth/Profile";
+import { useEffect } from "react";
+import socketIO from "socket.io-client";
+import TimeSheet from "./pages/TimerSheet/TimeSheet";
+import Tickets from "./pages/Tickets/Tickets";
+import Template from "./pages/Templates/Template";
+import EmailDetail from "./pages/Tickets/EmailDetail";
+import CompleteTickets from "./pages/Tickets/CompleteTickets";
+import Lead from "./pages/Lead/Lead";
+import Proposal from "./pages/Proposal/Proposal";
+import Roles from "./pages/role/Roles";
+
+import { useAuth } from "./context/authContext";
+import NotFound from "./pages/NotFound/NotFound";
+import Users from "./pages/Auth/Users";
+import Subscription from "./pages/Subscription/Subscription";
+import Inbox from "./pages/Tickets/Inbox";
+
+const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
+const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 function App() {
+  const { auth } = useAuth();
+  const user = auth.user;
+
+  const routeAccess = {
+    Dashboard: <Route path="/dashboard" element={<Dashboard />} />,
+    Users: <Route path="/users" element={<Users />} />,
+    Roles: <Route path="/roles" element={<Roles />} />,
+    Timesheet: <Route path="/timesheet" element={<TimeSheet />} />,
+    Proposals: <Route path="/proposals" element={<Proposal />} />,
+    Leads: <Route path="/leads" element={<Lead />} />,
+    Tasks: <Route path="/tasks" element={<AllTasks />} />,
+    Jobs: <Route path="/job-planning" element={<AllJobs />} />,
+    Tickets: (
+      <>
+        <Route path="/tickets" element={<Tickets />} />
+        <Route path="/tickets/complete" element={<CompleteTickets />} />
+        <Route path="/ticket/detail/:id" element={<EmailDetail />} />
+        <Route path="/tickets/inbox" element={<Inbox />} />
+      </>
+    ),
+    Templates: <Route path="/templates" element={<Template />} />,
+    Subscription: <Route path="/subscriptions" element={<Subscription />} />,
+  };
+
+  useEffect(() => {
+    socketId.on("connection", () => {});
+  }, []);
+
+  const userAccessRoutes = user?.role?.access
+    ?.map((accessItem) => {
+      return routeAccess[accessItem];
+    })
+    .filter(Boolean);
+
   return (
     <div>
       <BrowserRouter>
         <Routes>
+          {/* If the user is not authenticated, navigate to login */}
+          {/* {!user && <Route path="*" element={<Navigate to="/" />} />} */}
           <Route path="/" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/my_list" element={<AllLists />} />
-          <Route path="/tasks" element={<AllTasks />} />
-          <Route path="/job-planning" element={<AllJobs />} />
-          <Route path="/users" element={<AllUsers />} />
+          {userAccessRoutes}
           <Route path="/profile" element={<Profile />} />
+          {/* Catch-all route: if no access to a route, show 404 */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
       </BrowserRouter>

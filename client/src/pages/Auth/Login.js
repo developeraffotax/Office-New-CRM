@@ -5,6 +5,7 @@ import { useAuth } from "../../context/authContext";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import { TbLoader3 } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
+import { style } from "../../utlis/CommonStyle";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -30,40 +31,46 @@ export default function Login() {
       if (data?.success) {
         setAuth({ ...auth, user: data?.user, token: data?.token });
         localStorage.setItem("auth", JSON.stringify(data));
-        navigate("/dashboard");
+        navigate("/profile");
         toast.success("Login successfully!", { duration: 2000 });
         setLoading(false);
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.response.data.message, { duration: 2000 });
+      toast.error(error?.response?.data?.message, { duration: 2000 });
       setLoading(false);
     }
   };
   return (
-    <div className="w-full min-h-screen flex items-center justify-center py-6 px-4">
-      <div className="bg-gray-100 rounded-md shadow1 py-4 px-4 w-[30rem]">
-        <h3 className="text-2xl font-semibold text-black text-center w-full ">
+    <div className="w-full h-[111vh] flex items-center justify-center py-6 px-4 backgroundC">
+      <div className="rounded-md shadow1 py-4 px-4 w-[30rem] bg-white">
+        <div className="flex items-center justify-center flex-col">
+          <img
+            src="/logo.png"
+            alt="Logo"
+            className="w-[6] h-[6rem] drop-shadow-2xl shadow-gray-200 shadow-opacity-50 shadow-offset-2"
+          />
+        </div>
+        {/* <h3
+          className="text-2xl font-semibold text-white text-center w-full mb-[1.2rem] "
+          style={{ textShadow: "-1px 0px 1px #000" }}
+        >
           Sign In to Affotax
-        </h3>
-        <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
+        </h3> */}
+        <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-5">
           <div className="flex flex-col gap-2">
-            <label htmlFor="" className="text-[1.1rem] font-[400] ">
-              Enter your Email
-            </label>
-            <input
-              type="email"
-              placeholder="loginmail@gmail.com"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="py-2 px-3 border-2  text-[15px] outline-none border-gray-900 rounded-md shadow-md"
-            />
+            <div className="inputBox">
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={`${style.input} w-full py-2 px-3 border-2 bg-white  text-[15px] outline-none border-gray-900 rounded-md shadow-md `}
+              />
+              <span>Enter your Email</span>
+            </div>
           </div>
           <div className="flex flex-col gap-2">
-            <label htmlFor="" className="text-[1.1rem] font-[400] ">
-              Enter your Password
-            </label>
             <div className="relative w-full">
               <div
                 className="absolute top-2 right-2 z-10 cursor-pointer"
@@ -75,15 +82,18 @@ export default function Login() {
                   <IoMdEye size={25} className="cursor-pointer" />
                 )}
               </div>
-              <input
-                type={!isShow ? "password" : "text"}
-                placeholder="password!@#%"
-                required
-                value={password}
-                // minLength={8}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full py-2 px-3 border-2  text-[15px] outline-none border-gray-900 rounded-md shadow-md"
-              />
+
+              <div className="inputBox">
+                <input
+                  type={!isShow ? "password" : "text"}
+                  required
+                  value={password}
+                  // minLength={8}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={`${style.input} w-full py-2 px-3 border-2  bg-white text-[15px] outline-none border-gray-900 rounded-md shadow-md `}
+                />
+                <span>Password</span>
+              </div>
             </div>
             {/* <div className="flex items-start sm:items-center flex-col sm:flex-row justify-normal sm:justify-between my-3">
               <span
@@ -94,18 +104,22 @@ export default function Login() {
                 Reset Password
               </span>
             </div> */}
-            <button
-              type="submit"
-              className={`btn ${
-                loading && "animate-pulse pointer-events-none"
-              }`}
-            >
-              {loading ? (
-                <TbLoader3 className="h-5 w-5 animate-spin " />
-              ) : (
-                "Sign In"
-              )}
-            </button>
+            <div className=" w-full flex items-center justify-end mt-4">
+              <button
+                type="submit"
+                className={`py-[.5rem] px-[1.6rem] ${
+                  style.btn
+                }  flex items-center justify-center text-white shadow cursor-pointer  ${
+                  loading && "animate-pulse pointer-events-none "
+                }`}
+              >
+                {loading ? (
+                  <TbLoader3 className="h-5 w-5 animate-spin " />
+                ) : (
+                  "Sign In"
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>

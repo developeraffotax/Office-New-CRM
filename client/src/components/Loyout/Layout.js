@@ -4,21 +4,19 @@ import { useAuth } from "../../context/authContext";
 import Spinner from "../../utlis/Spinner";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
-import MainSidebar from "./MainSidebar";
 
 export default function Layout({ children }) {
   const [show, setShow] = useState(false);
   const [hide, setHide] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const { auth } = useAuth();
   if (!auth?.token) {
     return <Spinner />;
   }
 
   return (
-    <div className="relative w-full h-screen flex flex-col">
+    <div className="relative w-full h-[111vh] overflow-hidden flex flex-col ">
       <Header />
-      <div className=" w-full flex-1 gap-1 flex h-screen  fixed top-[3.8rem] left-[0rem] z-[1] overflow-hidden">
+      <div className=" w-full flex-1 gap-1 flex h-[100%]  fixed top-[3.8rem] left-[0rem] z-[1] overflow-hidden">
         {!show && (
           <div className=" flex sm:hidden  absolute top-2 left-3">
             <IoMenu
@@ -34,10 +32,6 @@ export default function Layout({ children }) {
           }`}
         >
           <Sidebar hide={hide} setHide={setHide} />
-          {/* <MainSidebar
-            isCollapsed={isCollapsed}
-            setIsCollapsed={setIsCollapsed}
-          /> */}
         </div>
         {show && (
           <div className=" absolute top-0 left-0 flex  bg-white sm:hidden z-20 w-[13rem] pt-[2rem]  border-r-[2px]  border-gray-600">
@@ -51,7 +45,7 @@ export default function Layout({ children }) {
             <Sidebar />
           </div>
         )}
-        <div className="flex-[1.8] border-r-red-500  pt-[2.5rem] overflow-x-auto hidden1  sm:pt-0 border-l-[2px]  ">
+        <div className="flex-[1.8] border-r-red-500  w-full h-[100%] pb-[3rem] pt-[2.5rem] overflow-y-auto hidden1   sm:pt-0 border-l-[2px]  ">
           {children}
         </div>
       </div>

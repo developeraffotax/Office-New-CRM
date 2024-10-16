@@ -24,16 +24,7 @@ export default function AllUsers() {
   const [show, setShow] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [index, setIndex] = useState("");
-  const roles = [
-    "Accountant",
-    "Admin",
-    "Accountant+Admin",
-    "Assistant",
-    "SEO",
-    "PA",
-    "Developer",
-    "Developer Product",
-  ];
+  const [userRoles, setUserRoles] = useState([]);
 
   // Get all Users
   const getAllUsers = async () => {
@@ -57,7 +48,26 @@ export default function AllUsers() {
     //eslint-disable-next-line
   }, []);
 
+  // Get All Roles
+  const getAllRoles = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/roles/fetch/all/roles`
+      );
+      setUserRoles(data?.roles);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllRoles();
+
+    //eslint-disable-next-line
+  }, []);
+
   const handleChange = (e, id) => {
+    console.log("ROle", e.target.value, id);
     UpdateRole(e.target.value, id);
   };
 
@@ -101,11 +111,11 @@ export default function AllUsers() {
             <select
               className={`${style.input} h-[2.5rem] w-full border-gray-900`}
               onChange={(e) => handleChange(e, params.row.id)}
-              value={params?.row.role || ""}
+              value={params?.row.role._id || ""}
             >
-              {roles?.map((p, i) => (
-                <option value={p} className="capitalize" key={i}>
-                  {p}
+              {userRoles?.map((role, i) => (
+                <option value={role._id} className="capitalize" key={i}>
+                  {role.name}
                 </option>
               ))}
             </select>
@@ -249,10 +259,10 @@ export default function AllUsers() {
             {loading ? (
               <Loader />
             ) : (
-              <div className="w-full h-[85vh]   pb-[4rem] overflow-auto message mt-[1rem] sm:mt-0">
+              <div className="w-full h-[85vh] pb-[4rem] overflow-auto message mt-[1rem] sm:mt-0">
                 <Box
                   m="40px 0 0 0"
-                  height="75vh"
+                  height="80vh"
                   width="98%"
                   boxShadow=".3rem .3rem .4rem rgba(0,0,0,.3)"
                   filter="drop-shadow(0rem 0rem .6rem .1rem rgb(0, 149, 255))"
@@ -312,100 +322,13 @@ export default function AllUsers() {
                     columns={columns}
                     initialState={{
                       pagination: {
-                        paginationModel: { page: 0, pageSize: 6 },
+                        paginationModel: { page: 0, pageSize: 15 },
                       },
                     }}
                     pageSizeOptions={[5, 10, 20, 50]}
                     checkboxSelection
                   />
                 </Box>
-                {/* Mobile Format */}
-                <div className=" sm:hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {users?.map((file, index) => (
-                    <div
-                      className=" relative box rounded-md py-4  border-2  cursor-default flex items-center justify-center flex-col gap-3 shadow-xl hover:shadow-md active:shadow-md hover:shadow-green-400/60 dark:hover:shadow-sky-400/60"
-                      key={file?._id}
-                      style={{
-                        border: `2px solid ${"#047857"}`,
-                      }}
-                    >
-                      {/* Three Dots */}
-                      <div className="relative flex items-center justify-between w-full px-2 ">
-                        <div className="flex items-center gap-2">
-                          <CiCalendarDate
-                            className="h-5 w-5 text-purple-600"
-                            style={{
-                              color: "#047857",
-                            }}
-                          />
-                          {format(new Date(file?.createdAt), "dd MMM yyyy")}
-                        </div>
-                        <span className=" p-1 border border-zinc-400 bg-white/15 cursor-pointer rounded-md shadow-md ">
-                          <BsThreeDotsVertical
-                            className="h-4 w-4 text-green-600 dark:text-blue-400"
-                            style={{
-                              color: "#047857",
-                            }}
-                            onClick={() =>
-                              setShow((prevShow) =>
-                                prevShow === index ? null : index
-                              )
-                            }
-                          />
-                        </span>
-                        {show === index && (
-                          <div className=" absolute top-6 right-4 bg-white z-40 w-[12rem] py-1 px-1 flex flex-col gap-[2px] rounded-md shadow-md cursor-pointer border border-zinc-400">
-                            <span
-                              className={` ${
-                                deleting && "pointer-events-none animate-pulse"
-                              }text-[14px] flex items-center justify-between text-red-500 font-medium cursor-pointer py-1 px-2 rounded-md hover:shadow-md hover:bg-white/10 border hover:border-red-400`}
-                              onClick={() =>
-                                handleDelete(file?.assistantId, file?.fileId)
-                              }
-                            >
-                              Delete File
-                              {deleting && (
-                                <TbLoader3 className="h-4 w-4 animate-spin" />
-                              )}
-                              <MdDeleteForever className="h-4 w-4 text-red-500" />
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* End */}
-                      <div className="relative w-[3rem] h-[3rem] object-fill p-1">
-                        <img
-                          src={
-                            file?.fileType === "pdf"
-                              ? "/pdf.png"
-                              : file?.fileType === "plain"
-                              ? "/txt.png"
-                              : file?.fileType === "txt"
-                              ? "/txt.png"
-                              : file?.fileType === "csv"
-                              ? "/csv.png"
-                              : file?.fileType === "docx"
-                              ? "/docx.png"
-                              : file?.fileType === "doc"
-                              ? "/docx.png"
-                              : file?.fileType === "pptx"
-                              ? "/pptx.png"
-                              : "/any.png"
-                          }
-                          layout="fill"
-                          objectFit="contain"
-                          className="w-full h-full"
-                          alt="Icon"
-                        />
-                      </div>
-                      <p className="text-[16] font-medium text-center">
-                        {file?.fileName?.slice(0, 25)}{" "}
-                        <span>{file?.fileName?.length > 25 && "..."}</span>
-                      </p>
-                    </div>
-                  ))}
-                </div>
               </div>
             )}
           </div>
@@ -413,7 +336,7 @@ export default function AllUsers() {
       </div>
       {/* Add New User */}
       {isOpen && (
-        <div className="fixed top-[4rem] h-screen sm:top-0 left-0 w-full z-[99990] overflow-y-scroll bg-black/70 flex items-center justify-center py-6 px-4">
+        <div className="fixed top-[4rem] h-[100%] sm:top-0 left-0 w-full z-[99990] overflow-y-scroll bg-gray-100/70 flex items-center justify-center py-6 px-4">
           <Register
             setIsOpen={setIsOpen}
             getAllUsers={getAllUsers}

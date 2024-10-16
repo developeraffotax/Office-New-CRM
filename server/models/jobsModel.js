@@ -8,12 +8,15 @@ const jobSchema = new mongoose.Schema(
     },
     yearEnd: {
       type: Date,
+      default: () => new Date(),
     },
     jobDeadline: {
       type: Date,
+      default: () => new Date(),
     },
     workDeadline: {
       type: Date,
+      default: () => new Date(),
     },
     hours: {
       type: String,
@@ -23,7 +26,6 @@ const jobSchema = new mongoose.Schema(
     },
     jobStatus: {
       type: String,
-      default: "progress",
     },
     notes: {
       type: String,
@@ -36,6 +38,46 @@ const jobSchema = new mongoose.Schema(
     },
     jobHolder: {
       type: String,
+    },
+  },
+  { timestamps: true }
+);
+
+// Comment Schema
+const commentsSchema = new mongoose.Schema(
+  {
+    user: Object,
+    comment: String,
+    commentReplies: [Object],
+    senderId: { type: String },
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    status: {
+      type: String,
+      default: "unread",
+    },
+  },
+  { timestamps: true }
+);
+
+const labelSchema = new mongoose.Schema({
+  name: { type: String },
+  color: { type: String },
+});
+
+const subtask = new mongoose.Schema(
+  {
+    subTask: {
+      type: String,
+      trim: true,
+    },
+    status: {
+      type: String,
+      default: "process",
     },
   },
   { timestamps: true }
@@ -59,15 +101,22 @@ const clientSchema = new mongoose.Schema(
       type: String,
     },
     totalHours: {
-      type: Number,
+      type: String,
     },
     currentDate: {
-      type: String,
+      type: Date,
+      default: () => new Date(),
     },
     source: {
       type: String,
     },
+    status: {
+      type: String,
+    },
     clientType: {
+      type: String,
+    },
+    partner: {
       type: String,
     },
     country: {
@@ -79,13 +128,25 @@ const clientSchema = new mongoose.Schema(
     ctLogin: {
       type: String,
     },
+    ctPassword: {
+      type: String,
+    },
     pyeLogin: {
+      type: String,
+    },
+    pyePassword: {
       type: String,
     },
     trLogin: {
       type: String,
     },
+    trPassword: {
+      type: String,
+    },
     vatLogin: {
+      type: String,
+    },
+    vatPassword: {
       type: String,
     },
     authCode: {
@@ -98,7 +159,15 @@ const clientSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    job: [jobSchema],
+    job: jobSchema,
+    totalTime: {
+      type: String,
+      default: "Om",
+    },
+    label: labelSchema,
+    data: labelSchema,
+    comments: [commentsSchema],
+    subtasks: [subtask],
   },
   { timestamps: true }
 );

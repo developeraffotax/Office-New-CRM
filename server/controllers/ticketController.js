@@ -14,6 +14,7 @@ import {
 } from "../utils/gmailApi.js";
 import notificationModel from "../models/notificationModel.js";
 import userModel from "../models/userModel.js";
+import mongoose from "mongoose";
 
 // Create Ticket \
 export const sendEmail = async (req, res) => {
@@ -441,6 +442,17 @@ export const sendTicketReply = async (req, res) => {
       emailSendTo,
     } = req.body;
 
+    console.log(
+      "Reply Detail:",
+      ticketId,
+      company,
+      threadId,
+      messageId,
+      message,
+      subject,
+      emailSendTo
+    );
+
     const attachments = req.files.map((file) => ({
       filename: file.originalname,
       content: file.buffer.toString("base64"),
@@ -458,11 +470,15 @@ export const sendTicketReply = async (req, res) => {
 
     await emailReply(emailData);
 
-    await ticketModel.findByIdAndUpdate(
-      { _id: ticketId },
-      { lastMessageSentBy: userName },
-      { new: true }
-    );
+    if (ticketId && mongoose.Types.ObjectId.isValid(ticketId)) {
+      await ticketModel.findByIdAndUpdate(
+        ticketId,
+        { lastMessageSentBy: userName },
+        { new: true }
+      );
+    } else {
+      console.log("Invalid ticketId");
+    }
 
     res.status(200).send({
       success: true,
@@ -569,9 +585,9 @@ export const getCompleteTickets = async (req, res) => {
 // Get ALl Inbox Data
 export const getAllInbox = async (req, res) => {
   try {
-    const { selectedCompany, pageNo } = req.params;
-    console.log(selectedCompany, pageNo);
-    const reponse = await getAllEmailInbox(selectedCompany, pageNo);
+    const { selectedCompany, pageNo, type } = req.params;
+    console.log(selectedCompany, pageNo, type);
+    const reponse = await getAllEmailInbox(selectedCompany, pageNo, type);
 
     res.status(200).send({
       success: true,

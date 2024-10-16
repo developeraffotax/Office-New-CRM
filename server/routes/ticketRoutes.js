@@ -70,7 +70,7 @@ router.get("/ticket/comments/:id", singleTicketComments);
 router.get("/complete/tickets", getCompleteTickets);
 
 // Fetch All Inbox
-router.get("/fetch/inbox/:selectedCompany/:pageNo", getAllInbox);
+router.get("/fetch/inbox/:selectedCompany/:pageNo/:type", getAllInbox);
 
 // Delete Email
 router.delete(

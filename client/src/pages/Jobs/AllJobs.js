@@ -89,6 +89,7 @@ export default function AllJobs() {
   const [labelData, setLabelData] = useState([]);
   const [showDataLable, setShowDataLable] = useState(false);
   const [dataLable, setDataLabel] = useState([]);
+  const [totalFee, setTotalFee] = useState(0);
 
   // Extract the current path
   const currentPath = location.pathname;
@@ -127,6 +128,19 @@ export default function AllJobs() {
       setTotalHours(calculateTotalHours(tableData).toFixed(0));
     } else if (filterData) {
       setTotalHours(calculateTotalHours(filterData).toFixed(0));
+    }
+  }, [tableData, filterData, active, active1]);
+
+  // ------------Total Fee-------->
+  useEffect(() => {
+    const calculateTotalFee = (data) => {
+      return data.reduce((sum, client) => sum + Number(client.fee), 0);
+    };
+
+    if (active === "All") {
+      setTotalFee(calculateTotalFee(tableData).toFixed(0));
+    } else if (filterData) {
+      setTotalFee(calculateTotalFee(filterData).toFixed(0));
     }
   }, [tableData, filterData, active, active1]);
 
@@ -686,32 +700,28 @@ export default function AllJobs() {
   };
 
   // Add Data
-  const addDatalabel1 = async (id, name, color) => {
-    console.log("Data:", id, name, color);
+  const addDatalabel1 = async (id, labelId) => {
+    console.log("Data:", id, labelId);
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/client/add/job/data/${id}`,
-        { name, color }
+        { labelId }
       );
       if (data) {
         if (filterId || active || active1) {
           setFilterData((prevData) =>
             prevData?.map((item) =>
-              item._id === id ? { ...item, data: { name, color } } : item
+              item._id === id ? { ...item, data: data?.job?.data } : item
             )
           );
         }
         setTableData((prevData) =>
           prevData?.map((item) =>
-            item._id === id ? { ...item, data: { name, color } } : item
+            item._id === id ? { ...item, data: data?.job?.data } : item
           )
         );
-
-        if (name) {
-          toast.success("Data label added!");
-        } else {
-          toast.success("Data label updated!");
-        }
+        allClientData();
+        toast.success("New Data label added!");
 
         // Socket
         socketId.emit("addJob", {
@@ -931,7 +941,7 @@ export default function AllJobs() {
         accessorKey: "totalHours",
         Header: ({ column }) => {
           return (
-            <div className=" flex flex-col gap-[2px] w-[5.5rem] items-center justify-center pr-2 ">
+            <div className=" flex flex-col gap-[2px] w-full items-center justify-center pr-2 ">
               <span
                 className="ml-1 w-full text-center cursor-pointer"
                 title="Clear Filter"
@@ -962,7 +972,7 @@ export default function AllJobs() {
           );
         },
         filterFn: "equals",
-        size: 90,
+        size: 70,
       },
       // End  year
       {
@@ -1885,7 +1895,7 @@ export default function AllJobs() {
 
         filterVariant: "select",
         filterSelectOptions: labelData.map((label) => label.name),
-        size: 160,
+        size: 130,
         minSize: 100,
         maxSize: 210,
         grow: false,
@@ -1894,6 +1904,42 @@ export default function AllJobs() {
 
       ...(auth?.user?.role?.name === "Admin"
         ? [
+            {
+              accessorKey: "fee",
+              Header: ({ column }) => {
+                return (
+                  <div className=" flex flex-col gap-[2px] w-full items-center justify-center  ">
+                    <span
+                      className="ml-1 w-full text-center cursor-pointer pr-6"
+                      title="Clear Filter"
+                      onClick={() => {
+                        column.setFilterValue("");
+                      }}
+                    >
+                      Fee
+                    </span>
+                    <span
+                      title={totalFee}
+                      className="font-medium w-full cursor-pointer text-center text-[12px] px-1 py-1 rounded-md bg-gray-300/30 text-black"
+                    >
+                      {totalFee}
+                    </span>
+                  </div>
+                );
+              },
+              Cell: ({ cell, row }) => {
+                const fee = row.original.fee;
+                return (
+                  <div className="w-full flex items-center justify-center">
+                    <span className="text-[15px] font-medium">
+                      {fee && fee}
+                    </span>
+                  </div>
+                );
+              },
+              filterFn: "equals",
+              size: 60,
+            },
             {
               accessorKey: "source",
               Header: ({ column }) => {
@@ -1935,7 +1981,7 @@ export default function AllJobs() {
               Cell: ({ cell, row }) => {
                 const source = row.original.source;
                 return (
-                  <div className="w-full flex items-center justify-center">
+                  <div className="w-full flex items-start justify-start">
                     <span className="text-[15px] font-medium">
                       {source && source}
                     </span>
@@ -1980,11 +2026,11 @@ export default function AllJobs() {
               Cell: ({ cell, row }) => {
                 const [show, setShow] = useState(false);
                 const jobLabel = row.original.data || {};
-                const { name, color } = jobLabel;
+                const { name, color, _id } = jobLabel;
 
                 const handleLabelChange = (labelName) => {
                   const selectedLabel = dataLable.find(
-                    (label) => label.name === labelName
+                    (label) => label._id === labelName
                   );
                   console.log("selectedLabel:", selectedLabel);
                   if (selectedLabel) {
@@ -2000,16 +2046,16 @@ export default function AllJobs() {
                 };
 
                 return (
-                  <div className="w-full flex items-center justify-center">
+                  <div className="w-full flex items-start ">
                     {show ? (
                       <select
-                        value={name || ""}
+                        value={_id || ""}
                         onChange={(e) => handleLabelChange(e.target.value)}
                         className="w-full h-[2rem] rounded-md border-none outline-none"
                       >
                         <option value="empty">Select Data</option>
                         {dataLable?.map((label, i) => (
-                          <option value={label?.name} key={i}>
+                          <option value={label?._id} key={i}>
                             {label?.name}
                           </option>
                         ))}
@@ -2058,7 +2104,7 @@ export default function AllJobs() {
         : []),
     ],
     // eslint-disable-next-line
-    [users, play, auth, note, totalHours]
+    [users, play, auth, note, totalHours, labelData, dataLable]
   );
 
   // Clear table Filter

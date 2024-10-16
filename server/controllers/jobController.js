@@ -1,4 +1,5 @@
 import jobsModel from "../models/jobsModel.js";
+import labelModel from "../models/labelModel.js";
 import notificationModel from "../models/notificationModel.js";
 import userModel from "../models/userModel.js";
 import XLSX from "xlsx";
@@ -116,8 +117,9 @@ export const getAllClients = async (req, res) => {
     const clients = await jobsModel
       .find({ status: { $ne: "completed" } })
       .select(
-        "clientName companyName email currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data"
-      );
+        "clientName companyName email fee currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data"
+      )
+      .populate("data");
 
     res.status(200).send({
       success: true,
@@ -1104,7 +1106,9 @@ export const deleteSubTask = async (req, res) => {
 export const addDatalabel = async (req, res) => {
   try {
     const jobId = req.params.id;
-    const { name, color } = req.body;
+    const { labelId } = req.body;
+
+    const label = await labelModel.findById(labelId);
 
     const job = await jobsModel.findById(jobId);
 
@@ -1117,7 +1121,7 @@ export const addDatalabel = async (req, res) => {
 
     const updateJob = await jobsModel.findByIdAndUpdate(
       { _id: job._id },
-      { "data.name": name, "data.color": color },
+      { data: label._id },
       { new: true }
     );
 

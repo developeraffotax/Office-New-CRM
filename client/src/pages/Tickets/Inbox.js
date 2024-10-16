@@ -11,10 +11,11 @@ import { FaUserPlus } from "react-icons/fa";
 import { AiTwotoneDelete } from "react-icons/ai";
 import InboxDetail from "./InboxDetail";
 import AssignToUserModal from "../../components/Tickets/AssignToUserModal";
+import { TbLoader2 } from "react-icons/tb";
 
 export default function Inbox() {
   const [selectedCompany, setSelectedCompany] = useState("Affotax");
-  const [inboxData, setInboxData] = useState([]); // All inbox data
+  const [inboxData, setInboxData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageNo, setPageNo] = useState(1);
   const [startIndex, setStartIndex] = useState(0);
@@ -27,6 +28,7 @@ export default function Inbox() {
   const [showEmailDetail, setShowEmailDetail] = useState(false);
   const [singleEmail, setSingleEmail] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [loadInbox, setLoadInbox] = useState(false);
 
   // console.log("Email:", totalEmails, inboxData);
   const navigate = useNavigate();
@@ -41,6 +43,7 @@ export default function Inbox() {
         setInboxData(data.email.detailedEmails);
         setTotalEmails(data?.email?.detailedEmails?.length || 0);
         setLoading(false);
+        getInboxEmail();
       }
     } catch (error) {
       console.log(error);
@@ -52,22 +55,6 @@ export default function Inbox() {
   useEffect(() => {
     getEmail();
   }, [selectedCompany]);
-
-  // Get Email without load
-  const getInboxEmail = async () => {
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/fetch/inbox/${selectedCompany}/${pageNo}`
-      );
-      if (data) {
-        setInboxData(data.email.detailedEmails);
-        setTotalEmails(data?.email?.detailedEmails?.length || 0);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Error fetching emails!");
-    }
-  };
 
   const filteredEmails = inboxData.filter((email) => {
     const fromHeader =
@@ -112,6 +99,25 @@ export default function Inbox() {
     setPageNo((prev) => prev - 1);
   };
 
+  // Get Email without load
+  const getInboxEmail = async () => {
+    try {
+      const { data } = await axios.get(
+        `${
+          process.env.REACT_APP_API_URL
+        }/api/v1/tickets/fetch/inbox/${selectedCompany}/${50}`
+      );
+      if (data) {
+        setInboxData(data.email.detailedEmails);
+        setTotalEmails(data?.email?.detailedEmails?.length || 0);
+        setLoadInbox(false);
+      }
+    } catch (error) {
+      setLoadInbox(false);
+      console.log(error);
+      toast.error("Error fetching emails!");
+    }
+  };
   // Close Timer Status to click anywhere
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -308,7 +314,11 @@ export default function Inbox() {
                 : "bg-orange-500 text-white"
             }`}
           >
-            Next
+            {loadInbox ? (
+              <TbLoader2 className="h-5 w-5 animate-spin text-white" />
+            ) : (
+              <span>Next</span>
+            )}
           </button>
         </div>
 

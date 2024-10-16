@@ -10,6 +10,10 @@ const AuthProvider = ({ children }) => {
   });
   const [token, setToken] = useState("");
   const [active, setActive] = useState("dashboard");
+  const [anyTimerRunning, setAnyTimerRunning] = useState(false);
+  const [time, setTime] = useState("");
+  const [filterId, setFilterId] = useState("");
+  const [searchValue, setSearchValue] = useState("");
 
   // check token
   axios.defaults.headers.common["Authorization"] = auth?.token;
@@ -25,8 +29,44 @@ const AuthProvider = ({ children }) => {
         token: parseData?.token,
       }));
     }
+
     // eslint-disable-next-line
   }, []);
+
+  const getUserDetail = async (id) => {
+    if (!id) {
+      return;
+    }
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_user/${id}`
+      );
+
+      console.log("SingleUserData:", data.user);
+
+      const updatedUser = {
+        ...data.user,
+        id: data.user._id,
+      };
+      delete updatedUser._id;
+
+      const updateAuthData = {
+        user: updatedUser,
+        token: auth.token,
+      };
+      localStorage.setItem("auth", JSON.stringify(updateAuthData));
+      setAuth(updateAuthData);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    const userId = auth?.user?.id;
+    if (userId) {
+      getUserDetail(userId);
+    }
+  }, [auth?.user?.id]);
 
   return (
     <AuthContext.Provider
@@ -37,6 +77,14 @@ const AuthProvider = ({ children }) => {
         setToken,
         active,
         setActive,
+        anyTimerRunning,
+        setAnyTimerRunning,
+        filterId,
+        setFilterId,
+        time,
+        setTime,
+        searchValue,
+        setSearchValue,
       }}
     >
       {children}

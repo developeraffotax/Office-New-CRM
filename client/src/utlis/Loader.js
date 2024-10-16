@@ -9,7 +9,7 @@ export default function Loader() {
         <SkeletonTheme baseColor="#ccc" highlightColor="#777">
           <p>
             <Skeleton
-              count={6}
+              count={10}
               height={60}
               width="100%"
               className="animate-pulse"

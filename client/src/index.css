@@ -4,11 +4,13 @@
 
 body {
   margin: 0;
+  padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  zoom: 0.9;
 }
 
 code {
@@ -86,7 +88,7 @@ input::-webkit-inner-spin-button {
 }
 ::-webkit-scrollbar {
   width: 0.2rem;
-  height: 0.1rem;
+  height: 0.3rem;
 }
 ::-webkit-scrollbar-track {
   background: #afadad;
@@ -261,7 +263,7 @@ input::-webkit-inner-spin-button {
 .inputBox > span {
   position: absolute;
   left: 0;
-  padding: 12px;
+  padding: 8px 12px;
   pointer-events: none;
   font-size: 1rem;
   color: #888;
@@ -272,7 +274,7 @@ input::-webkit-inner-spin-button {
 .inputBox > input:focus ~ span,
 inputBox > textarea:focus ~ span {
   color: #000;
-  transform: translateX(10px) translateY(-6px);
+  transform: translateX(10px) translateY(-8px);
   font-size: 0.8rem;
   padding: 0 7px;
   background: #fff;
@@ -289,4 +291,141 @@ inputBox > textarea:focus ~ span {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-fill-color: transparent;
+}
+
+.mentions {
+  outline: none;
+}
+
+.highlight {
+  background-color: #ffff99;
+  padding: 0 2px;
+  border-radius: 2px;
+  font-weight: 500;
+  color: #007bff;
+}
+
+/* -------------Button Animation---------- */
+.anibtn {
+  position: relative;
+  overflow: hidden;
+  background: #42455a;
+  width: 100%;
+  height: 100%;
+  border-radius: 2rem;
+  border: none;
+  font-size: 1rem;
+  color: #e0ffff;
+  font-weight: 500;
+  cursor: pointer;
+  z-index: 1;
+}
+.anibtn:active {
+  transform: scale(0.95);
+}
+.anibtn::before {
+  content: "";
+  position: absolute;
+  inset: -1px 30px;
+  background: #00c2cb;
+  transition: 500ms;
+  animation: rotate 4s linear infinite;
+  z-index: -1;
+}
+.anibtn:hover::before {
+  inset: -1px;
+}
+.anibtn::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: #22232e;
+  z-index: -1;
+}
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+/* --------Box Animation-------------- */
+.box {
+  color: white;
+  text-shadow: 0 1px 0 #000;
+
+  --border-angle: 0turn; /* For animation. */
+
+  /* Define the main background gradient */
+  --main-bg: conic-gradient(
+    from var(--border-angle),
+    #213,
+    #112 5%,
+    #112 60%,
+    #213 95%
+  );
+
+  /* Define the gradient border */
+  --gradient-border: conic-gradient(
+    from var(--border-angle),
+    transparent 25%,
+    #08f,
+    #f03 99%,
+    transparent
+  );
+
+  /* Apply the backgrounds */
+  background: 
+    /* padding-box clip this background in to the overall element except the border. */ var(
+        --main-bg
+      )
+      padding-box,
+    /* border-box extends this background to the border space */
+      var(--gradient-border) border-box,
+    /* Duplicate main background to fill in behind the gradient border. You can remove this if you want the border to extend "outside" the box background. */
+      var(--main-bg) border-box;
+
+  background-position: center center;
+
+  /* Add border and border radius */
+  border: solid 5px transparent;
+
+  /* Add animation */
+  animation: bg-spin 3s linear infinite;
+
+  /* Define the animation keyframes */
+  @keyframes bg-spin {
+    to {
+      --border-angle: 1turn;
+    }
+  }
+
+  /* Pause animation on hover */
+  &:hover {
+    animation-play-state: paused;
+  }
+}
+
+/* Define the custom property */
+@property --border-angle {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0turn;
+}
+
+/*  */
+.delete {
+  opacity: 0;
+  transition: 0.4s ease-in-out;
+}
+.label:hover .delete {
+  opacity: 1;
+}
+
+/* -----------------------Table Header------------- */
+.css-1tbggly {
+  min-height: 0rem !important;
+  height: 0px !important;
 }

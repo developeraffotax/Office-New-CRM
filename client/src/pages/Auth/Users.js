@@ -1,0 +1,854 @@
+import React, { useEffect, useMemo, useState } from "react";
+import Layout from "../../components/Loyout/Layout";
+import { IoClose } from "react-icons/io5";
+import { style } from "../../utlis/CommonStyle";
+import Register from "./Register";
+import axios from "axios";
+import {
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
+import { AiTwotoneDelete } from "react-icons/ai";
+import Loader from "../../utlis/Loader";
+import { useAuth } from "../../context/authContext";
+import { format } from "date-fns";
+import toast from "react-hot-toast";
+import { RiEdit2Line } from "react-icons/ri";
+import Swal from "sweetalert2";
+
+export default function Users() {
+  const { auth } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const [userId, setUserId] = useState("");
+  const [userData, setUserData] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [userRoles, setUserRoles] = useState([]);
+
+  //   All User
+
+  // Get all Users
+  const getAllUsers = async () => {
+    try {
+      setLoading(true);
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all`
+      );
+      setUserData(data?.users);
+      console.log("users", data?.users);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getAllUsers();
+
+    //eslint-disable-next-line
+  }, []);
+
+  const getUsers = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all`
+      );
+      setUserData(data?.users);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // Get All Roles
+  const getAllRoles = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/roles/fetch/all/roles`
+      );
+      setUserRoles(data?.roles);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllRoles();
+
+    //eslint-disable-next-line
+  }, []);
+
+  //   Update Role
+  const handleChange = (e, id) => {
+    console.log("ROle", e.target.value, id);
+    UpdateRole(e.target.value, id);
+  };
+
+  // Update User Role
+  const UpdateRole = async (role, userId) => {
+    if (!userId) return toast.error("User id  is missing!");
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/update_role/${userId}`,
+        { role: role }
+      );
+      if (data?.success) {
+        getUsers();
+        toast.success(data?.message, { duration: 2000 });
+      } else {
+        toast.error(data?.message, { duration: 2000 });
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong!");
+    } finally {
+    }
+  };
+
+  //   Update User Role
+  const updateUserRole = async (id, state) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/update/Profile/${id}`,
+        { isActive: state }
+      );
+      if (data) {
+        getUsers();
+        toast.success("Role Updated", { duration: 2000 });
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong!");
+    }
+  };
+
+  // ---------Handle Delete Task-------------
+
+  const handleDeleteConfirmation = (userId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleDeleteUser(userId);
+        Swal.fire("Deleted!", "User has been deleted.", "success");
+      }
+    });
+  };
+
+  const handleDeleteUser = async (id) => {
+    try {
+      const { data } = await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/delete_user/${id}`
+      );
+      if (data) {
+        getUsers();
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    }
+  };
+
+  //   -------------------Table Data------------->
+
+  const columns = useMemo(
+    () => [
+      {
+        accessorKey: "jobHolder",
+        header: "Job Holder",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Avatar
+              </span>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const avatar = row.original.avatar;
+          console.log(row.original);
+
+          return (
+            <div className="w-full h-[2.4rem] flex items-center justify-center ">
+              <div className="w-[2.4rem] h-[2.4rem] relative rounded-full overflow-hidden object-fill">
+                <img
+                  src={avatar ? avatar : "/profile1.jpeg"}
+                  alt="avater"
+                  className="w-full h-full object-fill rounded-full border border-orange-600"
+                />
+              </div>
+            </div>
+          );
+        },
+        filterFn: "equals",
+
+        filterVariant: "select",
+        size: 110,
+        minSize: 80,
+        maxSize: 130,
+        grow: false,
+      },
+      {
+        accessorKey: "name",
+        size: 140,
+        minSize: 80,
+        maxSize: 180,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Employee Name
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                }}
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const name = row.original.name;
+
+          return (
+            <div className="w-full">
+              <div className="w-full cursor-pointer">
+                <span>{name}</span>
+              </div>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
+        filterVariant: "select",
+      },
+      {
+        accessorKey: "username",
+        minSize: 100,
+        maxSize: 200,
+        size: 140,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                User Name
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                }}
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const username = row.original.username;
+
+          return (
+            <div className="w-full px-1">
+              <div className="cursor-pointer w-full">
+                <span className="font-medium">{username}</span>
+              </div>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
+        filterVariant: "select",
+      },
+      {
+        accessorKey: "email",
+        minSize: 100,
+        maxSize: 200,
+        size: 190,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Email
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                }}
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const email = row.original.email;
+
+          return (
+            <div className="w-full px-1">
+              <div className="cursor-pointer w-full">
+                <span className="font-medium">{email}</span>
+              </div>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
+        filterVariant: "select",
+      },
+      {
+        accessorKey: "phone",
+        minSize: 100,
+        maxSize: 200,
+        size: 120,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Phone Number
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                }}
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const phone = row.original.phone;
+
+          return (
+            <div className="w-full px-1">
+              <div className="cursor-pointer w-full">
+                <span className="font-medium">{phone}</span>
+              </div>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
+        filterVariant: "select",
+      },
+      {
+        accessorKey: "emergency_contact",
+        minSize: 100,
+        maxSize: 200,
+        size: 120,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                E.Contact
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                }}
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const emergency_contact = row.original.emergency_contact;
+
+          return (
+            <div className="w-full px-1">
+              <div className="cursor-pointer w-full">
+                <span className="font-medium">{emergency_contact}</span>
+              </div>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
+        filterVariant: "select",
+      },
+      {
+        accessorKey: "address",
+        minSize: 100,
+        maxSize: 250,
+        size: 200,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Address
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                }}
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const address = row.original.address;
+
+          return (
+            <div className="w-full px-1">
+              <div className="cursor-pointer w-full">
+                <span className="font-medium">{address}</span>
+              </div>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
+        filterVariant: "select",
+      },
+      //   Role
+      {
+        accessorKey: "role.name",
+        minSize: 120,
+        maxSize: 200,
+        size: 170,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Roles
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                }}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {userRoles.map((role) => (
+                  <option value={role.name}>{role.name}</option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const role = row.original.role;
+
+          return (
+            <div className="w-full ">
+              <select
+                className={`${style.input} h-[2.5rem] w-full border border-orange-200`}
+                onChange={(e) => handleChange(e, row.original?._id)}
+                value={role?._id || ""}
+              >
+                {userRoles?.map((role, i) => (
+                  <option value={role?._id} className="capitalize" key={i}>
+                    {role.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+          return (cellValue || "").toString() === filterValue.toString();
+        },
+        filterSelectOptions: userRoles?.map((role) => role.name),
+        filterVariant: "select",
+      },
+      {
+        accessorKey: "isActive",
+        minSize: 70,
+        maxSize: 200,
+        size: 100,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Status
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                }}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                <option value={true}>Active</option>
+                <option value={false}>Blocked</option>
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const status = row.original.isActive;
+
+          const updateStatus = (userId, state) => {
+            updateUserRole(userId, state);
+          };
+
+          return (
+            <div className="w-full items-center justify-center px-1">
+              <div className="cursor-pointer w-full">
+                {status === true ? (
+                  <button
+                    className={`${style.btn} bg-green-500 hover:bg-green-600`}
+                    style={{ background: "green" }}
+                    onClick={() => updateStatus(row.original?._id, false)}
+                  >
+                    Active
+                  </button>
+                ) : (
+                  <button
+                    className={`${style.btn} bg-red-500 hover:bg-red-600`}
+                    style={{ background: "red" }}
+                    onClick={() => updateStatus(row.original?._id, true)}
+                  >
+                    Blocked
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
+        filterVariant: "select",
+      },
+
+      //   Created At
+      {
+        accessorKey: "createdAt",
+        Header: ({ column }) => {
+          return (
+            <div className="w-full flex flex-col gap-[2px]">
+              <span className="cursor-pointer ">Created Date</span>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const createdAt = row.original.createdAt;
+          console.log("createdAt", createdAt);
+          return (
+            <div className="w-full flex  ">
+              <p>{format(new Date(createdAt), "dd-MMM-yyyy")}</p>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+          if (!cellValue) return false;
+          const cellDate = new Date(cellValue);
+          if (filterValue.includes("-")) {
+            const [year, month] = filterValue.split("-");
+            const cellYear = cellDate.getFullYear().toString();
+            const cellMonth = (cellDate.getMonth() + 1)
+              .toString()
+              .padStart(2, "0");
+            return year === cellYear && month === cellMonth;
+          }
+          // Other filter cases
+          const today = new Date();
+          const startOfToday = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate()
+          );
+          switch (filterValue) {
+            case "Expired":
+              return cellDate < startOfToday;
+            case "Today":
+              return cellDate.toDateString() === today.toDateString();
+            case "Tomorrow":
+              const tomorrow = new Date(today);
+              tomorrow.setDate(today.getDate() - 1);
+              return cellDate.toDateString() === tomorrow.toDateString();
+            case "In 7 days":
+              const in7Days = new Date(today);
+              in7Days.setDate(today.getDate() + 7);
+              return cellDate <= in7Days && cellDate > today;
+            case "In 15 days":
+              const in15Days = new Date(today);
+              in15Days.setDate(today.getDate() + 15);
+              return cellDate <= in15Days && cellDate > today;
+            case "30 Days":
+              const in30Days = new Date(today);
+              in30Days.setDate(today.getDate() + 30);
+              return cellDate <= in30Days && cellDate > today;
+            case "60 Days":
+              const in60Days = new Date(today);
+              in60Days.setDate(today.getDate() + 60);
+              return cellDate <= in60Days && cellDate > today;
+            case "Last 12 months":
+              const lastYear = new Date(today);
+              lastYear.setFullYear(today.getFullYear() - 1);
+              return cellDate >= lastYear && cellDate <= today;
+            default:
+              return false;
+          }
+        },
+        filterSelectOptions: [
+          "Expired",
+          "Today",
+          "Tomorrow",
+          "In 7 days",
+          "In 15 days",
+          "30 Days",
+          "60 Days",
+          "Custom date",
+        ],
+        filterVariant: "custom",
+        size: 100,
+        minSize: 90,
+        maxSize: 110,
+        grow: false,
+      },
+
+      // <-----Action------>
+      {
+        accessorKey: "actions",
+        header: "Actions",
+        Cell: ({ cell, row }) => {
+          return (
+            <div className="flex items-center justify-center gap-4 w-full h-full">
+              <span
+                className=""
+                title="Edit User"
+                onClick={() => {
+                  setUserId(row.original?._id);
+                  setIsOpen(true);
+                }}
+              >
+                <RiEdit2Line className="h-5 w-5 cursor-pointer text-sky-500 hover:text-sky-600" />
+              </span>
+              <span
+                className="text-[1rem] cursor-pointer"
+                onClick={() => handleDeleteConfirmation(row.original?._id)}
+                title="Delete User!"
+              >
+                <AiTwotoneDelete className="h-5 w-5 text-pink-500 hover:text-pink-600 " />
+              </span>
+            </div>
+          );
+        },
+        size: 90,
+      },
+    ],
+    // eslint-disable-next-line
+    [auth, userData]
+  );
+
+  // Clear table Filter
+  const handleClearFilters = () => {
+    table.setColumnFilters([]);
+    table.setGlobalFilter("");
+  };
+
+  const table = useMaterialReactTable({
+    columns,
+    data: userData || [],
+    enableStickyHeader: true,
+    enableStickyFooter: true,
+    muiTableContainerProps: { sx: { maxHeight: "800px" } },
+    enableColumnActions: false,
+    enableColumnFilters: false,
+    enableSorting: false,
+    enableGlobalFilter: true,
+    enableRowNumbers: true,
+    enableColumnResizing: true,
+    enableTopToolbar: true,
+    enableBottomToolbar: true,
+    enablePagination: true,
+    initialState: {
+      pagination: { pageSize: 20 },
+      pageSize: 20,
+      density: "compact",
+    },
+
+    muiTableHeadCellProps: {
+      style: {
+        fontWeight: "600",
+        fontSize: "14px",
+        backgroundColor: "#f0f0f0",
+        color: "#000",
+        padding: ".7rem 0.3rem",
+      },
+    },
+    muiTableBodyCellProps: {
+      sx: {
+        border: "1px solid rgba(203, 201, 201, 0.5)",
+      },
+    },
+    muiTableProps: {
+      sx: {
+        "& .MuiTableHead-root": {
+          backgroundColor: "#f0f0f0",
+        },
+        tableLayout: "auto",
+        fontSize: "13px",
+        border: "1px solid rgba(81, 81, 81, .5)",
+        caption: {
+          captionSide: "top",
+        },
+      },
+    },
+  });
+
+  return (
+    <Layout>
+      <div className=" relative w-full h-[100%] py-4 px-2 sm:px-4 overflow-y-auto">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h1 className=" text-xl sm:text-2xl font-semibold ">Users</h1>
+
+            <span
+              className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+              onClick={() => {
+                handleClearFilters();
+              }}
+              title="Clear filters"
+            >
+              <IoClose className="h-6 w-6  cursor-pointer" />
+            </span>
+          </div>
+
+          {/* ---------Template Buttons */}
+          <div className="flex items-center gap-4">
+            <button
+              className={`${style.button1} text-[15px] `}
+              onClick={() => setIsOpen(true)}
+              style={{ padding: ".4rem 1rem" }}
+            >
+              New User
+            </button>
+          </div>
+        </div>
+        <hr className="w-full h-[1px] bg-gray-300 my-4" />
+
+        {/* ---------Table Detail---------- */}
+        <div className="w-full h-full">
+          {loading ? (
+            <div className="flex items-center justify-center w-full h-screen px-4 py-4">
+              <Loader />
+            </div>
+          ) : (
+            <div className="w-full min-h-[10vh] relative ">
+              <div className="h-full hidden1 overflow-y-scroll relative">
+                <MaterialReactTable table={table} />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ------Add/Update User--- */}
+        {isOpen && (
+          <div className="fixed top-[4rem] h-[100%] sm:top-0 left-0 w-full z-[99990] overflow-y-scroll bg-gray-100/70 flex items-center justify-center py-6 px-4">
+            <Register
+              setIsOpen={setIsOpen}
+              getAllUsers={getUsers}
+              userId={userId}
+              setUserId={setUserId}
+            />
+          </div>
+        )}
+      </div>
+    </Layout>
+  );
+}

@@ -52,30 +52,31 @@ const MainSidebar = ({ isCollapsed, setIsCollapsed }) => {
           backgroundColor: "transparent !important",
         },
         "& .pro-inner-item:hover": {
-          color: "#868dfb !important",
+          color: "#ff7403 !important",
         },
         "& .pro-menu-item.active": {
-          color: "#6870fa !important",
+          color: "#ff5b03 !important",
         },
         "& .pro-inner-item": {
-          padding: "5px 35px 5px 20px !important",
+          padding: "5px 20px 5px 20px !important",
           opacity: 1,
         },
         "& .pro-menu-item": {
           color: "#000",
         },
       }}
-      className="!bg-white"
+      // className="!bg-white"
     >
       <Sidebar
         collapsed={isCollapsed}
         breakPoint="md"
         style={{
           position: "fixed",
-          top: 0,
+          top: "3.8rem",
           left: 0,
-          height: "100vh",
-          width: isCollapsed ? "0%" : "12%",
+          height: "92.4vh",
+          paddingBottom: ".8rem",
+          width: isCollapsed ? "0%" : "10rem",
         }}
         onCollapse={() => setIsCollapsed(!isCollapsed)}
       >
@@ -83,37 +84,15 @@ const MainSidebar = ({ isCollapsed, setIsCollapsed }) => {
           {/* Logo & Menu Icons */}
           <MenuItem
             onClick={() => setIsCollapsed(!isCollapsed)}
-            icon={isCollapsed ? <ArrowForwardIosIcon /> : undefined}
-            style={{ margin: "10px 0px 20px 0px" }}
-          >
-            {!isCollapsed && (
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                ml="15px"
-              >
-                <h3 className="text-[22px] text-gradient font-bold font-Poppins uppercase dark:text-white text-black">
-                  EULearning
-                </h3>
-
-                <IconButton
-                  onClick={() => setIsCollapsed(!isCollapsed)}
-                  className="inline-block"
-                >
-                  <ArrowBackIosIcon className="text-black dark:text-white" />
-                </IconButton>
-              </Box>
-            )}
-          </MenuItem>
-
-          {!isCollapsed && (
-            <Box mb="25px">
-              <Box display="flex" alignItems="center" justifyContent="center">
-                <div className="relative w-[100px] h-[100px] rounded-full overflow-hidden"></div>
-              </Box>
-            </Box>
-          )}
+            icon={
+              isCollapsed ? (
+                <ArrowForwardIosIcon />
+              ) : (
+                <ArrowBackIosIcon className="text-black" />
+              )
+            }
+            style={{ margin: "10px 0px 10px 0px" }}
+          ></MenuItem>
 
           <Box paddingLeft={isCollapsed ? undefined : "10%"}>
             <Item
@@ -125,7 +104,7 @@ const MainSidebar = ({ isCollapsed, setIsCollapsed }) => {
             />
             <Typography
               variant="h5"
-              className="!text-[20px] font-Poppins capitalize text-black !font-[400] dark:text-white"
+              className="!text-[20px] font-Poppins capitalize text-black !font-[400]"
               sx={{ m: "10px 0 0 0 " }}
             >
               {!isCollapsed && "Data"}
@@ -146,7 +125,7 @@ const MainSidebar = ({ isCollapsed, setIsCollapsed }) => {
             />
             <Typography
               variant="h5"
-              className="!text-[20px] font-Poppins capitalize text-black !font-[400] dark:text-white"
+              className="!text-[20px] font-Poppins capitalize text-black !font-[400]"
               sx={{ m: "10px 0 0 0 " }}
             >
               {!isCollapsed && "Content"}
@@ -167,7 +146,7 @@ const MainSidebar = ({ isCollapsed, setIsCollapsed }) => {
             />
             <Typography
               variant="h5"
-              className="!text-[20px] font-Poppins capitalize text-black !font-[400] dark:text-white"
+              className="!text-[20px] font-Poppins capitalize text-black !font-[400]"
               sx={{ m: "10px 0 0 0 " }}
             >
               {!isCollapsed && "Customization"}
@@ -195,7 +174,7 @@ const MainSidebar = ({ isCollapsed, setIsCollapsed }) => {
             />
             <Typography
               variant="h5"
-              className="!text-[20px] font-Poppins capitalize text-black !font-[400] dark:text-white"
+              className="!text-[20px] font-Poppins capitalize text-black !font-[400]"
               sx={{ m: "10px 0 0 0 " }}
             >
               {!isCollapsed && "Controllers"}
@@ -209,7 +188,7 @@ const MainSidebar = ({ isCollapsed, setIsCollapsed }) => {
             />
             <Typography
               variant="h5"
-              className="!text-[20px] font-Poppins capitalize text-black !font-[400] dark:text-white"
+              className="!text-[20px] font-Poppins capitalize text-black !font-[400]"
               sx={{ m: "10px 0 0 0 " }}
             >
               {!isCollapsed && "Courses Analytics"}
@@ -237,7 +216,7 @@ const MainSidebar = ({ isCollapsed, setIsCollapsed }) => {
             />
             <Typography
               variant="h5"
-              className="!text-[20px] font-Poppins capitalize text-black !font-[400] dark:text-white"
+              className="!text-[20px] font-Poppins capitalize text-black !font-[400]"
               sx={{ m: "10px 0 0 0 " }}
             >
               {!isCollapsed && "Extras"}

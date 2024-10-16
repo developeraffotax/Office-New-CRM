@@ -676,7 +676,7 @@ export default function TimeSheet() {
                 Job Holder
               </span>
               {(auth?.user?.role.name === "Admin" ||
-                auth?.user?.role?.name === "Sr. Accountant") && (
+                auth?.user?.role?.name === "Accountant-Lead") && (
                 <select
                   value={column.getFilterValue()}
                   onChange={(e) => {
@@ -1239,7 +1239,7 @@ export default function TimeSheet() {
         grow: false,
       },
       ...(auth?.user?.role?.name === "Admin" ||
-      auth?.user?.role?.name === "Sr. Accountant"
+      auth?.user?.role?.name === "Accountant-Lead"
         ? [
             {
               accessorKey: "actions",

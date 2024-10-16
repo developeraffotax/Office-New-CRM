@@ -71,7 +71,7 @@ export default function InboxDetail({
       <>
         <div className="flex items-end gap-1">
           <span className=" font-semibold text-[15px] sm:text-[17px] ">
-            {name}
+            {name.slice(0, 20)}
           </span>
           <span className=" font-normal text-[12px] sm:text-[14px] text-gray-600">
             {`<${emailAddress}>`}
@@ -364,7 +364,7 @@ export default function InboxDetail({
                                 return (
                                   <>
                                     <span class="font-semibold text-[16px]">
-                                      {name.trim()}
+                                      {name.trim().slice(0, 20)}
                                     </span>{" "}
                                     {email}
                                   </>

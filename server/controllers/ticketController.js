@@ -588,41 +588,6 @@ export const getAllInbox = async (req, res) => {
   }
 };
 
-// Assign Email to Employees
-export const assignEmail = async (req, res) => {
-  try {
-    const { companyName, clientName, company, jobHolder, subject, threadId } =
-      req.body;
-
-    const userName = req.user.user.name;
-    // const client = await jobsModel.findById(clientId);
-
-    const sendEmail = await ticketModel.create({
-      clientId: clientId,
-      companyName: client.companyName,
-      clientName: client.clientName,
-      company: company,
-      jobHolder: jobHolder,
-      subject: subject,
-      mailThreadId: threadId,
-      lastMessageSentBy: userName,
-    });
-
-    res.status(200).send({
-      success: true,
-      message: "Email allocate successfully!",
-      ticket: sendEmail,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({
-      success: false,
-      message: "Error while allocate email!",
-      error: error,
-    });
-  }
-};
-
 // Delete Email from Inbox
 export const deleteinboxEmail = async (req, res) => {
   try {
@@ -722,6 +687,41 @@ export const markAsReadInboxEmail = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error while mark as read inbox!",
+      error: error,
+    });
+  }
+};
+
+// Assign Email to Employees
+export const assignEmail = async (req, res) => {
+  try {
+    const { companyName, clientName, company, jobHolder, subject, threadId } =
+      req.body;
+
+    const userName = req.user.user.name;
+    // const client = await jobsModel.findById(clientId);
+
+    const sendEmail = await ticketModel.create({
+      // clientId: clientId,
+      companyName: companyName,
+      clientName: clientName,
+      company: company,
+      jobHolder: jobHolder,
+      subject: subject,
+      mailThreadId: threadId,
+      lastMessageSentBy: userName,
+    });
+
+    res.status(200).send({
+      success: true,
+      message: "Email allocate successfully!",
+      ticket: sendEmail,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while allocate email!",
       error: error,
     });
   }

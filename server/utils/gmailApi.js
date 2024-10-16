@@ -497,6 +497,35 @@ export const markThreadAsRead = async (messageId, companyName) => {
   }
 };
 
+// Delete Email
+
+export const deleteEmail = async (emailId, companyName) => {
+  try {
+    let accessToken;
+
+    if (companyName === "Affotax") {
+      accessToken = await getAccessToken();
+    } else {
+      accessToken = await getOutsourceAccessToken();
+    }
+
+    const config = {
+      method: "delete",
+      url: `https://gmail.googleapis.com/gmail/v1/users/me/messages/${emailId}`,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    };
+
+    await axios(config);
+    console.log(`Email with ID ${emailId} has been deleted successfully.`);
+    return true; // Return true if deletion is successful
+  } catch (error) {
+    console.error("Error while deleting the email:", error.message);
+    return false; // Return false if deletion failed
+  }
+};
+
 // ------------------------Inbox---------------->
 // Decrypt Email Message
 const decryptEmail = async (emailData) => {
@@ -525,8 +554,13 @@ const decryptEmail = async (emailData) => {
   return decodedMessage;
 };
 
-// Get Detailed Email with retry logic for handling 429 Too Many Requests error
-const getDetailedEmail = async (emailId, accessToken, retries = 3) => {
+// Get Detailed Email with retry logic (with exponential backoff)
+const getDetailedEmail = async (
+  emailId,
+  accessToken,
+  retries = 3,
+  backoff = 2000
+) => {
   try {
     const config = {
       method: "get",
@@ -575,13 +609,13 @@ const getDetailedEmail = async (emailId, accessToken, retries = 3) => {
   } catch (error) {
     if (error.response?.status === 429 && retries > 0) {
       const retryAfter = error.response.headers["retry-after"];
-      const waitTime = retryAfter ? retryAfter * 1000 : 2000; // Wait time from Retry-After or default 2 seconds
+      const waitTime = retryAfter ? retryAfter * 1000 : backoff;
       console.log(
         `Too many requests. Retrying in ${waitTime / 1000} seconds...`
       );
 
       await new Promise((resolve) => setTimeout(resolve, waitTime));
-      return getDetailedEmail(emailId, accessToken, retries - 1);
+      return getDetailedEmail(emailId, accessToken, retries - 1, backoff * 2); // Exponential backoff
     } else {
       console.log("Error while getting email details:", error.message);
       return null;
@@ -589,26 +623,34 @@ const getDetailedEmail = async (emailId, accessToken, retries = 3) => {
   }
 };
 
-// Fetch emails based on company (Affotax or Outsource) with pagination
+// Fetch emails based on company with pagination
+const fetchEmails = async (accessToken, pageNo) => {
+  let pageSize = 17;
+  const startIndex = (pageNo - 1) * pageSize;
 
-const fetchEmails = async (accessToken, pageNo, pageSize = 100) => {
-  console.log("pageNo:", pageNo);
+  pageSize = pageSize * pageNo;
+
+  console.log("startIndex:", startIndex, pageSize);
   try {
     const query = "after:2024/10/01";
     const config = {
       method: "get",
-      url: `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(
-        query
-      )}&pageToken=${pageNo}&maxResults=${pageSize}`,
+      url: `https://gmail.googleapis.com/gmail/v1/users/me/messages`,
       headers: {
         Authorization: `Bearer ${accessToken}`,
+      },
+      params: {
+        q: query,
+        maxResults: pageSize,
+        start: startIndex,
+        fields: "messages(id)",
       },
     };
 
     const response = await axios(config);
     const emailIds = response.data.messages.map((message) => message.id);
 
-    // Fetch detailed email data for each email ID
+    // Fetch detailed email data for each email ID in parallel
     const emails = await Promise.all(
       emailIds.map(async (emailId) => {
         const detailedEmail = await getDetailedEmail(emailId, accessToken);
@@ -626,76 +668,40 @@ const fetchEmails = async (accessToken, pageNo, pageSize = 100) => {
 // Fetch all emails based on the selected company with pagination
 export const getAllEmailInbox = async (selectedCompany, pageNo) => {
   try {
-    console.log(selectedCompany, pageNo);
     const accessToken = await getAccessToken();
     const outSourcingAccessToken = await getOutsourceAccessToken();
 
     if (!accessToken || !outSourcingAccessToken) {
       throw new Error("Access tokens are missing.");
-    } else {
-      let emails = [];
-
-      // Fetch emails based on the selected company
-      if (selectedCompany === "Affotax") {
-        emails = await fetchEmails(accessToken, pageNo);
-      } else if (selectedCompany === "Outsource") {
-        emails = await fetchEmails(outSourcingAccessToken, pageNo);
-      }
-
-      const unreadCount = emails.reduce((count, email) => {
-        if (email.readStatus === "Unread") {
-          return count + 1;
-        }
-        return count;
-      }, 0);
-
-      // console.log("detailedEmails:", emails, "unreadCount:", unreadCount);
-
-      return {
-        detailedEmails: emails,
-        length: emails.length,
-        unreadCount: unreadCount,
-      };
     }
+
+    let emails = [];
+
+    if (selectedCompany === "Affotax") {
+      emails = await fetchEmails(accessToken, pageNo);
+    } else if (selectedCompany === "Outsource") {
+      emails = await fetchEmails(outSourcingAccessToken, pageNo);
+    }
+
+    const unreadCount = emails.reduce((count, email) => {
+      return email.readStatus === "Unread" ? count + 1 : count;
+    }, 0);
+
+    return {
+      detailedEmails: emails,
+      length: emails.length,
+      unreadCount: unreadCount,
+    };
   } catch (error) {
     console.log("Error while getting all emails", error);
     return null;
   }
 };
 
-// Delete Email
-
-export const deleteEmail = async (emailId, companyName) => {
-  try {
-    let accessToken;
-
-    if (companyName === "Affotax") {
-      accessToken = await getAccessToken();
-    } else {
-      accessToken = await getOutsourceAccessToken();
-    }
-
-    const config = {
-      method: "delete",
-      url: `https://gmail.googleapis.com/gmail/v1/users/me/messages/${emailId}`,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    };
-
-    await axios(config);
-    console.log(`Email with ID ${emailId} has been deleted successfully.`);
-    return true; // Return true if deletion is successful
-  } catch (error) {
-    console.error("Error while deleting the email:", error.message);
-    return false; // Return false if deletion failed
-  }
-};
-
 // -----------------------------------Error------------------->
 // url: `https://gmail.googleapis.com/gmail/v1/users/me/messages?pageToken=${pageNo}&maxResults=${pageSize}`,
 
-// // Decrypt Email Message
+// Decrypt Email Message
 // const decryptEmail = async (emailData) => {
 //   let decodedMessage = "";
 
@@ -786,12 +792,19 @@ export const deleteEmail = async (emailId, companyName) => {
 //   }
 // };
 
-// // Fetch emails based on company (Affotax or Outsource)
-// const fetchEmails = async (accessToken) => {
+// // Fetch emails based on company (Affotax or Outsource) with pagination
+
+// const fetchEmails = async (accessToken, pageNo) => {
+//   let pageSize = 17;
+//   pageSize = pageNo * pageSize;
+
 //   try {
+//     const query = "after:2024/10/01";
 //     const config = {
 //       method: "get",
-//       url: `https://gmail.googleapis.com/gmail/v1/users/me/messages`,
+//       url: `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(
+//         query
+//       )}&maxResults=${pageSize}`,
 //       headers: {
 //         Authorization: `Bearer ${accessToken}`,
 //       },
@@ -815,9 +828,10 @@ export const deleteEmail = async (emailId, companyName) => {
 //   }
 // };
 
-// // Fetch all emails based on the selected company
+// // Fetch all emails based on the selected company with pagination
 // export const getAllEmailInbox = async (selectedCompany, pageNo) => {
 //   try {
+//     console.log(selectedCompany, pageNo);
 //     const accessToken = await getAccessToken();
 //     const outSourcingAccessToken = await getOutsourceAccessToken();
 
@@ -828,9 +842,9 @@ export const deleteEmail = async (emailId, companyName) => {
 
 //       // Fetch emails based on the selected company
 //       if (selectedCompany === "Affotax") {
-//         emails = await fetchEmails(accessToken);
+//         emails = await fetchEmails(accessToken, pageNo);
 //       } else if (selectedCompany === "Outsource") {
-//         emails = await fetchEmails(outSourcingAccessToken);
+//         emails = await fetchEmails(outSourcingAccessToken, pageNo);
 //       }
 
 //       const unreadCount = emails.reduce((count, email) => {
@@ -840,10 +854,11 @@ export const deleteEmail = async (emailId, companyName) => {
 //         return count;
 //       }, 0);
 
-//       console.log("detailedEmails:", emails, "unreadCount:", unreadCount);
+//       // console.log("detailedEmails:", emails, "unreadCount:", unreadCount);
 
 //       return {
 //         detailedEmails: emails,
+//         length: emails.length,
 //         unreadCount: unreadCount,
 //       };
 //     }

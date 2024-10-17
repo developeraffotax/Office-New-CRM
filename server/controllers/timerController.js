@@ -60,7 +60,7 @@ export const startTimer = async (req, res) => {
 export const stopTimer = async (req, res) => {
   try {
     const timerId = req.params.id;
-    const { note } = req.body;
+    const { note, activity } = req.body;
     const endTime = new Date().toISOString();
 
     const isExisting = await timerModel.findById({ _id: timerId });
@@ -73,13 +73,13 @@ export const stopTimer = async (req, res) => {
 
     const updateTimer = await timerModel.findByIdAndUpdate(
       { _id: isExisting._id },
-      { endTime: endTime, note: note, isRunning: false },
+      { endTime: endTime, note: note, activity: activity, isRunning: false },
       { new: true }
     );
 
     res.status(200).send({
       success: true,
-      message: "Timer Stop",
+      message: "Timer stoped!",
       timer: updateTimer,
     });
   } catch (error) {
@@ -445,6 +445,7 @@ export const addTimerMannually = async (req, res) => {
       task,
       note,
       companyName,
+      activity,
     } = req.body;
 
     const user = req.user.user.name;
@@ -461,6 +462,7 @@ export const addTimerMannually = async (req, res) => {
       note,
       companyName,
       type: "Manual",
+      activity,
     });
     res.status(200).send({
       success: true,
@@ -491,6 +493,7 @@ export const updateTimer = async (req, res) => {
       task,
       note,
       companyName,
+      activity,
     } = req.body;
 
     const isExist = await timerModel.findById(timerId);
@@ -513,7 +516,8 @@ export const updateTimer = async (req, res) => {
         clientName: clientName || isExist.clientName,
         projectName: projectName || isExist.projectName,
         task: task || isExist.task,
-        note: note || note,
+        note: note || isExist.note,
+        activity: activity || isExist.activity,
       },
       { new: true }
     );

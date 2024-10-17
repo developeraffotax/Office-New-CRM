@@ -152,60 +152,36 @@ export default function InboxDetail({
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`
       );
 
-      if (data && data.attachment && data.attachment.data) {
+      if (data) {
         const encodedData = data.attachment.data;
 
-        // Since encodedData is an array of bytes, we convert it directly to Uint8Array
-        const byteArray = new Uint8Array(encodedData);
+        console.log("encodedData", encodedData);
 
-        // Dynamically detect MIME type if possible (based on file extension)
-        const fileExtension = fileName?.split(".").pop();
-        let mimeType = "application/octet-stream"; // Default type
+        const decodedData = Buffer.from(encodedData, "base64");
+        console.log("decodedData:", decodedData);
+        const byteArray = new Uint8Array(decodedData.buffer);
 
-        if (fileExtension) {
-          switch (fileExtension.toLowerCase()) {
-            case "pdf":
-              mimeType = "application/pdf";
-              break;
-            case "jpg":
-            case "jpeg":
-              mimeType = "image/jpeg";
-              break;
-            case "png":
-              mimeType = "image/png";
-              break;
-            case "doc":
-            case "docx":
-              mimeType = "application/msword";
-              break;
-            case "xls":
-            case "xlsx":
-              mimeType = "application/vnd.ms-excel";
-              break;
-            // Add more cases as needed for other file types
-            default:
-              mimeType = "application/octet-stream";
-          }
-        }
+        console.log("byteArray:", byteArray);
 
-        // Create Blob from the byteArray
-        const blob = new Blob([byteArray], { type: mimeType });
+        const blob = new Blob([byteArray], {
+          type: "application/octet-stream",
+        });
+
+        // console.log("blob:", blob);
         const url = URL.createObjectURL(blob);
 
-        // Create an anchor element to trigger the download
+        console.log("URL:", url);
+
+        // Create a link element and set its attributes
         const link = document.createElement("a");
         link.href = url;
-        link.download = fileName || "attachment";
-        document.body.appendChild(link);
+        link.download = fileName;
+
         link.click();
 
-        // Clean up
-        document.body.removeChild(link);
+        // Clean up the URL object
         URL.revokeObjectURL(url);
 
-        setIsLoading(false);
-      } else {
-        toast.error("Attachment data is missing or incorrect!");
         setIsLoading(false);
       }
     } catch (error) {
@@ -349,7 +325,7 @@ export default function InboxDetail({
                                     downloadAttachments(
                                       item.attachmentId,
                                       item.attachmentMessageId,
-                                      ticketDetail.company,
+                                      company,
                                       item.attachmentFileName
                                     );
                                     setAttachmentId(item.attachmentId);
@@ -428,12 +404,14 @@ export default function InboxDetail({
                         className=" ml-10 text-[15px]"
                         style={{ lineHeight: "1rem" }}
                         dangerouslySetInnerHTML={{
-                          __html: cleanEmailBody(
-                            message?.payload?.body?.data.replace(
-                              /<\/p>\s*<p>/g,
-                              "</p><br><p>"
-                            )
-                          ),
+                          __html: message?.payload?.body?.data
+                            ? cleanEmailBody(
+                                message?.payload?.body?.data.replace(
+                                  /<\/p>\s*<p>/g,
+                                  "</p><br><p>"
+                                )
+                              )
+                            : message?.snippet,
                         }}
                       ></div>
 
@@ -457,7 +435,7 @@ export default function InboxDetail({
                                     downloadAttachments(
                                       item.attachmentId,
                                       item.attachmentMessageId,
-                                      ticketDetail.company,
+                                      company,
                                       item.attachmentFileName
                                     );
                                     setAttachmentId(item.attachmentId);

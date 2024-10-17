@@ -159,3 +159,54 @@ export const sendEmailWithAttachments = async (emailData) => {
     console.log("Error while send email!:", error);
   }
 };
+
+--------------------------------------------Download Attachments--------------------------------------------
+export const getAttachments = async (attachmentId, messageId, companyName) => {
+  try {
+    console.log("Fetching Attachment data:", {
+      attachmentId,
+      messageId,
+      companyName,
+    });
+
+    let accessToken;
+    if (companyName === "Affotax") {
+      accessToken = await getAccessToken();
+    } else {
+      accessToken = await getOutsourceAccessToken();
+    }
+
+    if (!accessToken) {
+      throw new Error("Access token is not available");
+    }
+
+    // Gmail API URL for fetching the attachment
+    const url = `https://www.googleapis.com/gmail/v1/users/me/messages/${messageId}/attachments/${attachmentId}`;
+
+    const config = {
+      method: "get",
+      url,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      responseType: "arraybuffer",
+    };
+
+    // Make the request
+    const response = await axios(config);
+    const attachmentData = response.data;
+
+    // Get MIME type from response headers
+    const contentType =
+      response.headers["content-type"] || "application/octet-stream";
+
+    // Return the attachment data and its content type (MIME)
+    return {
+      attachmentData,
+      contentType,
+    };
+  } catch (error) {
+    console.error("Error while getting attachment from Gmail:", error.message);
+    throw error;
+  }
+};

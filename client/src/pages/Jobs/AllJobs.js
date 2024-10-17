@@ -90,6 +90,7 @@ export default function AllJobs() {
   const [showDataLable, setShowDataLable] = useState(false);
   const [dataLable, setDataLabel] = useState([]);
   const [totalFee, setTotalFee] = useState(0);
+  const [activity, setActivity] = useState("Chargeable");
 
   // Extract the current path
   const currentPath = location.pathname;
@@ -1753,6 +1754,8 @@ export default function AllJobs() {
                   projectName={""}
                   task={""}
                   companyName={row.original.companyName}
+                  activity={activity}
+                  setActivity={setActivity}
                 />
               </span>
             </div>
@@ -2611,11 +2614,11 @@ export default function AllJobs() {
       {/* -------------Stop Timer Btn-----------*/}
       {isShow && (
         <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/80 flex items-center justify-center">
-          <div className="w-[32rem] rounded-md bg-white shadow-md">
+          <div className="w-[35rem] rounded-md bg-white shadow-md">
             <div className="flex  flex-col gap-3 ">
               <div className=" w-full flex items-center justify-between py-2 mt-1 px-4">
                 <h3 className="text-[19px] font-semibold text-gray-800">
-                  Enter your note here
+                  Enter end note
                 </h3>
                 <span
                   onClick={() => {
@@ -2626,12 +2629,31 @@ export default function AllJobs() {
                 </span>
               </div>
               <hr className="w-full h-[1px] bg-gray-500 " />
+              <div className="flex items-start px-4 py-2 ">
+                {activity === "Chargeable" ? (
+                  <button
+                    className={`px-4 h-[2.6rem] min-w-[5rem] flex items-center justify-center  rounded-md cursor-pointer shadow-md  text-white border-none outline-none bg-green-500 hover:bg-green-600`}
+                    onClick={() => setActivity("Non-Chargeable")}
+                    style={{ width: "8rem", fontSize: "14px" }}
+                  >
+                    Chargeable
+                  </button>
+                ) : (
+                  <button
+                    className={`px-4 h-[2.6rem] min-w-[5rem] flex items-center justify-center  rounded-md cursor-pointer shadow-md  text-white border-none outline-none bg-red-500 hover:bg-red-600`}
+                    onClick={() => setActivity("Chargeable")}
+                    style={{ width: "9rem", fontSize: "14px" }}
+                  >
+                    Non-Chargeable
+                  </button>
+                )}
+              </div>
               <div className=" w-full px-4 py-2 flex-col gap-4">
                 <textarea
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder="Add note here..."
-                  className="w-full h-[6rem] rounded-md resize-none py-1 px-2 shadow border-2 border-gray-700"
+                  className="w-full h-[6rem] rounded-md resize-none py-1 px-2 border-2 border-gray-700"
                 />
                 <div className="flex items-center justify-end mt-4">
                   <button className={`${style.btn}`} onClick={handleStopTimer}>

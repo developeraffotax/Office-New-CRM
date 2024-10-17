@@ -30,6 +30,8 @@ export const Timer = forwardRef(
       JobHolderName,
       projectName,
       task,
+      activity,
+      setActivity,
     },
     ref
   ) => {
@@ -96,6 +98,7 @@ export const Timer = forwardRef(
     //   setTimerId(JSON.parse(timeId));
     // }, []);
 
+    // -------------------Start Timer---------->
     const startTimer = async () => {
       localStorage.setItem("jobId", JSON.stringify(jobId));
       try {
@@ -135,28 +138,32 @@ export const Timer = forwardRef(
       }
     };
 
+    // --------------Stop Timer----------->
     const stopTimer = async () => {
       try {
-        await axios.put(
+        const { data } = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/v1/timer/stop/timer/${timerId}`,
-          { note }
+          { note, activity }
         );
-        localStorage.removeItem("timer_Id");
 
-        setAnyTimerRunning(false);
-        setNote("");
-        removeTimerStatus();
-        setIsShow(false);
-        gettotalTime(timerId);
-        setTimerId(null);
-        setElapsedTime(0);
-        setIsRunning(false);
-        // Send Socket Timer
-        socketId.emit("timer", {
-          timerId: timerId,
-          note: note,
-        });
-        localStorage.removeItem("jobId");
+        if (data) {
+          localStorage.removeItem("timer_Id");
+          setAnyTimerRunning(false);
+          removeTimerStatus();
+          setIsShow(false);
+          gettotalTime(timerId);
+          setTimerId(null);
+          setElapsedTime(0);
+          setIsRunning(false);
+          // Send Socket Timer
+          socketId.emit("timer", {
+            timerId: timerId,
+            note: note,
+          });
+          setNote("");
+          setActivity("Chargeable");
+          localStorage.removeItem("jobId");
+        }
       } catch (error) {
         console.error("Error stopping timer:", error);
       }

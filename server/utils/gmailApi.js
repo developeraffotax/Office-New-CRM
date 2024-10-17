@@ -360,11 +360,13 @@ export const getAttachments = async (attachmentId, messageId, companyName) => {
       responseType: "arraybuffer",
     };
 
-    const response = await axios(config);
-    const data = response.data;
+    let response = await axios(config);
+    const attachmentData = response.data;
 
-    console.log("Reponse:", data);
-    return data;
+    // Determine the file format based on the attachment's MIME type
+    const contentType = response.headers["content-type"];
+
+    return attachmentData;
   } catch (error) {
     console.log("Error while get attachment from gmail!", error);
   }

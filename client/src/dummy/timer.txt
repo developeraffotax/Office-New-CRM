@@ -1,0 +1,255 @@
+import { useState, useEffect } from "react";
+import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
+import { formatDate } from "./utils"; // Assuming formatDate is defined elsewhere
+
+const Component = ({ timerData }) => {
+  const [active, setActive] = useState("Weekly");
+  const selectDate = ["Weekly", "Monthly", "Yearly"];
+  const [week, setWeek] = useState(new Date());
+  const [month, setMonth] = useState(new Date());
+  const [year, setYear] = useState(new Date());
+  const [userName, setUsername] = useState("");
+
+  const [firstDayOfWeek, setFirstDayOfWeek] = useState(null);
+  const [lastDayOfWeek, setLastDayOfWeek] = useState(null);
+  const [strfdow, setStrfdow] = useState("");
+  const [strldow, setStrldow] = useState("");
+
+  const [firstDayOfMonth, setFirstDayOfMonth] = useState(null);
+  const [lastDayOfMonth, setLastDayOfMonth] = useState(null);
+  const [strfdom, setStrfdom] = useState("");
+  const [strldom, setStrldom] = useState("");
+
+  const [firstDayOfYear, setFirstDayOfYear] = useState(null);
+  const [lastDayOfYear, setLastDayOfYear] = useState(null);
+  const [strfdoy, setStrfdoy] = useState("");
+  const [strldoy, setStrldoy] = useState("");
+
+  const [filteredData, setFilteredData] = useState([]);
+
+  // Week-wise filter
+  useEffect(() => {
+    if (active === "Weekly" && week) {
+      const today = week;
+
+      // First and last day of current week
+      const fdow = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - today.getDay() + 1
+      );
+      const ldow = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate() - today.getDay() + 7
+      );
+
+      setFirstDayOfWeek(fdow);
+      setLastDayOfWeek(ldow);
+      setStrfdow(formatDate(fdow));
+      setStrldow(formatDate(ldow));
+
+      const filteredByWeek = timerData.filter((entry) => {
+        const entryDate = new Date(entry.date).setHours(0, 0, 0, 0);
+        const fdowWithoutTime = new Date(fdow).setHours(0, 0, 0, 0);
+        const ldowWithoutTime = new Date(ldow).setHours(23, 59, 59, 999);
+
+        return (
+          entryDate >= fdowWithoutTime &&
+          entryDate <= ldowWithoutTime &&
+          (!userName || entry.jobHolderName === userName)
+        );
+      });
+
+      setFilteredData(filteredByWeek);
+    }
+  }, [week, timerData, userName, active]);
+
+  // Month-wise filter
+  useEffect(() => {
+    if (active === "Monthly" && month) {
+      const today = month;
+
+      // First and last day of current month
+      const fdom = new Date(today.getFullYear(), today.getMonth(), 1);
+      const ldom = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+      setFirstDayOfMonth(fdom);
+      setLastDayOfMonth(ldom);
+      setStrfdom(formatDate(fdom));
+      setStrldom(formatDate(ldom));
+
+      const filteredByMonth = timerData.filter((entry) => {
+        const entryDate = new Date(entry.date).setHours(0, 0, 0, 0);
+        const fdomWithoutTime = new Date(fdom).setHours(0, 0, 0, 0);
+        const ldomWithoutTime = new Date(ldom).setHours(23, 59, 59, 999);
+
+        return (
+          entryDate >= fdomWithoutTime &&
+          entryDate <= ldomWithoutTime &&
+          (!userName || entry.jobHolderName === userName)
+        );
+      });
+
+      setFilteredData(filteredByMonth);
+    }
+  }, [month, timerData, userName, active]);
+
+  // Year-wise filter
+  useEffect(() => {
+    if (active === "Yearly" && year) {
+      const today = year;
+
+      // First and last day of current year
+      const fdoy = new Date(today.getFullYear(), 0, 1);
+      const ldoy = new Date(today.getFullYear(), 11, 31);
+
+      setFirstDayOfYear(fdoy);
+      setLastDayOfYear(ldoy);
+      setStrfdoy(formatDate(fdoy));
+      setStrldoy(formatDate(ldoy));
+
+      const filteredByYear = timerData.filter((entry) => {
+        const entryDate = new Date(entry.date).setHours(0, 0, 0, 0);
+        const fdoyWithoutTime = new Date(fdoy).setHours(0, 0, 0, 0);
+        const ldoyWithoutTime = new Date(ldoy).setHours(23, 59, 59, 999);
+
+        return (
+          entryDate >= fdoyWithoutTime &&
+          entryDate <= ldoyWithoutTime &&
+          (!userName || entry.jobHolderName === userName)
+        );
+      });
+
+      setFilteredData(filteredByYear);
+    }
+  }, [year, timerData, userName, active]);
+
+  // Handle previous and next navigation for weeks
+  const goToPrevWeek = () => {
+    setWeek(new Date(week.setDate(week.getDate() - 7)));
+  };
+
+  const goToNextWeek = () => {
+    setWeek(new Date(week.setDate(week.getDate() + 7)));
+  };
+
+  // Handle previous and next navigation for months
+  const goToPrevMonth = () => {
+    setMonth(new Date(month.setMonth(month.getMonth() - 1)));
+  };
+
+  const goToNextMonth = () => {
+    setMonth(new Date(month.setMonth(month.getMonth() + 1)));
+  };
+
+  // Handle previous and next navigation for years
+  const goToPrevYear = () => {
+    setYear(new Date(year.setFullYear(year.getFullYear() - 1)));
+  };
+
+  const goToNextYear = () => {
+    setYear(new Date(year.setFullYear(year.getFullYear() + 1)));
+  };
+
+  return (
+    <div>
+      {/* Dropdown to select Weekly, Monthly, or Yearly */}
+      <select
+        value={active}
+        onChange={(e) => setActive(e.target.value)}
+        className="w-[6rem] h-[2.1rem] border-2 border-orange-500 outline-none rounded-md cursor-pointer"
+      >
+        <option value="">Select Activity</option>
+        {selectDate.map((act, i) => (
+          <option key={i} value={act}>
+            {act}
+          </option>
+        ))}
+      </select>
+
+      {/* Weekly Navigation */}
+      {active === "Weekly" && (
+        <div className="flex items-center justify-center">
+          <button
+            title={`Previous Week: ${strfdow && strfdow} to ${strldow && strldow}`}
+            onClick={goToPrevWeek}
+            className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
+          >
+            <FaAngleLeft className="h-5 w-5 text-white" />
+          </button>
+
+          <div className="mx-2">
+            <p>
+              Week: {strfdow && strfdow} to {strldow && strldow}
+            </p>
+          </div>
+
+          <button
+            title={`Next Week: ${strfdow && strfdow} to ${strldow && strldow}`}
+            onClick={goToNextWeek}
+            className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
+          >
+            <FaAngleRight className="h-5 w-5 text-white" />
+          </button>
+        </div>
+      )}
+
+      {/* Monthly Navigation */}
+      {active === "Monthly" && (
+        <div className="flex items-center justify-center">
+          <button
+            title={`Previous Month: ${strfdom && strfdom} to ${strldom && strldom}`}
+            onClick={goToPrevMonth}
+            className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
+          >
+            <FaAngleLeft className="h-5 w-5 text-white" />
+          </button>
+
+          <div className="mx-2">
+            <p>
+              Month: {strfdom && strfdom} to {strldom && strldom}
+            </p>
+          </div>
+
+          <button
+            title={`Next Month: ${strfdom && strfdom} to ${strldom && strldom}`}
+            onClick={goToNextMonth}
+            className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
+          >
+            <FaAngleRight className="h-5 w-5 text-white" />
+          </button>
+        </div>
+      )}
+
+      {/* Yearly Navigation */}
+      {active === "Yearly" && (
+        <div className="flex items-center justify-center">
+          <button
+            title={`Previous Year: ${strfdoy && strfdoy} to ${strldoy && strldoy}`}
+            onClick={goToPrevYear}
+            className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
+          >
+            <FaAngleLeft className="h-5 w-5 text-white" />
+          </button>
+
+          <div className="mx-2">
+            <p>
+              Year: {strfdoy && strfdoy} to {strldoy && strldoy}
+            </p>
+          </div>
+
+          <button
+            title={`Next Year: ${strfdoy && strfdoy} to ${strldoy && strldoy}`}
+            onClick={goToNextYear}
+            className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
+          >
+            <FaAngleRight className="h-5 w-5 text-white" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Component;

@@ -422,7 +422,7 @@ export const getTicketAttachments = async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error while get ticket attachments!",
+      message: "Error while get email attachments!",
       error: error,
     });
   }

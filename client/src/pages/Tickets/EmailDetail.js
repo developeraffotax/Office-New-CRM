@@ -424,7 +424,24 @@ export default function EmailDetail() {
                             </span>
                           </div>
                           <div className="flex flex-col gap-0">
-                            {separate(message?.payload?.headers[18]?.value)}
+                            {/* {separate(message?.payload?.headers[18]?.value)} */}
+                            <h3 className="capitalize text-[14px] flex items-center gap-1">
+                              {(() => {
+                                const fromHeader =
+                                  message?.payload?.headers?.find(
+                                    (header) => header.name === "From"
+                                  )?.value || "No Sender";
+                                const [name, email] = fromHeader.split(/(?=<)/);
+                                return (
+                                  <>
+                                    <span class="font-semibold text-[16px]">
+                                      {name.trim().slice(0, 20)}
+                                    </span>{" "}
+                                    {email}
+                                  </>
+                                );
+                              })()}
+                            </h3>
                             <span className="text-[12px] text-gray-600 flex items-center gap-2 ">
                               to me
                               <span>
@@ -445,12 +462,14 @@ export default function EmailDetail() {
                         className=" ml-10 text-[15px]"
                         style={{ lineHeight: "1rem" }}
                         dangerouslySetInnerHTML={{
-                          __html: cleanEmailBody(
-                            message?.payload?.body?.data.replace(
-                              /<\/p>\s*<p>/g,
-                              "</p><br><p>"
-                            )
-                          ),
+                          __html: message?.payload?.body?.data
+                            ? cleanEmailBody(
+                                message?.payload?.body?.data.replace(
+                                  /<\/p>\s*<p>/g,
+                                  "</p><br><p>"
+                                )
+                              )
+                            : message?.snippet,
                         }}
                       ></div>
 

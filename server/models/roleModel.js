@@ -10,12 +10,20 @@ const roleSchema = new mongoose.Schema(
       trim: true,
     },
 
-    access: {
-      type: [String],
-      default: [],
-    },
+    access: [
+      {
+        permission: {
+          type: String,
+        },
+        subRoles: [
+          {
+            type: String,
+          },
+        ],
+      },
+    ],
   },
   { timestamps: true }
 );
 
-export default mongoose.model("Role", roleSchema); // Use singular for model name
+export default mongoose.model("Role", roleSchema);

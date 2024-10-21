@@ -169,12 +169,16 @@ export default function Lead() {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
       setUsers(
-        data?.users?.filter((user) => user.role?.access.includes("Leads")) || []
+        data?.users?.filter((user) =>
+          user.role?.access?.some((item) => item?.permission.includes("Leads"))
+        ) || []
       );
 
       setUserName(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Leads"))
+          ?.filter((user) =>
+            user.role?.access.some((item) => item?.permission.includes("Leads"))
+          )
           .map((user) => user.name)
       );
     } catch (error) {

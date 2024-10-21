@@ -58,7 +58,7 @@ const csvConfig = mkConfig({
 });
 
 export default function AllJobs() {
-  const { auth, filterId, setFilterId } = useAuth();
+  const { auth, filterId, setFilterId, searchValue } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [show, setShow] = useState(false);
   const [active, setActive] = useState("All");
@@ -91,6 +91,10 @@ export default function AllJobs() {
   const [dataLable, setDataLabel] = useState([]);
   const [totalFee, setTotalFee] = useState(0);
   const [activity, setActivity] = useState("Chargeable");
+  const [access, setAccess] = useState([]);
+  // const [userData, setUserData] = useState([]);
+
+  // console.log("access:", access);
 
   // Extract the current path
   const currentPath = location.pathname;
@@ -117,6 +121,18 @@ export default function AllJobs() {
     "Billing",
     "Feedback",
   ];
+
+  // Get Auth Access
+  // console.log("auth:", auth.user);
+  useEffect(() => {
+    if (auth.user) {
+      const filterAccess = auth.user.role.access
+        .filter((role) => role.permission === "Jobs")
+        .flatMap((jobRole) => jobRole.subRoles);
+
+      setAccess(filterAccess);
+    }
+  }, [auth]);
 
   // -----------Total Hours-------->
 
@@ -319,6 +335,21 @@ export default function AllJobs() {
     // eslint-disable-next-line
   }, [tableData, filterId]);
 
+  // Filter by Header Search
+  useEffect(() => {
+    if (searchValue) {
+      const filteredData = tableData.filter(
+        (item) =>
+          item?.clientName.toLowerCase().includes(searchValue.toLowerCase()) ||
+          item?.companyName.toLowerCase().includes(searchValue.toLowerCase())
+      );
+      setFilterData(filteredData);
+      console.log("SearchData:", filteredData);
+    } else {
+      setFilterData(tableData);
+    }
+  }, [searchValue, tableData]);
+
   // -------------- Filter Data By Department || Status || Placeholder ----------->
 
   const filterByDepStat = (value, dep) => {
@@ -359,12 +390,21 @@ export default function AllJobs() {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
 
-      // setUsers(data?.users.map((user) => user.name) || []);
       setUsers(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Jobs"))
+          ?.filter((user) =>
+            user?.role?.access?.some((item) =>
+              item?.permission?.includes("Jobs")
+            )
+          )
           .map((user) => user.name) || []
       );
+
+      // setUserData(
+      //   data?.users?.filter((user) =>
+      //     user.role?.access.some((item) => item.permission.includes("Jobs"))
+      //   )
+      // );
     } catch (error) {
       console.log(error);
     }
@@ -760,7 +800,7 @@ export default function AllJobs() {
                 type="search"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-white rounded-md border border-gray-300 outline-none"
               />
             </div>
           );
@@ -806,7 +846,7 @@ export default function AllJobs() {
                 type="search"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-white rounded-md border border-gray-300 outline-none"
               />
             </div>
           );
@@ -826,6 +866,12 @@ export default function AllJobs() {
       {
         accessorKey: "job.jobHolder",
         Header: ({ column }) => {
+          const user = auth?.user?.name;
+          useEffect(() => {
+            column.setFilterValue(user);
+
+            // eslint-disable-next-line
+          }, []);
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -1573,6 +1619,12 @@ export default function AllJobs() {
             "Billing",
             "Feedback",
           ];
+
+          useEffect(() => {
+            column.setFilterValue("Progress");
+
+            // eslint-disable-next-line
+          }, []);
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -1904,8 +1956,8 @@ export default function AllJobs() {
         grow: false,
       },
       // Source
-
-      ...(auth?.user?.role?.name === "Admin"
+      // || auth?.user?.role.access.some((item)=>)
+      ...(auth?.user?.role?.name === "Admin" || access.includes("Fee")
         ? [
             {
               accessorKey: "fee",
@@ -1943,6 +1995,10 @@ export default function AllJobs() {
               filterFn: "equals",
               size: 60,
             },
+          ]
+        : []),
+      ...(auth?.user?.role?.name === "Admin" || access.includes("Source")
+        ? [
             {
               accessorKey: "source",
               Header: ({ column }) => {
@@ -1994,6 +2050,11 @@ export default function AllJobs() {
               filterFn: "equals",
               size: 90,
             },
+          ]
+        : []),
+      // ---------------------------->
+      ...(auth?.user?.role?.name === "Admin" || access.includes("Data")
+        ? [
             // Data Label
             {
               accessorKey: "data",
@@ -2107,7 +2168,17 @@ export default function AllJobs() {
         : []),
     ],
     // eslint-disable-next-line
-    [users, play, auth, note, totalHours, labelData, dataLable]
+    [
+      users,
+      play,
+      auth,
+      note,
+      totalHours,
+      labelData,
+      dataLable,
+      filterData,
+      tableData,
+    ]
   );
 
   // Clear table Filter
@@ -2118,7 +2189,10 @@ export default function AllJobs() {
 
   const table = useMaterialReactTable({
     columns,
-    data: active === "All" && !active1 && !filterId ? tableData : filterData,
+    data:
+      active === "All" && !active1 && !filterId && !searchValue
+        ? tableData
+        : filterData,
     getRowId: (originalRow) => originalRow.id,
     // enableRowSelection: true,
     enableStickyHeader: true,
@@ -2138,7 +2212,7 @@ export default function AllJobs() {
 
     enablePagination: true,
     initialState: {
-      pagination: { pageSize: 50 },
+      pagination: { pageSize: 30 },
       pageSize: 20,
       density: "compact",
     },
@@ -2618,7 +2692,7 @@ export default function AllJobs() {
             <div className="flex  flex-col gap-3 ">
               <div className=" w-full flex items-center justify-between py-2 mt-1 px-4">
                 <h3 className="text-[19px] font-semibold text-gray-800">
-                  Enter end note
+                  Enter End Note
                 </h3>
                 <span
                   onClick={() => {

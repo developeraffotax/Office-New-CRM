@@ -35,8 +35,20 @@ export default function Tickets() {
   const [isComment, setIsComment] = useState(false);
   const commentStatusRef = useRef(null);
   const [commentTicketId, setCommentTicketId] = useState("");
+  const [access, setAccess] = useState([]);
 
   console.log("Email Data", emailData);
+
+  // Get Auth Access
+  useEffect(() => {
+    if (auth.user) {
+      const filterAccess = auth.user.role.access
+        .filter((role) => role.permission === "Tickets")
+        .flatMap((jobRole) => jobRole.subRoles);
+
+      setAccess(filterAccess);
+    }
+  }, [auth]);
 
   // -------Get All Emails-------
   const getAllEmails = async () => {
@@ -80,13 +92,20 @@ export default function Tickets() {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
       setUsers(
-        data?.users?.filter((user) => user.role?.access.includes("Tickets")) ||
-          []
+        data?.users?.filter((user) =>
+          user.role?.access?.some((item) =>
+            item?.permission?.includes("Tickets")
+          )
+        ) || []
       );
 
       setUserName(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Tickets"))
+          ?.filter((user) =>
+            user.role?.access.some((item) =>
+              item?.permission?.includes("Tickets")
+            )
+          )
           .map((user) => user.name)
       );
     } catch (error) {
@@ -1071,19 +1090,22 @@ export default function Tickets() {
             >
               Completed
             </button>
-            <button
-              className={`py-1 px-2 outline-none transition-all border-l-2  border-orange-500 duration-300 w-[6rem]  ${
-                selectedTab === "inbox"
-                  ? "bg-orange-500 text-white"
-                  : "text-black bg-gray-100 hover:bg-slate-200"
-              }`}
-              onClick={() => {
-                // setSelectedTab("inbox");
-                navigate("/tickets/inbox");
-              }}
-            >
-              Inbox
-            </button>
+            {(auth?.user?.role?.name === "Admin" ||
+              access.includes("Inbox")) && (
+              <button
+                className={`py-1 px-2 outline-none transition-all border-l-2  border-orange-500 duration-300 w-[6rem]  ${
+                  selectedTab === "inbox"
+                    ? "bg-orange-500 text-white"
+                    : "text-black bg-gray-100 hover:bg-slate-200"
+                }`}
+                onClick={() => {
+                  // setSelectedTab("inbox");
+                  navigate("/tickets/inbox");
+                }}
+              >
+                Inbox
+              </button>
+            )}
           </div>
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
         </>
@@ -1111,6 +1133,7 @@ export default function Tickets() {
             <SendEmailModal
               setShowSendModal={setShowSendModal}
               getEmails={getEmails}
+              access={access}
             />
           </div>
         )}

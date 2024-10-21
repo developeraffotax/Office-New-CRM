@@ -42,6 +42,7 @@ export default function Template() {
   const [showTemplate, setShowTemplate] = useState(false);
   const [template, setTemplate] = useState("");
   const templateDetailref = useRef(null);
+  const [access, setAccess] = useState([]);
 
   console.log("templateData:", templateData);
 
@@ -58,6 +59,17 @@ export default function Template() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Get Auth Access
+  useEffect(() => {
+    if (auth.user) {
+      const filterAccess = auth.user.role.access
+        .filter((role) => role.permission === "Templates")
+        .flatMap((jobRole) => jobRole.subRoles);
+
+      setAccess(filterAccess);
+    }
+  }, [auth]);
+
   // --------------Get All Templates---------->
   const getAllTemplates = async () => {
     setIsLoading(true);
@@ -65,7 +77,16 @@ export default function Template() {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/templates/get/all/template`
       );
-      setTemplateData(data?.templates);
+      if (auth.user.role.name === "Admin") {
+        setTemplateData(data?.templates);
+      } else {
+        const filteredTemplate = data?.templates.filter((template) =>
+          template?.userList?.some((user) => user._id === auth.user.id)
+        );
+        console.log("filteredTemplate:", filteredTemplate);
+        setTemplateData(filteredTemplate);
+      }
+
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -115,13 +136,19 @@ export default function Template() {
       );
       setUsers(
         data?.users?.filter((user) =>
-          user.role?.access.includes("Templates")
+          user.role?.access.some((item) =>
+            item?.permission?.includes("Templates")
+          )
         ) || []
       );
 
       setUserName(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Templates"))
+          ?.filter((user) =>
+            user.role?.access.some((item) =>
+              item?.permission?.includes("Templates")
+            )
+          )
           .map((user) => user.name)
       );
     } catch (error) {
@@ -751,15 +778,22 @@ export default function Template() {
                 </div>
               ) : (
                 <div className="w-full min-h-[10vh] relative ">
-                  <div className="h-full hidden1 overflow-y-scroll relative">
-                    <MaterialReactTable table={table} />
-                  </div>
+                  {(auth?.user?.role?.name === "Admin" ||
+                    access.includes("Template")) && (
+                    <div className="h-full hidden1 overflow-y-scroll relative">
+                      <MaterialReactTable table={table} />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           ) : selectedTab === "faq" ? (
             <div className="w-full h-full">
-              <FAQ setSelectedTab={setSelectedTab} selectedTab={selectedTab} />
+              <FAQ
+                setSelectedTab={setSelectedTab}
+                selectedTab={selectedTab}
+                access={access}
+              />
             </div>
           ) : (
             <div className=""></div>

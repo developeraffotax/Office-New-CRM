@@ -7,14 +7,13 @@ import userModel from "../models/userModel.js";
 // Create Comment
 export const createComment = async (req, res) => {
   const senderId = req.user.user._id;
-  console.log("senderId:", senderId);
+  // console.log("senderId:", senderId);
   try {
     const { comment, jobId, type, mentionUser } = req.body;
 
-    console.log("Sender Id", senderId);
-
     if (type === "Jobs") {
       const job = await jobsModel.findById(jobId);
+
       if (!job) {
         return res.status(400).send({
           success: false,
@@ -25,7 +24,7 @@ export const createComment = async (req, res) => {
       const newComment = {
         user: req.user.user,
         comment: comment,
-        senderId: senderId,
+        senderId: req?.user?.user?._id,
         commentReplies: [],
         likes: [],
       };
@@ -33,20 +32,19 @@ export const createComment = async (req, res) => {
       job.comments.push(newComment);
 
       await job.save();
+      console.log("mentionUser:", mentionUser);
 
       // Create Notification
-      const user = await userModel
-        .findOne({
-          name: mentionUser ? mentionUser : job.job.jobHolder,
-        })
-        .exec();
+      const user = await userModel.findOne({
+        name: mentionUser ? mentionUser.trim() : job?.job?.jobHolder,
+      });
 
-      console.log("user:", user);
+      console.log("userData:", user);
 
       const notification = await notificationModel.create({
         title: "New comment received!",
         redirectLink: "/job-planning",
-        description: `${req.user.user.name} add a new comment of "${job.job.jobName}". ${comment}`,
+        description: `${req?.user?.user?.name} add a new comment of "${job?.job?.jobName}". ${comment}`,
         taskId: jobId,
         userId: user?._id,
       });

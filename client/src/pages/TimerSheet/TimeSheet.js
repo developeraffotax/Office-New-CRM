@@ -23,6 +23,7 @@ import { FaAngleRight } from "react-icons/fa6";
 import { LuImport } from "react-icons/lu";
 import ApexCharts from "react-apexcharts";
 import { BsPieChartFill } from "react-icons/bs";
+import RunningTimers from "./RunningTimers";
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -44,6 +45,7 @@ export default function TimeSheet() {
   const [tableFilterData, setTableFilterDate] = useState([]);
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
+  const [userData, setUserData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [timerId, setTimerId] = useState("");
   const [times, setTimes] = useState({
@@ -97,8 +99,21 @@ export default function TimeSheet() {
   const [showGraph, setShowGraph] = useState(false);
   const [totalCPercengate, setTotalCPercentage] = useState(0);
   const [totalNPercengate, setTotalNPercentage] = useState(0);
+  const [access, setAccess] = useState([]);
+  const [isRunning, setIsRunning] = useState(false);
 
   console.log("TableFilterData:", tableFilterData);
+
+  // console.log("auth:", auth.user);
+  useEffect(() => {
+    if (auth.user) {
+      const filterAccess = auth.user.role.access
+        .filter((role) => role.permission === "Timesheet")
+        .flatMap((jobRole) => jobRole.subRoles);
+
+      setAccess(filterAccess);
+    }
+  }, [auth]);
 
   //   Get All Timer Data
   const getAllTimeSheetData = async () => {
@@ -218,6 +233,7 @@ export default function TimeSheet() {
       setUsers(
         data?.users.map((user) => ({ name: user?.name, id: user?._id }))
       );
+      setUserData(data?.users);
     } catch (error) {
       console.log(error);
     }
@@ -866,7 +882,7 @@ export default function TimeSheet() {
                 Job Holder
               </span>
               {(auth?.user?.role.name === "Admin" ||
-                auth?.user?.role?.name === "Accountant-Lead") && (
+                access.includes("Job-holder")) && (
                 <select
                   value={column.getFilterValue()}
                   onChange={(e) => {
@@ -1482,8 +1498,10 @@ export default function TimeSheet() {
         maxSize: 90,
         grow: false,
       },
+      // access.includes("Job-holder")
       ...(auth?.user?.role?.name === "Admin" ||
-      auth?.user?.role?.name === "Accountant-Lead"
+      access.includes("Edit") ||
+      access.includes("Delete")
         ? [
             {
               accessorKey: "actions",
@@ -1492,24 +1510,29 @@ export default function TimeSheet() {
                 const timerId = row.original._id;
                 return (
                   <div className="flex items-center justify-center gap-3 w-full h-full">
-                    <span
-                      className="text-[1rem] cursor-pointer"
-                      title="Edit this column"
-                      onClick={() => {
-                        setTimerId(timerId);
-                        setIsOpen(true);
-                      }}
-                    >
-                      <AiOutlineEdit className="h-5 w-5 text-cyan-600 " />
-                    </span>
-
-                    <span
-                      className="text-[1rem] cursor-pointer"
-                      title="Delete Task!"
-                      onClick={() => handleDeleteTaskConfirmation(timerId)}
-                    >
-                      <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
-                    </span>
+                    {(auth?.user?.role?.name === "Admin" ||
+                      access.includes("Edit")) && (
+                      <span
+                        className="text-[1rem] cursor-pointer"
+                        title="Edit this column"
+                        onClick={() => {
+                          setTimerId(timerId);
+                          setIsOpen(true);
+                        }}
+                      >
+                        <AiOutlineEdit className="h-5 w-5 text-cyan-600 " />
+                      </span>
+                    )}
+                    {(auth?.user?.role?.name === "Admin" ||
+                      access.includes("Delete")) && (
+                      <span
+                        className="text-[1rem] cursor-pointer"
+                        title="Delete Task!"
+                        onClick={() => handleDeleteTaskConfirmation(timerId)}
+                      >
+                        <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
+                      </span>
+                    )}
                   </div>
                 );
               },
@@ -1588,11 +1611,11 @@ export default function TimeSheet() {
           xl: "490px",
         },
         "@media (min-width: 1500px) and (max-width: 1800px)": {
-          maxHeight: "550px",
+          maxHeight: "650px",
         },
 
         "@media (min-width: 1800px)": {
-          maxHeight: "720px",
+          maxHeight: "740px",
         },
       },
     },
@@ -1855,6 +1878,18 @@ export default function TimeSheet() {
             >
               <LuImport className="h-6 w-6 " />
             </button>
+            {(auth.user.name === "Salman" ||
+              auth.user.name === "M Salman" ||
+              auth.user.name === "M Salman ") && (
+              <button
+                className={`${style.button1} text-[15px] `}
+                onClick={() => setIsRunning(true)}
+                style={{ padding: ".4rem 1rem" }}
+                title="All Running Timers"
+              >
+                Running Timers
+              </button>
+            )}
             <button
               className={`${style.button1} text-[15px] `}
               onClick={() => setIsOpen(true)}
@@ -1932,7 +1967,7 @@ export default function TimeSheet() {
           </div>
         </div>
 
-        {/* -----------Add Task-------------- */}
+        {/* -----------Add Timer Manual-------------- */}
         {isOpen && (
           <div className="fixed top-0 left-0 w-full h-[112vh] z-[999] bg-gray-300/70 flex items-center justify-center py-6  px-4">
             <AddTimerModal
@@ -1943,6 +1978,13 @@ export default function TimeSheet() {
               setTimerId={setTimerId}
               getAllTimeSheetData={getAllTimeSheetData}
             />
+          </div>
+        )}
+
+        {/* -----------All Running Timers-------------- */}
+        {isRunning && (
+          <div className="fixed top-0 left-0 w-full h-[112vh] z-[999] bg-gray-50 flex items-center justify-center ">
+            <RunningTimers users={userData} setIsRunning={setIsRunning} />
           </div>
         )}
       </div>

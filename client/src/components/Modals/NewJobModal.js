@@ -118,7 +118,11 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers(data?.users);
+      setUsers(
+        data?.users?.filter((user) =>
+          user?.role?.access?.some((item) => item?.permission?.includes("Jobs"))
+        )
+      );
       console.log("users", data?.users);
     } catch (error) {
       console.log(error);

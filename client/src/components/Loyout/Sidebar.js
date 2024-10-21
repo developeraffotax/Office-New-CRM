@@ -39,8 +39,12 @@ export default function Sidebar({ hide, setHide }) {
   }, [setActive]);
 
   // Access
+  // const hasAccess = (section) => {
+  //   return user?.role?.access?.map((item) => item.permission.includes(section));
+  // };
+
   const hasAccess = (section) => {
-    return user?.role?.access?.map((item) => item.permission.includes(section));
+    return user?.role?.access?.some((item) => item.permission === section);
   };
 
   // const handleLogout = () => {

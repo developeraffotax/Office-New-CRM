@@ -93,13 +93,19 @@ export default function Proposal() {
       );
       setUsers(
         data?.users?.filter((user) =>
-          user.role?.access.includes("Proposals")
+          user.role?.access.some((item) =>
+            item?.permission?.includes("Proposals")
+          )
         ) || []
       );
 
       setUserName(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Proposals"))
+          ?.filter((user) =>
+            user.role?.access.some((item) =>
+              item?.permission?.includes("Proposals")
+            )
+          )
           .map((user) => user.name)
       );
     } catch (error) {

@@ -16,7 +16,7 @@ import { RiEdit2Line } from "react-icons/ri";
 import Loader from "../../utlis/Loader";
 import { IoSearch } from "react-icons/io5";
 
-export default function FAQ({ setSelectedTab, selectedTab }) {
+export default function FAQ({ setSelectedTab, selectedTab, access }) {
   const { auth, searchValue } = useAuth();
   const [showCategory, setShowCategory] = useState(false);
   const [categoryData, setCategoryData] = useState([]);
@@ -418,78 +418,84 @@ export default function FAQ({ setSelectedTab, selectedTab }) {
           <Loader />
         </div>
       ) : (
-        <div className="w-full flex items-center flex-wrap gap-3 justify-center 2xl:justify-start  mt-4  ">
-          {(filteredFaq?.length || category || search
-            ? filteredFaq
-            : faqData
-          )?.map((faq) => (
-            <div
-              key={faq?._id}
-              className={`flex flex-col  border border-gray-300 ${
-                show &&
-                faqId === faq._id &&
-                "border-orange-500 shadow-md rounded-sm"
-              }  rounded-sm hover:shadow py-3 w-[21rem] sm:w-[38rem] transition-all duration-500`}
-            >
-              <div className="flex items-center  gap-2 cursor-pointer px-4">
+        <>
+          {(auth?.user?.role?.name === "Admin" || access.includes("FAQ")) && (
+            <div className="w-full flex items-center flex-wrap gap-3 justify-center 2xl:justify-start  mt-4  ">
+              {(filteredFaq?.length || category || search
+                ? filteredFaq
+                : faqData
+              )?.map((faq) => (
                 <div
-                  className="flex items-center w-full gap-2"
-                  onClick={() => {
-                    setFaqId((prevId) => (prevId === faq._id ? "" : faq._id));
-                    setShow((prevShow) => faqId !== faq._id || !prevShow);
-                  }}
-                >
-                  <span className="cursor-pointer">
-                    {show && faqId === faq._id ? (
-                      <FaRegWindowMinimize className="h-5 w-5 -mt-4" />
-                    ) : (
-                      <HiOutlinePlus className="h-5 w-5" />
-                    )}
-                  </span>
-                  <p className="text-[15px] font-normal">{faq?.question}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    onClick={() => {
-                      setFaqId(faq._id);
-                      setIsAddFAQ(true);
-                    }}
-                    className="cursor-pointer"
-                  >
-                    <RiEdit2Line className="h-5 w-5 text-sky-500 hover:text-sky-600" />
-                  </span>
-                  <span
-                    onClick={() => handleDeleteFaqConfirmation(faq._id)}
-                    className="cursor-pointer"
-                  >
-                    <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600" />
-                  </span>
-                </div>
-              </div>
-              {/* Answer section with animation */}
-              <div
-                className={`overflow-hidden text-justify transition-all duration-500  ${
-                  show && faqId === faq._id
-                    ? "max-h-[500px] opacity-100"
-                    : "max-h-0 opacity-0"
-                }`}
-              >
-                <div
-                  className={`w-full px-4 border-t-2 ${
+                  key={faq?._id}
+                  className={`flex flex-col  border border-gray-300 ${
                     show &&
                     faqId === faq._id &&
                     "border-orange-500 shadow-md rounded-sm"
-                  }   mt-2 py-2 cursor-pointer`}
-                  onClick={() => copyFaq(faq?.answer)}
+                  }  rounded-sm hover:shadow py-3 w-[21rem] sm:w-[38rem] transition-all duration-500`}
                 >
-                  <p className="text-[15px] border-none w-full h-fit font-normal">
-                    {faq?.answer}
-                  </p>
+                  <div className="flex items-center  gap-2 cursor-pointer px-4">
+                    <div
+                      className="flex items-center w-full gap-2"
+                      onClick={() => {
+                        setFaqId((prevId) =>
+                          prevId === faq._id ? "" : faq._id
+                        );
+                        setShow((prevShow) => faqId !== faq._id || !prevShow);
+                      }}
+                    >
+                      <span className="cursor-pointer">
+                        {show && faqId === faq._id ? (
+                          <FaRegWindowMinimize className="h-5 w-5 -mt-4" />
+                        ) : (
+                          <HiOutlinePlus className="h-5 w-5" />
+                        )}
+                      </span>
+                      <p className="text-[15px] font-normal">{faq?.question}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        onClick={() => {
+                          setFaqId(faq._id);
+                          setIsAddFAQ(true);
+                        }}
+                        className="cursor-pointer"
+                      >
+                        <RiEdit2Line className="h-5 w-5 text-sky-500 hover:text-sky-600" />
+                      </span>
+                      <span
+                        onClick={() => handleDeleteFaqConfirmation(faq._id)}
+                        className="cursor-pointer"
+                      >
+                        <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600" />
+                      </span>
+                    </div>
+                  </div>
+                  {/* Answer section with animation */}
+                  <div
+                    className={`overflow-hidden text-justify transition-all duration-500  ${
+                      show && faqId === faq._id
+                        ? "max-h-[500px] opacity-100"
+                        : "max-h-0 opacity-0"
+                    }`}
+                  >
+                    <div
+                      className={`w-full px-4 border-t-2 ${
+                        show &&
+                        faqId === faq._id &&
+                        "border-orange-500 shadow-md rounded-sm"
+                      }   mt-2 py-2 cursor-pointer`}
+                      onClick={() => copyFaq(faq?.answer)}
+                    >
+                      <p className="text-[15px] border-none w-full h-fit font-normal">
+                        {faq?.answer}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       {((filteredFaq.length === 0 && search) ||

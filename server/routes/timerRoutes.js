@@ -7,6 +7,7 @@ import {
   getAllTimers,
   getTimerStatus,
   removeTimerStatus,
+  runningTimers,
   singleTimer,
   startTimer,
   stopTimer,
@@ -56,5 +57,7 @@ router.get("/single/timer/:id", requiredSignIn, singleTimer);
 
 // Update Name
 router.put("/update/jobholder", updateJobHolderName);
+// Running Timers
+router.get("/running/timers", runningTimers);
 
 export default router;

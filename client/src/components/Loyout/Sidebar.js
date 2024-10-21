@@ -40,14 +40,14 @@ export default function Sidebar({ hide, setHide }) {
 
   // Access
   const hasAccess = (section) => {
-    return user?.role?.access?.includes(section);
+    return user?.role?.access?.map((item) => item.permission.includes(section));
   };
 
-  const handleLogout = () => {
-    setAuth({ ...auth, user: null, token: "" });
-    localStorage.removeItem("auth");
-    navigate("/");
-  };
+  // const handleLogout = () => {
+  //   setAuth({ ...auth, user: null, token: "" });
+  //   localStorage.removeItem("auth");
+  //   navigate("/");
+  // };
 
   return (
     <div className="w-full h-screen py-2 ">
@@ -506,6 +506,7 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </>
           )}
+
           {hasAccess("Users") && (
             <>
               <div

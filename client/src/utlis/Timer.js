@@ -42,8 +42,12 @@ export const Timer = forwardRef(
     const [startTime, setStartTime] = useState(null);
     const [totalTime, setTotalTime] = useState(null);
     const isInitialMount = useRef(true);
+    const [runningId, setRunningId] = useState("");
 
     useEffect(() => {
+      if (!clientId || !jobId) {
+        return;
+      }
       const fetchTimerStatus = async () => {
         try {
           const response = await axios.get(
@@ -78,6 +82,8 @@ export const Timer = forwardRef(
 
       const timeId = localStorage.getItem("timer_Id");
       setTimerId(JSON.parse(timeId));
+
+      setRunningId(JSON.parse(timeId));
     }, [clientId, jobId, setAnyTimerRunning]);
 
     // ---------Timer-------
@@ -122,6 +128,7 @@ export const Timer = forwardRef(
           "timer_Id",
           JSON.stringify(response.data.timer._id)
         );
+        setRunningId(response.data.timer._id);
 
         addTimerTaskStatus();
         setIsRunning(true);
@@ -155,6 +162,7 @@ export const Timer = forwardRef(
           setTimerId(null);
           setElapsedTime(0);
           setIsRunning(false);
+          setRunningId("");
           // Send Socket Timer
           socketId.emit("timer", {
             timerId: timerId,
@@ -234,7 +242,15 @@ export const Timer = forwardRef(
         <div className="w-full h-full relative">
           <div className="flex items-center gap-[2px]  ">
             <div className="flex space-x-4">
-              {!isRunning ? (
+              {isRunning && runningId === timerId ? (
+                <button
+                  onClick={() => setIsShow(true)}
+                  disabled={!isRunning}
+                  className="flex items-center justify-center  disabled:cursor-not-allowed"
+                >
+                  <IoStopCircle className="h-6 w-6  text-red-500 hover:text-red-600 animate-pulse " />
+                </button>
+              ) : (
                 <button
                   onClick={startTimer}
                   disabled={anyTimerRunning}
@@ -244,17 +260,9 @@ export const Timer = forwardRef(
                 >
                   <FaCirclePlay className="h-6 w-6  text-sky-500 hover:text-sky-600 " />
                 </button>
-              ) : (
-                <button
-                  onClick={() => setIsShow(true)}
-                  disabled={!isRunning}
-                  className="flex items-center justify-center  disabled:cursor-not-allowed"
-                >
-                  <IoStopCircle className="h-6 w-6  text-red-500 hover:text-red-600 animate-pulse " />
-                </button>
               )}
             </div>
-            {isRunning && (
+            {isRunning && runningId === timerId && (
               <div className="text-[13px] text-gray-800 font-semibold ">
                 {Math.floor(elapsedTime / 3600)
                   .toString()

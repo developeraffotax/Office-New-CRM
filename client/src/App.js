@@ -58,7 +58,7 @@ function App() {
 
   const userAccessRoutes = user?.role?.access
     ?.map((accessItem) => {
-      return routeAccess[accessItem];
+      return routeAccess[accessItem.permission];
     })
     .filter(Boolean);
 

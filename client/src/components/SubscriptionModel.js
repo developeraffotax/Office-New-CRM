@@ -222,7 +222,13 @@ export default function SubscriptionModel({
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers(data?.users);
+      setUsers(
+        data?.users?.filter((user) =>
+          user.role?.access.some((item) =>
+            item.permission.includes("Subscription")
+          )
+        ) || []
+      );
     } catch (error) {
       console.log(error);
     }

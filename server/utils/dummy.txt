@@ -210,3 +210,44 @@ export const getAttachments = async (attachmentId, messageId, companyName) => {
     throw error;
   }
 };
+
+
+------------------------------------Roles--------------->
+// Update Roles
+// export const updateRole = async (req, res) => {
+//   try {
+//     const roleId = req.params.id;
+//     const { name, access, subRoles, pageName } = req.body;
+
+//     console.log(subRoles, pageName);
+
+//     const existingRole = await roleModel.findById(roleId);
+
+//     const formattedAccess = access
+//       ? access.map((permission) => ({ permission }))
+//       : existingRole.access;
+
+//     const role = await roleModel.findByIdAndUpdate(
+//       { _id: roleId },
+//       {
+//         name: name ? name : existingRole.name,
+//         access: formattedAccess,
+//       },
+//       { new: true }
+//     );
+
+//     // Add SubRole based on access.permission ===pageName
+
+//     res.status(200).send({
+//       success: true,
+//       message: "Role update successfully!",
+//       role: role,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).send({
+//       success: false,
+//       message: "Error while update role!",
+//     });
+//   }
+// };

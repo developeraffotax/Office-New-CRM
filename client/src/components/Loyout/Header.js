@@ -121,6 +121,9 @@ export default function Header() {
 
   // Get ALl User Notifications
   const getNotifications = async () => {
+    if (!auth.user) {
+      return;
+    }
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/notification/get/notification/${auth.user.id}`
@@ -315,7 +318,7 @@ export default function Header() {
               placeholder="Search"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              className="w-[20rem] h-[2.5rem] rounded-[2.5rem] pl-7 pr-3 outline-none border-[1.5px] border-gray-400 focus:border-orange-600"
+              className="w-[20rem] sm:w-[32rem]  h-[2.7rem] rounded-[2.5rem] pl-8 pr-3 outline-none border-[1.5px] border-gray-400 focus:border-orange-600"
             />
           </form>
         </div>

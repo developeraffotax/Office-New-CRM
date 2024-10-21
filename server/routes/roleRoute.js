@@ -11,13 +11,13 @@ import {
 const router = express.Router();
 
 // Create Role
-router.post("/create/role", requiredSignIn, isAdmin, postRole);
+router.post("/create/role", requiredSignIn, postRole);
 
 // Get All Routes
 router.get("/fetch/all/roles", getAllRole);
 
 // Update Role
-router.put("/update/role/:id", requiredSignIn, isAdmin, updateRole);
+router.put("/update/role/:id", requiredSignIn, updateRole);
 
 // Get Single Role
 router.get("/fetch/single/role/:id", getSingleRole);

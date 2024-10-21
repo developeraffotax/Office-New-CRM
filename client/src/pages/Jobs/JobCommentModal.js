@@ -590,13 +590,18 @@ export default function JobCommentModal({
               className="w-full border border-orange-500 rounded-md px-2 py-1"
             >
               <div className="relative w-full">
-                <input
+                <textarea
                   placeholder="Enter your comment here... 🙄"
                   value={comment}
                   required
                   onChange={handleInputChange}
-                  className="h-[3.3rem] w-full rounded-md outline-none resize-none py-1 px-2"
-                ></input>
+                  className="h-[5rem] w-full rounded-md outline-none resize-none py-1 px-2"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      handleComment(e);
+                    }
+                  }}
+                ></textarea>
 
                 {showSuggestions && (
                   <ul className="absolute top-[-8rem] w-[8rem] bg-gray-50   rounded-md mt-1 shadow-md   max-h-40 overflow-y-auto z-10">

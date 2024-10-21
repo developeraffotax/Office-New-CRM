@@ -106,6 +106,8 @@ const AllTasks = () => {
   const [state, setState] = useState("");
   const [recurrLoad, setRecurrLoad] = useState(false);
   const [stateData, setStateData] = useState([]);
+  const [activity, setActivity] = useState("Chargeable");
+  const [access, setAccess] = useState([]);
 
   console.log("tasksData:", tasksData);
 
@@ -113,6 +115,17 @@ const AllTasks = () => {
     const timeId = localStorage.getItem("jobId");
     setTimerId(JSON.parse(timeId));
   }, [anyTimerRunning]);
+
+  // Get Auth Access
+  useEffect(() => {
+    if (auth.user) {
+      const filterAccess = auth.user.role.access
+        .filter((role) => role.permission === "Tasks")
+        .flatMap((jobRole) => jobRole.subRoles);
+
+      setAccess(filterAccess);
+    }
+  }, [auth]);
 
   //---------- Get All Projects-----------
   const getAllProjects = async () => {
@@ -212,13 +225,19 @@ const AllTasks = () => {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
       setUsers(
-        data?.users?.filter((user) => user.role?.access.includes("Tasks")) || []
+        data?.users?.filter((user) =>
+          user?.role?.access?.some((item) =>
+            item?.permission?.includes("Tasks")
+          )
+        ) || []
       );
 
       setUserName(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Tasks"))
-          .map((user) => user.name)
+          ?.filter((user) =>
+            user?.role?.access?.map((item) => item.permission.includes("Tasks"))
+          )
+          ?.map((user) => user.name)
       );
     } catch (error) {
       console.log(error);
@@ -568,7 +587,7 @@ const AllTasks = () => {
 
         setTasksData((prevData) => {
           if (Array?.isArray(prevData)) {
-            return prevData.map((item) =>
+            return prevData?.map((item) =>
               item?._id === updateTask?._id ? updateTask : item
             );
           } else {
@@ -716,7 +735,7 @@ const AllTasks = () => {
 
   // -----------Download in CSV------>
   const flattenData = (data) => {
-    return data.map((row) => ({
+    return data?.map((row) => ({
       projectName: row.project.projectName,
       projectId: row.project._id,
       jobHolder: row.jobHolder,
@@ -965,7 +984,7 @@ const AllTasks = () => {
             >
               <option value="">Select</option>
               {allProjects &&
-                allProjects.map((proj) => (
+                allProjects?.map((proj) => (
                   <option value={proj._id} key={proj._id}>
                     {proj?.projectName}
                   </option>
@@ -1038,7 +1057,7 @@ const AllTasks = () => {
           );
         },
         filterFn: "equals",
-        filterSelectOptions: users.map((jobhold) => jobhold.name),
+        filterSelectOptions: users?.map((jobhold) => jobhold.name),
         filterVariant: "select",
         size: 100,
         minSize: 80,
@@ -1272,7 +1291,7 @@ const AllTasks = () => {
                   className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
                 >
                   <option value="">Select</option>
-                  {column.columnDef.filterSelectOptions.map((option, idx) => (
+                  {column.columnDef.filterSelectOptions?.map((option, idx) => (
                     <option key={idx} value={option}>
                       {option}
                     </option>
@@ -1453,7 +1472,7 @@ const AllTasks = () => {
                   className="h-[1.8rem]  font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
                 >
                   <option value="">Select</option>
-                  {column.columnDef.filterSelectOptions.map((option, idx) => (
+                  {column.columnDef.filterSelectOptions?.map((option, idx) => (
                     <option key={idx} value={option}>
                       {option}
                     </option>
@@ -1788,7 +1807,7 @@ const AllTasks = () => {
                 className="w-full h-[2rem] rounded-md border-none bg-transparent outline-none"
               >
                 <option value="empty"></option>
-                {users.map((lead, i) => (
+                {users?.map((lead, i) => (
                   <option value={lead?.name} key={i}>
                     {lead?.name}
                   </option>
@@ -1798,7 +1817,7 @@ const AllTasks = () => {
           );
         },
         filterFn: "equals",
-        filterSelectOptions: users.map((lead) => lead),
+        filterSelectOptions: users?.map((lead) => lead),
         filterVariant: "select",
         size: 100,
         minSize: 60,
@@ -1856,6 +1875,8 @@ const AllTasks = () => {
                   JobHolderName={row.original.jobHolder}
                   projectName={""}
                   task={row.original.task}
+                  activity={activity}
+                  setActivity={setActivity}
                 />
               </span>
             </div>
@@ -2038,7 +2059,7 @@ const AllTasks = () => {
         },
 
         filterVariant: "select",
-        filterSelectOptions: labelData.map((label) => label.name),
+        filterSelectOptions: labelData?.map((label) => label.name),
         size: 140,
         minSize: 100,
         maxSize: 210,
@@ -2267,7 +2288,7 @@ const AllTasks = () => {
             {/* Project Buttons */}
             <div className="flex items-center gap-4">
               {/* Status Filter */}
-              <div className="">
+              {/* <div className="">
                 <select
                   className=" w-[8rem] h-[2rem] text-[14px] border-2 border-gray-200 rounded-md cursor-pointer"
                   value={state}
@@ -2283,9 +2304,10 @@ const AllTasks = () => {
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
               {/*  */}
-              {auth?.user?.role?.name === "Admin" && (
+              {(auth?.user?.role?.name === "Admin" ||
+                access.includes("Projects")) && (
                 <div
                   className=" relative w-[8rem]  border-2 border-gray-200 rounded-md py-1 px-2 flex items-center justify-between gap-1"
                   onClick={() => setShowProject(!showProject)}
@@ -2565,7 +2587,7 @@ const AllTasks = () => {
                       ?.filter(
                         (user) => getJobHolderCount(user?.name, active) > 0
                       )
-                      .map((user, i) => (
+                      ?.map((user, i) => (
                         <div
                           className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
                             active1 === user.name &&
@@ -2720,7 +2742,7 @@ const AllTasks = () => {
                 <div className="flex  flex-col gap-3 ">
                   <div className=" w-full flex items-center justify-between py-2 mt-1 px-4">
                     <h3 className="text-[19px] font-semibold text-gray-800">
-                      Enter your note here
+                      Enter End Note
                     </h3>
                     <span
                       onClick={() => {
@@ -2731,6 +2753,25 @@ const AllTasks = () => {
                     </span>
                   </div>
                   <hr className="w-full h-[1px] bg-gray-500 " />
+                  <div className="flex items-start px-4 py-2 ">
+                    {activity === "Chargeable" ? (
+                      <button
+                        className={`px-4 h-[2.6rem] min-w-[5rem] flex items-center justify-center  rounded-md cursor-pointer shadow-md  text-white border-none outline-none bg-green-500 hover:bg-green-600`}
+                        onClick={() => setActivity("Non-Chargeable")}
+                        style={{ width: "8rem", fontSize: "14px" }}
+                      >
+                        Chargeable
+                      </button>
+                    ) : (
+                      <button
+                        className={`px-4 h-[2.6rem] min-w-[5rem] flex items-center justify-center  rounded-md cursor-pointer shadow-md  text-white border-none outline-none bg-red-500 hover:bg-red-600`}
+                        onClick={() => setActivity("Chargeable")}
+                        style={{ width: "9rem", fontSize: "14px" }}
+                      >
+                        Non-Chargeable
+                      </button>
+                    )}
+                  </div>
                   <div className=" w-full px-4 py-2 flex-col gap-4">
                     <textarea
                       value={note}

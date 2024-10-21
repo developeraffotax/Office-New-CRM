@@ -73,13 +73,19 @@ export default function Subscription() {
       );
       setUsers(
         data?.users?.filter((user) =>
-          user.role?.access.includes("Subscription")
+          user.role?.access.some((item) =>
+            item.permission.includes("Subscription")
+          )
         ) || []
       );
 
       setUserName(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Subscription"))
+          ?.filter((user) =>
+            user.role?.access.some((item) =>
+              item.permission.includes("Subscription")
+            )
+          )
           .map((user) => user.name)
       );
     } catch (error) {

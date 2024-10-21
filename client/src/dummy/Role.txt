@@ -28,7 +28,6 @@ export default function Roles() {
       subRole: [],
     },
   ]);
-
   const pages = [
     "Dashboard",
     "Tasks",
@@ -43,23 +42,14 @@ export default function Roles() {
     "MyList",
     "Subscription",
   ];
-
-  const subRolesMapping = {
-    Tasks: ["Projects"],
-    Jobs: ["Fee", "Source", "Data"],
-    Tickets: ["Inbox", "Affotax", "OutSource"],
-    Templates: ["Template", "FAQ"],
-    Timesheet: ["Job-holder", "Edit", "Delete"],
-    // Add other pages and subroles as necessary
-  };
-
   const [isLoading, setIsLoading] = useState(false);
   const [users, setUsers] = useState([]);
   const [pageName, setPageName] = useState("");
-
+  
+  // console.log("subRoles:", subRoles);
   console.log("subRoles:", subRoles);
 
-  // console.log("roleData:", roleData);
+  console.log("roleData:", roleData);
 
   // Get All Roles
   const handleGetRole = async () => {
@@ -115,30 +105,6 @@ export default function Roles() {
     // eslint-disable-next-line
   }, []);
 
-  // ----------------------Subrole------->
-  // Handle main page checkbox change
-  const handleCheckboxChange = (page) => {
-    setPagesAccess((prev) =>
-      prev.includes(page) ? prev.filter((p) => p !== page) : [...prev, page]
-    );
-  };
-
-  // Handle subrole checkbox change
-  const handleSubRoleCheckboxChange = (page, subRole) => {
-    setSubRoles((prevSubRoles) =>
-      prevSubRoles.map((role) => {
-        if (role.pageName === page) {
-          const updatedSubRoles = role.subRole.includes(subRole)
-            ? role.subRole.filter((sr) => sr !== subRole)
-            : [...role.subRole, subRole];
-
-          return { ...role, subRole: updatedSubRoles };
-        }
-        return role;
-      })
-    );
-  };
-
   // Delete Role
   const handleDeleteConfirmation = (roleId) => {
     Swal.fire({
@@ -171,8 +137,6 @@ export default function Roles() {
     }
   };
 
-  // -----------Main Page Access----------
-
   useEffect(() => {
     if (selectedRole) {
       setPagesAccess(selectedRole.access.map((item) => item.permission) || {});
@@ -180,6 +144,7 @@ export default function Roles() {
   }, [selectedRole]);
 
   // ----------SubRole Access-------
+  // Effect to get subRole IDs based on selected role and page name
   useEffect(() => {
     if (selectedRole && pageName) {
       const selectedPage = selectedRole.access.find(
@@ -187,20 +152,20 @@ export default function Roles() {
       );
 
       if (selectedPage) {
-        const subRole = selectedPage.subRoles.map((subRole) => subRole);
+        const subRoleIds = selectedPage.subRoles.map((subRole) => subRole._id);
 
         // Update the subRoles state with the new structure
         setSubRoles((prev) => {
-          const existingPage = prev?.find((p) => p.pageName === pageName);
+          const existingPage = prev.find((p) => p.pageName === pageName);
 
           if (existingPage) {
             // Update existing page's subRoles
             return prev.map((p) =>
-              p.pageName === pageName ? { ...p, subRole: subRole } : p
+              p.pageName === pageName ? { ...p, subRole: subRoleIds } : p
             );
           } else {
             // Add a new page entry
-            return [...prev, { pageName, subRole: subRole }];
+            return [...prev, { pageName, subRole: subRoleIds }];
           }
         });
       } else {
@@ -219,7 +184,6 @@ export default function Roles() {
         { access: pagesAccess, subRoles, pageName }
       );
       if (data) {
-        setSelectedRole(data.role);
         getRole();
         toast.success("Role updated successfully!");
       }
@@ -230,6 +194,34 @@ export default function Roles() {
       setIsLoading(false);
       setShow(false);
     }
+  };
+
+  const handleCheckboxChange = (page) => {
+    setPagesAccess((prev) => {
+      const newAccess = [...prev];
+
+      if (newAccess.includes(page)) {
+        return newAccess.filter((p) => p !== page);
+      } else {
+        return [...newAccess, page];
+      }
+    });
+  };
+
+  // SubRole Change
+  const handleSunroleCheckboxChange = (userId) => {
+    setSubRoles((prev) => {
+      return prev.map((item) => {
+        if (item.pageName === pageName) {
+          const newSubRoles = item.subRole.includes(userId)
+            ? item.subRole.filter((id) => id !== userId)
+            : [...item.subRole, userId];
+
+          return { ...item, subRole: newSubRoles };
+        }
+        return item;
+      });
+    });
   };
 
   return (
@@ -245,7 +237,7 @@ export default function Roles() {
               <div className="w-full h-full rounded-md shadow-md bg-white border border-gray-300 min-h-[20rem]">
                 <div className="py-4 px-3 flex items-center justify-between bg-gray-200 border-b border-gray-300">
                   <h2 className="text-xl sm:text-2xl font-semibold flex items-center gap-4">
-                    Roles({roleData.length}){" "}
+                    Roles{" "}
                     <span
                       className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-100/50 hover:bg-gray-100/70 cursor-pointer border `}
                       onClick={() => {
@@ -332,11 +324,12 @@ export default function Roles() {
                   </div>
                   <div className="py-4 px-4 flex flex-col gap-3 max-h-[85vh] 2xl:max-h-[90vh] overflow-x-auto">
                     {pages.map((page) => (
-                      <div key={page} className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-4">
                         <div
-                          className={`w-full flex items-center justify-between py-2 px-2 rounded-md hover:shadow-md border hover:border-orange-500 ${
+                          key={page}
+                          className={`w-full flex items-center  justify-between py-2 px-2 rounded-md hover:shadow-md border hover:border-orange-500 ${
                             page === pageName && "bg-orange-100"
-                          } hover:bg-orange-50 transition-all duration-300`}
+                          } hover:bg-orange-50 transition-all duration-300  `}
                         >
                           <label
                             htmlFor={page}
@@ -347,87 +340,74 @@ export default function Roles() {
                               id={page}
                               checked={pagesAccess?.includes(page)}
                               onChange={() => handleCheckboxChange(page)}
-                              style={{ accentColor: "orangered" }}
+                              style={{
+                                accentColor: "orangered",
+                              }}
                               className="h-4 w-4 cursor-pointer checked:bg-orange-600"
                             />
                             <span>{page}</span>
                           </label>
-
-                          {isOpen && pageName === page ? (
-                            <>
-                              <span
-                                onClick={() => {
-                                  setIsOpen(false);
-                                  setPageName("");
-                                }}
-                                className="p-1 rounded-full cursor-pointer bg-gray-100/70 text-gray-950 hover:text-orange-600 transition-all duration-300"
-                              >
-                                <FaAngleUp className="h-5 w-5" />
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              {subRolesMapping[page] && (
-                                <span
-                                  onClick={() => {
-                                    setIsOpen(true);
-                                    setPageName(page);
-                                  }}
-                                  className="p-1 rounded-full cursor-pointer bg-gray-100/70 text-gray-950 hover:text-orange-600 transition-all duration-300"
-                                >
-                                  <FaAngleDown className="h-5 w-5" />
-                                </span>
-                              )}
-                            </>
-                          )}
+                          <span
+                            onClick={() => {
+                              setIsOpen((prev) => !prev);
+                              setPageName(page);
+                            }}
+                            className="p-1 rounded-full cursor-pointer bg-gray-100/70 text-gray-950 hover:text-orange-600 transition-all duration-300"
+                          >
+                            {isOpen && pageName === page ? (
+                              <FaAngleUp
+                                className="h-5 w-5"
+                                onClick={() => setPageName("")}
+                              />
+                            ) : (
+                              <FaAngleDown className="h-5 w-5" />
+                            )}
+                          </span>
                         </div>
                         {/* -------------SubRoles Access--------- */}
-                        {isOpen &&
-                          pageName === page &&
-                          subRolesMapping[page] && (
-                            <div className="flex flex-col gap-1">
-                              <h3 className="text-black font-semibold">
-                                Sub-Roles
-                              </h3>
-                              <div className="py-4 px-4 flex flex-col gap-3 ml-4 sm:ml-[3rem] max-h-[85vh] 2xl:max-h-[90vh] overflow-x-auto">
-                                {subRolesMapping[page].map((subRole) => (
-                                  <div
-                                    key={subRole}
-                                    className="w-full flex items-center justify-between py-2 px-2 rounded-md hover:shadow-md border hover:border-orange-500 hover:bg-orange-50 transition-all duration-300"
-                                  >
-                                    <label className="flex items-center gap-1">
-                                      <input
-                                        type="checkbox"
-                                        id={subRole}
-                                        checked={
-                                          subRoles.some(
-                                            (role) =>
-                                              role.pageName === page &&
-                                              role.subRole.includes(subRole)
-                                          ) || false
-                                        }
-                                        onChange={() =>
-                                          handleSubRoleCheckboxChange(
-                                            page,
-                                            subRole
+                        {isOpen && pageName === page && (
+                          <div className="flex flex-col gap-1">
+                            <h3 className="text-black font-semibold ">
+                              Sub-Role
+                            </h3>
+                            <div className="py-4 px-4 flex flex-col gap-3 ml-4 sm:ml-[3rem] max-h-[85vh] 2xl:max-h-[90vh] overflow-x-auto">
+                              {users.map((user) => (
+                                <div
+                                  key={user?._id}
+                                  className="w-full flex items-center justify-between py-2 px-2 rounded-md hover:shadow-md border hover:border-orange-500 hover:bg-orange-50 transition-all duration-300"
+                                >
+                                  <label className="flex items-center gap-1">
+                                    <input
+                                      type="checkbox"
+                                      id={user?._id}
+                                      checked={
+                                        subRoles
+                                          .find(
+                                            (item) => item.pageName === pageName
                                           )
-                                        }
-                                        style={{ accentColor: "orangered" }}
-                                        className="h-4 w-4 cursor-pointer checked:bg-orange-600"
-                                      />
-                                      <span>{subRole}</span>
-                                    </label>
-                                  </div>
-                                ))}
-                              </div>
+                                          ?.subRole.includes(user?._id) || false
+                                      }
+                                      onChange={() =>
+                                        handleSunroleCheckboxChange(user?._id)
+                                      }
+                                      style={{
+                                        accentColor: "orangered",
+                                      }}
+                                      className="h-4 w-4 cursor-pointer checked:bg-orange-600"
+                                    />
+                                    <span>{user.name}</span>
+                                  </label>
+                                </div>
+                              ))}
                             </div>
-                          )}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
                 </div>
               ) : (
-                <div className="w-full h-full rounded-md shadow-md bg-white border border-gray-300 min-h-[30rem]">
+                <div className="w-full h-full rounded-md shadow-md bg-white border border-gray-300 min-h-[20rem]">
                   <div className="py-4 px-3 flex items-center justify-between bg-gray-200 border-b border-gray-300">
                     <h2 className=" text-lg sm:text-2xl font-semibold">
                       Permissions

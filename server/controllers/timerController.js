@@ -109,7 +109,7 @@ export const timerStatus = async (req, res) => {
     });
 
     if (!timer) {
-      return res.status(404).json({ message: "No timer found" });
+      return res.status(200).json({ message: "Timer not running!" });
     }
 
     res.status(200).send({
@@ -607,6 +607,26 @@ export const updateJobHolderName = async (req, res) => {
       success: false,
       message: "Error updating jobHolderName for timers!",
       error,
+    });
+  }
+};
+
+// All Running Timer
+export const runningTimers = async (req, res) => {
+  try {
+    const timers = await timerModel.find({ isRunning: true });
+
+    res.status(200).send({
+      success: true,
+      message: "List of running timers!",
+      timers: timers,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get running timers!",
+      error: error,
     });
   }
 };

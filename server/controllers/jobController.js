@@ -178,7 +178,6 @@ export const getTicketClients = async (req, res) => {
 };
 
 // Update Client Status
-
 export const updateStatus = async (req, res) => {
   try {
     const jobId = req.params.id;
@@ -320,7 +319,6 @@ export const updateJobHolder = async (req, res) => {
 };
 
 // Delete Client Jobs
-
 export const deleteClientJob = async (req, res) => {
   try {
     const jobId = req.params.id;
@@ -1135,6 +1133,116 @@ export const addDatalabel = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in add job label!",
+      error: error,
+    });
+  }
+};
+
+// Update Time
+export const updateTime = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const { totalTime } = req.body;
+
+    if (!jobId) {
+      return res.status(400).send({
+        success: false,
+        message: "Job id is required!",
+      });
+    }
+
+    const clientJob = await jobsModel.findByIdAndUpdate(
+      { _id: jobId },
+      { totalTime: totalTime },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Time update successfully!",
+      clientJob: clientJob,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in update total time!",
+      error: error,
+    });
+  }
+};
+
+// Update Bulk Jobs
+export const updateBulkJob = async (req, res) => {
+  try {
+    const {
+      rowSelection,
+      jobHolder,
+      lead,
+      yearEnd,
+      jobDeadline,
+      currentDate,
+      jobState,
+      label,
+      dataLabelId,
+    } = req.body;
+
+    if (
+      !rowSelection ||
+      !Array.isArray(rowSelection) ||
+      rowSelection.length === 0
+    ) {
+      return res.status(400).send({
+        success: false,
+        message: "No jobs selected for update.",
+      });
+    }
+
+    // Handle label update
+    let currentLabel = { name: "", color: "" };
+    if (label) {
+      const islabel = await labelModel.findById({ _id: label });
+
+      currentLabel.name = islabel.name;
+      currentLabel.color = islabel.color;
+    }
+
+    let updateData = {};
+    if (jobHolder) updateData["job.jobHolder"] = jobHolder;
+    if (lead) updateData["job.lead"] = lead;
+    if (yearEnd) updateData["job.yearEnd"] = yearEnd;
+    if (jobDeadline) updateData["job.jobDeadline"] = jobDeadline;
+    if (currentDate) updateData.currentDate = currentDate;
+    if (jobState) updateData["job.jobStatus"] = jobState;
+    if (dataLabelId) updateData.data = dataLabelId;
+    if (label) updateData.label = currentLabel;
+
+    const updatedJobs = await jobsModel.updateMany(
+      {
+        _id: { $in: rowSelection },
+      },
+      { $set: updateData },
+      { multi: true }
+    );
+
+    // Check if any jobs were updated
+    if (updatedJobs.modifiedCount === 0) {
+      return res.status(404).send({
+        success: false,
+        message: "No jobs were updated.",
+      });
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Jobs updated successfully!",
+      updatedJobs,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in update bulk jobs !",
       error: error,
     });
   }

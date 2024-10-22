@@ -1719,12 +1719,6 @@ export default function TimeSheet() {
               <span
                 className={` p-[2px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
                 onClick={() => {
-                  // setActive("All");
-                  // setSelectedUser("");
-                  // setSelectedComapany("");
-                  // setSelectedDepartment("");
-                  // setSelectedDay("");
-                  // setTableFilterDate([]);
                   setUsername("");
                   handleClearFilters();
                 }}
@@ -1878,9 +1872,10 @@ export default function TimeSheet() {
             >
               <LuImport className="h-6 w-6 " />
             </button>
-            {(auth.user.name === "Salman" ||
-              auth.user.name === "M Salman" ||
-              auth.user.name === "M Salman ") && (
+            {/* auth.user.name === "Salman" ||
+              auth.user.name === "M Salman" || */}
+            {(auth.user.role.name === "Admin" ||
+              access.includes("Tracker")) && (
               <button
                 className={`${style.button1} text-[15px] `}
                 onClick={() => setIsRunning(true)}

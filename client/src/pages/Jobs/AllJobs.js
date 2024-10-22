@@ -17,7 +17,7 @@ import { MdInsertComment } from "react-icons/md";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/authContext";
 import Loader from "../../utlis/Loader";
-import { TbCalendarDue } from "react-icons/tb";
+import { TbCalendarDue, TbLoader2 } from "react-icons/tb";
 import { IoClose } from "react-icons/io5";
 import JobDetail from "./JobDetail";
 import { IoBriefcaseOutline } from "react-icons/io5";
@@ -27,10 +27,7 @@ import { MdAutoGraph } from "react-icons/md";
 import { useLocation } from "react-router-dom";
 import { TbLoader } from "react-icons/tb";
 import { Box, Button } from "@mui/material";
-// import {
-//   FileDownload as FileDownloadIcon,
-//   Clear as ClearIcon,
-// } from "@mui/icons-material";
+import { MdOutlineModeEdit } from "react-icons/md";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import { IoMdDownload } from "react-icons/io";
 
@@ -92,9 +89,21 @@ export default function AllJobs() {
   const [totalFee, setTotalFee] = useState(0);
   const [activity, setActivity] = useState("Chargeable");
   const [access, setAccess] = useState([]);
+  const [rowSelection, setRowSelection] = useState({});
+  const [showEdit, setShowEdit] = useState(false);
+  // -------Update Multiple------>
+  const [jobHolder, setJobHolder] = useState("");
+  const [lead, setLead] = useState("");
+  const [yearEnd, setYearEnd] = useState("");
+  const [jobDeadline, setJobDeadline] = useState("");
+  const [currentDate, setCurrentDate] = useState("");
+  const [jobState, setJobState] = useState("");
+  const [label, setLabel] = useState("");
+  const [dataLabelId, setDataLabelId] = useState("");
+  const [isUpload, setIsUpdate] = useState(false);
   // const [userData, setUserData] = useState([]);
 
-  // console.log("access:", access);
+  console.log("rowSelection:", rowSelection);
 
   // Extract the current path
   const currentPath = location.pathname;
@@ -1193,7 +1202,6 @@ export default function AllJobs() {
         maxSize: 140,
         grow: false,
       },
-
       // Job DeadLine
       {
         accessorKey: "job.jobDeadline",
@@ -1372,7 +1380,6 @@ export default function AllJobs() {
         maxSize: 140,
         grow: false,
       },
-
       //  Current Date
       {
         accessorKey: "currentDate",
@@ -1761,11 +1768,58 @@ export default function AllJobs() {
           );
         },
         Cell: ({ cell, row }) => {
-          const statusValue = cell.getValue();
+          const currentVal = row.original.totalTime;
+          // const statusValue = cell.getValue();
+          const [show, setShow] = useState(false);
+          const [totalTime, setTotalTime] = useState(currentVal);
+          const [load, setLoad] = useState(false);
+
+          const updateTimer = async (e) => {
+            e.preventDefault();
+            setLoad(true);
+            try {
+              const { data } = await axios.put(
+                `${process.env.REACT_APP_API_URL}/api/v1/client/update/timer/${row.original._id}`,
+                { totalTime }
+              );
+              if (data) {
+                setShow(false);
+                setLoad(true);
+                toast.success("Budget updated!");
+              }
+            } catch (error) {
+              setLoad(false);
+              console.log(error);
+            }
+          };
+
           return (
-            <div className="flex items-center gap-1 w-full justify-center">
-              <span className="text-[1rem]">⏳</span>
-              <span>{statusValue}</span>
+            <div className="flex items-center gap-1 w-full ">
+              {!show ? (
+                <div
+                  onDoubleClick={
+                    auth?.user?.role?.name === "Admin"
+                      ? () => setShow(true)
+                      : null
+                  }
+                  className="w-full flex items-center gap-1 justify-center cursor-pointer"
+                >
+                  <span className="text-[1rem]">⏳</span>
+                  <span>{totalTime}</span>
+                </div>
+              ) : (
+                <div className="w-full">
+                  <form onSubmit={updateTimer}>
+                    <input
+                      type="text"
+                      disabled={load}
+                      className="w-full h-[2rem] rounded-md border border-gray-500 px-1 outline-none "
+                      value={totalTime}
+                      onChange={(e) => setTotalTime(e.target.value)}
+                    />
+                  </form>
+                </div>
+              )}
             </div>
           );
         },
@@ -2193,8 +2247,7 @@ export default function AllJobs() {
       active === "All" && !active1 && !filterId && !searchValue
         ? tableData
         : filterData,
-    getRowId: (originalRow) => originalRow.id,
-    // enableRowSelection: true,
+    getRowId: (row) => row._id,
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
@@ -2207,6 +2260,9 @@ export default function AllJobs() {
     enableColumnResizing: true,
     enableTopToolbar: true,
     enableBottomToolbar: true,
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
+    state: { rowSelection },
     // enableEditing: true,
     // state: { isLoading: loading },
 
@@ -2288,6 +2344,52 @@ export default function AllJobs() {
   //   setFilterData(filteredRows);
   //   // eslint-disable-next-line
   // }, [table.getFilteredRowModel().rows]);
+
+  // -------Update Bulk Jobs------------->
+
+  const updateBulkJob = async (e) => {
+    e.preventDefault();
+    setIsUpdate(true);
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/update/bulk/job`,
+        {
+          rowSelection: Object.keys(rowSelection).filter(
+            (id) => rowSelection[id] === true
+          ),
+          jobHolder,
+          lead,
+          yearEnd,
+          jobDeadline,
+          currentDate,
+          jobState,
+          label,
+          dataLabelId,
+        }
+      );
+
+      if (data) {
+        allClientJobData();
+        setIsUpdate(false);
+        setShowEdit(false);
+        setRowSelection({});
+        setJobHolder("");
+        setLead("");
+        setYearEnd("");
+        setCurrentDate("");
+        setJobDeadline("");
+        setJobState("");
+        setLabel("");
+        setDataLabelId("");
+      }
+    } catch (error) {
+      setIsUpdate(false);
+      console.log(error?.response?.data?.message);
+      toast.error("Something went wrong!");
+    } finally {
+      setIsUpdate(false);
+    }
+  };
 
   return (
     <Layout>
@@ -2457,6 +2559,19 @@ export default function AllJobs() {
             <MdAutoGraph className="h-6 w-6  cursor-pointer" />
           </span>
 
+          {/* Edit Multiple Job */}
+          <span
+            className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+              showEdit && "bg-orange-500 text-white"
+            }`}
+            onClick={() => {
+              setShowEdit(!showEdit);
+            }}
+            title="Edit Multiple Jobs"
+          >
+            <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
+          </span>
+
           <span
             className={` p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
             onClick={() => {
@@ -2476,6 +2591,136 @@ export default function AllJobs() {
         </div>
         {/*  */}
         <hr className="mb-1 bg-gray-200 w-full h-[1px]" />
+
+        {/* Update Bulk Jobs */}
+        {showEdit && (
+          <div className="w-full  py-2">
+            <form
+              onSubmit={updateBulkJob}
+              className="w-full flex items-center gap-2 "
+            >
+              <div className="">
+                <select
+                  value={jobHolder}
+                  onChange={(e) => setJobHolder(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "8rem" }}
+                >
+                  <option value="empty">Assign</option>
+                  {users.map((jobHold, i) => (
+                    <option value={jobHold} key={i}>
+                      {jobHold}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="">
+                <select
+                  value={lead}
+                  onChange={(e) => setLead(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "8rem" }}
+                >
+                  <option value="empty">Owner</option>
+                  {users.map((jobHold, i) => (
+                    <option value={jobHold} key={i}>
+                      {jobHold}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="inputBox" style={{ width: "9rem" }}>
+                <input
+                  type="date"
+                  value={yearEnd}
+                  onChange={(e) => setYearEnd(e.target.value)}
+                  className={`${style.input} w-full `}
+                />
+                <span>Year End</span>
+              </div>
+              <div className="inputBox" style={{ width: "9rem" }}>
+                <input
+                  type="date"
+                  value={jobDeadline}
+                  onChange={(e) => setJobDeadline(e.target.value)}
+                  className={`${style.input} w-full `}
+                />
+                <span>Job Deadline</span>
+              </div>
+              <div className="inputBox" style={{ width: "9rem" }}>
+                <input
+                  type="date"
+                  value={currentDate}
+                  onChange={(e) => setCurrentDate(e.target.value)}
+                  className={`${style.input} w-full `}
+                />
+                <span>Job Date</span>
+              </div>
+              {/*  */}
+              <div className="">
+                <select
+                  value={jobState}
+                  onChange={(e) => setJobState(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "7rem" }}
+                >
+                  <option value="empty">Status</option>
+                  {status.map((stat, i) => (
+                    <option value={stat} key={i}>
+                      {stat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="">
+                <select
+                  value={label}
+                  onChange={(e) => setLabel(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "10rem" }}
+                >
+                  <option value="empty">Select Label</option>
+                  {labelData?.map((label, i) => (
+                    <option value={label._id} key={i}>
+                      {label?.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="">
+                <select
+                  value={dataLabelId}
+                  onChange={(e) => setDataLabelId(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "10rem" }}
+                >
+                  <option value="empty">Select Data</option>
+                  {dataLable?.map((data, i) => (
+                    <option value={data?._id} key={i}>
+                      {data?.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center justify-end pl-4">
+                <button
+                  className={`${style.button1} text-[15px] `}
+                  type="submit"
+                  disabled={isUpload}
+                  style={{ padding: ".5rem 1rem" }}
+                >
+                  {isUpload ? (
+                    <TbLoader2 className="h-5 w-5 animate-spin text-white" />
+                  ) : (
+                    <span>Save</span>
+                  )}
+                </button>
+              </div>
+            </form>
+            <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
+          </div>
+        )}
 
         {/* ----------Job_Holder Summery Filters---------- */}
         {showJobHolder && activeBtn === "jobHolder" && (
@@ -2604,9 +2849,6 @@ export default function AllJobs() {
                 <div className="h-full hidden1 overflow-y-scroll relative">
                   <MaterialReactTable table={table} />
                 </div>
-                {/* <span className="absolute bottom-4 left-[33%] z-10 font-semibold text-[15px] text-gray-900">
-                  Total Hrs: {totalHours}
-                </span> */}
               </div>
             )}
           </>

@@ -14,6 +14,7 @@ import {
   importData,
   singleClientComments,
   singleClientJob,
+  updateBulkJob,
   updateClientJob,
   updateClientStatus,
   updateDates,
@@ -21,6 +22,7 @@ import {
   updateLead,
   updateStatus,
   updateSubTaskStaus,
+  updateTime,
 } from "../controllers/jobController.js";
 import { isAdmin, requiredSignIn } from "../middlewares/authMiddleware.js";
 import multer from "multer";
@@ -96,5 +98,11 @@ router.get("/tickets/clients", getTicketClients);
 
 // Add Label
 router.put("/add/job/data/:id", requiredSignIn, addDatalabel);
+
+// Update time
+router.put("/update/timer/:id", requiredSignIn, isAdmin, updateTime);
+
+// Update Bulk Jobs
+router.put("/update/bulk/job", requiredSignIn, isAdmin, updateBulkJob);
 
 export default router;

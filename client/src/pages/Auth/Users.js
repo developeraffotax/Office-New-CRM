@@ -23,6 +23,7 @@ export default function Users() {
   const [userData, setUserData] = useState(false);
   const [loading, setLoading] = useState(false);
   const [userRoles, setUserRoles] = useState([]);
+  const isActive = [true, false];
 
   //   All User
 
@@ -549,6 +550,11 @@ export default function Users() {
         size: 100,
         grow: false,
         Header: ({ column }) => {
+          useEffect(() => {
+            column.setFilterValue(true);
+
+            // eslint-disable-next-line
+          }, []);
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -605,11 +611,8 @@ export default function Users() {
             </div>
           );
         },
-        filterFn: (row, columnId, filterValue) => {
-          const cellValue =
-            row.original[columnId]?.toString().toLowerCase() || "";
-          return cellValue.includes(filterValue.toLowerCase());
-        },
+        filterFn: "equals",
+        filterSelectOptions: isActive?.map((active) => active),
         filterVariant: "select",
       },
 

@@ -2170,6 +2170,7 @@ const AllTasks = () => {
     enableColumnResizing: true,
     enableTopToolbar: true,
     enableBottomToolbar: true,
+    // enableRowSelection: true,
     // enableEditing: true,
     // state: { isLoading: loading },
 

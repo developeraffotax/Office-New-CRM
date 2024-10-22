@@ -49,7 +49,7 @@ export default function Roles() {
     Jobs: ["Fee", "Source", "Data"],
     Tickets: ["Inbox", "Affotax", "OutSource"],
     Templates: ["Template", "FAQ"],
-    Timesheet: ["Job-holder", "Edit", "Delete"],
+    Timesheet: ["Job-holder", "Edit", "Delete", "Tracker"],
     // Add other pages and subroles as necessary
   };
 

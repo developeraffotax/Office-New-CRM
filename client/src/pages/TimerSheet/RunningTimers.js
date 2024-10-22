@@ -31,7 +31,7 @@ export default function RunningTimers({ setIsRunning, users }) {
 
   return (
     <Layout>
-      <div className="w-full h-full bg-gray-100 mt-2 ">
+      <div className="w-full h-full bg-gray-100 mt-2 overflow-y-auto overflow-hidden scroll-smooth ">
         <div className="flex items-center justify-between py-4 px-4 ">
           <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
             All Running Timer{" "}
@@ -46,9 +46,9 @@ export default function RunningTimers({ setIsRunning, users }) {
           </span>
         </div>
         <hr className="mt-4 mb-6 border-gray-300" />
-        <div className="py-4 px-3">
+        <div className="py-4 px-3 w-full h-screen ">
           {timerData.length >= 1 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 3xl:grid-cols-5 gap-5 ">
               {timerData?.map((timer) => {
                 const currentUser = filterUser(timer.clientId);
                 const timeElapsed = new Date() - new Date(timer.startTime);
@@ -58,21 +58,32 @@ export default function RunningTimers({ setIsRunning, users }) {
                     className="w-full rounded-lg shadow-lg hover:shadow-xl cursor-pointer py-6 px-5 transition-transform transform hover:scale-105 bg-gradient-to-r from-orange-600 via-orange-400 to-orange-300 flex flex-col items-center justify-center gap-4 relative"
                     key={timer._id}
                   >
-                    <div className="relative w-[5rem] h-[5rem] rounded-full object-cover border-2 border-white shadow-md animate-borderPulse">
-                      <img
-                        src={currentUser?.avatar || "/profile1.jpeg"}
-                        alt="avatar"
-                        className="w-full h-full rounded-full"
-                      />
-                      <span className="w-[.8rem] h-[.8rem] rounded-full bg-green-500 absolute bottom-1 right-[6px] border-2 border-white z-10"></span>
-                    </div>
+                    {currentUser?.avatar ? (
+                      <div className="relative w-[5rem] h-[5rem] rounded-full object-cover border-2 border-white shadow-md animate-borderPulse">
+                        <img
+                          src={currentUser?.avatar || "/profile1.jpeg"}
+                          alt="avatar"
+                          className="w-full h-full rounded-full"
+                        />
+                        <span className="w-[.8rem] h-[.8rem] rounded-full bg-green-500 absolute bottom-1 right-[6px] border-2 border-white z-10"></span>
+                      </div>
+                    ) : (
+                      <div className="relative w-[5rem] h-[5rem] rounded-full object-cover border-2 border-white bg-green-800 text-white shadow-md animate-borderPulse flex items-center justify-center">
+                        <span className="text-white font-medium text-3xl">
+                          {currentUser?.name?.slice(0, 1)}
+                        </span>
+                        <span className="w-[.8rem] h-[.8rem] rounded-full bg-green-500 absolute bottom-1 right-[6px] border-2 border-white z-10"></span>
+                      </div>
+                    )}
 
                     <div className="text-center">
                       <h3 className="text-lg font-semibold text-white drop-shadow-md shadow-gray-500">
                         {currentUser?.name || "Unknown User"}
                       </h3>
                       <p className="text-sm text-white opacity-90 drop-shadow-md shadow-gray-500">
-                        {timer.task || "No task assigned"}
+                        {timer?.task ||
+                          timer?.companyName ||
+                          "No task assigned"}
                       </p>
                     </div>
 

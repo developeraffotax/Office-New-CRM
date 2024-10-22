@@ -40,7 +40,7 @@ export default function Sidebar({ hide, setHide }) {
 
   // Access
   // const hasAccess = (section) => {
-  //   return user?.role?.access?.map((item) => item.permission.includes(section));
+  //   return user?.role?.access?.map((item) => item.permission === section);
   // };
 
   const hasAccess = (section) => {

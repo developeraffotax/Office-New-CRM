@@ -305,23 +305,26 @@ export default function Header() {
               </div>
             )}
           </div>
+
+          <div className=" hidden sm:flex ml-[1rem]">
+            <form onSubmit={handleSearch} className="relative">
+              <span className="absolute top-[.6rem] left-2 z-2">
+                <IoSearch className="h-5 w-5 text-orange-500" />
+              </span>
+              <input
+                type="search"
+                placeholder="Search"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                className="w-[20rem] sm:w-[32rem]  h-[2.7rem] rounded-[2.5rem] pl-8 pr-3 outline-none border-[1.5px] border-gray-400 focus:border-orange-600"
+              />
+            </form>
+          </div>
         </div>
 
         {/* Search */}
-        <div className=" hidden sm:flex">
-          <form onSubmit={handleSearch} className="relative">
-            <span className="absolute top-[.6rem] left-2 z-2">
-              <IoSearch className="h-5 w-5 text-orange-500" />
-            </span>
-            <input
-              type="search"
-              placeholder="Search"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              className="w-[20rem] sm:w-[32rem]  h-[2.7rem] rounded-[2.5rem] pl-8 pr-3 outline-none border-[1.5px] border-gray-400 focus:border-orange-600"
-            />
-          </form>
-        </div>
+
+        {/* end */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             {/* --------Timer Status------ */}

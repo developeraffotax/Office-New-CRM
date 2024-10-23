@@ -316,7 +316,7 @@ export const totalTime = async (req, res) => {
 // Add Timer Status
 export const addTimerStatus = async (req, res) => {
   try {
-    const { userId, taskName, pageName, taskLink, taskId } = req.body;
+    const { userId, taskName, pageName, taskLink, taskId, timerId } = req.body;
     if (!userId || !taskName || !pageName || !taskLink) {
       return res.status(400).send({
         success: false,
@@ -328,7 +328,7 @@ export const addTimerStatus = async (req, res) => {
     if (isExisting) {
       return res.status(400).send({
         success: false,
-        message: "Timer task is already exist!",
+        message: "Timer task is already running!",
       });
     }
 
@@ -338,6 +338,8 @@ export const addTimerStatus = async (req, res) => {
       pageName,
       taskLink,
       taskId,
+      isRunning: true,
+      timerId,
     });
 
     res.status(200).send({
@@ -392,7 +394,10 @@ export const getTimerStatus = async (req, res) => {
         message: "User id is required!",
       });
     }
-    const timerStatus = await timerStatusModel.findOne({ userId: userId });
+    const timerStatus = await timerStatusModel.findOne({
+      userId: userId,
+      isRunning: true,
+    });
 
     res.status(200).send({
       success: true,

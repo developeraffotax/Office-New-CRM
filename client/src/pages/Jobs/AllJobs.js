@@ -55,7 +55,8 @@ const csvConfig = mkConfig({
 });
 
 export default function AllJobs() {
-  const { auth, filterId, setFilterId, searchValue } = useAuth();
+  const { auth, filterId, setFilterId, searchValue, setSearchValue } =
+    useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [show, setShow] = useState(false);
   const [active, setActive] = useState("All");
@@ -101,6 +102,9 @@ export default function AllJobs() {
   const [label, setLabel] = useState("");
   const [dataLabelId, setDataLabelId] = useState("");
   const [isUpload, setIsUpdate] = useState(false);
+  const [source, setSource] = useState("");
+  const [fee, setFee] = useState("");
+  const sources = ["FIV", "UPW", "PPH", "Website", "Referal", "Partner"];
   // const [userData, setUserData] = useState([]);
 
   console.log("rowSelection:", rowSelection);
@@ -2365,6 +2369,8 @@ export default function AllJobs() {
           jobState,
           label,
           dataLabelId,
+          source,
+          fee,
         }
       );
 
@@ -2381,6 +2387,8 @@ export default function AllJobs() {
         setJobState("");
         setLabel("");
         setDataLabelId("");
+        setSource("");
+        setFee("");
       }
     } catch (error) {
       setIsUpdate(false);
@@ -2415,6 +2423,7 @@ export default function AllJobs() {
                 setActive1("");
                 setFilterId("");
                 handleClearFilters();
+                setSearchValue("");
               }}
               title="Clear filters"
             >
@@ -2597,7 +2606,7 @@ export default function AllJobs() {
           <div className="w-full  py-2">
             <form
               onSubmit={updateBulkJob}
-              className="w-full flex items-center gap-2 "
+              className="w-full flex items-center flex-wrap gap-2 "
             >
               <div className="">
                 <select
@@ -2703,6 +2712,38 @@ export default function AllJobs() {
                   ))}
                 </select>
               </div>
+              {(auth?.user?.role?.name === "Admin" ||
+                access.includes("Fee")) && (
+                <div className="inputBox" style={{ width: "7rem" }}>
+                  <input
+                    type="text"
+                    value={fee}
+                    onChange={(e) => setFee(e.target.value)}
+                    className={`${style.input} w-full `}
+                  />
+                  <span>Fee</span>
+                </div>
+              )}
+
+              {(auth?.user?.role?.name === "Admin" ||
+                access.includes("Source")) && (
+                <div className="">
+                  <select
+                    value={source}
+                    onChange={(e) => setSource(e.target.value)}
+                    className={`${style.input} w-full`}
+                    style={{ width: "8rem" }}
+                  >
+                    <option value="">Source</option>
+                    {sources.map((sou, i) => (
+                      <option value={sou} key={i}>
+                        {sou}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="flex items-center justify-end pl-4">
                 <button
                   className={`${style.button1} text-[15px] `}

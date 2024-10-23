@@ -88,7 +88,7 @@ export default function FAQ({ setSelectedTab, selectedTab, access }) {
     );
 
     setFilterFaq([...filteredData]);
-  }, [searchValue]);
+  }, [searchValue, faqData]);
 
   // Get Template Without Loading
   const getFaqs = async () => {

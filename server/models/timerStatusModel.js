@@ -17,6 +17,13 @@ const timerStatusSchema = new mongoose.Schema(
     taskLink: {
       type: String,
     },
+    timerId: {
+      type: String,
+    },
+    isRunning: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

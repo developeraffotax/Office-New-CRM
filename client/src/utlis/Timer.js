@@ -56,14 +56,14 @@ export const Timer = forwardRef(
               params: { clientId, jobId },
             }
           );
-          const { _id, startTime, endTime } = response.data.timer;
+          const { _id, startTime, endTime, isRunning } = response.data.timer;
           // console.log("Timer:", response.data.timer);
 
           if (startTime && !endTime) {
             setTimerId(_id);
             setStartTime(new Date(startTime));
-            setIsRunning(true);
-            setAnyTimerRunning(true);
+            setIsRunning(isRunning);
+            setAnyTimerRunning(isRunning);
             const timeElapsed = Math.floor(
               (new Date() - new Date(startTime)) / 1000
             );
@@ -130,7 +130,7 @@ export const Timer = forwardRef(
         );
         setRunningId(response.data.timer._id);
 
-        addTimerTaskStatus();
+        addTimerTaskStatus(response.data.timer._id);
         setIsRunning(true);
         setStartTime(new Date());
         setAnyTimerRunning(true);
@@ -147,6 +147,9 @@ export const Timer = forwardRef(
 
     // --------------Stop Timer----------->
     const stopTimer = async () => {
+      if (!timerId) {
+        return;
+      }
       try {
         const { data } = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/v1/timer/stop/timer/${timerId}`,
@@ -196,18 +199,25 @@ export const Timer = forwardRef(
     }));
 
     // -----------Timer Status--------->
-    const addTimerTaskStatus = async () => {
+    const addTimerTaskStatus = async (tid) => {
       try {
         await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/timer/timer_task/status`,
-          { userId: auth.user.id, taskName, pageName, taskLink, taskId: jobId }
+          {
+            userId: auth.user.id,
+            taskName,
+            pageName,
+            taskLink,
+            taskId: jobId,
+            timerId: tid,
+          }
         );
       } catch (error) {
         console.log(error);
       }
     };
 
-    // --------Remove Timer-------
+    // --------Remove Timer Status-------
     const removeTimerStatus = async () => {
       try {
         await axios.delete(
@@ -242,7 +252,7 @@ export const Timer = forwardRef(
         <div className="w-full h-full relative">
           <div className="flex items-center gap-[2px]  ">
             <div className="flex space-x-4">
-              {isRunning && runningId === timerId ? (
+              {isRunning ? (
                 <button
                   onClick={() => setIsShow(true)}
                   disabled={!isRunning}
@@ -262,7 +272,7 @@ export const Timer = forwardRef(
                 </button>
               )}
             </div>
-            {isRunning && runningId === timerId && (
+            {isRunning && (
               <div className="text-[13px] text-gray-800 font-semibold ">
                 {Math.floor(elapsedTime / 3600)
                   .toString()

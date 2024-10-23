@@ -60,7 +60,14 @@ const csvConfig = mkConfig({
 });
 
 const AllTasks = () => {
-  const { auth, filterId, setFilterId, anyTimerRunning } = useAuth();
+  const {
+    auth,
+    filterId,
+    setFilterId,
+    anyTimerRunning,
+    searchValue,
+    setSearchValue,
+  } = useAuth();
   const [show, setShow] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [users, setUsers] = useState([]);
@@ -679,6 +686,21 @@ const AllTasks = () => {
       return "";
     }
   };
+
+  // Filter by Header Search
+  useEffect(() => {
+    if (searchValue) {
+      const filteredData = tasksData.filter(
+        (item) =>
+          item?.task.toLowerCase().includes(searchValue.toLowerCase()) ||
+          item?.jobHolder.toLowerCase().includes(searchValue.toLowerCase())
+      );
+      setFilterData(filteredData);
+      console.log("SearchData:", filteredData);
+    } else {
+      setFilterData(tasksData);
+    }
+  }, [searchValue, tasksData]);
 
   // -----------Copy Task------->
 
@@ -2155,8 +2177,9 @@ const AllTasks = () => {
   const table = useMaterialReactTable({
     columns,
     data:
-      (active === "All" && !active1 && !filterId ? tasksData : filterData) ||
-      [],
+      (active === "All" && !active1 && !filterId && !searchValue
+        ? tasksData
+        : filterData) || [],
 
     enableStickyHeader: true,
     enableStickyFooter: true,
@@ -2279,6 +2302,7 @@ const AllTasks = () => {
                   setFilterId("");
                   handleClearFilters();
                   filterByState(state);
+                  setSearchValue("");
                 }}
                 title="Clear filters"
               >

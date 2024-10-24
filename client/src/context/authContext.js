@@ -66,6 +66,7 @@ const AuthProvider = ({ children }) => {
     if (userId) {
       getUserDetail(userId);
     }
+    //eslint-disable-next-line
   }, [auth?.user?.id]);
 
   return (

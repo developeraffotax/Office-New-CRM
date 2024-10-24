@@ -248,6 +248,7 @@ export default function Proposal() {
             prevData.filter((item) => item._id !== updateProposal._id)
           );
         }
+        getProposal();
         setFormData({
           clientName: "",
           jobHolder: "",
@@ -258,7 +259,6 @@ export default function Proposal() {
           status: "",
         });
         toast.success("Proposal data updated!");
-        getProposal();
       }
     } catch (error) {
       console.log(error);
@@ -1116,8 +1116,8 @@ export default function Proposal() {
                   onDoubleClick={() => setShow(true)}
                   className="cursor-pointer w-full"
                 >
-                  {note ? (
-                    note
+                  {localNote ? (
+                    localNote
                   ) : (
                     <div className="text-white w-full h-full">.</div>
                   )}
@@ -1224,7 +1224,7 @@ export default function Proposal() {
         filterSelectOptions: sources?.map((source) => source),
         filterVariant: "select",
       },
-      //   Status
+      //   Proposal
       {
         accessorKey: "propos",
         minSize: 80,
@@ -1254,7 +1254,9 @@ export default function Proposal() {
               >
                 <option value="">Select</option>
                 {status.map((stat) => (
-                  <option value={stat}>{stat}</option>
+                  <option key={stat} value={stat}>
+                    {stat}
+                  </option>
                 ))}
               </select>
             </div>
@@ -1311,7 +1313,13 @@ export default function Proposal() {
             </div>
           );
         },
-        filterFn: "equals",
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId] != null
+              ? row.original[columnId].toString().toLowerCase()
+              : "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
         filterSelectOptions: status?.map((stat) => stat),
         filterVariant: "select",
       },
@@ -1345,7 +1353,9 @@ export default function Proposal() {
               >
                 <option value="">Select</option>
                 {status.map((stat) => (
-                  <option value={stat}>{stat}</option>
+                  <option key={stat} value={stat}>
+                    {stat}
+                  </option>
                 ))}
               </select>
             </div>
@@ -1402,7 +1412,13 @@ export default function Proposal() {
             </div>
           );
         },
-        filterFn: "equals",
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId] != null
+              ? row.original[columnId].toString().toLowerCase()
+              : "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
         filterSelectOptions: status?.map((stat) => stat),
         filterVariant: "select",
       },
@@ -1436,7 +1452,9 @@ export default function Proposal() {
               >
                 <option value="">Select</option>
                 {status.map((stat) => (
-                  <option value={stat}>{stat}</option>
+                  <option key={stat} value={stat}>
+                    {stat}
+                  </option>
                 ))}
               </select>
             </div>
@@ -1493,7 +1511,13 @@ export default function Proposal() {
             </div>
           );
         },
-        filterFn: "equals",
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId] != null
+              ? row.original[columnId].toString().toLowerCase()
+              : "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
         filterSelectOptions: status?.map((stat) => stat),
         filterVariant: "select",
       },

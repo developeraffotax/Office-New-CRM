@@ -7,7 +7,10 @@ const goalSchema = new mongoose.Schema(
       trim: true,
     },
     achievement: {
-      type: String,
+      type: Number,
+    },
+    achievedCount: {
+      type: Number,
     },
     startDate: {
       type: Date,
@@ -21,6 +24,10 @@ const goalSchema = new mongoose.Schema(
     jobHolder: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Users",
+    },
+    status: {
+      type: String,
+      default: "Progress",
     },
   },
   { timestamps: true }

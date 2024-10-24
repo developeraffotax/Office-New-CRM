@@ -37,6 +37,7 @@ export default function Roles() {
     "Templates",
     "Leads",
     "Proposals",
+    "Goals",
     "Timesheet",
     "Roles",
     "Users",

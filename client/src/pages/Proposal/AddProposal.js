@@ -246,7 +246,7 @@ export default function AddProposal({
             {loading ? (
               <TbLoader2 className="h-5 w-5 animate-spin text-white" />
             ) : (
-              <span>{proposalId ? "Update" : "Send"}</span>
+              <span>{proposalId ? "Update" : "Create"}</span>
             )}
           </button>
         </div>

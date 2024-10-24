@@ -795,7 +795,7 @@ export default function AllJobs() {
         accessorKey: "companyName",
         minSize: 190,
         maxSize: 300,
-        size: 260,
+        size: 230,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -2008,7 +2008,7 @@ export default function AllJobs() {
 
         filterVariant: "select",
         filterSelectOptions: labelData.map((label) => label.name),
-        size: 130,
+        size: 120,
         minSize: 100,
         maxSize: 210,
         grow: false,
@@ -2217,7 +2217,7 @@ export default function AllJobs() {
 
               filterVariant: "select",
               filterSelectOptions: dataLable.map((label) => label.name),
-              size: 120,
+              size: 110,
               minSize: 100,
               maxSize: 210,
               grow: false,

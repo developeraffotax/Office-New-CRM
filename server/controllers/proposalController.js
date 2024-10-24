@@ -89,7 +89,7 @@ export const updateProposal = async (req, res) => {
         jobDate: jobDate ? jobDate : existingProposal.jobDate,
         deadline: deadline ? deadline : existingProposal.deadline,
         source: source ? source : existingProposal.source,
-        note: note ? note : existingProposal.note,
+        note: note,
         propos: propos ? propos : existingProposal.propos,
         lead: lead ? lead : existingProposal.lead,
         client: client ? client : existingProposal.client,

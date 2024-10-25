@@ -69,7 +69,10 @@ export const updateProposal = async (req, res) => {
       propos,
       lead,
       client,
+      createdAt,
     } = req.body;
+
+    console.log(new Date(createdAt));
 
     const existingProposal = await proposalModel.findById(proposalId);
     if (!existingProposal) {
@@ -93,6 +96,7 @@ export const updateProposal = async (req, res) => {
         propos: propos ? propos : existingProposal.propos,
         lead: lead ? lead : existingProposal.lead,
         client: client ? client : existingProposal.client,
+        createdAt: createdAt ? new Date(createdAt) : existingProposal.createdAt,
       },
       { new: true }
     );

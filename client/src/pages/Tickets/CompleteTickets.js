@@ -32,6 +32,18 @@ export default function CompleteTickets() {
   const [isComment, setIsComment] = useState(false);
   const commentStatusRef = useRef(null);
   const [commentTicketId, setCommentTicketId] = useState("");
+  const [access, setAccess] = useState([]);
+
+  // Get Auth Access
+  useEffect(() => {
+    if (auth.user) {
+      const filterAccess = auth.user.role.access
+        .filter((role) => role.permission === "Tickets")
+        .flatMap((jobRole) => jobRole.subRoles);
+
+      setAccess(filterAccess);
+    }
+  }, [auth]);
 
   // -------Get All Emails-------
   const getAllEmails = async () => {
@@ -1026,19 +1038,22 @@ export default function CompleteTickets() {
             >
               Completed
             </button>
-            <button
-              className={`py-1 px-2 outline-none transition-all border-l-2  border-orange-500 duration-300 w-[6rem]  ${
-                selectedTab === "inbox"
-                  ? "bg-orange-500 text-white"
-                  : "text-black bg-gray-100 hover:bg-slate-200"
-              }`}
-              onClick={() => {
-                // setSelectedTab("inbox");
-                navigate("/tickets/inbox");
-              }}
-            >
-              Inbox
-            </button>
+            {(auth?.user?.role?.name === "Admin" ||
+              access.includes("Inbox")) && (
+              <button
+                className={`py-1 px-2 outline-none transition-all border-l-2  border-orange-500 duration-300 w-[6rem]  ${
+                  selectedTab === "inbox"
+                    ? "bg-orange-500 text-white"
+                    : "text-black bg-gray-100 hover:bg-slate-200"
+                }`}
+                onClick={() => {
+                  // setSelectedTab("inbox");
+                  navigate("/tickets/inbox");
+                }}
+              >
+                Inbox
+              </button>
+            )}
           </div>
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
         </>

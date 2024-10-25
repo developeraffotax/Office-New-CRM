@@ -18,6 +18,9 @@ import { MdOutlineModeEdit } from "react-icons/md";
 import Swal from "sweetalert2";
 import ReactApexChart from "react-apexcharts";
 import CompletedGoals from "./CompletedGoals";
+import ChartData from "./ChartData";
+import { BsPieChartFill } from "react-icons/bs";
+import { VscGraph } from "react-icons/vsc";
 
 export default function Goals() {
   const { auth } = useAuth();
@@ -28,6 +31,8 @@ export default function Goals() {
   const [loading, setLoading] = useState(false);
   const [filterData, setFilterData] = useState([]);
   const [selectedTab, setSelectedTab] = useState("progress");
+  const [showGraph, setShowGraph] = useState(false);
+  const [selectChart, setSelectChart] = useState("Line & Bar");
   const [formData, setFormData] = useState({
     subject: "",
     achievement: "",
@@ -43,8 +48,6 @@ export default function Goals() {
     "Total Lead",
     "Lead Won",
   ];
-
-  console.log("goalsData:", goalsData);
 
   // -------Get All Proposal-------
   const getAllGoals = async () => {
@@ -226,88 +229,6 @@ export default function Goals() {
   const columns = useMemo(
     () => [
       {
-        accessorKey: "subject",
-        header: "Subject",
-        Header: ({ column }) => {
-          return (
-            <div className=" w-[350px] flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                Subject
-              </span>
-              <input
-                type="search"
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-white border-gray-300 rounded-md border  outline-none"
-              />
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const subject = row.original.subject;
-          const [showEdit, setShowEdit] = useState(false);
-          const [localSubject, setSubject] = useState(subject);
-
-          const handleSubmit = (e) => {
-            setFormData((prevData) => ({
-              ...prevData,
-              subject: localSubject,
-            }));
-
-            handleUpdateData(row.original._id, {
-              ...formData,
-              subject: localSubject,
-            });
-
-            setShowEdit(false);
-          };
-          return (
-            <div className="w-full h-full ">
-              {showEdit ? (
-                <form onSubmit={handleSubmit}>
-                  <input
-                    type="text"
-                    placeholder="Enter Subject..."
-                    value={localSubject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    onBlur={(e) => handleSubmit(e.target.value)}
-                    className="w-full h-[2.3rem] focus:border border-gray-300 px-1 outline-none rounded"
-                  />
-                </form>
-              ) : (
-                <div
-                  className="w-full h-full flex items-center justify-start "
-                  onDoubleClick={() => setShowEdit(true)}
-                  title={subject}
-                >
-                  <p
-                    className="text-black text-start font-medium"
-                    onDoubleClick={() => setShowEdit(true)}
-                  >
-                    {subject}
-                  </p>
-                </div>
-              )}
-            </div>
-          );
-        },
-        filterFn: (row, columnId, filterValue) => {
-          const cellValue =
-            row.original[columnId]?.toString().toLowerCase() || "";
-          return cellValue.includes(filterValue.toLowerCase());
-        },
-        size: 400,
-        minSize: 350,
-        maxSize: 560,
-        grow: false,
-      },
-      {
         accessorKey: "jobHolder._id",
         Header: ({ column }) => {
           const user = auth?.user?.name;
@@ -407,6 +328,89 @@ export default function Goals() {
         maxSize: 130,
         grow: false,
       },
+      {
+        accessorKey: "subject",
+        header: "Subject",
+        Header: ({ column }) => {
+          return (
+            <div className=" w-[350px] flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Subject
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-white border-gray-300 rounded-md border  outline-none"
+              />
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const subject = row.original.subject;
+          const [showEdit, setShowEdit] = useState(false);
+          const [localSubject, setSubject] = useState(subject);
+
+          const handleSubmit = (e) => {
+            setFormData((prevData) => ({
+              ...prevData,
+              subject: localSubject,
+            }));
+
+            handleUpdateData(row.original._id, {
+              ...formData,
+              subject: localSubject,
+            });
+
+            setShowEdit(false);
+          };
+          return (
+            <div className="w-full h-full ">
+              {showEdit ? (
+                <form onSubmit={handleSubmit}>
+                  <input
+                    type="text"
+                    placeholder="Enter Subject..."
+                    value={localSubject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    onBlur={(e) => handleSubmit(e.target.value)}
+                    className="w-full h-[2.3rem] focus:border border-gray-300 px-1 outline-none rounded"
+                  />
+                </form>
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-start "
+                  onDoubleClick={() => setShowEdit(true)}
+                  title={subject}
+                >
+                  <p
+                    className="text-black text-start font-medium"
+                    onDoubleClick={() => setShowEdit(true)}
+                  >
+                    {subject}
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
+        size: 400,
+        minSize: 350,
+        maxSize: 560,
+        grow: false,
+      },
+
       //   Start date
       {
         accessorKey: "startDate",
@@ -850,9 +854,9 @@ export default function Goals() {
         filterFn: "equals",
         filterSelectOptions: goalTypes.map((goal) => goal),
         filterVariant: "select",
-        size: 110,
+        size: 150,
         minSize: 80,
-        maxSize: 130,
+        maxSize: 170,
         grow: false,
       },
       // Target
@@ -1008,6 +1012,17 @@ export default function Goals() {
               >
                 Outcome
               </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                }}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                <option value="positive">Exceeds</option>
+                <option value="negative">Short</option>
+              </select>
             </div>
           );
         },
@@ -1031,102 +1046,21 @@ export default function Goals() {
           );
         },
         filterFn: (row, columnId, filterValue) => {
-          const cellValue =
-            row.original[columnId]?.toString().toLowerCase() || "";
-          return cellValue.includes(filterValue.toLowerCase());
+          const achievement = parseFloat(row.original.achievement) || 0;
+          const achievedCount = parseFloat(row.original.achievedCount) || 0;
+          const difference = achievedCount - achievement;
+
+          if (filterValue === "positive") {
+            return difference >= 0;
+          } else if (filterValue === "negative") {
+            return difference < 0;
+          }
+          return true; // Show all if no filter is selected
         },
         filterVariant: "select",
       },
-      //   Progress
-      //   {
-      //     accessorKey: "progress",
-      //     minSize: 100,
-      //     maxSize: 250,
-      //     size: 200,
-      //     grow: false,
-      //     Header: ({ column }) => {
-      //       return (
-      //         <div className="flex flex-col gap-[2px]">
-      //           <span
-      //             className="ml-1 cursor-pointer"
-      //             title="Clear Filter"
-      //             onClick={() => {
-      //               column.setFilterValue("");
-      //             }}
-      //           >
-      //             Progress
-      //           </span>
-      //           <input
-      //             type="search"
-      //             value={column.getFilterValue() || ""}
-      //             onChange={(e) => {
-      //               column.setFilterValue(e.target.value);
-      //             }}
-      //             className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-      //           />
-      //         </div>
-      //       );
-      //     },
-      //     Cell: ({ cell, row }) => {
-      //       const achievement = parseFloat(row.original.achievement) || 0;
-      //       const achievedCount = parseFloat(row.original.achievedCount) || 0;
 
-      //       const percentage = ((achievedCount / achievement) * 100).toFixed(2);
-      //       const progress = Math.min(Math.max(percentage, 0), 100); // Ensure it's between 0 and 100
-
-      //       const chartOptions = {
-      //         chart: {
-      //           type: "radialBar",
-      //           offsetY: -10,
-      //         },
-      //         plotOptions: {
-      //           radialBar: {
-      //             startAngle: -90,
-      //             endAngle: 90,
-      //             track: {
-      //               background: "#e7e7e7",
-      //               strokeWidth: "97%",
-      //               margin: 5,
-      //             },
-      //             dataLabels: {
-      //               name: {
-      //                 show: false,
-      //               },
-      //               value: {
-      //                 fontSize: "16px",
-      //                 fontWeight: "600",
-      //                 show: true,
-      //                 color: progress >= 100 ? "#00E396" : "#FF4560",
-      //                 offsetY: -2,
-      //               },
-      //             },
-      //           },
-      //         },
-      //         fill: {
-      //           colors: progress >= 100 ? ["#00E396"] : ["#FF4560"],
-      //         },
-      //         series: [progress],
-      //       };
-
-      //       return (
-      //         <div className="w-full flex items-center justify-center">
-      //           <ReactApexChart
-      //             options={chartOptions}
-      //             series={[progress]}
-      //             type="radialBar"
-      //             height={150}
-      //           />
-      //         </div>
-      //       );
-      //     },
-      //     filterFn: (row, columnId, filterValue) => {
-      //       const cellValue =
-      //         row.original[columnId]?.toString().toLowerCase() || "";
-      //       return cellValue.includes(filterValue.toLowerCase());
-      //     },
-      //     filterVariant: "select",
-      //   },
-      // Progress 2
+      // Progress
       {
         accessorKey: "progress",
         minSize: 100,
@@ -1308,6 +1242,16 @@ export default function Goals() {
       },
     },
   });
+
+  useEffect(() => {
+    const filteredRows = table
+      .getFilteredRowModel()
+      .rows.map((row) => row.original);
+
+    console.log("Filtered Data:", filteredRows);
+    setFilterData(filteredRows);
+  }, [table.getFilteredRowModel().rows]);
+
   return (
     <Layout>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
@@ -1323,6 +1267,12 @@ export default function Goals() {
               title="Clear filters"
             >
               <IoClose className="h-6 w-6  cursor-pointer" />
+            </span>
+            <span
+              onClick={() => setShowGraph(!showGraph)}
+              className="ml-[2rem] mb-1 p-1 rounded-md hover:shadow-md transition-all duration-300 cursor-pointer text-orange-500 hover:text-orange-600 bg-gray-200/60 hover:bg-gray-200/80 border"
+            >
+              <VscGraph className="h-6 w-6" />
             </span>
           </div>
 
@@ -1394,6 +1344,26 @@ export default function Goals() {
               setGoalId={setGoalId}
               goalId={goalId}
               getGoals={getGoals}
+            />
+          </div>
+        )}
+        {/* ------------Graphic View setShowGraph-------- */}
+        {showGraph && (
+          <div className="absolute top-[0rem] right-0 w-[21rem] sm:w-[40rem] h-full z-[999] bg-white flex  flex-col gap-4 py-4  px-4">
+            <div className="inputBox">
+              <select
+                value={selectChart}
+                onChange={(e) => setSelectChart(e.target.value)}
+                className={`${style.input} w-full `}
+              >
+                <option value={"Line & Bar"}>Line & Bar</option>
+                <option value={"Funnel Chart"}>Funnel Chart</option>
+              </select>
+            </div>
+            <ChartData
+              setShowGraph={setShowGraph}
+              goalsData={filterData ? filterData : goalsData}
+              selectChart={selectChart}
             />
           </div>
         )}

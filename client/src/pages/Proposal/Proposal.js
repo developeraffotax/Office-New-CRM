@@ -30,6 +30,7 @@ export default function Proposal() {
     clientName: "",
     jobHolder: "",
     subject: "",
+    createdAt: "",
     jobDate: "",
     deadline: "",
     source: "",
@@ -252,6 +253,7 @@ export default function Proposal() {
         setFormData({
           clientName: "",
           jobHolder: "",
+          createdAt: "",
           jobDate: "",
           deadline: "",
           source: "",
@@ -607,13 +609,49 @@ export default function Proposal() {
             </div>
           );
         },
+
         Cell: ({ cell, row }) => {
           const createdAt = row.original.createdAt;
+          const [date, setDate] = useState(() => {
+            const cellDate = new Date(
+              cell.getValue() || "2024-09-20T12:43:36.002+00:00"
+            );
+            return cellDate.toISOString().split("T")[0];
+          });
 
-          console.log("createdAt", createdAt);
+          const [showStartDate, setShowStartDate] = useState(false);
+
+          const handleDateChange = (newDate) => {
+            setDate(newDate);
+            handleUpdateData(row.original._id, {
+              ...formData,
+              createdAt: newDate,
+            });
+            setShowStartDate(false);
+          };
+
           return (
             <div className="w-full flex  ">
-              <p>{format(new Date(createdAt), "dd-MMM-yyyy")}</p>
+              {!showStartDate ? (
+                <p
+                  onDoubleClick={() => setShowStartDate(true)}
+                  className="w-full"
+                >
+                  {createdAt ? (
+                    format(new Date(createdAt), "dd-MMM-yyyy")
+                  ) : (
+                    <span className="text-white">.</span>
+                  )}
+                </p>
+              ) : (
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  onBlur={(e) => handleDateChange(e.target.value)}
+                  className={`h-[2rem] w-full cursor-pointer rounded-md border border-gray-200 outline-none `}
+                />
+              )}
             </div>
           );
         },
@@ -1265,7 +1303,7 @@ export default function Proposal() {
         Cell: ({ cell, row }) => {
           const state = row.original.propos;
           const [show, setShow] = useState(false);
-          const [localStage, setLocalStage] = useState(state || "");
+          const [localStage, setLocalStage] = useState(state || ".");
 
           const handleChange = (e) => {
             const selectedValue = e.target.value;
@@ -1302,9 +1340,11 @@ export default function Proposal() {
                   className="w-full h-[2rem] rounded-md border-none  outline-none"
                   onChange={handleChange}
                 >
-                  <option value="." className="text-white"></option>
+                  <option value="." className="text-white">
+                    Select
+                  </option>
                   {status?.map((stat, i) => (
-                    <option value={stat} key={i}>
+                    <option value={stat} key={stat}>
                       {stat}
                     </option>
                   ))}

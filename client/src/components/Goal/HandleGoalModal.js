@@ -142,6 +142,7 @@ export default function HandleGoalModal({
               value={jobHolder}
               onChange={(e) => setJobHolder(e.target.value)}
               className={`${style.input} w-full `}
+              required
             >
               <option value="">Select Jobholder</option>
               {users?.map((user, i) => (

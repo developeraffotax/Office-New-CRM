@@ -19,6 +19,7 @@
     "date-fns": "^3.6.0",
     "emoji-picker-react": "^4.11.1",
     "export-to-csv": "^1.3.0",
+    "file-saver": "^2.0.5",
     "froala-editor": "^4.2.1",
     "gif-picker-react": "^1.3.3",
     "material-react-table": "^2.13.1",

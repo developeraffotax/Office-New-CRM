@@ -9,6 +9,8 @@ export const createGoal = async (req, res) => {
     const { subject, achievement, startDate, endDate, goalType, jobHolder } =
       req.body;
 
+    console.log(subject, achievement, startDate, endDate, goalType, jobHolder);
+
     const goal = await goalModel.create({
       subject,
       achievement,

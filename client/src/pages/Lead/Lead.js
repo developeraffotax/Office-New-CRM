@@ -462,8 +462,8 @@ export default function Lead() {
                   onDoubleClick={() => setShow(true)}
                   className="cursor-pointer w-full"
                 >
-                  {companyName ? (
-                    companyName
+                  {localCompanyName ? (
+                    localCompanyName
                   ) : (
                     <div className="text-white w-full h-full">.</div>
                   )}
@@ -547,8 +547,8 @@ export default function Lead() {
                   onDoubleClick={() => setShow(true)}
                   className="cursor-pointer w-full"
                 >
-                  {clientName ? (
-                    clientName
+                  {localClientName ? (
+                    localClientName
                   ) : (
                     <div className="text-white w-full h-full">.</div>
                   )}

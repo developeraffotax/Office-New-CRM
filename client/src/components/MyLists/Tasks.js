@@ -66,9 +66,9 @@ const Tasks = ({ tasksData, loading, projects }) => {
   const [activity, setActivity] = useState("Chargeable");
   const [access, setAccess] = useState([]);
 
-  console.log("filterData", filterData);
+  // console.log("filterData", filterData);
 
-  console.log("tasksData:", tasksData);
+  // console.log("tasksData:", tasksData);
 
   useEffect(() => {
     const timeId = localStorage.getItem("jobId");

@@ -1750,15 +1750,15 @@ const Tasks = ({ tasksData, loading, projects }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    const filteredRows = table
-      .getFilteredRowModel()
-      .rows.map((row) => row.original);
+  // useMemo(() => {
+  //   const filteredRows = table
+  //     .getFilteredRowModel()
+  //     .rows.map((row) => row.original);
 
-    setFilterData(filteredRows);
+  //   setFilterData(filteredRows);
 
-    // eslint-disable-next-line
-  }, [table.getFilteredRowModel().rows]);
+  //   // eslint-disable-next-line
+  // }, [table.getFilteredRowModel().rows]);
 
   return (
     <>

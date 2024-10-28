@@ -430,8 +430,6 @@ export default function Lead() {
           const [localCompanyName, setLocalCompanyName] = useState(companyName);
 
           const handleSubmit = (e) => {
-            e.preventDefault();
-
             setFormData((prevData) => ({
               ...prevData,
               companyName: localCompanyName,
@@ -448,16 +446,14 @@ export default function Lead() {
           return (
             <div className="w-full px-1">
               {show ? (
-                <form onSubmit={handleSubmit}>
-                  <input
-                    type="text"
-                    value={localCompanyName}
-                    autoFocus
-                    onChange={(e) => setLocalCompanyName(e.target.value)}
-                    onBlur={(e) => setLocalCompanyName(e.target.value)}
-                    className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
-                  />
-                </form>
+                <input
+                  type="text"
+                  value={localCompanyName}
+                  autoFocus
+                  onChange={(e) => setLocalCompanyName(e.target.value)}
+                  onBlur={(e) => handleSubmit(e.target.value)}
+                  className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
+                />
               ) : (
                 <div
                   onDoubleClick={() => setShow(true)}
@@ -517,7 +513,6 @@ export default function Lead() {
           const [localClientName, setLocalClientName] = useState(clientName);
 
           const handleSubmit = (e) => {
-            e.preventDefault();
             setFormData((prevData) => ({
               ...prevData,
               clientName: localClientName,
@@ -534,16 +529,14 @@ export default function Lead() {
           return (
             <div className="w-full px-1">
               {show ? (
-                <form onSubmit={handleSubmit}>
-                  <input
-                    type="text"
-                    value={localClientName}
-                    autoFocus
-                    onChange={(e) => setLocalClientName(e.target.value)}
-                    onBlur={(e) => setLocalClientName(e.target.value)}
-                    className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
-                  />
-                </form>
+                <input
+                  type="text"
+                  value={localClientName}
+                  autoFocus
+                  onChange={(e) => setLocalClientName(e.target.value)}
+                  onBlur={(e) => handleSubmit(e.target.value)}
+                  className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
+                />
               ) : (
                 <div
                   onDoubleClick={() => setShow(true)}

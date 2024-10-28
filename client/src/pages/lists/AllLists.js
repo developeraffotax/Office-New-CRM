@@ -14,7 +14,6 @@ export default function AllLists() {
   const [selectedTab, setSelectedTab] = useState("Tasks");
   const [tasksData, setTasksData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [note, setNote] = useState("");
   const [projects, setProjects] = useState([]);
 
   //---------- Get All Projects-----------
@@ -63,7 +62,7 @@ export default function AllLists() {
           <div className="flex items-center gap-2">
             <h1 className=" text-xl sm:text-2xl font-semibold ">My Lists</h1>
 
-            <span
+            {/* <span
               className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
               // onClick={() => {
               //   handleClearFilters();
@@ -71,7 +70,7 @@ export default function AllLists() {
               title="Clear filters"
             >
               <IoClose className="h-6 w-6  cursor-pointer" />
-            </span>
+            </span> */}
           </div>
 
           {/* ---------Template Buttons--------- */}
@@ -81,9 +80,9 @@ export default function AllLists() {
         <>
           <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-2 transition-all duration-300 w-fit">
             <button
-              className={`py-1 px-2 outline-none w-[6rem] transition-all duration-300   ${
+              className={`py-[6px] px-2 outline-none w-[8.5rem] transition-all duration-300   ${
                 selectedTab === "Tasks"
-                  ? "bg-orange-500 text-white border-r-2 border-orange-500"
+                  ? "bg-orange-500 text-white border-r-2 border-orange-500 scale-105 shadow-md"
                   : "text-black bg-gray-100"
               }`}
               onClick={() => setSelectedTab("Tasks")}
@@ -91,9 +90,9 @@ export default function AllLists() {
               Tasks
             </button>
             <button
-              className={`py-1 px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[6rem]  ${
+              className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
                 selectedTab === "Jobs"
-                  ? "bg-orange-500 text-white"
+                  ? "bg-orange-500 text-white scale-105 shadow-md"
                   : "text-black bg-gray-100 hover:bg-slate-200"
               }`}
               onClick={() => {
@@ -103,9 +102,21 @@ export default function AllLists() {
               Jobs
             </button>
             <button
-              className={`py-1 px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[6rem]  ${
+              className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                selectedTab === "Tickets"
+                  ? "bg-orange-500 text-white scale-105 shadow-md"
+                  : "text-black bg-gray-100 hover:bg-slate-200"
+              }`}
+              onClick={() => {
+                setSelectedTab("Tickets");
+              }}
+            >
+              Tickets
+            </button>
+            <button
+              className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
                 selectedTab === "Leads"
-                  ? "bg-orange-500 text-white"
+                  ? "bg-orange-500 text-white scale-105 shadow-md"
                   : "text-black bg-gray-100 hover:bg-slate-200"
               }`}
               onClick={() => {
@@ -115,9 +126,9 @@ export default function AllLists() {
               Leads
             </button>
             <button
-              className={`py-1 px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[6rem]  ${
+              className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
                 selectedTab === "Proposals"
-                  ? "bg-orange-500 text-white"
+                  ? "bg-orange-500 text-white scale-105 shadow-md"
                   : "text-black bg-gray-100 hover:bg-slate-200"
               }`}
               onClick={() => {
@@ -127,9 +138,9 @@ export default function AllLists() {
               Proposals
             </button>
             <button
-              className={`py-1 px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[6rem]  ${
+              className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
                 selectedTab === "Templates"
-                  ? "bg-orange-500 text-white"
+                  ? "bg-orange-500 text-white scale-105 shadow-md"
                   : "text-black bg-gray-100 hover:bg-slate-200"
               }`}
               onClick={() => {
@@ -138,12 +149,40 @@ export default function AllLists() {
             >
               Templates
             </button>
+            <button
+              className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                selectedTab === "Goals"
+                  ? "bg-orange-500 text-white scale-105 shadow-md"
+                  : "text-black bg-gray-100 hover:bg-slate-200"
+              }`}
+              onClick={() => {
+                setSelectedTab("Goals");
+              }}
+            >
+              Goals
+            </button>
+            <button
+              className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                selectedTab === "Subscription"
+                  ? "bg-orange-500 text-white scale-105 shadow-md"
+                  : "text-black bg-gray-100 hover:bg-slate-200"
+              }`}
+              onClick={() => {
+                setSelectedTab("Subscription");
+              }}
+            >
+              Subscription
+            </button>
           </div>
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
         </>
         <div className="">
           {selectedTab === "Tasks" ? (
-            <Tasks />
+            <Tasks
+              tasksData={tasksData}
+              loading={loading}
+              projects={projects}
+            />
           ) : selectedTab === "Jobs" ? (
             <Jobs />
           ) : selectedTab === "Leads" ? (

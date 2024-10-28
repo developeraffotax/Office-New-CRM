@@ -24,18 +24,13 @@ export default function ChartData({ goalsData, selectChart }) {
       const options = {
         series: [
           {
-            name: "Achieved Count (Bar)",
-            type: "column",
-            data: achievedCounts,
-          },
-          {
             name: "Target (Achievement) (Bar)",
             type: "column",
             data: achievements,
           },
           {
-            name: "Achieved Count (Line)",
-            type: "area",
+            name: "Achieved Count (Bar)",
+            type: "column",
             data: achievedCounts,
           },
           {
@@ -43,24 +38,30 @@ export default function ChartData({ goalsData, selectChart }) {
             type: "area",
             data: achievements,
           },
+          // {
+          //   name: "Achieved Count (Line)",
+          //   type: "area",
+          //   data: achievedCounts,
+          // },
         ],
         chart: {
-          height: 450,
+          height: 600,
           type: "line",
           stacked: false,
           toolbar: {
             show: true,
           },
         },
-        colors: ["#00E396", "#775DD0", "#FEB019", "#FF4560"],
+        colors: ["#0D92F4", "#00E396", "#FEB019", "#FF4560"],
         stroke: {
           width: [0, 0, 2, 2],
           curve: "smooth",
         },
         plotOptions: {
           bar: {
-            columnWidth: "50%",
+            columnWidth: `${goalsData.length > 2 ? "60%" : "30%"}`,
             borderRadius: 4,
+            gap: ".5rem",
           },
         },
         fill: {
@@ -74,11 +75,11 @@ export default function ChartData({ goalsData, selectChart }) {
           },
         },
         dataLabels: {
-          enabled: true,
-          style: {
-            fontSize: "12px",
-            colors: ["#333"],
-          },
+          enabled: false,
+          // style: {
+          //   fontSize: "12px",
+          //   colors: ["#333"],
+          // },
         },
         labels: goalLabels,
         xaxis: {
@@ -137,61 +138,69 @@ export default function ChartData({ goalsData, selectChart }) {
     }
   }, [goalsData, selectChart]);
 
-  // Render the Funnel Chart
+  // Render Spline Area Chart
   useEffect(() => {
-    if (selectChart === "Funnel Chart") {
-      const funnelData = goalsData.map((goal) => goal.achievedCount);
+    if (selectChart === "Area Chart") {
+      const areaDataAchievedCounts = goalsData.map(
+        (goal) => goal.achievedCount
+      );
+      const areaDataAchievements = goalsData.map((goal) => goal.achievement);
+      const areaDataDifference = areaDataAchievedCounts.map(
+        (count, index) => count - areaDataAchievements[index]
+      );
 
-      const funnelOptions = {
+      const areaOptions = {
         series: [
           {
-            name: "Goals",
-            data: funnelData,
+            name: "Achieved Count",
+            data: areaDataAchievedCounts,
+          },
+          {
+            name: "Target (Achievement)",
+            data: areaDataAchievements,
+          },
+          {
+            name: "Difference (Achieved Count - Target)",
+            data: areaDataDifference,
           },
         ],
         chart: {
-          type: "bar",
-          height: 350,
+          height: 600,
+          type: "area",
         },
-        plotOptions: {
-          bar: {
-            borderRadius: 0,
-            horizontal: true,
-            distributed: true,
-            barHeight: "80%",
-            isFunnel: true,
-          },
+        stroke: {
+          curve: "smooth",
         },
-        colors: ["#F44F5E", "#E55A89", "#D863B1", "#CA6CD8", "#B57BED"],
-        dataLabels: {
-          enabled: true,
-          formatter: function (val, opt) {
-            return `${goalTypes[opt.dataPointIndex]}: ${val}`;
+        fill: {
+          type: "gradient",
+          gradient: {
+            shade: "light",
+            type: "vertical",
+            opacityFrom: 0.6,
+            opacityTo: 0.2,
           },
-          dropShadow: {
-            enabled: true,
-          },
-        },
-        title: {
-          text: "Funnel Chart",
-          align: "middle",
         },
         xaxis: {
-          categories: goalTypes,
+          categories: goalsData.map((goal) => goal.goalType),
         },
-        legend: {
-          show: false,
+        yaxis: {
+          title: {
+            text: "Counts",
+          },
+        },
+        tooltip: {
+          shared: true,
+          intersect: false,
         },
       };
 
-      const funnelElement = document.querySelector("#funnel-chart");
-      if (funnelElement) {
-        const funnelChart = new ApexCharts(funnelElement, funnelOptions);
-        funnelChart.render();
+      const areaElement = document.querySelector("#area-chart");
+      if (areaElement) {
+        const areaChart = new ApexCharts(areaElement, areaOptions);
+        areaChart.render();
 
-        // Cleanup function to destroy the funnel chart on component unmount
         return () => {
-          funnelChart.destroy();
+          areaChart.destroy();
         };
       }
     }
@@ -200,9 +209,9 @@ export default function ChartData({ goalsData, selectChart }) {
   return (
     <div>
       {selectChart === "Line & Bar" ? (
-        <div id="chart" style={{ width: "100%", height: "450px" }} />
+        <div id="chart" style={{ width: "100%", height: "600px" }} />
       ) : (
-        <div id="funnel-chart" style={{ width: "100%", height: "350px" }} />
+        <div id="area-chart" style={{ width: "100%", height: "600px" }} />
       )}
     </div>
   );

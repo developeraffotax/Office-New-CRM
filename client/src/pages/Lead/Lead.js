@@ -202,7 +202,7 @@ export default function Lead() {
         setLeadData((prevData) =>
           prevData ? [...prevData, data.lead] : [data.lead]
         );
-        getLeads();
+        getAllLeads();
       }
     } catch (error) {
       console.log(error);
@@ -291,7 +291,7 @@ export default function Lead() {
           const filterData1 = filteredData?.filter((item) => item._id !== id);
           setFilteredData(filterData1);
         }
-        getLeads();
+        getAllLeads();
       }
     } catch (error) {
       console.log(error);
@@ -383,7 +383,7 @@ export default function Lead() {
         setLeadData((prevData) =>
           prevData ? [...prevData, data.lead] : [data.lead]
         );
-        getLeads();
+        getAllLeads();
       }
     } catch (error) {
       console.log(error);
@@ -454,6 +454,7 @@ export default function Lead() {
                     value={localCompanyName}
                     autoFocus
                     onChange={(e) => setLocalCompanyName(e.target.value)}
+                    onBlur={(e) => setLocalCompanyName(e.target.value)}
                     className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
                   />
                 </form>
@@ -539,6 +540,7 @@ export default function Lead() {
                     value={localClientName}
                     autoFocus
                     onChange={(e) => setLocalClientName(e.target.value)}
+                    onBlur={(e) => setLocalClientName(e.target.value)}
                     className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
                   />
                 </form>
@@ -1769,7 +1771,7 @@ export default function Lead() {
       },
     ],
     // eslint-disable-next-line
-    [users, auth, leadData, filteredData, load]
+    [users, auth, leadData, load]
   );
 
   // Clear table Filter

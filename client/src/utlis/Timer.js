@@ -157,9 +157,9 @@ export const Timer = forwardRef(
         );
 
         if (data) {
+          removeTimerStatus();
           localStorage.removeItem("timer_Id");
           setAnyTimerRunning(false);
-          removeTimerStatus();
           setIsShow(false);
           gettotalTime(timerId);
           setTimerId(null);

@@ -112,17 +112,17 @@ export default function Sidebar({ hide, setHide }) {
           )}
 
           {/* 2 */}
-          {hasAccess("My List") && (
+          {hasAccess("MyList") && (
             <div
               className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
               onClick={() => {
-                router("/my_list");
+                router("/all/lists");
               }}
             >
               <div
                 className="adminbtn absolute h-full  sidebtn z-[20]"
                 style={{
-                  width: active === "my_list" && "100%",
+                  width: active === "all" && "100%",
                   background: `rgb(2, 68, 2)`,
                 }}
               ></div>
@@ -130,17 +130,17 @@ export default function Sidebar({ hide, setHide }) {
                 {hide ? (
                   <LiaClipboardListSolid
                     className="h-5 w-5 cursor-pointer ml-2"
-                    style={{ color: active === "my_list" && "#fff" }}
+                    style={{ color: active === "all" && "#fff" }}
                   />
                 ) : (
                   <div className="flex items-center gap-2">
                     <LiaClipboardListSolid
                       className="h-5 w-5 cursor-pointer ml-2"
-                      style={{ color: active === "my_list" && "#fff" }}
+                      style={{ color: active === "all" && "#fff" }}
                     />
                     <span
                       className="text-[14px] font-[400]"
-                      style={{ color: active === "my_list" && "#fff" }}
+                      style={{ color: active === "all" && "#fff" }}
                     >
                       My Lists
                     </span>

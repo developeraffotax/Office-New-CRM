@@ -1349,7 +1349,7 @@ export default function Goals() {
         )}
         {/* ------------Graphic View setShowGraph-------- */}
         {showGraph && (
-          <div className="absolute top-[0rem] right-0 w-[21rem] sm:w-[40rem] h-full z-[999] bg-white flex  flex-col gap-4 py-4  px-4">
+          <div className="absolute top-[0rem] right-0 w-[21rem] sm:w-[50%] h-full z-[999] bg-white flex  flex-col gap-4 py-4  px-4">
             <div className="inputBox">
               <select
                 value={selectChart}
@@ -1357,7 +1357,7 @@ export default function Goals() {
                 className={`${style.input} w-full `}
               >
                 <option value={"Line & Bar"}>Line & Bar</option>
-                <option value={"Funnel Chart"}>Funnel Chart</option>
+                <option value={"Area Chart"}>Area Chart</option>
               </select>
             </div>
             <ChartData

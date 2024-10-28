@@ -407,17 +407,9 @@ export const getTicketAttachments = async (req, res) => {
   try {
     const { attachmentId, messageId, companyName } = req.params;
 
-    const attachment = await getAttachments(
-      attachmentId,
-      messageId,
-      companyName
-    );
+    const resp = await getAttachments(attachmentId, messageId, companyName);
 
-    res.status(200).send({
-      success: true,
-      message: "Ticket attachments!",
-      attachment: attachment,
-    });
+    res.send(resp);
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -609,8 +601,6 @@ export const deleteinboxEmail = async (req, res) => {
   try {
     const { id, companyName } = req.params;
 
-    console.log(req.body, companyName);
-
     if (!companyName) {
       return res.status(400).send({
         success: false,
@@ -627,12 +617,49 @@ export const deleteinboxEmail = async (req, res) => {
 
     await deleteEmail(id, companyName);
 
-    // Delete Email From DB
-    // const email = await ticketModel.findById({});
+    res.status(200).send({
+      success: true,
+      message: "Email delete successfully!",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while delete email!",
+      error: error,
+    });
+  }
+};
+
+export const deleteMultipleEmail = async (req, res) => {
+  try {
+    const { companyName } = req.params;
+    const { ids } = req.body;
+
+    if (!companyName) {
+      return res.status(400).send({
+        success: false,
+        message: "Company name is required!",
+      });
+    }
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).send({
+        success: false,
+        message: "Email id is required!",
+      });
+    }
+
+    const deletionResults = await Promise.all(
+      ids.map((id) => deleteEmail(id, companyName))
+    );
+
+    // await deleteEmail(id, companyName);
 
     res.status(200).send({
       success: true,
       message: "Email delete successfully!",
+      deletionResults,
     });
   } catch (error) {
     console.log(error);

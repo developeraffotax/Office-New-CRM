@@ -3,6 +3,7 @@ import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
   assignEmail,
   deleteinboxEmail,
+  deleteMultipleEmail,
   deleteTicket,
   getAllInbox,
   getAllSendTickets,
@@ -77,6 +78,13 @@ router.delete(
   "/delete/inbox/email/:id/:companyName",
   requiredSignIn,
   deleteinboxEmail
+);
+
+// Delete Multiple Email
+router.delete(
+  "/delete/multiple/email/:companyName",
+  requiredSignIn,
+  deleteMultipleEmail
 );
 
 // Get Single Email Detail

@@ -13,6 +13,7 @@ import InboxDetail from "./InboxDetail";
 import AssignToUserModal from "../../components/Tickets/AssignToUserModal";
 import { TbLoader2 } from "react-icons/tb";
 import { IoReload } from "react-icons/io5";
+import { AiFillDelete } from "react-icons/ai";
 
 export default function Inbox() {
   const [selectedCompany, setSelectedCompany] = useState("Affotax");
@@ -31,8 +32,10 @@ export default function Inbox() {
   const [showModal, setShowModal] = useState(false);
   const [loadInbox, setLoadInbox] = useState(false);
   const [type, setType] = useState("received");
+  const [ids, setIds] = useState([]);
+  const [deleteLoad, setDeleteLoad] = useState(false);
 
-  // console.log("Email:", totalEmails, inboxData);
+  console.log("Emailid:", ids);
   const navigate = useNavigate();
 
   const getEmail = async () => {
@@ -137,7 +140,8 @@ export default function Inbox() {
   const deleteEmail = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/delete/inbox/email/${id}/${selectedCompany}`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/delete/inbox/email/${id}/${selectedCompany}`,
+        { ids }
       );
       if (data) {
         getInboxEmail();
@@ -149,6 +153,44 @@ export default function Inbox() {
       toast.error("Error in delete email!");
     }
   };
+
+  // Delete Multiple Emails
+  const deleteMultipleEmail = async () => {
+    setDeleteLoad(true);
+    try {
+      const { data } = await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/delete/multiple/email/${selectedCompany}`,
+        {
+          data: { ids },
+        }
+      );
+      if (data) {
+        const updatedInboxData = inboxData.filter(
+          (email) => !ids.includes(email.emailId)
+        );
+
+        setInboxData(updatedInboxData);
+        getInboxEmail();
+        setIds([]);
+        toast.success("Emails deleted successfully!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Error in delete email!");
+    } finally {
+      setDeleteLoad(false);
+    }
+  };
+
+  const handleChecked = (id) => {
+    setIds((prevIds) =>
+      prevIds.includes(id)
+        ? prevIds.filter((prevId) => prevId !== id)
+        : [...prevIds, id]
+    );
+  };
+
+  const isChecked = (id) => ids.includes(id);
 
   return (
     <Layout>
@@ -215,6 +257,16 @@ export default function Inbox() {
                 <IoReload className="h-5 w-5 text-orange-500 hover:text-orange-600" />
               )}
             </span>
+
+            {ids.length > 0 && (
+              <span
+                className="p-1 rounded-full bg-gray-200/50 hover:bg-gray-300/50 hover:shadow-md"
+                title="Delete Emails"
+                onClick={() => deleteMultipleEmail()}
+              >
+                <AiFillDelete className="text-red-500 hover:text-red-600 h-5 w-5 cursor-pointer" />
+              </span>
+            )}
           </div>
           <div className="">
             <select
@@ -237,7 +289,11 @@ export default function Inbox() {
         </div>
 
         <hr className="w-full bg-gray-300 mt-[1rem] mb-[1rem]" />
-
+        {deleteLoad && (
+          <div className="pb-5">
+            <div class="loader"></div>
+          </div>
+        )}
         <div className="relative flex flex-col gap-4">
           {loading ? (
             <Loader />
@@ -245,42 +301,51 @@ export default function Inbox() {
             <div className="flex flex-col gap-2">
               {paginatedEmails.map((email, i) => (
                 <div
+                  disabled={deleteLoad}
                   className="w-full flex items-center justify-between py-2 px-4 rounded-md hover:shadow-md  bg-gray-100 border border-gray-100 hover:border-orange-200 hover:bg-orange-50 transition-all duration-300"
                   key={email.emailId}
                 >
-                  <div
-                    className="flex items-center gap-5 cursor-pointer"
-                    onClick={() => {
-                      setSingleEmail(email);
-                      setShowEmailDetail(true);
-                    }}
-                  >
-                    <h3 className="capitalize w-[17rem]">
-                      {(() => {
-                        const fromHeader =
-                          email.emailData.payload.headers.find(
-                            (header) => header.name === "From"
-                          )?.value || "No Sender";
-
-                        const [name] = fromHeader.includes("<")
-                          ? fromHeader.split(/(?=<)/)
-                          : [fromHeader, ""];
-
-                        const cleanedName = name.replace(/["<>]/g, "").trim();
-
-                        return `${cleanedName}`;
-                      })()}
-                    </h3>
-
-                    <p
-                      className={`text-[16px] ${
-                        email?.readStatus === "Unread"
-                          ? "font-semibold text-black"
-                          : "text-gray-600"
-                      }`}
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 checked:bg-orange-600"
+                      checked={isChecked(email.emailId)}
+                      onChange={() => handleChecked(email.emailId)}
+                    />
+                    <div
+                      className="flex items-center gap-5 cursor-pointer"
+                      onClick={() => {
+                        setSingleEmail(email);
+                        setShowEmailDetail(true);
+                      }}
                     >
-                      {email.subject || "No Subject"}
-                    </p>
+                      <h3 className="capitalize w-[17rem]">
+                        {(() => {
+                          const fromHeader =
+                            email.emailData.payload.headers.find(
+                              (header) => header.name === "From"
+                            )?.value || "No Sender";
+
+                          const [name] = fromHeader.includes("<")
+                            ? fromHeader.split(/(?=<)/)
+                            : [fromHeader, ""];
+
+                          const cleanedName = name.replace(/["<>]/g, "").trim();
+
+                          return `${cleanedName}`;
+                        })()}
+                      </h3>
+
+                      <p
+                        className={`text-[16px] ${
+                          email?.readStatus === "Unread"
+                            ? "font-semibold text-black"
+                            : "text-gray-600"
+                        }`}
+                      >
+                        {email.subject || "No Subject"}
+                      </p>
+                    </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-[14px] font-medium">

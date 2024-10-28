@@ -360,7 +360,7 @@ export const getAttachments = async (attachmentId, messageId, companyName) => {
       responseType: "arraybuffer",
     };
 
-    const response = await axios(config);
+    let response = await axios(config);
     const attachmentData = response.data;
 
     // Determine the file format based on the attachment's MIME type

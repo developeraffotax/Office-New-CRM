@@ -124,50 +124,7 @@ export default function EmailDetail() {
     return <span className="text-[12px] text-gray-600">{formattedDate}</span>;
   };
 
-  //   Download Attachments
-  // const downloadAttachments = async (
-  //   attachmentId,
-  //   messageId,
-  //   companyName,
-  //   fileName
-  // ) => {
-  //   if (!attachmentId || !messageId || !companyName) {
-  //     toast.error("Attachment detail missing!");
-  //     return;
-  //   }
-  //   setIsLoading(true);
-  //   try {
-  //     const { data } = await axios.get(
-  //       `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`
-  //     );
-  //     if (data) {
-  //       const encodedData = data.attachment.data;
-  //       console.log("encodedData:", encodedData);
-  //       const decodedData = Buffer.from(encodedData, "base64");
-  //       const byteArray = new Uint8Array(decodedData.buffer);
-
-  //       const blob = new Blob([byteArray], {
-  //         type: "application/octet-stream",
-  //       });
-
-  //       const url = URL.createObjectURL(blob);
-
-  //       const link = document.createElement("a");
-  //       link.href = url;
-  //       link.download = fileName;
-  //       link.click();
-
-  //       URL.revokeObjectURL(url);
-
-  //       setIsLoading(false);
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //     setIsLoading(false);
-  //     toast.error("Error download attachments!");
-  //   }
-  // };
-
+  // ------------Download Email Attachments-------->
   const downloadAttachments = async (
     attachmentId,
     messageId,
@@ -183,63 +140,39 @@ export default function EmailDetail() {
 
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          responseType: "json",
+        }
       );
 
-      if (data && data.attachment && data.attachment.data) {
-        const encodedData = data.attachment.data;
+      if (data) {
+        const jsonData = data;
 
-        // Since encodedData is an array of bytes, we convert it directly to Uint8Array
-        const byteArray = new Uint8Array(encodedData);
+        const encodedData = jsonData.data;
 
-        // Dynamically detect MIME type if possible (based on file extension)
-        const fileExtension = fileName?.split(".").pop();
-        let mimeType = "application/octet-stream"; // Default type
+        const decodedData = Buffer.from(encodedData, "base64");
 
-        if (fileExtension) {
-          switch (fileExtension.toLowerCase()) {
-            case "pdf":
-              mimeType = "application/pdf";
-              break;
-            case "jpg":
-            case "jpeg":
-              mimeType = "image/jpeg";
-              break;
-            case "png":
-              mimeType = "image/png";
-              break;
-            case "doc":
-            case "docx":
-              mimeType = "application/msword";
-              break;
-            case "xls":
-            case "xlsx":
-              mimeType = "application/vnd.ms-excel";
-              break;
-            // Add more cases as needed for other file types
-            default:
-              mimeType = "application/octet-stream";
-          }
-        }
+        const byteArray = new Uint8Array(decodedData.buffer);
 
-        // Create Blob from the byteArray
-        const blob = new Blob([byteArray], { type: mimeType });
+        const blob = new Blob([byteArray], {
+          type: "application/octet-stream",
+        });
+
         const url = URL.createObjectURL(blob);
 
-        // Create an anchor element to trigger the download
         const link = document.createElement("a");
         link.href = url;
-        link.download = fileName || "attachment";
-        document.body.appendChild(link);
+        link.download = fileName;
+
         link.click();
 
-        // Clean up
-        document.body.removeChild(link);
+        // Clean up the URL object
         URL.revokeObjectURL(url);
 
-        setIsLoading(false);
-      } else {
-        toast.error("Attachment data is missing or incorrect!");
         setIsLoading(false);
       }
     } catch (error) {

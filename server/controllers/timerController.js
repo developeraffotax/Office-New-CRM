@@ -77,6 +77,8 @@ export const stopTimer = async (req, res) => {
       { new: true }
     );
 
+    removeStatus(updateTimer._id);
+
     res.status(200).send({
       success: true,
       message: "Timer stoped!",
@@ -382,6 +384,17 @@ export const removeTimerStatus = async (req, res) => {
       error,
     });
   }
+};
+
+const removeStatus = async (timerId) => {
+  if (!timerId) {
+    return res.status(400).send({
+      success: false,
+      message: "Timer id is required!",
+    });
+  }
+
+  await timerStatusModel.findOneAndDelete({ timerId: timerId });
 };
 
 // Get Task Timer Status

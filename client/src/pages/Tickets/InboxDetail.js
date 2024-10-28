@@ -134,6 +134,7 @@ export default function InboxDetail({
     return <span className="text-[12px] text-gray-600">{formattedDate}</span>;
   };
 
+  // ------------Download Email Attachments-------->
   const downloadAttachments = async (
     attachmentId,
     messageId,
@@ -149,30 +150,31 @@ export default function InboxDetail({
 
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          responseType: "json",
+        }
       );
 
       if (data) {
-        const encodedData = data.attachment.data;
+        const jsonData = data;
 
-        console.log("encodedData", encodedData);
+        const encodedData = jsonData.data;
 
         const decodedData = Buffer.from(encodedData, "base64");
-        console.log("decodedData:", decodedData);
-        const byteArray = new Uint8Array(decodedData.buffer);
 
-        console.log("byteArray:", byteArray);
+        const byteArray = new Uint8Array(decodedData.buffer);
 
         const blob = new Blob([byteArray], {
           type: "application/octet-stream",
         });
 
-        // console.log("blob:", blob);
         const url = URL.createObjectURL(blob);
 
-        console.log("URL:", url);
-
-        // Create a link element and set its attributes
+        // Create a link element
         const link = document.createElement("a");
         link.href = url;
         link.download = fileName;

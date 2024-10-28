@@ -24,6 +24,7 @@ import Users from "./pages/Auth/Users";
 import Subscription from "./pages/Subscription/Subscription";
 import Inbox from "./pages/Tickets/Inbox";
 import Goals from "./pages/Goal/Goals";
+import AllLists from "./pages/lists/AllLists";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -34,6 +35,7 @@ function App() {
 
   const routeAccess = {
     Dashboard: <Route path="/dashboard" element={<Dashboard />} />,
+    MyList: <Route path="/all/lists" element={<AllLists />} />,
     Users: <Route path="/users" element={<Users />} />,
     Roles: <Route path="/roles" element={<Roles />} />,
     Timesheet: <Route path="/timesheet" element={<TimeSheet />} />,
@@ -54,15 +56,39 @@ function App() {
     Subscription: <Route path="/subscriptions" element={<Subscription />} />,
   };
 
-  useEffect(() => {
-    socketId.on("connection", () => {});
-  }, []);
-
   const userAccessRoutes = user?.role?.access
     ?.map((accessItem) => {
       return routeAccess[accessItem.permission];
     })
     .filter(Boolean);
+
+  console.log("Access:", user?.role?.access);
+
+  useEffect(() => {
+    socketId.on("connection", () => {});
+  }, []);
+
+  useEffect(() => {
+    const cacheBuster = () => {
+      if ("caches" in window) {
+        caches.keys().then((cacheNames) => {
+          cacheNames.forEach((cacheName) => caches.delete(cacheName));
+        });
+      }
+    };
+
+    cacheBuster();
+
+    // Set cache-control headers on every API request
+    const defaultHeaders = new Headers();
+    defaultHeaders.append(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate"
+    );
+    defaultHeaders.append("Pragma", "no-cache");
+    defaultHeaders.append("Expires", "0");
+    defaultHeaders.append("Surrogate-Control", "no-store");
+  }, []);
 
   return (
     <div>

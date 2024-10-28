@@ -795,7 +795,7 @@ export default function AllJobs() {
         accessorKey: "companyName",
         minSize: 190,
         maxSize: 300,
-        size: 230,
+        size: 210,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -1011,7 +1011,7 @@ export default function AllJobs() {
               >
                 Hrs
               </span>
-              <span className="font-medium w-full text-center  px-1 py-1 rounded-md bg-gray-300/30 text-black">
+              <span className="font-medium w-[5rem] ml-2 text-center  px-1 py-1 rounded-md bg-gray-300/30 text-black">
                 {totalHours}
               </span>
               {/* <input
@@ -1032,7 +1032,7 @@ export default function AllJobs() {
           );
         },
         filterFn: "equals",
-        size: 70,
+        size: 60,
       },
       // End  year
       {
@@ -1612,7 +1612,7 @@ export default function AllJobs() {
         },
         filterSelectOptions: ["Overdue", "Due"],
         filterVariant: "select",
-        size: 100,
+        size: 95,
         minSize: 70,
         maxSize: 120,
         grow: false,
@@ -1827,7 +1827,7 @@ export default function AllJobs() {
             </div>
           );
         },
-        size: 90,
+        size: 80,
       },
       {
         accessorKey: "timertracker",
@@ -1909,7 +1909,7 @@ export default function AllJobs() {
             </div>
           );
         },
-        size: 100,
+        size: 80,
       },
       // Label
       {
@@ -2189,8 +2189,10 @@ export default function AllJobs() {
                       >
                         {name ? (
                           <span
-                            className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-black ${
-                              color === "#fff" ? "text-gray-950" : "text-white"
+                            className={`label relative  rounded-md hover:shadow  cursor-pointer text-black ${
+                              color === "#fff"
+                                ? "text-gray-950 py-[4px] px-0"
+                                : "text-white py-[4px] px-2"
                             }`}
                             style={{ background: `${color}` }}
                           >

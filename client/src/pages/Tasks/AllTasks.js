@@ -1196,7 +1196,6 @@ const AllTasks = () => {
           const [showId, setShowId] = useState("");
 
           const updateHours = async (e) => {
-            e.preventDefault();
             try {
               const { data } = await axios.put(
                 `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/hours/${showId}`,
@@ -1232,14 +1231,13 @@ const AllTasks = () => {
           return (
             <div className="w-full flex items-center justify-center">
               {show && row.original._id === showId ? (
-                <form onSubmit={updateHours}>
-                  <input
-                    type="text"
-                    value={hour}
-                    onChange={(e) => setHour(e.target.value)}
-                    className="w-full h-[1.7rem] px-[2px] outline-none rounded-md cursor-pointer"
-                  />
-                </form>
+                <input
+                  type="text"
+                  value={hour}
+                  onChange={(e) => setHour(e.target.value)}
+                  onBlur={(e) => updateHours(e.target.value)}
+                  className="w-full h-[1.7rem] px-[2px] outline-none rounded-md cursor-pointer"
+                />
               ) : (
                 <span
                   className="text-[15px] font-medium"

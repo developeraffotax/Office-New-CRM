@@ -8,6 +8,10 @@ import Leads from "../../components/MyLists/Leads";
 import Proposals from "../../components/MyLists/Proposals";
 import axios from "axios";
 import { useAuth } from "../../context/authContext";
+import Tickets from "../../components/MyLists/Tickets";
+import Templates from "../../components/MyLists/Templates";
+import Goals from "../../components/MyLists/Goals";
+import Subscriptions from "../../components/MyLists/Subscriptions";
 
 export default function AllLists() {
   const { auth } = useAuth();
@@ -15,6 +19,12 @@ export default function AllLists() {
   const [tasksData, setTasksData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const [emailData, setEmailData] = useState([]);
+  const [proposalData, setProposalData] = useState([]);
+  const [templateData, setTemplateData] = useState([]);
+  const [subscriptionData, setSubscriptionData] = useState([]);
+  const [goalsData, setGoalsData] = useState([]);
 
   //---------- Get All Projects-----------
   const getAllProjects = async () => {
@@ -53,6 +63,116 @@ export default function AllLists() {
   useEffect(() => {
     getAllTasks();
     // eslint-disable-next-line
+  }, []);
+
+  // ---------------All Client_Job Data----------->
+  const allClientJobData = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/job`
+      );
+      if (data) {
+        setTableData(data?.clients);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    allClientJobData();
+    // eslint-disable-next-line
+  }, []);
+
+  // -------Get All Tickets-------
+  const getAllEmails = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets`
+      );
+      if (data) {
+        setEmailData(data.emails);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllEmails();
+  }, []);
+
+  // -------Get All Proposal-------
+  const getAllProposal = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/proposal/fetch/proposal`
+      );
+      if (data) {
+        setProposalData(data.proposals);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllProposal();
+  }, []);
+
+  // Get ALl Templates
+  // --------------Get All Templates---------->
+  const getAllTemplates = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/templates/get/all/template`
+      );
+
+      setTemplateData(data?.templates);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllTemplates();
+    // eslint-disable-next-line
+  }, []);
+
+  // -------Get Subscription Data-------
+  const getAllSubscriptions = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/fetch/all`
+      );
+      if (data) {
+        setSubscriptionData(data.subscriptions);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllSubscriptions();
+  }, []);
+
+  // -------Get All Proposal-------
+  const getAllGoals = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/goals/fetch/all/goals`
+      );
+      if (data) {
+        setGoalsData(data.goals);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllGoals();
   }, []);
 
   return (
@@ -176,21 +296,37 @@ export default function AllLists() {
           </div>
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
         </>
-        <div className="">
+        <div className=" mt-[1rem]">
           {selectedTab === "Tasks" ? (
             <Tasks
               tasksData={tasksData}
               loading={loading}
               projects={projects}
+              setTasksData={setTasksData}
             />
           ) : selectedTab === "Jobs" ? (
-            <Jobs />
+            <Jobs tableData={tableData} setTableData={setTableData} />
+          ) : selectedTab === "Tickets" ? (
+            <Tickets emailData={emailData} setEmailData={setEmailData} />
           ) : selectedTab === "Leads" ? (
             <Leads />
           ) : selectedTab === "Proposals" ? (
-            <Proposals />
+            <Proposals
+              proposalData={proposalData}
+              setProposalData={setProposalData}
+            />
+          ) : selectedTab === "Templates" ? (
+            <Templates
+              templateData={templateData}
+              setTemplateData={setTemplateData}
+            />
+          ) : selectedTab === "Goals" ? (
+            <Goals goalsData={goalsData} setGoalsData={setGoalsData} />
           ) : (
-            "Templates"
+            <Subscriptions
+              subscriptionData={subscriptionData}
+              setSubscriptionData={setSubscriptionData}
+            />
           )}
         </div>
       </div>

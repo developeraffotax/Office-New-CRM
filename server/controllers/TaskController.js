@@ -767,12 +767,21 @@ export const autoCreateRecurringTasks = async (req, res) => {
       },
     });
 
+    const today = new Date();
+    const formattedDate = today
+      .toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+      .replace(/,/g, "");
+
     for (const task of tasks) {
       // Create a new task with updated dates
       const newTask = await taskModel.create({
         project: task.project,
         jobHolder: task.jobHolder,
-        task: task.task,
+        task: `${task.task}  ${formattedDate} `,
         hours: task.hours,
         startDate: calculateStartDate(task.startDate, task.recurring),
         deadline: calculateStartDate(task.deadline, task.recurring),
@@ -884,6 +893,28 @@ export const deleteDuplicateTasks = async (req, res) => {
     res.status(500).json({
       message: "An error occurred while deleting duplicate tasks.",
       error: error.message,
+    });
+  }
+};
+
+// Get ALl Tasks for Daskboard Analytics
+export const getDashboardTasks = async (req, res) => {
+  try {
+    const tasks = await taskModel
+      .find({})
+      .select("project.projectName jobHolder createdAt");
+
+    res.status(200).send({
+      success: true,
+      message: "All task list!",
+      tasks: tasks,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      messsage: "Error in get all tasks!",
+      error: error,
     });
   }
 };

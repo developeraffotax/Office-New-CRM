@@ -1,8 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
-import { IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
-import HandleGoalModal from "../../components/Goal/HandleGoalModal";
 import axios from "axios";
 import { useAuth } from "../../context/authContext";
 import {
@@ -17,17 +14,17 @@ import { MdCheckCircle } from "react-icons/md";
 import { MdOutlineModeEdit } from "react-icons/md";
 import Swal from "sweetalert2";
 import ReactApexChart from "react-apexcharts";
-import CompletedGoals from "./CompletedGoals";
-import ChartData from "./ChartData";
-import { BsPieChartFill } from "react-icons/bs";
-import { VscGraph } from "react-icons/vsc";
 
-export default function Goals() {
+import { VscGraph } from "react-icons/vsc";
+import CompletedGoals from "../../pages/Goal/CompletedGoals";
+import HandleGoalModal from "../Goal/HandleGoalModal";
+import ChartData from "../../pages/Goal/ChartData";
+
+export default function Goals({ goalsData, setGoalsData }) {
   const { auth } = useAuth();
   const [show, setShow] = useState(false);
   const [goalId, setGoalId] = useState("");
   const [users, setUsers] = useState([]);
-  const [goalsData, setGoalsData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filterData, setFilterData] = useState([]);
   const [selectedTab, setSelectedTab] = useState("progress");
@@ -48,27 +45,6 @@ export default function Goals() {
     "Total Lead",
     "Lead Won",
   ];
-
-  // -------Get All Proposal-------
-  const getAllGoals = async () => {
-    setLoading(true);
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/goals/fetch/all/goals`
-      );
-      if (data) {
-        setGoalsData(data.goals);
-        setLoading(false);
-      }
-    } catch (error) {
-      console.log(error);
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    getAllGoals();
-  }, []);
 
   const getGoals = async () => {
     try {
@@ -332,6 +308,11 @@ export default function Goals() {
         accessorKey: "subject",
         header: "Subject",
         Header: ({ column }) => {
+          useEffect(() => {
+            column.setFilterValue("");
+
+            // eslint-disable-next-line
+          }, [goalsData]);
           return (
             <div className=" w-[350px] flex flex-col gap-[2px]">
               <span
@@ -1059,6 +1040,7 @@ export default function Goals() {
         },
         filterVariant: "select",
       },
+
       //
       {
         accessorKey: "actions",
@@ -1099,94 +1081,7 @@ export default function Goals() {
         },
         size: 130,
       },
-
       // Progress
-      // {
-      //   accessorKey: "progress",
-      //   minSize: 100,
-      //   maxSize: 250,
-      //   size: 150,
-      //   grow: false,
-      //   Header: ({ column }) => {
-      //     return (
-      //       <div className="flex flex-col gap-[2px]">
-      //         <span
-      //           className="ml-1 cursor-pointer"
-      //           title="Clear Filter"
-      //           onClick={() => {
-      //             column.setFilterValue("");
-      //           }}
-      //         >
-      //           Progress
-      //         </span>
-      //       </div>
-      //     );
-      //   },
-      //   Cell: ({ cell, row }) => {
-      //     const achievement = parseFloat(row.original.achievement) || 0;
-      //     const achievedCount = parseFloat(row.original.achievedCount) || 0;
-
-      //     const progress =
-      //       achievement > 0
-      //         ? ((achievedCount / achievement) * 100).toFixed(2)
-      //         : 0;
-      //     const progressValue = Math.min(Math.max(progress, 0), 100);
-
-      //     // ApexCharts options
-      //     const chartOptions = {
-      //       chart: {
-      //         type: "radialBar",
-      //         height: 150,
-      //       },
-      //       plotOptions: {
-      //         radialBar: {
-      //           hollow: {
-      //             size: "50%",
-      //           },
-      //           dataLabels: {
-      //             name: {
-      //               show: false,
-      //             },
-      //             value: {
-      //               fontSize: "16px",
-      //               fontWeight: "600",
-
-      //               show: true,
-      //               formatter: function (val) {
-      //                 return `${Math.round(val)}%`;
-      //               },
-      //               color: progressValue >= 100 ? "#00E396" : "#FF4560",
-      //               offsetY: 7,
-      //               offsetX: 0,
-      //             },
-      //           },
-      //         },
-      //       },
-      //       fill: {
-      //         colors: progressValue >= 100 ? ["#00E396"] : ["#FF4560"],
-      //       },
-      //       series: [progressValue],
-      //     };
-
-      //     return (
-      //       <div className="w-full flex items-center justify-center">
-      //         <ReactApexChart
-      //           options={chartOptions}
-      //           series={[progressValue]}
-      //           type="radialBar"
-      //           height={130}
-      //           className="flex items-center justify-center"
-      //         />
-      //       </div>
-      //     );
-      //   },
-      //   filterFn: (row, columnId, filterValue) => {
-      //     const cellValue =
-      //       row.original[columnId]?.toString().toLowerCase() || "";
-      //     return cellValue.includes(filterValue.toLowerCase());
-      //   },
-      //   filterVariant: "select",
-      // },
       {
         accessorKey: "progress",
         minSize: 100,
@@ -1298,7 +1193,7 @@ export default function Goals() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        background: "linear-gradient(120deg,#ff7e5f,#feb47b, #ff7e5f )",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1333,40 +1228,8 @@ export default function Goals() {
   }, [table.getFilteredRowModel().rows]);
 
   return (
-    <Layout>
-      <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className=" text-xl sm:text-2xl font-semibold ">Goals</h1>
-
-            <span
-              className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
-              onClick={() => {
-                handleClearFilters();
-              }}
-              title="Clear filters"
-            >
-              <IoClose className="h-6 w-6  cursor-pointer" />
-            </span>
-            <span
-              onClick={() => setShowGraph(!showGraph)}
-              className="ml-[2rem] mb-1 p-1 rounded-md hover:shadow-md transition-all duration-300 cursor-pointer text-orange-500 hover:text-orange-600 bg-gray-200/60 hover:bg-gray-200/80 border"
-            >
-              <VscGraph className="h-6 w-6" />
-            </span>
-          </div>
-
-          {/* ---------Template Buttons */}
-          <div className="flex items-center gap-4">
-            <button
-              className={`${style.button1} text-[15px] `}
-              onClick={() => setShow(true)}
-              style={{ padding: ".4rem 1rem" }}
-            >
-              New Goal
-            </button>
-          </div>
-        </div>
+    <>
+      <div className=" relative w-full h-[100%] overflow-y-auto">
         {/* ----------Buttons------ */}
         <div className="flex items-center gap-5 mt-4">
           <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-2 transition-all duration-300 w-fit">
@@ -1393,6 +1256,12 @@ export default function Goals() {
               Completed
             </button>
           </div>
+          <span
+            onClick={() => setShowGraph(!showGraph)}
+            className="ml-[2rem] mt-2 p-1 rounded-md hover:shadow-md transition-all duration-300 cursor-pointer text-orange-500 hover:text-orange-600 bg-gray-200/60 hover:bg-gray-200/80 border"
+          >
+            <VscGraph className="h-6 w-6" />
+          </span>
         </div>
         <hr className="w-full h-[1px] bg-gray-300 my-4" />
 
@@ -1448,6 +1317,6 @@ export default function Goals() {
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 }

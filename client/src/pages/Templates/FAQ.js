@@ -16,7 +16,7 @@ import { RiEdit2Line } from "react-icons/ri";
 import Loader from "../../utlis/Loader";
 import { IoSearch } from "react-icons/io5";
 
-export default function FAQ({ setSelectedTab, selectedTab, access }) {
+export default function FAQ({ setSelectedTab, selectedTab, access, page }) {
   const { auth, searchValue } = useAuth();
   const [showCategory, setShowCategory] = useState(false);
   const [categoryData, setCategoryData] = useState([]);
@@ -258,7 +258,11 @@ export default function FAQ({ setSelectedTab, selectedTab, access }) {
   return (
     <div className="w-full min-h-screen">
       {selectedTab === "faq" && (
-        <div className="flex items-center justify-between">
+        <div
+          className={`flex items-center justify-between ${
+            page === "Mylist" && "hidden"
+          }`}
+        >
           <div className="flex items-center gap-2">
             <h1 className=" text-xl sm:text-2xl font-semibold ">FAQ's</h1>
 

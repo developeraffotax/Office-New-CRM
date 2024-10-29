@@ -48,7 +48,7 @@ export default function HandleGoalModal({
       );
       if (data) {
         setSubject(data.goal.subject);
-        setJobHolder(data.goal.jobHolder);
+        setJobHolder(data.goal.jobHolder._id);
         setStartDate(formattedStartDate);
         setEndDate(formattedEndDate);
         setAchievement(data.goal.achievement);

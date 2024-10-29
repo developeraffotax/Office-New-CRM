@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { mkConfig, generateCsv, download } from "export-to-csv";
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -7,9 +6,6 @@ import {
 import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
 
-import Layout from "../../components/Loyout/Layout";
-import { style } from "../../utlis/CommonStyle";
-import { IoClose } from "react-icons/io5";
 import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import toast from "react-hot-toast";
 import axios from "axios";
@@ -18,15 +14,13 @@ import { MdCheckCircle, MdInsertComment } from "react-icons/md";
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import JobCommentModal from "../Jobs/JobCommentModal";
+import JobCommentModal from "../../pages/Jobs/JobCommentModal";
 
-export default function Tickets() {
+export default function Tickets({ emailData, setEmailData }) {
   const { auth } = useAuth();
   const [showSendModal, setShowSendModal] = useState(false);
-  const [emailData, setEmailData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedTab, setSelectedTab] = useState("progress");
   const [users, setUsers] = useState([]);
   const [userName, setUserName] = useState([]);
   const companyData = ["Affotax", "Outsource"];
@@ -49,27 +43,6 @@ export default function Tickets() {
       setAccess(filterAccess);
     }
   }, [auth]);
-
-  // -------Get All Emails-------
-  const getAllEmails = async () => {
-    setIsLoading(true);
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets`
-      );
-      if (data) {
-        setEmailData(data.emails);
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.log(error);
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    getAllEmails();
-  }, []);
 
   // With Loading
   const getEmails = async () => {
@@ -347,6 +320,11 @@ export default function Tickets() {
         size: 120,
         grow: false,
         Header: ({ column }) => {
+          useEffect(() => {
+            column.setFilterValue("Affotax");
+
+            // eslint-disable-next-line
+          }, []);
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -917,11 +895,6 @@ export default function Tickets() {
                 <span className="text-[1rem] cursor-pointer relative">
                   <MdInsertComment className="h-5 w-5 text-orange-600 " />
                 </span>
-                {/* {readComments?.length > 0 && (
-                  <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
-                    {readComments?.length}
-                  </span>
-                )} */}
               </div>
             </div>
           );
@@ -962,14 +935,6 @@ export default function Tickets() {
     [users, auth, emailData, filteredData]
   );
 
-  // Clear table Filter
-  const handleClearFilters = () => {
-    table.setColumnFilters([]);
-
-    table.setGlobalFilter("");
-    // table.resetColumnFilters();
-  };
-
   const table = useMaterialReactTable({
     columns,
     data: emailData || [],
@@ -995,7 +960,7 @@ export default function Tickets() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        background: "linear-gradient(120deg,#ff7e5f,#feb47b, #ff7e5f )",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1036,82 +1001,8 @@ export default function Tickets() {
   }, []);
 
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className=" text-xl sm:text-2xl font-semibold ">Tickets</h1>
-
-            <span
-              className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
-              onClick={() => {
-                handleClearFilters();
-              }}
-              title="Clear filters"
-            >
-              <IoClose className="h-6 w-6  cursor-pointer" />
-            </span>
-          </div>
-
-          {/* ---------Template Buttons */}
-          <div className="flex items-center gap-4">
-            <button
-              className={`${style.button1} text-[15px] `}
-              onClick={() => setShowSendModal(true)}
-              style={{ padding: ".4rem 1rem" }}
-            >
-              New Ticket
-            </button>
-          </div>
-        </div>
-
-        <>
-          <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-2 transition-all duration-300 w-fit">
-            <button
-              className={`py-1 px-2 outline-none w-[6rem] transition-all duration-300   ${
-                selectedTab === "progress"
-                  ? "bg-orange-500 text-white border-r-2 border-orange-500"
-                  : "text-black bg-gray-100"
-              }`}
-              onClick={() => setSelectedTab("progress")}
-            >
-              Progress
-            </button>
-            <button
-              className={`py-1 px-2 outline-none transition-all duration-300 w-[6rem]  ${
-                selectedTab === "complete"
-                  ? "bg-orange-500 text-white"
-                  : "text-black bg-gray-100 hover:bg-slate-200"
-              }`}
-              onClick={() => {
-                setSelectedTab("complete");
-                navigate("/tickets/complete");
-              }}
-            >
-              Completed
-            </button>
-            {(auth?.user?.role?.name === "Admin" ||
-              access.includes("Inbox")) && (
-              <button
-                className={`py-1 px-2 outline-none transition-all border-l-2  border-orange-500 duration-300 w-[6rem]  ${
-                  selectedTab === "inbox"
-                    ? "bg-orange-500 text-white"
-                    : "text-black bg-gray-100 hover:bg-slate-200"
-                }`}
-                onClick={() => {
-                  // setSelectedTab("inbox");
-                  navigate("/tickets/inbox");
-                }}
-              >
-                Inbox
-              </button>
-            )}
-          </div>
-          <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
-        </>
-
-        <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
-
         {/* ---------Table Detail---------- */}
         <div className="w-full h-full">
           {isLoading ? (
@@ -1157,6 +1048,6 @@ export default function Tickets() {
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 }

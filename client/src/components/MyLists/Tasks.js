@@ -28,9 +28,8 @@ import TaskDetail from "../../pages/Tasks/TaskDetail";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
-const Tasks = ({ tasksData, loading, projects }) => {
-  const { auth, filterId, anyTimerRunning, searchValue, setSearchValue } =
-    useAuth();
+const Tasks = ({ tasksData, loading, projects, setTasksData }) => {
+  const { auth, filterId, anyTimerRunning } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [users, setUsers] = useState([]);
   const [openAddProject, setOpenAddProject] = useState(false);
@@ -56,19 +55,18 @@ const Tasks = ({ tasksData, loading, projects }) => {
   const [taskID, setTaskID] = useState("");
   const [projectName, setProjectName] = useState("");
   const [totalHours, setTotalHours] = useState("0");
-  const [allProjects, setAllProjects] = useState([]);
+  const [allProjects, setAllProjects] = useState(projects);
   const [labelData, setLabelData] = useState([]);
   const commentStatusRef = useRef(null);
   const [showlabel, setShowlabel] = useState(false);
   const [timerId, setTimerId] = useState("");
   const closeProject = useRef(null);
-  const [state, setState] = useState("");
   const [activity, setActivity] = useState("Chargeable");
   const [access, setAccess] = useState([]);
 
-  // console.log("filterData", filterData);
+  console.log("filterData", filterData);
 
-  // console.log("tasksData:", tasksData);
+  console.log("tasksData:", tasksData);
 
   useEffect(() => {
     const timeId = localStorage.getItem("jobId");
@@ -85,6 +83,18 @@ const Tasks = ({ tasksData, loading, projects }) => {
       setAccess(filterAccess);
     }
   }, [auth]);
+
+  const getAllTasks = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/all`
+      );
+
+      setTasksData(data?.tasks);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   //   Get All Labels
   const getlabel = async () => {
@@ -161,6 +171,7 @@ const Tasks = ({ tasksData, loading, projects }) => {
       if (data?.success) {
         const updateTask = data?.task;
         toast.success("Project updated!");
+        getAllTasks();
 
         if (active !== "All") {
           setFilterData((prevData) =>
@@ -170,10 +181,6 @@ const Tasks = ({ tasksData, loading, projects }) => {
           );
         }
       }
-      // Send Socket Timer
-      socketId.emit("addTask", {
-        note: "New Task Added",
-      });
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
@@ -193,6 +200,8 @@ const Tasks = ({ tasksData, loading, projects }) => {
         { jobHolder, lead, status }
       );
       if (data) {
+        getAllTasks();
+
         const updateTask = data?.task;
         toast.success("Task updated successfully!");
 
@@ -235,6 +244,7 @@ const Tasks = ({ tasksData, loading, projects }) => {
         toast.success("Task updated successfully!");
 
         if (filterData) {
+          getAllTasks();
           setFilterData((prevData) =>
             prevData?.map((item) =>
               item?._id === updateTask?._id ? updateTask : item
@@ -242,11 +252,6 @@ const Tasks = ({ tasksData, loading, projects }) => {
           );
         }
       }
-
-      // Send Socket Timer
-      socketId.emit("addTask", {
-        note: "New Task Added",
-      });
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
@@ -282,19 +287,21 @@ const Tasks = ({ tasksData, loading, projects }) => {
   };
 
   // Filter by Header Search
-  useEffect(() => {
-    if (searchValue) {
-      const filteredData = tasksData.filter(
-        (item) =>
-          item?.task.toLowerCase().includes(searchValue.toLowerCase()) ||
-          item?.jobHolder.toLowerCase().includes(searchValue.toLowerCase())
-      );
-      setFilterData(filteredData);
-      console.log("SearchData:", filteredData);
-    } else {
-      setFilterData(tasksData);
-    }
-  }, [searchValue, tasksData]);
+  // useEffect(() => {
+  //   const filteredData = searchValue
+  //     ? tasksData.filter(
+  //         (item) =>
+  //           item?.task.toLowerCase().includes(searchValue.toLowerCase()) ||
+  //           item?.jobHolder.toLowerCase().includes(searchValue.toLowerCase())
+  //       )
+  //     : tasksData;
+
+  //   if (filteredData !== filterData) {
+  //     setFilterData(filteredData);
+  //   }
+
+  //   // eslint-disable-next-line
+  // }, [searchValue, tasksData]);
 
   // -----------Copy Task------->
 
@@ -302,9 +309,6 @@ const Tasks = ({ tasksData, loading, projects }) => {
     const taskCopy = { ...originalTask };
     taskCopy.task = "";
     console.log("taskCopy", taskCopy);
-
-    // delete taskCopy._id;
-    // setTasksData((prevData) => [...prevData, taskCopy]);
 
     const { data } = await axios.post(
       `${process.env.REACT_APP_API_URL}/api/v1/tasks/create/task`,
@@ -322,6 +326,7 @@ const Tasks = ({ tasksData, loading, projects }) => {
     );
     if (data) {
       // Send Socket Timer
+      getAllTasks();
       socketId.emit("addTask", {
         note: "New Task Added",
       });
@@ -333,22 +338,6 @@ const Tasks = ({ tasksData, loading, projects }) => {
     if (timerRef.current) {
       timerRef.current.stopTimer();
     }
-  };
-
-  // -----------Download in CSV------>
-  const flattenData = (data) => {
-    return data?.map((row) => ({
-      projectName: row.project.projectName,
-      projectId: row.project._id,
-      jobHolder: row.jobHolder,
-      task: row.task,
-      hours: row.hours,
-      startDate: row.startDate,
-      deadline: row.deadline || "",
-      status: row.status || "",
-      lead: row.lead || "",
-      estimate_Time: row.estimate_Time || "",
-    }));
   };
 
   // ---------Handle Delete Task-------------
@@ -376,14 +365,9 @@ const Tasks = ({ tasksData, loading, projects }) => {
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/delete/task/${id}`
       );
       if (data) {
-        // getAllTasks();
+        getAllTasks();
         setShowDetail(false);
         toast.success("Task deleted successfully!");
-
-        // Send Socket Timer
-        socketId.emit("addTask", {
-          note: "New Task Added",
-        });
       }
     } catch (error) {
       console.log(error);
@@ -414,7 +398,8 @@ const Tasks = ({ tasksData, loading, projects }) => {
         { name, color }
       );
       if (data) {
-        if (filterId || active !== "All" || filterData || active1) {
+        getAllTasks();
+        if (filterData) {
           setFilterData((prevData = []) =>
             prevData?.map((item) =>
               item._id === id ? { ...item, label: { name, color } } : item
@@ -446,6 +431,7 @@ const Tasks = ({ tasksData, loading, projects }) => {
         { status: "completed" }
       );
       if (data?.success) {
+        getAllTasks();
         const updateTask = data?.task;
         setShowDetail(false);
         toast.success("Status completed successfully!");
@@ -621,7 +607,7 @@ const Tasks = ({ tasksData, loading, projects }) => {
                 type="search"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-white rounded-md border border-gray-300 outline-none"
               />
             </div>
           );
@@ -711,14 +697,14 @@ const Tasks = ({ tasksData, loading, projects }) => {
           const [showId, setShowId] = useState("");
 
           const updateHours = async (e) => {
-            e.preventDefault();
             try {
               const { data } = await axios.put(
                 `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/hours/${showId}`,
                 { hours: hour }
               );
               if (data) {
-                if (filterId || active || active1) {
+                getAllTasks();
+                if (filterData) {
                   setFilterData((prevData) =>
                     prevData?.map((item) =>
                       item._id === data?.task?._id
@@ -727,6 +713,14 @@ const Tasks = ({ tasksData, loading, projects }) => {
                     )
                   );
                 }
+
+                setTasksData((prevData) =>
+                  prevData?.map((item) =>
+                    item._id === data?.task?._id
+                      ? { ...item, hours: hour }
+                      : item
+                  )
+                );
 
                 setHour("");
                 setShow(false);
@@ -741,14 +735,13 @@ const Tasks = ({ tasksData, loading, projects }) => {
           return (
             <div className="w-full flex items-center justify-center">
               {show && row.original._id === showId ? (
-                <form onSubmit={updateHours}>
-                  <input
-                    type="text"
-                    value={hour}
-                    onChange={(e) => setHour(e.target.value)}
-                    className="w-full h-[1.7rem] px-[2px] outline-none rounded-md cursor-pointer"
-                  />
-                </form>
+                <input
+                  type="text"
+                  value={hour}
+                  onChange={(e) => setHour(e.target.value)}
+                  onBlur={(e) => updateHours(e.target.value)}
+                  className="w-full h-[1.7rem] px-[2px] outline-none rounded-md cursor-pointer"
+                />
               ) : (
                 <span
                   className="text-[15px] font-medium"
@@ -1212,9 +1205,6 @@ const Tasks = ({ tasksData, loading, projects }) => {
         header: "Task Status",
         Header: ({ column }) => {
           const statusData = ["To do", "Progress", "Review", "On hold"];
-          useEffect(() => {
-            column.setFilterValue(state);
-          }, [column]);
 
           useEffect(() => {
             column.setFilterValue("Progress");
@@ -1235,9 +1225,7 @@ const Tasks = ({ tasksData, loading, projects }) => {
               <div className="flex ">
                 <select
                   value={column.getFilterValue() || ""}
-                  onChange={(e) =>
-                    column.setFilterValue(e.target.value || state)
-                  }
+                  onChange={(e) => column.setFilterValue(e.target.value)}
                   className="ml-1 font-normal w-full  h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
                 >
                   <option value="">Select</option>
@@ -1655,18 +1643,7 @@ const Tasks = ({ tasksData, loading, projects }) => {
       },
     ],
     // eslint-disable-next-line
-    [
-      users,
-      play,
-      note,
-      auth,
-      currentPath,
-      projects,
-      filterData,
-      totalHours,
-      tasksData,
-      state,
-    ]
+    [users, play, note, auth, projects, filterData, totalHours, tasksData]
   );
 
   // Clear table Filter
@@ -1674,19 +1651,14 @@ const Tasks = ({ tasksData, loading, projects }) => {
     table.setColumnFilters([]);
 
     table.setGlobalFilter("");
-    // table.resetColumnFilters();
   };
 
   const table = useMaterialReactTable({
     columns,
-    data:
-      (active === "All" && !active1 && !filterId && !searchValue
-        ? tasksData
-        : filterData) || [],
-
+    data: (active === "All" ? tasksData : filterData) || [],
     enableStickyHeader: true,
     enableStickyFooter: true,
-    // columnFilterDisplayMode: "popover",
+    getRowId: (row) => row._id,
     muiTableContainerProps: { sx: { maxHeight: "860px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
@@ -1696,9 +1668,6 @@ const Tasks = ({ tasksData, loading, projects }) => {
     enableColumnResizing: true,
     enableTopToolbar: true,
     enableBottomToolbar: true,
-    // enableRowSelection: true,
-    // enableEditing: true,
-    // state: { isLoading: loading },
 
     enablePagination: true,
     initialState: {
@@ -1711,7 +1680,7 @@ const Tasks = ({ tasksData, loading, projects }) => {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        background: "linear-gradient(120deg,#ff7e5f,#feb47b, #ff7e5f )",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1750,15 +1719,15 @@ const Tasks = ({ tasksData, loading, projects }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // useMemo(() => {
-  //   const filteredRows = table
-  //     .getFilteredRowModel()
-  //     .rows.map((row) => row.original);
+  useMemo(() => {
+    const filteredRows = table
+      .getFilteredRowModel()
+      .rows.map((row) => row.original);
 
-  //   setFilterData(filteredRows);
+    setFilterData(filteredRows);
 
-  //   // eslint-disable-next-line
-  // }, [table.getFilteredRowModel().rows]);
+    // eslint-disable-next-line
+  }, [table.getFilteredRowModel().rows]);
 
   return (
     <>

@@ -57,7 +57,7 @@ export default function JobCommentModal({
       const query = value.slice(mentionIndex + 1);
 
       // Filter users based on the query after "@"
-      const filteredUsers = users.filter((user) =>
+      const filteredUsers = users?.filter((user) =>
         user.toLowerCase().startsWith(query.toLowerCase())
       );
 
@@ -120,6 +120,18 @@ export default function JobCommentModal({
             note: "New Task Added",
           });
         }
+      } else if (type === "Goals") {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/goals/get/comment/${jobId}`
+        );
+        if (data) {
+          setIsLoading(false);
+          setCommentData(data?.comments?.comments);
+          // Send Socket Timer
+          socketId.emit("addTask", {
+            note: "New Task Added",
+          });
+        }
       } else {
         const { data } = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/v1/tickets/ticket/comments/${jobId}`
@@ -158,6 +170,18 @@ export default function JobCommentModal({
         );
         if (data) {
           setCommentData(data?.comments?.comments);
+        }
+      } else if (type === "Goals") {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/goals/get/comment/${jobId}`
+        );
+        if (data) {
+          setIsLoading(false);
+          setCommentData(data?.comments?.comments);
+          // Send Socket
+          socketId.emit("addTask", {
+            note: "New Task Added",
+          });
         }
       } else {
         const { data } = await axios.get(
@@ -276,13 +300,13 @@ export default function JobCommentModal({
   // -----Like Counts----->
   useEffect(() => {
     setCommentLikes(
-      commentData.reduce((acc, comment) => {
+      commentData?.reduce((acc, comment) => {
         acc[comment._id] = comment.likes.includes(auth.user.id);
         return acc;
       }, {})
     );
     setLikeCounts(
-      commentData.reduce((acc, comment) => {
+      commentData?.reduce((acc, comment) => {
         acc[comment._id] = comment.likes.length;
         return acc;
       }, {})

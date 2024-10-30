@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from "react";
 import Loader from "../../utlis/Loader";
 import {
   MaterialReactTable,
@@ -15,7 +21,7 @@ import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { MdOutlineAnalytics } from "react-icons/md";
 
-export default function Leads() {
+const Leads = forwardRef(({}, ref) => {
   const { auth } = useAuth();
   const [selectedTab, setSelectedTab] = useState("progress");
   const [isLoading, setIsLoading] = useState(false);
@@ -68,6 +74,7 @@ export default function Leads() {
 
   // -------Get All Leads-------
   const getAllLeads = async () => {
+    setIsLoading(true);
     try {
       if (selectedTab === "progress") {
         const { data } = await axios.get(
@@ -187,25 +194,6 @@ export default function Leads() {
     // eslint-disable-next-line
   }, []);
 
-  //   Create New Lead
-  const handleCreateLead = async () => {
-    try {
-      const { data } = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/v1/leads/create/lead`,
-        { ...formData }
-      );
-      if (data) {
-        setLeadData((prevData) =>
-          prevData ? [...prevData, data.lead] : [data.lead]
-        );
-        getAllLeads();
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error(error?.response?.data?.message);
-    }
-  };
-
   //  ---------- Update Lead Status------>
   const handleLeadStatus = (leadId, status) => {
     Swal.fire({
@@ -280,13 +268,6 @@ export default function Leads() {
         `${process.env.REACT_APP_API_URL}/api/v1/leads/delete/lead/${id}`
       );
       if (data) {
-        const filteredData = leadData?.filter((item) => item._id !== id);
-        setLeadData(filteredData);
-
-        if (filteredData) {
-          const filterData1 = filteredData?.filter((item) => item._id !== id);
-          setFilteredData(filterData1);
-        }
         getAllLeads();
       }
     } catch (error) {
@@ -376,9 +357,6 @@ export default function Leads() {
         }
       );
       if (data) {
-        setLeadData((prevData) =>
-          prevData ? [...prevData, data.lead] : [data.lead]
-        );
         getAllLeads();
       }
     } catch (error) {
@@ -1579,9 +1557,13 @@ export default function Leads() {
   // Clear table Filter
   const handleClearFilters = () => {
     table.setColumnFilters([]);
+
     table.setGlobalFilter("");
-    setSelectFilter("");
   };
+
+  useImperativeHandle(ref, () => ({
+    handleClearFilters,
+  }));
 
   const table = useMaterialReactTable({
     columns,
@@ -1608,7 +1590,7 @@ export default function Leads() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        background: "linear-gradient(120deg,#ff7e5f,#feb47b, #ff7e5f )",
+        background: "#FB923C",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1738,4 +1720,6 @@ export default function Leads() {
       </div>
     </>
   );
-}
+});
+
+export default Leads;

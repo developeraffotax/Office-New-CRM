@@ -622,7 +622,7 @@ export default function Template() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "#FB923C",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -653,16 +653,18 @@ export default function Template() {
         {selectedTab === "templates" && (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h1 className=" text-xl sm:text-2xl font-semibold ">Templates</h1>
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
+                Templates
+              </h1>
 
               <span
-                className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+                className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
                 onClick={() => {
                   handleClearFilters();
                 }}
                 title="Clear filters"
               >
-                <IoClose className="h-6 w-6  cursor-pointer" />
+                <IoClose className="h-6 w-6 text-white" />
               </span>
             </div>
 
@@ -744,7 +746,7 @@ export default function Template() {
         {/* ------------------ */}
         {selectedTab === "templates" && (
           <>
-            <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-2 transition-all duration-300 w-fit">
+            <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
               <button
                 className={`py-1 px-2 w-[6.5rem] outline-none transition-all duration-300 ${
                   selectedTab === "templates"

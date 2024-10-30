@@ -1,4 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { style } from "../../utlis/CommonStyle";
 import axios from "axios";
 import { useAuth } from "../../context/authContext";
@@ -10,7 +17,7 @@ import Loader from "../../utlis/Loader";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { AiTwotoneDelete } from "react-icons/ai";
-import { MdCheckCircle } from "react-icons/md";
+import { MdCheckCircle, MdInsertComment } from "react-icons/md";
 import { MdOutlineModeEdit } from "react-icons/md";
 import Swal from "sweetalert2";
 import ReactApexChart from "react-apexcharts";
@@ -19,17 +26,22 @@ import { VscGraph } from "react-icons/vsc";
 import CompletedGoals from "../../pages/Goal/CompletedGoals";
 import HandleGoalModal from "../Goal/HandleGoalModal";
 import ChartData from "../../pages/Goal/ChartData";
+import JobCommentModal from "../../pages/Jobs/JobCommentModal";
 
-export default function Goals({ goalsData, setGoalsData }) {
+const Goals = forwardRef(({ goalsData, setGoalsData }, ref) => {
   const { auth } = useAuth();
   const [show, setShow] = useState(false);
   const [goalId, setGoalId] = useState("");
   const [users, setUsers] = useState([]);
+  const [userName, setUserName] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filterData, setFilterData] = useState([]);
   const [selectedTab, setSelectedTab] = useState("progress");
   const [showGraph, setShowGraph] = useState(false);
   const [selectChart, setSelectChart] = useState("Line & Bar");
+  const [isComment, setIsComment] = useState(false);
+  const [commentTaskId, setCommentTaskId] = useState("");
+  const commentStatusRef = useRef(null);
   const [formData, setFormData] = useState({
     subject: "",
     achievement: "",
@@ -69,6 +81,16 @@ export default function Goals({ goalsData, setGoalsData }) {
         data?.users?.filter((user) =>
           user.role?.access.some((item) => item?.permission?.includes("Goals"))
         ) || []
+      );
+
+      setUserName(
+        data?.users
+          ?.filter((user) =>
+            user.role?.access.some((item) =>
+              item?.permission?.includes("Goals")
+            )
+          )
+          ?.map((user) => user.name) || []
       );
     } catch (error) {
       console.log(error);
@@ -197,10 +219,16 @@ export default function Goals({ goalsData, setGoalsData }) {
     return `${year}-${month}`;
   };
   // Clear table Filter
+  // Clear table Filter
   const handleClearFilters = () => {
     table.setColumnFilters([]);
+
     table.setGlobalFilter("");
   };
+
+  useImperativeHandle(ref, () => ({
+    handleClearFilters,
+  }));
 
   const columns = useMemo(
     () => [
@@ -1040,7 +1068,44 @@ export default function Goals({ goalsData, setGoalsData }) {
         },
         filterVariant: "select",
       },
+      {
+        accessorKey: "comments",
+        header: "Comments",
+        Cell: ({ cell, row }) => {
+          const comments = cell.getValue();
+          const [readComments, setReadComments] = useState([]);
 
+          useEffect(() => {
+            const filterComments = comments?.filter(
+              (item) => item.status === "unread"
+            );
+            setReadComments(filterComments);
+            // eslint-disable-next-line
+          }, [comments]);
+
+          return (
+            <div
+              className="flex items-center justify-center gap-1 relative w-full h-full"
+              onClick={() => {
+                setCommentTaskId(row.original._id);
+                setIsComment(true);
+              }}
+            >
+              <div className="relative">
+                <span className="text-[1rem] cursor-pointer relative">
+                  <MdInsertComment className="h-5 w-5 text-orange-600 " />
+                </span>
+                {readComments?.length > 0 && (
+                  <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
+                    {readComments?.length}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        },
+        size: 90,
+      },
       //
       {
         accessorKey: "actions",
@@ -1098,12 +1163,13 @@ export default function Goals({ goalsData, setGoalsData }) {
                   column.setFilterValue("");
                 }}
               >
-                Progress
+                Progress Analytics
               </span>
             </div>
           );
         },
         Cell: ({ cell, row }) => {
+          const goalType = row.original.goalType;
           const achievement = parseFloat(row.original.achievement) || 0;
           const initialAchievedCount =
             parseFloat(row.original.achievedCount) || 0;
@@ -1115,10 +1181,8 @@ export default function Goals({ goalsData, setGoalsData }) {
               ? ((currentProgress / achievement) * 100).toFixed(2)
               : 0;
 
-          const progressValue = Math.min(
-            calculateProgress(),
-            initialAchievedCount > achievement ? initialAchievedCount : 100
-          );
+          // const progressValue = Math.min(calculateProgress(), 100);
+          const progressValue = calculateProgress();
 
           // Animate from 0 to initialAchievedCount
           useEffect(() => {
@@ -1136,8 +1200,11 @@ export default function Goals({ goalsData, setGoalsData }) {
           }, [initialAchievedCount]);
 
           return (
-            <div className="w-full flex items-center justify-start h-[2.5rem] bg-gray-300 rounded-md overflow-hidden">
-              <div className="bg-white border rounded-md p-1 shadow-md drop-shadow-md w-full h-full">
+            <div className="w-full flex items-center justify-start h-[2.7rem] bg-gray-300 rounded-md overflow-hidden">
+              <div
+                className="bg-white border rounded-md p-1 cursor-pointer shadow-md drop-shadow-md w-full h-full"
+                title={`${goalType} - ${progressValue}% `}
+              >
                 <div
                   style={{
                     width: `${progressValue > 100 ? 100 : progressValue}%`,
@@ -1193,7 +1260,7 @@ export default function Goals({ goalsData, setGoalsData }) {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        background: "linear-gradient(120deg,#ff7e5f,#feb47b, #ff7e5f )",
+        background: "#FB923C",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1226,6 +1293,21 @@ export default function Goals({ goalsData, setGoalsData }) {
     console.log("Filtered Data:", filteredRows);
     setFilterData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
+
+  // Close Comment Box to click anywhere
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        commentStatusRef.current &&
+        !commentStatusRef.current.contains(event.target)
+      ) {
+        setIsComment(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <>
@@ -1298,7 +1380,7 @@ export default function Goals({ goalsData, setGoalsData }) {
         )}
         {/* ------------Graphic View setShowGraph-------- */}
         {showGraph && (
-          <div className="absolute top-[0rem] right-0 w-[21rem] sm:w-[50%] h-full z-[999] bg-white flex  flex-col gap-4 py-4  px-4">
+          <div className="fixed top-[4rem] right-0 w-[21rem] sm:w-[50%] h-full z-[999] bg-white flex  flex-col gap-4 py-4  px-4">
             <div className="inputBox">
               <select
                 value={selectChart}
@@ -1316,7 +1398,28 @@ export default function Goals({ goalsData, setGoalsData }) {
             />
           </div>
         )}
+
+        {/* ------------Comment Modal---------*/}
+
+        {isComment && (
+          <div
+            ref={commentStatusRef}
+            className="fixed bottom-4 right-4 w-[30rem] max-h-screen z-[999]  flex items-center justify-center"
+          >
+            <JobCommentModal
+              setIsComment={setIsComment}
+              jobId={commentTaskId}
+              setJobId={setCommentTaskId}
+              users={userName}
+              type={"Goals"}
+              getTasks1={getGoals}
+              page={"Goals"}
+            />
+          </div>
+        )}
       </div>
     </>
   );
-}
+});
+
+export default Goals;

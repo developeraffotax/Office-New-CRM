@@ -82,7 +82,10 @@ export const updateGoal = async (req, res) => {
 // Get All Goal
 export const fetchAllGoal = async (req, res) => {
   try {
-    const goals = await goalModel.find({}).populate("jobHolder");
+    const goals = await goalModel
+      .find({})
+      .populate("jobHolder")
+      .select("-comments");
     const clients = await jobsModel.find({});
     const leads = await leadModel.find({});
     const wonleads = await leadModel.find({ status: won });
@@ -192,6 +195,7 @@ export const fetchAchievedDataByGoalType = async (req, res) => {
     const goals = await goalModel
       .find({ status: { $ne: "completed" } })
       .populate("jobHolder");
+    // .select("-comments");
 
     const updatedGoals = await Promise.all(
       goals.map(async (goal) => {
@@ -289,7 +293,8 @@ export const fetchAchievedDataByGoalComplete = async (req, res) => {
   try {
     const goals = await goalModel
       .find({ status: { $ne: "Progress" } })
-      .populate("jobHolder");
+      .populate("jobHolder")
+      .select("-comments");
 
     const updatedGoals = await Promise.all(
       goals.map(async (goal) => {
@@ -378,6 +383,36 @@ export const fetchAchievedDataByGoalComplete = async (req, res) => {
       success: false,
       message: "Error fetching goals with achieved data!",
       error: error.message,
+    });
+  }
+};
+
+// Get Comments
+export const singleGoalComments = async (req, res) => {
+  try {
+    const goalId = req.params.id;
+
+    if (!goalId) {
+      return res.status(400).send({
+        success: false,
+        message: "Goal id is required!",
+      });
+    }
+
+    const goalComments = await goalModel
+      .findById({ _id: goalId })
+      .select("comments");
+
+    res.status(200).send({
+      success: true,
+      comments: goalComments,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in get single job!",
+      error: error,
     });
   }
 };

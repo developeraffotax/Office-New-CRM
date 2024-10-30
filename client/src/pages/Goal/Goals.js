@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import { IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
@@ -13,26 +13,30 @@ import Loader from "../../utlis/Loader";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { AiTwotoneDelete } from "react-icons/ai";
-import { MdCheckCircle } from "react-icons/md";
+import { MdCheckCircle, MdInsertComment } from "react-icons/md";
 import { MdOutlineModeEdit } from "react-icons/md";
 import Swal from "sweetalert2";
 import ReactApexChart from "react-apexcharts";
 import CompletedGoals from "./CompletedGoals";
 import ChartData from "./ChartData";
-import { BsPieChartFill } from "react-icons/bs";
 import { VscGraph } from "react-icons/vsc";
+import JobCommentModal from "../Jobs/JobCommentModal";
 
 export default function Goals() {
   const { auth } = useAuth();
   const [show, setShow] = useState(false);
   const [goalId, setGoalId] = useState("");
   const [users, setUsers] = useState([]);
+  const [userName, setUserName] = useState([]);
   const [goalsData, setGoalsData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filterData, setFilterData] = useState([]);
   const [selectedTab, setSelectedTab] = useState("progress");
   const [showGraph, setShowGraph] = useState(false);
   const [selectChart, setSelectChart] = useState("Line & Bar");
+  const [isComment, setIsComment] = useState(false);
+  const [commentTaskId, setCommentTaskId] = useState("");
+  const commentStatusRef = useRef(null);
   const [formData, setFormData] = useState({
     subject: "",
     achievement: "",
@@ -48,6 +52,8 @@ export default function Goals() {
     "Total Lead",
     "Lead Won",
   ];
+
+  console.log("userName:", userName);
 
   // -------Get All Proposal-------
   const getAllGoals = async () => {
@@ -94,6 +100,16 @@ export default function Goals() {
           user.role?.access.some((item) => item?.permission?.includes("Goals"))
         ) || []
       );
+
+      setUserName(
+        data?.users
+          ?.filter((user) =>
+            user.role?.access.some((item) =>
+              item?.permission?.includes("Goals")
+            )
+          )
+          ?.map((user) => user.name) || []
+      );
     } catch (error) {
       console.log(error);
     }
@@ -120,7 +136,7 @@ export default function Goals() {
         const updateGoal = data.goal;
 
         setGoalsData((prevData) =>
-          prevData.filter((item) => item._id !== updateGoal._id)
+          prevData?.filter((item) => item._id !== updateGoal._id)
         );
         if (filterData) {
           setFilterData((prevData) =>
@@ -1059,6 +1075,46 @@ export default function Goals() {
         },
         filterVariant: "select",
       },
+      {
+        accessorKey: "comments",
+        header: "Comments",
+        Cell: ({ cell, row }) => {
+          const comments = cell.getValue();
+          const [readComments, setReadComments] = useState([]);
+
+          useEffect(() => {
+            const filterComments = comments?.filter(
+              (item) =>
+                item.status === "unread" &&
+                item?.mentionUser === auth?.user?.name
+            );
+            setReadComments(filterComments);
+            // eslint-disable-next-line
+          }, [comments]);
+
+          return (
+            <div
+              className="flex items-center justify-center gap-1 relative w-full h-full"
+              onClick={() => {
+                setCommentTaskId(row.original._id);
+                setIsComment(true);
+              }}
+            >
+              <div className="relative">
+                <span className="text-[1rem] cursor-pointer relative">
+                  <MdInsertComment className="h-5 w-5 text-orange-600 " />
+                </span>
+                {readComments?.length > 0 && (
+                  <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
+                    {readComments?.length}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        },
+        size: 90,
+      },
       //
       {
         accessorKey: "actions",
@@ -1220,10 +1276,8 @@ export default function Goals() {
               ? ((currentProgress / achievement) * 100).toFixed(2)
               : 0;
 
-          const progressValue = Math.min(
-            calculateProgress(),
-            initialAchievedCount > achievement ? initialAchievedCount : 100
-          );
+          // const progressValue = Math.min(calculateProgress(), 100);
+          const progressValue = calculateProgress();
 
           // Animate from 0 to initialAchievedCount
           useEffect(() => {
@@ -1298,7 +1352,7 @@ export default function Goals() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "#FB923C",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1332,28 +1386,47 @@ export default function Goals() {
     setFilterData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
 
+  // Close Comment Box to click anywhere
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        commentStatusRef.current &&
+        !commentStatusRef.current.contains(event.target)
+      ) {
+        setIsComment(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <Layout>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className=" text-xl sm:text-2xl font-semibold ">Goals</h1>
+          <div className="flex items-center gap-5">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
+              Goal's
+            </h1>
 
-            <span
-              className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
-              onClick={() => {
-                handleClearFilters();
-              }}
-              title="Clear filters"
-            >
-              <IoClose className="h-6 w-6  cursor-pointer" />
-            </span>
-            <span
-              onClick={() => setShowGraph(!showGraph)}
-              className="ml-[2rem] mb-1 p-1 rounded-md hover:shadow-md transition-all duration-300 cursor-pointer text-orange-500 hover:text-orange-600 bg-gray-200/60 hover:bg-gray-200/80 border"
-            >
-              <VscGraph className="h-6 w-6" />
-            </span>
+            <div className="flex items-center ">
+              <span
+                className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
+                onClick={() => {
+                  handleClearFilters();
+                }}
+                title="Clear filters"
+              >
+                <IoClose className="h-6 w-6 text-white" />
+              </span>
+              <span
+                onClick={() => setShowGraph(!showGraph)}
+                className="ml-[2rem] mb-1 p-1 rounded-md hover:shadow-md transition-all duration-300 cursor-pointer text-orange-500 hover:text-orange-600 bg-gray-200/60 hover:bg-gray-200/80 border"
+              >
+                <VscGraph className="h-6 w-6" />
+              </span>
+            </div>
           </div>
 
           {/* ---------Template Buttons */}
@@ -1368,8 +1441,8 @@ export default function Goals() {
           </div>
         </div>
         {/* ----------Buttons------ */}
-        <div className="flex items-center gap-5 mt-4">
-          <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-2 transition-all duration-300 w-fit">
+        <div className="flex items-center gap-5 mt-5">
+          <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden  transition-all duration-300 w-fit">
             <button
               className={`py-1 px-4  outline-none transition-all duration-300  w-[6rem] ${
                 selectedTab === "progress"
@@ -1444,6 +1517,25 @@ export default function Goals() {
               setShowGraph={setShowGraph}
               goalsData={filterData ? filterData : goalsData}
               selectChart={selectChart}
+            />
+          </div>
+        )}
+
+        {/* ------------Comment Modal---------*/}
+
+        {isComment && (
+          <div
+            ref={commentStatusRef}
+            className="fixed bottom-4 right-4 w-[30rem] max-h-screen z-[999]  flex items-center justify-center"
+          >
+            <JobCommentModal
+              setIsComment={setIsComment}
+              jobId={commentTaskId}
+              setJobId={setCommentTaskId}
+              users={userName}
+              type={"Goals"}
+              getTasks1={getGoals}
+              page={"Goals"}
             />
           </div>
         )}

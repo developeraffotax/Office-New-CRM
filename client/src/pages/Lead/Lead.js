@@ -1799,7 +1799,7 @@ export default function Lead() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "#FB923C",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1837,17 +1837,19 @@ export default function Lead() {
     <Layout>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className=" text-xl sm:text-2xl font-semibold ">Leads</h1>
+          <div className="flex items-center gap-5">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
+              Leads
+            </h1>
 
             <span
-              className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+              className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
               onClick={() => {
                 handleClearFilters();
               }}
               title="Clear filters"
             >
-              <IoClose className="h-6 w-6  cursor-pointer" />
+              <IoClose className="h-6 w-6 text-white" />
             </span>
           </div>
 
@@ -1865,7 +1867,7 @@ export default function Lead() {
         {/*  */}
         <>
           <div className="flex items-center gap-5">
-            <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-2 transition-all duration-300 w-fit">
+            <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
               <button
                 className={`py-1 px-4  outline-none transition-all duration-300  w-[6rem] ${
                   selectedTab === "progress"
@@ -1905,7 +1907,7 @@ export default function Lead() {
             </div>
             <button
               onClick={() => setActive(!active)}
-              className={`flex items-center justify-center px-2 py-[4px] mt-[6px] bg-gray-100  border border-gray-300 ${
+              className={`flex items-center justify-center px-2 py-[4px] mt-[1.2rem] bg-gray-100  border border-gray-300 ${
                 active && "bg-orange-600 text-white border-orange-500"
               }   rounded-md hover:shadow-md `}
             >

@@ -1,4 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { style } from "../../utlis/CommonStyle";
 import axios from "axios";
 import { IoClose } from "react-icons/io5";
@@ -28,12 +35,14 @@ import TaskDetail from "../../pages/Tasks/TaskDetail";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
-const Tasks = ({ tasksData, loading, projects, setTasksData }) => {
+const Tasks = forwardRef(({ tasksData, loading, setTasksData }, ref) => {
   const { auth, filterId, anyTimerRunning } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [users, setUsers] = useState([]);
   const [openAddProject, setOpenAddProject] = useState(false);
   const [projectId, setProjectId] = useState("");
+  const [projects, setProjects] = useState([]);
+  const [allProjects, setAllProjects] = useState([]);
   const [showProject, setShowProject] = useState(false);
   const [active, setActive] = useState("All");
   const [showCompleted, setShowCompleted] = useState(false);
@@ -55,7 +64,6 @@ const Tasks = ({ tasksData, loading, projects, setTasksData }) => {
   const [taskID, setTaskID] = useState("");
   const [projectName, setProjectName] = useState("");
   const [totalHours, setTotalHours] = useState("0");
-  const [allProjects, setAllProjects] = useState(projects);
   const [labelData, setLabelData] = useState([]);
   const commentStatusRef = useRef(null);
   const [showlabel, setShowlabel] = useState(false);
@@ -82,6 +90,24 @@ const Tasks = ({ tasksData, loading, projects, setTasksData }) => {
 
       setAccess(filterAccess);
     }
+  }, [auth]);
+
+  //---------- Get All Projects-----------
+  const getAllProjects = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/projects/get_all/project`
+      );
+      setAllProjects(data?.projects);
+      setProjects(data?.projects);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllProjects();
+    // eslint-disable-next-line
   }, [auth]);
 
   const getAllTasks = async () => {
@@ -285,23 +311,6 @@ const Tasks = ({ tasksData, loading, projects, setTasksData }) => {
       return "";
     }
   };
-
-  // Filter by Header Search
-  // useEffect(() => {
-  //   const filteredData = searchValue
-  //     ? tasksData.filter(
-  //         (item) =>
-  //           item?.task.toLowerCase().includes(searchValue.toLowerCase()) ||
-  //           item?.jobHolder.toLowerCase().includes(searchValue.toLowerCase())
-  //       )
-  //     : tasksData;
-
-  //   if (filteredData !== filterData) {
-  //     setFilterData(filteredData);
-  //   }
-
-  //   // eslint-disable-next-line
-  // }, [searchValue, tasksData]);
 
   // -----------Copy Task------->
 
@@ -684,7 +693,7 @@ const Tasks = ({ tasksData, loading, projects, setTasksData }) => {
               >
                 Hrs
               </span>
-              <span className="font-medium w-full text-center px-1 py-1 ml-1 rounded-md bg-gray-300/30 text-black">
+              <span className="font-medium w-full text-center px-1 py-1 ml-1 rounded-md bg-gray-50 text-black">
                 {totalHours}
               </span>
             </div>
@@ -1355,11 +1364,25 @@ const Tasks = ({ tasksData, loading, projects, setTasksData }) => {
         accessorKey: "timertracker",
         header: "Timer",
         Header: ({ column }) => {
+          const [isRunning, setIsRunning] = useState(false);
+
+          const handleCheckboxChange = () => {
+            setIsRunning(!isRunning);
+          };
           return (
             <div className=" flex flex-col gap-[2px] w-[5rem]">
               <span className="ml-1 cursor-pointer w-full text-center">
                 Timer
               </span>
+              {/* <div className="w-full flex items-center justify-center">
+                <input
+                  type="checkbox"
+                  className="cursor-pointer h-5 w-5 ml-3 "
+                  checked={isRunning}
+                  onChange={handleCheckboxChange}
+                />
+                <label className="ml-2 text-sm cursor-pointer"></label>
+              </div> */}
             </div>
           );
         },
@@ -1653,6 +1676,10 @@ const Tasks = ({ tasksData, loading, projects, setTasksData }) => {
     table.setGlobalFilter("");
   };
 
+  useImperativeHandle(ref, () => ({
+    handleClearFilters,
+  }));
+
   const table = useMaterialReactTable({
     columns,
     data: (active === "All" ? tasksData : filterData) || [],
@@ -1680,7 +1707,7 @@ const Tasks = ({ tasksData, loading, projects, setTasksData }) => {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        background: "linear-gradient(120deg,#ff7e5f,#feb47b, #ff7e5f )",
+        background: "#FB923C",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1895,6 +1922,6 @@ const Tasks = ({ tasksData, loading, projects, setTasksData }) => {
       )}
     </>
   );
-};
+});
 
 export default Tasks;

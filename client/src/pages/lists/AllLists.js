@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import { IoClose } from "react-icons/io5";
-import { style } from "../../utlis/CommonStyle";
 import Tasks from "../../components/MyLists/Tasks";
 import Jobs from "../../components/MyLists/Jobs";
 import Leads from "../../components/MyLists/Leads";
@@ -18,30 +17,13 @@ export default function AllLists() {
   const [selectedTab, setSelectedTab] = useState("Tasks");
   const [tasksData, setTasksData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [projects, setProjects] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [emailData, setEmailData] = useState([]);
   const [proposalData, setProposalData] = useState([]);
   const [templateData, setTemplateData] = useState([]);
   const [subscriptionData, setSubscriptionData] = useState([]);
   const [goalsData, setGoalsData] = useState([]);
-
-  //---------- Get All Projects-----------
-  const getAllProjects = async () => {
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/projects/get_all/project`
-      );
-      setProjects(data?.projects);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    getAllProjects();
-    // eslint-disable-next-line
-  }, [auth]);
+  const tasksRef = useRef(null);
 
   // Get All Tasks
   const getAllTasks = async () => {
@@ -179,26 +161,25 @@ export default function AllLists() {
     <Layout>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className=" text-xl sm:text-2xl font-semibold ">My Lists</h1>
+          <div className="flex items-center gap-5">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
+              My List's
+            </h1>
 
-            {/* <span
-              className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
-              // onClick={() => {
-              //   handleClearFilters();
-              // }}
+            <span
+              className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
+              onClick={() => tasksRef.current.handleClearFilters()}
               title="Clear filters"
             >
-              <IoClose className="h-6 w-6  cursor-pointer" />
-            </span> */}
+              <IoClose className="h-6 w-6 text-white" />
+            </span>
           </div>
 
           {/* ---------Template Buttons--------- */}
-          <div className="flex items-center gap-4"></div>
         </div>
         {/*  */}
         <>
-          <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-2 transition-all duration-300 w-fit">
+          <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
             <button
               className={`py-[6px] px-2 outline-none w-[8.5rem] transition-all duration-300   ${
                 selectedTab === "Tasks"
@@ -301,29 +282,44 @@ export default function AllLists() {
             <Tasks
               tasksData={tasksData}
               loading={loading}
-              projects={projects}
               setTasksData={setTasksData}
+              ref={tasksRef}
             />
           ) : selectedTab === "Jobs" ? (
-            <Jobs tableData={tableData} setTableData={setTableData} />
+            <Jobs
+              ref={tasksRef}
+              tableData={tableData}
+              setTableData={setTableData}
+            />
           ) : selectedTab === "Tickets" ? (
-            <Tickets emailData={emailData} setEmailData={setEmailData} />
+            <Tickets
+              ref={tasksRef}
+              emailData={emailData}
+              setEmailData={setEmailData}
+            />
           ) : selectedTab === "Leads" ? (
-            <Leads />
+            <Leads ref={tasksRef} />
           ) : selectedTab === "Proposals" ? (
             <Proposals
+              ref={tasksRef}
               proposalData={proposalData}
               setProposalData={setProposalData}
             />
           ) : selectedTab === "Templates" ? (
             <Templates
+              ref={tasksRef}
               templateData={templateData}
               setTemplateData={setTemplateData}
             />
           ) : selectedTab === "Goals" ? (
-            <Goals goalsData={goalsData} setGoalsData={setGoalsData} />
+            <Goals
+              ref={tasksRef}
+              goalsData={goalsData}
+              setGoalsData={setGoalsData}
+            />
           ) : (
             <Subscriptions
+              ref={tasksRef}
               subscriptionData={subscriptionData}
               setSubscriptionData={setSubscriptionData}
             />

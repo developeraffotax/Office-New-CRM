@@ -1,4 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import Loader from "../../utlis/Loader";
@@ -16,7 +23,7 @@ import { CiEdit } from "react-icons/ci";
 import { useAuth } from "../../context/authContext";
 import AddProposal from "../../pages/Proposal/AddProposal";
 
-export default function Proposals({ proposalData, setProposalData }) {
+const Proposals = forwardRef(({ proposalData, setProposalData }, ref) => {
   const { auth } = useAuth();
   const [show, setShow] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -1582,9 +1589,13 @@ export default function Proposals({ proposalData, setProposalData }) {
   // Clear table Filter
   const handleClearFilters = () => {
     table.setColumnFilters([]);
+
     table.setGlobalFilter("");
-    setSelectFilter("");
   };
+
+  useImperativeHandle(ref, () => ({
+    handleClearFilters,
+  }));
 
   const table = useMaterialReactTable({
     columns,
@@ -1611,7 +1622,7 @@ export default function Proposals({ proposalData, setProposalData }) {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        background: "linear-gradient(120deg,#ff7e5f,#feb47b, #ff7e5f )",
+        background: "#FB923C",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1773,4 +1784,6 @@ export default function Proposals({ proposalData, setProposalData }) {
       </div>
     </>
   );
-}
+});
+
+export default Proposals;

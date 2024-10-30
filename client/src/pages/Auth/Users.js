@@ -769,7 +769,7 @@ export default function Users() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "#FB923C",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -786,7 +786,7 @@ export default function Users() {
         },
         tableLayout: "auto",
         fontSize: "13px",
-        border: "1px solid rgba(81, 81, 81, .5)",
+        border: "1px solid #FB923C",
         caption: {
           captionSide: "top",
         },
@@ -799,16 +799,18 @@ export default function Users() {
       <div className=" relative w-full h-[100%] py-4 px-2 sm:px-4 overflow-y-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h1 className=" text-xl sm:text-2xl font-semibold ">Users</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
+              User's
+            </h1>
 
             <span
-              className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+              className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
               onClick={() => {
                 handleClearFilters();
               }}
               title="Clear filters"
             >
-              <IoClose className="h-6 w-6  cursor-pointer" />
+              <IoClose className="h-6 w-6 text-white" />
             </span>
           </div>
 

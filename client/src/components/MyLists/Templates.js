@@ -1,11 +1,17 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { style } from "../../utlis/CommonStyle";
 import { IoClose } from "react-icons/io5";
 import { useAuth } from "../../context/authContext";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { TbLoader2 } from "react-icons/tb";
-import { MdOutlineEdit } from "react-icons/md";
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import AddTemplateModal from "../../components/Template/AddTemplateModal";
@@ -21,7 +27,7 @@ import { RxClipboardCopy } from "react-icons/rx";
 import { RiEdit2Line } from "react-icons/ri";
 import FAQ from "../../pages/Templates/FAQ";
 
-export default function Template({ templateData, setTemplateData }) {
+const Templates = forwardRef(({ templateData, setTemplateData }, ref) => {
   const { auth } = useAuth();
   const [showCategory, setShowCategory] = useState(false);
   const [categoryData, setCategoryData] = useState([]);
@@ -527,8 +533,11 @@ export default function Template({ templateData, setTemplateData }) {
     table.setColumnFilters([]);
 
     table.setGlobalFilter("");
-    // table.resetColumnFilters();
   };
+
+  useImperativeHandle(ref, () => ({
+    handleClearFilters,
+  }));
 
   const table = useMaterialReactTable({
     columns,
@@ -555,7 +564,7 @@ export default function Template({ templateData, setTemplateData }) {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        background: "linear-gradient(120deg,#ff7e5f,#feb47b, #ff7e5f )",
+        background: "#FB923C",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -757,4 +766,6 @@ export default function Template({ templateData, setTemplateData }) {
       </div>
     </>
   );
-}
+});
+
+export default Templates;

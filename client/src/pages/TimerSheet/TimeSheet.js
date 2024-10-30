@@ -1627,8 +1627,6 @@ export default function TimeSheet() {
     enableColumnResizing: true,
     enableTopToolbar: true,
     enableBottomToolbar: true,
-    // enableEditing: true,
-    // state: { isLoading: loading },
 
     enablePagination: true,
     initialState: {
@@ -1641,7 +1639,7 @@ export default function TimeSheet() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "#FB923C",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1699,32 +1697,24 @@ export default function TimeSheet() {
     },
   });
 
-  // useEffect(() => {
-  //   const filteredRows = table
-  //     .getFilteredRowModel()
-  //     .rows.map((row) => row.original);
-
-  //   console.log("Filtered Data:", filteredRows);
-  //   setTableFilterDate(filteredRows);
-  //   // eslint-disable-next-line
-  // }, [table.getFilteredRowModel().rows]);
-
   return (
     <Layout>
       <div className=" relative w-full h-[100%] py-4 px-2 sm:px-4 flex flex-col gap-2  ">
         <div className="flex items-center justify-between">
           <div className="relative flex items-center gap-4">
-            <h1 className=" text-xl sm:text-2xl font-semibold ">Timesheet</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
+              Timesheet
+            </h1>
             <div className="flex items-center gap-2">
               <span
-                className={` p-[2px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+                className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
                 onClick={() => {
                   setUsername("");
                   handleClearFilters();
                 }}
                 title="Clear filters"
               >
-                <IoClose className="h-6 w-6  cursor-pointer" />
+                <IoClose className="h-6 w-6 text-white" />
               </span>
             </div>
             {/* Select */}
@@ -1903,7 +1893,7 @@ export default function TimeSheet() {
           </div>
         ) : (
           <div
-            className={`w-full ${
+            className={`w-full mt-4 ${
               timerData.length >= 14 ? "min-h-[10vh]" : "min-h-[60vh]"
             } relative `}
           >

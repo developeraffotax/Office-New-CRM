@@ -1017,93 +1017,6 @@ export default function CompletedGoals({ setGoalId, setShow }) {
         },
         filterVariant: "select",
       },
-      {
-        accessorKey: "progress",
-        minSize: 100,
-        maxSize: 250,
-        size: 150,
-        grow: false,
-        Header: ({ column }) => {
-          return (
-            <div className="flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                Progress
-              </span>
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const achievement = parseFloat(row.original.achievement) || 0;
-          const achievedCount = parseFloat(row.original.achievedCount) || 0;
-
-          const progress =
-            achievement > 0
-              ? ((achievedCount / achievement) * 100).toFixed(2)
-              : 0;
-          const progressValue = Math.min(Math.max(progress, 0), 100);
-
-          // ApexCharts options
-          const chartOptions = {
-            chart: {
-              type: "radialBar",
-              height: 150,
-            },
-            plotOptions: {
-              radialBar: {
-                hollow: {
-                  size: "50%",
-                },
-                dataLabels: {
-                  name: {
-                    show: false,
-                  },
-                  value: {
-                    fontSize: "16px",
-                    fontWeight: "600",
-
-                    show: true,
-                    formatter: function (val) {
-                      return `${Math.round(val)}%`;
-                    },
-                    color: progressValue >= 100 ? "#00E396" : "#FF4560",
-                    offsetY: 7,
-                    offsetX: 0,
-                  },
-                },
-              },
-            },
-            fill: {
-              colors: progressValue >= 100 ? ["#00E396"] : ["#FF4560"],
-            },
-            series: [progressValue],
-          };
-
-          return (
-            <div className="w-full flex items-center justify-center">
-              <ReactApexChart
-                options={chartOptions}
-                series={[progressValue]}
-                type="radialBar"
-                height={130}
-                className="flex items-center justify-center"
-              />
-            </div>
-          );
-        },
-        filterFn: (row, columnId, filterValue) => {
-          const cellValue =
-            row.original[columnId]?.toString().toLowerCase() || "";
-          return cellValue.includes(filterValue.toLowerCase());
-        },
-        filterVariant: "select",
-      },
-
       //
       {
         accessorKey: "actions",
@@ -1131,6 +1044,90 @@ export default function CompletedGoals({ setGoalId, setShow }) {
           );
         },
         size: 100,
+      },
+      // Progress
+      {
+        accessorKey: "progress",
+        minSize: 100,
+        maxSize: 600,
+        size: 450,
+        grow: true,
+        Header: ({ column }) => {
+          return (
+            <div className="flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Progress Analytics
+              </span>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const goalType = row.original.goalType;
+          const achievement = parseFloat(row.original.achievement) || 0;
+          const initialAchievedCount =
+            parseFloat(row.original.achievedCount) || 0;
+
+          const [currentProgress, setCurrentProgress] = useState(0);
+
+          const calculateProgress = () =>
+            achievement > 0
+              ? ((currentProgress / achievement) * 100).toFixed(2)
+              : 0;
+
+          // const progressValue = Math.min(calculateProgress(), 100);
+          const progressValue = calculateProgress();
+
+          // Animate from 0 to initialAchievedCount
+          useEffect(() => {
+            const interval = setInterval(() => {
+              setCurrentProgress((prev) => {
+                if (prev >= initialAchievedCount) {
+                  clearInterval(interval);
+                  return initialAchievedCount;
+                }
+                return prev + Math.max(initialAchievedCount / 20, 1);
+              });
+            }, 100);
+
+            return () => clearInterval(interval);
+          }, [initialAchievedCount]);
+
+          return (
+            <div className="w-full flex items-center justify-start h-[2.7rem] bg-gray-300 rounded-md overflow-hidden">
+              <div
+                className="bg-white border rounded-md p-1 cursor-pointer shadow-md drop-shadow-md w-full h-full"
+                title={`${goalType} - ${progressValue}% `}
+              >
+                <div
+                  style={{
+                    width: `${progressValue > 100 ? 100 : progressValue}%`,
+                    background:
+                      progressValue >= 100
+                        ? "linear-gradient(90deg, #00E396, #00C853)"
+                        : "linear-gradient(90deg, #FF4560, #FF8A65)",
+                    transition: "width 0.4s ease-in-out",
+                  }}
+                  className="h-full flex items-center justify-center text-white font-semibold rounded-md shadow-md"
+                >
+                  <span className="px-2 text-xs">{progressValue}%</span>
+                </div>
+              </div>
+            </div>
+          );
+        },
+
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.includes(filterValue.toLwerCase());
+        },
+        filterVariant: "select",
       },
     ],
     // eslint-disable-next-line
@@ -1162,7 +1159,7 @@ export default function CompletedGoals({ setGoalId, setShow }) {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "#FB923C",
         color: "#000",
         padding: ".7rem 0.3rem",
       },

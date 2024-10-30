@@ -1,4 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -16,7 +23,7 @@ import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import JobCommentModal from "../../pages/Jobs/JobCommentModal";
 
-export default function Tickets({ emailData, setEmailData }) {
+const Tickets = forwardRef(({ emailData, setEmailData }, ref) => {
   const { auth } = useAuth();
   const [showSendModal, setShowSendModal] = useState(false);
   const [filteredData, setFilteredData] = useState([]);
@@ -219,6 +226,17 @@ export default function Tickets({ emailData, setEmailData }) {
     }
   };
   // ------------------------Table Detail------------->
+
+  // Clear table Filter
+  const handleClearFilters = () => {
+    table.setColumnFilters([]);
+
+    table.setGlobalFilter("");
+  };
+
+  useImperativeHandle(ref, () => ({
+    handleClearFilters,
+  }));
 
   const getCurrentMonthYear = () => {
     const today = new Date();
@@ -960,7 +978,7 @@ export default function Tickets({ emailData, setEmailData }) {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        background: "linear-gradient(120deg,#ff7e5f,#feb47b, #ff7e5f )",
+        background: "#FB923C",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1050,4 +1068,6 @@ export default function Tickets({ emailData, setEmailData }) {
       </div>
     </>
   );
-}
+});
+
+export default Tickets;

@@ -1,4 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { style } from "../../utlis/CommonStyle";
 import NewJobModal from "../../components/Modals/NewJobModal";
 import { CgClose } from "react-icons/cg";
@@ -25,8 +32,8 @@ import { Timer } from "../../utlis/Timer";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
-export default function Jobs({ tableData, setTableData }) {
-  const { auth, filterId } = useAuth();
+const Jobs = forwardRef(({ tableData, setTableData }, ref) => {
+  const { auth } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [active, setActive] = useState("All");
   const [loading, setLoading] = useState(false);
@@ -173,29 +180,6 @@ export default function Jobs({ tableData, setTableData }) {
     }
   };
 
-  // --------------Filter Data By Department ----------->
-
-  const filterByDep = (value) => {
-    const filteredData = tableData.filter(
-      (item) =>
-        item.job.jobName === value ||
-        item.job.jobStatus === value ||
-        item.job.jobHolder === value ||
-        item._id === value
-    );
-
-    // console.log("FilterData", filteredData);
-
-    setFilterData([...filteredData]);
-  };
-
-  useEffect(() => {
-    if (tableData && filterId) {
-      filterByDep(filterId);
-    }
-    // eslint-disable-next-line
-  }, [tableData, filterId]);
-
   //---------- Get All Users-----------
   const getAllUsers = async () => {
     try {
@@ -236,7 +220,7 @@ export default function Jobs({ tableData, setTableData }) {
         }
       );
       if (data) {
-        if (filterId || active || active1) {
+        if (active) {
           setFilterData((prevData) =>
             prevData?.map((item) =>
               item._id === rowId
@@ -273,7 +257,7 @@ export default function Jobs({ tableData, setTableData }) {
         }
       );
       if (data) {
-        if (filterId || active || active1) {
+        if (active) {
           setFilterData((prevData) =>
             prevData?.map((item) =>
               item._id === rowId
@@ -310,7 +294,7 @@ export default function Jobs({ tableData, setTableData }) {
         }
       );
       if (data) {
-        if (filterId || active || active1) {
+        if (active) {
           setFilterData((prevData) =>
             prevData?.map((item) =>
               item._id === rowId
@@ -444,7 +428,7 @@ export default function Jobs({ tableData, setTableData }) {
         { name, color }
       );
       if (data) {
-        if (filterId || active || active1) {
+        if (active) {
           setFilterData((prevData) =>
             prevData?.map((item) =>
               item._id === id ? { ...item, label: { name, color } } : item
@@ -480,7 +464,7 @@ export default function Jobs({ tableData, setTableData }) {
         { labelId }
       );
       if (data) {
-        if (filterId || active || active1) {
+        if (active) {
           setFilterData((prevData) =>
             prevData?.map((item) =>
               item._id === id ? { ...item, data: data?.job?.data } : item
@@ -501,6 +485,17 @@ export default function Jobs({ tableData, setTableData }) {
       toast.error("Error while add label");
     }
   };
+
+  // Clear table Filter
+  const handleClearFilters = () => {
+    table.setColumnFilters([]);
+
+    table.setGlobalFilter("");
+  };
+
+  useImperativeHandle(ref, () => ({
+    handleClearFilters,
+  }));
 
   //  --------------Table Columns Data--------->
   const columns = useMemo(
@@ -709,7 +704,7 @@ export default function Jobs({ tableData, setTableData }) {
         accessorKey: "totalHours",
         Header: ({ column }) => {
           return (
-            <div className=" flex flex-col gap-[2px] w-full items-center justify-center pr-2 ">
+            <div className=" flex flex-col gap-[2px] w-full rounded-md items-center justify-center pr-2 ">
               <span
                 className="ml-1 w-full text-center cursor-pointer"
                 title="Clear Filter"
@@ -719,7 +714,7 @@ export default function Jobs({ tableData, setTableData }) {
               >
                 Hrs
               </span>
-              <span className="font-medium w-[5rem] ml-2 text-center  px-1 py-1 rounded-md bg-gray-300/30 text-black">
+              <span className="font-medium w-[5rem] ml-2 text-center  px-1 py-1 rounded-md bg-gray-50 text-black">
                 {totalHours}
               </span>
               {/* <input
@@ -1741,7 +1736,7 @@ export default function Jobs({ tableData, setTableData }) {
                     </span>
                     <span
                       title={totalFee}
-                      className="font-medium w-full cursor-pointer text-center text-[12px] px-1 py-1 rounded-md bg-gray-300/30 text-black"
+                      className="font-medium w-full cursor-pointer text-center text-[12px] px-1 py-1 rounded-md bg-gray-50 text-black"
                     >
                       {totalFee}
                     </span>
@@ -1951,7 +1946,7 @@ export default function Jobs({ tableData, setTableData }) {
 
   const table = useMaterialReactTable({
     columns,
-    data: active === "All" && filterData.length === 0 ? tableData : filterData,
+    data: tableData,
     getRowId: (row) => row._id,
     enableStickyHeader: true,
     enableStickyFooter: true,
@@ -1980,7 +1975,7 @@ export default function Jobs({ tableData, setTableData }) {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        background: "linear-gradient(120deg,#ff7e5f,#feb47b, #ff7e5f )",
+        background: "#FB923C",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -2005,15 +2000,15 @@ export default function Jobs({ tableData, setTableData }) {
     },
   });
 
-  // useEffect(() => {
-  //   const filteredRows = table
-  //     .getFilteredRowModel()
-  //     .rows.map((row) => row.original);
+  useMemo(() => {
+    const filteredRows = table
+      .getFilteredRowModel()
+      .rows.map((row) => row.original);
 
-  //   setFilterData(filteredRows);
+    setFilterData(filteredRows);
 
-  //   // eslint-disable-next-line
-  // }, [table.getFilteredRowModel().rows]);
+    // eslint-disable-next-line
+  }, [table.getFilteredRowModel().rows]);
 
   return (
     <>
@@ -2161,4 +2156,6 @@ export default function Jobs({ tableData, setTableData }) {
       )}
     </>
   );
-}
+});
+
+export default Jobs;

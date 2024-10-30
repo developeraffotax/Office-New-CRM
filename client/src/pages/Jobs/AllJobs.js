@@ -1011,15 +1011,9 @@ export default function AllJobs() {
               >
                 Hrs
               </span>
-              <span className="font-medium w-[5rem] ml-2 text-center  px-1 py-1 rounded-md bg-gray-300/30 text-black">
+              <span className="font-medium w-[5rem] ml-2 text-center  px-1 py-1 rounded-md bg-gray-50 text-black">
                 {totalHours}
               </span>
-              {/* <input
-                type="search"
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              /> */}
             </div>
           );
         },
@@ -2033,7 +2027,7 @@ export default function AllJobs() {
                     </span>
                     <span
                       title={totalFee}
-                      className="font-medium w-full cursor-pointer text-center text-[12px] px-1 py-1 rounded-md bg-gray-300/30 text-black"
+                      className="font-medium w-full cursor-pointer text-center text-[12px] px-1 py-1 rounded-md bg-gray-50 text-black"
                     >
                       {totalFee}
                     </span>
@@ -2283,7 +2277,7 @@ export default function AllJobs() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#ececec",
+        backgroundColor: "#FB923C",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -2405,17 +2399,13 @@ export default function AllJobs() {
     <Layout>
       <div className="w-full h-[100%] py-4 px-2 sm:px-4 overflow-y-auto ">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className=" text-xl sm:text-2xl font-semibold ">Job</h1>
-            <span className="" onClick={() => setShow(!show)}>
-              {show ? (
-                <IoIosArrowDropup className="h-5 w-5 cursor-pointer" />
-              ) : (
-                <IoIosArrowDropdown className="h-5 w-5 cursor-pointer" />
-              )}
-            </span>
+          <div className="flex items-center gap-5">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
+              Jobs
+            </h1>
+
             <span
-              className={` p-1 ml-2 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+              className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
               onClick={() => {
                 setActive("All");
                 setActiveBtn("");
@@ -2429,7 +2419,7 @@ export default function AllJobs() {
               }}
               title="Clear filters"
             >
-              <IoClose className="h-6 w-6  cursor-pointer" />
+              <IoClose className="h-6 w-6 text-white" />
             </span>
           </div>
 
@@ -2495,7 +2485,7 @@ export default function AllJobs() {
         {/*  */}
 
         {/* -----------Filters By Deparment--------- */}
-        <div className="flex items-center flex-wrap gap-2 mt-3">
+        <div className="flex items-center flex-wrap gap-2 mt-6">
           {departments?.map((dep, i) => {
             getDueAndOverdueCountByDepartment(dep);
             return (
@@ -2769,9 +2759,6 @@ export default function AllJobs() {
         {showJobHolder && activeBtn === "jobHolder" && (
           <>
             <div className="w-full  py-2 ">
-              {/* <h3 className="text-[19px] font-semibold text-black">
-                Job Holder Summary
-              </h3> */}
               <div className="flex items-center flex-wrap gap-4">
                 {/* {users?.map((user, i) => (
                   <div

@@ -7,6 +7,7 @@ import {
   fetchAchievedDataByGoalType,
   fetchAllGoal,
   fetchSingleGoal,
+  singleGoalComments,
   updateGoal,
   updateGoalStatus,
 } from "../controllers/goalsController.js";
@@ -33,5 +34,8 @@ router.delete("/delete/goals/:id", requiredSignIn, deleteGoal);
 
 // Update Goal Status
 router.put("/upadate/goals/status/:id", requiredSignIn, updateGoalStatus);
+
+// Comments
+router.get("/get/comment/:id", singleGoalComments);
 
 export default router;

@@ -1,3 +1,4 @@
+import goalModel from "../models/goalModel.js";
 import jobsModel from "../models/jobsModel.js";
 import notificationModel from "../models/notificationModel.js";
 import taskModel from "../models/taskModel.js";
@@ -103,6 +104,56 @@ export const createComment = async (req, res) => {
         success: true,
         message: "Comment Posted!",
         job: task,
+        notification: notification,
+      });
+    } else if (type === "Goals") {
+      const goal = await goalModel.findById({ _id: jobId });
+      if (!goal) {
+        return res.status(400).send({
+          success: false,
+          message: "Goal not found!",
+        });
+      }
+
+      const newComment = {
+        user: req.user.user,
+        comment: comment,
+        commentReplies: [],
+        senderId: senderId,
+        mentionUser: mentionUser,
+        likes: [],
+      };
+
+      goal.comments.push(newComment);
+
+      await goal.save();
+
+      const jobHolderId = goal.jobHolder;
+      console.log("jobHolderId:", jobHolderId);
+
+      // Create Notification
+      const user = await userModel.findOne(
+        mentionUser ? { name: mentionUser } : { _id: jobHolderId }
+      );
+
+      if (!user) {
+        return res.status(404).json({ error: "Jobholder not found!" });
+      }
+
+      console.log("Goal User:", user);
+
+      const notification = await notificationModel.create({
+        title: "New comment received!",
+        redirectLink: "/goals",
+        description: `${req.user.user.name} add a new comment in goals "${goal.subject}". ${comment}`,
+        taskId: jobId,
+        userId: user._id,
+      });
+
+      res.status(200).send({
+        success: true,
+        message: "Comment Posted!",
+        job: goal,
         notification: notification,
       });
     } else {
@@ -255,6 +306,56 @@ export const commentReply = async (req, res) => {
         job: task,
         notification: notification,
       });
+    } else if (type === "Goals") {
+      const goal = await goalModel.findById(jobId);
+      if (!goal) {
+        return res.status(400).send({
+          success: false,
+          message: "Goal not found!",
+        });
+      }
+      const comment = goal.comments.find((item) => item._id.equals(commentId));
+      if (!comment) {
+        return res.status(400).send({
+          success: false,
+          message: "Invalid comment id!",
+        });
+      }
+
+      // Replay
+      const newReply = {
+        user: req.user.user,
+        reply: commentReply,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      comment.commentReplies.push(newReply);
+      comment.status = "read";
+
+      await goal.save();
+
+      // Create Notification
+      const user = await userModel.findOne(
+        mentionUser ? { name: mentionUser } : { _id: goal.jobHolder }
+      );
+
+      console.log("user:", user);
+
+      const notification = await notificationModel.create({
+        title: "New comment reply received!",
+        redirectLink: "/goals",
+        description: `${req.user.user.name} add a new comment reply of goals "${goal.subject}". ${commentReply}`,
+        taskId: jobId,
+        userId: comment.senderId,
+      });
+
+      res.status(200).send({
+        success: true,
+        message: "Reply Posted!",
+        job: goal,
+        notification: notification,
+      });
     } else {
       const ticket = await ticketModel.findById(jobId);
       if (!ticket) {
@@ -381,6 +482,37 @@ export const likeComment = async (req, res) => {
         success: true,
         message: "Comment liked successfully!",
       });
+    } else if (type === "Goals") {
+      const goal = await goalModel.findById(jobId);
+      if (!goal) {
+        return res.status(400).send({
+          success: false,
+          message: "Goal not found!",
+        });
+      }
+      const comment = goal.comments.find((item) => item._id.equals(commentId));
+      if (!comment) {
+        return res.status(400).send({
+          success: false,
+          message: "Invalid comment id!",
+        });
+      }
+
+      if (comment.likes.includes(req.user.id)) {
+        return res.status(400).send({
+          success: false,
+          message: "Comment already liked!",
+        });
+      }
+
+      comment.likes.push(req.user.id);
+      comment.status = "read";
+      await goal.save();
+
+      res.status(200).send({
+        success: true,
+        message: "Comment liked successfully!",
+      });
     } else {
       const ticket = await ticketModel.findById(jobId);
       if (!ticket) {
@@ -489,6 +621,38 @@ export const unLikeComment = async (req, res) => {
         (id) => id.toString() !== req.user.id
       );
       await task.save();
+
+      res.status(200).send({
+        success: true,
+        message: "Comment unliked successfully!",
+      });
+    } else if (type === "Goals") {
+      const goal = await goalModel.findById(jobId);
+      if (!goal) {
+        return res.status(400).send({
+          success: false,
+          message: "Goal not found!",
+        });
+      }
+      const comment = goal.comments.find((item) => item._id.equals(commentId));
+      if (!comment) {
+        return res.status(400).send({
+          success: false,
+          message: "Invalid comment id!",
+        });
+      }
+
+      if (!comment.likes.includes(req.user.id)) {
+        return res.status(400).send({
+          success: false,
+          message: "Post not liked yet!",
+        });
+      }
+
+      comment.likes = comment.likes.filter(
+        (id) => id.toString() !== req.user.id
+      );
+      await goal.save();
 
       res.status(200).send({
         success: true,

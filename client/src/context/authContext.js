@@ -14,6 +14,7 @@ const AuthProvider = ({ children }) => {
   const [time, setTime] = useState("");
   const [filterId, setFilterId] = useState("");
   const [searchValue, setSearchValue] = useState("");
+  const [jid, setJid] = useState("");
 
   // check token
   axios.defaults.headers.common["Authorization"] = auth?.token;
@@ -86,6 +87,8 @@ const AuthProvider = ({ children }) => {
         setTime,
         searchValue,
         setSearchValue,
+        jid,
+        setJid,
       }}
     >
       {children}

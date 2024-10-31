@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
-import { IoClose } from "react-icons/io5";
+import { IoClose, IoReload } from "react-icons/io5";
 import Tasks from "../../components/MyLists/Tasks";
 import Jobs from "../../components/MyLists/Jobs";
 import Leads from "../../components/MyLists/Leads";
@@ -11,6 +11,7 @@ import Tickets from "../../components/MyLists/Tickets";
 import Templates from "../../components/MyLists/Templates";
 import Goals from "../../components/MyLists/Goals";
 import Subscriptions from "../../components/MyLists/Subscriptions";
+import { RiRefreshFill } from "react-icons/ri";
 
 export default function AllLists() {
   const { auth } = useAuth();
@@ -24,6 +25,12 @@ export default function AllLists() {
   const [subscriptionData, setSubscriptionData] = useState([]);
   const [goalsData, setGoalsData] = useState([]);
   const tasksRef = useRef(null);
+  const childRef = useRef(null);
+  const [isload, setIsload] = useState(false);
+
+  const refreshHandler = () => {
+    childRef.current.refreshData();
+  };
 
   // Get All Tasks
   const getAllTasks = async () => {
@@ -179,104 +186,120 @@ export default function AllLists() {
         </div>
         {/*  */}
         <>
-          <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
-            <button
-              className={`py-[6px] px-2 outline-none w-[8.5rem] transition-all duration-300   ${
-                selectedTab === "Tasks"
-                  ? "bg-orange-500 text-white border-r-2 border-orange-500 scale-105 shadow-md"
-                  : "text-black bg-gray-100"
-              }`}
-              onClick={() => setSelectedTab("Tasks")}
+          <div className=" w-full flex items-center gap-4">
+            <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
+              <button
+                className={`py-[6px] px-2 outline-none w-[8.5rem] transition-all duration-300   ${
+                  selectedTab === "Tasks"
+                    ? "bg-orange-500 text-white border-r-2 border-orange-500 scale-105 shadow-md"
+                    : "text-black bg-gray-100"
+                }`}
+                onClick={() => setSelectedTab("Tasks")}
+              >
+                Tasks
+              </button>
+              <button
+                className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                  selectedTab === "Jobs"
+                    ? "bg-orange-500 text-white scale-105 shadow-md"
+                    : "text-black bg-gray-100 hover:bg-slate-200"
+                }`}
+                onClick={() => {
+                  setSelectedTab("Jobs");
+                }}
+              >
+                Jobs
+              </button>
+              <button
+                className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                  selectedTab === "Tickets"
+                    ? "bg-orange-500 text-white scale-105 shadow-md"
+                    : "text-black bg-gray-100 hover:bg-slate-200"
+                }`}
+                onClick={() => {
+                  setSelectedTab("Tickets");
+                }}
+              >
+                Tickets
+              </button>
+              <button
+                className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                  selectedTab === "Leads"
+                    ? "bg-orange-500 text-white scale-105 shadow-md"
+                    : "text-black bg-gray-100 hover:bg-slate-200"
+                }`}
+                onClick={() => {
+                  setSelectedTab("Leads");
+                }}
+              >
+                Leads
+              </button>
+              <button
+                className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                  selectedTab === "Proposals"
+                    ? "bg-orange-500 text-white scale-105 shadow-md"
+                    : "text-black bg-gray-100 hover:bg-slate-200"
+                }`}
+                onClick={() => {
+                  setSelectedTab("Proposals");
+                }}
+              >
+                Proposals
+              </button>
+              <button
+                className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                  selectedTab === "Templates"
+                    ? "bg-orange-500 text-white scale-105 shadow-md"
+                    : "text-black bg-gray-100 hover:bg-slate-200"
+                }`}
+                onClick={() => {
+                  setSelectedTab("Templates");
+                }}
+              >
+                Templates
+              </button>
+              <button
+                className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                  selectedTab === "Goals"
+                    ? "bg-orange-500 text-white scale-105 shadow-md"
+                    : "text-black bg-gray-100 hover:bg-slate-200"
+                }`}
+                onClick={() => {
+                  setSelectedTab("Goals");
+                }}
+              >
+                Goals
+              </button>
+              <button
+                className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                  selectedTab === "Subscription"
+                    ? "bg-orange-500 text-white scale-105 shadow-md"
+                    : "text-black bg-gray-100 hover:bg-slate-200"
+                }`}
+                onClick={() => {
+                  setSelectedTab("Subscription");
+                }}
+              >
+                Subscription
+              </button>
+              {/* RiRefreshFill */}
+            </div>
+            <span
+              onClick={refreshHandler}
+              title="Refresh"
+              className="p-1 mt-5 cursor-pointer rounded-full bg-gray-200/50 hover:bg-gray-300/50 hover:shadow-md"
             >
-              Tasks
-            </button>
-            <button
-              className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
-                selectedTab === "Jobs"
-                  ? "bg-orange-500 text-white scale-105 shadow-md"
-                  : "text-black bg-gray-100 hover:bg-slate-200"
-              }`}
-              onClick={() => {
-                setSelectedTab("Jobs");
-              }}
-            >
-              Jobs
-            </button>
-            <button
-              className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
-                selectedTab === "Tickets"
-                  ? "bg-orange-500 text-white scale-105 shadow-md"
-                  : "text-black bg-gray-100 hover:bg-slate-200"
-              }`}
-              onClick={() => {
-                setSelectedTab("Tickets");
-              }}
-            >
-              Tickets
-            </button>
-            <button
-              className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
-                selectedTab === "Leads"
-                  ? "bg-orange-500 text-white scale-105 shadow-md"
-                  : "text-black bg-gray-100 hover:bg-slate-200"
-              }`}
-              onClick={() => {
-                setSelectedTab("Leads");
-              }}
-            >
-              Leads
-            </button>
-            <button
-              className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
-                selectedTab === "Proposals"
-                  ? "bg-orange-500 text-white scale-105 shadow-md"
-                  : "text-black bg-gray-100 hover:bg-slate-200"
-              }`}
-              onClick={() => {
-                setSelectedTab("Proposals");
-              }}
-            >
-              Proposals
-            </button>
-            <button
-              className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
-                selectedTab === "Templates"
-                  ? "bg-orange-500 text-white scale-105 shadow-md"
-                  : "text-black bg-gray-100 hover:bg-slate-200"
-              }`}
-              onClick={() => {
-                setSelectedTab("Templates");
-              }}
-            >
-              Templates
-            </button>
-            <button
-              className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
-                selectedTab === "Goals"
-                  ? "bg-orange-500 text-white scale-105 shadow-md"
-                  : "text-black bg-gray-100 hover:bg-slate-200"
-              }`}
-              onClick={() => {
-                setSelectedTab("Goals");
-              }}
-            >
-              Goals
-            </button>
-            <button
-              className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
-                selectedTab === "Subscription"
-                  ? "bg-orange-500 text-white scale-105 shadow-md"
-                  : "text-black bg-gray-100 hover:bg-slate-200"
-              }`}
-              onClick={() => {
-                setSelectedTab("Subscription");
-              }}
-            >
-              Subscription
-            </button>
+              <IoReload className="h-6 w-6 text-orange-500 hover:text-orange-600" />
+            </span>
           </div>
+
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
         </>
+        {isload && (
+          <div className="pb-5">
+            <div class="loader"></div>
+          </div>
+        )}
         <div className=" mt-[1rem]">
           {selectedTab === "Tasks" ? (
             <Tasks
@@ -284,44 +307,58 @@ export default function AllLists() {
               loading={loading}
               setTasksData={setTasksData}
               ref={tasksRef}
+              childRef={childRef}
+              setIsload={setIsload}
             />
           ) : selectedTab === "Jobs" ? (
             <Jobs
               ref={tasksRef}
               tableData={tableData}
               setTableData={setTableData}
+              childRef={childRef}
+              setIsload={setIsload}
             />
           ) : selectedTab === "Tickets" ? (
             <Tickets
               ref={tasksRef}
               emailData={emailData}
               setEmailData={setEmailData}
+              childRef={childRef}
+              setIsload={setIsload}
             />
           ) : selectedTab === "Leads" ? (
-            <Leads ref={tasksRef} />
+            <Leads ref={tasksRef} childRef={childRef} setIsload={setIsload} />
           ) : selectedTab === "Proposals" ? (
             <Proposals
               ref={tasksRef}
               proposalData={proposalData}
               setProposalData={setProposalData}
+              childRef={childRef}
+              setIsload={setIsload}
             />
           ) : selectedTab === "Templates" ? (
             <Templates
               ref={tasksRef}
               templateData={templateData}
               setTemplateData={setTemplateData}
+              childRef={childRef}
+              setIsload={setIsload}
             />
           ) : selectedTab === "Goals" ? (
             <Goals
               ref={tasksRef}
               goalsData={goalsData}
               setGoalsData={setGoalsData}
+              childRef={childRef}
+              setIsload={setIsload}
             />
           ) : (
             <Subscriptions
               ref={tasksRef}
               subscriptionData={subscriptionData}
               setSubscriptionData={setSubscriptionData}
+              childRef={childRef}
+              setIsload={setIsload}
             />
           )}
         </div>

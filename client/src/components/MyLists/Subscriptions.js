@@ -19,7 +19,7 @@ import Swal from "sweetalert2";
 import SubscriptionModel from "../SubscriptionModel";
 
 const Subscriptions = forwardRef(
-  ({ subscriptionData, setSubscriptionData }, ref) => {
+  ({ subscriptionData, setSubscriptionData, childRef, setIsload }, ref) => {
     const { auth } = useAuth();
     const [show, setShow] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -35,6 +35,7 @@ const Subscriptions = forwardRef(
     console.log("subscriptionData:", subscriptionData);
 
     const fetchSubscriptions = async () => {
+      setIsload(true);
       try {
         const { data } = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/fetch/all`
@@ -44,8 +45,14 @@ const Subscriptions = forwardRef(
         }
       } catch (error) {
         console.log(error);
+      } finally {
+        setIsload(false);
       }
     };
+
+    useImperativeHandle(childRef, () => ({
+      refreshData: fetchSubscriptions,
+    }));
 
     //---------- Get All Users-----------
     const getAllUsers = async () => {

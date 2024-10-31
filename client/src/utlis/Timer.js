@@ -35,7 +35,7 @@ export const Timer = forwardRef(
     },
     ref
   ) => {
-    const { anyTimerRunning, setAnyTimerRunning, auth, setTime } = useAuth();
+    const { anyTimerRunning, setAnyTimerRunning, auth, setJid } = useAuth();
     const [timerId, setTimerId] = useState(null);
     const [isRunning, setIsRunning] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
@@ -68,6 +68,7 @@ export const Timer = forwardRef(
               (new Date() - new Date(startTime)) / 1000
             );
             setElapsedTime(timeElapsed);
+            setJid(response.data.timer.jobId);
           }
         } catch (error) {
           console.error(error);
@@ -82,8 +83,6 @@ export const Timer = forwardRef(
 
       const timeId = localStorage.getItem("timer_Id");
       setTimerId(JSON.parse(timeId));
-
-      setRunningId(JSON.parse(timeId));
     }, [clientId, jobId, setAnyTimerRunning]);
 
     // ---------Timer-------
@@ -128,7 +127,6 @@ export const Timer = forwardRef(
           "timer_Id",
           JSON.stringify(response.data.timer._id)
         );
-        setRunningId(response.data.timer._id);
 
         addTimerTaskStatus(response.data.timer._id);
         setIsRunning(true);

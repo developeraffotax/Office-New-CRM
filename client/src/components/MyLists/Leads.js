@@ -21,7 +21,7 @@ import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { MdOutlineAnalytics } from "react-icons/md";
 
-const Leads = forwardRef(({}, ref) => {
+const Leads = forwardRef(({ childRef, setIsload }, ref) => {
   const { auth } = useAuth();
   const [selectedTab, setSelectedTab] = useState("progress");
   const [isLoading, setIsLoading] = useState(false);
@@ -113,6 +113,7 @@ const Leads = forwardRef(({}, ref) => {
 
   const getLeads = async () => {
     setLoad(true);
+    setIsload(true);
     try {
       if (selectedTab === "progress") {
         const { data } = await axios.get(
@@ -143,9 +144,14 @@ const Leads = forwardRef(({}, ref) => {
       setLoad(false);
       console.log(error);
     } finally {
+      setIsload(false);
       setLoad(false);
     }
   };
+
+  useImperativeHandle(childRef, () => ({
+    refreshData: getLeads,
+  }));
 
   // Total Source Count
   const getSourceCount = (source) => {
@@ -268,7 +274,7 @@ const Leads = forwardRef(({}, ref) => {
         `${process.env.REACT_APP_API_URL}/api/v1/leads/delete/lead/${id}`
       );
       if (data) {
-        getAllLeads();
+        getLeads();
       }
     } catch (error) {
       console.log(error);
@@ -357,7 +363,7 @@ const Leads = forwardRef(({}, ref) => {
         }
       );
       if (data) {
-        getAllLeads();
+        getLeads();
       }
     } catch (error) {
       console.log(error);

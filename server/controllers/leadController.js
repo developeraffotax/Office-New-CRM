@@ -113,9 +113,7 @@ export const updateLead = async (req, res) => {
 // Get All Progress Leads
 export const getAllProgressLead = async (req, res) => {
   try {
-    const leads = await leadModel
-      .find({ status: { $eq: "progress" } })
-      .sort({ createdAt: -1 });
+    const leads = await leadModel.find({ status: { $eq: "progress" } });
 
     res.status(200).send({
       success: true,
@@ -135,9 +133,7 @@ export const getAllProgressLead = async (req, res) => {
 // Get All Won Leads
 export const getAllWonLead = async (req, res) => {
   try {
-    const leads = await leadModel
-      .find({ status: { $eq: "won" } })
-      .sort({ createdAt: -1 });
+    const leads = await leadModel.find({ status: { $eq: "won" } });
 
     res.status(200).send({
       success: true,
@@ -157,9 +153,7 @@ export const getAllWonLead = async (req, res) => {
 // Get All Lost Leads
 export const getAlllostLead = async (req, res) => {
   try {
-    const leads = await leadModel
-      .find({ status: { $eq: "lost" } })
-      .sort({ createdAt: -1 });
+    const leads = await leadModel.find({ status: { $eq: "lost" } });
 
     res.status(200).send({
       success: true,

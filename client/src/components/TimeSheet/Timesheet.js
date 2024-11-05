@@ -903,7 +903,7 @@ const TimeSheet = forwardRef(
 
             useEffect(() => {
               column.setFilterValue(user);
-              // setUsername(user);
+              setUsername(user);
 
               // eslint-disable-next-line
             }, []);
@@ -924,8 +924,8 @@ const TimeSheet = forwardRef(
                     value={column.getFilterValue()}
                     onChange={(e) => {
                       column.setFilterValue(e.target.value);
-                      // setUsername(e.target.value);
-                      // filterByDep("", e.target.value, "");
+                      setUsername(e.target.value);
+                      filterByDep("", e.target.value, "");
                     }}
                     className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
                   >

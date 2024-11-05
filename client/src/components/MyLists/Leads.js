@@ -74,7 +74,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
 
   // -------Get All Leads-------
   const getAllLeads = async () => {
-    setIsLoading(true);
+    // setIsLoading(true);
     try {
       if (selectedTab === "progress") {
         const { data } = await axios.get(
@@ -1596,7 +1596,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        background: "#FB923C",
+        background: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },

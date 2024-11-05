@@ -769,7 +769,7 @@ export default function Users() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#FB923C",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -786,7 +786,7 @@ export default function Users() {
         },
         tableLayout: "auto",
         fontSize: "13px",
-        border: "1px solid #FB923C",
+        border: "1px solid rgb(193, 183, 173, 0.8)",
         caption: {
           captionSide: "top",
         },

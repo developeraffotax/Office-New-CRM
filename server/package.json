@@ -24,6 +24,7 @@
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "express-formidable": "^1.2.0",
+    "google-auth-library": "^9.14.2",
     "googleapis": "^105.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.4.1",

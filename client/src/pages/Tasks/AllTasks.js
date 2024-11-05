@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import { style } from "../../utlis/CommonStyle";
-import { IoIosArrowDropdown, IoIosArrowDropup } from "react-icons/io";
 import axios from "axios";
 import AddProjectModal from "../../components/Tasks/AddProjectModal";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
@@ -67,6 +66,7 @@ const AllTasks = () => {
     anyTimerRunning,
     searchValue,
     setSearchValue,
+    jid,
   } = useAuth();
   const [show, setShow] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -106,7 +106,6 @@ const AllTasks = () => {
   const commentStatusRef = useRef(null);
   const [showlabel, setShowlabel] = useState(false);
   const [timerId, setTimerId] = useState("");
-  console.log("filterData", filterData);
   const dateStatus = ["Due", "Overdue"];
   const status = ["To do", "Progress", "Review", "Onhold"];
   const closeProject = useRef(null);
@@ -117,6 +116,8 @@ const AllTasks = () => {
   const [access, setAccess] = useState([]);
 
   console.log("tasksData:", tasksData);
+  console.log("Jid:", jid);
+  console.log("filterData", filterData);
 
   useEffect(() => {
     const timeId = localStorage.getItem("jobId");
@@ -866,11 +867,6 @@ const AllTasks = () => {
         }
 
         getTasks1();
-
-        // // Socket
-        // socketId.emit("addTask", {
-        //   note: "New Task Added",
-        // });
       }
     } catch (error) {
       console.log(error);
@@ -1862,11 +1858,32 @@ const AllTasks = () => {
         accessorKey: "timertracker",
         header: "Timer",
         Header: ({ column }) => {
+          const [isRunning, setIsRunning] = useState(false);
+
+          const handleCheckboxChange = () => {
+            const newIsRunning = !isRunning;
+            setIsRunning(newIsRunning);
+
+            if (newIsRunning) {
+              column.setFilterValue(timerId || jid);
+            } else {
+              column.setFilterValue(undefined);
+            }
+          };
           return (
             <div className=" flex flex-col gap-[2px] w-[5rem]">
               <span className="ml-1 cursor-pointer w-full text-center">
                 Timer
               </span>
+              <div className="w-full flex items-center justify-center">
+                <input
+                  type="checkbox"
+                  className="cursor-pointer h-5 w-5 ml-3 accent-orange-600 "
+                  checked={isRunning}
+                  onChange={handleCheckboxChange}
+                />
+                <label className="ml-2 text-sm cursor-pointer"></label>
+              </div>
             </div>
           );
         },
@@ -1902,6 +1919,12 @@ const AllTasks = () => {
             </div>
           );
         },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.original._id;
+          console.log("T_ID:", filterValue, cellValue);
+          return cellValue === filterValue;
+        },
+        filterVariant: "select",
         size: 90,
       },
       {
@@ -2206,7 +2229,7 @@ const AllTasks = () => {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#FB923C",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },

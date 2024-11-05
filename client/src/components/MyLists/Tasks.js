@@ -1409,7 +1409,7 @@ const Tasks = forwardRef(
                 <div className="w-full flex items-center justify-center">
                   <input
                     type="checkbox"
-                    className="cursor-pointer h-5 w-5 ml-3 "
+                    className="cursor-pointer h-5 w-5 ml-3 accent-orange-600"
                     checked={isRunning}
                     onChange={handleCheckboxChange}
                   />
@@ -1746,7 +1746,7 @@ const Tasks = forwardRef(
         style: {
           fontWeight: "600",
           fontSize: "14px",
-          background: "#FB923C",
+          background: "rgb(193, 183, 173, 0.8)",
           color: "#000",
           padding: ".7rem 0.3rem",
         },

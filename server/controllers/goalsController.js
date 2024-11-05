@@ -2,6 +2,7 @@ import goalModel from "../models/goalModel.js";
 import jobsModel from "../models/jobsModel.js";
 import leadModel from "../models/leadModel.js";
 import proposalModel from "../models/proposalModel.js";
+import { getSearchConsoleData } from "../utils/getWebsiteImpression.js";
 
 // Create Goal
 export const createGoal = async (req, res) => {
@@ -194,8 +195,8 @@ export const fetchAchievedDataByGoalType = async (req, res) => {
   try {
     const goals = await goalModel
       .find({ status: { $ne: "completed" } })
-      .populate("jobHolder");
-    // .select("-comments");
+      .populate("jobHolder")
+      .sort({ startDate: 1 });
 
     const updatedGoals = await Promise.all(
       goals.map(async (goal) => {
@@ -263,7 +264,42 @@ export const fetchAchievedDataByGoalType = async (req, res) => {
             },
             jobHolder: goal.jobHolder.name,
           });
+        } else if (goal.goalType === "Proposal Lead") {
+          achievedCount = await proposalModel.countDocuments({
+            createdAt: {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+            jobHolder: goal.jobHolder.name,
+            lead: "Yes",
+          });
+        } else if (goal.goalType === "Proposal Client") {
+          achievedCount = await proposalModel.countDocuments({
+            createdAt: {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+            jobHolder: goal.jobHolder.name,
+            client: "Yes",
+          });
         }
+        // else if (goal.goalType === "Affotax Clicks") {
+        //   const siteUrl = "https://affotax.com/";
+        //   const data = await getSearchConsoleData({
+        //     startDate: goal.startDate,
+        //     endDate: goal.endDate,
+        //     siteUrl,
+        //   });
+        //   achievedCount = data.totalClicks;
+        // } else if (goal.goalType === "Affotax Impressions") {
+        //   const siteUrl = "https://affotax.com/";
+        //   const data = await getSearchConsoleData({
+        //     startDate: goal.startDate,
+        //     endDate: goal.endDate,
+        //     siteUrl,
+        //   });
+        //   achievedCount = data.totalImpressions;
+        // }
 
         // Update achievedCount in the goal object
         return {
@@ -361,6 +397,24 @@ export const fetchAchievedDataByGoalComplete = async (req, res) => {
               $lte: new Date(goal.endDate),
             },
             jobHolder: goal.jobHolder.name,
+          });
+        } else if (goal.goalType === "Proposal Lead") {
+          achievedCount = await proposalModel.countDocuments({
+            createdAt: {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+            jobHolder: goal.jobHolder.name,
+            lead: "Yes",
+          });
+        } else if (goal.goalType === "Proposal Client") {
+          achievedCount = await proposalModel.countDocuments({
+            createdAt: {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+            jobHolder: goal.jobHolder.name,
+            client: "Yes",
           });
         }
 

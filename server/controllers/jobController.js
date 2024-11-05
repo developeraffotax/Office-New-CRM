@@ -1254,3 +1254,25 @@ export const updateBulkJob = async (req, res) => {
     });
   }
 };
+
+// Workflow Page
+export const getWorkflowClients = async (req, res) => {
+  try {
+    const clients = await jobsModel
+      .find({ status: { $ne: "completed" } })
+      .select("fee  totalHours job.jobName job.lead job.jobHolder");
+
+    res.status(200).send({
+      success: true,
+      message: "All Clients!",
+      clients: clients,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "error while get workflow clients!",
+      error: error,
+    });
+  }
+};

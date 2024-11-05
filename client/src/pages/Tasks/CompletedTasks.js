@@ -1643,7 +1643,7 @@ const CompletedTasks = ({
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#FB923C",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },

@@ -3,13 +3,10 @@ import React, { useEffect, useState } from "react";
 import { AiOutlineMenuFold } from "react-icons/ai";
 import { AiOutlineMenuUnfold } from "react-icons/ai";
 import { LuLayoutDashboard } from "react-icons/lu";
-import { BsBell, BsFileEarmarkText } from "react-icons/bs";
+import { BsFileEarmarkText } from "react-icons/bs";
 import { BsBriefcase } from "react-icons/bs";
-import { BsCashCoin } from "react-icons/bs";
-import { GoGear } from "react-icons/go";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
-import { RiLogoutCircleLine } from "react-icons/ri";
 import { MdTaskAlt } from "react-icons/md";
 import { LiaClipboardListSolid } from "react-icons/lia";
 import ProfileModal from "../Modals/ProfileModal";
@@ -22,6 +19,8 @@ import { LuClipboardSignature } from "react-icons/lu";
 import { MdSecurity } from "react-icons/md";
 import { RiSettings4Fill } from "react-icons/ri";
 import { GoGoal } from "react-icons/go";
+import { FaTasks } from "react-icons/fa";
+import { LiaNetworkWiredSolid } from "react-icons/lia";
 
 export default function Sidebar({ hide, setHide }) {
   const router = useNavigate();
@@ -110,7 +109,6 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </div>
           )}
-
           {/* 2 */}
           {hasAccess("MyList") && (
             <div
@@ -149,7 +147,6 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </div>
           )}
-
           {/* 3 */}
           {hasAccess("Tasks") && (
             <div
@@ -167,13 +164,13 @@ export default function Sidebar({ hide, setHide }) {
               ></div>
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
-                  <MdTaskAlt
+                  <FaTasks
                     className="h-5 w-5 cursor-pointer ml-2"
                     style={{ color: active === "tasks" && "#fff" }}
                   />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <MdTaskAlt
+                    <FaTasks
                       className="h-5 w-5 cursor-pointer ml-2"
                       style={{ color: active === "tasks" && "#fff" }}
                     />
@@ -188,9 +185,7 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </div>
           )}
-
           {/* 4 */}
-
           {hasAccess("Jobs") && (
             <div
               className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
@@ -228,7 +223,6 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </div>
           )}
-
           {/* ------Ticket------ */}
           {hasAccess("Tickets") && (
             <div
@@ -267,7 +261,6 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </div>
           )}
-
           {/* --------Template------ */}
           {hasAccess("Templates") && (
             <div
@@ -306,7 +299,6 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </div>
           )}
-
           {/* ---------Lead-------- */}
           {hasAccess("Leads") && (
             <div
@@ -345,7 +337,6 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </div>
           )}
-
           {/* ---------Proposal----- */}
           {hasAccess("Proposals") && (
             <div
@@ -384,7 +375,6 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </div>
           )}
-
           {/* ---------Goals----- */}
           {hasAccess("Goals") && (
             <div
@@ -423,7 +413,6 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </div>
           )}
-
           {/* Timer Sheet */}
           {hasAccess("Timesheet") && (
             <div
@@ -462,8 +451,7 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </div>
           )}
-
-          {/* 6 */}
+          {/* Subscription */}
           {hasAccess("Subscription") && (
             <div
               className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
@@ -501,18 +489,64 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </div>
           )}
-
           {/*  */}
+          <hr className="my-1" />
+          {hide ? (
+            <h4 className="text-[16] font-semibold px-2 flex items-center gap-1">
+              {" "}
+              <span>
+                <RiSettings4Fill className="h-7 w-7 text-gray-900" />
+              </span>
+            </h4>
+          ) : (
+            <h4 className="text-[16] font-semibold px-2 flex items-center gap-1">
+              {" "}
+              <span>
+                <RiSettings4Fill className="h-7 w-7 text-gray-900" />
+              </span>
+              Settings
+            </h4>
+          )}
+          {/* Workflow */}
+          {hasAccess("Workflow") && (
+            <div
+              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              onClick={() => {
+                router("/workflow");
+              }}
+            >
+              <div
+                className="adminbtn absolute h-full  sidebtn z-[20]"
+                style={{
+                  width: active === "workflow" && "100%",
+                  background: `rgb(2, 68, 2)`,
+                }}
+              ></div>
+              <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                {hide ? (
+                  <LiaNetworkWiredSolid
+                    className="h-6 w-6 cursor-pointer ml-2"
+                    style={{ color: active === "workflow" && "#fff" }}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <LiaNetworkWiredSolid
+                      className="h-6 w-6 cursor-pointer ml-2"
+                      style={{ color: active === "workflow" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400]"
+                      style={{ color: active === "workflow" && "#fff" }}
+                    >
+                      Workflow
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           {hasAccess("Roles") && (
             <>
-              <hr className="my-1" />
-              <h4 className="text-[16] font-semibold px-2 flex items-center gap-1">
-                {" "}
-                <span>
-                  <RiSettings4Fill className="h-7 w-7 text-gray-900" />
-                </span>
-                Settings
-              </h4>{" "}
               <div
                 className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
                 onClick={() => {
@@ -550,7 +584,6 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </>
           )}
-
           {hasAccess("Users") && (
             <>
               <div
@@ -590,9 +623,7 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </>
           )}
-
           {/* User Info */}
-
           {/*  */}
         </div>
       </div>

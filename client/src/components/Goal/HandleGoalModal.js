@@ -24,8 +24,12 @@ export default function HandleGoalModal({
     "Increase Client",
     "Increase Fee",
     "Total Proposal",
+    "Proposal Lead",
+    "Proposal Client",
     "Total Lead",
     "Lead Won",
+    "Affotax Clicks",
+    "Affotax Impressions",
   ];
 
   // Fetch Proposal

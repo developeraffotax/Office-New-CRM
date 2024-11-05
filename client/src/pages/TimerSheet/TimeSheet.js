@@ -230,9 +230,19 @@ export default function TimeSheet() {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers(
-        data?.users.map((user) => ({ name: user?.name, id: user?._id }))
-      );
+
+      auth?.user?.role?.name === "Admin"
+        ? setUsers(
+            data?.users.map((user) => ({ name: user?.name, id: user?._id }))
+          )
+        : setUsers(
+            data?.users
+              .filter((user) => user?.role?.name !== "Admin")
+              .map((user) => ({ name: user?.name, id: user?._id }))
+          );
+      // setUsers(
+      //   data?.users.map((user) => ({ name: user?.name, id: user?._id }))
+      // );
       setUserData(data?.users);
     } catch (error) {
       console.log(error);
@@ -865,18 +875,22 @@ export default function TimeSheet() {
 
           useEffect(() => {
             column.setFilterValue(user);
-            setUsername(user);
+            // setUsername(user);
 
             // eslint-disable-next-line
-          }, [user]);
+          }, []);
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
                 className="ml-1 cursor-pointer"
                 title="Clear Filter"
                 onClick={() => {
-                  column.setFilterValue("");
-                  setCall(true);
+                  if (
+                    auth?.user?.role.name === "Admin" ||
+                    access.includes("Job-holder")
+                  ) {
+                    column.setFilterValue("");
+                  }
                 }}
               >
                 Job Holder
@@ -887,8 +901,8 @@ export default function TimeSheet() {
                   value={column.getFilterValue()}
                   onChange={(e) => {
                     column.setFilterValue(e.target.value);
-                    setUsername(e.target.value);
-                    filterByDep("", e.target.value, "");
+                    // setUsername(e.target.value);
+                    // filterByDep("", e.target.value, "");
                   }}
                   className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
                 >
@@ -1639,7 +1653,7 @@ export default function TimeSheet() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#FB923C",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1706,16 +1720,19 @@ export default function TimeSheet() {
               Timesheet
             </h1>
             <div className="flex items-center gap-2">
-              <span
-                className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
-                onClick={() => {
-                  setUsername("");
-                  handleClearFilters();
-                }}
-                title="Clear filters"
-              >
-                <IoClose className="h-6 w-6 text-white" />
-              </span>
+              {(auth?.user?.role.name === "Admin" ||
+                access.includes("Job-holder")) && (
+                <span
+                  className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
+                  onClick={() => {
+                    setUsername("");
+                    handleClearFilters();
+                  }}
+                  title="Clear filters"
+                >
+                  <IoClose className="h-6 w-6 text-white" />
+                </span>
+              )}
             </div>
             {/* Select */}
             <select

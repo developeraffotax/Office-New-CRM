@@ -49,8 +49,12 @@ export default function Goals() {
     "Increase Client",
     "Increase Fee",
     "Total Proposal",
+    "Proposal Lead",
+    "Proposal Client",
     "Total Lead",
     "Lead Won",
+    "Affotax Clicks",
+    "Affotax Impressions",
   ];
 
   console.log("userName:", userName);
@@ -1306,7 +1310,9 @@ export default function Goals() {
                         : "linear-gradient(90deg, #FF4560, #FF8A65)",
                     transition: "width 0.4s ease-in-out",
                   }}
-                  className="h-full flex items-center justify-center text-white font-semibold rounded-md shadow-md"
+                  className={`h-full flex items-center justify-center  ${
+                    progressValue < 15 ? "text-black" : "text-white"
+                  } font-semibold rounded-md shadow-md`}
                 >
                   <span className="px-2 text-xs">{progressValue}%</span>
                 </div>
@@ -1352,7 +1358,7 @@ export default function Goals() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#FB923C",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },

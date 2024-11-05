@@ -11,6 +11,7 @@ import {
   getClientJobs,
   getClientWithJobs,
   getTicketClients,
+  getWorkflowClients,
   importData,
   singleClientComments,
   singleClientJob,
@@ -104,5 +105,8 @@ router.put("/update/timer/:id", requiredSignIn, isAdmin, updateTime);
 
 // Update Bulk Jobs
 router.put("/update/bulk/job", requiredSignIn, isAdmin, updateBulkJob);
+
+// Get Workflow Clients
+router.get("/workflow/clients", getWorkflowClients);
 
 export default router;

@@ -33,8 +33,12 @@ export default function CompletedGoals({ setGoalId, setShow }) {
     "Increase Client",
     "Increase Fee",
     "Total Proposal",
+    "Proposal Lead",
+    "Proposal Client",
     "Total Lead",
     "Lead Won",
+    "Affotax Clicks",
+    "Affotax Impressions",
   ];
 
   console.log("goalsData:", goalsData);

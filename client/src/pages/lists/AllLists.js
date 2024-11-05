@@ -12,6 +12,7 @@ import Templates from "../../components/MyLists/Templates";
 import Goals from "../../components/MyLists/Goals";
 import Subscriptions from "../../components/MyLists/Subscriptions";
 import { RiRefreshFill } from "react-icons/ri";
+import Timesheet from "../../components/TimeSheet/Timesheet";
 
 export default function AllLists() {
   const { auth } = useAuth();
@@ -27,6 +28,7 @@ export default function AllLists() {
   const tasksRef = useRef(null);
   const childRef = useRef(null);
   const [isload, setIsload] = useState(false);
+  const [timerData, setTimerData] = useState([]);
 
   const refreshHandler = () => {
     childRef.current.refreshData();
@@ -164,6 +166,23 @@ export default function AllLists() {
     getAllGoals();
   }, []);
 
+  // Get TimeSheet Data
+  const getAllTimeSheetData = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/timer/get/all/timers`
+      );
+
+      setTimerData(data.timers);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllTimeSheetData();
+  }, []);
+
   return (
     <Layout>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
@@ -282,6 +301,18 @@ export default function AllLists() {
               >
                 Subscription
               </button>
+              <button
+                className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                  selectedTab === "TimeSheet"
+                    ? "bg-orange-500 text-white scale-105 shadow-md"
+                    : "text-black bg-gray-100 hover:bg-slate-200"
+                }`}
+                onClick={() => {
+                  setSelectedTab("TimeSheet");
+                }}
+              >
+                TimeSheet
+              </button>
               {/* RiRefreshFill */}
             </div>
             <span
@@ -295,11 +326,11 @@ export default function AllLists() {
 
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
         </>
-        {isload && (
+        {/* {isload && (
           <div className="pb-5">
             <div class="loader"></div>
           </div>
-        )}
+        )} */}
         <div className=" mt-[1rem]">
           {selectedTab === "Tasks" ? (
             <Tasks
@@ -349,6 +380,14 @@ export default function AllLists() {
               ref={tasksRef}
               goalsData={goalsData}
               setGoalsData={setGoalsData}
+              childRef={childRef}
+              setIsload={setIsload}
+            />
+          ) : selectedTab === "TimeSheet" ? (
+            <Timesheet
+              ref={tasksRef}
+              timerData={timerData}
+              setTimerData={setTimerData}
               childRef={childRef}
               setIsload={setIsload}
             />

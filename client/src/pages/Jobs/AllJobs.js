@@ -5,8 +5,6 @@ import NewJobModal from "../../components/Modals/NewJobModal";
 import { CgClose } from "react-icons/cg";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import { IoIosArrowDropdown } from "react-icons/io";
-import { IoIosArrowDropup } from "react-icons/io";
 import axios from "axios";
 import {
   MaterialReactTable,
@@ -55,8 +53,15 @@ const csvConfig = mkConfig({
 });
 
 export default function AllJobs() {
-  const { auth, filterId, setFilterId, searchValue, setSearchValue } =
-    useAuth();
+  const {
+    auth,
+    filterId,
+    setFilterId,
+    searchValue,
+    setSearchValue,
+    jid,
+    anyTimerRunning,
+  } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [show, setShow] = useState(false);
   const [active, setActive] = useState("All");
@@ -105,7 +110,7 @@ export default function AllJobs() {
   const [source, setSource] = useState("");
   const [fee, setFee] = useState("");
   const sources = ["FIV", "UPW", "PPH", "Website", "Referal", "Partner"];
-  // const [userData, setUserData] = useState([]);
+  const [timerId, setTimerId] = useState("");
 
   console.log("rowSelection:", rowSelection);
 
@@ -136,7 +141,6 @@ export default function AllJobs() {
   ];
 
   // Get Auth Access
-  // console.log("auth:", auth.user);
   useEffect(() => {
     if (auth.user) {
       const filterAccess = auth.user.role.access
@@ -146,6 +150,12 @@ export default function AllJobs() {
       setAccess(filterAccess);
     }
   }, [auth]);
+
+  // Get Timer ID
+  useEffect(() => {
+    const timeId = localStorage.getItem("jobId");
+    setTimerId(JSON.parse(timeId));
+  }, [anyTimerRunning]);
 
   // -----------Total Hours-------->
 
@@ -1826,9 +1836,30 @@ export default function AllJobs() {
       {
         accessorKey: "timertracker",
         Header: ({ column }) => {
+          const [isRunning, setIsRunning] = useState(false);
+
+          const handleCheckboxChange = () => {
+            const newIsRunning = !isRunning;
+            setIsRunning(newIsRunning);
+
+            if (newIsRunning) {
+              column.setFilterValue(timerId || jid);
+            } else {
+              column.setFilterValue(undefined);
+            }
+          };
           return (
             <div className=" flex flex-col gap-[2px]  ml w-[5rem]">
               <span className="w-full text-center ">Timer</span>
+              <div className="w-full flex items-center justify-center">
+                <input
+                  type="checkbox"
+                  className="cursor-pointer h-5 w-5 ml-3 accent-orange-600"
+                  checked={isRunning}
+                  onChange={handleCheckboxChange}
+                />
+                <label className="ml-2 text-sm cursor-pointer"></label>
+              </div>
             </div>
           );
         },
@@ -1865,6 +1896,12 @@ export default function AllJobs() {
             </div>
           );
         },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.original._id;
+          console.log("T_ID:", filterValue, cellValue);
+          return cellValue === filterValue;
+        },
+        filterVariant: "select",
         size: 90,
       },
       {
@@ -2277,7 +2314,7 @@ export default function AllJobs() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#FB923C",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },

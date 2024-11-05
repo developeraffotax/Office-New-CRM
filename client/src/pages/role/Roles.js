@@ -39,10 +39,11 @@ export default function Roles() {
     "Proposals",
     "Goals",
     "Timesheet",
-    "Roles",
-    "Users",
     "MyList",
     "Subscription",
+    "Workflow",
+    "Roles",
+    "Users",
   ];
 
   const subRolesMapping = {

@@ -1837,6 +1837,7 @@ const Tasks = forwardRef(
                   taskId={""}
                   setTaskId={setTaskId}
                   taskDetal={null}
+                  getAllTasks={getAllTasks}
                 />
               </div>
             )}
@@ -1937,6 +1938,7 @@ const Tasks = forwardRef(
                   users={users}
                   projects={projects}
                   setFilterData={setFilterData}
+                  getAllTasks={getAllTasks}
                 />
               </div>
             )}

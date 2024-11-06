@@ -22,6 +22,7 @@ import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import JobCommentModal from "../../pages/Jobs/JobCommentModal";
+import { style } from "../../utlis/CommonStyle";
 
 const Tickets = forwardRef(
   ({ emailData, setEmailData, childRef, setIsload }, ref) => {
@@ -1031,7 +1032,18 @@ const Tickets = forwardRef(
 
     return (
       <>
-        <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
+        <div className=" relative w-full h-full overflow-y-auto ">
+          <div className="flex items-center justify-end pb-4 pr-4">
+            <div className="flex items-center gap-4">
+              <button
+                className={`${style.button1} text-[15px] `}
+                onClick={() => setShowSendModal(true)}
+                style={{ padding: ".4rem 1rem" }}
+              >
+                New Ticket
+              </button>
+            </div>
+          </div>
           {/* ---------Table Detail---------- */}
           <div className="w-full h-full">
             {isLoading ? (

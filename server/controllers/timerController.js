@@ -19,6 +19,17 @@ export const startTimer = async (req, res) => {
     const startTime = new Date().toISOString();
 
     const user = req.user.user.name;
+    const isTimerRunning = await timerModel.findOne({
+      clientId: req.user.user._id,
+      isRunning: true,
+    });
+
+    if (isTimerRunning) {
+      return res.status(400).send({
+        success: false,
+        message: "Timer is already running in another task!",
+      });
+    }
 
     const newTimer = new timerModel({
       clientId,
@@ -130,79 +141,7 @@ export const timerStatus = async (req, res) => {
 };
 
 // Get Total Time
-// export const totalTime = async (req, res) => {
-//   try {
-//     const timerId = req.params.id;
-//     const { jobId } = req.query;
 
-//     if (!timerId) {
-//       return res.status(400).send({
-//         success: false,
-//         message: "Timer Id is required!",
-//       });
-//     }
-
-//     const timer = await timerModel.findById({ _id: timerId });
-//     if (!timer) {
-//       return res.status(400).send({
-//         success: false,
-//         message: "Timer not found!",
-//       });
-//     }
-
-//     if (!timer.startTime || !timer.endTime) {
-//       return res.status(400).json({ message: "Timer has not ended" });
-//     }
-
-//     const startTime = new Date(timer.startTime);
-//     const endTime = new Date(timer.endTime);
-//     const totalTimeInSeconds = (endTime - startTime) / 1000;
-
-//     let newTime;
-//     if (totalTimeInSeconds < 3600) {
-//       const totalTimeInMinutes = totalTimeInSeconds / 60;
-//       newTime = `${totalTimeInMinutes.toFixed(0)}m`;
-//     } else {
-//       const totalTimeInHours = totalTimeInSeconds / 3600;
-//       newTime = `${totalTimeInHours.toFixed(0)}h`;
-//     }
-
-//     const job = await jobsModel.findById(jobId);
-
-//     if (job) {
-//       // Update Time in Job
-//       await jobsModel.findByIdAndUpdate(
-//         { _id: jobId },
-//         { $set: { totalTime: newTime } },
-//         { new: true }
-//       );
-//     }
-
-//     const task = await taskModel.findById(jobId);
-
-//     if (task) {
-//       // Update Total Time in Task
-//       await taskModel.findByIdAndUpdate(
-//         { _id: jobId },
-//         { $set: { estimate_Time: newTime } },
-//         { new: true }
-//       );
-//     }
-
-//     res.status(200).send({
-//       success: true,
-//       message: "Total time calculated successfully!",
-//       totalTime: responseMessage,
-//     });
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).send({
-//       success: false,
-//       message: "Error in total time controller",
-//       error,
-//     });
-//   }
-// };
 export const totalTime = async (req, res) => {
   try {
     const timerId = req.params.id;

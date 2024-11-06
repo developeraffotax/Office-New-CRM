@@ -71,8 +71,7 @@ export default function AddTaskModal({
             nextRecurringDate,
           }
         );
-        if (data?.success) {
-          getAllTasks();
+        if (data) {
           setShowDetail(false);
           setLoading(false);
           setIsOpen(false);
@@ -81,6 +80,7 @@ export default function AddTaskModal({
           socketId.emit("notification", {
             title: "Task  Updated",
           });
+          getAllTasks();
         }
       } else {
         const { data } = await axios.post(
@@ -98,8 +98,7 @@ export default function AddTaskModal({
             nextRecurringDate,
           }
         );
-        if (data?.success) {
-          getAllTasks();
+        if (data) {
           setLoading(false);
           setIsOpen(false);
           toast.success("Task created successfully!");
@@ -107,6 +106,7 @@ export default function AddTaskModal({
           socketId.emit("notification", {
             title: "Task  added",
           });
+          getAllTasks();
         }
       }
       // Send Socket Timer
@@ -116,7 +116,7 @@ export default function AddTaskModal({
     } catch (error) {
       console.log(error);
       setLoading(false);
-      toast.error(error?.response?.data?.message);
+      // toast.error(error?.response?.data?.message);
     }
   };
   return (

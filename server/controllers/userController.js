@@ -156,7 +156,10 @@ export const loginUser = async (req, res) => {
 // Get All User
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await userModel.find({}).select("-password").populate("role");
+    const users = await userModel
+      .find({ name: { $ne: "Salmans" } })
+      .select("-password")
+      .populate("role");
 
     res.status(200).send({
       total: users.length,

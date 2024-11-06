@@ -1,8 +1,9 @@
+import affotaxAnalytics from "../models/affotaxAnalytics.js";
 import goalModel from "../models/goalModel.js";
 import jobsModel from "../models/jobsModel.js";
 import leadModel from "../models/leadModel.js";
 import proposalModel from "../models/proposalModel.js";
-import { getSearchConsoleData } from "../utils/getWebsiteImpression.js";
+import { fetchSearchAnalytics } from "../utils/websiteImpression.js";
 
 // Create Goal
 export const createGoal = async (req, res) => {
@@ -282,24 +283,21 @@ export const fetchAchievedDataByGoalType = async (req, res) => {
             jobHolder: goal.jobHolder.name,
             client: "Yes",
           });
+        } else if (goal.goalType === "Affotax Clicks") {
+          achievedCount = await affotaxAnalytics.countDocuments({
+            createdAt: {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+          });
+        } else if (goal.goalType === "Affotax Impressions") {
+          achievedCount = await affotaxAnalytics.countDocuments({
+            createdAt: {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+          });
         }
-        // else if (goal.goalType === "Affotax Clicks") {
-        //   const siteUrl = "https://affotax.com/";
-        //   const data = await getSearchConsoleData({
-        //     startDate: goal.startDate,
-        //     endDate: goal.endDate,
-        //     siteUrl,
-        //   });
-        //   achievedCount = data.totalClicks;
-        // } else if (goal.goalType === "Affotax Impressions") {
-        //   const siteUrl = "https://affotax.com/";
-        //   const data = await getSearchConsoleData({
-        //     startDate: goal.startDate,
-        //     endDate: goal.endDate,
-        //     siteUrl,
-        //   });
-        //   achievedCount = data.totalImpressions;
-        // }
 
         // Update achievedCount in the goal object
         return {
@@ -470,3 +468,10 @@ export const singleGoalComments = async (req, res) => {
     });
   }
 };
+
+const main = async () => {
+  const data = await fetchSearchAnalytics();
+  console.log("Data:", data);
+};
+
+// main();

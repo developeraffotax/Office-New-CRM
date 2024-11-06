@@ -29,14 +29,12 @@ const calculateNextRecurringDate = (currentDate, recurring) => {
 // Auto-create recurring tasks based on their schedule
 const autoCreateRecurringTasks = async () => {
   try {
-    // Find all tasks that have a recurring field and a nextRecurringDate
     const tasks = await taskModel.find({
       recurring: { $ne: null },
-      nextRecurringDate: { $lte: new Date() }, // Only tasks with a nextRecurringDate that's passed or today
+      nextRecurringDate: { $lte: new Date() },
     });
 
     for (const task of tasks) {
-      // Create a new task with the same data but new start and deadline dates
       const newTask = await taskModel.create({
         project: task.project,
         jobHolder: task.jobHolder,
@@ -50,12 +48,12 @@ const autoCreateRecurringTasks = async () => {
         nextRecurringDate: calculateNextRecurringDate(
           new Date().toISOString(),
           task.recurring
-        ), // Set next recurring date
+        ),
       });
 
       // Add activity log for the newly created recurring task
       newTask.activities.push({
-        userName: "System", // Indicate that it was created automatically
+        userName: "System",
         activity: `Auto-created a recurring task: ${task.task} for project: ${task.project.projectName}`,
       });
 

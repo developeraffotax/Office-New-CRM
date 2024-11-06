@@ -183,15 +183,18 @@ const AllTasks = () => {
       setTasksData(data?.tasks);
 
       if (
-        auth.user.role.name === "Admin" ||
-        auth.user.role.name === "SEO Manager" ||
-        auth.user.role.name === "Accountant-Lead"
+        auth.user.role.name === "Admin" 
       ) {
         setTasksData(data?.tasks);
       } else {
-        const filteredTasks = data?.tasks?.filter((item) =>
-          item?.jobHolder?.includes(auth?.user?.name)
-        );
+        // const filteredTasks = data?.tasks?.filter((item) =>
+        //   item?.jobHolder?.includes(auth?.user?.name)
+        // );
+        const filteredTasks = data?.tasks?.filter((item) => {
+          return item?.project?.users_list?.some(
+            (user) => user?.name === auth?.user?.name
+          );
+        });
 
         setTasksData(filteredTasks || []);
       }

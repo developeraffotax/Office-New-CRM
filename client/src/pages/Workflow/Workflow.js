@@ -1,9 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { style } from "../../utlis/CommonStyle";
+import {
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
+import Loader from "../../utlis/Loader";
+import Leads from "./Lead";
 
 export default function Workflow() {
   const [loading, setLoading] = useState(false);
@@ -11,9 +17,7 @@ export default function Workflow() {
   const [selectedTab, setSelectedTab] = useState("Clients");
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState("");
-  const [summarizedData, setSummarizedData] = useState([]);
-  const [leadWiseData, setLeadWiseData] = useState([]);
-  const [departmentWiseData, setDepartmentWiseData] = useState([]);
+  const [clients, setClients] = useState([]);
 
   const departments = [
     "Bookkeeping",
@@ -25,9 +29,8 @@ export default function Workflow() {
     "Address",
   ];
 
-  console.log("workFlowData:", workFlowData, users);
-  console.log("summarizedData:", leadWiseData);
-  console.log("departmentWiseData:", departmentWiseData);
+  console.log("workFlowData:", workFlowData);
+  console.log("clients:", clients);
 
   // ---------------All Client_Job Data----------->
   const allClientJobData = async () => {
@@ -79,48 +82,248 @@ export default function Workflow() {
     // eslint-disable-next-line
   }, []);
 
-  // Get Summery
+  // Get Client Lead Wise Total
   useEffect(() => {
-    // Lead-wise summary
-    const leadSummary = workFlowData.reduce((acc, job) => {
-      const lead = job.job.lead;
+    const departmentTotals = departments.map((department) => {
+      // Filter jobs by department
+      const departmentJobs = workFlowData.filter(
+        (job) => job.job.jobName === department
+      );
 
-      // Initialize lead entry if not present
-      if (!acc[lead]) {
-        acc[lead] = { lead, totalFee: 0, totalHours: 0, jobs: [] };
-      }
+      // Calculate total hours, fees, and job count for the department
+      const totalHours = departmentJobs
+        .reduce((sum, job) => sum + parseFloat(job.totalHours || 0), 0)
+        .toFixed(2);
+      const totalFee = departmentJobs.reduce(
+        (sum, job) => sum + parseFloat(job.fee || 0),
+        0
+      );
+      const totalDepartmentCount = departmentJobs.length;
 
-      // Add job details and accumulate fee and hours
-      acc[lead].jobs.push(job.job.jobName);
-      acc[lead].totalFee += parseFloat(job.fee) || 0;
-      acc[lead].totalHours += parseFloat(job.totalHours) || 0;
-
-      return acc;
-    }, {});
-
-    // Department-wise summary
-    const departmentSummary = workFlowData.reduce((acc, job) => {
-      const department = job.jobName;
-
-      // Ensure department exists in the departments array
-      if (departments.includes(department)) {
-        // Initialize department entry if not present
-        if (!acc[department]) {
-          acc[department] = { department, totalFee: 0, totalHours: 0 };
+      // Calculate lead-wise totals and job counts
+      const leadWiseTotals = departmentJobs.reduce((acc, job) => {
+        const lead = job.job.lead;
+        if (!acc[lead]) {
+          acc[lead] = { totalHours: 0, totalFee: 0, departmentCount: 0 };
         }
+        acc[lead].totalHours += parseFloat(job.totalHours || 0);
+        acc[lead].totalFee += parseFloat(job.fee || 0);
+        acc[lead].departmentCount += 1;
+        return acc;
+      }, {});
 
-        // Accumulate fee and hours for the department
-        acc[department].totalFee += parseFloat(job.fee) || 0;
-        acc[department].totalHours += parseFloat(job.totalHours) || 0;
-      }
+      return {
+        department,
+        totalHours,
+        totalFee,
+        totalDepartmentCount,
+        leadWiseTotals,
+      };
+    });
 
-      return acc;
-    }, {});
+    setClients(departmentTotals);
 
-    // Convert summaries to arrays for easier display
-    setLeadWiseData(Object.values(leadSummary));
-    setDepartmentWiseData(Object.values(departmentSummary));
+    // eslint-disable-next-line
   }, [workFlowData]);
+
+  // ---------------------Table Data----------------
+  const columns = useMemo(
+    () => [
+      {
+        accessorKey: "department",
+        header: "Department",
+        size: 170,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Department
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {departments?.map((dep, i) => (
+                  <option key={i} value={dep}>
+                    {dep}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell }) => (
+          <span className="font-medium text-[16px] text-black px-2">
+            {cell.getValue()}
+          </span>
+        ),
+        filterFn: "equals",
+        filterSelectOptions: departments?.map((dep) => dep),
+        filterVariant: "select",
+      },
+      {
+        accessorKey: "totalDepartmentCount",
+        header: "Total Count",
+        size: 100,
+        Cell: ({ cell }) => <span className="px-2">{cell.getValue()}</span>,
+      },
+      {
+        accessorKey: "totalHours",
+        header: "Total Hours",
+        size: 130,
+        Cell: ({ cell }) => <span className="px-2">{cell.getValue()}</span>,
+      },
+      {
+        accessorKey: "totalFee",
+        header: "Total Fee",
+        size: 130,
+        Cell: ({ cell }) => <span className="px-2">${cell.getValue()}</span>,
+      },
+
+      {
+        accessorKey: "leadWiseTotals",
+        header: "Owner-wise Breakdown",
+        size: 600,
+        grow: true,
+        Header: ({ column }) => {
+          return (
+            <div className="flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => column.setFilterValue("")}
+              >
+                Owner-wise Breakdown
+              </span>
+            </div>
+          );
+        },
+        Cell: ({ cell }) => {
+          const leadWiseData = cell.getValue();
+          const leadColumns = [
+            { accessorKey: "lead", header: "Owner", size: 100 },
+            { accessorKey: "totalHours", header: "Hours", size: 80 },
+            { accessorKey: "totalFee", header: "Fee", size: 80 },
+            { accessorKey: "departmentCount", header: "Dep Count", size: 60 },
+          ];
+
+          // Apply filter based on selectedUser
+          const filteredLeadData = Object.entries(leadWiseData)
+            .map(([lead, totals]) => ({
+              lead,
+              totalHours: totals.totalHours.toFixed(2),
+              totalFee: totals.totalFee,
+              departmentCount: totals.departmentCount,
+            }))
+            .filter((data) =>
+              selectedUser ? data.lead === selectedUser : true
+            );
+
+          return (
+            <MaterialReactTable
+              columns={leadColumns}
+              data={filteredLeadData}
+              enablePagination={false}
+              enableSorting={false}
+              enableColumnFilters={false}
+              enableTopToolbar={false}
+              enableBottomToolbar={false}
+              muiTableContainerProps={{
+                sx: { maxHeight: "300px", border: "1px solid #ddd" },
+              }}
+              muiTableBodyCellProps={{
+                sx: {
+                  padding: "4px",
+                  fontSize: "12px",
+                  border: "1px solid rgba(203, 201, 201, 0.5)",
+                },
+              }}
+              muiTableProps={{
+                sx: { fontSize: "12px", tableLayout: "fixed" },
+              }}
+              muiTableHeadCellProps={{
+                style: {
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  backgroundColor: "#DDE6ED",
+                  color: "#000",
+                  padding: ".7rem 0.3rem",
+                  borderRadius: "0",
+                },
+              }}
+            />
+          );
+        },
+      },
+    ],
+
+    [departments, selectedUser]
+  );
+
+  const table = useMaterialReactTable({
+    columns,
+    data: clients || [],
+    enableStickyHeader: true,
+    enableStickyFooter: true,
+    muiTableContainerProps: { sx: { maxHeight: "850px" } },
+    enableColumnActions: false,
+    enableColumnFilters: false,
+    enableSorting: false,
+    enableGlobalFilter: true,
+    enableRowNumbers: true,
+    enableColumnResizing: true,
+    enableTopToolbar: true,
+    enableBottomToolbar: true,
+    enablePagination: true,
+    initialState: {
+      pagination: { pageSize: 20 },
+      pageSize: 20,
+      density: "compact",
+    },
+    muiTableHeadCellProps: {
+      style: {
+        fontWeight: "600",
+        fontSize: "14px",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
+        color: "#000",
+        padding: ".4rem 0.3rem",
+      },
+    },
+    muiTableBodyCellProps: {
+      sx: {
+        border: "1px solid #999",
+        padding: "0rem 0rem",
+      },
+    },
+    muiTableProps: {
+      sx: {
+        "& .MuiTableHead-root": {
+          backgroundColor: "#f0f0f0",
+        },
+        tableLayout: "auto",
+        fontSize: "13px",
+        border: "1px solid #999",
+        caption: {
+          captionSide: "top",
+        },
+      },
+    },
+  });
+
+  // Clear table Filter
+  const handleClearFilters = () => {
+    table.setColumnFilters([]);
+
+    table.setGlobalFilter("");
+  };
 
   return (
     <Layout>
@@ -133,9 +336,10 @@ export default function Workflow() {
 
             <span
               className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
-              // onClick={() => {
-              //   handleClearFilters();
-              // }}
+              onClick={() => {
+                handleClearFilters();
+                setSelectedUser("");
+              }}
               title="Clear filters"
             >
               <IoClose className="h-6 w-6 text-white" />
@@ -185,30 +389,25 @@ export default function Workflow() {
           </div>
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
         </>
-        <div className="flex flex-col gap-4">
-          <div>
-            {/* Render lead-wise summarized data */}
-            {/* <h2>Lead-wise Summary</h2>
-            {leadWiseData.map((data, index) => (
-              <div key={index}>
-                <h3>Lead: {data.lead}</h3>
-                <p>Total Fee: {data.totalFee}</p>
-                <p>Total Hours: {data.totalHours}</p>
-                <p>Jobs: {data.jobs.join(", ")}</p>
+        {selectedTab === "Clients" ? (
+          <div className="w-full h-full ">
+            {loading ? (
+              <div className="flex items-center justify-center w-full h-screen px-4 py-4">
+                <Loader />
               </div>
-            ))} */}
-
-            {/* Render department-wise summarized data */}
-            {/* <h2>Department-wise Summary</h2>
-            {departmentWiseData.map((data, index) => (
-              <div key={index}>
-                <h3>Department: {data.department}</h3>
-                <p>Total Fee: {data.totalFee}</p>
-                <p>Total Hours: {data.totalHours}</p>
+            ) : (
+              <div className="w-full min-h-[10vh] relative ">
+                <div className="h-full hidden1 overflow-y-scroll relative">
+                  <MaterialReactTable table={table} />
+                </div>
               </div>
-            ))} */}
+            )}
           </div>
-        </div>
+        ) : (
+          <div className="w-full h-full">
+            <Leads selectedLead={selectedUser} />
+          </div>
+        )}
       </div>
     </Layout>
   );

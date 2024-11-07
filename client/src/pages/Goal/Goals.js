@@ -55,6 +55,7 @@ export default function Goals() {
     "Lead Won",
     "Affotax Clicks",
     "Affotax Impressions",
+    "Manual Goal",
   ];
 
   console.log("userName:", userName);

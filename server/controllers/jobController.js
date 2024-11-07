@@ -1190,6 +1190,7 @@ export const updateBulkJob = async (req, res) => {
       dataLabelId,
       source,
       fee,
+      totalHours,
     } = req.body;
 
     if (
@@ -1223,6 +1224,7 @@ export const updateBulkJob = async (req, res) => {
     if (label) updateData.label = currentLabel;
     if (source) updateData.source = source;
     if (fee) updateData.fee = fee;
+    if (totalHours) updateData.totalHours = totalHours;
 
     const updatedJobs = await jobsModel.updateMany(
       {

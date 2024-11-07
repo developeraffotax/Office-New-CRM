@@ -490,22 +490,36 @@ export default function Sidebar({ hide, setHide }) {
             </div>
           )}
           {/*  */}
-          <hr className="my-1" />
+          {(hasAccess("Workflow") ||
+            hasAccess("Roles") ||
+            hasAccess("Users")) && <hr className="my-1" />}
           {hide ? (
-            <h4 className="text-[16] font-semibold px-2 flex items-center gap-1">
-              {" "}
-              <span>
-                <RiSettings4Fill className="h-7 w-7 text-gray-900" />
-              </span>
-            </h4>
+            <>
+              {(hasAccess("Workflow") ||
+                hasAccess("Roles") ||
+                hasAccess("Users")) && (
+                <h4 className="text-[16] font-semibold px-2 flex items-center gap-1">
+                  {" "}
+                  <span>
+                    <RiSettings4Fill className="h-7 w-7 text-gray-900" />
+                  </span>
+                </h4>
+              )}
+            </>
           ) : (
-            <h4 className="text-[16] font-semibold px-2 flex items-center gap-1">
-              {" "}
-              <span>
-                <RiSettings4Fill className="h-7 w-7 text-gray-900" />
-              </span>
-              Settings
-            </h4>
+            <>
+              {(hasAccess("Workflow") ||
+                hasAccess("Roles") ||
+                hasAccess("Users")) && (
+                <h4 className="text-[16] font-semibold px-2 flex items-center gap-1">
+                  {" "}
+                  <span>
+                    <RiSettings4Fill className="h-7 w-7 text-gray-900" />
+                  </span>
+                  Settings
+                </h4>
+              )}
+            </>
           )}
           {/* Workflow */}
           {hasAccess("Workflow") && (

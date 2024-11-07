@@ -109,6 +109,7 @@ export default function AllJobs() {
   const [isUpload, setIsUpdate] = useState(false);
   const [source, setSource] = useState("");
   const [fee, setFee] = useState("");
+  const [hours, setHours] = useState("");
   const sources = ["FIV", "UPW", "PPH", "Website", "Referal", "Partner"];
   const [timerId, setTimerId] = useState("");
 
@@ -2404,6 +2405,7 @@ export default function AllJobs() {
           dataLabelId,
           source,
           fee,
+          totalHours: hours,
         }
       );
 
@@ -2422,6 +2424,7 @@ export default function AllJobs() {
         setDataLabelId("");
         setSource("");
         setFee("");
+        setHours("");
       }
     } catch (error) {
       setIsUpdate(false);
@@ -2642,7 +2645,7 @@ export default function AllJobs() {
                   value={jobHolder}
                   onChange={(e) => setJobHolder(e.target.value)}
                   className={`${style.input} w-full`}
-                  style={{ width: "8rem" }}
+                  style={{ width: "7rem" }}
                 >
                   <option value="empty">Assign</option>
                   {users.map((jobHold, i) => (
@@ -2657,7 +2660,7 @@ export default function AllJobs() {
                   value={lead}
                   onChange={(e) => setLead(e.target.value)}
                   className={`${style.input} w-full`}
-                  style={{ width: "8rem" }}
+                  style={{ width: "7rem" }}
                 >
                   <option value="empty">Owner</option>
                   {users.map((jobHold, i) => (
@@ -2667,7 +2670,7 @@ export default function AllJobs() {
                   ))}
                 </select>
               </div>
-              <div className="inputBox" style={{ width: "9rem" }}>
+              <div className="inputBox" style={{ width: "8.5rem" }}>
                 <input
                   type="date"
                   value={yearEnd}
@@ -2676,7 +2679,7 @@ export default function AllJobs() {
                 />
                 <span>Year End</span>
               </div>
-              <div className="inputBox" style={{ width: "9rem" }}>
+              <div className="inputBox" style={{ width: "8.5rem" }}>
                 <input
                   type="date"
                   value={jobDeadline}
@@ -2685,7 +2688,7 @@ export default function AllJobs() {
                 />
                 <span>Job Deadline</span>
               </div>
-              <div className="inputBox" style={{ width: "9rem" }}>
+              <div className="inputBox" style={{ width: "8.5rem" }}>
                 <input
                   type="date"
                   value={currentDate}
@@ -2700,7 +2703,7 @@ export default function AllJobs() {
                   value={jobState}
                   onChange={(e) => setJobState(e.target.value)}
                   className={`${style.input} w-full`}
-                  style={{ width: "7rem" }}
+                  style={{ width: "6.5rem" }}
                 >
                   <option value="empty">Status</option>
                   {status.map((stat, i) => (
@@ -2715,7 +2718,7 @@ export default function AllJobs() {
                   value={label}
                   onChange={(e) => setLabel(e.target.value)}
                   className={`${style.input} w-full`}
-                  style={{ width: "10rem" }}
+                  style={{ width: "9rem" }}
                 >
                   <option value="empty">Select Label</option>
                   {labelData?.map((label, i) => (
@@ -2731,7 +2734,7 @@ export default function AllJobs() {
                   value={dataLabelId}
                   onChange={(e) => setDataLabelId(e.target.value)}
                   className={`${style.input} w-full`}
-                  style={{ width: "10rem" }}
+                  style={{ width: "9rem" }}
                 >
                   <option value="empty">Select Data</option>
                   {dataLable?.map((data, i) => (
@@ -2743,7 +2746,7 @@ export default function AllJobs() {
               </div>
               {(auth?.user?.role?.name === "Admin" ||
                 access.includes("Fee")) && (
-                <div className="inputBox" style={{ width: "7rem" }}>
+                <div className="inputBox" style={{ width: "6rem" }}>
                   <input
                     type="text"
                     value={fee}
@@ -2751,6 +2754,17 @@ export default function AllJobs() {
                     className={`${style.input} w-full `}
                   />
                   <span>Fee</span>
+                </div>
+              )}
+              {auth?.user?.role?.name === "Admin" && (
+                <div className="inputBox" style={{ width: "6rem" }}>
+                  <input
+                    type="text"
+                    value={hours}
+                    onChange={(e) => setHours(e.target.value)}
+                    className={`${style.input} w-full `}
+                  />
+                  <span>Hours</span>
                 </div>
               )}
 

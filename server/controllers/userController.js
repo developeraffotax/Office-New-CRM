@@ -93,7 +93,9 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    const user = await userModel.findOne({ email: email }).populate("role");
+    const user = await userModel
+      .findOne({ email: new RegExp(`^${email}$`, "i") })
+      .populate("role");
     if (!user) {
       return res.status(400).send({
         success: false,

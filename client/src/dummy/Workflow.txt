@@ -1,0 +1,163 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { IoClose } from "react-icons/io5";
+import toast from "react-hot-toast";
+import axios from "axios";
+import {
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
+import Layout from "../../components/Loyout/Layout";
+import { style } from "../../utlis/CommonStyle";
+
+export default function Leads() {
+  const [loading, setLoading] = useState(false);
+  const [workFlowData, setWorkflowData] = useState([]);
+  const [users, setUsers] = useState([]);
+
+  // 1
+  const [clients, setClients] = useState([]);
+
+  const departments = [
+    "Bookkeeping",
+    "Payroll",
+    "Vat Return",
+    "Personal Tax",
+    "Accounts",
+    "Company Sec",
+    "Address",
+  ];
+
+  // ---------------All Client_Job Data----------->
+
+  const allClientJobData = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/workflow/clients`
+      );
+      if (data) {
+        setWorkflowData(data?.clients);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message || "Error in client Jobs");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    allClientJobData();
+    // eslint-disable-next-line
+  }, []);
+
+  //---------- Get All Users-----------
+
+  const getAllUsers = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+      );
+
+      setUsers(
+        data?.users
+          ?.filter((user) =>
+            user?.role?.access?.some((item) =>
+              item?.permission?.includes("Jobs")
+            )
+          )
+          .map((user) => user.name) || []
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllUsers();
+    // eslint-disable-next-line
+  }, []);
+
+  // Get Client Lead Wise Total
+  useEffect(() => {
+    const departmentTotals = departments.map((department) => {
+      // Filter jobs by department
+      const departmentJobs = workFlowData.filter(
+        (job) => job.job.jobName === department
+      );
+
+      // Calculate lead-wise totals and job counts
+      const leadWiseTotals = departmentJobs.reduce((acc, job) => {
+        const lead = job.job.lead;
+        if (!acc[lead]) {
+          acc[lead] = { totalHours: 0, totalFee: 0, departmentCount: 0 };
+        }
+        acc[lead].totalHours += parseFloat(job.totalHours || 0);
+        acc[lead].totalFee += parseFloat(job.fee || 0);
+        acc[lead].departmentCount += 1;
+        return acc;
+      }, {});
+
+      return {
+        department,
+        leadWiseTotals,
+      };
+    });
+
+    // Update the clients state with the calculated totals
+    setClients(departmentTotals);
+
+    // eslint-disable-next-line
+  }, [workFlowData]);
+
+  // ---------------------Table Data----------------
+
+  const leadColumns = [
+    { accessorKey: "lead", header: "Lead", size: 100 },
+    { accessorKey: "totalHours", header: "Hours", size: 80 },
+    { accessorKey: "totalFee", header: "Fee", size: 80 },
+    { accessorKey: "departmentCount", header: "Count", size: 60 },
+  ];
+
+  return (
+    <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
+      <div className="w-full h-full grid grid-cols-1 sm:grid-cols-2 3xl:grid-cols-3 gap-4">
+        {clients.map((departmentData, index) => (
+          <div key={index}>
+            <h2 className="text-lg font-semibold">
+              {departmentData.department}
+            </h2>
+            <MaterialReactTable
+              columns={leadColumns}
+              data={Object.entries(departmentData.leadWiseTotals).map(
+                ([lead, totals]) => ({
+                  lead,
+                  totalHours: totals.totalHours.toFixed(2),
+                  totalFee: totals.totalFee,
+                  departmentCount: totals.departmentCount,
+                })
+              )}
+              enablePagination={false}
+              enableSorting={false}
+              enableColumnFilters={false}
+              enableTopToolbar={false}
+              enableBottomToolbar={false}
+              muiTableContainerProps={{
+                sx: { maxHeight: "300px", border: "1px solid #ddd" },
+              }}
+              muiTableBodyCellProps={{
+                sx: {
+                  padding: "4px",
+                  fontSize: "12px",
+                  border: "1px solid rgba(0, 0, 0, 0.1)",
+                  lineHeight: "16px",
+                  wordBreak: "break-word",
+                },
+              }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

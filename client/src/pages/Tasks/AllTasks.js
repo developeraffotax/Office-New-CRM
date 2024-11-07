@@ -180,17 +180,14 @@ const AllTasks = () => {
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/all`
       );
 
-      setTasksData(data?.tasks);
+      setTasksData(data.tasks);
 
-      if (
-        auth.user.role.name === "Admin" 
-      ) {
+      console.log("data.tasks:", data?.tasks);
+      if (auth.user.role.name === "Admin") {
         setTasksData(data?.tasks);
       } else {
-        // const filteredTasks = data?.tasks?.filter((item) =>
-        //   item?.jobHolder?.includes(auth?.user?.name)
-        // );
         const filteredTasks = data?.tasks?.filter((item) => {
+          // item?.jobHolder === auth?.user?.name ||
           return item?.project?.users_list?.some(
             (user) => user?.name === auth?.user?.name
           );

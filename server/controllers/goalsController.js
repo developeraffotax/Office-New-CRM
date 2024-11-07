@@ -8,10 +8,17 @@ import { fetchSearchAnalytics } from "../utils/websiteImpression.js";
 // Create Goal
 export const createGoal = async (req, res) => {
   try {
-    const { subject, achievement, startDate, endDate, goalType, jobHolder } =
-      req.body;
+    const {
+      subject,
+      achievement,
+      startDate,
+      endDate,
+      goalType,
+      jobHolder,
+      achievedCount,
+    } = req.body;
 
-    console.log(subject, achievement, startDate, endDate, goalType, jobHolder);
+    console.log(achievedCount);
 
     const goal = await goalModel.create({
       subject,
@@ -20,6 +27,7 @@ export const createGoal = async (req, res) => {
       endDate,
       goalType,
       jobHolder,
+      achievedCount,
     });
 
     res.status(200).send({
@@ -41,8 +49,15 @@ export const createGoal = async (req, res) => {
 export const updateGoal = async (req, res) => {
   try {
     const goalId = req.params.id;
-    const { subject, achievement, startDate, endDate, goalType, jobHolder } =
-      req.body;
+    const {
+      subject,
+      achievement,
+      startDate,
+      endDate,
+      goalType,
+      jobHolder,
+      achievedCount,
+    } = req.body;
 
     const isGoal = await goalModel.findById(goalId);
     if (!isGoal) {
@@ -62,6 +77,7 @@ export const updateGoal = async (req, res) => {
         endDate: endDate || isGoal.endDate,
         goalType: goalType || isGoal.goalType,
         jobHolder: jobHolder || isGoal.jobHolder,
+        achievedCount: achievedCount || isGoal.achievedCount,
       },
       { new: true }
     );
@@ -297,6 +313,9 @@ export const fetchAchievedDataByGoalType = async (req, res) => {
               $lte: new Date(goal.endDate),
             },
           });
+        } else if (goal.goalType === "Manual Goal") {
+          const data = await goalModel.findOne({ _id: goal._id });
+          achievedCount = data ? data.achievedCount : 0;
         }
 
         // Update achievedCount in the goal object

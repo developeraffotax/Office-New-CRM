@@ -270,30 +270,31 @@ export default function AddTimerModal({
             />
             <span>Task</span>
           </div>
-          <div className="inputBox">
-            <input
-              type="text"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
+          <div className="inputBox ">
+            <select
+              value={activity}
+              onChange={(e) => setActivity(e.target.value)}
               className={`${style.input} w-full `}
-            />
-            <span>Note</span>
+            >
+              <option value="">Select Activity</option>
+              {options?.map((act, i) => (
+                <option key={i} value={act}>
+                  {act}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
         <div className="inputBox mt-4">
-          <select
-            value={activity}
-            onChange={(e) => setActivity(e.target.value)}
-            className={`${style.input} w-full `}
-          >
-            <option value="">Select Activity</option>
-            {options?.map((act, i) => (
-              <option key={i} value={act}>
-                {act}
-              </option>
-            ))}
-          </select>
+          <textarea
+            type="text"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className={`${style.input} w-full h-[5rem] `}
+          />
+          <span>Note</span>
         </div>
+
         <div className="w-full flex items-center justify-end mt-5">
           <div className="flex items-center justify-end">
             <button

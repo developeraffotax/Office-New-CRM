@@ -182,7 +182,7 @@ export const getAllUsers = async (req, res) => {
 export const getAllActiveUsers = async (req, res) => {
   try {
     const users = await userModel
-      .find({ isActive: { $ne: false } })
+      .find({ isActive: { $ne: false }, name: { $ne: "Salmans" } })
       .select("-password")
       .populate("role");
 

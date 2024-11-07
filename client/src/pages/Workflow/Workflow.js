@@ -17,6 +17,7 @@ export default function Workflow() {
   const [selectedTab, setSelectedTab] = useState("Clients");
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("");
   const [clients, setClients] = useState([]);
 
   const departments = [
@@ -339,6 +340,7 @@ export default function Workflow() {
               onClick={() => {
                 handleClearFilters();
                 setSelectedUser("");
+                setSelectedDepartment("");
               }}
               title="Clear filters"
             >
@@ -386,6 +388,23 @@ export default function Workflow() {
                 ))}
               </select>
             </div>
+            {selectedTab === "Owners" && (
+              <div className="w-[12rem] mt-5">
+                <select
+                  value={selectedDepartment}
+                  onChange={(e) => setSelectedDepartment(e.target.value)}
+                  className={`${style.input} w-full `}
+                  required
+                >
+                  <option value="">Select Department</option>
+                  {departments?.map((dep, i) => (
+                    <option key={i} value={dep}>
+                      {dep}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
         </>
@@ -405,7 +424,10 @@ export default function Workflow() {
           </div>
         ) : (
           <div className="w-full h-full">
-            <Leads selectedLead={selectedUser} />
+            <Leads
+              selectedLead={selectedUser}
+              selectedDepartment={selectedDepartment}
+            />
           </div>
         )}
       </div>

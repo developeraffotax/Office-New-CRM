@@ -55,8 +55,13 @@ const Goals = forwardRef(
       "Increase Client",
       "Increase Fee",
       "Total Proposal",
+      "Proposal Lead",
+      "Proposal Client",
       "Total Lead",
       "Lead Won",
+      "Affotax Clicks",
+      "Affotax Impressions",
+      "Manual Goal",
     ];
 
     const getGoals = async () => {

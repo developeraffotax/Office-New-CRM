@@ -19,6 +19,7 @@ export default function HandleGoalModal({
   const [achievement, setAchievement] = useState("");
   const [goalType, setGoalType] = useState("");
   const [loading, setLoading] = useState(false);
+  const [achievedCount, setAchievedCount] = useState("");
 
   const goalTypes = [
     "Increase Client",
@@ -30,6 +31,7 @@ export default function HandleGoalModal({
     "Lead Won",
     "Affotax Clicks",
     "Affotax Impressions",
+    "Manual Goal",
   ];
 
   // Fetch Proposal
@@ -57,6 +59,7 @@ export default function HandleGoalModal({
         setEndDate(formattedEndDate);
         setAchievement(data.goal.achievement);
         setGoalType(data.goal.goalType);
+        setAchievedCount(data.goal.achievedCount);
       }
     } catch (error) {
       console.log(error);
@@ -85,6 +88,7 @@ export default function HandleGoalModal({
             endDate,
             goalType,
             jobHolder,
+            achievedCount,
           }
         );
 
@@ -104,6 +108,7 @@ export default function HandleGoalModal({
             endDate,
             goalType,
             jobHolder,
+            achievedCount,
           }
         );
         if (data) {
@@ -195,19 +200,32 @@ export default function HandleGoalModal({
             <span>End Date</span>
           </div>
         </div>
-        <div className="inputBox">
-          <select
-            value={goalType}
-            onChange={(e) => setGoalType(e.target.value)}
-            className={`${style.input} w-full `}
-          >
-            <option value="">Select Goal Type</option>
-            {goalTypes?.map((goal, i) => (
-              <option key={i} value={goal}>
-                {goal}
-              </option>
-            ))}
-          </select>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="inputBox">
+            <select
+              value={goalType}
+              onChange={(e) => setGoalType(e.target.value)}
+              className={`${style.input} w-full `}
+            >
+              <option value="">Select Goal Type</option>
+              {goalTypes?.map((goal, i) => (
+                <option key={i} value={goal}>
+                  {goal}
+                </option>
+              ))}
+            </select>
+          </div>
+          {goalType === "Manual Goal" && (
+            <div className="inputBox">
+              <input
+                type="number"
+                value={achievedCount}
+                onChange={(e) => setAchievedCount(e.target.value)}
+                className={`${style.input} w-full `}
+              />
+              <span>Target Achieved</span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-end ">

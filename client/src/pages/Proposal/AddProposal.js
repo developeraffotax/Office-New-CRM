@@ -106,7 +106,7 @@ export default function AddProposal({
           }
         );
         if (data) {
-          getProposal(getProposal);
+          getProposal();
           setShow(false);
           setLoading(false);
           toast.success("New proposal added successfully.");

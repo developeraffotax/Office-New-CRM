@@ -39,6 +39,7 @@ export default function CompletedGoals({ setGoalId, setShow }) {
     "Lead Won",
     "Affotax Clicks",
     "Affotax Impressions",
+    "Manual Goal",
   ];
 
   console.log("goalsData:", goalsData);

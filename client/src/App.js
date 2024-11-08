@@ -26,6 +26,7 @@ import Inbox from "./pages/Tickets/Inbox";
 import Goals from "./pages/Goal/Goals";
 import AllLists from "./pages/lists/AllLists";
 import Workflow from "./pages/Workflow/Workflow";
+import Complaints from "./pages/Complaints/Complaints";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -46,6 +47,7 @@ function App() {
     Jobs: <Route path="/job-planning" element={<AllJobs />} />,
     Goals: <Route path="/goals" element={<Goals />} />,
     Workflow: <Route path="/workflow" element={<Workflow />} />,
+    Complaints: <Route path="/complaints" element={<Complaints />} />,
     Tickets: (
       <>
         <Route path="/tickets" element={<Tickets />} />

@@ -7,7 +7,6 @@ import { BsFileEarmarkText } from "react-icons/bs";
 import { BsBriefcase } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
-import { MdTaskAlt } from "react-icons/md";
 import { LiaClipboardListSolid } from "react-icons/lia";
 import ProfileModal from "../Modals/ProfileModal";
 import { FaUsers } from "react-icons/fa";
@@ -21,6 +20,7 @@ import { RiSettings4Fill } from "react-icons/ri";
 import { GoGoal } from "react-icons/go";
 import { FaTasks } from "react-icons/fa";
 import { LiaNetworkWiredSolid } from "react-icons/lia";
+import { BiMessageError } from "react-icons/bi";
 
 export default function Sidebar({ hide, setHide }) {
   const router = useNavigate();
@@ -553,6 +553,44 @@ export default function Sidebar({ hide, setHide }) {
                       style={{ color: active === "workflow" && "#fff" }}
                     >
                       Workflow
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          {/* Complaints */}
+          {hasAccess("Complaints") && (
+            <div
+              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              onClick={() => {
+                router("/complaints");
+              }}
+            >
+              <div
+                className="adminbtn absolute h-full  sidebtn z-[20]"
+                style={{
+                  width: active === "complaints" && "100%",
+                  background: `rgb(2, 68, 2)`,
+                }}
+              ></div>
+              <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                {hide ? (
+                  <BiMessageError
+                    className="h-6 w-6 cursor-pointer ml-2"
+                    style={{ color: active === "complaints" && "#fff" }}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <BiMessageError
+                      className="h-6 w-6 cursor-pointer ml-2"
+                      style={{ color: active === "complaints" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400]"
+                      style={{ color: active === "complaints" && "#fff" }}
+                    >
+                      Complaints
                     </span>
                   </div>
                 )}

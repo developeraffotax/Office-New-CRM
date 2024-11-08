@@ -1731,13 +1731,6 @@ const TimeSheet = forwardRef(
         <div className=" relative w-full min-h-[90vh] py-4 px-2 sm:px-4 flex flex-col gap-2  ">
           <div className="flex items-center justify-between">
             <div className="relative flex items-center gap-4">
-              <span
-                className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
-                onClick={handleClearFilters}
-                title="Clear filters"
-              >
-                <IoClose className="h-6 w-6 text-white" />
-              </span>
               {/* Select */}
               <select
                 value={active}

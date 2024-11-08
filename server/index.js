@@ -22,6 +22,7 @@ import roleRoute from "./routes/roleRoute.js";
 import notificationRoute from "./routes/notificationRoutes.js";
 import subscriptionRoute from "./routes/subscriptionRoutes.js";
 import goalsRoute from "./routes/goalRoutes.js";
+import complaintRoute from "./routes/complaintRoutes.js";
 import analyticsRoute from "./routes/Analytics.js/customImpressions.js";
 
 import http from "http";
@@ -64,6 +65,7 @@ app.use("/api/v1/roles", roleRoute);
 app.use("/api/v1/subscriptions", subscriptionRoute);
 app.use("/api/v1/goals", goalsRoute);
 app.use("/api/v1/analytics", analyticsRoute);
+app.use("/api/v1/complaints", complaintRoute);
 
 // Rest API's
 app.use("/", (req, res) => {

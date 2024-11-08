@@ -42,6 +42,7 @@ export default function Roles() {
     "MyList",
     "Subscription",
     "Workflow",
+    "Complaints",
     "Roles",
     "Users",
   ];

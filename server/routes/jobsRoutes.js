@@ -5,11 +5,13 @@ import {
   createDublicateJob,
   createJob,
   createSubTask,
+  dashboardCompletedClients,
   deleteClientJob,
   deleteSubTask,
   getAllClients,
   getClientJobs,
   getClientWithJobs,
+  getDashboardClients,
   getTicketClients,
   getWorkflowClients,
   importData,
@@ -108,5 +110,8 @@ router.put("/update/bulk/job", requiredSignIn, isAdmin, updateBulkJob);
 
 // Get Workflow Clients
 router.get("/workflow/clients", getWorkflowClients);
+// Dashboard Client
+router.get("/dashboard/clients/:type", getDashboardClients);
+router.get("/completed/clients", dashboardCompletedClients);
 
 export default router;

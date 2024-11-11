@@ -1278,3 +1278,49 @@ export const getWorkflowClients = async (req, res) => {
     });
   }
 };
+
+// Dashboard Page (data)
+export const getDashboardClients = async (req, res) => {
+  try {
+    const type = req.params.type;
+    console.log("type:", type);
+
+    const clients = await jobsModel
+      .find({ status: { $ne: type } })
+      .select(" job.jobName job.jobHolder ");
+
+    res.status(200).send({
+      success: true,
+      message: "All clients",
+      clients: clients,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get all job!",
+      error: error,
+    });
+  }
+};
+
+export const dashboardCompletedClients = async (req, res) => {
+  try {
+    const clients = await jobsModel
+      .find({ status: "completed" })
+      .select(" job.jobName job.jobHolder ");
+
+    res.status(200).send({
+      success: true,
+      message: "All clients",
+      clients: clients,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get all job!",
+      error: error,
+    });
+  }
+};

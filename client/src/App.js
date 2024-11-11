@@ -27,6 +27,7 @@ import Goals from "./pages/Goal/Goals";
 import AllLists from "./pages/lists/AllLists";
 import Workflow from "./pages/Workflow/Workflow";
 import Complaints from "./pages/Complaints/Complaints";
+import UDashboard from "./pages/Auth/Dashboard";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -104,6 +105,7 @@ function App() {
           {userAccessRoutes}
           <Route path="/profile" element={<Profile />} />
           {/* Catch-all route: if no access to a route, show 404 */}
+          <Route path="/employee/dashboard" element={<UDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />

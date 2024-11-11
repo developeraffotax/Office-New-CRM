@@ -628,14 +628,14 @@ export default function TimeSheet() {
   // -----------Download in CSV------>
   const flattenData = (data) => {
     return data.map((row) => ({
-      date: row.date || "",
-      JobHolderName: row.JobHolderName || "",
+      date: format(new Date(row.date), "dd-MMM-yyyy") || "",
+      JobHolderName: row.jobHolderName || "",
+      activity: row.activity || "",
       companyName: row.companyName || "",
       clientName: row.clientName || "",
-      projectName: row.projectName || "",
       department: row.department || "",
-      startTime: row.startTime || "",
-      endTime: row.endTime || "",
+      startTime: format(new Date(row.startTime), "HH:mm:ss") || "",
+      endTime: format(new Date(row.endTime), "HH:mm:ss") || "",
       type: row.type || "",
       note: row.note || "",
       task: row.task || "",
@@ -643,7 +643,7 @@ export default function TimeSheet() {
   };
 
   const handleExportData = () => {
-    const csvData = flattenData(timerData);
+    const csvData = flattenData(tableFilterData);
     const csv = generateCsv(csvConfig)(csvData);
     download(csvConfig)(csv);
   };
@@ -1873,11 +1873,11 @@ export default function TimeSheet() {
           {/* ----------Add Manual Buttons---------- */}
           <div className="flex items-center gap-4">
             <button
-              className={`w-[3rem] h-[2.2rem] flex items-center justify-center rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
+              className={`px-4 h-[2.2rem] flex items-center justify-center gap-1 rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
               onClick={handleExportData}
-              title="Import Date"
+              title="Export Date"
             >
-              <LuImport className="h-6 w-6 " />
+              <LuImport className="h-6 w-6 " /> Export
             </button>
             {/* auth.user.name === "Salman" ||
               auth.user.name === "M Salman" || */}

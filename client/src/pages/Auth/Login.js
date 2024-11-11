@@ -31,7 +31,7 @@ export default function Login() {
       if (data?.success) {
         setAuth({ ...auth, user: data?.user, token: data?.token });
         localStorage.setItem("auth", JSON.stringify(data));
-        navigate("/profile");
+        navigate("/employee/dashboard");
         toast.success("Login successfully!", { duration: 2000 });
         setLoading(false);
       }

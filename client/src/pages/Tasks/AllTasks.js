@@ -760,12 +760,11 @@ const AllTasks = () => {
   const flattenData = (data) => {
     return data?.map((row) => ({
       projectName: row.project.projectName,
-      projectId: row.project._id,
       jobHolder: row.jobHolder,
       task: row.task,
       hours: row.hours,
-      startDate: row.startDate,
-      deadline: row.deadline || "",
+      startDate: format(new Date(row.startDate), "dd-MMM-yyyy"),
+      deadline: format(new Date(row.deadline), "dd-MMM-yyyy") || "",
       status: row.status || "",
       lead: row.lead || "",
       estimate_Time: row.estimate_Time || "",
@@ -2318,24 +2317,6 @@ const AllTasks = () => {
 
             {/* Project Buttons */}
             <div className="flex items-center gap-4">
-              {/* Status Filter */}
-              {/* <div className="">
-                <select
-                  className=" w-[8rem] h-[2rem] text-[14px] border-2 border-gray-200 rounded-md cursor-pointer"
-                  value={state}
-                  onChange={(e) => {
-                    setState(e.target.value);
-                    filterByState(e.target.value);
-                  }}
-                >
-                  <option value="">Select Status</option>
-                  {status?.map((stat, i) => (
-                    <option key={i} value={stat}>
-                      {stat}
-                    </option>
-                  ))}
-                </select>
-              </div> */}
               {/*  */}
               {(auth?.user?.role?.name === "Admin" ||
                 access.includes("Projects")) && (
@@ -2404,13 +2385,13 @@ const AllTasks = () => {
               )}
 
               <button
-                className={`w-[3rem] h-[2.2rem] flex items-center justify-center rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
+                className={`px-4 h-[2.2rem] flex items-center justify-center gap-1 rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
                 onClick={handleExportData}
-                title="Export Data"
+                title="Export Date"
               >
-                <LuImport className="h-6 w-6 " />
+                <LuImport className="h-6 w-6 " /> Export
               </button>
-              {auth?.user?.role?.name === "Admin" && (
+              {/* {auth?.user?.role?.name === "Admin" && (
                 <button
                   className={`${style.button1} text-[15px] `}
                   onClick={handleRecurring}
@@ -2423,7 +2404,7 @@ const AllTasks = () => {
                     "Recurring"
                   )}
                 </button>
-              )}
+              )} */}
               <button
                 className={`${style.button1} text-[15px] `}
                 onClick={() => setShowlabel(true)}
@@ -2467,28 +2448,7 @@ const AllTasks = () => {
               >
                 All ({getProjectsCount("All")})
               </div>
-              {/* {projects?.map((proj, i) => {
-                getDueAndOverdueCountByDepartment(proj?.projectName);
-                return (
-                  <div
-                    className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                      active === proj?.projectName &&
-                      " border-2 border-b-0 text-orange-600 border-gray-300"
-                    }`}
-                    key={i}
-                    onClick={() => {
-                      setFilterData("");
-                      setActive(proj?.projectName);
-                      filterByDep(proj?.projectName);
-                      setShowCompleted(false);
-                      setActive1("");
-                      setFilterId("");
-                    }}
-                  >
-                    {proj?.projectName} ({getProjectsCount(proj?.projectName)})
-                  </div>
-                );
-              })} */}
+
               <DragDropContext onDragEnd={handleOnDragEnd}>
                 <Droppable droppableId="projects" direction="horizontal">
                   {(provided) => (
@@ -2610,9 +2570,6 @@ const AllTasks = () => {
             {showJobHolder && activeBtn === "jobHolder" && (
               <>
                 <div className="w-full  py-2 ">
-                  {/* <h3 className="text-[19px] font-semibold text-black">
-                    Job Holder Summary
-                  </h3> */}
                   <div className="flex items-center flex-wrap gap-4">
                     {users
                       ?.filter(
@@ -2643,9 +2600,6 @@ const AllTasks = () => {
             {showDue && activeBtn === "due" && (
               <>
                 <div className="w-full py-2">
-                  {/* <h3 className="text-[19px] font-semibold text-black">
-                    Date Status Summary
-                  </h3> */}
                   <div className="flex items-center flex-wrap gap-4">
                     {dateStatus?.map((stat, i) => {
                       const { due, overdue } =
@@ -2712,9 +2666,6 @@ const AllTasks = () => {
                 <div className="h-full hidden1 overflow-y-scroll relative">
                   <MaterialReactTable table={table} />
                 </div>
-                {/* <span className="absolute bottom-4 left-[35%] z-10 font-semibold text-[15px] text-gray-900">
-                  Total Hrs: {totalHours}
-                </span> */}
               </div>
             )}
           </div>

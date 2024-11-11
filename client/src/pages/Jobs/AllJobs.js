@@ -689,19 +689,21 @@ export default function AllJobs() {
 
   const flattenData = (data) => {
     return data.map((row) => ({
-      clientName: row.clientName,
-      companyName: row.companyName,
-      // email: row.email,
-      currentDate: row.currentDate,
-      totalHours: row.totalHours,
-      totalTime: row.totalTime,
+      clientName: row.clientName || " ",
+      companyName: row.companyName || "",
+      jobHolder: row.job?.jobHolder || "",
       jobName: row.job?.jobName || "",
-      yearEnd: row.job?.yearEnd || "",
-      jobDeadline: row.job?.jobDeadline || "",
-      workDeadline: row.job?.workDeadline || "",
+      totalHours: row.totalHours || "",
+      currentDate: format(new Date(row.currentDate), "dd-MMM-yyyy") || "",
+      yearEnd: format(new Date(row.job?.yearEnd), "dd-MMM-yyyy") || "",
+      jobDeadline: format(new Date(row.job?.jobDeadline), "dd-MMM-yyyy") || "",
+      workDeadline:
+        format(new Date(row.job?.workDeadline), "dd-MMM-yyyy") || "",
       jobStatus: row.job?.jobStatus || "",
       lead: row.job?.lead || "",
-      jobHolder: row.job?.jobHolder || "",
+      label: row.label?.name || "",
+      partner: row?.partner || "",
+      data: row.data?.name || "",
     }));
   };
 
@@ -2493,11 +2495,11 @@ export default function AllJobs() {
             </form>
 
             <button
-              className={`w-[3rem] h-[2.2rem] flex items-center justify-center rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
+              className={`px-4 h-[2.2rem] flex items-center justify-center gap-1 rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
               onClick={handleExportData}
-              title="Import Date"
+              title="Export Date"
             >
-              <LuImport className="h-5 w-5" />
+              <LuImport className="h-6 w-6 " /> Export
             </button>
             <button
               className={`${style.button1} text-[15px] `}

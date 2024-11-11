@@ -161,3 +161,72 @@ export default function Leads() {
     </div>
   );
 }
+
+-------------------Chart----------
+ // useEffect(() => {
+  //   const departmentCounts = clients.map(
+  //     (client) => client.totalDepartmentCount
+  //   );
+  //   const departmentLineData = clients.map(
+  //     (client) => client.totalDepartmentCount || 0
+  //   );
+  //   const departmentLabels = clients.map((client) => client.department);
+
+  //   const optionsCount = {
+  //     series: [
+  //       {
+  //         name: "Total Count (Bar)",
+  //         type: "column",
+  //         data: departmentCounts,
+  //         color: "#0284c7",
+  //       },
+  //       {
+  //         name: "Trend Line (Line)",
+  //         type: "line",
+  //         data: departmentLineData,
+  //       },
+  //     ],
+  //     chart: {
+  //       type: "line",
+  //       height: 350,
+  //       stacked: false,
+  //       toolbar: { show: true },
+  //     },
+  //     plotOptions: {
+  //       bar: {
+  //         columnWidth: "50%",
+  //         borderRadius: 5,
+  //       },
+  //     },
+  //     stroke: {
+  //       width: [0, 2],
+  //       curve: "smooth",
+  //     },
+  //     xaxis: {
+  //       categories: departmentLabels,
+  //       title: { text: "Department", style: { fontWeight: "bold" } },
+  //       labels: { style: { colors: "#4B5563", fontSize: "12px" } },
+  //     },
+  //     yaxis: {
+  //       title: { text: "Total Count" },
+  //       labels: { style: { colors: "#4B5563", fontSize: "12px" } },
+  //     },
+  //     tooltip: {
+  //       shared: true,
+  //       intersect: false,
+  //       y: {
+  //         formatter: function (value) {
+  //           return `${value.toLocaleString()}`;
+  //         },
+  //       },
+  //     },
+  //     colors: ["#0D92F4", "#FEB019"],
+  //   };
+
+  //   const chartElementCount = document.querySelector("#department-count-chart");
+  //   if (chartElementCount) {
+  //     const chartCount = new ApexCharts(chartElementCount, optionsCount);
+  //     chartCount.render();
+  //     return () => chartCount.destroy();
+  //   }
+  // }, [clients]);

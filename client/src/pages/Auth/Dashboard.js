@@ -63,7 +63,6 @@ export default function UDashboard() {
         y: task.value || Math.floor(Math.random() * 90) + 10,
       }));
 
-      // Update tasks data and chart series
       setTasksData(formattedData);
       //   setChartSeries([{ data: formattedData }]);
     } catch (error) {

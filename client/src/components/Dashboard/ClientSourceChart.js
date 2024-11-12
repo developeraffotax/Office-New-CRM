@@ -12,14 +12,14 @@ const JobSourcePieChart = ({ workFlowData, selectedMonth, selectedYear }) => {
 
     if (selectedYear) {
       filteredData = filteredData.filter((job) => {
-        const jobYear = new Date(job.createdAt).getFullYear();
+        const jobYear = new Date(job.currentDate).getFullYear();
         return jobYear === parseInt(selectedYear);
       });
     }
 
     if (selectedMonth) {
       filteredData = filteredData.filter((job) => {
-        const jobMonth = new Date(job.createdAt).getMonth() + 1; // Month is 0-indexed
+        const jobMonth = new Date(job.currentDate).getMonth() + 1; // Month is 0-indexed
         return jobMonth === parseInt(selectedMonth);
       });
     }

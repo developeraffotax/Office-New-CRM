@@ -399,7 +399,7 @@ const Jobs = forwardRef(
             ? { yearEnd: date }
             : type === "jobDeadline"
             ? { jobDeadline: date }
-            : { currentDate: date }
+            : { workDeadline: date }
         );
         if (data) {
           const clientJob = data.clientJob;
@@ -1103,7 +1103,7 @@ const Jobs = forwardRef(
         },
         //  Current Date
         {
-          accessorKey: "currentDate",
+          accessorKey: "job.workDeadline",
           Header: ({ column }) => {
             const [filterValue, setFilterValue] = useState("");
             const [customDate, setCustomDate] = useState(getCurrentMonthYear());
@@ -1177,7 +1177,7 @@ const Jobs = forwardRef(
               }
 
               setDate(newDate);
-              handleUpdateDates(row.original._id, newDate, "currentDate");
+              handleUpdateDates(row.original._id, newDate, "workDeadline");
               setShowCurrentDate(false);
             };
 

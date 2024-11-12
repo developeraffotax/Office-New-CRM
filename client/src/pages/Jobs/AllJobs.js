@@ -630,7 +630,7 @@ export default function AllJobs() {
           ? { yearEnd: date }
           : type === "jobDeadline"
           ? { jobDeadline: date }
-          : { currentDate: date }
+          : { workDeadline: date }
       );
       if (data) {
         const clientJob = data.clientJob;
@@ -1393,7 +1393,7 @@ export default function AllJobs() {
       },
       //  Current Date
       {
-        accessorKey: "currentDate",
+        accessorKey: "job.workDeadline",
         Header: ({ column }) => {
           const [filterValue, setFilterValue] = useState("");
           const [customDate, setCustomDate] = useState(getCurrentMonthYear());
@@ -1467,7 +1467,7 @@ export default function AllJobs() {
             }
 
             setDate(newDate);
-            handleUpdateDates(row.original._id, newDate, "currentDate");
+            handleUpdateDates(row.original._id, newDate, "workDeadline");
             setShowCurrentDate(false);
           };
 

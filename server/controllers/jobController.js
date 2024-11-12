@@ -1262,7 +1262,9 @@ export const getWorkflowClients = async (req, res) => {
   try {
     const clients = await jobsModel
       .find({ status: { $ne: "completed" } })
-      .select("fee  totalHours job.jobName job.lead job.jobHolder");
+      .select(
+        "fee  totalHours job.jobName job.lead job.jobHolder source clientType partner createdAt"
+      );
 
     res.status(200).send({
       success: true,
@@ -1287,7 +1289,7 @@ export const getDashboardClients = async (req, res) => {
 
     const clients = await jobsModel
       .find({ status: { $ne: type } })
-      .select(" job.jobName job.jobHolder ");
+      .select(" job.jobName job.jobHolder createdAt ");
 
     res.status(200).send({
       success: true,
@@ -1308,7 +1310,7 @@ export const dashboardCompletedClients = async (req, res) => {
   try {
     const clients = await jobsModel
       .find({ status: "completed" })
-      .select(" job.jobName job.jobHolder ");
+      .select(" job.jobName job.jobHolder createdAt ");
 
     res.status(200).send({
       success: true,

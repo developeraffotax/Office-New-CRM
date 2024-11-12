@@ -464,7 +464,7 @@ export default function Clients({
           </div>
 
           {/* -----------------------Bar/Line/Area Charts--------------- */}
-          <div className="w-full flex flex-col gap-4">
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* ------------Month Wise Department Total------------ */}
             <div className="w-full shadow-md rounded-md cursor-pointer border p-2">
               <div className="flex items-center gap-6">

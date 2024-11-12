@@ -141,9 +141,6 @@ export const getAllClients = async (req, res) => {
 // Get Ticket Clients
 export const getTicketClients = async (req, res) => {
   try {
-    // const clients = await jobsModel
-    //   .find({ status: { $ne: "completed" } })
-    //   .select("clientName companyName ");
     const uniqueCompanies = await jobsModel.aggregate([
       {
         $match: { status: { $ne: "completed" } },
@@ -562,7 +559,7 @@ export const updateClientJob = async (req, res) => {
 export const updateDates = async (req, res) => {
   try {
     const jobId = req.params.id;
-    const { yearEnd, jobDeadline, currentDate } = req.body;
+    const { yearEnd, jobDeadline, workDeadline } = req.body;
 
     if (!jobId) {
       return res.status(400).send({
@@ -587,10 +584,10 @@ export const updateDates = async (req, res) => {
         { new: true }
       );
     }
-    if (currentDate) {
+    if (workDeadline) {
       clientJob = await jobsModel.findByIdAndUpdate(
         { _id: jobId },
-        { $set: { currentDate: currentDate } },
+        { $set: { "job.workDeadline": currentDate } },
         { new: true }
       );
     }
@@ -1263,13 +1260,55 @@ export const getWorkflowClients = async (req, res) => {
     const clients = await jobsModel
       .find({ status: { $ne: "completed" } })
       .select(
-        "fee  totalHours job.jobName job.lead job.jobHolder source clientType partner createdAt"
+        "fee  totalHours job.jobName job.lead job.jobHolder source clientType partner createdAt currentDate"
       );
+
+    const uniqueClients = await jobsModel.aggregate([
+      {
+        $match: { status: { $ne: "completed" } },
+      },
+      {
+        $group: {
+          _id: "$companyName",
+          clientName: { $first: "$clientName" },
+          id: { $first: "$_id" },
+          fee: { $first: "$fee" },
+          totalHours: { $first: "$totalHours" },
+          jobName: { $first: "$job.jobName" },
+          lead: { $first: "$job.lead" },
+          jobHolder: { $first: "$job.jobHolder" },
+          source: { $first: "$source" },
+          clientType: { $first: "$clientType" },
+          partner: { $first: "$partner" },
+          createdAt: { $first: "$createdAt" },
+          currentDate: { $first: "$currentDate" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          companyName: "$_id", // Rename _id to companyName
+          clientName: 1,
+          id: 1,
+          fee: 1,
+          totalHours: 1,
+          jobName: 1,
+          lead: 1,
+          jobHolder: 1,
+          source: 1,
+          clientType: 1,
+          partner: 1,
+          createdAt: 1,
+          currentDate: 1,
+        },
+      },
+    ]);
 
     res.status(200).send({
       success: true,
       message: "All Clients!",
       clients: clients,
+      uniqueClients: uniqueClients,
     });
   } catch (error) {
     console.log(error);

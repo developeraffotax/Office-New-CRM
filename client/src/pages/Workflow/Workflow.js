@@ -196,14 +196,21 @@ export default function Workflow() {
         grow: true,
         Header: ({ column }) => {
           return (
-            <div className="flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => column.setFilterValue("")}
-              >
-                Owner-wise Breakdown
-              </span>
+            <div className="flex flex-col gap-[2px] w-[36rem] xl:w-[39rem] 2xl:w-[44rem] 3xl:w-[47rem] 4xl:w-[55rem] px-2  ">
+              <div className="w-full rounded-md flex items-center justify-between">
+                {["Owner", "Hours", "Fee", "Dep Count"].map((label, index) => (
+                  <span
+                    key={label}
+                    className={`ml-1 cursor-pointer ${
+                      index === 1 ? "3xl:ml-[1rem]" : ""
+                    }`}
+                    title="Clear Filter"
+                    onClick={() => column.setFilterValue("")}
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
             </div>
           );
         },
@@ -237,6 +244,7 @@ export default function Workflow() {
               enableColumnFilters={false}
               enableTopToolbar={false}
               enableBottomToolbar={false}
+              enableTableHead={false}
               muiTableContainerProps={{
                 sx: { maxHeight: "300px", border: "1px solid #ddd" },
               }}
@@ -284,6 +292,7 @@ export default function Workflow() {
     enableTopToolbar: true,
     enableBottomToolbar: true,
     enablePagination: true,
+
     initialState: {
       pagination: { pageSize: 20 },
       pageSize: 20,

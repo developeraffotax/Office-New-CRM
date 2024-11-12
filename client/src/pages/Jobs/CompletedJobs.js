@@ -695,7 +695,7 @@ export default function CompletedJobs({
 
       //  Current Date
       {
-        accessorKey: "currentDate",
+        accessorKey: "job.workDeadline",
         Header: ({ column }) => {
           const [filterValue, setFilterValue] = useState("");
           const [customDate, setCustomDate] = useState(getCurrentMonthYear());
@@ -762,7 +762,7 @@ export default function CompletedJobs({
 
           const handleDateChange = (newDate) => {
             setDate(newDate);
-            handleUpdateDates(row.original._id, newDate, "currentDate");
+            handleUpdateDates(row.original._id, newDate, "workDeadline");
             setShowCurrentDate(false);
           };
 

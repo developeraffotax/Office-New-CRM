@@ -18,7 +18,8 @@ export default function Clients({
   const [workFlowData, setWorkflowData] = useState([]);
   const [clients, setClients] = useState([]);
   const [fee, setFee] = useState("");
-  const [selectChart, setSelectChart] = useState("bar");
+  const [selectChart, setSelectChart] = useState("area");
+  const [uniqueClients, setUniqueClients] = useState([]);
 
   console.log("clients:", clients, "workflow:", workFlowData);
 
@@ -41,6 +42,7 @@ export default function Clients({
       );
       if (data) {
         setWorkflowData(data?.clients);
+        setUniqueClients(data.uniqueClients);
       }
     } catch (error) {
       console.log(error);
@@ -117,9 +119,12 @@ export default function Clients({
     const optionsCount = {
       series: [{ name: "Total Count", data: departmentCounts }],
       chart: { type: "bar", height: 350 },
-      plotOptions: { bar: { columnWidth: "50%", borderRadius: 5 } },
+      plotOptions: {
+        bar: { columnWidth: "50%", borderRadius: 5 },
+      },
       xaxis: { categories: departmentLabels, title: { text: "Department" } },
       yaxis: { title: { text: "Total Count" } },
+      colors: ["#059669", "#FF5733", "#33FF57", "#3357FF"],
     };
 
     const chartElementCount = document.querySelector("#department-count-chart");
@@ -210,7 +215,7 @@ export default function Clients({
       // Filter by month and year
       if (selectedMonth && selectedYear) {
         filteredData = filteredData.filter((job) => {
-          const jobDate = new Date(job.createdAt);
+          const jobDate = new Date(job.currentDate);
           const jobMonth = jobDate.getMonth() + 1;
           const jobYear = jobDate.getFullYear();
 
@@ -218,13 +223,13 @@ export default function Clients({
         });
       } else if (selectedMonth) {
         filteredData = filteredData.filter((job) => {
-          const jobDate = new Date(job.createdAt);
+          const jobDate = new Date(job.currentDate);
           const jobMonth = jobDate.getMonth() + 1;
           return jobMonth === parseInt(selectedMonth);
         });
       } else if (selectedYear) {
         filteredData = filteredData.filter((job) => {
-          const jobDate = new Date(job.createdAt);
+          const jobDate = new Date(job.currentDate);
           const jobYear = jobDate.getFullYear();
           return jobYear === parseInt(selectedYear);
         });
@@ -276,8 +281,8 @@ export default function Clients({
   }, [workFlowData, selectedDepartment, selectedMonth, selectedYear]);
 
   //------------------------ Filter Data By Depertment || Month || Year || Source || Client Type------>
-  const filterData = workFlowData.filter((job) => {
-    const jobDate = new Date(job.createdAt);
+  const filterData = uniqueClients.filter((job) => {
+    const jobDate = new Date(job.currentDate);
     const jobMonth = jobDate.getMonth() + 1;
     const jobYear = jobDate.getFullYear();
 
@@ -289,7 +294,7 @@ export default function Clients({
       (selectedSource ? job.source === selectedSource : true) &&
       (selectedClient ? job.clientType === selectedClient : true) &&
       (selectedPartner ? job.partner === selectedPartner : true) &&
-      (selectedDepartment ? job.job.jobName === selectedDepartment : true)
+      (selectedDepartment ? job.jobName === selectedDepartment : true)
     );
   });
 
@@ -297,7 +302,7 @@ export default function Clients({
 
   // Map data for month-wise total job count and fee totals
   const monthData = filterData.reduce((acc, job) => {
-    const jobDate = new Date(job.createdAt);
+    const jobDate = new Date(job.currentDate);
     const month = jobDate.toLocaleString("default", { month: "short" });
 
     // Initialize month if not already present
@@ -311,7 +316,26 @@ export default function Clients({
   }, {});
 
   // Get months for the chart
-  const months = Object.keys(monthData);
+  // const months = Object.keys(monthData);
+  const monthOrder = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  // Assuming `monthData` is an object with month abbreviations as keys
+  const months = Object.keys(monthData).sort(
+    (a, b) => monthOrder.indexOf(a) - monthOrder.indexOf(b)
+  );
 
   // Prepare data series for month-wise job count
   const jobCountSeries = [
@@ -328,6 +352,8 @@ export default function Clients({
       data: months.map((month) => monthData[month]?.totalFee || 0),
     },
   ];
+
+  console.log("months", months);
 
   // Render charts
   useEffect(() => {
@@ -370,6 +396,7 @@ export default function Clients({
         selectChart === "bar"
           ? { bar: { columnWidth: "50%", borderRadius: 5 } }
           : {},
+      colors: ["#FF5733", "#33FF57", "#3357FF"],
     };
 
     const feeChartElement = document.querySelector("#apex-fee-chart");

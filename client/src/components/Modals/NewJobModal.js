@@ -529,7 +529,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   }
                   className={`${style.input} w-full `}
                 />
-                <span>Work Date</span>
+                <span>Job Date</span>
               </div>
               <div className="inputBox">
                 <input
@@ -669,7 +669,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   }
                   className={`${style.input} w-full `}
                 />
-                <span>Work Date</span>
+                <span>Job Date</span>
               </div>
               <div className="inputBox">
                 <input
@@ -809,7 +809,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   }
                   className={`${style.input} w-full `}
                 />
-                <span>Work Date</span>
+                <span>Job Date</span>
               </div>
               <div className="inputBox">
                 <input
@@ -948,7 +948,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   }
                   className={`${style.input} w-full `}
                 />
-                <span>Work Date</span>
+                <span>Job Date</span>
               </div>
               <div className="inputBox">
                 <input
@@ -1087,7 +1087,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   }
                   className={`${style.input} w-full `}
                 />
-                <span>Work Date</span>
+                <span>Job Date</span>
               </div>
               <div className="inputBox">
                 <input
@@ -1226,7 +1226,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   }
                   className={`${style.input} w-full `}
                 />
-                <span>Work Date</span>
+                <span>Job Date</span>
               </div>
               <div className="inputBox">
                 <input
@@ -1365,7 +1365,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   }
                   className={`${style.input} w-full `}
                 />
-                <span>Work Date</span>
+                <span>Job Date</span>
               </div>
               <div className="inputBox">
                 <input

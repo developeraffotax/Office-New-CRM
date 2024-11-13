@@ -49,7 +49,7 @@ const JobSourcePieChart = ({ workFlowData, selectedMonth, selectedYear }) => {
       const chartOptions = {
         chart: {
           type: "pie",
-          height: 400,
+          height: 300,
         },
         labels: chartData.labels,
         series: chartData.series,

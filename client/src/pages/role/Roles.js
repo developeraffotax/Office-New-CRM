@@ -29,6 +29,8 @@ export default function Roles() {
     },
   ]);
 
+  console.log("subRoles", subRoles);
+
   const pages = [
     "Dashboard",
     "Tasks",
@@ -183,37 +185,53 @@ export default function Roles() {
   }, [selectedRole]);
 
   // ----------SubRole Access-------
+  // useEffect(() => {
+  //   if (selectedRole && pageName) {
+  //     const selectedPage = selectedRole.access.find(
+  //       (item) => item.permission === pageName
+  //     );
+
+  //     if (selectedPage) {
+  //       const subRole = selectedPage.subRoles.map((subRole) => subRole);
+
+  //       // Update the subRoles state with the new structure
+  //       setSubRoles((prev) => {
+  //         const existingPage = prev?.find((p) => p.pageName === pageName);
+
+  //         if (existingPage) {
+  //           // Update existing page's subRoles
+  //           return prev.map((p) =>
+  //             p.pageName === pageName ? { ...p, subRole: subRole } : p
+  //           );
+  //         } else {
+  //           // Add a new page entry
+  //           return [...prev, { pageName, subRole: subRole }];
+  //         }
+  //       });
+  //     } else {
+  //       // Reset subRoles if pageName doesn't match any access item
+  //       setSubRoles((prev) => prev.filter((p) => p.pageName !== pageName));
+  //     }
+  //   }
+  // }, [selectedRole, pageName]);
+
+  //
   useEffect(() => {
-    if (selectedRole && pageName) {
-      const selectedPage = selectedRole.access.find(
-        (item) => item.permission === pageName
+    if (selectedRole) {
+      const accessData = selectedRole.access;
+
+      // Update the subRoles state based on `accessData`
+      setSubRoles(
+        accessData.map((accessItem) => ({
+          pageName: accessItem.permission,
+          subRole: accessItem.subRoles,
+        }))
       );
-
-      if (selectedPage) {
-        const subRole = selectedPage.subRoles.map((subRole) => subRole);
-
-        // Update the subRoles state with the new structure
-        setSubRoles((prev) => {
-          const existingPage = prev?.find((p) => p.pageName === pageName);
-
-          if (existingPage) {
-            // Update existing page's subRoles
-            return prev.map((p) =>
-              p.pageName === pageName ? { ...p, subRole: subRole } : p
-            );
-          } else {
-            // Add a new page entry
-            return [...prev, { pageName, subRole: subRole }];
-          }
-        });
-      } else {
-        // Reset subRoles if pageName doesn't match any access item
-        setSubRoles((prev) => prev.filter((p) => p.pageName !== pageName));
-      }
     }
-  }, [selectedRole, pageName]);
+  }, [selectedRole]);
 
   // Update Roles
+
   const updateRoleAccess = async (id) => {
     try {
       setIsLoading(true);

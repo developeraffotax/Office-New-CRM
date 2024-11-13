@@ -35,6 +35,8 @@ import { GrUpdate } from "react-icons/gr";
 import AddLabel from "../../components/Modals/AddLabel";
 import { LuImport } from "react-icons/lu";
 import AddDataLabel from "../../components/Modals/AddDataLabel";
+import InactiveClients from "./InactiveClients";
+import Swal from "sweetalert2";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -112,6 +114,7 @@ export default function AllJobs() {
   const [hours, setHours] = useState("");
   const sources = ["FIV", "UPW", "PPH", "Website", "Referal", "Partner"];
   const [timerId, setTimerId] = useState("");
+  const [showInactive, setShowInactive] = useState(false);
 
   console.log("rowSelection:", rowSelection);
 
@@ -139,6 +142,7 @@ export default function AllJobs() {
     "Submission",
     "Billing",
     "Feedback",
+    "Inactive",
   ];
 
   // Get Auth Access
@@ -440,11 +444,38 @@ export default function AllJobs() {
     // eslint-disable-next-line
   }, []);
 
+  // ------------Update Status Confirmtion------------>
+  const handleUpdateTicketStatusConfirmation = (rowId, newStatus) => {
+    if (newStatus === "Inactive") {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, mark as Inactive!",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          handleStatusChange(rowId, newStatus);
+          Swal.fire(
+            "Inactive!",
+            "Client status set to inactive successfully!",
+            "success"
+          );
+        }
+      });
+    } else {
+      handleStatusChange(rowId, newStatus);
+    }
+  };
+
   // ---------------Handle Status Change---------->
   const handleStatusChange = async (rowId, newStatus) => {
     if (!rowId) {
       return toast.error("Job id is required!");
     }
+
     try {
       const { data } = await axios.patch(
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/status/${rowId}`,
@@ -1676,7 +1707,10 @@ export default function AllJobs() {
             <select
               value={statusValue}
               onChange={(e) =>
-                handleStatusChange(row.original._id, e.target.value)
+                handleUpdateTicketStatusConfirmation(
+                  row.original._id,
+                  e.target.value
+                )
               }
               className="w-[6rem] h-[2rem] rounded-md border border-sky-300 outline-none"
             >
@@ -1688,6 +1722,7 @@ export default function AllJobs() {
               <option value="Submission">Submission</option>
               <option value="Billing">Billing</option>
               <option value="Feedback">Feedback</option>
+              <option value="Inactive">Inactive</option>
             </select>
           );
         },
@@ -1704,6 +1739,7 @@ export default function AllJobs() {
           "Submission",
           "Billing",
           "Feedback",
+          "Inactive",
         ],
         filterVariant: "select",
         size: 110,
@@ -2375,16 +2411,6 @@ export default function AllJobs() {
     },
   });
 
-  // useEffect(() => {
-  //   const filteredRows = table
-  //     .getFilteredRowModel()
-  //     .rows.map((row) => row.original);
-
-  //   console.log("Filtered Data:", filteredRows);
-  //   setFilterData(filteredRows);
-  //   // eslint-disable-next-line
-  // }, [table.getFilteredRowModel().rows]);
-
   // -------Update Bulk Jobs------------->
 
   const updateBulkJob = async (e) => {
@@ -2443,7 +2469,11 @@ export default function AllJobs() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-5">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
-              Jobs
+              {showCompleted && activeBtn === "completed"
+                ? "Completed Job's"
+                : showInactive && activeBtn === "inactive"
+                ? "Inactive Jobs"
+                : "Jobs"}
             </h1>
 
             <span
@@ -2541,8 +2571,10 @@ export default function AllJobs() {
                   setActive(dep);
                   filterByDep(dep);
                   setShowCompleted(false);
+                  setShowInactive(false);
                   setActive1("");
                   setFilterId("");
+                  active === "All" && allClientData();
                 }}
               >
                 {dep} ({getDepartmentCount(dep)})
@@ -2562,6 +2594,20 @@ export default function AllJobs() {
             }}
           >
             Completed
+          </div>
+          <div
+            className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+              activeBtn === "inactive" &&
+              showInactive &&
+              " border-2 border-b-0 text-orange-600 border-gray-300"
+            }`}
+            onClick={() => {
+              setActiveBtn("inactive");
+              setShowInactive(true);
+              setActive("");
+            }}
+          >
+            Inactive
           </div>
           {/*  */}
           {/* -------------Filter Open Buttons-------- */}
@@ -2921,22 +2967,9 @@ export default function AllJobs() {
         )}
 
         {/* ---------------------Data Table---------------- */}
-        {!showCompleted ? (
-          <>
-            {loading ? (
-              <div className="flex items-center justify-center w-full h-screen px-4 py-4">
-                <Loader />
-              </div>
-            ) : (
-              <div className="w-full min-h-[20vh] relative border-t border-gray-300">
-                <div className="h-full hidden1 overflow-y-scroll relative">
-                  <MaterialReactTable table={table} />
-                </div>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="w-full min-h-screen  relative">
+
+        {showCompleted && activeBtn === "completed" ? (
+          <div className="w-full min-h-screen relative">
             <CompletedJobs
               getSingleJobDetail={getSingleJobDetail}
               setCompanyName={setCompanyName}
@@ -2949,6 +2982,34 @@ export default function AllJobs() {
               allClientJobData={allClientJobData}
             />
           </div>
+        ) : showInactive && activeBtn === "inactive" ? (
+          <div className="w-full min-h-screen relative">
+            <InactiveClients
+              getSingleJobDetail={getSingleJobDetail}
+              setCompanyName={setCompanyName}
+              users={users}
+              handleUpdateJobHolder={handleUpdateJobHolder}
+              handleUpdateDates={handleUpdateDates}
+              getStatus={getStatus}
+              setJobId={setJobId}
+              setIsComment={setIsComment}
+              allClientJobData={allClientJobData}
+            />
+          </div>
+        ) : (
+          <>
+            {loading ? (
+              <div className="flex items-center justify-center w-full h-screen px-4 py-4">
+                <Loader />
+              </div>
+            ) : (
+              <div className="w-full min-h-[20vh] relative border-t border-gray-300">
+                <div className="h-full overflow-y-scroll relative">
+                  <MaterialReactTable table={table} />
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

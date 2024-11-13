@@ -6,6 +6,7 @@ import {
   getAlllostLead,
   getAllProgressLead,
   getAllWonLead,
+  getdashboardLead,
   getSingleLead,
   updateLead,
 } from "../controllers/leadController.js";
@@ -32,5 +33,8 @@ router.get("/fetch/single/lead/:id", getSingleLead);
 
 // Delete Lead
 router.delete("/delete/lead/:id", deleteLead);
+
+// Dashboard
+router.get("/dashboard/lead", getdashboardLead);
 
 export default router;

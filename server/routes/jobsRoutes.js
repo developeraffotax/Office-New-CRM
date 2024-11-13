@@ -12,6 +12,7 @@ import {
   getClientJobs,
   getClientWithJobs,
   getDashboardClients,
+  getInactiveClientJobs,
   getTicketClients,
   getWorkflowClients,
   importData,
@@ -113,5 +114,8 @@ router.get("/workflow/clients", getWorkflowClients);
 // Dashboard Client
 router.get("/dashboard/clients/:type", getDashboardClients);
 router.get("/completed/clients", dashboardCompletedClients);
+
+// Get Inactive Client_Job
+router.get("/inactive/clients", getInactiveClientJobs);
 
 export default router;

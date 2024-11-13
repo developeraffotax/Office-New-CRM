@@ -116,7 +116,10 @@ export const createJob = async (req, res) => {
 export const getAllClients = async (req, res) => {
   try {
     const clients = await jobsModel
-      .find({ status: { $ne: "completed" } })
+      .find({
+        status: { $ne: "completed" },
+        "job.jobStatus": { $ne: "Inactive" },
+      })
       .select(
         "clientName companyName email fee currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data"
       )
@@ -645,6 +648,26 @@ export const getClientJobs = async (req, res) => {
     res.status(200).send({
       success: true,
       message: "All client jobs whose status is completed!",
+      clients: clients,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get all job!",
+      error: error,
+    });
+  }
+};
+
+// Get Only Status (Inactive) Jobs
+export const getInactiveClientJobs = async (req, res) => {
+  try {
+    const clients = await jobsModel.find({ "job.jobStatus": "Inactive" });
+
+    res.status(200).send({
+      success: true,
+      message: "All client jobs whose status is Inactive!",
       clients: clients,
     });
   } catch (error) {

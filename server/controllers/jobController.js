@@ -590,7 +590,7 @@ export const updateDates = async (req, res) => {
     if (workDeadline) {
       clientJob = await jobsModel.findByIdAndUpdate(
         { _id: jobId },
-        { $set: { "job.workDeadline": currentDate } },
+        { $set: { "job.workDeadline": workDeadline } },
         { new: true }
       );
     }

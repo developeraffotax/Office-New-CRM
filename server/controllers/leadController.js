@@ -1,4 +1,6 @@
+import jobsModel from "../models/jobsModel.js";
 import leadModel from "../models/leadModel.js";
+import proposalModel from "../models/proposalModel.js";
 
 // Create Lead
 export const createLead = async (req, res) => {
@@ -217,6 +219,55 @@ export const deleteLead = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error while delete lead!",
+      error: error,
+    });
+  }
+};
+
+// <------------Dashboard---------->
+export const getdashboardLead = async (req, res) => {
+  try {
+    const totalleads = await leadModel
+      .find({})
+      .select("lead_Source status createdAt");
+    const totalProposal = await proposalModel.find().select("source createdAt");
+    // Active Leads
+    const activeleadsTotal = await leadModel
+      .find({ status: { $ne: "lost" } })
+      .select("lead_Source status createdAt");
+    //Proposal
+    const proposalLead = await proposalModel
+      .find({ lead: "Yes" })
+      .select("source createdAt");
+    const proposalClient = await proposalModel
+      .find({ client: "Yes" })
+      .select("source createdAt");
+    const progressleads = await leadModel.find({ status: { $eq: "progress" } });
+    const wonleads = await leadModel.find({ status: { $eq: "won" } });
+    const clients = await jobsModel
+      .find({ "job.jobStatus": "Inactive" })
+      .select("createdAt");
+
+    res.status(200).send({
+      success: true,
+      message: "All progress lead list!",
+      salesData: {
+        totalPLLead: [activeleadsTotal, proposalLead],
+        totalLeads: totalleads,
+        totalProposals: totalProposal,
+        activeleadsTotal: activeleadsTotal,
+        proposalLead: proposalLead,
+        proposalClient: proposalClient,
+        progressleads: progressleads,
+        wonleads: wonleads,
+        inactiveClients: clients,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get dashboard leads!",
       error: error,
     });
   }

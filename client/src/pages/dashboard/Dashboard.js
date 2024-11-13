@@ -1,12 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import Clients from "../../components/Dashboard/Clients";
 import Tasks from "../../components/Dashboard/Tasks";
 import { style } from "../../utlis/CommonStyle";
-import Subscription from "../../components/Dashboard/Subscription";
 import { IoClose } from "react-icons/io5";
+import Sales from "../../components/Dashboard/Sales";
+import axios from "axios";
 
 export default function Dashboard() {
+  // Client
+  const [workFlowData, setWorkflowData] = useState([]);
+  const [uniqueClients, setUniqueClients] = useState([]);
+  const [loading, setLoading] = useState(false);
+  //
   const [selectedTab, setSelectedTab] = useState("Clients");
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
@@ -27,6 +33,51 @@ export default function Dashboard() {
   const sources = ["FIV", "UPW", "PPH", "Website", "Referal", "Partner"];
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
   const partners = ["Affotax", "Outsource", "OTL"];
+  // Sales
+  const [salesData, setSalesData] = useState([]);
+  // console.log("salesData:", salesData);
+
+  // ---------------All Client_Job Data----------->
+  const allClientJobData = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/workflow/clients`
+      );
+      if (data) {
+        setWorkflowData(data?.clients);
+        setUniqueClients(data.uniqueClients);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    allClientJobData();
+    // eslint-disable-next-line
+  }, []);
+
+  // ---------------All Leads Data----------->
+  const allLeadData = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/leads/dashboard/lead`
+      );
+      if (data) {
+        setSalesData(data.salesData);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    allLeadData();
+    // eslint-disable-next-line
+  }, []);
 
   return (
     <Layout>
@@ -66,110 +117,148 @@ export default function Dashboard() {
               </button>
               <button
                 className={`py-[.4rem] px-2 outline-none w-[8rem] border-l-2 border-orange-600 transition-all duration-300   ${
-                  selectedTab === "Subscription"
+                  selectedTab === "Sales"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
                     : "text-black bg-gray-100"
                 }`}
-                onClick={() => setSelectedTab("Subscription")}
+                onClick={() => setSelectedTab("Sales")}
               >
-                Subscription
+                Sales
               </button>
               <button
                 className={`py-[.4rem] px-2 outline-none w-[8rem] border-l-2 border-orange-600 transition-all duration-300   ${
-                  selectedTab === "Tasks"
+                  selectedTab === "hr"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
                     : "text-black bg-gray-100"
                 }`}
-                onClick={() => setSelectedTab("Tasks")}
+                onClick={() => setSelectedTab("hr")}
               >
-                Tasks
+                HR
               </button>
             </div>
 
             {/* --------------Date Filters------------- */}
-            <div className="flex gap-4 my-4 ml-5">
-              {/* Department */}
-              <select
-                onChange={(e) => setSelectedDepartment(e.target.value)}
-                value={selectedDepartment}
-                className={`${style.input} shadow-md drop-shadow-md`}
-              >
-                <option value="">Select Department</option>
-                {departments.map((dep) => (
-                  <option key={dep} value={dep}>
-                    {dep}
-                  </option>
-                ))}
-              </select>
-              <select
-                onChange={(e) => setSelectedYear(e.target.value)}
-                value={selectedYear}
-                className={`${style.input} shadow-md drop-shadow-md`}
-              >
-                <option value="">Select Year</option>
-                {Array.from({ length: 5 }, (_, i) => {
-                  const year = new Date().getFullYear() - i;
-                  return (
-                    <option key={year} value={year}>
-                      {year}
+            {selectedTab === "Clients" && (
+              <div className="flex gap-4 my-4 ml-5">
+                {/* Department */}
+                <select
+                  onChange={(e) => setSelectedDepartment(e.target.value)}
+                  value={selectedDepartment}
+                  className={`${style.input} shadow-md drop-shadow-md`}
+                >
+                  <option value="">Select Department</option>
+                  {departments.map((dep) => (
+                    <option key={dep} value={dep}>
+                      {dep}
                     </option>
-                  );
-                })}
-              </select>
+                  ))}
+                </select>
+                <select
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  value={selectedYear}
+                  className={`${style.input} shadow-md drop-shadow-md`}
+                >
+                  <option value="">Select Year</option>
+                  {Array.from({ length: 5 }, (_, i) => {
+                    const year = new Date().getFullYear() - i;
+                    return (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    );
+                  })}
+                </select>
 
-              <select
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                value={selectedMonth}
-                className={`${style.input} shadow-md drop-shadow-md`}
-              >
-                <option value="">Select Month</option>
-                {Array.from({ length: 12 }, (_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {new Date(0, i).toLocaleString("default", {
-                      month: "long",
-                    })}
-                  </option>
-                ))}
-              </select>
-              {/* Source */}
-              <select
-                onChange={(e) => setSelectedSource(e.target.value)}
-                value={selectedSource}
-                className={`${style.input} shadow-md drop-shadow-md`}
-              >
-                <option value="">Select Source</option>
-                {sources.map((sou) => (
-                  <option key={sou} value={sou}>
-                    {sou}
-                  </option>
-                ))}
-              </select>
-              <select
-                onChange={(e) => setSelectedClient(e.target.value)}
-                value={selectedClient}
-                className={`${style.input} shadow-md drop-shadow-md`}
-              >
-                <option value="">Select Client</option>
-                {clients.map((client) => (
-                  <option key={client} value={client}>
-                    {client}
-                  </option>
-                ))}
-              </select>
-              <select
-                onChange={(e) => setSelectedPartner(e.target.value)}
-                value={selectedPartner}
-                className={`${style.input} shadow-md drop-shadow-md`}
-              >
-                <option value="">Select Partner</option>
-                {partners.map((part) => (
-                  <option key={part} value={part}>
-                    {part}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <select
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  value={selectedMonth}
+                  className={`${style.input} shadow-md drop-shadow-md`}
+                >
+                  <option value="">Select Month</option>
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {new Date(0, i).toLocaleString("default", {
+                        month: "long",
+                      })}
+                    </option>
+                  ))}
+                </select>
+                {/* Source */}
+                <select
+                  onChange={(e) => setSelectedSource(e.target.value)}
+                  value={selectedSource}
+                  className={`${style.input} shadow-md drop-shadow-md`}
+                >
+                  <option value="">Select Source</option>
+                  {sources.map((sou) => (
+                    <option key={sou} value={sou}>
+                      {sou}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  onChange={(e) => setSelectedClient(e.target.value)}
+                  value={selectedClient}
+                  className={`${style.input} shadow-md drop-shadow-md`}
+                >
+                  <option value="">Select Client</option>
+                  {clients.map((client) => (
+                    <option key={client} value={client}>
+                      {client}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  onChange={(e) => setSelectedPartner(e.target.value)}
+                  value={selectedPartner}
+                  className={`${style.input} shadow-md drop-shadow-md`}
+                >
+                  <option value="">Select Partner</option>
+                  {partners.map((part) => (
+                    <option key={part} value={part}>
+                      {part}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {/* Sales */}
+            {selectedTab === "Sales" && (
+              <div className="flex gap-4 my-4 ml-5">
+                <select
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  value={selectedYear}
+                  className={`${style.input} shadow-md drop-shadow-md`}
+                >
+                  <option value="">Select Year</option>
+                  {Array.from({ length: 5 }, (_, i) => {
+                    const year = new Date().getFullYear() - i;
+                    return (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    );
+                  })}
+                </select>
+
+                <select
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  value={selectedMonth}
+                  className={`${style.input} shadow-md drop-shadow-md`}
+                >
+                  <option value="">Select Month</option>
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {new Date(0, i).toLocaleString("default", {
+                        month: "long",
+                      })}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
+
           {/*  */}
           <hr className="mb-1 bg-gray-200 w-full h-[1px]" />
           {/* -------------Detail------- */}
@@ -183,13 +272,18 @@ export default function Dashboard() {
                 selectedClient={selectedClient}
                 selectedPartner={selectedPartner}
                 selectedDepartment={selectedDepartment}
+                workFlowData={workFlowData}
+                uniqueClients={uniqueClients}
+                loading={loading}
               />
             </div>
-          ) : selectedTab === "Subscription" ? (
+          ) : selectedTab === "Sales" ? (
             <div className="w-full h-full">
-              <Subscription
+              <Sales
                 selectedMonth={selectedMonth}
                 selectedYear={selectedYear}
+                salesData={salesData}
+                uniqueClients={uniqueClients.length}
               />
             </div>
           ) : selectedTab === "Tasks" ? (

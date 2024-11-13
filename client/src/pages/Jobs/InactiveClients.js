@@ -12,7 +12,7 @@ import Loader from "../../utlis/Loader";
 import Swal from "sweetalert2";
 import { IoRemoveCircle } from "react-icons/io5";
 
-export default function CompletedJobs({
+export default function InactiveClients({
   getSingleJobDetail,
   setCompanyName,
   users,
@@ -33,7 +33,7 @@ export default function CompletedJobs({
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/jobs/status/complete`
+        `${process.env.REACT_APP_API_URL}/api/v1/client/inactive/clients`
       );
       if (data) {
         setTableData(data.clients);
@@ -50,6 +50,20 @@ export default function CompletedJobs({
     allClientJobs();
     // eslint-disable-next-line
   }, []);
+
+  const getClientJobs = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/inactive/clients`
+      );
+      if (data) {
+        setTableData(data.clients);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message || "Error in client Jobs");
+    }
+  };
 
   //   Get All Labels
   const getlabel = async () => {
@@ -102,6 +116,53 @@ export default function CompletedJobs({
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message || "Error in client Jobs");
+    }
+  };
+
+  const handleUpdateTicketStatusConfirmation = (rowId, newStatus) => {
+    if (newStatus !== "Inactive") {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: `Yes, mark as ${newStatus}!`,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          handleStatusChange(rowId, newStatus);
+          Swal.fire(
+            "Inactive!",
+            `Client status set to ${newStatus} successfully!`,
+            "success"
+          );
+        }
+      });
+    } else {
+      handleStatusChange(rowId, newStatus);
+    }
+  };
+
+  // ---------------Handle Status Change---------->
+  const handleStatusChange = async (rowId, newStatus) => {
+    if (!rowId) {
+      return toast.error("Job id is required!");
+    }
+
+    try {
+      const { data } = await axios.patch(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/update/status/${rowId}`,
+        {
+          status: newStatus,
+        }
+      );
+      if (data) {
+        toast.success("Job status updated!");
+        getClientJobs();
+      }
+    } catch (error) {
+      console.error("Error updating status", error);
     }
   };
 
@@ -965,9 +1026,12 @@ export default function CompletedJobs({
           return (
             <select
               value={statusValue}
-              // onChange={(e) =>
-              //   handleStatusChange(row.original._id, e.target.value)
-              // }
+              onChange={(e) =>
+                handleUpdateTicketStatusConfirmation(
+                  row.original._id,
+                  e.target.value
+                )
+              }
               className="w-[6rem] h-[2rem] rounded-md border border-sky-300 outline-none"
             >
               <option value="empty"></option>
@@ -978,6 +1042,7 @@ export default function CompletedJobs({
               <option value="Submission">Submission</option>
               <option value="Billing">Billing</option>
               <option value="Feedback">Feedback</option>
+              <option value="Inactive">Inactive</option>
             </select>
           );
         },
@@ -994,6 +1059,7 @@ export default function CompletedJobs({
           "Submission",
           "Billing",
           "Feedback",
+          "Inactive",
         ],
         filterVariant: "select",
         size: 110,
@@ -1095,134 +1161,7 @@ export default function CompletedJobs({
                 <span className="text-[1rem] cursor-pointer relative">
                   <MdInsertComment className="h-5 w-5 text-orange-600 " />
                 </span>
-                {/* {readComments?.length > 0 && (
-                  <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
-                    {readComments?.length}
-                  </span>
-                )} */}
               </div>
-            </div>
-          );
-        },
-        size: 100,
-      },
-      // Label
-      // {
-      //   accessorKey: "label",
-
-      //   Header: ({ column }) => {
-      //     return (
-      //       <div className="flex flex-col gap-[2px]">
-      //         <span
-      //           className="ml-1 cursor-pointer"
-      //           title="Clear Filter"
-      //           onClick={() => {
-      //             column.setFilterValue("");
-      //           }}
-      //         >
-      //           Labels
-      //         </span>
-      //         <select
-      //           value={column.getFilterValue() || ""}
-      //           onChange={(e) => column.setFilterValue(e.target.value)}
-      //           className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-      //         >
-      //           <option value="">Select</option>
-      //           {labelData?.map((label, i) => (
-      //             <option key={i} value={label?.name}>
-      //               {label?.name}
-      //             </option>
-      //           ))}
-      //         </select>
-      //       </div>
-      //     );
-      //   },
-
-      //   Cell: ({ cell, row }) => {
-      //     const [show, setShow] = useState(false);
-      //     const jobLabel = row.original.label || {};
-      //     const { name, color } = jobLabel;
-      //     console.log("label:", row.original);
-
-      //     // const handleLabelChange = (labelName) => {
-      //     //   const selectedLabel = labelData.find(
-      //     //     (label) => label.name === labelName
-      //     //   );
-      //     //   if (selectedLabel) {
-      //     //     addJoblabel(row.original._id, labelName, selectedLabel.color);
-      //     //   } else {
-      //     //     addJoblabel(row.original._id, "", "");
-      //     //   }
-      //     //   setShow(false);
-      //     // };
-
-      //     return (
-      //       <div className="w-full flex items-center justify-center">
-      //         {show ? (
-      //           <select
-      //             value={name || ""}
-      //             // onChange={(e) => handleLabelChange(e.target.value)}
-      //             className="w-full h-[2rem] rounded-md border-none outline-none"
-      //           >
-      //             <option value="empty">Select Label</option>
-      //             {labelData?.map((label, i) => (
-      //               <option value={label?.name} key={i}>
-      //                 {label?.name}
-      //               </option>
-      //             ))}
-      //           </select>
-      //         ) : (
-      //           <div
-      //             className="cursor-pointer h-full min-w-full "
-      //             // onDoubleClick={() => setShow(true)}
-      //           >
-      //             {name ? (
-      //               <span
-      //                 className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
-      //                 style={{ background: `${color}` }}
-      //               >
-      //                 {name}
-      //               </span>
-      //             ) : (
-      //               <span
-      //                 className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
-      //                 // style={{ background: `${color}` }}
-      //               >
-      //                 .
-      //               </span>
-      //             )}
-      //           </div>
-      //         )}
-      //       </div>
-      //     );
-      //   },
-
-      //   filterFn: (row, columnId, filterValue) => {
-      //     const labelName = row.original?.label?.name || "";
-      //     return labelName === filterValue;
-      //   },
-
-      //   filterVariant: "select",
-      //   filterSelectOptions: labelData.map((label) => label.name),
-      //   size: 160,
-      //   minSize: 100,
-      //   maxSize: 210,
-      //   grow: false,
-      // },
-      {
-        accessorKey: "complete",
-        header: "Actions",
-        Cell: ({ cell, row }) => {
-          return (
-            <div
-              className="flex items-center justify-center gap-1 w-full h-full"
-              onClick={() => {
-                handleUpdateClientStatus(row.original._id);
-              }}
-            >
-              <span className="text-[1rem] cursor-pointer">
-                <IoRemoveCircle className="h-5 w-5 text-red-500 hover:text-red-600" />
-              </span>
             </div>
           );
         },

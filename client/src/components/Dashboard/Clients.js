@@ -13,14 +13,13 @@ export default function Clients({
   selectedClient,
   selectedPartner,
   selectedDepartment,
+  workFlowData,
+  uniqueClients,
+  loading,
 }) {
-  const [loading, setLoading] = useState(false);
-  const [workFlowData, setWorkflowData] = useState([]);
   const [clients, setClients] = useState([]);
   const [fee, setFee] = useState("");
   const [selectChart, setSelectChart] = useState("area");
-  const [uniqueClients, setUniqueClients] = useState([]);
-
   console.log("clients:", clients, "workflow:", workFlowData);
 
   const departments = [
@@ -32,29 +31,6 @@ export default function Clients({
     "Company Sec",
     "Address",
   ];
-
-  // ---------------All Client_Job Data----------->
-  const allClientJobData = async () => {
-    setLoading(true);
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/workflow/clients`
-      );
-      if (data) {
-        setWorkflowData(data?.clients);
-        setUniqueClients(data.uniqueClients);
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    allClientJobData();
-    // eslint-disable-next-line
-  }, []);
 
   //------------ Department wise Total-------->
   useEffect(() => {
@@ -118,7 +94,7 @@ export default function Clients({
 
     const optionsCount = {
       series: [{ name: "Total Count", data: departmentCounts }],
-      chart: { type: "bar", height: 350 },
+      chart: { type: "bar", height: 300 },
       plotOptions: {
         bar: { columnWidth: "50%", borderRadius: 5 },
       },
@@ -150,7 +126,7 @@ export default function Clients({
       ],
       chart: {
         type: "bar",
-        height: 350,
+        height: 300,
         animations: {
           enabled: true,
           easing: "easeinout",
@@ -298,8 +274,6 @@ export default function Clients({
     );
   });
 
-  console.log("Filter Data", filterData);
-
   // Map data for month-wise total job count and fee totals
   const monthData = filterData.reduce((acc, job) => {
     const jobDate = new Date(job.currentDate);
@@ -316,7 +290,6 @@ export default function Clients({
   }, {});
 
   // Get months for the chart
-  // const months = Object.keys(monthData);
   const monthOrder = [
     "Jan",
     "Feb",
@@ -360,7 +333,7 @@ export default function Clients({
     // Job Count Chart
     const jobCountChartOptions = {
       series: jobCountSeries,
-      chart: { type: selectChart, height: 350 },
+      chart: { type: selectChart, height: 300 },
       xaxis: { categories: months, title: { text: "Month" } },
       yaxis: { title: { text: "Total Jobs" } },
       plotOptions:
@@ -383,13 +356,15 @@ export default function Clients({
       jobCountChart.render();
       return () => jobCountChart.destroy();
     }
+
+    // eslint-disable-next-line
   }, [selectChart, months, jobCountSeries]);
 
   useEffect(() => {
     // Fee Total Chart
     const feeChartOptions = {
       series: feeSeries,
-      chart: { type: selectChart, height: 350 },
+      chart: { type: selectChart, height: 300 },
       xaxis: { categories: months, title: { text: "Month" } },
       yaxis: { title: { text: "Total Fee" } },
       plotOptions:
@@ -414,17 +389,17 @@ export default function Clients({
       ) : (
         <div className="flex flex-col gap-4 w-full">
           <div className="flex gap-4 overflow-x-auto py-4 mx-auto max-w-[98%] hidden1 scroll-smooth">
-            <div className="flex flex-col items-center min-w-[11rem] p-6 cursor-pointer bg-gradient-to-br from-rose-100 via-rose-200 to-rose-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
-              <h2 className="text-2xl font-bold text-gray-800 text-center mb-3">
+            <div className="flex flex-col items-center min-w-[12rem] p-6 cursor-pointer bg-gradient-to-br from-rose-100 via-rose-200 to-rose-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
+              <h2 className="text-xl font-bold text-gray-800 text-center mb-3">
                 Departments
               </h2>
-              <div className="flex items-center flex-col justify-center w-full gap-3">
-                <p className="text-lg font-medium text-gray-700">
+              <div className="flex items-center flex-col justify-center w-full gap-4">
+                <p className="text-xl  font-bold text-gray-700">
                   <span className="font-semibold text-gray-900">
                     Total Clients:
                   </span>{" "}
                 </p>
-                <p className="text-lg font-medium text-gray-700">
+                <p className="text-xl  font-bold text-gray-700">
                   <span className="font-semibold text-gray-900">
                     Total Fee:
                   </span>
@@ -434,7 +409,7 @@ export default function Clients({
             {clients?.map((job) => (
               <div
                 key={job._id}
-                className={`flex flex-col items-center min-w-[13rem]  p-6 cursor-pointer transition-transform duration-300 transform hover:scale-105 rounded-lg shadow-lg hover:shadow-xl ${
+                className={`flex flex-col items-center min-w-[12rem]  p-6 cursor-pointer transition-transform duration-300 transform hover:scale-105 rounded-lg shadow-lg hover:shadow-xl ${
                   job?.department === "Bookkeeping"
                     ? "bg-gradient-to-br from-orange-100 via-orange-200 to-orange-300"
                     : job?.department === "Payroll"
@@ -454,16 +429,16 @@ export default function Clients({
                   "hidden"
                 }`}
               >
-                <h2 className="text-2xl font-bold text-gray-800 text-center mb-3">
+                <h2 className="text-lg font-medium text-gray-800 text-center mb-3">
                   {job?.department}
                 </h2>
                 <div className="flex flex-col items-center w-full space-y-2">
                   {/*  */}
-                  <p className="text-2xl font-medium text-gray-700 text-center">
+                  <p className="text-3xl font-bold text-gray-700 text-center">
                     {job?.totalDepartmentCount}
                   </p>
 
-                  <p className="text-2xl font-medium text-gray-700 text-center">
+                  <p className="text-2xl font-bold text-gray-700 text-center">
                     ${" "}
                     {parseFloat(job?.totalFee).toLocaleString(undefined, {
                       minimumFractionDigits: 0,
@@ -473,14 +448,14 @@ export default function Clients({
                 </div>
               </div>
             ))}
-            <div className="flex flex-col items-center min-w-[13rem]  p-6 cursor-pointer bg-gradient-to-br from-rose-100 via-rose-200 to-rose-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
-              <h2 className="text-2xl font-bold text-gray-800 text-center mb-3">
-                Total Dep
+            <div className="flex flex-col items-center min-w-[12rem]  p-6 cursor-pointer bg-gradient-to-br from-rose-100 via-rose-200 to-rose-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
+              <h2 className="text-lg font-medium text-gray-800 text-center mb-3">
+                Total
               </h2>
-              <p className="text-2xl font-medium text-gray-700 text-center">
+              <p className="text-3xl font-bold text-gray-700 text-center">
                 {workFlowData?.length}
               </p>
-              <p className="text-2xl font-medium text-gray-700 text-center">
+              <p className="text-2xl font-bold text-gray-700 text-center">
                 ${" "}
                 {parseFloat(fee).toLocaleString(undefined, {
                   minimumFractionDigits: 0,

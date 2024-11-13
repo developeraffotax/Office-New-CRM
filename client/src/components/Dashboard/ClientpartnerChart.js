@@ -73,7 +73,7 @@ const JobSourceClientPartnerDonutCharts = ({
   const generateChartOptions = (labels, series, title) => ({
     chart: {
       type: "donut",
-      height: 400,
+      height: 300,
     },
     labels: labels,
     series: series,

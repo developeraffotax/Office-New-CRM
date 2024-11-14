@@ -2,6 +2,7 @@ import express from "express";
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
   createComplain,
+  dashboardComplains,
   deleteComplains,
   fetchAllComplains,
   fetchSingleComplains,
@@ -20,5 +21,7 @@ router.get("/fetch/complaint", fetchAllComplains);
 router.get("/fetch/single/complaint/:id", fetchSingleComplains);
 // Delete Complaint
 router.delete("/delete/complaint/:id", requiredSignIn, deleteComplains);
+// Get All Complaints
+router.get("/dashboard/complaint", dashboardComplains);
 
 export default router;

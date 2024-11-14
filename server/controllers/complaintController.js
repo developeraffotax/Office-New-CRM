@@ -165,3 +165,26 @@ export const deleteComplains = async (req, res) => {
     });
   }
 };
+
+// Dashboard Complains
+export const dashboardComplains = async (req, res) => {
+  try {
+    const complaints = await complainModel
+      .find({})
+      .select("assign createdAt")
+      .populate([{ path: "assign", select: "name" }]);
+
+    res.status(200).send({
+      success: true,
+      message: "Dashboard Compliants.",
+      complaints: complaints,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get all complaints!",
+      error: error,
+    });
+  }
+};

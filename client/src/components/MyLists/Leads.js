@@ -70,8 +70,6 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
   const [active, setActive] = useState(false);
   const [selectFilter, setSelectFilter] = useState("");
 
-  console.log("formData:", formData);
-
   // -------Get All Leads-------
   const getAllLeads = async () => {
     // setIsLoading(true);

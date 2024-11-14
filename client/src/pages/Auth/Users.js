@@ -25,9 +25,7 @@ export default function Users() {
   const [userRoles, setUserRoles] = useState([]);
   const isActive = [true, false];
 
-  //   All User
-
-  // Get all Users
+  // All Users
   const getAllUsers = async () => {
     try {
       setLoading(true);
@@ -105,7 +103,7 @@ export default function Users() {
     }
   };
 
-  //   Update User Role
+  //   Update Profile
   const updateUserRole = async (id, state) => {
     try {
       const { data } = await axios.put(
@@ -115,6 +113,23 @@ export default function Users() {
       if (data) {
         getUsers();
         toast.success("Role Updated", { duration: 2000 });
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong!");
+    }
+  };
+
+  // Update Join Date
+  const updateJoinDate = async (id, createdAt) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/update/Profile/${id}`,
+        { createdAt: createdAt }
+      );
+      if (data) {
+        getUsers();
+        toast.success("Join date updated!");
       }
     } catch (error) {
       console.log(error);
@@ -622,16 +637,50 @@ export default function Users() {
         Header: ({ column }) => {
           return (
             <div className="w-full flex flex-col gap-[2px]">
-              <span className="cursor-pointer ">Created Date</span>
+              <span className="cursor-pointer ">Join Date</span>
             </div>
           );
         },
+
         Cell: ({ cell, row }) => {
           const createdAt = row.original.createdAt;
-          console.log("createdAt", createdAt);
+          const [date, setDate] = useState(() => {
+            const cellDate = new Date(
+              cell.getValue() || "2024-09-20T12:43:36.002+00:00"
+            );
+            return cellDate.toISOString().split("T")[0];
+          });
+
+          const [showStartDate, setShowStartDate] = useState(false);
+
+          const handleDateChange = (newDate) => {
+            setDate(newDate);
+            updateJoinDate(row.original._id, newDate);
+            setShowStartDate(false);
+          };
+
           return (
             <div className="w-full flex  ">
-              <p>{format(new Date(createdAt), "dd-MMM-yyyy")}</p>
+              {!showStartDate ? (
+                <p
+                  onDoubleClick={() => setShowStartDate(true)}
+                  className="w-full"
+                >
+                  {createdAt ? (
+                    format(new Date(createdAt), "dd-MMM-yyyy")
+                  ) : (
+                    <span className="text-white">.</span>
+                  )}
+                </p>
+              ) : (
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  onBlur={(e) => handleDateChange(e.target.value)}
+                  className={`h-[2rem] w-full cursor-pointer rounded-md border border-gray-200 outline-none `}
+                />
+              )}
             </div>
           );
         },
@@ -697,6 +746,50 @@ export default function Users() {
           "60 Days",
           "Custom date",
         ],
+        filterVariant: "custom",
+        size: 120,
+        minSize: 90,
+        maxSize: 110,
+        grow: false,
+      },
+      // Duration
+      {
+        accessorKey: "duration",
+        Header: ({ column }) => {
+          return (
+            <div className="w-full flex flex-col gap-[2px]">
+              <span className="cursor-pointer">Durations</span>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const createdAt = new Date(row.original.createdAt);
+          const today = new Date();
+          const calculateDuration = (startDate, endDate) => {
+            const diffInMs = endDate - startDate;
+            const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+            if (diffInDays < 30) return `${diffInDays} days`;
+            if (diffInDays < 365)
+              return `${Math.floor(diffInDays / 30)} months`;
+            return `${Math.floor(diffInDays / 365)} years`;
+          };
+
+          const duration = calculateDuration(createdAt, today);
+
+          return (
+            <div className="w-full flex">
+              <p className="w-full font-medium">
+                {duration ? (
+                  `${duration}`
+                ) : (
+                  <span className="text-white">.</span>
+                )}
+              </p>
+            </div>
+          );
+        },
+
         filterVariant: "custom",
         size: 100,
         minSize: 90,

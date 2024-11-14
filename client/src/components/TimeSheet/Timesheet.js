@@ -1535,6 +1535,7 @@ const TimeSheet = forwardRef(
           maxSize: 90,
           grow: false,
         },
+
         // access.includes("Job-holder")
         ...(auth?.user?.role?.name === "Admin" ||
         access.includes("Edit") ||

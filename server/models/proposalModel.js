@@ -36,6 +36,9 @@ const proposalSchema = new mongoose.Schema(
     client: {
       type: String,
     },
+    value: {
+      type: String,
+    },
     createdAt: {
       type: Date,
       default: Date.now,

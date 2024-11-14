@@ -326,11 +326,11 @@ export default function AllLists() {
 
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
         </>
-        {/* {isload && (
+        {isload && (
           <div className="pb-5">
             <div class="loader"></div>
           </div>
-        )} */}
+        )}
         <div className=" mt-[1rem]">
           {selectedTab === "Tasks" ? (
             <Tasks

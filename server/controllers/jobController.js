@@ -1351,7 +1351,7 @@ export const getDashboardClients = async (req, res) => {
 
     const clients = await jobsModel
       .find({ status: { $ne: type } })
-      .select(" job.jobName job.jobHolder createdAt ");
+      .select(" job.jobName job.jobHolder job.lead createdAt ");
 
     res.status(200).send({
       success: true,

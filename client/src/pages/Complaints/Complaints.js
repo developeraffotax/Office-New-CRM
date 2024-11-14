@@ -29,7 +29,6 @@ export default function Complaints() {
   const [isLoading, setIsLoading] = useState(false);
   const [totalPoint, setTotalPoint] = useState(0);
   const [filteredData, setFilteredData] = useState([]);
-  console.log("Filtered Data:", filteredData);
 
   // Get All Complaints
   const getAllComplaints = async () => {
@@ -63,15 +62,6 @@ export default function Complaints() {
     }
   };
 
-  // -----------Total Hours-------->
-  useEffect(() => {
-    const calculateTotalHours = (data) => {
-      return data.reduce((sum, complaint) => sum + Number(complaint.points), 0);
-    };
-
-    setTotalPoint(calculateTotalHours(filteredData).toFixed(0));
-  }, [filteredData]);
-
   //---------- Get All Users-----------
   const getAllUsers = async () => {
     try {
@@ -89,6 +79,15 @@ export default function Complaints() {
     getAllUsers();
     // eslint-disable-next-line
   }, []);
+
+  // -----------Total Hours-------->
+  useEffect(() => {
+    const calculateTotalHours = (data) => {
+      return data.reduce((sum, complaint) => sum + Number(complaint.points), 0);
+    };
+
+    setTotalPoint(calculateTotalHours(filteredData).toFixed(0));
+  }, [filteredData]);
 
   //   Get All Labels
   const getlabel = async () => {
@@ -314,6 +313,7 @@ export default function Complaints() {
       {
         accessorKey: "assign",
         Header: ({ column }) => {
+          console.log("users", users);
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -331,9 +331,9 @@ export default function Complaints() {
                 className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
                 <option value="">Select</option>
-                {users?.map((jobhold, i) => (
-                  <option key={i} value={jobhold.name}>
-                    {jobhold.name}
+                {users?.map((user, i) => (
+                  <option key={user._id} value={user.name}>
+                    {user.name}
                   </option>
                 ))}
               </select>
@@ -776,7 +776,7 @@ export default function Complaints() {
       },
     ],
     // eslint-disable-next-line
-    [totalPoint, complaintData]
+    [totalPoint, complaintData, users, errorData, solutionData]
   );
 
   // Clear table Filter

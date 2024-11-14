@@ -37,6 +37,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+    jobStatus: "",
   });
   const [clientPayRollFormData, setClientPayRollFormData] = useState({
     clientId: "",
@@ -48,6 +49,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+    jobStatus: "",
   });
   const [clientVatReturnFormData, setClientVatReturnFormData] = useState({
     clientId: "",
@@ -59,6 +61,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+    jobStatus: "",
   });
   const [clientPersonalTaxFormData, setClientPersonalTaxFormData] = useState({
     clientId: "",
@@ -70,6 +73,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+    jobStatus: "",
   });
   const [clientAccountsFormData, setClientAccountsFormData] = useState({
     clientId: "",
@@ -81,6 +85,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+    jobStatus: "",
   });
 
   const [clientCompanySecFormData, setClientCompanySecFormData] = useState({
@@ -93,6 +98,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+    jobStatus: "",
   });
 
   const [clientAddressFormData, setClientAddressFormData] = useState({
@@ -105,6 +111,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+    jobStatus: "",
   });
 
   const [jobs, setJobs] = useState([]);
@@ -204,6 +211,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+                jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -227,6 +235,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+                jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -250,6 +259,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+                jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -273,6 +283,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+                jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -296,6 +307,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+                jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -319,6 +331,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+                jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -342,6 +355,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+                jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);

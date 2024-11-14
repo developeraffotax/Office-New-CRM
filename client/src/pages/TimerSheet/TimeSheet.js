@@ -101,6 +101,7 @@ export default function TimeSheet() {
   const [totalNPercengate, setTotalNPercentage] = useState(0);
   const [access, setAccess] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
+  const holidays = ["Company Holiday", "Personal Holiday"];
 
   console.log("TableFilterData:", tableFilterData);
 
@@ -714,6 +715,22 @@ export default function TimeSheet() {
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
+    }
+  };
+
+  // Update Holiday
+  const updateHoliday = async (timerId, holidayType) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/timer/update/holiday/${timerId}`,
+        { holiday: holidayType }
+      );
+      if (data) {
+        toast.success("Holiday Updated!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong!");
     }
   };
 
@@ -1510,6 +1527,66 @@ export default function TimeSheet() {
         size: 65,
         minSize: 60,
         maxSize: 90,
+        grow: false,
+      },
+      {
+        accessorKey: "holiday",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Holidays
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {holidays?.map((holiday, i) => (
+                  <option key={i} value={holiday}>
+                    {holiday}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const [holiday, setHoliday] = useState(cell.getValue());
+
+          const update = (timerId, holidayType) => {
+            setHoliday(holidayType);
+            updateHoliday(timerId, holidayType);
+          };
+
+          return (
+            <select
+              value={holiday || ""}
+              className="w-full h-[2rem] rounded-md border-none  outline-none"
+              onChange={(e) => update(row.original?._id, e.target.value)}
+            >
+              <option value="."></option>
+              {holidays?.map((holi, i) => (
+                <option value={holi} key={i}>
+                  {holi}
+                </option>
+              ))}
+            </select>
+          );
+        },
+        filterFn: "equals",
+        filterSelectOptions: holidays?.map((holiday) => holiday),
+        filterVariant: "select",
+        size: 140,
+        minSize: 100,
+        maxSize: 150,
         grow: false,
       },
       // access.includes("Job-holder")

@@ -11,6 +11,7 @@ dotenv.config();
 const SHEET_ID = "1P5MY1-LD8pmEDwNIxILeLlKzcApKLKfRNcUtDoZnsnY";
 const ACTIVE_SHEET_RANGE = "Client_jobs!A1";
 const COMPLETED_SHEET_RANGE = "Completed!A1";
+const INACTIVE_SHEET_RANGE = "Inactive_Clients!A1";
 
 // Get __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -171,7 +172,10 @@ export const sendDatatoGoogleSheet = async (req, res) => {
   try {
     // Fetch active clients
     const activeClients = await jobsModel
-      .find({ status: { $ne: "completed" } })
+      .find({
+        status: { $ne: "completed" },
+        "job.jobStatus": { $ne: "Inactive" },
+      })
       .populate("data");
 
     // Fetch completed clients
@@ -179,9 +183,15 @@ export const sendDatatoGoogleSheet = async (req, res) => {
       .find({ status: "completed" })
       .populate("data");
 
+    // Inactive Clients
+    const inactiveClients = await jobsModel
+      .find({ "job.jobStatus": "Inactive" })
+      .populate("data");
+
     // Update both sheets
     await updateGoogleSheet(activeClients, ACTIVE_SHEET_RANGE);
     await updateGoogleSheet(completedClients, COMPLETED_SHEET_RANGE);
+    await updateGoogleSheet(inactiveClients, INACTIVE_SHEET_RANGE);
 
     res.status(200).send({
       success: true,
@@ -190,10 +200,5 @@ export const sendDatatoGoogleSheet = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    // res.status(500).send({
-    //   success: false,
-    //   message: "Error while updating Google Sheets!",
-    //   error: error,
-    // });
   }
 };

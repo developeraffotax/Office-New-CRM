@@ -15,6 +15,7 @@ export const startTimer = async (req, res) => {
       projectName,
       task,
       companyName,
+      holiday,
     } = req.body;
     const startTime = new Date().toISOString();
 
@@ -43,6 +44,7 @@ export const startTimer = async (req, res) => {
       task,
       companyName,
       isRunning: true,
+      holiday,
     });
     await newTimer.save();
 
@@ -583,6 +585,64 @@ export const runningTimers = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error while get running timers!",
+      error: error,
+    });
+  }
+};
+
+// Update holiday
+export const updateHoliday = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { holiday } = req.body;
+
+    const timer = await timerModel.findById(id);
+
+    if (!timer) {
+      return res.status(400).send({
+        success: false,
+        message: "Timer not found!",
+      });
+    }
+
+    const updateTimer = await timerModel.findByIdAndUpdate(
+      { _id: timer._id },
+      { $set: { holiday } },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Holiday updated!",
+      updateTimer: updateTimer,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error while update holiday!",
+      error: error,
+    });
+  }
+};
+
+// Get ALL Holidays
+export const getAllHolidays = async (req, res) => {
+  try {
+    const holidays = await timerModel
+      .find({
+        holiday: { $in: ["Company Holiday", "Personal Holiday"] },
+      })
+      .select(" jobHolderName holiday createdAt");
+
+    res.status(200).send({
+      success: true,
+      message: "All Holiday!",
+      holidays: holidays,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error while get holidays!",
       error: error,
     });
   }

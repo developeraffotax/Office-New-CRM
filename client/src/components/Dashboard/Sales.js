@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import Chart from "react-apexcharts";
 import dayjs from "dayjs";
+import {
+  FaPercentage,
+  FaUserSlash,
+  FaChartPie,
+  FaChartLine,
+} from "react-icons/fa";
 
 export default function Sales({
   salesData,
@@ -33,7 +39,6 @@ export default function Sales({
     "LinkedIn",
   ];
 
-  console.log("leadSourceCount", leadSourceCount);
   useEffect(() => {
     const sourceCount = leadSource.reduce((acc, source) => {
       const count = totalLeads.filter(
@@ -502,10 +507,13 @@ export default function Sales({
 
         {/*----------Conversion Lead in Client in Proposal--------- */}
 
-        <div className=" w-full flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105 ">
+        <div className=" w-full  h-fit flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105 ">
           <div className="flex flex-col gap-4 w-full">
             {/* Total Leads (Lead - Proposal Lead) */}
-            <div className="flex flex-col gap-4 w-full p-4 rounded-xl    bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+            <div className="flex flex-col   gap-4 w-full p-4 rounded-xl items-center justify-center   bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-pink-100 text-pink-700 shadow-lg">
+                <FaPercentage size={40} />
+              </div>
               <h3 className="text-2xl font-semibold text-gray-800 text-center">
                 Conversion % PPL
               </h3>
@@ -514,30 +522,15 @@ export default function Sales({
               </h1>
             </div>
             {/*----------Conversion PPC Lead Won --------- */}
-            <div className="flex flex-col gap-4 w-full p-4 rounded-xl   bg-gradient-to-br from-purple-100 via-purple-200 to-purple-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+            <div className="flex flex-col gap-4 w-full p-4 rounded-xl  items-center justify-center  bg-gradient-to-br from-purple-100 via-purple-200 to-purple-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 text-purple-700 shadow-lg">
+                <FaChartPie size={40} />
+              </div>
               <h3 className="text-2xl font-semibold text-gray-800 text-center">
                 Conversion % PPC
               </h3>
               <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
                 {PPCPercentage.toFixed(2)}%
-              </h1>
-            </div>
-            {/* Inactive Client Total*/}
-            <div className="flex flex-col gap-4 w-full p-4 rounded-xl   bg-gradient-to-br from-red-100 via-red-200 to-red-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-              <h3 className="text-2xl font-semibold text-gray-800 text-center">
-                Inactive Client
-              </h3>
-              <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
-                {salesData?.inactiveClients.length}
-              </h1>
-            </div>
-            {/* Inactive Client Percentage */}
-            <div className="flex flex-col gap-4 w-full p-4 rounded-xl   bg-gradient-to-br from-lime-100 via-lime-200 to-lime-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-              <h3 className="text-2xl font-semibold text-gray-800 text-center">
-                Inactive Client %
-              </h3>
-              <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
-                {InactiveClientPercentage.toFixed(2)}%
               </h1>
             </div>
           </div>
@@ -577,6 +570,34 @@ export default function Sales({
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Inactive Users */}
+        <div className="w-full flex flex-col h-fit items-center p-4 rounded-xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105 gap-4">
+          {/* Inactive Client Total*/}
+          <div className="flex items-center justify-center flex-col gap-4 w-full p-4 rounded-xl   bg-gradient-to-br from-red-100 via-red-200 to-red-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-700 shadow-lg">
+              <FaUserSlash size={40} />
+            </div>
+            <h3 className="text-2xl font-semibold text-gray-800 text-center">
+              Inactive Client
+            </h3>
+            <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
+              {salesData?.inactiveClients.length}
+            </h1>
+          </div>
+          {/* Inactive Client Percentage */}
+          <div className="flex flex-col gap-4 w-full p-4 rounded-xl items-center justify-center  bg-gradient-to-br from-lime-100 via-lime-200 to-lime-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-lime-100 text-lime-700 shadow-lg">
+              <FaChartLine size={40} />
+            </div>
+            <h3 className="text-2xl font-semibold text-gray-800 text-center">
+              Inactive Client %
+            </h3>
+            <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
+              {InactiveClientPercentage.toFixed(2)}%
+            </h1>
           </div>
         </div>
       </div>

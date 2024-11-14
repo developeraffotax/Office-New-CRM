@@ -6,6 +6,7 @@ import { style } from "../../utlis/CommonStyle";
 import { IoClose } from "react-icons/io5";
 import Sales from "../../components/Dashboard/Sales";
 import axios from "axios";
+import HR from "../../components/Dashboard/HR";
 
 export default function Dashboard() {
   // Client
@@ -20,6 +21,8 @@ export default function Dashboard() {
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedPartner, setSelectedPartner] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [userData, setUserData] = useState([]);
+  const [clientData, setClientData] = useState([]);
 
   const departments = [
     "Bookkeeping",
@@ -35,7 +38,10 @@ export default function Dashboard() {
   const partners = ["Affotax", "Outsource", "OTL"];
   // Sales
   const [salesData, setSalesData] = useState([]);
-  // console.log("salesData:", salesData);
+  //  HR
+  const [holidaysData, setHolidayData] = useState([]);
+  const [complaintData, setComplaintData] = useState([]);
+  const [selectedUser, setSelectedUser] = useState("");
 
   // ---------------All Client_Job Data----------->
   const allClientJobData = async () => {
@@ -79,6 +85,80 @@ export default function Dashboard() {
     // eslint-disable-next-line
   }, []);
 
+  // -------Get All Users-------->
+
+  const getAllUsers = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/dashboard/users`
+      );
+      setUserData(data?.users);
+      console.log("users", data?.users);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllUsers();
+
+    //eslint-disable-next-line
+  }, []);
+
+  // Get All Holidays
+  const allHolidays = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/timer/fetch/holidays`
+      );
+      setHolidayData(data?.holidays);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    allHolidays();
+
+    //eslint-disable-next-line
+  }, []);
+
+  // Get All Complain's
+  const getAllComplaints = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/complaints/dashboard/complaint`
+      );
+
+      setComplaintData(data.complaints);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllComplaints();
+  }, []);
+
+  // Get All Clients Data
+  const allClientData = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/dashboard/clients/completed`
+      );
+      if (data) {
+        setClientData(data?.clients);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    allClientData();
+    // eslint-disable-next-line
+  }, []);
+
   return (
     <Layout>
       <div className="relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4  bg-gray-100">
@@ -96,6 +176,7 @@ export default function Dashboard() {
                 setSelectedPartner("");
                 setSelectedSource("");
                 setSelectedYear("");
+                setSelectedUser("");
               }}
               title="Clear filters"
             >
@@ -127,11 +208,11 @@ export default function Dashboard() {
               </button>
               <button
                 className={`py-[.4rem] px-2 outline-none w-[8rem] border-l-2 border-orange-600 transition-all duration-300   ${
-                  selectedTab === "hr"
+                  selectedTab === "HR"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
                     : "text-black bg-gray-100"
                 }`}
-                onClick={() => setSelectedTab("hr")}
+                onClick={() => setSelectedTab("HR")}
               >
                 HR
               </button>
@@ -257,6 +338,53 @@ export default function Dashboard() {
                 </select>
               </div>
             )}
+            {/* HR */}
+            {selectedTab === "HR" && (
+              <div className="flex gap-4 my-4 ml-5">
+                <select
+                  onChange={(e) => setSelectedUser(e.target.value)}
+                  value={selectedUser}
+                  className={`${style.input} shadow-md drop-shadow-md`}
+                >
+                  <option value="">Select User</option>
+                  {userData.map((user) => (
+                    <option key={user._id} value={user?.name}>
+                      {user?.name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  value={selectedYear}
+                  className={`${style.input} shadow-md drop-shadow-md`}
+                >
+                  <option value="">Select Year</option>
+                  {Array.from({ length: 5 }, (_, i) => {
+                    const year = new Date().getFullYear() - i;
+                    return (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    );
+                  })}
+                </select>
+
+                <select
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  value={selectedMonth}
+                  className={`${style.input} shadow-md drop-shadow-md`}
+                >
+                  <option value="">Select Month</option>
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {new Date(0, i).toLocaleString("default", {
+                        month: "long",
+                      })}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           {/*  */}
@@ -286,11 +414,16 @@ export default function Dashboard() {
                 uniqueClients={uniqueClients.length}
               />
             </div>
-          ) : selectedTab === "Tasks" ? (
+          ) : selectedTab === "HR" ? (
             <div className="w-full h-full">
-              <Tasks
+              <HR
                 selectedMonth={selectedMonth}
                 selectedYear={selectedYear}
+                userData={userData}
+                holidaysData={holidaysData}
+                complaintData={complaintData}
+                selectedUser={selectedUser}
+                clientData={clientData}
               />
             </div>
           ) : (

@@ -15,6 +15,7 @@ export const createProposal = async (req, res) => {
       propos,
       lead,
       client,
+      value,
     } = req.body;
 
     const proposal = await proposalModel.create({
@@ -29,6 +30,7 @@ export const createProposal = async (req, res) => {
       propos,
       lead,
       client,
+      value,
     });
 
     res.status(200).send({
@@ -70,6 +72,7 @@ export const updateProposal = async (req, res) => {
       lead,
       client,
       createdAt,
+      value,
     } = req.body;
 
     console.log(new Date(createdAt));
@@ -97,6 +100,7 @@ export const updateProposal = async (req, res) => {
         lead: lead ? lead : existingProposal.lead,
         client: client ? client : existingProposal.client,
         createdAt: createdAt ? new Date(createdAt) : existingProposal.createdAt,
+        value: value || existingProposal.value,
       },
       { new: true }
     );

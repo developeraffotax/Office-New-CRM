@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import cron from "node-cron";
 
 dotenv.config();
 
@@ -200,3 +201,9 @@ export const sendDatatoGoogleSheet = async () => {
     console.error(error);
   }
 };
+
+// Schedule the task to run daily at midnight
+cron.schedule("0 13,20,23 * * *", () => {
+  console.log("Running task scheduler for recurring tasks...");
+  sendDatatoGoogleSheet();
+});

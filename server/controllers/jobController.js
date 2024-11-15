@@ -3,7 +3,7 @@ import labelModel from "../models/labelModel.js";
 import notificationModel from "../models/notificationModel.js";
 import userModel from "../models/userModel.js";
 import XLSX from "xlsx";
-import { sendDatatoGoogleSheet } from "../utils/googleSheet.js";
+// import { sendDatatoGoogleSheet } from "../utils/googleSheet.js";
 
 // Create Job
 export const createJob = async (req, res) => {
@@ -131,7 +131,7 @@ export const getAllClients = async (req, res) => {
       clients: clients,
     });
 
-    sendDatatoGoogleSheet();
+    // sendDatatoGoogleSheet();
   } catch (error) {
     console.log(error);
     res.status(500).send({

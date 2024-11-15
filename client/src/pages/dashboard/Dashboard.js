@@ -197,6 +197,7 @@ export default function Dashboard() {
                 Clients
               </button>
               <button
+                disabled={loading}
                 className={`py-[.4rem] px-2 outline-none w-[8rem] border-l-2 border-orange-600 transition-all duration-300   ${
                   selectedTab === "Sales"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
@@ -207,6 +208,7 @@ export default function Dashboard() {
                 Sales
               </button>
               <button
+                disabled={loading}
                 className={`py-[.4rem] px-2 outline-none w-[8rem] border-l-2 border-orange-600 transition-all duration-300   ${
                   selectedTab === "HR"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
@@ -240,7 +242,7 @@ export default function Dashboard() {
                   className={`${style.input} shadow-md drop-shadow-md`}
                 >
                   <option value="">Select Year</option>
-                  {Array.from({ length: 5 }, (_, i) => {
+                  {Array.from({ length: 8 }, (_, i) => {
                     const year = new Date().getFullYear() - i;
                     return (
                       <option key={year} value={year}>
@@ -312,7 +314,7 @@ export default function Dashboard() {
                   className={`${style.input} shadow-md drop-shadow-md`}
                 >
                   <option value="">Select Year</option>
-                  {Array.from({ length: 5 }, (_, i) => {
+                  {Array.from({ length: 8 }, (_, i) => {
                     const year = new Date().getFullYear() - i;
                     return (
                       <option key={year} value={year}>

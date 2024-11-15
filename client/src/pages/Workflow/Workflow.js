@@ -30,8 +30,8 @@ export default function Workflow() {
     "Address",
   ];
 
-  console.log("workFlowData:", workFlowData);
-  console.log("clients:", clients);
+  // console.log("workFlowData:", workFlowData);
+  // console.log("clients:", clients);
 
   // ---------------All Client_Job Data----------->
   const allClientJobData = async () => {
@@ -94,7 +94,7 @@ export default function Workflow() {
       // Calculate total hours, fees, and job count for the department
       const totalHours = departmentJobs
         .reduce((sum, job) => sum + parseFloat(job.totalHours || 0), 0)
-        .toFixed(2);
+        .toFixed(0);
       const totalFee = departmentJobs.reduce(
         (sum, job) => sum + parseFloat(job.fee || 0),
         0
@@ -227,7 +227,7 @@ export default function Workflow() {
           const filteredLeadData = Object.entries(leadWiseData)
             .map(([lead, totals]) => ({
               lead,
-              totalHours: totals.totalHours.toFixed(2),
+              totalHours: totals.totalHours.toFixed(0),
               totalFee: totals.totalFee,
               departmentCount: totals.departmentCount,
             }))

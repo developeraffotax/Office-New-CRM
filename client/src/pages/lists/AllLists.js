@@ -11,8 +11,8 @@ import Tickets from "../../components/MyLists/Tickets";
 import Templates from "../../components/MyLists/Templates";
 import Goals from "../../components/MyLists/Goals";
 import Subscriptions from "../../components/MyLists/Subscriptions";
-import { RiRefreshFill } from "react-icons/ri";
 import Timesheet from "../../components/TimeSheet/Timesheet";
+import Dashboard from "../../components/MyLists/LDashboard";
 
 export default function AllLists() {
   const { auth } = useAuth();
@@ -29,6 +29,10 @@ export default function AllLists() {
   const childRef = useRef(null);
   const [isload, setIsload] = useState(false);
   const [timerData, setTimerData] = useState([]);
+  // DashboardClients
+  // Client
+  const [workFlowData, setWorkflowData] = useState([]);
+  const [uniqueClients, setUniqueClients] = useState([]);
 
   const refreshHandler = () => {
     childRef.current.refreshData();
@@ -183,6 +187,27 @@ export default function AllLists() {
     getAllTimeSheetData();
   }, []);
 
+  // ---------------------------MyList Dashoard------------->
+  // ---------------All Client_Job Data----------->
+  const allDashboardClientData = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/workflow/clients`
+      );
+      if (data) {
+        setWorkflowData(data?.clients);
+        setUniqueClients(data.uniqueClients);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    allDashboardClientData();
+    // eslint-disable-next-line
+  }, []);
+
   return (
     <Layout>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
@@ -313,6 +338,16 @@ export default function AllLists() {
               >
                 TimeSheet
               </button>
+              <button
+                className={`py-[6px] px-2 outline-none w-[8.5rem] border-l-2 border-orange-600  transition-all duration-300   ${
+                  selectedTab === "Dashboard"
+                    ? "bg-orange-500 text-white border-r-2 border-orange-500 scale-105 shadow-md"
+                    : "text-black bg-gray-100"
+                }`}
+                onClick={() => setSelectedTab("Dashboard")}
+              >
+                Dashboard
+              </button>
               {/* RiRefreshFill */}
             </div>
             <span
@@ -390,6 +425,16 @@ export default function AllLists() {
               setTimerData={setTimerData}
               childRef={childRef}
               setIsload={setIsload}
+            />
+          ) : selectedTab === "Dashboard" ? (
+            <Dashboard
+              workFlowData={workFlowData}
+              uniqueClients={uniqueClients}
+              // ref={tasksRef}
+              // timerData={timerData}
+              // setTimerData={setTimerData}
+              // childRef={childRef}
+              // setIsload={setIsload}
             />
           ) : (
             <Subscriptions

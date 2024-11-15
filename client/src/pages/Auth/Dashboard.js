@@ -3,12 +3,19 @@ import { useAuth } from "../../context/authContext";
 import Layout from "../../components/Loyout/Layout";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import Loader from "../../utlis/Loader";
+import {
+  FiAward,
+  FiCheckCircle,
+  FiClipboard,
+  FiTag,
+  FiUsers,
+} from "react-icons/fi";
 // import Chart from "react-apexcharts";
 // import { style } from "../../utlis/CommonStyle";
 // import RunningGame from "../../utlis/RunningGame";
 // import MindGame from "../../utlis/MindGame";
-import PuzzleGame from "../../components/games/PuzzleGame";
-import Loader from "../../utlis/Loader";
+// import PuzzleGame from "../../components/games/PuzzleGame";
 
 export default function UDashboard() {
   const { auth } = useAuth();
@@ -171,61 +178,83 @@ export default function UDashboard() {
         {loading ? (
           <Loader />
         ) : (
-          <div className=" grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-4 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-4">
+            {/* Total Assign Tasks */}
             <div
               onClick={() => router("/tasks")}
-              className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-orange-100 via-orange-200 to-orange-300 p-4 rounded shadow"
+              className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-orange-100 via-orange-200 to-orange-300 p-6 rounded-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all"
             >
-              <h2 className="text-[18px] font-medium text-center">
+              <div className="flex items-center justify-center w-16 h-16 bg-orange-400 text-white rounded-full shadow-lg">
+                <FiClipboard className="text-3xl" />
+              </div>
+              <h2 className="text-lg font-medium text-center text-gray-800">
                 Total Assign Tasks
               </h2>
-              <p className="text-3xl font-bold text-center">
+              <p className="text-3xl font-bold text-center text-gray-900">
                 {projects ? projects : 0}
               </p>
             </div>
+
+            {/* Total Completed Tasks */}
             <div
               onClick={() => router("/tasks")}
-              className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-pink-100 via-pink-200 to-pink-300 p-4 rounded shadow"
+              className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-pink-100 via-pink-200 to-pink-300 p-6 rounded-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all"
             >
-              <h2 className="text-[18px] font-medium text-center">
+              <div className="flex items-center justify-center w-16 h-16 bg-pink-400 text-white rounded-full shadow-lg">
+                <FiCheckCircle className="text-3xl" />
+              </div>
+              <h2 className="text-lg font-medium text-center text-gray-800">
                 Total Completed Tasks
               </h2>
-              <p className="text-3xl font-bold text-center">
+              <p className="text-3xl font-bold text-center text-gray-900">
                 {tasksData ? tasksData?.length : 0}
               </p>
             </div>
-            {/* Clients */}
+
+            {/* Assign Clients */}
             <div
               onClick={() => router("/job-planning")}
-              className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-green-100 via-green-200 to-green-300 p-4 rounded shadow"
+              className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-green-100 via-green-200 to-green-300 p-6 rounded-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all"
             >
-              <h2 className="text-[18px] font-medium text-center">
+              <div className="flex items-center justify-center w-16 h-16 bg-green-400 text-white rounded-full shadow-lg">
+                <FiUsers className="text-3xl" />
+              </div>
+              <h2 className="text-lg font-medium text-center text-gray-800">
                 Assign Clients (Inprogress)
               </h2>
-              <p className="text-3xl font-bold text-center">
+              <p className="text-3xl font-bold text-center text-gray-900">
                 {clients ? clients : 0}
               </p>
             </div>
+
+            {/* Total Completed Clients */}
             <div
               onClick={() => router("/job-planning")}
-              className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-purple-100 via-purple-200 to-purple-300 p-4 rounded shadow"
+              className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-purple-100 via-purple-200 to-purple-300 p-6 rounded-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all"
             >
-              <h2 className="text-[18px] font-medium text-center">
+              <div className="flex items-center justify-center w-16 h-16 bg-purple-400 text-white rounded-full shadow-lg">
+                <FiAward className="text-3xl" />
+              </div>
+              <h2 className="text-lg font-medium text-center text-gray-800">
                 Total Completed Clients
               </h2>
-              <p className="text-3xl font-bold text-center">
+              <p className="text-3xl font-bold text-center text-gray-900">
                 {completedClients ? completedClients : 0}
               </p>
             </div>
-            {/* Ticket */}
+
+            {/* Assign Tickets */}
             <div
-              onClick={() => router("/job-planning")}
-              className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-lime-100 via-lime-200 to-lime-300 p-4 rounded shadow"
+              onClick={() => router("/tickets")}
+              className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-lime-100 via-lime-200 to-lime-300 p-6 rounded-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all"
             >
-              <h2 className="text-[18px] font-medium text-center">
+              <div className="flex items-center justify-center w-16 h-16 bg-lime-400 text-white rounded-full shadow-lg">
+                <FiTag className="text-3xl" />
+              </div>
+              <h2 className="text-lg font-medium text-center text-gray-800">
                 Assign Tickets
               </h2>
-              <p className="text-3xl font-bold text-center">
+              <p className="text-3xl font-bold text-center text-gray-900">
                 {ticketCount ? ticketCount : 0}
               </p>
             </div>

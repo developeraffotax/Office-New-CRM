@@ -7,7 +7,7 @@ import { useAuth } from "../../context/authContext";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { TbLoader2 } from "react-icons/tb";
-import { MdCheckCircle, MdOutlineEdit } from "react-icons/md";
+import { MdOutlineEdit } from "react-icons/md";
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import AddTemplateModal from "../../components/Template/AddTemplateModal";
@@ -17,7 +17,6 @@ import {
   useMaterialReactTable,
 } from "material-react-table";
 import Loader from "../../utlis/Loader";
-import { format } from "date-fns";
 import { GrCopy } from "react-icons/gr";
 import { RxClipboardCopy } from "react-icons/rx";
 
@@ -44,7 +43,7 @@ export default function Template() {
   const templateDetailref = useRef(null);
   const [access, setAccess] = useState([]);
 
-  console.log("templateData:", templateData);
+  // console.log("templateData:", templateData);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -83,7 +82,7 @@ export default function Template() {
         const filteredTemplate = data?.templates.filter((template) =>
           template?.userList?.some((user) => user._id === auth.user.id)
         );
-        console.log("filteredTemplate:", filteredTemplate);
+
         setTemplateData(filteredTemplate);
       }
 

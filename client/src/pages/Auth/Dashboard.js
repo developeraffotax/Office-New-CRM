@@ -3,11 +3,12 @@ import { useAuth } from "../../context/authContext";
 import Layout from "../../components/Loyout/Layout";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import Chart from "react-apexcharts";
-import { style } from "../../utlis/CommonStyle";
-import RunningGame from "../../utlis/RunningGame";
-import MindGame from "../../utlis/MindGame";
+// import Chart from "react-apexcharts";
+// import { style } from "../../utlis/CommonStyle";
+// import RunningGame from "../../utlis/RunningGame";
+// import MindGame from "../../utlis/MindGame";
 import PuzzleGame from "../../components/games/PuzzleGame";
+import Loader from "../../utlis/Loader";
 
 export default function UDashboard() {
   const { auth } = useAuth();
@@ -16,6 +17,8 @@ export default function UDashboard() {
   const [clients, setClients] = useState(0);
   const [tasksData, setTasksData] = useState([]);
   const [completedClients, setCompletedClient] = useState(0);
+  const [ticketCount, setTicketCount] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   console.log("completedTasks:", tasksData);
 
@@ -30,8 +33,10 @@ export default function UDashboard() {
       );
 
       const filteredTasks = data?.tasks?.filter(
-        (item) => item?.jobHolder === auth?.user?.name
+        (item) => item?.jobHolder.trim() === auth?.user?.name.trim()
       );
+
+      console.log("filteredTasks:", filteredTasks, data?.tasks);
 
       setProjects(filteredTasks.length || 0);
     } catch (error) {
@@ -54,7 +59,7 @@ export default function UDashboard() {
       );
 
       const filteredTasks = data?.tasks?.filter(
-        (item) => item?.jobHolder === auth?.user?.name
+        (item) => item?.jobHolder.trim() === auth?.user?.name
       );
 
       // Map data to chart format
@@ -78,6 +83,7 @@ export default function UDashboard() {
   //   Get Job's Count (Progress)
 
   const allClientData = async () => {
+    setLoading(true);
     if (!auth.user) {
       return;
     }
@@ -87,13 +93,15 @@ export default function UDashboard() {
       );
       if (data) {
         const filteredJobs = data?.clients.filter(
-          (client) => client.job?.jobHolder === auth?.user?.name
+          (client) => client.job?.jobHolder.trim() === auth?.user?.name.trim()
         );
 
         setClients(filteredJobs.length || 0);
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -113,10 +121,8 @@ export default function UDashboard() {
       );
       if (data) {
         const filteredJobs = data?.clients.filter(
-          (client) => client.job?.jobHolder === auth?.user?.name
+          (client) => client.job?.jobHolder.trim() === auth?.user?.name.trim()
         );
-
-        console.log("filteredJobs/complete:", filteredJobs, data);
         setCompletedClient(filteredJobs.length || 0);
       }
     } catch (error) {
@@ -129,6 +135,32 @@ export default function UDashboard() {
     // eslint-disable-next-line
   }, [auth]);
 
+  // Get Ticket Count
+  const fetchTicketData = async () => {
+    if (!auth.user) {
+      return;
+    }
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/dashboard/tickets`
+      );
+      if (data) {
+        const filteredJobs = data?.emails?.filter(
+          (email) => email.jobHolder.trim() === auth?.user?.name.trim()
+        );
+
+        setTicketCount(filteredJobs.length || 0);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTicketData();
+    // eslint-disable-next-line
+  }, [auth]);
+
   return (
     <Layout>
       <div className="w-full flex flex-col gap-4 py-4 px-4">
@@ -136,74 +168,75 @@ export default function UDashboard() {
           Welcome, {auth?.user?.name}!
         </h1>
 
-        {/* Statistics Cards */}
-        <div className=" grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-4 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          <div
-            onClick={() => router("/tasks")}
-            className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-orange-100 via-orange-200 to-orange-300 p-4 rounded shadow"
-          >
-            <h2 className="text-[18px] font-medium text-center">
-              Total Assign Tasks
-            </h2>
-            <p className="text-2xl font-bold text-center">
-              {projects ? projects : 0}
-            </p>
+        {loading ? (
+          <Loader />
+        ) : (
+          <div className=" grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mt-4 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div
+              onClick={() => router("/tasks")}
+              className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-orange-100 via-orange-200 to-orange-300 p-4 rounded shadow"
+            >
+              <h2 className="text-[18px] font-medium text-center">
+                Total Assign Tasks
+              </h2>
+              <p className="text-3xl font-bold text-center">
+                {projects ? projects : 0}
+              </p>
+            </div>
+            <div
+              onClick={() => router("/tasks")}
+              className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-pink-100 via-pink-200 to-pink-300 p-4 rounded shadow"
+            >
+              <h2 className="text-[18px] font-medium text-center">
+                Total Completed Tasks
+              </h2>
+              <p className="text-3xl font-bold text-center">
+                {tasksData ? tasksData?.length : 0}
+              </p>
+            </div>
+            {/* Clients */}
+            <div
+              onClick={() => router("/job-planning")}
+              className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-green-100 via-green-200 to-green-300 p-4 rounded shadow"
+            >
+              <h2 className="text-[18px] font-medium text-center">
+                Assign Clients (Inprogress)
+              </h2>
+              <p className="text-3xl font-bold text-center">
+                {clients ? clients : 0}
+              </p>
+            </div>
+            <div
+              onClick={() => router("/job-planning")}
+              className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-purple-100 via-purple-200 to-purple-300 p-4 rounded shadow"
+            >
+              <h2 className="text-[18px] font-medium text-center">
+                Total Completed Clients
+              </h2>
+              <p className="text-3xl font-bold text-center">
+                {completedClients ? completedClients : 0}
+              </p>
+            </div>
+            {/* Ticket */}
+            <div
+              onClick={() => router("/job-planning")}
+              className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-lime-100 via-lime-200 to-lime-300 p-4 rounded shadow"
+            >
+              <h2 className="text-[18px] font-medium text-center">
+                Assign Tickets
+              </h2>
+              <p className="text-3xl font-bold text-center">
+                {ticketCount ? ticketCount : 0}
+              </p>
+            </div>
           </div>
-          <div
-            onClick={() => router("/tasks")}
-            className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-pink-100 via-pink-200 to-pink-300 p-4 rounded shadow"
-          >
-            <h2 className="text-[18px] font-medium text-center">
-              Total Completed Tasks
-            </h2>
-            <p className="text-2xl font-bold text-center">
-              {tasksData ? tasksData?.length : 0}
-            </p>
-          </div>
-          {/* Clients */}
-          <div
-            onClick={() => router("/job-planning")}
-            className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-green-100 via-green-200 to-green-300 p-4 rounded shadow"
-          >
-            <h2 className="text-[18px] font-medium text-center">
-              Total Clients (Inprogress)
-            </h2>
-            <p className="text-2xl font-bold text-center">
-              {clients ? clients : 0}
-            </p>
-          </div>
-          <div
-            onClick={() => router("/job-planning")}
-            className="flex cursor-pointer items-center justify-center flex-col gap-4 bg-gradient-to-tr from-purple-100 via-purple-200 to-purple-300 p-4 rounded shadow"
-          >
-            <h2 className="text-[18px] font-medium text-center">
-              Total Completed Clients
-            </h2>
-            <p className="text-2xl font-bold text-center">
-              {completedClients ? completedClients : 0}
-            </p>
-          </div>
-        </div>
+        )}
 
-        {/* Charts and Analytics */}
-        {/* <div className="bg-white p-4 rounded shadow bg-gradient-to-tr from-gray-100 via-gray-200 to-gray-300">
-          <h2 className="font-semibold mb-2">
-            Monthly Progress (Completed Tasks Analytics)
-          </h2>
-        </div> */}
-        {/* Recent Activity */}
-        {/* <div className="bg-white p-4 rounded shadow">
-          <h2 className="font-semibold mb-2">Recent Activity</h2>
-          <ul>
-            <li>- Task "Client Onboarding" completed by John Doe</li>
-          </ul>
-        </div> */}
-
-        {/* <-------------Animation Game(Lion & Man)------------> */}
+        {/* <-------------Game------------> */}
         <div className="mt-4 w-full flex items-center justify-center gap-5">
           {/* <RunningGame /> */}
-          {/* <MindGame />
-          <PuzzleGame /> */}
+          {/* <MindGame /> */}
+          {/* <PuzzleGame /> */}
         </div>
       </div>
     </Layout>

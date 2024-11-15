@@ -115,9 +115,7 @@ const AllTasks = () => {
   const [activity, setActivity] = useState("Chargeable");
   const [access, setAccess] = useState([]);
 
-  console.log("tasksData:", tasksData);
-  console.log("Jid:", jid);
-  console.log("filterData", filterData);
+  // console.log("tasksData:", tasksData);
 
   useEffect(() => {
     const timeId = localStorage.getItem("jobId");
@@ -182,7 +180,7 @@ const AllTasks = () => {
 
       setTasksData(data.tasks);
 
-      console.log("data.tasks:", data?.tasks);
+      // console.log("data.tasks:", data?.tasks);
       if (auth.user.role.name === "Admin") {
         setTasksData(data?.tasks);
       } else {
@@ -521,8 +519,6 @@ const AllTasks = () => {
 
     const filteredData = tasksData?.filter((item) => item.status === state);
 
-    // console.log("FilterData", filteredData);
-
     setStateData([...filteredData]);
     console.log("stateData:", stateData);
   };
@@ -697,7 +693,6 @@ const AllTasks = () => {
           item?.jobHolder.toLowerCase().includes(searchValue.toLowerCase())
       );
       setFilterData(filteredData);
-      console.log("SearchData:", filteredData);
     } else {
       setFilterData(tasksData);
     }
@@ -927,7 +922,6 @@ const AllTasks = () => {
     const [reorderedProject] = updatedProjects.splice(result.source.index, 1);
     updatedProjects.splice(result.destination.index, 0, reorderedProject);
 
-    // console.log("updatedProjects", updatedProjects);
     setProjects(updatedProjects);
 
     // Save the new order to the backend
@@ -1323,12 +1317,6 @@ const AllTasks = () => {
             return cellDate.toISOString().split("T")[0];
           });
 
-          // console.log(
-          //   "Start Date:",
-          //   format(new Date(date), "dd-MMM-yyyy"),
-          //   format(new Date(startDate), "dd-MMM-yyyy")
-          // );
-
           const [showStartDate, setShowStartDate] = useState(false);
 
           const handleDateChange = (newDate) => {
@@ -1503,11 +1491,7 @@ const AllTasks = () => {
             const cellDate = new Date(cell.getValue());
             return cellDate.toISOString().split("T")[0];
           });
-          // console.log(
-          //   "Deadline Date:",
-          //   format(new Date(date), "dd-MMM-yyyy"),
-          //   format(new Date(deadline), "dd-MMM-yyyy")
-          // );
+
           const [allocateDate, setAllocateDate] = useState(date);
 
           useEffect(() => {
@@ -1888,7 +1872,6 @@ const AllTasks = () => {
         },
 
         Cell: ({ cell, row }) => {
-          // console.log("rowTask", row.original);
           return (
             <div
               className="flex items-center justify-center gap-1 w-full h-full "
@@ -1920,7 +1903,7 @@ const AllTasks = () => {
         },
         filterFn: (row, columnId, filterValue) => {
           const cellValue = row.original._id;
-          console.log("T_ID:", filterValue, cellValue);
+
           return cellValue === filterValue;
         },
         filterVariant: "select",
@@ -1968,7 +1951,6 @@ const AllTasks = () => {
         accessorKey: "actions",
         header: "Actions",
         Cell: ({ cell, row }) => {
-          // console.log("Id:", row.original._id);
           return (
             <div className="flex items-center justify-center gap-3 w-full h-full">
               <span
@@ -2267,22 +2249,22 @@ const AllTasks = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleRecurring = async () => {
-    setRecurrLoad(true);
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tasks/call/recurring`
-      );
-      if (data) {
-        getTasks1();
-        setRecurrLoad(false);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error(error?.response?.data?.message);
-      setRecurrLoad(false);
-    }
-  };
+  // const handleRecurring = async () => {
+  //   setRecurrLoad(true);
+  //   try {
+  //     const { data } = await axios.get(
+  //       `${process.env.REACT_APP_API_URL}/api/v1/tasks/call/recurring`
+  //     );
+  //     if (data) {
+  //       getTasks1();
+  //       setRecurrLoad(false);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     toast.error(error?.response?.data?.message);
+  //     setRecurrLoad(false);
+  //   }
+  // };
 
   return (
     <Layout>

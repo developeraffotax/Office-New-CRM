@@ -250,7 +250,7 @@ export const getdashboardLead = async (req, res) => {
     const wonleads = await leadModel.find({ status: { $eq: "won" } });
     const clients = await jobsModel
       .find({ "job.jobStatus": "Inactive" })
-      .select("createdAt");
+      .select("createdAt  updatedAt");
 
     res.status(200).send({
       success: true,

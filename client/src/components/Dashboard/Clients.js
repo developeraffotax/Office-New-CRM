@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import ApexCharts from "apexcharts";
 import Loader from "../../utlis/Loader";
@@ -20,7 +19,7 @@ export default function Clients({
   const [clients, setClients] = useState([]);
   const [fee, setFee] = useState("");
   const [selectChart, setSelectChart] = useState("area");
-  console.log("clients:", clients, "workflow:", workFlowData);
+  const [filterWorkFlow, setFilterWorkFlow] = useState([]);
 
   const departments = [
     "Bookkeeping",
@@ -85,7 +84,7 @@ export default function Clients({
     setFee(calculateTotalFee(clients).toFixed(0));
   }, [clients]);
 
-  // --Render Department Count Chart------->
+  // --Render Department Count Chart(#3)------->
   useEffect(() => {
     const departmentCounts = clients.map(
       (client) => client.totalDepartmentCount
@@ -111,7 +110,7 @@ export default function Clients({
     }
   }, [clients]);
 
-  // Render Department Fee Chart
+  // ---------Render Department Fee Chart(#4)---------
   useEffect(() => {
     const departmentFees = clients.map((client) => client.totalFee);
     const departmentLabels = clients.map((client) => client.department);
@@ -175,7 +174,7 @@ export default function Clients({
     }
   }, [clients]);
 
-  // Filter By Depertment
+  // -------Filter By Depertment--------------
 
   useEffect(() => {
     const filterData = () => {
@@ -211,10 +210,10 @@ export default function Clients({
         });
       }
 
-      console.log("filteredData:", filteredData);
-
       return filteredData;
     };
+
+    setFilterWorkFlow(filterData);
 
     const departmentTotals = departments.map((department) => {
       const departmentJobs = filterData().filter(
@@ -279,17 +278,14 @@ export default function Clients({
     const jobDate = new Date(job.currentDate);
     const month = jobDate.toLocaleString("default", { month: "short" });
 
-    // Initialize month if not already present
     if (!acc[month]) acc[month] = { jobCount: 0, totalFee: 0 };
 
-    // Increment job count and total fee for the month
     acc[month].jobCount += 1;
     acc[month].totalFee += parseFloat(job.fee || 0);
 
     return acc;
   }, {});
 
-  // Get months for the chart
   const monthOrder = [
     "Jan",
     "Feb",
@@ -305,7 +301,7 @@ export default function Clients({
     "Dec",
   ];
 
-  // Assuming `monthData` is an object with month abbreviations as keys
+  // Assuming `monthData`
   const months = Object.keys(monthData).sort(
     (a, b) => monthOrder.indexOf(a) - monthOrder.indexOf(b)
   );
@@ -325,8 +321,6 @@ export default function Clients({
       data: months.map((month) => monthData[month]?.totalFee || 0),
     },
   ];
-
-  console.log("months", months);
 
   // Render charts
   useEffect(() => {
@@ -360,6 +354,7 @@ export default function Clients({
     // eslint-disable-next-line
   }, [selectChart, months, jobCountSeries]);
 
+  // Department wise Fee
   useEffect(() => {
     // Fee Total Chart
     const feeChartOptions = {
@@ -453,7 +448,7 @@ export default function Clients({
                 Total
               </h2>
               <p className="text-3xl font-bold text-gray-700 text-center">
-                {workFlowData?.length}
+                {filterWorkFlow ? filterWorkFlow.length : workFlowData?.length}
               </p>
               <p className="text-2xl font-bold text-gray-700 text-center">
                 ${" "}

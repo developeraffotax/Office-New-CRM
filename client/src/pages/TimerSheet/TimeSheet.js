@@ -103,9 +103,8 @@ export default function TimeSheet() {
   const [isRunning, setIsRunning] = useState(false);
   const holidays = ["Company Holiday", "Personal Holiday"];
 
-  console.log("TableFilterData:", tableFilterData);
+  // console.log("TableFilterData:", tableFilterData);
 
-  // console.log("auth:", auth.user);
   useEffect(() => {
     if (auth.user) {
       const filterAccess = auth.user.role.access
@@ -602,8 +601,6 @@ export default function TimeSheet() {
     const filteredData = tableFilterData.filter((item) => {
       const itemDate = item.date ? normalizeDate(new Date(item.date)) : null;
 
-      console.log("Filter Date:", itemDate);
-
       // Check if the item date falls within the startDate and endDate range
       const matchDate =
         itemDate && startDate && endDate
@@ -816,7 +813,6 @@ export default function TimeSheet() {
           );
         },
         filterFn: (row, columnId, filterValue) => {
-          console.log("Filter Data:=>", row, columnId, filterValue);
           const cellValue = row.getValue(columnId);
           if (!cellValue) return false;
 

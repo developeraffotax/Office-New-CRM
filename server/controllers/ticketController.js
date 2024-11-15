@@ -769,3 +769,24 @@ export const assignEmail = async (req, res) => {
     });
   }
 };
+
+export const getDashboardTickets = async (req, res) => {
+  try {
+    const emails = await ticketModel
+      .find({ state: { $ne: "complete" } })
+      .select("jobHolder  createdAt");
+
+    res.status(200).send({
+      success: true,
+      message: "All email list!",
+      emails: emails,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while getting emails!",
+      error: error,
+    });
+  }
+};

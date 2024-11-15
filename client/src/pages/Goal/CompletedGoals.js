@@ -42,7 +42,7 @@ export default function CompletedGoals({ setGoalId, setShow }) {
     "Manual Goal",
   ];
 
-  console.log("goalsData:", goalsData);
+  // console.log("goalsData:", goalsData);
 
   // -------Get All Proposal-------
   const getAllGoals = async () => {

@@ -29,6 +29,7 @@ import JobCommentModal from "../../pages/Jobs/JobCommentModal";
 import JobDetail from "../../pages/Jobs/JobDetail";
 import CompletedJobs from "../../pages/Jobs/CompletedJobs";
 import { Timer } from "../../utlis/Timer";
+import Swal from "sweetalert2";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -221,6 +222,32 @@ const Jobs = forwardRef(
     }, []);
 
     // ---------------Handle Status Change---------->
+
+    const handleUpdateTicketStatusConfirmation = (rowId, newStatus) => {
+      if (newStatus === "Inactive") {
+        Swal.fire({
+          title: "Are you sure?",
+          text: "You won't be able to revert this!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Yes, mark as Inactive!",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            handleStatusChange(rowId, newStatus);
+            Swal.fire(
+              "Inactive!",
+              "Client status set to inactive successfully!",
+              "success"
+            );
+          }
+        });
+      } else {
+        handleStatusChange(rowId, newStatus);
+      }
+    };
+
     const handleStatusChange = async (rowId, newStatus) => {
       if (!rowId) {
         return toast.error("Job id is required!");
@@ -1338,9 +1365,10 @@ const Jobs = forwardRef(
         },
         //
         {
-          accessorKey: "job.jobStatus",
+          accessorKey: "jobStatus",
+          accessorFn: (row) => row.job?.jobStatus || "",
           Header: ({ column }) => {
-            const jobStatus = [
+            const jobStatusOptions = [
               "Data",
               "Progress",
               "Queries",
@@ -1352,17 +1380,14 @@ const Jobs = forwardRef(
 
             useEffect(() => {
               column.setFilterValue("Progress");
-
-              // eslint-disable-next-line
             }, []);
+
             return (
-              <div className=" flex flex-col gap-[2px]">
+              <div className="flex flex-col gap-[2px]">
                 <span
                   className="ml-1 cursor-pointer"
                   title="Clear Filter"
-                  onClick={() => {
-                    column.setFilterValue("");
-                  }}
+                  onClick={() => column.setFilterValue("")}
                 >
                   Job Status
                 </span>
@@ -1372,7 +1397,7 @@ const Jobs = forwardRef(
                   className="font-normal h-[1.8rem] ml-1 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
                 >
                   <option value="">Select</option>
-                  {jobStatus?.map((status, i) => (
+                  {jobStatusOptions.map((status, i) => (
                     <option key={i} value={status}>
                       {status}
                     </option>
@@ -1383,12 +1408,14 @@ const Jobs = forwardRef(
           },
           Cell: ({ cell, row }) => {
             const statusValue = cell.getValue();
-
             return (
               <select
                 value={statusValue}
                 onChange={(e) =>
-                  handleStatusChange(row.original._id, e.target.value)
+                  handleUpdateTicketStatusConfirmation(
+                    row.original._id,
+                    e.target.value
+                  )
                 }
                 className="w-[6rem] h-[2rem] rounded-md border border-sky-300 outline-none"
               >
@@ -1400,10 +1427,10 @@ const Jobs = forwardRef(
                 <option value="Submission">Submission</option>
                 <option value="Billing">Billing</option>
                 <option value="Feedback">Feedback</option>
+                <option value="Inactive">Inactive</option>
               </select>
             );
           },
-          // filterFn: "equals",
           filterFn: (row, columnId, filterValue) => {
             const cellValue = row.getValue(columnId);
             return (cellValue || "").toString() === filterValue.toString();
@@ -1416,6 +1443,7 @@ const Jobs = forwardRef(
             "Submission",
             "Billing",
             "Feedback",
+            "Inactive",
           ],
           filterVariant: "select",
           size: 110,

@@ -48,7 +48,7 @@ export default function Proposal() {
   const [mail, setMail] = useState("");
   const mailDetailref = useRef(null);
 
-  console.log("filteredData:", filteredData);
+  // console.log("filteredData:", filteredData);
 
   // -------Get All Proposal-------
   const getAllProposal = async () => {
@@ -138,7 +138,7 @@ export default function Proposal() {
     }
   };
 
-  //  ---------- Update Lead Status------>
+  //  ---------- Update Status------>
   const handleLeadStatus = (leadId, status) => {
     Swal.fire({
       title: "Are you sure?",
@@ -188,7 +188,7 @@ export default function Proposal() {
     }
   };
 
-  //  ------------Delete Lead------------>
+  //  ------------Delete Proposal------------>
   const handleDeleteLeadConfirmation = (propId) => {
     Swal.fire({
       title: "Are you sure?",
@@ -1737,7 +1737,6 @@ export default function Proposal() {
       .getFilteredRowModel()
       .rows.map((row) => row.original);
 
-    console.log("Filtered Data:", filteredRows);
     setFilteredData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
 

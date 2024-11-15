@@ -168,7 +168,7 @@ const updateGoogleSheet = async (data, range) => {
 };
 
 // Send data to Google Sheets
-export const sendDatatoGoogleSheet = async (req, res) => {
+export const sendDatatoGoogleSheet = async () => {
   try {
     // Fetch active clients
     const activeClients = await jobsModel
@@ -193,11 +193,9 @@ export const sendDatatoGoogleSheet = async (req, res) => {
     await updateGoogleSheet(completedClients, COMPLETED_SHEET_RANGE);
     await updateGoogleSheet(inactiveClients, INACTIVE_SHEET_RANGE);
 
-    res.status(200).send({
-      success: true,
-      message:
-        "Google Sheets updated successfully with both active and completed clients!",
-    });
+    console.log(
+      "Google Sheets updated successfully with active, inactive and completed clients!"
+    );
   } catch (error) {
     console.error(error);
   }

@@ -7,6 +7,8 @@ import {
   FaChartPie,
   FaChartLine,
 } from "react-icons/fa";
+import { IoIosArrowDropdown } from "react-icons/io";
+import { IoIosArrowDropup } from "react-icons/io";
 
 export default function Sales({
   salesData,
@@ -19,12 +21,124 @@ export default function Sales({
   const [filteredTotalProposals, setFilteredTotalProposals] = useState(0);
   const [filteredTotalLeadProposal, setFilteredTotalLeadProposal] = useState(0);
   const [filteredTotalPPCLead, setFilteredTotalPPCLead] = useState(0);
-  // PPL
-  const proposalLeads = salesData.proposalLead.length;
-  const proposalClients = salesData.proposalClient.length;
-  // PPC
-  const progressleadTotal = salesData.progressleads.length;
-  const wonleadTotal = salesData.wonleads.length;
+
+  // --------PPC---PPL----InActive Client---->
+  const [proposalLead, setProposalLead] = useState([]);
+  const [proposalClient, setProposalClient] = useState([]);
+
+  const proposalLeads = proposalLead?.length;
+  const proposalClients = proposalClient?.length;
+  // Filter Proposal Lead
+  useEffect(() => {
+    const filteredData = salesData?.proposalLead?.filter((item) => {
+      const createdAtDate = new Date(item.createdAt);
+      const itemMonth = createdAtDate.getMonth() + 1;
+      const itemYear = createdAtDate.getFullYear();
+
+      if (selectedMonth && selectedYear) {
+        return (
+          itemMonth === parseInt(selectedMonth) &&
+          itemYear === parseInt(selectedYear)
+        );
+      } else if (selectedMonth) {
+        return itemMonth === parseInt(selectedMonth);
+      } else if (selectedYear) {
+        return itemYear === parseInt(selectedYear);
+      } else {
+        return true;
+      }
+    });
+    setProposalLead(filteredData);
+  }, [selectedMonth, selectedYear, salesData]);
+
+  // Filter Proposal Clients
+  useEffect(() => {
+    const filteredData = salesData?.proposalClient?.filter((item) => {
+      const createdAtDate = new Date(item.createdAt);
+      const itemMonth = createdAtDate.getMonth() + 1;
+      const itemYear = createdAtDate.getFullYear();
+
+      if (selectedMonth && selectedYear) {
+        return (
+          itemMonth === parseInt(selectedMonth) &&
+          itemYear === parseInt(selectedYear)
+        );
+      } else if (selectedMonth) {
+        return itemMonth === parseInt(selectedMonth);
+      } else if (selectedYear) {
+        return itemYear === parseInt(selectedYear);
+      } else {
+        return true;
+      }
+    });
+    setProposalClient(filteredData);
+
+    console.log("Filtered Proposal Client:", filteredData);
+  }, [selectedMonth, selectedYear, salesData]);
+
+  //---------------Filter PPC------->
+  const [progressLead, setProgressLead] = useState([]);
+  const [wonLead, setWonLead] = useState([]);
+
+  const filterPPC = (data = [], selectedMonth, selectedYear) => {
+    return data.filter((item) => {
+      const createdAtDate = new Date(item.createdAt);
+      const itemMonth = createdAtDate.getMonth() + 1;
+      const itemYear = createdAtDate.getFullYear();
+
+      if (selectedMonth && selectedYear) {
+        return (
+          itemMonth === Number(selectedMonth) &&
+          itemYear === Number(selectedYear)
+        );
+      } else if (selectedMonth) {
+        return itemMonth === Number(selectedMonth);
+      } else if (selectedYear) {
+        return itemYear === Number(selectedYear);
+      }
+      return true; // Return all items if no filters are selected
+    });
+  };
+
+  useEffect(() => {
+    setProgressLead(
+      filterPPC(salesData.progressleads, selectedMonth, selectedYear)
+    );
+    setWonLead(filterPPC(salesData.wonleads, selectedMonth, selectedYear));
+  }, [selectedMonth, selectedYear, salesData]);
+
+  const progressleadTotal = progressLead?.length;
+  const wonleadTotal = wonLead?.length;
+
+  // --------------CLient Filter------------->
+  const [inactiveClient, setInactiveClient] = useState([]);
+
+  const filterJobClients = (data = [], selectedMonth, selectedYear) => {
+    return data.filter((item) => {
+      const createdAtDate = new Date(item.updatedAt);
+      const itemMonth = createdAtDate.getMonth() + 1;
+      const itemYear = createdAtDate.getFullYear();
+
+      if (selectedMonth && selectedYear) {
+        return (
+          itemMonth === Number(selectedMonth) &&
+          itemYear === Number(selectedYear)
+        );
+      } else if (selectedMonth) {
+        return itemMonth === Number(selectedMonth);
+      } else if (selectedYear) {
+        return itemYear === Number(selectedYear);
+      }
+      return true; // Return all items if no filters are selected
+    });
+  };
+
+  useEffect(() => {
+    setInactiveClient(
+      filterJobClients(salesData?.inactiveClients, selectedMonth, selectedYear)
+    );
+  }, [selectedMonth, selectedYear, salesData]);
+
   // Total Leads
   const totalLeads = salesData.activeleadsTotal;
   const [leadSourceCount, setLeadSourceCount] = useState([]);
@@ -39,11 +153,35 @@ export default function Sales({
     "LinkedIn",
   ];
 
+  // Filter Lead Source Count
   useEffect(() => {
+    const filterLeadsByMonthYear = (leads, month, year) => {
+      return leads.filter((lead) => {
+        const createdAtDate = new Date(lead.createdAt);
+        const itemMonth = createdAtDate.getMonth() + 1;
+        const itemYear = createdAtDate.getFullYear();
+
+        if (month && year) {
+          return itemMonth === Number(month) && itemYear === Number(year);
+        } else if (month) {
+          return itemMonth === Number(month);
+        } else if (year) {
+          return itemYear === Number(year);
+        }
+        return true;
+      });
+    };
+
+    const filteredLeads = filterLeadsByMonthYear(
+      totalLeads,
+      selectedMonth,
+      selectedYear
+    );
+
     const sourceCount = leadSource.reduce((acc, source) => {
-      const count = totalLeads.filter(
+      const count = filteredLeads.filter(
         (lead) => lead.lead_Source === source
-      ).length;
+      )?.length;
       acc[source] = count;
       return acc;
     }, {});
@@ -56,19 +194,19 @@ export default function Sales({
     );
 
     setLeadSourceCount(formattedSourceCount);
-  }, [totalLeads]);
+
+    // eslint-disable-next-line
+  }, [totalLeads, selectedMonth, selectedYear]);
 
   // PPL Lead Percentage
-  const PPLPercentage =
-    proposalClients > 0 ? (proposalClients / proposalLeads) * 100 : 0;
+  const PPLPercentage = (proposalClients / proposalLeads) * 100;
   // PPC Lead Percentage
-  const PPCPercentage =
-    proposalClients > 0 ? (wonleadTotal / progressleadTotal) * 100 : 0;
+  const PPCPercentage = (wonleadTotal / progressleadTotal) * 100;
   // Inactive Client Percentage
   const InactiveClientPercentage =
-    proposalClients > 0
-      ? (salesData?.inactiveClients.length / uniqueClients) * 100
-      : 0;
+    (inactiveClient?.length / uniqueClients) * 100;
+
+  console.log("UniqueCLient", uniqueClients);
 
   // --------------Total Leads------------
   const [leadsChartData, setLeadsChartData] = useState({
@@ -140,8 +278,8 @@ export default function Sales({
         labels: {
           style: {
             colors: "#333",
-            fontSize: "14px",
-            fontWeight: 600,
+            fontSize: "13px",
+            fontWeight: 500,
           },
         },
       },
@@ -150,7 +288,7 @@ export default function Sales({
           text: "Total Proposals Sent",
           style: {
             color: "#333",
-            fontSize: "16px",
+            fontSize: "13px",
             fontWeight: 600,
             textAlign: "start",
           },
@@ -332,7 +470,7 @@ export default function Sales({
           (!selectedMonth || leadDate.month() + 1 === parseInt(selectedMonth))
         );
       });
-    setFilteredTotalLeads(filteredLeads.length);
+    setFilteredTotalLeads(filteredLeads?.length);
 
     // Populate leads by month for chart data
     filteredLeads.forEach((lead) => {
@@ -348,7 +486,7 @@ export default function Sales({
         (!selectedMonth || proposalDate.month() + 1 === parseInt(selectedMonth))
       );
     });
-    setFilteredTotalProposals(filteredProposals.length);
+    setFilteredTotalProposals(filteredProposals?.length);
 
     // Populate proposals by month for chart data
     filteredProposals.forEach((proposal) => {
@@ -365,7 +503,7 @@ export default function Sales({
         (!selectedMonth || proposalDate.month() + 1 === parseInt(selectedMonth))
       );
     });
-    setFilteredTotalLeadProposal(filteredLeadProposals.length);
+    setFilteredTotalLeadProposal(filteredLeadProposals?.length);
 
     // Populate proposals by month for chart data
     filteredLeadProposals.forEach((proposal) => {
@@ -382,7 +520,7 @@ export default function Sales({
         (!selectedMonth || ppcLeadDate.month() + 1 === parseInt(selectedMonth))
       );
     });
-    setFilteredTotalPPCLead(filteredPPCLead.length);
+    setFilteredTotalPPCLead(filteredPPCLead?.length);
 
     // Populate proposals by month for chart data
     filteredPPCLead.forEach((proposal) => {
@@ -437,8 +575,6 @@ export default function Sales({
             />
           </div>
         </div>
-        {/*  */}
-
         {/* Total Send Proposal */}
         <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-orange-100 via-orange-200 to-orange-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
           <div className="flex flex-col gap-4 w-full p-4 rounded-xl bg-white/40 bg-opacity-90 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
@@ -482,7 +618,6 @@ export default function Sales({
             />
           </div>
         </div>
-
         {/*  ------Total PPC Lead Analytics */}
         <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-green-100 via-green-200 to-green-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
           <div className="flex flex-col gap-4 w-full p-4 rounded-xl bg-white/40 bg-opacity-90 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
@@ -504,10 +639,55 @@ export default function Sales({
             />
           </div>
         </div>
+        {/*  */}
 
         {/*----------Conversion Lead in Client in Proposal--------- */}
+        <div className=" w-full col-span-1 3xl:col-span-2 flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 shadow-lg hover:shadow-2xl  ">
+          <div className="flex flex-col gap-4 w-full">
+            <div className=" w-full flex items-center gap-2 p-2 rounded-md border shadow-md bg-white">
+              <h3 className="font-semibold text-xl w-[24%]">Lead Source</h3>
+              <h3 className="font-semibold text-xl text-start w-full">
+                Analytics Count
+              </h3>
+            </div>
 
-        <div className=" w-full  h-fit flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105 ">
+            <div className=" w-full flex flex-col gap-2">
+              {leadSourceCount?.map((lead) => (
+                <div
+                  key={lead.source}
+                  className="w-full flex items-center gap-2 px-2 py-1 rounded-md border shadow-md bg-white/60 transition-all duration-300 ease-in-out transform hover:scale-[1.04]"
+                >
+                  <h3 className="font-medium text-lg w-[24%]">{lead.source}</h3>
+                  <div className="bg-white  border overflow-hidden rounded-[2rem]  shadow-md drop-shadow-md w-full h-full">
+                    <div
+                      style={{
+                        width: `${lead?.count}%`,
+                        background:
+                          lead?.count >= 100
+                            ? "linear-gradient(90deg, #00E396, #00C853)"
+                            : "linear-gradient(90deg, #FF4560, #FF8A65)",
+                        transition: "width 0.4s ease-in-out",
+                      }}
+                      className={`h-[1.6rem] flex items-center justify-center  ${
+                        lead?.count < 15 ? "text-black" : "text-white"
+                      } font-semibold rounded-[2rem] shadow-md`}
+                    >
+                      <span
+                        className={`px-2 text-xs ${
+                          lead?.count < 3 ? "ml-3" : "ml-0"
+                        }`}
+                      >
+                        {lead?.count}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        {/*  */}
+        <div className=" w-full  h-fit flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out  ">
           <div className="flex flex-col gap-4 w-full">
             {/* Total Leads (Lead - Proposal Lead) */}
             <div className="flex flex-col   gap-4 w-full p-4 rounded-xl items-center justify-center   bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
@@ -521,72 +701,36 @@ export default function Sales({
                 {PPLPercentage.toFixed(2)}%
               </h1>
             </div>
-            {/*----------Conversion PPC Lead Won --------- */}
-            <div className="flex flex-col gap-4 w-full p-4 rounded-xl  items-center justify-center  bg-gradient-to-br from-purple-100 via-purple-200 to-purple-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 text-purple-700 shadow-lg">
-                <FaChartPie size={40} />
+            {/* Inactive Client Total*/}
+            <div className="flex items-center justify-center flex-col gap-4 w-full p-4 rounded-xl   bg-gradient-to-br from-red-100 via-red-200 to-red-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-700 shadow-lg">
+                <FaUserSlash size={40} />
               </div>
               <h3 className="text-2xl font-semibold text-gray-800 text-center">
-                Conversion % PPC
+                Inactive Client
               </h3>
               <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
-                {PPCPercentage.toFixed(2)}%
+                {inactiveClient ? inactiveClient?.length : 0}
               </h1>
             </div>
           </div>
         </div>
-        {/* --------Source Wise Total---------> */}
-        <div className=" w-full col-span-1 3xl:col-span-2 flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105 ">
-          <div className="flex flex-col gap-4 w-full">
-            <div className=" w-full flex items-center gap-2 p-2 rounded-md border shadow-md bg-white">
-              <h3 className="font-semibold text-xl w-[24%]">Lead Source</h3>
-              <h3 className="font-semibold text-xl text-start w-full">
-                Analytics Count
-              </h3>
-            </div>
-
-            {leadSourceCount?.map((lead) => (
-              <div
-                key={lead.source}
-                className="w-full flex items-center gap-2 px-2 py-1 rounded-md border shadow-md bg-white/60"
-              >
-                <h3 className="font-medium text-lg w-[24%]">{lead.source}</h3>
-                <div className="bg-white  border px-1 overflow-hidden rounded-[2rem] p-[1px] shadow-md drop-shadow-md w-full h-full">
-                  <div
-                    style={{
-                      width: `${lead?.count}%`,
-                      background:
-                        lead?.count >= 100
-                          ? "linear-gradient(90deg, #00E396, #00C853)"
-                          : "linear-gradient(90deg, #FF4560, #FF8A65)",
-                      transition: "width 0.4s ease-in-out",
-                    }}
-                    className={`h-[2rem] flex items-center justify-center  ${
-                      lead?.count < 15 ? "text-black" : "text-white"
-                    } font-semibold rounded-[2rem] shadow-md`}
-                  >
-                    <span className="px-2 text-xs ">{lead?.count}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Inactive Users */}
-        <div className="w-full flex flex-col h-fit items-center p-4 rounded-xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105 gap-4">
-          {/* Inactive Client Total*/}
-          <div className="flex items-center justify-center flex-col gap-4 w-full p-4 rounded-xl   bg-gradient-to-br from-red-100 via-red-200 to-red-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-700 shadow-lg">
-              <FaUserSlash size={40} />
+        <div className="w-full flex flex-col h-fit items-center p-4 rounded-xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out  gap-4">
+          {/*----------Conversion PPC Lead Won --------- */}
+          <div className="flex flex-col gap-4 w-full p-4 rounded-xl  items-center justify-center  bg-gradient-to-br from-purple-100 via-purple-200 to-purple-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 text-purple-700 shadow-lg">
+              <FaChartPie size={40} />
             </div>
             <h3 className="text-2xl font-semibold text-gray-800 text-center">
-              Inactive Client
+              Conversion % PPC
             </h3>
             <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
-              {salesData?.inactiveClients.length}
+              {PPCPercentage ? PPCPercentage.toFixed(2) : 0}%
             </h1>
           </div>
+
           {/* Inactive Client Percentage */}
           <div className="flex flex-col gap-4 w-full p-4 rounded-xl items-center justify-center  bg-gradient-to-br from-lime-100 via-lime-200 to-lime-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
             <div className="flex items-center justify-center w-16 h-16 rounded-full bg-lime-100 text-lime-700 shadow-lg">

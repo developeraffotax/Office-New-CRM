@@ -20,10 +20,6 @@ export default function HR({
   const [complaintDropDown, setComplaintDropDown] = useState(false);
   const [clientDropDown, setClientDropDown] = useState(false);
 
-  // console.log("userData:", users);
-  console.log("userClientCounts:", userClientCounts);
-  console.log("clientData:", clientData);
-
   useEffect(() => {
     const users = userData.map((user) => user.name);
     setUsers(users);
@@ -45,7 +41,7 @@ export default function HR({
       return matchesMonth && matchesYear && matchesUser;
     });
 
-    console.log("filteredHolidays:", filteredHolidays);
+    // console.log("filteredHolidays:", filteredHolidays);
 
     // Count holidays for each user
     const holidayCount = users?.reduce((acc, user) => {
@@ -101,7 +97,7 @@ export default function HR({
       }));
 
     setUserComplainCount(formattedSourceCount);
-  }, [users, holidaysData, selectedMonth, selectedYear, selectedUser]);
+  }, [users, complaintData, selectedMonth, selectedYear, selectedUser]);
 
   // Get ALl CLients
   useEffect(() => {
@@ -224,11 +220,11 @@ export default function HR({
                   </div>
                 )}
 
-                <div className="w-full flex items-center justify-end  px-2 py-2 rounded-md border border-red-200 shadow-md  bg-white  cursor-pointer">
-                  <span
-                    className="cursor-pointer "
-                    onClick={() => setComplaintDropDown(!complaintDropDown)}
-                  >
+                <div
+                  onClick={() => setComplaintDropDown(!complaintDropDown)}
+                  className="w-full flex items-center justify-end  px-2 py-2 rounded-md border border-red-200 shadow-md  bg-white  cursor-pointer"
+                >
+                  <span className="cursor-pointer ">
                     {complaintDropDown ? (
                       <IoIosArrowDropup className="h-6 w-6 text-red-800 " />
                     ) : (
@@ -306,11 +302,11 @@ export default function HR({
                     </p>
                   </div>
                 )}
-                <div className="w-full flex items-center justify-end  px-2 py-2 rounded-md border border-teal-200 shadow-md  bg-white  cursor-pointer">
-                  <span
-                    className="cursor-pointer "
-                    onClick={() => setHolidayDropDown(!holidayDropDown)}
-                  >
+                <div
+                  onClick={() => setHolidayDropDown(!holidayDropDown)}
+                  className="w-full flex items-center justify-end   px-2 py-2 rounded-md border border-teal-200 shadow-md  bg-white  cursor-pointer"
+                >
+                  <span className="cursor-pointer ">
                     {holidayDropDown ? (
                       <IoIosArrowDropup className="h-6 w-6 text-teal-800 " />
                     ) : (
@@ -389,11 +385,11 @@ export default function HR({
                     </p>
                   </div>
                 )}
-                <div className="w-full flex items-center justify-end  px-2 py-2 rounded-md border border-purple-200 shadow-md  bg-white  cursor-pointer">
-                  <span
-                    className="cursor-pointer "
-                    onClick={() => setClientDropDown(!clientDropDown)}
-                  >
+                <div
+                  onClick={() => setClientDropDown(!clientDropDown)}
+                  className="w-full flex items-center justify-end  px-2 py-2 rounded-md border border-purple-200 shadow-md  bg-white  cursor-pointer"
+                >
+                  <span className="cursor-pointer ">
                     {clientDropDown ? (
                       <IoIosArrowDropup className="h-6 w-6 text-purple-800 " />
                     ) : (

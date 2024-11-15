@@ -284,7 +284,7 @@ export default function Dashboard() {
                   value={selectedClient}
                   className={`${style.input} shadow-md drop-shadow-md`}
                 >
-                  <option value="">Select Client</option>
+                  <option value="">Select Type</option>
                   {clients.map((client) => (
                     <option key={client} value={client}>
                       {client}

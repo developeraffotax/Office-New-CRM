@@ -7,8 +7,6 @@ import {
   FaChartPie,
   FaChartLine,
 } from "react-icons/fa";
-import { IoIosArrowDropdown } from "react-icons/io";
-import { IoIosArrowDropup } from "react-icons/io";
 
 export default function Sales({
   salesData,
@@ -16,7 +14,7 @@ export default function Sales({
   selectedYear,
   uniqueClients,
 }) {
-  console.log("salesData", salesData);
+  // console.log("salesData", salesData);
   const [filteredTotalLeads, setFilteredTotalLeads] = useState(0);
   const [filteredTotalProposals, setFilteredTotalProposals] = useState(0);
   const [filteredTotalLeadProposal, setFilteredTotalLeadProposal] = useState(0);
@@ -102,13 +100,15 @@ export default function Sales({
 
   useEffect(() => {
     setProgressLead(
-      filterPPC(salesData.progressleads, selectedMonth, selectedYear)
+      filterPPC(salesData.totalLeads, selectedMonth, selectedYear)
     );
     setWonLead(filterPPC(salesData.wonleads, selectedMonth, selectedYear));
   }, [selectedMonth, selectedYear, salesData]);
 
   const progressleadTotal = progressLead?.length;
   const wonleadTotal = wonLead?.length;
+
+  console.log("PPC Conversion:", progressLead, wonLead);
 
   // --------------CLient Filter------------->
   const [inactiveClient, setInactiveClient] = useState([]);
@@ -205,8 +205,6 @@ export default function Sales({
   // Inactive Client Percentage
   const InactiveClientPercentage =
     (inactiveClient?.length / uniqueClients) * 100;
-
-  console.log("UniqueCLient", uniqueClients);
 
   // --------------Total Leads------------
   const [leadsChartData, setLeadsChartData] = useState({
@@ -513,7 +511,7 @@ export default function Sales({
 
     // --------------PPC Lead--------->
     // Filter proposals based on selected month and year
-    const filteredPPCLead = salesData.activeleadsTotal.filter((proposal) => {
+    const filteredPPCLead = salesData.totalLeads.filter((proposal) => {
       const ppcLeadDate = dayjs(proposal.createdAt);
       return (
         (!selectedYear || ppcLeadDate.year() === parseInt(selectedYear)) &&

@@ -20,6 +20,7 @@ export default function Clients({
   const [fee, setFee] = useState("");
   const [selectChart, setSelectChart] = useState("area");
   const [filterWorkFlow, setFilterWorkFlow] = useState([]);
+  const [filterUniqueClient, setFilteredUniqueClient] = useState([]);
 
   const departments = [
     "Bookkeeping",
@@ -30,6 +31,29 @@ export default function Clients({
     "Company Sec",
     "Address",
   ];
+
+  // ---------Filter Unique Clients------>
+  useEffect(() => {
+    const filteredData = uniqueClients?.filter((item) => {
+      const createdAtDate = new Date(item.currentDate);
+      const itemMonth = createdAtDate.getMonth() + 1;
+      const itemYear = createdAtDate.getFullYear();
+
+      if (selectedMonth && selectedYear) {
+        return (
+          itemMonth === parseInt(selectedMonth) &&
+          itemYear === parseInt(selectedYear)
+        );
+      } else if (selectedMonth) {
+        return itemMonth === parseInt(selectedMonth);
+      } else if (selectedYear) {
+        return itemYear === parseInt(selectedYear);
+      } else {
+        return true;
+      }
+    });
+    setFilteredUniqueClient(filteredData);
+  }, [selectedMonth, selectedYear, uniqueClients]);
 
   //------------ Department wise Total-------->
   useEffect(() => {
@@ -383,12 +407,12 @@ export default function Clients({
         <Loader />
       ) : (
         <div className="flex flex-col gap-4 w-full">
-          <div className="flex gap-4 overflow-x-auto py-4 mx-auto max-w-[98%] hidden1 scroll-smooth">
-            <div className="flex flex-col items-center min-w-[12rem] p-6 cursor-pointer bg-gradient-to-br from-rose-100 via-rose-200 to-rose-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
+          <div className="flex gap-4 overflow-x-auto py-4 mx-auto max-w-[100%] hidden1 scroll-smooth">
+            <div className="flex flex-col items-start min-w-[10rem] p-4 cursor-pointer bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
               <h2 className="text-xl font-bold text-gray-800 text-center mb-3">
                 Departments
               </h2>
-              <div className="flex items-center flex-col justify-center w-full gap-4">
+              <div className="flex items-start flex-col  w-full gap-4">
                 <p className="text-xl  font-bold text-gray-700">
                   <span className="font-semibold text-gray-900">
                     Total Clients:
@@ -404,7 +428,7 @@ export default function Clients({
             {clients?.map((job) => (
               <div
                 key={job._id}
-                className={`flex flex-col items-center min-w-[12rem]  p-6 cursor-pointer transition-transform duration-300 transform hover:scale-105 rounded-lg shadow-lg hover:shadow-xl ${
+                className={`flex flex-col items-center min-w-[11rem]  p-4 cursor-pointer transition-transform duration-300 transform hover:scale-105 rounded-lg shadow-lg hover:shadow-xl ${
                   job?.department === "Bookkeeping"
                     ? "bg-gradient-to-br from-orange-100 via-orange-200 to-orange-300"
                     : job?.department === "Payroll"
@@ -443,7 +467,7 @@ export default function Clients({
                 </div>
               </div>
             ))}
-            <div className="flex flex-col items-center min-w-[12rem]  p-6 cursor-pointer bg-gradient-to-br from-rose-100 via-rose-200 to-rose-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
+            <div className="flex flex-col items-center min-w-[11rem]  p-4 cursor-pointer bg-gradient-to-br from-rose-100 via-rose-200 to-rose-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
               <h2 className="text-lg font-medium text-gray-800 text-center mb-3">
                 Total
               </h2>
@@ -456,6 +480,14 @@ export default function Clients({
                   minimumFractionDigits: 0,
                   maximumFractionDigits: 2,
                 })}
+              </p>
+            </div>
+            <div className="flex flex-col items-center min-w-[11rem]  p-4 cursor-pointer bg-gradient-to-br from-lime-100 via-lime-200 to-lime-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
+              <h2 className="text-lg font-medium text-lime-900 text-center mb-3">
+                Unique Clients
+              </h2>
+              <p className="text-4xl font-bold text-gray-700 text-center">
+                {filterUniqueClient?.length}
               </p>
             </div>
           </div>

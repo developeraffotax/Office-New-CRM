@@ -166,8 +166,8 @@ export default function Leads({ selectedLead, selectedDepartment }) {
                           data={[
                             {
                               lead,
-                              totalHours: totals.totalHours.toFixed(2),
-                              totalFee: totals.totalFee.toFixed(2),
+                              totalHours: totals.totalHours.toFixed(0),
+                              totalFee: totals.totalFee.toFixed(0),
                               departmentCount: totals.departmentCount,
                               assignedDepartmentCount:
                                 totals.assignedDepartmentCount,

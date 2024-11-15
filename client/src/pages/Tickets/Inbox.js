@@ -35,7 +35,7 @@ export default function Inbox() {
   const [ids, setIds] = useState([]);
   const [deleteLoad, setDeleteLoad] = useState(false);
 
-  console.log("Emailid:", ids);
+  // console.log("Emailid:", ids);
   const navigate = useNavigate();
 
   const getEmail = async () => {

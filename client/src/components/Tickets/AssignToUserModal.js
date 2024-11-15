@@ -17,7 +17,7 @@ export default function AssignToUserModal({
   const [userName, setUserName] = useState([]);
   const [selectedUser, setSelectUser] = useState("");
   const [loading, setLoading] = useState(false);
-  console.log("singleEmail:", singleEmail);
+  // console.log("singleEmail:", singleEmail);
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
@@ -26,20 +26,26 @@ export default function AssignToUserModal({
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
       setUsers(
-        data?.users?.filter((user) => user.role?.access.includes("Tickets")) ||
-          []
+        data?.users?.filter((user) =>
+          user.role?.access?.some((item) =>
+            item?.permission?.includes("Tickets")
+          )
+        ) || []
       );
 
       setUserName(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Tickets"))
+          ?.filter((user) =>
+            user.role?.access.some((item) =>
+              item?.permission?.includes("Tickets")
+            )
+          )
           .map((user) => user.name)
       );
     } catch (error) {
       console.log(error);
     }
   };
-
   useEffect(() => {
     getAllUsers();
     // eslint-disable-next-line

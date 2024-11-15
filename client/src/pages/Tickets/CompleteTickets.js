@@ -7,7 +7,6 @@ import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
 import { IoRemoveCircle } from "react-icons/io5";
 import Layout from "../../components/Loyout/Layout";
-import { style } from "../../utlis/CommonStyle";
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
 import axios from "axios";
@@ -33,6 +32,8 @@ export default function CompleteTickets() {
   const commentStatusRef = useRef(null);
   const [commentTicketId, setCommentTicketId] = useState("");
   const [access, setAccess] = useState([]);
+
+  // console.log("Users:", users, userName);
 
   // Get Auth Access
   useEffect(() => {
@@ -87,13 +88,20 @@ export default function CompleteTickets() {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
       setUsers(
-        data?.users?.filter((user) => user.role?.access.includes("Tickets")) ||
-          []
+        data?.users?.filter((user) =>
+          user.role?.access?.some((item) =>
+            item?.permission?.includes("Tickets")
+          )
+        ) || []
       );
 
       setUserName(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Tickets"))
+          ?.filter((user) =>
+            user.role?.access.some((item) =>
+              item?.permission?.includes("Tickets")
+            )
+          )
           .map((user) => user.name)
       );
     } catch (error) {
@@ -591,7 +599,6 @@ export default function CompleteTickets() {
         Cell: ({ cell, row }) => {
           const createdAt = row.original.createdAt;
 
-          console.log("createdAt", createdAt);
           return (
             <div className="w-full flex  ">
               <p>{format(new Date(createdAt), "dd-MMM-yyyy")}</p>

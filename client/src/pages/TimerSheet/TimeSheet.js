@@ -1010,7 +1010,7 @@ export default function TimeSheet() {
         accessorKey: "companyName",
         minSize: 120,
         maxSize: 200,
-        size: 190,
+        size: 170,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -1398,8 +1398,8 @@ export default function TimeSheet() {
 
           return cellValue.startsWith(filterValue.toLowerCase());
         },
-        size: 220,
-        minSize: 200,
+        size: 200,
+        minSize: 180,
         maxSize: 400,
         grow: false,
       },
@@ -1477,7 +1477,7 @@ export default function TimeSheet() {
 
           return cellValue.startsWith(filterValue.toLowerCase());
         },
-        size: 300,
+        size: 260,
         minSize: 150,
         maxSize: 320,
         grow: false,
@@ -1556,6 +1556,7 @@ export default function TimeSheet() {
         },
         Cell: ({ cell, row }) => {
           const [holiday, setHoliday] = useState(cell.getValue());
+          const holidays = ["Company Holiday", "Personal Holiday"];
 
           const update = (timerId, holidayType) => {
             setHoliday(holidayType);
@@ -1629,7 +1630,16 @@ export default function TimeSheet() {
         : []),
     ],
     // eslint-disable-next-line
-    [auth, users, tableFilterData, filterData, timerData, userName, active]
+    [
+      auth,
+      users,
+      tableFilterData,
+      filterData,
+      timerData,
+      userName,
+      active,
+      holidays,
+    ]
   );
 
   // Display Time in Correct Day

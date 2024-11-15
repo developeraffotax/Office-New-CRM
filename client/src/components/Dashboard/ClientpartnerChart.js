@@ -137,8 +137,9 @@ const JobSourceClientPartnerDonutCharts = ({
         value={selected}
         className={`${style.input} w-[12rem] shadow-md drop-shadow-md`}
       >
-        <option value="client">Client</option>
+       
         <option value="partner">Partner</option>
+        <option value="client">Client</option>
       </select>
       {selected === "partner" ? (
         <div

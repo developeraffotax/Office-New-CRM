@@ -37,7 +37,7 @@ export default function Tickets() {
   const [commentTicketId, setCommentTicketId] = useState("");
   const [access, setAccess] = useState([]);
 
-  console.log("Email Data", emailData);
+  // console.log("Email Data", emailData);
 
   // Get Auth Access
   useEffect(() => {
@@ -634,7 +634,6 @@ export default function Tickets() {
         Cell: ({ cell, row }) => {
           const createdAt = row.original.createdAt;
 
-          console.log("createdAt", createdAt);
           return (
             <div className="w-full flex  ">
               <p>{format(new Date(createdAt), "dd-MMM-yyyy")}</p>

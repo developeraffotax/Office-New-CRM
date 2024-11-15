@@ -749,7 +749,7 @@ export const createDublicateJob = async (req, res) => {
 
     let yearEnd = new Date(isExisting.job.yearEnd);
     let jobDeadline = new Date(isExisting.job.jobDeadline);
-    let currDate = new Date(isExisting.currentDate);
+    let workDeadline = new Date(isExisting.job.workDeadline);
 
     if (
       isExisting.job.jobName === "Bookkeeping" ||
@@ -763,59 +763,41 @@ export const createDublicateJob = async (req, res) => {
       } else if (isExisting.job.jobName === "Payroll") {
         jobDeadline.setDate(jobDeadline.getDate() + 5);
       }
-      currDate.setMonth(currDate.getMonth() + 1); // Add 1 month
+      workDeadline.setMonth(workDeadline.getMonth() + 1); // Add 1 month
     } else if (isExisting.job.jobName === "Vat Return") {
       // Add 3 months
       yearEnd.setMonth(yearEnd.getMonth() + 3);
       jobDeadline.setDate(jobDeadline.getDate() + 37); // Add 37 days
-      currDate.setMonth(currDate.getMonth() + 3); // Add 3 months
+      workDeadline.setMonth(workDeadline.getMonth() + 3); // Add 3 months
     } else {
       // Add 12 months (1 year)
       yearEnd.setMonth(yearEnd.getMonth() + 12);
 
       // Specific adjustments for different job names
-      if (isExisting.job.jobName === "Personal Tax") {
+      if (isExisting.job.jobName.trim() === "Personal Tax") {
         jobDeadline.setDate(jobDeadline.getDate() + 301); // Add 301 days
-      } else if (isExisting.job.jobName === "Accounts") {
+      } else if (isExisting.job.jobName.trim() === "Accounts") {
         jobDeadline.setMonth(jobDeadline.getMonth() + 12); // Add 12 months
-      } else if (isExisting.job.jobName === "Company Sec") {
-        jobDeadline.setDate(jobDeadline.getMonth() + 12); // Add 1 year
-      } else if (isExisting.job.jobName === "Address") {
-        // Subtract 1 month from yearEnd for jobDeadline and currDate
+      } else if (isExisting.job.jobName.trim() === "Company Sec") {
+        jobDeadline.setMonth(jobDeadline.getMonth() + 12); // Add 1 year (12 months)
+      } else if (isExisting.job.jobName.trim() === "Address") {
+        // Subtract 1 month from yearEnd for jobDeadline and workDeadline
         jobDeadline.setMonth(yearEnd.getMonth() - 1);
-        currDate.setMonth(yearEnd.getMonth() - 1);
+        workDeadline.setMonth(yearEnd.getMonth() - 1);
       } else {
-        // Default case for other job names: add 12 months to jobDeadline and currDate
+        // Default case for other job names: add 12 months to jobDeadline and workDeadline
         jobDeadline.setMonth(jobDeadline.getMonth() + 12);
-        currDate.setMonth(currDate.getMonth() + 12);
+        workDeadline.setMonth(workDeadline.getMonth() + 12);
       }
     }
-
-    // if (
-    //   isExisting.job.jobName === "Bookkeeping" ||
-    //   isExisting.job.jobName === "Payroll"
-    // ) {
-    //   // Add 1 month
-    //   yearEnd.setMonth(yearEnd.getMonth() + 1); // 1 month
-    //   jobDeadline.setMonth(jobDeadline.getMonth() + 1); // if Bookkeeping 15 days,  if Payroll 5 days
-    //   currDate.setMonth(currDate.getMonth() + 1); // 1 month
-    // } else if (isExisting.job.jobName === "Vat Return") {
-    //   // Add 3 months
-    //   yearEnd.setMonth(yearEnd.getMonth() + 3); // 3 months
-    //   jobDeadline.setMonth(jobDeadline.getMonth() + 3); // 37 days
-    //   currDate.setMonth(currDate.getMonth() + 3); // 3 months
-    // } else {
-    //   // Add 12 months
-    //   yearEnd.setMonth(yearEnd.getMonth() + 12); // 1 year
-    //   jobDeadline.setMonth(jobDeadline.getMonth() + 12); // if (isExisting.job.jobName==="Personal Tax") then add 301 days, if (isExisting.job.jobName==="Accounts") then add 8 months , if (isExisting.job.jobName==="Company Sec") then add 14 days, // 1 year if (isExisting.job.jobName==="Address") then add 1 month before year end
-    //   currDate.setMonth(currDate.getMonth() + 12); // 1 year if (isExisting.job.jobName==="Address") then add 1 month before year end
-    // }
 
     // Update the job document with the new dates
     isExisting.job.yearEnd = yearEnd;
     isExisting.job.jobDeadline = jobDeadline;
-    isExisting.currentDate = currDate;
+    isExisting.job.workDeadline = workDeadline;
     isExisting.totalTime = "0s";
+
+    // console.log("Y,", yearEnd, "J,", jobDeadline, "W,", workDeadline);
 
     await isExisting.save();
 

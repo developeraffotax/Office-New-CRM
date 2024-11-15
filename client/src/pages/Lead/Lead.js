@@ -70,7 +70,7 @@ export default function Lead() {
   const [active, setActive] = useState(false);
   const [selectFilter, setSelectFilter] = useState("");
 
-  console.log("formData:", formData);
+  // console.log("formData:", formData);
 
   // -------Get All Leads-------
   const getAllLeads = async () => {
@@ -306,8 +306,6 @@ export default function Lead() {
       toast.error("Lead id is required!");
       return;
     }
-
-    console.log("updateData", updateData);
 
     try {
       const { data } = await axios.put(
@@ -691,8 +689,10 @@ export default function Lead() {
                 className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
                 <option value="">Select</option>
-                {departments.map((dep) => (
-                  <option value={dep}>{dep}</option>
+                {departments.map((dep, i) => (
+                  <option value={dep} key={i}>
+                    {dep}
+                  </option>
                 ))}
               </select>
             </div>
@@ -1161,7 +1161,6 @@ export default function Lead() {
         Cell: ({ cell, row }) => {
           const createdAt = row.original.createdAt;
 
-          console.log("createdAt", createdAt);
           return (
             <div className="w-full flex  ">
               <p>{format(new Date(createdAt), "dd-MMM-yyyy")}</p>
@@ -1721,7 +1720,6 @@ export default function Lead() {
       .getFilteredRowModel()
       .rows.map((row) => row.original);
 
-    console.log("Filtered Data:", filteredRows);
     setFilteredData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
 

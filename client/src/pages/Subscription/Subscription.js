@@ -29,7 +29,7 @@ export default function Subscription() {
   const subscriptions = ["Weekly", "Monthly", "Quarterly", "Yearly"];
   const states = ["Data", "Progress", "Queries", "Approval", "Submission"];
 
-  console.log("subscriptionData:", subscriptionData);
+  // console.log("subscriptionData:", subscriptionData);
 
   // -------Get Subscription Data-------
   const getAllSubscriptions = async () => {
@@ -1462,7 +1462,6 @@ export default function Subscription() {
       .getFilteredRowModel()
       .rows.map((row) => row.original);
 
-    console.log("Filtered Data:", filteredRows);
     setFilterData(filteredRows);
     // eslint-disable-next-line
   }, [table.getFilteredRowModel().rows]);

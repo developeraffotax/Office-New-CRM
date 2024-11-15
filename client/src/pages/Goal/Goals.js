@@ -58,7 +58,7 @@ export default function Goals() {
     "Manual Goal",
   ];
 
-  console.log("userName:", userName);
+  // console.log("userName:", userName);
 
   // -------Get All Proposal-------
   const getAllGoals = async () => {
@@ -1125,7 +1125,6 @@ export default function Goals() {
         accessorKey: "actions",
         header: "Actions",
         Cell: ({ cell, row }) => {
-          // console.log("Id:", row.original._id);
           return (
             <div className="flex items-center justify-center gap-3 w-full h-full">
               <span
@@ -1389,7 +1388,6 @@ export default function Goals() {
       .getFilteredRowModel()
       .rows.map((row) => row.original);
 
-    console.log("Filtered Data:", filteredRows);
     setFilterData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
 

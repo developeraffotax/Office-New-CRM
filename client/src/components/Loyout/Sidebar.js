@@ -38,20 +38,9 @@ export default function Sidebar({ hide, setHide }) {
     // exlint-disable-next-line
   }, [setActive]);
 
-  // Access
-  // const hasAccess = (section) => {
-  //   return user?.role?.access?.map((item) => item.permission === section);
-  // };
-
   const hasAccess = (section) => {
     return user?.role?.access?.some((item) => item.permission === section);
   };
-
-  // const handleLogout = () => {
-  //   setAuth({ ...auth, user: null, token: "" });
-  //   localStorage.removeItem("auth");
-  //   navigate("/");
-  // };
 
   return (
     <div className="w-full h-screen py-2 ">

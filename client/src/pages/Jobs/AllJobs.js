@@ -65,7 +65,6 @@ export default function AllJobs() {
     anyTimerRunning,
   } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [show, setShow] = useState(false);
   const [active, setActive] = useState("All");
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
@@ -116,7 +115,7 @@ export default function AllJobs() {
   const [timerId, setTimerId] = useState("");
   const [showInactive, setShowInactive] = useState(false);
 
-  console.log("rowSelection:", rowSelection);
+  // console.log("rowSelection:", rowSelection);
 
   // Extract the current path
   const currentPath = location.pathname;
@@ -346,7 +345,7 @@ export default function AllJobs() {
     const filteredData = tableData.filter(
       (item) =>
         item.job.jobName === value ||
-        item.job.jobStatus === value ||
+        item.job?.jobStatus === value ||
         item.job.jobHolder === value ||
         item._id === value
     );
@@ -386,7 +385,7 @@ export default function AllJobs() {
     if (dep === "All") {
       filteredData = tableData.filter(
         (item) =>
-          item.job.jobStatus === value ||
+          item.job?.jobStatus === value ||
           item.job.jobHolder === value ||
           getStatus(item.job.jobDeadline, item.job.yearEnd) === value ||
           getStatus(item.job.jobDeadline, item.job.yearEnd) === value
@@ -394,7 +393,7 @@ export default function AllJobs() {
     } else {
       filteredData = tableData.filter((item) => {
         const jobMatches = item.job.jobName === dep;
-        const statusMatches = item.job.jobStatus === value;
+        const statusMatches = item.job?.jobStatus === value;
         const holderMatches = item.job.jobHolder === value;
 
         return (
@@ -1655,11 +1654,14 @@ export default function AllJobs() {
         maxSize: 120,
         grow: false,
       },
-      //
+
+      // ----------Job Status----->
+
       {
-        accessorKey: "job.jobStatus",
+        accessorKey: "jobStatus",
+        accessorFn: (row) => row.job?.jobStatus || "",
         Header: ({ column }) => {
-          const jobStatus = [
+          const jobStatusOptions = [
             "Data",
             "Progress",
             "Queries",
@@ -1671,17 +1673,14 @@ export default function AllJobs() {
 
           useEffect(() => {
             column.setFilterValue("Progress");
-
-            // eslint-disable-next-line
           }, []);
+
           return (
-            <div className=" flex flex-col gap-[2px]">
+            <div className="flex flex-col gap-[2px]">
               <span
                 className="ml-1 cursor-pointer"
                 title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
+                onClick={() => column.setFilterValue("")}
               >
                 Job Status
               </span>
@@ -1691,7 +1690,7 @@ export default function AllJobs() {
                 className="font-normal h-[1.8rem] ml-1 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
                 <option value="">Select</option>
-                {jobStatus?.map((status, i) => (
+                {jobStatusOptions.map((status, i) => (
                   <option key={i} value={status}>
                     {status}
                   </option>
@@ -1702,7 +1701,6 @@ export default function AllJobs() {
         },
         Cell: ({ cell, row }) => {
           const statusValue = cell.getValue();
-
           return (
             <select
               value={statusValue}
@@ -1726,7 +1724,6 @@ export default function AllJobs() {
             </select>
           );
         },
-        // filterFn: "equals",
         filterFn: (row, columnId, filterValue) => {
           const cellValue = row.getValue(columnId);
           return (cellValue || "").toString() === filterValue.toString();
@@ -1745,6 +1742,8 @@ export default function AllJobs() {
         size: 110,
         grow: false,
       },
+
+      //
       {
         accessorKey: "job.lead",
         Header: ({ column }) => {

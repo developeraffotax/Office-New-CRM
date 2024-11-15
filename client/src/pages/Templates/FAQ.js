@@ -36,7 +36,7 @@ export default function FAQ({ setSelectedTab, selectedTab, access, page }) {
   const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
 
-  console.log("filteredFaq:", filteredFaq);
+  // console.log("filteredFaq:", filteredFaq);
 
   // --------------Get All Templates---------->
   const getAllFaqs = async () => {

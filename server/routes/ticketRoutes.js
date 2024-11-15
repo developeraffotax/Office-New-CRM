@@ -8,6 +8,7 @@ import {
   getAllInbox,
   getAllSendTickets,
   getCompleteTickets,
+  getDashboardTickets,
   getInboxDetail,
   getSingleEmailDetail,
   getTicketAttachments,
@@ -95,5 +96,8 @@ router.put("/markAsRead/inbox/email", markAsReadInboxEmail);
 
 // Assign Inbox email to User
 router.post("/assign/email", requiredSignIn, assignEmail);
+
+// Dashboard Tickets
+router.get("/dashboard/tickets", getDashboardTickets);
 
 export default router;

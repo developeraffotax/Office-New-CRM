@@ -2,10 +2,9 @@ import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { GoGoal } from "react-icons/go";
-import { MdDateRange, MdInsertComment } from "react-icons/md";
+import { MdDateRange } from "react-icons/md";
 import { RiLoaderFill, RiTimerLine } from "react-icons/ri";
 import { format } from "date-fns";
-// import { MdOutlineInsertComment } from "react-icons/md";
 import Loader from "../../utlis/Loader";
 import { Timer } from "../../utlis/Timer";
 import { useAuth } from "../../context/authContext";
@@ -20,6 +19,8 @@ import Swal from "sweetalert2";
 import { MdCheckCircle } from "react-icons/md";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import JobCommentModal from "./JobCommentModal";
+import { FaRegCopy } from "react-icons/fa";
+import CopyJobModel from "../../components/Modals/CopyJobModel";
 
 export default function JobDetail({
   clientId,
@@ -42,6 +43,7 @@ export default function JobDetail({
   const [subTaskLoading, setSubTaskLoading] = useState(false);
   const [subTaskData, setSubTaskData] = useState([]);
   const [timerId, setTimerId] = useState("");
+  const [openCopy, setOpenCopy] = useState(false);
 
   // ---------Stop Timer ----------->
   const handleStopTimer = () => {
@@ -256,6 +258,16 @@ export default function JobDetail({
             </span>
             <span
               className=""
+              title="Copy Job"
+              onClick={() => {
+                setJobId(clientDetail._id);
+                setOpenCopy(true);
+              }}
+            >
+              <FaRegCopy className="h-5 w-5 cursor-pointer text-sky-500 hover:text-sky-600" />
+            </span>
+            <span
+              className=""
               title="Complete Job"
               onClick={() => {
                 handleUpdateStatus();
@@ -355,24 +367,7 @@ export default function JobDetail({
                 />
               </span>
             </div>
-            {/*------------- Comment------- */}
-            {/* <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1 text-gray-500 w-[30%]">
-                <MdOutlineInsertComment className="h-4 w-4 text-gray-500" />{" "}
-                Comments
-              </span>
-              <span
-                className="text-[17px] font-medium text-gray-800 relative"
-                onClick={() => setActiveTab("comments")}
-              >
-                <span className=" absolute top-[-.5rem] right-[-.8rem] w-[1.1rem] h-[1.1rem] flex items-center justify-center font-medium rounded-full bg-green-500 text-white p-1 text-[12px]">
-                  10
-                </span>
-                <span className="text-[1rem] cursor-pointer  ">
-                  <MdInsertComment className="h-6 w-6 text-orange-500 hover:text-orange-600 " />
-                </span>
-              </span>
-            </div> */}
+
             {/*  */}
           </div>
           <hr className="h-[1.5px] w-full bg-gray-400 my-3" />
@@ -994,6 +989,22 @@ export default function JobDetail({
               </span>
               <EditJobModal
                 setIsOpen={setIsOpen}
+                allClientJobData={allClientJobData}
+                jobId={jobId}
+              />
+            </div>
+          )}
+          {/* Copy Job Modal */}
+          {openCopy && (
+            <div className="fixed top-0 left-0 w-full min-h-screen overflow-y-auto z-[999] bg-gray-100 flex items-center justify-center py-6  px-4">
+              <span
+                className="absolute top-[4px] right-[.8rem] cursor-pointer z-10 p-1 rounded-lg bg-white/50 hover:bg-gray-300/70 transition-all duration-150 flex items-center justify-center"
+                onClick={() => setOpenCopy(false)}
+              >
+                <CgClose className="h-5 w-5 text-black" />
+              </span>
+              <CopyJobModel
+                setIsOpen={setOpenCopy}
                 allClientJobData={allClientJobData}
                 jobId={jobId}
               />

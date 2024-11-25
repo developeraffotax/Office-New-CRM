@@ -21,6 +21,9 @@ import AddTimerModal from "./AddTimerModal";
 import { FaAngleLeft } from "react-icons/fa6";
 import { FaAngleRight } from "react-icons/fa6";
 import { LuImport } from "react-icons/lu";
+import ApexCharts from "react-apexcharts";
+import { BsPieChartFill } from "react-icons/bs";
+import RunningTimers from "./RunningTimers";
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -39,11 +42,12 @@ const csvConfig = mkConfig({
 export default function TimeSheet() {
   const { auth } = useAuth();
   const [timerData, setTimerData] = useState([]);
+  const [tableFilterData, setTableFilterDate] = useState([]);
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
+  const [userData, setUserData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [timerId, setTimerId] = useState("");
-  const [tableFilterData, setTableFilterDate] = useState([]);
   const [times, setTimes] = useState({
     monTotal: 0,
     tueTotal: 0,
@@ -72,8 +76,44 @@ export default function TimeSheet() {
   const [filterData, setFilterData] = useState([]);
   const [call, setCall] = useState(false);
   const [projects, setProjects] = useState([]);
+  const options = ["Chargeable", "Non-Chargeable"];
+  const [active, setActive] = useState("Weekly");
+  const selectDate = ["Weekly", "Monthly", "Yearly"];
+  // Month Filter
+  const [month, setMonth] = useState(new Date());
+  const [firstDayOfMonth, setFirstDayOfMonth] = useState(null);
+  const [lastDayOfMonth, setLastDayOfMonth] = useState(null);
+  const [strfdom, setStrfdom] = useState("");
+  const [strldom, setStrldom] = useState("");
+  // Yearly Filter
+  const [year, setYear] = useState(new Date());
+  const [firstDayOfYear, setFirstDayOfYear] = useState(null);
+  const [lastDayOfYear, setLastDayOfYear] = useState(null);
+  const [strfdoy, setStrfdoy] = useState("");
+  const [strldoy, setStrldoy] = useState("");
+  // Chart
+  const [chargeable, setChargeable] = useState(0);
+  const [nonChargeable, setNonChargeable] = useState(0);
+  const [chartOptions, setChartOptions] = useState({});
+  const [chartSeries, setChartSeries] = useState([0, 0]);
+  const [showGraph, setShowGraph] = useState(false);
+  const [totalCPercengate, setTotalCPercentage] = useState(0);
+  const [totalNPercengate, setTotalNPercentage] = useState(0);
+  const [access, setAccess] = useState([]);
+  const [isRunning, setIsRunning] = useState(false);
+  const holidays = ["Company Holiday", "Personal Holiday"];
 
-  console.log("Filter Data:", filterData);
+  // console.log("TableFilterData:", tableFilterData);
+
+  useEffect(() => {
+    if (auth.user) {
+      const filterAccess = auth.user.role.access
+        .filter((role) => role.permission === "Timesheet")
+        .flatMap((jobRole) => jobRole.subRoles);
+
+      setAccess(filterAccess);
+    }
+  }, [auth]);
 
   //   Get All Timer Data
   const getAllTimeSheetData = async () => {
@@ -98,15 +138,112 @@ export default function TimeSheet() {
     // eslint-disable-next-line
   }, []);
 
+  // -------------Filter Chargeable & Non-Chargeable-------->
+  useEffect(() => {
+    if (tableFilterData) {
+      const filteredData = tableFilterData.filter(
+        (entry) => !userName || entry.jobHolderName === userName
+      );
+      const chargeableCount = filteredData.reduce((count, entry) => {
+        return entry.activity === "Chargeable" ? count + 1 : count;
+      }, 0);
+
+      const nonChargeableCount = filteredData.reduce((count, entry) => {
+        return entry.activity === "Non-Chargeable" ? count + 1 : count;
+      }, 0);
+
+      setChargeable(chargeableCount);
+      setNonChargeable(nonChargeableCount);
+
+      // Update chart data and options
+      const total = chargeableCount + nonChargeableCount;
+      const chargeablePercentage = total ? (chargeableCount / total) * 100 : 0;
+      const nonChargeablePercentage = total
+        ? (nonChargeableCount / total) * 100
+        : 0;
+
+      setChartSeries([chargeablePercentage, nonChargeablePercentage]);
+
+      setChartOptions({
+        chart: {
+          type: "pie",
+        },
+        labels: ["Chargeable", "Non-Chargeable"],
+        colors: ["#008000", "#FF0000"],
+        dataLabels: {
+          formatter: (val) => `${val.toFixed(2)}%`,
+        },
+        legend: {
+          position: "bottom",
+        },
+      });
+    } else {
+      const filteredData = timerData.filter(
+        (entry) => !userName || entry.jobHolderName === userName
+      );
+      const chargeableCount = filteredData.reduce((count, entry) => {
+        return entry.activity === "Chargeable" ? count + 1 : count;
+      }, 0);
+
+      const nonChargeableCount = filteredData.reduce((count, entry) => {
+        return entry.activity === "Non-Chargeable" ? count + 1 : count;
+      }, 0);
+
+      setChargeable(chargeableCount);
+      setNonChargeable(nonChargeableCount);
+
+      // Update chart data and options
+      const total = chargeableCount + nonChargeableCount;
+      const chargeablePercentage = total ? (chargeableCount / total) * 100 : 0;
+      const nonChargeablePercentage = total
+        ? (nonChargeableCount / total) * 100
+        : 0;
+
+      setChartSeries([chargeablePercentage, nonChargeablePercentage]);
+
+      setChartOptions({
+        chart: {
+          type: "pie",
+        },
+        labels: ["Chargeable", "Non-Chargeable"],
+        colors: ["#008000", "#FF0000"],
+        dataLabels: {
+          formatter: (val) => `${val.toFixed(2)}%`,
+        },
+        legend: {
+          position: "bottom",
+        },
+      });
+    }
+  }, [userName, tableFilterData, timerData, active]);
+
+  // Percentage
+  useEffect(() => {
+    const totalEnteries = chargeable + nonChargeable;
+    setTotalCPercentage(((chargeable / totalEnteries) * 100).toFixed(1));
+    setTotalNPercentage(((nonChargeable / totalEnteries) * 100).toFixed(1));
+  }, [chargeable, nonChargeable]);
+
   //---------- Get All Users-----------
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers(
-        data?.users.map((user) => ({ name: user?.name, id: user?._id }))
-      );
+
+      auth?.user?.role?.name === "Admin"
+        ? setUsers(
+            data?.users.map((user) => ({ name: user?.name, id: user?._id }))
+          )
+        : setUsers(
+            data?.users
+              .filter((user) => user?.role?.name !== "Admin")
+              .map((user) => ({ name: user?.name, id: user?._id }))
+          );
+      // setUsers(
+      //   data?.users.map((user) => ({ name: user?.name, id: user?._id }))
+      // );
+      setUserData(data?.users);
     } catch (error) {
       console.log(error);
     }
@@ -316,8 +453,87 @@ export default function TimeSheet() {
 
       setTableFilterDate(filteredData); // Update the filtered data for the table
     }
-  }, [week, timerData, userName]);
+  }, [week, timerData, userName, active]);
 
+  // ------------------Filter By Month---------->
+  useEffect(() => {
+    if (active === "Monthly" && month) {
+      const today = month;
+
+      // First and last day of current month
+      const fdom = new Date(today.getFullYear(), today.getMonth(), 1);
+      const ldom = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+      setFirstDayOfMonth(fdom);
+      setLastDayOfMonth(ldom);
+      setStrfdom(formatDate(fdom));
+      setStrldom(formatDate(ldom));
+
+      const filteredByMonth = timerData.filter((entry) => {
+        const entryDate = new Date(entry.date).setHours(0, 0, 0, 0);
+        const fdomWithoutTime = new Date(fdom).setHours(0, 0, 0, 0);
+        const ldomWithoutTime = new Date(ldom).setHours(23, 59, 59, 999);
+
+        return (
+          entryDate >= fdomWithoutTime &&
+          entryDate <= ldomWithoutTime &&
+          (!userName || entry.jobHolderName === userName)
+        );
+      });
+
+      setTableFilterDate(filteredByMonth);
+    }
+  }, [month, timerData, userName, active]);
+
+  // Handle previous and next navigation for months
+  const goToPrevMonth = () => {
+    setMonth(new Date(month.setMonth(month.getMonth() - 1)));
+  };
+
+  const goToNextMonth = () => {
+    setMonth(new Date(month.setMonth(month.getMonth() + 1)));
+  };
+
+  // ---------------Year-wise filter------------------>
+  useEffect(() => {
+    if (active === "Yearly" && year) {
+      const today = year;
+
+      // First and last day of current year
+      const fdoy = new Date(today.getFullYear(), 0, 1);
+      const ldoy = new Date(today.getFullYear(), 11, 31);
+
+      setFirstDayOfYear(fdoy);
+      setLastDayOfYear(ldoy);
+      setStrfdoy(formatDate(fdoy));
+      setStrldoy(formatDate(ldoy));
+
+      const filteredByYear = timerData.filter((entry) => {
+        const entryDate = new Date(entry.date).setHours(0, 0, 0, 0);
+        const fdoyWithoutTime = new Date(fdoy).setHours(0, 0, 0, 0);
+        const ldoyWithoutTime = new Date(ldoy).setHours(23, 59, 59, 999);
+
+        return (
+          entryDate >= fdoyWithoutTime &&
+          entryDate <= ldoyWithoutTime &&
+          (!userName || entry.jobHolderName === userName)
+        );
+      });
+
+      setTableFilterDate(filteredByYear);
+    }
+  }, [year, timerData, userName, active]);
+
+  // Handle previous and next navigation for years
+  const goToPrevYear = () => {
+    setYear(new Date(year.setFullYear(year.getFullYear() - 1)));
+  };
+
+  const goToNextYear = () => {
+    setYear(new Date(year.setFullYear(year.getFullYear() + 1)));
+  };
+
+  // ---------Format Date----------->
   const formatDate = (date) => {
     const ye = new Intl.DateTimeFormat("en", { year: "numeric" }).format(date);
     const mo = new Intl.DateTimeFormat("en", { month: "short" }).format(date);
@@ -385,8 +601,6 @@ export default function TimeSheet() {
     const filteredData = tableFilterData.filter((item) => {
       const itemDate = item.date ? normalizeDate(new Date(item.date)) : null;
 
-      console.log("Filter Date:", itemDate);
-
       // Check if the item date falls within the startDate and endDate range
       const matchDate =
         itemDate && startDate && endDate
@@ -412,14 +626,14 @@ export default function TimeSheet() {
   // -----------Download in CSV------>
   const flattenData = (data) => {
     return data.map((row) => ({
-      date: row.date || "",
-      JobHolderName: row.JobHolderName || "",
+      date: format(new Date(row.date), "dd-MMM-yyyy") || "",
+      JobHolderName: row.jobHolderName || "",
+      activity: row.activity || "",
       companyName: row.companyName || "",
       clientName: row.clientName || "",
-      projectName: row.projectName || "",
       department: row.department || "",
-      startTime: row.startTime || "",
-      endTime: row.endTime || "",
+      startTime: format(new Date(row.startTime), "HH:mm:ss") || "",
+      endTime: format(new Date(row.endTime), "HH:mm:ss") || "",
       type: row.type || "",
       note: row.note || "",
       task: row.task || "",
@@ -427,7 +641,7 @@ export default function TimeSheet() {
   };
 
   const handleExportData = () => {
-    const csvData = flattenData(timerData);
+    const csvData = flattenData(tableFilterData);
     const csv = generateCsv(csvConfig)(csvData);
     download(csvConfig)(csv);
   };
@@ -498,6 +712,22 @@ export default function TimeSheet() {
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
+    }
+  };
+
+  // Update Holiday
+  const updateHoliday = async (timerId, holidayType) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/timer/update/holiday/${timerId}`,
+        { holiday: holidayType }
+      );
+      if (data) {
+        toast.success("Holiday Updated!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong!");
     }
   };
 
@@ -583,7 +813,6 @@ export default function TimeSheet() {
           );
         },
         filterFn: (row, columnId, filterValue) => {
-          console.log("Filter Data:=>", row, columnId, filterValue);
           const cellValue = row.getValue(columnId);
           if (!cellValue) return false;
 
@@ -662,21 +891,25 @@ export default function TimeSheet() {
             setUsername(user);
 
             // eslint-disable-next-line
-          }, [user]);
+          }, []);
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
                 className="ml-1 cursor-pointer"
                 title="Clear Filter"
                 onClick={() => {
-                  column.setFilterValue("");
-                  setCall(true);
+                  if (
+                    auth?.user?.role.name === "Admin" ||
+                    access.includes("Job-holder")
+                  ) {
+                    column.setFilterValue("");
+                  }
                 }}
               >
                 Job Holder
               </span>
               {(auth?.user?.role.name === "Admin" ||
-                auth?.user?.role?.name === "Sr. Accountant") && (
+                access.includes("Job-holder")) && (
                 <select
                   value={column.getFilterValue()}
                   onChange={(e) => {
@@ -720,10 +953,64 @@ export default function TimeSheet() {
         grow: false,
       },
       {
+        accessorKey: "activity",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Activity
+              </span>
+
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                }}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {options?.map((activity, i) => (
+                  <option key={i} value={activity}>
+                    {activity}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const activity = row.original.activity;
+
+          return (
+            <div className="w-full flex ">
+              <div className="">
+                <span className="text-center">{activity}</span>
+              </div>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+          return (cellValue || "").toString() === filterValue.toString();
+        },
+        filterSelectOptions: options.map((activity) => activity || ""),
+        filterVariant: "select",
+        size: 120,
+        minSize: 80,
+        maxSize: 130,
+        grow: false,
+      },
+      {
         accessorKey: "companyName",
         minSize: 120,
         maxSize: 200,
-        size: 190,
+        size: 170,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -1111,8 +1398,8 @@ export default function TimeSheet() {
 
           return cellValue.startsWith(filterValue.toLowerCase());
         },
-        size: 220,
-        minSize: 200,
+        size: 200,
+        minSize: 180,
         maxSize: 400,
         grow: false,
       },
@@ -1190,7 +1477,7 @@ export default function TimeSheet() {
 
           return cellValue.startsWith(filterValue.toLowerCase());
         },
-        size: 300,
+        size: 260,
         minSize: 150,
         maxSize: 320,
         grow: false,
@@ -1238,8 +1525,71 @@ export default function TimeSheet() {
         maxSize: 90,
         grow: false,
       },
+      {
+        accessorKey: "holiday",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Holidays
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {holidays?.map((holiday, i) => (
+                  <option key={i} value={holiday}>
+                    {holiday}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const [holiday, setHoliday] = useState(cell.getValue());
+          const holidays = ["Company Holiday", "Personal Holiday"];
+
+          const update = (timerId, holidayType) => {
+            setHoliday(holidayType);
+            updateHoliday(timerId, holidayType);
+          };
+
+          return (
+            <select
+              value={holiday || ""}
+              className="w-full h-[2rem] rounded-md border-none  outline-none"
+              onChange={(e) => update(row.original?._id, e.target.value)}
+            >
+              <option value="."></option>
+              {holidays?.map((holi, i) => (
+                <option value={holi} key={i}>
+                  {holi}
+                </option>
+              ))}
+            </select>
+          );
+        },
+        filterFn: "equals",
+        filterSelectOptions: holidays?.map((holiday) => holiday),
+        filterVariant: "select",
+        size: 140,
+        minSize: 100,
+        maxSize: 150,
+        grow: false,
+      },
+      // access.includes("Job-holder")
       ...(auth?.user?.role?.name === "Admin" ||
-      auth?.user?.role?.name === "Sr. Accountant"
+      access.includes("Edit") ||
+      access.includes("Delete")
         ? [
             {
               accessorKey: "actions",
@@ -1248,24 +1598,29 @@ export default function TimeSheet() {
                 const timerId = row.original._id;
                 return (
                   <div className="flex items-center justify-center gap-3 w-full h-full">
-                    <span
-                      className="text-[1rem] cursor-pointer"
-                      title="Edit this column"
-                      onClick={() => {
-                        setTimerId(timerId);
-                        setIsOpen(true);
-                      }}
-                    >
-                      <AiOutlineEdit className="h-5 w-5 text-cyan-600 " />
-                    </span>
-
-                    <span
-                      className="text-[1rem] cursor-pointer"
-                      title="Delete Task!"
-                      onClick={() => handleDeleteTaskConfirmation(timerId)}
-                    >
-                      <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
-                    </span>
+                    {(auth?.user?.role?.name === "Admin" ||
+                      access.includes("Edit")) && (
+                      <span
+                        className="text-[1rem] cursor-pointer"
+                        title="Edit this column"
+                        onClick={() => {
+                          setTimerId(timerId);
+                          setIsOpen(true);
+                        }}
+                      >
+                        <AiOutlineEdit className="h-5 w-5 text-cyan-600 " />
+                      </span>
+                    )}
+                    {(auth?.user?.role?.name === "Admin" ||
+                      access.includes("Delete")) && (
+                      <span
+                        className="text-[1rem] cursor-pointer"
+                        title="Delete Task!"
+                        onClick={() => handleDeleteTaskConfirmation(timerId)}
+                      >
+                        <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
+                      </span>
+                    )}
                   </div>
                 );
               },
@@ -1275,7 +1630,16 @@ export default function TimeSheet() {
         : []),
     ],
     // eslint-disable-next-line
-    [auth, users, tableFilterData, userName]
+    [
+      auth,
+      users,
+      tableFilterData,
+      filterData,
+      timerData,
+      userName,
+      active,
+      holidays,
+    ]
   );
 
   // Display Time in Correct Day
@@ -1344,11 +1708,11 @@ export default function TimeSheet() {
           xl: "490px",
         },
         "@media (min-width: 1500px) and (max-width: 1800px)": {
-          maxHeight: "550px",
+          maxHeight: "650px",
         },
 
         "@media (min-width: 1800px)": {
-          maxHeight: "720px",
+          maxHeight: "740px",
         },
       },
     },
@@ -1360,8 +1724,6 @@ export default function TimeSheet() {
     enableColumnResizing: true,
     enableTopToolbar: true,
     enableBottomToolbar: true,
-    // enableEditing: true,
-    // state: { isLoading: loading },
 
     enablePagination: true,
     initialState: {
@@ -1374,7 +1736,7 @@ export default function TimeSheet() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1432,51 +1794,91 @@ export default function TimeSheet() {
     },
   });
 
-  // // Access the row data
-  // const allRowData = table.getRowModel().rows.map((row) => row.original);
-  // console.log("allRowData:", allRowData);
-
   return (
     <Layout>
       <div className=" relative w-full h-[100%] py-4 px-2 sm:px-4 flex flex-col gap-2  ">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className=" text-xl sm:text-2xl font-semibold ">Timesheet</h1>
+          <div className="relative flex items-center gap-4">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
+              Timesheet
+            </h1>
             <div className="flex items-center gap-2">
-              <span
-                className={` p-[2px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
-                onClick={() => {
-                  // setActive("All");
-                  // setSelectedUser("");
-                  // setSelectedComapany("");
-                  // setSelectedDepartment("");
-                  // setSelectedDay("");
-                  // setFilterData("");
-                  setUsername("");
-                  handleClearFilters();
-                }}
-                title="Clear filters"
-              >
-                <IoClose className="h-6 w-6  cursor-pointer" />
-              </span>
-            </div>
-            {/*-------- Week Wise Filter---------- */}
-
-            <div className="flex items-center justify-center">
-              <div
-                className="mx-2"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {/* Previous Week Button */}
-                <button
-                  title={`${strfdopw && strfdopw} to ${strldopw && strldopw}`}
+              {(auth?.user?.role.name === "Admin" ||
+                access.includes("Job-holder")) && (
+                <span
+                  className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
                   onClick={() => {
-                    setWeek(new Date(firstDayOfPrevWeek));
+                    setUsername("");
+                    handleClearFilters();
                   }}
+                  title="Clear filters"
+                >
+                  <IoClose className="h-6 w-6 text-white" />
+                </span>
+              )}
+            </div>
+            {/* Select */}
+            <select
+              value={active}
+              onChange={(e) => setActive(e.target.value)}
+              className={`w-[6rem] h-[2.1rem] border-2 border-orange-500 outline-none rounded-md cursor-pointer `}
+            >
+              {/* <option value="">Select Activity</option> */}
+              {selectDate?.map((act, i) => (
+                <option key={i} value={act}>
+                  {act}
+                </option>
+              ))}
+            </select>
+            {/*-------- Week Wise Navigation---------- */}
+            {active === "Weekly" && (
+              <div className="flex items-center justify-center">
+                <div
+                  className="mx-2"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {/* Previous Week Button */}
+                  <button
+                    title={`${strfdopw && strfdopw} to ${strldopw && strldopw}`}
+                    onClick={() => {
+                      setWeek(new Date(firstDayOfPrevWeek));
+                    }}
+                    className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
+                  >
+                    <FaAngleLeft className="h-5 w-5 text-white" />
+                  </button>
+
+                  <div className="mx-2">
+                    <p>
+                      Entries From {strfdow && strfdow} to {strldow && strldow}
+                    </p>
+                  </div>
+
+                  {/* Next Week Button */}
+                  <button
+                    title={`${strfdonw && strfdonw} to ${strldonw && strldonw}`}
+                    onClick={() => {
+                      setWeek(new Date(firstDayOfNextWeek));
+                    }}
+                    className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
+                  >
+                    <FaAngleRight className="h-5 w-5 text-white" />
+                  </button>
+                </div>
+              </div>
+            )}
+            {/* -----------------Monthly Navigation------------- */}
+            {active === "Monthly" && (
+              <div className="flex items-center justify-center">
+                <button
+                  title={`Previous Month: ${strfdom && strfdom} to ${
+                    strldom && strldom
+                  }`}
+                  onClick={goToPrevMonth}
                   className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
                 >
                   <FaAngleLeft className="h-5 w-5 text-white" />
@@ -1484,32 +1886,95 @@ export default function TimeSheet() {
 
                 <div className="mx-2">
                   <p>
-                    Entries From {strfdow && strfdow} to {strldow && strldow}
+                    Month: {strfdom && strfdom} to {strldom && strldom}
                   </p>
                 </div>
 
-                {/* Next Week Button */}
                 <button
-                  title={`${strfdonw && strfdonw} to ${strldonw && strldonw}`}
-                  onClick={() => {
-                    setWeek(new Date(firstDayOfNextWeek));
-                  }}
+                  title={`Next Month: ${strfdom && strfdom} to ${
+                    strldom && strldom
+                  }`}
+                  onClick={goToNextMonth}
                   className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
                 >
                   <FaAngleRight className="h-5 w-5 text-white" />
                 </button>
               </div>
-            </div>
+            )}
+            {/*----------------- Yearly Navigation---------------- */}
+            {active === "Yearly" && (
+              <div className="flex items-center justify-center">
+                <button
+                  title={`Previous Year: ${strfdoy && strfdoy} to ${
+                    strldoy && strldoy
+                  }`}
+                  onClick={goToPrevYear}
+                  className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
+                >
+                  <FaAngleLeft className="h-5 w-5 text-white" />
+                </button>
+
+                <div className="mx-2">
+                  <p>
+                    Year: {strfdoy && strfdoy} to {strldoy && strldoy}
+                  </p>
+                </div>
+
+                <button
+                  title={`Next Year: ${strfdoy && strfdoy} to ${
+                    strldoy && strldoy
+                  }`}
+                  onClick={goToNextYear}
+                  className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
+                >
+                  <FaAngleRight className="h-5 w-5 text-white" />
+                </button>
+              </div>
+            )}
+
+            <span
+              onClick={() => setShowGraph(!showGraph)}
+              className=" p-1 rounded-md hover:shadow-md transition-all duration-300 cursor-pointer text-orange-500 hover:text-orange-600 bg-gray-200/60 hover:bg-gray-200/80 border"
+            >
+              <BsPieChartFill className="h-6 w-6" />
+            </span>
+            {/* ---------ApixChart------ */}
+
+            {showGraph && (
+              <div className="relative">
+                <div className=" absolute top-[0rem] left-[4rem] z-20 py-2 px-4 rounded-md shadow-md bg-white">
+                  <ApexCharts
+                    options={chartOptions}
+                    series={chartSeries}
+                    type="pie"
+                    width={350}
+                  />
+                </div>
+              </div>
+            )}
           </div>
           {/* ----------Add Manual Buttons---------- */}
           <div className="flex items-center gap-4">
             <button
-              className={`w-[3rem] h-[2.2rem] flex items-center justify-center rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
+              className={`px-4 h-[2.2rem] flex items-center justify-center gap-1 rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
               onClick={handleExportData}
-              title="Import Date"
+              title="Export Date"
             >
-              <LuImport className="h-6 w-6 " />
+              <LuImport className="h-6 w-6 " /> Export
             </button>
+            {/* auth.user.name === "Salman" ||
+              auth.user.name === "M Salman" || */}
+            {(auth.user.role.name === "Admin" ||
+              access.includes("Tracker")) && (
+              <button
+                className={`${style.button1} text-[15px] `}
+                onClick={() => setIsRunning(true)}
+                style={{ padding: ".4rem 1rem" }}
+                title="All Running Timers"
+              >
+                Running Timers
+              </button>
+            )}
             <button
               className={`${style.button1} text-[15px] `}
               onClick={() => setIsOpen(true)}
@@ -1528,7 +1993,7 @@ export default function TimeSheet() {
           </div>
         ) : (
           <div
-            className={`w-full ${
+            className={`w-full mt-4 ${
               timerData.length >= 14 ? "min-h-[10vh]" : "min-h-[60vh]"
             } relative `}
           >
@@ -1540,7 +2005,7 @@ export default function TimeSheet() {
 
         {/* ---------------Total Time---------------- */}
 
-        <div className="w-full absolute bottom-4 left-0 px-4 z-[20] grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-8 gap-4 2xl:gap-5">
+        <div className="w-full absolute bottom-4 left-0 px-4 z-[20] grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-9 gap-4 2xl:gap-5">
           <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
             <h4 className="text-[16px] font-medium">Monday</h4>
             <span className="text-[15px]">{times?.monTotal}</span>
@@ -1569,13 +2034,25 @@ export default function TimeSheet() {
             <h4 className="text-[16px] font-medium">Sunday</h4>
             <span className="text-[15px]">{times?.sunTotal}</span>
           </div>
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-orange-500 hover:bg-orange-600 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">Week-Total</h4>
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-orange-600 hover:bg-orange-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">
+              {active === "Weekly"
+                ? "Week-Total"
+                : active === "Monthly"
+                ? "Month-Total"
+                : "Year-Total"}
+            </h4>
             <span className="text-[15px]">{times?.weekTotal}</span>
+          </div>
+          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-sky-600 hover:bg-sky-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+            <h4 className="text-[16px] font-medium">Chargeable</h4>
+            <span className="text-[15px]">
+              {totalCPercengate > 0 ? totalCPercengate : 0} %
+            </span>
           </div>
         </div>
 
-        {/* -----------Add Task-------------- */}
+        {/* -----------Add Timer Manual-------------- */}
         {isOpen && (
           <div className="fixed top-0 left-0 w-full h-[112vh] z-[999] bg-gray-300/70 flex items-center justify-center py-6  px-4">
             <AddTimerModal
@@ -1586,6 +2063,13 @@ export default function TimeSheet() {
               setTimerId={setTimerId}
               getAllTimeSheetData={getAllTimeSheetData}
             />
+          </div>
+        )}
+
+        {/* -----------All Running Timers-------------- */}
+        {isRunning && (
+          <div className="fixed top-0 left-0 w-full h-[112vh] z-[999] bg-gray-50 flex items-center justify-center ">
+            <RunningTimers users={userData} setIsRunning={setIsRunning} />
           </div>
         )}
       </div>

@@ -15,10 +15,22 @@ export const startTimer = async (req, res) => {
       projectName,
       task,
       companyName,
+      holiday,
     } = req.body;
     const startTime = new Date().toISOString();
 
     const user = req.user.user.name;
+    const isTimerRunning = await timerModel.findOne({
+      clientId: req.user.user._id,
+      isRunning: true,
+    });
+
+    if (isTimerRunning) {
+      return res.status(400).send({
+        success: false,
+        message: "Timer is already running in another task!",
+      });
+    }
 
     const newTimer = new timerModel({
       clientId,
@@ -32,6 +44,7 @@ export const startTimer = async (req, res) => {
       task,
       companyName,
       isRunning: true,
+      holiday,
     });
     await newTimer.save();
 
@@ -60,7 +73,7 @@ export const startTimer = async (req, res) => {
 export const stopTimer = async (req, res) => {
   try {
     const timerId = req.params.id;
-    const { note } = req.body;
+    const { note, activity } = req.body;
     const endTime = new Date().toISOString();
 
     const isExisting = await timerModel.findById({ _id: timerId });
@@ -73,13 +86,15 @@ export const stopTimer = async (req, res) => {
 
     const updateTimer = await timerModel.findByIdAndUpdate(
       { _id: isExisting._id },
-      { endTime: endTime, note: note, isRunning: false },
+      { endTime: endTime, note: note, activity: activity, isRunning: false },
       { new: true }
     );
 
+    removeStatus(updateTimer._id);
+
     res.status(200).send({
       success: true,
-      message: "Timer Stop",
+      message: "Timer stoped!",
       timer: updateTimer,
     });
   } catch (error) {
@@ -109,7 +124,7 @@ export const timerStatus = async (req, res) => {
     });
 
     if (!timer) {
-      return res.status(404).json({ message: "No timer found" });
+      return res.status(200).json({ message: "Timer not running!" });
     }
 
     res.status(200).send({
@@ -128,79 +143,7 @@ export const timerStatus = async (req, res) => {
 };
 
 // Get Total Time
-// export const totalTime = async (req, res) => {
-//   try {
-//     const timerId = req.params.id;
-//     const { jobId } = req.query;
 
-//     if (!timerId) {
-//       return res.status(400).send({
-//         success: false,
-//         message: "Timer Id is required!",
-//       });
-//     }
-
-//     const timer = await timerModel.findById({ _id: timerId });
-//     if (!timer) {
-//       return res.status(400).send({
-//         success: false,
-//         message: "Timer not found!",
-//       });
-//     }
-
-//     if (!timer.startTime || !timer.endTime) {
-//       return res.status(400).json({ message: "Timer has not ended" });
-//     }
-
-//     const startTime = new Date(timer.startTime);
-//     const endTime = new Date(timer.endTime);
-//     const totalTimeInSeconds = (endTime - startTime) / 1000;
-
-//     let newTime;
-//     if (totalTimeInSeconds < 3600) {
-//       const totalTimeInMinutes = totalTimeInSeconds / 60;
-//       newTime = `${totalTimeInMinutes.toFixed(0)}m`;
-//     } else {
-//       const totalTimeInHours = totalTimeInSeconds / 3600;
-//       newTime = `${totalTimeInHours.toFixed(0)}h`;
-//     }
-
-//     const job = await jobsModel.findById(jobId);
-
-//     if (job) {
-//       // Update Time in Job
-//       await jobsModel.findByIdAndUpdate(
-//         { _id: jobId },
-//         { $set: { totalTime: newTime } },
-//         { new: true }
-//       );
-//     }
-
-//     const task = await taskModel.findById(jobId);
-
-//     if (task) {
-//       // Update Total Time in Task
-//       await taskModel.findByIdAndUpdate(
-//         { _id: jobId },
-//         { $set: { estimate_Time: newTime } },
-//         { new: true }
-//       );
-//     }
-
-//     res.status(200).send({
-//       success: true,
-//       message: "Total time calculated successfully!",
-//       totalTime: responseMessage,
-//     });
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).send({
-//       success: false,
-//       message: "Error in total time controller",
-//       error,
-//     });
-//   }
-// };
 export const totalTime = async (req, res) => {
   try {
     const timerId = req.params.id;
@@ -316,7 +259,7 @@ export const totalTime = async (req, res) => {
 // Add Timer Status
 export const addTimerStatus = async (req, res) => {
   try {
-    const { userId, taskName, pageName, taskLink, taskId } = req.body;
+    const { userId, taskName, pageName, taskLink, taskId, timerId } = req.body;
     if (!userId || !taskName || !pageName || !taskLink) {
       return res.status(400).send({
         success: false,
@@ -328,7 +271,7 @@ export const addTimerStatus = async (req, res) => {
     if (isExisting) {
       return res.status(400).send({
         success: false,
-        message: "Timer task is already exist!",
+        message: "Timer task is already running!",
       });
     }
 
@@ -338,6 +281,8 @@ export const addTimerStatus = async (req, res) => {
       pageName,
       taskLink,
       taskId,
+      isRunning: true,
+      timerId,
     });
 
     res.status(200).send({
@@ -382,6 +327,17 @@ export const removeTimerStatus = async (req, res) => {
   }
 };
 
+const removeStatus = async (timerId) => {
+  if (!timerId) {
+    return res.status(400).send({
+      success: false,
+      message: "Timer id is required!",
+    });
+  }
+
+  await timerStatusModel.findOneAndDelete({ timerId: timerId });
+};
+
 // Get Task Timer Status
 export const getTimerStatus = async (req, res) => {
   try {
@@ -392,7 +348,10 @@ export const getTimerStatus = async (req, res) => {
         message: "User id is required!",
       });
     }
-    const timerStatus = await timerStatusModel.findOne({ userId: userId });
+    const timerStatus = await timerStatusModel.findOne({
+      userId: userId,
+      isRunning: true,
+    });
 
     res.status(200).send({
       success: true,
@@ -445,6 +404,7 @@ export const addTimerMannually = async (req, res) => {
       task,
       note,
       companyName,
+      activity,
     } = req.body;
 
     const user = req.user.user.name;
@@ -461,6 +421,7 @@ export const addTimerMannually = async (req, res) => {
       note,
       companyName,
       type: "Manual",
+      activity,
     });
     res.status(200).send({
       success: true,
@@ -491,6 +452,7 @@ export const updateTimer = async (req, res) => {
       task,
       note,
       companyName,
+      activity,
     } = req.body;
 
     const isExist = await timerModel.findById(timerId);
@@ -513,7 +475,8 @@ export const updateTimer = async (req, res) => {
         clientName: clientName || isExist.clientName,
         projectName: projectName || isExist.projectName,
         task: task || isExist.task,
-        note: note || note,
+        note: note || isExist.note,
+        activity: activity || isExist.activity,
       },
       { new: true }
     );
@@ -603,6 +566,84 @@ export const updateJobHolderName = async (req, res) => {
       success: false,
       message: "Error updating jobHolderName for timers!",
       error,
+    });
+  }
+};
+
+// All Running Timer
+export const runningTimers = async (req, res) => {
+  try {
+    const timers = await timerModel.find({ isRunning: true });
+
+    res.status(200).send({
+      success: true,
+      message: "List of running timers!",
+      timers: timers,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get running timers!",
+      error: error,
+    });
+  }
+};
+
+// Update holiday
+export const updateHoliday = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { holiday } = req.body;
+
+    const timer = await timerModel.findById(id);
+
+    if (!timer) {
+      return res.status(400).send({
+        success: false,
+        message: "Timer not found!",
+      });
+    }
+
+    const updateTimer = await timerModel.findByIdAndUpdate(
+      { _id: timer._id },
+      { $set: { holiday } },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Holiday updated!",
+      updateTimer: updateTimer,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error while update holiday!",
+      error: error,
+    });
+  }
+};
+
+// Get ALL Holidays
+export const getAllHolidays = async (req, res) => {
+  try {
+    const holidays = await timerModel
+      .find({
+        holiday: { $in: ["Company Holiday", "Personal Holiday"] },
+      })
+      .select(" jobHolderName holiday createdAt");
+
+    res.status(200).send({
+      success: true,
+      message: "All Holiday!",
+      holidays: holidays,
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error while get holidays!",
+      error: error,
     });
   }
 };

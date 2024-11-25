@@ -7,7 +7,7 @@ import { useAuth } from "../../context/authContext";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { TbLoader2 } from "react-icons/tb";
-import { MdCheckCircle, MdOutlineEdit } from "react-icons/md";
+import { MdOutlineEdit } from "react-icons/md";
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import AddTemplateModal from "../../components/Template/AddTemplateModal";
@@ -17,7 +17,6 @@ import {
   useMaterialReactTable,
 } from "material-react-table";
 import Loader from "../../utlis/Loader";
-import { format } from "date-fns";
 import { GrCopy } from "react-icons/gr";
 import { RxClipboardCopy } from "react-icons/rx";
 
@@ -42,8 +41,9 @@ export default function Template() {
   const [showTemplate, setShowTemplate] = useState(false);
   const [template, setTemplate] = useState("");
   const templateDetailref = useRef(null);
+  const [access, setAccess] = useState([]);
 
-  console.log("templateData:", templateData);
+  // console.log("templateData:", templateData);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -58,6 +58,17 @@ export default function Template() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Get Auth Access
+  useEffect(() => {
+    if (auth.user) {
+      const filterAccess = auth.user.role.access
+        .filter((role) => role.permission === "Templates")
+        .flatMap((jobRole) => jobRole.subRoles);
+
+      setAccess(filterAccess);
+    }
+  }, [auth]);
+
   // --------------Get All Templates---------->
   const getAllTemplates = async () => {
     setIsLoading(true);
@@ -65,7 +76,16 @@ export default function Template() {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/templates/get/all/template`
       );
-      setTemplateData(data?.templates);
+      if (auth.user.role.name === "Admin") {
+        setTemplateData(data?.templates);
+      } else {
+        const filteredTemplate = data?.templates.filter((template) =>
+          template?.userList?.some((user) => user._id === auth.user.id)
+        );
+
+        setTemplateData(filteredTemplate);
+      }
+
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -115,13 +135,19 @@ export default function Template() {
       );
       setUsers(
         data?.users?.filter((user) =>
-          user.role?.access.includes("Templates")
+          user.role?.access.some((item) =>
+            item?.permission?.includes("Templates")
+          )
         ) || []
       );
 
       setUserName(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Templates"))
+          ?.filter((user) =>
+            user.role?.access.some((item) =>
+              item?.permission?.includes("Templates")
+            )
+          )
           .map((user) => user.name)
       );
     } catch (error) {
@@ -595,7 +621,7 @@ export default function Template() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -626,16 +652,18 @@ export default function Template() {
         {selectedTab === "templates" && (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h1 className=" text-xl sm:text-2xl font-semibold ">Templates</h1>
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
+                Templates
+              </h1>
 
               <span
-                className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+                className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
                 onClick={() => {
                   handleClearFilters();
                 }}
                 title="Clear filters"
               >
-                <IoClose className="h-6 w-6  cursor-pointer" />
+                <IoClose className="h-6 w-6 text-white" />
               </span>
             </div>
 
@@ -717,7 +745,7 @@ export default function Template() {
         {/* ------------------ */}
         {selectedTab === "templates" && (
           <>
-            <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-2 transition-all duration-300 w-fit">
+            <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
               <button
                 className={`py-1 px-2 w-[6.5rem] outline-none transition-all duration-300 ${
                   selectedTab === "templates"
@@ -751,15 +779,22 @@ export default function Template() {
                 </div>
               ) : (
                 <div className="w-full min-h-[10vh] relative ">
-                  <div className="h-full hidden1 overflow-y-scroll relative">
-                    <MaterialReactTable table={table} />
-                  </div>
+                  {(auth?.user?.role?.name === "Admin" ||
+                    access.includes("Template")) && (
+                    <div className="h-full hidden1 overflow-y-scroll relative">
+                      <MaterialReactTable table={table} />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           ) : selectedTab === "faq" ? (
             <div className="w-full h-full">
-              <FAQ setSelectedTab={setSelectedTab} selectedTab={selectedTab} />
+              <FAQ
+                setSelectedTab={setSelectedTab}
+                selectedTab={selectedTab}
+                access={access}
+              />
             </div>
           ) : (
             <div className=""></div>

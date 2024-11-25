@@ -5,6 +5,7 @@ import {
   deleteLabel,
   getAllLabelsByJob,
   getAllLabelsByTask,
+  getComplaintLabels,
   getDataLabels,
   updateLabel,
 } from "../controllers/labelController.js";
@@ -28,5 +29,8 @@ router.delete("/delete/label/:id", requiredSignIn, deleteLabel);
 
 // Update Label
 router.put("/update/label/:id", requiredSignIn, updateLabel);
+
+// Complaint Label
+router.get("/complaint/labels/:type", getComplaintLabels);
 
 export default router;

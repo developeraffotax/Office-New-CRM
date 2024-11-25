@@ -11,6 +11,7 @@ import {
   deleteTask,
   getAllCompletedTasks,
   getAllTasks,
+  getDashboardTasks,
   getSingleTask,
   singleTaskComments,
   updateAlocateTask,
@@ -76,6 +77,8 @@ router.delete("/delete/many", deleteDailyRecurringTasks);
 
 // Duplicate Task
 router.delete("/delete/diplicate", deleteDuplicateTasks);
+
+router.get("/dashboard/tasks", getDashboardTasks);
 
 // Call Recurring Function
 router.get(

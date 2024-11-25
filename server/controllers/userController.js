@@ -93,7 +93,9 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    const user = await userModel.findOne({ email: email }).populate("role");
+    const user = await userModel
+      .findOne({ email: new RegExp(`^${email}$`, "i") })
+      .populate("role");
     if (!user) {
       return res.status(400).send({
         success: false,
@@ -156,7 +158,10 @@ export const loginUser = async (req, res) => {
 // Get All User
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await userModel.find({}).select("-password").populate("role");
+    const users = await userModel
+      .find({ name: { $ne: "Salmans" } })
+      .select("-password")
+      .populate("role");
 
     res.status(200).send({
       total: users.length,
@@ -177,7 +182,7 @@ export const getAllUsers = async (req, res) => {
 export const getAllActiveUsers = async (req, res) => {
   try {
     const users = await userModel
-      .find({ isActive: { $ne: false } })
+      .find({ isActive: { $ne: false }, name: { $ne: "Salmans" } })
       .select("-password")
       .populate("role");
 
@@ -246,6 +251,7 @@ export const updateUserProfile = async (req, res) => {
       address,
       avatar,
       isActive,
+      createdAt,
     } = req.body;
 
     // Check if userId is provided
@@ -291,6 +297,7 @@ export const updateUserProfile = async (req, res) => {
         address: address !== undefined ? address : isExisting.address,
         avatar: avatar || isExisting.avatar,
         isActive: isActive !== undefined ? isActive : isExisting.isActive,
+        createdAt: createdAt || isExisting.createdAt,
       },
       { new: true }
     );
@@ -382,6 +389,29 @@ export const updateRole = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error while update user role!",
+    });
+  }
+};
+
+// Get ALl Dashboard Users
+export const getDashboardUsers = async (req, res) => {
+  try {
+    const users = await userModel
+      .find({ name: { $ne: "Salmans" } })
+      .populate("role", "name")
+      .select(" name createdAt role");
+
+    res.status(200).send({
+      total: users.length,
+      success: true,
+      message: "All users list",
+      users: users,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get all users!",
     });
   }
 };

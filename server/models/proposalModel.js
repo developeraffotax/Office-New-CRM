@@ -36,8 +36,19 @@ const proposalSchema = new mongoose.Schema(
     client: {
       type: String,
     },
+    value: {
+      type: String,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  { timestamps: true }
+  { timestamps: false }
 );
 
 export default mongoose.model("Proposal", proposalSchema);

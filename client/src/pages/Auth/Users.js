@@ -23,10 +23,9 @@ export default function Users() {
   const [userData, setUserData] = useState(false);
   const [loading, setLoading] = useState(false);
   const [userRoles, setUserRoles] = useState([]);
+  const isActive = [true, false];
 
-  //   All User
-
-  // Get all Users
+  // All Users
   const getAllUsers = async () => {
     try {
       setLoading(true);
@@ -104,7 +103,7 @@ export default function Users() {
     }
   };
 
-  //   Update User Role
+  //   Update Profile
   const updateUserRole = async (id, state) => {
     try {
       const { data } = await axios.put(
@@ -114,6 +113,23 @@ export default function Users() {
       if (data) {
         getUsers();
         toast.success("Role Updated", { duration: 2000 });
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong!");
+    }
+  };
+
+  // Update Join Date
+  const updateJoinDate = async (id, createdAt) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/update/Profile/${id}`,
+        { createdAt: createdAt }
+      );
+      if (data) {
+        getUsers();
+        toast.success("Join date updated!");
       }
     } catch (error) {
       console.log(error);
@@ -549,6 +565,11 @@ export default function Users() {
         size: 100,
         grow: false,
         Header: ({ column }) => {
+          useEffect(() => {
+            column.setFilterValue(true);
+
+            // eslint-disable-next-line
+          }, []);
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -605,11 +626,8 @@ export default function Users() {
             </div>
           );
         },
-        filterFn: (row, columnId, filterValue) => {
-          const cellValue =
-            row.original[columnId]?.toString().toLowerCase() || "";
-          return cellValue.includes(filterValue.toLowerCase());
-        },
+        filterFn: "equals",
+        filterSelectOptions: isActive?.map((active) => active),
         filterVariant: "select",
       },
 
@@ -619,16 +637,50 @@ export default function Users() {
         Header: ({ column }) => {
           return (
             <div className="w-full flex flex-col gap-[2px]">
-              <span className="cursor-pointer ">Created Date</span>
+              <span className="cursor-pointer ">Join Date</span>
             </div>
           );
         },
+
         Cell: ({ cell, row }) => {
           const createdAt = row.original.createdAt;
-          console.log("createdAt", createdAt);
+          const [date, setDate] = useState(() => {
+            const cellDate = new Date(
+              cell.getValue() || "2024-09-20T12:43:36.002+00:00"
+            );
+            return cellDate.toISOString().split("T")[0];
+          });
+
+          const [showStartDate, setShowStartDate] = useState(false);
+
+          const handleDateChange = (newDate) => {
+            setDate(newDate);
+            updateJoinDate(row.original._id, newDate);
+            setShowStartDate(false);
+          };
+
           return (
             <div className="w-full flex  ">
-              <p>{format(new Date(createdAt), "dd-MMM-yyyy")}</p>
+              {!showStartDate ? (
+                <p
+                  onDoubleClick={() => setShowStartDate(true)}
+                  className="w-full"
+                >
+                  {createdAt ? (
+                    format(new Date(createdAt), "dd-MMM-yyyy")
+                  ) : (
+                    <span className="text-white">.</span>
+                  )}
+                </p>
+              ) : (
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  onBlur={(e) => handleDateChange(e.target.value)}
+                  className={`h-[2rem] w-full cursor-pointer rounded-md border border-gray-200 outline-none `}
+                />
+              )}
             </div>
           );
         },
@@ -694,6 +746,50 @@ export default function Users() {
           "60 Days",
           "Custom date",
         ],
+        filterVariant: "custom",
+        size: 120,
+        minSize: 90,
+        maxSize: 110,
+        grow: false,
+      },
+      // Duration
+      {
+        accessorKey: "duration",
+        Header: ({ column }) => {
+          return (
+            <div className="w-full flex flex-col gap-[2px]">
+              <span className="cursor-pointer">Durations</span>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const createdAt = new Date(row.original.createdAt);
+          const today = new Date();
+          const calculateDuration = (startDate, endDate) => {
+            const diffInMs = endDate - startDate;
+            const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+            if (diffInDays < 30) return `${diffInDays} days`;
+            if (diffInDays < 365)
+              return `${Math.floor(diffInDays / 30)} months`;
+            return `${Math.floor(diffInDays / 365)} years`;
+          };
+
+          const duration = calculateDuration(createdAt, today);
+
+          return (
+            <div className="w-full flex">
+              <p className="w-full font-medium">
+                {duration ? (
+                  `${duration}`
+                ) : (
+                  <span className="text-white">.</span>
+                )}
+              </p>
+            </div>
+          );
+        },
+
         filterVariant: "custom",
         size: 100,
         minSize: 90,
@@ -766,7 +862,7 @@ export default function Users() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -783,7 +879,7 @@ export default function Users() {
         },
         tableLayout: "auto",
         fontSize: "13px",
-        border: "1px solid rgba(81, 81, 81, .5)",
+        border: "1px solid rgb(193, 183, 173, 0.8)",
         caption: {
           captionSide: "top",
         },
@@ -796,16 +892,18 @@ export default function Users() {
       <div className=" relative w-full h-[100%] py-4 px-2 sm:px-4 overflow-y-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h1 className=" text-xl sm:text-2xl font-semibold ">Users</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
+              User's
+            </h1>
 
             <span
-              className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+              className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
               onClick={() => {
                 handleClearFilters();
               }}
               title="Clear filters"
             >
-              <IoClose className="h-6 w-6  cursor-pointer" />
+              <IoClose className="h-6 w-6 text-white" />
             </span>
           </div>
 

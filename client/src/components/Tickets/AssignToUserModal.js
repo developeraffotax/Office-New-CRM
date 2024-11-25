@@ -17,7 +17,7 @@ export default function AssignToUserModal({
   const [userName, setUserName] = useState([]);
   const [selectedUser, setSelectUser] = useState("");
   const [loading, setLoading] = useState(false);
-  console.log("singleEmail:", singleEmail);
+  // console.log("singleEmail:", singleEmail);
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
@@ -26,41 +26,71 @@ export default function AssignToUserModal({
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
       setUsers(
-        data?.users?.filter((user) => user.role?.access.includes("Tickets")) ||
-          []
+        data?.users?.filter((user) =>
+          user.role?.access?.some((item) =>
+            item?.permission?.includes("Tickets")
+          )
+        ) || []
       );
 
       setUserName(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Tickets"))
+          ?.filter((user) =>
+            user.role?.access.some((item) =>
+              item?.permission?.includes("Tickets")
+            )
+          )
           .map((user) => user.name)
       );
     } catch (error) {
       console.log(error);
     }
   };
-
   useEffect(() => {
     getAllUsers();
     // eslint-disable-next-line
   }, []);
 
   //   Allocate User
-  const handleAllocate = async () => {
+  const handleAllocate = async (e) => {
+    e.preventDefault();
     setLoading(true);
+
+    // Extract Email
+    const fromHeader =
+      singleEmail.emailData.payload.headers.find(
+        (header) => header.name === "From"
+      )?.value || "No Sender";
+
+    // Check if 'fromHeader' contains an email
+    const [name, emailAddress] = fromHeader.includes("<")
+      ? fromHeader.split(/<|>/)
+      : [fromHeader, ""];
+
+    // Clean the email address
+    const cleanedEmail = emailAddress ? emailAddress.trim() : "";
+
+    console.log("Email:", name.trim(), cleanedEmail);
+    // ----->
+
     try {
       const { data } = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/send/email`,
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/assign/email`,
         {
-          companyName: singleEmail,
-          clientName: singleEmail,
+          companyName: cleanedEmail,
+          clientName: name ? name.trim() : cleanedEmail,
           company: selectedCompany,
           jobHolder: selectedUser,
           subject: singleEmail.subject,
           threadId: singleEmail.emailData.threadId,
         }
       );
-      setLoading(false);
+      if (data) {
+        setLoading(false);
+        toast.success("Email allocated successfully");
+        setSingleEmail(null);
+        setShowModal(false);
+      }
     } catch (error) {
       console.log(error);
       toast.error("Error in allocate user!");
@@ -72,7 +102,7 @@ export default function AssignToUserModal({
     <div className="w-full h-[100%] flex items-center justify-center py-3 px-4 overflow-y-auto rounded-md ">
       <div className="w-[30rem] rounded-md  border flex flex-col gap-4 bg-white  ">
         <div className="flex items-center justify-between px-4 pt-2">
-          <h1 className="text-[20px] font-semibold text-black">Assign</h1>
+          <h1 className="text-[20px] font-semibold text-black">Assign Email</h1>
           <span
             className=" cursor-pointer"
             onClick={() => {
@@ -83,7 +113,10 @@ export default function AssignToUserModal({
           </span>
         </div>
         <hr className="h-[1px] w-full bg-gray-400 " />
-        <form className="flex flex-col gap-4 w-full pb-4 px-4 ">
+        <form
+          className="flex flex-col gap-4 w-full pb-4 px-4 "
+          onSubmit={handleAllocate}
+        >
           <select
             value={selectedUser}
             onChange={(e) => setSelectUser(e.target.value)}

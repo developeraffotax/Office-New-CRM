@@ -3,10 +3,12 @@ import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
   assignEmail,
   deleteinboxEmail,
+  deleteMultipleEmail,
   deleteTicket,
   getAllInbox,
   getAllSendTickets,
   getCompleteTickets,
+  getDashboardTickets,
   getInboxDetail,
   getSingleEmailDetail,
   getTicketAttachments,
@@ -70,13 +72,20 @@ router.get("/ticket/comments/:id", singleTicketComments);
 router.get("/complete/tickets", getCompleteTickets);
 
 // Fetch All Inbox
-router.get("/fetch/inbox/:selectedCompany/:pageNo", getAllInbox);
+router.get("/fetch/inbox/:selectedCompany/:pageNo/:type", getAllInbox);
 
 // Delete Email
 router.delete(
   "/delete/inbox/email/:id/:companyName",
   requiredSignIn,
   deleteinboxEmail
+);
+
+// Delete Multiple Email
+router.delete(
+  "/delete/multiple/email/:companyName",
+  requiredSignIn,
+  deleteMultipleEmail
 );
 
 // Get Single Email Detail
@@ -87,5 +96,8 @@ router.put("/markAsRead/inbox/email", markAsReadInboxEmail);
 
 // Assign Inbox email to User
 router.post("/assign/email", requiredSignIn, assignEmail);
+
+// Dashboard Tickets
+router.get("/dashboard/tickets", getDashboardTickets);
 
 export default router;

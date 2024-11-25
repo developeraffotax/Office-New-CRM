@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "affotaxanalytics",
+  "private_key_id": "7fcb63ce0b74573dfd66e826c3930ce11a1337fa",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDJ5EwrEiWDEgYe\nXTPaX/8qGYXiXm+9qv9ktQp+D1pE5qLlfcrR8jMWh/ZBg0aGamuZunmmC+iSAIFv\n7UYTCO064ElXaJXefmbRYj8Rk++MwdsJR3UuppcX/Ts2yCl3eNDPWFVOnEkdFQRr\nl8cPslvK9wy7JfjDpHWsJW4imO+hwD9Ri9I805Bw63k1/c0aglWn9BK/3t3FXCCo\nbgYaXM625gejmFySci3RMSjhMtGuk2BPSP58ucWy88Nd20qiOZs1uiE6Ro3P1nVV\nh5rWQ97drKKRlNEoM5l1fSEiSfeU8bdD4l2yW+VV4+e7kVW0opqELELFavTL3NGN\nOG+edcYFAgMBAAECggEANzb4O9lRKAkQYlKEIWeareVgD9pa/gjboyu+LF6/hdN7\n3n6qLwPpw/I4P4+LBKzrM5Zjua1NFE0OGVHPldodozn+5OhmAH0aWo5fiEuoupqz\n8FQ6MKF/9iAcBy3z5UhF90cFwaONfWYnmNNgLiNN5nLtaOuIHt2GDygHeG/SLa6d\nBDTXnty4e2RPLJY4F8yRRGfsogEcBjUf0q46FkfJ1qGRyZ9JN0ggrpmExUF5XffN\nOTUAipquI7K21puqtAqCeTAAOZOtzstDayc2jZ21k4gvWzOvKs76/JWJaDOG2SDF\nZMDidqKQWJfZDO7dKFx5a2fVJnTepIz4eaSQ+u5OmwKBgQD2HdVadESi5nR/aZwe\nJf3lq4rwIjcmoEUK2GpB05ZtXvi9B0hxIEorTmtvuL5plNhzPDuL8TMJDwX/eCrO\nXdJfZOoqdXeGuxPgdbDjqntFc82JR4TLoACGsDVgciAngrjOLWH+hm0bZYxcEBqe\nGNyw6G+0VC4tN8Zx0RsroKRlNwKBgQDR/9FZ0J+QBZYninl7vH9WZgQRlZ/qoVtM\nzfqLEsBLRTXg4OXSQcvp/a5jBy+wkqlKg2CbMVVoRdlnhmLyNJpx41SeK7J2pTlF\nBQ0PILJAOj+cL9EvjXBxXZJWl1cuiUai1kRlCNMv9aNfH90Yjsm8gSyBU5Qh7vJU\npHuNdKtMowKBgQDU2AYcPPLiwlS7n7TQ6eBCkHEOrThu4inzcCesl/S+z2Rj7Xl7\nxAYAn8gQDYA2xO/P8KY6pzSQv/pa7ixu3frCXv6YC5B75ywQcReyPExxSu3UrBIv\nG0d5M8hliS0/njB+tgbKXKzdBZw2PgMW+L9bCxkXpblth4/J/KH3v+yMTwKBgQCG\nvX9UA3n97Le1UzIzZHTHuNkvdzOOVk3AcAErrrJXGWdCjMqpJ7JwxmZX/8pnnxKk\nTrtzmCnWp8qglCd0hK/8FwK6Igt1+PlQAbepVy9H6pfZ3Qx5WGUnOASnLp+vqkD6\nRkTIFut6QD+8zzMLiMKEAtXNfRT02N3/1TG5R3yJxQKBgCOjpeDYp8VxZfEXz219\nKJPVaZQjoH4qNRAJ2Qbn99YZ6LansztSCWhJ9/9ju8vCoc0zzE47lRhY+kO63JGK\nozk4CntUQ0tEJcneViR7ieq1xH3hL7R1CRt3FWSLdHhrnOBeOUajK40GRIIcLLQj\nKFPboJ2c0pJ0FPYenY6m6MWJ\n-----END PRIVATE KEY-----\n",
+  "client_email": "affotax@affotaxanalytics.iam.gserviceaccount.com",
+  "client_id": "110712516355085322690",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/affotax%40affotaxanalytics.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

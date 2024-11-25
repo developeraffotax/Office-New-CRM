@@ -30,6 +30,7 @@ export default function Proposal() {
     clientName: "",
     jobHolder: "",
     subject: "",
+    createdAt: "",
     jobDate: "",
     deadline: "",
     source: "",
@@ -37,6 +38,7 @@ export default function Proposal() {
     propos: "",
     lead: "",
     client: "",
+    value: "",
   });
   const [selectFilter, setSelectFilter] = useState("");
   const [proposalId, setProposalId] = useState("");
@@ -46,7 +48,7 @@ export default function Proposal() {
   const [mail, setMail] = useState("");
   const mailDetailref = useRef(null);
 
-  console.log("filteredData:", filteredData);
+  // console.log("filteredData:", filteredData);
 
   // -------Get All Proposal-------
   const getAllProposal = async () => {
@@ -93,13 +95,19 @@ export default function Proposal() {
       );
       setUsers(
         data?.users?.filter((user) =>
-          user.role?.access.includes("Proposals")
+          user.role?.access.some((item) =>
+            item?.permission?.includes("Proposals")
+          )
         ) || []
       );
 
       setUserName(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Proposals"))
+          ?.filter((user) =>
+            user.role?.access.some((item) =>
+              item?.permission?.includes("Proposals")
+            )
+          )
           .map((user) => user.name)
       );
     } catch (error) {
@@ -130,7 +138,7 @@ export default function Proposal() {
     }
   };
 
-  //  ---------- Update Lead Status------>
+  //  ---------- Update Status------>
   const handleLeadStatus = (leadId, status) => {
     Swal.fire({
       title: "Are you sure?",
@@ -180,7 +188,7 @@ export default function Proposal() {
     }
   };
 
-  //  ------------Delete Lead------------>
+  //  ------------Delete Proposal------------>
   const handleDeleteLeadConfirmation = (propId) => {
     Swal.fire({
       title: "Are you sure?",
@@ -242,17 +250,19 @@ export default function Proposal() {
             prevData.filter((item) => item._id !== updateProposal._id)
           );
         }
+        getProposal();
         setFormData({
           clientName: "",
           jobHolder: "",
+          createdAt: "",
           jobDate: "",
           deadline: "",
           source: "",
           note: "",
           status: "",
+          value: "",
         });
         toast.success("Proposal data updated!");
-        getProposal();
       }
     } catch (error) {
       console.log(error);
@@ -541,6 +551,75 @@ export default function Proposal() {
         maxSize: 560,
         grow: false,
       },
+      // Value
+      {
+        accessorKey: "value",
+        minSize: 50,
+        maxSize: 100,
+        size: 60,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                  setSelectFilter("");
+                }}
+              >
+                Value
+              </span>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const value = row.original.value;
+          const [show, setShow] = useState(false);
+          const [localValue, setLocalValue] = useState(value || "");
+
+          const handleSubmit = (e) => {
+            setFormData((prevData) => ({
+              ...prevData,
+              value: localValue,
+            }));
+
+            handleUpdateData(row.original._id, {
+              ...formData,
+              value: localValue,
+            });
+
+            setShow(false);
+          };
+
+          return (
+            <div className="w-full ">
+              {!show ? (
+                <div
+                  className="w-full cursor-pointer flex items-center justify-center"
+                  onDoubleClick={() => setShow(true)}
+                >
+                  {value ? (
+                    <span>{value}</span>
+                  ) : (
+                    <span className="text-white">.</span>
+                  )}
+                </div>
+              ) : (
+                <input
+                  value={localValue || ""}
+                  className="w-full h-[2rem] px-1 rounded-md border-none  outline-none"
+                  onChange={(e) => setLocalValue(e.target.value)}
+                  onBlur={(e) => handleSubmit(e.target.value)}
+                />
+              )}
+            </div>
+          );
+        },
+        filterFn: "equals",
+        filterVariant: "select",
+      },
       //   Created At
       {
         accessorKey: "createdAt",
@@ -601,13 +680,49 @@ export default function Proposal() {
             </div>
           );
         },
+
         Cell: ({ cell, row }) => {
           const createdAt = row.original.createdAt;
+          const [date, setDate] = useState(() => {
+            const cellDate = new Date(
+              cell.getValue() || "2024-09-20T12:43:36.002+00:00"
+            );
+            return cellDate.toISOString().split("T")[0];
+          });
 
-          console.log("createdAt", createdAt);
+          const [showStartDate, setShowStartDate] = useState(false);
+
+          const handleDateChange = (newDate) => {
+            setDate(newDate);
+            handleUpdateData(row.original._id, {
+              ...formData,
+              createdAt: newDate,
+            });
+            setShowStartDate(false);
+          };
+
           return (
             <div className="w-full flex  ">
-              <p>{format(new Date(createdAt), "dd-MMM-yyyy")}</p>
+              {!showStartDate ? (
+                <p
+                  onDoubleClick={() => setShowStartDate(true)}
+                  className="w-full"
+                >
+                  {createdAt ? (
+                    format(new Date(createdAt), "dd-MMM-yyyy")
+                  ) : (
+                    <span className="text-white">.</span>
+                  )}
+                </p>
+              ) : (
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  onBlur={(e) => handleDateChange(e.target.value)}
+                  className={`h-[2rem] w-full cursor-pointer rounded-md border border-gray-200 outline-none `}
+                />
+              )}
             </div>
           );
         },
@@ -1110,8 +1225,8 @@ export default function Proposal() {
                   onDoubleClick={() => setShow(true)}
                   className="cursor-pointer w-full"
                 >
-                  {note ? (
-                    note
+                  {localNote ? (
+                    localNote
                   ) : (
                     <div className="text-white w-full h-full">.</div>
                   )}
@@ -1218,7 +1333,7 @@ export default function Proposal() {
         filterSelectOptions: sources?.map((source) => source),
         filterVariant: "select",
       },
-      //   Status
+      //   Proposal
       {
         accessorKey: "propos",
         minSize: 80,
@@ -1248,7 +1363,9 @@ export default function Proposal() {
               >
                 <option value="">Select</option>
                 {status.map((stat) => (
-                  <option value={stat}>{stat}</option>
+                  <option key={stat} value={stat}>
+                    {stat}
+                  </option>
                 ))}
               </select>
             </div>
@@ -1257,7 +1374,7 @@ export default function Proposal() {
         Cell: ({ cell, row }) => {
           const state = row.original.propos;
           const [show, setShow] = useState(false);
-          const [localStage, setLocalStage] = useState(state || "");
+          const [localStage, setLocalStage] = useState(state || ".");
 
           const handleChange = (e) => {
             const selectedValue = e.target.value;
@@ -1294,9 +1411,11 @@ export default function Proposal() {
                   className="w-full h-[2rem] rounded-md border-none  outline-none"
                   onChange={handleChange}
                 >
-                  <option value="." className="text-white"></option>
+                  <option value="." className="text-white">
+                    Select
+                  </option>
                   {status?.map((stat, i) => (
-                    <option value={stat} key={i}>
+                    <option value={stat} key={stat}>
                       {stat}
                     </option>
                   ))}
@@ -1305,7 +1424,13 @@ export default function Proposal() {
             </div>
           );
         },
-        filterFn: "equals",
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId] != null
+              ? row.original[columnId].toString().toLowerCase()
+              : "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
         filterSelectOptions: status?.map((stat) => stat),
         filterVariant: "select",
       },
@@ -1339,7 +1464,9 @@ export default function Proposal() {
               >
                 <option value="">Select</option>
                 {status.map((stat) => (
-                  <option value={stat}>{stat}</option>
+                  <option key={stat} value={stat}>
+                    {stat}
+                  </option>
                 ))}
               </select>
             </div>
@@ -1396,7 +1523,13 @@ export default function Proposal() {
             </div>
           );
         },
-        filterFn: "equals",
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId] != null
+              ? row.original[columnId].toString().toLowerCase()
+              : "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
         filterSelectOptions: status?.map((stat) => stat),
         filterVariant: "select",
       },
@@ -1430,7 +1563,9 @@ export default function Proposal() {
               >
                 <option value="">Select</option>
                 {status.map((stat) => (
-                  <option value={stat}>{stat}</option>
+                  <option key={stat} value={stat}>
+                    {stat}
+                  </option>
                 ))}
               </select>
             </div>
@@ -1487,7 +1622,13 @@ export default function Proposal() {
             </div>
           );
         },
-        filterFn: "equals",
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId] != null
+              ? row.original[columnId].toString().toLowerCase()
+              : "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
         filterSelectOptions: status?.map((stat) => stat),
         filterVariant: "select",
       },
@@ -1566,7 +1707,7 @@ export default function Proposal() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1596,7 +1737,6 @@ export default function Proposal() {
       .getFilteredRowModel()
       .rows.map((row) => row.original);
 
-    console.log("Filtered Data:", filteredRows);
     setFilteredData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
 
@@ -1652,17 +1792,19 @@ export default function Proposal() {
     <Layout>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className=" text-xl sm:text-2xl font-semibold ">Proposal</h1>
+          <div className="flex items-center gap-5">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
+              Proposal's
+            </h1>
 
             <span
-              className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+              className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
               onClick={() => {
                 handleClearFilters();
               }}
               title="Clear filters"
             >
-              <IoClose className="h-6 w-6  cursor-pointer" />
+              <IoClose className="h-6 w-6 text-white" />
             </span>
           </div>
 

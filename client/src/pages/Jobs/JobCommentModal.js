@@ -57,7 +57,7 @@ export default function JobCommentModal({
       const query = value.slice(mentionIndex + 1);
 
       // Filter users based on the query after "@"
-      const filteredUsers = users.filter((user) =>
+      const filteredUsers = users?.filter((user) =>
         user.toLowerCase().startsWith(query.toLowerCase())
       );
 
@@ -120,6 +120,18 @@ export default function JobCommentModal({
             note: "New Task Added",
           });
         }
+      } else if (type === "Goals") {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/goals/get/comment/${jobId}`
+        );
+        if (data) {
+          setIsLoading(false);
+          setCommentData(data?.comments?.comments);
+          // Send Socket Timer
+          socketId.emit("addTask", {
+            note: "New Task Added",
+          });
+        }
       } else {
         const { data } = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/v1/tickets/ticket/comments/${jobId}`
@@ -158,6 +170,18 @@ export default function JobCommentModal({
         );
         if (data) {
           setCommentData(data?.comments?.comments);
+        }
+      } else if (type === "Goals") {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/goals/get/comment/${jobId}`
+        );
+        if (data) {
+          setIsLoading(false);
+          setCommentData(data?.comments?.comments);
+          // Send Socket
+          socketId.emit("addTask", {
+            note: "New Task Added",
+          });
         }
       } else {
         const { data } = await axios.get(
@@ -276,13 +300,13 @@ export default function JobCommentModal({
   // -----Like Counts----->
   useEffect(() => {
     setCommentLikes(
-      commentData.reduce((acc, comment) => {
+      commentData?.reduce((acc, comment) => {
         acc[comment._id] = comment.likes.includes(auth.user.id);
         return acc;
       }, {})
     );
     setLikeCounts(
-      commentData.reduce((acc, comment) => {
+      commentData?.reduce((acc, comment) => {
         acc[comment._id] = comment.likes.length;
         return acc;
       }, {})
@@ -590,13 +614,18 @@ export default function JobCommentModal({
               className="w-full border border-orange-500 rounded-md px-2 py-1"
             >
               <div className="relative w-full">
-                <input
+                <textarea
                   placeholder="Enter your comment here... 🙄"
                   value={comment}
                   required
                   onChange={handleInputChange}
-                  className="h-[3.3rem] w-full rounded-md outline-none resize-none py-1 px-2"
-                ></input>
+                  className="h-[5rem] w-full rounded-md outline-none resize-none py-1 px-2"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      handleComment(e);
+                    }
+                  }}
+                ></textarea>
 
                 {showSuggestions && (
                   <ul className="absolute top-[-8rem] w-[8rem] bg-gray-50   rounded-md mt-1 shadow-md   max-h-40 overflow-y-auto z-10">

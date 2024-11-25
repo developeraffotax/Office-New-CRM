@@ -3,6 +3,7 @@ import {
   deleteUser,
   getAllActiveUsers,
   getAllUsers,
+  getDashboardUsers,
   loginUser,
   registerUser,
   singleUser,
@@ -37,8 +38,7 @@ router.put("/update_role/:id", requiredSignIn, updateRole);
 // Delete User
 router.delete("/delete_user/:id", requiredSignIn, deleteUser);
 
-// Reset Password
-
-// Update Password
+// Dashboard Users
+router.get("/dashboard/users", getDashboardUsers);
 
 export default router;

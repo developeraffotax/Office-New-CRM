@@ -1,8 +1,12 @@
+import activityModel from "../models/activityModel.js";
 import notificationModel from "../models/notificationModel.js";
 import projectModel from "../models/projectModel.js";
 import taskModel from "../models/taskModel.js";
 import userModel from "../models/userModel.js";
 import cron from "node-cron";
+import moment from "moment";
+
+const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
 // Create Task
 export const createTask = async (req, res) => {
@@ -55,17 +59,22 @@ export const createTask = async (req, res) => {
         : new Date().toISOString(),
     });
 
-    const user = req.user.user;
+    await tasks.save();
 
+    // Add Activity Log
+    const user = req.user.user;
     if (tasks) {
-      tasks.activities.push({
-        userName: user.name,
-        profileImage: user.avatar,
-        activity: `created a task: ${task} in project: ${project.projectName}`,
+      activityModel.create({
+        user: user._id,
+        action: `${user.name} is created a task: ${tasks.task} in project: ${tasks.project.projectName}`,
+        entity: "Task",
+        details: `Task Details:
+        - Project Name: ${tasks.project.projectName}
+        - Assigned To: ${tasks.jobHolder || "Unassigned"}
+        - Task Description: ${tasks.task || "No description provided"}
+        - Created At: ${currentDateTime}`,
       });
     }
-
-    await tasks.save();
 
     // Create Notification
     const notiUser = await userModel.findOne({ name: jobHolder });
@@ -81,7 +90,7 @@ export const createTask = async (req, res) => {
     const notification = await notificationModel.create({
       title: "New Task Assigned",
       redirectLink: "/tasks",
-      description: `${req.user.user.name} assign a new task of "${task}"`,
+      description: `${req.user.user.name} assign a new task of "${tasks.task}"`,
       taskId: `${tasks._id}`,
       userId: notiUser._id,
     });
@@ -277,6 +286,31 @@ export const updateJobHolderLS = async (req, res) => {
       }
     }
 
+    const user = req.user.user;
+
+    // Add Activity Log
+    if (updateTask) {
+      activityModel.create({
+        user: user._id,
+        action: `${user.name.trim()} is update a task: ${
+          updateTask.task
+        } in project: ${updateTask.project.projectName}`,
+        entity: "Task",
+        details: `Task Details:
+          - Project Name: ${updateTask.project.projectName}
+          - Assigned To: ${updateTask.jobHolder || "Unassigned"}
+          - Update Type: ${
+            jobHolder
+              ? "Assign Update"
+              : lead
+              ? "Lead Update"
+              : "Task Status Update"
+          }
+          - Task Description: ${updateTask.task || "No description provided"}
+          - Update At: ${currentDateTime}`,
+      });
+    }
+
     res.status(200).send({
       success: true,
       message: "Task updated!",
@@ -326,6 +360,29 @@ export const updateAlocateTask = async (req, res) => {
         { deadline: deadline || new Date().toISOString() },
         { new: true }
       );
+    }
+    // Add Activity Log
+    const user = req.user.user;
+    if (updateTask) {
+      activityModel.create({
+        user: user._id,
+        action: `${user.name.trim()} is update a task: ${
+          updateTask.task
+        } in project: ${updateTask.project.projectName}`,
+        entity: "Task",
+        details: `Task Details:
+          - Project Name: ${updateTask.project.projectName}
+          - Assigned To: ${updateTask.jobHolder || "Unassigned"}
+          - Update Type: ${
+            allocateTask
+              ? "Task description Update"
+              : startDate
+              ? "Start Date Update"
+              : "Deadline Update Update"
+          }
+          - Task Description: ${updateTask.task || "No description provided"}
+          - Update At: ${currentDateTime}`,
+      });
     }
 
     res.status(200).send({
@@ -381,6 +438,24 @@ export const deleteTask = async (req, res) => {
       return res.status(400).send({
         success: false,
         message: "Task id is required!",
+      });
+    }
+
+    const task = await taskModel.findById(taskId);
+    // Add Activity Log
+    const user = req.user.user;
+    if (task) {
+      activityModel.create({
+        user: user._id,
+        action: `${user.name.trim()} delete a task: ${task.task} in project: ${
+          task.project.projectName
+        }`,
+        entity: "Task",
+        details: `Task Details:
+            - Project Name: ${task.project.projectName}
+            - Assigned To: ${task.jobHolder || "Unassigned"}
+            - Task Description: ${task.task || "No description provided"}
+            - Deleted At: ${currentDateTime}`,
       });
     }
 
@@ -465,6 +540,23 @@ export const updateTask = async (req, res) => {
       { new: true }
     );
 
+    // Add Activity Log
+    const user = req.user.user;
+    if (tasks) {
+      activityModel.create({
+        user: user._id,
+        action: `${user.name.trim()} is update a task: ${
+          tasks.task
+        } in project: ${tasks.project.projectName}`,
+        entity: "Task",
+        details: `Task Details:
+          - Project Name: ${tasks.project.projectName}
+          - Assigned To: ${tasks.jobHolder || "Unassigned"}
+          - Task Description: ${tasks.task || "No description provided"}
+          - Update At: ${currentDateTime}`,
+      });
+    }
+
     res.status(200).send({
       success: true,
       message: "Task updated successfully!",
@@ -510,6 +602,20 @@ export const createSubTask = async (req, res) => {
     task.subtasks.push({ subTask: subTask });
 
     await task.save();
+
+    // Add Activity Log
+    const user = req.user.user;
+    if (task) {
+      activityModel.create({
+        user: user._id,
+        action: `${user.name.trim()} is create a subtask in task: ${task.task}`,
+        entity: "Task",
+        details: `Task Details:
+           - Project Name: ${task.project.projectName}
+           - Task Description: ${task.task || "No description provided"}
+           - Update At: ${currentDateTime}`,
+      });
+    }
 
     res.status(200).send({
       success: true,
@@ -767,12 +873,21 @@ export const autoCreateRecurringTasks = async (req, res) => {
       },
     });
 
+    const today = new Date();
+    const formattedDate = today
+      .toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+      .replace(/,/g, "");
+
     for (const task of tasks) {
       // Create a new task with updated dates
       const newTask = await taskModel.create({
         project: task.project,
         jobHolder: task.jobHolder,
-        task: task.task,
+        task: `${task.task}`,
         hours: task.hours,
         startDate: calculateStartDate(task.startDate, task.recurring),
         deadline: calculateStartDate(task.deadline, task.recurring),
@@ -811,12 +926,6 @@ export const autoCreateRecurringTasks = async (req, res) => {
     console.error("Error in auto-creating recurring tasks:", error);
   }
 };
-
-// Schedule the task to run every 2 minutes
-// cron.schedule("*/2 * * * *", () => {
-//   console.log("Running task scheduler for recurring tasks...");
-//   autoCreateRecurringTasks();
-// });
 
 // Schedule the task to run daily at midnight
 cron.schedule("30 23 * * *", () => {
@@ -884,6 +993,28 @@ export const deleteDuplicateTasks = async (req, res) => {
     res.status(500).json({
       message: "An error occurred while deleting duplicate tasks.",
       error: error.message,
+    });
+  }
+};
+
+// Get ALl Tasks for Daskboard Analytics
+export const getDashboardTasks = async (req, res) => {
+  try {
+    const tasks = await taskModel
+      .find({})
+      .select("project.projectName jobHolder createdAt");
+
+    res.status(200).send({
+      success: true,
+      message: "All task list!",
+      tasks: tasks,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      messsage: "Error in get all tasks!",
+      error: error,
     });
   }
 };

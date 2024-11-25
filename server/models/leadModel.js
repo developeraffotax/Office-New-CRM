@@ -39,6 +39,9 @@ const leadSchema = new mongoose.Schema(
       type: String,
       default: "progress",
     },
+    value: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

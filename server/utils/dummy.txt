@@ -159,3 +159,95 @@ export const sendEmailWithAttachments = async (emailData) => {
     console.log("Error while send email!:", error);
   }
 };
+
+--------------------------------------------Download Attachments--------------------------------------------
+export const getAttachments = async (attachmentId, messageId, companyName) => {
+  try {
+    console.log("Fetching Attachment data:", {
+      attachmentId,
+      messageId,
+      companyName,
+    });
+
+    let accessToken;
+    if (companyName === "Affotax") {
+      accessToken = await getAccessToken();
+    } else {
+      accessToken = await getOutsourceAccessToken();
+    }
+
+    if (!accessToken) {
+      throw new Error("Access token is not available");
+    }
+
+    // Gmail API URL for fetching the attachment
+    const url = `https://www.googleapis.com/gmail/v1/users/me/messages/${messageId}/attachments/${attachmentId}`;
+
+    const config = {
+      method: "get",
+      url,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      responseType: "arraybuffer",
+    };
+
+    // Make the request
+    const response = await axios(config);
+    const attachmentData = response.data;
+
+    // Get MIME type from response headers
+    const contentType =
+      response.headers["content-type"] || "application/octet-stream";
+
+    // Return the attachment data and its content type (MIME)
+    return {
+      attachmentData,
+      contentType,
+    };
+  } catch (error) {
+    console.error("Error while getting attachment from Gmail:", error.message);
+    throw error;
+  }
+};
+
+
+------------------------------------Roles--------------->
+// Update Roles
+// export const updateRole = async (req, res) => {
+//   try {
+//     const roleId = req.params.id;
+//     const { name, access, subRoles, pageName } = req.body;
+
+//     console.log(subRoles, pageName);
+
+//     const existingRole = await roleModel.findById(roleId);
+
+//     const formattedAccess = access
+//       ? access.map((permission) => ({ permission }))
+//       : existingRole.access;
+
+//     const role = await roleModel.findByIdAndUpdate(
+//       { _id: roleId },
+//       {
+//         name: name ? name : existingRole.name,
+//         access: formattedAccess,
+//       },
+//       { new: true }
+//     );
+
+//     // Add SubRole based on access.permission ===pageName
+
+//     res.status(200).send({
+//       success: true,
+//       message: "Role update successfully!",
+//       role: role,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).send({
+//       success: false,
+//       message: "Error while update role!",
+//     });
+//   }
+// };

@@ -429,3 +429,90 @@ inputBox > textarea:focus ~ span {
   min-height: 0rem !important;
   height: 0px !important;
 }
+
+@keyframes borderPulse {
+  0% {
+    border-color: #2bff00;
+  }
+  50% {
+    border-color: #009df9;
+  }
+  90% {
+    border-color: #ff0090;
+  }
+  100% {
+    border-color: #2bff00;
+  }
+}
+
+.animate-borderPulse {
+  animation: borderPulse 5s infinite ease-in-out;
+}
+
+@keyframes hourglassEffect {
+  0% {
+    transform: rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    transform: rotate(90deg);
+    opacity: 0.75;
+  }
+  50% {
+    transform: rotate(180deg);
+    opacity: 0.5;
+  }
+  75% {
+    transform: rotate(270deg);
+    opacity: 0.25;
+  }
+  100% {
+    transform: rotate(360deg);
+    opacity: 1;
+  }
+}
+
+.hourglass-animation {
+  animation: hourglassEffect 4s infinite ease-in-out;
+  transform-origin: center;
+}
+
+@keyframes bounce-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 3s infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 6s linear infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 1.5s ease-in-out forwards;
+}

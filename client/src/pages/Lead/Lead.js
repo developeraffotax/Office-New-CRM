@@ -65,11 +65,12 @@ export default function Lead() {
     JobDate: "",
     Note: "",
     stage: "",
+    value: "",
   });
   const [active, setActive] = useState(false);
   const [selectFilter, setSelectFilter] = useState("");
 
-  console.log("formData:", formData);
+  // console.log("formData:", formData);
 
   // -------Get All Leads-------
   const getAllLeads = async () => {
@@ -169,12 +170,16 @@ export default function Lead() {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
       setUsers(
-        data?.users?.filter((user) => user.role?.access.includes("Leads")) || []
+        data?.users?.filter((user) =>
+          user.role?.access?.some((item) => item?.permission.includes("Leads"))
+        ) || []
       );
 
       setUserName(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Leads"))
+          ?.filter((user) =>
+            user.role?.access.some((item) => item?.permission.includes("Leads"))
+          )
           .map((user) => user.name)
       );
     } catch (error) {
@@ -198,7 +203,7 @@ export default function Lead() {
         setLeadData((prevData) =>
           prevData ? [...prevData, data.lead] : [data.lead]
         );
-        getLeads();
+        getAllLeads();
       }
     } catch (error) {
       console.log(error);
@@ -287,7 +292,7 @@ export default function Lead() {
           const filterData1 = filteredData?.filter((item) => item._id !== id);
           setFilteredData(filterData1);
         }
-        getLeads();
+        getAllLeads();
       }
     } catch (error) {
       console.log(error);
@@ -301,8 +306,6 @@ export default function Lead() {
       toast.error("Lead id is required!");
       return;
     }
-
-    console.log("updateData", updateData);
 
     try {
       const { data } = await axios.put(
@@ -332,6 +335,7 @@ export default function Lead() {
           JobDate: "",
           Note: "",
           stage: "",
+          value: "",
         });
         toast.success("Lead data updated!");
         getLeads();
@@ -379,7 +383,7 @@ export default function Lead() {
         setLeadData((prevData) =>
           prevData ? [...prevData, data.lead] : [data.lead]
         );
-        getLeads();
+        getAllLeads();
       }
     } catch (error) {
       console.log(error);
@@ -426,8 +430,6 @@ export default function Lead() {
           const [localCompanyName, setLocalCompanyName] = useState(companyName);
 
           const handleSubmit = (e) => {
-            e.preventDefault();
-
             setFormData((prevData) => ({
               ...prevData,
               companyName: localCompanyName,
@@ -444,22 +446,21 @@ export default function Lead() {
           return (
             <div className="w-full px-1">
               {show ? (
-                <form onSubmit={handleSubmit}>
-                  <input
-                    type="text"
-                    value={localCompanyName}
-                    autoFocus
-                    onChange={(e) => setLocalCompanyName(e.target.value)}
-                    className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
-                  />
-                </form>
+                <input
+                  type="text"
+                  value={localCompanyName}
+                  autoFocus
+                  onChange={(e) => setLocalCompanyName(e.target.value)}
+                  onBlur={(e) => handleSubmit(e.target.value)}
+                  className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
+                />
               ) : (
                 <div
                   onDoubleClick={() => setShow(true)}
                   className="cursor-pointer w-full"
                 >
-                  {companyName ? (
-                    companyName
+                  {localCompanyName ? (
+                    localCompanyName
                   ) : (
                     <div className="text-white w-full h-full">.</div>
                   )}
@@ -512,7 +513,6 @@ export default function Lead() {
           const [localClientName, setLocalClientName] = useState(clientName);
 
           const handleSubmit = (e) => {
-            e.preventDefault();
             setFormData((prevData) => ({
               ...prevData,
               clientName: localClientName,
@@ -529,22 +529,21 @@ export default function Lead() {
           return (
             <div className="w-full px-1">
               {show ? (
-                <form onSubmit={handleSubmit}>
-                  <input
-                    type="text"
-                    value={localClientName}
-                    autoFocus
-                    onChange={(e) => setLocalClientName(e.target.value)}
-                    className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
-                  />
-                </form>
+                <input
+                  type="text"
+                  value={localClientName}
+                  autoFocus
+                  onChange={(e) => setLocalClientName(e.target.value)}
+                  onBlur={(e) => handleSubmit(e.target.value)}
+                  className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
+                />
               ) : (
                 <div
                   onDoubleClick={() => setShow(true)}
                   className="cursor-pointer w-full"
                 >
-                  {clientName ? (
-                    clientName
+                  {localClientName ? (
+                    localClientName
                   ) : (
                     <div className="text-white w-full h-full">.</div>
                   )}
@@ -690,8 +689,10 @@ export default function Lead() {
                 className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
                 <option value="">Select</option>
-                {departments.map((dep) => (
-                  <option value={dep}>{dep}</option>
+                {departments.map((dep, i) => (
+                  <option value={dep} key={i}>
+                    {dep}
+                  </option>
                 ))}
               </select>
             </div>
@@ -938,6 +939,75 @@ export default function Lead() {
         filterVariant: "select",
       },
       {
+        accessorKey: "value",
+        minSize: 50,
+        maxSize: 100,
+        size: 60,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                  setSelectFilter("");
+                }}
+              >
+                Value
+              </span>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const value = row.original.value;
+          const [show, setShow] = useState(false);
+          const [localValue, setLocalValue] = useState(value || "");
+
+          const handleChange = (e) => {
+            setFormData((prevData) => ({
+              ...prevData,
+              value: localValue,
+            }));
+
+            handleUpdateData(row.original._id, {
+              ...formData,
+              value: localValue,
+            });
+
+            setShow(false);
+          };
+
+          return (
+            <div className="w-full ">
+              {!show ? (
+                <div
+                  className="w-full cursor-pointer flex items-center justify-center"
+                  onDoubleClick={() => setShow(true)}
+                >
+                  {value ? (
+                    <span>{value}</span>
+                  ) : (
+                    <span className="text-white">.</span>
+                  )}
+                </div>
+              ) : (
+                <input
+                  value={localValue || ""}
+                  className="w-full h-[2rem] px-1 rounded-md border-none  outline-none"
+                  onChange={(e) => setLocalValue(e.target.value)}
+                  onBlur={(e) => handleChange(e.target.value)}
+                />
+              )}
+            </div>
+          );
+        },
+        filterFn: "equals",
+        filterSelectOptions: brands?.map((brand) => brand),
+        filterVariant: "select",
+      },
+      {
         accessorKey: "lead_Source",
         minSize: 100,
         maxSize: 150,
@@ -1091,7 +1161,6 @@ export default function Lead() {
         Cell: ({ cell, row }) => {
           const createdAt = row.original.createdAt;
 
-          console.log("createdAt", createdAt);
           return (
             <div className="w-full flex  ">
               <p>{format(new Date(createdAt), "dd-MMM-yyyy")}</p>
@@ -1351,185 +1420,6 @@ export default function Lead() {
         maxSize: 120,
         grow: false,
       },
-      //   Job Date
-      // {
-      //   accessorKey: "JobDate",
-      //   Header: ({ column }) => {
-      //     const [filterValue, setFilterValue] = useState("");
-      //     const [customDate, setCustomDate] = useState(getCurrentMonthYear());
-
-      //     useEffect(() => {
-      //       if (filterValue === "Custom date") {
-      //         column.setFilterValue(customDate);
-      //       }
-      //       //eslint-disable-next-line
-      //     }, [customDate, filterValue]);
-
-      //     const handleFilterChange = (e) => {
-      //       setFilterValue(e.target.value);
-      //       column.setFilterValue(e.target.value);
-      //     };
-
-      //     const handleCustomDateChange = (e) => {
-      //       setCustomDate(e.target.value);
-      //       column.setFilterValue(e.target.value);
-      //     };
-      //     return (
-      //       <div className="w-full flex flex-col gap-[2px]">
-      //         <span
-      //           className="cursor-pointer "
-      //           title="Clear Filter"
-      //           onClick={() => {
-      //             setFilterValue("");
-      //             column.setFilterValue("");
-      //           }}
-      //         >
-      //           Job Date
-      //         </span>
-
-      //         {filterValue === "Custom date" ? (
-      //           <input
-      //             type="month"
-      //             value={customDate}
-      //             onChange={handleCustomDateChange}
-      //             className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
-      //           />
-      //         ) : (
-      //           <select
-      //             value={filterValue}
-      //             onChange={handleFilterChange}
-      //             className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
-      //           >
-      //             <option value="">Select</option>
-      //             {column.columnDef.filterSelectOptions.map((option, idx) => (
-      //               <option key={idx} value={option}>
-      //                 {option}
-      //               </option>
-      //             ))}
-      //           </select>
-      //         )}
-      //       </div>
-      //     );
-      //   },
-      //   Cell: ({ cell, row }) => {
-      //     const JobDate = row.original.JobDate;
-      //     const [date, setDate] = useState(() => {
-      //       const cellDate = new Date(
-      //         cell.getValue() || "2024-09-20T12:43:36.002+00:00"
-      //       );
-      //       return cellDate.toISOString().split("T")[0];
-      //     });
-
-      //     const [showStartDate, setShowStartDate] = useState(false);
-
-      //     const handleDateChange = (newDate) => {
-      //       setDate(newDate);
-      //       handleUpdateData(row.original._id, {
-      //         ...formData,
-      //         JobDate: newDate,
-      //       });
-      //       setShowStartDate(false);
-      //     };
-
-      //     return (
-      //       <div className="w-full flex  ">
-      //         {!showStartDate ? (
-      //           <p
-      //             onDoubleClick={() => setShowStartDate(true)}
-      //             className="w-full"
-      //           >
-      //             {JobDate ? (
-      //               format(new Date(JobDate), "dd-MMM-yyyy")
-      //             ) : (
-      //               <span className="text-white">.</span>
-      //             )}
-      //           </p>
-      //         ) : (
-      //           <input
-      //             type="date"
-      //             value={date}
-      //             onChange={(e) => setDate(e.target.value)}
-      //             onBlur={(e) => handleDateChange(e.target.value)}
-      //             className={`h-[2rem] w-full cursor-pointer rounded-md border border-gray-200 outline-none `}
-      //           />
-      //         )}
-      //       </div>
-      //     );
-      //   },
-      //   filterFn: (row, columnId, filterValue) => {
-      //     const cellValue = row.getValue(columnId);
-      //     if (!cellValue) return false;
-
-      //     const cellDate = new Date(cellValue);
-
-      //     if (filterValue.includes("-")) {
-      //       const [year, month] = filterValue.split("-");
-      //       const cellYear = cellDate.getFullYear().toString();
-      //       const cellMonth = (cellDate.getMonth() + 1)
-      //         .toString()
-      //         .padStart(2, "0");
-
-      //       return year === cellYear && month === cellMonth;
-      //     }
-
-      //     // Other filter cases
-      //     const today = new Date();
-
-      //     const startOfToday = new Date(
-      //       today.getFullYear(),
-      //       today.getMonth(),
-      //       today.getDate()
-      //     );
-
-      //     switch (filterValue) {
-      //       case "Expired":
-      //         return cellDate < startOfToday;
-      //       case "Today":
-      //         return cellDate.toDateString() === today.toDateString();
-      //       case "Tomorrow":
-      //         const tomorrow = new Date(today);
-      //         tomorrow.setDate(today.getDate() + 1);
-      //         return cellDate.toDateString() === tomorrow.toDateString();
-      //       case "In 7 days":
-      //         const in7Days = new Date(today);
-      //         in7Days.setDate(today.getDate() + 7);
-      //         return cellDate <= in7Days && cellDate > today;
-      //       case "In 15 days":
-      //         const in15Days = new Date(today);
-      //         in15Days.setDate(today.getDate() + 15);
-      //         return cellDate <= in15Days && cellDate > today;
-      //       case "30 Days":
-      //         const in30Days = new Date(today);
-      //         in30Days.setDate(today.getDate() + 30);
-      //         return cellDate <= in30Days && cellDate > today;
-      //       case "60 Days":
-      //         const in60Days = new Date(today);
-      //         in60Days.setDate(today.getDate() + 60);
-      //         return cellDate <= in60Days && cellDate > today;
-      //       case "Last 12 months":
-      //         const lastYear = new Date(today);
-      //         lastYear.setFullYear(today.getFullYear() - 1);
-      //         return cellDate >= lastYear && cellDate <= today;
-      //       default:
-      //         return false;
-      //     }
-      //   },
-      //   filterSelectOptions: [
-      //     "Expired",
-      //     "Today",
-      //     "Tomorrow",
-      //     "In 7 days",
-      //     "In 15 days",
-      //     "30 Days",
-      //     "60 Days",
-      //     "Custom date",
-      //   ],
-      //   filterVariant: "custom",
-      //   size: 120,
-      //   minSize: 90,
-      //   maxSize: 120,
-      //   grow: false,
-      // },
 
       //   Stages
       {
@@ -1765,7 +1655,7 @@ export default function Lead() {
       },
     ],
     // eslint-disable-next-line
-    [users, auth, leadData, filteredData, load]
+    [users, auth, leadData, load]
   );
 
   // Clear table Filter
@@ -1800,7 +1690,7 @@ export default function Lead() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1830,7 +1720,6 @@ export default function Lead() {
       .getFilteredRowModel()
       .rows.map((row) => row.original);
 
-    console.log("Filtered Data:", filteredRows);
     setFilteredData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
 
@@ -1838,17 +1727,19 @@ export default function Lead() {
     <Layout>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className=" text-xl sm:text-2xl font-semibold ">Leads</h1>
+          <div className="flex items-center gap-5">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
+              Leads
+            </h1>
 
             <span
-              className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+              className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
               onClick={() => {
                 handleClearFilters();
               }}
               title="Clear filters"
             >
-              <IoClose className="h-6 w-6  cursor-pointer" />
+              <IoClose className="h-6 w-6 text-white" />
             </span>
           </div>
 
@@ -1866,7 +1757,7 @@ export default function Lead() {
         {/*  */}
         <>
           <div className="flex items-center gap-5">
-            <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-2 transition-all duration-300 w-fit">
+            <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
               <button
                 className={`py-1 px-4  outline-none transition-all duration-300  w-[6rem] ${
                   selectedTab === "progress"
@@ -1906,7 +1797,7 @@ export default function Lead() {
             </div>
             <button
               onClick={() => setActive(!active)}
-              className={`flex items-center justify-center px-2 py-[4px] mt-[6px] bg-gray-100  border border-gray-300 ${
+              className={`flex items-center justify-center px-2 py-[4px] mt-[1.2rem] bg-gray-100  border border-gray-300 ${
                 active && "bg-orange-600 text-white border-orange-500"
               }   rounded-md hover:shadow-md `}
             >

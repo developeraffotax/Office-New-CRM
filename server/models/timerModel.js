@@ -50,6 +50,14 @@ const timerSchema = new mongoose.Schema(
     companyName: {
       type: String,
     },
+    activity: {
+      type: String,
+      default: "Chargeable",
+    },
+    holiday: {
+      type: String,
+      default: "",
+    },
 
     isRunning: { type: Boolean, default: false },
   },

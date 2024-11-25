@@ -118,7 +118,11 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers(data?.users);
+      setUsers(
+        data?.users?.filter((user) =>
+          user?.role?.access?.some((item) => item?.permission?.includes("Jobs"))
+        )
+      );
       console.log("users", data?.users);
     } catch (error) {
       console.log(error);
@@ -525,7 +529,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   }
                   className={`${style.input} w-full `}
                 />
-                <span>Work Date</span>
+                <span>Job Date</span>
               </div>
               <div className="inputBox">
                 <input
@@ -571,7 +575,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Lead</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -665,7 +669,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   }
                   className={`${style.input} w-full `}
                 />
-                <span>Work Date</span>
+                <span>Job Date</span>
               </div>
               <div className="inputBox">
                 <input
@@ -711,7 +715,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Lead</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -805,7 +809,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   }
                   className={`${style.input} w-full `}
                 />
-                <span>Work Date</span>
+                <span>Job Date</span>
               </div>
               <div className="inputBox">
                 <input
@@ -851,7 +855,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Lead</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -944,7 +948,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   }
                   className={`${style.input} w-full `}
                 />
-                <span>Work Date</span>
+                <span>Job Date</span>
               </div>
               <div className="inputBox">
                 <input
@@ -990,7 +994,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Lead</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1083,7 +1087,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   }
                   className={`${style.input} w-full `}
                 />
-                <span>Work Date</span>
+                <span>Job Date</span>
               </div>
               <div className="inputBox">
                 <input
@@ -1129,7 +1133,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Lead</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1222,7 +1226,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   }
                   className={`${style.input} w-full `}
                 />
-                <span>Work Date</span>
+                <span>Job Date</span>
               </div>
               <div className="inputBox">
                 <input
@@ -1268,7 +1272,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Lead</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}
@@ -1361,7 +1365,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   }
                   className={`${style.input} w-full `}
                 />
-                <span>Work Date</span>
+                <span>Job Date</span>
               </div>
               <div className="inputBox">
                 <input
@@ -1407,7 +1411,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Lead</option>
+                <option value="">Owner</option>
                 {users.map((lead) => (
                   <option key={lead._id} value={lead?.name}>
                     {lead?.name}

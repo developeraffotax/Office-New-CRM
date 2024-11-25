@@ -695,7 +695,7 @@ export default function CompletedJobs({
 
       //  Current Date
       {
-        accessorKey: "currentDate",
+        accessorKey: "job.workDeadline",
         Header: ({ column }) => {
           const [filterValue, setFilterValue] = useState("");
           const [customDate, setCustomDate] = useState(getCurrentMonthYear());
@@ -762,7 +762,7 @@ export default function CompletedJobs({
 
           const handleDateChange = (newDate) => {
             setDate(newDate);
-            handleUpdateDates(row.original._id, newDate, "currentDate");
+            handleUpdateDates(row.original._id, newDate, "workDeadline");
             setShowCurrentDate(false);
           };
 
@@ -931,6 +931,7 @@ export default function CompletedJobs({
             "Submission",
             "Billing",
             "Feedback",
+            "Inactive",
           ];
           return (
             <div className=" flex flex-col gap-[2px]">
@@ -1263,7 +1264,7 @@ export default function CompletedJobs({
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },

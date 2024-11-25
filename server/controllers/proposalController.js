@@ -15,6 +15,7 @@ export const createProposal = async (req, res) => {
       propos,
       lead,
       client,
+      value,
     } = req.body;
 
     const proposal = await proposalModel.create({
@@ -29,6 +30,7 @@ export const createProposal = async (req, res) => {
       propos,
       lead,
       client,
+      value,
     });
 
     res.status(200).send({
@@ -69,7 +71,11 @@ export const updateProposal = async (req, res) => {
       propos,
       lead,
       client,
+      createdAt,
+      value,
     } = req.body;
+
+    console.log(new Date(createdAt));
 
     const existingProposal = await proposalModel.findById(proposalId);
     if (!existingProposal) {
@@ -89,10 +95,12 @@ export const updateProposal = async (req, res) => {
         jobDate: jobDate ? jobDate : existingProposal.jobDate,
         deadline: deadline ? deadline : existingProposal.deadline,
         source: source ? source : existingProposal.source,
-        note: note ? note : existingProposal.note,
+        note: note,
         propos: propos ? propos : existingProposal.propos,
         lead: lead ? lead : existingProposal.lead,
         client: client ? client : existingProposal.client,
+        createdAt: createdAt ? new Date(createdAt) : existingProposal.createdAt,
+        value: value || existingProposal.value,
       },
       { new: true }
     );

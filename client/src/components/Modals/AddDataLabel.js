@@ -52,6 +52,7 @@ export default function AddDataLabel({ setShowDataLable, getDatalable }) {
           setName("");
           setColor("#40E0D0");
           setLoading(false);
+          getDatalable();
         }
       } else {
         const { data } = await axios.post(
@@ -64,6 +65,7 @@ export default function AddDataLabel({ setShowDataLable, getDatalable }) {
           setName("");
           setColor("#40E0D0");
           setlabelId("");
+          getDatalable();
         }
       }
     } catch (error) {

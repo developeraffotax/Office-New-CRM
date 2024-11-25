@@ -5,8 +5,6 @@ import NewJobModal from "../../components/Modals/NewJobModal";
 import { CgClose } from "react-icons/cg";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import { IoIosArrowDropdown } from "react-icons/io";
-import { IoIosArrowDropup } from "react-icons/io";
 import axios from "axios";
 import {
   MaterialReactTable,
@@ -17,7 +15,7 @@ import { MdInsertComment } from "react-icons/md";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/authContext";
 import Loader from "../../utlis/Loader";
-import { TbCalendarDue } from "react-icons/tb";
+import { TbCalendarDue, TbLoader2 } from "react-icons/tb";
 import { IoClose } from "react-icons/io5";
 import JobDetail from "./JobDetail";
 import { IoBriefcaseOutline } from "react-icons/io5";
@@ -27,10 +25,7 @@ import { MdAutoGraph } from "react-icons/md";
 import { useLocation } from "react-router-dom";
 import { TbLoader } from "react-icons/tb";
 import { Box, Button } from "@mui/material";
-// import {
-//   FileDownload as FileDownloadIcon,
-//   Clear as ClearIcon,
-// } from "@mui/icons-material";
+import { MdOutlineModeEdit } from "react-icons/md";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import { IoMdDownload } from "react-icons/io";
 
@@ -40,6 +35,8 @@ import { GrUpdate } from "react-icons/gr";
 import AddLabel from "../../components/Modals/AddLabel";
 import { LuImport } from "react-icons/lu";
 import AddDataLabel from "../../components/Modals/AddDataLabel";
+import InactiveClients from "./InactiveClients";
+import Swal from "sweetalert2";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -58,9 +55,16 @@ const csvConfig = mkConfig({
 });
 
 export default function AllJobs() {
-  const { auth, filterId, setFilterId } = useAuth();
+  const {
+    auth,
+    filterId,
+    setFilterId,
+    searchValue,
+    setSearchValue,
+    jid,
+    anyTimerRunning,
+  } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [show, setShow] = useState(false);
   const [active, setActive] = useState("All");
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
@@ -89,6 +93,29 @@ export default function AllJobs() {
   const [labelData, setLabelData] = useState([]);
   const [showDataLable, setShowDataLable] = useState(false);
   const [dataLable, setDataLabel] = useState([]);
+  const [totalFee, setTotalFee] = useState(0);
+  const [activity, setActivity] = useState("Chargeable");
+  const [access, setAccess] = useState([]);
+  const [rowSelection, setRowSelection] = useState({});
+  const [showEdit, setShowEdit] = useState(false);
+  // -------Update Multiple------>
+  const [jobHolder, setJobHolder] = useState("");
+  const [lead, setLead] = useState("");
+  const [yearEnd, setYearEnd] = useState("");
+  const [jobDeadline, setJobDeadline] = useState("");
+  const [currentDate, setCurrentDate] = useState("");
+  const [jobState, setJobState] = useState("");
+  const [label, setLabel] = useState("");
+  const [dataLabelId, setDataLabelId] = useState("");
+  const [isUpload, setIsUpdate] = useState(false);
+  const [source, setSource] = useState("");
+  const [fee, setFee] = useState("");
+  const [hours, setHours] = useState("");
+  const sources = ["FIV", "UPW", "PPH", "Website", "Referal", "Partner"];
+  const [timerId, setTimerId] = useState("");
+  const [showInactive, setShowInactive] = useState(false);
+
+  // console.log("rowSelection:", rowSelection);
 
   // Extract the current path
   const currentPath = location.pathname;
@@ -114,7 +141,25 @@ export default function AllJobs() {
     "Submission",
     "Billing",
     "Feedback",
+    "Inactive",
   ];
+
+  // Get Auth Access
+  useEffect(() => {
+    if (auth.user) {
+      const filterAccess = auth.user.role.access
+        .filter((role) => role.permission === "Jobs")
+        .flatMap((jobRole) => jobRole.subRoles);
+
+      setAccess(filterAccess);
+    }
+  }, [auth]);
+
+  // Get Timer ID
+  useEffect(() => {
+    const timeId = localStorage.getItem("jobId");
+    setTimerId(JSON.parse(timeId));
+  }, [anyTimerRunning]);
 
   // -----------Total Hours-------->
 
@@ -127,6 +172,19 @@ export default function AllJobs() {
       setTotalHours(calculateTotalHours(tableData).toFixed(0));
     } else if (filterData) {
       setTotalHours(calculateTotalHours(filterData).toFixed(0));
+    }
+  }, [tableData, filterData, active, active1]);
+
+  // ------------Total Fee-------->
+  useEffect(() => {
+    const calculateTotalFee = (data) => {
+      return data.reduce((sum, client) => sum + Number(client.fee), 0);
+    };
+
+    if (active === "All") {
+      setTotalFee(calculateTotalFee(tableData).toFixed(0));
+    } else if (filterData) {
+      setTotalFee(calculateTotalFee(filterData).toFixed(0));
     }
   }, [tableData, filterData, active, active1]);
 
@@ -287,7 +345,7 @@ export default function AllJobs() {
     const filteredData = tableData.filter(
       (item) =>
         item.job.jobName === value ||
-        item.job.jobStatus === value ||
+        item.job?.jobStatus === value ||
         item.job.jobHolder === value ||
         item._id === value
     );
@@ -304,6 +362,21 @@ export default function AllJobs() {
     // eslint-disable-next-line
   }, [tableData, filterId]);
 
+  // Filter by Header Search
+  useEffect(() => {
+    if (searchValue) {
+      const filteredData = tableData.filter(
+        (item) =>
+          item?.clientName.toLowerCase().includes(searchValue.toLowerCase()) ||
+          item?.companyName.toLowerCase().includes(searchValue.toLowerCase())
+      );
+      setFilterData(filteredData);
+      console.log("SearchData:", filteredData);
+    } else {
+      setFilterData(tableData);
+    }
+  }, [searchValue, tableData]);
+
   // -------------- Filter Data By Department || Status || Placeholder ----------->
 
   const filterByDepStat = (value, dep) => {
@@ -312,7 +385,7 @@ export default function AllJobs() {
     if (dep === "All") {
       filteredData = tableData.filter(
         (item) =>
-          item.job.jobStatus === value ||
+          item.job?.jobStatus === value ||
           item.job.jobHolder === value ||
           getStatus(item.job.jobDeadline, item.job.yearEnd) === value ||
           getStatus(item.job.jobDeadline, item.job.yearEnd) === value
@@ -320,7 +393,7 @@ export default function AllJobs() {
     } else {
       filteredData = tableData.filter((item) => {
         const jobMatches = item.job.jobName === dep;
-        const statusMatches = item.job.jobStatus === value;
+        const statusMatches = item.job?.jobStatus === value;
         const holderMatches = item.job.jobHolder === value;
 
         return (
@@ -344,12 +417,21 @@ export default function AllJobs() {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
 
-      // setUsers(data?.users.map((user) => user.name) || []);
       setUsers(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Jobs"))
+          ?.filter((user) =>
+            user?.role?.access?.some((item) =>
+              item?.permission?.includes("Jobs")
+            )
+          )
           .map((user) => user.name) || []
       );
+
+      // setUserData(
+      //   data?.users?.filter((user) =>
+      //     user.role?.access.some((item) => item.permission.includes("Jobs"))
+      //   )
+      // );
     } catch (error) {
       console.log(error);
     }
@@ -361,11 +443,38 @@ export default function AllJobs() {
     // eslint-disable-next-line
   }, []);
 
+  // ------------Update Status Confirmtion------------>
+  const handleUpdateTicketStatusConfirmation = (rowId, newStatus) => {
+    if (newStatus === "Inactive") {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, mark as Inactive!",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          handleStatusChange(rowId, newStatus);
+          Swal.fire(
+            "Inactive!",
+            "Client status set to inactive successfully!",
+            "success"
+          );
+        }
+      });
+    } else {
+      handleStatusChange(rowId, newStatus);
+    }
+  };
+
   // ---------------Handle Status Change---------->
   const handleStatusChange = async (rowId, newStatus) => {
     if (!rowId) {
       return toast.error("Job id is required!");
     }
+
     try {
       const { data } = await axios.patch(
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/status/${rowId}`,
@@ -551,7 +660,7 @@ export default function AllJobs() {
           ? { yearEnd: date }
           : type === "jobDeadline"
           ? { jobDeadline: date }
-          : { currentDate: date }
+          : { workDeadline: date }
       );
       if (data) {
         const clientJob = data.clientJob;
@@ -610,19 +719,21 @@ export default function AllJobs() {
 
   const flattenData = (data) => {
     return data.map((row) => ({
-      clientName: row.clientName,
-      companyName: row.companyName,
-      // email: row.email,
-      currentDate: row.currentDate,
-      totalHours: row.totalHours,
-      totalTime: row.totalTime,
+      clientName: row.clientName || " ",
+      companyName: row.companyName || "",
+      jobHolder: row.job?.jobHolder || "",
       jobName: row.job?.jobName || "",
-      yearEnd: row.job?.yearEnd || "",
-      jobDeadline: row.job?.jobDeadline || "",
-      workDeadline: row.job?.workDeadline || "",
+      totalHours: row.totalHours || "",
+      currentDate: format(new Date(row.currentDate), "dd-MMM-yyyy") || "",
+      yearEnd: format(new Date(row.job?.yearEnd), "dd-MMM-yyyy") || "",
+      jobDeadline: format(new Date(row.job?.jobDeadline), "dd-MMM-yyyy") || "",
+      workDeadline:
+        format(new Date(row.job?.workDeadline), "dd-MMM-yyyy") || "",
       jobStatus: row.job?.jobStatus || "",
       lead: row.job?.lead || "",
-      jobHolder: row.job?.jobHolder || "",
+      label: row.label?.name || "",
+      partner: row?.partner || "",
+      data: row.data?.name || "",
     }));
   };
 
@@ -686,32 +797,28 @@ export default function AllJobs() {
   };
 
   // Add Data
-  const addDatalabel1 = async (id, name, color) => {
-    console.log("Data:", id, name, color);
+  const addDatalabel1 = async (id, labelId) => {
+    console.log("Data:", id, labelId);
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/client/add/job/data/${id}`,
-        { name, color }
+        { labelId }
       );
       if (data) {
         if (filterId || active || active1) {
           setFilterData((prevData) =>
             prevData?.map((item) =>
-              item._id === id ? { ...item, data: { name, color } } : item
+              item._id === id ? { ...item, data: data?.job?.data } : item
             )
           );
         }
         setTableData((prevData) =>
           prevData?.map((item) =>
-            item._id === id ? { ...item, data: { name, color } } : item
+            item._id === id ? { ...item, data: data?.job?.data } : item
           )
         );
-
-        if (name) {
-          toast.success("Data label added!");
-        } else {
-          toast.success("Data label updated!");
-        }
+        allClientData();
+        toast.success("New Data label added!");
 
         // Socket
         socketId.emit("addJob", {
@@ -731,7 +838,7 @@ export default function AllJobs() {
         accessorKey: "companyName",
         minSize: 190,
         maxSize: 300,
-        size: 260,
+        size: 210,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -749,7 +856,7 @@ export default function AllJobs() {
                 type="search"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-white rounded-md border border-gray-300 outline-none"
               />
             </div>
           );
@@ -795,7 +902,7 @@ export default function AllJobs() {
                 type="search"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-white rounded-md border border-gray-300 outline-none"
               />
             </div>
           );
@@ -815,6 +922,12 @@ export default function AllJobs() {
       {
         accessorKey: "job.jobHolder",
         Header: ({ column }) => {
+          const user = auth?.user?.name;
+          useEffect(() => {
+            column.setFilterValue(user);
+
+            // eslint-disable-next-line
+          }, []);
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -931,7 +1044,7 @@ export default function AllJobs() {
         accessorKey: "totalHours",
         Header: ({ column }) => {
           return (
-            <div className=" flex flex-col gap-[2px] w-[5.5rem] items-center justify-center pr-2 ">
+            <div className=" flex flex-col gap-[2px] w-full items-center justify-center pr-2 ">
               <span
                 className="ml-1 w-full text-center cursor-pointer"
                 title="Clear Filter"
@@ -941,15 +1054,9 @@ export default function AllJobs() {
               >
                 Hrs
               </span>
-              <span className="font-medium w-full text-center  px-1 py-1 rounded-md bg-gray-300/30 text-black">
+              <span className="font-medium w-[5rem] ml-2 text-center  px-1 py-1 rounded-md bg-gray-50 text-black">
                 {totalHours}
               </span>
-              {/* <input
-                type="search"
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              /> */}
             </div>
           );
         },
@@ -962,7 +1069,7 @@ export default function AllJobs() {
           );
         },
         filterFn: "equals",
-        size: 90,
+        size: 60,
       },
       // End  year
       {
@@ -1136,7 +1243,6 @@ export default function AllJobs() {
         maxSize: 140,
         grow: false,
       },
-
       // Job DeadLine
       {
         accessorKey: "job.jobDeadline",
@@ -1315,10 +1421,9 @@ export default function AllJobs() {
         maxSize: 140,
         grow: false,
       },
-
       //  Current Date
       {
-        accessorKey: "currentDate",
+        accessorKey: "job.workDeadline",
         Header: ({ column }) => {
           const [filterValue, setFilterValue] = useState("");
           const [customDate, setCustomDate] = useState(getCurrentMonthYear());
@@ -1392,7 +1497,7 @@ export default function AllJobs() {
             }
 
             setDate(newDate);
-            handleUpdateDates(row.original._id, newDate, "currentDate");
+            handleUpdateDates(row.original._id, newDate, "workDeadline");
             setShowCurrentDate(false);
           };
 
@@ -1544,16 +1649,19 @@ export default function AllJobs() {
         },
         filterSelectOptions: ["Overdue", "Due"],
         filterVariant: "select",
-        size: 100,
+        size: 95,
         minSize: 70,
         maxSize: 120,
         grow: false,
       },
-      //
+
+      // ----------Job Status----->
+
       {
-        accessorKey: "job.jobStatus",
+        accessorKey: "jobStatus",
+        accessorFn: (row) => row.job?.jobStatus || "",
         Header: ({ column }) => {
-          const jobStatus = [
+          const jobStatusOptions = [
             "Data",
             "Progress",
             "Queries",
@@ -1562,14 +1670,17 @@ export default function AllJobs() {
             "Billing",
             "Feedback",
           ];
+
+          useEffect(() => {
+            column.setFilterValue("Progress");
+          }, []);
+
           return (
-            <div className=" flex flex-col gap-[2px]">
+            <div className="flex flex-col gap-[2px]">
               <span
                 className="ml-1 cursor-pointer"
                 title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
+                onClick={() => column.setFilterValue("")}
               >
                 Job Status
               </span>
@@ -1579,7 +1690,7 @@ export default function AllJobs() {
                 className="font-normal h-[1.8rem] ml-1 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
                 <option value="">Select</option>
-                {jobStatus?.map((status, i) => (
+                {jobStatusOptions.map((status, i) => (
                   <option key={i} value={status}>
                     {status}
                   </option>
@@ -1590,12 +1701,14 @@ export default function AllJobs() {
         },
         Cell: ({ cell, row }) => {
           const statusValue = cell.getValue();
-
           return (
             <select
               value={statusValue}
               onChange={(e) =>
-                handleStatusChange(row.original._id, e.target.value)
+                handleUpdateTicketStatusConfirmation(
+                  row.original._id,
+                  e.target.value
+                )
               }
               className="w-[6rem] h-[2rem] rounded-md border border-sky-300 outline-none"
             >
@@ -1607,10 +1720,10 @@ export default function AllJobs() {
               <option value="Submission">Submission</option>
               <option value="Billing">Billing</option>
               <option value="Feedback">Feedback</option>
+              <option value="Inactive">Inactive</option>
             </select>
           );
         },
-        // filterFn: "equals",
         filterFn: (row, columnId, filterValue) => {
           const cellValue = row.getValue(columnId);
           return (cellValue || "").toString() === filterValue.toString();
@@ -1623,11 +1736,14 @@ export default function AllJobs() {
           "Submission",
           "Billing",
           "Feedback",
+          "Inactive",
         ],
         filterVariant: "select",
         size: 110,
         grow: false,
       },
+
+      //
       {
         accessorKey: "job.lead",
         Header: ({ column }) => {
@@ -1698,22 +1814,90 @@ export default function AllJobs() {
           );
         },
         Cell: ({ cell, row }) => {
-          const statusValue = cell.getValue();
+          const currentVal = row.original.totalTime;
+          // const statusValue = cell.getValue();
+          const [show, setShow] = useState(false);
+          const [totalTime, setTotalTime] = useState(currentVal);
+          const [load, setLoad] = useState(false);
+
+          const updateTimer = async (e) => {
+            e.preventDefault();
+            setLoad(true);
+            try {
+              const { data } = await axios.put(
+                `${process.env.REACT_APP_API_URL}/api/v1/client/update/timer/${row.original._id}`,
+                { totalTime }
+              );
+              if (data) {
+                setShow(false);
+                setLoad(true);
+                toast.success("Budget updated!");
+              }
+            } catch (error) {
+              setLoad(false);
+              console.log(error);
+            }
+          };
+
           return (
-            <div className="flex items-center gap-1 w-full justify-center">
-              <span className="text-[1rem]">⏳</span>
-              <span>{statusValue}</span>
+            <div className="flex items-center gap-1 w-full ">
+              {!show ? (
+                <div
+                  onDoubleClick={
+                    auth?.user?.role?.name === "Admin"
+                      ? () => setShow(true)
+                      : null
+                  }
+                  className="w-full flex items-center gap-1 justify-center cursor-pointer"
+                >
+                  <span className="text-[1rem]">⏳</span>
+                  <span>{totalTime}</span>
+                </div>
+              ) : (
+                <div className="w-full">
+                  <form onSubmit={updateTimer}>
+                    <input
+                      type="text"
+                      disabled={load}
+                      className="w-full h-[2rem] rounded-md border border-gray-500 px-1 outline-none "
+                      value={totalTime}
+                      onChange={(e) => setTotalTime(e.target.value)}
+                    />
+                  </form>
+                </div>
+              )}
             </div>
           );
         },
-        size: 90,
+        size: 80,
       },
       {
         accessorKey: "timertracker",
         Header: ({ column }) => {
+          const [isRunning, setIsRunning] = useState(false);
+
+          const handleCheckboxChange = () => {
+            const newIsRunning = !isRunning;
+            setIsRunning(newIsRunning);
+
+            if (newIsRunning) {
+              column.setFilterValue(timerId || jid);
+            } else {
+              column.setFilterValue(undefined);
+            }
+          };
           return (
             <div className=" flex flex-col gap-[2px]  ml w-[5rem]">
               <span className="w-full text-center ">Timer</span>
+              <div className="w-full flex items-center justify-center">
+                <input
+                  type="checkbox"
+                  className="cursor-pointer h-5 w-5 ml-3 accent-orange-600"
+                  checked={isRunning}
+                  onChange={handleCheckboxChange}
+                />
+                <label className="ml-2 text-sm cursor-pointer"></label>
+              </div>
             </div>
           );
         },
@@ -1743,11 +1927,19 @@ export default function AllJobs() {
                   projectName={""}
                   task={""}
                   companyName={row.original.companyName}
+                  activity={activity}
+                  setActivity={setActivity}
                 />
               </span>
             </div>
           );
         },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.original._id;
+          console.log("T_ID:", filterValue, cellValue);
+          return cellValue === filterValue;
+        },
+        filterVariant: "select",
         size: 90,
       },
       {
@@ -1786,7 +1978,7 @@ export default function AllJobs() {
             </div>
           );
         },
-        size: 100,
+        size: 80,
       },
       // Label
       {
@@ -1885,14 +2077,54 @@ export default function AllJobs() {
 
         filterVariant: "select",
         filterSelectOptions: labelData.map((label) => label.name),
-        size: 160,
+        size: 120,
         minSize: 100,
         maxSize: 210,
         grow: false,
       },
       // Source
-
-      ...(auth?.user?.role?.name === "Admin"
+      // || auth?.user?.role.access.some((item)=>)
+      ...(auth?.user?.role?.name === "Admin" || access.includes("Fee")
+        ? [
+            {
+              accessorKey: "fee",
+              Header: ({ column }) => {
+                return (
+                  <div className=" flex flex-col gap-[2px] w-full items-center justify-center  ">
+                    <span
+                      className="ml-1 w-full text-center cursor-pointer pr-6"
+                      title="Clear Filter"
+                      onClick={() => {
+                        column.setFilterValue("");
+                      }}
+                    >
+                      Fee
+                    </span>
+                    <span
+                      title={totalFee}
+                      className="font-medium w-full cursor-pointer text-center text-[12px] px-1 py-1 rounded-md bg-gray-50 text-black"
+                    >
+                      {totalFee}
+                    </span>
+                  </div>
+                );
+              },
+              Cell: ({ cell, row }) => {
+                const fee = row.original.fee;
+                return (
+                  <div className="w-full flex items-center justify-center">
+                    <span className="text-[15px] font-medium">
+                      {fee && fee}
+                    </span>
+                  </div>
+                );
+              },
+              filterFn: "equals",
+              size: 60,
+            },
+          ]
+        : []),
+      ...(auth?.user?.role?.name === "Admin" || access.includes("Source")
         ? [
             {
               accessorKey: "source",
@@ -1935,7 +2167,7 @@ export default function AllJobs() {
               Cell: ({ cell, row }) => {
                 const source = row.original.source;
                 return (
-                  <div className="w-full flex items-center justify-center">
+                  <div className="w-full flex items-start justify-start">
                     <span className="text-[15px] font-medium">
                       {source && source}
                     </span>
@@ -1945,6 +2177,11 @@ export default function AllJobs() {
               filterFn: "equals",
               size: 90,
             },
+          ]
+        : []),
+      // ---------------------------->
+      ...(auth?.user?.role?.name === "Admin" || access.includes("Data")
+        ? [
             // Data Label
             {
               accessorKey: "data",
@@ -1980,11 +2217,11 @@ export default function AllJobs() {
               Cell: ({ cell, row }) => {
                 const [show, setShow] = useState(false);
                 const jobLabel = row.original.data || {};
-                const { name, color } = jobLabel;
+                const { name, color, _id } = jobLabel;
 
                 const handleLabelChange = (labelName) => {
                   const selectedLabel = dataLable.find(
-                    (label) => label.name === labelName
+                    (label) => label._id === labelName
                   );
                   console.log("selectedLabel:", selectedLabel);
                   if (selectedLabel) {
@@ -2000,16 +2237,16 @@ export default function AllJobs() {
                 };
 
                 return (
-                  <div className="w-full flex items-center justify-center">
+                  <div className="w-full flex items-start ">
                     {show ? (
                       <select
-                        value={name || ""}
+                        value={_id || ""}
                         onChange={(e) => handleLabelChange(e.target.value)}
                         className="w-full h-[2rem] rounded-md border-none outline-none"
                       >
                         <option value="empty">Select Data</option>
                         {dataLable?.map((label, i) => (
-                          <option value={label?.name} key={i}>
+                          <option value={label?._id} key={i}>
                             {label?.name}
                           </option>
                         ))}
@@ -2021,8 +2258,10 @@ export default function AllJobs() {
                       >
                         {name ? (
                           <span
-                            className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-black ${
-                              color === "#fff" ? "text-gray-950" : "text-white"
+                            className={`label relative  rounded-md hover:shadow  cursor-pointer text-black ${
+                              color === "#fff"
+                                ? "text-gray-950 py-[4px] px-0"
+                                : "text-white py-[4px] px-2"
                             }`}
                             style={{ background: `${color}` }}
                           >
@@ -2049,7 +2288,7 @@ export default function AllJobs() {
 
               filterVariant: "select",
               filterSelectOptions: dataLable.map((label) => label.name),
-              size: 120,
+              size: 110,
               minSize: 100,
               maxSize: 210,
               grow: false,
@@ -2058,7 +2297,17 @@ export default function AllJobs() {
         : []),
     ],
     // eslint-disable-next-line
-    [users, play, auth, note, totalHours]
+    [
+      users,
+      play,
+      auth,
+      note,
+      totalHours,
+      labelData,
+      dataLable,
+      filterData,
+      tableData,
+    ]
   );
 
   // Clear table Filter
@@ -2069,9 +2318,11 @@ export default function AllJobs() {
 
   const table = useMaterialReactTable({
     columns,
-    data: active === "All" && !active1 && !filterId ? tableData : filterData,
-    getRowId: (originalRow) => originalRow.id,
-    // enableRowSelection: true,
+    data:
+      active === "All" && !active1 && !filterId && !searchValue
+        ? tableData
+        : filterData,
+    getRowId: (row) => row._id,
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
@@ -2084,12 +2335,15 @@ export default function AllJobs() {
     enableColumnResizing: true,
     enableTopToolbar: true,
     enableBottomToolbar: true,
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
+    state: { rowSelection },
     // enableEditing: true,
     // state: { isLoading: loading },
 
     enablePagination: true,
     initialState: {
-      pagination: { pageSize: 50 },
+      pagination: { pageSize: 30 },
       pageSize: 20,
       density: "compact",
     },
@@ -2098,7 +2352,7 @@ export default function AllJobs() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#ececec",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -2156,31 +2410,73 @@ export default function AllJobs() {
     },
   });
 
-  // useEffect(() => {
-  //   const filteredRows = table
-  //     .getFilteredRowModel()
-  //     .rows.map((row) => row.original);
+  // -------Update Bulk Jobs------------->
 
-  //   console.log("Filtered Data:", filteredRows);
-  //   setFilterData(filteredRows);
-  //   // eslint-disable-next-line
-  // }, [table.getFilteredRowModel().rows]);
+  const updateBulkJob = async (e) => {
+    e.preventDefault();
+    setIsUpdate(true);
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/update/bulk/job`,
+        {
+          rowSelection: Object.keys(rowSelection).filter(
+            (id) => rowSelection[id] === true
+          ),
+          jobHolder,
+          lead,
+          yearEnd,
+          jobDeadline,
+          currentDate,
+          jobState,
+          label,
+          dataLabelId,
+          source,
+          fee,
+          totalHours: hours,
+        }
+      );
+
+      if (data) {
+        allClientJobData();
+        setIsUpdate(false);
+        setShowEdit(false);
+        setRowSelection({});
+        setJobHolder("");
+        setLead("");
+        setYearEnd("");
+        setCurrentDate("");
+        setJobDeadline("");
+        setJobState("");
+        setLabel("");
+        setDataLabelId("");
+        setSource("");
+        setFee("");
+        setHours("");
+      }
+    } catch (error) {
+      setIsUpdate(false);
+      console.log(error?.response?.data?.message);
+      toast.error("Something went wrong!");
+    } finally {
+      setIsUpdate(false);
+    }
+  };
 
   return (
     <Layout>
       <div className="w-full h-[100%] py-4 px-2 sm:px-4 overflow-y-auto ">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className=" text-xl sm:text-2xl font-semibold ">Job</h1>
-            <span className="" onClick={() => setShow(!show)}>
-              {show ? (
-                <IoIosArrowDropup className="h-5 w-5 cursor-pointer" />
-              ) : (
-                <IoIosArrowDropdown className="h-5 w-5 cursor-pointer" />
-              )}
-            </span>
+          <div className="flex items-center gap-5">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
+              {showCompleted && activeBtn === "completed"
+                ? "Completed Job's"
+                : showInactive && activeBtn === "inactive"
+                ? "Inactive Jobs"
+                : "Jobs"}
+            </h1>
+
             <span
-              className={` p-1 ml-2 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+              className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
               onClick={() => {
                 setActive("All");
                 setActiveBtn("");
@@ -2190,10 +2486,11 @@ export default function AllJobs() {
                 setActive1("");
                 setFilterId("");
                 handleClearFilters();
+                setSearchValue("");
               }}
               title="Clear filters"
             >
-              <IoClose className="h-6 w-6  cursor-pointer" />
+              <IoClose className="h-6 w-6 text-white" />
             </span>
           </div>
 
@@ -2227,11 +2524,11 @@ export default function AllJobs() {
             </form>
 
             <button
-              className={`w-[3rem] h-[2.2rem] flex items-center justify-center rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
+              className={`px-4 h-[2.2rem] flex items-center justify-center gap-1 rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
               onClick={handleExportData}
-              title="Import Date"
+              title="Export Date"
             >
-              <LuImport className="h-5 w-5" />
+              <LuImport className="h-6 w-6 " /> Export
             </button>
             <button
               className={`${style.button1} text-[15px] `}
@@ -2259,7 +2556,7 @@ export default function AllJobs() {
         {/*  */}
 
         {/* -----------Filters By Deparment--------- */}
-        <div className="flex items-center flex-wrap gap-2 mt-3">
+        <div className="flex items-center flex-wrap gap-2 mt-6">
           {departments?.map((dep, i) => {
             getDueAndOverdueCountByDepartment(dep);
             return (
@@ -2273,8 +2570,10 @@ export default function AllJobs() {
                   setActive(dep);
                   filterByDep(dep);
                   setShowCompleted(false);
+                  setShowInactive(false);
                   setActive1("");
                   setFilterId("");
+                  active === "All" && allClientData();
                 }}
               >
                 {dep} ({getDepartmentCount(dep)})
@@ -2294,6 +2593,20 @@ export default function AllJobs() {
             }}
           >
             Completed
+          </div>
+          <div
+            className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+              activeBtn === "inactive" &&
+              showInactive &&
+              " border-2 border-b-0 text-orange-600 border-gray-300"
+            }`}
+            onClick={() => {
+              setActiveBtn("inactive");
+              setShowInactive(true);
+              setActive("");
+            }}
+          >
+            Inactive
           </div>
           {/*  */}
           {/* -------------Filter Open Buttons-------- */}
@@ -2334,6 +2647,19 @@ export default function AllJobs() {
             <MdAutoGraph className="h-6 w-6  cursor-pointer" />
           </span>
 
+          {/* Edit Multiple Job */}
+          <span
+            className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+              showEdit && "bg-orange-500 text-white"
+            }`}
+            onClick={() => {
+              setShowEdit(!showEdit);
+            }}
+            title="Edit Multiple Jobs"
+          >
+            <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
+          </span>
+
           <span
             className={` p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
             onClick={() => {
@@ -2354,13 +2680,183 @@ export default function AllJobs() {
         {/*  */}
         <hr className="mb-1 bg-gray-200 w-full h-[1px]" />
 
+        {/* Update Bulk Jobs */}
+        {showEdit && (
+          <div className="w-full  py-2">
+            <form
+              onSubmit={updateBulkJob}
+              className="w-full flex items-center flex-wrap gap-2 "
+            >
+              <div className="">
+                <select
+                  value={jobHolder}
+                  onChange={(e) => setJobHolder(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "7rem" }}
+                >
+                  <option value="empty">Assign</option>
+                  {users.map((jobHold, i) => (
+                    <option value={jobHold} key={i}>
+                      {jobHold}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="">
+                <select
+                  value={lead}
+                  onChange={(e) => setLead(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "7rem" }}
+                >
+                  <option value="empty">Owner</option>
+                  {users.map((jobHold, i) => (
+                    <option value={jobHold} key={i}>
+                      {jobHold}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="inputBox" style={{ width: "8.5rem" }}>
+                <input
+                  type="date"
+                  value={yearEnd}
+                  onChange={(e) => setYearEnd(e.target.value)}
+                  className={`${style.input} w-full `}
+                />
+                <span>Year End</span>
+              </div>
+              <div className="inputBox" style={{ width: "8.5rem" }}>
+                <input
+                  type="date"
+                  value={jobDeadline}
+                  onChange={(e) => setJobDeadline(e.target.value)}
+                  className={`${style.input} w-full `}
+                />
+                <span>Job Deadline</span>
+              </div>
+              <div className="inputBox" style={{ width: "8.5rem" }}>
+                <input
+                  type="date"
+                  value={currentDate}
+                  onChange={(e) => setCurrentDate(e.target.value)}
+                  className={`${style.input} w-full `}
+                />
+                <span>Job Date</span>
+              </div>
+              {/*  */}
+              <div className="">
+                <select
+                  value={jobState}
+                  onChange={(e) => setJobState(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "6.5rem" }}
+                >
+                  <option value="empty">Status</option>
+                  {status.map((stat, i) => (
+                    <option value={stat} key={i}>
+                      {stat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="">
+                <select
+                  value={label}
+                  onChange={(e) => setLabel(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "9rem" }}
+                >
+                  <option value="empty">Select Label</option>
+                  {labelData?.map((label, i) => (
+                    <option value={label._id} key={i}>
+                      {label?.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="">
+                <select
+                  value={dataLabelId}
+                  onChange={(e) => setDataLabelId(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "9rem" }}
+                >
+                  <option value="empty">Select Data</option>
+                  {dataLable?.map((data, i) => (
+                    <option value={data?._id} key={i}>
+                      {data?.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {(auth?.user?.role?.name === "Admin" ||
+                access.includes("Fee")) && (
+                <div className="inputBox" style={{ width: "6rem" }}>
+                  <input
+                    type="text"
+                    value={fee}
+                    onChange={(e) => setFee(e.target.value)}
+                    className={`${style.input} w-full `}
+                  />
+                  <span>Fee</span>
+                </div>
+              )}
+              {auth?.user?.role?.name === "Admin" && (
+                <div className="inputBox" style={{ width: "6rem" }}>
+                  <input
+                    type="text"
+                    value={hours}
+                    onChange={(e) => setHours(e.target.value)}
+                    className={`${style.input} w-full `}
+                  />
+                  <span>Hours</span>
+                </div>
+              )}
+
+              {(auth?.user?.role?.name === "Admin" ||
+                access.includes("Source")) && (
+                <div className="">
+                  <select
+                    value={source}
+                    onChange={(e) => setSource(e.target.value)}
+                    className={`${style.input} w-full`}
+                    style={{ width: "8rem" }}
+                  >
+                    <option value="">Source</option>
+                    {sources.map((sou, i) => (
+                      <option value={sou} key={i}>
+                        {sou}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end pl-4">
+                <button
+                  className={`${style.button1} text-[15px] `}
+                  type="submit"
+                  disabled={isUpload}
+                  style={{ padding: ".5rem 1rem" }}
+                >
+                  {isUpload ? (
+                    <TbLoader2 className="h-5 w-5 animate-spin text-white" />
+                  ) : (
+                    <span>Save</span>
+                  )}
+                </button>
+              </div>
+            </form>
+            <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
+          </div>
+        )}
+
         {/* ----------Job_Holder Summery Filters---------- */}
         {showJobHolder && activeBtn === "jobHolder" && (
           <>
             <div className="w-full  py-2 ">
-              {/* <h3 className="text-[19px] font-semibold text-black">
-                Job Holder Summary
-              </h3> */}
               <div className="flex items-center flex-wrap gap-4">
                 {/* {users?.map((user, i) => (
                   <div
@@ -2470,25 +2966,9 @@ export default function AllJobs() {
         )}
 
         {/* ---------------------Data Table---------------- */}
-        {!showCompleted ? (
-          <>
-            {loading ? (
-              <div className="flex items-center justify-center w-full h-screen px-4 py-4">
-                <Loader />
-              </div>
-            ) : (
-              <div className="w-full min-h-[20vh] relative border-t border-gray-300">
-                <div className="h-full hidden1 overflow-y-scroll relative">
-                  <MaterialReactTable table={table} />
-                </div>
-                {/* <span className="absolute bottom-4 left-[33%] z-10 font-semibold text-[15px] text-gray-900">
-                  Total Hrs: {totalHours}
-                </span> */}
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="w-full min-h-screen  relative">
+
+        {showCompleted && activeBtn === "completed" ? (
+          <div className="w-full min-h-screen relative">
             <CompletedJobs
               getSingleJobDetail={getSingleJobDetail}
               setCompanyName={setCompanyName}
@@ -2501,6 +2981,34 @@ export default function AllJobs() {
               allClientJobData={allClientJobData}
             />
           </div>
+        ) : showInactive && activeBtn === "inactive" ? (
+          <div className="w-full min-h-screen relative">
+            <InactiveClients
+              getSingleJobDetail={getSingleJobDetail}
+              setCompanyName={setCompanyName}
+              users={users}
+              handleUpdateJobHolder={handleUpdateJobHolder}
+              handleUpdateDates={handleUpdateDates}
+              getStatus={getStatus}
+              setJobId={setJobId}
+              setIsComment={setIsComment}
+              allClientJobData={allClientJobData}
+            />
+          </div>
+        ) : (
+          <>
+            {loading ? (
+              <div className="flex items-center justify-center w-full h-screen px-4 py-4">
+                <Loader />
+              </div>
+            ) : (
+              <div className="w-full min-h-[20vh] relative border-t border-gray-300">
+                <div className="h-full overflow-y-scroll relative">
+                  <MaterialReactTable table={table} />
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -2565,11 +3073,11 @@ export default function AllJobs() {
       {/* -------------Stop Timer Btn-----------*/}
       {isShow && (
         <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/80 flex items-center justify-center">
-          <div className="w-[32rem] rounded-md bg-white shadow-md">
+          <div className="w-[35rem] rounded-md bg-white shadow-md">
             <div className="flex  flex-col gap-3 ">
               <div className=" w-full flex items-center justify-between py-2 mt-1 px-4">
                 <h3 className="text-[19px] font-semibold text-gray-800">
-                  Enter your note here
+                  Enter End Note
                 </h3>
                 <span
                   onClick={() => {
@@ -2580,12 +3088,31 @@ export default function AllJobs() {
                 </span>
               </div>
               <hr className="w-full h-[1px] bg-gray-500 " />
+              <div className="flex items-start px-4 py-2 ">
+                {activity === "Chargeable" ? (
+                  <button
+                    className={`px-4 h-[2.6rem] min-w-[5rem] flex items-center justify-center  rounded-md cursor-pointer shadow-md  text-white border-none outline-none bg-green-500 hover:bg-green-600`}
+                    onClick={() => setActivity("Non-Chargeable")}
+                    style={{ width: "8rem", fontSize: "14px" }}
+                  >
+                    Chargeable
+                  </button>
+                ) : (
+                  <button
+                    className={`px-4 h-[2.6rem] min-w-[5rem] flex items-center justify-center  rounded-md cursor-pointer shadow-md  text-white border-none outline-none bg-red-500 hover:bg-red-600`}
+                    onClick={() => setActivity("Chargeable")}
+                    style={{ width: "9rem", fontSize: "14px" }}
+                  >
+                    Non-Chargeable
+                  </button>
+                )}
+              </div>
               <div className=" w-full px-4 py-2 flex-col gap-4">
                 <textarea
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder="Add note here..."
-                  className="w-full h-[6rem] rounded-md resize-none py-1 px-2 shadow border-2 border-gray-700"
+                  className="w-full h-[6rem] rounded-md resize-none py-1 px-2 border-2 border-gray-700"
                 />
                 <div className="flex items-center justify-end mt-4">
                   <button className={`${style.btn}`} onClick={handleStopTimer}>

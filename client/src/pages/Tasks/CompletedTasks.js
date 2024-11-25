@@ -771,7 +771,7 @@ const CompletedTasks = ({
               >
                 Hrs
               </span>
-              <span className="font-medium w-full text-center px-1 py-1 ml-1 rounded-md bg-gray-300/30 text-black">
+              <span className="font-medium w-full text-center px-1 py-1 ml-1 rounded-md bg-gray-50 text-black">
                 {totalHours}
               </span>
             </div>
@@ -1643,7 +1643,7 @@ const CompletedTasks = ({
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },

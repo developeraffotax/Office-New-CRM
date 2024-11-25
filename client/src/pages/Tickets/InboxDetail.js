@@ -15,19 +15,20 @@ import { LuDownload } from "react-icons/lu";
 import { ImAttachment } from "react-icons/im";
 import { TbLoader2 } from "react-icons/tb";
 import SendEmailReply from "../../components/Tickets/SendEmailReply";
+// import SendEmailReply from "../../components/Tickets/SendEmailReply";
 
 export default function InboxDetail({
   singleEmail,
   setShowEmailDetail,
   company,
 }) {
-  const params = useParams();
   const [ticketDetail, setTicketDetail] = useState([]);
   const [emailDetail, setEmailDetail] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isloading, setIsLoading] = useState(false);
   const [attachmentId, setAttachmentId] = useState("");
   const [showReplay, setShowReply] = useState(false);
+  const [sendToEmail, setSendToEmail] = useState("");
 
   console.log("emailDetail:", emailDetail);
 
@@ -58,6 +59,42 @@ export default function InboxDetail({
     getEmailDetail();
   }, [singleEmail, company]);
 
+  // Get Email Detail without load
+  const getEmail = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/inbox/detail/${singleEmail.emailData.threadId}/${company}`
+      );
+      if (data) {
+        setEmailDetail(data.emailDetails);
+        //
+        markAsRead(
+          data.emailDetails.threadData.messages[
+            data.emailDetails.threadData.messages.length - 1
+          ].id
+        );
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    const fromHeader =
+      singleEmail.emailData.payload.headers.find(
+        (header) => header.name === "From"
+      )?.value || "No Sender";
+
+    // Check if 'fromHeader' contains an email
+    const [name, emailAddress] = fromHeader.includes("<")
+      ? fromHeader.split(/<|>/)
+      : [fromHeader, ""];
+
+    // Clean the email address
+    const cleanedEmail = emailAddress ? emailAddress.trim() : "";
+    setSendToEmail(cleanedEmail);
+  }, [singleEmail]);
+
   // Regex to extract the name and email address
   const separate = (email) => {
     const emailRegex = /(.*)<(.*)>/;
@@ -71,7 +108,7 @@ export default function InboxDetail({
       <>
         <div className="flex items-end gap-1">
           <span className=" font-semibold text-[15px] sm:text-[17px] ">
-            {name}
+            {name.slice(0, 20)}
           </span>
           <span className=" font-normal text-[12px] sm:text-[14px] text-gray-600">
             {`<${emailAddress}>`}
@@ -97,6 +134,7 @@ export default function InboxDetail({
     return <span className="text-[12px] text-gray-600">{formattedDate}</span>;
   };
 
+  // ------------Download Email Attachments-------->
   const downloadAttachments = async (
     attachmentId,
     messageId,
@@ -112,63 +150,40 @@ export default function InboxDetail({
 
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          responseType: "json",
+        }
       );
 
-      if (data && data.attachment && data.attachment.data) {
-        const encodedData = data.attachment.data;
+      if (data) {
+        const jsonData = data;
 
-        // Since encodedData is an array of bytes, we convert it directly to Uint8Array
-        const byteArray = new Uint8Array(encodedData);
+        const encodedData = jsonData.data;
 
-        // Dynamically detect MIME type if possible (based on file extension)
-        const fileExtension = fileName?.split(".").pop();
-        let mimeType = "application/octet-stream"; // Default type
+        const decodedData = Buffer.from(encodedData, "base64");
 
-        if (fileExtension) {
-          switch (fileExtension.toLowerCase()) {
-            case "pdf":
-              mimeType = "application/pdf";
-              break;
-            case "jpg":
-            case "jpeg":
-              mimeType = "image/jpeg";
-              break;
-            case "png":
-              mimeType = "image/png";
-              break;
-            case "doc":
-            case "docx":
-              mimeType = "application/msword";
-              break;
-            case "xls":
-            case "xlsx":
-              mimeType = "application/vnd.ms-excel";
-              break;
-            // Add more cases as needed for other file types
-            default:
-              mimeType = "application/octet-stream";
-          }
-        }
+        const byteArray = new Uint8Array(decodedData.buffer);
 
-        // Create Blob from the byteArray
-        const blob = new Blob([byteArray], { type: mimeType });
+        const blob = new Blob([byteArray], {
+          type: "application/octet-stream",
+        });
+
         const url = URL.createObjectURL(blob);
 
-        // Create an anchor element to trigger the download
+        // Create a link element
         const link = document.createElement("a");
         link.href = url;
-        link.download = fileName || "attachment";
-        document.body.appendChild(link);
+        link.download = fileName;
+
         link.click();
 
-        // Clean up
-        document.body.removeChild(link);
+        // Clean up the URL object
         URL.revokeObjectURL(url);
 
-        setIsLoading(false);
-      } else {
-        toast.error("Attachment data is missing or incorrect!");
         setIsLoading(false);
       }
     } catch (error) {
@@ -233,13 +248,13 @@ export default function InboxDetail({
               {singleEmail?.subject}
             </h2>
           </div>
-          {/* <button
+          <button
             className={`${style.button1} text-[15px] flex items-center gap-1 `}
             onClick={() => setShowReply(true)}
             style={{ padding: ".4rem 1rem" }}
           >
             <HiReply className="h-4 w-4" /> Reply
-          </button> */}
+          </button>
         </div>
         {/* Email Detail */}
         {loading ? (
@@ -312,7 +327,7 @@ export default function InboxDetail({
                                     downloadAttachments(
                                       item.attachmentId,
                                       item.attachmentMessageId,
-                                      ticketDetail.company,
+                                      company,
                                       item.attachmentFileName
                                     );
                                     setAttachmentId(item.attachmentId);
@@ -364,7 +379,7 @@ export default function InboxDetail({
                                 return (
                                   <>
                                     <span class="font-semibold text-[16px]">
-                                      {name.trim()}
+                                      {name.trim().slice(0, 20)}
                                     </span>{" "}
                                     {email}
                                   </>
@@ -391,12 +406,14 @@ export default function InboxDetail({
                         className=" ml-10 text-[15px]"
                         style={{ lineHeight: "1rem" }}
                         dangerouslySetInnerHTML={{
-                          __html: cleanEmailBody(
-                            message?.payload?.body?.data.replace(
-                              /<\/p>\s*<p>/g,
-                              "</p><br><p>"
-                            )
-                          ),
+                          __html: message?.payload?.body?.data
+                            ? cleanEmailBody(
+                                message?.payload?.body?.data.replace(
+                                  /<\/p>\s*<p>/g,
+                                  "</p><br><p>"
+                                )
+                              )
+                            : message?.snippet,
                         }}
                       ></div>
 
@@ -420,7 +437,7 @@ export default function InboxDetail({
                                     downloadAttachments(
                                       item.attachmentId,
                                       item.attachmentMessageId,
-                                      ticketDetail.company,
+                                      company,
                                       item.attachmentFileName
                                     );
                                     setAttachmentId(item.attachmentId);
@@ -454,19 +471,19 @@ export default function InboxDetail({
         )}
 
         {/* ----------------Email Reply-------------- */}
-        {/* {showReplay && (
+        {showReplay && (
           <div className="fixed top-0 left-0 z-[999] w-full h-full py-1 bg-gray-700/70 flex items-center justify-center">
             <SendEmailReply
               setShowReply={setShowReply}
               subject={emailDetail.subject}
               threadId={emailDetail.threadId}
-              company={ticketDetail.company}
+              company={company}
               ticketId={ticketDetail._id}
-              emailSendTo={emailDetail.recipients[0]}
-              getEmailDetail={emailData}
+              emailSendTo={sendToEmail}
+              getEmailDetail={getEmail}
             />
           </div>
-        )} */}
+        )}
       </div>
     </Layout>
   );

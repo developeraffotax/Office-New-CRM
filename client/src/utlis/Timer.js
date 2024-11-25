@@ -9,6 +9,7 @@ import axios from "axios";
 import { FaCirclePlay } from "react-icons/fa6";
 import { IoStopCircle } from "react-icons/io5";
 import { useAuth } from "../context/authContext";
+import toast from "react-hot-toast";
 import socketIO from "socket.io-client";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -30,18 +31,24 @@ export const Timer = forwardRef(
       JobHolderName,
       projectName,
       task,
+      activity,
+      setActivity,
     },
     ref
   ) => {
-    const { anyTimerRunning, setAnyTimerRunning, auth, setTime } = useAuth();
+    const { anyTimerRunning, setAnyTimerRunning, auth, setJid } = useAuth();
     const [timerId, setTimerId] = useState(null);
     const [isRunning, setIsRunning] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
     const [startTime, setStartTime] = useState(null);
     const [totalTime, setTotalTime] = useState(null);
     const isInitialMount = useRef(true);
+    const [runningId, setRunningId] = useState("");
 
     useEffect(() => {
+      if (!clientId || !jobId) {
+        return;
+      }
       const fetchTimerStatus = async () => {
         try {
           const response = await axios.get(
@@ -50,18 +57,19 @@ export const Timer = forwardRef(
               params: { clientId, jobId },
             }
           );
-          const { _id, startTime, endTime } = response.data.timer;
+          const { _id, startTime, endTime, isRunning } = response.data.timer;
           // console.log("Timer:", response.data.timer);
 
           if (startTime && !endTime) {
             setTimerId(_id);
             setStartTime(new Date(startTime));
-            setIsRunning(true);
-            setAnyTimerRunning(true);
+            setIsRunning(isRunning);
+            setAnyTimerRunning(isRunning);
             const timeElapsed = Math.floor(
               (new Date() - new Date(startTime)) / 1000
             );
             setElapsedTime(timeElapsed);
+            setJid(response.data.timer.jobId);
           }
         } catch (error) {
           console.error(error);
@@ -96,6 +104,7 @@ export const Timer = forwardRef(
     //   setTimerId(JSON.parse(timeId));
     // }, []);
 
+    // -------------------Start Timer---------->
     const startTimer = async () => {
       localStorage.setItem("jobId", JSON.stringify(jobId));
       try {
@@ -120,7 +129,7 @@ export const Timer = forwardRef(
           JSON.stringify(response.data.timer._id)
         );
 
-        addTimerTaskStatus();
+        addTimerTaskStatus(response.data.timer._id);
         setIsRunning(true);
         setStartTime(new Date());
         setAnyTimerRunning(true);
@@ -131,34 +140,45 @@ export const Timer = forwardRef(
           note: "Started work on job",
         });
       } catch (error) {
-        console.error("Error starting timer:", error);
+        console.error(error?.response?.data?.message);
+        toast.error(error?.response?.data?.message || "Some thing went wrong!");
       }
     };
 
+    // --------------Stop Timer----------->
     const stopTimer = async () => {
+      if (!timerId) {
+        return;
+      }
       try {
-        await axios.put(
+        const { data } = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/v1/timer/stop/timer/${timerId}`,
-          { note }
+          { note, activity }
         );
-        localStorage.removeItem("timer_Id");
 
-        setAnyTimerRunning(false);
-        setNote("");
-        removeTimerStatus();
-        setIsShow(false);
-        gettotalTime(timerId);
-        setTimerId(null);
-        setElapsedTime(0);
-        setIsRunning(false);
-        // Send Socket Timer
-        socketId.emit("timer", {
-          timerId: timerId,
-          note: note,
-        });
-        localStorage.removeItem("jobId");
+        if (data) {
+          removeTimerStatus();
+          localStorage.removeItem("timer_Id");
+          setAnyTimerRunning(false);
+          setIsShow(false);
+          gettotalTime(timerId);
+          setTimerId(null);
+          setElapsedTime(0);
+          setIsRunning(false);
+          setRunningId("");
+          // Send Socket Timer
+          socketId.emit("timer", {
+            timerId: timerId,
+            note: note,
+          });
+          setNote("");
+          setActivity("Chargeable");
+          localStorage.removeItem("jobId");
+          toast.success("Timer stoped successfully!");
+        }
       } catch (error) {
         console.error("Error stopping timer:", error);
+        toast.success(error.response?.data?.message);
       }
     };
 
@@ -181,18 +201,25 @@ export const Timer = forwardRef(
     }));
 
     // -----------Timer Status--------->
-    const addTimerTaskStatus = async () => {
+    const addTimerTaskStatus = async (tid) => {
       try {
         await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/timer/timer_task/status`,
-          { userId: auth.user.id, taskName, pageName, taskLink, taskId: jobId }
+          {
+            userId: auth.user.id,
+            taskName,
+            pageName,
+            taskLink,
+            taskId: jobId,
+            timerId: tid,
+          }
         );
       } catch (error) {
         console.log(error);
       }
     };
 
-    // --------Remove Timer-------
+    // --------Remove Timer Status-------
     const removeTimerStatus = async () => {
       try {
         await axios.delete(
@@ -227,7 +254,15 @@ export const Timer = forwardRef(
         <div className="w-full h-full relative">
           <div className="flex items-center gap-[2px]  ">
             <div className="flex space-x-4">
-              {!isRunning ? (
+              {isRunning ? (
+                <button
+                  onClick={() => setIsShow(true)}
+                  disabled={!isRunning}
+                  className="flex items-center justify-center  disabled:cursor-not-allowed"
+                >
+                  <IoStopCircle className="h-6 w-6  text-red-500 hover:text-red-600 animate-pulse " />
+                </button>
+              ) : (
                 <button
                   onClick={startTimer}
                   disabled={anyTimerRunning}
@@ -236,14 +271,6 @@ export const Timer = forwardRef(
                   }`}
                 >
                   <FaCirclePlay className="h-6 w-6  text-sky-500 hover:text-sky-600 " />
-                </button>
-              ) : (
-                <button
-                  onClick={() => setIsShow(true)}
-                  disabled={!isRunning}
-                  className="flex items-center justify-center  disabled:cursor-not-allowed"
-                >
-                  <IoStopCircle className="h-6 w-6  text-red-500 hover:text-red-600 animate-pulse " />
                 </button>
               )}
             </div>

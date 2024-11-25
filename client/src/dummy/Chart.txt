@@ -1,0 +1,94 @@
+  // useEffect(() => {
+  //   const departmentFees = clients.map((client) => client.totalFee);
+  //   const departmentLabels = clients.map((client) => client.department);
+
+  //   // Format department fees into K format (with one decimal place)
+  //   const formattedDepartmentFees = departmentFees.map((fee) => {
+  //     return fee >= 1000 ? `${(fee / 1000).toFixed(1)}K` : fee;
+  //   });
+
+  //   const optionsFee = {
+  //     series: [
+  //       {
+  //         name: "Total Fee",
+  //         data: formattedDepartmentFees.map((fee) =>
+  //           typeof fee === "string" ? parseFloat(fee) : fee
+  //         ), // Ensure the data is numeric for chart rendering
+  //         color: "#a21caf",
+  //       },
+  //     ],
+  //     chart: {
+  //       type: "bar",
+  //       height: 300,
+  //       animations: {
+  //         enabled: true,
+  //         easing: "easeinout",
+  //         speed: 800,
+  //       },
+  //       toolbar: { show: false },
+  //     },
+  //     plotOptions: {
+  //       bar: {
+  //         columnWidth: "50%",
+  //         borderRadius: 5,
+  //         colors: {
+  //           backgroundBarColors: ["#f0f0f0"],
+  //           backgroundBarOpacity: 0.4,
+  //         },
+  //       },
+  //     },
+  //     xaxis: {
+  //       categories: departmentLabels,
+  //       title: {
+  //         text: "Department",
+  //         style: { fontWeight: "bold" },
+  //       },
+  //       labels: { style: { colors: "#4B5563", fontSize: "12px" } },
+  //     },
+  //     yaxis: {
+  //       title: {
+  //         text: "Total Fee ($)",
+  //         style: { fontWeight: "bold" },
+  //       },
+  //       labels: {
+  //         style: { colors: "#4B5563", fontSize: "12px" },
+  //         formatter: (value) => {
+  //           if (value >= 1000) {
+  //             return `${(value / 1000).toFixed(1)}K`;
+  //           }
+  //           return value;
+  //         },
+  //       },
+  //     },
+  //     tooltip: {
+  //       theme: "light",
+  //       y: {
+  //         formatter: (value) => {
+  //           if (value >= 1000) {
+  //             return `$${(value / 1000).toFixed(1)}K`;
+  //           }
+  //           return `$${value.toLocaleString()}`;
+  //         },
+  //       },
+  //     },
+  //     dataLabels: {
+  //       enabled: true,
+  //       style: {
+  //         colors: ["#fff"],
+  //       },
+  //       formatter: (val) => {
+  //         if (val >= 1000) {
+  //           return `${(val / 1000).toFixed(1)}K`;
+  //         }
+  //         return val;
+  //       },
+  //     },
+  //   };
+
+  //   const chartElementFee = document.querySelector("#department-fee-chart");
+  //   if (chartElementFee) {
+  //     const chartFee = new ApexCharts(chartElementFee, optionsFee);
+  //     chartFee.render();
+  //     return () => chartFee.destroy();
+  //   }
+  // }, [clients]);

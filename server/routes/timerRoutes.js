@@ -4,14 +4,17 @@ import {
   addTimerMannually,
   addTimerStatus,
   deleteTimer,
+  getAllHolidays,
   getAllTimers,
   getTimerStatus,
   removeTimerStatus,
+  runningTimers,
   singleTimer,
   startTimer,
   stopTimer,
   timerStatus,
   totalTime,
+  updateHoliday,
   updateJobHolderName,
   updateTimer,
 } from "../controllers/timerController.js";
@@ -56,5 +59,11 @@ router.get("/single/timer/:id", requiredSignIn, singleTimer);
 
 // Update Name
 router.put("/update/jobholder", updateJobHolderName);
+// Running Timers
+router.get("/running/timers", runningTimers);
+// Update Holiday
+router.put("/update/holiday/:id", updateHoliday);
+// Fetch Holidays
+router.get("/fetch/holidays", getAllHolidays);
 
 export default router;

@@ -23,6 +23,11 @@ import NotFound from "./pages/NotFound/NotFound";
 import Users from "./pages/Auth/Users";
 import Subscription from "./pages/Subscription/Subscription";
 import Inbox from "./pages/Tickets/Inbox";
+import Goals from "./pages/Goal/Goals";
+import AllLists from "./pages/lists/AllLists";
+import Workflow from "./pages/Workflow/Workflow";
+import Complaints from "./pages/Complaints/Complaints";
+import UDashboard from "./pages/Auth/Dashboard";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -33,6 +38,7 @@ function App() {
 
   const routeAccess = {
     Dashboard: <Route path="/dashboard" element={<Dashboard />} />,
+    MyList: <Route path="/all/lists" element={<AllLists />} />,
     Users: <Route path="/users" element={<Users />} />,
     Roles: <Route path="/roles" element={<Roles />} />,
     Timesheet: <Route path="/timesheet" element={<TimeSheet />} />,
@@ -40,6 +46,9 @@ function App() {
     Leads: <Route path="/leads" element={<Lead />} />,
     Tasks: <Route path="/tasks" element={<AllTasks />} />,
     Jobs: <Route path="/job-planning" element={<AllJobs />} />,
+    Goals: <Route path="/goals" element={<Goals />} />,
+    Workflow: <Route path="/workflow" element={<Workflow />} />,
+    Complaints: <Route path="/complaints" element={<Complaints />} />,
     Tickets: (
       <>
         <Route path="/tickets" element={<Tickets />} />
@@ -52,15 +61,39 @@ function App() {
     Subscription: <Route path="/subscriptions" element={<Subscription />} />,
   };
 
+  const userAccessRoutes = user?.role?.access
+    ?.map((accessItem) => {
+      return routeAccess[accessItem.permission];
+    })
+    .filter(Boolean);
+
+  console.log("Access:", user?.role?.access);
+
   useEffect(() => {
     socketId.on("connection", () => {});
   }, []);
 
-  const userAccessRoutes = user?.role?.access
-    ?.map((accessItem) => {
-      return routeAccess[accessItem];
-    })
-    .filter(Boolean);
+  useEffect(() => {
+    const cacheBuster = () => {
+      if ("caches" in window) {
+        caches.keys().then((cacheNames) => {
+          cacheNames.forEach((cacheName) => caches.delete(cacheName));
+        });
+      }
+    };
+
+    cacheBuster();
+
+    // Set cache-control headers on every API request
+    const defaultHeaders = new Headers();
+    defaultHeaders.append(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate"
+    );
+    defaultHeaders.append("Pragma", "no-cache");
+    defaultHeaders.append("Expires", "0");
+    defaultHeaders.append("Surrogate-Control", "no-store");
+  }, []);
 
   return (
     <div>
@@ -72,6 +105,7 @@ function App() {
           {userAccessRoutes}
           <Route path="/profile" element={<Profile />} />
           {/* Catch-all route: if no access to a route, show 404 */}
+          <Route path="/employee/dashboard" element={<UDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />

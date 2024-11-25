@@ -7,8 +7,14 @@ import Select from "react-select";
 import CustomEditor from "../../utlis/CustomEditor";
 import { TbLoader2 } from "react-icons/tb";
 import { RiUploadCloud2Fill } from "react-icons/ri";
+import { useAuth } from "../../context/authContext";
 
-export default function SendEmailModal({ setShowSendModal, getEmails }) {
+export default function SendEmailModal({
+  setShowSendModal,
+  getEmails,
+  access,
+}) {
+  const { auth } = useAuth();
   const [company, setCompany] = useState("");
   const [clientId, setClientId] = useState("");
   const [subject, setSubject] = useState("");
@@ -188,10 +194,16 @@ export default function SendEmailModal({ setShowSendModal, getEmails }) {
             onChange={(e) => setCompany(e.target.value)}
           >
             <option>Select Company</option>
-            <option value="Affotax">Affotax-info@affotax.com</option>
-            <option value="Outsource">
-              Outsource-admin@outsourceaccountings.co.uk
-            </option>
+            {(auth?.user?.role?.name === "Admin" ||
+              access.includes("Affotax")) && (
+              <option value="Affotax">Affotax-info@affotax.com</option>
+            )}
+            {(auth?.user?.role?.name === "Admin" ||
+              access.includes("OutSource")) && (
+              <option value="Outsource">
+                Outsource-admin@outsourceaccountings.co.uk
+              </option>
+            )}
           </select>
           {/*  */}
           <Select

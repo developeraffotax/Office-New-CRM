@@ -149,3 +149,26 @@ export const updateLabel = async (req, res) => {
     });
   }
 };
+
+// Get Complain label
+export const getComplaintLabels = async (req, res) => {
+  try {
+    const type = req.params.type;
+    const labels = await labelModel
+      .find({ type: type })
+      .sort({ createdAt: -1 });
+
+    res.status(200).send({
+      success: true,
+      message: "All label list!",
+      labels: labels,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error in get labels!",
+      error,
+    });
+  }
+};

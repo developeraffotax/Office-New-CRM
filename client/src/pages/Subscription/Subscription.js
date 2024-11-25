@@ -29,7 +29,7 @@ export default function Subscription() {
   const subscriptions = ["Weekly", "Monthly", "Quarterly", "Yearly"];
   const states = ["Data", "Progress", "Queries", "Approval", "Submission"];
 
-  console.log("subscriptionData:", subscriptionData);
+  // console.log("subscriptionData:", subscriptionData);
 
   // -------Get Subscription Data-------
   const getAllSubscriptions = async () => {
@@ -73,13 +73,19 @@ export default function Subscription() {
       );
       setUsers(
         data?.users?.filter((user) =>
-          user.role?.access.includes("Subscription")
+          user.role?.access.some((item) =>
+            item.permission.includes("Subscription")
+          )
         ) || []
       );
 
       setUserName(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Subscription"))
+          ?.filter((user) =>
+            user.role?.access.some((item) =>
+              item.permission.includes("Subscription")
+            )
+          )
           .map((user) => user.name)
       );
     } catch (error) {
@@ -1036,7 +1042,7 @@ export default function Subscription() {
               >
                 Fee
               </span>
-              <span className="font-medium w-full text-center  px-1 py-1 rounded-md bg-gray-300/30 text-black">
+              <span className="font-medium w-full text-center  px-1 py-1 rounded-md bg-gray-50 text-black">
                 {totalFee}
               </span>
               {/* <input
@@ -1426,7 +1432,7 @@ export default function Subscription() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1456,7 +1462,6 @@ export default function Subscription() {
       .getFilteredRowModel()
       .rows.map((row) => row.original);
 
-    console.log("Filtered Data:", filteredRows);
     setFilterData(filteredRows);
     // eslint-disable-next-line
   }, [table.getFilteredRowModel().rows]);
@@ -1465,19 +1470,19 @@ export default function Subscription() {
     <Layout>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4 pb-[2rem]">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className=" text-xl sm:text-2xl font-semibold ">
-              Subscription
+          <div className="flex items-center gap-5">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
+              Subscription's
             </h1>
 
             <span
-              className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+              className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
               onClick={() => {
                 handleClearFilters();
               }}
               title="Clear filters"
             >
-              <IoClose className="h-6 w-6  cursor-pointer" />
+              <IoClose className="h-6 w-6 text-white" />
             </span>
           </div>
 

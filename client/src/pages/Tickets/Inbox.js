@@ -11,10 +11,13 @@ import { FaUserPlus } from "react-icons/fa";
 import { AiTwotoneDelete } from "react-icons/ai";
 import InboxDetail from "./InboxDetail";
 import AssignToUserModal from "../../components/Tickets/AssignToUserModal";
+import { TbLoader2 } from "react-icons/tb";
+import { IoReload } from "react-icons/io5";
+import { AiFillDelete } from "react-icons/ai";
 
 export default function Inbox() {
   const [selectedCompany, setSelectedCompany] = useState("Affotax");
-  const [inboxData, setInboxData] = useState([]); // All inbox data
+  const [inboxData, setInboxData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pageNo, setPageNo] = useState(1);
   const [startIndex, setStartIndex] = useState(0);
@@ -27,20 +30,25 @@ export default function Inbox() {
   const [showEmailDetail, setShowEmailDetail] = useState(false);
   const [singleEmail, setSingleEmail] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [loadInbox, setLoadInbox] = useState(false);
+  const [type, setType] = useState("received");
+  const [ids, setIds] = useState([]);
+  const [deleteLoad, setDeleteLoad] = useState(false);
 
-  // console.log("Email:", totalEmails, inboxData);
+  // console.log("Emailid:", ids);
   const navigate = useNavigate();
 
   const getEmail = async () => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/fetch/inbox/${selectedCompany}/${pageNo}`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/fetch/inbox/${selectedCompany}/${pageNo}/${type}`
       );
       if (data) {
         setInboxData(data.email.detailedEmails);
         setTotalEmails(data?.email?.detailedEmails?.length || 0);
         setLoading(false);
+        getInboxEmail();
       }
     } catch (error) {
       console.log(error);
@@ -51,23 +59,7 @@ export default function Inbox() {
 
   useEffect(() => {
     getEmail();
-  }, [selectedCompany]);
-
-  // Get Email without load
-  const getInboxEmail = async () => {
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/fetch/inbox/${selectedCompany}/${pageNo}`
-      );
-      if (data) {
-        setInboxData(data.email.detailedEmails);
-        setTotalEmails(data?.email?.detailedEmails?.length || 0);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Error fetching emails!");
-    }
-  };
+  }, [selectedCompany, type]);
 
   const filteredEmails = inboxData.filter((email) => {
     const fromHeader =
@@ -112,6 +104,26 @@ export default function Inbox() {
     setPageNo((prev) => prev - 1);
   };
 
+  // Get Email without load
+  const getInboxEmail = async () => {
+    setLoadInbox(true);
+    try {
+      const { data } = await axios.get(
+        `${
+          process.env.REACT_APP_API_URL
+        }/api/v1/tickets/fetch/inbox/${selectedCompany}/${50}/${type}`
+      );
+      if (data) {
+        setInboxData(data.email.detailedEmails);
+        setTotalEmails(data?.email?.detailedEmails?.length || 0);
+        setLoadInbox(false);
+      }
+    } catch (error) {
+      setLoadInbox(false);
+      console.log(error);
+      toast.error("Error fetching emails!");
+    }
+  };
   // Close Timer Status to click anywhere
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -128,7 +140,8 @@ export default function Inbox() {
   const deleteEmail = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/delete/inbox/email/${id}/${selectedCompany}`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/delete/inbox/email/${id}/${selectedCompany}`,
+        { ids }
       );
       if (data) {
         getInboxEmail();
@@ -141,6 +154,44 @@ export default function Inbox() {
     }
   };
 
+  // Delete Multiple Emails
+  const deleteMultipleEmail = async () => {
+    setDeleteLoad(true);
+    try {
+      const { data } = await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/delete/multiple/email/${selectedCompany}`,
+        {
+          data: { ids },
+        }
+      );
+      if (data) {
+        const updatedInboxData = inboxData.filter(
+          (email) => !ids.includes(email.emailId)
+        );
+
+        setInboxData(updatedInboxData);
+        getInboxEmail();
+        setIds([]);
+        toast.success("Emails deleted successfully!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Error in delete email!");
+    } finally {
+      setDeleteLoad(false);
+    }
+  };
+
+  const handleChecked = (id) => {
+    setIds((prevIds) =>
+      prevIds.includes(id)
+        ? prevIds.filter((prevId) => prevId !== id)
+        : [...prevIds, id]
+    );
+  };
+
+  const isChecked = (id) => ids.includes(id);
+
   return (
     <Layout>
       <div className="relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4 pb-[2rem]">
@@ -152,7 +203,35 @@ export default function Inbox() {
             >
               <IoArrowBackOutline className="h-5 w-5 cursor-pointer" />
             </span>
-            <div className="relative">
+
+            {/*  */}
+            <div className="flex  items-center  border-2 border-orange-500 rounded-sm overflow-hidden  transition-all duration-300 w-fit">
+              <button
+                className={`py-1 px-2 outline-none transition-all duration-300  w-[6rem] ${
+                  type === "received"
+                    ? "bg-orange-500 text-white border-r-2 border-orange-500"
+                    : "text-black bg-gray-100"
+                }`}
+                onClick={() => {
+                  setType("received");
+                }}
+              >
+                Inbox
+              </button>
+              <button
+                className={`py-1 px-2 outline-none transition-all duration-300 w-[6rem]  ${
+                  type === "send"
+                    ? "bg-orange-500 text-white"
+                    : "text-black bg-gray-100 hover:bg-slate-200"
+                }`}
+                onClick={() => setType("send")}
+              >
+                Send
+              </button>
+            </div>
+
+            {/*  */}
+            <div className="relative ">
               <span className="absolute top-[.6rem] left-2 z-10">
                 <IoSearch className="h-5 w-5 text-orange-500" />
               </span>
@@ -161,11 +240,33 @@ export default function Inbox() {
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
-                  setStartIndex(0); // Reset startIndex when searching
+                  setStartIndex(0);
                 }}
                 className="w-[18rem] sm:w-[35rem] h-[2.5rem] rounded-[2rem] border-2 border-gray-600 focus:border-orange-500 pl-[2rem] px-4 outline-none cursor-pointer"
               />
             </div>
+            {/*  */}
+            <span
+              onClick={getInboxEmail}
+              title="Refresh"
+              className="p-1 rounded-full bg-gray-200/50 hover:bg-gray-300/50 hover:shadow-md"
+            >
+              {loadInbox ? (
+                <TbLoader2 className="h-5 w-5 animate-spin text-red-500" />
+              ) : (
+                <IoReload className="h-5 w-5 text-orange-500 hover:text-orange-600" />
+              )}
+            </span>
+
+            {ids.length > 0 && (
+              <span
+                className="p-1 rounded-full bg-gray-200/50 hover:bg-gray-300/50 hover:shadow-md"
+                title="Delete Emails"
+                onClick={() => deleteMultipleEmail()}
+              >
+                <AiFillDelete className="text-red-500 hover:text-red-600 h-5 w-5 cursor-pointer" />
+              </span>
+            )}
           </div>
           <div className="">
             <select
@@ -174,7 +275,7 @@ export default function Inbox() {
               required
               onChange={(e) => {
                 setSelectedCompany(e.target.value);
-                setStartIndex(0); // Reset startIndex when changing company
+                setStartIndex(0);
               }}
               style={{ width: "16rem" }}
             >
@@ -188,7 +289,11 @@ export default function Inbox() {
         </div>
 
         <hr className="w-full bg-gray-300 mt-[1rem] mb-[1rem]" />
-
+        {deleteLoad && (
+          <div className="pb-5">
+            <div class="loader"></div>
+          </div>
+        )}
         <div className="relative flex flex-col gap-4">
           {loading ? (
             <Loader />
@@ -196,42 +301,51 @@ export default function Inbox() {
             <div className="flex flex-col gap-2">
               {paginatedEmails.map((email, i) => (
                 <div
+                  disabled={deleteLoad}
                   className="w-full flex items-center justify-between py-2 px-4 rounded-md hover:shadow-md  bg-gray-100 border border-gray-100 hover:border-orange-200 hover:bg-orange-50 transition-all duration-300"
                   key={email.emailId}
                 >
-                  <div
-                    className="flex items-center gap-5 cursor-pointer"
-                    onClick={() => {
-                      setSingleEmail(email);
-                      setShowEmailDetail(true);
-                    }}
-                  >
-                    <h3 className="capitalize w-[17rem]">
-                      {(() => {
-                        const fromHeader =
-                          email.emailData.payload.headers.find(
-                            (header) => header.name === "From"
-                          )?.value || "No Sender";
-
-                        const [name] = fromHeader.includes("<")
-                          ? fromHeader.split(/(?=<)/)
-                          : [fromHeader, ""];
-
-                        const cleanedName = name.replace(/["<>]/g, "").trim();
-
-                        return `${cleanedName}`;
-                      })()}
-                    </h3>
-
-                    <p
-                      className={`text-[16px] ${
-                        email?.readStatus === "Unread"
-                          ? "font-semibold text-black"
-                          : "text-gray-600"
-                      }`}
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 checked:bg-orange-600"
+                      checked={isChecked(email.emailId)}
+                      onChange={() => handleChecked(email.emailId)}
+                    />
+                    <div
+                      className="flex items-center gap-5 cursor-pointer"
+                      onClick={() => {
+                        setSingleEmail(email);
+                        setShowEmailDetail(true);
+                      }}
                     >
-                      {email.subject || "No Subject"}
-                    </p>
+                      <h3 className="capitalize w-[17rem]">
+                        {(() => {
+                          const fromHeader =
+                            email.emailData.payload.headers.find(
+                              (header) => header.name === "From"
+                            )?.value || "No Sender";
+
+                          const [name] = fromHeader.includes("<")
+                            ? fromHeader.split(/(?=<)/)
+                            : [fromHeader, ""];
+
+                          const cleanedName = name.replace(/["<>]/g, "").trim();
+
+                          return `${cleanedName}`;
+                        })()}
+                      </h3>
+
+                      <p
+                        className={`text-[16px] ${
+                          email?.readStatus === "Unread"
+                            ? "font-semibold text-black"
+                            : "text-gray-600"
+                        }`}
+                      >
+                        {email.subject || "No Subject"}
+                      </p>
+                    </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-[14px] font-medium">
@@ -308,7 +422,7 @@ export default function Inbox() {
                 : "bg-orange-500 text-white"
             }`}
           >
-            Next
+            <span>Next</span>
           </button>
         </div>
 

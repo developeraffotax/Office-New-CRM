@@ -14,6 +14,7 @@ import {
 } from "../utils/gmailApi.js";
 import notificationModel from "../models/notificationModel.js";
 import userModel from "../models/userModel.js";
+import mongoose from "mongoose";
 
 // Create Ticket \
 export const sendEmail = async (req, res) => {
@@ -406,22 +407,14 @@ export const getTicketAttachments = async (req, res) => {
   try {
     const { attachmentId, messageId, companyName } = req.params;
 
-    const attachment = await getAttachments(
-      attachmentId,
-      messageId,
-      companyName
-    );
+    const resp = await getAttachments(attachmentId, messageId, companyName);
 
-    res.status(200).send({
-      success: true,
-      message: "Ticket attachments!",
-      attachment: attachment,
-    });
+    res.send(resp);
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error while get ticket attachments!",
+      message: "Error while get email attachments!",
       error: error,
     });
   }
@@ -441,6 +434,17 @@ export const sendTicketReply = async (req, res) => {
       emailSendTo,
     } = req.body;
 
+    console.log(
+      "Reply Detail:",
+      ticketId,
+      company,
+      threadId,
+      messageId,
+      message,
+      subject,
+      emailSendTo
+    );
+
     const attachments = req.files.map((file) => ({
       filename: file.originalname,
       content: file.buffer.toString("base64"),
@@ -458,11 +462,15 @@ export const sendTicketReply = async (req, res) => {
 
     await emailReply(emailData);
 
-    await ticketModel.findByIdAndUpdate(
-      { _id: ticketId },
-      { lastMessageSentBy: userName },
-      { new: true }
-    );
+    if (ticketId && mongoose.Types.ObjectId.isValid(ticketId)) {
+      await ticketModel.findByIdAndUpdate(
+        ticketId,
+        { lastMessageSentBy: userName },
+        { new: true }
+      );
+    } else {
+      console.log("Invalid ticketId");
+    }
 
     res.status(200).send({
       success: true,
@@ -569,9 +577,9 @@ export const getCompleteTickets = async (req, res) => {
 // Get ALl Inbox Data
 export const getAllInbox = async (req, res) => {
   try {
-    const { selectedCompany, pageNo } = req.params;
-    console.log(selectedCompany, pageNo);
-    const reponse = await getAllEmailInbox(selectedCompany, pageNo);
+    const { selectedCompany, pageNo, type } = req.params;
+    console.log(selectedCompany, pageNo, type);
+    const reponse = await getAllEmailInbox(selectedCompany, pageNo, type);
 
     res.status(200).send({
       success: true,
@@ -588,47 +596,10 @@ export const getAllInbox = async (req, res) => {
   }
 };
 
-// Assign Email to Employees
-export const assignEmail = async (req, res) => {
-  try {
-    const { companyName, clientName, company, jobHolder, subject, threadId } =
-      req.body;
-
-    const userName = req.user.user.name;
-    // const client = await jobsModel.findById(clientId);
-
-    const sendEmail = await ticketModel.create({
-      clientId: clientId,
-      companyName: client.companyName,
-      clientName: client.clientName,
-      company: company,
-      jobHolder: jobHolder,
-      subject: subject,
-      mailThreadId: threadId,
-      lastMessageSentBy: userName,
-    });
-
-    res.status(200).send({
-      success: true,
-      message: "Email allocate successfully!",
-      ticket: sendEmail,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({
-      success: false,
-      message: "Error while allocate email!",
-      error: error,
-    });
-  }
-};
-
 // Delete Email from Inbox
 export const deleteinboxEmail = async (req, res) => {
   try {
     const { id, companyName } = req.params;
-
-    console.log(req.body, companyName);
 
     if (!companyName) {
       return res.status(400).send({
@@ -646,12 +617,49 @@ export const deleteinboxEmail = async (req, res) => {
 
     await deleteEmail(id, companyName);
 
-    // Delete Email From DB
-    // const email = await ticketModel.findById({});
+    res.status(200).send({
+      success: true,
+      message: "Email delete successfully!",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while delete email!",
+      error: error,
+    });
+  }
+};
+
+export const deleteMultipleEmail = async (req, res) => {
+  try {
+    const { companyName } = req.params;
+    const { ids } = req.body;
+
+    if (!companyName) {
+      return res.status(400).send({
+        success: false,
+        message: "Company name is required!",
+      });
+    }
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).send({
+        success: false,
+        message: "Email id is required!",
+      });
+    }
+
+    const deletionResults = await Promise.all(
+      ids.map((id) => deleteEmail(id, companyName))
+    );
+
+    // await deleteEmail(id, companyName);
 
     res.status(200).send({
       success: true,
       message: "Email delete successfully!",
+      deletionResults,
     });
   } catch (error) {
     console.log(error);
@@ -722,6 +730,62 @@ export const markAsReadInboxEmail = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error while mark as read inbox!",
+      error: error,
+    });
+  }
+};
+
+// Assign Email to Employees
+export const assignEmail = async (req, res) => {
+  try {
+    const { companyName, clientName, company, jobHolder, subject, threadId } =
+      req.body;
+
+    const userName = req.user.user.name;
+    // const client = await jobsModel.findById(clientId);
+
+    const sendEmail = await ticketModel.create({
+      // clientId: clientId,
+      companyName: companyName,
+      clientName: clientName,
+      company: company,
+      jobHolder: jobHolder,
+      subject: subject,
+      mailThreadId: threadId,
+      lastMessageSentBy: userName,
+    });
+
+    res.status(200).send({
+      success: true,
+      message: "Email allocate successfully!",
+      ticket: sendEmail,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while allocate email!",
+      error: error,
+    });
+  }
+};
+
+export const getDashboardTickets = async (req, res) => {
+  try {
+    const emails = await ticketModel
+      .find({ state: { $ne: "complete" } })
+      .select("jobHolder  createdAt");
+
+    res.status(200).send({
+      success: true,
+      message: "All email list!",
+      emails: emails,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while getting emails!",
       error: error,
     });
   }

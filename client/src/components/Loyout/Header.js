@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { IoSearch } from "react-icons/io5";
 import { IoNotifications } from "react-icons/io5";
-// import { MdEmail } from "react-icons/md";
 import { format } from "timeago.js";
 import { useAuth } from "../../context/authContext";
 import { Link, useNavigate } from "react-router-dom";
@@ -121,6 +120,9 @@ export default function Header() {
 
   // Get ALl User Notifications
   const getNotifications = async () => {
+    if (!auth.user) {
+      return;
+    }
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/notification/get/notification/${auth.user.id}`
@@ -302,23 +304,26 @@ export default function Header() {
               </div>
             )}
           </div>
+
+          <div className=" hidden sm:flex ml-[1rem]">
+            <form onSubmit={handleSearch} className="relative">
+              <span className="absolute top-[.6rem] left-2 z-2">
+                <IoSearch className="h-5 w-5 text-orange-500" />
+              </span>
+              <input
+                type="search"
+                placeholder="Search"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                className="w-[20rem] sm:w-[32rem]  h-[2.7rem] rounded-[2.5rem] pl-8 pr-3 outline-none border-[1.5px] border-gray-400 focus:border-orange-600"
+              />
+            </form>
+          </div>
         </div>
 
         {/* Search */}
-        <div className=" hidden sm:flex">
-          <form onSubmit={handleSearch} className="relative">
-            <span className="absolute top-[.6rem] left-2 z-2">
-              <IoSearch className="h-5 w-5 text-orange-500" />
-            </span>
-            <input
-              type="search"
-              placeholder="Search"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              className="w-[20rem] h-[2.5rem] rounded-[2.5rem] pl-7 pr-3 outline-none border-[1.5px] border-gray-400 focus:border-orange-600"
-            />
-          </form>
-        </div>
+
+        {/* end */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             {/* --------Timer Status------ */}
@@ -499,14 +504,20 @@ export default function Header() {
               <div className="absolute w-[14rem] top-[2.6rem] right-[1.3rem] z-[999] py-2 px-1 rounded-md rounded-tr-none shadow-sm bg-white border">
                 <ul className="flex flex-col gap-2 w-full transition-all duration-200">
                   <Link
+                    to={"/employee/dashboard"}
+                    className="font-medium text-[16px] w-full hover:bg-gray-200 hover:shadow-md rounded-md transition-all duration-200 cursor-pointer py-2 px-2"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
                     to={"/profile"}
-                    className="font-medium text-[14px] w-full hover:bg-gray-200 hover:shadow-md rounded-md transition-all duration-200 cursor-pointer py-2 px-2"
+                    className="font-medium text-[16px]  w-full hover:bg-gray-200 hover:shadow-md rounded-md transition-all duration-200 cursor-pointer py-2 px-2"
                   >
                     Profile
                   </Link>
                   <span
                     onClick={handleLogout}
-                    className="font-medium text-[14px] w-full hover:bg-gray-200 hover:shadow-md rounded-md transition-all duration-200 cursor-pointer py-2 px-2"
+                    className="font-medium text-[16px]  w-full hover:bg-gray-200 hover:shadow-md rounded-md transition-all duration-200 cursor-pointer py-2 px-2"
                   >
                     Logout
                   </span>

@@ -165,7 +165,10 @@ const clientSchema = new mongoose.Schema(
       default: "Om",
     },
     label: labelSchema,
-    data: labelSchema,
+    data: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Lable",
+    },
     comments: [commentsSchema],
     subtasks: [subtask],
   },

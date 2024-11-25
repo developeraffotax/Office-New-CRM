@@ -43,8 +43,16 @@ const userSchema = new mongoose.Schema(
       type: String,
     },
     access: [String],
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  { timestamps: true }
+  { timestamps: false }
 );
 
 export default mongoose.model("Users", userSchema);

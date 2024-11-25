@@ -1,0 +1,98 @@
+  // Apply filters to workflow data
+  const filterData = workFlowData.filter((job) => {
+    const jobDate = new Date(job.createdAt);
+    const jobMonth = jobDate.getMonth() + 1;
+    const jobYear = jobDate.getFullYear();
+
+    return (
+      (selectedMonth ? jobMonth === selectedMonth : true) &&
+      (selectedYear ? jobYear === selectedYear : true) &&
+      (selectedSource ? job.source === selectedSource : true) &&
+      (selectedClient ? job.client === selectedClient : true) &&
+      (selectedPartner ? job.partner === selectedPartner : true) &&
+      (selectedDepartment ? job.job.jobName === selectedDepartment : true)
+    );
+  });
+
+  // Map data for month-wise department job counts and fee totals
+  const monthDeptData = filterData.reduce((acc, job) => {
+    const jobDate = new Date(job.createdAt);
+    const month = jobDate.toLocaleString("default", { month: "short" }); // "Jan", "Feb", etc.
+    const department = job.job.jobName;
+
+    // Initialize month and department if not already present
+    if (!acc[month]) acc[month] = {};
+    if (!acc[month][department])
+      acc[month][department] = { jobCount: 0, totalFee: 0 };
+
+    // Increment job count for the department in the specific month
+    acc[month][department].jobCount += 1;
+    acc[month][department].totalFee += parseFloat(job.fee || 0);
+
+    return acc;
+  }, {});
+
+  // Get months and departments for the chart
+  const months = Object.keys(monthDeptData); // ["Jan", "Feb", ...]
+  const departments = Array.from(
+    new Set(filterData.map((job) => job.job.jobName))
+  ); // Unique department names
+
+  // Prepare data series for department job counts
+  const departmentSeries = departments.map((dept) => ({
+    name: dept,
+    data: months.map((month) => monthDeptData[month]?.[dept]?.jobCount || 0),
+  }));
+
+  // Prepare data series for fee totals
+  const feeSeries = departments.map((dept) => ({
+    name: dept,
+    data: months.map((month) => monthDeptData[month]?.[dept]?.totalFee || 0),
+  }));
+
+  // Render charts
+  useEffect(() => {
+    // Department Job Count Chart
+    const deptChartOptions = {
+      series: departmentSeries,
+      chart: { type: selectChart, height: 350 },
+      xaxis: { categories: months, title: { text: "Month" } },
+      yaxis: {
+        title: { text: "Job Count" },
+      },
+      plotOptions:
+        selectChart === "bar"
+          ? { bar: { columnWidth: "50%", borderRadius: 5 } }
+          : {},
+    };
+
+    const deptChartElement = document.querySelector("#apex-dept-chart");
+    if (deptChartElement) {
+      const deptChart = new ApexCharts(deptChartElement, deptChartOptions);
+      deptChart.render();
+      return () => deptChart.destroy();
+    }
+  }, [selectChart, months, departmentSeries]);
+
+  useEffect(() => {
+    // Fee Total Chart
+    const feeChartOptions = {
+      series: feeSeries,
+      chart: { type: selectChart, height: 350 },
+      xaxis: { categories: months, title: { text: "Month" } },
+      yaxis: {
+        title: { text: "Total Fee" },
+      },
+      plotOptions:
+        selectChart === "bar"
+          ? { bar: { columnWidth: "50%", borderRadius: 5 } }
+          : {},
+    };
+
+    const feeChartElement = document.querySelector("#apex-fee-chart");
+    if (feeChartElement) {
+      const feeChart = new ApexCharts(feeChartElement, feeChartOptions);
+      feeChart.render();
+      return () => feeChart.destroy();
+    }
+  }, [selectChart, months, feeSeries]);

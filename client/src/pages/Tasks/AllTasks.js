@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import { style } from "../../utlis/CommonStyle";
-import { IoIosArrowDropdown, IoIosArrowDropup } from "react-icons/io";
 import axios from "axios";
 import AddProjectModal from "../../components/Tasks/AddProjectModal";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
@@ -60,7 +59,15 @@ const csvConfig = mkConfig({
 });
 
 const AllTasks = () => {
-  const { auth, filterId, setFilterId, anyTimerRunning } = useAuth();
+  const {
+    auth,
+    filterId,
+    setFilterId,
+    anyTimerRunning,
+    searchValue,
+    setSearchValue,
+    jid,
+  } = useAuth();
   const [show, setShow] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [users, setUsers] = useState([]);
@@ -99,20 +106,32 @@ const AllTasks = () => {
   const commentStatusRef = useRef(null);
   const [showlabel, setShowlabel] = useState(false);
   const [timerId, setTimerId] = useState("");
-  console.log("filterData", filterData);
   const dateStatus = ["Due", "Overdue"];
   const status = ["To do", "Progress", "Review", "Onhold"];
   const closeProject = useRef(null);
   const [state, setState] = useState("");
   const [recurrLoad, setRecurrLoad] = useState(false);
   const [stateData, setStateData] = useState([]);
+  const [activity, setActivity] = useState("Chargeable");
+  const [access, setAccess] = useState([]);
 
-  console.log("tasksData:", tasksData);
+  // console.log("tasksData:", tasksData);
 
   useEffect(() => {
     const timeId = localStorage.getItem("jobId");
     setTimerId(JSON.parse(timeId));
   }, [anyTimerRunning]);
+
+  // Get Auth Access
+  useEffect(() => {
+    if (auth.user) {
+      const filterAccess = auth.user.role.access
+        .filter((role) => role.permission === "Tasks")
+        .flatMap((jobRole) => jobRole.subRoles);
+
+      setAccess(filterAccess);
+    }
+  }, [auth]);
 
   //---------- Get All Projects-----------
   const getAllProjects = async () => {
@@ -159,18 +178,18 @@ const AllTasks = () => {
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/all`
       );
 
-      setTasksData(data?.tasks);
+      setTasksData(data.tasks);
 
-      if (
-        auth.user.role.name === "Admin" ||
-        auth.user.role.name === "SEO Manager" ||
-        auth.user.role.name === "Accountant-Lead"
-      ) {
+      // console.log("data.tasks:", data?.tasks);
+      if (auth.user.role.name === "Admin") {
         setTasksData(data?.tasks);
       } else {
-        const filteredTasks = data?.tasks?.filter((item) =>
-          item?.jobHolder?.includes(auth?.user?.name)
-        );
+        const filteredTasks = data?.tasks?.filter((item) => {
+          // item?.jobHolder === auth?.user?.name ||
+          return item?.project?.users_list?.some(
+            (user) => user?.name === auth?.user?.name
+          );
+        });
 
         setTasksData(filteredTasks || []);
       }
@@ -212,13 +231,19 @@ const AllTasks = () => {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
       setUsers(
-        data?.users?.filter((user) => user.role?.access.includes("Tasks")) || []
+        data?.users?.filter((user) =>
+          user?.role?.access?.some((item) =>
+            item?.permission?.includes("Tasks")
+          )
+        ) || []
       );
 
       setUserName(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Tasks"))
-          .map((user) => user.name)
+          ?.filter((user) =>
+            user?.role?.access?.map((item) => item.permission.includes("Tasks"))
+          )
+          ?.map((user) => user.name)
       );
     } catch (error) {
       console.log(error);
@@ -494,8 +519,6 @@ const AllTasks = () => {
 
     const filteredData = tasksData?.filter((item) => item.status === state);
 
-    // console.log("FilterData", filteredData);
-
     setStateData([...filteredData]);
     console.log("stateData:", stateData);
   };
@@ -568,7 +591,7 @@ const AllTasks = () => {
 
         setTasksData((prevData) => {
           if (Array?.isArray(prevData)) {
-            return prevData.map((item) =>
+            return prevData?.map((item) =>
               item?._id === updateTask?._id ? updateTask : item
             );
           } else {
@@ -661,6 +684,20 @@ const AllTasks = () => {
     }
   };
 
+  // Filter by Header Search
+  useEffect(() => {
+    if (searchValue) {
+      const filteredData = tasksData.filter(
+        (item) =>
+          item?.task.toLowerCase().includes(searchValue.toLowerCase()) ||
+          item?.jobHolder.toLowerCase().includes(searchValue.toLowerCase())
+      );
+      setFilterData(filteredData);
+    } else {
+      setFilterData(tasksData);
+    }
+  }, [searchValue, tasksData]);
+
   // -----------Copy Task------->
 
   const copyTask = async (originalTask) => {
@@ -716,14 +753,13 @@ const AllTasks = () => {
 
   // -----------Download in CSV------>
   const flattenData = (data) => {
-    return data.map((row) => ({
+    return data?.map((row) => ({
       projectName: row.project.projectName,
-      projectId: row.project._id,
       jobHolder: row.jobHolder,
       task: row.task,
       hours: row.hours,
-      startDate: row.startDate,
-      deadline: row.deadline || "",
+      startDate: format(new Date(row.startDate), "dd-MMM-yyyy"),
+      deadline: format(new Date(row.deadline), "dd-MMM-yyyy") || "",
       status: row.status || "",
       lead: row.lead || "",
       estimate_Time: row.estimate_Time || "",
@@ -825,11 +861,6 @@ const AllTasks = () => {
         }
 
         getTasks1();
-
-        // // Socket
-        // socketId.emit("addTask", {
-        //   note: "New Task Added",
-        // });
       }
     } catch (error) {
       console.log(error);
@@ -891,7 +922,6 @@ const AllTasks = () => {
     const [reorderedProject] = updatedProjects.splice(result.source.index, 1);
     updatedProjects.splice(result.destination.index, 0, reorderedProject);
 
-    // console.log("updatedProjects", updatedProjects);
     setProjects(updatedProjects);
 
     // Save the new order to the backend
@@ -965,7 +995,7 @@ const AllTasks = () => {
             >
               <option value="">Select</option>
               {allProjects &&
-                allProjects.map((proj) => (
+                allProjects?.map((proj) => (
                   <option value={proj._id} key={proj._id}>
                     {proj?.projectName}
                   </option>
@@ -1038,7 +1068,7 @@ const AllTasks = () => {
           );
         },
         filterFn: "equals",
-        filterSelectOptions: users.map((jobhold) => jobhold.name),
+        filterSelectOptions: users?.map((jobhold) => jobhold.name),
         filterVariant: "select",
         size: 100,
         minSize: 80,
@@ -1142,7 +1172,7 @@ const AllTasks = () => {
               >
                 Hrs
               </span>
-              <span className="font-medium w-full text-center px-1 py-1 ml-1 rounded-md bg-gray-300/30 text-black">
+              <span className="font-medium w-full text-center px-1 py-1 ml-1 rounded-md bg-gray-50 text-black">
                 {totalHours}
               </span>
             </div>
@@ -1155,7 +1185,6 @@ const AllTasks = () => {
           const [showId, setShowId] = useState("");
 
           const updateHours = async (e) => {
-            e.preventDefault();
             try {
               const { data } = await axios.put(
                 `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/hours/${showId}`,
@@ -1191,14 +1220,13 @@ const AllTasks = () => {
           return (
             <div className="w-full flex items-center justify-center">
               {show && row.original._id === showId ? (
-                <form onSubmit={updateHours}>
-                  <input
-                    type="text"
-                    value={hour}
-                    onChange={(e) => setHour(e.target.value)}
-                    className="w-full h-[1.7rem] px-[2px] outline-none rounded-md cursor-pointer"
-                  />
-                </form>
+                <input
+                  type="text"
+                  value={hour}
+                  onChange={(e) => setHour(e.target.value)}
+                  onBlur={(e) => updateHours(e.target.value)}
+                  className="w-full h-[1.7rem] px-[2px] outline-none rounded-md cursor-pointer"
+                />
               ) : (
                 <span
                   className="text-[15px] font-medium"
@@ -1272,7 +1300,7 @@ const AllTasks = () => {
                   className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
                 >
                   <option value="">Select</option>
-                  {column.columnDef.filterSelectOptions.map((option, idx) => (
+                  {column.columnDef.filterSelectOptions?.map((option, idx) => (
                     <option key={idx} value={option}>
                       {option}
                     </option>
@@ -1288,12 +1316,6 @@ const AllTasks = () => {
             const cellDate = new Date(cell.getValue());
             return cellDate.toISOString().split("T")[0];
           });
-
-          // console.log(
-          //   "Start Date:",
-          //   format(new Date(date), "dd-MMM-yyyy"),
-          //   format(new Date(startDate), "dd-MMM-yyyy")
-          // );
 
           const [showStartDate, setShowStartDate] = useState(false);
 
@@ -1453,7 +1475,7 @@ const AllTasks = () => {
                   className="h-[1.8rem]  font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
                 >
                   <option value="">Select</option>
-                  {column.columnDef.filterSelectOptions.map((option, idx) => (
+                  {column.columnDef.filterSelectOptions?.map((option, idx) => (
                     <option key={idx} value={option}>
                       {option}
                     </option>
@@ -1469,11 +1491,7 @@ const AllTasks = () => {
             const cellDate = new Date(cell.getValue());
             return cellDate.toISOString().split("T")[0];
           });
-          // console.log(
-          //   "Deadline Date:",
-          //   format(new Date(date), "dd-MMM-yyyy"),
-          //   format(new Date(deadline), "dd-MMM-yyyy")
-          // );
+
           const [allocateDate, setAllocateDate] = useState(date);
 
           useEffect(() => {
@@ -1788,7 +1806,7 @@ const AllTasks = () => {
                 className="w-full h-[2rem] rounded-md border-none bg-transparent outline-none"
               >
                 <option value="empty"></option>
-                {users.map((lead, i) => (
+                {users?.map((lead, i) => (
                   <option value={lead?.name} key={i}>
                     {lead?.name}
                   </option>
@@ -1798,7 +1816,7 @@ const AllTasks = () => {
           );
         },
         filterFn: "equals",
-        filterSelectOptions: users.map((lead) => lead),
+        filterSelectOptions: users?.map((lead) => lead),
         filterVariant: "select",
         size: 100,
         minSize: 60,
@@ -1823,17 +1841,37 @@ const AllTasks = () => {
         accessorKey: "timertracker",
         header: "Timer",
         Header: ({ column }) => {
+          const [isRunning, setIsRunning] = useState(false);
+
+          const handleCheckboxChange = () => {
+            const newIsRunning = !isRunning;
+            setIsRunning(newIsRunning);
+
+            if (newIsRunning) {
+              column.setFilterValue(timerId || jid);
+            } else {
+              column.setFilterValue(undefined);
+            }
+          };
           return (
             <div className=" flex flex-col gap-[2px] w-[5rem]">
               <span className="ml-1 cursor-pointer w-full text-center">
                 Timer
               </span>
+              <div className="w-full flex items-center justify-center">
+                <input
+                  type="checkbox"
+                  className="cursor-pointer h-5 w-5 ml-3 accent-orange-600 "
+                  checked={isRunning}
+                  onChange={handleCheckboxChange}
+                />
+                <label className="ml-2 text-sm cursor-pointer"></label>
+              </div>
             </div>
           );
         },
 
         Cell: ({ cell, row }) => {
-          // console.log("rowTask", row.original);
           return (
             <div
               className="flex items-center justify-center gap-1 w-full h-full "
@@ -1856,11 +1894,19 @@ const AllTasks = () => {
                   JobHolderName={row.original.jobHolder}
                   projectName={""}
                   task={row.original.task}
+                  activity={activity}
+                  setActivity={setActivity}
                 />
               </span>
             </div>
           );
         },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.original._id;
+
+          return cellValue === filterValue;
+        },
+        filterVariant: "select",
         size: 90,
       },
       {
@@ -1905,7 +1951,6 @@ const AllTasks = () => {
         accessorKey: "actions",
         header: "Actions",
         Cell: ({ cell, row }) => {
-          // console.log("Id:", row.original._id);
           return (
             <div className="flex items-center justify-center gap-3 w-full h-full">
               <span
@@ -2038,7 +2083,7 @@ const AllTasks = () => {
         },
 
         filterVariant: "select",
-        filterSelectOptions: labelData.map((label) => label.name),
+        filterSelectOptions: labelData?.map((label) => label.name),
         size: 140,
         minSize: 100,
         maxSize: 210,
@@ -2134,8 +2179,9 @@ const AllTasks = () => {
   const table = useMaterialReactTable({
     columns,
     data:
-      (active === "All" && !active1 && !filterId ? tasksData : filterData) ||
-      [],
+      (active === "All" && !active1 && !filterId && !searchValue
+        ? tasksData
+        : filterData) || [],
 
     enableStickyHeader: true,
     enableStickyFooter: true,
@@ -2149,6 +2195,7 @@ const AllTasks = () => {
     enableColumnResizing: true,
     enableTopToolbar: true,
     enableBottomToolbar: true,
+    // enableRowSelection: true,
     // enableEditing: true,
     // state: { isLoading: loading },
 
@@ -2163,7 +2210,7 @@ const AllTasks = () => {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -2188,17 +2235,6 @@ const AllTasks = () => {
     },
   });
 
-  // useEffect(() => {
-  //   const filteredRows = table
-  //     .getFilteredRowModel()
-  //     .rows.map((row) => row.original);
-
-  //   console.log("Filtered Data:", filteredRows);
-  //   setFilterData(filteredRows);
-
-  //   // eslint-disable-next-line
-  // }, [table.getFilteredRowModel().rows]);
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -2213,39 +2249,35 @@ const AllTasks = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleRecurring = async () => {
-    setRecurrLoad(true);
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tasks/call/recurring`
-      );
-      if (data) {
-        getTasks1();
-        setRecurrLoad(false);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error(error?.response?.data?.message);
-      setRecurrLoad(false);
-    }
-  };
+  // const handleRecurring = async () => {
+  //   setRecurrLoad(true);
+  //   try {
+  //     const { data } = await axios.get(
+  //       `${process.env.REACT_APP_API_URL}/api/v1/tasks/call/recurring`
+  //     );
+  //     if (data) {
+  //       getTasks1();
+  //       setRecurrLoad(false);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     toast.error(error?.response?.data?.message);
+  //     setRecurrLoad(false);
+  //   }
+  // };
 
   return (
     <Layout>
       {!showCompleted ? (
         <div className=" relative w-full h-full overflow-auto py-4 px-2 sm:px-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h1 className=" text-xl sm:text-2xl font-semibold ">Tasks</h1>
-              <span className="" onClick={() => setShow(!show)}>
-                {show ? (
-                  <IoIosArrowDropup className="h-5 w-5 cursor-pointer" />
-                ) : (
-                  <IoIosArrowDropdown className="h-5 w-5 cursor-pointer" />
-                )}
-              </span>
+            <div className="flex items-center gap-5">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
+                Tasks
+              </h1>
+
               <span
-                className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+                className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
                 onClick={() => {
                   setActive("All");
                   setFilterData("");
@@ -2257,35 +2289,19 @@ const AllTasks = () => {
                   setFilterId("");
                   handleClearFilters();
                   filterByState(state);
+                  setSearchValue("");
                 }}
                 title="Clear filters"
               >
-                <IoClose className="h-6 w-6  cursor-pointer" />
+                <IoClose className="h-6 w-6 text-white" />
               </span>
             </div>
 
             {/* Project Buttons */}
             <div className="flex items-center gap-4">
-              {/* Status Filter */}
-              <div className="">
-                <select
-                  className=" w-[8rem] h-[2rem] text-[14px] border-2 border-gray-200 rounded-md cursor-pointer"
-                  value={state}
-                  onChange={(e) => {
-                    setState(e.target.value);
-                    filterByState(e.target.value);
-                  }}
-                >
-                  <option value="">Select Status</option>
-                  {status?.map((stat, i) => (
-                    <option key={i} value={stat}>
-                      {stat}
-                    </option>
-                  ))}
-                </select>
-              </div>
               {/*  */}
-              {auth?.user?.role?.name === "Admin" && (
+              {(auth?.user?.role?.name === "Admin" ||
+                access.includes("Projects")) && (
                 <div
                   className=" relative w-[8rem]  border-2 border-gray-200 rounded-md py-1 px-2 flex items-center justify-between gap-1"
                   onClick={() => setShowProject(!showProject)}
@@ -2351,13 +2367,13 @@ const AllTasks = () => {
               )}
 
               <button
-                className={`w-[3rem] h-[2.2rem] flex items-center justify-center rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
+                className={`px-4 h-[2.2rem] flex items-center justify-center gap-1 rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
                 onClick={handleExportData}
-                title="Export Data"
+                title="Export Date"
               >
-                <LuImport className="h-6 w-6 " />
+                <LuImport className="h-6 w-6 " /> Export
               </button>
-              {auth?.user?.role?.name === "Admin" && (
+              {/* {auth?.user?.role?.name === "Admin" && (
                 <button
                   className={`${style.button1} text-[15px] `}
                   onClick={handleRecurring}
@@ -2370,7 +2386,7 @@ const AllTasks = () => {
                     "Recurring"
                   )}
                 </button>
-              )}
+              )} */}
               <button
                 className={`${style.button1} text-[15px] `}
                 onClick={() => setShowlabel(true)}
@@ -2395,7 +2411,7 @@ const AllTasks = () => {
             </div>
           </div>
           {/*  */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 mt-3">
             {/* -----------Filters By Projects--------- */}
             <div className="flex items-center flex-wrap gap-2 mt-3">
               <div
@@ -2414,28 +2430,7 @@ const AllTasks = () => {
               >
                 All ({getProjectsCount("All")})
               </div>
-              {/* {projects?.map((proj, i) => {
-                getDueAndOverdueCountByDepartment(proj?.projectName);
-                return (
-                  <div
-                    className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                      active === proj?.projectName &&
-                      " border-2 border-b-0 text-orange-600 border-gray-300"
-                    }`}
-                    key={i}
-                    onClick={() => {
-                      setFilterData("");
-                      setActive(proj?.projectName);
-                      filterByDep(proj?.projectName);
-                      setShowCompleted(false);
-                      setActive1("");
-                      setFilterId("");
-                    }}
-                  >
-                    {proj?.projectName} ({getProjectsCount(proj?.projectName)})
-                  </div>
-                );
-              })} */}
+
               <DragDropContext onDragEnd={handleOnDragEnd}>
                 <Droppable droppableId="projects" direction="horizontal">
                   {(provided) => (
@@ -2557,15 +2552,12 @@ const AllTasks = () => {
             {showJobHolder && activeBtn === "jobHolder" && (
               <>
                 <div className="w-full  py-2 ">
-                  {/* <h3 className="text-[19px] font-semibold text-black">
-                    Job Holder Summary
-                  </h3> */}
                   <div className="flex items-center flex-wrap gap-4">
                     {users
                       ?.filter(
                         (user) => getJobHolderCount(user?.name, active) > 0
                       )
-                      .map((user, i) => (
+                      ?.map((user, i) => (
                         <div
                           className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
                             active1 === user.name &&
@@ -2590,9 +2582,6 @@ const AllTasks = () => {
             {showDue && activeBtn === "due" && (
               <>
                 <div className="w-full py-2">
-                  {/* <h3 className="text-[19px] font-semibold text-black">
-                    Date Status Summary
-                  </h3> */}
                   <div className="flex items-center flex-wrap gap-4">
                     {dateStatus?.map((stat, i) => {
                       const { due, overdue } =
@@ -2659,9 +2648,6 @@ const AllTasks = () => {
                 <div className="h-full hidden1 overflow-y-scroll relative">
                   <MaterialReactTable table={table} />
                 </div>
-                {/* <span className="absolute bottom-4 left-[35%] z-10 font-semibold text-[15px] text-gray-900">
-                  Total Hrs: {totalHours}
-                </span> */}
               </div>
             )}
           </div>
@@ -2720,7 +2706,7 @@ const AllTasks = () => {
                 <div className="flex  flex-col gap-3 ">
                   <div className=" w-full flex items-center justify-between py-2 mt-1 px-4">
                     <h3 className="text-[19px] font-semibold text-gray-800">
-                      Enter your note here
+                      Enter End Note
                     </h3>
                     <span
                       onClick={() => {
@@ -2731,6 +2717,25 @@ const AllTasks = () => {
                     </span>
                   </div>
                   <hr className="w-full h-[1px] bg-gray-500 " />
+                  <div className="flex items-start px-4 py-2 ">
+                    {activity === "Chargeable" ? (
+                      <button
+                        className={`px-4 h-[2.6rem] min-w-[5rem] flex items-center justify-center  rounded-md cursor-pointer shadow-md  text-white border-none outline-none bg-green-500 hover:bg-green-600`}
+                        onClick={() => setActivity("Non-Chargeable")}
+                        style={{ width: "8rem", fontSize: "14px" }}
+                      >
+                        Chargeable
+                      </button>
+                    ) : (
+                      <button
+                        className={`px-4 h-[2.6rem] min-w-[5rem] flex items-center justify-center  rounded-md cursor-pointer shadow-md  text-white border-none outline-none bg-red-500 hover:bg-red-600`}
+                        onClick={() => setActivity("Chargeable")}
+                        style={{ width: "9rem", fontSize: "14px" }}
+                      >
+                        Non-Chargeable
+                      </button>
+                    )}
+                  </div>
                   <div className=" w-full px-4 py-2 flex-col gap-4">
                     <textarea
                       value={note}

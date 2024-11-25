@@ -7,7 +7,6 @@ import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
 import { IoRemoveCircle } from "react-icons/io5";
 import Layout from "../../components/Loyout/Layout";
-import { style } from "../../utlis/CommonStyle";
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
 import axios from "axios";
@@ -32,6 +31,20 @@ export default function CompleteTickets() {
   const [isComment, setIsComment] = useState(false);
   const commentStatusRef = useRef(null);
   const [commentTicketId, setCommentTicketId] = useState("");
+  const [access, setAccess] = useState([]);
+
+  // console.log("Users:", users, userName);
+
+  // Get Auth Access
+  useEffect(() => {
+    if (auth.user) {
+      const filterAccess = auth.user.role.access
+        .filter((role) => role.permission === "Tickets")
+        .flatMap((jobRole) => jobRole.subRoles);
+
+      setAccess(filterAccess);
+    }
+  }, [auth]);
 
   // -------Get All Emails-------
   const getAllEmails = async () => {
@@ -75,13 +88,20 @@ export default function CompleteTickets() {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
       setUsers(
-        data?.users?.filter((user) => user.role?.access.includes("Tickets")) ||
-          []
+        data?.users?.filter((user) =>
+          user.role?.access?.some((item) =>
+            item?.permission?.includes("Tickets")
+          )
+        ) || []
       );
 
       setUserName(
         data?.users
-          ?.filter((user) => user.role?.access.includes("Tickets"))
+          ?.filter((user) =>
+            user.role?.access.some((item) =>
+              item?.permission?.includes("Tickets")
+            )
+          )
           .map((user) => user.name)
       );
     } catch (error) {
@@ -579,7 +599,6 @@ export default function CompleteTickets() {
         Cell: ({ cell, row }) => {
           const createdAt = row.original.createdAt;
 
-          console.log("createdAt", createdAt);
           return (
             <div className="w-full flex  ">
               <p>{format(new Date(createdAt), "dd-MMM-yyyy")}</p>
@@ -940,7 +959,7 @@ export default function CompleteTickets() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#f0f0f0",
+        backgroundColor: "#FB923C",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -984,25 +1003,25 @@ export default function CompleteTickets() {
     <Layout>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className=" text-xl sm:text-2xl font-semibold ">
+          <div className="flex items-center gap-5">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
               Complete Tickets
             </h1>
 
             <span
-              className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+              className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
               onClick={() => {
                 handleClearFilters();
               }}
               title="Clear filters"
             >
-              <IoClose className="h-6 w-6  cursor-pointer" />
+              <IoClose className="h-6 w-6 text-white" />
             </span>
           </div>
         </div>
 
         <>
-          <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-2 transition-all duration-300 w-fit">
+          <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
             <button
               className={`py-1 px-2 outline-none transition-all duration-300  w-[6rem] ${
                 selectedTab === "progress"
@@ -1026,19 +1045,22 @@ export default function CompleteTickets() {
             >
               Completed
             </button>
-            <button
-              className={`py-1 px-2 outline-none transition-all border-l-2  border-orange-500 duration-300 w-[6rem]  ${
-                selectedTab === "inbox"
-                  ? "bg-orange-500 text-white"
-                  : "text-black bg-gray-100 hover:bg-slate-200"
-              }`}
-              onClick={() => {
-                // setSelectedTab("inbox");
-                navigate("/tickets/inbox");
-              }}
-            >
-              Inbox
-            </button>
+            {(auth?.user?.role?.name === "Admin" ||
+              access.includes("Inbox")) && (
+              <button
+                className={`py-1 px-2 outline-none transition-all border-l-2  border-orange-500 duration-300 w-[6rem]  ${
+                  selectedTab === "inbox"
+                    ? "bg-orange-500 text-white"
+                    : "text-black bg-gray-100 hover:bg-slate-200"
+                }`}
+                onClick={() => {
+                  // setSelectedTab("inbox");
+                  navigate("/tickets/inbox");
+                }}
+              >
+                Inbox
+              </button>
+            )}
           </div>
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
         </>

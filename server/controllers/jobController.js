@@ -1,7 +1,12 @@
+import activityModel from "../models/activityModel.js";
 import jobsModel from "../models/jobsModel.js";
+import labelModel from "../models/labelModel.js";
 import notificationModel from "../models/notificationModel.js";
 import userModel from "../models/userModel.js";
 import XLSX from "xlsx";
+import moment from "moment";
+
+const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
 // Create Job
 export const createJob = async (req, res) => {
@@ -95,6 +100,20 @@ export const createJob = async (req, res) => {
       })
     );
 
+    // Add Activity Log
+    const user = req.user.user;
+    if (createdJobs) {
+      activityModel.create({
+        user: user._id,
+        action: `${user.name.trim()} is create a Job: ${companyName}`,
+        entity: "Jobs",
+        details: `Job Details:
+        - Company Name: ${companyName}
+        - Job Client: ${clientName || "No client provided"}
+        - Created At: ${currentDateTime}`,
+      });
+    }
+
     return res.status(200).send({
       success: true,
       message: "New client created and jobs added successfully",
@@ -114,16 +133,22 @@ export const createJob = async (req, res) => {
 export const getAllClients = async (req, res) => {
   try {
     const clients = await jobsModel
-      .find({ status: { $ne: "completed" } })
+      .find({
+        status: { $ne: "completed" },
+        "job.jobStatus": { $ne: "Inactive" },
+      })
       .select(
-        "clientName companyName email currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data"
-      );
+        "clientName companyName email fee currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data"
+      )
+      .populate("data");
 
     res.status(200).send({
       success: true,
       message: "All clients",
       clients: clients,
     });
+
+    // sendDatatoGoogleSheet();
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -136,9 +161,6 @@ export const getAllClients = async (req, res) => {
 // Get Ticket Clients
 export const getTicketClients = async (req, res) => {
   try {
-    // const clients = await jobsModel
-    //   .find({ status: { $ne: "completed" } })
-    //   .select("clientName companyName ");
     const uniqueCompanies = await jobsModel.aggregate([
       {
         $match: { status: { $ne: "completed" } },
@@ -176,7 +198,6 @@ export const getTicketClients = async (req, res) => {
 };
 
 // Update Client Status
-
 export const updateStatus = async (req, res) => {
   try {
     const jobId = req.params.id;
@@ -206,6 +227,20 @@ export const updateStatus = async (req, res) => {
       message: "Job status updated successfully!",
       clientJob: clientJob,
     });
+
+    // Add Activity Log
+    const user = req.user.user;
+    if (clientJob) {
+      activityModel.create({
+        user: user._id,
+        action: `${user.name.trim()} is update a job status.`,
+        entity: "Jobs",
+        details: `Job Details:
+          - Company Name: ${clientJob.companyName}
+          - Job Client: ${clientJob.clientName || "No client provided"}
+          - Created At: ${currentDateTime}`,
+      });
+    }
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -246,6 +281,20 @@ export const updateLead = async (req, res) => {
       message: "Lead user updated successfully!",
       clientJob: clientJob,
     });
+
+    // Add Activity Log
+    const user = req.user.user;
+    if (clientJob) {
+      activityModel.create({
+        user: user._id,
+        action: `${user.name.trim()} is update a Job Lead.`,
+        entity: "Jobs",
+        details: `Job Details:
+          - Company Name: ${clientJob.companyName}
+          - Job Client: ${clientJob.clientName || "No client provided"}
+          - Created At: ${currentDateTime}`,
+      });
+    }
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -281,18 +330,15 @@ export const updateJobHolder = async (req, res) => {
       { new: true }
     );
 
+    res.status(200).send({
+      success: true,
+      message: "Job holder updated successfully!",
+      clientJob: clientJob,
+      notification: notification,
+    });
+
     // Create Notification
     const user = await userModel.findOne({ name: jobHolder });
-    if (!user) {
-      res.status(200).send({
-        success: true,
-        message: "Job holder updated successfully!",
-        clientJob: clientJob,
-      });
-
-      return;
-    }
-
     const notification = await notificationModel.create({
       title: "New Job Assigned",
       redirectLink: "/job-planning",
@@ -301,12 +347,19 @@ export const updateJobHolder = async (req, res) => {
       userId: user._id,
     });
 
-    res.status(200).send({
-      success: true,
-      message: "Job holder updated successfully!",
-      clientJob: clientJob,
-      notification: notification,
-    });
+    // Add Activity Log
+    const currectUser = req.user.user;
+    if (clientJob) {
+      activityModel.create({
+        user: currectUser._id,
+        action: `${currectUser.name.trim()} is update a Job Assign.`,
+        entity: "Jobs",
+        details: `Job Details:
+             - Company Name: ${clientJob.companyName}
+             - Job Client: ${clientJob.clientName || "No client provided"}
+             - Created At: ${currentDateTime}`,
+      });
+    }
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -318,7 +371,6 @@ export const updateJobHolder = async (req, res) => {
 };
 
 // Delete Client Jobs
-
 export const deleteClientJob = async (req, res) => {
   try {
     const jobId = req.params.id;
@@ -339,19 +391,33 @@ export const deleteClientJob = async (req, res) => {
       });
     }
 
+    // Add Activity Log
+    const currectUser = req.user.user;
+    if (isExisting) {
+      activityModel.create({
+        user: currectUser._id,
+        action: `${currectUser.name.trim()} delete a job.`,
+        entity: "Jobs",
+        details: `Job Details:
+              - Company Name: ${isExisting.companyName || "No company provided"}
+              - Job Client: ${isExisting.clientName || "No client provided"}
+              - Created At: ${currentDateTime}`,
+      });
+    }
+
     await jobsModel.findByIdAndDelete({
       _id: isExisting._id,
     });
 
     res.status(200).send({
       success: true,
-      message: " Job delete successfully!",
+      message: "Job delete successfully!",
     });
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error in delete job !",
+      message: "Error in delete job!",
       error: error,
     });
   }
@@ -432,7 +498,6 @@ export const getClientWithJobs = async (req, res) => {
 };
 
 // Update Client Jobs
-
 export const updateClientJob = async (req, res) => {
   try {
     const {
@@ -545,6 +610,19 @@ export const updateClientJob = async (req, res) => {
       success: true,
       message: "Client job(s) updated successfully!",
     });
+
+    // Add Activity Log
+    const currectUser = req.user.user;
+
+    activityModel.create({
+      user: currectUser._id,
+      action: `${currectUser.name.trim()} update a job.`,
+      entity: "Jobs",
+      details: `Job Details:
+              - Company Name: ${companyName || "No company provided"}
+              - Job Client: ${clientName || "No client provided"}
+              - Created At: ${currentDateTime}`,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -559,7 +637,7 @@ export const updateClientJob = async (req, res) => {
 export const updateDates = async (req, res) => {
   try {
     const jobId = req.params.id;
-    const { yearEnd, jobDeadline, currentDate } = req.body;
+    const { yearEnd, jobDeadline, workDeadline } = req.body;
 
     if (!jobId) {
       return res.status(400).send({
@@ -584,10 +662,10 @@ export const updateDates = async (req, res) => {
         { new: true }
       );
     }
-    if (currentDate) {
+    if (workDeadline) {
       clientJob = await jobsModel.findByIdAndUpdate(
         { _id: jobId },
-        { $set: { currentDate: currentDate } },
+        { $set: { "job.workDeadline": workDeadline } },
         { new: true }
       );
     }
@@ -645,6 +723,26 @@ export const getClientJobs = async (req, res) => {
     res.status(200).send({
       success: true,
       message: "All client jobs whose status is completed!",
+      clients: clients,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get all job!",
+      error: error,
+    });
+  }
+};
+
+// Get Only Status (Inactive) Jobs
+export const getInactiveClientJobs = async (req, res) => {
+  try {
+    const clients = await jobsModel.find({ "job.jobStatus": "Inactive" });
+
+    res.status(200).send({
+      success: true,
+      message: "All client jobs whose status is Inactive!",
       clients: clients,
     });
   } catch (error) {
@@ -726,7 +824,7 @@ export const createDublicateJob = async (req, res) => {
 
     let yearEnd = new Date(isExisting.job.yearEnd);
     let jobDeadline = new Date(isExisting.job.jobDeadline);
-    let currDate = new Date(isExisting.currentDate);
+    let workDeadline = new Date(isExisting.job.workDeadline);
 
     if (
       isExisting.job.jobName === "Bookkeeping" ||
@@ -740,61 +838,59 @@ export const createDublicateJob = async (req, res) => {
       } else if (isExisting.job.jobName === "Payroll") {
         jobDeadline.setDate(jobDeadline.getDate() + 5);
       }
-      currDate.setMonth(currDate.getMonth() + 1); // Add 1 month
+      workDeadline.setMonth(workDeadline.getMonth() + 1); // Add 1 month
     } else if (isExisting.job.jobName === "Vat Return") {
       // Add 3 months
       yearEnd.setMonth(yearEnd.getMonth() + 3);
       jobDeadline.setDate(jobDeadline.getDate() + 37); // Add 37 days
-      currDate.setMonth(currDate.getMonth() + 3); // Add 3 months
+      workDeadline.setMonth(workDeadline.getMonth() + 3); // Add 3 months
     } else {
       // Add 12 months (1 year)
       yearEnd.setMonth(yearEnd.getMonth() + 12);
 
       // Specific adjustments for different job names
-      if (isExisting.job.jobName === "Personal Tax") {
+      if (isExisting.job.jobName.trim() === "Personal Tax") {
         jobDeadline.setDate(jobDeadline.getDate() + 301); // Add 301 days
-      } else if (isExisting.job.jobName === "Accounts") {
+      } else if (isExisting.job.jobName.trim() === "Accounts") {
         jobDeadline.setMonth(jobDeadline.getMonth() + 12); // Add 12 months
-      } else if (isExisting.job.jobName === "Company Sec") {
-        jobDeadline.setDate(jobDeadline.getMonth() + 12); // Add 1 year
-      } else if (isExisting.job.jobName === "Address") {
-        // Subtract 1 month from yearEnd for jobDeadline and currDate
+      } else if (isExisting.job.jobName.trim() === "Company Sec") {
+        jobDeadline.setMonth(jobDeadline.getMonth() + 12); // Add 1 year (12 months)
+      } else if (isExisting.job.jobName.trim() === "Address") {
+        // Subtract 1 month from yearEnd for jobDeadline and workDeadline
         jobDeadline.setMonth(yearEnd.getMonth() - 1);
-        currDate.setMonth(yearEnd.getMonth() - 1);
+        workDeadline.setMonth(yearEnd.getMonth() - 1);
       } else {
-        // Default case for other job names: add 12 months to jobDeadline and currDate
+        // Default case for other job names: add 12 months to jobDeadline and workDeadline
         jobDeadline.setMonth(jobDeadline.getMonth() + 12);
-        currDate.setMonth(currDate.getMonth() + 12);
+        workDeadline.setMonth(workDeadline.getMonth() + 12);
       }
     }
-
-    // if (
-    //   isExisting.job.jobName === "Bookkeeping" ||
-    //   isExisting.job.jobName === "Payroll"
-    // ) {
-    //   // Add 1 month
-    //   yearEnd.setMonth(yearEnd.getMonth() + 1); // 1 month
-    //   jobDeadline.setMonth(jobDeadline.getMonth() + 1); // if Bookkeeping 15 days,  if Payroll 5 days
-    //   currDate.setMonth(currDate.getMonth() + 1); // 1 month
-    // } else if (isExisting.job.jobName === "Vat Return") {
-    //   // Add 3 months
-    //   yearEnd.setMonth(yearEnd.getMonth() + 3); // 3 months
-    //   jobDeadline.setMonth(jobDeadline.getMonth() + 3); // 37 days
-    //   currDate.setMonth(currDate.getMonth() + 3); // 3 months
-    // } else {
-    //   // Add 12 months
-    //   yearEnd.setMonth(yearEnd.getMonth() + 12); // 1 year
-    //   jobDeadline.setMonth(jobDeadline.getMonth() + 12); // if (isExisting.job.jobName==="Personal Tax") then add 301 days, if (isExisting.job.jobName==="Accounts") then add 8 months , if (isExisting.job.jobName==="Company Sec") then add 14 days, // 1 year if (isExisting.job.jobName==="Address") then add 1 month before year end
-    //   currDate.setMonth(currDate.getMonth() + 12); // 1 year if (isExisting.job.jobName==="Address") then add 1 month before year end
-    // }
 
     // Update the job document with the new dates
     isExisting.job.yearEnd = yearEnd;
     isExisting.job.jobDeadline = jobDeadline;
-    isExisting.currentDate = currDate;
+    isExisting.job.workDeadline = workDeadline;
     isExisting.totalTime = "0s";
 
+    // console.log("Y,", yearEnd, "J,", jobDeadline, "W,", workDeadline);
+
     await isExisting.save();
+
+    // Add Activity Log
+    const currectUser = req.user.user;
+    if (clientJob) {
+      activityModel.create({
+        user: currectUser._id,
+        action: `${currectUser.name.trim()} complete a job.`,
+        entity: "Jobs",
+        details: `Job Details:
+                 - Company Name: ${
+                   clientJob.companyName || "No company provided"
+                 }
+                 - Job Client: ${clientJob.clientName || "No client provided"}
+                 - Created At: ${currentDateTime}`,
+      });
+    }
 
     return res.status(200).send({
       success: true,
@@ -1104,7 +1200,9 @@ export const deleteSubTask = async (req, res) => {
 export const addDatalabel = async (req, res) => {
   try {
     const jobId = req.params.id;
-    const { name, color } = req.body;
+    const { labelId } = req.body;
+
+    const label = await labelModel.findById(labelId);
 
     const job = await jobsModel.findById(jobId);
 
@@ -1117,7 +1215,7 @@ export const addDatalabel = async (req, res) => {
 
     const updateJob = await jobsModel.findByIdAndUpdate(
       { _id: job._id },
-      { "data.name": name, "data.color": color },
+      { data: label._id },
       { new: true }
     );
 
@@ -1131,6 +1229,246 @@ export const addDatalabel = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in add job label!",
+      error: error,
+    });
+  }
+};
+
+// Update Time
+export const updateTime = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const { totalTime } = req.body;
+
+    if (!jobId) {
+      return res.status(400).send({
+        success: false,
+        message: "Job id is required!",
+      });
+    }
+
+    const clientJob = await jobsModel.findByIdAndUpdate(
+      { _id: jobId },
+      { totalTime: totalTime },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Time update successfully!",
+      clientJob: clientJob,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in update total time!",
+      error: error,
+    });
+  }
+};
+
+// Update Bulk Jobs
+export const updateBulkJob = async (req, res) => {
+  try {
+    const {
+      rowSelection,
+      jobHolder,
+      lead,
+      yearEnd,
+      jobDeadline,
+      currentDate,
+      jobState,
+      label,
+      dataLabelId,
+      source,
+      fee,
+      totalHours,
+    } = req.body;
+
+    if (
+      !rowSelection ||
+      !Array.isArray(rowSelection) ||
+      rowSelection.length === 0
+    ) {
+      return res.status(400).send({
+        success: false,
+        message: "No jobs selected for update.",
+      });
+    }
+
+    // Handle label update
+    let currentLabel = { name: "", color: "" };
+    if (label) {
+      const islabel = await labelModel.findById({ _id: label });
+
+      currentLabel.name = islabel.name;
+      currentLabel.color = islabel.color;
+    }
+
+    let updateData = {};
+    if (jobHolder) updateData["job.jobHolder"] = jobHolder;
+    if (lead) updateData["job.lead"] = lead;
+    if (yearEnd) updateData["job.yearEnd"] = yearEnd;
+    if (jobDeadline) updateData["job.jobDeadline"] = jobDeadline;
+    if (currentDate) updateData.currentDate = currentDate;
+    if (jobState) updateData["job.jobStatus"] = jobState;
+    if (dataLabelId) updateData.data = dataLabelId;
+    if (label) updateData.label = currentLabel;
+    if (source) updateData.source = source;
+    if (fee) updateData.fee = fee;
+    if (totalHours) updateData.totalHours = totalHours;
+
+    const updatedJobs = await jobsModel.updateMany(
+      {
+        _id: { $in: rowSelection },
+      },
+      { $set: updateData },
+      { multi: true }
+    );
+
+    // Check if any jobs were updated
+    if (updatedJobs.modifiedCount === 0) {
+      return res.status(404).send({
+        success: false,
+        message: "No jobs were updated.",
+      });
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Jobs updated successfully!",
+      updatedJobs,
+    });
+
+    // Add Activity Log
+    const currectUser = req.user.user;
+    if (updatedJobs) {
+      activityModel.create({
+        user: currectUser._id,
+        action: `${currectUser.name.trim()} update bulk jobs.`,
+        entity: "Jobs",
+        details: `Job Details:
+                   - Created At: ${currentDateTime}`,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in update bulk jobs !",
+      error: error,
+    });
+  }
+};
+
+// Workflow Page
+export const getWorkflowClients = async (req, res) => {
+  try {
+    const clients = await jobsModel
+      .find({ status: { $ne: "completed" } })
+      .select(
+        "fee  totalHours job.jobName job.lead job.jobHolder source clientType partner createdAt currentDate"
+      );
+
+    const uniqueClients = await jobsModel.aggregate([
+      {
+        $match: { status: { $ne: "completed" } },
+      },
+      {
+        $group: {
+          _id: "$companyName",
+          clientName: { $first: "$clientName" },
+          id: { $first: "$_id" },
+          fee: { $first: "$fee" },
+          totalHours: { $first: "$totalHours" },
+          jobName: { $first: "$job.jobName" },
+          lead: { $first: "$job.lead" },
+          jobHolder: { $first: "$job.jobHolder" },
+          source: { $first: "$source" },
+          clientType: { $first: "$clientType" },
+          partner: { $first: "$partner" },
+          createdAt: { $first: "$createdAt" },
+          currentDate: { $first: "$currentDate" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          companyName: "$_id", // Rename _id to companyName
+          clientName: 1,
+          id: 1,
+          fee: 1,
+          totalHours: 1,
+          jobName: 1,
+          lead: 1,
+          jobHolder: 1,
+          source: 1,
+          clientType: 1,
+          partner: 1,
+          createdAt: 1,
+          currentDate: 1,
+        },
+      },
+    ]);
+
+    res.status(200).send({
+      success: true,
+      message: "All Clients!",
+      clients: clients,
+      uniqueClients: uniqueClients,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "error while get workflow clients!",
+      error: error,
+    });
+  }
+};
+
+// Dashboard Page (data)
+export const getDashboardClients = async (req, res) => {
+  try {
+    const type = req.params.type;
+    console.log("type:", type);
+
+    const clients = await jobsModel
+      .find({ status: { $ne: type } })
+      .select(" job.jobName job.jobHolder job.lead createdAt ");
+
+    res.status(200).send({
+      success: true,
+      message: "All clients",
+      clients: clients,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get all job!",
+      error: error,
+    });
+  }
+};
+
+export const dashboardCompletedClients = async (req, res) => {
+  try {
+    const clients = await jobsModel
+      .find({ status: "completed" })
+      .select(" job.jobName job.jobHolder createdAt ");
+
+    res.status(200).send({
+      success: true,
+      message: "All clients",
+      clients: clients,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get all job!",
       error: error,
     });
   }

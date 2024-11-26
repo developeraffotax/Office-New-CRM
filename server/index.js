@@ -25,6 +25,7 @@ import goalsRoute from "./routes/goalRoutes.js";
 import complaintRoute from "./routes/complaintRoutes.js";
 import analyticsRoute from "./routes/Analytics.js/customImpressions.js";
 import activityRoute from "./routes/ActivityRoutes.js";
+import reminderRoute from "./routes/reminderRoutes.js";
 
 import http from "http";
 import { initSocketServer } from "./socketServer.js";
@@ -68,6 +69,7 @@ app.use("/api/v1/goals", goalsRoute);
 app.use("/api/v1/analytics", analyticsRoute);
 app.use("/api/v1/complaints", complaintRoute);
 app.use("/api/v1/activies", activityRoute);
+app.use("/api/v1/reminders", reminderRoute);
 
 // Rest API's
 app.use("/", (req, res) => {

@@ -5,7 +5,6 @@ import { GoGoal } from "react-icons/go";
 import { MdDateRange } from "react-icons/md";
 import { RiTimerLine } from "react-icons/ri";
 import { format } from "date-fns";
-// import { MdOutlineInsertComment } from "react-icons/md";
 import Loader from "../../utlis/Loader";
 import { Timer } from "../../utlis/Timer";
 import { useAuth } from "../../context/authContext";
@@ -20,6 +19,9 @@ import AddTaskModal from "../../components/Tasks/AddTaskModal";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { RiLoaderFill } from "react-icons/ri";
+import { BiBellPlus } from "react-icons/bi";
+import { BiSolidBellPlus } from "react-icons/bi";
+import Reminder from "../../utlis/Reminder";
 
 export default function TaskDetail({
   taskId,
@@ -44,6 +46,7 @@ export default function TaskDetail({
   const [subTaskLoading, setSubTaskLoading] = useState(false);
   const [subTaskData, setSubTaskData] = useState([]);
   const [timerId, setTimerId] = useState("");
+  const [showReminder, setShowReminder] = useState(false);
 
   console.log("timerId:", timerId, anyTimerRunning, taskDetal?._id);
 
@@ -370,6 +373,18 @@ export default function TaskDetail({
                   projectName={""}
                   task={taskDetal?.task || ""}
                 />
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1 text-gray-500 w-[30%]">
+                <BiBellPlus className="h-4 w-4 text-gray-500" />
+                Add Reminder
+              </span>
+              <span
+                onClick={() => setShowReminder(true)}
+                className=" text-pink-500 hover:text-pink-600"
+              >
+                <BiSolidBellPlus className="h-7 w-7 cursor-pointer " />
               </span>
             </div>
             {/*------------- Comment------- */}
@@ -749,6 +764,17 @@ export default function TaskDetail({
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Add Reminder */}
+          {showReminder && (
+            <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/80 flex items-center justify-center">
+              <Reminder
+                setShowReminder={setShowReminder}
+                taskId={taskId}
+                link={"/tasks"}
+              />
             </div>
           )}
         </div>

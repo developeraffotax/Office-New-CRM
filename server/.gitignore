@@ -9,7 +9,7 @@ logs/
 *.log
 npm-debug.log*
 
-# Ignore OS-specific files
+# Ignore OS-specific files text
 # macOS
 .DS_Store
 .AppleDouble

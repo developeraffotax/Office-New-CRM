@@ -18,6 +18,18 @@ module.exports = {
         "3xl": "1620px",
         "4xl": "1820px",
       },
+      animation: {
+        shake: "shake 0.5s ease-in-out infinite",
+      },
+      keyframes: {
+        shake: {
+          "0%": { transform: "translateX(0)" },
+          "25%": { transform: "translateX(-10px)" },
+          "50%": { transform: "translateX(10px)" },
+          "75%": { transform: "translateX(-10px)" },
+          "100%": { transform: "translateX(0)" },
+        },
+      },
     },
   },
   plugins: [],

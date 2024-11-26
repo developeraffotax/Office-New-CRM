@@ -8,6 +8,8 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { IoIosTimer } from "react-icons/io";
 import { MdOutlineTimerOff } from "react-icons/md";
+import { TbBellRinging } from "react-icons/tb";
+import { BiSolidBellMinus } from "react-icons/bi";
 import { FaStopwatch } from "react-icons/fa6";
 import socketIO from "socket.io-client";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
@@ -44,6 +46,8 @@ export default function Header() {
   );
   const notificationRef = useRef(null);
   const timerStatusRef = useRef(null);
+  const [reminderData, setReminderData] = useState(false);
+  const [showReminder, setShowReminder] = useState(false);
 
   useEffect(() => {
     if (audio) {
@@ -144,7 +148,6 @@ export default function Header() {
 
   useEffect(() => {
     getNotifications();
-
     // eslint-disable-next-line
   }, []);
 
@@ -198,6 +201,7 @@ export default function Header() {
         !notificationRef.current.contains(event.target)
       ) {
         setOpen(false);
+        setShowReminder(false);
       }
     };
 
@@ -219,6 +223,42 @@ export default function Header() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Get Reminders
+  const getReminders = async () => {
+    if (!auth.user) {
+      return;
+    }
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/reminders/fetch/reminder`
+      );
+      setReminderData(data.reminders);
+      console.log("data.reminders:", data.reminders);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getReminders();
+    // eslint-disable-next-line
+  }, []);
+
+  // Delete Reminders
+  const deleteReminder = async (id) => {
+    if (!auth.user) {
+      return;
+    }
+    try {
+      await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/v1/reminders/delete/reminder/${id}`
+      );
+      getReminders();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div className="w-full h-[3.8rem] bg-gray-200">
@@ -252,7 +292,10 @@ export default function Header() {
                 <div className="w-[350px] min-h-[40vh] max-h-[60vh]  overflow-y-scroll   ">
                   {notificationData &&
                     notificationData?.map((item, index) => (
-                      <div className="dark:bg-[#2d3a4ea1] bg-[#00000013] hover:bg-gray-300 transition-all duration-200 font-Poppins border-b dark:border-b-[#ffffff47] border-b-[#fff]">
+                      <div
+                        key={index}
+                        className="dark:bg-[#2d3a4ea1] bg-[#00000013] hover:bg-gray-300 transition-all duration-200 font-Poppins border-b dark:border-b-[#ffffff47] border-b-[#fff]"
+                      >
                         <div className="w-full flex items-center justify-between p-2">
                           <p className="text-black ">{item?.title}</p>
                           <p
@@ -411,35 +454,52 @@ export default function Header() {
               )}
             </div>
             {/* --------Notifications------ */}
-            {/* <div className="relative">
+            <div className="relative">
               <div
                 className="relative cursor-pointer m-2"
                 onClick={() => {
-                  getNotifications();
-                  setOpen(!open);
+                  getReminders();
+                  setShowReminder(!showReminder);
                 }}
               >
-                <IoNotifications className="text-2xl container text-black " />
-                <span className="absolute -top-2 -right-2 bg-orange-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
-                  {notificationData && notificationData.length}
-                </span>
+                <TbBellRinging className="text-2xl container text-black " />
+                {reminderData.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-orange-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
+                    {reminderData && reminderData.length}
+                  </span>
+                )}
               </div>
-              {open && (
-                <div className="shadow-xl  bg-gray-100 absolute z-[999] top-[2rem] right-[1.6rem] rounded-md overflow-hidden">
-                  <h5 className="text-[20px] text-center font-medium text-black bg-orange-400  p-3 font-Poppins">
-                    Notifications
+              {showReminder && (
+                <div
+                  ref={notificationRef}
+                  className="shadow-xl  bg-gray-100 absolute z-[999] top-[2rem] right-[1.6rem] rounded-md "
+                >
+                  <h5 className=" relative text-[20px] text-center font-medium rounded-tl-md text-white bg-orange-600  p-3 font-Poppins">
+                    Reminders
+                    <div className="absolute right-[.5rem] top-[-1rem] animate-shake z-10">
+                      <img
+                        src="/reminder.png"
+                        alt="reminder"
+                        className="h-[5rem] w-[5rem]"
+                      />
+                    </div>
                   </h5>
-                  <div className="w-[350px] min-h-[40vh] max-h-[60vh]  overflow-y-scroll   ">
-                    {notificationData &&
-                      notificationData?.map((item, index) => (
-                        <div className="dark:bg-[#2d3a4ea1] bg-[#00000013] hover:bg-gray-300 transition-all duration-200 font-Poppins border-b dark:border-b-[#ffffff47] border-b-[#fff]">
-                          <div className="w-full flex items-center justify-between p-2">
-                            <p className="text-black ">{item?.title}</p>
+                  <div className="w-[350px] flex flex-col gap-2 p-1 min-h-[30vh] max-h-[60vh]  overflow-y-auto   ">
+                    {reminderData &&
+                      reminderData?.map((item, index) => (
+                        <div
+                          key={index}
+                          className="dark:bg-[#2d3a4ea1] rounded-sm hover:shadow-md bg-[#00000013] hover:bg-gray-300 transition-all duration-200 font-Poppins border-b dark:border-b-[#ffffff47] border-b-[#fff]"
+                        >
+                          <div className="w-full relative flex items-center justify-between p-2">
+                            <p className="text-black text-[15px] font-medium ">
+                              {item?.title}
+                            </p>
                             <p
-                              className="text-sky-500 hover:text-sky-600 text-[14px] transition-all duration-200  cursor-pointer"
-                              onClick={() => updateNotification(item._id)}
+                              className="text-red-500 absolute top-2 right-1 hover:text-red-600 transition-all duration-200  cursor-pointer"
+                              onClick={() => deleteReminder(item._id)}
                             >
-                              Mark as read
+                              <BiSolidBellMinus className="h-6 w-6 cursor-pointer " />
                             </p>
                           </div>
                           <Link
@@ -449,38 +509,29 @@ export default function Header() {
                             className="cursor-pointer"
                           >
                             <p className="p-2 text-gray-700  text-[14px]">
+                              <strong className="text-black font-medium text-[15px]">
+                                Description:
+                              </strong>
                               {item?.description}
-                            </p>
-                            <p className="p-2 text-black  text-[14px] ">
-                              {format(item?.createdAt)}
                             </p>
                           </Link>
                         </div>
                       ))}
 
-                    {notificationData.length === 0 && (
-                      <div className="w-full h-[30vh] text-black  flex items-center justify-center flex-col gap-2">
-                        <span className="text-[19px]">🤯</span>
-                        Notifications not available!.
+                    {reminderData.length === 0 && (
+                      <div className="w-full h-[30vh] text-[14px] text-black  flex items-center justify-center flex-col">
+                        <img
+                          src="/rb_616.png"
+                          alt="notfound"
+                          className="h-[8rem] w-[8rem] animate-pulse"
+                        />
+                        Reminder not available!.
                       </div>
                     )}
                   </div>
-                  <div
-                    className="w-full  cursor-pointer bg-gray-200    px-2 flex  items-center justify-end"
-                    onClick={() => updateAllNotification(auth.user.id)}
-                  >
-                    <button
-                      disabled={notificationData.length === 0}
-                      className={`text-[14px] py-2 cursor-pointer text-sky-500 hover:text-sky-600 disabled:cursor-not-allowed  ${
-                        notificationData.length === 0 && "cursor-not-allowed"
-                      }`}
-                    >
-                      Mark all as read
-                    </button>
-                  </div>
                 </div>
               )}
-            </div> */}
+            </div>
           </div>
           {/* ----------Profile Image-------- */}
           <div className="relative">

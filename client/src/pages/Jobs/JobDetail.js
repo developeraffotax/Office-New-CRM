@@ -21,6 +21,8 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import JobCommentModal from "./JobCommentModal";
 import { FaRegCopy } from "react-icons/fa";
 import CopyJobModel from "../../components/Modals/CopyJobModel";
+import Reminder from "../../utlis/Reminder";
+import { BiBellPlus, BiSolidBellPlus } from "react-icons/bi";
 
 export default function JobDetail({
   clientId,
@@ -44,6 +46,7 @@ export default function JobDetail({
   const [subTaskData, setSubTaskData] = useState([]);
   const [timerId, setTimerId] = useState("");
   const [openCopy, setOpenCopy] = useState(false);
+  const [showReminder, setShowReminder] = useState(false);
 
   // ---------Stop Timer ----------->
   const handleStopTimer = () => {
@@ -342,7 +345,7 @@ export default function JobDetail({
                 )}
               </span>
             </div>
-            {/*  */}
+            {/* Timer  */}
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1 text-gray-500 w-[30%]">
                 <RiTimerLine className="h-4 w-4 text-gray-500" /> Start Timer
@@ -365,6 +368,19 @@ export default function JobDetail({
                   task={""}
                   companyName={clientDetail?.companyName}
                 />
+              </span>
+            </div>
+            {/* Reminder */}
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1 text-gray-500 w-[30%]">
+                <BiBellPlus className="h-4 w-4 text-gray-500" />
+                Add Reminder
+              </span>
+              <span
+                onClick={() => setShowReminder(true)}
+                className=" text-pink-500 hover:text-pink-600"
+              >
+                <BiSolidBellPlus className="h-7 w-7 cursor-pointer " />
               </span>
             </div>
 
@@ -1047,6 +1063,17 @@ export default function JobDetail({
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Add Reminder */}
+          {showReminder && (
+            <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/80 flex items-center justify-center">
+              <Reminder
+                setShowReminder={setShowReminder}
+                taskId={clientId}
+                link={"/job-planning"}
+              />
             </div>
           )}
         </div>

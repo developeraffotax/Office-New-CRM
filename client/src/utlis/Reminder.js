@@ -4,6 +4,9 @@ import axios from "axios";
 import { IoClose } from "react-icons/io5";
 import { style } from "./CommonStyle";
 import { TbLoader2 } from "react-icons/tb";
+import socketIO from "socket.io-client";
+const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
+const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 export default function Reminder({ setShowReminder, taskId, link }) {
   const [title, setTitle] = useState("");
@@ -25,6 +28,9 @@ export default function Reminder({ setShowReminder, taskId, link }) {
       if (data) {
         toast.success("Reminder created successfully!");
         setShowReminder(false);
+        socketId.emit("reminder", {
+          note: "New Reminder Added",
+        });
       }
     } catch (error) {
       console.error("Error crete reminder:", error);
@@ -33,6 +39,7 @@ export default function Reminder({ setShowReminder, taskId, link }) {
       setLoading(false);
     }
   };
+
   return (
     <div className=" relative w-[21rem] sm:w-[40rem]  rounded-lg shadow-md bg-white">
       <div className="absolute right-[7rem] top-[-5rem] animate-shake z-10">

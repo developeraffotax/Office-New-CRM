@@ -330,16 +330,9 @@ export const updateJobHolder = async (req, res) => {
       { new: true }
     );
 
-    res.status(200).send({
-      success: true,
-      message: "Job holder updated successfully!",
-      clientJob: clientJob,
-      notification: notification,
-    });
-
     // Create Notification
     const user = await userModel.findOne({ name: jobHolder });
-    const notification = await notificationModel.create({
+    await notificationModel.create({
       title: "New Job Assigned",
       redirectLink: "/job-planning",
       description: `${req.user.user.name} assign a new job of "${clientJob.job.jobName}"`,
@@ -347,9 +340,15 @@ export const updateJobHolder = async (req, res) => {
       userId: user._id,
     });
 
+    res.status(200).send({
+      success: true,
+      message: "Job holder updated successfully!",
+      clientJob: clientJob,
+    });
+
     // Add Activity Log
-    const currectUser = req.user.user;
     if (clientJob) {
+      const currectUser = req.user.user;
       activityModel.create({
         user: currectUser._id,
         action: `${currectUser.name.trim()} is update a Job Assign.`,
@@ -1469,6 +1468,39 @@ export const dashboardCompletedClients = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error while get all job!",
+      error: error,
+    });
+  }
+};
+
+// Update Work Plan
+export const updateWorkPlan = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const { workPlan } = req.body;
+
+    if (!jobId) {
+      return res.status(400).send({
+        success: false,
+        message: "Job id is required!",
+      });
+    }
+    const clientJob = await jobsModel.findByIdAndUpdate(
+      { _id: jobId },
+      { workPlan: workPlan },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Work Plan update successfully!",
+      clientJob: clientJob,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in update total time!",
       error: error,
     });
   }

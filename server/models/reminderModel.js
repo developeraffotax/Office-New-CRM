@@ -10,7 +10,7 @@ const reminderSchema = new mongoose.Schema(
     description: { type: String },
     taskId: { type: String, required: true },
     date: { type: Date, required: true },
-    time: { type: String, required: true },
+    time: { type: String },
     redirectLink: {
       type: String,
     },

@@ -109,7 +109,7 @@ export default function AddTaskModal({
           getAllTasks();
         }
       }
-      // Send Socket Timer
+      // Send Socket
       socketId.emit("addTask", {
         note: "New Task Added",
       });

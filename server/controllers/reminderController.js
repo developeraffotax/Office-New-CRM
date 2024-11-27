@@ -1,8 +1,6 @@
 import reminderModel from "../models/reminderModel.js";
-import schedule from "node-schedule";
 import moment from "moment";
-
-const scheduledJobs = {};
+import reminders from "node-reminders";
 
 // Create Reminder
 export const createReminder = async (req, res) => {
@@ -19,9 +17,11 @@ export const createReminder = async (req, res) => {
     if (!date || !time) {
       return res.status(400).send({
         success: false,
-        message: "Date and time is required!",
+        message: "Date is required!",
       });
     }
+
+    // const reminderDate = moment(`${date}T${time}`).toISOString();
 
     const reminder = await reminderModel.create({
       userId,
@@ -33,7 +33,16 @@ export const createReminder = async (req, res) => {
       redirectLink,
     });
 
-    scheduleReminder(reminder);
+    // Schedule reminder
+    // reminders.schedule(
+    //   {
+    //     time: reminderDate,
+    //     data: { id: reminder._id, title, redirectLink },
+    //   },
+    //   (reminderData) => {
+    //     console.log(`Reminder Triggered: ${reminderData.data.title}`);
+    //   }
+    // );
 
     res.status(200).send({
       success: true,
@@ -82,23 +91,15 @@ export const getReminderByUsers = async (req, res) => {
   }
 };
 
-// Schedule a reminder
-const scheduleReminder = (reminder) => {
-  const dateTime = new Date(`${reminder.date}T${reminder.time}`);
-
-  if (dateTime > new Date()) {
-    const job = schedule.scheduleJob(reminder.taskId, dateTime, () => {
-      console.log(`Reminder Triggered: ${reminder.title}`);
-    });
-
-    scheduledJobs[reminder.taskId] = job;
-  }
-};
-
 // Delete  Reminder
 export const deleteReminder = async (req, res) => {
   try {
     const reminderId = req.params.id;
+    const reminder = await reminderModel.findById(reminderId);
+
+    // if (reminder) {
+    //   reminders.cancel(reminder._id.toString());
+    // }
 
     await reminderModel.findByIdAndDelete(reminderId);
 

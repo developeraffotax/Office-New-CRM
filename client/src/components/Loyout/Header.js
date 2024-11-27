@@ -30,7 +30,7 @@ const formatElapsedTime = (createdAt) => {
   }
 };
 
-export default function Header() {
+export default function Header({ reminderData }) {
   const { auth, setAuth, setFilterId, time, searchValue, setSearchValue } =
     useAuth();
   const [open, setOpen] = useState(false);
@@ -46,7 +46,6 @@ export default function Header() {
   );
   const notificationRef = useRef(null);
   const timerStatusRef = useRef(null);
-  const [reminderData, setReminderData] = useState(false);
   const [showReminder, setShowReminder] = useState(false);
 
   useEffect(() => {
@@ -224,27 +223,6 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Get Reminders
-  const getReminders = async () => {
-    if (!auth.user) {
-      return;
-    }
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/reminders/fetch/reminder`
-      );
-      setReminderData(data.reminders);
-      console.log("data.reminders:", data.reminders);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    getReminders();
-    // eslint-disable-next-line
-  }, []);
-
   // Delete Reminders
   const deleteReminder = async (id) => {
     if (!auth.user) {
@@ -254,7 +232,6 @@ export default function Header() {
       await axios.delete(
         `${process.env.REACT_APP_API_URL}/api/v1/reminders/delete/reminder/${id}`
       );
-      getReminders();
     } catch (error) {
       console.log(error);
     }
@@ -458,7 +435,6 @@ export default function Header() {
               <div
                 className="relative cursor-pointer m-2"
                 onClick={() => {
-                  getReminders();
                   setShowReminder(!showReminder);
                 }}
               >
@@ -495,12 +471,12 @@ export default function Header() {
                             <p className="text-black text-[15px] font-medium ">
                               {item?.title}
                             </p>
-                            <p
+                            {/* <p
                               className="text-red-500 absolute top-2 right-1 hover:text-red-600 transition-all duration-200  cursor-pointer"
                               onClick={() => deleteReminder(item._id)}
                             >
                               <BiSolidBellMinus className="h-6 w-6 cursor-pointer " />
-                            </p>
+                            </p> */}
                           </div>
                           <Link
                             to={item?.redirectLink}

@@ -11,6 +11,11 @@ export const initSocketServer = (server) => {
       io.emit("newNotification", data);
     });
 
+    // Listen "Reminder"
+    socket.on("reminder", (data) => {
+      io.emit("newReminder", data);
+    });
+
     // Listen Timer
     socket.on("timer", (data) => {
       io.emit("newTimer", data);

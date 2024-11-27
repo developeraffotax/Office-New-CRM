@@ -1249,7 +1249,12 @@ export default function Goals() {
           );
         },
         filterFn: (row, columnId, filterValue) => {
-          const progressValue = parseFloat(row.getValue(columnId)) || 0;
+          const achievement = parseFloat(row.original.achievement) || 0;
+          const initialAchievedCount =
+            parseFloat(row.original.achievedCount) || 0;
+
+          const progressValue =
+            achievement > 0 ? (initialAchievedCount / achievement) * 100 : 0;
 
           const ranges = {
             20: [0, 20],
@@ -1263,14 +1268,13 @@ export default function Goals() {
             return progressValue > 100;
           }
 
-          // Get the range for the filter value
           const range = ranges[filterValue];
-
           if (!range) return true;
+
           const [min, max] = range;
           return progressValue >= min && progressValue <= max;
         },
-        filterVariant: "select",
+        enableColumnFilter: true,
       },
     ],
     // eslint-disable-next-line

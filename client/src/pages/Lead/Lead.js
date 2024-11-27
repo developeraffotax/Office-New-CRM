@@ -66,6 +66,7 @@ export default function Lead() {
     Note: "",
     stage: "",
     value: "",
+    number: "",
   });
   const [active, setActive] = useState(false);
   const [selectFilter, setSelectFilter] = useState("");
@@ -336,6 +337,7 @@ export default function Lead() {
           Note: "",
           stage: "",
           value: "",
+          number: "",
         });
         toast.success("Lead data updated!");
         getLeads();
@@ -1008,6 +1010,75 @@ export default function Lead() {
         filterVariant: "select",
       },
       {
+        accessorKey: "number",
+        minSize: 50,
+        maxSize: 100,
+        size: 70,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                  setSelectFilter("");
+                }}
+              >
+                Number
+              </span>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const number = row.original.number;
+          const [show, setShow] = useState(false);
+          const [localValue, setLocalValue] = useState(number || "");
+
+          const handleChange = (e) => {
+            setFormData((prevData) => ({
+              ...prevData,
+              number: localValue,
+            }));
+
+            handleUpdateData(row.original._id, {
+              ...formData,
+              number: localValue,
+            });
+
+            setShow(false);
+          };
+
+          return (
+            <div className="w-full ">
+              {!show ? (
+                <div
+                  className="w-full cursor-pointer flex items-center justify-center"
+                  onDoubleClick={() => setShow(true)}
+                >
+                  {number ? (
+                    <span>{number}</span>
+                  ) : (
+                    <span className="text-white">.</span>
+                  )}
+                </div>
+              ) : (
+                <input
+                  value={localValue || ""}
+                  className="w-full h-[2rem] px-1 rounded-md border-none  outline-none"
+                  onChange={(e) => setLocalValue(e.target.value)}
+                  onBlur={(e) => handleChange(e.target.value)}
+                />
+              )}
+            </div>
+          );
+        },
+        filterFn: "equals",
+        filterSelectOptions: brands?.map((brand) => brand),
+        filterVariant: "select",
+      },
+      {
         accessorKey: "lead_Source",
         minSize: 100,
         maxSize: 150,
@@ -1417,6 +1488,71 @@ export default function Lead() {
         filterVariant: "custom",
         size: 120,
         minSize: 90,
+        maxSize: 120,
+        grow: false,
+      },
+      // Days
+      {
+        accessorKey: "Days",
+        Header: ({ column }) => {
+          return (
+            <div className="w-full flex flex-col gap-[2px]">
+              <span
+                className="cursor-pointer"
+                title="Clear Filter"
+                onClick={() => column.setFilterValue("")}
+              >
+                Days
+              </span>
+              <input
+                type="text"
+                placeholder="Search Days..."
+                className="border rounded px-2 py-1 text-sm outline-none"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+              />
+            </div>
+          );
+        },
+        Cell: ({ row }) => {
+          const createdAt = new Date(row.original.createdAt);
+          const deadline = new Date(row.original.followUpDate);
+
+          if (!createdAt || !deadline) return <div>N/A</div>;
+
+          const timeDifference = deadline.getTime() - createdAt.getTime();
+          const dayDifference = Math.ceil(
+            timeDifference / (1000 * 60 * 60 * 24)
+          );
+
+          return (
+            <div className="w-full text-center">
+              {dayDifference > 0 ? (
+                `${dayDifference} Days`
+              ) : (
+                <span className="text-red-500">Expired</span>
+              )}
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const createdAt = new Date(row.original.createdAt);
+          const deadline = new Date(row.original.followUpDate);
+
+          if (!createdAt || !deadline) return false;
+
+          const timeDifference = deadline.getTime() - createdAt.getTime();
+          const dayDifference = Math.ceil(
+            timeDifference / (1000 * 60 * 60 * 24)
+          );
+
+          // alert(dayDifference);
+
+          return dayDifference.toString().includes(filterValue);
+        },
+        enableColumnFilter: true,
+        size: 70,
+        minSize: 60,
         maxSize: 120,
         grow: false,
       },

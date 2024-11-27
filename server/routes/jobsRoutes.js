@@ -27,6 +27,7 @@ import {
   updateStatus,
   updateSubTaskStaus,
   updateTime,
+  updateWorkPlan,
 } from "../controllers/jobController.js";
 import { isAdmin, requiredSignIn } from "../middlewares/authMiddleware.js";
 import multer from "multer";
@@ -117,5 +118,8 @@ router.get("/completed/clients", dashboardCompletedClients);
 
 // Get Inactive Client_Job
 router.get("/inactive/clients", getInactiveClientJobs);
+
+// Update WorkPlain
+router.put("/update/workplain/:id", updateWorkPlan);
 
 export default router;

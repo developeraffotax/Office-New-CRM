@@ -164,6 +164,10 @@ const clientSchema = new mongoose.Schema(
       type: String,
       default: "Om",
     },
+    workPlan: {
+      type: String,
+      default: "",
+    },
     label: labelSchema,
     data: {
       type: mongoose.Schema.Types.ObjectId,

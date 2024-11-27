@@ -255,7 +255,7 @@ export const updateJobHolderLS = async (req, res) => {
         return;
       }
 
-      const notification = await notificationModel.create({
+      await notificationModel.create({
         title: "New Task Assigned",
         redirectLink: "/tasks",
         description: `${req.user.user.name} assign a new task of "${updateTask.task}"`,
@@ -288,6 +288,12 @@ export const updateJobHolderLS = async (req, res) => {
 
     const user = req.user.user;
 
+    res.status(200).send({
+      success: true,
+      message: "Task updated!",
+      task: updateTask,
+    });
+
     // Add Activity Log
     if (updateTask) {
       activityModel.create({
@@ -310,12 +316,6 @@ export const updateJobHolderLS = async (req, res) => {
           - Update At: ${currentDateTime}`,
       });
     }
-
-    res.status(200).send({
-      success: true,
-      message: "Task updated!",
-      task: updateTask,
-    });
   } catch (error) {
     console.log(error);
     res.status(500).send({

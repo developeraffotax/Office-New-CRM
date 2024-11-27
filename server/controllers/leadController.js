@@ -19,6 +19,7 @@ export const createLead = async (req, res) => {
       stage,
       status,
       value,
+      number,
     } = req.body;
 
     const lead = await leadModel.create({
@@ -35,6 +36,7 @@ export const createLead = async (req, res) => {
       stage,
       status,
       value,
+      number,
     });
 
     res.status(200).send({
@@ -70,6 +72,7 @@ export const updateLead = async (req, res) => {
       stage,
       status,
       value,
+      number,
     } = req.body;
 
     const lead = await leadModel.findById(leadId);
@@ -97,6 +100,7 @@ export const updateLead = async (req, res) => {
         stage: stage ? stage : lead.stage,
         status: status ? status : lead.status,
         value: value || lead.value,
+        number: number || lead.number,
       },
       { new: true }
     );

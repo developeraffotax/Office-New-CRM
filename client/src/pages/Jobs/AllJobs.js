@@ -22,7 +22,7 @@ import { IoBriefcaseOutline } from "react-icons/io5";
 import { Timer } from "../../utlis/Timer";
 import JobCommentModal from "./JobCommentModal";
 import { MdAutoGraph } from "react-icons/md";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { TbLoader } from "react-icons/tb";
 import { Box, Button } from "@mui/material";
 import { MdOutlineModeEdit } from "react-icons/md";
@@ -114,6 +114,7 @@ export default function AllJobs() {
   const sources = ["FIV", "UPW", "PPH", "Website", "Referal", "Partner"];
   const [timerId, setTimerId] = useState("");
   const [showInactive, setShowInactive] = useState(false);
+  const [isLoad, setIsLoad] = useState(false);
 
   // console.log("rowSelection:", rowSelection);
 
@@ -168,7 +169,7 @@ export default function AllJobs() {
       return data.reduce((sum, client) => sum + Number(client.totalHours), 0);
     };
 
-    if (active === "All") {
+    if (active === "All" && !active1) {
       setTotalHours(calculateTotalHours(tableData).toFixed(0));
     } else if (filterData) {
       setTotalHours(calculateTotalHours(filterData).toFixed(0));
@@ -213,13 +214,12 @@ export default function AllJobs() {
 
   // -----------Get Client without Showing Loading-------->
   const allClientData = async () => {
+    setIsLoad(true);
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/job`
       );
       if (data) {
-        setTableData(data?.clients);
-
         if (active !== "All") {
           setFilterData((prevData) => {
             if (Array.isArray(prevData)) {
@@ -227,10 +227,13 @@ export default function AllJobs() {
             }
           });
         }
+        setTableData(data?.clients);
       }
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message || "Error in client Jobs");
+    } finally {
+      setIsLoad(false);
     }
   };
 
@@ -866,7 +869,7 @@ export default function AllJobs() {
 
           return (
             <div
-              className="cursor-pointer text-[#0078c8] hover:text-[#0053c8] w-full h-full"
+              className="cursor-pointer flex items-center justify-start text-[#0078c8] hover:text-[#0053c8] w-full h-full"
               onClick={() => {
                 getSingleJobDetail(row.original._id);
                 setCompanyName(companyName);
@@ -905,6 +908,27 @@ export default function AllJobs() {
                 className="font-normal h-[1.8rem] px-2 cursor-pointer bg-white rounded-md border border-gray-300 outline-none"
               />
             </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const clientName = row.original.clientName;
+          const regNo = row.original.regNumber || "";
+          // console.log("regNo:", row.original);
+
+          return (
+            <Link
+              to={
+                regNo
+                  ? `https://find-and-update.company-information.service.gov.uk/company/${regNo}`
+                  : "#"
+              }
+              target="_black"
+              className={`cursor-pointer flex items-center justify-start ${
+                regNo && "text-[#0078c8] hover:text-[#0053c8]"
+              }   w-full h-full`}
+            >
+              {clientName}
+            </Link>
           );
         },
         filterFn: (row, columnId, filterValue) => {
@@ -2307,6 +2331,7 @@ export default function AllJobs() {
       dataLable,
       filterData,
       tableData,
+      isLoad,
     ]
   );
 
@@ -2672,9 +2697,13 @@ export default function AllJobs() {
               setActive1("");
               setFilterId("");
             }}
-            title="Update Date"
+            title="Refresh Data"
           >
-            <GrUpdate className="h-5 w-5  cursor-pointer" />
+            <GrUpdate
+              className={`h-5 w-5  cursor-pointer ${
+                isLoad && "animate-spin text-sky-500"
+              }`}
+            />
           </span>
         </div>
         {/*  */}

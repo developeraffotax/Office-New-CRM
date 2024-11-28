@@ -1,12 +1,13 @@
 import reminderModel from "../models/reminderModel.js";
 import moment from "moment";
 import reminders from "node-reminders";
+import userModel from "../models/userModel.js";
 
 // Create Reminder
 export const createReminder = async (req, res) => {
   try {
-    const { title, description, taskId, date, time, redirectLink } = req.body;
-    const userId = req.user.user._id;
+    const { title, description, taskId, date, time, redirectLink, usersList } =
+      req.body;
 
     if (!title) {
       return res.status(400).send({
@@ -17,43 +18,42 @@ export const createReminder = async (req, res) => {
     if (!date || !time) {
       return res.status(400).send({
         success: false,
-        message: "Date is required!",
+        message: "Date and time are required!",
       });
     }
 
-    // const reminderDate = moment(`${date}T${time}`).toISOString();
+    if (!usersList || !Array.isArray(usersList) || usersList.length === 0) {
+      return res.status(400).send({
+        success: false,
+        message: "Users list is required and should not be empty!",
+      });
+    }
 
-    const reminder = await reminderModel.create({
-      userId,
-      title,
-      description,
-      taskId,
-      date,
-      time,
-      redirectLink,
-    });
+    const reminders = [];
 
-    // Schedule reminder
-    // reminders.schedule(
-    //   {
-    //     time: reminderDate,
-    //     data: { id: reminder._id, title, redirectLink },
-    //   },
-    //   (reminderData) => {
-    //     console.log(`Reminder Triggered: ${reminderData.data.title}`);
-    //   }
-    // );
+    for (let user of usersList) {
+      const reminder = await reminderModel.create({
+        userId: user._id,
+        title,
+        description,
+        taskId,
+        date,
+        time,
+        redirectLink,
+      });
+      reminders.push(reminder);
+    }
 
     res.status(200).send({
       success: true,
-      message: "Reminder created successfully!",
-      reminder: reminder,
+      message: "Reminder(s) created successfully!",
+      reminders: reminders,
     });
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error occured while create reminder!",
+      message: "Error occurred while creating reminder(s)!",
       error: error.message,
     });
   }
@@ -96,10 +96,6 @@ export const deleteReminder = async (req, res) => {
   try {
     const reminderId = req.params.id;
     const reminder = await reminderModel.findById(reminderId);
-
-    // if (reminder) {
-    //   reminders.cancel(reminder._id.toString());
-    // }
 
     await reminderModel.findByIdAndDelete(reminderId);
 

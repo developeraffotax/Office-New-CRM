@@ -26,9 +26,12 @@ import complaintRoute from "./routes/complaintRoutes.js";
 import analyticsRoute from "./routes/Analytics.js/customImpressions.js";
 import activityRoute from "./routes/ActivityRoutes.js";
 import reminderRoute from "./routes/reminderRoutes.js";
+import cron from "node-cron";
+import webpush from "web-push";
 
 import http from "http";
 import { initSocketServer } from "./socketServer.js";
+import { sendDatatoGoogleSheet } from "./utils/googleSheet.js";
 
 // Dotenv Config
 dotenv.config();
@@ -70,6 +73,24 @@ app.use("/api/v1/analytics", analyticsRoute);
 app.use("/api/v1/complaints", complaintRoute);
 app.use("/api/v1/activies", activityRoute);
 app.use("/api/v1/reminders", reminderRoute);
+
+// Send Data to Google Sheet
+cron.schedule("0 13,20,23 * * *", () => {
+  console.log("Running task scheduler for recurring tasks...");
+  sendDatatoGoogleSheet();
+});
+
+// Web Push
+const apiKeys = {
+  publicKey: process.env.VAPID_PUBLIC_KEY,
+  privateKey: process.env.VAPID_PRIVATE_KEY,
+};
+
+webpush.setVapidDetails(
+  "mailto:YOUR_MAILTO_STRING",
+  apiKeys.publicKey,
+  apiKeys.privateKey
+);
 
 // Rest API's
 app.use("/", (req, res) => {

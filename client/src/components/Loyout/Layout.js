@@ -7,7 +7,11 @@ import Header from "./Header";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { getMessaging, getToken } from "firebase/messaging";
+import { messaging } from "../../firebase-config";
+import Draggable from "react-draggable";
 import socketIO from "socket.io-client";
+import toast from "react-hot-toast";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -66,43 +70,77 @@ export default function Layout({ children }) {
     // eslint-disable-next-line
   }, [socketId]);
 
+  const requestPermission = async () => {
+    const permission = await Notification.requestPermission();
+    if (permission === "granted") {
+      // Generate Token
+      // const token = await getToken(messaging, {
+      //   vapidKey:
+      //     "BFhdoGxuB7Ic_QWLpUTxlQCOeI3HepFWk4WhdvbHwIOZDAhN8VIe9PGryq1zmTTOQ7A_EnXUeoFj4nnhv2X9A0s",
+      // });
+      // console.log("Token:", token);
+    } else if (permission === "denied") {
+      toast.error("You denied the reminder notifications");
+    } else {
+      console.log("User has blocked notifications");
+    }
+  };
+
+  useEffect(() => {
+    // Req User for notification Permission
+    requestPermission();
+  }, []);
+
   if (!auth?.token) {
     return <Spinner />;
   }
 
+  // Reminder Notification Popup
   const renderNotification = (reminder, setReminderFn) => {
     if (!reminder) return null;
     return (
-      <div className="absolute bottom-4 bg-white border border-gray-200 right-2 z-[999] w-[20rem] sm:w-[25rem] rounded-md shadow-md drop-shadow-md min-h-[6rem] mb-4">
-        <span
-          className="cursor-pointer absolute top-2 right-2 z-10"
-          onClick={() => deleteReminder(reminder._id, setReminderFn)}
+      <Draggable handle=".drag-handle">
+        <div
+          className="fixed inset-0 flex items-center justify-center z-[999]"
+          style={{ pointerEvents: "none" }}
         >
-          <IoCloseCircleOutline className="text-[26px] text-gray-500 hover:text-gray-700" />
-        </span>
-        <h5 className=" relative text-[20px] text-start font-medium rounded-md text-white bg-orange-600  p-3 font-Poppins">
-          Reminders
-          <div className="absolute right-[8rem] top-[-3rem] animate-shake z-10">
-            <img
-              src="/reminder.png"
-              alt="reminder"
-              className="h-[7rem] w-[7rem]"
-            />
+          <div
+            style={{ pointerEvents: "all" }}
+            className="relative bg-white border border-gray-200  z-[999] w-[20rem] sm:w-[25rem] rounded-md shadow-md drop-shadow-md min-h-[6rem] mb-4"
+          >
+            <span
+              className="cursor-pointer absolute top-2 right-2 z-[9999]"
+              onClick={() => deleteReminder(reminder._id, setReminderFn)}
+            >
+              <IoCloseCircleOutline className="text-[26px] text-white hover:text-sky-500" />
+            </span>
+            <h5 className="drag-handle cursor-move relative text-[20px] text-start font-medium rounded-tl-md rounded-tr-md text-white bg-orange-600  p-3 font-Poppins">
+              Reminders
+              <div className="absolute right-[8rem] top-[-3rem] animate-shake z-10">
+                <img
+                  src="/reminder.png"
+                  alt="reminder"
+                  className="h-[7rem] w-[7rem]"
+                />
+              </div>
+            </h5>
+            <div className="flex flex-col gap-1">
+              <p className="p-3 text-sm text-gray-900 font-semibold">
+                {reminder.title}
+              </p>
+              <p className="p-3 text-sm text-gray-700">
+                {reminder.description}
+              </p>
+            </div>
+            <Link
+              to={reminder.redirectLink}
+              className="text-blue-500 hover:text-blue-600 text-sm underline p-3 block"
+            >
+              Go to Page
+            </Link>
           </div>
-        </h5>
-        <div className="flex flex-col gap-1">
-          <p className="p-3 text-sm text-gray-900 font-semibold">
-            {reminder.title}
-          </p>
-          <p className="p-3 text-sm text-gray-700">{reminder.description}</p>
         </div>
-        <Link
-          to={reminder.redirectLink}
-          className="text-blue-500 text-sm underline p-3 block"
-        >
-          Go to Task
-        </Link>
-      </div>
+      </Draggable>
     );
   };
 

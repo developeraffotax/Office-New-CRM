@@ -36,6 +36,9 @@ function App() {
   const { auth } = useAuth();
   const user = auth.user;
 
+
+    
+
   const routeAccess = {
     Dashboard: <Route path="/dashboard" element={<Dashboard />} />,
     MyList: <Route path="/all/lists" element={<AllLists />} />,
@@ -94,6 +97,9 @@ function App() {
     defaultHeaders.append("Expires", "0");
     defaultHeaders.append("Surrogate-Control", "no-store");
   }, []);
+
+
+
 
   return (
     <div>

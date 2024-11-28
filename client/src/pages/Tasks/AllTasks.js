@@ -100,7 +100,7 @@ const AllTasks = () => {
   const [showDetail, setShowDetail] = useState(false);
   const [taskID, setTaskID] = useState("");
   const [projectName, setProjectName] = useState("");
-  const [totalHours, setTotalHours] = useState("0");
+  const [totalHours, setTotalHours] = useState(0);
   const [allProjects, setAllProjects] = useState([]);
   const [labelData, setLabelData] = useState([]);
   const commentStatusRef = useRef(null);
@@ -398,10 +398,10 @@ const AllTasks = () => {
 
   useEffect(() => {
     const calculateTotalHours = (data) => {
-      return data.reduce((sum, client) => sum + Number(client.hours), 0);
+      return data?.reduce((sum, client) => sum + Number(client.hours), 0);
     };
 
-    if (active === "All") {
+    if (active === "All" && !active1) {
       setTotalHours(calculateTotalHours(tasksData).toFixed(0));
     } else if (filterData) {
       setTotalHours(calculateTotalHours(filterData).toFixed(0));

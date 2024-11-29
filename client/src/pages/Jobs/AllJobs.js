@@ -2158,7 +2158,7 @@ export default function AllJobs() {
                   "UPW",
                   "PPH",
                   "Website",
-                  "Referal",
+                  "Direct",
                   "Partner",
                 ];
                 return (

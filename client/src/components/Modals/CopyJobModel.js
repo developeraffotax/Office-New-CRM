@@ -112,7 +112,7 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
 
   console.log("jobs:", jobs);
 
-  const sources = ["FIV", "UPW", "PPH", "Website", "Referal", "Partner"];
+  const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
   const partners = ["Affotax", "Outsource", "OTL"];
 

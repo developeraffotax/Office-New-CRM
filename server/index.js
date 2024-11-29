@@ -27,7 +27,7 @@ import analyticsRoute from "./routes/Analytics.js/customImpressions.js";
 import activityRoute from "./routes/ActivityRoutes.js";
 import reminderRoute from "./routes/reminderRoutes.js";
 import cron from "node-cron";
-import webpush from "web-push";
+// import webpush from "web-push";
 
 import http from "http";
 import { initSocketServer } from "./socketServer.js";
@@ -81,16 +81,16 @@ cron.schedule("0 13,20,23 * * *", () => {
 });
 
 // Web Push
-const apiKeys = {
-  publicKey: process.env.VAPID_PUBLIC_KEY,
-  privateKey: process.env.VAPID_PRIVATE_KEY,
-};
+// const apiKeys = {
+//   publicKey: process.env.VAPID_PUBLIC_KEY,
+//   privateKey: process.env.VAPID_PRIVATE_KEY,
+// };
 
-webpush.setVapidDetails(
-  "mailto:YOUR_MAILTO_STRING",
-  apiKeys.publicKey,
-  apiKeys.privateKey
-);
+// webpush.setVapidDetails(
+//   "mailto:YOUR_MAILTO_STRING",
+//   apiKeys.publicKey,
+//   apiKeys.privateKey
+// );
 
 // Rest API's
 app.use("/", (req, res) => {

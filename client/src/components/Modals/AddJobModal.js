@@ -47,7 +47,7 @@ export default function AddJobModal({ setIsOpen }) {
   };
 
   const partners = ["Affotax", "Outsource", "OTL"];
-  const sources = ["AIV", "UPW", "PPH", "Website", "Referal", "Partner"];
+  const sources = ["AIV", "UPW", "PPH", "Website", "Direct", "Partner"];
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
   const leads = ["Rashid", "Salman", "M Ali"];
   const JobHolders = ["Rashid", "Salman", "M Ali"];

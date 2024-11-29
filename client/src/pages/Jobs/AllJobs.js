@@ -111,7 +111,7 @@ export default function AllJobs() {
   const [source, setSource] = useState("");
   const [fee, setFee] = useState("");
   const [hours, setHours] = useState("");
-  const sources = ["FIV", "UPW", "PPH", "Website", "Referal", "Partner"];
+  const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
   const [timerId, setTimerId] = useState("");
   const [showInactive, setShowInactive] = useState(false);
   const [isLoad, setIsLoad] = useState(false);

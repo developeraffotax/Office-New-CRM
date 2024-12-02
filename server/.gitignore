@@ -1,10 +1,10 @@
 # Ignore Node.js dependencies
 node_modules/
 
-# Ignore environment variables files
+# Ignore environment variables files Testing
 .env
 
-# Ignore logs and debugging files
+# Ignore logs and debugging files 
 logs/
 *.log
 npm-debug.log*

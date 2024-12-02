@@ -17,7 +17,7 @@ export default function Dashboard() {
   //
   const [selectedTab, setSelectedTab] = useState("Clients");
   const [selectedMonth, setSelectedMonth] = useState("");
-  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedSource, setSelectedSource] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedPartner, setSelectedPartner] = useState("");
@@ -34,7 +34,7 @@ export default function Dashboard() {
     "Company Sec",
     "Address",
   ];
-  const sources = ["FIV", "UPW", "PPH", "Website", "Referal", "Partner"];
+  const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
   const partners = ["Affotax", "Outsource", "OTL"];
   // Sales

@@ -1,0 +1,76 @@
+/* components/certifications/HtmlCertificate.module.css */
+
+.certificateBody {
+    font-family: 'Georgia', serif;
+    background-color: #f2f2f2;
+    padding: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .certificateContainer {
+    position: relative;
+    width: 800px;
+    height: 600px;
+    padding: 50px;
+    text-align: center;
+    background: linear-gradient(to bottom right, #ffffff, #e6e6e6);
+    border: 5px solid #8c8c8c;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .certificateTitle {
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333333;
+  }
+  
+  .certificateContent {
+    font-size: 24px;
+    color: #666666;
+    margin-bottom: 40px;
+  }
+  
+  .certificateContent h2 {
+    font-size: 36px;
+    margin: 20px 0;
+    color: #333333;
+  }
+  
+  .certificateFooter {
+    position: absolute;
+    bottom: 50px;
+    left: 50px;
+    right: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .signature {
+    text-align: center;
+  }
+  
+  .date {
+    font-size: 18px;
+    color: #666666;
+  }
+  
+  .certificateSeal {
+    position: absolute;
+    top: 50px;
+    right: 50px;
+  }
+  
+  .certificateSeal img {
+    width: 100px;
+    height: auto;
+  }
+  
+  .signatureImage img {
+    width: 200px;
+    height: auto;
+  }
+  

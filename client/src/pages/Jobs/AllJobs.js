@@ -111,6 +111,7 @@ export default function AllJobs() {
   const [source, setSource] = useState("");
   const [fee, setFee] = useState("");
   const [hours, setHours] = useState("");
+  const [activeClient, setActiveClient] = useState("");
   const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
   const [timerId, setTimerId] = useState("");
   const [showInactive, setShowInactive] = useState(false);
@@ -2106,6 +2107,7 @@ export default function AllJobs() {
         maxSize: 210,
         grow: false,
       },
+
       // Source
       // || auth?.user?.role.access.some((item)=>)
       ...(auth?.user?.role?.name === "Admin" || access.includes("Fee")
@@ -2158,7 +2160,7 @@ export default function AllJobs() {
                   "UPW",
                   "PPH",
                   "Website",
-                  "Referal",
+                  "Direct",
                   "Partner",
                 ];
                 return (
@@ -2319,6 +2321,56 @@ export default function AllJobs() {
             },
           ]
         : []),
+
+      // ----Client Type---->
+      {
+        accessorKey: "activeClient",
+        Header: ({ column }) => {
+          return (
+            <div className="flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                AC
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          );
+        },
+
+        Cell: ({ cell, row }) => {
+          const active = row.original.activeClient || "";
+
+          return (
+            <div className="w-full flex items-start capitalize">
+              {active ? active : ""}
+            </div>
+          );
+        },
+
+        filterFn: (row, columnId, filterValue) => {
+          const labelName = row.original?.activeClient || ""; // Match the correct property
+          return labelName === filterValue;
+        },
+
+        filterVariant: "select",
+        size: 50,
+        minSize: 70,
+        maxSize: 120,
+        grow: false,
+      },
     ],
     // eslint-disable-next-line
     [
@@ -2458,6 +2510,7 @@ export default function AllJobs() {
           source,
           fee,
           totalHours: hours,
+          activeClient,
         }
       );
 
@@ -2477,6 +2530,7 @@ export default function AllJobs() {
         setSource("");
         setFee("");
         setHours("");
+        setActiveClient("");
       }
     } catch (error) {
       setIsUpdate(false);
@@ -2504,11 +2558,11 @@ export default function AllJobs() {
               className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
               onClick={() => {
                 setActive("All");
-                setActiveBtn("");
-                setShowStatus(false);
-                setShowJobHolder(false);
-                setShowDue(false);
-                setActive1("");
+                // setActiveBtn("");
+                // setShowStatus(false);
+                // setShowJobHolder(false);
+                // setShowDue(false);
+                // setActive1("");
                 setFilterId("");
                 handleClearFilters();
                 setSearchValue("");
@@ -2862,6 +2916,20 @@ export default function AllJobs() {
                   </select>
                 </div>
               )}
+
+              <div className="">
+                <select
+                  value={activeClient}
+                  onChange={(e) => setActiveClient(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "6rem" }}
+                >
+                  <option value="empty">Select Client</option>
+
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
 
               <div className="flex items-center justify-end pl-4">
                 <button

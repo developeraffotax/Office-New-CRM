@@ -28,6 +28,8 @@ import AllLists from "./pages/lists/AllLists";
 import Workflow from "./pages/Workflow/Workflow";
 import Complaints from "./pages/Complaints/Complaints";
 import UDashboard from "./pages/Auth/Dashboard";
+import TemplateEditor from "./pages/Tickets/TemplateEditor";
+import PDFEditor from "./pages/Editor/PDFEditor";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -35,9 +37,6 @@ const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 function App() {
   const { auth } = useAuth();
   const user = auth.user;
-
-
-    
 
   const routeAccess = {
     Dashboard: <Route path="/dashboard" element={<Dashboard />} />,
@@ -98,9 +97,6 @@ function App() {
     defaultHeaders.append("Surrogate-Control", "no-store");
   }, []);
 
-
-
-
   return (
     <div>
       <BrowserRouter>
@@ -112,6 +108,8 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           {/* Catch-all route: if no access to a route, show 404 */}
           <Route path="/employee/dashboard" element={<UDashboard />} />
+          <Route path="/editor/templates" element={<TemplateEditor />} />
+          <Route path="/pdf/editor" element={<PDFEditor />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />

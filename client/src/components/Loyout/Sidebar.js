@@ -21,6 +21,7 @@ import { GoGoal } from "react-icons/go";
 import { FaTasks } from "react-icons/fa";
 import { LiaNetworkWiredSolid } from "react-icons/lia";
 import { BiMessageError } from "react-icons/bi";
+import { MdDesignServices } from "react-icons/md";
 
 export default function Sidebar({ hide, setHide }) {
   const router = useNavigate();
@@ -625,6 +626,48 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </>
           )}
+          {/* Template Editor */}
+          {hasAccess("Editor") && (
+            <>
+              <div
+                className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+                onClick={() => {
+                  router("/editor/templates");
+                }}
+              >
+                <div
+                  className="adminbtn absolute h-full  sidebtn z-[20]"
+                  style={{
+                    width: active === "editor" && "100%",
+                    background: `rgb(2, 68, 2)`,
+                  }}
+                ></div>
+                <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                  {hide ? (
+                    <MdDesignServices
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "editor" && "#fff" }}
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <MdDesignServices
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "editor" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{ color: active === "editor" && "#fff" }}
+                      >
+                        Editor
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/*  */}
           {hasAccess("Users") && (
             <>
               <div

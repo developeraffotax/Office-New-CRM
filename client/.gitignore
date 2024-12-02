@@ -5,16 +5,10 @@
 /.pnp
 .pnp.js
 
-# testing Data
+# testing
 /coverage
 
-<<<<<<< HEAD
-/.env
-
 # production
-=======
-# production 
->>>>>>> 822e9f2e6001434047b72fa09f6412a8dca1fb09
 /build
 
 # misc

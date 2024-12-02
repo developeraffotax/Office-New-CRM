@@ -46,6 +46,7 @@ export default function Roles() {
     "Workflow",
     "Complaints",
     "Roles",
+    "Editor",
     "Users",
   ];
 

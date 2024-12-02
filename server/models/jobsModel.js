@@ -175,6 +175,10 @@ const clientSchema = new mongoose.Schema(
     },
     comments: [commentsSchema],
     subtasks: [subtask],
+    activeClient: {
+      type: String,
+      default: "active",
+    },
   },
   { timestamps: true }
 );

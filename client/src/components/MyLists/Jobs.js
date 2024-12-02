@@ -1839,7 +1839,7 @@ const Jobs = forwardRef(
                     "UPW",
                     "PPH",
                     "Website",
-                    "Referal",
+                    "Direct",
                     "Partner",
                   ];
                   return (

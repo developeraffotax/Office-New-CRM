@@ -138,7 +138,7 @@ export const getAllClients = async (req, res) => {
         "job.jobStatus": { $ne: "Inactive" },
       })
       .select(
-        "clientName companyName regNumber email fee currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data"
+        "clientName companyName regNumber email fee currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data activeClient"
       )
       .populate("data");
 
@@ -1283,7 +1283,10 @@ export const updateBulkJob = async (req, res) => {
       source,
       fee,
       totalHours,
+      activeClient,
     } = req.body;
+
+    console.log("activeClient:", activeClient);
 
     if (
       !rowSelection ||
@@ -1317,6 +1320,7 @@ export const updateBulkJob = async (req, res) => {
     if (source) updateData.source = source;
     if (fee) updateData.fee = fee;
     if (totalHours) updateData.totalHours = totalHours;
+    if (activeClient) updateData.activeClient = activeClient;
 
     const updatedJobs = await jobsModel.updateMany(
       {
@@ -1367,7 +1371,7 @@ export const getWorkflowClients = async (req, res) => {
     const clients = await jobsModel
       .find({ status: { $ne: "completed" } })
       .select(
-        "fee  totalHours job.jobName job.lead job.jobHolder source clientType partner createdAt currentDate"
+        "fee  totalHours job.jobName job.lead job.jobHolder source clientType partner activeClient createdAt currentDate"
       );
 
     const uniqueClients = await jobsModel.aggregate([

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ApexCharts from "apexcharts";
 
-const sources = ["FIV", "UPW", "PPH", "Website", "Referal", "Partner"];
+const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
 
 const JobSourcePieChart = ({ workFlowData, selectedMonth, selectedYear }) => {
   const [chartData, setChartData] = useState({ labels: [], series: [] });

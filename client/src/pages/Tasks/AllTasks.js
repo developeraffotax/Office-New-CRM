@@ -2280,7 +2280,7 @@ const AllTasks = () => {
                 className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
                 onClick={() => {
                   setActive("All");
-                  setFilterData("");
+                  // setFilterData("");
                   setActiveBtn("");
                   setActive1("");
                   setShowStatus(false);

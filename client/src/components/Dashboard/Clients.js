@@ -21,6 +21,15 @@ export default function Clients({
   const [selectChart, setSelectChart] = useState("area");
   const [filterWorkFlow, setFilterWorkFlow] = useState([]);
   const [filterUniqueClient, setFilteredUniqueClient] = useState([]);
+  const [activeClientJobs, setActiveClientJobs] = useState([]); // Active client jobs
+  const [activeClients, setActiveClients] = useState({
+    totalFee: "0",
+    totalClients: "0",
+  });
+
+  console.log("Data:", activeClientJobs, activeClients);
+
+  console.log("workFlowData:", workFlowData);
 
   const departments = [
     "Bookkeeping",
@@ -98,6 +107,28 @@ export default function Clients({
 
     // eslint-disable-next-line
   }, [workFlowData]);
+
+  // Active Clients Total
+  useEffect(() => {
+    const filteredJobs = filterWorkFlow.filter(
+      (job) => job.activeClient === "active"
+    );
+
+    // Calculate total fee
+    const totalFee = filteredJobs
+      .reduce((sum, job) => sum + parseFloat(job.fee || 0), 0)
+      .toFixed(0);
+
+    // Count total clients
+    const totalClients = filteredJobs.length;
+
+    // Set state
+    setActiveClientJobs(filteredJobs);
+    setActiveClients({
+      totalFee: totalFee,
+      totalClients: totalClients.toString(),
+    });
+  }, [workFlowData, filterWorkFlow]);
 
   // ------------Total Fee-------->
   useEffect(() => {
@@ -428,7 +459,7 @@ export default function Clients({
             {clients?.map((job) => (
               <div
                 key={job._id}
-                className={`flex flex-col items-center min-w-[11rem]  p-4 cursor-pointer transition-transform duration-300 transform hover:scale-105 rounded-lg shadow-lg hover:shadow-xl ${
+                className={`flex flex-col items-center min-w-[9.5rem]  p-4 cursor-pointer transition-transform duration-300 transform hover:scale-105 rounded-lg shadow-lg hover:shadow-xl ${
                   job?.department === "Bookkeeping"
                     ? "bg-gradient-to-br from-orange-100 via-orange-200 to-orange-300"
                     : job?.department === "Payroll"
@@ -467,7 +498,7 @@ export default function Clients({
                 </div>
               </div>
             ))}
-            <div className="flex flex-col items-center min-w-[11rem]  p-4 cursor-pointer bg-gradient-to-br from-rose-100 via-rose-200 to-rose-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
+            <div className="flex flex-col items-center min-w-[10rem]  p-4 cursor-pointer bg-gradient-to-br from-rose-100 via-rose-200 to-rose-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
               <h2 className="text-lg font-medium text-gray-800 text-center mb-3">
                 Total
               </h2>
@@ -482,12 +513,29 @@ export default function Clients({
                 })}
               </p>
             </div>
-            <div className="flex flex-col items-center min-w-[11rem]  p-4 cursor-pointer bg-gradient-to-br from-lime-100 via-lime-200 to-lime-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
+            {/* Unique Client */}
+            <div className="flex flex-col items-center min-w-[10rem]  p-4 cursor-pointer bg-gradient-to-br from-lime-100 via-lime-200 to-lime-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
               <h2 className="text-lg font-medium text-lime-900 text-center mb-3">
                 Unique Clients
               </h2>
               <p className="text-4xl font-bold text-gray-700 text-center">
                 {filterUniqueClient?.length}
+              </p>
+            </div>
+            {/* Active Client */}
+            <div className="flex flex-col items-center min-w-[10rem]  p-4 cursor-pointer bg-gradient-to-br from-amber-100 via-amber-200 to-amber-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
+              <h2 className="text-lg font-medium text-gray-800 text-center mb-3">
+                AU Total
+              </h2>
+              <p className="text-3xl font-bold text-gray-700 text-center">
+                {activeClients.totalClients}
+              </p>
+              <p className="text-2xl font-bold text-gray-700 text-center">
+                ${" "}
+                {parseFloat(activeClients.totalFee).toLocaleString(undefined, {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 2,
+                })}
               </p>
             </div>
           </div>

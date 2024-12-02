@@ -1,7 +1,7 @@
 # Ignore Node.js dependencies
 node_modules/
 
-# Ignore environment variables files Testing
+# Ignore environment variables files
 .env
 
 # Ignore logs and debugging files 

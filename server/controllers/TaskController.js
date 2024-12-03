@@ -843,6 +843,18 @@ export const updateTaskHours = async (req, res) => {
 const calculateStartDate = (date, recurringType) => {
   const currentDate = new Date(date);
 
+  const addDaysSkippingWeekends = (date, days) => {
+    let result = new Date(date);
+    while (days > 0) {
+      result.setDate(result.getDate() + 1);
+      // Skip Saturday and Sunday
+      if (result.getDay() !== 6 && result.getDay() !== 0) {
+        days--;
+      }
+    }
+    return result;
+  };
+
   switch (recurringType) {
     case "2_minutes":
       return new Date(currentDate.getTime() + 2 * 60 * 1000);
@@ -859,6 +871,21 @@ const calculateStartDate = (date, recurringType) => {
   }
 };
 
+// case "monthly":
+// {
+//   const nextMonth = new Date(currentDate.setMonth(currentDate.getMonth() + 1));
+//   return nextMonth.getDay() === 6 || nextMonth.getDay() === 0
+//     ? addDaysSkippingWeekends(nextMonth, 1)
+//     : nextMonth;
+// }
+// case "quarterly":
+// {
+//   const nextQuarter = new Date(currentDate.setMonth(currentDate.getMonth() + 3));
+//   return nextQuarter.getDay() === 6 || nextQuarter.getDay() === 0
+//     ? addDaysSkippingWeekends(nextQuarter, 1)
+//     : nextQuarter;
+// }
+
 export const autoCreateRecurringTasks = async (req, res) => {
   try {
     const now = new Date();
@@ -873,24 +900,33 @@ export const autoCreateRecurringTasks = async (req, res) => {
       },
     });
 
-    const today = new Date();
-    const formattedDate = today
-      .toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
-      .replace(/,/g, "");
+    // const today = new Date();
+    // const formattedDate = today
+    //   .toLocaleDateString("en-GB", {
+    //     day: "2-digit",
+    //     month: "short",
+    //     year: "numeric",
+    //   })
+    //   .replace(/,/g, "");
 
     for (const task of tasks) {
+      // Calculate the new start and deadline dates
+      const newStartDate = calculateStartDate(task.startDate, task.recurring);
+      const newDeadline = calculateStartDate(task.deadline, task.recurring);
+
+      // Ensure tasks are not created for Saturday or Sunday
+      if (newStartDate.getDay() === 6 || newStartDate.getDay() === 0) {
+        continue;
+      }
+
       // Create a new task with updated dates
       const newTask = await taskModel.create({
         project: task.project,
         jobHolder: task.jobHolder,
         task: `${task.task}`,
         hours: task.hours,
-        startDate: calculateStartDate(task.startDate, task.recurring),
-        deadline: calculateStartDate(task.deadline, task.recurring),
+        startDate: newStartDate,
+        deadline: newDeadline,
         lead: task.lead,
         recurring: task.recurring,
         labal: task.labal,
@@ -900,22 +936,6 @@ export const autoCreateRecurringTasks = async (req, res) => {
           task.recurring
         ),
       });
-
-      newTask.activities.push({
-        userName: "System",
-        activity: `Auto-created recurring task: ${task.task} for project: ${task.project.projectName}`,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      await newTask.save();
-
-      // Update the original task with the next recurring date
-      // task.nextRecurringDate = calculateNextRecurringDate(
-      //   task.nextRecurringDate,
-      //   task.recurring
-      // );
-      // await task.save();
     }
 
     res.status(200).send({

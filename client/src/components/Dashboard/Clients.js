@@ -27,9 +27,9 @@ export default function Clients({
     totalClients: "0",
   });
 
-  console.log("Data:", activeClientJobs, activeClients);
+  // console.log("Data:", activeClientJobs, activeClients);
 
-  console.log("workFlowData:", workFlowData);
+  console.log("uniqueClients:", uniqueClients);
 
   const departments = [
     "Bookkeeping",

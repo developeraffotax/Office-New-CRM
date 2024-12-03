@@ -1393,6 +1393,7 @@ export const getWorkflowClients = async (req, res) => {
           partner: { $first: "$partner" },
           createdAt: { $first: "$createdAt" },
           currentDate: { $first: "$currentDate" },
+          activeClient: { $first: "$activeClient" },
         },
       },
       {
@@ -1411,6 +1412,7 @@ export const getWorkflowClients = async (req, res) => {
           partner: 1,
           createdAt: 1,
           currentDate: 1,
+          activeClient: 1,
         },
       },
     ]);

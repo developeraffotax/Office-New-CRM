@@ -153,7 +153,10 @@ export const Timer = forwardRef(
       try {
         const { data } = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/v1/timer/stop/timer/${timerId}`,
-          { note, activity }
+          {
+            note: note || "Auto stop due to inactivity!",
+            activity: activity || "Chargeable",
+          }
         );
 
         if (data) {
@@ -182,6 +185,26 @@ export const Timer = forwardRef(
       }
     };
 
+    // ------Automatically Stop Timer------>
+    // useEffect(() => {
+    //   const handleVisibilityChange = () => {
+    //     if (document.hidden) {
+    //       stopTimer();
+    //     }
+    //   };
+    //   document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    //   return () => {
+    //     document.removeEventListener(
+    //       "visibilitychange",
+    //       handleVisibilityChange
+    //     );
+    //   };
+
+    //   // eslint-disable-next-line
+    // }, [timerId]);
+
+    // Get Total time
     const gettotalTime = async (id) => {
       try {
         const { data } = await axios.get(

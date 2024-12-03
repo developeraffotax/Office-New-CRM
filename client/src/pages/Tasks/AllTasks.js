@@ -2281,11 +2281,11 @@ const AllTasks = () => {
                 onClick={() => {
                   setActive("All");
                   // setFilterData("");
-                  setActiveBtn("");
-                  setActive1("");
-                  setShowStatus(false);
-                  setShowJobHolder(false);
-                  setShowDue(false);
+                  // setActiveBtn("");
+                  // setActive1("");
+                  // setShowStatus(false);
+                  // setShowJobHolder(false);
+                  // setShowDue(false);
                   setFilterId("");
                   handleClearFilters();
                   filterByState(state);

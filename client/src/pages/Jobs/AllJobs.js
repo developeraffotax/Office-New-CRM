@@ -28,6 +28,8 @@ import { Box, Button } from "@mui/material";
 import { MdOutlineModeEdit } from "react-icons/md";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import { IoMdDownload } from "react-icons/io";
+import { GoEye } from "react-icons/go";
+import { GoEyeClosed } from "react-icons/go";
 
 import CompletedJobs from "./CompletedJobs";
 import socketIO from "socket.io-client";
@@ -116,6 +118,7 @@ export default function AllJobs() {
   const [timerId, setTimerId] = useState("");
   const [showInactive, setShowInactive] = useState(false);
   const [isLoad, setIsLoad] = useState(false);
+  const [showcolumn, setShowColumn] = useState(false);
 
   // console.log("rowSelection:", rowSelection);
 
@@ -2322,55 +2325,226 @@ export default function AllJobs() {
           ]
         : []),
 
-      // ----Client Type---->
-      {
-        accessorKey: "activeClient",
-        Header: ({ column }) => {
-          return (
-            <div className="flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                AC
-              </span>
-              <select
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              >
-                <option value="">Select</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </div>
-          );
-        },
+      // ----Client Type showcolumn ---->
+      ...((auth?.user?.role?.name === "Admin" && showcolumn) ||
+      (access.includes("Data") && showcolumn)
+        ? [
+            {
+              accessorKey: "activeClient",
+              Header: ({ column }) => {
+                return (
+                  <div className="flex flex-col gap-[2px]">
+                    <span
+                      className="ml-1 cursor-pointer"
+                      title="Clear Filter"
+                      onClick={() => {
+                        column.setFilterValue("");
+                      }}
+                    >
+                      AC
+                    </span>
+                    <select
+                      value={column.getFilterValue() || ""}
+                      onChange={(e) => column.setFilterValue(e.target.value)}
+                      className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                    >
+                      <option value="">Select</option>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </div>
+                );
+              },
 
-        Cell: ({ cell, row }) => {
-          const active = row.original.activeClient || "";
+              Cell: ({ cell, row }) => {
+                const active = row.original.activeClient || "";
 
-          return (
-            <div className="w-full flex items-start capitalize">
-              {active ? active : ""}
-            </div>
-          );
-        },
+                return (
+                  <div className="w-full flex items-start capitalize">
+                    {active ? active : ""}
+                  </div>
+                );
+              },
 
-        filterFn: (row, columnId, filterValue) => {
-          const labelName = row.original?.activeClient || ""; // Match the correct property
-          return labelName === filterValue;
-        },
+              filterFn: (row, columnId, filterValue) => {
+                const labelName = row.original?.activeClient || "";
+                return labelName === filterValue;
+              },
 
-        filterVariant: "select",
-        size: 50,
-        minSize: 70,
-        maxSize: 120,
-        grow: false,
-      },
+              filterVariant: "select",
+              size: 50,
+              minSize: 70,
+              maxSize: 120,
+              grow: false,
+            },
+            //  Current Date
+            {
+              accessorKey: "currentDate",
+              Header: ({ column }) => {
+                const [filterValue, setFilterValue] = useState("");
+                const [customDate, setCustomDate] = useState(
+                  getCurrentMonthYear()
+                );
+
+                useEffect(() => {
+                  if (filterValue === "Custom Date") {
+                    column.setFilterValue(customDate);
+                  }
+                  //eslint-disable-next-line
+                }, [customDate, filterValue]);
+
+                const handleFilterChange = (e) => {
+                  setFilterValue(e.target.value);
+                  column.setFilterValue(e.target.value);
+                };
+
+                const handleCustomDateChange = (e) => {
+                  setCustomDate(e.target.value);
+                  column.setFilterValue(e.target.value);
+                };
+                return (
+                  <div className=" flex flex-col gap-[2px]">
+                    <span
+                      className="ml-1 cursor-pointer"
+                      title="Clear Filter"
+                      onClick={() => {
+                        setFilterValue("");
+                        column.setFilterValue("");
+                      }}
+                    >
+                      SignUp Date
+                    </span>
+                    {filterValue === "Custom Date" ? (
+                      <input
+                        type="month"
+                        value={customDate}
+                        onChange={handleCustomDateChange}
+                        className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
+                      />
+                    ) : (
+                      <select
+                        value={filterValue}
+                        onChange={handleFilterChange}
+                        className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
+                      >
+                        <option value="">Select</option>
+                        {column.columnDef.filterSelectOptions.map(
+                          (option, idx) => (
+                            <option key={idx} value={option}>
+                              {option}
+                            </option>
+                          )
+                        )}
+                      </select>
+                    )}
+                  </div>
+                );
+              },
+              Cell: ({ cell, row }) => {
+                const [date, setDate] = useState(() => {
+                  const cellDate = new Date(cell.getValue());
+                  return cellDate.toISOString().split("T")[0];
+                });
+
+                const [showInput, setShowInput] = useState(false);
+
+                const handleDateChange = (newDate) => {
+                  const parsedDate = new Date(newDate);
+                  if (isNaN(parsedDate.getTime())) {
+                    toast.error("Please enter a valid date.");
+                    return;
+                  }
+                  setDate(newDate);
+                  handleUpdateDates(row.original._id, newDate, "workDeadline");
+                  setShowInput(false);
+                };
+
+                return (
+                  <div className="w-full">
+                    {!showInput ? (
+                      <p onDoubleClick={() => setShowInput(false)}>
+                        {format(new Date(date), "dd-MMM-yyyy")}
+                      </p>
+                    ) : (
+                      <input
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        onBlur={(e) => handleDateChange(e.target.value)}
+                        className="h-[2rem] w-full cursor-pointer text-center rounded-md border border-gray-200 outline-none"
+                      />
+                    )}
+                  </div>
+                );
+              },
+              filterFn: (row, columnId, filterValue) => {
+                const cellValue = row.getValue(columnId);
+                if (!cellValue) return false;
+
+                const cellDate = new Date(cellValue);
+
+                if (filterValue.includes("-")) {
+                  const [year, month] = filterValue.split("-");
+                  const cellYear = cellDate.getFullYear().toString();
+                  const cellMonth = (cellDate.getMonth() + 1)
+                    .toString()
+                    .padStart(2, "0");
+
+                  return year === cellYear && month === cellMonth;
+                }
+
+                const today = new Date();
+
+                switch (filterValue) {
+                  case "Today":
+                    return cellDate.toDateString() === today.toDateString();
+                  case "Tomorrow":
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(today.getDate() + 1);
+                    return cellDate.toDateString() === tomorrow.toDateString();
+                  case "Last 7 days":
+                    const last7Days = new Date(today);
+                    last7Days.setDate(today.getDate() - 7);
+                    return cellDate >= last7Days && cellDate <= today;
+                  case "Last 15 days":
+                    const last15Days = new Date(today);
+                    last15Days.setDate(today.getDate() - 15);
+                    return cellDate >= last15Days && cellDate <= today;
+                  case "Last 30 Days":
+                    const last30Days = new Date(today);
+                    last30Days.setDate(today.getDate() - 30);
+                    return cellDate >= last30Days && cellDate <= today;
+                  case "Last 12 months":
+                    const lastYear = new Date(today);
+                    lastYear.setFullYear(today.getFullYear() - 1);
+                    return cellDate >= lastYear && cellDate <= today;
+                  // case "Custom Date":
+                  //   const [year, month] = filterValue.split("-");
+                  //   return (
+                  //     cellDate.getFullYear() === parseInt(year) &&
+                  //     cellDate.getMonth() === parseInt(month) - 1
+                  //   );
+                  default:
+                    return false;
+                }
+              },
+              filterSelectOptions: [
+                "Today",
+                "Tomorrow",
+                "Last 7 days",
+                "Last 15 days",
+                "Last 30 Days",
+                "Last 12 months",
+                "Custom Date",
+              ],
+              filterVariant: "select",
+              size: 115,
+              minSize: 80,
+              maxSize: 140,
+              grow: false,
+            },
+          ]
+        : []),
     ],
     // eslint-disable-next-line
     [
@@ -2384,6 +2558,7 @@ export default function AllJobs() {
       filterData,
       tableData,
       isLoad,
+      showcolumn,
     ]
   );
 
@@ -2725,7 +2900,6 @@ export default function AllJobs() {
           >
             <MdAutoGraph className="h-6 w-6  cursor-pointer" />
           </span>
-
           {/* Edit Multiple Job */}
           <span
             className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
@@ -2737,6 +2911,18 @@ export default function AllJobs() {
             title="Edit Multiple Jobs"
           >
             <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
+          </span>
+          <span
+            className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+              showcolumn && "bg-orange-500 text-white"
+            }`}
+            onClick={() => setShowColumn(!showcolumn)}
+          >
+            {showcolumn ? (
+              <GoEyeClosed className="text-[22px]" />
+            ) : (
+              <GoEye className="text-[22px]" />
+            )}
           </span>
 
           <span

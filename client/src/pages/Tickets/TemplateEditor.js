@@ -132,7 +132,7 @@ export default function TemplateEditor() {
         </div>
         {/* -------------Body---------------- */}
         <div className="w-[100%] h-full flex items-start justify-center  ">
-          <div className="w-full sm:w-[99%] h-full rounded-md  bg-[#fff] grid grid-cols-6 overflow-hidden ">
+          <div className="w-full sm:w-[99%] h-full rounded-md  bg-[#fff] grid grid-cols-6 overflow-hidden overflow-y-auto ">
             {/* -----------Design Editor--------------- */}
             <div className="w-full h-full flex overflow-y-auto overflow-hidden col-span-2 ">
               <div className="w-full h-full flex-col gap-4 overflow-y-auto overflow-x-hidden py-3 px-3 ">
@@ -206,20 +206,7 @@ export default function TemplateEditor() {
                       </>
                     ) : designMode === "pdf" ? (
                       <>
-                        {/* Image Design Controls */}
                         <FilesUploader onImageUpload={handleFilesUpload} />
-                        {/* <ImageMultiSelect
-                        selectedImages={selectedImages}
-                        setSelectedImages={setSelectedImages}
-                      /> */}
-                        <button
-                          onClick={handleSelectExistingImages}
-                          className="mt-4 w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition-colors duration-300"
-                        >
-                          Add Selected PDF
-                        </button>
-                        <TextInput onAddText={handleAddText} />
-                        <SignaturePad onSave={handleSignatureSave} />
                         {/* Additional controls can be added here */}
                       </>
                     ) : (

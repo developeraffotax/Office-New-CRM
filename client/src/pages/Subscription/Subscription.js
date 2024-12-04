@@ -1449,7 +1449,7 @@ export default function Subscription() {
         },
         tableLayout: "auto",
         fontSize: "13px",
-        border: "1px solid rgba(81, 81, 81, .5)",
+        // border: "1px solid rgba(81, 81, 81, .5)",
         caption: {
           captionSide: "top",
         },
@@ -1504,8 +1504,8 @@ export default function Subscription() {
               <Loader />
             </div>
           ) : (
-            <div className="w-full min-h-[20vh] relative border-t border-gray-300">
-              <div className="h-full hidden1 overflow-y-scroll relative">
+            <div className="w-full min-h-[20vh] relative ">
+              <div className="h-full hidden1 overflow-y-auto relative">
                 <MaterialReactTable table={table} />
               </div>
               {/* <span className="absolute bottom-4 left-[30.5%] z-10 font-semibold text-[15px] text-gray-900">

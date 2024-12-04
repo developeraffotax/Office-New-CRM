@@ -320,7 +320,7 @@ export default function Workflow() {
         },
         tableLayout: "auto",
         fontSize: "13px",
-        border: "1px solid #999",
+        // border: "1px solid #999",
         caption: {
           captionSide: "top",
         },
@@ -425,7 +425,7 @@ export default function Workflow() {
               </div>
             ) : (
               <div className="w-full min-h-[10vh] relative ">
-                <div className="h-full hidden1 overflow-y-scroll relative">
+                <div className="h-full hidden1 overflow-y-auto relative">
                   <MaterialReactTable table={table} />
                 </div>
               </div>

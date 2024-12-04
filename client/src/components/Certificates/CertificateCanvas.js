@@ -11,6 +11,7 @@ import { ImUndo2 } from "react-icons/im";
 import { ImRedo2 } from "react-icons/im";
 import jsPDF from "jspdf";
 import DraggableFiles from "./DraggableFiles";
+import PdfViewer from "./PdfViewer";
 
 const CertificateCanvas = ({
   images,
@@ -375,7 +376,7 @@ const CertificateCanvas = ({
   return (
     <div className="w-full h-full p-2">
       <div className="w-full  flex items-center gap-3 pb-2">
-        {(designMode === "image" || designMode === "pdf") && (
+        {designMode === "image" && (
           <>
             <button
               onClick={handleUndo}
@@ -406,23 +407,23 @@ const CertificateCanvas = ({
             >
               Delete Selected
             </button>
+            <button
+              onClick={handleExport}
+              className="text-[14px] px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md"
+            >
+              Export as {designMode === "pdf" ? "PDF" : "Image"}
+            </button>
+            <button
+              onClick={handleSaveMine}
+              disabled={uploading}
+              className={`text-[14px] px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none ${
+                uploading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              {uploading ? "Saving..." : "Save Mine"}
+            </button>
           </>
         )}
-        <button
-          onClick={handleExport}
-          className="text-[14px] px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md"
-        >
-          Export as {designMode === "pdf" ? "PDF" : "Image"}
-        </button>
-        <button
-          onClick={handleSaveMine}
-          disabled={uploading}
-          className={`text-[14px] px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none ${
-            uploading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-        >
-          {uploading ? "Saving..." : "Save Mine"}
-        </button>
       </div>
       <div className="flex">
         {designMode === "image" ? (
@@ -474,51 +475,22 @@ const CertificateCanvas = ({
             )}
           </div>
         ) : designMode === "pdf" ? (
-          <div className="relative">
-            <Stage
-              width={containerWidth}
-              height={containerHeight}
-              ref={stageRef}
-              className="bg-white border rounded-md overflow-hidden"
-              onMouseDown={(e) => {
-                if (e.target === e.target.getStage()) {
-                  handleDeselect();
-                }
-              }}
-            >
-              <Layer>
-                {files.map((file) => (
-                  <DraggableFiles
-                    key={file.id}
-                    file={file}
-                    isSelected={file.id === selectedId}
-                    onSelect={handleSelect}
-                    setImages={updateImages}
-                    files={files}
-                    containerWidth={containerWidth}
-                    containerHeight={containerHeight}
+          <div className="relative w-full h-full min-h-[85vh] rounded-sm border">
+            {files.length > 0 ? (
+              <PdfViewer file={files[0].src || ""} />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center min-h-[80vh] p-4">
+                <div className="flex flex-col gap-0">
+                  <img
+                    src="/rb_4702.png"
+                    alt="Notfound"
+                    className="h-[13rem] w-[13rem]"
                   />
-                ))}
-                {texts.map((text) => (
-                  <DraggableText
-                    key={text.id}
-                    text={text}
-                    isSelected={text.id === selectedId}
-                    onSelect={handleSelect}
-                    setTexts={updateTexts}
-                    texts={texts}
-                  />
-                ))}
-              </Layer>
-            </Stage>
-            {/* Text Adjustments */}
-            {selectedId && texts.some((txt) => txt.id === selectedId) && (
-              <TextAdjustments
-                selectedText={
-                  texts.find((txt) => txt.id === selectedId) || null
-                }
-                onUpdateText={handleUpdateText}
-              />
+                  <p className="text-[13px] font-normal text-center w-full text-gray-600">
+                    No PDF file selected!
+                  </p>
+                </div>
+              </div>
             )}
           </div>
         ) : (

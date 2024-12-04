@@ -114,6 +114,7 @@ const AllTasks = () => {
   const [stateData, setStateData] = useState([]);
   const [activity, setActivity] = useState("Chargeable");
   const [access, setAccess] = useState([]);
+  const [isLoad, setIsLoad] = useState(false);
 
   // console.log("tasksData:", tasksData);
 
@@ -257,6 +258,7 @@ const AllTasks = () => {
 
   // ---------------Get Task on WithoutLoad-----
   const getTasks1 = async () => {
+    setIsLoad(true);
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/all`
@@ -278,6 +280,8 @@ const AllTasks = () => {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoad(false);
     }
   };
 
@@ -2227,7 +2231,7 @@ const AllTasks = () => {
         },
         tableLayout: "auto",
         fontSize: "13px",
-        border: "1px solid rgba(81, 81, 81, .5)",
+        // border: "1px solid rgba(81, 81, 81, .5)",
         caption: {
           captionSide: "top",
         },
@@ -2533,16 +2537,20 @@ const AllTasks = () => {
                 onClick={() => {
                   getTasks1();
                   getAllProjects();
-                  setActive("All");
-                  setActiveBtn("");
-                  setActive1("");
+                  // setActive("All");
+                  // setActiveBtn("");
+                  // setActive1("");
                   setFilterId("");
-                  setShowStatus(false);
-                  setShowJobHolder(false);
+                  // setShowStatus(false);
+                  // setShowJobHolder(false);
                 }}
-                title="Update Data"
+                title="Refresh Data"
               >
-                <GrUpdate className="h-5 w-5  cursor-pointer" />
+                <GrUpdate
+                  className={`h-5 w-5  cursor-pointer ${
+                    isLoad && "animate-spin text-sky-500"
+                  }`}
+                />
               </span>
             </div>
             {/*  */}

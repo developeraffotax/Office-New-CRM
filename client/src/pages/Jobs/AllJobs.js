@@ -120,8 +120,8 @@ export default function AllJobs() {
   const [isLoad, setIsLoad] = useState(false);
   const [showcolumn, setShowColumn] = useState(false);
   const columnData = [
-    "Company",
-    "Client",
+    "companyName",
+    "clientNamess",
     "Assign",
     "Departments",
     "Hrs",
@@ -162,8 +162,6 @@ export default function AllJobs() {
     setColumnVisibility(updatedVisibility);
     localStorage.setItem("columnVisibility", JSON.stringify(updatedVisibility));
   };
-
-  // console.log("rowSelection:", rowSelection);
 
   // Extract the current path
   const currentPath = location.pathname;
@@ -886,7 +884,7 @@ export default function AllJobs() {
     () => {
       const allColumns = [
         {
-          id: "Company",
+          id: "companyName",
           accessorKey: "companyName",
           minSize: 190,
           maxSize: 300,
@@ -936,7 +934,7 @@ export default function AllJobs() {
           },
         },
         {
-          id: "Client",
+          id: "clientName",
           accessorKey: "clientName",
           header: "Client",
           Header: ({ column }) => {
@@ -2694,7 +2692,7 @@ export default function AllJobs() {
         },
         tableLayout: "auto",
         fontSize: "13px",
-        border: "1px solid rgba(81, 81, 81, .5)",
+        // border: "1px solid rgba(81, 81, 81, .5)",
         caption: {
           captionSide: "top",
         },
@@ -3028,12 +3026,12 @@ export default function AllJobs() {
             className={` p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
             onClick={() => {
               allClientData();
-              setActive("All");
-              setActiveBtn("");
-              setShowStatus(false);
-              setShowJobHolder(false);
-              setShowDue(false);
-              setActive1("");
+              // setActive("All");
+              // setActiveBtn("");
+              // setShowStatus(false);
+              // setShowJobHolder(false);
+              // setShowDue(false);
+              // setActive1("");
               setFilterId("");
             }}
             title="Refresh Data"
@@ -3384,8 +3382,8 @@ export default function AllJobs() {
                 <Loader />
               </div>
             ) : (
-              <div className="w-full min-h-[20vh] relative border-t border-gray-300">
-                <div className="h-full overflow-y-scroll relative">
+              <div className="w-full min-h-[20vh] relative ">
+                <div className="h-full overflow-y-auto relative">
                   <MaterialReactTable table={table} />
                 </div>
               </div>

@@ -18,7 +18,7 @@ const DraggableFiles = ({ files, isSelected, onSelect, setFiles }) => {
   const renderPdfPage = async (file) => {
     try {
       const pdf = await getDocument(file.src).promise;
-      const page = await pdf.getPage(1); // Render the first page of the PDF
+      const page = await pdf.getPage(1);
 
       const scale = 1.5; // Adjust the scale as needed
       const viewport = page.getViewport({ scale });

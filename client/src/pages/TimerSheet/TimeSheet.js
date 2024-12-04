@@ -1753,7 +1753,7 @@ export default function TimeSheet() {
         },
         tableLayout: "auto",
         fontSize: "13px",
-        border: "1px solid rgba(81, 81, 81, .5)",
+        // border: "1px solid rgba(81, 81, 81, .5)",
         caption: {
           captionSide: "top",
         },
@@ -1997,7 +1997,7 @@ export default function TimeSheet() {
               timerData.length >= 14 ? "min-h-[10vh]" : "min-h-[60vh]"
             } relative `}
           >
-            <div className="h-full hidden1 overflow-y-scroll  relative">
+            <div className="h-full hidden1 overflow-y-auto  relative">
               <MaterialReactTable table={table} />
             </div>
           </div>

@@ -830,7 +830,7 @@ export default function Complaints() {
         },
         tableLayout: "auto",
         fontSize: "13px",
-        border: "1px solid rgba(81, 81, 81, .5)",
+        // border: "1px solid rgba(81, 81, 81, .5)",
         caption: {
           captionSide: "top",
         },
@@ -902,7 +902,7 @@ export default function Complaints() {
             </div>
           ) : (
             <div className="w-full min-h-[10vh] relative ">
-              <div className="h-full hidden1 overflow-y-scroll relative">
+              <div className="h-full hidden1 overflow-y-auto relative">
                 <MaterialReactTable table={table} />
               </div>
             </div>

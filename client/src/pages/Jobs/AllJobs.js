@@ -121,7 +121,7 @@ export default function AllJobs() {
   const [showcolumn, setShowColumn] = useState(false);
   const columnData = [
     "companyName",
-    "clientNamess",
+    "clientName",
     "Assign",
     "Departments",
     "Hrs",

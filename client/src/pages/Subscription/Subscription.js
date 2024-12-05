@@ -27,7 +27,7 @@ export default function Subscription() {
   const [totalFee, setTotalFee] = useState(0);
   //
   const subscriptions = ["Weekly", "Monthly", "Quarterly", "Yearly"];
-  const states = ["Data", "Progress", "Queries", "Approval", "Submission"];
+  const states = ["Paid", "Unpaid", "Send", "Not Due"];
 
   // console.log("subscriptionData:", subscriptionData);
 

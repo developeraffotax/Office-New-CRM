@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import { useAuth } from "../../context/authContext";
 import axios from "axios";
@@ -102,6 +102,9 @@ export default function TimeSheet() {
   const [access, setAccess] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const holidays = ["Company Holiday", "Personal Holiday"];
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const isInitialRender = useRef(true);
 
   // console.log("TableFilterData:", tableFilterData);
 
@@ -115,20 +118,39 @@ export default function TimeSheet() {
     }
   }, [auth]);
 
+  // Set Start & End Date
+  useEffect(() => {
+    if (active === "Weekly") {
+      setStartDate(strfdow);
+      setEndDate(strldow);
+    } else if (active === "Monthly") {
+      setStartDate(strfdom);
+      setEndDate(strldom);
+    } else if (active === "Yearly") {
+      setStartDate(strfdoy);
+      setEndDate(strldoy);
+    }
+  }, [active, strfdow, strldow, strfdom, strldom, strfdoy, strldoy]);
+
   //   Get All Timer Data
   const getAllTimeSheetData = async () => {
-    setLoading(true);
+    if (isInitialRender.current) {
+      setLoading(true);
+    }
+
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/timer/get/all/timers`
+        `${process.env.REACT_APP_API_URL}/api/v1/timer/fetch/timers/${startDate}/${endDate}`
       );
 
       setTimerData(data.timers);
-
-      setLoading(false);
     } catch (error) {
       console.log(error);
-      setLoading(false);
+    } finally {
+      if (isInitialRender.current) {
+        setLoading(false);
+        isInitialRender.current = false;
+      }
     }
   };
 
@@ -136,19 +158,19 @@ export default function TimeSheet() {
     getAllTimeSheetData();
 
     // eslint-disable-next-line
-  }, []);
+  }, [startDate, endDate]);
 
   // -------------Filter Chargeable & Non-Chargeable-------->
   useEffect(() => {
     if (tableFilterData) {
-      const filteredData = tableFilterData.filter(
+      const filteredData = tableFilterData?.filter(
         (entry) => !userName || entry.jobHolderName === userName
       );
-      const chargeableCount = filteredData.reduce((count, entry) => {
+      const chargeableCount = filteredData?.reduce((count, entry) => {
         return entry.activity === "Chargeable" ? count + 1 : count;
       }, 0);
 
-      const nonChargeableCount = filteredData.reduce((count, entry) => {
+      const nonChargeableCount = filteredData?.reduce((count, entry) => {
         return entry.activity === "Non-Chargeable" ? count + 1 : count;
       }, 0);
 
@@ -178,14 +200,14 @@ export default function TimeSheet() {
         },
       });
     } else {
-      const filteredData = timerData.filter(
+      const filteredData = timerData?.filter(
         (entry) => !userName || entry.jobHolderName === userName
       );
-      const chargeableCount = filteredData.reduce((count, entry) => {
+      const chargeableCount = filteredData?.reduce((count, entry) => {
         return entry.activity === "Chargeable" ? count + 1 : count;
       }, 0);
 
-      const nonChargeableCount = filteredData.reduce((count, entry) => {
+      const nonChargeableCount = filteredData?.reduce((count, entry) => {
         return entry.activity === "Non-Chargeable" ? count + 1 : count;
       }, 0);
 
@@ -237,7 +259,7 @@ export default function TimeSheet() {
           )
         : setUsers(
             data?.users
-              .filter((user) => user?.role?.name !== "Admin")
+              ?.filter((user) => user?.role?.name !== "Admin")
               .map((user) => ({ name: user?.name, id: user?._id }))
           );
       // setUsers(
@@ -435,7 +457,7 @@ export default function TimeSheet() {
       setStrldonw(formatDate(ldonw));
 
       // Filter `timerData` for the current week
-      const filteredData = timerData.filter((entry) => {
+      const filteredData = timerData?.filter((entry) => {
         const entryDate = new Date(entry.date);
 
         // Convert first and last day to only date (ignore time)
@@ -469,7 +491,7 @@ export default function TimeSheet() {
       setStrfdom(formatDate(fdom));
       setStrldom(formatDate(ldom));
 
-      const filteredByMonth = timerData.filter((entry) => {
+      const filteredByMonth = timerData?.filter((entry) => {
         const entryDate = new Date(entry.date).setHours(0, 0, 0, 0);
         const fdomWithoutTime = new Date(fdom).setHours(0, 0, 0, 0);
         const ldomWithoutTime = new Date(ldom).setHours(23, 59, 59, 999);
@@ -508,7 +530,7 @@ export default function TimeSheet() {
       setStrfdoy(formatDate(fdoy));
       setStrldoy(formatDate(ldoy));
 
-      const filteredByYear = timerData.filter((entry) => {
+      const filteredByYear = timerData?.filter((entry) => {
         const entryDate = new Date(entry.date).setHours(0, 0, 0, 0);
         const fdoyWithoutTime = new Date(fdoy).setHours(0, 0, 0, 0);
         const ldoyWithoutTime = new Date(ldoy).setHours(23, 59, 59, 999);
@@ -598,7 +620,7 @@ export default function TimeSheet() {
         endDate = null;
     }
 
-    const filteredData = tableFilterData.filter((item) => {
+    const filteredData = tableFilterData?.filter((item) => {
       const itemDate = item.date ? normalizeDate(new Date(item.date)) : null;
 
       // Check if the item date falls within the startDate and endDate range
@@ -1994,7 +2016,7 @@ export default function TimeSheet() {
         ) : (
           <div
             className={`w-full mt-4 ${
-              timerData.length >= 14 ? "min-h-[10vh]" : "min-h-[60vh]"
+              timerData?.length >= 14 ? "min-h-[10vh]" : "min-h-[60vh]"
             } relative `}
           >
             <div className="h-full hidden1 overflow-y-auto  relative">

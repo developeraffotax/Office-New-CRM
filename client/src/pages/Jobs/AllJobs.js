@@ -121,7 +121,7 @@ export default function AllJobs() {
   const [showcolumn, setShowColumn] = useState(false);
   const columnData = [
     "companyName",
-    "clientNamess",
+    "clientName",
     "Assign",
     "Departments",
     "Hrs",
@@ -2387,7 +2387,7 @@ export default function AllJobs() {
           : []),
 
         // ----Client Type showcolumn ---->
-        ...(auth?.user?.role?.name === "Admin" || access.includes("Data")
+        ...(auth?.user?.role?.name === "Admin"
           ? [
               {
                 id: "AC",

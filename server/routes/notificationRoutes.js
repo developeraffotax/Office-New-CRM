@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getNotification,
+  ticketNotification,
   updateAllNotification,
   updateNotification,
 } from "../controllers/notificationController.js";
@@ -16,5 +17,8 @@ router.put("/update/notification/:id", requiredSignIn, updateNotification);
 
 // Mark All Notification
 router.put("/marks/all/:id", requiredSignIn, updateAllNotification);
+
+// Get Ticket Notifications
+router.get("/ticket/notification/:id", ticketNotification);
 
 export default router;

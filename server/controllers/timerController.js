@@ -647,3 +647,37 @@ export const getAllHolidays = async (req, res) => {
     });
   }
 };
+
+// Get Timers date wise(weekly, monthly, yearly) wise
+export const fetchTimersbydate = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.params;
+
+    if (!startDate || !endDate) {
+      return res.status(400).send({
+        success: false,
+        message: "StartDate and EndDate are required",
+      });
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const timers = await timerModel
+      .find({ endTime: { $ne: null }, createdAt: { $gte: start, $lte: end } })
+      .sort({ date: 1 });
+
+    res.status(200).send({
+      success: true,
+      message: "All Timers",
+      timers: timers,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in get all timers",
+      error,
+    });
+  }
+};

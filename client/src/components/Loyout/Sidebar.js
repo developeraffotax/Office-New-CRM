@@ -22,14 +22,16 @@ import { FaTasks } from "react-icons/fa";
 import { LiaNetworkWiredSolid } from "react-icons/lia";
 import { BiMessageError } from "react-icons/bi";
 import { MdDesignServices } from "react-icons/md";
+import axios from "axios";
 
 export default function Sidebar({ hide, setHide }) {
   const router = useNavigate();
-  const { auth, setAuth, active, setActive } = useAuth();
+  const { auth, active, setActive } = useAuth();
   const navigate = useNavigate();
   const [isProfile, setIsProfile] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const user = auth?.user;
+  const [ticketNitification, setTicketNotification] = useState([]);
 
   useEffect(() => {
     const pathArray = window.location.pathname.split("/");
@@ -42,6 +44,26 @@ export default function Sidebar({ hide, setHide }) {
   const hasAccess = (section) => {
     return user?.role?.access?.some((item) => item.permission === section);
   };
+
+  const fetchTicketNotification = async () => {
+    if (!auth) {
+      return;
+    }
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/notification/ticket/notification/${auth.user.id}`
+      );
+      if (data) {
+        setTicketNotification(data.notifications);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTicketNotification();
+  }, [auth]);
 
   return (
     <div className="w-full h-screen py-2 ">
@@ -246,6 +268,11 @@ export default function Sidebar({ hide, setHide }) {
                     >
                       Tickets
                     </span>
+                    {ticketNitification.length > 0 && (
+                      <span className=" bg-orange-600 rounded-full w-[24px] h-[24px] text-[13px] text-white flex items-center justify-center ">
+                        {ticketNitification && ticketNitification.length}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -273,7 +300,7 @@ export default function Sidebar({ hide, setHide }) {
                     style={{ color: active === "templates" && "#fff" }}
                   />
                 ) : (
-                  <div className="flex items-center gap-2">
+                  <div className=" relative flex items-center gap-2">
                     <GoRepoTemplate
                       className="h-5 w-5 cursor-pointer ml-2"
                       style={{ color: active === "templates" && "#fff" }}

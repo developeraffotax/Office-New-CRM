@@ -75,3 +75,31 @@ export const updateAllNotification = async (req, res) => {
     });
   }
 };
+
+// Get Ticket Notification
+export const ticketNotification = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const notifications = await notificationModel
+      .find({
+        userId: userId,
+        status: "unread",
+        title: "Reply to a ticket received",
+      })
+      .select("title status");
+
+    res.status(200).send({
+      success: true,
+      message: "All ticket notifications.",
+      notifications: notifications,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in get ticket notifications",
+      error: error,
+    });
+  }
+};

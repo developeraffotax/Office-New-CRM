@@ -1,0 +1,22 @@
+import { getMessaging, getToken } from "firebase/messaging";
+import { messaging } from "../../firebase-config";
+const requestPermission = async () => {
+    const permission = await Notification.requestPermission();
+    if (permission === "granted") {
+      // Generate Token
+      // const token = await getToken(messaging, {
+      //   vapidKey:
+      //     "BFhdoGxuB7Ic_QWLpUTxlQCOeI3HepFWk4WhdvbHwIOZDAhN8VIe9PGryq1zmTTOQ7A_EnXUeoFj4nnhv2X9A0s",
+      // });
+      // console.log("Token:", token);
+    } else if (permission === "denied") {
+      toast.error("You denied the reminder notifications");
+    } else {
+      console.log("User has blocked notifications");
+    }
+  };
+
+  useEffect(() => {
+    // Req User for notification Permission
+    requestPermission();
+  }, []);

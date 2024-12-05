@@ -1607,15 +1607,14 @@ const TimeSheet = forwardRef(
       let formattedTime = "";
 
       if (differenceInSecondsTotal < 60) {
-        // Display nothing if less than 1 minute
         return null;
       } else if (differenceInSecondsTotal < 3600) {
         const minutes = Math.floor(differenceInSecondsTotal / 60);
-        formattedTime = `${minutes}m`; // Display in minutes if less than 1 hour
+        formattedTime = `${minutes}m`;
       } else {
         const hours = Math.floor(differenceInSecondsTotal / 3600);
         const minutes = Math.floor((differenceInSecondsTotal % 3600) / 60);
-        formattedTime = `${hours}:${String(minutes).padStart(2, "0")}h`; // Display in hours and minutes if 1 hour or more
+        formattedTime = `${hours}:${String(minutes).padStart(2, "0")}h`;
       }
 
       return (

@@ -4,6 +4,7 @@ import {
   addTimerMannually,
   addTimerStatus,
   deleteTimer,
+  fetchTimersbydate,
   getAllHolidays,
   getAllTimers,
   getTimerStatus,
@@ -65,5 +66,7 @@ router.get("/running/timers", runningTimers);
 router.put("/update/holiday/:id", updateHoliday);
 // Fetch Holidays
 router.get("/fetch/holidays", getAllHolidays);
+// Get date wise timers
+router.get("/fetch/timers/:startDate/:endDate", fetchTimersbydate);
 
 export default router;

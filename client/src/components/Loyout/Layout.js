@@ -7,11 +7,8 @@ import Header from "./Header";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { getMessaging, getToken } from "firebase/messaging";
-import { messaging } from "../../firebase-config";
 import Draggable from "react-draggable";
 import socketIO from "socket.io-client";
-import toast from "react-hot-toast";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -19,10 +16,8 @@ export default function Layout({ children }) {
   const [show, setShow] = useState(false);
   const [hide, setHide] = useState(false);
   const { auth } = useAuth();
-  const [reminder1, setReminder1] = useState(null);
-  const [reminder2, setReminder2] = useState(null);
-  const [reminder3, setReminder3] = useState(null);
-  const [reminderData, setReminderData] = useState(false);
+  const [reminderData, setReminderData] = useState([]);
+  const [snoozeTimers, setSnoozeTimers] = useState({});
 
   // Fetch reminders
   const getReminders = async () => {
@@ -30,28 +25,9 @@ export default function Layout({ children }) {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/reminders/fetch/reminder`
       );
-      const reminders = data.reminders;
-      setReminderData(reminders);
-      setReminder1(reminders[0] || null);
-      setReminder2(reminders[1] || null);
-      setReminder3(reminders[2] || null);
+      setReminderData(data.reminders);
     } catch (error) {
       console.error("Error fetching reminders:", error);
-    }
-  };
-
-  // Delete reminder
-  const deleteReminder = async (id, setReminderFn) => {
-    try {
-      await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/reminders/delete/reminder/${id}`
-      );
-      setReminderFn(null);
-      socketId.emit("reminder", {
-        note: "New Reminder Added",
-      });
-    } catch (error) {
-      console.error("Error deleting reminder:", error);
     }
   };
 
@@ -60,43 +36,102 @@ export default function Layout({ children }) {
   }, []);
 
   useEffect(() => {
+    // Load snoozed reminders from localStorage
+    const snoozedReminders =
+      JSON.parse(localStorage.getItem("snoozedReminders")) || [];
+    const now = Date.now();
+
+    const stillSnoozed = [];
+
+    snoozedReminders.forEach(({ reminder, snoozeUntil }) => {
+      if (snoozeUntil <= now) {
+        // If the snooze time has passed, show the reminder
+        setReminderData((prev) => [...prev, reminder]);
+      } else {
+        // If the reminder is still snoozed, keep it in the array and set a timeout
+        const timeLeft = snoozeUntil - now;
+        stillSnoozed.push({ reminder, snoozeUntil });
+
+        const timer = setTimeout(() => {
+          setReminderData((prev) => [...prev, reminder]);
+          removeSnoozeFromStorage(reminder._id);
+        }, timeLeft);
+
+        setSnoozeTimers((prev) => ({
+          ...prev,
+          [reminder._id]: timer,
+        }));
+      }
+    });
+
+    // Update localStorage with reminders still snoozed
+    localStorage.setItem("snoozedReminders", JSON.stringify(stillSnoozed));
+
+    getReminders();
+
     socketId.on("newReminder", () => {
       getReminders();
     });
 
     return () => {
-      socketId.off("newReminder", getReminders);
+      socketId.off("newReminder");
+      Object.values(snoozeTimers).forEach(clearTimeout);
     };
-    // eslint-disable-next-line
-  }, [socketId]);
+  }, []);
 
-  const requestPermission = async () => {
-    const permission = await Notification.requestPermission();
-    if (permission === "granted") {
-      // Generate Token
-      // const token = await getToken(messaging, {
-      //   vapidKey:
-      //     "BFhdoGxuB7Ic_QWLpUTxlQCOeI3HepFWk4WhdvbHwIOZDAhN8VIe9PGryq1zmTTOQ7A_EnXUeoFj4nnhv2X9A0s",
-      // });
-      // console.log("Token:", token);
-    } else if (permission === "denied") {
-      toast.error("You denied the reminder notifications");
-    } else {
-      console.log("User has blocked notifications");
+  const deleteReminder = async (id) => {
+    try {
+      await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/v1/reminders/delete/reminder/${id}`
+      );
+      setReminderData((prev) => prev.filter((reminder) => reminder._id !== id));
+      socketId.emit("reminder", {
+        note: "Reminder Deleted",
+      });
+    } catch (error) {
+      console.error("Error deleting reminder:", error);
     }
   };
 
-  useEffect(() => {
-    // Req User for notification Permission
-    requestPermission();
-  }, []);
+  const snoozeReminder = (reminderId, duration) => {
+    const reminder = reminderData.find((r) => r._id === reminderId);
+    setReminderData((prev) => prev.filter((r) => r._id !== reminderId));
+
+    const snoozeUntil = Date.now() + duration;
+    addSnoozeToStorage(reminder, snoozeUntil);
+
+    const timer = setTimeout(() => {
+      setReminderData((prev) => [...prev, reminder]);
+      removeSnoozeFromStorage(reminderId);
+    }, duration);
+
+    setSnoozeTimers((prev) => ({
+      ...prev,
+      [reminderId]: timer,
+    }));
+  };
+
+  const addSnoozeToStorage = (reminder, snoozeUntil) => {
+    const snoozedReminders =
+      JSON.parse(localStorage.getItem("snoozedReminders")) || [];
+    snoozedReminders.push({ reminder, snoozeUntil });
+    localStorage.setItem("snoozedReminders", JSON.stringify(snoozedReminders));
+  };
+
+  const removeSnoozeFromStorage = (reminderId) => {
+    const snoozedReminders =
+      JSON.parse(localStorage.getItem("snoozedReminders")) || [];
+    const updatedReminders = snoozedReminders.filter(
+      ({ reminder }) => reminder._id !== reminderId
+    );
+    localStorage.setItem("snoozedReminders", JSON.stringify(updatedReminders));
+  };
 
   if (!auth?.token) {
     return <Spinner />;
   }
 
-  // Reminder Notification Popup
-  const renderNotification = (reminder, setReminderFn) => {
+  const renderNotification = (reminder) => {
     if (!reminder) return null;
     return (
       <Draggable handle=".drag-handle">
@@ -106,15 +141,15 @@ export default function Layout({ children }) {
         >
           <div
             style={{ pointerEvents: "all" }}
-            className="relative bg-white border border-gray-200  z-[999] w-[20rem] sm:w-[25rem] rounded-md shadow-md drop-shadow-md min-h-[6rem] mb-4"
+            className="relative bg-white border border-gray-200 z-[999] w-[20rem] sm:w-[29rem] rounded-md shadow-md drop-shadow-md min-h-[6rem] mb-4"
           >
             <span
               className="cursor-pointer absolute top-2 right-2 z-[9999]"
-              onClick={() => deleteReminder(reminder._id, setReminderFn)}
+              onClick={() => deleteReminder(reminder._id)}
             >
               <IoCloseCircleOutline className="text-[26px] text-white hover:text-sky-500" />
             </span>
-            <h5 className="drag-handle cursor-move relative text-[20px] text-start font-medium rounded-tl-md rounded-tr-md text-white bg-orange-600  p-3 font-Poppins">
+            <h5 className="drag-handle cursor-move relative text-[20px] text-start font-medium rounded-tl-md rounded-tr-md text-white bg-orange-600 p-3 font-Poppins">
               Reminders
               <div className="absolute right-[8rem] top-[-3rem] animate-shake z-10">
                 <img
@@ -124,13 +159,11 @@ export default function Layout({ children }) {
                 />
               </div>
             </h5>
-            <div className="flex flex-col gap-1">
-              <p className="p-3 text-sm text-gray-900 font-semibold">
+            <div className="flex flex-col gap-1 p-3">
+              <p className=" text-sm text-gray-900 font-semibold">
                 {reminder.title}
               </p>
-              <p className="p-3 text-sm text-gray-700">
-                {reminder.description}
-              </p>
+              <p className=" text-sm text-gray-700">{reminder.description}</p>
             </div>
             <Link
               to={reminder.redirectLink}
@@ -138,6 +171,44 @@ export default function Layout({ children }) {
             >
               Go to Page
             </Link>
+            <div className="flex gap-2 justify-end p-3">
+              <button
+                className="bg-blue-500 text-[13px] text-white px-3 py-1 rounded hover:bg-blue-600"
+                onClick={() => {
+                  snoozeReminder(reminder._id, 5 * 60 * 1000);
+                  deleteReminder(reminder._id);
+                }}
+              >
+                Snooze 5m
+              </button>
+              <button
+                className="bg-green-500 text-[13px] text-white px-3 py-1 rounded hover:bg-green-600"
+                onClick={() => {
+                  snoozeReminder(reminder._id, 15 * 60 * 1000);
+                  deleteReminder(reminder._id);
+                }}
+              >
+                Snooze 15m
+              </button>
+              <button
+                className="bg-pink-500 text-[13px] text-white px-3 py-1 rounded hover:bg-pink-600"
+                onClick={() => {
+                  snoozeReminder(reminder._id, 30 * 60 * 1000);
+                  deleteReminder(reminder._id);
+                }}
+              >
+                Snooze 30m
+              </button>
+              <button
+                className="bg-purple-500 text-[13px] text-white px-3 py-1 rounded hover:bg-purple-600"
+                onClick={() => {
+                  snoozeReminder(reminder._id, 60 * 60 * 1000);
+                  deleteReminder(reminder._id);
+                }}
+              >
+                Snooze 60m
+              </button>
+            </div>
           </div>
         </div>
       </Draggable>
@@ -181,29 +252,8 @@ export default function Layout({ children }) {
         </div>
       </div>
 
-      {/* Notification */}
       {/* Reminder Notifications */}
-      {renderNotification(reminder1, setReminder1)}
-      {renderNotification(reminder2, setReminder2)}
-      {renderNotification(reminder3, setReminder3)}
-      {/* <div className="absolute bottom-4 bg-white border border-gray-200 right-2 z-[999]  w-[20rem] sm:w-[25rem] rounded-md shadow-md drop-shadow-md min-h-[6rem]">
-        <span
-          className="cursor-pointer absolute top-2 right-2 z-10"
-          onClick={() => deleteReminder()}
-        >
-          <IoCloseCircleOutline className="text-[26px] text-white" />
-        </span>
-        <h5 className=" relative text-[20px] text-start font-medium rounded-md text-white bg-orange-600  p-3 font-Poppins">
-          Reminders
-          <div className="absolute right-[8rem] top-[-3rem] animate-shake z-10">
-            <img
-              src="/reminder.png"
-              alt="reminder"
-              className="h-[7rem] w-[7rem]"
-            />
-          </div>
-        </h5>
-      </div> */}
+      {reminderData.map((reminder) => renderNotification(reminder))}
     </div>
   );
 }

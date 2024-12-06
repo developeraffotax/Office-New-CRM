@@ -1,10 +1,12 @@
 import express from "express";
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
+  addDatalabel,
   createSubscription,
   deleteSubscription,
   fetchAllSubscription,
   fetchSingleSubscription,
+  updateBulkSubscription,
   updateSingleField,
   updateSubscription,
 } from "../controllers/subscriptionController.js";
@@ -28,5 +30,9 @@ router.get("/fetch/single/:id", fetchSingleSubscription);
 
 // Delete Scubscription
 router.delete("/delete/:id", requiredSignIn, deleteSubscription);
+// Subscription
+router.put("/lable/:id", requiredSignIn, addDatalabel);
+//
+router.put("/multiple/updates", requiredSignIn, updateBulkSubscription);
 
 export default router;

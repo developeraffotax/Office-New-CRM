@@ -1,3 +1,4 @@
+import labelModel from "../models/labelModel.js";
 import subscriptionModel from "../models/subscriptionModel.js";
 
 // Create Subscription
@@ -237,7 +238,8 @@ export const fetchAllSubscription = async (req, res) => {
   try {
     const subscriptions = await subscriptionModel
       .find({})
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .populate("data");
 
     res.status(200).send({
       success: true,
@@ -299,6 +301,128 @@ export const deleteSubscription = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error while delete subscription!",
+      error: error,
+    });
+  }
+};
+
+// Add data Label
+export const addDatalabel = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const { labelId } = req.body;
+
+    const label = await labelModel.findById(labelId);
+
+    const job = await subscriptionModel.findById(jobId);
+
+    if (!job) {
+      return res.status(400).send({
+        success: false,
+        message: "Subscription not found!",
+      });
+    }
+
+    const updateJob = await subscriptionModel.findByIdAndUpdate(
+      { _id: job._id },
+      { data: label._id },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Data Label added!",
+      job: updateJob,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in add job label!",
+      error: error,
+    });
+  }
+};
+
+// Update Bulk Jobs
+export const updateBulkSubscription = async (req, res) => {
+  try {
+    const {
+      rowSelection,
+      jobHolder,
+      lead,
+      billingStart,
+      billingEnd,
+      deadline,
+      jobStatus,
+      dataLabelId,
+      source,
+      fee,
+    } = req.body;
+
+    console.log(
+      "Data:",
+      jobHolder,
+      lead,
+      billingStart,
+      billingEnd,
+      deadline,
+      jobStatus,
+      dataLabelId,
+      source,
+      fee
+    );
+
+    if (
+      !rowSelection ||
+      !Array.isArray(rowSelection) ||
+      rowSelection.length === 0
+    ) {
+      return res.status(400).send({
+        success: false,
+        message: "No jobs selected for update.",
+      });
+    }
+
+    let updateData = {};
+    if (jobHolder) updateData["job.jobHolder"] = jobHolder;
+    if (lead) updateData["job.lead"] = lead;
+    if (billingStart) updateData["job.billingStart"] = billingStart;
+    if (billingEnd) updateData["job.billingEnd"] = billingEnd;
+    if (deadline) updateData.deadline = deadline;
+    if (jobStatus) updateData.status = jobStatus;
+    if (dataLabelId) updateData.data = dataLabelId;
+    if (source) updateData.source = source;
+    if (fee) updateData["job.fee"] = fee;
+
+    console.log(updateData);
+
+    const updatedJobs = await subscriptionModel.updateMany(
+      {
+        _id: { $in: rowSelection },
+      },
+      { $set: updateData },
+      { multi: true }
+    );
+
+    // Check if any jobs were updated
+    if (updatedJobs.modifiedCount === 0) {
+      return res.status(404).send({
+        success: false,
+        message: "No subscription job were updated.",
+      });
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Subscription jobs update successfully!",
+      updatedJobs,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in update bulk jobs !",
       error: error,
     });
   }

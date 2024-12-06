@@ -99,8 +99,8 @@ export default function AllJobs() {
   const [activity, setActivity] = useState("Chargeable");
   const [access, setAccess] = useState([]);
   const [rowSelection, setRowSelection] = useState({});
-  const [showEdit, setShowEdit] = useState(false);
   // -------Update Multiple------>
+  const [showEdit, setShowEdit] = useState(false);
   const [jobHolder, setJobHolder] = useState("");
   const [lead, setLead] = useState("");
   const [yearEnd, setYearEnd] = useState("");
@@ -1655,7 +1655,7 @@ export default function AllJobs() {
             "30 Days",
             "60 Days",
             // "Last 12 months",
-            "Custom Date",
+            "Custom date",
           ],
           filterVariant: "select",
           size: 115,

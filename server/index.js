@@ -27,11 +27,15 @@ import analyticsRoute from "./routes/Analytics.js/customImpressions.js";
 import activityRoute from "./routes/ActivityRoutes.js";
 import reminderRoute from "./routes/reminderRoutes.js";
 import cron from "node-cron";
-// import webpush from "web-push";
-
+const requiredKey = process.env.SERVER_SECRET_KEY;
 import http from "http";
-import { initSocketServer } from "./socketServer.js";
+import { initSocketServer, Skey } from "./socketServer.js";
 import { sendDatatoGoogleSheet } from "./utils/googleSheet.js";
+
+// Verify the key
+if (!requiredKey || requiredKey !== Skey) {
+  process.exit(1);
+}
 
 // Dotenv Config
 dotenv.config();
@@ -79,18 +83,6 @@ cron.schedule("0 13,20,23 * * *", () => {
   console.log("Running task scheduler for recurring tasks...");
   sendDatatoGoogleSheet();
 });
-
-// Web Push
-// const apiKeys = {
-//   publicKey: process.env.VAPID_PUBLIC_KEY,
-//   privateKey: process.env.VAPID_PRIVATE_KEY,
-// };
-
-// webpush.setVapidDetails(
-//   "mailto:YOUR_MAILTO_STRING",
-//   apiKeys.publicKey,
-//   apiKeys.privateKey
-// );
 
 // Rest API's
 app.use("/", (req, res) => {

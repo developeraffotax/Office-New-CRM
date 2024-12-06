@@ -48,7 +48,7 @@ export default function SubscriptionModel({
   });
   const [users, setUsers] = useState([]);
 
-  const sources = ["FIV", "UPW", "PPH", "Website", "Referal", "Partner"];
+  const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
   const partners = ["Affotax", "Outsource", "OTL"];
 

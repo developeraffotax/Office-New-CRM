@@ -14,6 +14,8 @@ import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { AiOutlineEdit, AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
+import DataLabel from "./DataLabel";
+import { TbLoader2 } from "react-icons/tb";
 
 export default function Subscription() {
   const { auth } = useAuth();
@@ -28,8 +30,24 @@ export default function Subscription() {
   //
   const subscriptions = ["Weekly", "Monthly", "Quarterly", "Yearly"];
   const states = ["Paid", "Unpaid", "Send", "Not Due"];
+  const [showDataLabel, setShowDataLable] = useState(false);
+  const [dataLable, setDataLabel] = useState([]);
+  const [rowSelection, setRowSelection] = useState({});
+  // Bulk Change State
+  const [isUpload, setIsUpdate] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [jobHolder, setJobHolder] = useState("");
+  const [lead, setLead] = useState("");
+  const [billingStart, setBillingStart] = useState("");
+  const [billingEnd, setBillingEnd] = useState("");
+  const [deadline, setDeadline] = useState("");
+  const [jobStatus, setJobStatus] = useState("");
+  const [dataLabelId, setDataLabelId] = useState("");
+  const [source, setSource] = useState("");
+  const [fee, setFee] = useState("");
+  const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
 
-  // console.log("subscriptionData:", subscriptionData);
+  console.log("rowSelection:", rowSelection);
 
   // -------Get Subscription Data-------
   const getAllSubscriptions = async () => {
@@ -97,6 +115,42 @@ export default function Subscription() {
     getAllUsers();
     // eslint-disable-next-line
   }, []);
+
+  //   Get All Data Labels
+  const getDatalable = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/label/subscription/labels`
+      );
+      if (data.success) {
+        setDataLabel(data.labels);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getDatalable();
+  }, []);
+
+  // Update data Label
+  const addDatalabel = async (id, labelId) => {
+    // console.log("Data:", id, labelId);
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/lable/${id}`,
+        { labelId }
+      );
+      if (data) {
+        fetchSubscriptions();
+        toast.success("New Data label added!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Error while add label");
+    }
+  };
 
   // --------------Update JobHolder------------>
   const handleUpdateSubscription = async (id, value, type) => {
@@ -298,7 +352,7 @@ export default function Subscription() {
                   column.setFilterValue("");
                 }}
               >
-                Job Holder
+                Assign
               </span>
               <select
                 value={column.getFilterValue() || ""}
@@ -959,6 +1013,70 @@ export default function Subscription() {
         maxSize: 140,
         grow: false,
       },
+      {
+        accessorKey: "Months",
+        Header: ({ column }) => {
+          return (
+            <div className="w-full flex flex-col gap-[2px]">
+              <span
+                className="cursor-pointer"
+                title="Clear Filter"
+                onClick={() => column.setFilterValue("")}
+              >
+                Time
+              </span>
+              <input
+                type="text"
+                placeholder="Search..."
+                className="border rounded px-2 py-1 text-sm outline-none"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+              />
+            </div>
+          );
+        },
+        Cell: ({ row }) => {
+          const billingStart = new Date(row.original.job.billingStart);
+          const billingEnd = new Date(row.original.job.billingEnd);
+
+          if (!billingStart || !billingEnd) return <div>N/A</div>;
+
+          const timeDifference = billingEnd.getTime() - billingStart.getTime();
+          const monthDifference = (
+            timeDifference /
+            (1000 * 60 * 60 * 24 * 30.44)
+          ).toFixed(0);
+
+          return (
+            <div className="w-full text-center">
+              {monthDifference > 0 ? (
+                `${monthDifference} Month${monthDifference > 1 ? "s" : ""}`
+              ) : (
+                <span className="text-red-500">Expired</span>
+              )}
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const billingStart = new Date(row.original.job.billingStart);
+          const billingEnd = new Date(row.original.job.billingEnd);
+
+          if (!billingStart || !billingEnd) return false;
+
+          const timeDifference = billingEnd.getTime() - billingStart.getTime();
+          const monthDifference = (
+            timeDifference /
+            (1000 * 60 * 60 * 24 * 30.44)
+          ).toFixed(0);
+
+          return monthDifference.toString().includes(filterValue);
+        },
+        enableColumnFilter: true,
+        size: 90,
+        minSize: 60,
+        maxSize: 120,
+        grow: false,
+      },
       //  -----Due & Over Due Status----->
       {
         accessorKey: "state",
@@ -1242,7 +1360,7 @@ export default function Subscription() {
                   column.setFilterValue("");
                 }}
               >
-                Manager
+                Owner
               </span>
               <select
                 value={column.getFilterValue() || ""}
@@ -1356,6 +1474,114 @@ export default function Subscription() {
         maxSize: 140,
         grow: false,
       },
+      // Data Label
+      {
+        id: "Data",
+        accessorKey: "data",
+
+        Header: ({ column }) => {
+          return (
+            <div className="flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                CC Person
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {dataLable?.map((label, i) => (
+                  <option key={i} value={label?.name}>
+                    {label?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+
+        Cell: ({ cell, row }) => {
+          const [show, setShow] = useState(false);
+          const jobLabel = row.original.data || {};
+          const { name, color, _id } = jobLabel;
+
+          const handleLabelChange = (labelName) => {
+            const selectedLabel = dataLable.find(
+              (label) => label._id === labelName
+            );
+            console.log("selectedLabel:", selectedLabel);
+            if (selectedLabel) {
+              addDatalabel(row.original._id, labelName);
+            } else {
+              addDatalabel(row.original._id, "");
+            }
+            setShow(false);
+          };
+
+          return (
+            <div className="w-full flex items-start ">
+              {show ? (
+                <select
+                  value={_id || ""}
+                  onChange={(e) => handleLabelChange(e.target.value)}
+                  className="w-full h-[2rem] rounded-md border-none outline-none"
+                >
+                  <option value=".">Select Label</option>
+                  {dataLable?.map((label, i) => (
+                    <option value={label?._id} key={i}>
+                      {label?.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div
+                  className="cursor-pointer h-full min-w-full "
+                  onDoubleClick={() => setShow(true)}
+                >
+                  {name ? (
+                    <span
+                      className={`label relative  rounded-md hover:shadow  cursor-pointer text-black ${
+                        color === "#fff"
+                          ? "text-gray-950 py-[4px] px-0"
+                          : "text-white py-[4px] px-2"
+                      }`}
+                      style={{ background: `${color}` }}
+                    >
+                      {name}
+                    </span>
+                  ) : (
+                    <span
+                      className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
+                      // style={{ background: `${color}` }}
+                    >
+                      .
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        },
+
+        filterFn: (row, columnId, filterValue) => {
+          const labelName = row.original?.data?.name || "";
+          return labelName === filterValue;
+        },
+
+        filterVariant: "select",
+        filterSelectOptions: dataLable.map((label) => label.name),
+        size: 130,
+        minSize: 100,
+        maxSize: 210,
+        grow: false,
+      },
       ...(auth?.user?.role?.name === "Admin"
         ? [
             {
@@ -1404,8 +1630,7 @@ export default function Subscription() {
   const table = useMaterialReactTable({
     columns,
     data: subscriptionData,
-    getRowId: (originalRow) => originalRow.id,
-    // enableRowSelection: true,
+    getRowId: (row) => row._id,
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
@@ -1418,6 +1643,9 @@ export default function Subscription() {
     enableColumnResizing: true,
     enableTopToolbar: true,
     enableBottomToolbar: true,
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
+    state: { rowSelection },
     // enableEditing: true,
     // state: { isLoading: loading },
 
@@ -1466,6 +1694,54 @@ export default function Subscription() {
     // eslint-disable-next-line
   }, [table.getFilteredRowModel().rows]);
 
+  // -------Update Bulk Jobs------------->
+
+  const updateBulkJob = async (e) => {
+    e.preventDefault();
+    setIsUpdate(true);
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/multiple/updates`,
+        {
+          rowSelection: Object.keys(rowSelection).filter(
+            (id) => rowSelection[id] === true
+          ),
+          jobHolder,
+          lead,
+          billingStart,
+          billingEnd,
+          deadline,
+          jobStatus,
+          dataLabelId,
+          source,
+          fee,
+        }
+      );
+
+      if (data) {
+        fetchSubscriptions();
+        setIsUpdate(false);
+        setShowEdit(false);
+        setRowSelection({});
+        setJobHolder("");
+        setLead("");
+        setBillingStart("");
+        setBillingEnd("");
+        setDeadline("");
+        setJobStatus("");
+        setDataLabelId("");
+        setSource("");
+        setFee("");
+      }
+    } catch (error) {
+      setIsUpdate(false);
+      console.log(error?.response?.data?.message);
+      toast.error("Something went wrong!");
+    } finally {
+      setIsUpdate(false);
+    }
+  };
+
   return (
     <Layout>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4 pb-[2rem]">
@@ -1490,6 +1766,20 @@ export default function Subscription() {
           <div className="flex items-center gap-4">
             <button
               className={`${style.button1} text-[15px] `}
+              onClick={() => setShowEdit(!showEdit)}
+              style={{ padding: ".4rem 1rem" }}
+            >
+              Edit All
+            </button>
+            <button
+              className={`${style.button1} text-[15px] `}
+              onClick={() => setShowDataLable(true)}
+              style={{ padding: ".4rem 1rem" }}
+            >
+              Add Data
+            </button>
+            <button
+              className={`${style.button1} text-[15px] `}
               onClick={() => setShow(true)}
               style={{ padding: ".4rem 1rem" }}
             >
@@ -1497,7 +1787,151 @@ export default function Subscription() {
             </button>
           </div>
         </div>
-        <hr className="w-full h-[1px] bg-gray-300 my-4" />
+        {/* Update Bulk Jobs */}
+        {showEdit && (
+          <div className="w-full mt-4 py-2">
+            <form
+              onSubmit={updateBulkJob}
+              className="w-full flex items-center flex-wrap gap-2 "
+            >
+              <div className="">
+                <select
+                  value={jobHolder}
+                  onChange={(e) => setJobHolder(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "7rem" }}
+                >
+                  <option value="empty">Assign</option>
+                  {users.map((jobHold, i) => (
+                    <option value={jobHold.name} key={i}>
+                      {jobHold.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="">
+                <select
+                  value={lead}
+                  onChange={(e) => setLead(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "7rem" }}
+                >
+                  <option value="empty">Owner</option>
+                  {users.map((jobHold, i) => (
+                    <option value={jobHold.name} key={i}>
+                      {jobHold.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="inputBox" style={{ width: "8.5rem" }}>
+                <input
+                  type="date"
+                  value={billingStart}
+                  onChange={(e) => setBillingStart(e.target.value)}
+                  className={`${style.input} w-full `}
+                />
+                <span>Billing Start</span>
+              </div>
+              <div className="inputBox" style={{ width: "8.5rem" }}>
+                <input
+                  type="date"
+                  value={billingEnd}
+                  onChange={(e) => setBillingEnd(e.target.value)}
+                  className={`${style.input} w-full `}
+                />
+                <span>Billing End</span>
+              </div>
+              <div className="inputBox" style={{ width: "8.5rem" }}>
+                <input
+                  type="date"
+                  value={deadline}
+                  onChange={(e) => setDeadline(e.target.value)}
+                  className={`${style.input} w-full `}
+                />
+                <span>Deadline</span>
+              </div>
+              {/*  */}
+              <div className="">
+                <select
+                  value={jobStatus}
+                  onChange={(e) => setJobStatus(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "6.5rem" }}
+                >
+                  <option value="empty">Status</option>
+                  {states.map((stat, i) => (
+                    <option value={stat} key={i}>
+                      {stat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="">
+                <select
+                  value={dataLabelId}
+                  onChange={(e) => setDataLabelId(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "9rem" }}
+                >
+                  <option value=".">Select Data</option>
+                  {dataLable?.map((label, i) => (
+                    <option key={i} value={label?._id}>
+                      {label?.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {auth?.user?.role?.name === "Admin" && (
+                <div className="inputBox" style={{ width: "6rem" }}>
+                  <input
+                    type="text"
+                    value={fee}
+                    onChange={(e) => setFee(e.target.value)}
+                    className={`${style.input} w-full `}
+                  />
+                  <span>Fee</span>
+                </div>
+              )}
+
+              {/* {auth?.user?.role?.name === "Admin" && (
+                <div className="">
+                  <select
+                    value={source}
+                    onChange={(e) => setSource(e.target.value)}
+                    className={`${style.input} w-full`}
+                    style={{ width: "8rem" }}
+                  >
+                    <option value="">Source</option>
+                    {sources.map((sou, i) => (
+                      <option value={sou} key={i}>
+                        {sou}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )} */}
+
+              <div className="flex items-center justify-end pl-4">
+                <button
+                  className={`${style.button1} text-[15px] `}
+                  type="submit"
+                  disabled={isUpload}
+                  style={{ padding: ".5rem 1rem" }}
+                >
+                  {isUpload ? (
+                    <TbLoader2 className="h-5 w-5 animate-spin text-white" />
+                  ) : (
+                    <span>Save</span>
+                  )}
+                </button>
+              </div>
+            </form>
+            <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
+          </div>
+        )}
+        {!showEdit && <hr className="w-full h-[1px] bg-gray-300 my-4" />}
         <>
           {loading ? (
             <div className="flex items-center justify-center w-full h-screen px-4 py-4">
@@ -1523,6 +1957,16 @@ export default function Subscription() {
               fetchSubscriptions={fetchSubscriptions}
               subscriptionId={subscriptionId}
               setSubscriptionId={setSubscriptionId}
+            />
+          </div>
+        )}
+        {/*  */}
+        {/* ---------------Add Data label------------- */}
+        {showDataLabel && (
+          <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
+            <DataLabel
+              setShowDataLable={setShowDataLable}
+              getDatalable={getDatalable}
             />
           </div>
         )}

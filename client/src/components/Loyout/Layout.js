@@ -19,6 +19,13 @@ export default function Layout({ children }) {
   const [reminderData, setReminderData] = useState([]);
   const [snoozeTimers, setSnoozeTimers] = useState({});
 
+  // Security
+  const secureKey = process.env.REACT_APP_SECURE_KEY;
+  if (!secureKey || secureKey !== "salman@affotax") {
+    document.body.innerHTML = "<h1>Unauthorized key access !</h1>";
+    throw new Error("Unauthorized key access!");
+  }
+
   // Fetch reminders
   const getReminders = async () => {
     try {

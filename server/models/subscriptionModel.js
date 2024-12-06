@@ -119,6 +119,10 @@ const subScriptionSchema = new mongoose.Schema(
       default: "",
     },
     job: jobSchema,
+    data: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Lable",
+    },
   },
   { timestamps: true }
 );

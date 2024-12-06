@@ -92,6 +92,28 @@ export const getDataLabels = async (req, res) => {
   }
 };
 
+// Get Data Lable
+export const getSubscriptionLabels = async (req, res) => {
+  try {
+    const labels = await labelModel
+      .find({ type: "subscription" })
+      .sort({ createdAt: -1 });
+
+    res.status(200).send({
+      success: true,
+      message: "All label list!",
+      labels: labels,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error in get labels!",
+      error,
+    });
+  }
+};
+
 // Delete Label
 export const deleteLabel = async (req, res) => {
   try {

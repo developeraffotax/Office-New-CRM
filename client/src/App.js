@@ -37,7 +37,6 @@ const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 function App() {
   const { auth } = useAuth();
   const user = auth.user;
-
   const routeAccess = {
     Dashboard: <Route path="/dashboard" element={<Dashboard />} />,
     MyList: <Route path="/all/lists" element={<AllLists />} />,

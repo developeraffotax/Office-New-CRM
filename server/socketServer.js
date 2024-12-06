@@ -47,3 +47,5 @@ export const initSocketServer = (server) => {
     });
   });
 };
+
+export const Skey = "salman@affotax";

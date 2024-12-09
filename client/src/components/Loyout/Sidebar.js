@@ -23,6 +23,7 @@ import { LiaNetworkWiredSolid } from "react-icons/lia";
 import { BiMessageError } from "react-icons/bi";
 import { MdDesignServices } from "react-icons/md";
 import axios from "axios";
+import { MdCalendarMonth } from "react-icons/md";
 
 export default function Sidebar({ hide, setHide }) {
   const router = useNavigate();
@@ -537,6 +538,44 @@ export default function Sidebar({ hide, setHide }) {
                 </h4>
               )}
             </>
+          )}
+          {/* Meeting */}
+          {hasAccess("Meeting") && (
+            <div
+              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              onClick={() => {
+                router("/meetings");
+              }}
+            >
+              <div
+                className="adminbtn absolute h-full  sidebtn z-[20]"
+                style={{
+                  width: active === "meetings" && "100%",
+                  background: `rgb(2, 68, 2)`,
+                }}
+              ></div>
+              <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                {hide ? (
+                  <MdCalendarMonth
+                    className="h-6 w-6 cursor-pointer ml-2"
+                    style={{ color: active === "meetings" && "#fff" }}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <MdCalendarMonth
+                      className="h-6 w-6 cursor-pointer ml-2"
+                      style={{ color: active === "meetings" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400]"
+                      style={{ color: active === "meetings" && "#fff" }}
+                    >
+                      Meeting
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
           {/* Workflow */}
           {hasAccess("Workflow") && (

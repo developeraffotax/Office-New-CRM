@@ -170,7 +170,14 @@ export default function Layout({ children }) {
               <p className=" text-sm text-gray-900 font-semibold">
                 {reminder.title}
               </p>
-              <p className=" text-sm text-gray-700">{reminder.description}</p>
+              <div className="mx-h-[18rem] overflow-y-auto w-full overflow-hidden">
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: reminder.description,
+                  }}
+                  className="whitespace-pre-wrap break-words px-2 py-2 w-full"
+                ></div>
+              </div>
             </div>
             <Link
               to={reminder.redirectLink}

@@ -116,6 +116,19 @@ select {
   }
 }
 
+/* ------------Calender--------- */
+
+
+
+.fc {
+  width: 100% !important;  
+}
+
+.fc-view {
+  width: 100% !important;  
+}
+
+
 /* --------- */
 
 /* .css-wsew38 {

@@ -26,7 +26,6 @@ import { BiBellPlus, BiSolidBellPlus } from "react-icons/bi";
 import { RiLoader2Fill } from "react-icons/ri";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import ReactMarkdown from "react-markdown";
 
 export default function JobDetail({
   clientId,
@@ -55,12 +54,20 @@ export default function JobDetail({
   const [workPlan, setWorkPlan] = useState("");
   const [load, setLoad] = useState(false);
 
+  // console.log(clientDetail.workPlan);
+
   // ---------Stop Timer ----------->
   const handleStopTimer = () => {
     if (timerRef.current) {
       timerRef.current.stopTimer();
     }
   };
+
+  useEffect(() => {
+    if (clientDetail) {
+      setWorkPlan(clientDetail.workPlan);
+    }
+  }, [clientDetail, showEdit]);
 
   //    Single Client
 
@@ -696,7 +703,7 @@ export default function JobDetail({
                       className="text-sm text-blue-500 hover:underline"
                       onClick={() => setShowEdit(!showEdit)}
                     >
-                      {clientDetail.workPlan ? "Edit" : "Add"}
+                      {clientDetail?.workPlan ? "Edit" : "Add"}
                     </button>
                   </div>
                   <hr className="w-full  h-[1px] bg-gray-400 mb-2" />
@@ -727,7 +734,7 @@ export default function JobDetail({
                   ) : (
                     <div
                       dangerouslySetInnerHTML={{
-                        __html: clientDetail.workPlan,
+                        __html: clientDetail?.workPlan,
                       }}
                       className="whitespace-pre-wrap break-words"
                     ></div>

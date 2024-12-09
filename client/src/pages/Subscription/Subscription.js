@@ -1212,7 +1212,7 @@ export default function Subscription() {
         accessorKey: "note",
         minSize: 200,
         maxSize: 500,
-        size: 350,
+        size: 250,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -1942,9 +1942,6 @@ export default function Subscription() {
               <div className="h-full hidden1 overflow-y-auto relative">
                 <MaterialReactTable table={table} />
               </div>
-              {/* <span className="absolute bottom-4 left-[30.5%] z-10 font-semibold text-[15px] text-gray-900">
-                  Total Hrs: {totalHours}
-                </span> */}
             </div>
           )}
         </>

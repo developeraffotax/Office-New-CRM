@@ -30,6 +30,7 @@ import Complaints from "./pages/Complaints/Complaints";
 import UDashboard from "./pages/Auth/Dashboard";
 import TemplateEditor from "./pages/Tickets/TemplateEditor";
 import PDFEditor from "./pages/Editor/PDFEditor";
+import Meeting from "./pages/Meeting/Meeting";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -50,6 +51,7 @@ function App() {
     Goals: <Route path="/goals" element={<Goals />} />,
     Workflow: <Route path="/workflow" element={<Workflow />} />,
     Complaints: <Route path="/complaints" element={<Complaints />} />,
+    Meeting: <Route path="/meetings" element={<Meeting />} />,
     Tickets: (
       <>
         <Route path="/tickets" element={<Tickets />} />

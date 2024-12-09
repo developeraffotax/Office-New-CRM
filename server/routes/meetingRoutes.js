@@ -15,9 +15,10 @@ router.post("/create/meeting", requiredSignIn, createMeeting);
 // Update Meeting
 router.put("/update/meeting/:id", requiredSignIn, updateMeeting);
 // Fetch All
-router.post("/fetch/meetings", getAllMeetings);
+router.get("/fetch/meetings", getAllMeetings);
 // Meeting Detail
-router.post("/meeting/detail/:id", fetchMeeting);
+router.get("/meeting/detail/:id", fetchMeeting);
 // Delete Meeting
-router.post("/create/meeting", requiredSignIn, deleteMeeting);
-export default router();
+router.delete("/delete/meeting/:id", requiredSignIn, deleteMeeting);
+
+export default router;

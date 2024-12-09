@@ -147,7 +147,7 @@ export const getAllMeetings = async (req, res) => {
   try {
     const meetings = await meetingModel
       .find({})
-      .populate("usersList", "name, email, avatar");
+      .populate("usersList", "name email avatar");
 
     res.status(200).send({
       success: true,
@@ -170,7 +170,7 @@ export const fetchMeeting = async (req, res) => {
     const meetingId = req.params.id;
     const meeting = await meetingModel
       .findById({ _id: meetingId })
-      .populate("usersList", "name, email, avatar");
+      .populate("usersList", "name email avatar");
 
     res.status(200).send({
       success: true,

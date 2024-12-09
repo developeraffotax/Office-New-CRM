@@ -26,6 +26,8 @@ import complaintRoute from "./routes/complaintRoutes.js";
 import analyticsRoute from "./routes/Analytics.js/customImpressions.js";
 import activityRoute from "./routes/ActivityRoutes.js";
 import reminderRoute from "./routes/reminderRoutes.js";
+import meetingRoute from "./routes/meetingRoutes.js";
+
 import cron from "node-cron";
 const requiredKey = process.env.SERVER_SECRET_KEY;
 import http from "http";
@@ -77,6 +79,7 @@ app.use("/api/v1/analytics", analyticsRoute);
 app.use("/api/v1/complaints", complaintRoute);
 app.use("/api/v1/activies", activityRoute);
 app.use("/api/v1/reminders", reminderRoute);
+app.use("/api/v1/meetings", meetingRoute);
 
 // Send Data to Google Sheet
 cron.schedule("0 13,20,23 * * *", () => {

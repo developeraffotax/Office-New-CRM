@@ -47,6 +47,7 @@ export default function Roles() {
     "Complaints",
     "Roles",
     "Editor",
+    "Meeting",
     "Users",
   ];
 

@@ -10,12 +10,15 @@ import Loader from "../../utlis/Loader";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { AiTwotoneDelete } from "react-icons/ai";
-import { MdOutlineModeEdit } from "react-icons/md";
 import Swal from "sweetalert2";
-import ReactApexChart from "react-apexcharts";
 import { MdOutlineRemoveCircle } from "react-icons/md";
 
-export default function CompletedGoals({ setGoalId, setShow }) {
+export default function CompletedGoals({
+  fetchGoals,
+  setShow,
+  setGoalId,
+  setCompleteGoalsData,
+}) {
   const { auth } = useAuth();
   const [users, setUsers] = useState([]);
   const [goalsData, setGoalsData] = useState([]);
@@ -42,8 +45,6 @@ export default function CompletedGoals({ setGoalId, setShow }) {
     "Manual Goal",
   ];
 
-  // console.log("goalsData:", goalsData);
-
   // -------Get All Proposal-------
   const getAllGoals = async () => {
     setLoading(true);
@@ -53,6 +54,7 @@ export default function CompletedGoals({ setGoalId, setShow }) {
       );
       if (data) {
         setGoalsData(data.goals);
+        setCompleteGoalsData(data.goals);
         setLoading(false);
       }
     } catch (error) {
@@ -187,7 +189,7 @@ export default function CompletedGoals({ setGoalId, setShow }) {
     }).then((result) => {
       if (result.isConfirmed) {
         handleCompleteGoal(goalId);
-        Swal.fire("Deleted!", "Goal status updated successfully.", "success");
+        Swal.fire("Progress!", "Goal status updated successfully.", "success");
       }
     });
   };
@@ -200,6 +202,7 @@ export default function CompletedGoals({ setGoalId, setShow }) {
       );
       if (data) {
         getGoals();
+        fetchGoals();
         toast.success("Goal status updated!");
       }
     } catch (error) {
@@ -218,88 +221,6 @@ export default function CompletedGoals({ setGoalId, setShow }) {
 
   const columns = useMemo(
     () => [
-      {
-        accessorKey: "subject",
-        header: "Subject",
-        Header: ({ column }) => {
-          return (
-            <div className=" w-[350px] flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                Subject
-              </span>
-              <input
-                type="search"
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-white border-gray-300 rounded-md border  outline-none"
-              />
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const subject = row.original.subject;
-          const [showEdit, setShowEdit] = useState(false);
-          const [localSubject, setSubject] = useState(subject);
-
-          const handleSubmit = (e) => {
-            setFormData((prevData) => ({
-              ...prevData,
-              subject: localSubject,
-            }));
-
-            handleUpdateData(row.original._id, {
-              ...formData,
-              subject: localSubject,
-            });
-
-            setShowEdit(false);
-          };
-          return (
-            <div className="w-full h-full ">
-              {showEdit ? (
-                <form onSubmit={handleSubmit}>
-                  <input
-                    type="text"
-                    placeholder="Enter Subject..."
-                    value={localSubject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    onBlur={(e) => handleSubmit(e.target.value)}
-                    className="w-full h-[2.3rem] focus:border border-gray-300 px-1 outline-none rounded"
-                  />
-                </form>
-              ) : (
-                <div
-                  className="w-full h-full flex items-center justify-start "
-                  onDoubleClick={() => setShowEdit(true)}
-                  title={subject}
-                >
-                  <p
-                    className="text-black text-start font-medium"
-                    onDoubleClick={() => setShowEdit(true)}
-                  >
-                    {subject}
-                  </p>
-                </div>
-              )}
-            </div>
-          );
-        },
-        filterFn: (row, columnId, filterValue) => {
-          const cellValue =
-            row.original[columnId]?.toString().toLowerCase() || "";
-          return cellValue.includes(filterValue.toLowerCase());
-        },
-        size: 400,
-        minSize: 350,
-        maxSize: 560,
-        grow: false,
-      },
       {
         accessorKey: "jobHolder._id",
         Header: ({ column }) => {
@@ -390,6 +311,88 @@ export default function CompletedGoals({ setGoalId, setShow }) {
         size: 110,
         minSize: 80,
         maxSize: 130,
+        grow: false,
+      },
+      {
+        accessorKey: "subject",
+        header: "Subject",
+        Header: ({ column }) => {
+          return (
+            <div className=" w-[350px] flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Subject
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-white border-gray-300 rounded-md border  outline-none"
+              />
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const subject = row.original.subject;
+          const [showEdit, setShowEdit] = useState(false);
+          const [localSubject, setSubject] = useState(subject);
+
+          const handleSubmit = (e) => {
+            setFormData((prevData) => ({
+              ...prevData,
+              subject: localSubject,
+            }));
+
+            handleUpdateData(row.original._id, {
+              ...formData,
+              subject: localSubject,
+            });
+
+            setShowEdit(false);
+          };
+          return (
+            <div className="w-full h-full ">
+              {showEdit ? (
+                <form onSubmit={handleSubmit}>
+                  <input
+                    type="text"
+                    placeholder="Enter Subject..."
+                    value={localSubject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    onBlur={(e) => handleSubmit(e.target.value)}
+                    className="w-full h-[2.3rem] focus:border border-gray-300 px-1 outline-none rounded"
+                  />
+                </form>
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-start "
+                  onDoubleClick={() => setShowEdit(true)}
+                  title={subject}
+                >
+                  <p
+                    className="text-black text-start font-medium"
+                    onDoubleClick={() => setShowEdit(true)}
+                  >
+                    {subject}
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
+        size: 400,
+        minSize: 350,
+        maxSize: 560,
         grow: false,
       },
       //   Start date
@@ -1188,6 +1191,14 @@ export default function CompletedGoals({ setGoalId, setShow }) {
       },
     },
   });
+
+  useEffect(() => {
+    const filteredRows = table
+      .getFilteredRowModel()
+      .rows.map((row) => row.original);
+
+    setCompleteGoalsData(filteredRows);
+  }, [table.getFilteredRowModel().rows]);
   return (
     <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
       {/* ---------Table Detail---------- */}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useAuth } from "../../context/authContext";
@@ -14,6 +14,12 @@ export default function Login() {
   const { auth, setAuth } = useAuth();
   const [isShow, setIsShow] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (auth.token) {
+      navigate("/employee/dashboard");
+    }
+  }, [auth]);
 
   //   Login User
   const handleSubmit = async (e) => {

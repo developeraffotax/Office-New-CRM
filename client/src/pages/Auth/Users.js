@@ -103,7 +103,24 @@ export default function Users() {
     }
   };
 
-  //   Update Profile
+  //   Update Status
+  const handleStatusConfirmation = (userId, state) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: `Yes, ${state === true ? "activate" : "blocked"} it!`,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        updateUserRole(userId, state);
+        Swal.fire("Status!", "User status has been updated.", "success");
+      }
+    });
+  };
+
   const updateUserRole = async (id, state) => {
     try {
       const { data } = await axios.put(
@@ -168,6 +185,14 @@ export default function Users() {
       console.log(error);
       toast.error(error?.response?.data?.message);
     }
+  };
+
+  // -----------Handle Custom date filter------
+  const getCurrentMonthYear = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, "0");
+    return `${year}-${month}`;
   };
 
   //   -------------------Table Data------------->
@@ -454,9 +479,9 @@ export default function Users() {
       {
         accessorKey: "address",
         minSize: 100,
-        maxSize: 250,
-        size: 200,
-        grow: false,
+        maxSize: 400,
+        size: 300,
+        grow: true,
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">
@@ -485,7 +510,7 @@ export default function Users() {
 
           return (
             <div className="w-full px-1">
-              <div className="cursor-pointer w-full">
+              <div className="cursor-pointer w-full" title={address}>
                 <span className="font-medium">{address}</span>
               </div>
             </div>
@@ -502,8 +527,8 @@ export default function Users() {
       {
         accessorKey: "role.name",
         minSize: 120,
-        maxSize: 200,
-        size: 170,
+        maxSize: 250,
+        size: 220,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -599,7 +624,7 @@ export default function Users() {
           const status = row.original.isActive;
 
           const updateStatus = (userId, state) => {
-            updateUserRole(userId, state);
+            handleStatusConfirmation(userId, state);
           };
 
           return (
@@ -635,9 +660,58 @@ export default function Users() {
       {
         accessorKey: "createdAt",
         Header: ({ column }) => {
+          const [filterValue, setFilterValue] = useState("");
+          const [customDate, setCustomDate] = useState(getCurrentMonthYear());
+
+          useEffect(() => {
+            if (filterValue === "Custom date") {
+              column.setFilterValue(customDate);
+            }
+            //eslint-disable-next-line
+          }, [customDate, filterValue]);
+
+          const handleFilterChange = (e) => {
+            setFilterValue(e.target.value);
+            column.setFilterValue(e.target.value);
+          };
+
+          const handleCustomDateChange = (e) => {
+            setCustomDate(e.target.value);
+            column.setFilterValue(e.target.value);
+          };
           return (
-            <div className="w-full flex flex-col gap-[2px]">
-              <span className="cursor-pointer ">Join Date</span>
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  setFilterValue("");
+                  column.setFilterValue("");
+                }}
+              >
+                Joining Date
+              </span>
+              {filterValue === "Custom date" ? (
+                <input
+                  type="month"
+                  value={customDate}
+                  onChange={handleCustomDateChange}
+                  className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
+                />
+              ) : (
+                <select
+                  value={filterValue}
+                  onChange={handleFilterChange}
+                  className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select</option>
+                  {column.columnDef.filterSelectOptions.map((option, idx) => (
+                    <option key={idx} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           );
         },
@@ -687,8 +761,10 @@ export default function Users() {
         filterFn: (row, columnId, filterValue) => {
           const cellValue = row.getValue(columnId);
           if (!cellValue) return false;
+
           const cellDate = new Date(cellValue);
           if (filterValue.includes("-")) {
+            // Handle Year-Month format
             const [year, month] = filterValue.split("-");
             const cellYear = cellDate.getFullYear().toString();
             const cellMonth = (cellDate.getMonth() + 1)
@@ -696,86 +772,193 @@ export default function Users() {
               .padStart(2, "0");
             return year === cellYear && month === cellMonth;
           }
+
           // Other filter cases
           const today = new Date();
-          const startOfToday = new Date(
-            today.getFullYear(),
-            today.getMonth(),
-            today.getDate()
-          );
+          today.setHours(0, 0, 0, 0);
+
           switch (filterValue) {
-            case "Expired":
-              return cellDate < startOfToday;
             case "Today":
               return cellDate.toDateString() === today.toDateString();
+
             case "Tomorrow":
               const tomorrow = new Date(today);
-              tomorrow.setDate(today.getDate() - 1);
+              tomorrow.setDate(today.getDate() + 1);
               return cellDate.toDateString() === tomorrow.toDateString();
-            case "In 7 days":
+
+            case "Last 7 days":
               const in7Days = new Date(today);
-              in7Days.setDate(today.getDate() + 7);
-              return cellDate <= in7Days && cellDate > today;
-            case "In 15 days":
+              in7Days.setDate(today.getDate() - 7);
+              return cellDate >= in7Days && cellDate < today;
+
+            case "Last 15 days":
               const in15Days = new Date(today);
-              in15Days.setDate(today.getDate() + 15);
-              return cellDate <= in15Days && cellDate > today;
-            case "30 Days":
+              in15Days.setDate(today.getDate() - 15);
+              return cellDate >= in15Days && cellDate < today;
+
+            case "Last 30 Days":
               const in30Days = new Date(today);
-              in30Days.setDate(today.getDate() + 30);
-              return cellDate <= in30Days && cellDate > today;
-            case "60 Days":
+              in30Days.setDate(today.getDate() - 30);
+              return cellDate >= in30Days && cellDate < today;
+
+            case "Last 60 Days":
               const in60Days = new Date(today);
-              in60Days.setDate(today.getDate() + 60);
-              return cellDate <= in60Days && cellDate > today;
+              in60Days.setDate(today.getDate() - 60);
+              return cellDate >= in60Days && cellDate < today;
+
             case "Last 12 months":
               const lastYear = new Date(today);
               lastYear.setFullYear(today.getFullYear() - 1);
-              return cellDate >= lastYear && cellDate <= today;
+              return cellDate >= lastYear && cellDate < today;
+
             default:
               return false;
           }
         },
+
         filterSelectOptions: [
-          "Expired",
           "Today",
           "Tomorrow",
-          "In 7 days",
-          "In 15 days",
-          "30 Days",
-          "60 Days",
+          "Last 7 days",
+          "Last 15 days",
+          "Last 30 Days",
+          "Last 60 Days",
+          "Last 12 months",
           "Custom date",
         ],
+
         filterVariant: "custom",
         size: 120,
         minSize: 90,
         maxSize: 110,
         grow: false,
       },
-      // Duration
+
       {
-        accessorKey: "duration",
+        accessorKey: "updatedAt",
         Header: ({ column }) => {
           return (
             <div className="w-full flex flex-col gap-[2px]">
-              <span className="cursor-pointer">Durations</span>
+              <span className="cursor-pointer ">Last Date</span>
+            </div>
+          );
+        },
+
+        Cell: ({ cell, row }) => {
+          const updatedAt = row.original.updatedAt;
+          const [date, setDate] = useState(() => {
+            const cellDate = new Date(
+              cell.getValue() || "2024-09-20T12:43:36.002+00:00"
+            );
+            return cellDate.toISOString().split("T")[0];
+          });
+
+          const [showStartDate, setShowStartDate] = useState(false);
+
+          const handleDateChange = async (updateDate) => {
+            setDate(updateDate);
+
+            try {
+              const { data } = await axios.put(
+                `${process.env.REACT_APP_API_URL}/api/v1/user/update/Profile/${row.original._id}`,
+                { updatedAt: updateDate }
+              );
+              if (data) {
+                getUsers();
+                toast.success("Resignation date updated!");
+              }
+            } catch (error) {
+              console.log(error);
+              toast.error("Something went wrong!");
+            }
+
+            setShowStartDate(false);
+          };
+
+          return (
+            <div
+              className={`w-full   ${
+                row.original.isActive === false ? "flex" : "hidden"
+              }  `}
+            >
+              {!showStartDate ? (
+                <p
+                  onDoubleClick={() => setShowStartDate(true)}
+                  className="w-full"
+                >
+                  {updatedAt ? (
+                    format(new Date(updatedAt), "dd-MMM-yyyy")
+                  ) : (
+                    <span className="text-white">.</span>
+                  )}
+                </p>
+              ) : (
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  onBlur={(e) => handleDateChange(e.target.value)}
+                  className={`h-[2rem] w-full cursor-pointer rounded-md border border-gray-200 outline-none `}
+                />
+              )}
+            </div>
+          );
+        },
+
+        filterVariant: "custom",
+        size: 120,
+        minSize: 90,
+        maxSize: 110,
+        grow: false,
+      },
+
+      // Duration
+      {
+        accessorKey: "Durations",
+        Header: ({ column }) => {
+          return (
+            <div className="w-full flex flex-col gap-[2px]">
+              <span
+                className="cursor-pointer"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Duration
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                }}
+                placeholder="Search durations..."
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
             </div>
           );
         },
         Cell: ({ cell, row }) => {
+          const status = row.original.isActive;
           const createdAt = new Date(row.original.createdAt);
+          const lastUpdate = new Date(row.original.updatedAt);
           const today = new Date();
+
           const calculateDuration = (startDate, endDate) => {
             const diffInMs = endDate - startDate;
-            const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+            const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
 
-            if (diffInDays < 30) return `${diffInDays} days`;
-            if (diffInDays < 365)
-              return `${Math.floor(diffInDays / 30)} months`;
-            return `${Math.floor(diffInDays / 365)} years`;
+            if (diffInDays < 30) return `${Math.round(diffInDays)} days`;
+            if (diffInDays < 365) {
+              const months = (diffInDays / 30).toFixed(1);
+              return `${months} months`;
+            }
+            const years = (diffInDays / 365).toFixed(1);
+            return `${years} years`;
           };
 
-          const duration = calculateDuration(createdAt, today);
+          const endDate = status ? today : lastUpdate;
+          const duration = calculateDuration(createdAt, endDate);
 
           return (
             <div className="w-full flex">
@@ -789,8 +972,31 @@ export default function Users() {
             </div>
           );
         },
+        filterFn: (row, columnId, filterValue) => {
+          const createdAt = new Date(row.original.createdAt);
+          const today = new Date();
 
-        filterVariant: "custom",
+          if (!createdAt || !today || !filterValue) return false;
+
+          const calculateDuration = (startDate, endDate) => {
+            const diffInMs = endDate - startDate;
+            const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+            if (diffInDays < 30) return `${Math.round(diffInDays)} days`;
+            if (diffInDays < 365) {
+              const months = (diffInDays / 30).toFixed(1);
+              return `${months} months`;
+            }
+            const years = (diffInDays / 365).toFixed(1);
+            return `${years} years`;
+          };
+
+          const duration = calculateDuration(createdAt, today);
+          // Check if filterValue matches any difference as a substring
+          const match = duration.toString().includes(filterValue);
+
+          return match;
+        },
         size: 100,
         minSize: 90,
         maxSize: 110,

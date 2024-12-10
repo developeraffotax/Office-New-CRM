@@ -959,6 +959,13 @@ export default function Lead() {
               >
                 Value
               </span>
+              <input
+                type="text"
+                placeholder=""
+                className="border rounded px-2 py-1 text-sm outline-none"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+              />
             </div>
           );
         },
@@ -1005,10 +1012,15 @@ export default function Lead() {
             </div>
           );
         },
-        filterFn: "equals",
-        filterSelectOptions: brands?.map((brand) => brand),
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+          if (cellValue == null) return false;
+          return cellValue.toString().includes(filterValue.toString());
+        },
+
         filterVariant: "select",
       },
+      // Number
       {
         accessorKey: "number",
         minSize: 50,
@@ -1028,6 +1040,13 @@ export default function Lead() {
               >
                 Number
               </span>
+              <input
+                type="text"
+                placeholder=""
+                className="border rounded px-2 py-1 text-sm outline-none"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+              />
             </div>
           );
         },
@@ -1074,8 +1093,12 @@ export default function Lead() {
             </div>
           );
         },
-        filterFn: "equals",
-        filterSelectOptions: brands?.map((brand) => brand),
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+          if (cellValue == null) return false;
+          return cellValue.toString().includes(filterValue.toString());
+        },
+
         filterVariant: "select",
       },
       {

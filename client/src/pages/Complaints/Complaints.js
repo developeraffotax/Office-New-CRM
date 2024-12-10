@@ -16,6 +16,8 @@ import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
+import { GoEye } from "react-icons/go";
+import ComplaintDetail from "../../components/Complaint/ComplaintDetail";
 
 export default function Complaints() {
   const [show, setShow] = useState(false);
@@ -29,6 +31,7 @@ export default function Complaints() {
   const [isLoading, setIsLoading] = useState(false);
   const [totalPoint, setTotalPoint] = useState(0);
   const [filteredData, setFilteredData] = useState([]);
+  const [showDetail, setShowDetail] = useState(false);
 
   // Get All Complaints
   const getAllComplaints = async () => {
@@ -581,7 +584,7 @@ export default function Complaints() {
         accessorKey: "note",
         minSize: 200,
         maxSize: 600,
-        size: 550,
+        size: 600,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -612,8 +615,11 @@ export default function Complaints() {
           return (
             <div className="w-full px-1">
               <div
-                onDoubleClick={() => setShow(true)}
-                className="cursor-pointer w-full"
+                onDoubleClick={() => {
+                  setComplaintId(row.original._id);
+                  setShowDetail(true);
+                }}
+                className="cursor-pointer w-full select-none"
               >
                 {note ? (
                   note
@@ -748,7 +754,17 @@ export default function Complaints() {
         header: "Actions",
         Cell: ({ cell, row }) => {
           return (
-            <div className="flex items-center justify-center gap-4 w-full h-full">
+            <div className="flex items-center justify-center gap-2 w-full h-full">
+              <span
+                className=""
+                title="See Detail"
+                onClick={() => {
+                  setComplaintId(row.original._id);
+                  setShowDetail(true);
+                }}
+              >
+                <GoEye className="h-6 w-6 cursor-pointer text-sky-500 hover:text-sky-600" />
+              </span>
               <span
                 className=""
                 title="Edit Proposal"
@@ -759,7 +775,6 @@ export default function Complaints() {
               >
                 <CiEdit className="h-7 w-7 cursor-pointer text-green-500 hover:text-green-600" />
               </span>
-
               <span
                 className="text-[1rem] cursor-pointer"
                 onClick={() =>
@@ -772,7 +787,7 @@ export default function Complaints() {
             </div>
           );
         },
-        size: 80,
+        size: 120,
       },
     ],
     // eslint-disable-next-line
@@ -920,6 +935,16 @@ export default function Complaints() {
               getComplaints={getComplaints}
               errorData={errorData}
               solutionData={solutionData}
+            />
+          </div>
+        )}
+        {/* ----------------Detail---------- */}
+        {showDetail && (
+          <div className="fixed top-0 left-0 w-full h-full z-[999] bg-gray-100/70 flex items-center justify-center py-6  px-4">
+            <ComplaintDetail
+              setShowDetail={setShowDetail}
+              setComplaintId={setComplaintId}
+              complaintId={complaintId}
             />
           </div>
         )}

@@ -1,14 +1,6 @@
 import React, { useEffect } from "react";
 import ApexCharts from "apexcharts";
 
-const goalTypes = [
-  "Increase Client",
-  "Increase Fee",
-  "Total Proposal",
-  "Total Lead",
-  "Lead Won",
-];
-
 export default function ChartData({ goalsData, selectChart }) {
   useEffect(() => {
     if (goalsData && goalsData.length > 0) {
@@ -16,9 +8,18 @@ export default function ChartData({ goalsData, selectChart }) {
       const achievements = goalsData.map((goal) => goal.achievement);
 
       const goalLabels = goalsData.map((goal) => {
-        const startDate = new Date(goal.startDate).toLocaleDateString();
-        const endDate = new Date(goal.endDate).toLocaleDateString();
-        return `${startDate} - ${endDate}`;
+        const startDate = new Date(goal.startDate);
+        // const endDate = new Date(goal.endDate);
+
+        const formatter = new Intl.DateTimeFormat("en-US", {
+          month: "short",
+          year: "numeric",
+        });
+
+        const formattedStartDate = formatter.format(startDate);
+        // const formattedEndDate = formatter.format(endDate);
+
+        return `${formattedStartDate}`;
       });
 
       const options = {

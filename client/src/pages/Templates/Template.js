@@ -18,8 +18,7 @@ import {
 } from "material-react-table";
 import Loader from "../../utlis/Loader";
 import { GrCopy } from "react-icons/gr";
-import { RxClipboardCopy } from "react-icons/rx";
-
+import { IoMdCopy } from "react-icons/io";
 import { RiEdit2Line } from "react-icons/ri";
 
 export default function Template() {
@@ -524,13 +523,13 @@ export default function Template() {
           const template = row.original.template;
 
           return (
-            <div className="flex items-center justify-center gap-3 w-full h-full">
+            <div className="flex items-center justify-center w-full h-full">
               <span
-                className="text-[1rem] cursor-pointer"
+                className=" cursor-pointer"
                 onClick={() => copyTemplate(template)}
                 title="Copy Template"
               >
-                <RxClipboardCopy className="h-5 w-5 text-cyan-500 hover:text-cyan-600 " />
+                <IoMdCopy className="h-7 w-7 text-cyan-500 hover:text-cyan-600 " />
               </span>
             </div>
           );

@@ -573,6 +573,27 @@ export default function Sales({
             />
           </div>
         </div>
+        {/*  ------Total PPC Lead Analytics */}
+        <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-green-100 via-green-200 to-green-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+          <div className="flex flex-col gap-4 w-full p-4 rounded-xl bg-white/40 bg-opacity-90 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
+            <h3 className="text-2xl font-semibold text-gray-800 text-center">
+              Total Leads in PPC
+            </h3>
+            <h1 className="text-5xl font-extrabold text-black text-center tracking-wide">
+              {filteredTotalPPCLead}
+            </h1>
+          </div>
+
+          <div className="w-full mt-6 rounded-xl bg-white/30 p-4 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
+            <h3 className="text-lg font-medium mb-4">PPC Lead Overview</h3>
+            <Chart
+              options={PPCleadsChartData.options}
+              series={PPCleadsChartData.series}
+              type="area"
+              height={300}
+            />
+          </div>
+        </div>
         {/* Total Send Proposal */}
         <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-orange-100 via-orange-200 to-orange-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
           <div className="flex flex-col gap-4 w-full p-4 rounded-xl bg-white/40 bg-opacity-90 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
@@ -616,28 +637,67 @@ export default function Sales({
             />
           </div>
         </div>
-        {/*  ------Total PPC Lead Analytics */}
-        <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-green-100 via-green-200 to-green-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-          <div className="flex flex-col gap-4 w-full p-4 rounded-xl bg-white/40 bg-opacity-90 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
+
+        {/*  */}
+
+        {/*  */}
+        <div className=" w-full  h-fit flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out  ">
+          <div className="flex flex-col gap-4 w-full">
+            {/* Total Leads (Lead - Proposal Lead) */}
+            <div className="flex flex-col   gap-4 w-full p-4 rounded-xl items-center justify-center   bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-pink-100 text-pink-700 shadow-lg">
+                <FaPercentage size={40} />
+              </div>
+              <h3 className="text-2xl font-semibold text-gray-800 text-center">
+                Conversion % PPL
+              </h3>
+              <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
+                {PPLPercentage ? PPLPercentage.toFixed(2) : 0}%
+              </h1>
+            </div>
+            {/* Inactive Client Total*/}
+            <div className="flex items-center justify-center flex-col gap-4 w-full p-4 rounded-xl   bg-gradient-to-br from-red-100 via-red-200 to-red-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-700 shadow-lg">
+                <FaUserSlash size={40} />
+              </div>
+              <h3 className="text-2xl font-semibold text-gray-800 text-center">
+                Inactive Client
+              </h3>
+              <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
+                {inactiveClient ? inactiveClient?.length : 0}
+              </h1>
+            </div>
+          </div>
+        </div>
+
+        {/* Inactive Clients */}
+        <div className="w-full flex flex-col h-fit items-center p-4 rounded-xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out  gap-4">
+          {/*----------Conversion PPC Lead Won --------- */}
+          <div className="flex flex-col gap-4 w-full p-4 rounded-xl  items-center justify-center  bg-gradient-to-br from-purple-100 via-purple-200 to-purple-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 text-purple-700 shadow-lg">
+              <FaChartPie size={40} />
+            </div>
             <h3 className="text-2xl font-semibold text-gray-800 text-center">
-              Total Leads in PPC
+              Conversion % PPC
             </h3>
-            <h1 className="text-5xl font-extrabold text-black text-center tracking-wide">
-              {filteredTotalPPCLead}
+            <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
+              {PPCPercentage ? PPCPercentage.toFixed(2) : 0}%
             </h1>
           </div>
 
-          <div className="w-full mt-6 rounded-xl bg-white/30 p-4 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
-            <h3 className="text-lg font-medium mb-4">PPC Lead Overview</h3>
-            <Chart
-              options={PPCleadsChartData.options}
-              series={PPCleadsChartData.series}
-              type="area"
-              height={300}
-            />
+          {/* Inactive Client Percentage */}
+          <div className="flex flex-col gap-4 w-full p-4 rounded-xl items-center justify-center  bg-gradient-to-br from-lime-100 via-lime-200 to-lime-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-lime-100 text-lime-700 shadow-lg">
+              <FaChartLine size={40} />
+            </div>
+            <h3 className="text-2xl font-semibold text-gray-800 text-center">
+              Inactive Client %
+            </h3>
+            <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
+              {InactiveClientPercentage.toFixed(2)}%
+            </h1>
           </div>
         </div>
-        {/*  */}
 
         {/*----------Conversion Lead in Client in Proposal--------- */}
         <div className=" w-full col-span-1 3xl:col-span-2 flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 shadow-lg hover:shadow-2xl  ">
@@ -682,64 +742,6 @@ export default function Sales({
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-        {/*  */}
-        <div className=" w-full  h-fit flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out  ">
-          <div className="flex flex-col gap-4 w-full">
-            {/* Total Leads (Lead - Proposal Lead) */}
-            <div className="flex flex-col   gap-4 w-full p-4 rounded-xl items-center justify-center   bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-pink-100 text-pink-700 shadow-lg">
-                <FaPercentage size={40} />
-              </div>
-              <h3 className="text-2xl font-semibold text-gray-800 text-center">
-                Conversion % PPL
-              </h3>
-              <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
-                {PPLPercentage.toFixed(2)}%
-              </h1>
-            </div>
-            {/* Inactive Client Total*/}
-            <div className="flex items-center justify-center flex-col gap-4 w-full p-4 rounded-xl   bg-gradient-to-br from-red-100 via-red-200 to-red-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-700 shadow-lg">
-                <FaUserSlash size={40} />
-              </div>
-              <h3 className="text-2xl font-semibold text-gray-800 text-center">
-                Inactive Client
-              </h3>
-              <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
-                {inactiveClient ? inactiveClient?.length : 0}
-              </h1>
-            </div>
-          </div>
-        </div>
-
-        {/* Inactive Users */}
-        <div className="w-full flex flex-col h-fit items-center p-4 rounded-xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out  gap-4">
-          {/*----------Conversion PPC Lead Won --------- */}
-          <div className="flex flex-col gap-4 w-full p-4 rounded-xl  items-center justify-center  bg-gradient-to-br from-purple-100 via-purple-200 to-purple-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 text-purple-700 shadow-lg">
-              <FaChartPie size={40} />
-            </div>
-            <h3 className="text-2xl font-semibold text-gray-800 text-center">
-              Conversion % PPC
-            </h3>
-            <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
-              {PPCPercentage ? PPCPercentage.toFixed(2) : 0}%
-            </h1>
-          </div>
-
-          {/* Inactive Client Percentage */}
-          <div className="flex flex-col gap-4 w-full p-4 rounded-xl items-center justify-center  bg-gradient-to-br from-lime-100 via-lime-200 to-lime-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-lime-100 text-lime-700 shadow-lg">
-              <FaChartLine size={40} />
-            </div>
-            <h3 className="text-2xl font-semibold text-gray-800 text-center">
-              Inactive Client %
-            </h3>
-            <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
-              {InactiveClientPercentage.toFixed(2)}%
-            </h1>
           </div>
         </div>
       </div>

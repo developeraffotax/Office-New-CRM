@@ -30,7 +30,7 @@ const Subscriptions = forwardRef(
     const [totalFee, setTotalFee] = useState(0);
     //
     const subscriptions = ["Weekly", "Monthly", "Quarterly", "Yearly"];
-    const states = ["Paid", "Unpaid", "Send", "Not Due"];
+    const states = ["Paid", "Unpaid", "On Hold", "Not Due"];
 
     console.log("subscriptionData:", subscriptionData);
 

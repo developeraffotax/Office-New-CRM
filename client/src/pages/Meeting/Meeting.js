@@ -151,6 +151,12 @@ export default function Meeting() {
                 center: "title",
                 right: "dayGridMonth,timeGridWeek,timeGridDay",
               }}
+              buttonText={{
+                today: "Today",
+                month: "Month",
+                week: "Week",
+                day: "Day",
+              }}
               events={events}
               eventClick={handleEventClick}
               height="auto"

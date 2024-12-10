@@ -120,13 +120,16 @@ select {
 
 
 
-.fc {
-  width: 100% !important;  
+/* .fc-toolbar .fc-button {
+  background-color: orangered;
+  color: white;
+  border: none; 
 }
 
-.fc-view {
-  width: 100% !important;  
-}
+.fc-toolbar .fc-button:hover {
+  background-color: rgb(255, 55, 0); 
+} */
+
 
 
 /* --------- */

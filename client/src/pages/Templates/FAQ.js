@@ -380,7 +380,7 @@ export default function FAQ({ setSelectedTab, selectedTab, access, page }) {
           </button>
         </div>
         {/* ------------Filter FAQ---------*/}
-        <div className="flex items-center  gap-4 translate-y-1 ">
+        <div className="flex items-center  gap-4 mt-[1.3rem]">
           <div className="relative">
             <IoSearch className="absolute top-[.4rem] left-2 z-10 text-orange-500 h-5 w-5" />
             <input

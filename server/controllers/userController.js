@@ -76,7 +76,6 @@ export const registerUser = async (req, res) => {
 };
 
 // Login User
-
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -201,8 +200,6 @@ export const getAllActiveUsers = async (req, res) => {
   }
 };
 
-//
-
 // Get Single User
 export const singleUser = async (req, res) => {
   try {
@@ -252,6 +249,7 @@ export const updateUserProfile = async (req, res) => {
       avatar,
       isActive,
       createdAt,
+      updatedAt,
     } = req.body;
 
     // Check if userId is provided
@@ -298,6 +296,7 @@ export const updateUserProfile = async (req, res) => {
         avatar: avatar || isExisting.avatar,
         isActive: isActive !== undefined ? isActive : isExisting.isActive,
         createdAt: createdAt || isExisting.createdAt,
+        updatedAt: updatedAt || isExisting.updatedAt,
       },
       { new: true }
     );

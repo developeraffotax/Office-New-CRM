@@ -16,7 +16,6 @@ import { AiTwotoneDelete } from "react-icons/ai";
 import { MdCheckCircle, MdInsertComment } from "react-icons/md";
 import { MdOutlineModeEdit } from "react-icons/md";
 import Swal from "sweetalert2";
-import ReactApexChart from "react-apexcharts";
 import CompletedGoals from "./CompletedGoals";
 import ChartData from "./ChartData";
 import { VscGraph } from "react-icons/vsc";
@@ -29,6 +28,8 @@ export default function Goals() {
   const [users, setUsers] = useState([]);
   const [userName, setUserName] = useState([]);
   const [goalsData, setGoalsData] = useState([]);
+  const [completeGoalsData, setCompleteGoalsData] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [filterData, setFilterData] = useState([]);
   const [selectedTab, setSelectedTab] = useState("progress");
@@ -1438,7 +1439,12 @@ export default function Goals() {
             )}
           </div>
         ) : (
-          <CompletedGoals setShow={setShow} setGoalId={setGoalId} />
+          <CompletedGoals
+            setShow={setShow}
+            setGoalId={setGoalId}
+            setCompleteGoalsData={setCompleteGoalsData}
+            fetchGoals={getGoals}
+          />
         )}
 
         {/* --------Add Goals-------- */}
@@ -1455,8 +1461,8 @@ export default function Goals() {
         )}
         {/* ------------Graphic View setShowGraph-------- */}
         {showGraph && (
-          <div className="absolute top-[0rem] right-0 w-[21rem] sm:w-[50%] h-full z-[999] bg-white flex  flex-col gap-4 py-4  px-4">
-            <div className="inputBox">
+          <div className="absolute top-[0rem] right-0 w-[21rem] sm:w-[60%] h-full z-[999] bg-white flex  flex-col gap-4 py-4  px-4">
+            <div className="inputBox " style={{ width: "15rem" }}>
               <select
                 value={selectChart}
                 onChange={(e) => setSelectChart(e.target.value)}
@@ -1468,7 +1474,11 @@ export default function Goals() {
             </div>
             <ChartData
               setShowGraph={setShowGraph}
-              goalsData={filterData ? filterData : goalsData}
+              goalsData={
+                selectedTab === "progress"
+                  ? filterData || goalsData
+                  : completeGoalsData
+              }
               selectChart={selectChart}
             />
           </div>

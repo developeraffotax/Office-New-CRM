@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { RiEdit2Line } from "react-icons/ri";
 import Swal from "sweetalert2";
+import UserLabelModal from "../../components/user/UserLabelModal";
 
 export default function Users() {
   const { auth } = useAuth();
@@ -24,6 +25,8 @@ export default function Users() {
   const [loading, setLoading] = useState(false);
   const [userRoles, setUserRoles] = useState([]);
   const isActive = [true, false];
+  const [labelData, setLabelData] = useState([]);
+  const [showLabel, setShowLabel] = useState(false);
 
   // All Users
   const getAllUsers = async () => {
@@ -74,6 +77,26 @@ export default function Users() {
     getAllRoles();
 
     //eslint-disable-next-line
+  }, []);
+
+  //   Get All Labels
+  const getDatalabel = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/label/user/labels`
+      );
+      if (data) {
+        setLabelData(data.labels);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getDatalabel();
+
+    // eslint-disable-next-line
   }, []);
 
   //   Update Role
@@ -193,6 +216,22 @@ export default function Users() {
     const year = today.getFullYear();
     const month = (today.getMonth() + 1).toString().padStart(2, "0");
     return `${year}-${month}`;
+  };
+  // addDatalabel
+  // -------------------Handle Label---------->
+  const handleDataLabel = async (userId, labelId) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/label/${userId}`,
+        { labelId }
+      );
+      if (data) {
+        getUsers();
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    }
   };
 
   //   -------------------Table Data------------->
@@ -838,7 +877,7 @@ export default function Users() {
         accessorKey: "updatedAt",
         Header: ({ column }) => {
           return (
-            <div className="w-full flex flex-col gap-[2px]">
+            <div className={`w-full flex flex-col gap-[2px] `}>
               <span className="cursor-pointer ">Last Date</span>
             </div>
           );
@@ -1002,6 +1041,113 @@ export default function Users() {
         maxSize: 110,
         grow: false,
       },
+      // Data Label
+      {
+        id: "Data",
+        accessorKey: "data",
+
+        Header: ({ column }) => {
+          return (
+            <div className="flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                CC Person
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {labelData?.map((label, i) => (
+                  <option key={i} value={label?.name}>
+                    {label?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+
+        Cell: ({ cell, row }) => {
+          const [show, setShow] = useState(false);
+          const jobLabel = row.original.data || {};
+          const { name, color, _id } = jobLabel;
+
+          const handleLabelChange = (labelName) => {
+            const selectedLabel = labelData.find(
+              (label) => label._id === labelName
+            );
+            if (selectedLabel) {
+              handleDataLabel(row.original._id, labelName);
+            } else {
+              handleDataLabel(row.original._id, "");
+            }
+            setShow(false);
+          };
+
+          return (
+            <div className="w-full flex items-start ">
+              {show ? (
+                <select
+                  value={_id || ""}
+                  onChange={(e) => handleLabelChange(e.target.value)}
+                  className="w-full h-[2rem] rounded-md border-none outline-none"
+                >
+                  <option value=".">Select Label</option>
+                  {labelData?.map((label, i) => (
+                    <option value={label?._id} key={i}>
+                      {label?.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div
+                  className="cursor-pointer h-full min-w-full "
+                  onDoubleClick={() => setShow(true)}
+                >
+                  {name ? (
+                    <span
+                      className={`label relative  rounded-md hover:shadow  cursor-pointer text-black ${
+                        color === "#fff"
+                          ? "text-gray-950 py-[4px] px-0"
+                          : "text-white py-[4px] px-2"
+                      }`}
+                      style={{ background: `${color}` }}
+                    >
+                      {name}
+                    </span>
+                  ) : (
+                    <span
+                      className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
+                      // style={{ background: `${color}` }}
+                    >
+                      .
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        },
+
+        filterFn: (row, columnId, filterValue) => {
+          const labelName = row.original?.data?.name || "";
+          return labelName === filterValue;
+        },
+
+        filterVariant: "select",
+        filterSelectOptions: labelData.map((label) => label.name),
+        size: 150,
+        minSize: 100,
+        maxSize: 210,
+        grow: false,
+      },
 
       // <-----Action------>
       {
@@ -1034,7 +1180,7 @@ export default function Users() {
       },
     ],
     // eslint-disable-next-line
-    [auth, userData]
+    [auth, userData, labelData]
   );
 
   // Clear table Filter
@@ -1117,6 +1263,13 @@ export default function Users() {
           <div className="flex items-center gap-4">
             <button
               className={`${style.button1} text-[15px] `}
+              onClick={() => setShowLabel(true)}
+              style={{ padding: ".4rem 1rem" }}
+            >
+              Add Data
+            </button>
+            <button
+              className={`${style.button1} text-[15px] `}
               onClick={() => setIsOpen(true)}
               style={{ padding: ".4rem 1rem" }}
             >
@@ -1153,6 +1306,16 @@ export default function Users() {
           </div>
         )}
       </div>
+
+      {/* ---------------Add Data label------------- */}
+      {showLabel && (
+        <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
+          <UserLabelModal
+            setShowLabel={setShowLabel}
+            getDatalabel={getDatalabel}
+          />
+        </div>
+      )}
     </Layout>
   );
 }

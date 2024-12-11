@@ -157,6 +157,7 @@ export default function Meeting() {
                 week: "Week",
                 day: "Day",
               }}
+              slotMinTime="09:00:00"
               events={events}
               eventClick={handleEventClick}
               height="auto"

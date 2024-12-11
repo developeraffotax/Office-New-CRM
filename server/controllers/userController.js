@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { comparePassword, hashPassword } from "../helper/encryption.js";
 import userModel from "../models/userModel.js";
 import jwt from "jsonwebtoken";
+import labelModel from "../models/labelModel.js";
 
 // Create User
 export const registerUser = async (req, res) => {
@@ -160,7 +161,8 @@ export const getAllUsers = async (req, res) => {
     const users = await userModel
       .find({ name: { $ne: "Salmans" } })
       .select("-password")
-      .populate("role");
+      .populate("role")
+      .populate("data");
 
     res.status(200).send({
       total: users.length,
@@ -411,6 +413,44 @@ export const getDashboardUsers = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error while get all users!",
+    });
+  }
+};
+
+// Add data Label
+export const addDatalabel = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { labelId } = req.body;
+
+    const label = await labelModel.findById(labelId);
+
+    const user = await userModel.findById(userId);
+
+    if (!user) {
+      return res.status(400).send({
+        success: false,
+        message: "User not found!",
+      });
+    }
+
+    const updateUser = await userModel.findByIdAndUpdate(
+      { _id: user._id },
+      { data: label._id },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Data Label added!",
+      user: updateUser,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in add user label!",
+      error: error,
     });
   }
 };

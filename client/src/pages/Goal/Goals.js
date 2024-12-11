@@ -1461,7 +1461,7 @@ export default function Goals() {
         )}
         {/* ------------Graphic View setShowGraph-------- */}
         {showGraph && (
-          <div className="absolute top-[0rem] right-0 w-[21rem] sm:w-[60%] h-full z-[999] bg-white flex  flex-col gap-4 py-4  px-4">
+          <div className="absolute top-0 3xl:top-[14rem] right-0 w-[91%] h-full z-[999] bg-white flex  flex-col gap-4 py-4  px-4">
             <div className="inputBox " style={{ width: "15rem" }}>
               <select
                 value={selectChart}

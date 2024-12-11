@@ -8,6 +8,7 @@ import {
   getComplaintLabels,
   getDataLabels,
   getSubscriptionLabels,
+  getUserLabels,
   updateLabel,
 } from "../controllers/labelController.js";
 
@@ -24,6 +25,7 @@ router.get("/get/labels/task", getAllLabelsByTask);
 
 // Data Lable
 router.get("/data/labels", getDataLabels);
+
 router.get("/subscription/labels", getSubscriptionLabels);
 
 // Delete
@@ -34,5 +36,8 @@ router.put("/update/label/:id", requiredSignIn, updateLabel);
 
 // Complaint Label
 router.get("/complaint/labels/:type", getComplaintLabels);
+
+// User Label
+router.get("/user/labels", getUserLabels);
 
 export default router;

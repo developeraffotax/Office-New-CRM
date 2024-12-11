@@ -35,6 +35,11 @@ const activitySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const labelSchema = new mongoose.Schema({
+  name: { type: String },
+  color: { type: String },
+});
+
 const subtask = new mongoose.Schema(
   {
     subTask: {
@@ -45,14 +50,12 @@ const subtask = new mongoose.Schema(
       type: String,
       default: "process",
     },
+    order: {
+      type: Number,
+    },
   },
   { timestamps: true }
 );
-
-const labelSchema = new mongoose.Schema({
-  name: { type: String },
-  color: { type: String },
-});
 
 const taskSchema = new mongoose.Schema(
   {

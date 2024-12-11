@@ -149,10 +149,16 @@ export const getSingleTask = async (req, res) => {
 
     const task = await taskModel.findById(taskId);
 
+    // Sort subtasks by `order`
+    const sortedSubtasks = task.subtasks.sort((a, b) => a.order - b.order);
+
     res.status(200).send({
       success: true,
-      message: "Single task!",
-      task: task,
+      message: "Single task retrieved successfully!",
+      task: {
+        ...task.toObject(),
+        subtasks: sortedSubtasks,
+      },
     });
   } catch (error) {
     console.log(error);
@@ -599,7 +605,10 @@ export const createSubTask = async (req, res) => {
       });
     }
 
-    task.subtasks.push({ subTask: subTask });
+    // Count existing subtasks
+    const subtaskCount = task.subtasks ? task.subtasks.length : 0;
+
+    task.subtasks.push({ subTask: subTask, order: subtaskCount + 1 });
 
     await task.save();
 
@@ -920,7 +929,7 @@ export const autoCreateRecurringTasks = async (req, res) => {
       }
 
       // Create a new task with updated dates
-      const newTask = await taskModel.create({
+      await taskModel.create({
         project: task.project,
         jobHolder: task.jobHolder,
         task: `${task.task}`,
@@ -931,6 +940,7 @@ export const autoCreateRecurringTasks = async (req, res) => {
         recurring: task.recurring,
         labal: task.labal,
         status: "Progress",
+        subtasks: task.subtasks,
         nextRecurringDate: calculateStartDate(
           task.nextRecurringDate,
           task.recurring
@@ -1035,6 +1045,59 @@ export const getDashboardTasks = async (req, res) => {
       success: false,
       messsage: "Error in get all tasks!",
       error: error,
+    });
+  }
+};
+// Reordering Subtasks
+export const reordering = async (req, res) => {
+  try {
+    const taskId = req.params.id;
+    const { subtasks } = req.body;
+
+    // Validate input
+    if (!taskId) {
+      return res.status(400).json({
+        success: false,
+        message: "Task ID is required!",
+      });
+    }
+    if (!subtasks || !Array.isArray(subtasks)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid subtasks format. Must be an array of subtasks!",
+      });
+    }
+
+    // Fetch the task to ensure it exists
+    const task = await taskModel.findById(taskId);
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found!",
+      });
+    }
+
+    // Update the order of each subtask
+    await Promise.all(
+      subtasks.map((stask, index) =>
+        taskModel.updateOne(
+          { "subtasks._id": stask._id },
+          { $set: { "subtasks.$.order": index + 1 } }
+        )
+      )
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Subtask order updated successfully!",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Error while reordering subtasks!",
+      error: error.message,
     });
   }
 };

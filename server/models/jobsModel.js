@@ -168,6 +168,7 @@ const clientSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
     label: labelSchema,
     data: {
       type: mongoose.Schema.Types.ObjectId,
@@ -178,6 +179,18 @@ const clientSchema = new mongoose.Schema(
     activeClient: {
       type: String,
       default: "active",
+    },
+    prepared: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Users",
+    },
+    review: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Users",
+    },
+    filed: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Users",
     },
   },
   { timestamps: true }

@@ -92,11 +92,32 @@ export const getDataLabels = async (req, res) => {
   }
 };
 
-// Get Data Lable
+// Get Subscription Lable
 export const getSubscriptionLabels = async (req, res) => {
   try {
     const labels = await labelModel
       .find({ type: "subscription" })
+      .sort({ createdAt: -1 });
+
+    res.status(200).send({
+      success: true,
+      message: "All label list!",
+      labels: labels,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error in get labels!",
+      error,
+    });
+  }
+};
+// Get Data Lable
+export const getUserLabels = async (req, res) => {
+  try {
+    const labels = await labelModel
+      .find({ type: "users" })
       .sort({ createdAt: -1 });
 
     res.status(200).send({

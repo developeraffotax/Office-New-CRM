@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { style } from "../../utlis/CommonStyle";
-import { IoMdDownload } from "react-icons/io";
 import axios from "axios";
 import AddProjectModal from "../../components/Tasks/AddProjectModal";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
@@ -17,16 +16,13 @@ import toast from "react-hot-toast";
 import { useAuth } from "../../context/authContext";
 import { TbCalendarDue } from "react-icons/tb";
 import AddTaskModal from "../../components/Tasks/AddTaskModal";
-import { Box, Button } from "@mui/material";
 import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
 import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
-import { Timer } from "../../utlis/Timer";
 import { useLocation } from "react-router-dom";
-import { GrCopy } from "react-icons/gr";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import TaskDetail from "./TaskDetail";
@@ -90,6 +86,8 @@ const CompletedTasks = ({
 
   const status = ["Todo", "Progress", "Review", "Onhold"];
 
+  console.log("projects:", projects);
+
   // -------Get All Tasks----->
   const getAllTasks = async () => {
     setLoading(true);
@@ -116,8 +114,16 @@ const CompletedTasks = ({
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers(data?.users);
+
+      // setUsers(data?.users);
       setUserName(data?.users.map((user) => user.name));
+      setUsers(
+        data?.users?.filter((user) =>
+          user?.role?.access?.some((item) =>
+            item?.permission?.includes("Tasks")
+          )
+        ) || []
+      );
     } catch (error) {
       console.log(error);
     }
@@ -132,7 +138,7 @@ const CompletedTasks = ({
   const getAllProjects = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/projects/get/completed/project`
+        `${process.env.REACT_APP_API_URL}/api/v1/projects/get_all/project`
       );
       setProjects(data?.projects);
     } catch (error) {
@@ -583,7 +589,7 @@ const CompletedTasks = ({
               <select
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className="font-normal h-[1.8rem] w-full cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               >
                 <option value="">Select</option>
                 {projects?.map((proj) => (

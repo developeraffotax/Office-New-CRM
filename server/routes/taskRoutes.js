@@ -13,6 +13,7 @@ import {
   getAllTasks,
   getDashboardTasks,
   getSingleTask,
+  reordering,
   singleTaskComments,
   updateAlocateTask,
   updateJobHolderLS,
@@ -79,6 +80,9 @@ router.delete("/delete/many", deleteDailyRecurringTasks);
 router.delete("/delete/diplicate", deleteDuplicateTasks);
 
 router.get("/dashboard/tasks", getDashboardTasks);
+
+// Reordering Subtask
+router.put("/reorder/subtasks/:id", reordering);
 
 // Call Recurring Function
 router.get(

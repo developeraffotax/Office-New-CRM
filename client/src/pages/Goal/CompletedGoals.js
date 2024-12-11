@@ -1167,7 +1167,7 @@ export default function CompletedGoals({
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#FB923C",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },
@@ -1200,7 +1200,7 @@ export default function CompletedGoals({
     setCompleteGoalsData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
   return (
-    <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
+    <div className=" relative w-full h-[100%] overflow-y-auto ">
       {/* ---------Table Detail---------- */}
       <div className="w-full h-full">
         {loading ? (
@@ -1209,7 +1209,7 @@ export default function CompletedGoals({
           </div>
         ) : (
           <div className="w-full min-h-[10vh] relative ">
-            <div className="h-full hidden1 overflow-y-scroll relative">
+            <div className="h-full hidden1 overflow-y-auto relative">
               <MaterialReactTable table={table} />
             </div>
           </div>

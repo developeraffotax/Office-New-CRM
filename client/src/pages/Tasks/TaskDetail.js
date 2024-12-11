@@ -67,11 +67,7 @@ export default function TaskDetail({
       if (data) {
         setLoading(false);
         setTaskDetal(data?.task);
-        setSubTaskData(
-          data?.task?.subtasks?.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          )
-        );
+        setSubTaskData(data?.task?.subtasks);
       }
     } catch (error) {
       console.log(error);
@@ -220,6 +216,23 @@ export default function TaskDetail({
     newTodos.splice(destination.index, 0, movedTodo);
 
     setSubTaskData(newTodos);
+
+    handleReorderingSubtask(newTodos);
+  };
+  // Handle Reordering
+  const handleReorderingSubtask = async (newTodos) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/reorder/subtasks/${taskId}`,
+        { subtasks: newTodos }
+      );
+      if (data) {
+        toast.success("Reordering successfully!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
   };
 
   // Update Subtask Status
@@ -387,24 +400,6 @@ export default function TaskDetail({
                 <BiSolidBellPlus className="h-7 w-7 cursor-pointer " />
               </span>
             </div>
-            {/*------------- Comment------- */}
-            {/* <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1 text-gray-500 w-[30%]">
-            <MdOutlineInsertComment className="h-4 w-4 text-gray-500" />{" "}
-            Comments
-          </span>
-          <span
-            className="text-[17px] font-medium text-gray-800 relative"
-            onClick={() => setActiveTab("comments")}
-          >
-            <span className=" absolute top-[-.5rem] right-[-.8rem] w-[1.1rem] h-[1.1rem] flex items-center justify-center font-medium rounded-full bg-green-500 text-white p-1 text-[12px]">
-              10
-            </span>
-            <span className="text-[1rem] cursor-pointer  ">
-              <MdInsertComment className="h-6 w-6 text-orange-500 hover:text-orange-600 " />
-            </span>
-          </span>
-        </div> */}
             {/*  */}
           </div>
           <hr className="h-[1.5px] w-full bg-gray-400 my-3" />

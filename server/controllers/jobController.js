@@ -1511,3 +1511,51 @@ export const updateWorkPlan = async (req, res) => {
     });
   }
 };
+
+// Update (Prepared/Review/Filed)
+export const updateUsers = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const { prepared, review, filed } = req.body;
+
+    if (!jobId) {
+      return res.status(400).send({
+        success: false,
+        message: "Job id is required!",
+      });
+    }
+
+    const clientJob = await jobsModel.findByIdAndUpdate(
+      { _id: jobId },
+      { $set: { prepared: prepared, review: review, filed: filed } },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Job holder updated successfully!",
+      clientJob: clientJob,
+    });
+
+    // Add Activity Log
+    if (clientJob) {
+      const currectUser = req.user.user;
+      activityModel.create({
+        user: currectUser._id,
+        action: `${currectUser.name.trim()} is update a Job Assign.`,
+        entity: "Jobs",
+        details: `Job Details:
+             - Company Name: ${clientJob.companyName}
+             - Job Client: ${clientJob.clientName || "No client provided"}
+             - Created At: ${currentDateTime}`,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in update job holder !",
+      error: error,
+    });
+  }
+};

@@ -347,7 +347,8 @@ export const fetchAchievedDataByGoalComplete = async (req, res) => {
     const goals = await goalModel
       .find({ status: { $ne: "Progress" } })
       .populate("jobHolder")
-      .select("-comments");
+      .select("-comments")
+      .sort({ startDate: 1 });
 
     const updatedGoals = await Promise.all(
       goals.map(async (goal) => {

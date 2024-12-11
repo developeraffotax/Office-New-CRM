@@ -27,6 +27,7 @@ import {
   updateStatus,
   updateSubTaskStaus,
   updateTime,
+  updateUsers,
   updateWorkPlan,
 } from "../controllers/jobController.js";
 import { isAdmin, requiredSignIn } from "../middlewares/authMiddleware.js";
@@ -120,6 +121,9 @@ router.get("/completed/clients", dashboardCompletedClients);
 router.get("/inactive/clients", getInactiveClientJobs);
 
 // Update WorkPlain
-router.put("/update/workplain/:id", updateWorkPlan);
+router.put("/update/workplain/:id", requiredSignIn, updateWorkPlan);
+
+// Update (Prepared|Review|Filed)
+router.put("/job/users/:id", requiredSignIn, updateUsers);
 
 export default router;

@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  addDatalabel,
   deleteUser,
   getAllActiveUsers,
   getAllUsers,
@@ -40,5 +41,8 @@ router.delete("/delete_user/:id", requiredSignIn, deleteUser);
 
 // Dashboard Users
 router.get("/dashboard/users", getDashboardUsers);
+
+// User Label
+router.put("/label/:id", requiredSignIn, addDatalabel);
 
 export default router;

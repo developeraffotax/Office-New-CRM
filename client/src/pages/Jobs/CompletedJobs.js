@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { MdInsertComment } from "react-icons/md";
@@ -27,22 +27,28 @@ export default function CompletedJobs({
   const [tableData, setTableData] = useState([]);
   const { auth } = useAuth();
   const [labelData, setLabelData] = useState([]);
+  const isInitialRender = useRef(true);
 
   // ---------------All Client_Job Status(Completed) ----------->
   const allClientJobs = async () => {
-    setLoading(true);
+    if (isInitialRender.current) {
+      setLoading(true);
+    }
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/client/jobs/status/complete`
       );
       if (data) {
         setTableData(data.clients);
-        setLoading(false);
       }
     } catch (error) {
-      setLoading(false);
       console.log(error);
       toast.error(error?.response?.data?.message || "Error in client Jobs");
+    } finally {
+      if (isInitialRender.current) {
+        setLoading(false);
+        isInitialRender.current = false;
+      }
     }
   };
 
@@ -105,11 +111,37 @@ export default function CompletedJobs({
     }
   };
 
+  // Update Users (Prepared | Viewed | Filed)
+  const handleUpdateUser = async (jobId, prepared, review, filed) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/job/users/${jobId}`,
+        {
+          prepared,
+          review,
+          filed,
+        }
+      );
+
+      if (data) {
+        allClientJobs();
+        const updatedJob = data.clientJob;
+        setTableData((prevData) =>
+          prevData.map((job) => (job._id === jobId ? updatedJob : job))
+        );
+
+        toast.success("Job updated successfully.");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response?.data?.message);
+    }
+  };
   // -----------Handle Custom date filter------
   const getCurrentMonthYear = () => {
     const today = new Date();
     const year = today.getFullYear();
-    const month = (today.getMonth() + 1).toString().padStart(2, "0");
+    const month = (today.getMonth() + 1)?.toString().padStart(2, "0");
     return `${year}-${month}`;
   };
 
@@ -452,9 +484,9 @@ export default function CompletedJobs({
 
           if (filterValue.includes("-")) {
             const [year, month] = filterValue.split("-");
-            const cellYear = cellDate.getFullYear().toString();
+            const cellYear = cellDate.getFullYear()?.toString();
             const cellMonth = (cellDate.getMonth() + 1)
-              .toString()
+              ?.toString()
               .padStart(2, "0");
 
             return year === cellYear && month === cellMonth;
@@ -626,9 +658,9 @@ export default function CompletedJobs({
 
           if (filterValue.includes("-")) {
             const [year, month] = filterValue.split("-");
-            const cellYear = cellDate.getFullYear().toString();
+            const cellYear = cellDate.getFullYear()?.toString();
             const cellMonth = (cellDate.getMonth() + 1)
-              .toString()
+              ?.toString()
               .padStart(2, "0");
 
             return year === cellYear && month === cellMonth;
@@ -910,7 +942,7 @@ export default function CompletedJobs({
             row.original.job.yearEnd
           );
           if (status === undefined || status === null) return false;
-          return status.toString().toLowerCase() === filterValue.toLowerCase();
+          return status?.toString().toLowerCase() === filterValue.toLowerCase();
         },
         filterSelectOptions: ["Overdue", "Due"],
         filterVariant: "select",
@@ -984,7 +1016,7 @@ export default function CompletedJobs({
         // filterFn: "equals",
         filterFn: (row, columnId, filterValue) => {
           const cellValue = row.getValue(columnId);
-          return (cellValue || "").toString() === filterValue.toString();
+          return (cellValue || "")?.toString() === filterValue?.toString();
         },
         filterSelectOptions: [
           "Data",
@@ -1106,109 +1138,187 @@ export default function CompletedJobs({
         },
         size: 100,
       },
-      // Label
-      // {
-      //   accessorKey: "label",
+      // ------------Prepared|Review|Filed------>
+      {
+        accessorKey: "prepared",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Job Prepared
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {users?.map((jobhold, i) => (
+                  <option key={i} value={jobhold}>
+                    {jobhold}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const prepared = cell.getValue();
 
-      //   Header: ({ column }) => {
-      //     return (
-      //       <div className="flex flex-col gap-[2px]">
-      //         <span
-      //           className="ml-1 cursor-pointer"
-      //           title="Clear Filter"
-      //           onClick={() => {
-      //             column.setFilterValue("");
-      //           }}
-      //         >
-      //           Labels
-      //         </span>
-      //         <select
-      //           value={column.getFilterValue() || ""}
-      //           onChange={(e) => column.setFilterValue(e.target.value)}
-      //           className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-      //         >
-      //           <option value="">Select</option>
-      //           {labelData?.map((label, i) => (
-      //             <option key={i} value={label?.name}>
-      //               {label?.name}
-      //             </option>
-      //           ))}
-      //         </select>
-      //       </div>
-      //     );
-      //   },
+          return (
+            <div className="w-full flex items-center justify-center">
+              <select
+                value={prepared || ""}
+                onChange={(e) =>
+                  handleUpdateUser(row.original._id, e.target.value, "", "")
+                }
+                className="w-full h-[2rem] rounded-md border-none outline-none"
+              >
+                <option value="empty"></option>
+                {users.map((jobHold, i) => (
+                  <option value={jobHold} key={i}>
+                    {jobHold}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        filterFn: "equals",
+        filterSelectOptions: users.map((jobhold) => jobhold),
+        filterVariant: "select",
+        size: 110,
+        minSize: 80,
+        maxSize: 150,
+        grow: false,
+      },
+      //
+      {
+        accessorKey: "review",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Job Review
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {users?.map((jobhold, i) => (
+                  <option key={i} value={jobhold}>
+                    {jobhold}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const review = cell.getValue();
 
-      //   Cell: ({ cell, row }) => {
-      //     const [show, setShow] = useState(false);
-      //     const jobLabel = row.original.label || {};
-      //     const { name, color } = jobLabel;
-      //     console.log("label:", row.original);
+          return (
+            <div className="w-full flex items-center justify-center">
+              <select
+                value={review || ""}
+                onChange={(e) =>
+                  handleUpdateUser(row.original._id, "", e.target.value, "")
+                }
+                className="w-full h-[2rem] rounded-md border-none outline-none"
+              >
+                <option value="empty"></option>
+                {users.map((jobHold, i) => (
+                  <option value={jobHold} key={i}>
+                    {jobHold}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        filterFn: "equals",
+        filterSelectOptions: users.map((jobhold) => jobhold),
+        filterVariant: "select",
+        size: 110,
+        minSize: 80,
+        maxSize: 150,
+        grow: false,
+      },
+      //
+      {
+        accessorKey: "filed",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Job Filed
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {users?.map((jobhold, i) => (
+                  <option key={i} value={jobhold}>
+                    {jobhold}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const filed = cell.getValue();
 
-      //     // const handleLabelChange = (labelName) => {
-      //     //   const selectedLabel = labelData.find(
-      //     //     (label) => label.name === labelName
-      //     //   );
-      //     //   if (selectedLabel) {
-      //     //     addJoblabel(row.original._id, labelName, selectedLabel.color);
-      //     //   } else {
-      //     //     addJoblabel(row.original._id, "", "");
-      //     //   }
-      //     //   setShow(false);
-      //     // };
-
-      //     return (
-      //       <div className="w-full flex items-center justify-center">
-      //         {show ? (
-      //           <select
-      //             value={name || ""}
-      //             // onChange={(e) => handleLabelChange(e.target.value)}
-      //             className="w-full h-[2rem] rounded-md border-none outline-none"
-      //           >
-      //             <option value="empty">Select Label</option>
-      //             {labelData?.map((label, i) => (
-      //               <option value={label?.name} key={i}>
-      //                 {label?.name}
-      //               </option>
-      //             ))}
-      //           </select>
-      //         ) : (
-      //           <div
-      //             className="cursor-pointer h-full min-w-full "
-      //             // onDoubleClick={() => setShow(true)}
-      //           >
-      //             {name ? (
-      //               <span
-      //                 className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
-      //                 style={{ background: `${color}` }}
-      //               >
-      //                 {name}
-      //               </span>
-      //             ) : (
-      //               <span
-      //                 className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
-      //                 // style={{ background: `${color}` }}
-      //               >
-      //                 .
-      //               </span>
-      //             )}
-      //           </div>
-      //         )}
-      //       </div>
-      //     );
-      //   },
-
-      //   filterFn: (row, columnId, filterValue) => {
-      //     const labelName = row.original?.label?.name || "";
-      //     return labelName === filterValue;
-      //   },
-
-      //   filterVariant: "select",
-      //   filterSelectOptions: labelData.map((label) => label.name),
-      //   size: 160,
-      //   minSize: 100,
-      //   maxSize: 210,
-      //   grow: false,
-      // },
+          return (
+            <div className="w-full flex items-center justify-center">
+              <select
+                value={filed || ""}
+                onChange={(e) =>
+                  handleUpdateUser(row.original._id, "", "", e.target.value)
+                }
+                className="w-full h-[2rem] rounded-md border-none outline-none"
+              >
+                <option value="empty"></option>
+                {users.map((jobHold, i) => (
+                  <option value={jobHold} key={i}>
+                    {jobHold}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        filterFn: "equals",
+        filterSelectOptions: users.map((jobhold) => jobhold),
+        filterVariant: "select",
+        size: 110,
+        minSize: 80,
+        maxSize: 150,
+        grow: false,
+      },
+      // ------------Prepared|Review|Filed------>
       {
         accessorKey: "complete",
         header: "Actions",

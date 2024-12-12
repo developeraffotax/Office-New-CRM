@@ -653,6 +653,7 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </div>
           )}
+          {/*  */}
           {hasAccess("Roles") && (
             <>
               <div
@@ -685,6 +686,46 @@ export default function Sidebar({ hide, setHide }) {
                         style={{ color: active === "roles" && "#fff" }}
                       >
                         Roles
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+          {/* User Info */}
+          {hasAccess("Users") && (
+            <>
+              <div
+                className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+                onClick={() => {
+                  router("/users");
+                }}
+              >
+                <div
+                  className="adminbtn absolute h-full  sidebtn z-[20]"
+                  style={{
+                    width: active === "users" && "100%",
+                    background: `rgb(2, 68, 2)`,
+                  }}
+                ></div>
+                <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                  {hide ? (
+                    <FaUsers
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "users" && "#fff" }}
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <FaUsers
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "users" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{ color: active === "users" && "#fff" }}
+                      >
+                        Users
                       </span>
                     </div>
                   )}
@@ -733,48 +774,7 @@ export default function Sidebar({ hide, setHide }) {
             </>
           )}
 
-          {/*  */}
-          {hasAccess("Users") && (
-            <>
-              <div
-                className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
-                onClick={() => {
-                  router("/users");
-                }}
-              >
-                <div
-                  className="adminbtn absolute h-full  sidebtn z-[20]"
-                  style={{
-                    width: active === "users" && "100%",
-                    background: `rgb(2, 68, 2)`,
-                  }}
-                ></div>
-                <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-                  {hide ? (
-                    <FaUsers
-                      className="h-5 w-5 cursor-pointer ml-2"
-                      style={{ color: active === "users" && "#fff" }}
-                    />
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <FaUsers
-                        className="h-5 w-5 cursor-pointer ml-2"
-                        style={{ color: active === "users" && "#fff" }}
-                      />
-                      <span
-                        className="text-[14px] font-[400] "
-                        style={{ color: active === "users" && "#fff" }}
-                      >
-                        Users
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-          {/* User Info */}
-          {/*  */}
+          {/* End */}
         </div>
       </div>
       {/* Profile Modal */}

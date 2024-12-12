@@ -1518,16 +1518,24 @@ export const updateUsers = async (req, res) => {
     const jobId = req.params.id;
     const { prepared, review, filed } = req.body;
 
-    if (!jobId) {
-      return res.status(400).send({
+    const job = await jobsModel.findById(jobId);
+
+    if (!job) {
+      return res.status(404).send({
         success: false,
-        message: "Job id is required!",
+        message: "Job not found!",
       });
     }
 
     const clientJob = await jobsModel.findByIdAndUpdate(
-      { _id: jobId },
-      { $set: { prepared: prepared, review: review, filed: filed } },
+      { _id: job._id },
+      {
+        $set: {
+          prepared: prepared || job.prepared,
+          review: review || job.review,
+          filed: filed || job.filed,
+        },
+      },
       { new: true }
     );
 
@@ -1536,20 +1544,6 @@ export const updateUsers = async (req, res) => {
       message: "Job holder updated successfully!",
       clientJob: clientJob,
     });
-
-    // Add Activity Log
-    if (clientJob) {
-      const currectUser = req.user.user;
-      activityModel.create({
-        user: currectUser._id,
-        action: `${currectUser.name.trim()} is update a Job Assign.`,
-        entity: "Jobs",
-        details: `Job Details:
-             - Company Name: ${clientJob.companyName}
-             - Job Client: ${clientJob.clientName || "No client provided"}
-             - Created At: ${currentDateTime}`,
-      });
-    }
   } catch (error) {
     console.log(error);
     res.status(500).send({

@@ -181,16 +181,13 @@ const clientSchema = new mongoose.Schema(
       default: "active",
     },
     prepared: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Users",
+      type: String,
     },
     review: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Users",
+      type: String,
     },
     filed: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Users",
+      type: String,
     },
   },
   { timestamps: true }

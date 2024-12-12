@@ -56,6 +56,10 @@ export default function Goals() {
     "Lead Won",
     "Affotax Clicks",
     "Affotax Impressions",
+    "Job Prepared",
+    "Job Review",
+    "Job Filed",
+    "Chargeable Time %",
     "Manual Goal",
   ];
 

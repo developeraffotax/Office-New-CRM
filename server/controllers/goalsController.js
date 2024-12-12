@@ -3,6 +3,7 @@ import goalModel from "../models/goalModel.js";
 import jobsModel from "../models/jobsModel.js";
 import leadModel from "../models/leadModel.js";
 import proposalModel from "../models/proposalModel.js";
+import timerModel from "../models/timerModel.js";
 import { fetchSearchAnalytics } from "../utils/websiteImpression.js";
 
 // Create Goal
@@ -316,6 +317,52 @@ export const fetchAchievedDataByGoalType = async (req, res) => {
         } else if (goal.goalType === "Manual Goal") {
           const data = await goalModel.findOne({ _id: goal._id });
           achievedCount = data ? data.achievedCount : 0;
+        } else if (goal.goalType === "Job Prepared") {
+          achievedCount = await jobsModel.countDocuments({
+            "job.yearEnd": {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+            prepared: goal.jobHolder.name,
+            status: "completed",
+          });
+        } else if (goal.goalType === "Job Review") {
+          achievedCount = await jobsModel.countDocuments({
+            "job.yearEnd": {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+            review: goal.jobHolder.name,
+            status: "completed",
+          });
+        } else if (goal.goalType === "Job Filed") {
+          achievedCount = await jobsModel.countDocuments({
+            "job.yearEnd": {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+            filed: goal.jobHolder.name,
+            status: "completed",
+          });
+        } else if (goal.goalType === "Chargeable Time %") {
+          const timerData = await timerModel.find({
+            date: {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+            jobHolderName: goal.jobHolder.name,
+          });
+          const chargeableCount = timerData?.reduce((count, entry) => {
+            return entry.activity === "Chargeable" ? count + 1 : count;
+          }, 0);
+          const nonChargeableCount = timerData?.reduce((count, entry) => {
+            return entry.activity === "Non-Chargeable" ? count + 1 : count;
+          }, 0);
+          const total = chargeableCount + nonChargeableCount;
+          const chargeablePercentage = total
+            ? (chargeableCount / total) * 100
+            : 0;
+          achievedCount = chargeablePercentage.toFixed(1);
         }
 
         // Update achievedCount in the goal object
@@ -434,6 +481,69 @@ export const fetchAchievedDataByGoalComplete = async (req, res) => {
             jobHolder: goal.jobHolder.name,
             client: "Yes",
           });
+        } else if (goal.goalType === "Job Prepared") {
+          achievedCount = await jobsModel.countDocuments({
+            "job.yearEnd": {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+            prepared: goal.jobHolder.name,
+            status: "completed",
+          });
+        } else if (goal.goalType === "Job Review") {
+          achievedCount = await jobsModel.countDocuments({
+            "job.yearEnd": {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+            review: goal.jobHolder.name,
+            status: "completed",
+          });
+        } else if (goal.goalType === "Job Filed") {
+          achievedCount = await jobsModel.countDocuments({
+            "job.yearEnd": {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+            filed: goal.jobHolder.name,
+            status: "completed",
+          });
+        } else if (goal.goalType === "Chargeable Time %") {
+          const timerData = await timerModel.find({
+            date: {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+            jobHolderName: goal.jobHolder.name,
+          });
+          const chargeableCount = timerData?.reduce((count, entry) => {
+            return entry.activity === "Chargeable" ? count + 1 : count;
+          }, 0);
+          const nonChargeableCount = timerData?.reduce((count, entry) => {
+            return entry.activity === "Non-Chargeable" ? count + 1 : count;
+          }, 0);
+          const total = chargeableCount + nonChargeableCount;
+          const chargeablePercentage = total
+            ? (chargeableCount / total) * 100
+            : 0;
+          achievedCount = chargeablePercentage.toFixed(1);
+        } else if (goal.goalType === "Affotax Clicks") {
+          achievedCount = await affotaxAnalytics.countDocuments({
+            createdAt: {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+          });
+        } else if (goal.goalType === "Affotax Impressions") {
+          achievedCount = await affotaxAnalytics.countDocuments({
+            createdAt: {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+          });
+        } else if (goal.goalType === "Manual Goal") {
+          const data = await goalModel.findOne({ _id: goal._id });
+          achievedCount = data ? data.achievedCount : 0;
         }
 
         // Update achievedCount in the goal object

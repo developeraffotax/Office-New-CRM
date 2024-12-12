@@ -155,7 +155,10 @@ export const Timer = forwardRef(
           `${process.env.REACT_APP_API_URL}/api/v1/timer/stop/timer/${timerId}`,
           {
             note: note || "Auto stop due to inactivity!",
-            activity: activity || "Chargeable",
+            activity:
+              taskName.trim() === "Training"
+                ? "Non-Chargeable"
+                : activity || "Chargeable",
           }
         );
 

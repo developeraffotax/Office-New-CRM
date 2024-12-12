@@ -47,6 +47,7 @@ export default function TaskDetail({
   const [subTaskData, setSubTaskData] = useState([]);
   const [timerId, setTimerId] = useState("");
   const [showReminder, setShowReminder] = useState(false);
+  const initialLoad = useRef(true);
 
   console.log("timerId:", timerId, anyTimerRunning, taskDetal?._id);
 
@@ -59,7 +60,9 @@ export default function TaskDetail({
 
   //    -----------Single Task----------
   const getSingleTask = async () => {
-    setLoading(true);
+    if (initialLoad.current) {
+      setLoading(true);
+    }
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/single/${taskId}`
@@ -73,6 +76,11 @@ export default function TaskDetail({
       console.log(error);
       setLoading(false);
       toast.error(error?.response?.data?.message || "Error in single task!");
+    } finally {
+      if (initialLoad.current) {
+        setLoading(false);
+        initialLoad.current = false;
+      }
     }
   };
 
@@ -188,12 +196,7 @@ export default function TaskDetail({
         { subTask }
       );
       if (data) {
-        setTaskDetal(data?.task);
-        setSubTaskData(
-          data?.task?.subtasks?.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          )
-        );
+        getSingleTask();
         setSubtask("");
         toast.success("Subtask added successfully!");
         setSubTaskLoading(false);
@@ -243,12 +246,7 @@ export default function TaskDetail({
         { subTaskId }
       );
       if (data) {
-        setTaskDetal(data?.task);
-        setSubTaskData(
-          data?.task?.subtasks?.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          )
-        );
+        getSingleTask();
       }
     } catch (error) {
       console.log(error);
@@ -262,12 +260,7 @@ export default function TaskDetail({
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/delete/subtask/${taskId}/${subTaskId}`
       );
       if (data.success) {
-        setTaskDetal(data?.task);
-        setSubTaskData(
-          data?.task?.subtasks?.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          )
-        );
+        getSingleTask();
       }
     } catch (error) {
       console.log(error);

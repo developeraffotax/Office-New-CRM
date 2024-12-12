@@ -940,7 +940,10 @@ export const autoCreateRecurringTasks = async (req, res) => {
         recurring: task.recurring,
         labal: task.labal,
         status: "Progress",
-        subtasks: task.subtasks,
+        subtasks: task.subtasks.map((subtask) => ({
+          ...subtask,
+          status: "process",
+        })),
         nextRecurringDate: calculateStartDate(
           task.nextRecurringDate,
           task.recurring

@@ -605,7 +605,7 @@ export default function TaskDetail({
                                               style={{
                                                 accentColor: "orangered",
                                               }}
-                                              className="h-5 w-5 cursor-pointer  checked:bg-orange-600"
+                                              className="h-5 w-5 mt-2 cursor-pointer  checked:bg-orange-600"
                                             />
                                           </div>
                                           <p

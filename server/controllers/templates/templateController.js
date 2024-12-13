@@ -5,6 +5,8 @@ export const createTemplate = async (req, res) => {
   try {
     const { name, description, template, category, userList } = req.body;
 
+    console.log("template", template);
+
     if (!category) {
       return res.status(400).send({
         success: false,

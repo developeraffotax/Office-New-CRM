@@ -24,11 +24,11 @@ import { BiMessageError } from "react-icons/bi";
 import { MdDesignServices } from "react-icons/md";
 import axios from "axios";
 import { MdCalendarMonth } from "react-icons/md";
+import { FaUserTie } from "react-icons/fa6";
 
 export default function Sidebar({ hide, setHide }) {
   const router = useNavigate();
   const { auth, active, setActive } = useAuth();
-  const navigate = useNavigate();
   const [isProfile, setIsProfile] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const user = auth?.user;
@@ -87,22 +87,19 @@ export default function Sidebar({ hide, setHide }) {
           {/* 1 */}
           {hasAccess("Dashboard") && (
             <div
-              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "dashboard"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black  hover:bg-orange-200 transition-all duration-300"
+              }   filter   overflow-hidden `}
               onClick={() => {
                 router("/dashboard");
               }}
             >
-              <div
-                className="adminbtn absolute h-full sidebtn z-[20]" //
-                style={{
-                  width: active === "dashboard" && "100%",
-                  background: `rgb(2, 68, 2)`,
-                }}
-              ></div>
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
                   <LuLayoutDashboard
-                    className="h-5 w-5 cursor-pointer ml-2"
+                    className="h-6 w-6 cursor-pointer ml-2"
                     style={{ color: active === "dashboard" && "#fff" }}
                   />
                 ) : (
@@ -125,22 +122,19 @@ export default function Sidebar({ hide, setHide }) {
           {/* 2 */}
           {hasAccess("MyList") && (
             <div
-              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "all"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/all/lists");
               }}
             >
-              <div
-                className="adminbtn absolute h-full  sidebtn z-[20]"
-                style={{
-                  width: active === "all" && "100%",
-                  background: `rgb(2, 68, 2)`,
-                }}
-              ></div>
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
                   <LiaClipboardListSolid
-                    className="h-5 w-5 cursor-pointer ml-2"
+                    className="h-6 w-6 cursor-pointer ml-2"
                     style={{ color: active === "all" && "#fff" }}
                   />
                 ) : (
@@ -163,22 +157,19 @@ export default function Sidebar({ hide, setHide }) {
           {/* 3 */}
           {hasAccess("Tasks") && (
             <div
-              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "tasks"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/tasks");
               }}
             >
-              <div
-                className="adminbtn absolute h-full  sidebtn z-[20]"
-                style={{
-                  width: active === "tasks" && "100%",
-                  background: `rgb(2, 68, 2)`,
-                }}
-              ></div>
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
                   <FaTasks
-                    className="h-5 w-5 cursor-pointer ml-2"
+                    className="h-6 w-6 cursor-pointer ml-2"
                     style={{ color: active === "tasks" && "#fff" }}
                   />
                 ) : (
@@ -201,22 +192,19 @@ export default function Sidebar({ hide, setHide }) {
           {/* 4 */}
           {hasAccess("Jobs") && (
             <div
-              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "job-planning"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/job-planning");
               }}
             >
-              <div
-                className="adminbtn absolute h-full  sidebtn z-[20]"
-                style={{
-                  width: active === "job-planning" && "100%",
-                  background: `rgb(2, 68, 2)`,
-                }}
-              ></div>
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
                   <BsBriefcase
-                    className="h-5 w-5 cursor-pointer ml-2"
+                    className="h-6 w-6 cursor-pointer ml-2"
                     style={{ color: active === "job-planning" && "#fff" }}
                   />
                 ) : (
@@ -239,22 +227,19 @@ export default function Sidebar({ hide, setHide }) {
           {/* ------Ticket------ */}
           {hasAccess("Tickets") && (
             <div
-              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "tickets"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/tickets");
               }}
             >
-              <div
-                className="adminbtn absolute h-full  sidebtn z-[20]"
-                style={{
-                  width: active === "tickets" && "100%",
-                  background: `rgb(2, 68, 2)`,
-                }}
-              ></div>
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
                   <BsFileEarmarkText
-                    className="h-5 w-5 cursor-pointer ml-2"
+                    className="h-6 w-6 cursor-pointer ml-2"
                     style={{ color: active === "tickets" && "#fff" }}
                   />
                 ) : (
@@ -282,22 +267,19 @@ export default function Sidebar({ hide, setHide }) {
           {/* --------Template------ */}
           {hasAccess("Templates") && (
             <div
-              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "templates"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/templates");
               }}
             >
-              <div
-                className="adminbtn absolute h-full  sidebtn z-[20]"
-                style={{
-                  width: active === "templates" && "100%",
-                  background: `rgb(2, 68, 2)`,
-                }}
-              ></div>
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
                   <GoRepoTemplate
-                    className="h-5 w-5 cursor-pointer ml-2"
+                    className="h-6 w-6 cursor-pointer ml-2"
                     style={{ color: active === "templates" && "#fff" }}
                   />
                 ) : (
@@ -320,22 +302,19 @@ export default function Sidebar({ hide, setHide }) {
           {/* ---------Lead-------- */}
           {hasAccess("Leads") && (
             <div
-              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "leads"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/leads");
               }}
             >
-              <div
-                className="adminbtn absolute h-full  sidebtn z-[20]"
-                style={{
-                  width: active === "leads" && "100%",
-                  background: `rgb(2, 68, 2)`,
-                }}
-              ></div>
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
                   <BiLayer
-                    className="h-5 w-5 cursor-pointer ml-2"
+                    className="h-6 w-6 cursor-pointer ml-2"
                     style={{ color: active === "leads" && "#fff" }}
                   />
                 ) : (
@@ -358,22 +337,19 @@ export default function Sidebar({ hide, setHide }) {
           {/* ---------Proposal----- */}
           {hasAccess("Proposals") && (
             <div
-              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "proposals"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/proposals");
               }}
             >
-              <div
-                className="adminbtn absolute h-full  sidebtn z-[20]"
-                style={{
-                  width: active === "proposals" && "100%",
-                  background: `rgb(2, 68, 2)`,
-                }}
-              ></div>
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
                   <LuClipboardSignature
-                    className="h-5 w-5 cursor-pointer ml-2"
+                    className="h-6 w-6 cursor-pointer ml-2"
                     style={{ color: active === "proposals" && "#fff" }}
                   />
                 ) : (
@@ -396,18 +372,15 @@ export default function Sidebar({ hide, setHide }) {
           {/* ---------Goals----- */}
           {hasAccess("Goals") && (
             <div
-              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "goals"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/goals");
               }}
             >
-              <div
-                className="adminbtn absolute h-full  sidebtn z-[20]"
-                style={{
-                  width: active === "goals" && "100%",
-                  background: `rgb(2, 68, 2)`,
-                }}
-              ></div>
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
                   <GoGoal
@@ -434,22 +407,19 @@ export default function Sidebar({ hide, setHide }) {
           {/* Timer Sheet */}
           {hasAccess("Timesheet") && (
             <div
-              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "timesheet"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/timesheet");
               }}
             >
-              <div
-                className="adminbtn absolute h-full  sidebtn z-[20]"
-                style={{
-                  width: active === "timesheet" && "100%",
-                  background: `rgb(2, 68, 2)`,
-                }}
-              ></div>
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
                   <SlCalender
-                    className="h-5 w-5 cursor-pointer ml-2"
+                    className="h-6 w-6 cursor-pointer ml-2"
                     style={{ color: active === "timesheet" && "#fff" }}
                   />
                 ) : (
@@ -472,22 +442,19 @@ export default function Sidebar({ hide, setHide }) {
           {/* Subscription */}
           {hasAccess("Subscription") && (
             <div
-              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "subscriptions"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/subscriptions");
               }}
             >
-              <div
-                className="adminbtn absolute h-full  sidebtn z-[20]"
-                style={{
-                  width: active === "subscriptions" && "100%",
-                  background: `rgb(2, 68, 2)`,
-                }}
-              ></div>
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
                   <FaRegCreditCard
-                    className="h-5 w-5 cursor-pointer ml-2"
+                    className="h-6 w-6 cursor-pointer ml-2"
                     style={{ color: active === "subscriptions" && "#fff" }}
                   />
                 ) : (
@@ -542,18 +509,15 @@ export default function Sidebar({ hide, setHide }) {
           {/* Meeting */}
           {hasAccess("Meeting") && (
             <div
-              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "meetings"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+              }   filter   overflow-hidden `}
               onClick={() => {
                 router("/meetings");
               }}
             >
-              <div
-                className="adminbtn absolute h-full  sidebtn z-[20]"
-                style={{
-                  width: active === "meetings" && "100%",
-                  background: `rgb(2, 68, 2)`,
-                }}
-              ></div>
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
                   <MdCalendarMonth
@@ -580,18 +544,15 @@ export default function Sidebar({ hide, setHide }) {
           {/* Workflow */}
           {hasAccess("Workflow") && (
             <div
-              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "workflow"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/workflow");
               }}
             >
-              <div
-                className="adminbtn absolute h-full  sidebtn z-[20]"
-                style={{
-                  width: active === "workflow" && "100%",
-                  background: `rgb(2, 68, 2)`,
-                }}
-              ></div>
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
                   <LiaNetworkWiredSolid
@@ -618,18 +579,15 @@ export default function Sidebar({ hide, setHide }) {
           {/* Complaints */}
           {hasAccess("Complaints") && (
             <div
-              className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "complaints"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/complaints");
               }}
             >
-              <div
-                className="adminbtn absolute h-full  sidebtn z-[20]"
-                style={{
-                  width: active === "complaints" && "100%",
-                  background: `rgb(2, 68, 2)`,
-                }}
-              ></div>
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
                   <BiMessageError
@@ -657,22 +615,19 @@ export default function Sidebar({ hide, setHide }) {
           {hasAccess("Roles") && (
             <>
               <div
-                className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                  active === "roles"
+                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+                }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/roles");
                 }}
               >
-                <div
-                  className="adminbtn absolute h-full  sidebtn z-[20]"
-                  style={{
-                    width: active === "roles" && "100%",
-                    background: `rgb(2, 68, 2)`,
-                  }}
-                ></div>
                 <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                   {hide ? (
                     <MdSecurity
-                      className="h-5 w-5 cursor-pointer ml-2"
+                      className="h-6 w-6 cursor-pointer ml-2"
                       style={{ color: active === "roles" && "#fff" }}
                     />
                   ) : (
@@ -693,26 +648,61 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </>
           )}
+          {/* HR */}
+          {hasAccess("HR") && (
+            <>
+              <div
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                  active === "hr"
+                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+                }   filter   overflow-hidden`}
+                onClick={() => {
+                  router("/hr/tasks");
+                }}
+              >
+                <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                  {hide ? (
+                    <FaUserTie
+                      className="h-6 w-6 cursor-pointer ml-2"
+                      style={{ color: active === "hr" && "#fff" }}
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <FaUserTie
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "hr" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{ color: active === "hr" && "#fff" }}
+                      >
+                        HR
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
           {/* User Info */}
           {hasAccess("Users") && (
             <>
               <div
-                className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                  active === "users"
+                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+                }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/users");
                 }}
               >
-                <div
-                  className="adminbtn absolute h-full  sidebtn z-[20]"
-                  style={{
-                    width: active === "users" && "100%",
-                    background: `rgb(2, 68, 2)`,
-                  }}
-                ></div>
                 <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                   {hide ? (
                     <FaUsers
-                      className="h-5 w-5 cursor-pointer ml-2"
+                      className="h-6 w-6 cursor-pointer ml-2"
                       style={{ color: active === "users" && "#fff" }}
                     />
                   ) : (
@@ -737,22 +727,19 @@ export default function Sidebar({ hide, setHide }) {
           {hasAccess("Editor") && (
             <>
               <div
-                className=" mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer shadow-sm shadow-gray-300 bg-gray-200  filter drop-shadow-md  overflow-hidden"
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                  active === "editor"
+                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                    : "bg-gray-100 text-black  hover:bg-orange-200 transition-all duration-300"
+                }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/editor/templates");
                 }}
               >
-                <div
-                  className="adminbtn absolute h-full  sidebtn z-[20]"
-                  style={{
-                    width: active === "editor" && "100%",
-                    background: `rgb(2, 68, 2)`,
-                  }}
-                ></div>
                 <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                   {hide ? (
                     <MdDesignServices
-                      className="h-5 w-5 cursor-pointer ml-2"
+                      className="h-6 w-6 cursor-pointer ml-2"
                       style={{ color: active === "editor" && "#fff" }}
                     />
                   ) : (

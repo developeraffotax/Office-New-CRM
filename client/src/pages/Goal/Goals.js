@@ -1166,7 +1166,6 @@ export default function Goals() {
       },
 
       // Progress
-
       {
         accessorKey: "progress",
         minSize: 100,

@@ -48,6 +48,7 @@ export default function Roles() {
     "Roles",
     "Editor",
     "Meeting",
+    "HR",
     "Users",
   ];
 

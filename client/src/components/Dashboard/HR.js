@@ -171,7 +171,7 @@ export default function HR({
                 {userComplainCounts.length > 0 ? (
                   <>
                     {(!complaintDropDown
-                      ? userComplainCounts?.slice(0, 3)
+                      ? userComplainCounts?.slice(0, 2)
                       : userComplainCounts
                     )?.map((complain) => (
                       <>

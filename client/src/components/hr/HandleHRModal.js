@@ -22,6 +22,7 @@ export default function HandleHRModal({
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [title, setTitle] = useState("");
 
   //---------- Get Single Project-----------
   const getSingleTask = async () => {
@@ -35,6 +36,7 @@ export default function HandleHRModal({
       setDepartment(data?.task?.department?._id);
       setCategory(data?.task?.category);
       setDescription(data?.task?.description);
+      setTitle(data?.task?.title);
       setIsLoading(false);
     } catch (error) {
       console.log(error);
@@ -55,7 +57,7 @@ export default function HandleHRModal({
       if (taskId) {
         const { data } = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/v1/hr/edit/task/${taskId}`,
-          { software, department, description, category }
+          { software, department, description, category, title }
         );
         if (data?.success) {
           setLoading(false);
@@ -65,13 +67,14 @@ export default function HandleHRModal({
           setDepartment("");
           setDescription("");
           setCategory("");
+          setTitle("");
           setShowAddTask(false);
           toast.success("HR tasks updated!");
         }
       } else {
         const { data } = await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/hr/create/task`,
-          { software, department, description, category }
+          { software, department, description, category, title }
         );
         if (data) {
           getAllTasks();
@@ -82,6 +85,7 @@ export default function HandleHRModal({
           setDepartment("");
           setDescription("");
           setCategory("");
+          setTitle("");
         }
       }
     } catch (error) {
@@ -145,23 +149,34 @@ export default function HandleHRModal({
             onSubmit={handleTemplate}
             className="w-full flex flex-col gap-4 "
           >
-            <select
-              value={department}
-              className={`${style.input}`}
-              onChange={(e) => setDepartment(e.target.value)}
-            >
-              <option>Select Department</option>
-              {deparmentsData &&
-                deparmentsData?.map((dep, i) => (
-                  <option
-                    key={dep._id}
-                    value={dep._id}
-                    className=" flex items-center gap-1"
-                  >
-                    {dep?.departmentName}
-                  </option>
-                ))}
-            </select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <input
+                type="text"
+                placeholder="Title"
+                required
+                className={`${style.input} w-full`}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+              <select
+                value={department}
+                className={`${style.input}`}
+                onChange={(e) => setDepartment(e.target.value)}
+              >
+                <option>Select Department</option>
+                {deparmentsData &&
+                  deparmentsData?.map((dep, i) => (
+                    <option
+                      key={dep._id}
+                      value={dep._id}
+                      className=" flex items-center gap-1"
+                    >
+                      {dep?.departmentName}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <input
                 type="text"

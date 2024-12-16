@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const hrSchema = new mongoose.Schema(
   {
+    title: {
+      type: String,
+      required: true,
+    },
     department: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "departments",

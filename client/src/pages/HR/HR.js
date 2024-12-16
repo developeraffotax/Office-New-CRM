@@ -18,6 +18,7 @@ import {
 import Loader from "../../utlis/Loader";
 import { RiEdit2Line } from "react-icons/ri";
 import { GoEye, GoEyeClosed } from "react-icons/go";
+import { GrCopy } from "react-icons/gr";
 
 export default function HR() {
   const { auth } = useAuth();
@@ -382,7 +383,7 @@ export default function HR() {
         grow: false,
       },
       {
-        accessorKey: "description",
+        accessorKey: "title",
         Header: ({ column }) => {
           return (
             <div className=" w-[480px] flex flex-col gap-[2px]">
@@ -405,7 +406,7 @@ export default function HR() {
           );
         },
         Cell: ({ cell, row }) => {
-          const description = row.original.description;
+          const title = row.original.title || "";
 
           return (
             <div className="w-full h-full ">
@@ -413,11 +414,12 @@ export default function HR() {
                 <div
                   onClick={() => {
                     setShowDescription(true);
-                    setCopyDescription(description);
+                    setCopyDescription(row.original?.description);
                   }}
                   className="px-1 w-full text-[14px] text-blue-600 cursor-pointer"
-                  dangerouslySetInnerHTML={{ __html: description.slice(0, 50) }}
-                ></div>
+                >
+                  {title || ""}
+                </div>
               </div>
             </div>
           );
@@ -527,10 +529,19 @@ export default function HR() {
         header: "Actions",
         Cell: ({ cell, row }) => {
           return (
-            <div className="flex items-center justify-center gap-4 w-full h-full">
+            <div className="flex items-center justify-center gap-2 w-full h-full">
               <span
                 className=""
-                title="Edit Template"
+                title="Copy Task"
+                // onClick={() => {
+                //   setTaskId(row.original._id);
+                // }}
+              >
+                <GrCopy className="h-6 w-6 cursor-pointer text-sky-500 hover:text-sky-600" />
+              </span>
+              <span
+                className=""
+                title="Edit Task"
                 onClick={() => {
                   setTaskId(row.original._id);
                   setShowAddTask(true);
@@ -548,7 +559,7 @@ export default function HR() {
             </div>
           );
         },
-        size: 90,
+        size: 110,
       },
     ],
     // eslint-disable-next-line
@@ -629,6 +640,21 @@ export default function HR() {
       ))}
     </div>
   );
+  // -----------Handle Close Outsite
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        closeProject.current &&
+        !closeProject.current.contains(event.target)
+      ) {
+        setShowDepartment(false);
+        setShowColumn(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <Layout>
@@ -667,7 +693,10 @@ export default function HR() {
                 )}
               </div>
               {showcolumn && (
-                <div className="absolute top-10 right-8 z-50 w-[12rem]">
+                <div
+                  ref={closeProject}
+                  className="absolute top-10 right-8 z-50 w-[12rem]"
+                >
                   {renderColumnControls()}
                 </div>
               )}
@@ -765,7 +794,7 @@ export default function HR() {
         {/* -----------------Handle HR Tasks--------------- */}
         {showAddTask && (
           <div className="fixed top-0 left-0 z-[999] w-full h-full py-4 px-4 bg-gray-300/70 flex items-center justify-center">
-            <div className="w-[45rem]">
+            <div className="w-[50rem]">
               <HandleHRModal
                 setShowAddTask={setShowAddTask}
                 users={users}
@@ -794,7 +823,7 @@ export default function HR() {
         {/* -----------------template Details----------- */}
         {showDescription && (
           <div className="fixed top-0 left-0 z-[999] w-full h-full py-4 px-4 bg-gray-300/70 flex items-center justify-center">
-            <div className="flex flex-col gap-2 bg-white rounded-md shadow-md w-[40rem] max-h-[95vh] ">
+            <div className="flex flex-col gap-2 bg-white rounded-md shadow-md w-[55rem] max-h-[100vh] ">
               <div className="flex items-center justify-between px-4 pt-2">
                 <h1 className="text-[20px] font-semibold text-black">
                   Task Detail

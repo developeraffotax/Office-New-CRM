@@ -18,6 +18,7 @@ import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { GoEye } from "react-icons/go";
 import ComplaintDetail from "../../components/Complaint/ComplaintDetail";
+import { GrCopy } from "react-icons/gr";
 
 export default function Complaints() {
   const [show, setShow] = useState(false);
@@ -767,6 +768,15 @@ export default function Complaints() {
               </span>
               <span
                 className=""
+                title="Copy Task"
+                // onClick={() => {
+                //   setTaskId(row.original._id);
+                // }}
+              >
+                <GrCopy className="h-6 w-6 cursor-pointer text-lime-500 hover:text-lime-600" />
+              </span>
+              <span
+                className=""
                 title="Edit Proposal"
                 onClick={() => {
                   setComplaintId(row.original._id);
@@ -787,7 +797,7 @@ export default function Complaints() {
             </div>
           );
         },
-        size: 120,
+        size: 130,
       },
     ],
     // eslint-disable-next-line

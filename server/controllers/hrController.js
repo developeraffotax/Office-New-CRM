@@ -3,13 +3,14 @@ import hrModel from "../models/hrModel.js";
 // Create
 export const createHrTask = async (req, res) => {
   try {
-    const { department, category, software, description } = req.body;
+    const { title, department, category, software, description } = req.body;
 
     if (!department) {
       return res.status(400).json({ message: "Department is required" });
     }
 
     const task = await hrModel.create({
+      title,
       department,
       category,
       software,
@@ -35,7 +36,7 @@ export const createHrTask = async (req, res) => {
 export const updateHrTask = async (req, res) => {
   try {
     const taskId = req.params.id;
-    const { department, category, software, description } = req.body;
+    const { title, department, category, software, description } = req.body;
 
     const existingTask = await hrModel.findById(taskId);
 
@@ -49,6 +50,7 @@ export const updateHrTask = async (req, res) => {
     const task = await hrModel.findByIdAndUpdate(
       { _id: existingTask._id },
       {
+        title,
         department,
         category,
         software,

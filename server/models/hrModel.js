@@ -18,6 +18,19 @@ const hrSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    users: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Users",
+        },
+        status: {
+          type: String,
+          enum: ["Yes", "No"],
+          default: "No",
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

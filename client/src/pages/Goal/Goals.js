@@ -20,6 +20,8 @@ import CompletedGoals from "./CompletedGoals";
 import ChartData from "./ChartData";
 import { VscGraph } from "react-icons/vsc";
 import JobCommentModal from "../Jobs/JobCommentModal";
+import { TbLoader2 } from "react-icons/tb";
+import { GrCopy } from "react-icons/gr";
 
 export default function Goals() {
   const { auth } = useAuth();
@@ -38,6 +40,10 @@ export default function Goals() {
   const [isComment, setIsComment] = useState(false);
   const [commentTaskId, setCommentTaskId] = useState("");
   const commentStatusRef = useRef(null);
+  const [rowSelection, setRowSelection] = useState({});
+  const [isUpdate, setIsUpdate] = useState(false);
+  const [status, setStatus] = useState("");
+  const [showEdit, setShowEdit] = useState(false);
   const [formData, setFormData] = useState({
     subject: "",
     achievement: "",
@@ -63,7 +69,7 @@ export default function Goals() {
     "Manual Goal",
   ];
 
-  // console.log("userName:", userName);
+  console.log("rowSelection:", rowSelection);
 
   // -------Get All Proposal-------
   const getAllGoals = async () => {
@@ -238,6 +244,52 @@ export default function Goals() {
       toast.error(error?.response?.data?.message);
     }
   };
+  // ----------Copy Goal---------->
+  const handleCopyGoal = async (id) => {
+    try {
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/goals/copy/goal/${id}`
+      );
+      if (data) {
+        getGoals();
+        toast.success("Goal copied successfully!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    }
+  };
+
+  // -------Update Bulk Jobs------------->
+
+  const updateBulkJob = async (e) => {
+    e.preventDefault();
+    setIsUpdate(true);
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/goals/bulk/goals`,
+        {
+          rowSelection: Object.keys(rowSelection).filter(
+            (id) => rowSelection[id] === true
+          ),
+          status,
+        }
+      );
+
+      if (data) {
+        getGoals();
+        setShowEdit(false);
+        setStatus("");
+        toast.success("Goals Updated successfully");
+      }
+    } catch (error) {
+      setIsUpdate(false);
+      console.log(error?.response?.data?.message);
+      toast.error("Something went wrong!");
+    } finally {
+      setIsUpdate(false);
+    }
+  };
 
   //   --------------------Table Data --------------->
   const getCurrentMonthYear = () => {
@@ -257,14 +309,6 @@ export default function Goals() {
       {
         accessorKey: "jobHolder._id",
         Header: ({ column }) => {
-          const user = auth?.user?.name;
-
-          //   useEffect(() => {
-          //     column.setFilterValue(user);
-
-          //     // eslint-disable-next-line
-          //   }, []);
-
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -1131,7 +1175,17 @@ export default function Goals() {
         header: "Actions",
         Cell: ({ cell, row }) => {
           return (
-            <div className="flex items-center justify-center gap-3 w-full h-full">
+            <div className="flex items-center justify-center gap-2 w-full h-full">
+              {/* GrCopy */}
+              <span
+                className="text-[1rem] cursor-pointer"
+                onClick={() => {
+                  handleCopyGoal(row.original._id);
+                }}
+                title="Copy Goal"
+              >
+                <GrCopy className="h-6 w-6 text-lime-600 " />
+              </span>
               <span
                 className="text-[1rem] cursor-pointer"
                 onClick={() => {
@@ -1162,7 +1216,7 @@ export default function Goals() {
             </div>
           );
         },
-        size: 130,
+        size: 140,
       },
 
       // Progress
@@ -1288,6 +1342,7 @@ export default function Goals() {
   const table = useMaterialReactTable({
     columns,
     data: goalsData || [],
+    getRowId: (row) => row._id,
     enableStickyHeader: true,
     enableStickyFooter: true,
     muiTableContainerProps: { sx: { maxHeight: "840px" } },
@@ -1305,6 +1360,9 @@ export default function Goals() {
       pageSize: 20,
       density: "compact",
     },
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
+    state: { rowSelection },
 
     muiTableHeadCellProps: {
       style: {
@@ -1357,7 +1415,7 @@ export default function Goals() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
+  // completed
   return (
     <Layout>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
@@ -1423,7 +1481,58 @@ export default function Goals() {
               Completed
             </button>
           </div>
+          {/* Edit Multiple Job */}
+          <span
+            className={` p-1 rounded-md hover:shadow-md bg-gray-50 cursor-pointer border ${
+              showEdit && "bg-orange-500 text-white"
+            }`}
+            onClick={() => {
+              setShowEdit(!showEdit);
+            }}
+            title="Edit Multiple Goals"
+          >
+            <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
+          </span>
         </div>
+        {/* Update Bulk Jobs */}
+        {showEdit && (
+          <div className="w-full  py-2">
+            <form
+              onSubmit={updateBulkJob}
+              className="w-full flex items-center flex-wrap gap-2 "
+            >
+              <div className="">
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "8rem" }}
+                >
+                  <option value=".">Select Staus</option>
+
+                  <option value="Progress">Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end pl-4">
+                <button
+                  className={`${style.button1} text-[15px] `}
+                  type="submit"
+                  disabled={isUpdate}
+                  style={{ padding: ".5rem 1rem" }}
+                >
+                  {isUpdate ? (
+                    <TbLoader2 className="h-5 w-5 animate-spin text-white" />
+                  ) : (
+                    <span>Save</span>
+                  )}
+                </button>
+              </div>
+            </form>
+            <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
+          </div>
+        )}
         <hr className="w-full h-[1px] bg-gray-300 my-4" />
 
         {/* ---------Table Detail---------- */}

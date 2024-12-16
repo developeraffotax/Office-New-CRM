@@ -242,7 +242,7 @@ export default function MeetingModal({
                 className={`${style.input} w-full `}
                 required
               />
-              <span>Date</span>
+              {/* <span>Date</span> */}
             </div>
             <div className="inputBox">
               <input
@@ -252,7 +252,7 @@ export default function MeetingModal({
                 className={`${style.input} w-full `}
                 required
               />
-              <span>Time</span>
+              {/* <span>Time</span> */}
             </div>
           </div>
 
@@ -263,6 +263,7 @@ export default function MeetingModal({
               style={{ height: "8rem" }}
               value={description}
               onChange={(value) => setDescription(value)}
+              required
             />
           </div>
 

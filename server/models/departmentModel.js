@@ -8,8 +8,14 @@ const departmentSchema = new mongoose.Schema(
     },
     users: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Users",
+        },
+        status: {
+          type: String,
+          default: "No",
+        },
       },
     ],
     status: {

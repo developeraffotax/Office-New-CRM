@@ -137,7 +137,7 @@ export default function AllJobs() {
     "Labels",
     "Fee",
     "Source",
-    "Data",
+    "CC_Person",
     "AC",
     "SignUp_Date",
   ];
@@ -2273,7 +2273,7 @@ export default function AllJobs() {
           ? [
               // Data Label
               {
-                id: "Data",
+                id: "CC_Person",
                 accessorKey: "data",
 
                 Header: ({ column }) => {
@@ -2286,7 +2286,7 @@ export default function AllJobs() {
                           column.setFilterValue("");
                         }}
                       >
-                        Data
+                        CC Person
                       </span>
                       <select
                         value={column.getFilterValue() || ""}

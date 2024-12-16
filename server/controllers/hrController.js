@@ -3,18 +3,17 @@ import hrModel from "../models/hrModel.js";
 // Create
 export const createHrTask = async (req, res) => {
   try {
-    const { department, category, software, description, users } = req.body;
+    const { department, category, software, description } = req.body;
 
     if (!department) {
       return res.status(400).json({ message: "Department is required" });
     }
 
-    const task = await hrModel.find({
+    const task = await hrModel.create({
       department,
       category,
       software,
       description,
-      users,
     });
 
     res.status(200).send({
@@ -36,7 +35,7 @@ export const createHrTask = async (req, res) => {
 export const updateHrTask = async (req, res) => {
   try {
     const taskId = req.params.id;
-    const { department, category, software, description, users } = req.body;
+    const { department, category, software, description } = req.body;
 
     const existingTask = await hrModel.findById(taskId);
 
@@ -54,7 +53,6 @@ export const updateHrTask = async (req, res) => {
         category,
         software,
         description,
-        users,
       },
       { new: true }
     );
@@ -77,7 +75,16 @@ export const updateHrTask = async (req, res) => {
 // Fetch All
 export const allHrTask = async (req, res) => {
   try {
-    const tasks = await hrModel.findById({}).populate("department");
+    const tasks = await hrModel
+      .find({})
+      .populate("department")
+      .populate({
+        path: "department",
+        populate: {
+          path: "users.user",
+          select: "name email",
+        },
+      });
 
     res.status(200).send({
       success: true,
@@ -99,7 +106,16 @@ export const hrTaskDetail = async (req, res) => {
   try {
     const taskId = req.params.id;
 
-    const task = await hrModel.findById(taskId).populate("department");
+    const task = await hrModel
+      .findById(taskId)
+      .populate("department")
+      .populate({
+        path: "department",
+        populate: {
+          path: "users.user",
+          select: "name email",
+        },
+      });
 
     if (!task) {
       return res.status(404).send({

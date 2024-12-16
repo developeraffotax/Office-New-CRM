@@ -6,40 +6,44 @@ import { style } from "../../utlis/CommonStyle";
 import { TbLoader2 } from "react-icons/tb";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import Loader from "../../utlis/Loader";
 
 export default function HandleHRModal({
   setShowAddTask,
   taskId,
   setTaskId,
-  users,
   getAllTasks,
+  deparmentsData,
+  users,
 }) {
   const [department, setDepartment] = useState("");
   const [category, setCategory] = useState("");
   const [software, setSoftware] = useState("");
   const [description, setDescription] = useState("");
-  const [userList, setUserList] = useState([]);
   const [loading, setLoading] = useState(false);
-  const departments = [];
+  const [isLoading, setIsLoading] = useState(false);
 
   //---------- Get Single Project-----------
-  const getSingleTemplate = async () => {
+  const getSingleTask = async () => {
+    setIsLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/hr/remove/task/${taskId}`
+        `${process.env.REACT_APP_API_URL}/api/v1/hr/task/detail/${taskId}`
       );
-      setSoftware(data?.template?.software);
-      setDepartment(data?.template?.department);
-      setCategory(data?.template?.category);
-      setDescription(data?.template?.description);
-      setUserList(data?.template?.userList);
+
+      setSoftware(data?.task?.software);
+      setDepartment(data?.task?.department?._id);
+      setCategory(data?.task?.category);
+      setDescription(data?.task?.description);
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    getSingleTemplate();
+    getSingleTask();
     // eslint-disable-next-line
   }, [taskId]);
 
@@ -51,7 +55,7 @@ export default function HandleHRModal({
       if (taskId) {
         const { data } = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/v1/hr/edit/task/${taskId}`,
-          { software, department, description, category, users: userList }
+          { software, department, description, category }
         );
         if (data?.success) {
           setLoading(false);
@@ -61,14 +65,13 @@ export default function HandleHRModal({
           setDepartment("");
           setDescription("");
           setCategory("");
-          setUserList([]);
           setShowAddTask(false);
           toast.success("HR tasks updated!");
         }
       } else {
         const { data } = await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/hr/create/task`,
-          { software, department, description, category, users: userList }
+          { software, department, description, category }
         );
         if (data) {
           getAllTasks();
@@ -79,7 +82,6 @@ export default function HandleHRModal({
           setDepartment("");
           setDescription("");
           setCategory("");
-          setUserList([]);
         }
       }
     } catch (error) {
@@ -87,26 +89,6 @@ export default function HandleHRModal({
       setLoading(false);
       toast.error(error?.response?.data?.message);
     }
-  };
-
-  //   Add Users
-  const handleAddUser = (user) => {
-    if (!Array.isArray(userList)) {
-      setUserList([user]);
-      return;
-    }
-
-    if (userList.some((existingUser) => existingUser._id === user._id)) {
-      return toast.error("User already exists!");
-    }
-    setUserList([...userList, user]);
-  };
-
-  //   Remove user
-  const handleRemoveUser = (id) => {
-    const newUsers = userList.filter((user) => user._id !== id);
-
-    setUserList(newUsers);
   };
 
   const modules = {
@@ -137,6 +119,7 @@ export default function HandleHRModal({
     "link",
     "image",
   ];
+
   return (
     <div className="w-full rounded-md shadow border flex flex-col gap-4 bg-white">
       <div className="flex items-center justify-between px-4 pt-2">
@@ -155,110 +138,75 @@ export default function HandleHRModal({
       </div>
       <hr className="h-[1px] w-full bg-gray-400 " />
       <div className="w-full py-2 px-4">
-        <form onSubmit={handleTemplate} className="w-full flex flex-col gap-4 ">
-          <select
-            value={department}
-            className={`${style.input}`}
-            onChange={(e) => setDepartment(e.target.value)}
+        {isLoading ? (
+          <Loader />
+        ) : (
+          <form
+            onSubmit={handleTemplate}
+            className="w-full flex flex-col gap-4 "
           >
-            <option>Select Department</option>
-            {departments &&
-              departments?.map((dep, i) => (
-                <option
-                  key={i}
-                  value={dep}
-                  className=" flex items-center gap-1"
-                >
-                  {dep}
-                </option>
-              ))}
-          </select>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <input
-              type="text"
-              placeholder="Category"
-              required
-              className={`${style.input} w-full`}
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="Software"
-              required
-              className={`${style.input} w-full`}
-              value={software}
-              onChange={(e) => setSoftware(e.target.value)}
-            />
-          </div>
-
-          {/* ------------- */}
-          {userList?.length > 0 && (
-            <div className="w-full flex items-center gap-4 flex-wrap border py-2 px-2 rounded-md border-gray-400">
-              {userList &&
-                userList.map((user) => (
-                  <div
-                    key={user?._id}
-                    className="flex items-center gap-3 bg py-1 px-2 rounded-md text-white bg-purple-600"
-                  >
-                    <span className="text-white text-[15px]">{user?.name}</span>
-                    <span
-                      className="cursor-pointer bg-red-500/50 p-[2px] rounded-full hover:bg-red-500"
-                      onClick={() => handleRemoveUser(user?._id)}
-                    >
-                      <IoClose className="h-4 w-4 " />
-                    </span>
-                  </div>
-                ))}
-            </div>
-          )}
-          <select
-            value=""
-            className={`${style.input}`}
-            onChange={(e) => handleAddUser(JSON.parse(e.target.value))}
-          >
-            <option>Select User</option>
-            {users &&
-              users?.map((user) => (
-                <option
-                  key={user._id}
-                  value={JSON.stringify({
-                    _id: user._id,
-                    name: user.name,
-                  })}
-                  className=" flex items-center gap-1"
-                >
-                  {user?.name}
-                </option>
-              ))}
-          </select>
-          {/*  */}
-
-          {/*  */}
-          <ReactQuill
-            theme="snow"
-            modules={modules}
-            formats={formats}
-            className="rounded-md relative min-h-[11rem] max-[28rem] h-[12rem] 2xl:h-[22rem]"
-            value={description}
-            onChange={setDescription}
-          />
-          {/*  */}
-          <div className="flex items-center justify-end mt-[2.5rem]">
-            <button
-              disabled={loading}
-              className={`${style.button1} text-[15px] `}
-              type="submit"
-              style={{ padding: ".4rem 1rem" }}
+            <select
+              value={department}
+              className={`${style.input}`}
+              onChange={(e) => setDepartment(e.target.value)}
             >
-              {loading ? (
-                <TbLoader2 className="h-5 w-5 animate-spin text-white" />
-              ) : (
-                <span>{taskId ? "Update" : "Create"}</span>
-              )}
-            </button>
-          </div>
-        </form>
+              <option>Select Department</option>
+              {deparmentsData &&
+                deparmentsData?.map((dep, i) => (
+                  <option
+                    key={dep._id}
+                    value={dep._id}
+                    className=" flex items-center gap-1"
+                  >
+                    {dep?.departmentName}
+                  </option>
+                ))}
+            </select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <input
+                type="text"
+                placeholder="Category"
+                required
+                className={`${style.input} w-full`}
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              />
+              <input
+                type="text"
+                placeholder="Software"
+                required
+                className={`${style.input} w-full`}
+                value={software}
+                onChange={(e) => setSoftware(e.target.value)}
+              />
+            </div>
+
+            {/*------------ Desciption----------- */}
+            <ReactQuill
+              theme="snow"
+              modules={modules}
+              formats={formats}
+              className="rounded-md relative min-h-[11rem] max-[28rem] h-[12rem] 2xl:h-[22rem]"
+              value={description}
+              onChange={setDescription}
+            />
+            {/*  */}
+            <div className="flex items-center justify-end mt-[2.5rem]">
+              <button
+                disabled={loading}
+                className={`${style.button1} text-[15px] `}
+                type="submit"
+                style={{ padding: ".4rem 1rem" }}
+              >
+                {loading ? (
+                  <TbLoader2 className="h-5 w-5 animate-spin text-white" />
+                ) : (
+                  <span>{taskId ? "Update" : "Create"}</span>
+                )}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

@@ -848,7 +848,107 @@ export const updateTaskHours = async (req, res) => {
 };
 
 // --------------------------------Recurring Task---------------------------------------->
+// case "monthly":
+// {
+//   const nextMonth = new Date(currentDate.setMonth(currentDate.getMonth() + 1));
+//   return nextMonth.getDay() === 6 || nextMonth.getDay() === 0
+//     ? addDaysSkippingWeekends(nextMonth, 1)
+//     : nextMonth;
+// }
+// case "quarterly":
+// {
+//   const nextQuarter = new Date(currentDate.setMonth(currentDate.getMonth() + 3));
+//   return nextQuarter.getDay() === 6 || nextQuarter.getDay() === 0
+//     ? addDaysSkippingWeekends(nextQuarter, 1)
+//     : nextQuarter;
+// }
+// const calculateStartDate = (date, recurringType) => {
+//   const currentDate = new Date(date);
 
+//   const addDaysSkippingWeekends = (date, days) => {
+//     let result = new Date(date);
+//     while (days > 0) {
+//       result.setDate(result.getDate() + 1);
+//       // Skip Saturday and Sunday
+//       if (result.getDay() !== 6 && result.getDay() !== 0) {
+//         days--;
+//       }
+//     }
+//     return result;
+//   };
+
+//   switch (recurringType) {
+//     case "2_minutes":
+//       return new Date(currentDate.getTime() + 2 * 60 * 1000);
+//     case "daily":
+//       return new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+//     case "weekly":
+//       return new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+//     case "monthly":
+//       return new Date(currentDate.setMonth(currentDate.getMonth() + 1));
+//     case "quarterly":
+//       return new Date(currentDate.setMonth(currentDate.getMonth() + 3));
+//     default:
+//       return currentDate;
+//   }
+// };
+
+// export const autoCreateRecurringTasks = async (req, res) => {
+//   try {
+//     const now = new Date();
+//     const startOfToday = new Date(now.setHours(0, 0, 0, 0));
+//     const endOfToday = new Date(now.setHours(23, 59, 59, 999));
+
+//     const tasks = await taskModel.find({
+//       recurring: { $exists: true, $ne: "", $ne: null },
+//       nextRecurringDate: {
+//         $gte: startOfToday,
+//         $lte: endOfToday,
+//       },
+//     });
+
+//     for (const task of tasks) {
+//       // Calculate the new start and deadline dates
+//       const newStartDate = calculateStartDate(task.startDate, task.recurring);
+//       const newDeadline = calculateStartDate(task.deadline, task.recurring);
+
+//       // Ensure tasks are not created for Saturday or Sunday
+//       if (newStartDate.getDay() === 6 || newStartDate.getDay() === 0) {
+//         continue;
+//       }
+
+//       // Create a new task with updated dates
+//       await taskModel.create({
+//         project: task.project,
+//         jobHolder: task.jobHolder,
+//         task: `${task.task}`,
+//         hours: task.hours,
+//         startDate: newStartDate,
+//         deadline: newDeadline,
+//         lead: task.lead,
+//         recurring: task.recurring,
+//         labal: task.labal,
+//         status: "Progress",
+//         subtasks: task.subtasks.map((subtask) => ({
+//           ...subtask,
+//           status: "process",
+//         })),
+//         nextRecurringDate: calculateStartDate(
+//           task.nextRecurringDate,
+//           task.recurring
+//         ),
+//       });
+//     }
+
+//     res.status(200).send({
+//       success: true,
+//       message: "Recurring function call...",
+//     });
+//   } catch (error) {
+//     console.error("Error in auto-creating recurring tasks:", error);
+//   }
+// };
+// ---------------------Handle Recurreing---------->
 const calculateStartDate = (date, recurringType) => {
   const currentDate = new Date(date);
 
@@ -868,32 +968,38 @@ const calculateStartDate = (date, recurringType) => {
     case "2_minutes":
       return new Date(currentDate.getTime() + 2 * 60 * 1000);
     case "daily":
-      return new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+      return addDaysSkippingWeekends(currentDate, 1);
     case "weekly":
-      return new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+      return addDaysSkippingWeekends(currentDate, 7);
     case "monthly":
-      return new Date(currentDate.setMonth(currentDate.getMonth() + 1));
+      const nextMonthDate = new Date(
+        currentDate.setMonth(currentDate.getMonth() + 1)
+      );
+      return adjustForFridayAndWeekend(nextMonthDate);
     case "quarterly":
-      return new Date(currentDate.setMonth(currentDate.getMonth() + 3));
+      const nextQuarterDate = new Date(
+        currentDate.setMonth(currentDate.getMonth() + 3)
+      );
+      return adjustForFridayAndWeekend(nextQuarterDate);
     default:
       return currentDate;
   }
 };
 
-// case "monthly":
-// {
-//   const nextMonth = new Date(currentDate.setMonth(currentDate.getMonth() + 1));
-//   return nextMonth.getDay() === 6 || nextMonth.getDay() === 0
-//     ? addDaysSkippingWeekends(nextMonth, 1)
-//     : nextMonth;
-// }
-// case "quarterly":
-// {
-//   const nextQuarter = new Date(currentDate.setMonth(currentDate.getMonth() + 3));
-//   return nextQuarter.getDay() === 6 || nextQuarter.getDay() === 0
-//     ? addDaysSkippingWeekends(nextQuarter, 1)
-//     : nextQuarter;
-// }
+const adjustForFridayAndWeekend = (date) => {
+  const day = date.getDay();
+  if (day === 5) {
+    // If Friday, move to the following Monday
+    date.setDate(date.getDate() + 3);
+  } else if (day === 6) {
+    // If Saturday, move to Monday
+    date.setDate(date.getDate() + 2);
+  } else if (day === 0) {
+    // If Sunday, move to Monday
+    date.setDate(date.getDate() + 1);
+  }
+  return date;
+};
 
 export const autoCreateRecurringTasks = async (req, res) => {
   try {
@@ -909,24 +1015,14 @@ export const autoCreateRecurringTasks = async (req, res) => {
       },
     });
 
-    // const today = new Date();
-    // const formattedDate = today
-    //   .toLocaleDateString("en-GB", {
-    //     day: "2-digit",
-    //     month: "short",
-    //     year: "numeric",
-    //   })
-    //   .replace(/,/g, "");
-
     for (const task of tasks) {
       // Calculate the new start and deadline dates
-      const newStartDate = calculateStartDate(task.startDate, task.recurring);
-      const newDeadline = calculateStartDate(task.deadline, task.recurring);
+      let newStartDate = calculateStartDate(task.startDate, task.recurring);
+      let newDeadline = calculateStartDate(task.deadline, task.recurring);
 
-      // Ensure tasks are not created for Saturday or Sunday
-      if (newStartDate.getDay() === 6 || newStartDate.getDay() === 0) {
-        continue;
-      }
+      // Adjust for Fridays and weekends
+      newStartDate = adjustForFridayAndWeekend(newStartDate);
+      newDeadline = adjustForFridayAndWeekend(newDeadline);
 
       // Create a new task with updated dates
       await taskModel.create({
@@ -938,25 +1034,29 @@ export const autoCreateRecurringTasks = async (req, res) => {
         deadline: newDeadline,
         lead: task.lead,
         recurring: task.recurring,
-        labal: task.labal,
+        label: task?.labal,
         status: "Progress",
         subtasks: task.subtasks.map((subtask) => ({
           ...subtask,
           status: "process",
         })),
-        nextRecurringDate: calculateStartDate(
-          task.nextRecurringDate,
-          task.recurring
+        nextRecurringDate: adjustForFridayAndWeekend(
+          calculateStartDate(task.nextRecurringDate, task.recurring)
         ),
       });
     }
 
     res.status(200).send({
       success: true,
-      message: "Recurring function call...",
+      message: "Recurring tasks processed successfully.",
     });
   } catch (error) {
     console.error("Error in auto-creating recurring tasks:", error);
+    res.status(500).send({
+      success: false,
+      message: "An error occurred while processing recurring tasks.",
+      error: error.message,
+    });
   }
 };
 

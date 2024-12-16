@@ -599,9 +599,96 @@ export const singleGoalComments = async (req, res) => {
   }
 };
 
-const main = async () => {
-  const data = await fetchSearchAnalytics();
-  console.log("Data:", data);
+// Update Goal
+export const updateBulkGoals = async (req, res) => {
+  try {
+    const { rowSelection, status } = req.body;
+
+    console.log(rowSelection, status);
+
+    // Validate rowSelection
+    if (
+      !rowSelection ||
+      !Array.isArray(rowSelection) ||
+      rowSelection.length === 0
+    ) {
+      return res.status(400).send({
+        success: false,
+        message: "No goals selected for update.",
+      });
+    }
+
+    // Prepare update data
+    const updateData = {};
+    if (status) updateData.status = status;
+
+    // Update multiple goals
+    const updatedGoals = await goalModel.updateMany(
+      { _id: { $in: rowSelection } },
+      { $set: updateData }
+    );
+
+    if (updatedGoals.modifiedCount === 0) {
+      return res.status(400).send({
+        success: false,
+        message: "No goals were updated. Please check the provided IDs.",
+      });
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Goals updated successfully!",
+      updatedGoals,
+    });
+  } catch (error) {
+    console.error("Error updating bulk goals:", error);
+    res.status(500).send({
+      success: false,
+      message: "An error occurred while updating bulk goals. Please try again.",
+      error: error.message,
+    });
+  }
 };
 
-// main();
+// Copy Goals
+export const copyGoal = async (req, res) => {
+  try {
+    const goalId = req.params.id;
+
+    const existingGoal = await goalModel.findById(goalId);
+    if (!existingGoal) {
+      return res.status(404).send({
+        success: false,
+        message: "Goal not found.",
+      });
+    }
+
+    const newStartDate = new Date(existingGoal.startDate);
+    newStartDate.setMonth(newStartDate.getMonth() + 1);
+
+    const newEndDate = new Date(existingGoal.endDate);
+    newEndDate.setMonth(newEndDate.getMonth() + 1);
+
+    const goalData = { ...existingGoal.toObject() };
+    delete goalData._id;
+    delete goalData.createdAt;
+    delete goalData.updatedAt;
+    goalData.startDate = newStartDate;
+    goalData.endDate = newEndDate;
+
+    const goal = await goalModel.create(goalData);
+
+    res.status(200).send({
+      success: true,
+      message: "Goal copied successfully!",
+      goal: goal,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "An error occurred while copy goal. Please try again.",
+      error: error.message,
+    });
+  }
+};

@@ -18,6 +18,15 @@ export default function Layout({ children }) {
   const { auth } = useAuth();
   const [reminderData, setReminderData] = useState([]);
   const [snoozeTimers, setSnoozeTimers] = useState({});
+  const hours = [2, 3, 4, 5, 6, 7];
+  const colors = [
+    "bg-red-500 hover:bg-red-600",
+    "bg-green-700 hover:bg-perple-800",
+    "bg-lime-500 hover:bg-lime-600",
+    "bg-yellow-500 hover:bg-yellow-600",
+    "bg-indigo-500 hover:bg-indigo-600",
+    "bg-orange-500 hover:bg-orange-600",
+  ];
 
   // Security
   const secureKey = process.env.REACT_APP_SECURE_KEY;
@@ -185,7 +194,7 @@ export default function Layout({ children }) {
             >
               Go to Page
             </Link>
-            <div className="flex gap-2 justify-end p-3">
+            <div className="flex items-center gap-2 flex-wrap p-3">
               <button
                 className="bg-blue-500 text-[13px] text-white px-3 py-1 rounded hover:bg-blue-600"
                 onClick={() => {
@@ -222,6 +231,20 @@ export default function Layout({ children }) {
               >
                 Snooze 60m
               </button>
+              {hours.map((hour, index) => (
+                <button
+                  key={hour}
+                  className={`text-[13px] text-white px-3 py-1 rounded ${
+                    colors[index % colors.length]
+                  }`}
+                  onClick={() => {
+                    snoozeReminder(reminder._id, hour * 60 * 60 * 1000);
+                    deleteReminder(reminder._id);
+                  }}
+                >
+                  Snooze {hour}h
+                </button>
+              ))}
             </div>
           </div>
         </div>

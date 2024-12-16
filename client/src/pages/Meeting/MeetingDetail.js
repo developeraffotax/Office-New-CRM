@@ -135,32 +135,36 @@ export default function MeetingDetail({
               {formatMeetingDate(meeting?.date, meeting?.time)}
             </h3>
           </div>
-          <div className="flex items-start gap-2 mt-2">
-            <span>
-              <BiDetail className="text-[26px] text-orange-600" />
-            </span>
-            <div className="text-[16px] text-gray-800 border-l-4 border-orange-600 bg-gray-100 rounded-sm">
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: meeting.description,
-                }}
-                className="whitespace-pre-wrap break-words px-2 py-2"
-              ></div>
+          {meeting?.description && (
+            <div className="flex items-start gap-2 mt-2">
+              <span>
+                <BiDetail className="text-[26px] text-orange-600" />
+              </span>
+              <div className="text-[16px] text-gray-800 border-l-4 border-orange-600 bg-gray-100 rounded-sm">
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: meeting.description,
+                  }}
+                  className="whitespace-pre-wrap break-words px-2 py-2"
+                ></div>
+              </div>
             </div>
-          </div>
-          <div className="flex items-start gap-2  mt-2">
-            <span>
-              <IoPodiumOutline className="text-[26px] text-pink-600" />
-            </span>
-            <div className="text-[16px] text-gray-800 border-l-4 border-pink-600 bg-gray-100 rounded-sm">
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: meeting.results,
-                }}
-                className="whitespace-pre-wrap break-words px-2 py-2"
-              ></div>
+          )}
+          {meeting?.results && (
+            <div className="flex items-start gap-2  mt-2">
+              <span>
+                <IoPodiumOutline className="text-[26px] text-pink-600" />
+              </span>
+              <div className="text-[16px] text-gray-800 border-l-4 border-pink-600 bg-gray-100 rounded-sm">
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: meeting.results,
+                  }}
+                  className="whitespace-pre-wrap break-words px-2 py-2"
+                ></div>
+              </div>
             </div>
-          </div>
+          )}
           <div className="flex items-start gap-2 mt-2">
             <span>
               <FaUsers className="text-[26px] text-yellow-600" />

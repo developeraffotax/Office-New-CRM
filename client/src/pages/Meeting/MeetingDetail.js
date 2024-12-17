@@ -13,6 +13,7 @@ import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { FaUsers } from "react-icons/fa";
 import { MdOutlineEdit } from "react-icons/md";
+import { useAuth } from "../../context/authContext";
 
 export default function MeetingDetail({
   setShowDetail,
@@ -21,6 +22,7 @@ export default function MeetingDetail({
   setMeetingId,
   setShow,
 }) {
+  const { auth } = useAuth();
   const [meeting, setMeeting] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -192,14 +194,16 @@ export default function MeetingDetail({
             >
               <MdOutlineEdit className="h-7 w-7 cursor-pointer" />
             </button>
-            <button
-              onClick={() => {
-                handleDeleteConfirmation(meetingId);
-              }}
-              className="p-1 bg-red-100 hover:bg-red-200 text-red-500 hover:text-red-600 rounded-full transition-all duration-300"
-            >
-              <AiOutlineDelete className="h-7 w-7 cursor-pointer" />
-            </button>
+            {auth?.user?.role?.name === "Admin" && (
+              <button
+                onClick={() => {
+                  handleDeleteConfirmation(meetingId);
+                }}
+                className="p-1 bg-red-100 hover:bg-red-200 text-red-500 hover:text-red-600 rounded-full transition-all duration-300"
+              >
+                <AiOutlineDelete className="h-7 w-7 cursor-pointer" />
+              </button>
+            )}
           </div>
         </div>
       )}

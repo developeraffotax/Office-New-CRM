@@ -30,6 +30,7 @@ import { mkConfig, generateCsv, download } from "export-to-csv";
 import { IoMdDownload } from "react-icons/io";
 import { GoEye } from "react-icons/go";
 import { GoEyeClosed } from "react-icons/go";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 import CompletedJobs from "./CompletedJobs";
 import socketIO from "socket.io-client";
@@ -70,6 +71,7 @@ export default function AllJobs() {
   const [active, setActive] = useState("All");
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
+  const [usersData, setUsersData] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [play, setPlay] = useState(false);
   const [filterData, setFilterData] = useState([]);
@@ -162,6 +164,8 @@ export default function AllJobs() {
     setColumnVisibility(updatedVisibility);
     localStorage.setItem("columnVisibility", JSON.stringify(updatedVisibility));
   };
+
+  console.log("usersData:", usersData);
 
   // Extract the current path
   const currentPath = location.pathname;
@@ -473,6 +477,11 @@ export default function AllJobs() {
             )
           )
           .map((user) => user.name) || []
+      );
+      setUsersData(
+        data?.users?.filter((user) =>
+          user?.role?.access?.some((item) => item?.permission?.includes("Jobs"))
+        ) || []
       );
 
       // setUserData(
@@ -2805,6 +2814,36 @@ export default function AllJobs() {
     </div>
   );
 
+  //  -----------Handle drag end---------
+  const handleUserOnDragEnd = (result) => {
+    const { destination, source } = result;
+
+    if (!destination || destination.index === source.index) return;
+
+    const newTodos = Array.from(usersData);
+    const [movedTodo] = newTodos.splice(source.index, 1);
+    newTodos.splice(destination.index, 0, movedTodo);
+
+    setUsersData(newTodos);
+
+    handleReorderingUsers(newTodos);
+  };
+  // Handle Reordering
+  const handleReorderingUsers = async (newTodos) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/reordering`,
+        { usersData: newTodos }
+      );
+      if (data) {
+        toast.success("Reordering successfully!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
+  };
+
   return (
     <Layout>
       <div className="w-full h-[100%] py-4 px-2 sm:px-4 overflow-y-auto ">
@@ -3236,43 +3275,72 @@ export default function AllJobs() {
         {/* ----------Job_Holder Summery Filters---------- */}
         {showJobHolder && activeBtn === "jobHolder" && (
           <>
+            {/* <div className="w-full  py-2 ">
+              <div className="flex items-center flex-wrap gap-4">
+                {users
+                  ?.filter((user) => getJobHolderCount(user, active) > 0)
+                  .map((user, i) => (
+                    <div
+                      className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                        active1 === user &&
+                        "  border-b-2 text-orange-600 border-orange-600"
+                      }`}
+                      key={i}
+                      onClick={() => {
+                        setActive1(user);
+                        filterByDepStat(user, active);
+                      }}
+                    >
+                      {user} ({getJobHolderCount(user, active)})
+                    </div>
+                  ))}
+              </div>
+            </div> */}
             <div className="w-full  py-2 ">
               <div className="flex items-center flex-wrap gap-4">
-                {/* {users?.map((user, i) => (
-                  <div
-                    className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                      active1 === user &&
-                      "  border-b-2 text-orange-600 border-orange-600"
-                    }`}
-                    key={i}
-                    onClick={() => {
-                      setActive1(user);
-                      filterByDepStat(user, active);
-                    }}
-                  >
-                    {user} ({getJobHolderCount(user, active)})
-                  </div>
-                ))} */}
-
-                <div className="flex items-center flex-wrap gap-4">
-                  {users
-                    ?.filter((user) => getJobHolderCount(user, active) > 0)
-                    .map((user, i) => (
+                <DragDropContext onDragEnd={handleUserOnDragEnd}>
+                  <Droppable droppableId="users" direction="horizontal">
+                    {(provided) => (
                       <div
-                        className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                          active1 === user &&
-                          "  border-b-2 text-orange-600 border-orange-600"
-                        }`}
-                        key={i}
-                        onClick={() => {
-                          setActive1(user);
-                          filterByDepStat(user, active);
-                        }}
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        className="flex items-center gap-2 flex-wrap"
                       >
-                        {user} ({getJobHolderCount(user, active)})
+                        {usersData
+                          ?.filter(
+                            (user) => getJobHolderCount(user.name, active) > 0
+                          )
+                          ?.map((user, index) => (
+                            <Draggable
+                              key={user._id}
+                              draggableId={user._id}
+                              index={index}
+                            >
+                              {(provided) => (
+                                <div
+                                  className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                                    active1 === user?.name &&
+                                    "  border-b-2 text-orange-600 border-orange-600"
+                                  }`}
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  onClick={() => {
+                                    setActive1(user?.name);
+                                    filterByDepStat(user?.name, active);
+                                  }}
+                                >
+                                  {user?.name} (
+                                  {getJobHolderCount(user?.name, active)})
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                        {provided.placeholder}
                       </div>
-                    ))}
-                </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
               </div>
             </div>
             <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
@@ -3283,9 +3351,6 @@ export default function AllJobs() {
         {showDue && activeBtn === "due" && (
           <>
             <div className="w-full py-2">
-              {/* <h3 className="text-[19px] font-semibold text-black">
-                Date Status Summary
-              </h3> */}
               <div className="flex items-center flex-wrap gap-4">
                 {dateStatus?.map((stat, i) => {
                   const { due, overdue } =
@@ -3320,9 +3385,6 @@ export default function AllJobs() {
         {showStatus && activeBtn === "status" && (
           <>
             <div className="w-full  py-2 ">
-              {/* <h3 className="text-[19px] font-semibold text-black">
-                Status Summary
-              </h3> */}
               <div className="flex items-center flex-wrap gap-4">
                 {status?.map((stat, i) => (
                   <div

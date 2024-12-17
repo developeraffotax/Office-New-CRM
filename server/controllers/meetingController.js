@@ -1,5 +1,7 @@
 import meetingModel from "../models/meetingModel.js";
 import reminderModel from "../models/reminderModel.js";
+import cron from "node-cron";
+import moment from "moment";
 
 // Create Meeting
 export const createMeeting = async (req, res) => {
@@ -223,3 +225,32 @@ export const deleteMeeting = async (req, res) => {
     });
   }
 };
+
+// Delete Meeting If Date Expire
+export const deleteExpireMeeting = async (req, res) => {
+  try {
+    const currentDate = moment().format("YYYY-MM-DD");
+
+    const result = await meetingModel.deleteMany({
+      date: { $lt: currentDate },
+    });
+
+    res.status(200).send({
+      success: true,
+      message: `${result.deletedCount} expired meeting(s) deleted.`,
+    });
+  } catch (error) {
+    console.log("Error", error);
+    res.status(500).send({
+      success: false,
+      message: "Error occured while delete expire meetings!",
+      error: error,
+    });
+  }
+};
+
+// Schedule the task to run daily at midnight
+cron.schedule("30 23 * * *", () => {
+  console.log("Running task scheduler for recurring tasks...");
+  deleteExpireMeeting();
+});

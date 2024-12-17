@@ -38,7 +38,6 @@ import TaskDetail from "./TaskDetail";
 import { GrUpdate } from "react-icons/gr";
 import { LuImport } from "react-icons/lu";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { BiLoaderCircle } from "react-icons/bi";
 
 import socketIO from "socket.io-client";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
@@ -2253,22 +2252,35 @@ const AllTasks = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // const handleRecurring = async () => {
-  //   setRecurrLoad(true);
-  //   try {
-  //     const { data } = await axios.get(
-  //       `${process.env.REACT_APP_API_URL}/api/v1/tasks/call/recurring`
-  //     );
-  //     if (data) {
-  //       getTasks1();
-  //       setRecurrLoad(false);
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //     toast.error(error?.response?.data?.message);
-  //     setRecurrLoad(false);
-  //   }
-  // };
+  //  -----------Handle drag end---------
+  const handleUserOnDragEnd = (result) => {
+    const { destination, source } = result;
+
+    if (!destination || destination.index === source.index) return;
+
+    const newTodos = Array.from(users);
+    const [movedTodo] = newTodos.splice(source.index, 1);
+    newTodos.splice(destination.index, 0, movedTodo);
+
+    setUsers(newTodos);
+
+    handleReorderingUsers(newTodos);
+  };
+  // Handle Reordering
+  const handleReorderingUsers = async (newTodos) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/reordering`,
+        { usersData: newTodos }
+      );
+      if (data) {
+        toast.success("Reordering successfully!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
+  };
 
   return (
     <Layout>
@@ -2377,20 +2389,6 @@ const AllTasks = () => {
               >
                 <LuImport className="h-6 w-6 " /> Export
               </button>
-              {/* {auth?.user?.role?.name === "Admin" && (
-                <button
-                  className={`${style.button1} text-[15px] `}
-                  onClick={handleRecurring}
-                  style={{ padding: ".4rem 1rem" }}
-                  title="Call Recurring"
-                >
-                  {recurrLoad ? (
-                    <BiLoaderCircle className="h-5 w-5 animate-spin" />
-                  ) : (
-                    "Recurring"
-                  )}
-                </button>
-              )} */}
               <button
                 className={`${style.button1} text-[15px] `}
                 onClick={() => setShowlabel(true)}
@@ -2559,8 +2557,8 @@ const AllTasks = () => {
             {/* ----------Job_Holder Summery Filters---------- */}
             {showJobHolder && activeBtn === "jobHolder" && (
               <>
-                <div className="w-full  py-2 ">
-                  <div className="flex items-center flex-wrap gap-4">
+                {/* --------------User Drag & Drop---------- */}
+                {/* <div className="flex items-center flex-wrap gap-4">
                     {users
                       ?.filter(
                         (user) => getJobHolderCount(user?.name, active) > 0
@@ -2580,6 +2578,53 @@ const AllTasks = () => {
                           {user.name} ({getJobHolderCount(user?.name, active)})
                         </div>
                       ))}
+                  </div> */}
+                <div className="w-full  py-2 ">
+                  <div className="flex items-center flex-wrap gap-4">
+                    <DragDropContext onDragEnd={handleUserOnDragEnd}>
+                      <Droppable droppableId="users" direction="horizontal">
+                        {(provided) => (
+                          <div
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                            className="flex items-center gap-2 flex-wrap"
+                          >
+                            {users
+                              ?.filter(
+                                (user) =>
+                                  getJobHolderCount(user?.name, active) > 0
+                              )
+                              ?.map((user, index) => (
+                                <Draggable
+                                  key={user._id}
+                                  draggableId={user._id}
+                                  index={index}
+                                >
+                                  {(provided) => (
+                                    <div
+                                      className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                                        active1 === user.name &&
+                                        "  border-b-2 text-orange-600 border-orange-600"
+                                      }`}
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      onClick={() => {
+                                        setActive1(user?.name);
+                                        filterByProjStat(user?.name, active);
+                                      }}
+                                    >
+                                      {user.name} (
+                                      {getJobHolderCount(user?.name, active)})
+                                    </div>
+                                  )}
+                                </Draggable>
+                              ))}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
                   </div>
                 </div>
                 <hr className="mb-1 bg-gray-300 w-full h-[1px]" />

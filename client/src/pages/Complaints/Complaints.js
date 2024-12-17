@@ -33,6 +33,7 @@ export default function Complaints() {
   const [totalPoint, setTotalPoint] = useState(0);
   const [filteredData, setFilteredData] = useState([]);
   const [showDetail, setShowDetail] = useState(false);
+  const [copyLoad, setCopyLoad] = useState(false);
 
   // Get All Complaints
   const getAllComplaints = async () => {
@@ -158,6 +159,25 @@ export default function Complaints() {
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message);
+    }
+  };
+
+  // -----------Copy Complaint-------->
+  const handleCopyComplaint = async (id) => {
+    setCopyLoad(true);
+    try {
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/complaints/copy/${id}`
+      );
+      if (data) {
+        getComplaints();
+        toast.success("Complaint copied successfully!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    } finally {
+      setCopyLoad(false);
     }
   };
 
@@ -768,16 +788,16 @@ export default function Complaints() {
               </span>
               <span
                 className=""
-                title="Copy Task"
-                // onClick={() => {
-                //   setTaskId(row.original._id);
-                // }}
+                title="Copy Complaint"
+                onClick={() => {
+                  handleCopyComplaint(row.original._id);
+                }}
               >
                 <GrCopy className="h-6 w-6 cursor-pointer text-lime-500 hover:text-lime-600" />
               </span>
               <span
                 className=""
-                title="Edit Proposal"
+                title="Edit Complaint"
                 onClick={() => {
                   setComplaintId(row.original._id);
                   setShow(true);
@@ -917,6 +937,12 @@ export default function Complaints() {
           </div>
         </div>
         <hr className="w-full h-[1px] bg-gray-300 my-4" />
+        {/* Load */}
+        {copyLoad && (
+          <div className="pb-5">
+            <div class="loader"></div>
+          </div>
+        )}
         {/*  */}
 
         {/* ---------Table Detail---------- */}

@@ -170,3 +170,39 @@ export const deleteHrTask = async (req, res) => {
     });
   }
 };
+
+// Copy Task
+export const copyHrTask = async (req, res) => {
+  try {
+    const taskId = req.params.id;
+
+    const task = await hrModel.findById(taskId);
+
+    if (!task) {
+      return res.status(404).send({
+        success: false,
+        message: "Hr task not found!",
+      });
+    }
+
+    const taskData = { ...task.toObject() };
+    delete taskData._id;
+    delete taskData.createdAt;
+    delete taskData.updatedAt;
+
+    const copyTask = await hrModel.create(taskData);
+
+    res.status(200).send({
+      success: true,
+      message: "Task copy successfully!",
+      copyTask: copyTask,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Error occur while copy hr task!",
+      error: error,
+    });
+  }
+};

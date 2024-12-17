@@ -2,6 +2,7 @@ import express from "express";
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
   allHrTask,
+  copyHrTask,
   createHrTask,
   deleteHrTask,
   hrTaskDetail,
@@ -24,5 +25,8 @@ router.get("/task/detail/:id", hrTaskDetail);
 
 // Delete
 router.delete("/remove/task/:id", requiredSignIn, deleteHrTask);
+
+// Copy HR Task
+router.post("/copy/task/:id", requiredSignIn, copyHrTask);
 
 export default router;

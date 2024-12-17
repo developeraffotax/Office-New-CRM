@@ -7,6 +7,7 @@ import {
   getDashboardUsers,
   loginUser,
   registerUser,
+  reordering,
   singleUser,
   updateRole,
   updateUserProfile,
@@ -44,5 +45,8 @@ router.get("/dashboard/users", getDashboardUsers);
 
 // User Label
 router.put("/label/:id", requiredSignIn, addDatalabel);
+
+// Reordering
+router.put("/reordering", requiredSignIn, reordering);
 
 export default router;

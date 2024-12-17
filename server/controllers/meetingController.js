@@ -250,7 +250,7 @@ export const deleteExpireMeeting = async (req, res) => {
 };
 
 // Schedule the task to run daily at midnight
-cron.schedule("30 23 * * *", () => {
-  console.log("Running task scheduler for recurring tasks...");
-  deleteExpireMeeting();
-});
+// cron.schedule("30 23 * * *", () => {
+//   console.log("Running task scheduler for recurring tasks...");
+//   deleteExpireMeeting();
+// });

@@ -44,6 +44,8 @@ export const registerUser = async (req, res) => {
     // hash Password
     const hashedPassword = await hashPassword(password);
 
+    const userCount = await userModel.countDocuments();
+
     // Save
     const user = await userModel.create({
       name,
@@ -55,6 +57,7 @@ export const registerUser = async (req, res) => {
       address,
       role,
       avatar,
+      order: userCount,
     });
 
     res.status(200).send({
@@ -162,7 +165,8 @@ export const getAllUsers = async (req, res) => {
       .find({ name: { $ne: "Salmans" } })
       .select("-password")
       .populate("role")
-      .populate("data");
+      .populate("data")
+      .sort({ order: 1 });
 
     res.status(200).send({
       total: users.length,
@@ -185,7 +189,8 @@ export const getAllActiveUsers = async (req, res) => {
     const users = await userModel
       .find({ isActive: { $ne: false }, name: { $ne: "Salmans" } })
       .select("-password")
-      .populate("role");
+      .populate("role")
+      .sort({ order: 1 });
 
     res.status(200).send({
       total: users.length,
@@ -400,7 +405,8 @@ export const getDashboardUsers = async (req, res) => {
     const users = await userModel
       .find({ name: { $ne: "Salmans" } })
       .populate("role", "name")
-      .select(" name createdAt role");
+      .select(" name createdAt role")
+      .sort({ order: 1 });
 
     res.status(200).send({
       total: users.length,
@@ -450,6 +456,30 @@ export const addDatalabel = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in add user label!",
+      error: error,
+    });
+  }
+};
+
+// Reordering
+export const reordering = async (req, res) => {
+  try {
+    const { usersData } = req.body;
+    await Promise.all(
+      usersData.map((user, index) =>
+        userModel.findByIdAndUpdate(
+          user._id,
+          { order: index + 1 },
+          { new: true }
+        )
+      )
+    );
+    res.status(200).json({ message: "User order updated successfully!" });
+  } catch (error) {
+    console.log(error);
+    res.status(200).send({
+      success: false,
+      message: "Error while reordering users!",
       error: error,
     });
   }

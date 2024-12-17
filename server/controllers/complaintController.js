@@ -188,3 +188,40 @@ export const dashboardComplains = async (req, res) => {
     });
   }
 };
+
+// Copy Task
+export const copyComplaint = async (req, res) => {
+  try {
+    const complaintId = req.params.id;
+
+    const complaint = await complainModel.findById(complaintId);
+
+    if (!complaint) {
+      return res.status(404).send({
+        success: false,
+        message: "Complaint not found!",
+      });
+    }
+
+    const taskData = { ...complaint.toObject() };
+    delete taskData._id;
+    delete taskData.createdAt;
+    delete taskData.updatedAt;
+    taskData.note = "";
+
+    const copyComplaint = await complainModel.create(taskData);
+
+    res.status(200).send({
+      success: true,
+      message: "Complaint copy successfully!",
+      copyComplaint: copyComplaint,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Error occur while copy hr task!",
+      error: error,
+    });
+  }
+};

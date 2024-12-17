@@ -38,6 +38,7 @@ export default function HR() {
   const [showDescription, setShowDescription] = useState(false);
   const [showcolumn, setShowColumn] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState({});
+  const [copyLoad, setCopyLoad] = useState(false);
 
   useEffect(() => {
     if (userName && userName.length > 0) {
@@ -136,6 +137,25 @@ export default function HR() {
     getAllUsers();
     // eslint-disable-next-line
   }, []);
+
+  // -----------Copy Task-------->
+  const handleCopyTask = async (id) => {
+    setCopyLoad(true);
+    try {
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/hr/copy/task/${id}`
+      );
+      if (data) {
+        getAllTasks();
+        toast.success("Task copied successfully!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    } finally {
+      setCopyLoad(false);
+    }
+  };
 
   // ------Close Departments------------
   useEffect(() => {
@@ -533,9 +553,9 @@ export default function HR() {
               <span
                 className=""
                 title="Copy Task"
-                // onClick={() => {
-                //   setTaskId(row.original._id);
-                // }}
+                onClick={() => {
+                  handleCopyTask(row.original._id);
+                }}
               >
                 <GrCopy className="h-6 w-6 cursor-pointer text-sky-500 hover:text-sky-600" />
               </span>
@@ -776,6 +796,11 @@ export default function HR() {
           </div>
         </div>
         <hr className="w-full h-[1px] bg-gray-300 my-5" />
+        {copyLoad && (
+          <div className="pb-5">
+            <div class="loader"></div>
+          </div>
+        )}
         {/* -----------------Table Detail----------- */}
         <div className="w-full h-full">
           {isloading ? (

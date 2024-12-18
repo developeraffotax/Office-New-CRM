@@ -59,7 +59,19 @@ export const createTask = async (req, res) => {
         : new Date().toISOString(),
     });
 
+    // Push activity to activities array
+    tasks.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} create a new task "${tasks.task}".`,
+    });
+
     await tasks.save();
+
+    res.status(200).send({
+      success: true,
+      message: "Task created successfully!",
+      task: tasks,
+    });
 
     // Add Activity Log
     const user = req.user.user;
@@ -93,14 +105,6 @@ export const createTask = async (req, res) => {
       description: `${req.user.user.name} assign a new task of "${tasks.task}"`,
       taskId: `${tasks._id}`,
       userId: notiUser._id,
-    });
-
-    //  -------------------Noti End---------
-
-    res.status(200).send({
-      success: true,
-      message: "Task created successfully!",
-      task: tasks,
     });
   } catch (error) {
     console.log(error);
@@ -147,7 +151,9 @@ export const getSingleTask = async (req, res) => {
       });
     }
 
-    const task = await taskModel.findById(taskId);
+    const task = await taskModel
+      .findById(taskId)
+      .populate({ path: "activities.user", select: "name avatar" });
 
     // Sort subtasks by `order`
     const sortedSubtasks = task.subtasks.sort((a, b) => a.order - b.order);
@@ -210,6 +216,13 @@ export const updatetaskProject = async (req, res) => {
       },
       { new: true }
     );
+
+    // Push activity to activities array
+    updateTask.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} updated the task project to "${project.projectName}" in task "${task.task}".`,
+    });
+
     await updateTask.save();
 
     res.status(200).send({
@@ -250,6 +263,12 @@ export const updateJobHolderLS = async (req, res) => {
         { new: true }
       );
 
+      // Push activity to activities array
+      updateTask.activities.push({
+        user: req.user.user._id,
+        activity: `${req.user.user.name} updated the task assign in task "${updateTask.task}".`,
+      });
+
       // Create Notification
       const notiUser = await userModel.findOne({ name: jobHolder });
       if (!notiUser) {
@@ -276,6 +295,12 @@ export const updateJobHolderLS = async (req, res) => {
         { lead: lead },
         { new: true }
       );
+
+      // Push activity to activities array
+      updateTask.activities.push({
+        user: req.user.user._id,
+        activity: `${req.user.user.name} updated the task owner in task "${updateTask.task}".`,
+      });
     } else {
       if (status === "completed") {
         updateTask = await taskModel.findByIdAndUpdate(
@@ -283,14 +308,28 @@ export const updateJobHolderLS = async (req, res) => {
           { status: status },
           { new: true }
         );
+
+        // Push activity to activities array
+        updateTask.activities.push({
+          user: req.user.user._id,
+          activity: `${req.user.user.name} complete the task "${updateTask.task}".`,
+        });
       } else {
         updateTask = await taskModel.findByIdAndUpdate(
           task._id,
           { status: status },
           { new: true }
         );
+
+        // Push activity to activities array
+        updateTask.activities.push({
+          user: req.user.user._id,
+          activity: `${req.user.user.name} updated the task status "${status}" in task "${updateTask.task}" .`,
+        });
       }
     }
+
+    await updateTask.save();
 
     const user = req.user.user;
 
@@ -354,19 +393,40 @@ export const updateAlocateTask = async (req, res) => {
         { task: allocateTask },
         { new: true }
       );
+
+      // Push activity to activities array
+      updateTask.activities.push({
+        user: req.user.user._id,
+        activity: `${req.user.user.name} updated the allocate task "${updateTask.task}" .`,
+      });
     } else if (startDate) {
       updateTask = await taskModel.findByIdAndUpdate(
         task._id,
         { startDate: startDate },
         { new: true }
       );
+
+      // Push activity to activities array
+      updateTask.activities.push({
+        user: req.user.user._id,
+        activity: `${req.user.user.name} updated the allocate task start date in task "${updateTask.task}".`,
+      });
     } else {
       updateTask = await taskModel.findByIdAndUpdate(
         task._id,
         { deadline: deadline || new Date().toISOString() },
         { new: true }
       );
+
+      // Push activity to activities array
+      updateTask.activities.push({
+        user: req.user.user._id,
+        activity: `${req.user.user.name} updated the allocate task deadline date in task "${updateTask.task}".`,
+      });
     }
+
+    await updateTask.save();
+
     // Add Activity Log
     const user = req.user.user;
     if (updateTask) {
@@ -546,6 +606,14 @@ export const updateTask = async (req, res) => {
       { new: true }
     );
 
+    // Push activity to activities array
+    tasks.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} updated the full task "${tasks.task}".`,
+    });
+
+    await tasks.save();
+
     // Add Activity Log
     const user = req.user.user;
     if (tasks) {
@@ -682,6 +750,12 @@ export const updateSubTaskStaus = async (req, res) => {
     task.subtasks[subtaskIndex].status =
       task.subtasks[subtaskIndex].status === "process" ? "complete" : "process";
 
+    // Push activity to activities array
+    task.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} updated the subtask in task "${task.task}".`,
+    });
+
     await task.save();
 
     res.status(200).send({
@@ -739,6 +813,13 @@ export const deleteSubTask = async (req, res) => {
     }
 
     task.subtasks.splice(subtaskIndex, 1);
+
+    // Push activity to activities array
+    task.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} delete the subtask in task "${task.task}".`,
+    });
+
     await task.save();
 
     res.status(200).send({
@@ -794,6 +875,14 @@ export const addlabel = async (req, res) => {
       { "labal.name": name, "labal.color": color },
       { new: true }
     );
+
+    // Push activity to activities array
+    updateTask.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} added label in task "${updateTask.task}".`,
+    });
+
+    await updateTask.save();
 
     res.status(200).send({
       success: true,

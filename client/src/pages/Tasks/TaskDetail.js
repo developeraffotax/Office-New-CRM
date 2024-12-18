@@ -49,8 +49,6 @@ export default function TaskDetail({
   const [showReminder, setShowReminder] = useState(false);
   const initialLoad = useRef(true);
 
-  console.log("timerId:", timerId, anyTimerRunning, taskDetal?._id);
-
   // ---------Stop Timer ----------->
   const handleStopTimer = () => {
     if (timerRef.current) {
@@ -664,19 +662,50 @@ export default function TaskDetail({
                 </div>
               </div>
             ) : activeTab === "activity" ? (
-              <div className="flex flex-col">
-                {/* <div className="grid grid-cols-2">
-                  <span className="border border-gray-300 text-black font-medium py-2 px-2 rounded-tl-md">
-                    CT Login
-                  </span>
-                  <span className="border border-gray-300 text-gray-600 py-2 px-2 rounded-tr-md">
-                    {clientDetail?.ctLogin ? (
-                      clientDetail?.ctLogin
-                    ) : (
-                      <span className="text-red-500">N/A</span>
-                    )}
-                  </span>
-                </div> */}
+              <div className="flex flex-col gap-2 w-full h-full overflow-y-auto p-2 ">
+                {taskDetal?.activities?.map((activity) => (
+                  <div
+                    className="w-full flex flex-col gap-2 py-2 px-3 border border-gray-300 rounded-md shadow hover:shadow-md bg-white hover:bg-orange-50 transition-all duration-300 cursor-pointer hover:scale-[1.03] ease-in-out "
+                    key={activity?._id}
+                  >
+                    <p className="mb-2 text-[15px] font-medium text-green-500 mt-2 flex items-center gap-2">
+                      <span className="w-[.8rem] h-[.8rem] rounded-full bg-green-500"></span>
+                      {new Date(activity?.createdAt).toLocaleString()}
+                    </p>
+                    <div className="flex items-center gap-1">
+                      <div className="flex-shrink-0">
+                        {activity?.user?.avatar ? (
+                          <img
+                            src={activity?.user?.avatar}
+                            alt="Avatar"
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div
+                            className="w-8 h-8 rounded-full text-white font-semibold flex items-center justify-center"
+                            style={{
+                              backgroundColor: `#${Math.floor(
+                                Math.random() * 16777215
+                              ).toString(16)}`,
+                            }}
+                          >
+                            {activity?.user?.name.slice(0, 1)}
+                          </div>
+                        )}
+                      </div>
+                      <strong className="text-[16px] font-medium text-black capitalize">
+                        {activity?.user?.name}
+                      </strong>
+                    </div>
+                    {/* Action */}
+                    <strong className="text-[15px] font-semibold text-black">
+                      Action:{" "}
+                      <span className="text-[13px] text-gray-700 ml-1 font-normal">
+                        {activity?.activity}
+                      </span>
+                    </strong>
+                  </div>
+                ))}
               </div>
             ) : activeTab === "departmentInfo" ? (
               <div className="flex flex-col">

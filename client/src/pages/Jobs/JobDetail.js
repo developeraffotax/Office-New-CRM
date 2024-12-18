@@ -446,7 +446,7 @@ export default function JobDetail({
               } `}
               onClick={() => setActiveTab("salesDetail")}
             >
-              Sales Detail
+              Sales
             </button>
             <button
               className={` text-[14px] font-medium cursor-pointer py-1  ${
@@ -462,7 +462,7 @@ export default function JobDetail({
               } `}
               onClick={() => setActiveTab("departmentInfo")}
             >
-              Department Detail
+              Department
             </button>
             <button
               className={` text-[14px] font-medium cursor-pointer py-1  ${
@@ -471,6 +471,14 @@ export default function JobDetail({
               onClick={() => setActiveTab("comments")}
             >
               comments
+            </button>
+            <button
+              className={` text-[14px] font-medium cursor-pointer py-1  ${
+                activeTab === "activities" && "border-b-2 border-orange-600"
+              } `}
+              onClick={() => setActiveTab("activities")}
+            >
+              Activity
             </button>
           </div>
           <hr className="h-[1.5px] w-full bg-gray-400 my-3" />
@@ -1067,6 +1075,64 @@ export default function JobDetail({
                     )}
                   </span>
                 </div>
+              </div>
+            ) : activeTab === "activities" ? (
+              <div className="flex flex-col gap-2 w-full h-full overflow-y-auto p-2 ">
+                {clientDetail?.activities?.map((activity) => (
+                  <div
+                    className="w-full flex flex-col gap-2 py-2 px-3 border border-gray-300 rounded-md shadow hover:shadow-md bg-white hover:bg-orange-50 transition-all duration-300 cursor-pointer hover:scale-[1.03] ease-in-out "
+                    key={activity?._id}
+                  >
+                    <p className="mb-2 text-[15px] font-medium text-green-500 mt-2 flex items-center gap-2">
+                      <span className="w-[.8rem] h-[.8rem] rounded-full bg-green-500"></span>
+                      {new Date(activity?.createdAt).toLocaleString()}
+                    </p>
+                    <div className="flex items-center gap-1">
+                      <div className="flex-shrink-0">
+                        {activity?.user?.avatar ? (
+                          <img
+                            src={activity?.user?.avatar}
+                            alt="Avatar"
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div
+                            className="w-8 h-8 rounded-full text-white font-semibold flex items-center justify-center"
+                            style={{
+                              backgroundColor: `#${Math.floor(
+                                Math.random() * 16777215
+                              ).toString(16)}`,
+                            }}
+                          >
+                            {activity?.user?.name.slice(0, 1)}
+                          </div>
+                        )}
+                      </div>
+                      <strong className="text-[16px] font-medium text-black capitalize">
+                        {activity?.user?.name}
+                      </strong>
+                    </div>
+                    {/* Action */}
+                    <strong className="text-[15px] font-semibold text-black">
+                      Action:{" "}
+                      <span className="text-[13px] text-gray-700 ml-1 font-normal">
+                        {activity?.activity}
+                      </span>
+                    </strong>
+                  </div>
+                ))}
+                {clientDetail?.activities.length === 0 && (
+                  <div className="flex flex-col gap-1 items-center justify-center w-full min-h-[40vh]">
+                    <img
+                      src="/rb_695.png"
+                      alt="notfound"
+                      className="h-[12rem] w-[12rem] animate-pulse"
+                    />
+                    <span className="text-[13px] text-gray-700">
+                      No activity found!
+                    </span>
+                  </div>
+                )}
               </div>
             ) : (
               <JobCommentModal

@@ -2172,7 +2172,7 @@ export default function AllJobs() {
 
           filterVariant: "select",
           filterSelectOptions: labelData.map((label) => label.name),
-          size: 120,
+          size: 140,
           minSize: 100,
           maxSize: 210,
           grow: false,

@@ -103,11 +103,8 @@ export const fetchAllGoal = async (req, res) => {
   try {
     const goals = await goalModel
       .find({})
-      .populate("jobHolder")
+      .populate("jobHolder", "name email")
       .select("-comments");
-    const clients = await jobsModel.find({});
-    const leads = await leadModel.find({});
-    const wonleads = await leadModel.find({ status: won });
 
     res.status(200).send({
       success: true,
@@ -213,7 +210,7 @@ export const fetchAchievedDataByGoalType = async (req, res) => {
   try {
     const goals = await goalModel
       .find({ status: { $ne: "completed" } })
-      .populate("jobHolder")
+      .populate("jobHolder", "name email")
       .sort({ startDate: 1 });
 
     const updatedGoals = await Promise.all(
@@ -393,7 +390,7 @@ export const fetchAchievedDataByGoalComplete = async (req, res) => {
   try {
     const goals = await goalModel
       .find({ status: { $ne: "Progress" } })
-      .populate("jobHolder")
+      .populate("jobHolder", "name email")
       .select("-comments")
       .sort({ startDate: 1 });
 

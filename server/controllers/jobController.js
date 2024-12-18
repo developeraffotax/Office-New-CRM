@@ -98,7 +98,7 @@ export const createJob = async (req, res) => {
         // Push activity to activities array
         client.activities.push({
           user: req.user.user._id,
-          activity: `${req.user.user.name} created a new job for the client "${client.clientName}" with the company name "${client.companyName}".`,
+          activity: `${req.user.user.name} has created this job.`,
         });
 
         // Save the client with the current job
@@ -231,7 +231,7 @@ export const updateStatus = async (req, res) => {
     // Push activity to activities array
     clientJob.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} update job status for the client "${clientJob.clientName}" with the company name "${clientJob.companyName}".`,
+      activity: `${req.user.user.name} update this job status "${status}".`,
     });
 
     await clientJob.save();
@@ -293,7 +293,7 @@ export const updateLead = async (req, res) => {
     // Push activity to activities array
     clientJob.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} update job owner for the client "${clientJob.clientName}" with the company name "${clientJob.companyName}".`,
+      activity: `${req.user.user.name} has update this job owner "${lead}"  .`,
     });
 
     await clientJob.save();
@@ -355,7 +355,7 @@ export const updateJobHolder = async (req, res) => {
     // Push activity to activities array
     clientJob.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} update job assign for the client "${clientJob.clientName}" with the company name "${clientJob.companyName}".`,
+      activity: `${req.user.user.name} has update this job assign "${jobHolder}".`,
     });
 
     await clientJob.save();
@@ -670,6 +670,11 @@ export const updateDates = async (req, res) => {
     const jobId = req.params.id;
     const { yearEnd, jobDeadline, workDeadline } = req.body;
 
+    const formatDate = (date) => {
+      const options = { day: "2-digit", month: "short", year: "numeric" };
+      return new Intl.DateTimeFormat("en-GB", options).format(new Date(date));
+    };
+
     if (!jobId) {
       return res.status(400).send({
         success: false,
@@ -689,7 +694,9 @@ export const updateDates = async (req, res) => {
       // Push activity to activities array
       clientJob.activities.push({
         user: req.user.user._id,
-        activity: `${req.user.user.name} update job year end date for the client "${clientJob.clientName}" with the company name "${clientJob.companyName}".`,
+        activity: `${
+          req.user.user.name
+        } has update this job year end date "${formatDate(yearEnd)}" .`,
       });
     }
     if (jobDeadline) {
@@ -702,7 +709,9 @@ export const updateDates = async (req, res) => {
       // Push activity to activities array
       clientJob.activities.push({
         user: req.user.user._id,
-        activity: `${req.user.user.name} update job deadline date for the client "${clientJob.clientName}" with the company name "${clientJob.companyName}".`,
+        activity: `${
+          req.user.user.name
+        } has update this job deadline date "${formatDate(jobDeadline)}".`,
       });
     }
     if (workDeadline) {
@@ -715,7 +724,9 @@ export const updateDates = async (req, res) => {
       // Push activity to activities array
       clientJob.activities.push({
         user: req.user.user._id,
-        activity: `${req.user.user.name} update job date for the client "${clientJob.clientName}" with the company name "${clientJob.companyName}".`,
+        activity: `${
+          req.user.user.name
+        } has update this job Job_date "${formatDate(workDeadline)}".`,
       });
     }
 
@@ -979,7 +990,7 @@ export const updateClientStatus = async (req, res) => {
     // Push activity to activities array
     clientJob.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} update job status "progress" for the client "${clientJob.clientName}" with the company name "${clientJob.companyName}".`,
+      activity: `${req.user.user.name} has update this job status completed to "progress".`,
     });
 
     await clientJob.save();
@@ -1082,7 +1093,7 @@ export const addlabel = async (req, res) => {
     // Push activity to activities array
     updateJob.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} add label in job for the client "${updateJob.clientName}" with the company name "${updateJob.companyName}".`,
+      activity: `${req.user.user.name} add label "${name}" in this job.`,
     });
 
     await updateJob.save();
@@ -1134,7 +1145,7 @@ export const createSubTask = async (req, res) => {
     // Push activity to activities array
     job.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} add subtask "${subTask}" in job for the client "${job?.clientName}" with the company name "${job?.companyName}".`,
+      activity: `${req.user.user.name} add subtask "${subTask}" in job.`,
     });
 
     await job.save();
@@ -1256,7 +1267,7 @@ export const deleteSubTask = async (req, res) => {
     // Push activity to activities array
     job.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} delete subtask in job for the client "${job?.clientName}" with the company name "${job?.companyName}".`,
+      activity: `${req.user.user.name} has deleted subtask in this job.`,
     });
 
     await job.save();
@@ -1302,7 +1313,7 @@ export const addDatalabel = async (req, res) => {
     // Push activity to activities array
     updateJob.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} update "cc person" in job for the client "${updateJob?.clientName}" with the company name "${updateJob?.companyName}".`,
+      activity: `${req.user.user.name} has update CC Person & add "${label?.name}" in this job.`,
     });
 
     await updateJob.save();
@@ -1341,7 +1352,7 @@ export const updateTime = async (req, res) => {
       { new: true }
     );
 
-    res.status(200).send({
+    await res.status(200).send({
       success: true,
       message: "Time update successfully!",
       clientJob: clientJob,
@@ -1589,7 +1600,7 @@ export const updateWorkPlan = async (req, res) => {
     // Push activity to activities array
     clientJob.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} update work plan in job for the client "${clientJob?.clientName}" with the company name "${clientJob?.companyName}".`,
+      activity: `${req.user.user.name} has update work plan in this job.`,
     });
 
     await clientJob.save();

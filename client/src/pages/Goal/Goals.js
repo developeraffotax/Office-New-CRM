@@ -1518,7 +1518,7 @@ export default function Goals() {
           </div>
 
           {/*----- Users ---------*/}
-          {selectedTab === "progress" && (
+          {auth?.user?.role?.name === "Admin" && selectedTab === "progress" && (
             <div className="flex items-center flex-wrap gap-3">
               <button
                 onClick={() => filterGoalsByUser("All")}

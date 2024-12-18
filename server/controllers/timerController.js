@@ -142,8 +142,7 @@ export const timerStatus = async (req, res) => {
   }
 };
 
-// Get Total Time
-
+// Get Total Time(Task & Job)
 export const totalTime = async (req, res) => {
   try {
     const timerId = req.params.id;
@@ -203,6 +202,15 @@ export const totalTime = async (req, res) => {
       }
     };
 
+    const formatTime = (date) => {
+      return new Date(date).toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+      });
+    };
+
     // Update job's total time
     const job = await jobsModel.findById(jobId);
 
@@ -215,11 +223,25 @@ export const totalTime = async (req, res) => {
         updatedJobTimeInSeconds
       );
 
-      await jobsModel.findByIdAndUpdate(
+      const updateJob = await jobsModel.findByIdAndUpdate(
         { _id: jobId },
         { $set: { totalTime: updatedJobTime } },
         { new: true }
       );
+
+      // Push activity to activities array
+      updateJob.activities.push({
+        user: req.user.user._id,
+        activity: `${req.user.user.name} ⏱️ tracked time from 🕒 "${formatTime(
+          startTime
+        )}" - to 🕒 "${formatTime(
+          endTime
+        )}" with a total duration of ⏳ "${convertSecondsToReadableTime(
+          totalTimeInSeconds
+        )}" in this job.`,
+      });
+
+      await updateJob.save();
     }
 
     // Update task's estimated time
@@ -235,11 +257,25 @@ export const totalTime = async (req, res) => {
         updatedTaskTimeInSeconds
       );
 
-      await taskModel.findByIdAndUpdate(
+      const updateTask = await taskModel.findByIdAndUpdate(
         { _id: jobId },
         { $set: { estimate_Time: updatedTaskTime } },
         { new: true }
       );
+
+      // Push activity to activities array
+      updateTask.activities.push({
+        user: req.user.user._id,
+        activity: `${req.user.user.name} ⏱️ tracked time from 🕒 "${formatTime(
+          startTime
+        )}" - to 🕒 "${formatTime(
+          endTime
+        )}" with a total duration of ⏳ "${convertSecondsToReadableTime(
+          totalTimeInSeconds
+        )}" in this task.`,
+      });
+
+      await updateTask.save();
     }
 
     res.status(200).send({

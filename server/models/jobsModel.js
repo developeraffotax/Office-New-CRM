@@ -83,6 +83,17 @@ const subtask = new mongoose.Schema(
   { timestamps: true }
 );
 
+const activitySchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Users",
+    },
+    activity: { type: String },
+  },
+  { timestamps: true }
+);
+
 // Client Schema
 const clientSchema = new mongoose.Schema(
   {
@@ -189,6 +200,7 @@ const clientSchema = new mongoose.Schema(
     filed: {
       type: String,
     },
+    activities: [activitySchema],
   },
   { timestamps: true }
 );

@@ -24,11 +24,9 @@ const commentsSchema = new mongoose.Schema(
 
 const activitySchema = new mongoose.Schema(
   {
-    userName: {
-      type: String,
-    },
-    profileImage: {
-      type: String,
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Users",
     },
     activity: { type: String },
   },

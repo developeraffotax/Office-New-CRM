@@ -31,7 +31,7 @@ export default function Goals() {
   const [userName, setUserName] = useState([]);
   const [goalsData, setGoalsData] = useState([]);
   const [completeGoalsData, setCompleteGoalsData] = useState([]);
-
+  const [filterGoals, setFilterGoals] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filterData, setFilterData] = useState([]);
   const [selectedTab, setSelectedTab] = useState("progress");
@@ -44,6 +44,7 @@ export default function Goals() {
   const [isUpdate, setIsUpdate] = useState(false);
   const [status, setStatus] = useState("");
   const [showEdit, setShowEdit] = useState(false);
+  const [activeUser, setActiveUser] = useState("All");
   const [formData, setFormData] = useState({
     subject: "",
     achievement: "",
@@ -69,7 +70,8 @@ export default function Goals() {
     "Manual Goal",
   ];
 
-  console.log("rowSelection:", rowSelection);
+  console.log("goalsData:", goalsData);
+  console.log("filterGoals:", filterGoals);
 
   // -------Get All Proposal-------
   const getAllGoals = async () => {
@@ -135,6 +137,26 @@ export default function Goals() {
     getAllUsers();
     // eslint-disable-next-line
   }, []);
+
+  // ---------------Filter Goals By User---------->
+
+  useEffect(() => {
+    const goals = selectedTab === "progress" ? goalsData : completeGoalsData;
+    setFilterGoals(goals);
+  }, [goalsData, completeGoalsData, selectedTab]);
+
+  const filterGoalsByUser = (user) => {
+    setActiveUser(user);
+    const goals = selectedTab === "progress" ? goalsData : completeGoalsData;
+
+    // Check if "All" is selected, else filter by user
+    const filteredGoals =
+      user === "All"
+        ? goals
+        : goals.filter((goal) => goal.jobHolder.name === user);
+
+    setFilterGoals(filteredGoals);
+  };
 
   //   Update Data
   const handleUpdateData = async (goalId, updateData) => {
@@ -1336,12 +1358,12 @@ export default function Goals() {
       },
     ],
     // eslint-disable-next-line
-    [users, auth, goalsData, filterData]
+    [users, auth, goalsData, filterData, filterGoals]
   );
 
   const table = useMaterialReactTable({
     columns,
-    data: goalsData || [],
+    data: filterGoals || [],
     getRowId: (row) => row._id,
     enableStickyHeader: true,
     enableStickyFooter: true,
@@ -1446,6 +1468,19 @@ export default function Goals() {
 
           {/* ---------Template Buttons */}
           <div className="flex items-center gap-4">
+            {/* --------Edit Multiple Job--------- */}
+            <span
+              className={` p-1 rounded-md hover:shadow-md bg-gray-50 cursor-pointer border ${
+                showEdit && "bg-orange-500 text-white"
+              }`}
+              onClick={() => {
+                setShowEdit(!showEdit);
+              }}
+              title="Edit Multiple Goals"
+            >
+              <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
+            </span>
+
             <button
               className={`${style.button1} text-[15px] `}
               onClick={() => setShow(true)}
@@ -1481,22 +1516,40 @@ export default function Goals() {
               Completed
             </button>
           </div>
-          {/* Edit Multiple Job */}
-          <span
-            className={` p-1 rounded-md hover:shadow-md bg-gray-50 cursor-pointer border ${
-              showEdit && "bg-orange-500 text-white"
-            }`}
-            onClick={() => {
-              setShowEdit(!showEdit);
-            }}
-            title="Edit Multiple Goals"
-          >
-            <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
-          </span>
+
+          {/*----- Users ---------*/}
+          {selectedTab === "progress" && (
+            <div className="flex items-center flex-wrap gap-3">
+              <button
+                onClick={() => filterGoalsByUser("All")}
+                className={`px-4 py-[5px] rounded-md font-medium transition-all duration-300 ${
+                  activeUser === "All"
+                    ? "bg-orange-600 text-white shadow-md"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                All
+              </button>
+              {userName?.map((user) => (
+                <button
+                  key={user}
+                  onClick={() => filterGoalsByUser(user)}
+                  className={`px-4 py-[5px] rounded-md font-medium transition-all duration-300 ${
+                    activeUser === user
+                      ? "bg-orange-600 text-white shadow-md"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+                >
+                  {user}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         {/* Update Bulk Jobs */}
         {showEdit && (
           <div className="w-full  py-2">
+            <hr className=" bg-gray-300 w-full h-[1px] my-2 mb-3" />
             <form
               onSubmit={updateBulkJob}
               className="w-full flex items-center flex-wrap gap-2 "
@@ -1530,10 +1583,9 @@ export default function Goals() {
                 </button>
               </div>
             </form>
-            <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
           </div>
         )}
-        <hr className="w-full h-[1px] bg-gray-300 my-4" />
+        <hr className="w-full h-[1px] bg-gray-300 my-3" />
 
         {/* ---------Table Detail---------- */}
         {selectedTab === "progress" ? (

@@ -95,6 +95,12 @@ export const createJob = async (req, res) => {
           },
         });
 
+        // Push activity to activities array
+        client.activities.push({
+          user: req.user.user._id,
+          activity: `${req.user.user.name} created a new job for the client "${client.clientName}" with the company name "${client.companyName}".`,
+        });
+
         // Save the client with the current job
         return await client.save();
       })
@@ -222,6 +228,14 @@ export const updateStatus = async (req, res) => {
       { new: true }
     );
 
+    // Push activity to activities array
+    clientJob.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} update job status for the client "${clientJob.clientName}" with the company name "${clientJob.companyName}".`,
+    });
+
+    await clientJob.save();
+
     res.status(200).send({
       success: true,
       message: "Job status updated successfully!",
@@ -275,6 +289,14 @@ export const updateLead = async (req, res) => {
       { $set: { "job.lead": lead } },
       { new: true }
     );
+
+    // Push activity to activities array
+    clientJob.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} update job owner for the client "${clientJob.clientName}" with the company name "${clientJob.companyName}".`,
+    });
+
+    await clientJob.save();
 
     res.status(200).send({
       success: true,
@@ -330,6 +352,20 @@ export const updateJobHolder = async (req, res) => {
       { new: true }
     );
 
+    // Push activity to activities array
+    clientJob.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} update job assign for the client "${clientJob.clientName}" with the company name "${clientJob.companyName}".`,
+    });
+
+    await clientJob.save();
+
+    res.status(200).send({
+      success: true,
+      message: "Job holder updated successfully!",
+      clientJob: clientJob,
+    });
+
     // Create Notification
     const user = await userModel.findOne({ name: jobHolder });
     await notificationModel.create({
@@ -338,12 +374,6 @@ export const updateJobHolder = async (req, res) => {
       description: `${req.user.user.name} assign a new job of "${clientJob.job.jobName}"`,
       taskId: `${clientJob._id}`,
       userId: user._id,
-    });
-
-    res.status(200).send({
-      success: true,
-      message: "Job holder updated successfully!",
-      clientJob: clientJob,
     });
 
     // Add Activity Log
@@ -434,7 +464,9 @@ export const singleClientJob = async (req, res) => {
       });
     }
 
-    const clientJob = await jobsModel.findById({ _id: jobId });
+    const clientJob = await jobsModel
+      .findById({ _id: jobId })
+      .populate({ path: "activities.user", select: "name avatar" });
 
     if (!clientJob) {
       return res.status(400).send({
@@ -653,6 +685,12 @@ export const updateDates = async (req, res) => {
         { $set: { "job.yearEnd": yearEnd } },
         { new: true }
       );
+
+      // Push activity to activities array
+      clientJob.activities.push({
+        user: req.user.user._id,
+        activity: `${req.user.user.name} update job year end date for the client "${clientJob.clientName}" with the company name "${clientJob.companyName}".`,
+      });
     }
     if (jobDeadline) {
       clientJob = await jobsModel.findByIdAndUpdate(
@@ -660,6 +698,12 @@ export const updateDates = async (req, res) => {
         { $set: { "job.jobDeadline": jobDeadline } },
         { new: true }
       );
+
+      // Push activity to activities array
+      clientJob.activities.push({
+        user: req.user.user._id,
+        activity: `${req.user.user.name} update job deadline date for the client "${clientJob.clientName}" with the company name "${clientJob.companyName}".`,
+      });
     }
     if (workDeadline) {
       clientJob = await jobsModel.findByIdAndUpdate(
@@ -667,7 +711,15 @@ export const updateDates = async (req, res) => {
         { $set: { "job.workDeadline": workDeadline } },
         { new: true }
       );
+
+      // Push activity to activities array
+      clientJob.activities.push({
+        user: req.user.user._id,
+        activity: `${req.user.user.name} update job date for the client "${clientJob.clientName}" with the company name "${clientJob.companyName}".`,
+      });
     }
+
+    await clientJob.save();
 
     res.status(200).send({
       success: true,
@@ -924,6 +976,14 @@ export const updateClientStatus = async (req, res) => {
       { new: true }
     );
 
+    // Push activity to activities array
+    clientJob.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} update job status "progress" for the client "${clientJob.clientName}" with the company name "${clientJob.companyName}".`,
+    });
+
+    await clientJob.save();
+
     res.status(200).send({
       success: true,
       message: "Client Job status updated successfully!",
@@ -1019,6 +1079,14 @@ export const addlabel = async (req, res) => {
       { new: true }
     );
 
+    // Push activity to activities array
+    updateJob.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} add label in job for the client "${updateJob.clientName}" with the company name "${updateJob.companyName}".`,
+    });
+
+    await updateJob.save();
+
     res.status(200).send({
       success: true,
       message: "Label added!",
@@ -1062,6 +1130,12 @@ export const createSubTask = async (req, res) => {
     }
 
     job.subtasks.push({ subTask: subTask });
+
+    // Push activity to activities array
+    job.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} add subtask "${subTask}" in job for the client "${job?.clientName}" with the company name "${job?.companyName}".`,
+    });
 
     await job.save();
 
@@ -1178,6 +1252,13 @@ export const deleteSubTask = async (req, res) => {
     }
 
     job.subtasks.splice(subtaskIndex, 1);
+
+    // Push activity to activities array
+    job.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} delete subtask in job for the client "${job?.clientName}" with the company name "${job?.companyName}".`,
+    });
+
     await job.save();
 
     res.status(200).send({
@@ -1217,6 +1298,14 @@ export const addDatalabel = async (req, res) => {
       { data: label._id },
       { new: true }
     );
+
+    // Push activity to activities array
+    updateJob.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} update "cc person" in job for the client "${updateJob?.clientName}" with the company name "${updateJob?.companyName}".`,
+    });
+
+    await updateJob.save();
 
     res.status(200).send({
       success: true,
@@ -1371,7 +1460,7 @@ export const getWorkflowClients = async (req, res) => {
     const clients = await jobsModel
       .find({ status: { $ne: "completed" } })
       .select(
-        "fee  totalHours job.jobName job.lead job.jobHolder source clientType partner activeClient createdAt currentDate"
+        "fee totalHours job.jobName job.lead job.jobHolder source clientType partner activeClient createdAt currentDate"
       );
 
     const uniqueClients = await jobsModel.aggregate([
@@ -1496,6 +1585,14 @@ export const updateWorkPlan = async (req, res) => {
       { workPlan: workPlan },
       { new: true }
     );
+
+    // Push activity to activities array
+    clientJob.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} update work plan in job for the client "${clientJob?.clientName}" with the company name "${clientJob?.companyName}".`,
+    });
+
+    await clientJob.save();
 
     res.status(200).send({
       success: true,

@@ -22,6 +22,8 @@ import { VscGraph } from "react-icons/vsc";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import { TbLoader2 } from "react-icons/tb";
 import { GrCopy } from "react-icons/gr";
+import { GoEye } from "react-icons/go";
+import GoalDetail from "../../components/Goal/GoalDetail";
 
 export default function Goals() {
   const { auth } = useAuth();
@@ -45,6 +47,8 @@ export default function Goals() {
   const [status, setStatus] = useState("");
   const [showEdit, setShowEdit] = useState(false);
   const [activeUser, setActiveUser] = useState("All");
+  const [showGoalDetail, setShowGoalDetail] = useState(false);
+  const [note, setNote] = useState("");
   const [formData, setFormData] = useState({
     subject: "",
     achievement: "",
@@ -1198,6 +1202,16 @@ export default function Goals() {
         Cell: ({ cell, row }) => {
           return (
             <div className="flex items-center justify-center gap-2 w-full h-full">
+              <span
+                className=""
+                title="See Detail"
+                onClick={() => {
+                  setShowGoalDetail(true);
+                  setNote(row.original.note);
+                }}
+              >
+                <GoEye className="h-5 w-5 cursor-pointer text-sky-500 hover:text-sky-600" />
+              </span>
               {/* GrCopy */}
               <span
                 className="text-[1rem] cursor-pointer"
@@ -1238,7 +1252,7 @@ export default function Goals() {
             </div>
           );
         },
-        size: 140,
+        size: 160,
       },
 
       // Progress
@@ -1621,6 +1635,12 @@ export default function Goals() {
               goalId={goalId}
               getGoals={getGoals}
             />
+          </div>
+        )}
+        {/* ---------Goal Note---------- */}
+        {showGoalDetail && (
+          <div className="fixed top-0 left-0 w-full h-screen z-[999] bg-gray-100/70 flex items-center justify-center py-6  px-4">
+            <GoalDetail setShowGoalDetail={setShowGoalDetail} note={note} />
           </div>
         )}
         {/* ------------Graphic View setShowGraph-------- */}

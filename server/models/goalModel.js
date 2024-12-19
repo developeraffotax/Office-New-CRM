@@ -55,6 +55,9 @@ const goalSchema = new mongoose.Schema(
       default: "Progress",
     },
     comments: [commentsSchema],
+    note: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

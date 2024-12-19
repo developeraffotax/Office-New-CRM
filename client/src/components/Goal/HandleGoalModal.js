@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import { TbLoader2 } from "react-icons/tb";
+import ReactQuill from "react-quill";
 
 export default function HandleGoalModal({
   goalId,
@@ -20,6 +21,7 @@ export default function HandleGoalModal({
   const [goalType, setGoalType] = useState("");
   const [loading, setLoading] = useState(false);
   const [achievedCount, setAchievedCount] = useState("");
+  const [note, setNote] = useState("");
 
   const goalTypes = [
     "Increase Client",
@@ -64,6 +66,7 @@ export default function HandleGoalModal({
         setAchievement(data.goal.achievement);
         setGoalType(data.goal.goalType);
         setAchievedCount(data.goal.achievedCount);
+        setNote(data.goal.note);
       }
     } catch (error) {
       console.log(error);
@@ -93,6 +96,7 @@ export default function HandleGoalModal({
             goalType,
             jobHolder,
             achievedCount,
+            note,
           }
         );
 
@@ -113,6 +117,7 @@ export default function HandleGoalModal({
             goalType,
             jobHolder,
             achievedCount,
+            note,
           }
         );
         if (data) {
@@ -129,6 +134,35 @@ export default function HandleGoalModal({
       toast.error(error?.response?.data?.message);
     }
   };
+
+  const modules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ["bold", "italic", "underline", "strike", "blockquote"],
+      [
+        { list: "ordered" },
+        { list: "bullet" },
+        { indent: "-1" },
+        { indent: "+1" },
+      ],
+      ["link", "image"],
+      ["clean"],
+    ],
+  };
+
+  const formats = [
+    "header",
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "blockquote",
+    "list",
+    "bullet",
+    "indent",
+    "link",
+    "image",
+  ];
 
   return (
     <div className=" w-[21rem] sm:w-[40rem] max-h-[105vh] mt-[3rem] hidden1 overflow-y-auto rounded-lg shadow-md bg-white">
@@ -232,7 +266,17 @@ export default function HandleGoalModal({
           )}
         </div>
 
-        <div className="flex items-center justify-end ">
+        {/*------------ Desciption----------- */}
+        <ReactQuill
+          theme="snow"
+          modules={modules}
+          formats={formats}
+          className="rounded-md relative min-h-[11rem] max-[28rem] h-[10rem] 2xl:h-[14rem]"
+          value={note}
+          onChange={setNote}
+        />
+
+        <div className="flex items-center justify-end mt-[3rem] ">
           <button
             disabled={loading}
             className={`${style.button1} text-[15px] `}

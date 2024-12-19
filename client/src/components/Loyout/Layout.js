@@ -28,6 +28,8 @@ export default function Layout({ children }) {
     "bg-orange-500 hover:bg-orange-600",
   ];
 
+  console.log("reminderData:", reminderData);
+
   // Security
   const secureKey = process.env.REACT_APP_SECURE_KEY;
   if (!secureKey || secureKey !== "salman@affotax") {
@@ -41,17 +43,26 @@ export default function Layout({ children }) {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/reminders/fetch/reminder`
       );
-      setReminderData(data.reminders);
+      // setReminderData(data.reminders);
+      const currentTime = new Date();
+      const activeReminders = data.reminders.filter((reminder) => {
+        const [hours, minutes] = reminder.time.split(":").map(Number);
+        const reminderTime = new Date(reminder.date);
+        reminderTime.setHours(hours, minutes, 0);
+        return reminderTime <= currentTime;
+      });
+      setReminderData(activeReminders);
     } catch (error) {
       console.error("Error fetching reminders:", error);
     }
   };
 
-  useEffect(() => {
-    getReminders();
-  }, []);
+  // useEffect(() => {
+  //   getReminders();
+  // }, []);
 
   useEffect(() => {
+    getReminders();
     // Load snoozed reminders from localStorage
     const snoozedReminders =
       JSON.parse(localStorage.getItem("snoozedReminders")) || [];

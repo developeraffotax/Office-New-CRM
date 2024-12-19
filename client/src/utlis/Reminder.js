@@ -185,7 +185,7 @@ export default function Reminder({ setShowReminder, taskId, link }) {
                 className={`${style.input} w-full `}
                 required
               />
-              <span>Date</span>
+              {/* <span>Date</span> */}
             </div>
             <div className="inputBox">
               <input
@@ -195,7 +195,7 @@ export default function Reminder({ setShowReminder, taskId, link }) {
                 className={`${style.input} w-full `}
                 required
               />
-              <span>Time</span>
+              {/* <span>Time</span> */}
             </div>
           </div>
           <div className="flex items-center justify-end w-full">

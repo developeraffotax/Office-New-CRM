@@ -7,6 +7,7 @@ import {
   deleteHrTask,
   hrTaskDetail,
   updateHrTask,
+  updateUserStatus,
 } from "../controllers/hrController.js";
 
 const router = express.Router();
@@ -28,5 +29,8 @@ router.delete("/remove/task/:id", requiredSignIn, deleteHrTask);
 
 // Copy HR Task
 router.post("/copy/task/:id", requiredSignIn, copyHrTask);
+
+// Update Status
+router.put("/update/status/:id", requiredSignIn, updateUserStatus);
 
 export default router;

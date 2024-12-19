@@ -1,3 +1,4 @@
+import departmentModel from "../models/departmentModel.js";
 import hrModel from "../models/hrModel.js";
 
 // Create
@@ -5,8 +6,12 @@ export const createHrTask = async (req, res) => {
   try {
     const { title, department, category, software, description } = req.body;
 
-    if (!department) {
-      return res.status(400).json({ message: "Department is required" });
+    const departmentDetail = await departmentModel.findById(department);
+    if (!departmentDetail) {
+      return res.status(404).send({
+        success: false,
+        message: "Department not found!",
+      });
     }
 
     const task = await hrModel.create({
@@ -15,6 +20,7 @@ export const createHrTask = async (req, res) => {
       category,
       software,
       description,
+      users: departmentDetail.users,
     });
 
     res.status(200).send({
@@ -47,6 +53,31 @@ export const updateHrTask = async (req, res) => {
       });
     }
 
+    const departmentDetail = await departmentModel.findById(department);
+    if (!departmentDetail) {
+      return res.status(404).send({
+        success: false,
+        message: "Department not found!",
+      });
+    }
+
+    const existingUsersMap = new Map(
+      existingTask.users.map((userObj) => [
+        userObj.user.toString(),
+        userObj.status,
+      ])
+    );
+
+    console.log("status:", existingUsersMap);
+
+    const updatedUsers = departmentDetail.users.map((userObj) => {
+      return {
+        user: userObj.user,
+        status: existingUsersMap.get(userObj.user.toString()) || "No",
+      };
+    });
+    console.log("data:", updatedUsers);
+
     const task = await hrModel.findByIdAndUpdate(
       { _id: existingTask._id },
       {
@@ -55,6 +86,7 @@ export const updateHrTask = async (req, res) => {
         category,
         software,
         description,
+        users: updatedUsers,
       },
       { new: true }
     );
@@ -79,6 +111,10 @@ export const allHrTask = async (req, res) => {
   try {
     const tasks = await hrModel
       .find({})
+      .populate({
+        path: "users.user",
+        select: "name email",
+      })
       .populate("department")
       .populate({
         path: "department",
@@ -110,6 +146,10 @@ export const hrTaskDetail = async (req, res) => {
 
     const task = await hrModel
       .findById(taskId)
+      .populate({
+        path: "users.user",
+        select: "name email",
+      })
       .populate("department")
       .populate({
         path: "department",
@@ -203,6 +243,49 @@ export const copyHrTask = async (req, res) => {
       success: false,
       message: "Error occur while copy hr task!",
       error: error,
+    });
+  }
+};
+
+// Update User Status
+export const updateUserStatus = async (req, res) => {
+  try {
+    const taskId = req.params.id;
+    const { statusId, status } = req.body;
+
+    const task = await hrModel.findById(taskId);
+    if (!task) {
+      return res.status(404).send({
+        success: false,
+        message: "Task not found!",
+      });
+    }
+
+    const userIndex = task.users.findIndex(
+      (user) => user._id.toString() === statusId
+    );
+
+    if (userIndex === -1) {
+      return res.status(404).send({
+        success: false,
+        message: "User not found in this project!",
+      });
+    }
+
+    task.users[userIndex].status = status;
+
+    await task.save();
+
+    res.status(200).send({
+      success: true,
+      message: "User status updated successfully!",
+      task: task,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error occured while update user status, please try again!",
     });
   }
 };

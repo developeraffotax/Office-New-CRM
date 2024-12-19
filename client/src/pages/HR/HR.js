@@ -40,6 +40,8 @@ export default function HR() {
   const [columnVisibility, setColumnVisibility] = useState({});
   const [copyLoad, setCopyLoad] = useState(false);
 
+  console.log("taskData:", taskData);
+
   useEffect(() => {
     if (userName && userName.length > 0) {
       const savedVisibility = JSON.parse(
@@ -225,6 +227,7 @@ export default function HR() {
         `${process.env.REACT_APP_API_URL}/api/v1/hr/remove/task/${id}`
       );
       if (data) {
+        setTaskData((prevTasks) => prevTasks.filter((task) => task._id !== id));
         getAllTasks();
       }
     } catch (error) {
@@ -234,15 +237,14 @@ export default function HR() {
   };
 
   // Update User Status
-  const updateUserStatus = async (depId, statusId, status) => {
+  const updateUserStatus = async (taskId, statusId, status) => {
     try {
       const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/department/update/status/${depId}`,
+        `${process.env.REACT_APP_API_URL}/api/v1/hr/update/status/${taskId}`,
         { statusId, status }
       );
       if (data) {
         getAllTasks();
-        fetchAllDepartments();
       }
     } catch (error) {
       console.log(error);
@@ -485,7 +487,7 @@ export default function HR() {
             );
           },
           Cell: ({ row }) => {
-            const matchedUser = row.original.department.users?.find(
+            const matchedUser = row.original.users?.find(
               (u) => u?.user?.name === name
             );
             const [isShow, setIsShow] = useState(false);
@@ -493,7 +495,7 @@ export default function HR() {
 
             const handleStatus = (value, statusId) => {
               setStatus(value);
-              updateUserStatus(row.original.department._id, statusId, value);
+              updateUserStatus(row.original._id, statusId, value);
               setIsShow(false);
             };
             return (
@@ -533,7 +535,7 @@ export default function HR() {
           maxSize: 160,
           grow: false,
           filterFn: (row, columnId, filterValue) => {
-            const status = row.original.department.users?.find(
+            const status = row.original.users?.find(
               (u) => u?.user?.name === name
             )?.status;
 

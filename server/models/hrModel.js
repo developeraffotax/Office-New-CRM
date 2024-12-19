@@ -30,7 +30,6 @@ const hrSchema = new mongoose.Schema(
         },
         status: {
           type: String,
-          enum: ["Yes", "No"],
           default: "No",
         },
       },

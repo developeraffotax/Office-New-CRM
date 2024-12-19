@@ -12,10 +12,6 @@ const departmentSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "Users",
         },
-        status: {
-          type: String,
-          default: "No",
-        },
       },
     ],
     status: {

@@ -429,7 +429,7 @@ export default function AllJobs() {
     }
   }, [searchValue, tableData]);
 
-  // -------------- Filter Data By Department || Status || Placeholder ----------->
+  // -------------- Filter Data By Department || Status || Jobholder ----------->
 
   const filterByDepStat = (value, dep) => {
     let filteredData = [];
@@ -483,12 +483,6 @@ export default function AllJobs() {
           user?.role?.access?.some((item) => item?.permission?.includes("Jobs"))
         ) || []
       );
-
-      // setUserData(
-      //   data?.users?.filter((user) =>
-      //     user.role?.access.some((item) => item.permission.includes("Jobs"))
-      //   )
-      // );
     } catch (error) {
       console.log(error);
     }
@@ -558,9 +552,9 @@ export default function AllJobs() {
         );
         toast.success("Job status updated!");
         // Socket
-        socketId.emit("addJob", {
-          note: "New Task Added",
-        });
+        // socketId.emit("addJob", {
+        //   note: "New Task Added",
+        // });
       }
     } catch (error) {
       console.error("Error updating status", error);
@@ -598,9 +592,9 @@ export default function AllJobs() {
         );
         toast.success("Job lead updated!");
         // Socket
-        socketId.emit("addJob", {
-          note: "New Task Added",
-        });
+        // socketId.emit("addJob", {
+        //   note: "New Task Added",
+        // });
       }
     } catch (error) {
       console.error("Error updating status", error);
@@ -639,9 +633,9 @@ export default function AllJobs() {
 
         toast.success("Job holder updated!");
         // Socket
-        socketId.emit("addJob", {
-          note: "New Task Added",
-        });
+        // socketId.emit("addJob", {
+        //   note: "New Task Added",
+        // });
         // Send Socket Notification
         socketId.emit("notification", {
           title: "New Job Assigned",
@@ -722,15 +716,22 @@ export default function AllJobs() {
       if (data) {
         const clientJob = data.clientJob;
         // Socket
-        socketId.emit("addJob", {
-          note: "New Task Added",
-        });
-        toast.success("Date updated successfully!");
+        // socketId.emit("addJob", {
+        //   note: "New Task Added",
+        // });
+        if (filterId || active || active1) {
+          setFilterData((prevData) =>
+            prevData?.map((item) =>
+              item._id === jobId ? { ...item, ...clientJob } : item
+            )
+          );
+        }
         setTableData((prevData) =>
           prevData?.map((item) =>
-            item._id === clientJob._id ? clientJob : item
+            item._id === jobId ? { ...item, ...clientJob } : item
           )
         );
+        toast.success("Date updated successfully!");
       }
     } catch (error) {
       console.log(error);
@@ -823,16 +824,17 @@ export default function AllJobs() {
         { name, color }
       );
       if (data) {
+        const clientJob = data.job;
         if (filterId || active || active1) {
           setFilterData((prevData) =>
             prevData?.map((item) =>
-              item._id === id ? { ...item, label: { name, color } } : item
+              item._id === id ? { ...item, ...clientJob } : item
             )
           );
         }
         setTableData((prevData) =>
           prevData?.map((item) =>
-            item._id === id ? { ...item, label: { name, color } } : item
+            item._id === id ? { ...item, ...clientJob } : item
           )
         );
 
@@ -843,9 +845,9 @@ export default function AllJobs() {
         }
 
         // Socket
-        socketId.emit("addJob", {
-          note: "New Task Added",
-        });
+        // socketId.emit("addJob", {
+        //   note: "New Task Added",
+        // });
       }
     } catch (error) {
       console.log(error);
@@ -855,27 +857,30 @@ export default function AllJobs() {
 
   // Add Data
   const addDatalabel1 = async (id, labelId) => {
-    console.log("Data:", id, labelId);
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/client/add/job/data/${id}`,
         { labelId }
       );
       if (data) {
+        const clientJob = data.job;
+        console.log("ClientJob:", clientJob);
+
         if (filterId || active || active1) {
           setFilterData((prevData) =>
             prevData?.map((item) =>
-              item._id === id ? { ...item, data: data?.job?.data } : item
+              item._id === clientJob._id ? { ...item, ...clientJob } : item
             )
           );
         }
+
         setTableData((prevData) =>
           prevData?.map((item) =>
-            item._id === id ? { ...item, data: data?.job?.data } : item
+            item._id === clientJob._id ? { ...item, ...clientJob } : item
           )
         );
-        allClientData();
-        toast.success("New Data label added!");
+
+        toast.success("Data label Updated!");
 
         // Socket
         socketId.emit("addJob", {

@@ -636,14 +636,14 @@ export default function Complaints() {
           return (
             <div className="w-full px-1">
               <div
-                onDoubleClick={() => {
+                onClick={() => {
                   setComplaintId(row.original._id);
                   setShowDetail(true);
                 }}
-                className="cursor-pointer w-full select-none"
+                className="cursor-pointer w-full select-none text-blue-500 font-medium"
               >
                 {note ? (
-                  note
+                  note.slice(0, 80) + "..."
                 ) : (
                   <div className="text-white w-full h-full">.</div>
                 )}

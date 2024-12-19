@@ -17,6 +17,7 @@ export const createGoal = async (req, res) => {
       goalType,
       jobHolder,
       achievedCount,
+      note,
     } = req.body;
 
     console.log(achievedCount);
@@ -29,6 +30,7 @@ export const createGoal = async (req, res) => {
       goalType,
       jobHolder,
       achievedCount,
+      note,
     });
 
     res.status(200).send({
@@ -58,6 +60,7 @@ export const updateGoal = async (req, res) => {
       goalType,
       jobHolder,
       achievedCount,
+      note,
     } = req.body;
 
     const isGoal = await goalModel.findById(goalId);
@@ -79,6 +82,7 @@ export const updateGoal = async (req, res) => {
         goalType: goalType || isGoal.goalType,
         jobHolder: jobHolder || isGoal.jobHolder,
         achievedCount: achievedCount || isGoal.achievedCount,
+        note: note || isGoal.note,
       },
       { new: true }
     );

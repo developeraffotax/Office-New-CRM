@@ -26,9 +26,11 @@ export default function Reminder({ setShowReminder, taskId, link }) {
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/dashboard/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUserData(data?.users);
+      setUserData(
+        data?.users.map((user) => ({ _id: user._id, name: user.name }))
+      );
       console.log("users", data?.users);
     } catch (error) {
       console.log(error);

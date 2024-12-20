@@ -83,6 +83,28 @@ const subtask = new mongoose.Schema(
   { timestamps: true }
 );
 
+const qualityCheck = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Users",
+    },
+    subTask: {
+      type: String,
+      trim: true,
+    },
+    status: {
+      type: String,
+      default: "process",
+    },
+    order: {
+      type: Number,
+      default: 0,
+    },
+  },
+  { timestamps: true }
+);
+
 const activitySchema = new mongoose.Schema(
   {
     user: {
@@ -187,6 +209,7 @@ const clientSchema = new mongoose.Schema(
     },
     comments: [commentsSchema],
     subtasks: [subtask],
+    quality_Check: [qualityCheck],
     activeClient: {
       type: String,
       default: "active",

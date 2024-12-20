@@ -4,9 +4,11 @@ import {
   addlabel,
   createDublicateJob,
   createJob,
+  createQuality,
   createSubTask,
   dashboardCompletedClients,
   deleteClientJob,
+  deleteQuality,
   deleteSubTask,
   getAllClients,
   getClientJobs,
@@ -24,6 +26,7 @@ import {
   updateDates,
   updateJobHolder,
   updateLead,
+  updateQuality,
   updateStatus,
   updateSubTaskStaus,
   updateTime,
@@ -126,5 +129,19 @@ router.put("/update/workplain/:id", requiredSignIn, updateWorkPlan);
 
 // Update (Prepared|Review|Filed)
 router.put("/job/users/:id", requiredSignIn, updateUsers);
+
+// ------------------------------Qulity Check-------------------------------->
+// Create Quality Check
+router.post("/create/quality/:id", requiredSignIn, createQuality);
+
+// Update Quality Chec
+router.put("/update/quality/status/:id", requiredSignIn, updateQuality);
+
+// Delete Quality Check
+router.delete(
+  "/delete/quality/:jobId/:qualityId",
+  requiredSignIn,
+  deleteQuality
+);
 
 export default router;

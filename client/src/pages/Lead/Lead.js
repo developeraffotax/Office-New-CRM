@@ -30,6 +30,7 @@ export default function Lead() {
   const [users, setUsers] = useState([]);
   const [userName, setUserName] = useState([]);
   const [load, setLoad] = useState(false);
+  const [valueTotal, setValueTotal] = useState(0);
   const leadSource = [
     "Upwork",
     "Fiverr",
@@ -72,7 +73,7 @@ export default function Lead() {
   const [active, setActive] = useState(false);
   const [selectFilter, setSelectFilter] = useState("");
 
-  // console.log("formData:", formData);
+  console.log("filteredData:", filteredData);
 
   // -------Get All Leads-------
   const getAllLeads = async () => {
@@ -112,6 +113,16 @@ export default function Lead() {
   useEffect(() => {
     getAllLeads();
   }, [selectedTab]);
+
+  // Filter Total Value
+  useEffect(() => {
+    const totalvalue = filteredData.reduce(
+      (acc, item) => acc + Number(item.value || 0),
+      0
+    );
+    console.log("totalvalue:", totalvalue);
+    setValueTotal(totalvalue);
+  }, [filteredData]);
 
   const getLeads = async () => {
     setLoad(true);
@@ -960,13 +971,16 @@ export default function Lead() {
               >
                 Value
               </span>
-              <input
+              <span className="border rounded px-2 py-1 text-sm ">
+                {valueTotal}
+              </span>
+              {/* <input
                 type="text"
                 placeholder=""
                 className="border rounded px-2 py-1 text-sm outline-none"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-              />
+              /> */}
             </div>
           );
         },
@@ -1843,7 +1857,7 @@ export default function Lead() {
       },
     ],
     // eslint-disable-next-line
-    [users, auth, leadData, load]
+    [users, auth, leadData, load, valueTotal]
   );
 
   // Clear table Filter

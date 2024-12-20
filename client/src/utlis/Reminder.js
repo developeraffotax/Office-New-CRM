@@ -5,10 +5,12 @@ import { IoClose } from "react-icons/io5";
 import { style } from "./CommonStyle";
 import { TbLoader2 } from "react-icons/tb";
 import socketIO from "socket.io-client";
+import { useAuth } from "../context/authContext";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 export default function Reminder({ setShowReminder, taskId, link }) {
+  const { auth } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
@@ -16,6 +18,8 @@ export default function Reminder({ setShowReminder, taskId, link }) {
   const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState([]);
   const [usersList, setUserList] = useState([]);
+
+  console.log("usersList", usersList);
 
   // -------Get All Users-------->
 
@@ -36,6 +40,15 @@ export default function Reminder({ setShowReminder, taskId, link }) {
 
     //eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    if (auth.user) {
+      const _id = auth.user.id;
+      const name = auth.user.name;
+
+      setUserList([{ _id, name }]);
+    }
+  }, [auth.user]);
 
   // Create Reminder
   const handleCreateReminder = async (e) => {

@@ -263,19 +263,18 @@ const AllTasks = () => {
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/all`
       );
 
-      setTasksData(data?.tasks);
-      if (
-        auth.user.role.name === "Admin" ||
-        auth.user.role.name === "SEO Manager" ||
-        auth.user.role.name === "Accountant-Lead"
-      ) {
+      setTasksData(data.tasks);
+
+      if (auth.user.role.name === "Admin") {
         setTasksData(data?.tasks);
       } else {
-        const filteredTasks = data?.tasks?.filter(
-          (item) => item.jobHolder === auth.user.name
-        );
+        const filteredTasks = data?.tasks?.filter((item) => {
+          return item?.project?.users_list?.some(
+            (user) => user?.name === auth?.user?.name
+          );
+        });
 
-        setTasksData(filteredTasks);
+        setTasksData(filteredTasks || []);
       }
     } catch (error) {
       console.log(error);

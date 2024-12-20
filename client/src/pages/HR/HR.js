@@ -20,6 +20,21 @@ import { RiEdit2Line } from "react-icons/ri";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { GrCopy } from "react-icons/gr";
 
+const months = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 export default function HR() {
   const { auth } = useAuth();
   const [showAddTask, setShowAddTask] = useState(false);
@@ -39,8 +54,10 @@ export default function HR() {
   const [showcolumn, setShowColumn] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [copyLoad, setCopyLoad] = useState(false);
+  const currentMonthIndex = new Date().getMonth();
+  const [month, setMonth] = useState(currentMonthIndex);
 
-  console.log("taskData:", taskData);
+  console.log("month:", month);
 
   useEffect(() => {
     if (userName && userName.length > 0) {
@@ -440,7 +457,7 @@ export default function HR() {
                   }}
                   className="px-1 w-full text-[14px] text-blue-600 cursor-pointer"
                 >
-                  {title || ""}
+                  {title.length > 65 ? `${title.slice(0, 65)}...` : title}
                 </div>
               </div>
             </div>
@@ -723,6 +740,21 @@ export default function HR() {
                 </div>
               )}
             </div>
+            {/* ----------Months Filter--------- */}
+            {/* <div className="relative">
+              <select
+                className="w-[8rem] p-[6px] rounded-md border border-gray-300 cursor-pointer outline-orange-500"
+                value={month}
+                onChange={(e) => setMonth(parseInt(e.target.value))}
+              >
+                <option value="">Select Month</option>
+                {months.map((monthName, index) => (
+                  <option key={index} value={index}>
+                    {monthName}
+                  </option>
+                ))}
+              </select>
+            </div> */}
             {/* ----------All Departments--------- */}
             <div
               className=" relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2 flex items-center justify-between gap-1"

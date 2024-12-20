@@ -6,6 +6,7 @@ import { TbLoader2 } from "react-icons/tb";
 import socketIO from "socket.io-client";
 import { style } from "../../utlis/CommonStyle";
 import ReactQuill from "react-quill";
+import { useAuth } from "../../context/authContext";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -16,6 +17,7 @@ export default function MeetingModal({
   fetchMeetingData,
   setMeetingId,
 }) {
+  const { auth } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [results, setResults] = useState("");
@@ -76,6 +78,15 @@ export default function MeetingModal({
 
     //eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    if (auth.user) {
+      const _id = auth.user.id;
+      const name = auth.user.name;
+
+      setUserList([{ _id, name }]);
+    }
+  }, [auth.user]);
 
   // Create Reminder
   const handleMeeting = async (e) => {

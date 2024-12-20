@@ -18,6 +18,7 @@ import { GiBrokenHeart } from "react-icons/gi";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { MdOutlineAnalytics } from "react-icons/md";
+import { RiProgress3Line } from "react-icons/ri";
 
 export default function Lead() {
   const navigate = useNavigate();
@@ -1579,7 +1580,6 @@ export default function Lead() {
         maxSize: 120,
         grow: false,
       },
-
       //   Stages
       {
         accessorKey: "stage",
@@ -1671,7 +1671,6 @@ export default function Lead() {
         filterSelectOptions: stages?.map((stage) => stage),
         filterVariant: "select",
       },
-
       // <-----Action------>
       {
         accessorKey: "actions",
@@ -1697,24 +1696,50 @@ export default function Lead() {
               >
                 <GrCopy className="h-5 w-5 text-cyan-500 hover:text-cyan-600 " />
               </span>
-              <span
-                className=""
-                title="Won Lead"
-                onClick={() => {
-                  handleLeadStatus(row.original._id, "won");
-                }}
-              >
-                <FaTrophy className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
-              </span>
-              <span
-                className=""
-                title="Lost Lead"
-                onClick={() => {
-                  handleLeadStatus(row.original._id, "lost");
-                }}
-              >
-                <GiBrokenHeart className="h-6 w-6 cursor-pointer text-red-500 hover:text-red-600" />
-              </span>
+              {selectedTab === "won" ? (
+                <span
+                  className=""
+                  title="Progress Lead"
+                  onClick={() => {
+                    handleLeadStatus(row.original._id, "progress");
+                  }}
+                >
+                  <RiProgress3Line className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
+                </span>
+              ) : (
+                <span
+                  className=""
+                  title="Won Lead"
+                  onClick={() => {
+                    handleLeadStatus(row.original._id, "won");
+                  }}
+                >
+                  <FaTrophy className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
+                </span>
+              )}
+              {selectedTab === "lost" ? (
+                <div className="flex items-center gap-2">
+                  <span
+                    className=""
+                    title="Progress Lead"
+                    onClick={() => {
+                      handleLeadStatus(row.original._id, "progress");
+                    }}
+                  >
+                    <RiProgress3Line className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
+                  </span>
+                </div>
+              ) : (
+                <span
+                  className=""
+                  title="Lost Lead"
+                  onClick={() => {
+                    handleLeadStatus(row.original._id, "lost");
+                  }}
+                >
+                  <GiBrokenHeart className="h-6 w-6 cursor-pointer text-red-500 hover:text-red-600" />
+                </span>
+              )}
 
               <span
                 className="text-[1rem] cursor-pointer"
@@ -1796,7 +1821,11 @@ export default function Lead() {
                   className="cursor-pointer w-full"
                 >
                   {note ? (
-                    note
+                    note.length > 46 ? (
+                      <span>{note.slice(0, 46)}...</span>
+                    ) : (
+                      <span>{note}</span>
+                    )
                   ) : (
                     <div className="text-white w-full h-full">.</div>
                   )}

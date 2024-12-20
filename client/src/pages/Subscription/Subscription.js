@@ -1265,7 +1265,11 @@ export default function Subscription() {
                   className="cursor-pointer w-full"
                 >
                   {note ? (
-                    note
+                    note.length > 32 ? (
+                      note.slice(0, 32) + " ..."
+                    ) : (
+                      note
+                    )
                   ) : (
                     <div className="text-white w-full h-full">.</div>
                   )}

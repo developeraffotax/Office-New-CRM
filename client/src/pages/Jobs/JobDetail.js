@@ -53,6 +53,9 @@ export default function JobDetail({
   const [showEdit, setShowEdit] = useState(false);
   const [workPlan, setWorkPlan] = useState("");
   const [load, setLoad] = useState(false);
+  const [quality, setQuality] = useState("");
+  const [loadingQuality, setLoadingQuality] = useState(false);
+  const [qualityData, setQualityData] = useState([]);
 
   // console.log(clientDetail.workPlan);
 
@@ -85,6 +88,7 @@ export default function JobDetail({
             (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
           )
         );
+        setQualityData(data?.clientJob?.quality_Check);
       }
     } catch (error) {
       console.log(error);
@@ -236,7 +240,7 @@ export default function JobDetail({
       toast.error(error.response.data.message);
     }
   };
-
+  // Delete Subtask
   const handleDeleteSubTask = async (subTaskId) => {
     try {
       const { data } = await axios.delete(
@@ -274,6 +278,62 @@ export default function JobDetail({
       console.log(error);
     } finally {
       setLoad(false);
+    }
+  };
+
+  // ----------Create Quality Check---------->
+  const handleCreateQuality = async (e) => {
+    e.preventDefault();
+    setSubTaskLoading(true);
+    try {
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/create/quality/${clientId}`,
+        { quality }
+      );
+      if (data) {
+        setClientDetail(data?.job);
+        setQualityData(data?.job?.quality_Check);
+        setQuality("");
+        toast.success("Quality check added successfully!");
+        setLoadingQuality(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setSubTaskLoading(false);
+      toast.error(error.response.data.message);
+    }
+  };
+
+  // Update Quality Check
+  const updateQualityCheckStatus = async (qualityId) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/update/quality/status/${clientId}`,
+        { qualityId }
+      );
+      if (data) {
+        setClientDetail(data?.job);
+        setQualityData(data?.job?.quality_Check);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
+  };
+
+  // Delete Quality Check
+  const handleDeleteQuality = async (qualityId) => {
+    try {
+      const { data } = await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/delete/quality/${clientId}/${qualityId}`
+      );
+      if (data.success) {
+        setClientDetail(data?.job);
+        setQualityData(data?.job?.quality_Check);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
     }
   };
 
@@ -485,145 +545,303 @@ export default function JobDetail({
 
           <div className="w-full">
             {activeTab === "subtasks" ? (
-              <div className="flex flex-col w-full px-2">
-                <div className="flex items-center gap-2 w-full ">
-                  <form
-                    onSubmit={handleCreateSubtask}
-                    className="flex items-center gap-2 w-full py-1 px-2 border bg-gray-50 border-gray-300 rounded-lg  "
-                  >
-                    <input
-                      type="text"
-                      value={subTask}
-                      onChange={(e) => setSubtask(e.target.value)}
-                      placeholder="Add Subtask..."
-                      className="py-2 px-1 border-none bg-transparent outline-none w-full"
-                    />
-                    <button
-                      type="submit"
-                      className="py-[7px] px-4 rounded-md shadow cursor-pointer bg-orange-500 hover:bg-orange-600 text-white"
+              <div className="w-full flex flex-col gap-5 h-screen overflow-y-auto p-4">
+                {/* ------Subtasks---------- */}
+                <div className="flex flex-col w-full px-2">
+                  <div className="flex items-center gap-2 w-full ">
+                    <form
+                      onSubmit={handleCreateSubtask}
+                      className="flex items-center gap-2 w-full py-1 px-2 border bg-gray-50 border-gray-300 rounded-lg  "
                     >
-                      {subTaskLoading ? (
-                        <RiLoaderFill className="h-6 w-6 animate-spin text-white" />
-                      ) : (
-                        "Add"
-                      )}
-                    </button>
-                  </form>
-                </div>
-                <div className="mt-2 py-1  rounded-md border border-gray-300 flex flex-col gap-3">
-                  <h3 className="text-[17px] w-full font-semibold py-2 text-gray-900 border-b-[1px] px-2 border-gray-300">
-                    Checklist (
-                    {
-                      subTaskData.filter(
-                        (subtask) => subtask.status === "complete"
-                      ).length
-                    }
-                    /{subTaskData?.length})
-                  </h3>
-                  <div className="px-2">
-                    {subTaskData.length > 0 ? (
-                      <DragDropContext onDragEnd={handleOnDragEnd}>
-                        <Droppable droppableId="subTaskData">
-                          {(provided) => (
-                            <ul
-                              {...provided.droppableProps}
-                              ref={provided.innerRef}
-                              style={{ listStyle: "none", padding: 0 }}
-                            >
-                              {subTaskData?.map(
-                                ({ _id, subTask, status }, index) => (
-                                  <Draggable
-                                    key={_id}
-                                    draggableId={_id}
-                                    index={index}
-                                  >
-                                    {(provided) => (
-                                      <li
-                                        ref={provided.innerRef}
-                                        {...provided.draggableProps}
-                                        {...provided.dragHandleProps}
-                                        style={{
-                                          ...provided.draggableProps.style,
-                                          padding: "8px",
-                                          marginBottom: "4px",
-                                          backgroundColor:
-                                            status === "complete"
-                                              ? "#d4edda"
-                                              : "#f3f3f3",
-                                          borderRadius: "4px",
-                                          border: "1px solid #ddd",
-                                          display: "flex",
-                                          alignItems: "center",
-                                          justifyContent: "space-between",
-                                        }}
-                                        className="flex items-center justify-between gap-2"
-                                      >
-                                        <div className="flex items-center gap-2 w-full">
-                                          <div className="w-6 h-full">
-                                            <input
-                                              type="checkbox"
-                                              checked={status === "complete"}
-                                              onChange={() =>
-                                                updateSubtaskStatus(_id)
-                                              }
-                                              style={{
-                                                accentColor: "orangered",
-                                              }}
-                                              className="h-5 w-5 cursor-pointer  checked:bg-orange-600"
-                                            />
+                      <input
+                        type="text"
+                        value={subTask}
+                        onChange={(e) => setSubtask(e.target.value)}
+                        placeholder="Add Subtask..."
+                        className="py-2 px-1 border-none bg-transparent outline-none w-full"
+                      />
+                      <button
+                        type="submit"
+                        className="py-[7px] px-4 rounded-md shadow cursor-pointer bg-orange-500 hover:bg-orange-600 text-white"
+                      >
+                        {subTaskLoading ? (
+                          <RiLoaderFill className="h-6 w-6 animate-spin text-white" />
+                        ) : (
+                          "Add"
+                        )}
+                      </button>
+                    </form>
+                  </div>
+                  <div className="mt-2 py-1  rounded-md border border-gray-300 flex flex-col gap-3">
+                    <h3 className="text-[17px] w-full font-semibold py-2 text-gray-900 border-b-[1px] px-2 border-gray-300">
+                      Checklist (
+                      {
+                        subTaskData.filter(
+                          (subtask) => subtask.status === "complete"
+                        ).length
+                      }
+                      /{subTaskData?.length})
+                    </h3>
+                    <div className="px-2">
+                      {subTaskData.length > 0 ? (
+                        <DragDropContext onDragEnd={handleOnDragEnd}>
+                          <Droppable droppableId="subTaskData">
+                            {(provided) => (
+                              <ul
+                                {...provided.droppableProps}
+                                ref={provided.innerRef}
+                                style={{ listStyle: "none", padding: 0 }}
+                              >
+                                {subTaskData?.map(
+                                  ({ _id, subTask, status }, index) => (
+                                    <Draggable
+                                      key={_id}
+                                      draggableId={_id}
+                                      index={index}
+                                    >
+                                      {(provided) => (
+                                        <li
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          {...provided.dragHandleProps}
+                                          style={{
+                                            ...provided.draggableProps.style,
+                                            padding: "8px",
+                                            marginBottom: "4px",
+                                            backgroundColor:
+                                              status === "complete"
+                                                ? "#d4edda"
+                                                : "#f3f3f3",
+                                            borderRadius: "4px",
+                                            border: "1px solid #ddd",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "space-between",
+                                          }}
+                                          className="flex items-center justify-between gap-2"
+                                        >
+                                          <div className="flex items-center gap-2 w-full">
+                                            <div className="w-6 h-full">
+                                              <input
+                                                type="checkbox"
+                                                checked={status === "complete"}
+                                                onChange={() =>
+                                                  updateSubtaskStatus(_id)
+                                                }
+                                                style={{
+                                                  accentColor: "orangered",
+                                                }}
+                                                className="h-5 w-5 cursor-pointer  checked:bg-orange-600"
+                                              />
+                                            </div>
+                                            <p
+                                              className={`text-[15px] ${
+                                                status === "complete" &&
+                                                "line-through"
+                                              }`}
+                                            >
+                                              {subTask}
+                                            </p>
                                           </div>
-                                          <p
-                                            className={`text-[15px] ${
-                                              status === "complete" &&
-                                              "line-through"
-                                            }`}
-                                          >
-                                            {subTask}
-                                          </p>
-                                        </div>
 
-                                        <div className="flex items-center gap-1">
-                                          <span
-                                            className="p-1 cursor-pointer"
-                                            onClick={() => setSubtask(subTask)}
-                                          >
-                                            <FaEdit className="h-5 w-5 cursor-pointer text-gray-800 hover:text-sky-600" />
-                                          </span>
-                                          <span
-                                            className="p-1 cursor-pointer"
-                                            onClick={() =>
-                                              handleDeleteSubTask(_id)
-                                            }
-                                          >
-                                            <IoCloseCircleOutline
-                                              size={24}
-                                              className="cursor-pointer hover:text-red-500 "
-                                              title="Delete Subtask"
-                                            />
-                                          </span>
-                                        </div>
-                                      </li>
-                                    )}
-                                  </Draggable>
-                                )
-                              )}
-                              {provided.placeholder}
-                            </ul>
-                          )}
-                        </Droppable>
-                      </DragDropContext>
-                    ) : (
-                      <div className="w-full py-8 flex items-center flex-col justify-center">
-                        <img
-                          src="/notask1.png"
-                          alt="No_Task"
-                          className="h-[12rem] w-[16rem] animate-pulse"
-                        />
-                        <span className="text-center text-[14px] text-gray-500">
-                          Subtask not available!
-                        </span>
-                      </div>
-                    )}
+                                          <div className="flex items-center gap-1">
+                                            <span
+                                              className="p-1 cursor-pointer"
+                                              onClick={() =>
+                                                setSubtask(subTask)
+                                              }
+                                            >
+                                              <FaEdit className="h-5 w-5 cursor-pointer text-gray-800 hover:text-sky-600" />
+                                            </span>
+                                            <span
+                                              className="p-1 cursor-pointer"
+                                              onClick={() =>
+                                                handleDeleteSubTask(_id)
+                                              }
+                                            >
+                                              <IoCloseCircleOutline
+                                                size={24}
+                                                className="cursor-pointer hover:text-red-500 "
+                                                title="Delete Subtask"
+                                              />
+                                            </span>
+                                          </div>
+                                        </li>
+                                      )}
+                                    </Draggable>
+                                  )
+                                )}
+                                {provided.placeholder}
+                              </ul>
+                            )}
+                          </Droppable>
+                        </DragDropContext>
+                      ) : (
+                        <div className="w-full py-8 flex items-center flex-col justify-center">
+                          <img
+                            src="/notask1.png"
+                            alt="No_Task"
+                            className="h-[12rem] w-[16rem] animate-pulse"
+                          />
+                          <span className="text-center text-[14px] text-gray-500">
+                            Subtask not available!
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {/* --------Quality Check-------- */}
+                <div className="flex flex-col w-full px-2 gap-3">
+                  <h3 className="text-[17px] font-semibold text-gray-900">
+                    Quality Check
+                  </h3>
+                  <div className="flex items-center gap-2 w-full ">
+                    <form
+                      onSubmit={handleCreateQuality}
+                      className="flex items-center gap-2 w-full py-1 px-2 border bg-gray-50 border-gray-300 rounded-lg  "
+                    >
+                      <input
+                        type="text"
+                        value={quality}
+                        onChange={(e) => setQuality(e.target.value)}
+                        placeholder="Add quality check..."
+                        className="py-2 px-1 border-none bg-transparent outline-none w-full"
+                      />
+                      <button
+                        type="submit"
+                        className="py-[7px] px-4 rounded-md shadow cursor-pointer bg-orange-500 hover:bg-orange-600 text-white"
+                      >
+                        {loadingQuality ? (
+                          <RiLoaderFill className="h-6 w-6 animate-spin text-white" />
+                        ) : (
+                          "Add"
+                        )}
+                      </button>
+                    </form>
+                  </div>
+                  <div className="mt-2 py-1  rounded-md border border-gray-300 flex flex-col gap-3">
+                    <h3 className="text-[17px] w-full font-semibold py-2 text-gray-900 border-b-[1px] px-2 border-gray-300">
+                      Checklist (
+                      {
+                        qualityData.filter(
+                          (subtask) => subtask.status === "complete"
+                        ).length
+                      }
+                      /{qualityData?.length})
+                    </h3>
+                    <div className="px-2">
+                      {qualityData.length > 0 ? (
+                        <DragDropContext onDragEnd={handleOnDragEnd}>
+                          <Droppable droppableId="subTaskData">
+                            {(provided) => (
+                              <ul
+                                {...provided.droppableProps}
+                                ref={provided.innerRef}
+                                style={{ listStyle: "none", padding: 0 }}
+                              >
+                                {qualityData?.map(
+                                  ({ _id, subTask, status, user }, index) => (
+                                    <Draggable
+                                      key={_id}
+                                      draggableId={_id}
+                                      index={index}
+                                    >
+                                      {(provided) => (
+                                        <li
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          {...provided.dragHandleProps}
+                                          style={{
+                                            ...provided.draggableProps.style,
+                                            padding: "8px",
+                                            marginBottom: "4px",
+                                            backgroundColor:
+                                              status === "complete"
+                                                ? "#d4edda"
+                                                : "#f3f3f3",
+                                            borderRadius: "4px",
+                                            border: "1px solid #ddd",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "space-between",
+                                          }}
+                                          className="flex items-center justify-between gap-2"
+                                        >
+                                          <div className="flex items-center gap-2 w-full">
+                                            <div className="w-6 h-full">
+                                              <input
+                                                type="checkbox"
+                                                checked={status === "complete"}
+                                                onChange={() =>
+                                                  updateQualityCheckStatus(_id)
+                                                }
+                                                style={{
+                                                  accentColor: "orangered",
+                                                }}
+                                                className="h-5 w-5 cursor-pointer  checked:bg-orange-600"
+                                              />
+                                            </div>
+                                            <p
+                                              className={`text-[15px] ${
+                                                status === "complete" &&
+                                                "line-through"
+                                              }`}
+                                            >
+                                              {subTask}
+                                            </p>
+                                          </div>
+
+                                          <div className="flex items-center gap-1">
+                                            {user?.name && (
+                                              <span className="min-w-[5rem] py-1 px-3 rounded-md bg-sky-600 text-white text-[12px]">
+                                                {user?.name}
+                                              </span>
+                                            )}
+                                            <span
+                                              className="p-1 cursor-pointer"
+                                              onClick={() =>
+                                                setSubtask(subTask)
+                                              }
+                                            >
+                                              <FaEdit className="h-5 w-5 cursor-pointer text-gray-800 hover:text-sky-600" />
+                                            </span>
+                                            <span
+                                              className="p-1 cursor-pointer"
+                                              onClick={() =>
+                                                handleDeleteQuality(_id)
+                                              }
+                                            >
+                                              <IoCloseCircleOutline
+                                                size={24}
+                                                className="cursor-pointer hover:text-red-500 "
+                                                title="Delete Subtask"
+                                              />
+                                            </span>
+                                          </div>
+                                        </li>
+                                      )}
+                                    </Draggable>
+                                  )
+                                )}
+                                {provided.placeholder}
+                              </ul>
+                            )}
+                          </Droppable>
+                        </DragDropContext>
+                      ) : (
+                        <div className="w-full py-8 flex items-center flex-col justify-center">
+                          <img
+                            src="/notask1.png"
+                            alt="No_Task"
+                            className="h-[12rem] w-[16rem] animate-pulse"
+                          />
+                          <span className="text-center text-[14px] text-gray-500">
+                            Quality check not available!
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

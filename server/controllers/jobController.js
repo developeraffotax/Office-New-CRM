@@ -466,7 +466,8 @@ export const singleClientJob = async (req, res) => {
 
     const clientJob = await jobsModel
       .findById({ _id: jobId })
-      .populate({ path: "activities.user", select: "name avatar" });
+      .populate({ path: "activities.user", select: "name avatar" })
+      .populate({ path: "quality_Check.user", select: "name" });
 
     if (!clientJob) {
       return res.status(400).send({
@@ -1657,6 +1658,186 @@ export const updateUsers = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in update job holder !",
+      error: error,
+    });
+  }
+};
+
+// Create Quality Control
+export const createQuality = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const { quality } = req.body;
+    if (!jobId) {
+      return res.status(400).send({
+        success: false,
+        message: "Job Id is required!",
+      });
+    }
+    if (!quality) {
+      return res.status(400).send({
+        success: false,
+        message: "Quality subtask is required!",
+      });
+    }
+
+    const job = await jobsModel.findById(jobId);
+
+    if (!job) {
+      return res.status(400).send({
+        success: false,
+        message: "Job not found!",
+      });
+    }
+
+    job.quality_Check.push({ subTask: quality });
+
+    // Push activity to activities array
+    job.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} add quality check "${quality}" in job.`,
+    });
+
+    await job.save();
+
+    res.status(200).send({
+      success: true,
+      message: "Quality check added successfully!",
+      job: job,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      messsage: "Error in create subtask!",
+      error: error,
+    });
+  }
+};
+
+// Update Quality Control
+export const updateQuality = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const userId = req.user.user._id;
+
+    const { qualityId } = req.body;
+    if (!jobId) {
+      return res.status(400).send({
+        success: false,
+        message: "Job Id is required!",
+      });
+    }
+    if (!qualityId) {
+      return res.status(400).send({
+        success: false,
+        message: "Quality check id is required!",
+      });
+    }
+
+    const job = await jobsModel
+      .findById(jobId)
+      .populate({ path: "quality_Check.user", select: "name" });
+
+    if (!job) {
+      return res.status(400).send({
+        success: false,
+        message: "Job not found!",
+      });
+    }
+
+    const qualityIndex = job.quality_Check.findIndex(
+      (item) => item._id.toString() === qualityId
+    );
+    if (qualityIndex === -1) {
+      return res.status(400).send({
+        success: false,
+        message: "Quality check not found!",
+      });
+    }
+
+    job.quality_Check[qualityIndex].status =
+      job.quality_Check[qualityIndex].status === "process"
+        ? "complete"
+        : "process";
+    job.quality_Check[qualityIndex].user = userId;
+
+    await job.save();
+
+    res.status(200).send({
+      success: true,
+      message: "Quality check status updated!",
+      job: job,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      messsage: "Error in update subtask!",
+      error: error,
+    });
+  }
+};
+
+// Delete Quality Control
+export const deleteQuality = async (req, res) => {
+  try {
+    const { jobId, qualityId } = req.params;
+
+    if (!jobId) {
+      return res.status(400).send({
+        success: false,
+        message: "Job Id is required!",
+      });
+    }
+    if (!qualityId) {
+      return res.status(400).send({
+        success: false,
+        message: "Quality check id is required!",
+      });
+    }
+
+    const job = await jobsModel.findById(jobId);
+
+    if (!job) {
+      return res.status(400).send({
+        success: false,
+        message: "Job not found!",
+      });
+    }
+
+    const qualityIndex = job.quality_Check.findIndex(
+      (quality) => quality._id.toString() === qualityId
+    );
+
+    // If the subtask is not found
+    if (qualityIndex === -1) {
+      return res.status(400).send({
+        success: false,
+        message: "Quality check not found!",
+      });
+    }
+
+    job.quality_Check.splice(qualityIndex, 1);
+
+    // Push activity to activities array
+    job.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} has deleted quality check in this job.`,
+    });
+
+    await job.save();
+
+    res.status(200).send({
+      success: true,
+      message: "Quality check deleted!",
+      job: job,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      messsage: "Error in delete subtask!",
       error: error,
     });
   }

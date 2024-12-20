@@ -20,6 +20,7 @@ import { GiBrokenHeart } from "react-icons/gi";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { MdOutlineAnalytics } from "react-icons/md";
+import { RiProgress3Line } from "react-icons/ri";
 
 const Leads = forwardRef(({ childRef, setIsload }, ref) => {
   const { auth } = useAuth();
@@ -1630,6 +1631,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
       },
 
       // <-----Action------>
+      // <-----Action------>
       {
         accessorKey: "actions",
         header: "Actions",
@@ -1654,24 +1656,50 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
               >
                 <GrCopy className="h-5 w-5 text-cyan-500 hover:text-cyan-600 " />
               </span>
-              <span
-                className=""
-                title="Won Lead"
-                onClick={() => {
-                  handleLeadStatus(row.original._id, "won");
-                }}
-              >
-                <FaTrophy className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
-              </span>
-              <span
-                className=""
-                title="Lost Lead"
-                onClick={() => {
-                  handleLeadStatus(row.original._id, "lost");
-                }}
-              >
-                <GiBrokenHeart className="h-6 w-6 cursor-pointer text-red-500 hover:text-red-600" />
-              </span>
+              {selectedTab === "won" ? (
+                <span
+                  className=""
+                  title="Progress Lead"
+                  onClick={() => {
+                    handleLeadStatus(row.original._id, "progress");
+                  }}
+                >
+                  <RiProgress3Line className="h-6 w-6 cursor-pointer text-orange-500 hover:text-orange-600" />
+                </span>
+              ) : (
+                <span
+                  className=""
+                  title="Won Lead"
+                  onClick={() => {
+                    handleLeadStatus(row.original._id, "won");
+                  }}
+                >
+                  <FaTrophy className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
+                </span>
+              )}
+              {selectedTab === "lost" ? (
+                <div className="flex items-center gap-2">
+                  <span
+                    className=""
+                    title="Progress Lead"
+                    onClick={() => {
+                      handleLeadStatus(row.original._id, "progress");
+                    }}
+                  >
+                    <RiProgress3Line className="h-6 w-6 cursor-pointer text-orange-500 hover:text-orange-600" />
+                  </span>
+                </div>
+              ) : (
+                <span
+                  className=""
+                  title="Lost Lead"
+                  onClick={() => {
+                    handleLeadStatus(row.original._id, "lost");
+                  }}
+                >
+                  <GiBrokenHeart className="h-6 w-6 cursor-pointer text-red-500 hover:text-red-600" />
+                </span>
+              )}
 
               <span
                 className="text-[1rem] cursor-pointer"

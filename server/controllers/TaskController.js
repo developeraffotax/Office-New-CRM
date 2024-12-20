@@ -1085,7 +1085,10 @@ const calculateStartDate = (date, recurringType) => {
 
 const adjustForFridayAndWeekend = (date) => {
   const day = date.getDay();
-  if (day === 5) {
+  if (day === 4) {
+    // If Thursday, move to Friday
+    date.setDate(date.getDate() + 1);
+  } else if (day === 5) {
     // If Friday, move to the following Monday
     date.setDate(date.getDate() + 3);
   } else if (day === 6) {
@@ -1158,7 +1161,7 @@ export const autoCreateRecurringTasks = async (req, res) => {
 };
 
 // Schedule the task to run daily at midnight
-cron.schedule("30 23 * * *", () => {
+cron.schedule("30 22 * * *", () => {
   console.log("Running task scheduler for recurring tasks...");
   autoCreateRecurringTasks();
 });

@@ -9,6 +9,8 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import Draggable from "react-draggable";
 import socketIO from "socket.io-client";
+import toast from "react-hot-toast";
+import { CgList } from "react-icons/cg";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -27,8 +29,9 @@ export default function Layout({ children }) {
     "bg-indigo-500 hover:bg-indigo-600",
     "bg-orange-500 hover:bg-orange-600",
   ];
-
-  console.log("reminderData:", reminderData);
+  const [showQuickList, setShowQuickList] = useState(false);
+  const [quickListData, setQuickListData] = useState("");
+  const [editId, setEditId] = useState("");
 
   // Security
   const secureKey = process.env.REACT_APP_SECURE_KEY;
@@ -154,6 +157,59 @@ export default function Layout({ children }) {
     localStorage.setItem("snoozedReminders", JSON.stringify(updatedReminders));
   };
 
+  // Get Quick List
+  const getQuickList = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/quicklist/get/quicklist`
+      );
+      setQuickListData(data.quickList.description);
+      setEditId(data.quickList._id);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getQuickList();
+  }, [auth]);
+
+  // Update Quick List
+  const updateQuickList = async (e) => {
+    e.preventDefault();
+    setShowQuickList(false);
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/quicklist/update/quicklist/${editId}`,
+        { description: quickListData }
+      );
+      if (data) {
+        getQuickList();
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    }
+  };
+
+  // const createQuickList = async (e) => {
+  //   e.preventDefault();
+  //   setShowQuickList(false);
+  //   try {
+  //     const { data } = await axios.post(
+  //       `${process.env.REACT_APP_API_URL}/api/v1/quicklist/create/quicklist`,
+  //       { description: quickListData }
+  //     );
+  //     if (data) {
+  //       getQuickList();
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     toast.error(error?.response?.data?.message);
+  //   }
+  // };
+
+  // ----------------verify token-------------
   if (!auth?.token) {
     return <Spinner />;
   }
@@ -265,7 +321,13 @@ export default function Layout({ children }) {
 
   return (
     <div className="relative w-full h-[111vh] overflow-hidden flex flex-col ">
-      <Header reminderData={reminderData} deleteReminder={deleteReminder} />
+      <Header
+        reminderData={reminderData}
+        deleteReminder={deleteReminder}
+        setShowQuickList={setShowQuickList}
+        showQuickList={showQuickList}
+        getQuickList={getQuickList}
+      />
       <div className=" w-full flex-1 gap-1 flex h-[100%]  fixed top-[3.8rem] left-[0rem] z-[1] overflow-hidden">
         {!show && (
           <div className=" flex sm:hidden  absolute top-2 left-3">
@@ -302,6 +364,36 @@ export default function Layout({ children }) {
 
       {/* Reminder Notifications */}
       {reminderData.map((reminder) => renderNotification(reminder))}
+
+      {/* Quick List */}
+      {showQuickList && (
+        <Draggable handle=".drag-handle">
+          <div className="fixed top-[4rem] right-[8rem] z-[999] w-[20rem] sm:w-[29rem] rounded-md shadow-md drop-shadow-md min-h-[14rem] mb-4 bg-gray-50">
+            <div className="drag-handle flex items-center justify-between cursor-move relative rounded-tl-md rounded-tr-md text-white bg-orange-600 p-3 font-Poppins">
+              <h5 className=" flex items-center gap-2  text-[20px] text-start font-medium ">
+                <CgList className="h-6 w-6 text-white " /> Quick Lists
+              </h5>
+              <span
+                className="cursor-pointer absolute top-2 right-2 z-[9999]"
+                onClick={() => setShowQuickList(false)}
+              >
+                <IoCloseCircleOutline className="text-[28px] text-white mt-1 " />
+              </span>
+            </div>
+            <div className="flex flex-col gap-1 p-3">
+              <div className="h-[16rem]  w-full overflow-hidden">
+                <textarea
+                  className="w-full h-[16rem] rounded-md resize-none py-1 px-2 rezise-none border-0 bg-transparent outline-none"
+                  value={quickListData}
+                  onChange={(e) => setQuickListData(e.target.value)}
+                  placeholder="Add quick list here..."
+                  onBlur={(e) => updateQuickList(e)}
+                ></textarea>
+              </div>
+            </div>
+          </div>
+        </Draggable>
+      )}
     </div>
   );
 }

@@ -26,6 +26,8 @@ import { BiBellPlus, BiSolidBellPlus } from "react-icons/bi";
 import { RiLoader2Fill } from "react-icons/ri";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { RiListView } from "react-icons/ri";
+import { MdOutlineAddBox } from "react-icons/md";
 
 export default function JobDetail({
   clientId,
@@ -56,6 +58,8 @@ export default function JobDetail({
   const [quality, setQuality] = useState("");
   const [loadingQuality, setLoadingQuality] = useState(false);
   const [qualityData, setQualityData] = useState([]);
+  const [qualities, setQualities] = useState([]);
+  const [showQuality, setShowQuality] = useState(false);
 
   // console.log(clientDetail.workPlan);
 
@@ -88,7 +92,11 @@ export default function JobDetail({
             (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
           )
         );
-        setQualityData(data?.clientJob?.quality_Check);
+        // setQualityData(data?.clientJob?.quality_Check);
+        const sortedData = [...data.clientJob.quality_Check].sort(
+          (a, b) => a.order - b.order
+        );
+        setQualityData(sortedData);
       }
     } catch (error) {
       console.log(error);
@@ -281,6 +289,26 @@ export default function JobDetail({
     }
   };
 
+  // Get All Quality Check
+  const getQuickList = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/quicklist/get/all`
+      );
+      if (data) {
+        setQualities(data.qualityChecks);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getQuickList();
+
+    // eslint-disable-next-line
+  }, []);
+
   // ----------Create Quality Check---------->
   const handleCreateQuality = async (e) => {
     e.preventDefault();
@@ -291,8 +319,10 @@ export default function JobDetail({
         { quality }
       );
       if (data) {
-        setClientDetail(data?.job);
-        setQualityData(data?.job?.quality_Check);
+        const sortedData = [...data?.job?.quality_Check].sort(
+          (a, b) => a.order - b.order
+        );
+        setQualityData(sortedData);
         setQuality("");
         toast.success("Quality check added successfully!");
         setLoadingQuality(false);
@@ -304,6 +334,31 @@ export default function JobDetail({
     }
   };
 
+  // Handle Create Quality Check
+  const handleCreateQualityByClick = async (quality) => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/create/quality/${clientId}`,
+        { quality }
+      );
+
+      if (response?.data) {
+        const sortedData = response.data.job.quality_Check.sort(
+          (a, b) => a.order - b.order
+        );
+
+        setQualityData(sortedData);
+        setQuality("");
+        toast.success("Quality check added successfully!");
+      }
+    } catch (error) {
+      console.error("Error creating quality check:", error);
+      toast.error(
+        error.response?.data?.message || "An unexpected error occurred"
+      );
+    }
+  };
+
   // Update Quality Check
   const updateQualityCheckStatus = async (qualityId) => {
     try {
@@ -312,8 +367,10 @@ export default function JobDetail({
         { qualityId }
       );
       if (data) {
-        setClientDetail(data?.job);
-        setQualityData(data?.job?.quality_Check);
+        const sortedData = [...data?.job?.quality_Check].sort(
+          (a, b) => a.order - b.order
+        );
+        setQualityData(sortedData);
       }
     } catch (error) {
       console.log(error);
@@ -328,12 +385,47 @@ export default function JobDetail({
         `${process.env.REACT_APP_API_URL}/api/v1/client/delete/quality/${clientId}/${qualityId}`
       );
       if (data.success) {
-        setClientDetail(data?.job);
-        setQualityData(data?.job?.quality_Check);
+        // setClientDetail(data?.job);
+        // setQualityData(data?.job?.quality_Check);
+        const sortedData = [...data?.job?.quality_Check].sort(
+          (a, b) => a.order - b.order
+        );
+        setQualityData(sortedData);
       }
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
+    }
+  };
+
+  //  Handle drag end
+  const handleOnDragEndQualityCheck = (result) => {
+    const { destination, source } = result;
+
+    if (!destination || destination.index === source.index) return;
+
+    const newTodos = Array.from(qualityData);
+    const [movedTodo] = newTodos.splice(source.index, 1);
+    newTodos.splice(destination.index, 0, movedTodo);
+
+    setQualityData(newTodos);
+
+    handleReorderingQualityCheck(newTodos);
+  };
+
+  // Handle Reordering
+  const handleReorderingQualityCheck = async (newTodos) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/reordering/${clientId}`,
+        { qualities: newTodos }
+      );
+      if (data) {
+        toast.success("Reordering successfully!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
     }
   };
 
@@ -621,7 +713,7 @@ export default function JobDetail({
                                           className="flex items-center justify-between gap-2"
                                         >
                                           <div className="flex items-center gap-2 w-full">
-                                            <div className="w-6 h-full">
+                                            <div className="w-6 h-full mt-1">
                                               <input
                                                 type="checkbox"
                                                 checked={status === "complete"}
@@ -693,9 +785,47 @@ export default function JobDetail({
                 </div>
                 {/* --------Quality Check-------- */}
                 <div className="flex flex-col w-full px-2 gap-3">
-                  <h3 className="text-[17px] font-semibold text-gray-900">
-                    Quality Check
-                  </h3>
+                  <div className=" relative w-full flex items-center justify-between gap-4">
+                    <h3 className="text-[17px] font-semibold text-gray-900">
+                      Quality Check
+                    </h3>
+                    <span onClick={() => setShowQuality(!showQuality)}>
+                      <RiListView className="h-6 w-6 cursor-pointer text-sky-500" />
+                    </span>
+                    {showQuality && (
+                      <div className="absolute top-[.5rem] right-[2rem] flex items-center gap-4 bg-gray-50 w-[16rem]">
+                        {qualities.length > 0 && (
+                          <div className="flex flex-col gap-2 w-full  p-3 border rounded-md mb-2">
+                            {qualities &&
+                              qualities
+                                .filter(
+                                  (item) =>
+                                    !qualityData.some(
+                                      (quality) => quality.subTask === item.task
+                                    )
+                                )
+                                ?.map((item) => (
+                                  <div
+                                    className={` flex items-center  justify-between gap-2 relative py-[2px] px-2 rounded-md hover:shadow  cursor-pointer  bg-white border border-gray-300`}
+                                  >
+                                    <span className="tet-[14px] text-gray-800">
+                                      {item?.task}
+                                    </span>
+                                    <span
+                                      onClick={() =>
+                                        handleCreateQualityByClick(item?.task)
+                                      }
+                                      className=" w-[1.5rem] h-[1.5rem] flex items-center justify-center  rounded-full p-[3px] cursor-pointer z-[10]"
+                                    >
+                                      <MdOutlineAddBox className="h-5 w-5 cursor-pointer text-black" />
+                                    </span>
+                                  </div>
+                                ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2 w-full ">
                     <form
                       onSubmit={handleCreateQuality}
@@ -732,7 +862,9 @@ export default function JobDetail({
                     </h3>
                     <div className="px-2">
                       {qualityData.length > 0 ? (
-                        <DragDropContext onDragEnd={handleOnDragEnd}>
+                        <DragDropContext
+                          onDragEnd={handleOnDragEndQualityCheck}
+                        >
                           <Droppable droppableId="subTaskData">
                             {(provided) => (
                               <ul
@@ -754,7 +886,7 @@ export default function JobDetail({
                                           {...provided.dragHandleProps}
                                           style={{
                                             ...provided.draggableProps.style,
-                                            padding: "8px",
+                                            padding: "4px 8px",
                                             marginBottom: "4px",
                                             backgroundColor:
                                               status === "complete"
@@ -769,7 +901,7 @@ export default function JobDetail({
                                           className="flex items-center justify-between gap-2"
                                         >
                                           <div className="flex items-center gap-2 w-full">
-                                            <div className="w-6 h-full">
+                                            <div className="w-6 h-full mt-2 ">
                                               <input
                                                 type="checkbox"
                                                 checked={status === "complete"}
@@ -779,7 +911,7 @@ export default function JobDetail({
                                                 style={{
                                                   accentColor: "orangered",
                                                 }}
-                                                className="h-5 w-5 cursor-pointer  checked:bg-orange-600"
+                                                className="h-5 w-5  cursor-pointer  checked:bg-orange-600"
                                               />
                                             </div>
                                             <p

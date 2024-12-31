@@ -2,6 +2,7 @@ import meetingModel from "../models/meetingModel.js";
 import reminderModel from "../models/reminderModel.js";
 import cron from "node-cron";
 import moment from "moment";
+import notificationModel from "../models/notificationModel.js";
 
 // Create Meeting
 export const createMeeting = async (req, res) => {
@@ -56,6 +57,17 @@ export const createMeeting = async (req, res) => {
           redirectLink,
         });
         reminders.push(reminder);
+      }
+
+      // Send notification to users
+      for (let user of usersList) {
+        await notificationModel.create({
+          title: "Meeting Created",
+          redirectLink: "/meetings",
+          description: `${req.user.user.name} create a new meeting of "${meeting.title}"`,
+          taskId: `${meeting._id}`,
+          userId: user._id,
+        });
       }
     }
 

@@ -5,6 +5,7 @@ import {
   createDublicateJob,
   createJob,
   createQuality,
+  createQualityForAllJobs,
   createSubTask,
   dashboardCompletedClients,
   deleteClientJob,
@@ -18,6 +19,7 @@ import {
   getTicketClients,
   getWorkflowClients,
   importData,
+  reordering,
   singleClientComments,
   singleClientJob,
   updateBulkJob,
@@ -143,5 +145,11 @@ router.delete(
   requiredSignIn,
   deleteQuality
 );
+
+// Reordering Quality Check
+router.put("/reordering/:id", requiredSignIn, reordering);
+
+// Add Quality Check to All Jobs
+router.post("/add/quality/all", requiredSignIn, createQualityForAllJobs);
 
 export default router;

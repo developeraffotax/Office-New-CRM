@@ -29,6 +29,8 @@ import reminderRoute from "./routes/reminderRoutes.js";
 import meetingRoute from "./routes/meetingRoutes.js";
 import hrRoute from "./routes/hrRoutes.js";
 import departmentRoute from "./routes/departmentRoutes.js";
+import quickListRoute from "./routes/quickListRoute.js";
+import qualityListRoute from "./routes/qualityRoutes.js";
 
 import cron from "node-cron";
 const requiredKey = process.env.SERVER_SECRET_KEY;
@@ -83,6 +85,8 @@ app.use("/api/v1/reminders", reminderRoute);
 app.use("/api/v1/meetings", meetingRoute);
 app.use("/api/v1/hr", hrRoute);
 app.use("/api/v1/department", departmentRoute);
+app.use("/api/v1/quicklist", quickListRoute);
+app.use("/api/v1/quicklist", qualityListRoute);
 
 // Send Data to Google Sheet
 cron.schedule("0 13,20,23 * * *", () => {

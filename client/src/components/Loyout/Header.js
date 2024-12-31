@@ -9,7 +9,7 @@ import axios from "axios";
 import { IoIosTimer } from "react-icons/io";
 import { MdOutlineTimerOff } from "react-icons/md";
 import { TbBellRinging } from "react-icons/tb";
-import { BiSolidBellMinus } from "react-icons/bi";
+import { CgList } from "react-icons/cg";
 import { FaStopwatch } from "react-icons/fa6";
 import socketIO from "socket.io-client";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
@@ -30,7 +30,12 @@ const formatElapsedTime = (createdAt) => {
   }
 };
 
-export default function Header({ reminderData }) {
+export default function Header({
+  reminderData,
+  setShowQuickList,
+  showQuickList,
+  getQuickList,
+}) {
   const { auth, setAuth, setFilterId, time, searchValue, setSearchValue } =
     useAuth();
   const [open, setOpen] = useState(false);
@@ -430,6 +435,15 @@ export default function Header({ reminderData }) {
                 </div>
               )}
             </div>
+            {/* --------Quick Lists------ */}
+            <span
+              onClick={() => {
+                // getQuickList();
+                setShowQuickList(!showQuickList);
+              }}
+            >
+              <CgList className="text-2xl container text-black " />
+            </span>
             {/* --------Notifications------ */}
             <div className="relative">
               <div

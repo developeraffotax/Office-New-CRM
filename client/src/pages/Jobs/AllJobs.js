@@ -31,6 +31,7 @@ import { IoMdDownload } from "react-icons/io";
 import { GoEye } from "react-icons/go";
 import { GoEyeClosed } from "react-icons/go";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import Select from "react-select";
 
 import CompletedJobs from "./CompletedJobs";
 import socketIO from "socket.io-client";
@@ -40,6 +41,7 @@ import { LuImport } from "react-icons/lu";
 import AddDataLabel from "../../components/Modals/AddDataLabel";
 import InactiveClients from "./InactiveClients";
 import Swal from "sweetalert2";
+import HandleQualityModal from "../../components/Modals/HandleQualityModal";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -116,11 +118,14 @@ export default function AllJobs() {
   const [fee, setFee] = useState("");
   const [hours, setHours] = useState("");
   const [activeClient, setActiveClient] = useState("");
+  const [qualities, setQualities] = useState([]);
   const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
   const [timerId, setTimerId] = useState("");
   const [showInactive, setShowInactive] = useState(false);
   const [isLoad, setIsLoad] = useState(false);
   const [showcolumn, setShowColumn] = useState(false);
+  const [showQuickList, setShowQuickList] = useState(false);
+  const [qualityData, setQualityData] = useState([]);
   const columnData = [
     "companyName",
     "clientName",
@@ -165,7 +170,7 @@ export default function AllJobs() {
     localStorage.setItem("columnVisibility", JSON.stringify(updatedVisibility));
   };
 
-  console.log("usersData:", usersData);
+  console.log("qualityData:", qualityData);
 
   // Extract the current path
   const currentPath = location.pathname;
@@ -2771,6 +2776,7 @@ export default function AllJobs() {
           fee,
           totalHours: hours,
           activeClient,
+          qualities: qualities.map((item) => item.label),
         }
       );
 
@@ -2791,6 +2797,7 @@ export default function AllJobs() {
         setFee("");
         setHours("");
         setActiveClient("");
+        setQualities([]);
       }
     } catch (error) {
       setIsUpdate(false);
@@ -2848,6 +2855,34 @@ export default function AllJobs() {
       toast.error(error.response.data.message);
     }
   };
+
+  // Get All Quality Check
+  const getQuickList = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/quicklist/get/all`
+      );
+      if (data) {
+        setQualityData(data.qualityChecks);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getQuickList();
+
+    // eslint-disable-next-line
+  }, []);
+
+  const qualityOptions = qualityData?.map((cat) => ({
+    value: cat._id,
+    label: cat.task,
+  }));
+
+  console.log("qualityOptions:", qualityOptions);
+  console.log("qualityData:", qualityData);
 
   return (
     <Layout>
@@ -2916,6 +2951,13 @@ export default function AllJobs() {
               title="Export Date"
             >
               <LuImport className="h-6 w-6 " /> Export
+            </button>
+            <button
+              className={`${style.button1} text-[15px] `}
+              onClick={() => setShowQuickList(true)}
+              style={{ padding: ".4rem 1rem" }}
+            >
+              Quality List
             </button>
             <button
               className={`${style.button1} text-[15px] `}
@@ -3258,6 +3300,16 @@ export default function AllJobs() {
                 </select>
               </div>
 
+              <div className=" z-[999]">
+                <Select
+                  options={qualityOptions}
+                  value={qualities}
+                  onChange={setQualities}
+                  isMulti
+                  placeholder="Quality Check"
+                />
+              </div>
+
               <div className="flex items-center justify-end pl-4">
                 <button
                   className={`${style.button1} text-[15px] `}
@@ -3589,6 +3641,16 @@ export default function AllJobs() {
           <AddDataLabel
             setShowDataLable={setShowDataLable}
             getDatalable={getDatalable}
+          />
+        </div>
+      )}
+
+      {/* ---------------Add Quick List------------- */}
+      {showQuickList && (
+        <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
+          <HandleQualityModal
+            setShowQuickList={setShowQuickList}
+            getQuickList={getQuickList}
           />
         </div>
       )}

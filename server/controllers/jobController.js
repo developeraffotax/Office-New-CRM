@@ -1385,9 +1385,10 @@ export const updateBulkJob = async (req, res) => {
       fee,
       totalHours,
       activeClient,
+      qualities,
     } = req.body;
 
-    console.log("activeClient:", activeClient);
+    console.log("qualities:", qualities);
 
     if (
       !rowSelection ||
@@ -1430,6 +1431,27 @@ export const updateBulkJob = async (req, res) => {
       { $set: updateData },
       { multi: true }
     );
+
+    // Add qualities to quality_Check
+    if (qualities && Array.isArray(qualities)) {
+      for (const quality of qualities) {
+        const job = await jobsModel.findOne({ _id: { $in: rowSelection } });
+        const currentOrder = job ? job.quality_Check.length : 0;
+
+        await jobsModel.updateMany(
+          { _id: { $in: rowSelection } },
+          {
+            $push: {
+              quality_Check: {
+                subTask: quality,
+                status: "process",
+                order: currentOrder,
+              },
+            },
+          }
+        );
+      }
+    }
 
     // Check if any jobs were updated
     if (updatedJobs.modifiedCount === 0) {
@@ -1690,7 +1712,14 @@ export const createQuality = async (req, res) => {
       });
     }
 
-    job.quality_Check.push({ subTask: quality });
+    // Count existing subtasks
+    const qualityCheckCount = job.quality_Check ? job.quality_Check.length : 0;
+
+    job.quality_Check.push({ subTask: quality, order: qualityCheckCount + 1 });
+
+    await job.save();
+
+    // job.quality_Check.push({ subTask: quality });
 
     // Push activity to activities array
     job.activities.push({
@@ -1839,6 +1868,115 @@ export const deleteQuality = async (req, res) => {
       success: false,
       messsage: "Error in delete subtask!",
       error: error,
+    });
+  }
+};
+
+// Reordering Subtasks
+export const reordering = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const { qualities } = req.body;
+
+    // Validate input
+    if (!jobId) {
+      return res.status(400).json({
+        success: false,
+        message: "Job Id is required!",
+      });
+    }
+    if (!qualities || !Array.isArray(qualities)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid quality check format. Must be an array of tasks!",
+      });
+    }
+
+    // Fetch the task to ensure it exists
+    const job = await jobsModel.findById(jobId);
+
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: "Job not found!",
+      });
+    }
+
+    // Update the order of each subtask
+    await Promise.all(
+      qualities.map((stask, index) =>
+        jobsModel.updateOne(
+          { "quality_Check._id": stask._id },
+          { $set: { "quality_Check.$.order": index + 1 } }
+        )
+      )
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Quality check order updated successfully!",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Error while reordering quality check!",
+      error: error.message,
+    });
+  }
+};
+
+// Add Quility Check to All Jobs
+export const createQualityForAllJobs = async (req, res) => {
+  try {
+    const { quality } = req.body;
+
+    if (!quality) {
+      return res.status(400).send({
+        success: false,
+        message: "Quality subtask is required!",
+      });
+    }
+
+    // Find all jobs with status "Progress"
+    const jobs = await jobsModel.find({ jobStatus: "Progress" });
+
+    if (!jobs || jobs.length === 0) {
+      return res.status(404).send({
+        success: false,
+        message: "No jobs found with status 'Progress'!",
+      });
+    }
+
+    // Iterate through all jobs and add the quality check
+    const updatePromises = jobsModel.map(async (job) => {
+      const qualityCheckCount = job.quality_Check
+        ? job.quality_Check.length
+        : 0;
+
+      // Add new quality check subtask
+      job.quality_Check.push({
+        subTask: quality,
+        order: qualityCheckCount + 1,
+      });
+
+      // Save the updated job
+      return job.save();
+    });
+
+    // Wait for all updates to complete
+    await Promise.all(updatePromises);
+
+    res.status(200).send({
+      success: true,
+      message: "Quality check added to all jobs in progress!",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      success: false,
+      message: "Error adding quality check to jobs!",
+      error: error.message,
     });
   }
 };

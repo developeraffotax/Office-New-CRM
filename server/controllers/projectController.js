@@ -80,6 +80,14 @@ export const updateProject = async (req, res) => {
       { new: true }
     );
 
+    const tasks = await taskModel.updateMany(
+      { "project._id": project._id },
+      { $set: { project: project } },
+      { new: true }
+    );
+
+    console.log("tasks", tasks);
+
     res.status(200).send({
       success: true,
       message: "Project update successfully!",

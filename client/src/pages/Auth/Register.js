@@ -248,7 +248,7 @@ export default function Register({
           </div>
           <div className="flex flex-col gap-1">
             <label htmlFor="" className="text-[1rem] font-[400] ">
-              Emergency Contact
+              Role
             </label>
             <select
               className={`${style.input} h-[2.7rem] border-gray-900`}

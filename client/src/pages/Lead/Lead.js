@@ -1542,13 +1542,27 @@ export default function Lead() {
               >
                 Days
               </span>
-              <input
+              {/* <input
                 type="text"
                 placeholder="Search Days..."
                 className="border rounded px-2 py-1 text-sm outline-none"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-              />
+              /> */}
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                  setSelectFilter(e.target.value);
+                }}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                <option value="0-10">0-10</option>
+                <option value="10-20">10-20</option>
+                <option value="20-30">20-30</option>
+                <option value="30+">30+</option>
+              </select>
             </div>
           );
         },
@@ -1584,9 +1598,12 @@ export default function Lead() {
             timeDifference / (1000 * 60 * 60 * 24)
           );
 
-          // alert(dayDifference);
+          if (filterValue === "30+") {
+            return dayDifference >= 30;
+          }
 
-          return dayDifference.toString().includes(filterValue);
+          const [min, max] = filterValue.split("-").map(Number);
+          return dayDifference >= min && dayDifference <= max;
         },
         enableColumnFilter: true,
         size: 70,

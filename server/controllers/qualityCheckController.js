@@ -3,7 +3,7 @@ import qualityCheckModel from "../models/qualityCheckModel.js";
 // Create Quality Check
 export const createQuality = async (req, res) => {
   try {
-    const { task } = req.body;
+    const { task, type } = req.body;
 
     if (!task) {
       return res.status(400).send({
@@ -14,6 +14,7 @@ export const createQuality = async (req, res) => {
 
     const qualityCheck = await qualityCheckModel.create({
       task,
+      type,
     });
 
     res.status(200).send({

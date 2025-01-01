@@ -689,6 +689,8 @@ export const fetchTimersbydate = async (req, res) => {
   try {
     const { startDate, endDate } = req.params;
 
+    // console.log("Dates", startDate, endDate);
+
     if (!startDate || !endDate) {
       return res.status(400).send({
         success: false,
@@ -698,9 +700,10 @@ export const fetchTimersbydate = async (req, res) => {
 
     const start = new Date(startDate);
     const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
 
     const timers = await timerModel
-      .find({ endTime: { $ne: null }, createdAt: { $gte: start, $lte: end } })
+      .find({ endTime: { $ne: null }, date: { $gte: start, $lte: end } })
       .sort({ date: 1 });
 
     res.status(200).send({

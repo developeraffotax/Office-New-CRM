@@ -38,6 +38,7 @@ import http from "http";
 import { initSocketServer, Skey } from "./socketServer.js";
 import { sendDatatoGoogleSheet } from "./utils/googleSheet.js";
 
+// export const createServer = (port) => {
 // Verify the key
 if (!requiredKey || requiredKey !== Skey) {
   process.exit(1);
@@ -105,3 +106,4 @@ const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
   console.log(`Server is running at PORT ${PORT}`.bgMagenta.white);
 });
+// };

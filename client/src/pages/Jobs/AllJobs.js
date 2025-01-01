@@ -2757,6 +2757,14 @@ export default function AllJobs() {
   const updateBulkJob = async (e) => {
     e.preventDefault();
     setIsUpdate(true);
+
+    const filteredTasks = qualityData.filter(
+      (item) => item.type === qualities.label
+    );
+
+    // Map to extract labels
+    const qualityLabels = filteredTasks.map((item) => item.task);
+
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/bulk/job`,
@@ -2776,7 +2784,7 @@ export default function AllJobs() {
           fee,
           totalHours: hours,
           activeClient,
-          qualities: qualities.map((item) => item.label),
+          qualities: qualityLabels,
         }
       );
 
@@ -2875,14 +2883,16 @@ export default function AllJobs() {
 
     // eslint-disable-next-line
   }, []);
+  const groupedData = qualityData?.reduce((acc, item) => {
+    if (!acc[item.type]) acc[item.type] = [];
+    acc[item.type].push(item);
+    return acc;
+  }, {});
 
-  const qualityOptions = qualityData?.map((cat) => ({
-    value: cat._id,
-    label: cat.task,
+  const qualityOptions = Object.entries(groupedData).map(([type, items]) => ({
+    value: type,
+    label: type,
   }));
-
-  console.log("qualityOptions:", qualityOptions);
-  console.log("qualityData:", qualityData);
 
   return (
     <Layout>
@@ -3305,8 +3315,9 @@ export default function AllJobs() {
                   options={qualityOptions}
                   value={qualities}
                   onChange={setQualities}
-                  isMulti
+                  // isMulti
                   placeholder="Quality Check"
+                  className="min-w-[8rem]"
                 />
               </div>
 

@@ -266,7 +266,7 @@ export default function Lead() {
             prevData.filter((item) => item._id !== updateLead._id)
           );
         }
-        getLeads();
+        getAllLeads();
       }
     } catch (error) {
       console.log(error);

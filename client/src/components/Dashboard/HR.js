@@ -28,7 +28,7 @@ export default function HR({
   // Get ALL Holidays
   useEffect(() => {
     const filteredHolidays = holidaysData?.filter((holiday) => {
-      const holidayDate = new Date(holiday.createdAt);
+      const holidayDate = new Date(holiday.date);
       const matchesMonth = selectedMonth
         ? holidayDate.getMonth() + 1 === parseInt(selectedMonth)
         : true;

@@ -45,6 +45,7 @@ const Proposals = forwardRef(
       propos: "",
       lead: "",
       client: "",
+      value: "",
     });
     const [selectFilter, setSelectFilter] = useState("");
     const [proposalId, setProposalId] = useState("");
@@ -252,6 +253,7 @@ const Proposals = forwardRef(
             source: "",
             note: "",
             status: "",
+            value: "",
           });
           toast.success("Proposal data updated!");
         }
@@ -537,6 +539,75 @@ const Proposals = forwardRef(
           minSize: 350,
           maxSize: 560,
           grow: false,
+        },
+        // Value
+        {
+          accessorKey: "value",
+          minSize: 50,
+          maxSize: 100,
+          size: 60,
+          grow: false,
+          Header: ({ column }) => {
+            return (
+              <div className=" flex flex-col gap-[2px]">
+                <span
+                  className="ml-1 cursor-pointer"
+                  title="Clear Filter"
+                  onClick={() => {
+                    column.setFilterValue("");
+                    setSelectFilter("");
+                  }}
+                >
+                  Value
+                </span>
+              </div>
+            );
+          },
+          Cell: ({ cell, row }) => {
+            const value = row.original.value;
+            const [show, setShow] = useState(false);
+            const [localValue, setLocalValue] = useState(value || "");
+
+            const handleSubmit = (e) => {
+              setFormData((prevData) => ({
+                ...prevData,
+                value: localValue,
+              }));
+
+              handleUpdateData(row.original._id, {
+                ...formData,
+                value: localValue,
+              });
+
+              setShow(false);
+            };
+
+            return (
+              <div className="w-full ">
+                {!show ? (
+                  <div
+                    className="w-full cursor-pointer flex items-center justify-center"
+                    onDoubleClick={() => setShow(true)}
+                  >
+                    {value ? (
+                      <span>{value}</span>
+                    ) : (
+                      <span className="text-white">.</span>
+                    )}
+                  </div>
+                ) : (
+                  <input
+                    value={localValue || ""}
+                    className="w-full h-[2rem] px-1 rounded-md border-none  outline-none"
+                    onChange={(e) => setLocalValue(e.target.value)}
+                    onBlur={(e) => handleSubmit(e.target.value)}
+                  />
+                )}
+              </div>
+            );
+          },
+          filterFn: "equals",
+          filterVariant: "select",
         },
         //   Created At
         {

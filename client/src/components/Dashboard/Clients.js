@@ -27,6 +27,8 @@ export default function Clients({
     totalClients: "0",
   });
 
+  console.log("Data:", filterWorkFlow, filterUniqueClient);
+
   // console.log("Data:", activeClientJobs, activeClients);
 
   console.log("uniqueClients:", uniqueClients);

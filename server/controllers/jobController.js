@@ -669,7 +669,7 @@ export const updateClientJob = async (req, res) => {
 export const updateDates = async (req, res) => {
   try {
     const jobId = req.params.id;
-    const { yearEnd, jobDeadline, workDeadline } = req.body;
+    const { yearEnd, jobDeadline, workDeadline, currentDate } = req.body;
 
     const formatDate = (date) => {
       const options = { day: "2-digit", month: "short", year: "numeric" };
@@ -728,6 +728,22 @@ export const updateDates = async (req, res) => {
         activity: `${
           req.user.user.name
         } has update this job Job_date "${formatDate(workDeadline)}".`,
+      });
+    }
+
+    if (currentDate) {
+      clientJob = await jobsModel.findByIdAndUpdate(
+        { _id: jobId },
+        { $set: { currentDate: currentDate } },
+        { new: true }
+      );
+
+      // Push activity to activities array
+      clientJob.activities.push({
+        user: req.user.user._id,
+        activity: `${
+          req.user.user.name
+        } has update this job current date "${formatDate(currentDate)}".`,
       });
     }
 

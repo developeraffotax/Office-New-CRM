@@ -28,6 +28,7 @@ const Subscriptions = forwardRef(
     const [subscriptionId, setSubscriptionId] = useState("");
     const [filterData, setFilterData] = useState([]);
     const [totalFee, setTotalFee] = useState(0);
+    const [dataLable, setDataLabel] = useState([]);
     //
     const subscriptions = ["Weekly", "Monthly", "Quarterly", "Yearly"];
     const states = ["Paid", "Unpaid", "On Hold", "Not Due"];
@@ -85,6 +86,24 @@ const Subscriptions = forwardRef(
     useEffect(() => {
       getAllUsers();
       // eslint-disable-next-line
+    }, []);
+
+    //   Get All Data Labels
+    const getDatalable = async () => {
+      try {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/label/subscription/labels`
+        );
+        if (data.success) {
+          setDataLabel(data.labels);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    useEffect(() => {
+      getDatalable();
     }, []);
 
     // --------------Update JobHolder------------>
@@ -196,6 +215,23 @@ const Subscriptions = forwardRef(
       }
     };
 
+    // Update data Label
+    const addDatalabel = async (id, labelId) => {
+      try {
+        const { data } = await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/lable/${id}`,
+          { labelId }
+        );
+        if (data) {
+          fetchSubscriptions();
+          toast.success("New Data label added!");
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error("Error while add label");
+      }
+    };
+
     //  --------------Table Columns Data--------->
     const columns = useMemo(
       () => [
@@ -291,7 +327,7 @@ const Subscriptions = forwardRef(
                     column.setFilterValue("");
                   }}
                 >
-                  Job Holder
+                  Assign
                 </span>
                 <select
                   value={column.getFilterValue() || ""}
@@ -1200,7 +1236,7 @@ const Subscriptions = forwardRef(
                     column.setFilterValue("");
                   }}
                 >
-                  Manager
+                  Owner
                 </span>
                 <select
                   value={column.getFilterValue() || ""}
@@ -1312,6 +1348,113 @@ const Subscriptions = forwardRef(
           size: 110,
           minSize: 70,
           maxSize: 140,
+          grow: false,
+        },
+        {
+          id: "Data",
+          accessorKey: "data",
+
+          Header: ({ column }) => {
+            return (
+              <div className="flex flex-col gap-[2px]">
+                <span
+                  className="ml-1 cursor-pointer"
+                  title="Clear Filter"
+                  onClick={() => {
+                    column.setFilterValue("");
+                  }}
+                >
+                  CC Person
+                </span>
+                <select
+                  value={column.getFilterValue() || ""}
+                  onChange={(e) => column.setFilterValue(e.target.value)}
+                  className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select</option>
+                  {dataLable?.map((label, i) => (
+                    <option key={i} value={label?.name}>
+                      {label?.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            );
+          },
+
+          Cell: ({ cell, row }) => {
+            const [show, setShow] = useState(false);
+            const jobLabel = row.original.data || {};
+            const { name, color, _id } = jobLabel;
+
+            const handleLabelChange = (labelName) => {
+              const selectedLabel = dataLable.find(
+                (label) => label._id === labelName
+              );
+              console.log("selectedLabel:", selectedLabel);
+              if (selectedLabel) {
+                addDatalabel(row.original._id, labelName);
+              } else {
+                addDatalabel(row.original._id, "");
+              }
+              setShow(false);
+            };
+
+            return (
+              <div className="w-full flex items-start ">
+                {show ? (
+                  <select
+                    value={_id || ""}
+                    onChange={(e) => handleLabelChange(e.target.value)}
+                    className="w-full h-[2rem] rounded-md border-none outline-none"
+                  >
+                    <option value=".">Select Label</option>
+                    {dataLable?.map((label, i) => (
+                      <option value={label?._id} key={i}>
+                        {label?.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div
+                    className="cursor-pointer h-full min-w-full "
+                    onDoubleClick={() => setShow(true)}
+                  >
+                    {name ? (
+                      <span
+                        className={`label relative  rounded-md hover:shadow  cursor-pointer text-black ${
+                          color === "#fff"
+                            ? "text-gray-950 py-[4px] px-0"
+                            : "text-white py-[4px] px-2"
+                        }`}
+                        style={{ background: `${color}` }}
+                      >
+                        {name}
+                      </span>
+                    ) : (
+                      <span
+                        className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
+                        // style={{ background: `${color}` }}
+                      >
+                        .
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          },
+
+          filterFn: (row, columnId, filterValue) => {
+            const labelName = row.original?.data?.name || "";
+            return labelName === filterValue;
+          },
+
+          filterVariant: "select",
+          filterSelectOptions: dataLable.map((label) => label.name),
+          size: 130,
+          minSize: 100,
+          maxSize: 210,
           grow: false,
         },
         ...(auth?.user?.role?.name === "Admin"

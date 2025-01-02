@@ -1083,13 +1083,15 @@ const calculateStartDate = (date, recurringType) => {
   }
 };
 
+// if (day === 4) {
+//   // If Thursday, move to Friday
+//   date.setDate(date.getDate() + 1);
+// } else
+
 const adjustForFridayAndWeekend = (date) => {
   const day = date.getDay();
-  if (day === 4) {
-    // If Thursday, move to Friday
-    date.setDate(date.getDate() + 1);
-  } else if (day === 5) {
-    // If Friday, move to the following Monday
+  if (day === 5) {
+    // If Friday, move to Monday
     date.setDate(date.getDate() + 3);
   } else if (day === 6) {
     // If Saturday, move to Monday

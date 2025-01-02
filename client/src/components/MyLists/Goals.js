@@ -27,6 +27,9 @@ import CompletedGoals from "../../pages/Goal/CompletedGoals";
 import HandleGoalModal from "../Goal/HandleGoalModal";
 import ChartData from "../../pages/Goal/ChartData";
 import JobCommentModal from "../../pages/Jobs/JobCommentModal";
+import { GoEye } from "react-icons/go";
+import { GrCopy } from "react-icons/gr";
+import GoalDetail from "../Goal/GoalDetail";
 
 const Goals = forwardRef(
   ({ goalsData, setGoalsData, childRef, setIsload }, ref) => {
@@ -37,12 +40,15 @@ const Goals = forwardRef(
     const [userName, setUserName] = useState([]);
     const [loading, setLoading] = useState(false);
     const [filterData, setFilterData] = useState([]);
+    const [completeGoalsData, setCompleteGoalsData] = useState([]);
     const [selectedTab, setSelectedTab] = useState("progress");
     const [showGraph, setShowGraph] = useState(false);
     const [selectChart, setSelectChart] = useState("Line & Bar");
     const [isComment, setIsComment] = useState(false);
     const [commentTaskId, setCommentTaskId] = useState("");
     const commentStatusRef = useRef(null);
+    const [showGoalDetail, setShowGoalDetail] = useState(false);
+    const [note, setNote] = useState("");
     const [formData, setFormData] = useState({
       subject: "",
       achievement: "",
@@ -223,6 +229,22 @@ const Goals = forwardRef(
         if (data) {
           getGoals();
           toast.success("Goal status updated!");
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error(error?.response?.data?.message);
+      }
+    };
+
+    // ----------Copy Goal---------->
+    const handleCopyGoal = async (id) => {
+      try {
+        const { data } = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/v1/goals/copy/goal/${id}`
+        );
+        if (data) {
+          getGoals();
+          toast.success("Goal copied successfully!");
         }
       } catch (error) {
         console.log(error);
@@ -1134,7 +1156,27 @@ const Goals = forwardRef(
           Cell: ({ cell, row }) => {
             // console.log("Id:", row.original._id);
             return (
-              <div className="flex items-center justify-center gap-3 w-full h-full">
+              <div className="flex items-center justify-center gap-2 w-full h-full">
+                <span
+                  className=""
+                  title="See Detail"
+                  onClick={() => {
+                    setShowGoalDetail(true);
+                    setNote(row.original.note);
+                  }}
+                >
+                  <GoEye className="h-5 w-5 cursor-pointer text-sky-500 hover:text-sky-600" />
+                </span>
+                {/* GrCopy */}
+                <span
+                  className="text-[1rem] cursor-pointer"
+                  onClick={() => {
+                    handleCopyGoal(row.original._id);
+                  }}
+                  title="Copy Goal"
+                >
+                  <GrCopy className="h-6 w-6 text-lime-600 " />
+                </span>
                 <span
                   className="text-[1rem] cursor-pointer"
                   onClick={() => {
@@ -1165,7 +1207,7 @@ const Goals = forwardRef(
               </div>
             );
           },
-          size: 130,
+          size: 160,
         },
         // Progress
         {
@@ -1385,7 +1427,12 @@ const Goals = forwardRef(
               )}
             </div>
           ) : (
-            <CompletedGoals setShow={setShow} setGoalId={setGoalId} />
+            <CompletedGoals
+              setShow={setShow}
+              setGoalId={setGoalId}
+              setCompleteGoalsData={setCompleteGoalsData}
+              fetchGoals={getGoals}
+            />
           )}
 
           {/* --------Add Goals-------- */}
@@ -1398,6 +1445,12 @@ const Goals = forwardRef(
                 goalId={goalId}
                 getGoals={getGoals}
               />
+            </div>
+          )}
+          {/* ---------Goal Note---------- */}
+          {showGoalDetail && (
+            <div className="fixed top-0 left-0 w-full h-screen z-[999] bg-gray-100/70 flex items-center justify-center py-6  px-4">
+              <GoalDetail setShowGoalDetail={setShowGoalDetail} note={note} />
             </div>
           )}
           {/* ------------Graphic View setShowGraph-------- */}

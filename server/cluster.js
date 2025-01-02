@@ -1,6 +1,6 @@
 import cluster from "cluster";
 import os from "os";
-import { createServer } from "./index.js";
+import { createServer } from "./main.js";
 
 // Clustering setup
 const setupCluster = (port) => {

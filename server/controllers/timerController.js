@@ -668,7 +668,7 @@ export const getAllHolidays = async (req, res) => {
       .find({
         holiday: { $in: ["Company Holiday", "Personal Holiday"] },
       })
-      .select(" jobHolderName holiday createdAt");
+      .select(" date jobHolderName holiday createdAt");
 
     res.status(200).send({
       success: true,

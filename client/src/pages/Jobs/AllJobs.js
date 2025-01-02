@@ -716,6 +716,8 @@ export default function AllJobs() {
           ? { yearEnd: date }
           : type === "jobDeadline"
           ? { jobDeadline: date }
+          : type === "currentDate"
+          ? { currentDate: date }
           : { workDeadline: date }
       );
       if (data) {
@@ -2536,18 +2538,14 @@ export default function AllJobs() {
                       return;
                     }
                     setDate(newDate);
-                    handleUpdateDates(
-                      row.original._id,
-                      newDate,
-                      "workDeadline"
-                    );
+                    handleUpdateDates(row.original._id, newDate, "currentDate");
                     setShowInput(false);
                   };
 
                   return (
                     <div className="w-full">
                       {!showInput ? (
-                        <p onDoubleClick={() => setShowInput(false)}>
+                        <p onDoubleClick={() => setShowInput(true)}>
                           {format(new Date(date), "dd-MMM-yyyy")}
                         </p>
                       ) : (

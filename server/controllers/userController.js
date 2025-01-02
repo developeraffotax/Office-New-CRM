@@ -403,7 +403,7 @@ export const updateRole = async (req, res) => {
 export const getDashboardUsers = async (req, res) => {
   try {
     const users = await userModel
-      .find({ name: { $ne: "Salmans" } })
+      .find({ name: { $ne: "Salmans" }, isActive: { $ne: false } })
       .populate("role", "name")
       .select(" name createdAt role")
       .sort({ order: 1 });

@@ -1056,7 +1056,7 @@ export default function Users() {
                   column.setFilterValue("");
                 }}
               >
-                CC Person
+                Department
               </span>
               <select
                 value={column.getFilterValue() || ""}

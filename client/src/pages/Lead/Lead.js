@@ -133,7 +133,7 @@ export default function Lead() {
         );
         if (data) {
           setLeadData(data.leads);
-          setIsLoading(false);
+          setLoad(false);
         }
       } else if (selectedTab === "won") {
         const { data } = await axios.get(
@@ -141,7 +141,7 @@ export default function Lead() {
         );
         if (data) {
           setLeadData(data.leads);
-          setIsLoading(false);
+          setLoad(false);
         }
       } else {
         const { data } = await axios.get(
@@ -149,12 +149,14 @@ export default function Lead() {
         );
         if (data) {
           setLeadData(data.leads);
-          setIsLoading(false);
+          setLoad(false);
         }
       }
     } catch (error) {
       setLoad(false);
       console.log(error);
+    } finally {
+      setLoad(false);
     }
   };
 
@@ -266,7 +268,7 @@ export default function Lead() {
             prevData.filter((item) => item._id !== updateLead._id)
           );
         }
-        getLeads();
+        getAllLeads();
       }
     } catch (error) {
       console.log(error);
@@ -1542,13 +1544,27 @@ export default function Lead() {
               >
                 Days
               </span>
-              <input
+              {/* <input
                 type="text"
                 placeholder="Search Days..."
                 className="border rounded px-2 py-1 text-sm outline-none"
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
-              />
+              /> */}
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                  setSelectFilter(e.target.value);
+                }}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                <option value="0-10">0-10</option>
+                <option value="10-20">10-20</option>
+                <option value="20-30">20-30</option>
+                <option value="30+">30+</option>
+              </select>
             </div>
           );
         },
@@ -1584,10 +1600,28 @@ export default function Lead() {
             timeDifference / (1000 * 60 * 60 * 24)
           );
 
-          // alert(dayDifference);
+          if (filterValue === "30+") {
+            return dayDifference >= 30;
+          }
 
-          return dayDifference.toString().includes(filterValue);
+          const [min, max] = filterValue.split("-").map(Number);
+          return dayDifference >= min && dayDifference <= max;
         },
+        // filterFn: (row, columnId, filterValue) => {
+        //   const createdAt = new Date(row.original.createdAt);
+        //   const deadline = new Date(row.original.followUpDate);
+
+        //   if (!createdAt || !deadline) return false;
+
+        //   const timeDifference = deadline.getTime() - createdAt.getTime();
+        //   const dayDifference = Math.ceil(
+        //     timeDifference / (1000 * 60 * 60 * 24)
+        //   );
+
+        //   // alert(dayDifference);
+
+        //   return dayDifference.toString().includes(filterValue);
+        // },
         enableColumnFilter: true,
         size: 70,
         minSize: 60,
@@ -1857,7 +1891,7 @@ export default function Lead() {
       },
     ],
     // eslint-disable-next-line
-    [users, auth, leadData, load, valueTotal]
+    [users, auth, leadData, load, valueTotal, filteredData]
   );
 
   // Clear table Filter
@@ -2006,6 +2040,11 @@ export default function Lead() {
               <MdOutlineAnalytics className="h-7 w-7" />
             </button>
           </div>
+          {load && (
+            <div className="py-3">
+              <div class="loader"></div>
+            </div>
+          )}
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
           {active && (
             <>

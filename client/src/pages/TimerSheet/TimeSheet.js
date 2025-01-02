@@ -24,6 +24,7 @@ import { LuImport } from "react-icons/lu";
 import ApexCharts from "react-apexcharts";
 import { BsPieChartFill } from "react-icons/bs";
 import RunningTimers from "./RunningTimers";
+import UsersTimeSheet from "./UsersTimeSheet";
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -105,6 +106,7 @@ export default function TimeSheet() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const isInitialRender = useRef(true);
+  const [selectedTab, setSelectedTab] = useState("Single");
 
   // console.log("TableFilterData:", tableFilterData);
 
@@ -1732,11 +1734,11 @@ export default function TimeSheet() {
           xl: "490px",
         },
         "@media (min-width: 1500px) and (max-width: 1800px)": {
-          maxHeight: "650px",
+          maxHeight: "700px",
         },
 
         "@media (min-width: 1800px)": {
-          maxHeight: "740px",
+          maxHeight: "780px",
         },
       },
     },
@@ -2009,72 +2011,109 @@ export default function TimeSheet() {
           </div>
         </div>
         {/* ---------------Filters---------- */}
-
+        <div className="flex items-center h-[2.2rem] border-2 border-orange-500 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
+          <button
+            className={`min-h-[2.2rem] px-2 w-[6.5rem] outline-none transition-all duration-300 ${
+              selectedTab === "Single"
+                ? "bg-orange-500 text-white border-r-2 border-orange-500"
+                : "text-black bg-gray-100"
+            }`}
+            onClick={() => setSelectedTab("Single")}
+          >
+            Single
+          </button>
+          <button
+            className={`min-h-[2.2rem] px-2 w-[6.5rem] outline-none transition-all duration-300   ${
+              selectedTab === "Multiple"
+                ? "bg-orange-500 text-white"
+                : "text-black bg-gray-100 hover:bg-slate-200"
+            }`}
+            onClick={() => setSelectedTab("Multiple")}
+          >
+            Multiple
+          </button>
+        </div>
+        <hr className="bg-gray-300 w-full h-[1px] my-2" />
         {/* -----------Tabledata--------------- */}
         {loading ? (
           <div className="flex items-center justify-center w-full h-screen px-4 py-4">
             <Loader />
           </div>
         ) : (
-          <div
-            className={`w-full mt-4 ${
-              timerData?.length >= 14 ? "min-h-[10vh]" : "min-h-[60vh]"
-            } relative `}
-          >
-            <div className="h-full hidden1 overflow-y-auto  relative">
-              <MaterialReactTable table={table} />
-            </div>
-          </div>
+          <>
+            {selectedTab === "Single" ? (
+              <div
+                className={`w-full ${
+                  timerData?.length >= 14 ? "min-h-[10vh]" : "min-h-[60vh]"
+                } relative `}
+              >
+                <div className="h-full hidden1 overflow-y-auto  relative">
+                  <MaterialReactTable table={table} />
+                </div>
+              </div>
+            ) : (
+              <div
+                className={`w-full h-full relative overflow-y-auto hidden1  `}
+              >
+                <UsersTimeSheet
+                  timerData={timerData}
+                  userData={userData}
+                  active={active}
+                />
+              </div>
+            )}
+          </>
         )}
 
         {/* ---------------Total Time---------------- */}
-
-        <div className="w-full absolute bottom-4 left-0 px-4 z-[20] grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-9 gap-4 2xl:gap-5">
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">Monday</h4>
-            <span className="text-[15px]">{times?.monTotal}</span>
+        {selectedTab === "Single" && (
+          <div className="w-full absolute bottom-4 left-0 px-4 z-[20] grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-9 gap-4 2xl:gap-5">
+            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+              <h4 className="text-[16px] font-medium">Monday</h4>
+              <span className="text-[15px]">{times?.monTotal}</span>
+            </div>
+            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+              <h4 className="text-[16px] font-medium">Tuesday</h4>
+              <span className="text-[15px]">{times?.tueTotal}</span>
+            </div>
+            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+              <h4 className="text-[16px] font-medium">Wednesday</h4>
+              <span className="text-[15px]">{times?.wedTotal}</span>
+            </div>
+            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+              <h4 className="text-[16px] font-medium">Thursday</h4>
+              <span className="text-[15px]">{times?.thuTotal}</span>
+            </div>
+            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+              <h4 className="text-[16px] font-medium">Friday</h4>
+              <span className="text-[15px]">{times?.friTotal}</span>
+            </div>
+            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+              <h4 className="text-[16px] font-medium">Saturday</h4>
+              <span className="text-[15px]">{times?.satTotal}</span>
+            </div>
+            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+              <h4 className="text-[16px] font-medium">Sunday</h4>
+              <span className="text-[15px]">{times?.sunTotal}</span>
+            </div>
+            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-orange-600 hover:bg-orange-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+              <h4 className="text-[16px] font-medium">
+                {active === "Weekly"
+                  ? "Week-Total"
+                  : active === "Monthly"
+                  ? "Month-Total"
+                  : "Year-Total"}
+              </h4>
+              <span className="text-[15px]">{times?.weekTotal}</span>
+            </div>
+            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-sky-600 hover:bg-sky-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
+              <h4 className="text-[16px] font-medium">Chargeable</h4>
+              <span className="text-[15px]">
+                {totalCPercengate > 0 ? totalCPercengate : 0} %
+              </span>
+            </div>
           </div>
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">Tuesday</h4>
-            <span className="text-[15px]">{times?.tueTotal}</span>
-          </div>
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">Wednesday</h4>
-            <span className="text-[15px]">{times?.wedTotal}</span>
-          </div>
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">Thursday</h4>
-            <span className="text-[15px]">{times?.thuTotal}</span>
-          </div>
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">Friday</h4>
-            <span className="text-[15px]">{times?.friTotal}</span>
-          </div>
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">Saturday</h4>
-            <span className="text-[15px]">{times?.satTotal}</span>
-          </div>
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">Sunday</h4>
-            <span className="text-[15px]">{times?.sunTotal}</span>
-          </div>
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-orange-600 hover:bg-orange-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">
-              {active === "Weekly"
-                ? "Week-Total"
-                : active === "Monthly"
-                ? "Month-Total"
-                : "Year-Total"}
-            </h4>
-            <span className="text-[15px]">{times?.weekTotal}</span>
-          </div>
-          <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-sky-600 hover:bg-sky-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-            <h4 className="text-[16px] font-medium">Chargeable</h4>
-            <span className="text-[15px]">
-              {totalCPercengate > 0 ? totalCPercengate : 0} %
-            </span>
-          </div>
-        </div>
+        )}
 
         {/* -----------Add Timer Manual-------------- */}
         {isOpen && (

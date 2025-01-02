@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 # Ignore Node.js dependencies
+=======
+
+# Ignore Node.js dependencies Test
+>>>>>>> 0126922ab4d8e2e2da0b40f9a68e9a498d17a5de
 node_modules/
 
 # Ignore environment variables files

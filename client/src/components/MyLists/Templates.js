@@ -22,10 +22,9 @@ import {
 } from "material-react-table";
 import Loader from "../../utlis/Loader";
 import { GrCopy } from "react-icons/gr";
-import { RxClipboardCopy } from "react-icons/rx";
-
 import { RiEdit2Line } from "react-icons/ri";
 import FAQ from "../../pages/Templates/FAQ";
+import { IoMdCopy } from "react-icons/io";
 
 const Templates = forwardRef(
   ({ templateData, setTemplateData, childRef, setIsload }, ref) => {
@@ -486,7 +485,7 @@ const Templates = forwardRef(
                   onClick={() => copyTemplate(template)}
                   title="Copy Template"
                 >
-                  <RxClipboardCopy className="h-5 w-5 text-cyan-500 hover:text-cyan-600 " />
+                  <IoMdCopy className="h-7 w-7 text-cyan-500 hover:text-cyan-600 " />
                 </span>
               </div>
             );

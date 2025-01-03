@@ -40,6 +40,7 @@ export default function CompletedGoals({
     "Proposal Client",
     "Total Lead",
     "Lead Won",
+    "Lead Won Manual",
     "Affotax Clicks",
     "Affotax Impressions",
     "Job Prepared",

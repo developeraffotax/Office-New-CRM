@@ -267,6 +267,28 @@ export const fetchAchievedDataByGoalType = async (req, res) => {
             jobHolder: goal.jobHolder.name,
           });
         } else if (goal.goalType === "Lead Won") {
+          const achievement = await leadModel.countDocuments({
+            createdAt: {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+            jobHolder: goal.jobHolder.name,
+          });
+
+          // console.log("achievement:", achievement);
+
+          const goalUpdate = await goalModel.findOneAndUpdate(
+            {
+              goalType: "Lead Won",
+              startDate: goal.startDate,
+              endDate: goal.endDate,
+              jobHolder: goal.jobHolder._id,
+            },
+            { achievement },
+            { new: true }
+          );
+          // console.log("goalUpdate:", goalUpdate);
+
           achievedCount = await leadModel.countDocuments({
             status: "won",
             createdAt: {

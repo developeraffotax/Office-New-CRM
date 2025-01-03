@@ -7,20 +7,111 @@ import React, { useEffect, useMemo, useState } from "react";
 export default function UsersTimeSheet({ timerData, userData, active }) {
   const [userTimes, setUserTimes] = useState([]);
 
-  // Helper function to format time
-  const formatTime = (milliseconds) => {
-    const totalMinutes = Math.floor(milliseconds / 60000);
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
+  console.log("userTimes:", userTimes);
 
-    return `${String(hours)}h:${String(minutes).padStart(2, "0")}m`;
-  };
+  // Helper function to format time
+  // const formatTime = (milliseconds) => {
+  //   const totalMinutes = Math.floor(milliseconds / 60000);
+  //   const hours = Math.floor(totalMinutes / 60);
+  //   const minutes = totalMinutes % 60;
+
+  //   return `${String(hours)}h:${String(minutes).padStart(2, "0")}m`;
+  // };
+
+  // useEffect(() => {
+  //   const calculateTimes = () => {
+  //     const timesByUser = userData?.map((user) => {
+  //       const userTimers = timerData?.filter(
+  //         (entry) => entry?.jobHolderName === user.name
+  //       );
+
+  //       let monTotal = 0;
+  //       let tueTotal = 0;
+  //       let wedTotal = 0;
+  //       let thuTotal = 0;
+  //       let friTotal = 0;
+  //       let satTotal = 0;
+  //       let sunTotal = 0;
+
+  //       userTimers.forEach((entry) => {
+  //         const startTime = new Date(entry.startTime);
+  //         const endTime = new Date(entry.endTime);
+
+  //         if (!isNaN(startTime) && !isNaN(endTime)) {
+  //           const diffMs = Math.abs(endTime - startTime);
+  //           const day = startTime.getDay();
+
+  //           switch (day) {
+  //             case 1:
+  //               monTotal += diffMs;
+  //               break;
+  //             case 2:
+  //               tueTotal += diffMs;
+  //               break;
+  //             case 3:
+  //               wedTotal += diffMs;
+  //               break;
+  //             case 4:
+  //               thuTotal += diffMs;
+  //               break;
+  //             case 5:
+  //               friTotal += diffMs;
+  //               break;
+  //             case 6:
+  //               satTotal += diffMs;
+  //               break;
+  //             case 0:
+  //               sunTotal += diffMs;
+  //               break;
+  //             default:
+  //               break;
+  //           }
+  //         }
+  //       });
+
+  //       const weekTotal =
+  //         monTotal +
+  //         tueTotal +
+  //         wedTotal +
+  //         thuTotal +
+  //         friTotal +
+  //         satTotal +
+  //         sunTotal;
+
+  //       return {
+  //         userName: user.name,
+  //         userAvatar: user.avatar,
+  //         monTotal: formatTime(monTotal),
+  //         tueTotal: formatTime(tueTotal),
+  //         wedTotal: formatTime(wedTotal),
+  //         thuTotal: formatTime(thuTotal),
+  //         friTotal: formatTime(friTotal),
+  //         satTotal: formatTime(satTotal),
+  //         sunTotal: formatTime(sunTotal),
+  //         weekTotal: formatTime(weekTotal),
+  //         difference:
+  //           monTotal +
+  //           tueTotal +
+  //           wedTotal +
+  //           thuTotal +
+  //           friTotal +
+  //           satTotal +
+  //           sunTotal -
+  //           weekTotal,
+  //       };
+  //     });
+
+  //     setUserTimes(timesByUser);
+  //   };
+
+  //   calculateTimes();
+  // }, [timerData, userData]);
 
   useEffect(() => {
     const calculateTimes = () => {
-      const timesByUser = userData.map((user) => {
-        const userTimers = timerData.filter(
-          (entry) => entry.jobHolderName === user.name
+      const timesByUser = userData?.map((user) => {
+        const userTimers = timerData?.filter(
+          (entry) => entry?.jobHolderName === user?.name
         );
 
         let monTotal = 0;
@@ -31,9 +122,9 @@ export default function UsersTimeSheet({ timerData, userData, active }) {
         let satTotal = 0;
         let sunTotal = 0;
 
-        userTimers.forEach((entry) => {
-          const startTime = new Date(entry.startTime);
-          const endTime = new Date(entry.endTime);
+        userTimers?.forEach((entry) => {
+          const startTime = new Date(entry?.startTime);
+          const endTime = new Date(entry?.endTime);
 
           if (!isNaN(startTime) && !isNaN(endTime)) {
             const diffMs = Math.abs(endTime - startTime);
@@ -76,6 +167,15 @@ export default function UsersTimeSheet({ timerData, userData, active }) {
           satTotal +
           sunTotal;
 
+        const monthTotal = weekTotal;
+
+        const weeklyDifference = formatDifference(
+          weekTotal - 40 * 60 * 60 * 1000
+        );
+        const monthlyDifference = formatDifference(
+          monthTotal - 160 * 60 * 60 * 1000
+        );
+
         return {
           userName: user.name,
           userAvatar: user.avatar,
@@ -87,6 +187,8 @@ export default function UsersTimeSheet({ timerData, userData, active }) {
           satTotal: formatTime(satTotal),
           sunTotal: formatTime(sunTotal),
           weekTotal: formatTime(weekTotal),
+          weeklyDifference,
+          monthlyDifference,
         };
       });
 
@@ -96,10 +198,23 @@ export default function UsersTimeSheet({ timerData, userData, active }) {
     calculateTimes();
   }, [timerData, userData]);
 
-  //   const convertToMinutes = (time) => {
-  //     const [hours, minutes] = time.split(/h|:|m/).map(Number);
-  //     return hours * 60 + minutes;
-  //   };
+  // Helper function to format time in milliseconds to "HH:MM"
+  const formatTime = (timeInMs) => {
+    const totalMinutes = Math.floor(timeInMs / (1000 * 60));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours}h:${minutes}m`;
+  };
+
+  // Helper function to format the difference
+  const formatDifference = (differenceInMs) => {
+    const sign = differenceInMs >= 0 ? "+" : "-";
+    const absoluteDifference = Math.abs(differenceInMs);
+    const totalMinutes = Math.floor(absoluteDifference / (1000 * 60));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${sign}${hours}h:${minutes}m`;
+  };
 
   const columns = useMemo(
     () => [
@@ -297,7 +412,7 @@ export default function UsersTimeSheet({ timerData, userData, active }) {
           return (
             <div className="w-full flex items-center justify-center">
               <span className="text-center">
-                {satTotal === "0h:00m" || !satTotal ? "--" : satTotal}
+                {satTotal === "0h:0m" || !satTotal ? "--" : satTotal}
               </span>
             </div>
           );
@@ -322,7 +437,7 @@ export default function UsersTimeSheet({ timerData, userData, active }) {
           return (
             <div className="w-full flex items-center justify-center">
               <span className="text-center">
-                {sunTotal === "0h:00m" || !sunTotal ? "--" : sunTotal}
+                {sunTotal === "0h:0m" || !sunTotal ? "--" : sunTotal}
               </span>
             </div>
           );
@@ -346,8 +461,44 @@ export default function UsersTimeSheet({ timerData, userData, active }) {
 
           return (
             <div className="w-full flex items-center justify-center">
-              <span className="text-center px-2 py-1 rounded-md text-white font-medium bg-green-600 ">
+              <span className="text-center px-2 py-1 rounded-md text-white font-medium bg-green-800 ">
                 {weekTotal}
+              </span>
+            </div>
+          );
+        },
+        size: 100,
+        minSize: 40,
+        maxSize: 100,
+        grow: false,
+      },
+      {
+        accessorKey: "difference",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex items-center justify-center w-[5.5rem]">
+              <span className="ml-1 cursor-pointer ">Difference</span>
+            </div>
+          );
+        },
+        Cell: ({ row }) => {
+          const weekDiff = row.original.weeklyDifference;
+          const monthDiff = row.original.monthlyDifference;
+
+          return (
+            <div className="w-full flex items-center justify-center">
+              <span
+                className={`text-center ${
+                  (
+                    active === "Weekly"
+                      ? weekDiff.includes("+")
+                      : monthDiff.includes("+")
+                  )
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {active === "Weekly" ? weekDiff : monthDiff}
               </span>
             </div>
           );
@@ -435,54 +586,6 @@ export default function UsersTimeSheet({ timerData, userData, active }) {
       <div className="h-full hidden1 overflow-y-auto  relative">
         <MaterialReactTable table={table} />
       </div>
-      {/* <table className="min-w-full border-collapse border border-gray-300">
-        <thead>
-          <tr>
-            <th className="border border-gray-300 px-4 py-2">User</th>
-            <th className="border border-gray-300 px-4 py-2">Monday</th>
-            <th className="border border-gray-300 px-4 py-2">Tuesday</th>
-            <th className="border border-gray-300 px-4 py-2">Wednesday</th>
-            <th className="border border-gray-300 px-4 py-2">Thursday</th>
-            <th className="border border-gray-300 px-4 py-2">Friday</th>
-            <th className="border border-gray-300 px-4 py-2">Saturday</th>
-            <th className="border border-gray-300 px-4 py-2">Sunday</th>
-            <th className="border border-gray-300 px-4 py-2">Weekly Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {userTimes.map((user) => (
-            <tr key={user.userName}>
-              <td className="border border-gray-300 px-4 py-2">
-                {user.userName}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {user.wedTotal}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {user.tueTotal}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {user.wedTotal}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {user.thuTotal}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {user.friTotal}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {user.satTotal}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {user.sunTotal}
-              </td>
-              <td className="border border-gray-300 px-4 py-2">
-                {user.weekTotal}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table> */}
     </div>
   );
 }

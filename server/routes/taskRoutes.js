@@ -85,11 +85,6 @@ router.get("/dashboard/tasks", getDashboardTasks);
 router.put("/reorder/subtasks/:id", reordering);
 
 // Call Recurring Function
-router.get(
-  "/call/recurring",
-  requiredSignIn,
-  isAdmin,
-  autoCreateRecurringTasks
-);
+router.get("/call/recurring", autoCreateRecurringTasks);
 
 export default router;

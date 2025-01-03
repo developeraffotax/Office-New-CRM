@@ -1046,6 +1046,11 @@ export const updateTaskHours = async (req, res) => {
 //   }
 // };
 // ---------------------Handle Recurreing---------->
+
+// if (day === 4) {
+//   // If Thursday, move to Friday
+//   date.setDate(date.getDate() + 1);
+// } else
 const calculateStartDate = (date, recurringType) => {
   const currentDate = new Date(date);
 
@@ -1059,6 +1064,21 @@ const calculateStartDate = (date, recurringType) => {
       }
     }
     return result;
+  };
+
+  const adjustForFridayAndWeekend = (date) => {
+    const day = date.getDay();
+    if (day === 5) {
+      // If Friday, move to Monday
+      date.setDate(date.getDate() + 3);
+    } else if (day === 6) {
+      // If Saturday, move to Monday
+      date.setDate(date.getDate() + 2);
+    } else if (day === 0) {
+      // If Sunday, move to Monday
+      date.setDate(date.getDate() + 1);
+    }
+    return date;
   };
 
   switch (recurringType) {
@@ -1083,26 +1103,6 @@ const calculateStartDate = (date, recurringType) => {
   }
 };
 
-// if (day === 4) {
-//   // If Thursday, move to Friday
-//   date.setDate(date.getDate() + 1);
-// } else
-
-const adjustForFridayAndWeekend = (date) => {
-  const day = date.getDay();
-  if (day === 5) {
-    // If Friday, move to Monday
-    date.setDate(date.getDate() + 3);
-  } else if (day === 6) {
-    // If Saturday, move to Monday
-    date.setDate(date.getDate() + 2);
-  } else if (day === 0) {
-    // If Sunday, move to Monday
-    date.setDate(date.getDate() + 1);
-  }
-  return date;
-};
-
 export const autoCreateRecurringTasks = async (req, res) => {
   try {
     const now = new Date();
@@ -1122,10 +1122,6 @@ export const autoCreateRecurringTasks = async (req, res) => {
       let newStartDate = calculateStartDate(task.startDate, task.recurring);
       let newDeadline = calculateStartDate(task.deadline, task.recurring);
 
-      // Adjust for Fridays and weekends
-      newStartDate = adjustForFridayAndWeekend(newStartDate);
-      newDeadline = adjustForFridayAndWeekend(newDeadline);
-
       // Create a new task with updated dates
       await taskModel.create({
         project: task.project,
@@ -1136,14 +1132,15 @@ export const autoCreateRecurringTasks = async (req, res) => {
         deadline: newDeadline,
         lead: task.lead,
         recurring: task.recurring,
-        label: task?.labal,
+        label: task?.label,
         status: "Progress",
         subtasks: task.subtasks.map((subtask) => ({
           ...subtask,
           status: "process",
         })),
-        nextRecurringDate: adjustForFridayAndWeekend(
-          calculateStartDate(task.nextRecurringDate, task.recurring)
+        nextRecurringDate: calculateStartDate(
+          task.nextRecurringDate,
+          task.recurring
         ),
       });
     }
@@ -1161,7 +1158,6 @@ export const autoCreateRecurringTasks = async (req, res) => {
     });
   }
 };
-
 // Schedule the task to run daily at midnight
 cron.schedule("30 22 * * *", () => {
   console.log("Running task scheduler for recurring tasks...");

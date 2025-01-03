@@ -45,6 +45,7 @@ export default function TimeSheet() {
   const [timerData, setTimerData] = useState([]);
   const [tableFilterData, setTableFilterDate] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isload, setIsload] = useState(false);
   const [users, setUsers] = useState([]);
   const [userData, setUserData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -139,6 +140,7 @@ export default function TimeSheet() {
     if (isInitialRender.current) {
       setLoading(true);
     }
+    setIsload(true);
 
     try {
       const { data } = await axios.get(
@@ -149,6 +151,7 @@ export default function TimeSheet() {
     } catch (error) {
       console.log(error);
     } finally {
+      setIsload(false);
       if (isInitialRender.current) {
         setLoading(false);
         isInitialRender.current = false;
@@ -2033,6 +2036,11 @@ export default function TimeSheet() {
             Multiple
           </button>
         </div>
+        {isload && (
+          <div className="pb-1">
+            <div class="loader"></div>
+          </div>
+        )}
         <hr className="bg-gray-300 w-full h-[1px] my-2" />
         {/* -----------Tabledata--------------- */}
         {loading ? (

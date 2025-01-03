@@ -65,6 +65,7 @@ const Goals = forwardRef(
       "Proposal Client",
       "Total Lead",
       "Lead Won",
+      "Lead Won Manual",
       "Affotax Clicks",
       "Affotax Impressions",
       "Job Prepared",

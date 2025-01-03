@@ -297,6 +297,15 @@ export const fetchAchievedDataByGoalType = async (req, res) => {
             },
             jobHolder: goal.jobHolder.name,
           });
+        } else if (goal.goalType === "Lead Won Manual") {
+          achievedCount = await leadModel.countDocuments({
+            status: "won",
+            createdAt: {
+              $gte: new Date(goal.startDate),
+              $lte: new Date(goal.endDate),
+            },
+            jobHolder: goal.jobHolder.name,
+          });
         } else if (goal.goalType === "Total Proposal") {
           achievedCount = await proposalModel.countDocuments({
             createdAt: {

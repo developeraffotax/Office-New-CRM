@@ -1224,7 +1224,15 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
           if (!cellValue) return false;
 
           const cellDate = new Date(cellValue);
+          const today = new Date();
 
+          const startOfToday = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate()
+          );
+
+          // Handle "Custom date" filter (if it includes a specific month-year)
           if (filterValue.includes("-")) {
             const [year, month] = filterValue.split("-");
             const cellYear = cellDate.getFullYear().toString();
@@ -1236,14 +1244,6 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
           }
 
           // Other filter cases
-          const today = new Date();
-
-          const startOfToday = new Date(
-            today.getFullYear(),
-            today.getMonth(),
-            today.getDate()
-          );
-
           switch (filterValue) {
             case "Expired":
               return cellDate < startOfToday;
@@ -1251,40 +1251,35 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
               return cellDate.toDateString() === today.toDateString();
             case "Tomorrow":
               const tomorrow = new Date(today);
-              tomorrow.setDate(today.getDate() - 1);
+              tomorrow.setDate(today.getDate() + 1);
               return cellDate.toDateString() === tomorrow.toDateString();
-            case "In 7 days":
-              const in7Days = new Date(today);
-              in7Days.setDate(today.getDate() + 7);
-              return cellDate <= in7Days && cellDate > today;
-            case "In 15 days":
-              const in15Days = new Date(today);
-              in15Days.setDate(today.getDate() + 15);
-              return cellDate <= in15Days && cellDate > today;
-            case "30 Days":
-              const in30Days = new Date(today);
-              in30Days.setDate(today.getDate() + 30);
-              return cellDate <= in30Days && cellDate > today;
-            case "60 Days":
-              const in60Days = new Date(today);
-              in60Days.setDate(today.getDate() + 60);
-              return cellDate <= in60Days && cellDate > today;
-            case "Last 12 months":
-              const lastYear = new Date(today);
-              lastYear.setFullYear(today.getFullYear() - 1);
-              return cellDate >= lastYear && cellDate <= today;
+            case "Last 7 days":
+              const last7Days = new Date(today);
+              last7Days.setDate(today.getDate() - 7);
+              return cellDate >= last7Days && cellDate < startOfToday;
+            case "Last 15 days":
+              const last15Days = new Date(today);
+              last15Days.setDate(today.getDate() - 15);
+              return cellDate >= last15Days && cellDate < startOfToday;
+            case "Last 30 Days":
+              const last30Days = new Date(today);
+              last30Days.setDate(today.getDate() - 30);
+              return cellDate >= last30Days && cellDate < startOfToday;
+            case "Last 60 Days":
+              const last60Days = new Date(today);
+              last60Days.setDate(today.getDate() - 60);
+              return cellDate >= last60Days && cellDate < startOfToday;
             default:
               return false;
           }
         },
         filterSelectOptions: [
-          "Expired",
           "Today",
           "Tomorrow",
-          "In 7 days",
-          "In 15 days",
-          "30 Days",
-          "60 Days",
+          "Last 7 days",
+          "Last 15 days",
+          "Last 30 Days",
+          "Last 60 Days",
           "Custom date",
         ],
         filterVariant: "custom",

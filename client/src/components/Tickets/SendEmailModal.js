@@ -23,6 +23,8 @@ export default function SendEmailModal({
   const [jobData, setJobData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState([]);
+  const [type, setType] = useState("client");
+  const [email, setEmail] = useState("");
 
   console.log("Files:", files);
 
@@ -133,6 +135,10 @@ export default function SendEmailModal({
 
   const sendEmail = async (e) => {
     e.preventDefault();
+    if (!company) {
+      toast.error("Company is required!");
+      return;
+    }
     setLoading(true);
     try {
       const emailData = new FormData();
@@ -140,6 +146,7 @@ export default function SendEmailModal({
       emailData.append("clientId", clientId);
       emailData.append("subject", subject);
       emailData.append("message", message);
+      emailData.append("email", email);
       files.forEach((file) => {
         emailData.append("files", file);
       });
@@ -158,6 +165,8 @@ export default function SendEmailModal({
         setClientId("");
         setSubject("");
         setTemplates("");
+        setEmail("");
+        setType("client");
       }
     } catch (error) {
       console.log(error);
@@ -205,16 +214,53 @@ export default function SendEmailModal({
               </option>
             )}
           </select>
+          {/* Select Type */}
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="type"
+                value="client"
+                defaultChecked
+                onChange={(e) => setType(e.target.value)}
+                className="h-4 w-4  text-orange-600 focus:ring-orange-500"
+              />
+              <span className="text-sm">Client</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="type"
+                value="manual"
+                onChange={(e) => setType(e.target.value)}
+                className="h-4 w-4  text-orange-600 focus:ring-orange-500"
+              />
+              <span className="text-sm">Manual</span>
+            </label>
+          </div>
+
           {/*  */}
-          <Select
-            className={`${style.input} h-[2.6rem] flex items-center justify-center px-0 py-0`}
-            value={selectedOption}
-            onChange={handleChange}
-            options={options}
-            placeholder="To"
-            styles={customStyles}
-            isClearable
-          />
+
+          {type === "client" ? (
+            <Select
+              className={`${style.input} h-[2.6rem] flex items-center justify-center px-0 py-0`}
+              value={selectedOption}
+              onChange={handleChange}
+              options={options}
+              placeholder="To"
+              styles={customStyles}
+              isClearable
+            />
+          ) : (
+            <input
+              type="email"
+              placeholder="Enter Email..."
+              required
+              className={`${style.input} w-full`}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          )}
           {/*  */}
           <input
             type="text"

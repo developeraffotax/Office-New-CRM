@@ -69,6 +69,8 @@ export const sendEmailWithAttachments = async (emailData) => {
     let accessToken = "";
     let fromEmail = "";
 
+    console.log("emailData:", emailData);
+
     if (emailData.company === "Affotax") {
       accessToken = await getAccessToken();
       fromEmail = "Affotax <info@affotax.com>";

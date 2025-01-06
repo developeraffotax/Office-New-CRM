@@ -5,6 +5,7 @@ import taskModel from "../models/taskModel.js";
 import userModel from "../models/userModel.js";
 import cron from "node-cron";
 import moment from "moment";
+import XLSX from "xlsx";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
@@ -1300,5 +1301,56 @@ export const reordering = async (req, res) => {
       message: "Error while reordering subtasks!",
       error: error.message,
     });
+  }
+};
+
+// Function to parse Excel/CSV data
+const parseData = (buffer) => {
+  const workbook = XLSX.read(buffer, { type: "buffer" });
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+  return XLSX.utils.sheet_to_json(sheet);
+};
+
+const parseExcelDate = (serial) => {
+  if (!serial || isNaN(serial)) return null;
+  const excelEpoch = new Date(Date.UTC(1900, 0, 1));
+  const daysOffset = Math.floor(serial - 1);
+  const millisecondsInDay = 24 * 60 * 60 * 1000;
+  return new Date(excelEpoch.getTime() + daysOffset * millisecondsInDay);
+};
+
+// Controller to handle file upload
+export const importData = async (req, res) => {
+  try {
+    const file = req.file;
+    if (!file) {
+      return res.status(400).send("No file uploaded.");
+    }
+
+    const data = parseData(file.buffer);
+
+    console.log("data:", data);
+
+    const clients = data.map((task) => ({
+      task: task.task || "",
+      jobHolder: task.jobHolder || "",
+      hours: task.hours || "",
+      startDate: task.startDate ? parseExcelDate(task.startDate) : null,
+      deadline: task.deadline ? parseExcelDate(task.deadline) : null,
+      lead: task.lead || "",
+      project: {
+        projectName: task.projectName || "",
+      },
+    }));
+
+    await taskModel.insertMany(clients);
+    res.status(200).send({
+      success: true,
+      message: "Data imported successfully!",
+    });
+  } catch (error) {
+    console.error("Error importing data:", error);
+    res.status(500).send("An error occurred while importing data.");
   }
 };

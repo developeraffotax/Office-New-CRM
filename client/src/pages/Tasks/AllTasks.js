@@ -19,7 +19,7 @@ import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/authContext";
-import { TbCalendarDue } from "react-icons/tb";
+import { TbCalendarDue, TbLoader } from "react-icons/tb";
 import CompletedTasks from "./CompletedTasks";
 import AddTaskModal from "../../components/Tasks/AddTaskModal";
 import {
@@ -51,7 +51,7 @@ const csvConfig = mkConfig({
   decimalSeparator: ".",
   showLabels: true,
   showTitle: true,
-  title: "Exported Tasks Table Data",
+  title: "",
   useTextFile: false,
   useBom: true,
   useKeysAsHeaders: true,
@@ -87,6 +87,7 @@ const AllTasks = () => {
   const [isShow, setIsShow] = useState(false);
   const location = useLocation();
   const currentPath = location.pathname;
+  const [fLoading, setFLoading] = useState(false);
   // Filters
   const [showJobHolder, setShowJobHolder] = useState(false);
   const [showDue, setShowDue] = useState(false);
@@ -764,7 +765,6 @@ const AllTasks = () => {
       deadline: format(new Date(row.deadline), "dd-MMM-yyyy") || "",
       status: row.status || "",
       lead: row.lead || "",
-      estimate_Time: row.estimate_Time || "",
     }));
   };
 
@@ -2281,6 +2281,43 @@ const AllTasks = () => {
     }
   };
 
+  // Import CSV File
+  // --------------Import Job data------------>
+  const importJobData = async (file) => {
+    setFLoading(true);
+    if (!file) {
+      toast.error("File is required!");
+      setFLoading(false);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/import`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      if (data) {
+        getAllTasks();
+        toast.success("Tasks Data imported successfully!");
+      }
+    } catch (error) {
+      console.error("Error importing data:", error);
+      toast.error(
+        error?.response?.data?.message || "Failed to import job data"
+      );
+    } finally {
+      setFLoading(false);
+    }
+  };
+
   return (
     <Layout>
       {!showCompleted ? (
@@ -2380,7 +2417,33 @@ const AllTasks = () => {
                   )}
                 </div>
               )}
-
+              <form>
+                <input
+                  type="file"
+                  name="file"
+                  onChange={(e) => importJobData(e.target.files[0])}
+                  accept=".csv, .xlsx"
+                  id="importJobs"
+                  className="hidden"
+                />
+                <label
+                  htmlFor="importJobs"
+                  className={`${
+                    style.button1
+                  } !bg-gray-100 !shadow-none text-black hover:bg-orange-500 text-[15px] ${
+                    fLoading ? "cursor-not-allowed opacity-90" : ""
+                  }`}
+                  style={{ padding: ".4rem 1.1rem", color: "#000" }}
+                  title={"Import csv or excel file!"}
+                  onClick={(e) => fLoading && e.preventDefault()}
+                >
+                  {fLoading ? (
+                    <TbLoader className="h-6 w-6 animate-spin text-black" />
+                  ) : (
+                    "Import"
+                  )}
+                </label>
+              </form>
               <button
                 className={`px-4 h-[2.2rem] flex items-center justify-center gap-1 rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
                 onClick={handleExportData}

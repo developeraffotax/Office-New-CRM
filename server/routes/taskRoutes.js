@@ -13,6 +13,7 @@ import {
   getAllTasks,
   getDashboardTasks,
   getSingleTask,
+  importData,
   reordering,
   singleTaskComments,
   updateAlocateTask,
@@ -22,6 +23,10 @@ import {
   updateTaskHours,
   updatetaskProject,
 } from "../controllers/TaskController.js";
+import multer from "multer";
+// Configure multer for file upload
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 const router = express.Router();
 
@@ -86,5 +91,8 @@ router.put("/reorder/subtasks/:id", reordering);
 
 // Call Recurring Function
 router.get("/call/recurring", autoCreateRecurringTasks);
+
+// Import CSV File
+router.post("/import", requiredSignIn, upload.single("file"), importData);
 
 export default router;

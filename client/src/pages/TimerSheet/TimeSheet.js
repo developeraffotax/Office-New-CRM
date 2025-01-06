@@ -844,7 +844,15 @@ export default function TimeSheet() {
           if (!cellValue) return false;
 
           const cellDate = new Date(cellValue);
+          const today = new Date();
 
+          const startOfToday = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate()
+          );
+
+          // Handle "Custom date" filter (if it includes a specific month-year)
           if (filterValue.includes("-")) {
             const [year, month] = filterValue.split("-");
             const cellYear = cellDate.getFullYear().toString();
@@ -855,47 +863,40 @@ export default function TimeSheet() {
             return year === cellYear && month === cellMonth;
           }
 
-          const today = new Date();
-
+          // Other filter cases
           switch (filterValue) {
+            case "Expired":
+              return cellDate < startOfToday;
             case "Today":
               return cellDate.toDateString() === today.toDateString();
-            case "Yesterday":
-              const yesterday = new Date(today);
-              yesterday.setDate(today.getDate() - 1);
-              return cellDate.toDateString() === yesterday.toDateString();
+            case "Tomorrow":
+              const tomorrow = new Date(today);
+              tomorrow.setDate(today.getDate() + 1);
+              return cellDate.toDateString() === tomorrow.toDateString();
             case "Last 7 days":
               const last7Days = new Date(today);
               last7Days.setDate(today.getDate() - 7);
-              return cellDate >= last7Days && cellDate <= today;
+              return cellDate >= last7Days && cellDate < startOfToday;
             case "Last 15 days":
               const last15Days = new Date(today);
               last15Days.setDate(today.getDate() - 15);
-              return cellDate >= last15Days && cellDate <= today;
+              return cellDate >= last15Days && cellDate < startOfToday;
             case "Last 30 Days":
               const last30Days = new Date(today);
               last30Days.setDate(today.getDate() - 30);
-              return cellDate >= last30Days && cellDate <= today;
+              return cellDate >= last30Days && cellDate < startOfToday;
             case "Last 60 Days":
               const last60Days = new Date(today);
               last60Days.setDate(today.getDate() - 60);
-              return cellDate >= last60Days && cellDate <= today;
-            case "Custom date":
-              if (!filterValue.includes("-")) return false;
-              const [year, month] = filterValue.split("-");
-              const cellYear = cellDate.getFullYear().toString();
-              const cellMonth = (cellDate.getMonth() + 1)
-                .toString()
-                .padStart(2, "0");
-
-              return year === cellYear && month === cellMonth;
+              return cellDate >= last60Days && cellDate < startOfToday;
             default:
               return false;
           }
         },
         filterSelectOptions: [
           "Today",
-          "Yesterday",
+          "Tomorrow",
+          "Last 7 days",
           "Last 15 days",
           "Last 30 Days",
           "Last 60 Days",

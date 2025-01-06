@@ -101,9 +101,9 @@ export const createServer = (port) => {
   });
 
   // Listening
-  const PORT = process.env.PORT || 8080;
+  // const PORT = process.env.PORT || 8080;
 
-  server.listen(PORT, () => {
-    console.log(`Server is running at PORT ${PORT}`.bgMagenta.white);
+  server.listen(port, () => {
+    console.log(`Server is running at PORT ${port}`.bgMagenta.white);
   });
 };

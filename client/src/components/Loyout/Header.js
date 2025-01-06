@@ -153,9 +153,13 @@ export default function Header({
   useEffect(() => {
     getNotifications();
     // eslint-disable-next-line
-  }, []);
+  }, [auth.user]);
 
   useEffect(() => {
+    if (!socketId) {
+      return;
+    }
+
     socketId.on("newNotification", () => {
       getNotifications();
       // notificationPlayer();

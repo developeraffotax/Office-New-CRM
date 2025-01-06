@@ -145,6 +145,9 @@ export default function MeetingModal({
       socketId.emit("reminder", {
         note: "New Reminder Added",
       });
+      socketId.emit("notification", {
+        note: "New Notification Added",
+      });
     }
   };
 

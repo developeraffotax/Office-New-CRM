@@ -19,24 +19,23 @@ import mongoose from "mongoose";
 // Create Ticket \
 export const sendEmail = async (req, res) => {
   try {
-    const { clientId, company, subject, message } = req.body;
+    const { clientId, company, subject, message, email } = req.body;
 
     const userName = req.user.user.name;
-    const client = await jobsModel.findById(clientId);
+    let client;
 
-    if (!client.email) {
+    if (clientId) {
+      client = await jobsModel.findById(clientId);
+    }
+
+    if ((clientId && !client?.email) || (email && !email)) {
       return res.status(400).send({
         success: false,
         message: "Client email not found!",
       });
     }
 
-    if (!client) {
-      return res.status(400).send({
-        success: false,
-        message: "Client not found!",
-      });
-    }
+    console.log("email:", email);
 
     var company_email = "";
     if (company === "Affotax") {
@@ -51,7 +50,7 @@ export const sendEmail = async (req, res) => {
     }));
 
     const emailData = {
-      email: client.email,
+      email: clientId ? client.email : email,
       subject: subject,
       message: message,
       attachments: attachments,
@@ -64,9 +63,9 @@ export const sendEmail = async (req, res) => {
     const threadId = resp.data.threadId;
 
     const sendEmail = await ticketModel.create({
-      clientId: clientId,
-      companyName: client.companyName,
-      clientName: client.clientName,
+      clientId: clientId || "",
+      companyName: (clientId && client?.companyName) || "",
+      clientName: (clientId && client?.clientName) || "",
       company: company,
       jobHolder: userName,
       subject: subject,
@@ -215,9 +214,9 @@ export const getAllSendTickets = async (req, res) => {
           },
           { new: true }
         );
-        console.log(
-          `Updated ticket ${matchingTicket._id} with new status: ${newStatus}`
-        );
+        // console.log(
+        //   `Updated ticket ${matchingTicket._id} with new status: ${newStatus}`
+        // );
 
         const user = await userModel.findOne({
           name: matchingTicket.lastMessageSentBy,

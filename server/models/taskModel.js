@@ -101,7 +101,7 @@ const taskSchema = new mongoose.Schema(
     subtasks: [subtask],
     recurring: {
       type: String,
-      enum: ["2_minutes", "daily", "weekly", "monthly", "quarterly"],
+      // enum: ["2_minutes", "daily", "weekly", "monthly", "quarterly"],
       default: "",
     },
     nextRecurringDate: {

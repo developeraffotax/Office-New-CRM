@@ -19,7 +19,6 @@ import Loader from "../../utlis/Loader";
 import { RiEdit2Line } from "react-icons/ri";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { GrCopy } from "react-icons/gr";
-import ReactHTMLParser from "react-html-parser";
 
 const months = [
   "January",
@@ -907,7 +906,6 @@ export default function HR() {
                   className=" py-4  px-4 w-full max-h-[80vh] text-[14px] overflow-y-auto cursor-pointer"
                   dangerouslySetInnerHTML={{ __html: copyDescription }}
                 >
-                  {/* {ReactHTMLParser(copyDescription)} */}
                 </div>
               </div>
             </div>

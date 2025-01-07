@@ -19,6 +19,7 @@ import Loader from "../../utlis/Loader";
 import { RiEdit2Line } from "react-icons/ri";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { GrCopy } from "react-icons/gr";
+import ReactHTMLParser from "react-html-parser";
 
 const months = [
   "January",
@@ -57,7 +58,7 @@ export default function HR() {
   const currentMonthIndex = new Date().getMonth();
   const [month, setMonth] = useState(currentMonthIndex);
 
-  console.log("month:", month);
+  console.log("copyDescription:", copyDescription);
 
   useEffect(() => {
     if (userName && userName.length > 0) {
@@ -507,6 +508,9 @@ export default function HR() {
             const matchedUser = row.original.users?.find(
               (u) => u?.user?.name === name
             );
+
+            console.log("matchedUser:", matchedUser);
+
             const [isShow, setIsShow] = useState(false);
             const [status, setStatus] = useState(matchedUser?.status || "");
 
@@ -534,7 +538,7 @@ export default function HR() {
                   <select
                     value={status}
                     onChange={(e) =>
-                      handleStatus(e.target.value, matchedUser._id)
+                      handleStatus(e.target.value, matchedUser?._id)
                     }
                     onBlur={() => setIsShow(false)}
                     className="font-normal w-full h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
@@ -898,10 +902,14 @@ export default function HR() {
                 </span>
               </div>
               <hr className="h-[1px] w-full bg-gray-400 " />
-              <div
-                className="py-4 px-4 w-full max-h-[80vh] text-[14px] overflow-y-auto cursor-pointer"
-                dangerouslySetInnerHTML={{ __html: copyDescription }}
-              ></div>
+              <div className="px-4 w-full">
+                <div
+                  className=" py-4  px-4 w-full max-h-[80vh] text-[14px] overflow-y-auto cursor-pointer"
+                  dangerouslySetInnerHTML={{ __html: copyDescription }}
+                >
+                  {/* {ReactHTMLParser(copyDescription)} */}
+                </div>
+              </div>
             </div>
           </div>
         )}

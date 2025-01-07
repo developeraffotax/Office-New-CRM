@@ -1912,8 +1912,8 @@ export default function Lead() {
     enableBottomToolbar: true,
     enablePagination: true,
     initialState: {
-      pagination: { pageSize: 20 },
-      pageSize: 20,
+      pagination: { pageSize: 30 },
+      pageSize: 30,
       density: "compact",
     },
 

@@ -108,6 +108,8 @@ export default function TimeSheet() {
   const [endDate, setEndDate] = useState("");
   const isInitialRender = useRef(true);
   const [selectedTab, setSelectedTab] = useState("Single");
+  const [showNote, setShowNote] = useState(false);
+  const [note, setNote] = useState("");
 
   // console.log("TableFilterData:", tableFilterData);
 
@@ -869,9 +871,9 @@ export default function TimeSheet() {
               return cellDate < startOfToday;
             case "Today":
               return cellDate.toDateString() === today.toDateString();
-            case "Tomorrow":
+            case "Yesterday":
               const tomorrow = new Date(today);
-              tomorrow.setDate(today.getDate() + 1);
+              tomorrow.setDate(today.getDate() - 1);
               return cellDate.toDateString() === tomorrow.toDateString();
             case "Last 7 days":
               const last7Days = new Date(today);
@@ -895,7 +897,7 @@ export default function TimeSheet() {
         },
         filterSelectOptions: [
           "Today",
-          "Tomorrow",
+          "Yesterday",
           "Last 7 days",
           "Last 15 days",
           "Last 30 Days",
@@ -1488,11 +1490,14 @@ export default function TimeSheet() {
                 <div
                   className="w-full h-full flex items-center justify-start "
                   onDoubleClick={() => setShowEdit(true)}
-                  title={note}
                 >
                   <p
-                    className="text-black cursor-pointer text-start  "
+                    className="text-blue-500 cursor-pointer text-start truncate "
                     onDoubleClick={() => setShowEdit(true)}
+                    onClick={() => {
+                      setNote(note);
+                      setShowNote(true);
+                    }}
                   >
                     {note.length > 35 ? note.slice(0, 35) + "..." : note}
                   </p>
@@ -2142,6 +2147,27 @@ export default function TimeSheet() {
         {isRunning && (
           <div className="fixed top-0 left-0 w-full h-[112vh] z-[999] bg-gray-50 flex items-center justify-center ">
             <RunningTimers users={userData} setIsRunning={setIsRunning} />
+          </div>
+        )}
+        {/* -----------Note Modal-------------- */}
+        {showNote && (
+          <div className="fixed top-0 left-0 w-full h-full z-[999] bg-gray-200/70 flex items-center justify-center ">
+            <div className=" bg-white w-[36rem] rounded-md border shadow-md flex flex-col">
+              <div className="flex items-center justify-between py-2 px-3">
+                <h3 className="text-[19px] font-medium">Note</h3>
+                <span
+                  onClick={() => {
+                    setShowNote(false);
+                    setNote("");
+                  }}
+                  className="cursor-pointer"
+                >
+                  <IoClose className="h-5 w-5" />
+                </span>
+              </div>
+              <hr className=" w-full h-[1px] bg-gray-300" />
+              <div className="w-full py-2 px-3 min-h-[7rem]">{note}</div>
+            </div>
           </div>
         )}
       </div>

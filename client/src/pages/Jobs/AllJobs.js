@@ -467,6 +467,12 @@ export default function AllJobs() {
     setFilterData([...filteredData]);
   };
 
+  useEffect(() => {
+    filterByDepStat(active1, active);
+
+    // eslint-disable-next-line
+  }, [tableData, filterData, active1, active]);
+
   //---------- Get All Users-----------
   const getAllUsers = async () => {
     try {
@@ -2021,6 +2027,7 @@ export default function AllJobs() {
                     clientId={auth.user.id}
                     jobId={row.original._id}
                     setIsShow={setIsShow}
+                    reload={true}
                     note={note}
                     taskLink={currentPath}
                     pageName={"Jobs"}

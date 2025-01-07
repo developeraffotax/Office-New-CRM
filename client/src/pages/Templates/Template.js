@@ -300,6 +300,30 @@ export default function Template() {
     return html;
   };
 
+  // const convertQuillHtmlToPlainText = (html) => {
+  //   html = html.replace(/<strong>|<b>/g, "**");
+  //   html = html.replace(/<\/strong>|<\/b>/g, "**");
+
+  //   html = html.replace(/<em>|<i>/g, "_");
+  //   html = html.replace(/<\/em>|<\/i>/g, "_");
+
+  //   html = html.replace(/<u>/g, "__");
+  //   html = html.replace(/<\/u>/g, "__");
+
+  //   html = html.replace(/<a.*?href="(.*?)".*?>(.*?)<\/a>/g, "[$2]($1)");
+
+  //   html = html.replace(/<br\s*\/?>/g, "");
+
+  //   html = html.replace(/<\/p>/g, "\n");
+
+  //   html = html.replace(/<[^>]*>/g, "");
+
+  //   html = html.replace(/\*\*\*(.*?)\*\*\*/g, "$1");
+  //   html = html.replace(/\*\*(.*?)\*\*/g, "$1");
+
+  //   return html;
+  // };
+
   const copyTemplate = (template) => {
     const cleanText = convertQuillHtmlToPlainText(template);
 

@@ -1742,25 +1742,53 @@ export default function Proposal() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // const convertQuillHtmlToPlainText = (html) => {
+  //   html = html.replace(/<strong>|<b>/g, "**");
+  //   html = html.replace(/<\/strong>|<\/b>/g, "**");
+
+  //   html = html.replace(/<em>|<i>/g, "_");
+  //   html = html.replace(/<\/em>|<\/i>/g, "_");
+
+  //   html = html.replace(/<u>/g, "__");
+  //   html = html.replace(/<\/u>/g, "__");
+
+  //   html = html.replace(/<a.*?href="(.*?)".*?>(.*?)<\/a>/g, "[$2]($1)");
+
+  //   html = html.replace(/<br\s*\/?>/g, "");
+
+  //   html = html.replace(/<\/p>/g, "\n");
+
+  //   html = html.replace(/<[^>]*>/g, "");
+
+  //   return html;
+  // };
+
   const convertQuillHtmlToPlainText = (html) => {
+    // Replace bold tags with markdown-style **
     html = html.replace(/<strong>|<b>/g, "**");
     html = html.replace(/<\/strong>|<\/b>/g, "**");
 
+    // Replace italic tags with markdown-style _
     html = html.replace(/<em>|<i>/g, "_");
     html = html.replace(/<\/em>|<\/i>/g, "_");
 
+    // Replace underline tags with markdown-style __
     html = html.replace(/<u>/g, "__");
     html = html.replace(/<\/u>/g, "__");
 
+    // Replace links with markdown-style [text](url)
     html = html.replace(/<a.*?href="(.*?)".*?>(.*?)<\/a>/g, "[$2]($1)");
 
-    html = html.replace(/<br\s*\/?>/g, "");
+    // Replace multiple <br> with a single newline
+    html = html.replace(/<br\s*\/?>/g, "\n");
 
-    html = html.replace(/<\/p>/g, "\n");
+    // Replace </p> with two newlines for paragraph spacing
+    html = html.replace(/<\/p>/g, "\n\n");
 
+    // Remove any remaining HTML tags
     html = html.replace(/<[^>]*>/g, "");
 
-    return html;
+    return html.trim();
   };
 
   const copyTemplate = (template) => {

@@ -676,9 +676,9 @@ const Tickets = forwardRef(
                 return cellDate < startOfToday;
               case "Today":
                 return cellDate.toDateString() === today.toDateString();
-              case "Tomorrow":
+              case "Yesterday":
                 const tomorrow = new Date(today);
-                tomorrow.setDate(today.getDate() + 1);
+                tomorrow.setDate(today.getDate() - 1);
                 return cellDate.toDateString() === tomorrow.toDateString();
               case "Last 7 days":
                 const last7Days = new Date(today);
@@ -702,7 +702,7 @@ const Tickets = forwardRef(
           },
           filterSelectOptions: [
             "Today",
-            "Tomorrow",
+            "Yesterday",
             "Last 7 days",
             "Last 15 days",
             "Last 30 Days",
@@ -846,9 +846,9 @@ const Tickets = forwardRef(
                 return cellDate < startOfToday;
               case "Today":
                 return cellDate.toDateString() === today.toDateString();
-              case "Tomorrow":
+              case "Yesterday":
                 const tomorrow = new Date(today);
-                tomorrow.setDate(today.getDate() + 1);
+                tomorrow.setDate(today.getDate() - 1);
                 return cellDate.toDateString() === tomorrow.toDateString();
               case "In 7 days":
                 const in7Days = new Date(today);
@@ -877,7 +877,7 @@ const Tickets = forwardRef(
           filterSelectOptions: [
             "Expired",
             "Today",
-            "Tomorrow",
+            "Yesterday",
             "In 7 days",
             "In 15 days",
             "30 Days",

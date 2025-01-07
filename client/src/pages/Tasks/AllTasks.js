@@ -14,12 +14,13 @@ import {
   MdCheckCircle,
   MdInsertComment,
   MdOutlineEdit,
+  MdOutlineModeEdit,
 } from "react-icons/md";
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/authContext";
-import { TbCalendarDue, TbLoader } from "react-icons/tb";
+import { TbCalendarDue, TbLoader, TbLoader2 } from "react-icons/tb";
 import CompletedTasks from "./CompletedTasks";
 import AddTaskModal from "../../components/Tasks/AddTaskModal";
 import {
@@ -110,11 +111,22 @@ const AllTasks = () => {
   const status = ["To do", "Progress", "Review", "Onhold"];
   const closeProject = useRef(null);
   const [state, setState] = useState("");
-  const [recurrLoad, setRecurrLoad] = useState(false);
   const [stateData, setStateData] = useState([]);
   const [activity, setActivity] = useState("Chargeable");
   const [access, setAccess] = useState([]);
   const [isLoad, setIsLoad] = useState(false);
+  // Bulk Action
+  const [showEdit, setShowEdit] = useState(false);
+  const [rowSelection, setRowSelection] = useState({});
+  const [project, setProject] = useState("");
+  const [jobHolder, setJobHolder] = useState("");
+  const [lead, setLead] = useState("");
+  const [hours, setHours] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [deadline, setDeadline] = useState("");
+  const [tstatus, setTStatus] = useState("");
+  const [isUpload, setIsUpdate] = useState(false);
+  const [reload, setReload] = useState(false);
 
   // console.log("tasksData:", tasksData);
 
@@ -381,7 +393,6 @@ const AllTasks = () => {
         getAllProjects();
         getAllTasks();
         setShowProject(false);
-        // toast.success("Project completed!");
         // Send Socket Timer
         socketId.emit("addTask", {
           note: "New Task Added",
@@ -512,6 +523,12 @@ const AllTasks = () => {
 
     setFilterData([...filteredData]);
   };
+
+  useEffect(() => {
+    filterByProjStat(active1, active);
+
+    // eslint-disable-next-line
+  }, [tasksData, filterData, active1, active]);
 
   // Filter By State
   const filterByState = (state) => {
@@ -650,9 +667,10 @@ const AllTasks = () => {
       }
 
       // Send Socket Timer
-      socketId.emit("addTask", {
-        note: "New Task Added",
-      });
+      getTasks1();
+      // socketId.emit("addTask", {
+      //   note: "New Task Added",
+      // });
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
@@ -730,20 +748,6 @@ const AllTasks = () => {
       socketId.emit("addTask", {
         note: "New Task Added",
       });
-      // setTasksData((prevData) => [...prevData, data.task]);
-      // if (active !== "All") {
-      //   setFilterData((prevData) => {
-      //     const taskExists = prevData.some(
-      //       (task) => task._id === data.task._id
-      //     );
-
-      //     if (!taskExists) {
-      //       return [...prevData, data.task];
-      //     }
-
-      //     return prevData;
-      //   });
-      // }
     }
   };
 
@@ -946,7 +950,6 @@ const AllTasks = () => {
   };
 
   // ----------------------Table Data--------->
-
   const columns = useMemo(
     () => [
       {
@@ -1426,7 +1429,6 @@ const AllTasks = () => {
         maxSize: 110,
         grow: false,
       },
-
       // Task DeadLine
       {
         accessorKey: "deadline",
@@ -1839,6 +1841,7 @@ const AllTasks = () => {
         },
         size: 80,
       },
+      // Timer
       {
         accessorKey: "timertracker",
         header: "Timer",
@@ -1854,6 +1857,7 @@ const AllTasks = () => {
             } else {
               column.setFilterValue(undefined);
             }
+            setReload((prev) => !prev);
           };
           return (
             <div className=" flex flex-col gap-[2px] w-[5rem]">
@@ -1885,6 +1889,7 @@ const AllTasks = () => {
                   clientId={auth?.user?.id}
                   jobId={row?.original?._id}
                   setIsShow={setIsShow}
+                  reload={reload}
                   note={note}
                   taskLink={currentPath}
                   pageName={"Tasks"}
@@ -2184,7 +2189,7 @@ const AllTasks = () => {
       (active === "All" && !active1 && !filterId && !searchValue
         ? tasksData
         : filterData) || [],
-
+    getRowId: (row) => row._id,
     enableStickyHeader: true,
     enableStickyFooter: true,
     // columnFilterDisplayMode: "popover",
@@ -2197,9 +2202,10 @@ const AllTasks = () => {
     enableColumnResizing: true,
     enableTopToolbar: true,
     enableBottomToolbar: true,
-    // enableRowSelection: true,
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
+    state: { rowSelection },
     // enableEditing: true,
-    // state: { isLoading: loading },
 
     enablePagination: true,
     initialState: {
@@ -2315,6 +2321,48 @@ const AllTasks = () => {
       );
     } finally {
       setFLoading(false);
+    }
+  };
+
+  // Handle Bulk Action
+  const updateBulkJob = async (e) => {
+    e.preventDefault();
+    setIsUpdate(true);
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/multiple`,
+        {
+          rowSelection: Object.keys(rowSelection).filter(
+            (id) => rowSelection[id] === true
+          ),
+          projectId: project,
+          jobHolder,
+          lead,
+          hours,
+          startDate,
+          deadline,
+          status: tstatus,
+        }
+      );
+      if (data) {
+        getAllTasks();
+        toast.success("Bulk Action updated successfully!");
+        setRowSelection({});
+        setProject("");
+        setJobHolder("");
+        setLead("");
+        setHours("");
+        setStartDate("");
+        setDeadline("");
+        setTStatus("");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    } finally {
+      setIsUpdate(false);
+      setShowEdit(false);
+      setRowSelection({});
     }
   };
 
@@ -2592,6 +2640,19 @@ const AllTasks = () => {
                 <MdAutoGraph className="h-6 w-6  cursor-pointer" />
               </span>
 
+              {/* Edit Multiple Tasks */}
+              <span
+                className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+                  showEdit && "bg-orange-500 text-white"
+                }`}
+                onClick={() => {
+                  setShowEdit(!showEdit);
+                }}
+                title="Edit Multiple Tasks"
+              >
+                <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
+              </span>
+
               <span
                 className={` p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
                 onClick={() => {
@@ -2619,28 +2680,6 @@ const AllTasks = () => {
             {/* ----------Job_Holder Summery Filters---------- */}
             {showJobHolder && activeBtn === "jobHolder" && (
               <>
-                {/* --------------User Drag & Drop---------- */}
-                {/* <div className="flex items-center flex-wrap gap-4">
-                    {users
-                      ?.filter(
-                        (user) => getJobHolderCount(user?.name, active) > 0
-                      )
-                      ?.map((user, i) => (
-                        <div
-                          className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                            active1 === user.name &&
-                            "  border-b-2 text-orange-600 border-orange-600"
-                          }`}
-                          key={i}
-                          onClick={() => {
-                            setActive1(user?.name);
-                            filterByProjStat(user?.name, active);
-                          }}
-                        >
-                          {user.name} ({getJobHolderCount(user?.name, active)})
-                        </div>
-                      ))}
-                  </div> */}
                 <div className="w-full  py-2 ">
                   <div className="flex items-center flex-wrap gap-4">
                     <DragDropContext onDragEnd={handleUserOnDragEnd}>
@@ -2752,7 +2791,137 @@ const AllTasks = () => {
                 <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
               </>
             )}
-            {/*  */}
+            {/* ----------Bulk Action--------> */}
+
+            {showEdit && (
+              <div className="w-full  py-2">
+                <form
+                  onSubmit={updateBulkJob}
+                  className="w-full flex items-center flex-wrap gap-2 "
+                >
+                  <div className="">
+                    <select
+                      value={project}
+                      onChange={(e) => setProject(e.target.value)}
+                      className={`${style.input} w-full`}
+                      style={{ width: "8rem" }}
+                    >
+                      <option value="empty">Project</option>
+                      {projects.map((project, i) => (
+                        <option value={project._id} key={i}>
+                          {project.projectName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="">
+                    <select
+                      value={jobHolder}
+                      onChange={(e) => setJobHolder(e.target.value)}
+                      className={`${style.input} w-full`}
+                      style={{ width: "7rem" }}
+                    >
+                      <option value="empty">Assign</option>
+                      {users.map((jobHold, i) => (
+                        <option value={jobHold.name} key={i}>
+                          {jobHold.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="">
+                    <select
+                      value={lead}
+                      onChange={(e) => setLead(e.target.value)}
+                      className={`${style.input} w-full`}
+                      style={{ width: "7rem" }}
+                    >
+                      <option value="empty">Owner</option>
+                      {users.map((jobHold, i) => (
+                        <option value={jobHold.name} key={i}>
+                          {jobHold.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="inputBox" style={{ width: "8.5rem" }}>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className={`${style.input} w-full `}
+                    />
+                    <span>Start Date</span>
+                  </div>
+                  <div className="inputBox" style={{ width: "8.5rem" }}>
+                    <input
+                      type="date"
+                      value={deadline}
+                      onChange={(e) => setDeadline(e.target.value)}
+                      className={`${style.input} w-full `}
+                    />
+                    <span>Deadline</span>
+                  </div>
+
+                  {/*  */}
+                  <div className="">
+                    <select
+                      value={tstatus}
+                      onChange={(e) => setTStatus(e.target.value)}
+                      className={`${style.input} w-full`}
+                      style={{ width: "6.5rem" }}
+                    >
+                      <option value="empty">Status</option>
+                      {status.map((stat, i) => (
+                        <option value={stat} key={i}>
+                          {stat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="inputBox" style={{ width: "6rem" }}>
+                    <input
+                      type="text"
+                      value={hours}
+                      onChange={(e) => setHours(e.target.value)}
+                      className={`${style.input} w-full `}
+                    />
+                    <span>Hours</span>
+                  </div>
+                  {/* <div className="">
+                <select
+                  value={label}
+                  onChange={(e) => setLabel(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "9rem" }}
+                >
+                  <option value="empty">Select Label</option>
+                  {labelData?.map((label, i) => (
+                    <option value={label._id} key={i}>
+                      {label?.name}
+                    </option>
+                  ))}
+                </select>
+              </div> */}
+                  <div className="flex items-center justify-end pl-4">
+                    <button
+                      className={`${style.button1} text-[15px] `}
+                      type="submit"
+                      disabled={isUpload}
+                      style={{ padding: ".5rem 1rem" }}
+                    >
+                      {isUpload ? (
+                        <TbLoader2 className="h-5 w-5 animate-spin text-white" />
+                      ) : (
+                        <span>Save</span>
+                      )}
+                    </button>
+                  </div>
+                </form>
+                <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
+              </div>
+            )}
             {/* <hr className="mb-1 bg-gray-300 w-full h-[1px]" /> */}
             {loading ? (
               <div className="flex items-center justify-center w-full h-screen px-4 py-4">

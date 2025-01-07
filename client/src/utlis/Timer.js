@@ -33,6 +33,7 @@ export const Timer = forwardRef(
       task,
       activity,
       setActivity,
+      reload,
     },
     ref
   ) => {
@@ -84,7 +85,9 @@ export const Timer = forwardRef(
 
       const timeId = localStorage.getItem("timer_Id");
       setTimerId(JSON.parse(timeId));
-    }, [clientId, jobId, setAnyTimerRunning]);
+
+      // eslint-disable-next-line
+    }, [clientId, jobId, setAnyTimerRunning, reload]);
 
     // ---------Timer-------
     useEffect(() => {

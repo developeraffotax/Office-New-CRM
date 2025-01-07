@@ -535,9 +535,9 @@ export default function CompletedGoals({
               return cellDate < startOfToday;
             case "Today":
               return cellDate.toDateString() === today.toDateString();
-            case "Tomorrow":
+            case "Yesterday":
               const tomorrow = new Date(today);
-              tomorrow.setDate(today.getDate() + 1);
+              tomorrow.setDate(today.getDate() - 1);
               return cellDate.toDateString() === tomorrow.toDateString();
             case "Last 7 days":
               const last7Days = new Date(today);
@@ -561,7 +561,7 @@ export default function CompletedGoals({
         },
         filterSelectOptions: [
           "Today",
-          "Tomorrow",
+          "Yesterday",
           "Last 7 days",
           "Last 15 days",
           "Last 30 Days",
@@ -709,9 +709,9 @@ export default function CompletedGoals({
               return cellDate < startOfToday;
             case "Today":
               return cellDate.toDateString() === today.toDateString();
-            case "Tomorrow":
+            case "Yesterday":
               const tomorrow = new Date(today);
-              tomorrow.setDate(today.getDate() + 1);
+              tomorrow.setDate(today.getDate() - 1);
               return cellDate.toDateString() === tomorrow.toDateString();
             case "Last 7 days":
               const last7Days = new Date(today);
@@ -735,7 +735,7 @@ export default function CompletedGoals({
         },
         filterSelectOptions: [
           "Today",
-          "Tomorrow",
+          "Yesterday",
           "Last 7 days",
           "Last 15 days",
           "Last 30 Days",

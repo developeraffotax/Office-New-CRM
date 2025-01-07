@@ -946,20 +946,7 @@ export const updateTaskHours = async (req, res) => {
 };
 
 // --------------------------------Recurring Task---------------------------------------->
-// case "monthly":
-// {
-//   const nextMonth = new Date(currentDate.setMonth(currentDate.getMonth() + 1));
-//   return nextMonth.getDay() === 6 || nextMonth.getDay() === 0
-//     ? addDaysSkippingWeekends(nextMonth, 1)
-//     : nextMonth;
-// }
-// case "quarterly":
-// {
-//   const nextQuarter = new Date(currentDate.setMonth(currentDate.getMonth() + 3));
-//   return nextQuarter.getDay() === 6 || nextQuarter.getDay() === 0
-//     ? addDaysSkippingWeekends(nextQuarter, 1)
-//     : nextQuarter;
-// }
+
 // const calculateStartDate = (date, recurringType) => {
 //   const currentDate = new Date(date);
 
@@ -975,17 +962,36 @@ export const updateTaskHours = async (req, res) => {
 //     return result;
 //   };
 
+//   const adjustForFridayAndWeekend = (date) => {
+//     const day = date.getDay();
+//     if (day === 5) {
+//       // If Friday, move to Monday
+//       date.setDate(date.getDate() + 3);
+//     } else if (day === 6) {
+//       // If Saturday, move to Monday
+//       date.setDate(date.getDate() + 2);
+//     } else if (day === 0) {
+//       // If Sunday, move to Monday
+//       date.setDate(date.getDate() + 1);
+//     }
+//     return date;
+//   };
+
 //   switch (recurringType) {
-//     case "2_minutes":
-//       return new Date(currentDate.getTime() + 2 * 60 * 1000);
 //     case "daily":
-//       return new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+//       return addDaysSkippingWeekends(currentDate, 1);
 //     case "weekly":
-//       return new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+//       return addDaysSkippingWeekends(currentDate, 7);
 //     case "monthly":
-//       return new Date(currentDate.setMonth(currentDate.getMonth() + 1));
+//       const nextMonthDate = new Date(
+//         currentDate.setMonth(currentDate.getMonth() + 1)
+//       );
+//       return adjustForFridayAndWeekend(nextMonthDate);
 //     case "quarterly":
-//       return new Date(currentDate.setMonth(currentDate.getMonth() + 3));
+//       const nextQuarterDate = new Date(
+//         currentDate.setMonth(currentDate.getMonth() + 3)
+//       );
+//       return adjustForFridayAndWeekend(nextQuarterDate);
 //     default:
 //       return currentDate;
 //   }
@@ -1006,14 +1012,8 @@ export const updateTaskHours = async (req, res) => {
 //     });
 
 //     for (const task of tasks) {
-//       // Calculate the new start and deadline dates
-//       const newStartDate = calculateStartDate(task.startDate, task.recurring);
-//       const newDeadline = calculateStartDate(task.deadline, task.recurring);
-
-//       // Ensure tasks are not created for Saturday or Sunday
-//       if (newStartDate.getDay() === 6 || newStartDate.getDay() === 0) {
-//         continue;
-//       }
+//       let newStartDate = calculateStartDate(task.startDate, task.recurring);
+//       let newDeadline = calculateStartDate(task.deadline, task.recurring);
 
 //       // Create a new task with updated dates
 //       await taskModel.create({
@@ -1025,7 +1025,7 @@ export const updateTaskHours = async (req, res) => {
 //         deadline: newDeadline,
 //         lead: task.lead,
 //         recurring: task.recurring,
-//         labal: task.labal,
+//         label: task?.label,
 //         status: "Progress",
 //         subtasks: task.subtasks.map((subtask) => ({
 //           ...subtask,
@@ -1040,18 +1040,24 @@ export const updateTaskHours = async (req, res) => {
 
 //     res.status(200).send({
 //       success: true,
-//       message: "Recurring function call...",
+//       message: "Recurring tasks processed successfully.",
 //     });
 //   } catch (error) {
 //     console.error("Error in auto-creating recurring tasks:", error);
+//     res.status(500).send({
+//       success: false,
+//       message: "An error occurred while processing recurring tasks.",
+//       error: error.message,
+//     });
 //   }
 // };
-// ---------------------Handle Recurreing---------->
+// // Schedule the task to run daily at midnight
+// cron.schedule("30 22 * * *", () => {
+//   console.log("Running task scheduler for recurring tasks...");
+//   autoCreateRecurringTasks();
+// });
 
-// if (day === 4) {
-//   // If Thursday, move to Friday
-//   date.setDate(date.getDate() + 1);
-// } else
+// Function to calculate the next start date
 const calculateStartDate = (date, recurringType) => {
   const currentDate = new Date(date);
 
@@ -1059,7 +1065,6 @@ const calculateStartDate = (date, recurringType) => {
     let result = new Date(date);
     while (days > 0) {
       result.setDate(result.getDate() + 1);
-      // Skip Saturday and Sunday
       if (result.getDay() !== 6 && result.getDay() !== 0) {
         days--;
       }
@@ -1070,21 +1075,16 @@ const calculateStartDate = (date, recurringType) => {
   const adjustForFridayAndWeekend = (date) => {
     const day = date.getDay();
     if (day === 5) {
-      // If Friday, move to Monday
       date.setDate(date.getDate() + 3);
     } else if (day === 6) {
-      // If Saturday, move to Monday
       date.setDate(date.getDate() + 2);
     } else if (day === 0) {
-      // If Sunday, move to Monday
       date.setDate(date.getDate() + 1);
     }
     return date;
   };
 
   switch (recurringType) {
-    case "2_minutes":
-      return new Date(currentDate.getTime() + 2 * 60 * 1000);
     case "daily":
       return addDaysSkippingWeekends(currentDate, 1);
     case "weekly":
@@ -1104,6 +1104,7 @@ const calculateStartDate = (date, recurringType) => {
   }
 };
 
+// Main task scheduler
 export const autoCreateRecurringTasks = async (req, res) => {
   try {
     const now = new Date();
@@ -1119,11 +1120,9 @@ export const autoCreateRecurringTasks = async (req, res) => {
     });
 
     for (const task of tasks) {
-      // Calculate the new start and deadline dates
       let newStartDate = calculateStartDate(task.startDate, task.recurring);
       let newDeadline = calculateStartDate(task.deadline, task.recurring);
 
-      // Create a new task with updated dates
       await taskModel.create({
         project: task.project,
         jobHolder: task.jobHolder,
@@ -1146,25 +1145,31 @@ export const autoCreateRecurringTasks = async (req, res) => {
       });
     }
 
-    res.status(200).send({
-      success: true,
-      message: "Recurring tasks processed successfully.",
-    });
+    if (res) {
+      res.status(200).send({
+        success: true,
+        message: "Recurring tasks processed successfully.",
+      });
+    }
   } catch (error) {
     console.error("Error in auto-creating recurring tasks:", error);
-    res.status(500).send({
-      success: false,
-      message: "An error occurred while processing recurring tasks.",
-      error: error.message,
-    });
+    if (res) {
+      res.status(500).send({
+        success: false,
+        message: "An error occurred while processing recurring tasks.",
+        error: error.message,
+      });
+    }
   }
 };
-// Schedule the task to run daily at midnight
-cron.schedule("30 22 * * *", () => {
-  console.log("Running task scheduler for recurring tasks...");
-  autoCreateRecurringTasks();
+
+// Schedule the task to run daily at 11 PM
+cron.schedule("0 23 * * *", async () => {
+  console.log("Running task scheduler for recurring tasks at 11 PM...");
+  await autoCreateRecurringTasks();
 });
 
+// ---------------------Delete Daily Recurring Tasks ---------------------->
 export const deleteDailyRecurringTasks = async (req, res) => {
   try {
     const tasksToDelete = await taskModel.find({ recurring: "daily" });
@@ -1352,5 +1357,86 @@ export const importData = async (req, res) => {
   } catch (error) {
     console.error("Error importing data:", error);
     res.status(500).send("An error occurred while importing data.");
+  }
+};
+
+// Update Multiple Tasks
+export const updateMultipleTasks = async (req, res) => {
+  try {
+    const {
+      rowSelection,
+      projectId,
+      jobHolder,
+      hours,
+      startDate,
+      deadline,
+      lead,
+      status,
+    } = req.body;
+
+    console.log("rowSelection:", rowSelection);
+
+    if (
+      !rowSelection ||
+      !Array.isArray(rowSelection) ||
+      rowSelection.length === 0
+    ) {
+      return res.status(400).send({
+        success: false,
+        message: "No tasks selected for update.",
+      });
+    }
+
+    let project;
+    if (projectId) {
+      project = await projectModel.findById(projectId);
+      if (!project) {
+        return res.status(400).send({
+          success: false,
+          message: "Project not found!",
+        });
+      }
+    }
+
+    let updateData = {};
+    if (project) updateData["project._id"] = project._id;
+    if (project) updateData["project.projectName"] = project.projectName;
+    if (project) updateData["project.users_list"] = project.users_list;
+    if (project) updateData["project.status"] = project.status;
+    if (jobHolder) updateData["jobHolder"] = jobHolder;
+    if (hours) updateData["hours"] = hours;
+    if (startDate) updateData["startDate"] = startDate;
+    if (deadline) updateData["deadline"] = deadline;
+    if (lead) updateData["lead"] = lead;
+    if (status) updateData["status"] = status;
+
+    const updatedTasks = await taskModel.updateMany(
+      {
+        _id: { $in: rowSelection },
+      },
+      { $set: updateData },
+      { multi: true }
+    );
+
+    // Check if any jobs were updated
+    if (updatedTasks.modifiedCount === 0) {
+      return res.status(404).send({
+        success: false,
+        message: "No jobs were updated.",
+      });
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Tasks updated successfully!",
+      updatedTasks,
+    });
+  } catch (error) {
+    console.log("Error in update multiple tasks:", error);
+    res.status(500).send({
+      success: false,
+      message: "Error in update multiple tasks!",
+      error: error,
+    });
   }
 };

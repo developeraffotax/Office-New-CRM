@@ -18,6 +18,7 @@ import {
   singleTaskComments,
   updateAlocateTask,
   updateJobHolderLS,
+  updateMultipleTasks,
   updateSubTaskStaus,
   updateTask,
   updateTaskHours,
@@ -94,5 +95,8 @@ router.get("/call/recurring", autoCreateRecurringTasks);
 
 // Import CSV File
 router.post("/import", requiredSignIn, upload.single("file"), importData);
+
+// Update Multiple Tasks
+router.put("/update/multiple", requiredSignIn, updateMultipleTasks);
 
 export default router;

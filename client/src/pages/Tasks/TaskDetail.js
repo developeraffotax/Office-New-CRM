@@ -589,6 +589,7 @@ export default function TaskDetail({
                                           display: "flex",
                                           alignItems: "center",
                                           justifyContent: "space-between",
+                                          marginLeft: "-.2rem",
                                         }}
                                         className="flex items-center justify-between gap-2"
                                       >
@@ -607,7 +608,7 @@ export default function TaskDetail({
                                             />
                                           </div>
                                           <p
-                                            className={`text-[15px] ${
+                                            className={`text-[15px] w-full ${
                                               status === "complete" &&
                                               "line-through"
                                             }`}

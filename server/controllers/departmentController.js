@@ -1,4 +1,5 @@
 import departmentModel from "../models/departmentModel.js";
+import hrModel from "../models/hrModel.js";
 
 // Create Department
 export const createDepartment = async (req, res) => {
@@ -37,6 +38,7 @@ export const createDepartment = async (req, res) => {
     });
   }
 };
+
 // Udpate Department
 export const updateDepartment = async (req, res) => {
   try {
@@ -65,6 +67,33 @@ export const updateDepartment = async (req, res) => {
       { new: true }
     );
 
+    // Update the tasks users for the department
+
+    const tasks = await hrModel.find({ department: updateDepartment._id });
+
+    if (tasks) {
+      for (const task of tasks) {
+        // Create a map of existing users with their statuses
+        const existingUsersMap = new Map(
+          task.users.map((userObj) => [userObj.user.toString(), userObj.status])
+        );
+
+        // Merge existing users with the new list
+        const updatedUsers = updateDepartment.users.map((userObj) => {
+          return {
+            user: userObj.user,
+            status: existingUsersMap.get(userObj.user.toString()) || "No",
+          };
+        });
+
+        await hrModel.updateOne(
+          { _id: task._id },
+          { $set: { users: updatedUsers } },
+          { new: true }
+        );
+      }
+    }
+
     res.status(200).send({
       success: true,
       message: "Department updated successfully!",
@@ -78,6 +107,7 @@ export const updateDepartment = async (req, res) => {
     });
   }
 };
+
 // Fetch All Department
 export const fetchDepartments = async (req, res) => {
   try {

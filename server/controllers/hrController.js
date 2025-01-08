@@ -68,15 +68,12 @@ export const updateHrTask = async (req, res) => {
       ])
     );
 
-    console.log("status:", existingUsersMap);
-
     const updatedUsers = departmentDetail.users.map((userObj) => {
       return {
         user: userObj.user,
         status: existingUsersMap.get(userObj.user.toString()) || "No",
       };
     });
-    console.log("data:", updatedUsers);
 
     const task = await hrModel.findByIdAndUpdate(
       { _id: existingTask._id },

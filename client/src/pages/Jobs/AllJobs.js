@@ -467,11 +467,12 @@ export default function AllJobs() {
     setFilterData([...filteredData]);
   };
 
-  useEffect(() => {
-    filterByDepStat(active1, active);
+  // Update Filter
+  // useEffect(() => {
+  //   filterByDepStat(active1, active);
 
-    // eslint-disable-next-line
-  }, [tableData, filterData, active1, active]);
+  //   // eslint-disable-next-line
+  // }, [tableData, filterData, active1, active]);
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {

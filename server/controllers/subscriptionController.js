@@ -211,7 +211,7 @@ export const updateSingleField = async (req, res) => {
         "job.deadline": deadline || existingSub.job.deadline,
         "job.lead": lead || existingSub.job.lead,
         "job.fee": fee || existingSub.job.fee,
-        note: note || existingSub.note,
+        note: note,
         status: status || existingSub.status,
         subscription: subscription || existingSub.subscription,
       },

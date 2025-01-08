@@ -319,7 +319,7 @@ export default function JobDetail({
   // ----------Create Quality Check---------->
   const handleCreateQuality = async (e) => {
     e.preventDefault();
-    setSubTaskLoading(true);
+    setLoadingQuality(false);
     try {
       const { data } = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/client/create/quality/${clientId}`,
@@ -336,7 +336,7 @@ export default function JobDetail({
       }
     } catch (error) {
       console.log(error);
-      setSubTaskLoading(false);
+      setLoadingQuality(false);
       toast.error(error.response.data.message);
     }
   };
@@ -642,7 +642,7 @@ export default function JobDetail({
 
           <div className="w-full">
             {activeTab === "subtasks" ? (
-              <div className="w-full flex flex-col gap-5 h-screen overflow-y-auto p-4">
+              <div className="w-full flex flex-col gap-5 h-screen overflow-y-auto hidden1 p-4">
                 {/* ------Subtasks---------- */}
                 <div className="flex flex-col w-full px-2">
                   <div className="flex items-center gap-2 w-full ">
@@ -714,6 +714,7 @@ export default function JobDetail({
                                             display: "flex",
                                             alignItems: "center",
                                             justifyContent: "space-between",
+                                            marginLeft: "-.2rem",
                                           }}
                                           className="flex items-center justify-between gap-2"
                                         >
@@ -902,6 +903,7 @@ export default function JobDetail({
                                             display: "flex",
                                             alignItems: "center",
                                             justifyContent: "space-between",
+                                            marginLeft: "-.2rem",
                                           }}
                                           className="flex items-center justify-between gap-2"
                                         >
@@ -938,7 +940,7 @@ export default function JobDetail({
                                             <span
                                               className="p-1 cursor-pointer"
                                               onClick={() =>
-                                                setSubtask(subTask)
+                                                setQuality(subTask)
                                               }
                                             >
                                               <FaEdit className="h-5 w-5 cursor-pointer text-gray-800 hover:text-sky-600" />

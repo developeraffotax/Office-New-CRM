@@ -524,11 +524,12 @@ const AllTasks = () => {
     setFilterData([...filteredData]);
   };
 
-  useEffect(() => {
-    filterByProjStat(active1, active);
+  // Update Filter
+  // useEffect(() => {
+  //   filterByProjStat(active1, active);
 
-    // eslint-disable-next-line
-  }, [tasksData, filterData, active1, active]);
+  //   // eslint-disable-next-line
+  // }, [tasksData, filterData, active1, active]);
 
   // Filter By State
   const filterByState = (state) => {

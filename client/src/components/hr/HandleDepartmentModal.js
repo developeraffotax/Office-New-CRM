@@ -11,6 +11,7 @@ export default function HandleDepartmentModal({
   fetchAllDepartments,
   departmentId,
   setDepartmentId,
+  getAllTasks,
 }) {
   const [loading, setLoading] = useState(false);
   const [departmentName, setDepartmentName] = useState("");
@@ -46,6 +47,7 @@ export default function HandleDepartmentModal({
           { departmentName, users: usersList }
         );
         if (data?.success) {
+          getAllTasks();
           setLoading(false);
           setDepartmentId("");
           fetchAllDepartments();

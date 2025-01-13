@@ -144,9 +144,11 @@ const updateGoogleSheet = async (data, range) => {
     const rows = data.map(flattenClientData);
 
     // Clear existing data on the specified sheet range
+    const clearRange = range.split("!")[0] + "!A1:Z1000";
+
     await sheets.spreadsheets.values.clear({
       spreadsheetId: SHEET_ID,
-      range: range,
+      range: clearRange,
     });
 
     console.log("range:", range);
@@ -200,9 +202,3 @@ export const sendDatatoGoogleSheet = async () => {
     console.error(error);
   }
 };
-
-// Schedule the task to run daily at midnight
-// cron.schedule("0 13,20,23 * * *", () => {
-//   console.log("Running task scheduler for recurring tasks...");
-//   sendDatatoGoogleSheet();
-// });

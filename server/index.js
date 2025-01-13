@@ -88,6 +88,7 @@ app.use("/api/v1/hr", hrRoute);
 app.use("/api/v1/department", departmentRoute);
 app.use("/api/v1/quicklist", quickListRoute);
 app.use("/api/v1/quicklist", qualityListRoute);
+app.use("/api/v1/googleSheet", sendDatatoGoogleSheet);
 
 // Send Data to Google Sheet
 cron.schedule("0 13,20,23 * * *", () => {

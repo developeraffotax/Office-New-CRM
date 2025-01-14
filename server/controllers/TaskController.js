@@ -1256,12 +1256,14 @@ export const getDashboardTasks = async (req, res) => {
   }
 };
 // Reordering Subtasks
+
 export const reordering = async (req, res) => {
   try {
     const taskId = req.params.id;
     const { subtasks } = req.body;
 
-    // Validate input
+    console.log("Received subtasks:", subtasks);
+
     if (!taskId) {
       return res.status(400).json({
         success: false,
@@ -1275,9 +1277,7 @@ export const reordering = async (req, res) => {
       });
     }
 
-    // Fetch the task to ensure it exists
     const task = await taskModel.findById(taskId);
-
     if (!task) {
       return res.status(404).json({
         success: false,
@@ -1285,22 +1285,48 @@ export const reordering = async (req, res) => {
       });
     }
 
-    // Update the order of each subtask
-    await Promise.all(
-      subtasks.map((stask, index) =>
-        taskModel.updateOne(
-          { "subtasks._id": stask._id },
-          { $set: { "subtasks.$.order": index + 1 } }
-        )
-      )
+    // Ensure subtasks in the task match the ones provided
+    const taskSubtaskIds = task.subtasks.map((sub) => sub._id.toString());
+    const providedSubtaskIds = subtasks.map((sub) => sub._id);
+
+    const invalidIds = providedSubtaskIds.filter(
+      (id) => !taskSubtaskIds.includes(id)
     );
+    if (invalidIds.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid subtask IDs provided: ${invalidIds.join(", ")}`,
+      });
+    }
+
+    // Update the order of each subtask
+    const updateSubtasks = await Promise.all(
+      subtasks.map((stask, index) => {
+        return taskModel.updateOne(
+          { _id: taskId, "subtasks._id": stask._id },
+          { $set: { "subtasks.$.order": index + 1 } }
+        );
+      })
+    );
+
+    const allUpdatesSuccessful = updateSubtasks.every(
+      (update) => update.acknowledged && update.modifiedCount > 0
+    );
+
+    if (!allUpdatesSuccessful) {
+      return res.status(500).json({
+        success: false,
+        message: "Some subtasks could not be updated!",
+        updateSubtasks,
+      });
+    }
 
     res.status(200).json({
       success: true,
       message: "Subtask order updated successfully!",
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error while reordering subtasks:", error);
     res.status(500).json({
       success: false,
       message: "Error while reordering subtasks!",

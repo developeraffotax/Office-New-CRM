@@ -8,11 +8,13 @@ import Sales from "../../components/Dashboard/Sales";
 import axios from "axios";
 import HR from "../../components/Dashboard/HR";
 import ActivityLogs from "../../components/Dashboard/ActivityLogs";
+import JobSummery from "../../components/Dashboard/JobSummery";
 
 export default function Dashboard() {
   // Client
   const [workFlowData, setWorkflowData] = useState([]);
   const [uniqueClients, setUniqueClients] = useState([]);
+  const [inactiveClient, setInactiveClient] = useState(0);
   const [loading, setLoading] = useState(false);
   //
   const [selectedTab, setSelectedTab] = useState("Clients");
@@ -24,6 +26,7 @@ export default function Dashboard() {
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [userData, setUserData] = useState([]);
   const [clientData, setClientData] = useState([]);
+  const [status, setStatus] = useState("");
 
   const departments = [
     "Bookkeeping",
@@ -54,6 +57,7 @@ export default function Dashboard() {
       if (data) {
         setWorkflowData(data?.clients);
         setUniqueClients(data.uniqueClients);
+        setInactiveClient(data.inactiveClientsCount);
       }
     } catch (error) {
       console.log(error);
@@ -196,6 +200,17 @@ export default function Dashboard() {
                 onClick={() => setSelectedTab("Clients")}
               >
                 Clients
+              </button>
+              <button
+                className={`py-[.4rem] px-2 outline-none w-[8rem] transition-all duration-300   ${
+                  selectedTab === "Summary"
+                    ? "bg-orange-500 text-white border-r-2 border-orange-500"
+                    : "text-black bg-gray-100 "
+                }`}
+                onClick={() => setSelectedTab("Summary")}
+                disabled={loading}
+              >
+                Summary
               </button>
               <button
                 disabled={loading}
@@ -399,6 +414,18 @@ export default function Dashboard() {
                 </select>
               </div>
             )}
+            {/* Status */}
+            {selectedTab === "Summary" && (
+              <select
+                onChange={(e) => setStatus(e.target.value)}
+                value={status}
+                className={`${style.input} shadow-md drop-shadow-md`}
+              >
+                <option value="">Select Status</option>
+                <option value="due">Due</option>
+                <option value="overdue ">Overdue </option>
+              </select>
+            )}
           </div>
 
           {/*  */}
@@ -419,6 +446,14 @@ export default function Dashboard() {
                 loading={loading}
               />
             </div>
+          ) : selectedTab === "Summary" ? (
+            <JobSummery
+              uniqueClients={uniqueClients}
+              workFlowData={workFlowData}
+              userData={userData}
+              inactiveClient={inactiveClient}
+              status={status}
+            />
           ) : selectedTab === "Sales" ? (
             <div className="w-full h-full">
               <Sales

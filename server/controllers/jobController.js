@@ -1508,10 +1508,14 @@ export const updateBulkJob = async (req, res) => {
 export const getWorkflowClients = async (req, res) => {
   try {
     const clients = await jobsModel
-      .find({ status: { $ne: "completed" } })
+      .find({
+        status: { $ne: "completed" },
+        "job.jobStatus": { $ne: "Inactive" },
+      })
       .select(
-        "fee totalHours job.jobName job.lead job.jobHolder source clientType partner activeClient createdAt currentDate"
-      );
+        "clientName companyName regNumber fee totalTime totalHours job.yearEnd job.jobDeadline job.workDeadline job.jobName job.lead job.jobStatus job.lead job.jobHolder job.jobHolder source clientType partner activeClient createdAt currentDate label source data activeClient"
+      )
+      .populate("data");
 
     const uniqueClients = await jobsModel.aggregate([
       {
@@ -1538,7 +1542,7 @@ export const getWorkflowClients = async (req, res) => {
       {
         $project: {
           _id: 0,
-          companyName: "$_id", // Rename _id to companyName
+          companyName: "$_id",
           clientName: 1,
           id: 1,
           fee: 1,
@@ -1556,11 +1560,16 @@ export const getWorkflowClients = async (req, res) => {
       },
     ]);
 
+    const inactiveClientsCount = await jobsModel.countDocuments({
+      "job.jobStatus": "Inactive",
+    });
+
     res.status(200).send({
       success: true,
       message: "All Clients!",
       clients: clients,
       uniqueClients: uniqueClients,
+      inactiveClientsCount: inactiveClientsCount,
     });
   } catch (error) {
     console.log(error);

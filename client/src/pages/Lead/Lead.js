@@ -1482,9 +1482,9 @@ export default function Lead() {
               return cellDate < startOfToday;
             case "Today":
               return cellDate.toDateString() === today.toDateString();
-            case "Yesterday":
+            case "Tomorrow":
               const tomorrow = new Date(today);
-              tomorrow.setDate(today.getDate() - 1);
+              tomorrow.setDate(today.getDate() + 1);
               return cellDate.toDateString() === tomorrow.toDateString();
             case "In 7 days":
               const in7Days = new Date(today);
@@ -1513,7 +1513,7 @@ export default function Lead() {
         filterSelectOptions: [
           "Expired",
           "Today",
-          "Yesterday",
+          "Tomorrow",
           "In 7 days",
           "In 15 days",
           "30 Days",

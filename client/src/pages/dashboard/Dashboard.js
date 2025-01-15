@@ -415,7 +415,7 @@ export default function Dashboard() {
               </div>
             )}
             {/* Status */}
-            {selectedTab === "Summary" && (
+            {/* {selectedTab === "Summary" && (
               <select
                 onChange={(e) => setStatus(e.target.value)}
                 value={status}
@@ -425,7 +425,7 @@ export default function Dashboard() {
                 <option value="due">Due</option>
                 <option value="overdue ">Overdue </option>
               </select>
-            )}
+            )} */}
           </div>
 
           {/*  */}

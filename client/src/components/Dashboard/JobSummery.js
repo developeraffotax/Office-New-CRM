@@ -1578,7 +1578,7 @@ export default function JobSummery({
           </div>
         </div>
         {/* Client Type Length */}
-        <div className="w-full flex flex-col gap-4 p-4 border border-gray-300 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-white to-gray-50">
+        <div className="w-full flex flex-col gap-4 p-4 border border-green-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-green-100 to-green-50">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 px-4">
             {clientTypeLength.map((client) => (
               <div
@@ -1614,7 +1614,7 @@ export default function JobSummery({
           </div>
         </div>
         {/* Client Department */}
-        <div className="w-full flex flex-col gap-4 p-4 border border-gray-300 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-white to-gray-50">
+        <div className="w-full flex flex-col gap-4 p-4 border border-pink-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-pink-100 to-pink-100">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4 px-4">
             {departmentLength.map((dep) => (
               <div
@@ -1650,7 +1650,7 @@ export default function JobSummery({
           </div>
         </div>
         {/* User length */}
-        <div className="w-full flex flex-col gap-4 p-4 border border-gray-300 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-white to-gray-50">
+        <div className="w-full flex flex-col gap-4 p-4 border border-sky-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-sky-100 to-sky-100">
           <div className="flex items-center overflow-auto hidden1 gap-4 px-4">
             {userLength.map((user) => (
               <div
@@ -1686,7 +1686,7 @@ export default function JobSummery({
           </div>
         </div>
         {/* Status length */}
-        <div className="w-full flex flex-col gap-4 p-4 border border-gray-300 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-white to-gray-50">
+        <div className="w-full flex flex-col gap-4 p-4 border border-lime-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-lime-100 to-lime-100">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4 px-4">
             {statusLength.map((s) => (
               <div
@@ -1722,10 +1722,23 @@ export default function JobSummery({
           </div>
         </div>
       </div>
-      {activeClient && (
+      {activeClient ? (
         <div className="w-full min-h-[20vh] relative border-t border-gray-300">
           <div className="h-full hidden1 overflow-y-scroll relative">
             <MaterialReactTable table={table} />
+          </div>
+        </div>
+      ) : (
+        <div className="w-full min-h-[40vh] relative border-t border-gray-300 flex items-center justify-center ">
+          <div className="flex flex-col gap-0">
+            <img
+              src="/rb_695.png"
+              alt="empty"
+              className="w-[16rem] h-[16rem]"
+            />
+            <span className="text-sm text-gray-700 -mt-9 text-center ">
+              Select a client to view the job details
+            </span>
           </div>
         </div>
       )}

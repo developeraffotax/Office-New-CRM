@@ -145,8 +145,6 @@ export default function JobSummery({
   }, [workFlowData]);
 
   // Get Status (Due & OverDue)
-  // <-----------Job Status------------->
-
   const getStatus = (jobDeadline, yearEnd) => {
     const deadline = new Date(jobDeadline);
     const yearEndDate = new Date(yearEnd);
@@ -163,7 +161,7 @@ export default function JobSummery({
     } else if (deadline.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
       return "Due";
     } else {
-      return "";
+      return "Upcoming";
     }
   };
 
@@ -846,7 +844,7 @@ export default function JobSummery({
       {
         accessorKey: "status",
         Header: ({ column }) => {
-          const dateStatus = ["Overdue", "Due"];
+          const dateStatus = ["Overdue", "Due", "Upcoming"];
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -882,12 +880,12 @@ export default function JobSummery({
           return (
             <div className="w-full ">
               <span
-                className={`text-white   rounded-[2rem] ${
+                className={`rounded-[2rem] ${
                   status === "Due"
-                    ? "bg-green-500  py-[6px] px-4 "
+                    ? "bg-green-500  py-[6px] px-4 text-white "
                     : status === "Overdue"
-                    ? "bg-red-500  py-[6px] px-3 "
-                    : "bg-transparent"
+                    ? "bg-red-500  py-[6px] px-3 text-white "
+                    : "bg-gray-200  py-[6px] px-3 text-black ml-[-5px] "
                 }`}
               >
                 {status}
@@ -903,7 +901,7 @@ export default function JobSummery({
           if (status === undefined || status === null) return false;
           return status.toString().toLowerCase() === filterValue.toLowerCase();
         },
-        filterSelectOptions: ["Overdue", "Due"],
+        filterSelectOptions: ["Overdue", "Due", "Upcoming"],
         filterVariant: "select",
         size: 95,
         minSize: 70,

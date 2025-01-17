@@ -9,6 +9,7 @@ import axios from "axios";
 import HR from "../../components/Dashboard/HR";
 import ActivityLogs from "../../components/Dashboard/ActivityLogs";
 import JobSummery from "../../components/Dashboard/JobSummery";
+import TaskSummary from "../../components/Dashboard/TaskSummary";
 
 export default function Dashboard() {
   // Client
@@ -46,6 +47,8 @@ export default function Dashboard() {
   const [holidaysData, setHolidayData] = useState([]);
   const [complaintData, setComplaintData] = useState([]);
   const [selectedUser, setSelectedUser] = useState("");
+  const [projects, setProjects] = useState([]);
+  const [tasksData, setTasksData] = useState([]);
 
   // ---------------All Client_Job Data----------->
   const allClientJobData = async () => {
@@ -108,6 +111,41 @@ export default function Dashboard() {
     getAllUsers();
 
     //eslint-disable-next-line
+  }, []);
+
+  //---------- Get All Projects-----------
+  const getAllProjects = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/projects/get_all/project`
+      );
+      setProjects(data?.projects);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllProjects();
+    // eslint-disable-next-line
+  }, []);
+
+  // -------Get All Tasks----->
+  const getAllTasks = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/all`
+      );
+
+      setTasksData(data.tasks);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllTasks();
+    // eslint-disable-next-line
   }, []);
 
   // Get All Holidays
@@ -202,7 +240,7 @@ export default function Dashboard() {
                 Clients
               </button>
               <button
-                className={`py-[.4rem] px-2 outline-none w-[8rem] transition-all duration-300   ${
+                className={`py-[.4rem] px-2 outline-none w-[9rem] transition-all duration-300 border-l-2 border-orange-600   ${
                   selectedTab === "Summary"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
                     : "text-black bg-gray-100 "
@@ -210,7 +248,18 @@ export default function Dashboard() {
                 onClick={() => setSelectedTab("Summary")}
                 disabled={loading}
               >
-                Summary
+                Job Summary
+              </button>
+              <button
+                className={`py-[.4rem] px-2 outline-none w-[9rem] transition-all border-l-2 border-orange-600 duration-300   ${
+                  selectedTab === "tSummary"
+                    ? "bg-orange-500 text-white border-r-2 border-orange-500"
+                    : "text-black bg-gray-100 "
+                }`}
+                onClick={() => setSelectedTab("tSummary")}
+                disabled={loading}
+              >
+                Task Summary
               </button>
               <button
                 disabled={loading}
@@ -453,6 +502,12 @@ export default function Dashboard() {
               userData={userData}
               inactiveClient={inactiveClient}
               status={status}
+            />
+          ) : selectedTab === "tSummary" ? (
+            <TaskSummary
+              projects={projects}
+              tasksData={tasksData}
+              userData={userData}
             />
           ) : selectedTab === "Sales" ? (
             <div className="w-full h-full">

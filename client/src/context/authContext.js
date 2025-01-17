@@ -70,19 +70,51 @@ const AuthProvider = ({ children }) => {
     //eslint-disable-next-line
   }, [auth?.user?.id]);
 
+  // useEffect(() => {
+  //   const checkTokenExpiry = () => {
+  //     const data = localStorage.getItem("auth");
+  //     if (data) {
+  //       const { token } = JSON.parse(data);
+  //       const decodedToken = JSON.parse(atob(token?.split(".")[1]));
+  //       const isExpired = decodedToken.exp * 1000 < Date.now();
+  //       if (isExpired) {
+  //         setAuth({ user: null, token: "" });
+  //         localStorage.removeItem("auth");
+  //       }
+  //     }
+  //   };
+  //   checkTokenExpiry();
+  // }, []);
+
   useEffect(() => {
     const checkTokenExpiry = () => {
       const data = localStorage.getItem("auth");
       if (data) {
-        const { token } = JSON.parse(data);
-        const decodedToken = JSON.parse(atob(token.split(".")[1]));
-        const isExpired = decodedToken.exp * 1000 < Date.now();
-        if (isExpired) {
+        try {
+          const { token } = JSON.parse(data);
+          if (!token) throw new Error("Token is missing");
+
+          // Split and decode the token
+          const parts = token.split(".");
+          if (parts.length !== 3) throw new Error("Invalid token format");
+
+          const decodedPayload = atob(parts[1]);
+          const decodedToken = JSON.parse(decodedPayload);
+
+          // Check expiry
+          const isExpired = decodedToken.exp * 1000 < Date.now();
+          if (isExpired) {
+            setAuth({ user: null, token: "" });
+            localStorage.removeItem("auth");
+          }
+        } catch (error) {
+          console.error("Error decoding token:", error.message);
           setAuth({ user: null, token: "" });
           localStorage.removeItem("auth");
         }
       }
     };
+
     checkTokenExpiry();
   }, []);
 

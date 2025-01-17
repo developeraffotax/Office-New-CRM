@@ -186,7 +186,7 @@ export default function AllJobs() {
     "Address",
   ];
 
-  const dateStatus = ["Due", "Overdue"];
+  const dateStatus = ["Due", "Overdue", "Upcoming"];
 
   const status = [
     "Data",
@@ -375,8 +375,11 @@ export default function AllJobs() {
     const overdueCount = filteredData.filter(
       (item) => getStatus(item.job.jobDeadline, item.job.yearEnd) === "Overdue"
     ).length;
+    const upcomingCount = filteredData.filter(
+      (item) => getStatus(item.job.jobDeadline, item.job.yearEnd) === "Upcoming"
+    ).length;
 
-    return { due: dueCount, overdue: overdueCount };
+    return { due: dueCount, overdue: overdueCount, upcoming: upcomingCount };
   };
   // --------------Status Length---------->
   const getStatusCount = (status, department) => {
@@ -681,7 +684,7 @@ export default function AllJobs() {
     } else if (deadline.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
       return "Due";
     } else {
-      return "";
+      return "Upcoming";
     }
   };
 
@@ -1696,7 +1699,7 @@ export default function AllJobs() {
           id: "Status",
           accessorKey: "status",
           Header: ({ column }) => {
-            const dateStatus = ["Overdue", "Due"];
+            const dateStatus = ["Overdue", "Due", "Upcoming"];
             return (
               <div className=" flex flex-col gap-[2px]">
                 <span
@@ -1732,12 +1735,12 @@ export default function AllJobs() {
             return (
               <div className="w-full ">
                 <span
-                  className={`text-white   rounded-[2rem] ${
+                  className={`   rounded-[2rem] ${
                     status === "Due"
-                      ? "bg-green-500  py-[6px] px-4 "
+                      ? "bg-green-500  py-[6px] px-4 text-white"
                       : status === "Overdue"
-                      ? "bg-red-500  py-[6px] px-3 "
-                      : "bg-transparent"
+                      ? "bg-red-500  py-[6px] px-3 text-white"
+                      : "bg-gray-200  py-[6px] px-3 text-black ml-[-5px]"
                   }`}
                 >
                   {status}
@@ -1755,7 +1758,7 @@ export default function AllJobs() {
               status.toString().toLowerCase() === filterValue.toLowerCase()
             );
           },
-          filterSelectOptions: ["Overdue", "Due"],
+          filterSelectOptions: ["Overdue", "Due", "Upcoming"],
           filterVariant: "select",
           size: 95,
           minSize: 70,
@@ -3427,7 +3430,7 @@ export default function AllJobs() {
             <div className="w-full py-2">
               <div className="flex items-center flex-wrap gap-4">
                 {dateStatus?.map((stat, i) => {
-                  const { due, overdue } =
+                  const { due, overdue, upcoming } =
                     getDueAndOverdueCountByDepartment(active);
                   return (
                     <div
@@ -3443,8 +3446,10 @@ export default function AllJobs() {
                     >
                       {stat === "Due" ? (
                         <span>Due {due}</span>
-                      ) : (
+                      ) : stat === "Due" ? (
                         <span>Overdue {overdue}</span>
+                      ) : (
+                        <span>Upcoming {upcoming}</span>
                       )}
                     </div>
                   );

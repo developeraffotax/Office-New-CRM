@@ -25,8 +25,8 @@ export default function TaskSummary({ projects, tasksData, userData }) {
     jobHolder: "",
     jobStatus: "",
   });
-  //   console.log("tasksData:", tasksData);
-  console.log("filterTasks:", filterTasks);
+
+  // console.log("filterTasks:", filterTasks);
 
   // ---------Total Hours-------->
 
@@ -819,19 +819,7 @@ export default function TaskSummary({ projects, tasksData, userData }) {
 
           return (
             <div className="flex items-center justify-center w-full">
-              <select
-                value={statusValue}
-                // onChange={(e) =>
-                //   updateTaskJLS(row.original?._id, "", "", e.target.value)
-                // }
-                className="w-[6rem] h-[2rem] rounded-md border border-sky-300 outline-none"
-              >
-                <option value="empty"></option>
-                <option value="To do">To do</option>
-                <option value="Progress">Progress</option>
-                <option value="Review">Review</option>
-                <option value="On hold">On hold</option>
-              </select>
+              {statusValue}
             </div>
           );
         },

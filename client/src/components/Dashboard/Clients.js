@@ -458,9 +458,9 @@ export default function Clients({
                 </p>
               </div>
             </div>
-            {clients?.map((job) => (
+            {clients?.map((job, index) => (
               <div
-                key={job._id}
+                key={index}
                 className={`flex flex-col items-center min-w-[9.5rem]  p-4 cursor-pointer transition-transform duration-300 transform hover:scale-105 rounded-lg shadow-lg hover:shadow-xl ${
                   job?.department === "Bookkeeping"
                     ? "bg-gradient-to-br from-orange-100 via-orange-200 to-orange-300"

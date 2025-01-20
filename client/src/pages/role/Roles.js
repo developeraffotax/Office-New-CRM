@@ -263,9 +263,9 @@ export default function Roles() {
         {loading ? (
           <Loader />
         ) : (
-          <div className="grid grid-cols-11 gap-2 ">
+          <div className="grid grid-cols-11 gap-4 sm:gap-2 ">
             {/* Roles */}
-            <div className="col-span-4  px-3 h-full">
+            <div className="col-span-11 sm:col-span-4  px-3 h-full">
               <div className="w-full h-full rounded-md shadow-md bg-white border border-gray-300 min-h-[20rem]">
                 <div className="py-4 px-3 flex items-center justify-between bg-gray-200 border-b border-gray-300">
                   <h2 className="text-xl sm:text-2xl font-semibold flex items-center gap-4">
@@ -333,7 +333,7 @@ export default function Roles() {
               </div>
             </div>
             {/* -----Permissions */}
-            <div className="col-span-7 px-3 h-full">
+            <div className=" col-span-11 sm:col-span-7 px-3 h-full">
               {selectedRole ? (
                 <div className="w-full h-full rounded-md shadow-md bg-white border border-gray-300">
                   <div className="py-4 px-3 flex items-center justify-between bg-gray-200 border-b border-gray-300">

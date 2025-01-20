@@ -204,7 +204,7 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4  bg-gray-100">
+      <div className="relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4  bg-gray-100 overflow-hidden">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-5">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
@@ -227,10 +227,10 @@ export default function Dashboard() {
             </span>
           </div>
           {/* ----------Tabs--------- */}
-          <div className="flex items-center flex-wrap  gap-5">
-            <div className="flex items-center mt-3 sm:mt-0 ml-5 sm:ml-[5rem]  border-2 border-orange-500 rounded-sm overflow-hidden  transition-all duration-300 w-fit">
+          <div className="flex items-center flex-wrap  gap-5 overflow-x-auto hidden1 ">
+            <div className="flex items-center mt-3 sm:mt-0 ml-5 sm:ml-[5rem] border-2 border-orange-500 rounded-sm  transition-all duration-300 w-fit ">
               <button
-                className={`py-[.4rem] px-2 outline-none w-[8rem] transition-all duration-300   ${
+                className={`py-[.4rem] px-2 outline-none min-w-[7rem]  w-[8rem] transition-all duration-300   ${
                   selectedTab === "Clients"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
                     : "text-black bg-gray-100 "
@@ -240,7 +240,7 @@ export default function Dashboard() {
                 Clients
               </button>
               <button
-                className={`py-[.4rem] px-2 outline-none w-[9rem] transition-all duration-300 border-l-2 border-orange-600   ${
+                className={`py-[.4rem] px-2 outline-none min-w-[9rem] w-[9rem] transition-all duration-300 border-l-2 border-orange-600   ${
                   selectedTab === "Summary"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
                     : "text-black bg-gray-100 "
@@ -251,7 +251,7 @@ export default function Dashboard() {
                 Job Summary
               </button>
               <button
-                className={`py-[.4rem] px-2 outline-none w-[9rem] transition-all border-l-2 border-orange-600 duration-300   ${
+                className={`py-[.4rem] px-2 outline-none min-w-[9rem]  w-[9rem] transition-all border-l-2 border-orange-600 duration-300   ${
                   selectedTab === "tSummary"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
                     : "text-black bg-gray-100 "
@@ -263,7 +263,7 @@ export default function Dashboard() {
               </button>
               <button
                 disabled={loading}
-                className={`py-[.4rem] px-2 outline-none w-[8rem] border-l-2 border-orange-600 transition-all duration-300   ${
+                className={`py-[.4rem] px-2 outline-none min-w-[7rem]  w-[8rem] border-l-2 border-orange-600 transition-all duration-300   ${
                   selectedTab === "Sales"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
                     : "text-black bg-gray-100"
@@ -274,7 +274,7 @@ export default function Dashboard() {
               </button>
               <button
                 disabled={loading}
-                className={`py-[.4rem] px-2 outline-none w-[8rem] border-l-2 border-orange-600 transition-all duration-300   ${
+                className={`py-[.4rem] px-2 outline-none min-w-[7rem]  w-[8rem] border-l-2 border-orange-600 transition-all duration-300   ${
                   selectedTab === "HR"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
                     : "text-black bg-gray-100"
@@ -285,7 +285,7 @@ export default function Dashboard() {
               </button>
               <button
                 disabled={loading}
-                className={`py-[.4rem] px-2 outline-none w-[8rem] border-l-2 border-orange-600 transition-all duration-300   ${
+                className={`py-[.4rem] px-2 outline-none min-w-[7rem]  w-[8rem] border-l-2 border-orange-600 transition-all duration-300   ${
                   selectedTab === "Activity"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
                     : "text-black bg-gray-100"

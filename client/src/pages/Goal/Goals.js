@@ -1474,7 +1474,7 @@ export default function Goals() {
               </span>
               <span
                 onClick={() => setShowGraph(!showGraph)}
-                className="ml-[2rem] mb-1 p-1 rounded-md hover:shadow-md transition-all duration-300 cursor-pointer text-orange-500 hover:text-orange-600 bg-gray-200/60 hover:bg-gray-200/80 border"
+                className="ml-[2rem] hidden sm:block mb-1 p-1 rounded-md hover:shadow-md transition-all duration-300 cursor-pointer text-orange-500 hover:text-orange-600 bg-gray-200/60 hover:bg-gray-200/80 border"
               >
                 <VscGraph className="h-6 w-6" />
               </span>
@@ -1534,7 +1534,7 @@ export default function Goals() {
 
           {/*----- Users ---------*/}
           {auth?.user?.role?.name === "Admin" && selectedTab === "progress" && (
-            <div className="flex items-center flex-wrap gap-3">
+            <div className=" hidden sm:flex items-center flex-wrap gap-3">
               <button
                 onClick={() => filterGoalsByUser("All")}
                 className={`px-4 py-[5px] rounded-md font-medium transition-all duration-300 ${

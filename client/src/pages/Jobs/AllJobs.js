@@ -2906,7 +2906,7 @@ export default function AllJobs() {
   return (
     <Layout>
       <div className="w-full h-[100%] py-4 px-2 sm:px-4 overflow-y-auto ">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start sm:items-center sm:justify-between flex-col sm:flex-row gap-3 ">
           <div className="flex items-center gap-5">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
               {showCompleted && activeBtn === "completed"
@@ -2949,7 +2949,7 @@ export default function AllJobs() {
                 htmlFor="importJobs"
                 className={`${
                   style.button1
-                } !bg-gray-100 !shadow-none text-black hover:bg-orange-500 text-[15px] ${
+                } !bg-gray-100 hidden sm:flex !shadow-none text-black hover:bg-orange-500 text-[15px] ${
                   fLoading ? "cursor-not-allowed opacity-90" : ""
                 }`}
                 style={{ padding: ".4rem 1.1rem", color: "#000" }}
@@ -2965,14 +2965,14 @@ export default function AllJobs() {
             </form>
 
             <button
-              className={`px-4 h-[2.2rem] flex items-center justify-center gap-1 rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
+              className={`px-4 h-[2.2rem] hidden sm:flex items-center justify-center gap-1 rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
               onClick={handleExportData}
               title="Export Date"
             >
               <LuImport className="h-6 w-6 " /> Export
             </button>
             <button
-              className={`${style.button1} text-[15px] `}
+              className={`${style.button1} hidden sm:flex text-[15px] `}
               onClick={() => setShowQuickList(true)}
               style={{ padding: ".4rem 1rem" }}
             >
@@ -3004,7 +3004,7 @@ export default function AllJobs() {
         {/*  */}
 
         {/* -----------Filters By Deparment--------- */}
-        <div className="flex items-center flex-wrap gap-2 mt-6">
+        <div className="flex items-center overflow-x-auto hidden1 gap-2 mt-6">
           {departments?.map((dep, i) => {
             getDueAndOverdueCountByDepartment(dep);
             return (
@@ -3381,7 +3381,7 @@ export default function AllJobs() {
                       <div
                         {...provided.droppableProps}
                         ref={provided.innerRef}
-                        className="flex items-center gap-2 flex-wrap"
+                        className="flex items-center gap-2 overflow-x-auto hidden1"
                       >
                         {usersData
                           ?.filter(
@@ -3395,7 +3395,7 @@ export default function AllJobs() {
                             >
                               {(provided) => (
                                 <div
-                                  className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                                  className={`py-1 rounded-tl-md rounded-tr-md min-w-[5.8rem] px-1 cursor-pointer font-[500] text-[14px] ${
                                     active1 === user?.name &&
                                     "  border-b-2 text-orange-600 border-orange-600"
                                   }`}

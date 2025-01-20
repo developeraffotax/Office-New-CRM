@@ -231,7 +231,7 @@ export default function Inbox() {
             </div>
 
             {/*  */}
-            <div className="relative ">
+            <div className="relative hidden sm:flex ">
               <span className="absolute top-[.6rem] left-2 z-10">
                 <IoSearch className="h-5 w-5 text-orange-500" />
               </span>
@@ -298,7 +298,7 @@ export default function Inbox() {
           {loading ? (
             <Loader />
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 w-full min-w-[50rem] overflow-x-auto hidden1">
               {paginatedEmails.map((email, i) => (
                 <div
                   disabled={deleteLoad}

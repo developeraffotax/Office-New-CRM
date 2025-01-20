@@ -100,14 +100,16 @@ export default function ActivityLogs({
   }, [userwiseActiviesCount, selectedUser]);
 
   return (
-    <div className="w-full h-full p-6 flex items-center justify-center ">
+    <div className="w-full h-full p-2 sm:p-6 flex items-center justify-center ">
       <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg border overflow-hidden">
         {/* Header Section */}
         <div className="p-4 bg-green-600 flex items-center gap-4">
           <div className="pr-4 border-r-2 border-green-300">
-            <span className="text-2xl font-bold text-white">Filters</span>
+            <span className="text-lg  sm:text-2xl font-bold text-white">
+              Filters
+            </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 overflow-x-auto hidden1">
             {/* Date Filters */}
             {[
               { label: "Today", value: today },
@@ -119,7 +121,7 @@ export default function ActivityLogs({
                   setDate(filter.value);
                   setActive(filter.label.toLowerCase());
                 }}
-                className={`px-6 py-2 rounded-full font-semibold transition-transform duration-300 ${
+                className={`px-4 sm:px-6 py-1 sm:py-2 rounded-full text-[13px]  sm:text-[15px] font-semibold transition-transform duration-300 ${
                   active === filter.label.toLowerCase()
                     ? "bg-white text-green-600 shadow-lg scale-105"
                     : "text-white border border-white hover:bg-gray-50 hover:text-green-600"
@@ -132,7 +134,7 @@ export default function ActivityLogs({
             {/* Custom Date Picker */}
             <button
               onClick={() => setActive("custom")}
-              className={`px-6 py-2 rounded-full font-semibold transition-transform duration-300 ${
+              className={`px-4 sm:px-6 py-1 sm:py-2 text-[13px]  sm:text-[15px]  rounded-full font-semibold transition-transform duration-300 ${
                 active === "custom"
                   ? "bg-white text-green-600 shadow-lg scale-105"
                   : "text-white border border-white hover:bg-gray-50 hover:text-green-600"
@@ -220,12 +222,12 @@ export default function ActivityLogs({
                       </div>
 
                       {/* User's Activity */}
-                      <div className="relative ml-6">
+                      <div className="relative ml-0 sm:ml-6">
                         {userActivity?.activity?.map(
                           (activity, activityIndex) => (
                             <div
                               key={activityIndex}
-                              className={`relative py-2 px-4 mt-3 bg-white rounded-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] ${
+                              className={`relative py-2 px-4 mt-3 overflow-hidden bg-white rounded-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] ${
                                 activityIndex !==
                                 userActivity.activity.length - 1
                                   ? "pb-12"
@@ -249,7 +251,7 @@ export default function ActivityLogs({
                                 {activity?.action}
                               </p>
                               <pre className="text-[15px] text-gray-700 mt-2 ">
-                                <strong className="text-gray-900 text-lg text-[17px]">
+                                <strong className="text-gray-900 text-lg text-[14px] sm:text-[17px] ">
                                   Details:
                                 </strong>{" "}
                                 {activity?.details}

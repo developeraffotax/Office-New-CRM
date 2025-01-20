@@ -1749,7 +1749,7 @@ export default function Subscription() {
   return (
     <Layout>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4 pb-[2rem]">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-4 ">
           <div className="flex items-center gap-5">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
               Subscription's

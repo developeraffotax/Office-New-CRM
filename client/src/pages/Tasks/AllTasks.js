@@ -2371,8 +2371,8 @@ const AllTasks = () => {
     <Layout>
       {!showCompleted ? (
         <div className=" relative w-full h-full overflow-auto py-4 px-2 sm:px-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-5">
+          <div className="flex text-start sm:items-center sm:justify-between gap-4 flex-col sm:flex-row">
+            <div className="flex items-center gap-5 ">
               <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
                 Tasks
               </h1>
@@ -2404,7 +2404,7 @@ const AllTasks = () => {
               {(auth?.user?.role?.name === "Admin" ||
                 access.includes("Projects")) && (
                 <div
-                  className=" relative w-[8rem]  border-2 border-gray-200 rounded-md py-1 px-2 flex items-center justify-between gap-1"
+                  className=" relative w-[8rem]    border-2 border-gray-200 rounded-md py-1 px-2 hidden sm:flex items-center justify-between gap-1"
                   onClick={() => setShowProject(!showProject)}
                 >
                   <span className="text-[15px] text-gray-900 cursor-pointer">
@@ -2479,7 +2479,7 @@ const AllTasks = () => {
                   htmlFor="importJobs"
                   className={`${
                     style.button1
-                  } !bg-gray-100 !shadow-none text-black hover:bg-orange-500 text-[15px] ${
+                  } !bg-gray-100 !shadow-none text-black hidden sm:flex  hover:bg-orange-500 text-[15px] ${
                     fLoading ? "cursor-not-allowed opacity-90" : ""
                   }`}
                   style={{ padding: ".4rem 1.1rem", color: "#000" }}
@@ -2494,7 +2494,7 @@ const AllTasks = () => {
                 </label>
               </form>
               <button
-                className={`px-4 h-[2.2rem] flex items-center justify-center gap-1 rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
+                className={`px-4 h-[2.2rem] hidden sm:flex items-center justify-center gap-1 rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
                 onClick={handleExportData}
                 title="Export Date"
               >
@@ -2526,7 +2526,7 @@ const AllTasks = () => {
           {/*  */}
           <div className="flex flex-col gap-2 mt-3">
             {/* -----------Filters By Projects--------- */}
-            <div className="flex items-center flex-wrap gap-2 mt-3">
+            <div className="flex items-center flex-row overflow-x-auto hidden1 gap-2 mt-3">
               <div
                 className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
                   active === "All" &&
@@ -2550,7 +2550,7 @@ const AllTasks = () => {
                     <div
                       {...provided.droppableProps}
                       ref={provided.innerRef}
-                      className="flex items-center gap-2 flex-wrap"
+                      className="flex items-center gap-2 "
                     >
                       {projects?.map((proj, index) => (
                         <Draggable
@@ -2560,7 +2560,7 @@ const AllTasks = () => {
                         >
                           {(provided) => (
                             <div
-                              className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                              className={`py-1 rounded-tl-md rounded-tr-md px-1 w-fit cursor-pointer font-[500] text-[14px] ${
                                 active === proj?.projectName &&
                                 " border-2 border-b-0 text-orange-600 border-gray-300"
                               }`}
@@ -2643,7 +2643,7 @@ const AllTasks = () => {
 
               {/* Edit Multiple Tasks */}
               <span
-                className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+                className={`hidden sm:block p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
                   showEdit && "bg-orange-500 text-white"
                 }`}
                 onClick={() => {
@@ -2689,7 +2689,7 @@ const AllTasks = () => {
                           <div
                             {...provided.droppableProps}
                             ref={provided.innerRef}
-                            className="flex items-center gap-2 flex-wrap"
+                            className="flex items-center gap-2 overflow-x-auto hidden1"
                           >
                             {users
                               ?.filter(
@@ -2704,7 +2704,7 @@ const AllTasks = () => {
                                 >
                                   {(provided) => (
                                     <div
-                                      className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                                      className={`py-1 rounded-tl-md min-w-[5.8rem] rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
                                         active1 === user.name &&
                                         "  border-b-2 text-orange-600 border-orange-600"
                                       }`}

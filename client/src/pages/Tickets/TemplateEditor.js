@@ -134,7 +134,7 @@ export default function TemplateEditor() {
         <div className="w-[100%] h-full flex items-start justify-center  ">
           <div className="w-full sm:w-[99%] h-full rounded-md  bg-[#fff] grid grid-cols-6 overflow-hidden overflow-y-auto ">
             {/* -----------Design Editor--------------- */}
-            <div className="w-full h-full flex overflow-y-auto overflow-hidden col-span-2 ">
+            <div className="w-full h-full flex sm:overflow-y-auto sm:overflow-hidden col-span-6 sm:col-span-2 ">
               <div className="w-full h-full flex-col gap-4 overflow-y-auto overflow-x-hidden py-3 px-3 ">
                 {/* -------Selector */}
                 <div className="mb-4">
@@ -239,7 +239,7 @@ export default function TemplateEditor() {
               </div>
             </div>
             {/*---------------- Template ------------- */}
-            <div className="w-full h-full col-span-4  ">
+            <div className="w-full h-full col-span-6 sm:col-span-4  ">
               <CertificateCanvas
                 images={images}
                 texts={texts}

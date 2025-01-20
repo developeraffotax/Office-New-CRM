@@ -673,7 +673,7 @@ export default function Template() {
     <Layout>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
         {selectedTab === "templates" && (
-          <div className="flex items-center justify-between">
+          <div className="flex items-start sm:items-center sm:justify-between flex-col gap-2 sm:flex-row">
             <div className="flex items-center gap-2">
               <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
                 Templates
@@ -691,7 +691,7 @@ export default function Template() {
             </div>
 
             {/* ---------Template Buttons */}
-            <div className="flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-4">
               <div
                 className={`relative w-[8rem]  border-2 rounded-md py-1 px-2 flex items-center justify-between gap-1 ${
                   showAllCategories ? "border-orange-600" : "border-gray-200 "
@@ -741,7 +741,7 @@ export default function Template() {
               </div>
 
               <button
-                className={`w-[3rem] h-[2.2rem] flex items-center justify-center rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
+                className={`w-[3rem] hidden  h-[2.2rem] sm:flex items-center justify-center rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
                 // onClick={handleExportData}
                 title="Export Data"
               >

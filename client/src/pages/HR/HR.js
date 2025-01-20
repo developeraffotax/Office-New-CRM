@@ -701,7 +701,7 @@ export default function HR() {
   return (
     <Layout>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
-        <div className="flex items-center justify-between">
+        <div className="flex fles-start sm:items-center sm:justify-between flex-col sm:flex-row gap-4 ">
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
               HR
@@ -714,14 +714,14 @@ export default function HR() {
               }}
               title="Clear filters"
             >
-              <IoClose className="h-6 w-6 text-white" />
+              <IoClose className="h-4 sm:h-6 w-4 sm:w-6 text-white" />
             </span>
           </div>
 
           {/* ---------Template Buttons */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 sm:w-fit w-full justify-end sm:justify-normal">
             {/* Hide & Show */}
-            <div className="relative">
+            <div className=" hidden sm:flex relative">
               <div
                 className={` p-1 rounded-md hover:shadow-md bg-gray-50 cursor-pointer border ${
                   showcolumn && "bg-orange-500 text-white"
@@ -760,7 +760,7 @@ export default function HR() {
             </div> */}
             {/* ----------All Departments--------- */}
             <div
-              className=" relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2 flex items-center justify-between gap-1"
+              className=" hidden sm:flex items-center justify-between relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2  gap-1"
               onClick={() => setShowDepartment(!showDepartment)}
             >
               <span className="text-[15px] text-gray-900 cursor-pointer">

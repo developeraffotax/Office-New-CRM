@@ -547,7 +547,7 @@ export default function Clients({
             {/* ------------Month Wise Department Total------------ */}
             <div className="w-full shadow-md rounded-md cursor-pointer border p-2">
               <div className="flex items-center gap-6">
-                <h3 className="text-xl font-semibold text-center">
+                <h3 className="text-lg sm:text-xl font-semibold text-center">
                   Client Department Analytics
                 </h3>
                 <select
@@ -567,7 +567,7 @@ export default function Clients({
             {/* ------------Month Wise Fee------------ */}
             <div className="w-full shadow-md rounded-md cursor-pointer border p-2">
               <div className="flex items-center gap-6">
-                <h3 className="text-xl font-semibold text-center">
+                <h3 className="text-lg sm:text-xl font-semibold text-center">
                   Client Fee Analytics
                 </h3>
               </div>

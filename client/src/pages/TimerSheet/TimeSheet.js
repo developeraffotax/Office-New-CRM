@@ -1832,144 +1832,152 @@ export default function TimeSheet() {
   return (
     <Layout>
       <div className=" relative w-full h-[100%] py-4 px-2 sm:px-4 flex flex-col gap-2  ">
-        <div className="flex items-center justify-between">
-          <div className="relative flex items-center gap-4">
-            <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
-              Timesheet
-            </h1>
-            <div className="flex items-center gap-2">
-              {(auth?.user?.role.name === "Admin" ||
-                access.includes("Job-holder")) && (
-                <span
-                  className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
-                  onClick={() => {
-                    setUsername("");
-                    handleClearFilters();
-                  }}
-                  title="Clear filters"
-                >
-                  <IoClose className="h-6 w-6 text-white" />
-                </span>
-              )}
+        <div className="flex items-start sm:items-center sm:justify-between flex-col sm:flex-row gap-2">
+          <div className="relative flex items-start sm:items-center sm:flex-row flex-col gap-4">
+            <div className="flex items-center gap-4">
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
+                Timesheet
+              </h1>
+              <div className="flex items-center gap-2">
+                {(auth?.user?.role.name === "Admin" ||
+                  access.includes("Job-holder")) && (
+                  <span
+                    className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
+                    onClick={() => {
+                      setUsername("");
+                      handleClearFilters();
+                    }}
+                    title="Clear filters"
+                  >
+                    <IoClose className="h-6 w-6 text-white" />
+                  </span>
+                )}
+              </div>
             </div>
             {/* Select */}
-            <select
-              value={active}
-              onChange={(e) => setActive(e.target.value)}
-              className={`w-[6rem] h-[2.1rem] border-2 border-orange-500 outline-none rounded-md cursor-pointer `}
-            >
-              {/* <option value="">Select Activity</option> */}
-              {selectDate?.map((act, i) => (
-                <option key={i} value={act}>
-                  {act}
-                </option>
-              ))}
-            </select>
-            {/*-------- Week Wise Navigation---------- */}
-            {active === "Weekly" && (
-              <div className="flex items-center justify-center">
-                <div
-                  className="mx-2"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {/* Previous Week Button */}
-                  <button
-                    title={`${strfdopw && strfdopw} to ${strldopw && strldopw}`}
-                    onClick={() => {
-                      setWeek(new Date(firstDayOfPrevWeek));
+            <div className="flex items-center gap-2 sm:gap-4">
+              <select
+                value={active}
+                onChange={(e) => setActive(e.target.value)}
+                className={`w-[6rem] h-[2.1rem] border-2 border-orange-500 outline-none rounded-md cursor-pointer `}
+              >
+                {/* <option value="">Select Activity</option> */}
+                {selectDate?.map((act, i) => (
+                  <option key={i} value={act}>
+                    {act}
+                  </option>
+                ))}
+              </select>
+              {/*-------- Week Wise Navigation---------- */}
+              {active === "Weekly" && (
+                <div className="flex items-center justify-center">
+                  <div
+                    className="mx-2"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
+                  >
+                    {/* Previous Week Button */}
+                    <button
+                      title={`${strfdopw && strfdopw} to ${
+                        strldopw && strldopw
+                      }`}
+                      onClick={() => {
+                        setWeek(new Date(firstDayOfPrevWeek));
+                      }}
+                      className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
+                    >
+                      <FaAngleLeft className="h-5 w-5 text-white" />
+                    </button>
+
+                    <div className="mx-2">
+                      <p className="sm:text-[15px] text-[13px]">
+                        {strfdow && strfdow} to {strldow && strldow}
+                      </p>
+                    </div>
+
+                    {/* Next Week Button */}
+                    <button
+                      title={`${strfdonw && strfdonw} to ${
+                        strldonw && strldonw
+                      }`}
+                      onClick={() => {
+                        setWeek(new Date(firstDayOfNextWeek));
+                      }}
+                      className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
+                    >
+                      <FaAngleRight className="h-5 w-5 text-white" />
+                    </button>
+                  </div>
+                </div>
+              )}
+              {/* -----------------Monthly Navigation------------- */}
+              {active === "Monthly" && (
+                <div className="flex items-center justify-center">
+                  <button
+                    title={`Previous Month: ${strfdom && strfdom} to ${
+                      strldom && strldom
+                    }`}
+                    onClick={goToPrevMonth}
                     className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
                   >
                     <FaAngleLeft className="h-5 w-5 text-white" />
                   </button>
 
                   <div className="mx-2">
-                    <p>
-                      Entries From {strfdow && strfdow} to {strldow && strldow}
+                    <p className="sm:text-[15px] text-[13px]">
+                      Month: {strfdom && strfdom} to {strldom && strldom}
                     </p>
                   </div>
 
-                  {/* Next Week Button */}
                   <button
-                    title={`${strfdonw && strfdonw} to ${strldonw && strldonw}`}
-                    onClick={() => {
-                      setWeek(new Date(firstDayOfNextWeek));
-                    }}
+                    title={`Next Month: ${strfdom && strfdom} to ${
+                      strldom && strldom
+                    }`}
+                    onClick={goToNextMonth}
                     className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
                   >
                     <FaAngleRight className="h-5 w-5 text-white" />
                   </button>
                 </div>
-              </div>
-            )}
-            {/* -----------------Monthly Navigation------------- */}
-            {active === "Monthly" && (
-              <div className="flex items-center justify-center">
-                <button
-                  title={`Previous Month: ${strfdom && strfdom} to ${
-                    strldom && strldom
-                  }`}
-                  onClick={goToPrevMonth}
-                  className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
-                >
-                  <FaAngleLeft className="h-5 w-5 text-white" />
-                </button>
+              )}
+              {/*----------------- Yearly Navigation---------------- */}
+              {active === "Yearly" && (
+                <div className="flex items-center justify-center">
+                  <button
+                    title={`Previous Year: ${strfdoy && strfdoy} to ${
+                      strldoy && strldoy
+                    }`}
+                    onClick={goToPrevYear}
+                    className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
+                  >
+                    <FaAngleLeft className="h-5 w-5 text-white" />
+                  </button>
 
-                <div className="mx-2">
-                  <p>
-                    Month: {strfdom && strfdom} to {strldom && strldom}
-                  </p>
+                  <div className="mx-2">
+                    <p className="sm:text-[15px] text-[13px]">
+                      Year: {strfdoy && strfdoy} to {strldoy && strldoy}
+                    </p>
+                  </div>
+
+                  <button
+                    title={`Next Year: ${strfdoy && strfdoy} to ${
+                      strldoy && strldoy
+                    }`}
+                    onClick={goToNextYear}
+                    className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
+                  >
+                    <FaAngleRight className="h-5 w-5 text-white" />
+                  </button>
                 </div>
-
-                <button
-                  title={`Next Month: ${strfdom && strfdom} to ${
-                    strldom && strldom
-                  }`}
-                  onClick={goToNextMonth}
-                  className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
-                >
-                  <FaAngleRight className="h-5 w-5 text-white" />
-                </button>
-              </div>
-            )}
-            {/*----------------- Yearly Navigation---------------- */}
-            {active === "Yearly" && (
-              <div className="flex items-center justify-center">
-                <button
-                  title={`Previous Year: ${strfdoy && strfdoy} to ${
-                    strldoy && strldoy
-                  }`}
-                  onClick={goToPrevYear}
-                  className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
-                >
-                  <FaAngleLeft className="h-5 w-5 text-white" />
-                </button>
-
-                <div className="mx-2">
-                  <p>
-                    Year: {strfdoy && strfdoy} to {strldoy && strldoy}
-                  </p>
-                </div>
-
-                <button
-                  title={`Next Year: ${strfdoy && strfdoy} to ${
-                    strldoy && strldoy
-                  }`}
-                  onClick={goToNextYear}
-                  className="border-none rounded-full p-1 shadow bg-orange-500 hover:bg-orange-600 transition-all duration-200 cursor-pointer flex items-center justify-center"
-                >
-                  <FaAngleRight className="h-5 w-5 text-white" />
-                </button>
-              </div>
-            )}
+              )}
+            </div>
 
             <span
               onClick={() => setShowGraph(!showGraph)}
-              className=" p-1 rounded-md hover:shadow-md transition-all duration-300 cursor-pointer text-orange-500 hover:text-orange-600 bg-gray-200/60 hover:bg-gray-200/80 border"
+              className=" hidden sm:block p-1 rounded-md hover:shadow-md transition-all duration-300 cursor-pointer text-orange-500 hover:text-orange-600 bg-gray-200/60 hover:bg-gray-200/80 border"
             >
               <BsPieChartFill className="h-6 w-6" />
             </span>
@@ -1989,9 +1997,9 @@ export default function TimeSheet() {
             )}
           </div>
           {/* ----------Add Manual Buttons---------- */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 w-full justify-end  sm:w-fit">
             <button
-              className={`px-4 h-[2.2rem] flex items-center justify-center gap-1 rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
+              className={`px-4 h-[2.2rem] hidden sm:flex items-center justify-center gap-1 rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
               onClick={handleExportData}
               title="Export Date"
             >
@@ -2081,7 +2089,7 @@ export default function TimeSheet() {
 
         {/* ---------------Total Time---------------- */}
         {selectedTab === "Single" && (
-          <div className="w-full absolute bottom-4 left-0 px-4 z-[20] grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-9 gap-4 2xl:gap-5">
+          <div className="w-full hidden absolute bottom-4 left-0 px-4 z-[20] sm:grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-9 gap-4 2xl:gap-5">
             <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
               <h4 className="text-[16px] font-medium">Monday</h4>
               <span className="text-[15px]">{times?.monTotal}</span>

@@ -230,10 +230,10 @@ export default function AllLists() {
         </div>
         {/*  */}
         <>
-          <div className=" w-full flex items-center gap-4">
-            <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
+          <div className=" w-full flex items-center gap-4 overflow-x-auto hidden1">
+            <div className="flex items-center  border-2  border-orange-500 overflow-x-auto hidden1 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
               <button
-                className={`py-[6px] px-2 outline-none w-[8.5rem] transition-all duration-300   ${
+                className={`py-[6px] px-2 outline-none min-w-[8rem] text-[13px] sm:text-[15px] w-[8.5rem] transition-all duration-300   ${
                   selectedTab === "Tasks"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500 scale-105 shadow-md"
                     : "text-black bg-gray-100"
@@ -243,7 +243,7 @@ export default function AllLists() {
                 Tasks
               </button>
               <button
-                className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                className={`py-[6px] px-2 outline-none min-w-[8rem] text-[13px] sm:text-[15px] transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
                   selectedTab === "Jobs"
                     ? "bg-orange-500 text-white scale-105 shadow-md"
                     : "text-black bg-gray-100 hover:bg-slate-200"
@@ -255,7 +255,7 @@ export default function AllLists() {
                 Jobs
               </button>
               <button
-                className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                className={`py-[6px] px-2 outline-none min-w-[8rem] text-[13px] sm:text-[15px] transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
                   selectedTab === "Tickets"
                     ? "bg-orange-500 text-white scale-105 shadow-md"
                     : "text-black bg-gray-100 hover:bg-slate-200"
@@ -267,7 +267,7 @@ export default function AllLists() {
                 Tickets
               </button>
               <button
-                className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                className={`py-[6px] px-2 outline-none min-w-[8rem] text-[13px] sm:text-[15px] transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
                   selectedTab === "Leads"
                     ? "bg-orange-500 text-white scale-105 shadow-md"
                     : "text-black bg-gray-100 hover:bg-slate-200"
@@ -279,7 +279,7 @@ export default function AllLists() {
                 Leads
               </button>
               <button
-                className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                className={`py-[6px] px-2 outline-none min-w-[8rem] text-[13px] sm:text-[15px] transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
                   selectedTab === "Proposals"
                     ? "bg-orange-500 text-white scale-105 shadow-md"
                     : "text-black bg-gray-100 hover:bg-slate-200"
@@ -291,7 +291,7 @@ export default function AllLists() {
                 Proposals
               </button>
               <button
-                className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                className={`py-[6px] px-2 outline-none min-w-[8rem] text-[13px] sm:text-[15px] transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
                   selectedTab === "Templates"
                     ? "bg-orange-500 text-white scale-105 shadow-md"
                     : "text-black bg-gray-100 hover:bg-slate-200"
@@ -303,7 +303,7 @@ export default function AllLists() {
                 Templates
               </button>
               <button
-                className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                className={`py-[6px] px-2 min-w-[8rem] text-[13px] sm:text-[15px] outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
                   selectedTab === "Goals"
                     ? "bg-orange-500 text-white scale-105 shadow-md"
                     : "text-black bg-gray-100 hover:bg-slate-200"
@@ -315,7 +315,7 @@ export default function AllLists() {
                 Goals
               </button>
               <button
-                className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                className={`py-[6px] px-2 min-w-[8rem] text-[13px] sm:text-[15px] outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
                   selectedTab === "Subscription"
                     ? "bg-orange-500 text-white scale-105 shadow-md"
                     : "text-black bg-gray-100 hover:bg-slate-200"
@@ -327,7 +327,7 @@ export default function AllLists() {
                 Subscription
               </button>
               <button
-                className={`py-[6px] px-2 outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                className={`py-[6px] hidden sm:block px-2 min-w-[8rem] text-[13px] sm:text-[15px] outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
                   selectedTab === "TimeSheet"
                     ? "bg-orange-500 text-white scale-105 shadow-md"
                     : "text-black bg-gray-100 hover:bg-slate-200"
@@ -339,7 +339,7 @@ export default function AllLists() {
                 TimeSheet
               </button>
               <button
-                className={`py-[6px] px-2 outline-none w-[8.5rem] border-l-2 border-orange-600  transition-all duration-300   ${
+                className={`py-[6px] px-2 min-w-[8rem] text-[13px] sm:text-[15px] outline-none w-[8.5rem] border-l-2 border-orange-600  transition-all duration-300   ${
                   selectedTab === "Dashboard"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500 scale-105 shadow-md"
                     : "text-black bg-gray-100"

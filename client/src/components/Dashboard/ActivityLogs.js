@@ -167,8 +167,8 @@ export default function ActivityLogs({
         </div>
 
         {/* Activities Section */}
-        <div className="p-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+        <div className=" p-1 sm:p-6">
+          <h2 className=" text-[1.1rem] sm:text-2xl font-semibold text-gray-800 mb-4">
             Activities for {date || today}
           </h2>
           {loading ? (
@@ -180,7 +180,7 @@ export default function ActivityLogs({
                   {filteredActivities.map((userActivity, index) => (
                     <div
                       key={index}
-                      className={`relative p-4 bg-gradient-to-r from-slate-300 to-slate-500 shadow-lg rounded-xl flex flex-col gap-4 ${
+                      className={`relative p-1 sm:p-4 bg-gradient-to-r from-slate-300 to-slate-500 shadow-lg rounded-xl flex flex-col gap-4 ${
                         index !== filteredActivities.length - 1 ? "pb-16" : ""
                       }`}
                     >
@@ -250,12 +250,18 @@ export default function ActivityLogs({
                                 </strong>{" "}
                                 {activity?.action}
                               </p>
-                              <pre className="text-[15px] text-gray-700 mt-2 ">
+                              <pre className="  hidden  sm:block text-[12px] sm:text-[15px] text-gray-700 mt-2  ">
                                 <strong className="text-gray-900 text-lg text-[14px] sm:text-[17px] ">
                                   Details:
                                 </strong>{" "}
                                 {activity?.details}
                               </pre>
+                              <p className="  sm:hidden  block text-[12px] sm:text-[15px] text-gray-700 mt-2  ">
+                                <strong className="text-gray-900 text-lg text-[14px] sm:text-[17px] ">
+                                  Details:
+                                </strong>{" "}
+                                {activity?.details}
+                              </p>
                             </div>
                           )
                         )}

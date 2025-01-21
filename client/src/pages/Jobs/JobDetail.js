@@ -452,7 +452,7 @@ export default function JobDetail({
               <FaEdit className="h-5 w-5 cursor-pointer text-gray-800 hover:text-gray-950" />
             </span>
             <span
-              className=""
+              className="  hidden  sm:block"
               title="Copy Job"
               onClick={() => {
                 setJobId(clientDetail._id);
@@ -472,7 +472,7 @@ export default function JobDetail({
             </span>
             <button
               disabled={anyTimerRunning && timerId === clientDetail?._id}
-              className={`${
+              className={` hidden  sm:block ${
                 anyTimerRunning && timerId === clientDetail?._id
                   ? "cursor-not-allowed"
                   : "cursor-pointer"
@@ -566,7 +566,7 @@ export default function JobDetail({
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1 text-gray-500 w-[30%]">
                 <BiBellPlus className="h-4 w-4 text-gray-500" />
-                Add Reminder
+                Reminder
               </span>
               <span
                 onClick={() => setShowReminder(true)}
@@ -606,7 +606,7 @@ export default function JobDetail({
               Sales
             </button>
             <button
-              className={` text-[14px] font-medium cursor-pointer py-1  ${
+              className={`  text-[14px] font-medium cursor-pointer py-1  ${
                 activeTab === "loginInfo" && "border-b-2 border-orange-600"
               } `}
               onClick={() => setActiveTab("loginInfo")}
@@ -614,7 +614,7 @@ export default function JobDetail({
               Login Info
             </button>
             <button
-              className={` text-[14px] font-medium cursor-pointer py-1  ${
+              className={` hidden  sm:block  text-[14px] font-medium cursor-pointer py-1  ${
                 activeTab === "departmentInfo" && "border-b-2 border-orange-600"
               } `}
               onClick={() => setActiveTab("departmentInfo")}
@@ -622,7 +622,7 @@ export default function JobDetail({
               Department
             </button>
             <button
-              className={` text-[14px] font-medium cursor-pointer py-1  ${
+              className={` hidden  sm:block text-[14px] font-medium cursor-pointer py-1  ${
                 activeTab === "comments" && "border-b-2 border-orange-600"
               } `}
               onClick={() => setActiveTab("comments")}

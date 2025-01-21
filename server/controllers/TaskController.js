@@ -40,6 +40,16 @@ export const createTask = async (req, res) => {
       });
     }
 
+    let updatedNextRecurringDate = nextRecurringDate
+      ? new Date(nextRecurringDate)
+      : new Date();
+
+    if (recurring === "weekly") {
+      const prevDate = new Date();
+      prevDate.setDate(updatedNextRecurringDate.getDate() - 1);
+      updatedNextRecurringDate = prevDate;
+    }
+
     const tasks = await taskModel.create({
       project: {
         _id: project._id,
@@ -55,9 +65,7 @@ export const createTask = async (req, res) => {
       lead,
       status,
       recurring: recurring ? recurring : null,
-      nextRecurringDate: nextRecurringDate
-        ? nextRecurringDate
-        : new Date().toISOString(),
+      nextRecurringDate: updatedNextRecurringDate.toISOString(),
     });
 
     // Push activity to activities array
@@ -91,21 +99,22 @@ export const createTask = async (req, res) => {
 
     // Create Notification
     const notiUser = await userModel.findOne({ name: jobHolder });
+    console.log(notiUser);
+
     if (!notiUser) {
       res.status(200).send({
         success: true,
-        message: "Notification User not found while create task!",
+        message: "Notification User not found while creating task!",
       });
-
       return;
     }
 
-    const notification = await notificationModel.create({
+    await notificationModel.create({
       title: "New Task Assigned",
       redirectLink: "/tasks",
       description: `${req.user.user.name} assign a new task of "${tasks.task}"`,
-      taskId: `${tasks._id}`,
-      userId: notiUser._id,
+      taskId: `${tasks?._id}`,
+      userId: notiUser?._id || null,
     });
   } catch (error) {
     console.log(error);
@@ -570,6 +579,16 @@ export const updateTask = async (req, res) => {
       });
     }
 
+    let updatedNextRecurringDate = nextRecurringDate
+      ? new Date(nextRecurringDate)
+      : new Date();
+
+    if (recurring === "weekly") {
+      const prevDate = new Date();
+      prevDate.setDate(updatedNextRecurringDate.getDate() - 1);
+      updatedNextRecurringDate = prevDate;
+    }
+
     const existingTask = await taskModel.findById(taskId);
     if (!existingTask) {
       return res.status(400).send({
@@ -602,7 +621,7 @@ export const updateTask = async (req, res) => {
         deadline,
         lead,
         recurring: recurring ? recurring : null,
-        nextRecurringDate: nextRecurringDate ? nextRecurringDate : null,
+        nextRecurringDate: updatedNextRecurringDate.toISOString(),
       },
       { new: true }
     );

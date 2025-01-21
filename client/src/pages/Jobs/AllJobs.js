@@ -3070,7 +3070,7 @@ export default function AllJobs() {
           >
             <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
           </span>
-          <span
+          {/* <span
             className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
               activeBtn === "due" && "bg-orange-500 text-white"
             }`}
@@ -3081,7 +3081,7 @@ export default function AllJobs() {
             title="Filter by Status"
           >
             <TbCalendarDue className="h-6 w-6  cursor-pointer" />
-          </span>
+          </span> */}
           <span
             className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
               activeBtn === "status" && "bg-orange-500 text-white"
@@ -3395,7 +3395,7 @@ export default function AllJobs() {
                             >
                               {(provided) => (
                                 <div
-                                  className={`py-1 rounded-tl-md rounded-tr-md min-w-[5.8rem] px-1 cursor-pointer font-[500] text-[14px] ${
+                                  className={`py-1 rounded-tl-md rounded-tr-md w-[5.8rem] sm:w-fit px-1 cursor-pointer font-[500] text-[14px] ${
                                     active1 === user?.name &&
                                     "  border-b-2 text-orange-600 border-orange-600"
                                   }`}
@@ -3463,7 +3463,34 @@ export default function AllJobs() {
         {/* ----------Status Summery Filters---------- */}
         {showStatus && activeBtn === "status" && (
           <>
-            <div className="w-full  py-2 ">
+            <div className="w-full py-2 flex items-center gap-2">
+              <div className="flex items-center flex-wrap gap-4">
+                {dateStatus?.map((stat, i) => {
+                  const { due, overdue, upcoming } =
+                    getDueAndOverdueCountByDepartment(active);
+                  return (
+                    <div
+                      className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                        active1 === stat &&
+                        " border-b-2 text-orange-600 border-orange-600"
+                      }`}
+                      key={i}
+                      onClick={() => {
+                        setActive1(stat);
+                        filterByDepStat(stat, active);
+                      }}
+                    >
+                      {stat === "Due" ? (
+                        <span>Due {due}</span>
+                      ) : stat === "Due" ? (
+                        <span>Overdue {overdue}</span>
+                      ) : (
+                        <span>Upcoming {upcoming}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
               <div className="flex items-center flex-wrap gap-4">
                 {status?.map((stat, i) => (
                   <div
@@ -3552,7 +3579,7 @@ export default function AllJobs() {
       {/*---------------Job Details---------------*/}
 
       {showDetail && (
-        <div className="fixed right-0 top-[3.8rem] z-[999] bg-gray-100 w-[37%] 2xl:w-[28%] h-[calc(103vh-0rem)] py-3 px-3 ">
+        <div className="fixed right-0 top-[3.8rem] z-[999] bg-gray-100 w-[97%] sm:w-[37%] 3xl:w-[26%] h-[calc(103vh-0rem)] py-3 px-3 ">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">{companyName}</h3>
             <span

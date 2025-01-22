@@ -383,11 +383,11 @@ export default function CompleteTickets() {
         Header: ({ column }) => {
           const user = auth?.user?.name;
 
-          // useEffect(() => {
-          //   column.setFilterValue(user);
+          useEffect(() => {
+            column.setFilterValue(user);
 
-          //   // eslint-disable-next-line
-          // }, []);
+            // eslint-disable-next-line
+          }, []);
 
           return (
             <div className=" flex flex-col gap-[2px]">
@@ -400,18 +400,20 @@ export default function CompleteTickets() {
               >
                 Job Holder
               </span>
-              <select
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              >
-                <option value="">Select</option>
-                {users?.map((jobhold, i) => (
-                  <option key={i} value={jobhold?.name}>
-                    {jobhold?.name}
-                  </option>
-                ))}
-              </select>
+              {auth?.user?.role?.name === "Admin" && (
+                <select
+                  value={column.getFilterValue() || ""}
+                  onChange={(e) => column.setFilterValue(e.target.value)}
+                  className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select</option>
+                  {users?.map((jobhold, i) => (
+                    <option key={i} value={jobhold?.name}>
+                      {jobhold?.name}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           );
         },
@@ -427,7 +429,7 @@ export default function CompleteTickets() {
         filterFn: "equals",
         filterSelectOptions: users.map((jobhold) => jobhold.name),
         filterVariant: "select",
-        size: 100,
+        size: 120,
         minSize: 80,
         maxSize: 130,
         grow: false,
@@ -949,7 +951,7 @@ export default function CompleteTickets() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "#FB923C",
+        backgroundColor: "rgb(193, 183, 173, 0.8)",
         color: "#000",
         padding: ".7rem 0.3rem",
       },

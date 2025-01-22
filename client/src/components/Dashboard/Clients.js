@@ -21,17 +21,17 @@ export default function Clients({
   const [selectChart, setSelectChart] = useState("area");
   const [filterWorkFlow, setFilterWorkFlow] = useState([]);
   const [filterUniqueClient, setFilteredUniqueClient] = useState([]);
-  const [activeClientJobs, setActiveClientJobs] = useState([]); // Active client jobs
+  const [activeClientJobs, setActiveClientJobs] = useState([]);
   const [activeClients, setActiveClients] = useState({
     totalFee: "0",
     totalClients: "0",
   });
 
-  console.log("Data:", filterWorkFlow, filterUniqueClient);
+  console.log("filterWorkFlow:", filterWorkFlow);
 
   // console.log("Data:", activeClientJobs, activeClients);
 
-  console.log("uniqueClients:", uniqueClients);
+  // console.log("uniqueClients:", uniqueClients);
 
   const departments = [
     "Bookkeeping",
@@ -251,7 +251,10 @@ export default function Clients({
           const jobMonth = jobDate.getMonth() + 1;
           const jobYear = jobDate.getFullYear();
 
-          return jobMonth === selectedMonth && jobYear === selectedYear;
+          return (
+            jobMonth === parseInt(selectedMonth) &&
+            jobYear === parseInt(selectedYear)
+          );
         });
       } else if (selectedMonth) {
         filteredData = filteredData.filter((job) => {
@@ -266,6 +269,7 @@ export default function Clients({
           return jobYear === parseInt(selectedYear);
         });
       }
+      // Filter by month and year
 
       return filteredData;
     };

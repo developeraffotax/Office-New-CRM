@@ -2770,8 +2770,8 @@ const AllTasks = () => {
             {/* ----------Status Summery Filters---------- */}
             {showStatus && activeBtn === "status" && (
               <>
-                <div className="w-full py-2 flex items-center gap-2 ">
-                  <div className="flex items-center flex-wrap gap-4">
+                <div className="w-full py-2 flex items-center overflow-x-auto hidden1 gap-2 ">
+                  <div className="flex items-center  gap-4">
                     {dateStatus?.map((stat, i) => {
                       const { due, overdue } =
                         getDueAndOverdueCountByDepartment(active);
@@ -2797,10 +2797,10 @@ const AllTasks = () => {
                     })}
                   </div>
 
-                  <div className="flex items-center flex-wrap gap-4">
+                  <div className="flex items-center gap-4">
                     {status?.map((stat, i) => (
                       <div
-                        className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                        className={`py-1 rounded-tl-md min-w-[4rem] sm:min-w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
                           active1 === stat &&
                           "  border-b-2 text-orange-600 border-orange-600"
                         }`}

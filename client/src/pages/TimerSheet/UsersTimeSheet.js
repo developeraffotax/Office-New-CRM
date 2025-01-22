@@ -216,6 +216,16 @@ export default function UsersTimeSheet({ timerData, userData, active }) {
     return `${sign}${hours}h:${minutes}m`;
   };
 
+  function convertToMinutes(time) {
+    if (!time || typeof time !== "string" || !time.includes("h:")) {
+      console.error(`Invalid time format: ${time}`);
+      return 0;
+    }
+
+    const [hours, minutes] = time.split("h:").map((val) => parseInt(val, 10));
+    return (hours || 0) * 60 + (minutes || 0);
+  }
+
   const columns = useMemo(
     () => [
       {
@@ -296,7 +306,15 @@ export default function UsersTimeSheet({ timerData, userData, active }) {
 
           return (
             <div className="w-full flex items-center justify-center">
-              <span className={`text-center `}>{monTotal}</span>
+              <span
+                className={`text-center ${
+                  convertToMinutes(monTotal) < convertToMinutes("8h:0m")
+                    ? "text-red-600"
+                    : "text-gray-900"
+                }`}
+              >
+                {monTotal}
+              </span>
             </div>
           );
         },
@@ -319,7 +337,15 @@ export default function UsersTimeSheet({ timerData, userData, active }) {
 
           return (
             <div className="w-full flex items-center justify-center">
-              <span className="text-center">{tueTotal}</span>
+              <span
+                className={`text-center ${
+                  convertToMinutes(tueTotal) < convertToMinutes("8h:0m")
+                    ? "text-red-600"
+                    : "text-gray-900"
+                }`}
+              >
+                {tueTotal}
+              </span>
             </div>
           );
         },
@@ -342,7 +368,15 @@ export default function UsersTimeSheet({ timerData, userData, active }) {
 
           return (
             <div className="w-full flex items-center justify-center">
-              <span className="text-center">{wedTotal}</span>
+              <span
+                className={`text-center ${
+                  convertToMinutes(wedTotal) < convertToMinutes("8h:0m")
+                    ? "text-red-600"
+                    : "text-gray-900"
+                }`}
+              >
+                {wedTotal}
+              </span>
             </div>
           );
         },
@@ -365,7 +399,15 @@ export default function UsersTimeSheet({ timerData, userData, active }) {
 
           return (
             <div className="w-full flex items-center justify-center">
-              <span className="text-center">{thuTotal}</span>
+              <span
+                className={`text-center ${
+                  convertToMinutes(thuTotal) < convertToMinutes("8h:0m")
+                    ? "text-red-600"
+                    : "text-gray-900"
+                }`}
+              >
+                {thuTotal}
+              </span>
             </div>
           );
         },
@@ -388,7 +430,15 @@ export default function UsersTimeSheet({ timerData, userData, active }) {
 
           return (
             <div className="w-full flex items-center justify-center">
-              <span className="text-center">{friTotal}</span>
+              <span
+                className={`text-center ${
+                  convertToMinutes(friTotal) < convertToMinutes("8h:0m")
+                    ? "text-red-600"
+                    : "text-gray-900"
+                }`}
+              >
+                {friTotal}
+              </span>
             </div>
           );
         },

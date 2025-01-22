@@ -947,13 +947,18 @@ export default function AllJobs() {
 
             return (
               <div
-                className="cursor-pointer flex items-center justify-start text-[#0078c8] hover:text-[#0053c8] w-full h-full"
-                onClick={() => {
-                  getSingleJobDetail(row.original._id);
-                  setCompanyName(companyName);
-                }}
+                className="flex items-center justify-start text-[#0078c8] hover:text-[#0053c8] w-full h-full"
+               
               >
-                {companyName}
+                <span
+                  onClick={() => {
+                    getSingleJobDetail(row.original._id);
+                    setCompanyName(companyName);
+                  }}
+                  className="cursor-pointer"
+                >
+                  {companyName}
+                </span>
               </div>
             );
           },

@@ -1532,6 +1532,15 @@ export default function TimeSheet() {
               >
                 Type
               </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] w-full cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                <option value="Timer">Timer</option>
+                <option value="Manual">Manual</option>
+              </select>
             </div>
           );
         },
@@ -1559,6 +1568,8 @@ export default function TimeSheet() {
         minSize: 60,
         maxSize: 90,
         grow: false,
+        filterSelectOptions: ["Timer", "Manual"],
+        filterVariant: "select",
       },
       {
         accessorKey: "holiday",

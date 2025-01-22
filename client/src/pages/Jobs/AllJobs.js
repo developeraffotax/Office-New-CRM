@@ -3446,7 +3446,7 @@ export default function AllJobs() {
                     >
                       {stat === "Due" ? (
                         <span>Due {due}</span>
-                      ) : stat === "Due" ? (
+                      ) : stat === "Overdue" ? (
                         <span>Overdue {overdue}</span>
                       ) : (
                         <span>Upcoming {upcoming}</span>
@@ -3463,8 +3463,8 @@ export default function AllJobs() {
         {/* ----------Status Summery Filters---------- */}
         {showStatus && activeBtn === "status" && (
           <>
-            <div className="w-full py-2 flex items-center gap-2">
-              <div className="flex items-center flex-wrap gap-4">
+            <div className="w-full py-2 flex items-center overflow-x-auto hidden1 gap-2 ">
+              <div className="flex items-center  gap-4">
                 {dateStatus?.map((stat, i) => {
                   const { due, overdue, upcoming } =
                     getDueAndOverdueCountByDepartment(active);
@@ -3482,7 +3482,7 @@ export default function AllJobs() {
                     >
                       {stat === "Due" ? (
                         <span>Due {due}</span>
-                      ) : stat === "Due" ? (
+                      ) : stat === "Overdue" ? (
                         <span>Overdue {overdue}</span>
                       ) : (
                         <span>Upcoming {upcoming}</span>
@@ -3491,7 +3491,7 @@ export default function AllJobs() {
                   );
                 })}
               </div>
-              <div className="flex items-center flex-wrap gap-4">
+              <div className="flex items-center gap-4">
                 {status?.map((stat, i) => (
                   <div
                     className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${

@@ -86,8 +86,18 @@ export default function Goals() {
         `${process.env.REACT_APP_API_URL}/api/v1/goals/fetch/all/goals`
       );
       if (data) {
-        setGoalsData(data.goals);
+        // setGoalsData(data.goals);
         setLoading(false);
+
+        if (auth.user.role.name === "Admin") {
+          setGoalsData(data.goals);
+        } else {
+          const filteredGoals = data.goals.filter((goal) =>
+            goal.usersList.some((user) => user._id === auth?.user?.id)
+          );
+          setGoalsData(filteredGoals);
+        }
+        // filter goals by user
       }
     } catch (error) {
       console.log(error);
@@ -105,7 +115,15 @@ export default function Goals() {
         `${process.env.REACT_APP_API_URL}/api/v1/goals/fetch/all/goals`
       );
       if (data) {
-        setGoalsData(data.goals);
+        // setGoalsData(data.goals);
+        if (auth.user.role.name === "Admin") {
+          setGoalsData(data.goals);
+        } else {
+          const filteredGoals = data.goals.filter((goal) =>
+            goal.usersList.some((user) => user._id === auth?.user?.id)
+          );
+          setGoalsData(filteredGoals);
+        }
       }
     } catch (error) {
       console.log(error);
@@ -338,29 +356,23 @@ export default function Goals() {
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                Job Holder
-              </span>
-              <select
-                value={column.getFilterValue() || ""}
-                onChange={(e) => {
-                  column.setFilterValue(e.target.value);
-                }}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              >
-                <option value="">Select</option>
-                {users?.map((jobhold, i) => (
-                  <option key={i} value={jobhold?._id}>
-                    {jobhold?.name}
-                  </option>
-                ))}
-              </select>
+              <span className="ml-1 cursor-pointer">Job Holder</span>
+              {auth?.user?.role?.name === "Admin" && (
+                <select
+                  value={column.getFilterValue() || ""}
+                  onChange={(e) => {
+                    column.setFilterValue(e.target.value);
+                  }}
+                  className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select</option>
+                  {users?.map((jobhold, i) => (
+                    <option key={i} value={jobhold?._id}>
+                      {jobhold?.name}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           );
         },
@@ -1534,10 +1546,10 @@ export default function Goals() {
 
           {/*----- Users ---------*/}
           {auth?.user?.role?.name === "Admin" && selectedTab === "progress" && (
-            <div className=" hidden sm:flex items-center flex-wrap gap-3">
+            <div className=" hidden sm:flex items-center  gap-3 overflow-x-auto hidden1">
               <button
                 onClick={() => filterGoalsByUser("All")}
-                className={`px-4 py-[5px] rounded-md font-medium transition-all duration-300 ${
+                className={`px-4 py-[8px] text-[14px]  rounded-md font-medium transition-all duration-300 ${
                   activeUser === "All"
                     ? "bg-orange-600 text-white shadow-md"
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -1549,7 +1561,9 @@ export default function Goals() {
                 <button
                   key={user}
                   onClick={() => filterGoalsByUser(user)}
-                  className={`px-4 py-[5px] rounded-md font-medium transition-all duration-300 ${
+                  className={`px-4 py-[8px]  ${
+                    user === "M Salman " && "min-w-[6rem]"
+                  }  text-[14px] rounded-md font-medium transition-all duration-300 ${
                     activeUser === user
                       ? "bg-orange-600 text-white shadow-md"
                       : "bg-gray-200 text-gray-700 hover:bg-gray-300"

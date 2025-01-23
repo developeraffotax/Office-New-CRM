@@ -58,6 +58,12 @@ const goalSchema = new mongoose.Schema(
     note: {
       type: String,
     },
+    usersList: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Users",
+      },
+    ],
   },
   { timestamps: true }
 );

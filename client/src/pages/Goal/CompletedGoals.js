@@ -50,7 +50,7 @@ export default function CompletedGoals({
     "Manual Goal",
   ];
 
-  // -------Get All Proposal-------
+  // -------Get All Goals-------
   const getAllGoals = async () => {
     setLoading(true);
     try {
@@ -58,7 +58,15 @@ export default function CompletedGoals({
         `${process.env.REACT_APP_API_URL}/api/v1/goals/fetch/complete/goals`
       );
       if (data) {
-        setGoalsData(data.goals);
+        if (auth.user.role.name === "Admin") {
+          setGoalsData(data.goals);
+        } else {
+          const filteredGoals = data.goals.filter((goal) =>
+            goal.usersList.some((user) => user._id === auth?.user?.id)
+          );
+          setGoalsData(filteredGoals);
+        }
+        // setGoalsData(data.goals);
         setCompleteGoalsData(data.goals);
         setLoading(false);
       }
@@ -78,7 +86,15 @@ export default function CompletedGoals({
         `${process.env.REACT_APP_API_URL}/api/v1/goals/fetch/complete/goals`
       );
       if (data) {
-        setGoalsData(data.goals);
+        // setGoalsData(data.goals);
+        if (auth.user.role.name === "Admin") {
+          setGoalsData(data.goals);
+        } else {
+          const filteredGoals = data.goals.filter((goal) =>
+            goal.usersList.some((user) => user._id === auth?.user?.id)
+          );
+          setGoalsData(filteredGoals);
+        }
       }
     } catch (error) {
       console.log(error);

@@ -18,6 +18,7 @@ export const createGoal = async (req, res) => {
       jobHolder,
       achievedCount,
       note,
+      usersList,
     } = req.body;
 
     console.log(achievedCount);
@@ -31,6 +32,7 @@ export const createGoal = async (req, res) => {
       jobHolder,
       achievedCount,
       note,
+      usersList,
     });
 
     res.status(200).send({
@@ -61,7 +63,10 @@ export const updateGoal = async (req, res) => {
       jobHolder,
       achievedCount,
       note,
+      usersList,
     } = req.body;
+
+    console.log("usersList:", usersList);
 
     const isGoal = await goalModel.findById(goalId);
     if (!isGoal) {
@@ -83,6 +88,7 @@ export const updateGoal = async (req, res) => {
         jobHolder: jobHolder || isGoal.jobHolder,
         achievedCount: achievedCount || isGoal.achievedCount,
         note: note || isGoal.note,
+        usersList: usersList || isGoal.usersList,
       },
       { new: true }
     );
@@ -108,6 +114,7 @@ export const fetchAllGoal = async (req, res) => {
     const goals = await goalModel
       .find({})
       .populate("jobHolder", "name email")
+      .populate("usersList", "name")
       .select("-comments");
 
     res.status(200).send({
@@ -130,7 +137,10 @@ export const fetchSingleGoal = async (req, res) => {
   try {
     const goalId = req.params.id;
 
-    const goal = await goalModel.findById(goalId).populate("jobHolder");
+    const goal = await goalModel
+      .findById(goalId)
+      .populate("jobHolder")
+      .populate("usersList", "name");
 
     if (!goal) {
       res.status(400).send({
@@ -215,6 +225,7 @@ export const fetchAchievedDataByGoalType = async (req, res) => {
     const goals = await goalModel
       .find({ status: { $ne: "completed" } })
       .populate("jobHolder", "name email")
+      .populate("usersList", "name")
       .sort({ startDate: 1 });
 
     const updatedGoals = await Promise.all(
@@ -426,6 +437,7 @@ export const fetchAchievedDataByGoalComplete = async (req, res) => {
     const goals = await goalModel
       .find({ status: { $ne: "Progress" } })
       .populate("jobHolder", "name email")
+      .populate("usersList", "name")
       .select("-comments")
       .sort({ startDate: 1 });
 

@@ -946,14 +946,16 @@ export default function AllJobs() {
             const companyName = cell.getValue();
 
             return (
-              <div
-                className="cursor-pointer flex items-center justify-start text-[#0078c8] hover:text-[#0053c8] w-full h-full"
-                onClick={() => {
-                  getSingleJobDetail(row.original._id);
-                  setCompanyName(companyName);
-                }}
-              >
-                {companyName}
+              <div className="flex items-center justify-start text-[#0078c8] hover:text-[#0053c8] w-full h-full">
+                <span
+                  onClick={() => {
+                    getSingleJobDetail(row.original._id);
+                    setCompanyName(companyName);
+                  }}
+                  className="cursor-pointer"
+                >
+                  {companyName}
+                </span>
               </div>
             );
           },
@@ -2924,7 +2926,7 @@ export default function AllJobs() {
                 // setShowStatus(false);
                 // setShowJobHolder(false);
                 // setShowDue(false);
-                // setActive1("");
+                setActive1("");
                 setFilterId("");
                 handleClearFilters();
                 setSearchValue("");

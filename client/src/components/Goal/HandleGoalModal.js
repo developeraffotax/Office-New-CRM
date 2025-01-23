@@ -22,6 +22,7 @@ export default function HandleGoalModal({
   const [loading, setLoading] = useState(false);
   const [achievedCount, setAchievedCount] = useState("");
   const [note, setNote] = useState("");
+  const [userList, setUserList] = useState([]);
 
   const goalTypes = [
     "Increase Client",
@@ -68,6 +69,7 @@ export default function HandleGoalModal({
         setGoalType(data.goal.goalType);
         setAchievedCount(data.goal.achievedCount);
         setNote(data.goal.note);
+        setUserList(data?.goal?.usersList);
       }
     } catch (error) {
       console.log(error);
@@ -80,6 +82,27 @@ export default function HandleGoalModal({
 
     // eslint-disable-next-line
   }, [goalId]);
+
+  //   Add Users
+  const handleAddUser = (user) => {
+    if (!Array.isArray(userList)) {
+      setUserList([user]);
+      return;
+    }
+
+    if (userList.some((existingUser) => existingUser._id === user._id)) {
+      return toast.error("User already exists!");
+    }
+    setUserList([...userList, user]);
+  };
+
+  //   Remove user
+
+  const handleRemoveUser = (id) => {
+    const newUsers = userList.filter((user) => user._id !== id);
+
+    setUserList(newUsers);
+  };
 
   // Handle Proposal
   const handleGoal = async (e) => {
@@ -98,6 +121,7 @@ export default function HandleGoalModal({
             jobHolder,
             achievedCount,
             note,
+            usersList: userList,
           }
         );
 
@@ -119,6 +143,7 @@ export default function HandleGoalModal({
             jobHolder,
             achievedCount,
             note,
+            usersList: userList,
           }
         );
         if (data) {
@@ -239,6 +264,46 @@ export default function HandleGoalModal({
             <span>End Date</span>
           </div>
         </div>
+        {/* ------------- */}
+        {userList?.length > 0 && (
+          <div className="w-full flex items-center gap-4 flex-wrap border py-2 px-2 rounded-md border-gray-400">
+            {userList &&
+              userList.map((user) => (
+                <div
+                  key={user?._id}
+                  className="flex items-center gap-3 bg py-1 px-2 rounded-md text-white bg-purple-600"
+                >
+                  <span className="text-white text-[15px]">{user?.name}</span>
+                  <span
+                    className="cursor-pointer bg-red-500/50 p-[2px] rounded-full hover:bg-red-500"
+                    onClick={() => handleRemoveUser(user?._id)}
+                  >
+                    <IoClose className="h-4 w-4 " />
+                  </span>
+                </div>
+              ))}
+          </div>
+        )}
+        <select
+          value=""
+          className={`${style.input}`}
+          onChange={(e) => handleAddUser(JSON.parse(e.target.value))}
+        >
+          <option>Select User</option>
+          {users &&
+            users?.map((user) => (
+              <option
+                key={user._id}
+                value={JSON.stringify({
+                  _id: user._id,
+                  name: user.name,
+                })}
+                className=" flex items-center gap-1"
+              >
+                {user?.name}
+              </option>
+            ))}
+        </select>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="inputBox">
             <select

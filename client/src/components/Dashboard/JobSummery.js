@@ -1556,7 +1556,7 @@ export default function JobSummery({
   });
 
   return (
-    <div className="w-full h-full flex flex-col gap-4">
+    <div className="w-full h-full flex flex-col gap-3">
       <div className="flex flex-col gap-2">
         {/* Unique Clients */}
         <div className="flex items-center justify-between">
@@ -1576,12 +1576,12 @@ export default function JobSummery({
           </div>
         </div>
         {/* Client Type Length */}
-        <div className="w-full flex flex-col gap-4 p-4 border border-green-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-green-100 to-green-50">
+        <div className="w-full flex flex-col gap-4 px-2 sm:px-4 py-2 border border-green-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-green-100 to-green-50">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 px-4">
             {clientTypeLength.map((client) => (
               <div
                 key={client.type}
-                className={`flex flex-col items-center justify-center gap-2 p-4 border rounded-md cursor-pointer transition-all transform ${
+                className={`flex flex-col items-center justify-center gap-2 px-2 py-2 sm:px-4 border rounded-md cursor-pointer transition-all transform ${
                   client.type === activeClient
                     ? "bg-orange-100 border-orange-300 scale-105 shadow-sm"
                     : "bg-white border-gray-200 hover:bg-gray-50 hover:shadow-md"
@@ -1612,12 +1612,12 @@ export default function JobSummery({
           </div>
         </div>
         {/* Client Department */}
-        <div className="w-full flex flex-col gap-4 p-4 border border-pink-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-pink-100 to-pink-100">
+        <div className="w-full flex flex-col gap-4 px-2 sm:px-4 py-2 border border-pink-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-pink-100 to-pink-100">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4 px-4">
             {departmentLength.map((dep) => (
               <div
                 key={dep.department}
-                className={`flex flex-col items-center justify-center gap-2 p-4 border rounded-md cursor-pointer transition-all transform ${
+                className={`flex flex-col items-center justify-center gap-2 px-2 sm:px-4 py-2 border rounded-md cursor-pointer transition-all transform ${
                   dep.department === activeClient
                     ? "bg-orange-100 border-orange-300 scale-105 shadow-sm"
                     : "bg-white border-gray-200 hover:bg-gray-50 hover:shadow-md"
@@ -1648,12 +1648,12 @@ export default function JobSummery({
           </div>
         </div>
         {/* User length */}
-        <div className="w-full flex flex-col gap-4 p-4 border border-sky-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-sky-100 to-sky-100">
+        <div className="w-full flex flex-col gap-4 px-2 sm:px-4 py-2 border border-sky-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-sky-100 to-sky-100">
           <div className="flex items-center overflow-auto hidden1 gap-4 px-4">
             {userLength.map((user) => (
               <div
                 key={user.name}
-                className={`flex flex-col items-center justify-center min-w-[8rem] w-full   gap-2 p-4 border rounded-md cursor-pointer transition-all transform ${
+                className={`flex flex-col items-center justify-center min-w-[8rem] w-full   gap-2 px-2 sm:px-4 py-2 border rounded-md cursor-pointer transition-all transform ${
                   user.name === activeClient
                     ? "bg-orange-100 border-orange-300 shadow-sm"
                     : "bg-white border-gray-200 hover:bg-gray-50 hover:shadow-md"
@@ -1684,12 +1684,12 @@ export default function JobSummery({
           </div>
         </div>
         {/* Status length */}
-        <div className="w-full flex flex-col gap-4 p-4 border border-lime-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-lime-100 to-lime-100">
+        <div className="w-full flex flex-col gap-4 px-2 sm:px-4 py-2 border border-lime-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-lime-100 to-lime-100">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4 px-4">
             {statusLength.map((s) => (
               <div
                 key={s?.state}
-                className={`flex flex-col items-center justify-center gap-2 p-4 border rounded-md cursor-pointer transition-all transform ${
+                className={`flex flex-col items-center justify-center gap-2 px-2 sm:px-4 py-2 border rounded-md cursor-pointer transition-all transform ${
                   s?.state === activeClient
                     ? "bg-orange-100 border-orange-300 scale-105 shadow-sm"
                     : "bg-white border-gray-200 hover:bg-gray-50 hover:shadow-md"

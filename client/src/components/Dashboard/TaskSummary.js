@@ -1127,12 +1127,12 @@ export default function TaskSummary({ projects, tasksData, userData }) {
     <div className="relative w-full h-full flex flex-col gap-4">
       {/* Filter By Projects */}
       <div className="flex flex-col gap-2">
-        <div className="w-full flex flex-col gap-4 p-4 border border-green-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-green-100 to-green-50">
+        <div className="w-full flex flex-col gap-4 px-2 sm:px-4 py-2 border border-green-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-green-100 to-green-50">
           <div className="flex items-center overflow-auto hidden1 gap-4 px-4 ">
             {projectLength.map((p) => (
               <div
                 key={p.project}
-                className={`flex flex-col min-w-[8rem] w-full items-center justify-center gap-2 p-4 border rounded-md cursor-pointer transition-all transform ${
+                className={`flex flex-col min-w-[8rem] w-full items-center justify-center gap-2 px-2 sm:px-4 py-2 border rounded-md cursor-pointer transition-all transform ${
                   p.project === active
                     ? "bg-orange-100 border-orange-300  shadow-sm"
                     : "bg-white border-gray-200 hover:bg-gray-50 hover:shadow-md"
@@ -1161,12 +1161,12 @@ export default function TaskSummary({ projects, tasksData, userData }) {
         </div>
       </div>
       {/* User Length */}
-      <div className="w-full flex flex-col gap-4 p-4 border border-yellow-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-yellow-100 to-yellow-100">
+      <div className="w-full flex flex-col gap-4 px-2 sm:px-4 py-2 border border-yellow-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-yellow-100 to-yellow-100">
         <div className="flex items-center overflow-auto hidden1 gap-4 px-4">
           {userLength?.map((user) => (
             <div
               key={user.name}
-              className={`flex flex-col items-center justify-center min-w-[8rem] w-full   gap-2 p-4 border rounded-md cursor-pointer transition-all transform ${
+              className={`flex flex-col items-center justify-center min-w-[8rem] w-full   gap-2 px-2 sm:px-4 py-2 border rounded-md cursor-pointer transition-all transform ${
                 user.name === active
                   ? "bg-orange-100 border-orange-300 shadow-sm"
                   : "bg-white border-gray-200 hover:bg-gray-50 hover:shadow-md"
@@ -1195,12 +1195,12 @@ export default function TaskSummary({ projects, tasksData, userData }) {
       </div>
 
       {/* Status length */}
-      <div className="w-full flex flex-col gap-4 p-4 border border-purple-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-purple-100 to-purple-100">
+      <div className="w-full flex flex-col gap-4 px-2 sm:px-4 py-2 border border-purple-500 rounded-lg hover:shadow-lg shadow-gray-300 bg-gradient-to-r from-purple-100 to-purple-100">
         <div className="grid grid-cols-2 sm:grid-cols-4  gap-4 px-4 w-full">
           {statusLength.map((s) => (
             <div
               key={s?.state}
-              className={`flex flex-col items-center justify-center gap-2 p-4 border rounded-md cursor-pointer transition-all transform ${
+              className={`flex flex-col items-center justify-center gap-2 px-2 sm:px-4 py-2 border rounded-md cursor-pointer transition-all transform ${
                 s?.state === active
                   ? "bg-orange-100 border-orange-300 scale-105 shadow-sm"
                   : "bg-white border-gray-200 hover:bg-gray-50 hover:shadow-md"

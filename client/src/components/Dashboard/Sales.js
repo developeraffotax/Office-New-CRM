@@ -94,7 +94,7 @@ export default function Sales({
       } else if (selectedYear) {
         return itemYear === Number(selectedYear);
       }
-      return true; // Return all items if no filters are selected
+      return true;
     });
   };
 

@@ -2828,18 +2828,21 @@ export default function AllJobs() {
   };
 
   const renderColumnControls = () => (
-    <div className="flex flex-wrap gap-3 bg-white rounded-md  border p-4">
+    <div className="flex flex-col gap-2 bg-white rounded-md   border p-4">
       {Object.keys(columnVisibility)?.map((column) => (
-        <div key={column} className="flex items-center">
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={columnVisibility[column]}
-              onChange={() => toggleColumnVisibility(column)}
-              className="mr-2 accent-orange-600 h-4 w-4"
-            />
-            {column}
-          </label>
+        <div key={column} className="flex w-full gap-1 flex-col ">
+          <div className="flex items-center">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={columnVisibility[column]}
+                onChange={() => toggleColumnVisibility(column)}
+                className="mr-2 accent-orange-600 h-4 w-4"
+              />
+              {column}
+            </label>
+          </div>
+          <hr className=" bg-gray-300 w-full h-[1px]" />
         </div>
       ))}
     </div>
@@ -3123,7 +3126,7 @@ export default function AllJobs() {
               )}
             </div>
             {showcolumn && (
-              <div className="absolute top-10 right-8 z-50">
+              <div className="fixed top-[11rem] right-[20%] z-[99] max-h-[80vh] overflow-y-auto hidden1  ">
                 {renderColumnControls()}
               </div>
             )}

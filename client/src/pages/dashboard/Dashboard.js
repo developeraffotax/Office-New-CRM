@@ -10,6 +10,8 @@ import HR from "../../components/Dashboard/HR";
 import ActivityLogs from "../../components/Dashboard/ActivityLogs";
 import JobSummery from "../../components/Dashboard/JobSummery";
 import TaskSummary from "../../components/Dashboard/TaskSummary";
+import { GoEye, GoEyeClosed } from "react-icons/go";
+import Loader from "../../utlis/Loader";
 
 export default function Dashboard() {
   // Client
@@ -18,7 +20,7 @@ export default function Dashboard() {
   const [inactiveClient, setInactiveClient] = useState(0);
   const [loading, setLoading] = useState(false);
   //
-  const [selectedTab, setSelectedTab] = useState("Clients");
+  const [selectedTab, setSelectedTab] = useState("Summary");
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedSource, setSelectedSource] = useState("");
@@ -28,6 +30,7 @@ export default function Dashboard() {
   const [userData, setUserData] = useState([]);
   const [clientData, setClientData] = useState([]);
   const [status, setStatus] = useState("");
+  const [search, setSearch] = useState("");
 
   const departments = [
     "Bookkeeping",
@@ -49,6 +52,7 @@ export default function Dashboard() {
   const [selectedUser, setSelectedUser] = useState("");
   const [projects, setProjects] = useState([]);
   const [tasksData, setTasksData] = useState([]);
+  const [isSales, setIsSales] = useState(false);
 
   // ---------------All Client_Job Data----------->
   const allClientJobData = async () => {
@@ -220,6 +224,7 @@ export default function Dashboard() {
                 setSelectedSource("");
                 setSelectedYear("");
                 setSelectedUser("");
+                setSearch("");
               }}
               title="Clear filters"
             >
@@ -230,17 +235,7 @@ export default function Dashboard() {
           <div className="flex items-center flex-wrap  gap-5 overflow-x-auto hidden1 ">
             <div className="flex items-center mt-3 sm:mt-0 ml-5 sm:ml-[5rem] border-2 border-orange-500 rounded-sm  transition-all duration-300 w-fit ">
               <button
-                className={`py-[.4rem] px-2 outline-none min-w-[7rem]  w-[8rem] transition-all duration-300   ${
-                  selectedTab === "Clients"
-                    ? "bg-orange-500 text-white border-r-2 border-orange-500"
-                    : "text-black bg-gray-100 "
-                }`}
-                onClick={() => setSelectedTab("Clients")}
-              >
-                Clients
-              </button>
-              <button
-                className={`py-[.4rem] px-2 outline-none min-w-[9rem] w-[9rem] transition-all duration-300 border-l-2 border-orange-600   ${
+                className={`py-[.4rem] px-2 outline-none min-w-[9rem] w-[9rem] transition-all duration-300    ${
                   selectedTab === "Summary"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
                     : "text-black bg-gray-100 "
@@ -260,6 +255,16 @@ export default function Dashboard() {
                 disabled={loading}
               >
                 Task Summary
+              </button>
+              <button
+                className={`py-[.4rem] px-2 outline-none min-w-[7rem]  w-[8rem] transition-all border-l-2 border-orange-600 duration-300  duration-300   ${
+                  selectedTab === "Clients"
+                    ? "bg-orange-500 text-white border-r-2 border-orange-500"
+                    : "text-black bg-gray-100 "
+                }`}
+                onClick={() => setSelectedTab("Clients")}
+              >
+                Clients
               </button>
               <button
                 disabled={loading}
@@ -342,6 +347,17 @@ export default function Dashboard() {
                     </option>
                   ))}
                 </select>
+                <input
+                  type="number"
+                  value={search}
+                  onChange={(e) => {
+                    const value = Math.max(1, parseInt(e.target.value));
+                    setSearch(value);
+                  }}
+                  placeholder="Search"
+                  className={`${style.input} shadow-md drop-shadow-md`}
+                />
+
                 {/* Source */}
                 <select
                   onChange={(e) => setSelectedSource(e.target.value)}
@@ -414,6 +430,29 @@ export default function Dashboard() {
                     </option>
                   ))}
                 </select>
+                <input
+                  type="number"
+                  value={search}
+                  onChange={(e) => {
+                    const value = Math.max(1, parseInt(e.target.value));
+                    setSearch(value);
+                  }}
+                  placeholder="Search"
+                  className={`${style.input} shadow-md drop-shadow-md`}
+                />
+
+                <div
+                  className={` w-[2rem] h-[2rem] flex items-center justify-center mt-[.4rem] rounded-md hover:shadow-md mb-1 bg-gray-100 cursor-pointer border border-gray-300 ${
+                    isSales && "bg-orange-500 text-white"
+                  }`}
+                  onClick={() => setIsSales(!isSales)}
+                >
+                  {isSales ? (
+                    <GoEyeClosed className="text-[22px]" />
+                  ) : (
+                    <GoEye className="text-[22px]" />
+                  )}
+                </div>
               </div>
             )}
             {/* HR */}
@@ -480,68 +519,76 @@ export default function Dashboard() {
           {/*  */}
           <hr className="mb-1 bg-gray-200 w-full h-[1px]" />
           {/* -------------Detail------- */}
-
-          {selectedTab === "Clients" ? (
-            <div className="w-full h-full">
-              <Clients
-                selectedMonth={selectedMonth}
-                selectedYear={selectedYear}
-                selectedSource={selectedSource}
-                selectedClient={selectedClient}
-                selectedPartner={selectedPartner}
-                selectedDepartment={selectedDepartment}
-                workFlowData={workFlowData}
-                uniqueClients={uniqueClients}
-                loading={loading}
-              />
-            </div>
-          ) : selectedTab === "Summary" ? (
-            <JobSummery
-              uniqueClients={uniqueClients}
-              workFlowData={workFlowData}
-              userData={userData}
-              inactiveClient={inactiveClient}
-              status={status}
-            />
-          ) : selectedTab === "tSummary" ? (
-            <TaskSummary
-              projects={projects}
-              tasksData={tasksData}
-              userData={userData}
-            />
-          ) : selectedTab === "Sales" ? (
-            <div className="w-full h-full">
-              <Sales
-                selectedMonth={selectedMonth}
-                selectedYear={selectedYear}
-                salesData={salesData}
-                uniqueClients={uniqueClients.length}
-              />
-            </div>
-          ) : selectedTab === "HR" ? (
-            <div className="w-full h-full">
-              <HR
-                selectedMonth={selectedMonth}
-                selectedYear={selectedYear}
-                userData={userData}
-                holidaysData={holidaysData}
-                complaintData={complaintData}
-                selectedUser={selectedUser}
-                clientData={clientData}
-              />
-            </div>
-          ) : selectedTab === "Activity" ? (
-            <div className="w-full min-h-[87vh] bg-gradient-to-r from-slate-300 to-slate-500 rounded-md">
-              <ActivityLogs
-                userData={userData}
-                selectedUser={selectedUser}
-                setSelectedUser={setSelectedUser}
-              />
-            </div>
+          {loading ? (
+            <Loader />
           ) : (
-            <div className="w-full h-full">
-              <Clients />
-            </div>
+            <>
+              {selectedTab === "Clients" ? (
+                <div className="w-full h-full">
+                  <Clients
+                    selectedMonth={selectedMonth}
+                    selectedYear={selectedYear}
+                    selectedSource={selectedSource}
+                    selectedClient={selectedClient}
+                    selectedPartner={selectedPartner}
+                    selectedDepartment={selectedDepartment}
+                    workFlowData={workFlowData}
+                    uniqueClients={uniqueClients}
+                    loading={loading}
+                    search={search}
+                  />
+                </div>
+              ) : selectedTab === "Summary" ? (
+                <JobSummery
+                  uniqueClients={uniqueClients}
+                  workFlowData={workFlowData}
+                  userData={userData}
+                  inactiveClient={inactiveClient}
+                  status={status}
+                />
+              ) : selectedTab === "tSummary" ? (
+                <TaskSummary
+                  projects={projects}
+                  tasksData={tasksData}
+                  userData={userData}
+                />
+              ) : selectedTab === "Sales" ? (
+                <div className="w-full h-full">
+                  <Sales
+                    selectedMonth={selectedMonth}
+                    selectedYear={selectedYear}
+                    salesData={salesData}
+                    uniqueClients={uniqueClients.length}
+                    isSales={isSales}
+                    lastDays={search}
+                  />
+                </div>
+              ) : selectedTab === "HR" ? (
+                <div className="w-full h-full">
+                  <HR
+                    selectedMonth={selectedMonth}
+                    selectedYear={selectedYear}
+                    userData={userData}
+                    holidaysData={holidaysData}
+                    complaintData={complaintData}
+                    selectedUser={selectedUser}
+                    clientData={clientData}
+                  />
+                </div>
+              ) : selectedTab === "Activity" ? (
+                <div className="w-full min-h-[87vh] bg-gradient-to-r from-slate-300 to-slate-500 rounded-md">
+                  <ActivityLogs
+                    userData={userData}
+                    selectedUser={selectedUser}
+                    setSelectedUser={setSelectedUser}
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-full">
+                  <Clients />
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

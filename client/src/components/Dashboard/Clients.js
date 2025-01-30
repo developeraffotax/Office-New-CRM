@@ -17,6 +17,7 @@ export default function Clients({
   workFlowData,
   uniqueClients,
   loading,
+  search,
 }) {
   const [clients, setClients] = useState([]);
   const [fee, setFee] = useState("");
@@ -51,22 +52,39 @@ export default function Clients({
       const createdAtDate = new Date(item.currentDate);
       const itemMonth = createdAtDate.getMonth() + 1;
       const itemYear = createdAtDate.getFullYear();
+      const itemTime = createdAtDate.getTime();
+      const currentTime = new Date().getTime();
 
-      if (selectedMonth && selectedYear) {
-        return (
-          itemMonth === parseInt(selectedMonth) &&
-          itemYear === parseInt(selectedYear)
-        );
-      } else if (selectedMonth) {
-        return itemMonth === parseInt(selectedMonth);
-      } else if (selectedYear) {
-        return itemYear === parseInt(selectedYear);
-      } else {
-        return true;
+      const today = new Date();
+      const pastDate = new Date();
+      if (search && !isNaN(search) && search >= 1) {
+        pastDate.setDate(today.getDate() - parseInt(search));
       }
+
+      let matchesDateFilter = true;
+      let matchesSearchFilter = true;
+
+      // Filter by selected month and year
+      if (selectedMonth && selectedYear) {
+        matchesDateFilter =
+          itemMonth === parseInt(selectedMonth) &&
+          itemYear === parseInt(selectedYear);
+      } else if (selectedMonth) {
+        matchesDateFilter = itemMonth === parseInt(selectedMonth);
+      } else if (selectedYear) {
+        matchesDateFilter = itemYear === parseInt(selectedYear);
+      }
+
+      matchesSearchFilter =
+        !search || (createdAtDate >= pastDate && createdAtDate <= today);
+
+      return matchesDateFilter && matchesSearchFilter;
     });
+
+    console.log("filteredData", filteredData);
+
     setFilteredUniqueClient(filteredData);
-  }, [selectedMonth, selectedYear, uniqueClients]);
+  }, [selectedMonth, selectedYear, uniqueClients, search]);
 
   //------------ Department wise Total-------->
   // useEffect(() => {
@@ -269,7 +287,7 @@ export default function Clients({
 
     const optionsCount = {
       series: [{ name: "Total Count", data: departmentCounts }],
-      chart: { type: "bar", height: 300 },
+      chart: { type: selectChart, height: 300 },
       plotOptions: {
         bar: { columnWidth: "50%", borderRadius: 5 },
       },
@@ -284,7 +302,7 @@ export default function Clients({
       chartCount.render();
       return () => chartCount.destroy();
     }
-  }, [clients]);
+  }, [clients, selectChart]);
 
   // ---------Render Department Fee Chart(#4)---------
   useEffect(() => {
@@ -300,7 +318,7 @@ export default function Clients({
         },
       ],
       chart: {
-        type: "bar",
+        type: selectChart,
         height: 300,
         animations: {
           enabled: true,
@@ -348,103 +366,11 @@ export default function Clients({
       chartFee.render();
       return () => chartFee.destroy();
     }
-  }, [clients]);
+  }, [clients, selectChart]);
 
   // -------Filter By Depertment--------------
 
-  // useEffect(() => {
-  //   const filterData = () => {
-  //     let filteredData = [...workFlowData];
-
-  //     // Filter by department
-  //     if (selectedDepartment) {
-  //       filteredData = filteredData.filter(
-  //         (job) => job.job.jobName === selectedDepartment
-  //       );
-  //     }
-
-  //     // Filter by month and year
-  //     if (selectedMonth && selectedYear) {
-  //       filteredData = filteredData.filter((job) => {
-  //         const jobDate = new Date(job.currentDate);
-  //         const jobMonth = jobDate.getMonth() + 1;
-  //         const jobYear = jobDate.getFullYear();
-
-  //         return (
-  //           jobMonth === parseInt(selectedMonth) &&
-  //           jobYear === parseInt(selectedYear)
-  //         );
-  //       });
-  //     } else if (selectedMonth) {
-  //       filteredData = filteredData.filter((job) => {
-  //         const jobDate = new Date(job.currentDate);
-  //         const jobMonth = jobDate.getMonth() + 1;
-  //         return jobMonth === parseInt(selectedMonth);
-  //       });
-  //     } else if (selectedYear) {
-  //       filteredData = filteredData.filter((job) => {
-  //         const jobDate = new Date(job.currentDate);
-  //         const jobYear = jobDate.getFullYear();
-  //         return jobYear === parseInt(selectedYear);
-  //       });
-  //     }
-  //     // Filter by month and year
-
-  //     return filteredData;
-  //   };
-
-  //   setFilterWorkFlow(filterData);
-
-  //   const departmentTotals = departments.map((department) => {
-  //     const departmentJobs = filterData().filter(
-  //       (job) => job.job.jobName === department
-  //     );
-
-  //     // Calculate total hours, fees, and job count for the department
-  //     const totalHours = departmentJobs
-  //       .reduce((sum, job) => sum + parseFloat(job.totalHours || 0), 0)
-  //       .toFixed(2);
-  //     const totalFee = departmentJobs.reduce(
-  //       (sum, job) => sum + parseFloat(job.fee || 0),
-  //       0
-  //     );
-  //     const totalDepartmentCount = departmentJobs.length;
-
-  //     // Calculate lead-wise totals and job counts
-  //     const leadWiseTotals = departmentJobs.reduce((acc, job) => {
-  //       const lead = job.job.lead;
-  //       if (!acc[lead]) {
-  //         acc[lead] = { totalHours: 0, totalFee: 0, departmentCount: 0 };
-  //       }
-  //       acc[lead].totalHours += parseFloat(job.totalHours || 0);
-  //       acc[lead].totalFee += parseFloat(job.fee || 0);
-  //       acc[lead].departmentCount += 1;
-  //       return acc;
-  //     }, {});
-
-  //     return {
-  //       department,
-  //       totalHours,
-  //       totalFee,
-  //       totalDepartmentCount,
-  //       leadWiseTotals,
-  //     };
-  //   });
-
-  //   setClients(departmentTotals);
-  //   // eslint-disable-next-line
-  // }, [workFlowData, selectedDepartment, selectedMonth, selectedYear]);
   useEffect(() => {
-    // Helper function to calculate percentage change
-    const calculatePercentageChange = (current, previous) => {
-      if (previous === 0) {
-        return current > 0 ? "+100%" : "0%";
-      }
-      const change = (((current - previous) / previous) * 100).toFixed(0);
-      return `${change > 0 ? "+" : ""}${change}%`;
-    };
-
-    // Function to filter data based on department, month, and year
     const filterData = () => {
       let filteredData = [...workFlowData];
 
@@ -459,8 +385,9 @@ export default function Clients({
       if (selectedMonth && selectedYear) {
         filteredData = filteredData.filter((job) => {
           const jobDate = new Date(job.currentDate);
-          const jobMonth = jobDate.getMonth() + 1; // Months are 0-based
+          const jobMonth = jobDate.getMonth() + 1;
           const jobYear = jobDate.getFullYear();
+
           return (
             jobMonth === parseInt(selectedMonth) &&
             jobYear === parseInt(selectedYear)
@@ -479,96 +406,41 @@ export default function Clients({
           return jobYear === parseInt(selectedYear);
         });
       }
+      // Filter by month and year
+      if (search && search >= 1) {
+        const today = new Date();
+        const pastDate = new Date();
+        pastDate.setDate(today.getDate() - search);
+
+        filteredData = filteredData.filter((job) => {
+          const jobDate = new Date(job.currentDate);
+          return jobDate >= pastDate && jobDate <= today;
+        });
+      }
 
       return filteredData;
     };
 
-    // Filtered workflow data
-    const filteredWorkFlow = filterData();
-    setFilterWorkFlow(filteredWorkFlow);
+    console.log("filterData", filterData());
 
-    // Calculate department totals and percentage changes
+    setFilterWorkFlow(filterData);
+
     const departmentTotals = departments.map((department) => {
-      // Filter jobs for the department
-      const departmentJobs = filteredWorkFlow.filter(
+      const departmentJobs = filterData().filter(
         (job) => job.job.jobName === department
       );
 
-      // Calculate total hours, fees, and job count
+      // Calculate total hours, fees, and job count for the department
       const totalHours = departmentJobs
         .reduce((sum, job) => sum + parseFloat(job.totalHours || 0), 0)
         .toFixed(2);
-
       const totalFee = departmentJobs.reduce(
         (sum, job) => sum + parseFloat(job.fee || 0),
         0
       );
-
       const totalDepartmentCount = departmentJobs.length;
 
-      // Current and last month/year jobs
-      const currentDate = new Date();
-      const currentMonthJobs = departmentJobs.filter((job) => {
-        const jobDate = new Date(job.currentDate);
-        return (
-          jobDate.getMonth() === currentDate.getMonth() &&
-          jobDate.getFullYear() === currentDate.getFullYear()
-        );
-      });
-
-      const lastMonthJobs = departmentJobs.filter((job) => {
-        const jobDate = new Date(job.currentDate);
-        const lastMonth =
-          currentDate.getMonth() === 0 ? 11 : currentDate.getMonth() - 1;
-        const lastMonthYear =
-          currentDate.getMonth() === 0
-            ? currentDate.getFullYear() - 1
-            : currentDate.getFullYear();
-        return (
-          jobDate.getMonth() === lastMonth &&
-          jobDate.getFullYear() === lastMonthYear
-        );
-      });
-
-      const currentYearJobs = departmentJobs.filter((job) => {
-        const jobDate = new Date(job.currentDate);
-        return jobDate.getFullYear() === currentDate.getFullYear();
-      });
-
-      const lastYearJobs = departmentJobs.filter((job) => {
-        const jobDate = new Date(job.currentDate);
-        return jobDate.getFullYear() === currentDate.getFullYear() - 1;
-      });
-
-      // Calculate current and previous totals based on filters
-      const currentTotal =
-        selectedMonth || selectedYear
-          ? currentMonthJobs.reduce(
-              (sum, job) => sum + parseFloat(job.fee || 0),
-              0
-            )
-          : currentYearJobs.reduce(
-              (sum, job) => sum + parseFloat(job.fee || 0),
-              0
-            );
-
-      const previousTotal =
-        selectedMonth || selectedYear
-          ? lastMonthJobs.reduce(
-              (sum, job) => sum + parseFloat(job.fee || 0),
-              0
-            )
-          : lastYearJobs.reduce(
-              (sum, job) => sum + parseFloat(job.fee || 0),
-              0
-            );
-
-      const percentageChange = calculatePercentageChange(
-        currentTotal,
-        previousTotal
-      );
-
-      // Lead-wise totals and job counts
+      // Calculate lead-wise totals and job counts
       const leadWiseTotals = departmentJobs.reduce((acc, job) => {
         const lead = job.job.lead;
         if (!acc[lead]) {
@@ -586,30 +458,232 @@ export default function Clients({
         totalFee,
         totalDepartmentCount,
         leadWiseTotals,
-        percentageChange,
       };
     });
 
     setClients(departmentTotals);
-  }, [workFlowData, selectedDepartment, selectedMonth, selectedYear]);
+    // eslint-disable-next-line
+  }, [workFlowData, selectedDepartment, selectedMonth, selectedYear, search]);
+  // useEffect(() => {
+  //   const calculatePercentageChange = (current, previous) => {
+  //     if (previous === 0) {
+  //       return current > 0 ? "+100%" : "0%";
+  //     }
+  //     const change = (((current - previous) / previous) * 100).toFixed(0);
+  //     return `${change > 0 ? "+" : ""}${change}%`;
+  //   };
+
+  //   // Function to filter data based on department, month, and year,   last days like(20) search
+  //   const filterData = () => {
+  //     let filteredData = [...workFlowData];
+
+  //     // Filter by department
+  //     if (selectedDepartment) {
+  //       filteredData = filteredData.filter(
+  //         (job) => job.job.jobName === selectedDepartment
+  //       );
+  //     }
+
+  //     // Filter by month and year
+  //     if (selectedMonth && selectedYear) {
+  //       filteredData = filteredData.filter((job) => {
+  //         const jobDate = new Date(job.currentDate);
+  //         const jobMonth = jobDate.getMonth() + 1;
+  //         const jobYear = jobDate.getFullYear();
+  //         return (
+  //           jobMonth === parseInt(selectedMonth) &&
+  //           jobYear === parseInt(selectedYear)
+  //         );
+  //       });
+  //     } else if (selectedMonth) {
+  //       filteredData = filteredData.filter((job) => {
+  //         const jobDate = new Date(job.currentDate);
+  //         const jobMonth = jobDate.getMonth() + 1;
+  //         return jobMonth === parseInt(selectedMonth);
+  //       });
+  //     } else if (selectedYear) {
+  //       filteredData = filteredData.filter((job) => {
+  //         const jobDate = new Date(job.currentDate);
+  //         const jobYear = jobDate.getFullYear();
+  //         return jobYear === parseInt(selectedYear);
+  //       });
+  //     }
+
+  //     if (search && search >= 1) {
+  //       const today = new Date();
+  //       const pastDate = new Date();
+  //       pastDate.setDate(today.getDate() - search);
+
+  //       filteredData = filteredData.filter((job) => {
+  //         const jobDate = new Date(job.currentDate);
+  //         return jobDate >= pastDate && jobDate <= today;
+  //       });
+  //     }
+
+  //     return filteredData;
+  //   };
+
+  //   // Filtered workflow data
+  //   const filteredWorkFlow = filterData();
+  //   setFilterWorkFlow(filteredWorkFlow);
+
+  //   // Calculate department totals and percentage changes
+  //   const departmentTotals = departments.map((department) => {
+  //     // Filter jobs for the department
+  //     const departmentJobs = filteredWorkFlow.filter(
+  //       (job) => job.job.jobName === department
+  //     );
+
+  //     // Calculate total hours, fees, and job count
+  //     const totalHours = departmentJobs
+  //       .reduce((sum, job) => sum + parseFloat(job.totalHours || 0), 0)
+  //       .toFixed(2);
+
+  //     const totalFee = departmentJobs.reduce(
+  //       (sum, job) => sum + parseFloat(job.fee || 0),
+  //       0
+  //     );
+
+  //     const totalDepartmentCount = departmentJobs.length;
+
+  //     // Current and last month/year jobs
+  //     const currentDate = new Date();
+  //     const currentMonthJobs = departmentJobs.filter((job) => {
+  //       const jobDate = new Date(job.currentDate);
+  //       return (
+  //         jobDate.getMonth() === currentDate.getMonth() &&
+  //         jobDate.getFullYear() === currentDate.getFullYear()
+  //       );
+  //     });
+
+  //     const lastMonthJobs = departmentJobs.filter((job) => {
+  //       const jobDate = new Date(job.currentDate);
+  //       const lastMonth =
+  //         currentDate.getMonth() === 0 ? 11 : currentDate.getMonth() - 1;
+  //       const lastMonthYear =
+  //         currentDate.getMonth() === 0
+  //           ? currentDate.getFullYear() - 1
+  //           : currentDate.getFullYear();
+  //       return (
+  //         jobDate.getMonth() === lastMonth &&
+  //         jobDate.getFullYear() === lastMonthYear
+  //       );
+  //     });
+
+  //     const currentYearJobs = departmentJobs.filter((job) => {
+  //       const jobDate = new Date(job.currentDate);
+  //       return jobDate.getFullYear() === currentDate.getFullYear();
+  //     });
+
+  //     const lastYearJobs = departmentJobs.filter((job) => {
+  //       const jobDate = new Date(job.currentDate);
+  //       return jobDate.getFullYear() === currentDate.getFullYear() - 1;
+  //     });
+
+  //     // Calculate current and previous totals based on filters
+  //     const currentTotal =
+  //       selectedMonth || selectedYear
+  //         ? currentMonthJobs.reduce(
+  //             (sum, job) => sum + parseFloat(job.fee || 0),
+  //             0
+  //           )
+  //         : currentYearJobs.reduce(
+  //             (sum, job) => sum + parseFloat(job.fee || 0),
+  //             0
+  //           );
+
+  //     const previousTotal =
+  //       selectedMonth || selectedYear
+  //         ? lastMonthJobs.reduce(
+  //             (sum, job) => sum + parseFloat(job.fee || 0),
+  //             0
+  //           )
+  //         : lastYearJobs.reduce(
+  //             (sum, job) => sum + parseFloat(job.fee || 0),
+  //             0
+  //           );
+
+  //     const percentageChange = calculatePercentageChange(
+  //       currentTotal,
+  //       previousTotal
+  //     );
+
+  //     // Lead-wise totals and job counts
+  //     const leadWiseTotals = departmentJobs.reduce((acc, job) => {
+  //       const lead = job.job.lead;
+  //       if (!acc[lead]) {
+  //         acc[lead] = { totalHours: 0, totalFee: 0, departmentCount: 0 };
+  //       }
+  //       acc[lead].totalHours += parseFloat(job.totalHours || 0);
+  //       acc[lead].totalFee += parseFloat(job.fee || 0);
+  //       acc[lead].departmentCount += 1;
+  //       return acc;
+  //     }, {});
+
+  //     return {
+  //       department,
+  //       totalHours,
+  //       totalFee,
+  //       totalDepartmentCount,
+  //       leadWiseTotals,
+  //       percentageChange,
+  //     };
+  //   });
+
+  //   setClients(departmentTotals);
+  //   // eslint-disable-next-line
+  // }, [workFlowData, selectedDepartment, selectedMonth, selectedYear, search]);
 
   //------------------------ Filter Data By Depertment || Month || Year || Source || Client Type------>
+  // const filterData = uniqueClients.filter((job) => {
+  //   const jobDate = new Date(job.currentDate);
+  //   const jobMonth = jobDate.getMonth() + 1;
+  //   const jobYear = jobDate.getFullYear();
+
+  //   const today = new Date();
+  //   const pastDate = new Date();
+  //   if (search && search >= 1) {
+  //     pastDate.setDate(today.getDate() - search);
+  //   }
+
+  //   const matchesSearch = !search || (jobDate >= pastDate && jobDate <= today);
+
+  //   return (
+  //     (!selectedMonth || jobMonth === parseInt(selectedMonth)) &&
+  //     (!selectedYear || jobYear === parseInt(selectedYear)) &&
+  //     (!selectedSource || job.source === selectedSource) &&
+  //     (!selectedClient || job.clientType === selectedClient) &&
+  //     (!selectedPartner || job.partner === selectedPartner) &&
+  //     (!selectedDepartment || job.jobName === selectedDepartment) &&
+  //     matchesSearch
+  //   );
+  // });
   const filterData = uniqueClients.filter((job) => {
     const jobDate = new Date(job.currentDate);
     const jobMonth = jobDate.getMonth() + 1;
     const jobYear = jobDate.getFullYear();
 
+    const today = new Date();
+    const pastDate = new Date();
+
+    if (search && !isNaN(search) && search >= 1) {
+      pastDate.setDate(today.getDate() - parseInt(search));
+    }
+
+    const matchesSearch = !search || (jobDate >= pastDate && jobDate <= today);
+
     return (
-      // Apply month filter (0-indexed, so we adjust selectedMonth by subtracting 1)
-      (selectedMonth ? jobMonth === parseInt(selectedMonth) : true) &&
-      // Apply year filter
-      (selectedYear ? jobYear === parseInt(selectedYear) : true) &&
-      (selectedSource ? job.source === selectedSource : true) &&
-      (selectedClient ? job.clientType === selectedClient : true) &&
-      (selectedPartner ? job.partner === selectedPartner : true) &&
-      (selectedDepartment ? job.jobName === selectedDepartment : true)
+      (!selectedMonth || jobMonth === parseInt(selectedMonth)) &&
+      (!selectedYear || jobYear === parseInt(selectedYear)) &&
+      (!selectedSource || job.source === selectedSource) &&
+      (!selectedClient || job.clientType === selectedClient) &&
+      (!selectedPartner || job.partner === selectedPartner) &&
+      (!selectedDepartment || job.jobName === selectedDepartment) &&
+      matchesSearch
     );
   });
+
+  console.log("FilterData2:", filterData);
 
   // Map data for month-wise total job count and fee totals
   const monthData = filterData.reduce((acc, job) => {
@@ -843,20 +917,25 @@ export default function Clients({
           <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* ------------Month Wise Department Total------------ */}
             <div className="w-full shadow-md rounded-md cursor-pointer border p-2">
-              <div className="flex items-center gap-6">
-                <h3 className="text-lg sm:text-xl font-semibold text-center">
-                  Client Department Analytics
+              <div className="flex items-center justify-between  w-full gap-4">
+                <div className="flex items-center gap-4">
+                  <h3 className="text-lg sm:text-xl font-semibold text-center">
+                    Client Department Analytics
+                  </h3>
+                  <select
+                    onChange={(e) => setSelectChart(e.target.value)}
+                    value={selectChart}
+                    className={`${style.input} shadow-md drop-shadow-md`}
+                    style={{ height: "2.2rem" }}
+                  >
+                    <option value={"bar"}>Bar Chart</option>
+                    <option value={"line"}>Line Chart</option>
+                    <option value={"area"}>Area Chart</option>
+                  </select>
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold">
+                  ({filterUniqueClient?.length})
                 </h3>
-                <select
-                  onChange={(e) => setSelectChart(e.target.value)}
-                  value={selectChart}
-                  className={`${style.input} shadow-md drop-shadow-md`}
-                  style={{ height: "2.2rem" }}
-                >
-                  <option value={"bar"}>Bar Chart</option>
-                  <option value={"line"}>Line Chart</option>
-                  <option value={"area"}>Area Chart</option>
-                </select>
               </div>
               {/* (Month Wise) Department Total */}
               <div className="mt-3" id="apex-jobcount-chart" />

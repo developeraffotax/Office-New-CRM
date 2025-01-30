@@ -13,12 +13,41 @@ export default function Sales({
   selectedMonth,
   selectedYear,
   uniqueClients,
+  isSales,
+  lastDays,
 }) {
   // console.log("salesData", salesData);
   const [filteredTotalLeads, setFilteredTotalLeads] = useState(0);
   const [filteredTotalProposals, setFilteredTotalProposals] = useState(0);
   const [filteredTotalLeadProposal, setFilteredTotalLeadProposal] = useState(0);
   const [filteredTotalPPCLead, setFilteredTotalPPCLead] = useState(0);
+
+  const initialState = [true, true, true, true, true, true, true];
+  const [visibility, setVisibility] = useState(() => {
+    const savedState = localStorage.getItem("sales");
+    return savedState ? JSON.parse(savedState) : initialState;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("sales", JSON.stringify(visibility));
+  }, [visibility]);
+
+  const toggleVisibility = (index) => {
+    const updatedVisibility = [...visibility];
+    updatedVisibility[index] = !updatedVisibility[index];
+    setVisibility(updatedVisibility);
+  };
+
+  const visibleCount = visibility.filter(Boolean).length;
+
+  // Dynamically set grid classes based on visible divs
+  const getGridClasses = () => {
+    if (visibleCount === 1) return "grid grid-cols-1";
+    if (visibleCount === 2) return "grid grid-cols-1 sm:grid-cols-2";
+    if (visibleCount >= 3 && visibleCount <= 4)
+      return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
+    return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4";
+  };
 
   // --------PPC---PPL----InActive Client---->
   const [proposalLead, setProposalLead] = useState([]);
@@ -47,7 +76,7 @@ export default function Sales({
       }
     });
     setProposalLead(filteredData);
-  }, [selectedMonth, selectedYear, salesData]);
+  }, [selectedMonth, selectedYear, salesData, lastDays]);
 
   // Filter Proposal Clients
   useEffect(() => {
@@ -72,7 +101,7 @@ export default function Sales({
     setProposalClient(filteredData);
 
     console.log("Filtered Proposal Client:", filteredData);
-  }, [selectedMonth, selectedYear, salesData]);
+  }, [selectedMonth, selectedYear, salesData, lastDays]);
 
   //---------------Filter PPC------->
   const [progressLead, setProgressLead] = useState([]);
@@ -103,7 +132,7 @@ export default function Sales({
       filterPPC(salesData.totalLeads, selectedMonth, selectedYear)
     );
     setWonLead(filterPPC(salesData.wonleads, selectedMonth, selectedYear));
-  }, [selectedMonth, selectedYear, salesData]);
+  }, [selectedMonth, selectedYear, salesData, lastDays]);
 
   const progressleadTotal = progressLead?.length;
   const wonleadTotal = wonLead?.length;
@@ -137,7 +166,7 @@ export default function Sales({
     setInactiveClient(
       filterJobClients(salesData?.inactiveClients, selectedMonth, selectedYear)
     );
-  }, [selectedMonth, selectedYear, salesData]);
+  }, [selectedMonth, selectedYear, salesData, lastDays]);
 
   // Total Leads
   const totalLeads = salesData.activeleadsTotal;
@@ -196,7 +225,7 @@ export default function Sales({
     setLeadSourceCount(formattedSourceCount);
 
     // eslint-disable-next-line
-  }, [totalLeads, selectedMonth, selectedYear]);
+  }, [totalLeads, selectedMonth, selectedYear, lastDays]);
 
   // PPL Lead Percentage
   const PPLPercentage = (proposalClients / proposalLeads) * 100;
@@ -545,205 +574,241 @@ export default function Sales({
       ...prevData,
       series: [{ name: "PPCleads", data: PPCleadByMonth }],
     }));
-  }, [salesData, selectedMonth, selectedYear]);
+  }, [salesData, selectedMonth, selectedYear, lastDays]);
 
   return (
     <div className="w-full h-full p-2">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 gap-4">
-        {/* Total Leads (Lead - Proposal Lead) */}
-        <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-sky-100 via-sky-200 to-sky-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-          <div className="flex flex-col gap-4 w-full p-4 rounded-xl bg-white/40 bg-opacity-90 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
-            <h3 className="text-2xl font-semibold text-gray-800 text-center">
-              Total Leads
-            </h3>
-            <h1 className="text-5xl font-extrabold text-black text-center tracking-wide">
-              {filteredTotalLeads}
-            </h1>
-          </div>
-
-          <div className="w-full mt-6 rounded-xl bg-white/30 p-4 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
-            <h3 className="text-xl font-medium mb-4 text-gray-700">
-              Leads Overview
-            </h3>
-            <Chart
-              options={leadsChartData.options}
-              series={leadsChartData.series}
-              type="area"
-              height={300}
-            />
-          </div>
+      {isSales && (
+        <div className=" absolute top-[8rem] right-[6rem] sm:right-[18rem] z-30 flex flex-col flex-wrap gap-3 p-3 bg-white shadow-md rounded-lg w-[9rem]">
+          {visibility.map((isVisible, index) => (
+            <label
+              key={index}
+              className="flex items-center gap-3 px-4 py-2 bg-gray-100 rounded-lg shadow-sm transition-all hover:bg-gray-200 cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={isVisible}
+                onChange={() => toggleVisibility(index)}
+                className="cursor-pointer accent-orange-600 h-5 w-5 transition-all duration-300"
+              />
+              <span className="text-gray-700 font-medium text-sm">
+                Show {index + 1}
+              </span>
+            </label>
+          ))}
         </div>
-        {/*  ------Total PPC Lead Analytics */}
-        <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-green-100 via-green-200 to-green-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-          <div className="flex flex-col gap-4 w-full p-4 rounded-xl bg-white/40 bg-opacity-90 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
-            <h3 className="text-2xl font-semibold text-gray-800 text-center">
-              Total Leads in PPC
-            </h3>
-            <h1 className="text-5xl font-extrabold text-black text-center tracking-wide">
-              {filteredTotalPPCLead}
-            </h1>
-          </div>
+      )}
 
-          <div className="w-full mt-6 rounded-xl bg-white/30 p-4 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
-            <h3 className="text-lg font-medium mb-4">PPC Lead Overview</h3>
-            <Chart
-              options={PPCleadsChartData.options}
-              series={PPCleadsChartData.series}
-              type="area"
-              height={300}
-            />
-          </div>
-        </div>
-        {/* Total Send Proposal */}
-        <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-orange-100 via-orange-200 to-orange-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-          <div className="flex flex-col gap-4 w-full p-4 rounded-xl bg-white/40 bg-opacity-90 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
-            <h3 className="text-2xl font-semibold text-gray-800 text-center">
-              Total Send Proposal
-            </h3>
-            <h1 className="text-5xl font-extrabold text-black text-center tracking-wide">
-              {filteredTotalProposals}
-            </h1>
-          </div>
-
-          <div className="w-full mt-6 rounded-xl bg-white/30 p-4 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
-            <h3 className="text-lg font-medium mb-4">Proposal Overview</h3>
-            <Chart
-              options={proposalChartData.options}
-              series={proposalChartData.series}
-              type="bar"
-              height={300}
-            />
-          </div>
-        </div>
-
-        {/* Total Proposal in Lead  */}
-        <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-yellow-100 via-yellow-200 to-yellow-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-          <div className="flex flex-col gap-4 w-full p-4 rounded-xl bg-white/40 bg-opacity-90 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
-            <h3 className="text-2xl font-semibold text-gray-800 text-center">
-              Total Leads in Proposal
-            </h3>
-            <h1 className="text-5xl font-extrabold text-black text-center tracking-wide">
-              {filteredTotalLeadProposal}
-            </h1>
-          </div>
-
-          <div className="w-full mt-6 rounded-xl bg-white/30 p-4 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
-            <h3 className="text-lg font-medium mb-4">Proposal Lead Overview</h3>
-            <Chart
-              options={leadsProposalChartData.options}
-              series={leadsProposalChartData.series}
-              type="area"
-              height={300}
-            />
-          </div>
-        </div>
-
-        {/*  */}
-
-        {/*  */}
-        <div className=" w-full  h-fit flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out  ">
-          <div className="flex flex-col gap-4 w-full">
-            {/* Total Leads (Lead - Proposal Lead) */}
-            <div className="flex flex-col   gap-4 w-full p-4 rounded-xl items-center justify-center   bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-pink-100 text-pink-700 shadow-lg">
-                <FaPercentage size={40} />
-              </div>
+      <div className={`${getGridClasses()} gap-4`}>
+        {/* 1 Total Leads (Lead - Proposal Lead) */}
+        {visibility[0] && (
+          <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-sky-100 via-sky-200 to-sky-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+            <div className="flex flex-col gap-4 w-full p-4 rounded-xl bg-white/40 bg-opacity-90 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
               <h3 className="text-2xl font-semibold text-gray-800 text-center">
-                Conversion % PPL
+                Total Leads
               </h3>
-              <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
-                {PPLPercentage ? PPLPercentage.toFixed(2) : 0}%
+              <h1 className="text-5xl font-extrabold text-black text-center tracking-wide">
+                {filteredTotalLeads}
               </h1>
             </div>
-            {/* Inactive Client Total*/}
-            <div className="flex items-center justify-center flex-col gap-4 w-full p-4 rounded-xl   bg-gradient-to-br from-red-100 via-red-200 to-red-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-700 shadow-lg">
-                <FaUserSlash size={40} />
+
+            <div className="w-full mt-6 rounded-xl bg-white/30 p-4 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
+              <h3 className="text-xl font-medium mb-4 text-gray-700">
+                Leads Overview
+              </h3>
+              <Chart
+                options={leadsChartData.options}
+                series={leadsChartData.series}
+                type="area"
+                height={300}
+              />
+            </div>
+          </div>
+        )}
+        {/* 2  ------Total PPC Lead Analytics */}
+        {visibility[1] && (
+          <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-green-100 via-green-200 to-green-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+            <div className="flex flex-col gap-4 w-full p-4 rounded-xl bg-white/40 bg-opacity-90 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
+              <h3 className="text-2xl font-semibold text-gray-800 text-center">
+                Total Leads in PPC
+              </h3>
+              <h1 className="text-5xl font-extrabold text-black text-center tracking-wide">
+                {filteredTotalPPCLead}
+              </h1>
+            </div>
+
+            <div className="w-full mt-6 rounded-xl bg-white/30 p-4 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
+              <h3 className="text-lg font-medium mb-4">PPC Lead Overview</h3>
+              <Chart
+                options={PPCleadsChartData.options}
+                series={PPCleadsChartData.series}
+                type="area"
+                height={300}
+              />
+            </div>
+          </div>
+        )}
+        {/* 3 Total Send Proposal */}
+        {visibility[2] && (
+          <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-orange-100 via-orange-200 to-orange-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+            <div className="flex flex-col gap-4 w-full p-4 rounded-xl bg-white/40 bg-opacity-90 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
+              <h3 className="text-2xl font-semibold text-gray-800 text-center">
+                Total Send Proposal
+              </h3>
+              <h1 className="text-5xl font-extrabold text-black text-center tracking-wide">
+                {filteredTotalProposals}
+              </h1>
+            </div>
+
+            <div className="w-full mt-6 rounded-xl bg-white/30 p-4 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
+              <h3 className="text-lg font-medium mb-4">Proposal Overview</h3>
+              <Chart
+                options={proposalChartData.options}
+                series={proposalChartData.series}
+                type="bar"
+                height={300}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* 4 Total Proposal in Lead  */}
+        {visibility[3] && (
+          <div className="flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-yellow-100 via-yellow-200 to-yellow-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+            <div className="flex flex-col gap-4 w-full p-4 rounded-xl bg-white/40 bg-opacity-90 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
+              <h3 className="text-2xl font-semibold text-gray-800 text-center">
+                Total Leads in Proposal
+              </h3>
+              <h1 className="text-5xl font-extrabold text-black text-center tracking-wide">
+                {filteredTotalLeadProposal}
+              </h1>
+            </div>
+
+            <div className="w-full mt-6 rounded-xl bg-white/30 p-4 shadow-md hover:shadow-xl transition-all duration-300 ease-in-out">
+              <h3 className="text-lg font-medium mb-4">
+                Proposal Lead Overview
+              </h3>
+              <Chart
+                options={leadsProposalChartData.options}
+                series={leadsProposalChartData.series}
+                type="area"
+                height={300}
+              />
+            </div>
+          </div>
+        )}
+        {/* 5  */}
+        {visibility[4] && (
+          <div className=" w-full  h-fit flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out  ">
+            <div className="flex flex-col gap-4 w-full">
+              {/* Total Leads (Lead - Proposal Lead) */}
+              <div className="flex flex-col   gap-4 w-full p-4 rounded-xl items-center justify-center   bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-pink-100 text-pink-700 shadow-lg">
+                  <FaPercentage size={40} />
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-800 text-center">
+                  Conversion % PPL
+                </h3>
+                <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
+                  {PPLPercentage ? PPLPercentage.toFixed(2) : 0}%
+                </h1>
+              </div>
+              {/* Inactive Client Total*/}
+              <div className="flex items-center justify-center flex-col gap-4 w-full p-4 rounded-xl   bg-gradient-to-br from-red-100 via-red-200 to-red-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-700 shadow-lg">
+                  <FaUserSlash size={40} />
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-800 text-center">
+                  Inactive Client
+                </h3>
+                <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
+                  {inactiveClient ? inactiveClient?.length : 0}
+                </h1>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 6 Inactive Clients */}
+        {visibility[5] && (
+          <div className="w-full flex flex-col h-fit items-center p-4 rounded-xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out  gap-4">
+            {/*----------Conversion PPC Lead Won --------- */}
+            <div className="flex flex-col gap-4 w-full p-4 rounded-xl  items-center justify-center  bg-gradient-to-br from-purple-100 via-purple-200 to-purple-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 text-purple-700 shadow-lg">
+                <FaChartPie size={40} />
               </div>
               <h3 className="text-2xl font-semibold text-gray-800 text-center">
-                Inactive Client
+                Conversion % PPC
               </h3>
               <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
-                {inactiveClient ? inactiveClient?.length : 0}
+                {PPCPercentage ? PPCPercentage.toFixed(2) : 0}%
+              </h1>
+            </div>
+
+            {/* Inactive Client Percentage */}
+            <div className="flex flex-col gap-4 w-full p-4 rounded-xl items-center justify-center  bg-gradient-to-br from-lime-100 via-lime-200 to-lime-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-lime-100 text-lime-700 shadow-lg">
+                <FaChartLine size={40} />
+              </div>
+              <h3 className="text-2xl font-semibold text-gray-800 text-center">
+                Inactive Client %
+              </h3>
+              <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
+                {InactiveClientPercentage.toFixed(2)}%
               </h1>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Inactive Clients */}
-        <div className="w-full flex flex-col h-fit items-center p-4 rounded-xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out  gap-4">
-          {/*----------Conversion PPC Lead Won --------- */}
-          <div className="flex flex-col gap-4 w-full p-4 rounded-xl  items-center justify-center  bg-gradient-to-br from-purple-100 via-purple-200 to-purple-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 text-purple-700 shadow-lg">
-              <FaChartPie size={40} />
-            </div>
-            <h3 className="text-2xl font-semibold text-gray-800 text-center">
-              Conversion % PPC
-            </h3>
-            <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
-              {PPCPercentage ? PPCPercentage.toFixed(2) : 0}%
-            </h1>
-          </div>
+        {/* 7----------Conversion Lead in Client in Proposal--------- */}
+        {visibility[6] && (
+          <div className=" w-full col-span-1 3xl:col-span-2 flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 shadow-lg hover:shadow-2xl  ">
+            <div className="flex flex-col gap-4 w-full">
+              <div className=" w-full flex items-center gap-2 p-2 rounded-md border shadow-md bg-white">
+                <h3 className="font-semibold text-xl w-[24%]">Lead Source</h3>
+                <h3 className="font-semibold text-xl text-start w-full">
+                  Analytics Count
+                </h3>
+              </div>
 
-          {/* Inactive Client Percentage */}
-          <div className="flex flex-col gap-4 w-full p-4 rounded-xl items-center justify-center  bg-gradient-to-br from-lime-100 via-lime-200 to-lime-300 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:scale-105">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-lime-100 text-lime-700 shadow-lg">
-              <FaChartLine size={40} />
-            </div>
-            <h3 className="text-2xl font-semibold text-gray-800 text-center">
-              Inactive Client %
-            </h3>
-            <h1 className="text-4xl font-extrabold text-black text-center tracking-wide">
-              {InactiveClientPercentage.toFixed(2)}%
-            </h1>
-          </div>
-        </div>
-
-        {/*----------Conversion Lead in Client in Proposal--------- */}
-        <div className=" w-full col-span-1 3xl:col-span-2 flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 shadow-lg hover:shadow-2xl  ">
-          <div className="flex flex-col gap-4 w-full">
-            <div className=" w-full flex items-center gap-2 p-2 rounded-md border shadow-md bg-white">
-              <h3 className="font-semibold text-xl w-[24%]">Lead Source</h3>
-              <h3 className="font-semibold text-xl text-start w-full">
-                Analytics Count
-              </h3>
-            </div>
-
-            <div className=" w-full flex flex-col gap-2">
-              {leadSourceCount?.map((lead) => (
-                <div
-                  key={lead.source}
-                  className="w-full flex items-center gap-2 px-2 py-1 rounded-md border shadow-md bg-white/60 transition-all duration-300 ease-in-out transform hover:scale-[1.04]"
-                >
-                  <h3 className="font-medium text-lg w-[24%]">{lead.source}</h3>
-                  <div className="bg-white  border overflow-hidden rounded-[2rem]  shadow-md drop-shadow-md w-full h-full">
-                    <div
-                      style={{
-                        width: `${lead?.count}%`,
-                        background:
-                          lead?.count >= 100
-                            ? "linear-gradient(90deg, #00E396, #00C853)"
-                            : "linear-gradient(90deg, #FF4560, #FF8A65)",
-                        transition: "width 0.4s ease-in-out",
-                      }}
-                      className={`h-[1.6rem] flex items-center justify-center  ${
-                        lead?.count < 15 ? "text-black" : "text-white"
-                      } font-semibold rounded-[2rem] shadow-md`}
-                    >
-                      <span
-                        className={`px-2 text-xs ${
-                          lead?.count < 3 ? "ml-3" : "ml-0"
-                        }`}
+              <div className=" w-full flex flex-col gap-2">
+                {leadSourceCount?.map((lead) => (
+                  <div
+                    key={lead.source}
+                    className="w-full flex items-center gap-2 px-2 py-1 rounded-md border shadow-md bg-white/60 transition-all duration-300 ease-in-out transform hover:scale-[1.04]"
+                  >
+                    <h3 className="font-medium text-lg w-[24%]">
+                      {lead.source}
+                    </h3>
+                    <div className="bg-white  border overflow-hidden rounded-[2rem]  shadow-md drop-shadow-md w-full h-full">
+                      <div
+                        style={{
+                          width: `${lead?.count}%`,
+                          background:
+                            lead?.count >= 100
+                              ? "linear-gradient(90deg, #00E396, #00C853)"
+                              : "linear-gradient(90deg, #FF4560, #FF8A65)",
+                          transition: "width 0.4s ease-in-out",
+                        }}
+                        className={`h-[1.6rem] flex items-center justify-center  ${
+                          lead?.count < 15 ? "text-black" : "text-white"
+                        } font-semibold rounded-[2rem] shadow-md`}
                       >
-                        {lead?.count}
-                      </span>
+                        <span
+                          className={`px-2 text-xs ${
+                            lead?.count < 3 ? "ml-3" : "ml-0"
+                          }`}
+                        >
+                          {lead?.count}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

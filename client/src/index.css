@@ -31,6 +31,16 @@ body {
   zoom: 0.9;
 }
 
+.zoomout2 {
+  zoom: 0.8;
+}
+.zoomout3 {
+  zoom: 0.7;
+}
+.zoomout4 {
+  zoom: 0.6;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;

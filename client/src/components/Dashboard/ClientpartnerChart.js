@@ -10,6 +10,7 @@ const JobSourceClientPartnerDonutCharts = ({
   workFlowData,
   selectedMonth,
   selectedYear,
+  lastDays,
 }) => {
   const [selected, setSelected] = useState("client");
   const [chartData, setChartData] = useState({
@@ -36,6 +37,17 @@ const JobSourceClientPartnerDonutCharts = ({
       filteredData = filteredData.filter((job) => {
         const jobMonth = new Date(job.currentDate).getMonth() + 1;
         return jobMonth === parseInt(selectedMonth);
+      });
+    }
+
+    if (lastDays) {
+      const today = new Date();
+      const lastDaysDate = new Date();
+      lastDaysDate.setDate(today.getDate() - lastDays);
+
+      filteredData = filteredData.filter((job) => {
+        const jobDate = new Date(job.currentDate);
+        return jobDate >= lastDaysDate && jobDate <= today;
       });
     }
 
@@ -68,7 +80,7 @@ const JobSourceClientPartnerDonutCharts = ({
       partnerLabels: Object.keys(partnerCount),
       partnerSeries: Object.values(partnerCount),
     });
-  }, [workFlowData, selectedMonth, selectedYear]);
+  }, [workFlowData, selectedMonth, selectedYear, lastDays]);
 
   const generateChartOptions = (labels, series, title) => ({
     chart: {

@@ -55,12 +55,23 @@ export default function Sales({
 
   const proposalLeads = proposalLead?.length;
   const proposalClients = proposalClient?.length;
+
   // Filter Proposal Lead
   useEffect(() => {
     const filteredData = salesData?.proposalLead?.filter((item) => {
       const createdAtDate = new Date(item.createdAt);
       const itemMonth = createdAtDate.getMonth() + 1;
       const itemYear = createdAtDate.getFullYear();
+
+      // Get the date for the last 'lastDays' days
+      const currentDate = new Date();
+      const lastDaysDate = new Date();
+      lastDaysDate.setDate(currentDate.getDate() - lastDays);
+
+      // Check if the item falls within the last 'lastDays' days
+      const isInLastDays = lastDays
+        ? createdAtDate >= lastDaysDate && createdAtDate <= currentDate
+        : true;
 
       if (selectedMonth && selectedYear) {
         return (
@@ -71,6 +82,8 @@ export default function Sales({
         return itemMonth === parseInt(selectedMonth);
       } else if (selectedYear) {
         return itemYear === parseInt(selectedYear);
+      } else if (lastDays) {
+        return isInLastDays;
       } else {
         return true;
       }
@@ -85,6 +98,16 @@ export default function Sales({
       const itemMonth = createdAtDate.getMonth() + 1;
       const itemYear = createdAtDate.getFullYear();
 
+      // Get the date for the last 'lastDays' days
+      const currentDate = new Date();
+      const lastDaysDate = new Date();
+      lastDaysDate.setDate(currentDate.getDate() - lastDays);
+
+      // Check if the item falls within the last 'lastDays' days
+      const isInLastDays = lastDays
+        ? createdAtDate >= lastDaysDate && createdAtDate <= currentDate
+        : true;
+
       if (selectedMonth && selectedYear) {
         return (
           itemMonth === parseInt(selectedMonth) &&
@@ -94,6 +117,8 @@ export default function Sales({
         return itemMonth === parseInt(selectedMonth);
       } else if (selectedYear) {
         return itemYear === parseInt(selectedYear);
+      } else if (lastDays) {
+        return isInLastDays;
       } else {
         return true;
       }
@@ -107,11 +132,21 @@ export default function Sales({
   const [progressLead, setProgressLead] = useState([]);
   const [wonLead, setWonLead] = useState([]);
 
-  const filterPPC = (data = [], selectedMonth, selectedYear) => {
+  const filterPPC = (data = [], selectedMonth, selectedYear, lastDays) => {
     return data.filter((item) => {
       const createdAtDate = new Date(item.createdAt);
       const itemMonth = createdAtDate.getMonth() + 1;
       const itemYear = createdAtDate.getFullYear();
+
+      // Get the date for the last 'lastDays' days
+      const currentDate = new Date();
+      const lastDaysDate = new Date();
+      lastDaysDate.setDate(currentDate.getDate() - lastDays);
+
+      // Check if the item falls within the last 'lastDays' days
+      const isInLastDays = lastDays
+        ? createdAtDate >= lastDaysDate && createdAtDate <= currentDate
+        : true;
 
       if (selectedMonth && selectedYear) {
         return (
@@ -122,6 +157,8 @@ export default function Sales({
         return itemMonth === Number(selectedMonth);
       } else if (selectedYear) {
         return itemYear === Number(selectedYear);
+      } else if (lastDays) {
+        return isInLastDays;
       }
       return true;
     });
@@ -129,9 +166,11 @@ export default function Sales({
 
   useEffect(() => {
     setProgressLead(
-      filterPPC(salesData.totalLeads, selectedMonth, selectedYear)
+      filterPPC(salesData.totalLeads, selectedMonth, selectedYear, lastDays)
     );
-    setWonLead(filterPPC(salesData.wonleads, selectedMonth, selectedYear));
+    setWonLead(
+      filterPPC(salesData.wonleads, selectedMonth, selectedYear, lastDays)
+    );
   }, [selectedMonth, selectedYear, salesData, lastDays]);
 
   const progressleadTotal = progressLead?.length;
@@ -142,11 +181,25 @@ export default function Sales({
   // --------------CLient Filter------------->
   const [inactiveClient, setInactiveClient] = useState([]);
 
-  const filterJobClients = (data = [], selectedMonth, selectedYear) => {
+  const filterJobClients = (
+    data = [],
+    selectedMonth,
+    selectedYear,
+    lastDays
+  ) => {
     return data.filter((item) => {
       const createdAtDate = new Date(item.updatedAt);
       const itemMonth = createdAtDate.getMonth() + 1;
       const itemYear = createdAtDate.getFullYear();
+
+      // Get the date for the last 'lastDays' days
+      const currentDate = new Date();
+      const lastDaysDate = new Date();
+      lastDaysDate.setDate(currentDate.getDate() - lastDays);
+
+      const isInLastDays = lastDays
+        ? createdAtDate >= lastDaysDate && createdAtDate <= currentDate
+        : true;
 
       if (selectedMonth && selectedYear) {
         return (
@@ -157,14 +210,21 @@ export default function Sales({
         return itemMonth === Number(selectedMonth);
       } else if (selectedYear) {
         return itemYear === Number(selectedYear);
+      } else if (lastDays) {
+        return isInLastDays;
       }
-      return true; // Return all items if no filters are selected
+      return true;
     });
   };
 
   useEffect(() => {
     setInactiveClient(
-      filterJobClients(salesData?.inactiveClients, selectedMonth, selectedYear)
+      filterJobClients(
+        salesData?.inactiveClients,
+        selectedMonth,
+        selectedYear,
+        lastDays
+      )
     );
   }, [selectedMonth, selectedYear, salesData, lastDays]);
 
@@ -184,11 +244,20 @@ export default function Sales({
 
   // Filter Lead Source Count
   useEffect(() => {
-    const filterLeadsByMonthYear = (leads, month, year) => {
+    const filterLeadsByMonthYear = (leads, month, year, lastDays) => {
       return leads.filter((lead) => {
         const createdAtDate = new Date(lead.createdAt);
         const itemMonth = createdAtDate.getMonth() + 1;
         const itemYear = createdAtDate.getFullYear();
+
+        // Get the date for the last 'lastDays' days
+        const currentDate = new Date();
+        const lastDaysDate = new Date();
+        lastDaysDate.setDate(currentDate.getDate() - lastDays);
+
+        const isInLastDays = lastDays
+          ? createdAtDate >= lastDaysDate && createdAtDate <= currentDate
+          : true;
 
         if (month && year) {
           return itemMonth === Number(month) && itemYear === Number(year);
@@ -196,6 +265,8 @@ export default function Sales({
           return itemMonth === Number(month);
         } else if (year) {
           return itemYear === Number(year);
+        } else if (lastDays) {
+          return isInLastDays;
         }
         return true;
       });
@@ -204,7 +275,8 @@ export default function Sales({
     const filteredLeads = filterLeadsByMonthYear(
       totalLeads,
       selectedMonth,
-      selectedYear
+      selectedYear,
+      lastDays
     );
 
     const sourceCount = leadSource.reduce((acc, source) => {
@@ -487,17 +559,33 @@ export default function Sales({
     const leadProposalByMonth = Array(12).fill(0);
     const PPCleadByMonth = Array(12).fill(0);
 
-    // Filter leads based on selected month and year
-    const filteredLeads = salesData.totalLeads
-      .concat(salesData.proposalLead)
-      .filter((lead) => {
-        const leadDate = dayjs(lead.createdAt);
-        return (
-          (!selectedYear || leadDate.year() === parseInt(selectedYear)) &&
-          (!selectedMonth || leadDate.month() + 1 === parseInt(selectedMonth))
-        );
-      });
-    setFilteredTotalLeads(filteredLeads?.length);
+    // Filter leads based on selected month and year, last days
+    const filteredLeads = [
+      ...(salesData.totalLeads || []),
+      ...(salesData.proposalLead || []),
+    ].filter((lead) => {
+      const leadDate = dayjs(lead.createdAt).startOf("day");
+
+      const today = dayjs().startOf("day");
+
+      const lastDaysDate =
+        lastDays && Number(lastDays) > 0
+          ? today.subtract(Number(lastDays), "day")
+          : null;
+
+      const isInLastDays = lastDaysDate
+        ? leadDate.isAfter(lastDaysDate) || leadDate.isSame(lastDaysDate)
+        : true;
+
+      return (
+        (!selectedYear || leadDate.year() === parseInt(selectedYear, 10)) &&
+        (!selectedMonth ||
+          leadDate.month() + 1 === parseInt(selectedMonth, 10)) &&
+        isInLastDays
+      );
+    });
+
+    setFilteredTotalLeads(filteredLeads.length);
 
     // Populate leads by month for chart data
     filteredLeads.forEach((lead) => {
@@ -508,9 +596,22 @@ export default function Sales({
     // Filter proposals based on selected month and year
     const filteredProposals = salesData.totalProposals.filter((proposal) => {
       const proposalDate = dayjs(proposal.createdAt);
+      const today = dayjs().startOf("day");
+
+      const lastDaysDate =
+        lastDays && Number(lastDays) > 0
+          ? today.subtract(Number(lastDays), "day")
+          : null;
+
+      const isInLastDays = lastDaysDate
+        ? proposalDate.isAfter(lastDaysDate) ||
+          proposalDate.isSame(lastDaysDate)
+        : true;
       return (
         (!selectedYear || proposalDate.year() === parseInt(selectedYear)) &&
-        (!selectedMonth || proposalDate.month() + 1 === parseInt(selectedMonth))
+        (!selectedMonth ||
+          proposalDate.month() + 1 === parseInt(selectedMonth)) &&
+        isInLastDays
       );
     });
     setFilteredTotalProposals(filteredProposals?.length);
@@ -525,9 +626,24 @@ export default function Sales({
     // Filter proposals based on selected month and year
     const filteredLeadProposals = salesData.proposalLead.filter((proposal) => {
       const proposalDate = dayjs(proposal.createdAt);
+
+      const today = dayjs().startOf("day");
+
+      const lastDaysDate =
+        lastDays && Number(lastDays) > 0
+          ? today.subtract(Number(lastDays), "day")
+          : null;
+
+      const isInLastDays = lastDaysDate
+        ? proposalDate.isAfter(lastDaysDate) ||
+          proposalDate.isSame(lastDaysDate)
+        : true;
+
       return (
         (!selectedYear || proposalDate.year() === parseInt(selectedYear)) &&
-        (!selectedMonth || proposalDate.month() + 1 === parseInt(selectedMonth))
+        (!selectedMonth ||
+          proposalDate.month() + 1 === parseInt(selectedMonth)) &&
+        isInLastDays
       );
     });
     setFilteredTotalLeadProposal(filteredLeadProposals?.length);
@@ -542,9 +658,22 @@ export default function Sales({
     // Filter proposals based on selected month and year
     const filteredPPCLead = salesData.totalLeads.filter((proposal) => {
       const ppcLeadDate = dayjs(proposal.createdAt);
+      const today = dayjs().startOf("day");
+
+      const lastDaysDate =
+        lastDays && Number(lastDays) > 0
+          ? today.subtract(Number(lastDays), "day")
+          : null;
+
+      const isInLastDays = lastDaysDate
+        ? ppcLeadDate.isAfter(lastDaysDate) || ppcLeadDate.isSame(lastDaysDate)
+        : true;
+
       return (
         (!selectedYear || ppcLeadDate.year() === parseInt(selectedYear)) &&
-        (!selectedMonth || ppcLeadDate.month() + 1 === parseInt(selectedMonth))
+        (!selectedMonth ||
+          ppcLeadDate.month() + 1 === parseInt(selectedMonth)) &&
+        isInLastDays
       );
     });
     setFilteredTotalPPCLead(filteredPPCLead?.length);

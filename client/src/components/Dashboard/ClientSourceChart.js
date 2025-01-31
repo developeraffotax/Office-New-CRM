@@ -4,7 +4,12 @@ import { style } from "../../utlis/CommonStyle";
 
 const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
 
-const JobSourceChart = ({ workFlowData, selectedMonth, selectedYear }) => {
+const JobSourceChart = ({
+  workFlowData,
+  selectedMonth,
+  selectedYear,
+  lastDays,
+}) => {
   const [chartType, setChartType] = useState("pie"); // Toggle between Pie and Area chart
   const [chartData, setChartData] = useState({ labels: [], series: [] });
 
@@ -25,6 +30,17 @@ const JobSourceChart = ({ workFlowData, selectedMonth, selectedYear }) => {
       });
     }
 
+    if (lastDays) {
+      const today = new Date();
+      const lastDaysDate = new Date();
+      lastDaysDate.setDate(today.getDate() - lastDays);
+
+      filteredData = filteredData.filter((job) => {
+        const jobDate = new Date(job.currentDate);
+        return jobDate >= lastDaysDate && jobDate <= today;
+      });
+    }
+
     const sourceCount = sources.reduce((acc, source) => {
       acc[source] = 0;
       return acc;
@@ -41,7 +57,7 @@ const JobSourceChart = ({ workFlowData, selectedMonth, selectedYear }) => {
       labels: Object.keys(sourceCount),
       series: Object.values(sourceCount),
     });
-  }, [workFlowData, selectedMonth, selectedYear]);
+  }, [workFlowData, selectedMonth, selectedYear, lastDays]);
 
   useEffect(() => {
     if (chartData.labels.length > 0) {

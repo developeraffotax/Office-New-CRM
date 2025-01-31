@@ -144,7 +144,7 @@ export const getAllClients = async (req, res) => {
         "job.jobStatus": { $ne: "Inactive" },
       })
       .select(
-        "clientName companyName regNumber email fee currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data activeClient"
+        "clientName companyName regNumber email fee currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data activeClient clientType"
       )
       .populate("data");
 
@@ -1402,6 +1402,7 @@ export const updateBulkJob = async (req, res) => {
       totalHours,
       activeClient,
       qualities,
+      clientType,
     } = req.body;
 
     console.log("qualities:", qualities);
@@ -1436,6 +1437,7 @@ export const updateBulkJob = async (req, res) => {
     if (dataLabelId) updateData.data = dataLabelId;
     if (label) updateData.label = currentLabel;
     if (source) updateData.source = source;
+    if (clientType) updateData.clientType = clientType;
     if (fee) updateData.fee = fee;
     if (totalHours) updateData.totalHours = totalHours;
     if (activeClient) updateData.activeClient = activeClient;

@@ -12,6 +12,7 @@ import JobSummery from "../../components/Dashboard/JobSummery";
 import TaskSummary from "../../components/Dashboard/TaskSummary";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import Loader from "../../utlis/Loader";
+import { FiZoomIn, FiZoomOut, FiRefreshCw } from "react-icons/fi";
 
 export default function Dashboard() {
   // Client
@@ -31,6 +32,7 @@ export default function Dashboard() {
   const [clientData, setClientData] = useState([]);
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
+  const [isClients, setIsClients] = useState(false);
 
   const departments = [
     "Bookkeeping",
@@ -53,6 +55,16 @@ export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [tasksData, setTasksData] = useState([]);
   const [isSales, setIsSales] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
+
+  // Function to increase zoom
+  const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 1, 4));
+
+  // Function to decrease zoom
+  const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 1, 1));
+
+  // Reset to default (100%)
+  const handleResetZoom = () => setZoomLevel(1);
 
   // ---------------All Client_Job Data----------->
   const allClientJobData = async () => {
@@ -208,9 +220,25 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4  bg-gray-100 overflow-hidden">
+      <div
+        // style={{
+        //   transform: `scale(${zoomLevel})`,
+        //   transformOrigin: "top left",
+        // }}
+        className={` ${
+          zoomLevel === 1
+            ? ""
+            : zoomLevel === 2
+            ? "zoomout2"
+            : zoomLevel === 3
+            ? "zoomout2"
+            : zoomLevel === 4
+            ? "zoomout4"
+            : ""
+        } relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4  bg-gray-100 overflow-hidden`}
+      >
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-5">
+          <div className=" relative flex items-center gap-5">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
               Dashboard
             </h1>
@@ -230,6 +258,27 @@ export default function Dashboard() {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
+            {/* Zoom Controls */}
+            <div className="absolute hidden top-2 right-2 sm:flex gap-2 bg-white p-2 rounded-lg shadow">
+              <button
+                onClick={handleZoomIn}
+                className="p-2 bg-gray-200 rounded hover:bg-orange-500 hover:text-white"
+              >
+                <FiZoomOut size={20} />
+              </button>
+              <button
+                onClick={handleZoomOut}
+                className="p-2 bg-gray-200 rounded hover:bg-orange-500 hover:text-white"
+              >
+                <FiZoomIn size={20} />
+              </button>
+              <button
+                onClick={handleResetZoom}
+                className="p-2 bg-gray-200 rounded hover:bg-orange-500 hover:text-white"
+              >
+                <FiRefreshCw size={20} />
+              </button>
+            </div>
           </div>
           {/* ----------Tabs--------- */}
           <div className="flex items-center flex-wrap  gap-5 overflow-x-auto hidden1 ">
@@ -395,6 +444,18 @@ export default function Dashboard() {
                     </option>
                   ))}
                 </select>
+                <div
+                  className={` w-[2rem] h-[2rem] flex items-center justify-center mt-[.4rem] rounded-md hover:shadow-md mb-1 bg-gray-100 cursor-pointer border border-gray-300 ${
+                    isClients && "bg-orange-500 text-white"
+                  }`}
+                  onClick={() => setIsClients(!isClients)}
+                >
+                  {isClients ? (
+                    <GoEyeClosed className="text-[22px]" />
+                  ) : (
+                    <GoEye className="text-[22px]" />
+                  )}
+                </div>
               </div>
             )}
             {/* Sales */}
@@ -536,6 +597,8 @@ export default function Dashboard() {
                     uniqueClients={uniqueClients}
                     loading={loading}
                     search={search}
+                    userData={userData}
+                    isClients={isClients}
                   />
                 </div>
               ) : selectedTab === "Summary" ? (

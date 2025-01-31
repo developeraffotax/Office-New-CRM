@@ -115,11 +115,13 @@ export default function AllJobs() {
   const [dataLabelId, setDataLabelId] = useState("");
   const [isUpload, setIsUpdate] = useState(false);
   const [source, setSource] = useState("");
+  const [clientType, setClientType] = useState("");
   const [fee, setFee] = useState("");
   const [hours, setHours] = useState("");
   const [activeClient, setActiveClient] = useState("");
   const [qualities, setQualities] = useState([]);
   const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
+  const ctypes = ["Limited", "LLP", "Individual", "Non UK"];
   const [timerId, setTimerId] = useState("");
   const [showInactive, setShowInactive] = useState(false);
   const [isLoad, setIsLoad] = useState(false);
@@ -144,6 +146,7 @@ export default function AllJobs() {
     "Labels",
     "Fee",
     "Source",
+    "ClientType",
     "CC_Person",
     "AC",
     "SignUp_Date",
@@ -2259,6 +2262,7 @@ export default function AllJobs() {
                     "Website",
                     "Direct",
                     "Partner",
+                    "No Source",
                   ];
                   return (
                     <div className=" flex flex-col gap-[2px] w-[5.5rem] items-center justify-center  ">
@@ -2297,7 +2301,77 @@ export default function AllJobs() {
                     </div>
                   );
                 },
-                filterFn: "equals",
+                // filterFn: "equals",
+                filterFn: (row, columnId, filterValue) => {
+                  const source = row.getValue(columnId);
+
+                  if (filterValue === "No Source") {
+                    return !source;
+                  }
+
+                  return source === filterValue;
+                },
+                size: 90,
+              },
+              // clientType
+              {
+                id: "ClientType",
+                accessorKey: "clientType",
+                Header: ({ column }) => {
+                  const clientType = [
+                    "Limited",
+                    "LLP",
+                    "Individual",
+                    "Non UK",
+                    "No CT",
+                  ];
+                  return (
+                    <div className=" flex flex-col gap-[2px] w-[5.5rem] items-center justify-center  ">
+                      <span
+                        className="ml-1 w-full text-center cursor-pointer pr-6"
+                        title="Clear Filter"
+                        onClick={() => {
+                          column.setFilterValue("");
+                        }}
+                      >
+                        Client Type
+                      </span>
+
+                      <select
+                        value={column.getFilterValue() || ""}
+                        onChange={(e) => column.setFilterValue(e.target.value)}
+                        className="font-normal w-full max-w-[5rem] h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                      >
+                        <option value="">Select</option>
+                        {clientType?.map((sour, i) => (
+                          <option key={i} value={sour}>
+                            {sour}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                },
+                Cell: ({ cell, row }) => {
+                  const clientType = row.original.clientType;
+                  return (
+                    <div className="w-full flex items-start justify-start">
+                      <span className="text-[15px] font-medium">
+                        {clientType && clientType}
+                      </span>
+                    </div>
+                  );
+                },
+                // filterFn: "equals",
+                filterFn: (row, columnId, filterValue) => {
+                  const clientType = row.getValue(columnId);
+
+                  if (filterValue === "No CT") {
+                    return !clientType;
+                  }
+
+                  return clientType === filterValue;
+                },
                 size: 90,
               },
             ]
@@ -2333,6 +2407,7 @@ export default function AllJobs() {
                             {label?.name}
                           </option>
                         ))}
+                        <option value="empty">Empty</option>
                       </select>
                     </div>
                   );
@@ -2407,6 +2482,9 @@ export default function AllJobs() {
 
                 filterFn: (row, columnId, filterValue) => {
                   const labelName = row.original?.data?.name || "";
+                  if (filterValue === "empty") {
+                    return !labelName;
+                  }
                   return labelName === filterValue;
                 },
 
@@ -2446,6 +2524,7 @@ export default function AllJobs() {
                         <option value="">Select</option>
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
+                        <option value="empty">Empty</option>
                       </select>
                     </div>
                   );
@@ -2792,6 +2871,7 @@ export default function AllJobs() {
           label,
           dataLabelId,
           source,
+          clientType,
           fee,
           totalHours: hours,
           activeClient,
@@ -2813,6 +2893,7 @@ export default function AllJobs() {
         setLabel("");
         setDataLabelId("");
         setSource("");
+        setClientType("");
         setFee("");
         setHours("");
         setActiveClient("");
@@ -3304,6 +3385,23 @@ export default function AllJobs() {
                     {sources.map((sou, i) => (
                       <option value={sou} key={i}>
                         {sou}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {auth?.user?.role?.name === "Admin" && (
+                <div className="">
+                  <select
+                    value={clientType}
+                    onChange={(e) => setClientType(e.target.value)}
+                    className={`${style.input} w-full`}
+                    style={{ width: "8rem" }}
+                  >
+                    <option value="">Client Type</option>
+                    {ctypes.map((ct, i) => (
+                      <option value={ct} key={i}>
+                        {ct}
                       </option>
                     ))}
                   </select>

@@ -18,6 +18,8 @@ export default function Clients({
   uniqueClients,
   loading,
   search,
+  userData,
+  isClients,
 }) {
   const [clients, setClients] = useState([]);
   const [fee, setFee] = useState("");
@@ -29,6 +31,30 @@ export default function Clients({
     totalFee: "0",
     totalClients: "0",
   });
+
+  // Visibility Div
+  const initialState = [true, true, true, true, true, true];
+  const [visibility, setVisibility] = useState(() => {
+    const savedState = localStorage.getItem("clients");
+    return savedState ? JSON.parse(savedState) : initialState;
+  });
+  useEffect(() => {
+    localStorage.setItem("sales", JSON.stringify(visibility));
+  }, [visibility]);
+
+  const toggleVisibility = (index) => {
+    const updatedVisibility = [...visibility];
+    updatedVisibility[index] = !updatedVisibility[index];
+    setVisibility(updatedVisibility);
+  };
+
+  const visibleCount = visibility.filter(Boolean).length;
+
+  // Dynamically set grid classes based on visible divs
+  const getGridClasses = () => {
+    if (visibleCount === 1) return "grid grid-cols-1";
+    return "grid grid-cols-1 sm:grid-cols-2";
+  };
 
   console.log("clients:", clients);
 
@@ -52,8 +78,6 @@ export default function Clients({
       const createdAtDate = new Date(item.currentDate);
       const itemMonth = createdAtDate.getMonth() + 1;
       const itemYear = createdAtDate.getFullYear();
-      const itemTime = createdAtDate.getTime();
-      const currentTime = new Date().getTime();
 
       const today = new Date();
       const pastDate = new Date();
@@ -698,6 +722,8 @@ export default function Clients({
     return acc;
   }, {});
 
+  // ------------------------>Format Months<--------------------->
+
   const monthOrder = [
     "Jan",
     "Feb",
@@ -714,8 +740,18 @@ export default function Clients({
   ];
 
   // Assuming `monthData`
-  const months = Object.keys(monthData).sort(
-    (a, b) => monthOrder.indexOf(a) - monthOrder.indexOf(b)
+  const months = Object.keys(monthData).sort((a, b) => {
+    const [monthA, yearA] = a.split(" ");
+    const [monthB, yearB] = b.split(" ");
+
+    return (
+      parseInt(yearA) - parseInt(yearB) ||
+      monthOrder.indexOf(monthA) - monthOrder.indexOf(monthB)
+    );
+  });
+
+  const formattedMonths = months.map(
+    (month) => `${month} (${monthData[month]?.jobCount || 0})`
   );
 
   // Prepare data series for month-wise job count
@@ -740,7 +776,7 @@ export default function Clients({
     const jobCountChartOptions = {
       series: jobCountSeries,
       chart: { type: selectChart, height: 300 },
-      xaxis: { categories: months, title: { text: "Month" } },
+      xaxis: { categories: formattedMonths, title: { text: "Month" } },
       yaxis: { title: { text: "Total Jobs" } },
       plotOptions:
         selectChart === "bar"
@@ -772,7 +808,7 @@ export default function Clients({
     const feeChartOptions = {
       series: feeSeries,
       chart: { type: selectChart, height: 300 },
-      xaxis: { categories: months, title: { text: "Month" } },
+      xaxis: { categories: formattedMonths, title: { text: "Month" } },
       yaxis: { title: { text: "Total Fee" } },
       plotOptions:
         selectChart === "bar"
@@ -790,7 +826,27 @@ export default function Clients({
   }, [selectChart, months, feeSeries]);
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full relative">
+      {isClients && (
+        <div className=" absolute top-[-2rem] right-[6rem] sm:right-[18rem] z-30 flex flex-col flex-wrap gap-3 p-3 bg-white shadow-md rounded-lg w-[9rem]">
+          {visibility.map((isVisible, index) => (
+            <label
+              key={index}
+              className="flex items-center gap-3 px-4 py-2 bg-gray-100 rounded-lg shadow-sm transition-all hover:bg-gray-200 cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={isVisible}
+                onChange={() => toggleVisibility(index)}
+                className="cursor-pointer accent-orange-600 h-5 w-5 transition-all duration-300"
+              />
+              <span className="text-gray-700 font-medium text-sm">
+                Show {index + 1}
+              </span>
+            </label>
+          ))}
+        </div>
+      )}
       {loading ? (
         <Loader />
       ) : (
@@ -853,7 +909,7 @@ export default function Clients({
                     })}
                   </p>
                 </div>
-                <div className="flex items-center ">
+                {/* <div className="flex items-center ">
                   {job?.percentageChange >= 0 ? (
                     <FaLongArrowAltUp className="text-green-500 text-[17px]" />
                   ) : (
@@ -868,10 +924,10 @@ export default function Clients({
                   >
                     {job?.percentageChange}
                   </p>
-                </div>
+                </div> */}
               </div>
             ))}
-            <div className="flex flex-col items-center min-w-[10rem]  p-4 cursor-pointer bg-gradient-to-br from-rose-100 via-rose-200 to-rose-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
+            <div className="flex flex-col items-center min-w-[10rem]  p-3 cursor-pointer bg-gradient-to-br from-rose-100 via-rose-200 to-rose-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
               <h2 className="text-lg font-medium text-gray-800 text-center mb-3">
                 Total
               </h2>
@@ -887,7 +943,7 @@ export default function Clients({
               </p>
             </div>
             {/* Unique Client */}
-            <div className="flex flex-col items-center min-w-[10rem]  p-4 cursor-pointer bg-gradient-to-br from-lime-100 via-lime-200 to-lime-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
+            <div className="flex flex-col items-center min-w-[10rem]  p-3 cursor-pointer bg-gradient-to-br from-lime-100 via-lime-200 to-lime-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
               <h2 className="text-lg font-medium text-lime-900 text-center mb-3">
                 Unique Clients
               </h2>
@@ -896,7 +952,7 @@ export default function Clients({
               </p>
             </div>
             {/* Active Client */}
-            <div className="flex flex-col items-center min-w-[10rem]  p-4 cursor-pointer bg-gradient-to-br from-amber-100 via-amber-200 to-amber-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
+            <div className="flex flex-col items-center min-w-[10rem]  p-3 cursor-pointer bg-gradient-to-br from-amber-100 via-amber-200 to-amber-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
               <h2 className="text-lg font-medium text-gray-800 text-center mb-3">
                 AU Total
               </h2>
@@ -911,78 +967,121 @@ export default function Clients({
                 })}
               </p>
             </div>
+            {/* RPC */}
+            <div className="flex flex-col items-center min-w-[10rem]  p-3 cursor-pointer bg-gradient-to-br from-indigo-100 via-indigo-200 to-indigo-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
+              <h2 className="text-lg font-medium text-gray-800 text-center mb-3">
+                RPC
+              </h2>
+              <p className="text-3xl font-bold text-gray-700 text-center">
+                {(
+                  (parseFloat(activeClients.totalFee) || 1) /
+                  activeClients.totalClients
+                )
+                  .toFixed(0)
+                  .toLocaleString(undefined, {
+                    minimumFractionDigits: 1,
+                    maximumFractionDigits: 2,
+                  })}
+              </p>
+            </div>
+            {/* RPU */}
+            <div className="flex flex-col items-center min-w-[10rem]  p-3 cursor-pointer bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
+              <h2 className="text-lg font-medium text-gray-800 text-center mb-3">
+                RPU
+              </h2>
+              <p className="text-3xl font-bold text-gray-700 text-center">
+                {((parseFloat(activeClients.totalFee) || 1) / userData.length)
+                  .toFixed(0)
+                  .toLocaleString(undefined, {
+                    minimumFractionDigits: 1,
+                    maximumFractionDigits: 2,
+                  })}
+              </p>
+            </div>
           </div>
 
           {/* -----------------------Bar/Line/Area Charts--------------- */}
-          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className={`w-full ${getGridClasses()} gap-4`}>
             {/* ------------Month Wise Department Total------------ */}
-            <div className="w-full shadow-md rounded-md cursor-pointer border p-2">
-              <div className="flex items-center justify-between  w-full gap-4">
-                <div className="flex items-center gap-4">
-                  <h3 className="text-lg sm:text-xl font-semibold text-center">
-                    Client Department Analytics
+            {visibility[0] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <div className="flex items-center justify-between  w-full gap-4">
+                  <div className="flex items-center gap-4">
+                    <h3 className="text-lg sm:text-xl font-semibold text-center">
+                      Client Department Analytics
+                    </h3>
+                    <select
+                      onChange={(e) => setSelectChart(e.target.value)}
+                      value={selectChart}
+                      className={`${style.input} shadow-md drop-shadow-md`}
+                      style={{ height: "2.2rem" }}
+                    >
+                      <option value={"bar"}>Bar Chart</option>
+                      <option value={"line"}>Line Chart</option>
+                      <option value={"area"}>Area Chart</option>
+                    </select>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-semibold">
+                    ({filterUniqueClient?.length})
                   </h3>
-                  <select
-                    onChange={(e) => setSelectChart(e.target.value)}
-                    value={selectChart}
-                    className={`${style.input} shadow-md drop-shadow-md`}
-                    style={{ height: "2.2rem" }}
-                  >
-                    <option value={"bar"}>Bar Chart</option>
-                    <option value={"line"}>Line Chart</option>
-                    <option value={"area"}>Area Chart</option>
-                  </select>
                 </div>
-                <h3 className="text-lg sm:text-xl font-semibold">
-                  ({filterUniqueClient?.length})
-                </h3>
+                {/* (Month Wise) Department Total */}
+                <div className="mt-3" id="apex-jobcount-chart" />
               </div>
-              {/* (Month Wise) Department Total */}
-              <div className="mt-3" id="apex-jobcount-chart" />
-            </div>
+            )}
             {/* ------------Month Wise Fee------------ */}
-            <div className="w-full shadow-md rounded-md cursor-pointer border p-2">
-              <div className="flex items-center gap-6">
-                <h3 className="text-lg sm:text-xl font-semibold text-center">
-                  Client Fee Analytics
-                </h3>
+            {visibility[1] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <div className="flex items-center gap-6">
+                  <h3 className="text-lg sm:text-xl font-semibold text-center">
+                    Client Fee Analytics
+                  </h3>
+                </div>
+                {/* (Month Wise) Fee Total */}
+                <div className="mt-3" id="apex-fee-chart" />
               </div>
-              {/* (Month Wise) Fee Total */}
-              <div className="mt-3" id="apex-fee-chart" />
-            </div>
-          </div>
+            )}
 
-          {/* -----------------Graphic----------------- */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
-            <div className="w-full shadow-md rounded-md cursor-pointer border p-2">
-              <h3 className="text-lg font-semibold text-center">
-                Department-wise Total Count
-              </h3>
-              <div id="department-count-chart" />
-            </div>
-            <div className="w-full shadow-md rounded-md cursor-pointer border p-2">
-              <h3 className="text-lg font-semibold text-center">
-                Department-wise Fee Count
-              </h3>
-              <div id="department-fee-chart" />
-            </div>
-          </div>
+            {/*  -------------Jobs Analysis----------- */}
+            {visibility[2] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <h3 className="text-lg font-semibold text-center">
+                  Department-wise Total Count
+                </h3>
+                <div id="department-count-chart" />
+              </div>
+            )}
+            {/* ------------------Fee Analysis----------------- */}
+            {visibility[3] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <h3 className="text-lg font-semibold text-center">
+                  Department-wise Fee Count
+                </h3>
+                <div id="department-fee-chart" />
+              </div>
+            )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
-            <div className="w-full shadow-md rounded-md cursor-pointer border p-2">
-              <JobSourcePieChart
-                workFlowData={workFlowData}
-                selectedMonth={selectedMonth}
-                selectedYear={selectedYear}
-              />
-            </div>
-            <div className="w-full shadow-md rounded-md cursor-pointer border p-2">
-              <JobSourceClientPartnerDonutCharts
-                workFlowData={workFlowData}
-                selectedMonth={selectedMonth}
-                selectedYear={selectedYear}
-              />
-            </div>
+            {/* ------------------Source Analysis----------------- */}
+            {visibility[4] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <JobSourcePieChart
+                  workFlowData={workFlowData}
+                  selectedMonth={selectedMonth}
+                  selectedYear={selectedYear}
+                  lastDays={search}
+                />
+              </div>
+            )}
+            {visibility[5] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <JobSourceClientPartnerDonutCharts
+                  workFlowData={workFlowData}
+                  selectedMonth={selectedMonth}
+                  selectedYear={selectedYear}
+                  lastDays={search}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -41,6 +41,8 @@ import { LuImport } from "react-icons/lu";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 import socketIO from "socket.io-client";
+import { Box, Typography } from "@mui/material";
+import RowTaskDetail from "./RowTaskDetail";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -129,6 +131,18 @@ const AllTasks = () => {
   const [reload, setReload] = useState(false);
 
   // console.log("tasksData:", tasksData);
+
+
+
+ 
+
+
+
+
+
+
+
+
 
   useEffect(() => {
     const timeId = localStorage.getItem("jobId");
@@ -1046,7 +1060,7 @@ const AllTasks = () => {
                 <option value="">Select</option>
                 {users?.map((jobhold, i) => (
                   <option key={i} value={jobhold?.name}>
-                    {jobhold?.name}
+                    {jobhold?.name}{console.log(users, 'THE USERS ARE>>>>>>>>>>>>>>>>>>>>>>>')}
                   </option>
                 ))}
               </select>
@@ -1687,12 +1701,15 @@ const AllTasks = () => {
       },
       //
       {
+        
         accessorKey: "status",
         header: "Task Status",
+        
         Header: ({ column }) => {
           const statusData = ["To do", "Progress", "Review", "On hold"];
           useEffect(() => {
             column.setFilterValue(state);
+            console.log(state, "THE STATE VALUE IS >>")
           }, [state]);
 
           useEffect(() => {
@@ -2207,7 +2224,7 @@ const AllTasks = () => {
     onRowSelectionChange: setRowSelection,
     state: { rowSelection },
     // enableEditing: true,
-
+        
     enablePagination: true,
     initialState: {
       pagination: { pageSize: 20 },
@@ -2242,6 +2259,25 @@ const AllTasks = () => {
         },
       },
     },
+
+//     renderDetailPanel: ({ row }) => (
+//       <Box
+//         sx={{
+//           alignItems: 'center',
+//           display: 'flex',
+//           justifyContent: 'space-around',
+//           left: '30px',
+//            maxWidth: '1000px',
+//           position: 'sticky',
+//           width: '100%',
+//         }}
+//       >
+//         {console.log(row, "THE ROW IS")}
+//  <RowTaskDetail taskId={row.original._id} getAllTasks={getAllTasks} handleDeleteTask={handleDeleteTask} setTasksData={setTasksData} setShowDetail={setShowDetail} users={users} projects={projects} setFilterData={setFilterData} />
+//       </Box>
+//     ),
+
+
   });
 
   useEffect(() => {
@@ -2366,6 +2402,27 @@ const AllTasks = () => {
       setRowSelection({});
     }
   };
+
+
+
+
+
+
+
+
+
+
+
+  const setColumnFromOutsideTable = (colKey, filterVal) => {
+
+    const col = table.getColumn(colKey);
+    return col.setFilterValue(filterVal);
+  }
+
+
+
+
+  
 
   return (
     <Layout>
@@ -2714,6 +2771,9 @@ const AllTasks = () => {
                                       onClick={() => {
                                         setActive1(user?.name);
                                         filterByProjStat(user?.name, active);
+                                        setColumnFromOutsideTable('status', 'Progress');
+                                        setColumnFromOutsideTable('jobHolder', user?.name);
+                                        
                                       }}
                                     >
                                       {user.name} (
@@ -2957,7 +3017,7 @@ const AllTasks = () => {
             ) : (
               <div className="w-full min-h-[10vh] relative -mt-[10px] ">
                 <div className="h-full hidden1 overflow-y-scroll relative">
-                  <MaterialReactTable table={table} />
+                  <MaterialReactTable table={table}   />
                 </div>
               </div>
             )}

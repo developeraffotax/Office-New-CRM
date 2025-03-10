@@ -25,7 +25,7 @@ import { format } from "date-fns";
 import { useLocation } from "react-router-dom";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import JobCommentModal from "../Jobs/JobCommentModal";
-import TaskDetail from "./TaskDetail";
+import TaskDetail from "./RowTaskDetail";
 import { MdBackspace } from "react-icons/md";
 
 // CSV Configuration

@@ -51,6 +51,7 @@ const subtask = new mongoose.Schema(
     order: {
       type: Number,
     },
+    
   },
   { timestamps: true }
 );
@@ -108,6 +109,11 @@ const taskSchema = new mongoose.Schema(
       type: Date,
       default: () => new Date(),
     },
+
+    // deleteCompletedRecurringSubtasks: {
+    //   type: Boolean,
+    //   default: false,
+    // }
   },
 
   { timestamps: true }

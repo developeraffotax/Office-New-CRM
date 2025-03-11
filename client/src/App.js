@@ -31,7 +31,7 @@ import UDashboard from "./pages/Auth/Dashboard";
 import TemplateEditor from "./pages/Tickets/TemplateEditor";
 import PDFEditor from "./pages/Editor/PDFEditor";
 import Meeting from "./pages/Meeting/Meeting";
-import HR from "./pages/HR/HR";
+import HR from "./pages/HR/HR"; 
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });

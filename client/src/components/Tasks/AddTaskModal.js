@@ -31,6 +31,7 @@ export default function AddTaskModal({
   const [projectName, setProjectName] = useState("");
   const [recurring, setRecurring] = useState("");
   const [nextRecurringDate, setNextRecurringDate] = useState("");
+  const [deleteCompletedRecurringSubtasks, setDeleteCompletedRecurringSubtasks] = useState(false);
 
   useEffect(() => {
     if (taskDetal) {
@@ -47,17 +48,19 @@ export default function AddTaskModal({
       setNextRecurringDate(
         format(new Date(taskDetal.nextRecurringDate), "yyyy-MM-dd")
       );
+      setDeleteCompletedRecurringSubtasks(taskDetal?.deleteCompletedRecurringSubtasks )
     }
   }, [taskId, taskDetal]);
 
   // ---------Create / Update task---------
   const handleTask = async (e) => {
     e.preventDefault();
+    
     setLoading(true);
     try {
       if (taskId) {
         const { data } = await axios.put(
-          `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/task/${taskId}`,
+          `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/task/${taskId}`,   
           {
             projectId,
             jobHolder,
@@ -69,6 +72,7 @@ export default function AddTaskModal({
             label,
             recurring,
             nextRecurringDate,
+            deleteCompletedRecurringSubtasks
           }
         );
         if (data) {
@@ -96,6 +100,7 @@ export default function AddTaskModal({
             label,
             recurring,
             nextRecurringDate,
+            deleteCompletedRecurringSubtasks
           }
         );
         if (data) {
@@ -244,6 +249,22 @@ export default function AddTaskModal({
             />
             <span>Recurring Date</span>
           </div>
+
+         
+          <div className=" flex items-start justify-start w-full gap-2">
+            <div className="flex items-center   cursor-pointer relative"  >
+              
+              <input id="deleteCompletedRecurringSubtasks" type="checkbox" checked={deleteCompletedRecurringSubtasks} onChange={(e) => setDeleteCompletedRecurringSubtasks(e.target.checked)} className="peer h-5 w-5 cursor-pointer transition-all appearance-none rounded   hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600" />
+              <span className="absolute text-white opacity-0 peer-checked:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"> <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" stroke="currentColor" strokeWidth="1" > <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" ></path> </svg> </span>
+            </div>
+              <label htmlFor="deleteCompletedRecurringSubtasks" className="cursor-pointer">Delete Completed Subtasks</label>
+          </div>
+
+
+          
+
+
+
           <div className="flex items-center justify-end">
             <button
               className={`${style.button1} text-[15px] `}

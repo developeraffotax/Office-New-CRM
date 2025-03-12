@@ -23,6 +23,7 @@ export const createTask = async (req, res) => {
       status,
       recurring,
       nextRecurringDate,
+      deleteCompletedRecurringSubtasks,
     } = req.body;
 
     if (!projectId) {
@@ -66,6 +67,7 @@ export const createTask = async (req, res) => {
       status,
       recurring: recurring ? recurring : null,
       nextRecurringDate: updatedNextRecurringDate.toISOString(),
+      deleteCompletedRecurringSubtasks,
     });
 
     // Push activity to activities array
@@ -564,6 +566,7 @@ export const updateTask = async (req, res) => {
       lead,
       recurring,
       nextRecurringDate,
+      deleteCompletedRecurringSubtasks
     } = req.body;
 
     if (!projectId) {
@@ -622,6 +625,7 @@ export const updateTask = async (req, res) => {
         lead,
         recurring: recurring ? recurring : null,
         nextRecurringDate: updatedNextRecurringDate.toISOString(),
+        deleteCompletedRecurringSubtasks
       },
       { new: true }
     );
@@ -1142,7 +1146,19 @@ export const autoCreateRecurringTasks = async (req, res) => {
       let newStartDate = calculateStartDate(task.startDate, task.recurring);
       let newDeadline = calculateStartDate(task.deadline, task.recurring);
 
-      await taskModel.create({
+      const subtasksIncludingCompleted = task.subtasks?.map((subtask) => ({
+        ...subtask,
+        status: "process",
+      }));
+
+      console.log(subtasksIncludingCompleted, "SUBTASKS INC COMPLETED")
+
+      const subtasksNotIncludingCompleted = task.subtasks?.filter(el => el.status !== "complete").map((subtask) => ({
+        ...subtask,
+        status: "process",
+      }));
+
+      const result  = await taskModel.create({
         project: task.project,
         jobHolder: task.jobHolder,
         task: `${task.task}`,
@@ -1153,15 +1169,40 @@ export const autoCreateRecurringTasks = async (req, res) => {
         recurring: task.recurring,
         label: task?.label,
         status: "Progress",
-        subtasks: task.subtasks.map((subtask) => ({
-          ...subtask,
-          status: "process",
-        })),
+        subtasks: task.deleteCompletedRecurringSubtasks ? subtasksNotIncludingCompleted : subtasksIncludingCompleted,
         nextRecurringDate: calculateStartDate(
           task.nextRecurringDate,
           task.recurring
         ),
+
+        deleteCompletedRecurringSubtasks: task.deleteCompletedRecurringSubtasks
       });
+
+
+      console.log(result)
+      // if(task.deleteCompletedRecurringSubtasks) {
+      //   await taskModel.create({
+      //     project: task.project,
+      //     jobHolder: task.jobHolder,
+      //     task: `${task.task}`,
+      //     hours: task.hours,
+      //     startDate: newStartDate,
+      //     deadline: newDeadline,
+      //     lead: task.lead,
+      //     recurring: task.recurring,
+      //     label: task?.label,
+      //     status: "Progress",
+      //     subtasks: task.deleteCompletedRecurringSubtasks ? subtasksNotIncludingCompleted : subtasksIncludingCompleted,
+      //     nextRecurringDate: calculateStartDate(
+      //       task.nextRecurringDate,
+      //       task.recurring
+      //     ),
+  
+      //     deleteCompletedRecurringSubtasks: task.deleteCompletedRecurringSubtasks
+      //   });
+      // }
+
+       
     }
 
     if (res) {

@@ -110,10 +110,10 @@ const taskSchema = new mongoose.Schema(
       default: () => new Date(),
     },
 
-    // deleteCompletedRecurringSubtasks: {
-    //   type: Boolean,
-    //   default: false,
-    // }
+    deleteCompletedRecurringSubtasks: {
+      type: Boolean,
+      default: false,
+    }
   },
 
   { timestamps: true }

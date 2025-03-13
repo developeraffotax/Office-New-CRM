@@ -2989,6 +2989,16 @@ export default function AllJobs() {
     label: type,
   }));
 
+
+  const setColumnFromOutsideTable = (colKey, filterVal) => {
+
+    const col = table.getColumn(colKey);
+
+    console.log(col, 'THE COLUMN IS ');
+    return col.setFilterValue(filterVal);
+  }
+
+
   return (
     <Layout>
       <div className="w-full h-[100%] py-4 px-2 sm:px-4 overflow-y-auto ">
@@ -3508,6 +3518,9 @@ export default function AllJobs() {
                                   onClick={() => {
                                     setActive1(user?.name);
                                     filterByDepStat(user?.name, active);
+
+                                    setColumnFromOutsideTable("Job_Status", "Progress");
+                                    setColumnFromOutsideTable("Assign", user?.name);
                                   }}
                                 >
                                   {user?.name} (

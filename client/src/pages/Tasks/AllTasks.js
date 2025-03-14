@@ -43,6 +43,7 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 import socketIO from "socket.io-client";
 import { Box, Typography } from "@mui/material";
+import Subtasks from "./Subtasks";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });

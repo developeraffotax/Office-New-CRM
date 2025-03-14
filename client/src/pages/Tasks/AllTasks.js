@@ -38,6 +38,7 @@ import AddLabel from "../../components/Modals/AddLabel";
 import TaskDetail from "./TaskDetail";
 import { GrUpdate } from "react-icons/gr";
 import { LuImport } from "react-icons/lu";
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 import socketIO from "socket.io-client";
@@ -131,7 +132,6 @@ const AllTasks = () => {
   const [reload, setReload] = useState(false);
 
   // console.log("tasksData:", tasksData);
-
 
 
  
@@ -974,6 +974,7 @@ const AllTasks = () => {
         maxSize: 200,
         size: 160,
         grow: false,
+        
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">
@@ -1005,13 +1006,14 @@ const AllTasks = () => {
           const projectId = row.original.project._id;
 
           return (
-            <select
+            
+              <select
               value={projectId}
               onChange={(e) => {
                 const selectedProjectId = e.target.value;
                 updateTaskProject(row.original._id, selectedProjectId);
               }}
-              className="w-full h-[2rem] rounded-md bg-transparent border-none outline-none"
+              className="w-full h-[2rem] rounded-md bg-transparent border-none outline-none    "
             >
               <option value="">Select</option>
               {allProjects &&
@@ -1021,6 +1023,7 @@ const AllTasks = () => {
                   </option>
                 ))}
             </select>
+            
           );
         },
         filterFn: "equals",
@@ -1125,6 +1128,19 @@ const AllTasks = () => {
           const [allocateTask, setAllocateTask] = useState(task);
           const [showEdit, setShowEdit] = useState(false);
 
+          
+          const [showSubtasks, setShowSubtasks] = useState(false);
+          const [showSubtaskId, setShowSubtaskId] = useState("");
+
+          const handleShowSubtasks = () => {
+             
+            if(showSubtaskId === row.original._id){
+              setShowSubtaskId("");
+            }else{
+              setShowSubtaskId(row.original._id);
+            }
+          }
+           
           useEffect(() => {
             setAllocateTask(row.original.task);
           }, [row.original]);
@@ -1134,7 +1150,10 @@ const AllTasks = () => {
             setShowEdit(false);
           };
           return (
-            <div className="w-full h-full ">
+            <div className="w-full flex items-start justify-start gap-1 flex-col ">
+
+              <div  className="w-full   flex items-center justify-between gap-1 flex-row ">
+              <div className="w-[90%] h-full ">
               {showEdit ? (
                 <input
                   type="text"
@@ -1163,6 +1182,33 @@ const AllTasks = () => {
                   </p>
                 </div>
               )}
+            </div>
+
+            <div className="w-[10%]">
+              <span className={`${showSubtaskId === row.original._id ? "text-orange-500" : "text-gray-500"} cursor-pointer hover:text-orange-500`} onClick={() => {
+                      setTaskID(row.original._id);
+                      setProjectName(row.original.project.projectName);
+                      handleShowSubtasks()
+                    }}>
+                <AssignmentIcon />
+              </span>
+
+            </div>
+
+
+            </div>
+
+
+
+             {
+                 showSubtaskId === row.original._id && <div className={`  w-full h-full bg-gradient-to-br from-orange-200  rounded-lg shadow-md text-black `}>
+                <Subtasks taskId={showSubtaskId} />
+                </div>
+              }
+
+
+
+
             </div>
           );
         },
@@ -1353,7 +1399,7 @@ const AllTasks = () => {
           };
 
           return (
-            <div className="w-full flex  ">
+            <div className="w-full flex   ">
               {!showStartDate ? (
                 <p onDoubleClick={() => setShowStartDate(true)}>
                   {format(new Date(startDate), "dd-MMM-yyyy")}
@@ -1701,7 +1747,7 @@ const AllTasks = () => {
       },
       //
       {
-        
+         
         accessorKey: "status",
         header: "Task Status",
         
@@ -2201,6 +2247,10 @@ const AllTasks = () => {
     // table.resetColumnFilters();
   };
 
+
+
+
+
   const table = useMaterialReactTable({
     columns,
     data:
@@ -2208,10 +2258,13 @@ const AllTasks = () => {
         ? tasksData
         : filterData) || [],
     getRowId: (row) => row._id,
+    
     enableStickyHeader: true,
     enableStickyFooter: true,
     // columnFilterDisplayMode: "popover",
     muiTableContainerProps: { sx: { maxHeight: "860px" } },
+
+    
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -2222,8 +2275,10 @@ const AllTasks = () => {
     enableBottomToolbar: true,
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
-    state: { rowSelection },
+    state: { rowSelection,  },
     // enableEditing: true,
+    
+
         
     enablePagination: true,
     initialState: {
@@ -2244,8 +2299,11 @@ const AllTasks = () => {
     muiTableBodyCellProps: {
       sx: {
         border: "1px solid rgba(203, 201, 201, 0.5)",
+        
+        
       },
     },
+
     muiTableProps: {
       sx: {
         "& .MuiTableHead-root": {
@@ -3179,3 +3237,9 @@ const AllTasks = () => {
 };
 
 export default AllTasks;
+
+
+
+
+
+// bg-gradient-to-br from-[#ffe4e6] 

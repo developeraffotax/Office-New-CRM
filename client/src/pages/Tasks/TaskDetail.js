@@ -21,6 +21,7 @@ import { IoCloseCircleOutline } from "react-icons/io5";
 import { RiLoaderFill } from "react-icons/ri";
 import { BiBellPlus } from "react-icons/bi";
 import { BiSolidBellPlus } from "react-icons/bi";
+import { MdOutlineDriveFileMove } from "react-icons/md";
 import Reminder from "../../utlis/Reminder";
 
 export default function TaskDetail({
@@ -32,6 +33,9 @@ export default function TaskDetail({
   users,
   projects,
   setFilterData,
+  tasksData,
+  assignedPerson,
+   
 }) {
   const [taskDetal, setTaskDetal] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -48,6 +52,63 @@ export default function TaskDetail({
   const [timerId, setTimerId] = useState("");
   const [showReminder, setShowReminder] = useState(false);
   const initialLoad = useRef(true);
+
+  const [showMoveProject, setShowMoveProject] = useState(false);
+  const [usersTasksArr, setUsersTasksArr] = useState([]);
+  
+  
+
+   // ---------Getting the task of specific person  ----------->
+  useEffect(() => {
+    setUsersTasksArr(tasksData?.filter((item) => item?.jobHolder === assignedPerson));
+  }, []);
+
+
+  const moveSubtask = async (subtask, fromTask, toTask, subTaskIdToDlt) => {
+    console.log("subtask:", subtask);
+    console.log("fromTask:", fromTask);
+    console.log("toTask:", toTask);
+
+
+   try {
+    const createPromise = axios.post( `${process.env.REACT_APP_API_URL}/api/v1/tasks/create/subTask/${toTask}`, { subTask: subtask } );
+    const deletePromise = axios.delete( `${process.env.REACT_APP_API_URL}/api/v1/tasks/delete/subtask/${fromTask}/${subTaskIdToDlt}` );
+
+    const [createRes, deleteRes] = await Promise.all([createPromise, deletePromise]);
+
+    console.log("createRes:", createRes, "deleteRes:", deleteRes);
+    if (createRes.status === 200 && deleteRes.status === 200) {
+      toast.success("Subtask moved successfully!");
+      setSubtask("");
+      getSingleTask();
+    }  
+   } catch (error) {
+    console.log(error);
+    toast.error(error.response.data.message);
+   }
+
+    
+
+
+ 
+
+
+
+
+
+  }
+
+
+
+
+
+
+
+
+
+
+
+
 
   // ---------Stop Timer ----------->
   const handleStopTimer = () => {
@@ -83,6 +144,7 @@ export default function TaskDetail({
   };
 
   useEffect(() => {
+    // console.log("tasksData:", tasksData);
     getSingleTask();
     // eslint-disable-next-line
   }, [taskId]);
@@ -567,6 +629,7 @@ export default function TaskDetail({
                               {subTaskData?.map(
                                 ({ _id, subTask, status }, index) => (
                                   <Draggable
+                                    
                                     key={_id}
                                     draggableId={_id}
                                     index={index}
@@ -579,21 +642,26 @@ export default function TaskDetail({
                                         style={{
                                           ...provided.draggableProps.style,
                                           padding: "8px",
-                                          marginBottom: "4px",
+                                          marginBottom: "8px",
                                           backgroundColor:
                                             status === "complete"
                                               ? "#d4edda"
                                               : "#f3f3f3",
                                           borderRadius: "4px",
-                                          border: "1px solid #ddd",
+                                          border: "1px solid #5c5c5c",
                                           display: "flex",
                                           alignItems: "center",
                                           justifyContent: "space-between",
                                           marginLeft: "-.2rem",
+
+                                          // position: "relative",
                                         }}
-                                        className="flex items-center justify-between gap-2"
+                                        className="flex items-center flex-col justify-center gap-1"
                                       >
-                                        <div className="flex items-center gap-2 w-full">
+                                        <div className="w-full flex items-center flex-row justify-between gap-2">
+
+
+                                        <div className="flex items-center gap-2 w-full relative">
                                           <div className="w-6 h-full">
                                             <input
                                               type="checkbox"
@@ -618,6 +686,7 @@ export default function TaskDetail({
                                         </div>
 
                                         <div className="flex items-center gap-1">
+                                        
                                           <span
                                             className="p-1 cursor-pointer"
                                             onClick={() => setSubtask(subTask)}
@@ -636,6 +705,34 @@ export default function TaskDetail({
                                               title="Delete Subtask"
                                             />
                                           </span>
+
+                                          {/* <span
+                                            className="p-1 cursor-pointer"
+                                            onClick={() => setShowMoveProject(true)}
+                                          >
+                                            <MdOutlineDriveFileMove  className="h-5 w-5 cursor-pointer text-gray-800 hover:text-sky-600" />
+                                          </span> */}
+                                        </div>
+
+
+                                        </div>
+
+                                        <div className="     w-full flex justify-start  ">
+
+                                          {
+                                              (
+                                              <select  defaultValue={taskId} className="w-[50%] py-1 px-2 bg-transparent border border-gray-300 rounded-md cursor-pointer  " onChange={(e) => moveSubtask(subTask, taskId, e.target.value, _id)}>
+                                                  {
+                                                    usersTasksArr?.map((item) => {
+                                                      
+                                                      return (
+                                                        <option  value={item?._id} key={item?._id}  >{item?.task}</option>
+                                                      )
+                                                    })
+                                                  }
+                                              </select>
+                                          )
+                                          }
                                         </div>
                                       </li>
                                     )}

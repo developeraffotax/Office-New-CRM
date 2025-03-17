@@ -190,6 +190,7 @@ export const getAllEmails = async (ticketsList) => {
     }
   } catch (error) {
     console.log("Error while get all email's to Gmail", error);
+    throw error;
   }
 };
 
@@ -308,8 +309,12 @@ const getDetailedThreads = async (threadId, accessToken) => {
     if (error.response && error.response.status === 404) {
       // Mail not found, skip this thread ID
       return [];
+    } else if (error.response && error.response.status === 429) {
+      // Mail not found, skip this thread ID
+      return;
     } else {
       console.log("Error while getting Thread details:", error);
+      throw error;
       //throw new Error(error.message);
     }
   }

@@ -168,20 +168,128 @@ export const sendEmail = async (req, res) => {
 //   }
 // };
 
+
+
+
+
+
+
+
+
+
+
+
+
+// export const getAllSendTickets = async (req, res, next) => {
+//   try {
+    
+//     const emails = await ticketModel.find({ state: { $ne: "complete" } }).select( "clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt" );
+
+//     res.status(200).send({ success: true, message: "All email list!", emails: emails, });
+
+
+    
+//     const ticketsList = emails.map((email) => ({
+//       threadId: email.mailThreadId,
+//       companyName: email.company,
+//     }));
+
+//     const emailData = await getAllEmails(ticketsList);
+
+//     console.log("emailData:", emailData);
+//     //NEED TO UPDATE THE BELOW CODE 
+
+   
+
+       
+//     for (const email of emailData.detailedThreads) {
+       
+//       const matchingTicket = await ticketModel.findOne({
+//         mailThreadId: email.threadId,
+//       });
+
+//       console.log("matchingTicket:", matchingTicket);
+
+
+
+
+//       if (matchingTicket) {
+//         let newStatus = "Unread";
+
+//         if (email.readStatus === "Sent") {
+//           newStatus = "Send";
+//         } else if (email.readStatus === "Unread") {
+//           newStatus = "Unread";
+//         } else if (email.readStatus === "Read") {
+//           newStatus = "Read";
+//         }
+
+//         await ticketModel.updateOne(
+//           { mailThreadId: email.threadId },
+//           {
+//             $set: {
+//               status: newStatus,
+//             },
+//           },
+//           { new: true }
+//         );
+//         // console.log(
+//         //   `Updated ticket ${matchingTicket._id} with new status: ${newStatus}`
+//         // );
+
+//         const user = await userModel.findOne({
+//           name: matchingTicket.lastMessageSentBy,
+//         });
+
+//         // Create a notification
+//         if (email.readStatus === "Unread") {
+//           const notiUser = user._id;
+
+//           await notificationModel.create({
+//             title: "Reply to a ticket received",
+//             redirectLink: `/ticket/detail/${matchingTicket._id}`,
+//             description: `You've received a response to a ticket with the subject "${matchingTicket.subject}" from the company "${matchingTicket.companyName}" and the client's name "${matchingTicket.clientName}".`,
+//             taskId: matchingTicket._id,
+//             userId: notiUser,
+//           });
+//         }
+//       } else {
+//         console.log(`No matching ticket found for threadId: ${email.threadId}`);
+//       }
+//     }
+
+    
+    
+
+//   } catch (error) {
+//     // next(error);
+//     console.log(error);
+//     res.status(500).send({
+//       success: false,
+//       message: "Error while getting emails!",
+//       error: error,
+//     });
+//   }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
 export const getAllSendTickets = async (req, res, next) => {
   try {
     
-    const emails = await ticketModel
-      .find({ state: { $ne: "complete" } })
-      .select(
-        "clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt"
-      );
+    const emails = await ticketModel.find({ state: { $ne: "complete" } }).select( "clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt" );
 
-      res.status(200).send({
-      success: true,
-      message: "All email list!",
-      emails: emails,
-    });
+    res.status(200).send({ success: true, message: "All email list!", emails: emails, });
 
 
     
@@ -192,55 +300,101 @@ export const getAllSendTickets = async (req, res, next) => {
 
     const emailData = await getAllEmails(ticketsList);
 
+    // console.log("emailData:", emailData);
+    //NEED TO UPDATE THE BELOW CODE 
+   
+
+    if(!emailData.detailedThreads) {
+      return res.status(400).send({ success: false, message: "No email data found!" });
+    }
+
+    const threadIds = emailData.detailedThreads.map(email => {
+      if(email?.threadId) {
+        return email.threadId;
+      }
+    });
+
+
+    const matchingTickets = await ticketModel.find({
+      mailThreadId: { $in: threadIds }
+    });
+
+
+    console.log("matchingTicket:", matchingTickets);
+
+
+    // Map the tickets to the corresponding threadId for easier lookup
+      const ticketMap = matchingTickets.reduce((map, ticket) => {
+        map[ticket.mailThreadId] = ticket;
+        return map;
+      }, {});
+
+
+       
     for (const email of emailData.detailedThreads) {
-      const matchingTicket = await ticketModel.findOne({
-        mailThreadId: email?.threadId,
-      });
-
-      if (matchingTicket) {
-        let newStatus = "Unread";
-
-        if (email.readStatus === "Sent") {
-          newStatus = "Send";
-        } else if (email.readStatus === "Unread") {
-          newStatus = "Unread";
-        } else if (email.readStatus === "Read") {
-          newStatus = "Read";
-        }
-
-        await ticketModel.updateOne(
-          { mailThreadId: email.threadId },
-          {
-            $set: {
-              status: newStatus,
+       
+      // const matchingTicket = await ticketModel.findOne({
+      //   mailThreadId: email.threadId,
+      // });
+      
+      
+      
+      if(email?.threadId) {  
+        const matchingTicket = ticketMap[email.threadId];
+        if (matchingTicket) {
+          let newStatus = "Unread";
+  
+          if (email.readStatus === "Sent") {
+            newStatus = "Send";
+          } else if (email.readStatus === "Unread") {
+            newStatus = "Unread";
+          } else if (email.readStatus === "Read") {
+            newStatus = "Read";
+          }
+  
+          await ticketModel.updateOne(
+            { mailThreadId: email.threadId },
+            {
+              $set: {
+                status: newStatus,
+              },
             },
-          },
-          { new: true }
-        );
-        // console.log(
-        //   `Updated ticket ${matchingTicket._id} with new status: ${newStatus}`
-        // );
-
-        const user = await userModel.findOne({
-          name: matchingTicket.lastMessageSentBy,
-        });
-
-        // Create a notification
-        if (email.readStatus === "Unread") {
-          const notiUser = user._id;
-
-          await notificationModel.create({
-            title: "Reply to a ticket received",
-            redirectLink: `/ticket/detail/${matchingTicket._id}`,
-            description: `You've received a response to a ticket with the subject "${matchingTicket.subject}" from the company "${matchingTicket.companyName}" and the client's name "${matchingTicket.clientName}".`,
-            taskId: matchingTicket._id,
-            userId: notiUser,
+            { new: true }
+          );
+          // console.log(
+          //   `Updated ticket ${matchingTicket._id} with new status: ${newStatus}`
+          // );
+  
+          const user = await userModel.findOne({
+            name: matchingTicket.lastMessageSentBy,
           });
-        }
+  
+          // Create a notification
+          if (email.readStatus === "Unread") {
+            const notiUser = user._id;
+  
+            await notificationModel.create({
+              title: "Reply to a ticket received",
+              redirectLink: `/ticket/detail/${matchingTicket._id}`,
+              description: `You've received a response to a ticket with the subject "${matchingTicket.subject}" from the company "${matchingTicket.companyName}" and the client's name "${matchingTicket.clientName}".`,
+              taskId: matchingTicket._id,
+              userId: notiUser,
+            });
+          }
+        }  
+
+
+
+
+
       } else {
-        console.log(`No matching ticket found for threadId: ${email.threadId}`);
+        console.log(`No matching ticket found for threadId: ${email?.threadId}`);
       }
     }
+
+    
+    
+
   } catch (error) {
     // next(error);
     console.log(error);
@@ -251,6 +405,29 @@ export const getAllSendTickets = async (req, res, next) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Get Single Email detail
 

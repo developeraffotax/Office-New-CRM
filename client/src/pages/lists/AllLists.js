@@ -17,7 +17,7 @@ import HR from "../../components/MyLists/Hr";
 
 export default function AllLists() {
   const { auth } = useAuth();
-  const [selectedTab, setSelectedTab] = useState("Hr");
+  const [selectedTab, setSelectedTab] = useState("Tasks");
   const [tasksData, setTasksData] = useState([]);
 
   const [hrTasks, setHrTasks] = useState([]);

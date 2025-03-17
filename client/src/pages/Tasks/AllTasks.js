@@ -1036,6 +1036,7 @@ const AllTasks = () => {
       {
         accessorKey: "jobHolder",
         header: "Job Holder",
+         
         Header: ({ column }) => {
           const user = auth?.user?.name;
 
@@ -1064,7 +1065,7 @@ const AllTasks = () => {
                 <option value="">Select</option>
                 {users?.map((jobhold, i) => (
                   <option key={i} value={jobhold?.name}>
-                    {jobhold?.name}{console.log(users, 'THE USERS ARE>>>>>>>>>>>>>>>>>>>>>>>')}
+                    {jobhold?.name}
                   </option>
                 ))}
               </select>
@@ -1151,7 +1152,7 @@ const AllTasks = () => {
             setShowEdit(false);
           };
           return (
-            <div className="w-full flex items-start justify-start gap-1 flex-col ">
+            <div className="w-full flex items-start justify-start gap-1 flex-col "  >
 
               <div  className="w-full   flex items-center justify-between gap-1 flex-row ">
               <div className="w-[90%] h-full ">
@@ -2319,22 +2320,6 @@ const AllTasks = () => {
       },
     },
 
-//     renderDetailPanel: ({ row }) => (
-//       <Box
-//         sx={{
-//           alignItems: 'center',
-//           display: 'flex',
-//           justifyContent: 'space-around',
-//           left: '30px',
-//            maxWidth: '1000px',
-//           position: 'sticky',
-//           width: '100%',
-//         }}
-//       >
-//         {console.log(row, "THE ROW IS")}
-//  <RowTaskDetail taskId={row.original._id} getAllTasks={getAllTasks} handleDeleteTask={handleDeleteTask} setTasksData={setTasksData} setShowDetail={setShowDetail} users={users} projects={projects} setFilterData={setFilterData} />
-//       </Box>
-//     ),
 
 
   });
@@ -3208,6 +3193,9 @@ const AllTasks = () => {
                 users={users}
                 projects={projects}
                 setFilterData={setFilterData}
+                tasksData={tasksData}
+                
+                assignedPerson = {(table.getRow(taskID)).original.jobHolder}
               />
             </div>
           )}

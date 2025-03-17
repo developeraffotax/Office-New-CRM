@@ -739,7 +739,7 @@ const AllTasks = () => {
 
   const copyTask = async (originalTask) => {
     const taskCopy = { ...originalTask };
-    taskCopy.task = "";
+    taskCopy.task = "Enter Task Here";
     console.log("taskCopy", taskCopy);
 
     // delete taskCopy._id;

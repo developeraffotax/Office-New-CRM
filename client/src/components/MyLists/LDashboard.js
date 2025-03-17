@@ -352,6 +352,8 @@ export default function Dashboard({ workFlowData, uniqueClients }) {
               workFlowData={workFlowData}
               uniqueClients={uniqueClients}
               loading={false}
+              userData={userData}
+
             />
           </div>
         ) : selectedTab === "Sales" ? (
@@ -361,6 +363,7 @@ export default function Dashboard({ workFlowData, uniqueClients }) {
               selectedYear={selectedYear}
               salesData={salesData}
               uniqueClients={uniqueClients.length}
+              
             />
           </div>
         ) : selectedTab === "HR" ? (

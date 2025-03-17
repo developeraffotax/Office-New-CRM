@@ -101,6 +101,17 @@ app.use("/", (req, res) => {
   res.send(`<h1 style="color:red;">Server is running...</h1>`);
 });
 
+// Error-handling middleware (placed after all routes and other middleware)
+app.use((err, req, res, next) => {
+  console.error(err.message); // Log the error message for debugging
+  
+  // Send a response to the client
+  res.status(500).json({
+      message: 'Something went wrong!',
+      error: err.message // Optionally include the error message
+  });
+});
+
 // Listening
 const PORT = process.env.PORT || 8080;
 

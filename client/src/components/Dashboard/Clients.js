@@ -990,7 +990,7 @@ export default function Clients({
                 RPU
               </h2>
               <p className="text-3xl font-bold text-gray-700 text-center">
-                {((parseFloat(activeClients.totalFee) || 1) / userData.length)
+                {((parseFloat(activeClients.totalFee) || 1) / userData?.length)
                   .toFixed(0)
                   .toLocaleString(undefined, {
                     minimumFractionDigits: 1,

@@ -13,11 +13,14 @@ import Goals from "../../components/MyLists/Goals";
 import Subscriptions from "../../components/MyLists/Subscriptions";
 import Timesheet from "../../components/TimeSheet/Timesheet";
 import Dashboard from "../../components/MyLists/LDashboard";
+import HR from "../../components/MyLists/Hr";
 
 export default function AllLists() {
   const { auth } = useAuth();
-  const [selectedTab, setSelectedTab] = useState("Tasks");
+  const [selectedTab, setSelectedTab] = useState("Hr");
   const [tasksData, setTasksData] = useState([]);
+
+  const [hrTasks, setHrTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [tableData, setTableData] = useState([]);
   const [emailData, setEmailData] = useState([]);
@@ -37,6 +40,34 @@ export default function AllLists() {
   const refreshHandler = () => {
     childRef.current.refreshData();
   };
+
+
+    // --------------Get All Hr Tasks---------->
+    const getAllHrTasks = async () => {
+     
+      setLoading(true);
+      try {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/hr/all/tasks`
+        );
+
+        console.log("hr tasks",data);
+        setHrTasks(data?.tasks);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+       
+      }
+    };
+  
+    useEffect(() => {
+      getAllHrTasks();
+      // eslint-disable-next-line
+    }, []);
+
+
+
 
   // Get All Tasks
   const getAllTasks = async () => {
@@ -338,6 +369,23 @@ export default function AllLists() {
               >
                 TimeSheet
               </button>
+
+
+              <button
+                className={`py-[6px] hidden sm:block px-2 min-w-[8rem] text-[13px] sm:text-[15px] outline-none transition-all border-l-2 border-orange-600 duration-300 w-[8.5rem]  ${
+                  selectedTab === "Hr"
+                    ? "bg-orange-500 text-white scale-105 shadow-md"
+                    : "text-black bg-gray-100 hover:bg-slate-200"
+                }`}
+                onClick={() => {
+                  setSelectedTab("Hr");
+                }}
+              >
+                HR
+              </button>
+
+
+
               <button
                 className={`py-[6px] px-2 min-w-[8rem] text-[13px] sm:text-[15px] outline-none w-[8.5rem] border-l-2 border-orange-600  transition-all duration-300   ${
                   selectedTab === "Dashboard"
@@ -415,6 +463,14 @@ export default function AllLists() {
               ref={tasksRef}
               goalsData={goalsData}
               setGoalsData={setGoalsData}
+              childRef={childRef}
+              setIsload={setIsload}
+            />
+          ) : selectedTab === "Hr" ? (
+            <HR
+              ref={tasksRef}
+              taskData={hrTasks}
+              setTaskData={setHrTasks}
               childRef={childRef}
               setIsload={setIsload}
             />

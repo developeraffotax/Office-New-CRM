@@ -168,20 +168,23 @@ export const sendEmail = async (req, res) => {
 //   }
 // };
 
-export const getAllSendTickets = async (req, res) => {
+export const getAllSendTickets = async (req, res, next) => {
   try {
+    
     const emails = await ticketModel
       .find({ state: { $ne: "complete" } })
       .select(
         "clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt"
       );
 
-    res.status(200).send({
+      res.status(200).send({
       success: true,
       message: "All email list!",
       emails: emails,
     });
 
+
+    
     const ticketsList = emails.map((email) => ({
       threadId: email.mailThreadId,
       companyName: email.company,
@@ -191,7 +194,7 @@ export const getAllSendTickets = async (req, res) => {
 
     for (const email of emailData.detailedThreads) {
       const matchingTicket = await ticketModel.findOne({
-        mailThreadId: email.threadId,
+        mailThreadId: email?.threadId,
       });
 
       if (matchingTicket) {
@@ -239,6 +242,7 @@ export const getAllSendTickets = async (req, res) => {
       }
     }
   } catch (error) {
+    // next(error);
     console.log(error);
     res.status(500).send({
       success: false,

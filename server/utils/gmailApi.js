@@ -174,10 +174,10 @@ export const getAllEmails = async (ticketsList) => {
       );
 
       // Filter out null values (skipped thread IDs)
-      detailedThreads = detailedThreads.filter((thread) => thread !== null);
+      detailedThreads = detailedThreads?.filter((thread) => thread !== null);
 
-      const unreadCount = detailedThreads.reduce((count, thread) => {
-        if (thread.readStatus === "Unread") {
+      const unreadCount = detailedThreads?.reduce((count, thread) => {
+        if (thread?.readStatus === "Unread") {
           return count + 1;
         }
         return count;
@@ -309,7 +309,8 @@ const getDetailedThreads = async (threadId, accessToken) => {
       // Mail not found, skip this thread ID
       return [];
     } else {
-      throw new Error(error.message);
+      console.log("Error while getting Thread details:", error);
+      //throw new Error(error.message);
     }
   }
 };

@@ -157,6 +157,8 @@ export const getAllEmails = async (ticketsList) => {
     const outSourcingAccessToken = await getOutsourceAccessToken();
 
     if (!accessToken || !outSourcingAccessToken) {
+      console.log("No access token found");
+      return;
       getAllEmails(ticketsList);
     } else {
       let detailedThreads = await Promise.all(

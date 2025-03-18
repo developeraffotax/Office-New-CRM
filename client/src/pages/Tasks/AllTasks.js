@@ -143,8 +143,6 @@ const AllTasks = () => {
 
 
 
-
-
   useEffect(() => {
     const timeId = localStorage.getItem("jobId");
     setTimerId(JSON.parse(timeId));
@@ -2449,7 +2447,23 @@ const AllTasks = () => {
 
 
 
+// To Change the total hours when filter is applied inside the table
+useEffect(()=>{
+  
+  console.log("table.getFilteredRowModel().rows.length", table.getFilteredRowModel().rows.length)
+  const showingRows = table.getFilteredRowModel().rows  
+  setTotalHours((prev) => {
 
+    const totalHours = showingRows.reduce((acc, row) => {
+      const hours = row.original.hours;
+      return acc + Number(hours);
+    }, 0);
+
+    return totalHours.toFixed(0); 
+
+
+  })
+}, [table.getFilteredRowModel().rows])
 
 
 

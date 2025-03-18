@@ -202,6 +202,33 @@ export default function AllJobs() {
     "Inactive",
   ];
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // Get Auth Access
   useEffect(() => {
     if (auth.user) {
@@ -2988,6 +3015,49 @@ export default function AllJobs() {
     value: type,
     label: type,
   }));
+
+
+
+
+
+
+
+
+
+
+
+// To Change the total hours when filter is applied inside the table
+useEffect(()=>{
+  console.log("FIlter DATA>>>>>>>>>>>>", filterData)
+
+  console.log('table.getFilteredRowModel()', table.getFilteredRowModel())
+
+  const showingRows = table.getFilteredRowModel().rows  
+
+  setTotalHours((prev) => {
+
+    const totalHours = showingRows.reduce((acc, row) => {
+      const hours = row.original.totalHours;
+      return acc + Number(hours);
+    }, 0);
+
+    return totalHours.toFixed(0); 
+
+
+  })
+}, [table.getFilteredRowModel().rows ])
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   const setColumnFromOutsideTable = (colKey, filterVal) => {

@@ -1185,7 +1185,7 @@ const AllTasks = () => {
             </div>
 
             <div className="w-[10%]">
-              <span className={`${showSubtaskId === row.original._id ? "text-orange-500" : "text-gray-500"} cursor-pointer hover:text-orange-500`} onClick={() => {
+              <span className={`${showSubtaskId === row.original._id ? "text-orange-500 " : row.original?.subtasksLength > 0 ? "text-blue-400" : "text-gray-500"} cursor-pointer hover:text-orange-500 transition-all `} onClick={() => {
                       setTaskID(row.original._id);
                       setProjectName(row.original.project.projectName);
                       handleShowSubtasks()

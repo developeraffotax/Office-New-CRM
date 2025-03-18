@@ -131,11 +131,36 @@ export const createTask = async (req, res) => {
 // Get ALl Tasks
 export const getAllTasks = async (req, res) => {
   try {
-    const tasks = await taskModel
-      .find({ status: { $ne: "completed" } })
-      .select(
-        "project jobHolder task hours startDate deadline status lead  estimate_Time comments._id comments.status labal recurring"
-      );
+    // const tasks = await taskModel
+    //   .find({ status: { $ne: "completed" } })
+    //   .select(
+    //     "project jobHolder task hours startDate deadline status lead  estimate_Time comments._id comments.status labal recurring"
+    //   );
+
+      const tasks = await taskModel.aggregate([
+        {
+          $match: { status: { $ne: "completed" } }
+        },
+        {
+          $project: {
+            project: 1,
+            jobHolder: 1,
+            task: 1,
+            hours: 1,
+            startDate: 1,
+            deadline: 1,
+            status: 1,
+            lead: 1,
+            estimate_Time: 1,
+            comments: { _id: 1, status: 1 },
+            subtasksLength: { $size: "$subtasks" },
+            labal: 1,
+            recurring: 1
+          }
+        }
+      ]);
+
+
 
     res.status(200).send({
       success: true,

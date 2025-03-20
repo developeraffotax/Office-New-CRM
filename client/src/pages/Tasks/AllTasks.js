@@ -754,7 +754,7 @@ const AllTasks = () => {
         deadline: taskCopy?.deadline,
         lead: taskCopy?.lead,
         label: taskCopy?.label,
-        status: "Progress",
+        status: taskCopy?.status,
       }
     );
     if (data) {
@@ -1752,7 +1752,7 @@ const AllTasks = () => {
         header: "Task Status",
         
         Header: ({ column }) => {
-          const statusData = ["To do", "Progress", "Review", "On hold"];
+          const statusData = ["To do", "Progress", "Review", "Awaiting", "On hold"];
           useEffect(() => {
             column.setFilterValue(state);
             console.log(state, "THE STATE VALUE IS >>")
@@ -1809,6 +1809,7 @@ const AllTasks = () => {
                 <option value="To do">To do</option>
                 <option value="Progress">Progress</option>
                 <option value="Review">Review</option>
+                <option value="Awaiting">Awaiting</option>
                 <option value="On hold">On hold</option>
               </select>
             </div>
@@ -1824,6 +1825,7 @@ const AllTasks = () => {
           "To do",
           "Progress",
           "Review",
+          "Awaiting",
           "On hold",
         ],
         filterVariant: "select",

@@ -37,6 +37,8 @@ const requiredKey = process.env.SERVER_SECRET_KEY;
 import http from "http";
 import { initSocketServer, Skey } from "./socketServer.js";
 import { sendDatatoGoogleSheet } from "./utils/googleSheet.js";
+import { setWatch } from "./utils/setWatch.js";
+import { listenForMessages } from "./utils/pubSub.js";
 
 // export const createServer = (port) => {
 // Verify the key
@@ -114,6 +116,8 @@ app.use((err, req, res, next) => {
 
 // Listening
 const PORT = process.env.PORT || 8080;
+// listenForMessages();
+// await setWatch();
 
 server.listen(PORT, () => {
   console.log(`Server is running at PORT ${PORT}`.bgMagenta.white);

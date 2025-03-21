@@ -28,7 +28,7 @@ export async function setWatch() {
 
     const request = {
       labelIds: ["INBOX"],
-      topicName: "projects/affotax-crm/topics/ticket-notification", // The Google Cloud Pub/Sub topic
+      topicName: "projects/affotax-crm/topics/ticket-push", // The Google Cloud Pub/Sub topic
       
     };
 

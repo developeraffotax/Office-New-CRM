@@ -38,7 +38,8 @@ import http from "http";
 import { initSocketServer, Skey } from "./socketServer.js";
 import { sendDatatoGoogleSheet } from "./utils/googleSheet.js";
 import { setWatch } from "./utils/setWatch.js";
-import { listenForMessages } from "./utils/pubSub.js";
+ 
+import { gmailWebhookHandler } from "./utils/pubSubPush.js";
 
 // export const createServer = (port) => {
 // Verify the key
@@ -92,6 +93,11 @@ app.use("/api/v1/quicklist", quickListRoute);
 app.use("/api/v1/quicklist", qualityListRoute);
 app.use("/api/v1/googleSheet", sendDatatoGoogleSheet);
 
+// app.post('/gmail-webhook', gmailWebhookHandler);
+
+
+
+
 // Send Data to Google Sheet
 cron.schedule("0 13,20,23 * * *", () => {
   console.log("Running task scheduler for recurring tasks...");
@@ -116,8 +122,8 @@ app.use((err, req, res, next) => {
 
 // Listening
 const PORT = process.env.PORT || 8080;
-// listenForMessages();
-// await setWatch();
+ 
+//await setWatch();
 
 server.listen(PORT, () => {
   console.log(`Server is running at PORT ${PORT}`.bgMagenta.white);

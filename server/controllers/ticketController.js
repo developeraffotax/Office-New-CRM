@@ -320,7 +320,7 @@ export const getAllSendTickets = async (req, res, next) => {
     });
 
 
-    console.log("matchingTicket:", matchingTickets);
+
 
 
     // Map the tickets to the corresponding threadId for easier lookup
@@ -333,10 +333,7 @@ export const getAllSendTickets = async (req, res, next) => {
        
     for (const email of emailData.detailedThreads) {
        
-      // const matchingTicket = await ticketModel.findOne({
-      //   mailThreadId: email.threadId,
-      // });
-      
+    
       
       
       if(email?.threadId) {  
@@ -365,22 +362,22 @@ export const getAllSendTickets = async (req, res, next) => {
           //   `Updated ticket ${matchingTicket._id} with new status: ${newStatus}`
           // );
   
-          const user = await userModel.findOne({
-            name: matchingTicket.lastMessageSentBy,
-          });
+          // const user = await userModel.findOne({
+          //   name: matchingTicket.lastMessageSentBy,
+          // });
   
           // Create a notification
-          if (email.readStatus === "Unread") {
-            const notiUser = user._id;
+          // if (email.readStatus === "Unread") {
+          //   const notiUser = user._id;
   
-            await notificationModel.create({
-              title: "Reply to a ticket received",
-              redirectLink: `/ticket/detail/${matchingTicket._id}`,
-              description: `You've received a response to a ticket with the subject "${matchingTicket.subject}" from the company "${matchingTicket.companyName}" and the client's name "${matchingTicket.clientName}".`,
-              taskId: matchingTicket._id,
-              userId: notiUser,
-            });
-          }
+          //   await notificationModel.create({
+          //     title: "Reply to a ticket received",
+          //     redirectLink: `/ticket/detail/${matchingTicket._id}`,
+          //     description: `You've received a response to a ticket with the subject "${matchingTicket.subject}" from the company "${matchingTicket.companyName}" and the client's name "${matchingTicket.clientName}".`,
+          //     taskId: matchingTicket._id,
+          //     userId: notiUser,
+          //   });
+          // }
         }  
 
 

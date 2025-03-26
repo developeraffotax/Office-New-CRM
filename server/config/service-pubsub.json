@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "affotax-crm",
+  "private_key_id": "09eaa0aaf3d997f127128bdffeee4f2a8013275b",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCo/m26JOd02aza\narAlLpQbeEzovhxMCYC9pzVwMaLOjPEc/IopO5mzmcaocVyT+B53GHSPcCTDkSMr\nUD4bOiOzKell2ppZzirYkwUkumAYE4ISDKxWWoA+gr6syb5BKkR70CUKwp8OHrGn\nnr4iuAMmsqtHinJ23r9djLLP5goZU039vip3nddacnVoFVYmmdBQI64DZ2amSEix\nyJNfHTwYMjKGfb4Nd5qgPeySz/ZSsl8qC+8amFPvOdz36uLQdW7M2Gv5Gg3kJHCG\nyHrfsvhCbQv5V1HW1kHsAvR3yR/Lej9yeEnm6+nWSxQW/vZae/iOaZFHFJ54dpmX\nbict9yDTAgMBAAECggEAPhhnFzvSNHR7eDI1kSQBVeqpT+fzG9luDcHv9861RPIy\n8nS1C5uTyZOalHA7FT/Zaed5hO8vAxFEe/jbKUP+tCmVUlC14IPJ6JR1El7NSmt4\noss3U++jKdT+3RywJN+0FE6SHdcPfK+4lZ/Vu4oj1kdWek4b6yPD60r0tUGQumbx\n3T2nN0v5VUvG6wd30AK5gknS73PAQL8Ng+WlYKF0vUN/gPGEQrRuxbDAVgahXX5s\nd2wGVM0SUbf726qXpbD06vz7E/4cK/ywRrx91yTcamf0YlJDugBe4jHAVvxHZ3UP\nIebI013n+KBdq/GRQYbK4WH2r8t9r3KjmHLzZzba8QKBgQDVRCznSiHv1f26HeiZ\njhvUq99o23F+UwwQIjUneotTzZaWBS7P9SRS+vyE8jUzUm6uxvxBbWilrf+yzzzV\nKlvg/gQkBnkoe97DKpg/HqLN9+E1zbphL7QjsDVTxpslmSTrtPeRQO0wSvL+qKWc\nQTX/3Leris0So+hxDtphBv4sSwKBgQDK2zrJZww16qYI8Gd+p9ZXLujtk6SmHzct\n3ebcDiuEsc8b/tYhV/xYyquYb4h+bl6mLCMq0vFJjTPE+pHC7sE8zUnxIFwyvsl5\nkrHm0Wqd2wvt38Qf52U10TvEgpFRYewjy7pKNtTrwiyRmGmas3Y1q6MTzR3jwhjI\niVutS7L4mQKBgQCAs3ndwpEkaaGLNg1uzaHiAC782qFtOLTo75vgTUXTtxgPROVx\nPmFDapAFsx2D8VU2SINnAJ3Mjmrm/8WYZs23w9O/4eAwHEDcytHCFbzuS48vpw25\nJM6zUt17xzlNwVPUowtcLzB0mmZ2ZFQ9LeVmmU6GSWdkvmHCCNKlB1FQbQKBgAUx\no8mwV8GxplqoPR4jEfvdeZ1LoHWYawNDoTuVKUwWeWUQG09zP0TOu6IFiQsjrEy4\n6JWaHQ9zDBZJDB5fmpcB8pi36WRrOiFgvilYx1APYbjPd+gRNqgwGUWoyiu5RCCO\ngNCRotX+fMGlk16gpbAuGtjQ8aj5OUU5Lx26yHRRAoGAOQCtXcjnavuHlYBdFZGd\nEEpyGrNQX39Oyi5G6MNzngEbIA7oDNma+hUYY8C8dyvAF1W6s9Pa1yC9H+4fxmve\nMbYDtFyjXujDc4tcubJGrooLmO1V8J4b7tQqwICJ0Q1V5aZw3bQxJRfUHV2+/iU8\njOokPxvGqe+lOdLax5GzDh4=\n-----END PRIVATE KEY-----\n",
+  "client_email": "ticket-notification@affotax-crm.iam.gserviceaccount.com",
+  "client_id": "118161617741608559905",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/ticket-notification%40affotax-crm.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

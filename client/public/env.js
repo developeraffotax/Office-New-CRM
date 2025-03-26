@@ -1,6 +1,7 @@
 window.env = {
   "ALLUSERSPROFILE": "C:\\ProgramData",
   "APPDATA": "C:\\Users\\dell\\AppData\\Roaming",
+  "C:\\ngrok": "C:\\ngrok",
   "COLOR": "1",
   "CommonProgramFiles": "C:\\Program Files\\Common Files",
   "CommonProgramFiles(x86)": "C:\\Program Files (x86)\\Common Files",
@@ -51,10 +52,10 @@ window.env = {
   "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.CPL",
   "POSH_AZURE_ENABLED": "False",
   "POSH_CURSOR_COLUMN": "1",
-  "POSH_CURSOR_LINE": "7",
+  "POSH_CURSOR_LINE": "2",
   "POSH_GIT_ENABLED": "False",
   "POSH_INSTALLER": "manual",
-  "POSH_PID": "4432",
+  "POSH_PID": "7404",
   "POSH_SHELL_VERSION": "5.1.19041.5607",
   "POSH_THEME": "C:\\Users\\dell\\AppData\\Local\\oh-my-posh\\config.aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0phbkRlRG9iYmVsZWVyL29oLW15LXBvc2gvbWFpbi90aGVtZXMvamFuZGVkb2JiZWxlZXIub21wLmpzb24=.omp.json",
   "POSH_THEMES_PATH": "C:\\Users\\dell\\AppData\\Local\\Programs\\oh-my-posh\\themes",
@@ -85,6 +86,6 @@ window.env = {
   "windir": "C:\\WINDOWS",
   "WSLENV": "WT_SESSION:WT_PROFILE_ID:",
   "WT_PROFILE_ID": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
-  "WT_SESSION": "f7990161-19af-4766-8631-76ff65db8ccb",
+  "WT_SESSION": "a14d4431-0b1b-46de-88d1-b88df79c3fe4",
   "ZES_ENABLE_SYSMAN": "1"
 };

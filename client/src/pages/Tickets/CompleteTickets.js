@@ -466,7 +466,14 @@ export default function CompleteTickets() {
           return (
             <div className="w-full px-1">
               <span
-                onClick={() => navigate(`/ticket/detail/${row.original._id}`)}
+                // onClick={() => navigate(`/ticket/detail/${row.original._id}`)}
+                onClick={(event) => {
+                  if (event.ctrlKey || event.metaKey) {
+                    window.open(`/ticket/detail/${row.original._id}`, "_blank");
+                  } else {
+                    navigate(`/ticket/detail/${row.original._id}`);
+                  }
+                }}
                 className="cursor-pointer text-blue-500 hover:text-blue-600 font-medium"
               >
                 {subject}

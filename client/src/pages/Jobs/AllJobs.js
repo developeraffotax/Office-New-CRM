@@ -2881,7 +2881,7 @@ export default function AllJobs() {
 
     // Map to extract labels
     const qualityLabels = filteredTasks.map((item) => item.task);
-
+    // console.log(rowSelection)
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/bulk/job`,

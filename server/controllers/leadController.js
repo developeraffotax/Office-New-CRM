@@ -280,3 +280,104 @@ export const getdashboardLead = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      // companyName,
+      // clientName,
+      // jobHolder,
+      // department,
+      // source,
+      // brand,
+      // lead_Source,
+      // followUpDate,
+      // JobDate,
+      // Note,
+      // stage,
+      // status,
+      // value,
+      // number,
+
+
+
+// Update Bulk Leads
+export const updateBulkLeads = async (req, res) => {
+  try {
+    const {
+      rowSelection,
+      updates  // object which contains all the updates values 
+      
+    } = req.body;
+
+    console.log("Updates",updates)
+    console.log("rowSelection",rowSelection)
+    if (
+      !rowSelection ||
+      !Array.isArray(rowSelection) ||
+      rowSelection.length === 0
+    ) {
+      return res.status(400).send({
+        success: false,
+        message: "No jobs selected for update.",
+      });
+    }
+
+
+ 
+
+    let updateData = {};
+
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value) {
+        updateData[key] = value;
+      }
+    });
+
+    const updatedLeads = await leadModel.updateMany(
+      {
+        _id: { $in: rowSelection },
+      },
+      { $set: updateData },
+       
+    );
+
+ 
+
+    // Check if any leads were updated
+    if (updatedLeads.modifiedCount === 0) {
+      return res.status(404).send({
+        success: false,
+        message: "No leads were updated.",
+      });
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Leads updated successfully!",
+      updatedLeads,
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in update bulk leads!",
+      error: error,
+    });
+  }
+};

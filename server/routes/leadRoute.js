@@ -1,5 +1,5 @@
 import express from "express";
-import { requiredSignIn } from "../middlewares/authMiddleware.js";
+import { isAdmin, requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
   createLead,
   deleteLead,
@@ -8,6 +8,7 @@ import {
   getAllWonLead,
   getdashboardLead,
   getSingleLead,
+  updateBulkLeads,
   updateLead,
 } from "../controllers/leadController.js";
 
@@ -36,5 +37,15 @@ router.delete("/delete/lead/:id", deleteLead);
 
 // Dashboard
 router.get("/dashboard/lead", getdashboardLead);
+
+
+
+
+
+
+
+
+// Update Bulk Leads
+router.put("/update/bulk/leads", requiredSignIn, isAdmin, updateBulkLeads);
 
 export default router;

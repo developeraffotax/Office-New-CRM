@@ -47,7 +47,7 @@ dist/
 config.js
 credentials.json
 
-config/service-pubsub.json
+server/config/service-pubsub.json
 
 # Ignore compiled files
 *.out

@@ -19,9 +19,34 @@ import { FaTrophy } from "react-icons/fa6";
 import { GiBrokenHeart } from "react-icons/gi";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
-import { MdOutlineAnalytics } from "react-icons/md";
+import { MdOutlineAnalytics, MdOutlineModeEdit } from "react-icons/md";
 import { RiProgress3Line } from "react-icons/ri";
 import { GoEye, GoEyeClosed } from "react-icons/go";
+import { TbLoader2 } from "react-icons/tb";
+import { style } from "../../utlis/CommonStyle";
+
+
+
+
+
+const updates_object_init = {
+  companyName: '',
+  clientName: '',
+  jobHolder: '',
+  department: '',
+  source: '',
+  brand: '',
+  lead_Source: '',
+  followUpDate: '',
+  JobDate: '',
+  Note: '',
+  stage: '',
+  status: '',
+  value: '',
+  number: ''
+}
+
+
 
 const Leads = forwardRef(({ childRef, setIsload }, ref) => {
   const { auth } = useAuth();
@@ -73,6 +98,118 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
   });
   const [active, setActive] = useState(false);
   const [selectFilter, setSelectFilter] = useState("");
+
+
+
+
+
+
+  
+  // BULK EDITING
+  const [rowSelection, setRowSelection] = useState({});
+  
+  const [showEdit, setShowEdit] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const [updates, setUpdates] = useState(updates_object_init)
+
+
+  const handle_on_change_update = (e) => {
+    setUpdates(prev => {
+      return {
+        ...prev,
+        [e.target.name]: e.target.value
+      }
+    })
+  }
+  
+  // -------Update Bulk Leads------------->
+
+  const updateBulkLeads = async (e) => {
+    e.preventDefault();
+    setIsUpdating(true);
+
+    console.log("Row Selection",rowSelection);
+    console.log("Updates",updates)
+
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/leads/update/bulk/leads`,
+        {
+          rowSelection: Object.keys(rowSelection).filter(
+            (id) => rowSelection[id] === true
+          ),
+          updates
+        }
+      );
+
+      if (data) {
+        setUpdates(updates_object_init);
+        toast.success("Leads Updated💚💚");
+        getAllLeads()
+      }
+    } catch (error) {
+       
+      console.log(error?.response?.data?.message);
+      toast.error("Something went wrong!");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -169,7 +306,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
 
   // -------Get All Leads-------
   const getAllLeads = async () => {
-    // setIsLoading(true);
+     setIsLoading(true);
     try {
       if (selectedTab === "progress") {
         const { data } = await axios.get(
@@ -1923,6 +2060,14 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
   const table = useMaterialReactTable({
     columns,
     data: leadData || [],
+
+
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
+    state: { rowSelection },
+    enableBatchRowSelection: true,
+
+    getRowId: (row) => row._id,
     enableStickyHeader: true,
     enableStickyFooter: true,
     muiTableContainerProps: { sx: { maxHeight: "850px" } },
@@ -2030,19 +2175,37 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
               <MdOutlineAnalytics className="h-7 w-7" />
             </button>
 
+
+
+               {/* Edit Multiple Job Button */}
+
+               <div className="flex justify-center items-center  mt-2   ">
+                  <span
+                      className={` p-2 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+                          showEdit && "bg-orange-500 text-white"
+                            }`}
+                      onClick={() => {
+                        setShowEdit(!showEdit);
+                      }}
+                      title="Edit Multiple Jobs"
+                  >
+                    <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
+                  </span>
+              </div>
+
                           
             {/* Hide & Show Button And Fixed Component*/}
           <div className="flex justify-center items-center  mt-2   ">
             <div
-              className={`  p-[6px]  rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border  ${
+              className={`  p-2  rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border  ${
                 showcolumn && "bg-orange-500 text-white"
               }`}
               onClick={() => setShowColumn(!showcolumn)}
             >
               {showcolumn ? (
-                <GoEyeClosed className="text-[22px]" />
+                <GoEyeClosed className="text-[20px]" />
               ) : (
-                <GoEye className="text-[22px]" />
+                <GoEye className="text-[20px]" />
               )}
             </div>
             {showcolumn && (
@@ -2080,6 +2243,266 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
               <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
             </>
           )}
+
+
+
+
+
+
+
+
+
+          
+                  {/* Update Bulk Jobs */}
+        {showEdit && (
+          <div className="w-full  p-4 ">
+            <form
+              onSubmit={updateBulkLeads}
+              className="w-full grid grid-cols-12 gap-4 max-2xl:grid-cols-8  "
+            >
+
+                <div className="inputBox w-full" >
+                  <input
+                    name="companyName"
+                    type="text"
+                    value={updates.companyName}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full `}
+                    // placeholder="Company Name"
+                  />
+                  <span>Company Name</span>
+                </div>
+
+                <div className="inputBox w-full" >
+                  <input
+                    name="clientName"
+                    type="text"
+                    value={updates.clientName}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full `}
+                  />
+                  <span>Client Name</span>
+                </div>
+
+              <div className="w-full">
+                <select
+                  name="jobHolder"
+                  value={updates.jobHolder}
+                  
+                  onChange={handle_on_change_update}
+                  className={`${style.input} w-full`}
+                   
+                >
+                  <option value="empty">Job Holder</option>
+                  {users.map((jobHold, i) => (
+                    <option value={jobHold.name} key={i}>
+                      {jobHold.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="w-full">
+                <select
+                  name="department"
+                  value={updates.department}
+                  
+                  onChange={handle_on_change_update}
+                  className={`${style.input} w-full`}
+                   
+                >
+                  <option value="empty">Department</option>
+                  {departments.map((department, i) => (
+                    <option value={department} key={i}>
+                      {department}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="w-full">
+                <select
+                  name="source"
+                  value={updates.source}
+                  
+                  onChange={handle_on_change_update}
+                  className={`${style.input} w-full`}
+                  
+                >
+                  <option value="empty">Source</option>
+                  {sources.map((source, i) => (
+                    <option value={source} key={i}>
+                      {source}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="w-full">
+                <select
+                  name="brand"
+                  value={updates.brand}
+                  
+                  onChange={handle_on_change_update}
+                  className={`${style.input} w-full`}
+                   
+                >
+                  <option value="empty">Brand</option>
+                  {brands.map((brand, i) => (
+                    <option value={brand} key={i}>
+                      {brand}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+
+              <div className="inputBox w-full" >
+                  <input
+                    name="value"
+                    type="text"
+                    value={updates.value}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full `}
+                  />
+                  <span>Value</span>
+                </div>
+
+                <div className="inputBox w-full" >
+                  <input
+                    name="number"
+                    type="text"
+                    value={updates.number}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full `}
+                  />
+                  <span>Number</span>
+                </div>
+
+         
+
+
+         
+                <div className="w-full">
+                    <select
+                      name="lead_Source"
+                      value={updates.lead_Source}
+                      
+                      onChange={handle_on_change_update}
+                      className={`${style.input} w-full`}
+                       
+                    >
+                      <option value="empty">Lead Source</option>
+                      {leadSource.map((el, i) => (
+                        <option value={el} key={i}>
+                          {el}
+                        </option>
+                      ))}
+                    </select>
+              </div>
+
+                  
+                      
+
+              <div className="inputBox" >
+                <input
+                  type="date"
+                  name="followUpDate"
+                  value={updates.followUpDate}
+                  onChange={handle_on_change_update}
+                  className={`${style.input} w-full `}
+                />
+                <span>Follow-Up Deadline</span>
+              </div>
+
+
+              <div className="inputBox" >
+                <input
+                  type="date"
+                  name="JobDate"
+                  value={updates.JobDate}
+                  onChange={handle_on_change_update}
+                  className={`${style.input} w-full `}
+                />
+                <span>Job Date</span>
+              </div>
+             
+
+
+              
+              
+              <div className="">
+                    <select
+                      name="stage"
+                      value={updates.stage}
+                      
+                      onChange={handle_on_change_update}
+                      className={`${style.input} w-full`}
+                       
+                    >
+                      <option value="empty">Stage</option>
+                      {stages.map((el, i) => (
+                        <option value={el} key={i}>
+                          {el}
+                        </option>
+                      ))}
+                    </select>
+              </div>
+
+
+
+
+              <div className="">
+                    <select
+                      name="status"
+                      value={updates.status}
+                      
+                      onChange={handle_on_change_update}
+                      className={`${style.input} w-full`}
+                       
+                    >
+                      <option value="empty">Status</option>
+                      {['progress', 'won', 'lost'].map((el, i) => (
+                        <option value={el} key={i}>
+                          {el}
+                        </option>
+                      ))}
+                    </select>
+              </div>
+
+                
+
+              <div className="inputBox w-full col-span-2" >
+                  <input
+                    name="Note"
+                    type="text"
+                    value={updates.Note}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full `}
+                  />
+                  <span>Note</span>
+                </div>
+
+             
+
+              <div className="w-full flex items-center justify-end  ">
+                <button
+                  className={`${style.button1} text-[15px] w-full `}
+                  type="submit"
+                  disabled={isUpdating}
+                  style={{ padding: ".5rem  " }}
+                >
+                  {isUpdating ? (
+                    <TbLoader2 className="h-5 w-5 animate-spin text-white" />
+                  ) : (
+                    <span>Save</span>
+                  )}
+                </button>
+              </div>
+            </form>
+            <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
+          </div>
+        )}
         </>
 
         {/* ---------Table Detail---------- */}

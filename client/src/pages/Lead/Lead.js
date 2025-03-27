@@ -98,9 +98,10 @@ export default function Lead() {
   const [selectFilter, setSelectFilter] = useState("");
 
 
-  const [rowSelection, setRowSelection] = useState({});
-
+  
   // BULK EDITING
+  const [rowSelection, setRowSelection] = useState({});
+  
   const [showEdit, setShowEdit] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 

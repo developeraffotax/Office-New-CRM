@@ -10,7 +10,7 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
-import { format } from "date-fns";
+import { addMonths, format, formatISO } from "date-fns";
 import { MdInsertComment } from "react-icons/md";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/authContext";
@@ -19,12 +19,13 @@ import { TbCalendarDue, TbLoader2 } from "react-icons/tb";
 import { IoClose } from "react-icons/io5";
 import JobDetail from "./JobDetail";
 import { IoBriefcaseOutline } from "react-icons/io5";
+import { MdDriveFileMoveOutline } from "react-icons/md";
 import { Timer } from "../../utlis/Timer";
 import JobCommentModal from "./JobCommentModal";
 import { MdAutoGraph } from "react-icons/md";
 import { Link, useLocation } from "react-router-dom";
 import { TbLoader } from "react-icons/tb";
-import { Box, Button } from "@mui/material";
+import { Box, Button, LinearProgress } from "@mui/material";
 import { MdOutlineModeEdit } from "react-icons/md";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import { IoMdDownload } from "react-icons/io";
@@ -42,6 +43,7 @@ import AddDataLabel from "../../components/Modals/AddDataLabel";
 import InactiveClients from "./InactiveClients";
 import Swal from "sweetalert2";
 import HandleQualityModal from "../../components/Modals/HandleQualityModal";
+import { ImSpinner8 } from "react-icons/im";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -150,6 +152,7 @@ export default function AllJobs() {
     "CC_Person",
     "AC",
     "SignUp_Date",
+    "Actions"
   ];
   const [columnVisibility, setColumnVisibility] = useState(() => {
     const savedVisibility = JSON.parse(
@@ -203,12 +206,73 @@ export default function AllJobs() {
   ];
 
 
+ 
+ 
+  const [isMoving, setIsMoving] = useState(false)
+
+  // Move to Job Handler
+  const moveJobToLead = async (client) => {
+    console.log(client);
+
+    // Get today's date
+    const today = new Date();
+
+    // Add one month to today's date
+    const nextMonthDate = addMonths(today, 1);
+
+    // Format the new date to ISO format (including the time and timezone)
+    const followUpDate = formatISO(nextMonthDate);
+
+    try {
+      setIsMoving(true)
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/leads/create/lead`,
+        { 
+          companyName: client.companyName,
+          clientName: client.clientName,
+          jobHolder: client.job?.jobHolder,
+          department: client.job?.jobName,
+          source: client.source || "",
+          brand: "Affotax",
+          lead_Source: "CRM",
+          followUpDate: followUpDate,
+          JobDate: client.job.workDeadline,   // it is actually a job date 
+          Note: '',
+          stage: "",
+          value: "",
+          number: "",
+
+
+        }
+      );
+
+
+      if (data) {
+        console.log(data);
+
+          const res = await axios.delete(
+            `${process.env.REACT_APP_API_URL}/api/v1/client/delete/job/${client._id}`
+          );
+          if (res.data) {
+            const filterData = tableData.filter((item) => item._id !== client._id);
+            setTableData(filterData);
+            toast.success("Job Moved to Lead Successfully!💚");
+          }
+        
+ 
+
+
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    } finally {
+      setIsMoving(false)
+    }
 
 
 
-
-
-
+  }
 
 
 
@@ -2129,6 +2193,36 @@ export default function AllJobs() {
           },
           size: 80,
         },
+
+        // Actions move to leads
+        // {
+        //   id: "Actions",
+        //   accessorKey: "actions",
+        //   header: "Actions",
+        //   Cell: ({ cell, row }) => {
+            
+        //     return (
+        //       <div
+        //         className="flex items-center justify-center gap-1 w-full h-full"
+                
+        //       >
+        //         <div className="relative" title="Move to Lead" onClick={() => {
+        //           moveJobToLead(row.original);
+                   
+        //         }}>
+        //           <span className="text-[1rem] cursor-pointer relative">
+        //            <MdDriveFileMoveOutline className="h-6 w-6 text-orange-600 " />
+                    
+        //           </span>
+                   
+        //         </div>
+        //       </div>
+        //     );
+        //   },
+        //   size: 80,
+        // },
+
+
         // Label
         {
           id: "Labels",
@@ -2796,7 +2890,23 @@ export default function AllJobs() {
     enableBottomToolbar: true,
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
-    state: { rowSelection },
+    renderTopToolbar:() => (
+      
+      <div style={{ width: '100%' }}>
+        {isMoving && (
+          <LinearProgress
+            sx={{
+              width: '100%',
+              marginBottom: '16px', // Space between the progress bar and table
+               
+            }}
+          />
+        )}
+      </div>
+    ),
+
+
+    state: { rowSelection,   },
     // enableEditing: true,
     // state: { isLoading: loading },
 
@@ -3738,7 +3848,7 @@ useEffect(()=>{
             ) : (
               <div className="w-full min-h-[20vh] relative ">
                 <div className="h-full overflow-y-auto relative">
-                  <MaterialReactTable table={table} />
+                  <MaterialReactTable table={table}  />
                 </div>
               </div>
             )}

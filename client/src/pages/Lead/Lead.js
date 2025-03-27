@@ -139,6 +139,7 @@ export default function Lead() {
       if (data) {
         setUpdates(updates_object_init);
         toast.success("Leads Updated💚💚");
+        getAllLeads()
       }
     } catch (error) {
        
@@ -2240,7 +2241,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
 
               {/* Edit Multiple Job Button */}
 
-              {/* <div className="flex justify-center items-center  mt-[1.2rem]   ">
+              <div className="flex justify-center items-center  mt-[1.2rem]   ">
                   <span
                       className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
                           showEdit && "bg-orange-500 text-white"
@@ -2252,7 +2253,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                   >
                     <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
                   </span>
-              </div> */}
+              </div>
 
           
 

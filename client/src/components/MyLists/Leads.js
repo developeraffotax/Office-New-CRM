@@ -21,6 +21,7 @@ import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { MdOutlineAnalytics } from "react-icons/md";
 import { RiProgress3Line } from "react-icons/ri";
+import { GoEye, GoEyeClosed } from "react-icons/go";
 
 const Leads = forwardRef(({ childRef, setIsload }, ref) => {
   const { auth } = useAuth();
@@ -72,6 +73,99 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
   });
   const [active, setActive] = useState(false);
   const [selectFilter, setSelectFilter] = useState("");
+
+
+
+
+
+
+  const [showcolumn, setShowColumn] = useState(false);
+  const columnData = [
+    "companyName",
+    "clientName",
+    "jobHolder",
+    "department",
+    "source",
+    "brand",
+    "value",
+    "number",
+    "lead_Source",
+    "createdAt",
+    "followUpDate",
+    "Days",
+    "stage",
+    "actions",
+    "Note",
+    // "Fee",
+    // "Source",
+    // "ClientType",
+    // "CC_Person",
+    // "AC",
+    // "SignUp_Date",
+  ];
+
+  const [columnVisibility, setColumnVisibility] = useState(() => {
+    const savedVisibility = JSON.parse(
+      localStorage.getItem("columnVisibilityLead_mylist")
+    );
+    return (
+      savedVisibility ||
+      columnData.reduce((acc, col) => {
+        acc[col] = true;
+        return acc;
+      }, {})
+    );
+  });
+
+  const toggleColumnVisibility = (column) => {
+    const updatedVisibility = {
+      ...columnVisibility,
+      [column]: !columnVisibility[column],
+    };
+    setColumnVisibility(updatedVisibility);
+    localStorage.setItem("columnVisibilityLead_mylist", JSON.stringify(updatedVisibility));
+  };
+
+
+
+  const renderColumnControls = () => (
+    <div className="flex flex-col gap-2 bg-white rounded-md   border p-4">
+      {Object.keys(columnVisibility)?.map((column) => (
+        <div key={column} className="flex w-full gap-1 flex-col ">
+          <div className="flex items-center">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={columnVisibility[column]}
+                onChange={() => toggleColumnVisibility(column)}
+                className="mr-2 accent-orange-600 h-4 w-4"
+              />
+              {column}
+            </label>
+          </div>
+          <hr className=" bg-gray-300 w-full h-[1px]" />
+        </div>
+      ))}
+    </div>
+  );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // -------Get All Leads-------
   const getAllLeads = async () => {
@@ -1810,9 +1904,9 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
         },
         filterVariant: "select",
       },
-    ],
+    ].filter((col) => columnVisibility[col.accessorKey]),
     // eslint-disable-next-line
-    [users, auth, leadData, load]
+    [users, auth, leadData, load,  showcolumn, columnVisibility]
   );
 
   // Clear table Filter
@@ -1935,6 +2029,30 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
             >
               <MdOutlineAnalytics className="h-7 w-7" />
             </button>
+
+                          
+            {/* Hide & Show Button And Fixed Component*/}
+          <div className="flex justify-center items-center  mt-2   ">
+            <div
+              className={`  p-[6px]  rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border  ${
+                showcolumn && "bg-orange-500 text-white"
+              }`}
+              onClick={() => setShowColumn(!showcolumn)}
+            >
+              {showcolumn ? (
+                <GoEyeClosed className="text-[22px]" />
+              ) : (
+                <GoEye className="text-[22px]" />
+              )}
+            </div>
+            {showcolumn && (
+              <div className="fixed top-[11rem] right-[20%] z-[99] max-h-[80vh] overflow-y-auto hidden1  ">
+                {renderColumnControls()}
+              </div>
+            )}
+          </div>
+
+
           </div>
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
           {active && (

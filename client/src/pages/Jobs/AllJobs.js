@@ -2195,32 +2195,32 @@ export default function AllJobs() {
         },
 
         // Actions move to leads
-        // {
-        //   id: "Actions",
-        //   accessorKey: "actions",
-        //   header: "Actions",
-        //   Cell: ({ cell, row }) => {
+        {
+          id: "Actions",
+          accessorKey: "actions",
+          header: "Actions",
+          Cell: ({ cell, row }) => {
             
-        //     return (
-        //       <div
-        //         className="flex items-center justify-center gap-1 w-full h-full"
+            return (
+              <div
+                className="flex items-center justify-center gap-1 w-full h-full"
                 
-        //       >
-        //         <div className="relative" title="Move to Lead" onClick={() => {
-        //           moveJobToLead(row.original);
+              >
+                <div className="relative" title="Move to Lead" onClick={() => {
+                  moveJobToLead(row.original);
                    
-        //         }}>
-        //           <span className="text-[1rem] cursor-pointer relative">
-        //            <MdDriveFileMoveOutline className="h-6 w-6 text-orange-600 " />
+                }}>
+                  <span className="text-[1rem] cursor-pointer relative">
+                   <MdDriveFileMoveOutline className="h-6 w-6 text-orange-600 " />
                     
-        //           </span>
+                  </span>
                    
-        //         </div>
-        //       </div>
-        //     );
-        //   },
-        //   size: 80,
-        // },
+                </div>
+              </div>
+            );
+          },
+          size: 80,
+        },
 
 
         // Label

@@ -761,7 +761,7 @@ export default function TaskDetail({
               </div>
             ) : activeTab === "activity" ? (
               <div className="flex flex-col gap-2 w-full h-full overflow-y-auto p-2 ">
-                {taskDetal?.activities?.map((activity) => (
+                {taskDetal?.activities?.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((activity) => (
                   <div
                     className="w-full flex flex-col gap-2 py-2 px-3 border border-gray-300 rounded-md shadow hover:shadow-md bg-white hover:bg-orange-50 transition-all duration-300 cursor-pointer hover:scale-[1.03] ease-in-out "
                     key={activity?._id}

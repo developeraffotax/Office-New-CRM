@@ -45,6 +45,17 @@ const leadSchema = new mongoose.Schema(
     number: {
       type: Number,
     },
+
+
+    yearEnd: {
+      type: Date,
+      
+     
+    },
+    jobDeadline: {
+      type: Date,
+      
+    },
   },
   { timestamps: true }
 );

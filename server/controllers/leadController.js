@@ -20,6 +20,9 @@ export const createLead = async (req, res) => {
       status,
       value,
       number,
+
+      yearEnd,
+      jobDeadline
     } = req.body;
 
     const lead = await leadModel.create({
@@ -37,6 +40,9 @@ export const createLead = async (req, res) => {
       status,
       value,
       number,
+
+      yearEnd,
+      jobDeadline
     });
 
     res.status(200).send({
@@ -73,6 +79,9 @@ export const updateLead = async (req, res) => {
       status,
       value,
       number,
+
+      yearEnd,
+      jobDeadline
     } = req.body;
 
     const lead = await leadModel.findById(leadId);
@@ -101,6 +110,10 @@ export const updateLead = async (req, res) => {
         status: status ? status : lead.status,
         value: value || lead.value,
         number: number || lead.number,
+
+        yearEnd:  yearEnd ? yearEnd : lead.yearEnd,
+        jobDeadline:  jobDeadline ? jobDeadline : lead.jobDeadline,
+       
       },
       { new: true }
     );

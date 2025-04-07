@@ -242,6 +242,9 @@ export default function AllJobs() {
           value: "",
           number: "",
 
+          yearEnd: client.job.yearEnd,
+          jobDeadline: client.job.jobDeadline
+
 
         }
       );

@@ -2,6 +2,7 @@ import { JWT } from "google-auth-library";
 import { google } from "googleapis";
 import path from "path";
 import { fileURLToPath } from "url";
+import gmailModel from "../models/gmailModel.js";
 
 export async function setWatch() {
   // // Get __dirname
@@ -9,7 +10,7 @@ export async function setWatch() {
   const __dirname = path.dirname(__filename);
 
   // Path for Credentials
-  const CREDENTIALS_PATH = path.join( __dirname, "..", "config", "service-pubsub.json" );
+  const CREDENTIALS_PATH = path.join( __dirname, "..", "creds", "service-pubsub.json" );
 
   // Scopes you need
   const SCOPES = [ "https://www.googleapis.com/auth/gmail.readonly", "https://www.googleapis.com/auth/gmail.modify", "https://www.googleapis.com/auth/pubsub", ];
@@ -38,6 +39,10 @@ export async function setWatch() {
         
         
     });
+
+    await gmailModel.create({
+      last_history_id: response.data.historyId
+    })
 
     
     console.log("Watch request created successfully", response.data);

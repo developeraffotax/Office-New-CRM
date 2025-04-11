@@ -123,7 +123,7 @@ app.use((err, req, res, next) => {
 // Listening
 const PORT = process.env.PORT || 8080;
  
-//await setWatch();
+// await setWatch();
 
 server.listen(PORT, () => {
   console.log(`Server is running at PORT ${PORT}`.bgMagenta.white);

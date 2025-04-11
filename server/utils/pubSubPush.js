@@ -8,9 +8,11 @@ import userModel from "../models/userModel.js";
 import notificationModel from "../models/notificationModel.js";
 import gmailModel from "../models/gmailModel.js";
 
+
 // Get __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 
 // Path for Credentials
 const CREDENTIALS_PATH = path.join(
@@ -37,174 +39,92 @@ const jwtClient = new JWT({
 
 
 
-
-
-
-
-
-
-
-
-
-
 export async function gmailWebhookHandler(req, res) {
-    const {message} = req.body;
+  const { message } = req.body;
 
-    console.log("MESSAGE", message);
-    
-    try {
-        const data = Buffer.from(message.data, "base64").toString();
-        const { historyId } = JSON.parse(data);
-        console.log("DATA:>>>",data)
-        await jwtClient.authorize();
-        const gmail = google.gmail({ version: "v1", auth: jwtClient });
-  
+  console.log("MESSAGE", message);
 
-        const lastDoc = await gmailModel.findOne({}).sort({_id: -1});
-        // 1. Get History
-        const historyResponse = await gmail.users.history.list({
-          userId: "me",
-          startHistoryId: lastDoc.last_history_id,
-          historyTypes: ['messageAdded'],
-          
+  try {
+    const data = Buffer.from(message.data, "base64").toString();
+    const { historyId } = JSON.parse(data);
+    console.log("DATA:>>>", data);
+    await jwtClient.authorize();
+    const gmail = google.gmail({ version: "v1", auth: jwtClient });
 
-        });
-  
+    const lastDoc = await gmailModel.findOne({}).sort({ _id: -1 });
+    // 1. Get History
+    const historyResponse = await gmail.users.history.list({
+      userId: "me",
+      startHistoryId: lastDoc.last_history_id,
+      historyTypes: ["messageAdded"],
+    });
 
-          
-              await gmailModel.create({
-                last_history_id: historyResponse.data.historyId
-              })
+    await gmailModel.create({
+      last_history_id: historyResponse.data.historyId,
+    });
 
-    //       console.log("History Response:>>>" , historyResponse)
-
-    //     const history = historyResponse.data.history || [];
-    // const newEmails = [];
-
-    // for (const record of history) {
-    //   if (record.messagesAdded) {
-    //     for (const messageAdded of record.messagesAdded) {
-    //       const messageId = messageAdded.message.id;
-    //       // Fetch the full email details using users.messages.get
-    //       // const emailResponse = await gmail.users.messages.get({
-    //       //   userId: userId,
-    //       //   id: messageId,
-    //       //   format: 'full', // Or 'raw' for the full MIME message
-    //       // });
-    //       newEmails.push(messageId);
-
-    //     }
-    //   }
-    // }
-
-    // console.log(newEmails)
-
-
-
-
-
-
-
-
-
-
-
-
-        const history = historyResponse.data.history;
-              
-        console.log("HISTORY", history)
-        if (history && history.length > 0) {
-          for (const item of history) {
-            console.log("ITEM", item.messagesAdded);
-            if (item.messagesAdded && item.messagesAdded.length > 0) {
-              for (const message of item.messagesAdded) {
-                
-
-                const messageId = message.message.id;
-                 //console.log("MESSAGE ID", messageId);
-
-
-                const threadId = message.message.threadId;
-                //console.log("THREAD ID", threadId);
-
-
-                const emailResponse = await gmail.users.messages.get({
-                  userId: "me",
-                  id: messageId,
-                  format: 'metadata', // Request only metadata for efficiency
-                  metadataHeaders: ['From'], // Specify the headers you need
-                });
-
-                //console.log("emailResponse", emailResponse);
-      
-                const headers = emailResponse.data.payload.headers;
-                const fromHeader = headers.find(header => header.name === 'From');
-
-                console.log("fromHeader", fromHeader);
-
-
-                const text = fromHeader ? fromHeader.value : null;
-
-
-
-                                // Sample string
-               // const text = "Affotax <info@affotax.com>";
-
-                // Regular expression to extract email address inside angle brackets
-                const pattern = /<([^>]+)>/;
-
-                // Search for the email
-                const senderEmail = text.match(pattern)[1];
-                
-                console.log("SenderEmail>>>>>", senderEmail)
-      
-                // Replace 'your_email@example.com' with the actual email address
-                const yourEmail = 'info@affotax.com';
-
-                if (senderEmail && senderEmail !== yourEmail) {
-                  const ticket = await findTicketByThreadId(threadId);
-                  console.log("TICKET", ticket);
-    
-                  if (ticket) {
-                    await createNotification(ticket);
-                  } else {
-                    console.log("TICKET NOT FOUND");
-                }
-                }
-
+    const history = historyResponse.data.history;
 
   
-                
+    if (history && history.length > 0) {
+      for (const item of history) {
+        
+        if (item.messagesAdded && item.messagesAdded.length > 0) {
+          for (const message of item.messagesAdded) {
+            const messageId = message.message.id;
+            
+            const threadId = message.message.threadId;
+
+
+            const emailResponse = await gmail.users.messages.get({
+              userId: "me",
+              id: messageId,
+              format: "metadata", // Request only metadata for efficiency
+              metadataHeaders: ["From"], // Specify the headers you need
+            });
+
+
+            const headers = emailResponse.data.payload.headers;
+            const fromHeader = headers.find((header) => header.name === "From");
+
+            console.log("fromHeader", fromHeader);
+
+            const text = fromHeader ? fromHeader.value : null;
+
+            // Regular expression to extract email address inside angle brackets
+            const pattern = /<([^>]+)>/;
+
+            // Search for the email
+            const senderEmail = text.match(pattern)[1];
+
+            console.log("SenderEmail>>>>>", senderEmail);
+
+            // Replace 'your_email@example.com' with the actual email address
+            const yourEmail = "info@affotax.com";
+
+            if (senderEmail && senderEmail !== yourEmail) {
+              const ticket = await findTicketByThreadId(threadId);
+              console.log("TICKET", ticket);
+
+              if (ticket) {
+                await createNotification(ticket);
+              } else {
+                console.log("TICKET NOT FOUND");
               }
             }
           }
-        } else {
-          console.log("No new messages related to historyId:", historyId);
         }
-
-
-
-        res.status(200).send('Notification received');
-      } catch (error) {
-        console.error("Error processing message:", error);
-        res.status(500).send('Error processing message');
       }
+    } else {
+      console.log("No new messages related to historyId:", historyId);
+    }
 
-
+    res.status(200).send("Notification received");
+  } catch (error) {
+    console.error("Error processing message:", error);
+    res.status(500).send("Error processing message");
+  }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -230,8 +150,8 @@ const findUsersToNotify = async (ticket) => {
 
 const createNotification = async (ticket) => {
   const { lastMessageSentBy, jobHolder } = await findUsersToNotify(ticket);
-  console.log("LAST MESSAGE SENT BY", lastMessageSentBy);
-  console.log("JOB HOLDER", jobHolder);
+  // console.log("LAST MESSAGE SENT BY", lastMessageSentBy);
+  // console.log("JOB HOLDER", jobHolder);
 
   const notification1 = await notificationModel.create({
     title: "Reply to a ticket received",

@@ -93,7 +93,7 @@ app.use("/api/v1/quicklist", quickListRoute);
 app.use("/api/v1/quicklist", qualityListRoute);
 app.use("/api/v1/googleSheet", sendDatatoGoogleSheet);
 
-// app.post('/gmail-webhook', gmailWebhookHandler);
+app.post('/gmail-webhook', gmailWebhookHandler);
 
 
 
@@ -123,7 +123,7 @@ app.use((err, req, res, next) => {
 // Listening
 const PORT = process.env.PORT || 8080;
  
-// await setWatch();
+await setWatch();
 
 server.listen(PORT, () => {
   console.log(`Server is running at PORT ${PORT}`.bgMagenta.white);

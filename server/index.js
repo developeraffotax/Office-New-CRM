@@ -123,7 +123,15 @@ app.use((err, req, res, next) => {
 // Listening
 const PORT = process.env.PORT || 8080;
  
+
+// cron.schedule('0 0 */6 * *', () => {
+//   // Runs at midnight every 6 days
+//   setWatch();
+// });
+
 await setWatch();
+
+
 
 server.listen(PORT, () => {
   console.log(`Server is running at PORT ${PORT}`.bgMagenta.white);

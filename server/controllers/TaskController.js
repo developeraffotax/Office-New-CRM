@@ -1113,7 +1113,7 @@ const calculateStartDate = (date, recurringType) => {
     let result = new Date(date);
     while (days > 0) {
       result.setDate(result.getDate() + 1);
-      if (result.getDay() !== 6 && result.getDay() !== 0) {
+      if (result.getDay() !== 6 && result.getDay() !== 5) {
         days--;
       }
     }

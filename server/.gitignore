@@ -1,6 +1,9 @@
 # Ignore Node.js dependencies
 node_modules/
 
+# Ignore Credentials Folder
+creds/
+
 # Ignore environment variables files
 .env
 

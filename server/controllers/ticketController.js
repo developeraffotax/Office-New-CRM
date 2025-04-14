@@ -287,12 +287,12 @@ export const sendEmail = async (req, res) => {
 export const getAllSendTickets = async (req, res, next) => {
   try {
     
-    const emails = await ticketModel.find({ state: { $ne: "complete" } }).select( "clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt" );
+    const emails = await ticketModel.find({ state: { $ne: "complete" } }).select( "clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy lastMessageSentTime createdAt" );
 
     res.status(200).send({ success: true, message: "All email list!", emails: emails, });
 
 
-    
+    // We can comment this one for better performance,, will see it in future.
     const ticketsList = emails.map((email) => ({
       threadId: email.mailThreadId,
       companyName: email.company,
@@ -642,7 +642,7 @@ export const sendTicketReply = async (req, res) => {
     if (ticketId && mongoose.Types.ObjectId.isValid(ticketId)) {
       await ticketModel.findByIdAndUpdate(
         ticketId,
-        { lastMessageSentBy: userName },
+        { lastMessageSentBy: userName, lastMessageSentTime: new Date() },
         { new: true }
       );
     } else {

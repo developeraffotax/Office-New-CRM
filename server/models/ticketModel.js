@@ -65,6 +65,10 @@ const ticketSchema = new mongoose.Schema(
     lastMessageSentBy: {
       type: String,
     },
+
+    lastMessageSentTime: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );

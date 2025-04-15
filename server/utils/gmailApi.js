@@ -275,10 +275,13 @@ const getDetailedThreads = async (threadId, accessToken) => {
           (part) => part.filename && part.body?.attachmentId
         );
 
+        //console.log(attachments)
+
         const messageAttachments = attachments.map((attachment) => ({
           attachmentId: attachment.body.attachmentId,
           attachmentMessageId: message.id,
           attachmentFileName: attachment.filename,
+          attachmentHeaders:  attachment.headers,
         }));
 
         return {

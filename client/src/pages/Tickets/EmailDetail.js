@@ -262,7 +262,7 @@ export default function EmailDetail() {
                   {console.log("THE MESSAGE >>", message)}
 
                   {/* || message?.labelIds?.includes('SENT') */}
-                  {message?.payload?.body?.sentByMe  ? (
+                  {message?.payload?.body?.sentByMe || message?.labelIds?.includes('SENT')  ? (
                     <div className="flex flex-col gap-2 bg-orange-50 px-2 py-2 rounded-md">
                       {/* Header */}
                       <div className="flex items-center justify-between">
@@ -276,13 +276,13 @@ export default function EmailDetail() {
                           </div>
                           <div className="flex flex-col gap-0">
                             
-                          {separate(message?.payload?.headers[1]?.value) }
-                            {/* { separate(message?.payload?.headers.find(h => h.name === 'From')?.value)} */}
+                          {/* {separate(message?.payload?.headers[1]?.value) } */}
+                            { separate(message?.payload?.headers.find(h => h.name === 'From')?.value)}
                             <span className="text-[12px] text-gray-600 flex items-center gap-2 ">
                               to{" "}
-                              {message?.payload?.headers[2]?.value.slice(0, 12)}{" "}
+                              {/* {message?.payload?.headers[2]?.value.slice(0, 12)}{" "} */}
 
-                              {/* { message?.payload?.headers.find(h => h.name === 'To')?.value} */}
+                              { message?.payload?.headers.find(h => h.name === 'To')?.value}
                               <span>
                                 <FaCaretDown className="h-4 w-4 cursor-pointer" />
                               </span>
@@ -300,11 +300,21 @@ export default function EmailDetail() {
                         className="ml-10 text-[15px]"
                         style={{ lineHeight: "1rem" }}
                         dangerouslySetInnerHTML={{
-                          __html: (message?.payload?.body?.data || "").replace(
-                            /<\/p>\s*<p>/g,
-                            "</p><br><p>"
-                          ),
+                          __html: message?.payload?.body?.data
+                            ? cleanEmailBody(
+                                message?.payload?.body?.data.replace(
+                                  /<\/p>\s*<p>/g,
+                                  "</p><br><p>"
+                                )
+                              )
+                            : message?.snippet,
                         }}
+                        // dangerouslySetInnerHTML={{
+                        //   __html: (message?.payload?.body?.data || "").replace(
+                        //     /<\/p>\s*<p>/g,
+                        //     "</p><br><p>"
+                        //   ),
+                        // }}
                       ></div>
 
                       {/* ------------Attachments----------- */}

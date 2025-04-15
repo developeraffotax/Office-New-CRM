@@ -57,6 +57,7 @@ export default function EmailDetail() {
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/email/detail/${mailThreadId}/${company}/${params.id}`
       );
       if (data) {
+        console.log("EMAIL DATA SINGLE>>>>>>>>>>>>>>>>>>>>>>>>", data)
         setLoading(false);
         setEmailDetail(data.emailDetails);
         //
@@ -152,9 +153,12 @@ export default function EmailDetail() {
       if (data) {
         const jsonData = data;
 
+        
         const encodedData = jsonData.data;
 
         const decodedData = Buffer.from(encodedData, "base64");
+
+        
 
         const byteArray = new Uint8Array(decodedData.buffer);
 
@@ -255,7 +259,10 @@ export default function EmailDetail() {
             {emailDetail?.decryptedMessages &&
               emailDetail?.decryptedMessages?.map((message, i) => (
                 <div className="flex flex-col gap-4" key={i}>
-                  {message?.payload?.body?.sentByMe ? (
+                  {console.log("THE MESSAGE >>", message)}
+
+                  {/* || message?.labelIds?.includes('SENT') */}
+                  {message?.payload?.body?.sentByMe  ? (
                     <div className="flex flex-col gap-2 bg-orange-50 px-2 py-2 rounded-md">
                       {/* Header */}
                       <div className="flex items-center justify-between">
@@ -268,10 +275,14 @@ export default function EmailDetail() {
                             />
                           </div>
                           <div className="flex flex-col gap-0">
-                            {separate(message?.payload?.headers[1]?.value)}
+                            
+                          {separate(message?.payload?.headers[1]?.value) }
+                            {/* { separate(message?.payload?.headers.find(h => h.name === 'From')?.value)} */}
                             <span className="text-[12px] text-gray-600 flex items-center gap-2 ">
                               to{" "}
                               {message?.payload?.headers[2]?.value.slice(0, 12)}{" "}
+
+                              {/* { message?.payload?.headers.find(h => h.name === 'To')?.value} */}
                               <span>
                                 <FaCaretDown className="h-4 w-4 cursor-pointer" />
                               </span>
@@ -308,8 +319,12 @@ export default function EmailDetail() {
                           </h3>
                           <div className="flex items-center flex-wrap gap-4 py-3">
                             {message?.payload?.body?.messageAttachments?.map(
-                              (item) => (
-                                <div
+                              (item) => {
+
+
+
+                                return (
+                                  <div
                                   className=" flex items-center gap-4 border bg-gray-50 hover:bg-gray-100 cursor-pointer px-3 py-2 transition-all duration-300 rounded-md hover:shadow-md font-medium text-[13px] "
                                   key={item.attachmentId}
                                   onClick={() => {
@@ -337,7 +352,8 @@ export default function EmailDetail() {
                                     )}
                                   </span>
                                 </div>
-                              )
+                                )
+                              }
                             )}
                           </div>
                         </>
@@ -416,10 +432,25 @@ export default function EmailDetail() {
                             Attachments
                             {`(${message?.payload?.body?.messageAttachments.length})`}
                           </h3>
+
+
+
                           <div className="flex items-center flex-wrap gap-4 py-3">
                             {message?.payload.body?.messageAttachments?.map(
-                              (item) => (
-                                <div
+                              (item) => {
+
+
+                                                          
+                          console.log("ATTACHMENT HEADEERS",item.attachmentHeaders)
+
+                          const contentDispositionHeader = item.attachmentHeaders.find(header => header.name === 'Content-Disposition');
+                          
+                          const isInline = contentDispositionHeader?.value?.toLowerCase().includes("inline");
+
+
+
+                                return (
+                                  <div
                                   className=" flex items-center gap-4 border bg-gray-50 hover:bg-gray-100 cursor-pointer px-3 py-2 transition-all duration-300 rounded-md hover:shadow-md font-medium text-[13px] "
                                   key={item.attachmentId}
                                   onClick={() => {
@@ -438,6 +469,10 @@ export default function EmailDetail() {
                                     </span>
                                     <span>{item?.attachmentFileName}</span>
                                   </div>
+
+                                  { isInline && <h3>| Signature</h3> }
+
+
                                   <span className="bg-gray-300/30 hover:bg-gray-500/30 transition-all duration-300 cursor-pointer rounded-full p-[7px]">
                                     {isloading &&
                                     attachmentId === item.attachmentId ? (
@@ -446,8 +481,16 @@ export default function EmailDetail() {
                                       <LuDownload className="h-5 w-5 text-sky-500" />
                                     )}
                                   </span>
+
+                                  
+
+
+
+
+
                                 </div>
-                              )
+                                )
+                              }
                             )}
                           </div>
                         </>

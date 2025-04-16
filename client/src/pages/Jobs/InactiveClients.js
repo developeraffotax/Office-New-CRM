@@ -985,6 +985,7 @@ export default function InactiveClients({
         accessorKey: "job.jobStatus",
         Header: ({ column }) => {
           const jobStatus = [
+            "Quote",
             "Data",
             "Progress",
             "Queries",
@@ -992,7 +993,7 @@ export default function InactiveClients({
             "Submission",
             "Billing",
             "Feedback",
-            "Quote",
+            
             "Inactive",
           ];
           return (
@@ -1036,6 +1037,7 @@ export default function InactiveClients({
               className="w-[6rem] h-[2rem] rounded-md border border-sky-300 outline-none"
             >
               <option value="empty"></option>
+              <option value="Quote">Quote</option>
               <option value="Data">Data</option>
               <option value="Progress">Progress</option>
               <option value="Queries">Queries</option>
@@ -1043,7 +1045,7 @@ export default function InactiveClients({
               <option value="Submission">Submission</option>
               <option value="Billing">Billing</option>
               <option value="Feedback">Feedback</option>
-              <option value="Quote">Quote</option>
+             
               <option value="Inactive">Inactive</option>
             </select>
           );
@@ -1054,6 +1056,7 @@ export default function InactiveClients({
           return (cellValue || "").toString() === filterValue.toString();
         },
         filterSelectOptions: [
+          "Quote",
           "Data",
           "Progress",
           "Queries",
@@ -1061,7 +1064,7 @@ export default function InactiveClients({
           "Submission",
           "Billing",
           "Feedback",
-          "Quote",
+          
           "Inactive",
         ],
         filterVariant: "select",

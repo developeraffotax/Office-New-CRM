@@ -1369,6 +1369,7 @@ const Jobs = forwardRef(
           accessorFn: (row) => row.job?.jobStatus || "",
           Header: ({ column }) => {
             const jobStatusOptions = [
+              "Quote",
               "Data",
               "Progress",
               "Queries",
@@ -1376,7 +1377,7 @@ const Jobs = forwardRef(
               "Submission",
               "Billing",
               "Feedback",
-              "Quote",
+              
             ];
 
             useEffect(() => {
@@ -1421,6 +1422,7 @@ const Jobs = forwardRef(
                 className="w-[6rem] h-[2rem] rounded-md border border-sky-300 outline-none"
               >
                 <option value="empty"></option>
+                <option value="Quote">Quote</option>
                 <option value="Data">Data</option>
                 <option value="Progress">Progress</option>
                 <option value="Queries">Queries</option>
@@ -1428,7 +1430,7 @@ const Jobs = forwardRef(
                 <option value="Submission">Submission</option>
                 <option value="Billing">Billing</option>
                 <option value="Feedback">Feedback</option>
-                <option value="Quote">Quote</option>
+                
                 <option value="Inactive">Inactive</option>
               </select>
             );
@@ -1438,6 +1440,7 @@ const Jobs = forwardRef(
             return (cellValue || "").toString() === filterValue.toString();
           },
           filterSelectOptions: [
+            "Quote",
             "Data",
             "Progress",
             "Queries",
@@ -1445,7 +1448,7 @@ const Jobs = forwardRef(
             "Submission",
             "Billing",
             "Feedback",
-            "Quote",
+            
             "Inactive",
              
           ],

@@ -480,7 +480,7 @@ export default function EmailDetail() {
                                     <span>{item?.attachmentFileName}</span>
                                   </div>
 
-                                  { isInline && <h3>| Signature</h3> }
+                                  {/* { isInline && <h3>| Signature</h3> } */}
 
 
                                   <span className="bg-gray-300/30 hover:bg-gray-500/30 transition-all duration-300 cursor-pointer rounded-full p-[7px]">

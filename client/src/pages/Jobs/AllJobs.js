@@ -253,15 +253,15 @@ export default function AllJobs() {
 
       if (data) {
         console.log(data);
+        toast.success("Job Moved to Lead Successfully!💚");
 
-          const res = await axios.delete(
-            `${process.env.REACT_APP_API_URL}/api/v1/client/delete/job/${client._id}`
-          );
-          if (res.data) {
-            const filterData = tableData.filter((item) => item._id !== client._id);
-            setTableData(filterData);
-            toast.success("Job Moved to Lead Successfully!💚");
-          }
+          // const res = await axios.delete(
+          //   `${process.env.REACT_APP_API_URL}/api/v1/client/delete/job/${client._id}`
+          // );
+          // if (res.data) {
+          //   const filterData = tableData.filter((item) => item._id !== client._id);
+          //   setTableData(filterData);
+          // }
         
  
 

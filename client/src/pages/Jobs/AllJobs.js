@@ -195,6 +195,7 @@ export default function AllJobs() {
   const dateStatus = ["Due", "Overdue", "Upcoming"];
 
   const status = [
+    "Quote",
     "Data",
     "Progress",
     "Queries",
@@ -203,7 +204,7 @@ export default function AllJobs() {
     "Billing",
     "Feedback",
     "Inactive",
-    "Quote",
+    
   ];
 
 
@@ -1874,6 +1875,7 @@ export default function AllJobs() {
           accessorFn: (row) => row.job?.jobStatus || "",
           Header: ({ column }) => {
             const jobStatusOptions = [
+              "Quote",
               "Data",
               "Progress",
               "Queries",
@@ -1882,7 +1884,7 @@ export default function AllJobs() {
               "Billing",
               "Feedback",
               
-              "Quote",
+              
             ];
 
             useEffect(() => {
@@ -1927,6 +1929,7 @@ export default function AllJobs() {
                 className="w-[6rem] h-[2rem] rounded-md border border-sky-300 outline-none"
               >
                 <option value="empty"></option>
+                <option value="Quote">Quote</option>
                 <option value="Data">Data</option>
                 <option value="Progress">Progress</option>
                 <option value="Queries">Queries</option>
@@ -1934,7 +1937,7 @@ export default function AllJobs() {
                 <option value="Submission">Submission</option>
                 <option value="Billing">Billing</option>
                 <option value="Feedback">Feedback</option>
-                <option value="Quote">Quote</option>
+                
                 <option value="Inactive">Inactive</option>
               </select>
             );
@@ -1944,6 +1947,7 @@ export default function AllJobs() {
             return (cellValue || "").toString() === filterValue.toString();
           },
           filterSelectOptions: [
+            "Quote",
             "Data",
             "Progress",
             "Queries",
@@ -1951,7 +1955,7 @@ export default function AllJobs() {
             "Submission",
             "Billing",
             "Feedback",
-            "Quote",
+           
             "Inactive",
           ],
           filterVariant: "select",

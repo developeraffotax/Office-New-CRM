@@ -992,6 +992,7 @@ export default function InactiveClients({
             "Submission",
             "Billing",
             "Feedback",
+            "Quote",
             "Inactive",
           ];
           return (
@@ -1042,6 +1043,7 @@ export default function InactiveClients({
               <option value="Submission">Submission</option>
               <option value="Billing">Billing</option>
               <option value="Feedback">Feedback</option>
+              <option value="Quote">Quote</option>
               <option value="Inactive">Inactive</option>
             </select>
           );
@@ -1059,6 +1061,7 @@ export default function InactiveClients({
           "Submission",
           "Billing",
           "Feedback",
+          "Quote",
           "Inactive",
         ],
         filterVariant: "select",

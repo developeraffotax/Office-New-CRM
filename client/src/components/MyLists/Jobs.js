@@ -1376,6 +1376,7 @@ const Jobs = forwardRef(
               "Submission",
               "Billing",
               "Feedback",
+              "Quote",
             ];
 
             useEffect(() => {
@@ -1427,6 +1428,7 @@ const Jobs = forwardRef(
                 <option value="Submission">Submission</option>
                 <option value="Billing">Billing</option>
                 <option value="Feedback">Feedback</option>
+                <option value="Quote">Quote</option>
                 <option value="Inactive">Inactive</option>
               </select>
             );
@@ -1443,7 +1445,9 @@ const Jobs = forwardRef(
             "Submission",
             "Billing",
             "Feedback",
+            "Quote",
             "Inactive",
+             
           ],
           filterVariant: "select",
           size: 110,

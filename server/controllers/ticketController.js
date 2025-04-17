@@ -378,11 +378,23 @@ export const getTicketsByClientName = async (req, res, next) => {
 
 
 export const getAllSendTickets = async (req, res, next) => {
-  try {
-    
-    const emails = await ticketModel.find({ state: { $ne: "complete" } }).select( "clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy lastMessageSentTime createdAt" );
 
+    
+    const role = req.user?.user?.role?.name;
+    const userName =  req.user?.user?.name;
+
+  try {
+
+    let filter = { state: { $ne: "complete" } };
+
+    if(role !== 'Admin') {
+      filter.jobHolder = userName;
+    } 
+    
+    
+    const emails = await ticketModel.find(filter).select( "clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy lastMessageSentTime createdAt" );
     res.status(200).send({ success: true, message: "All email list!", emails: emails, });
+    
 
 
     // We can comment this one for better performance,, will see it in future.
@@ -822,18 +834,20 @@ export const singleTicketComments = async (req, res) => {
 
 // Get Complete Tickets
 export const getCompleteTickets = async (req, res) => {
+  const role = req.user?.user?.role?.name;
+  const userName =  req.user?.user?.name
   try {
-    const emails = await ticketModel
-      .find({ state: { $ne: "progress" } })
-      .select(
-        "clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt"
-      );
 
-    res.status(200).send({
-      success: true,
-      message: "All complete email list!",
-      emails: emails,
-    });
+    if(role === 'Admin') {
+      const emails = await ticketModel .find({ state: { $ne: "progress" } }) .select( "clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt" );
+      res.status(200).send({ success: true, message: "All complete email list!", emails: emails, });
+    } else {
+      const emails = await ticketModel .find({ state: { $ne: "progress" }, jobHolder: userName }) .select( "clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt" );
+      res.status(200).send({ success: true, message: "All complete email list!", emails: emails, });
+    }
+   
+
+    
   } catch (error) {
     console.log(error);
     res.status(500).send({

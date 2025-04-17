@@ -21,13 +21,13 @@ router.post("/create/lead", createLead);
 router.put("/update/lead/:id", requiredSignIn, updateLead);
 
 // Get Progress Lead
-router.get("/fetch/progress/lead", getAllProgressLead);
+router.get("/fetch/progress/lead", requiredSignIn, getAllProgressLead);
 
 // Get Won Lead
-router.get("/fetch/won/lead", getAllWonLead);
+router.get("/fetch/won/lead", requiredSignIn, getAllWonLead);
 
 // Get Lost Lead
-router.get("/fetch/lost/lead", getAlllostLead);
+router.get("/fetch/lost/lead", requiredSignIn, getAlllostLead);
 
 // Get Single Lead
 router.get("/fetch/single/lead/:id", getSingleLead);

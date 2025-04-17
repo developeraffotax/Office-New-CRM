@@ -1,6 +1,7 @@
 import express from "express";
 import {
   addDatalabel,
+  addJobActivity,
   addlabel,
   createDublicateJob,
   createJob,
@@ -151,5 +152,14 @@ router.put("/reordering/:id", requiredSignIn, reordering);
 
 // Add Quality Check to All Jobs
 router.post("/add/quality/all", requiredSignIn, createQualityForAllJobs);
+
+
+
+
+
+// /api/v1/client/jobActivity/:jobId
+router.post("/jobActivity/:jobId", requiredSignIn, addJobActivity);
+
+
 
 export default router;

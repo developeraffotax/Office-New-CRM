@@ -2007,3 +2007,59 @@ export const createQualityForAllJobs = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const addJobActivity = async (req, res) => {
+
+  const jobId = req.params.jobId;
+  const activityText = req.body.activityText || "moved this job to Leads!"
+
+  try {
+
+      const clientJob = await jobsModel.findOne( { _id: jobId }, );
+       
+      // Push activity to activities array
+      clientJob.activities.push({
+        user: req.user.user._id,
+        activity: `${req.user.user.name} ${activityText}`,
+      });
+
+      await clientJob.save();
+
+        res.status(200).send({
+          success: true,
+          message: "Job Actitivites Added successfully!",
+          clientJob: clientJob,
+        });
+
+
+
+
+  } catch (error) {
+    
+
+res.status(500).send({
+  success: false,
+  message: "Error adding quality check to jobs!",
+  error: error.message,
+});
+  }
+
+
+
+
+}

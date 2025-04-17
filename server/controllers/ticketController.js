@@ -284,6 +284,99 @@ export const sendEmail = async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getTicketsByClientName = async (req, res, next) => {
+
+  const clientName = req.params.clientName;
+
+  console.log(clientName, "client name is")
+
+
+  try {
+    
+    const emails = await ticketModel.find({ state: { $ne: "complete" }, clientName: clientName.trim()  }).select( "clientId companyName clientName company jobHolder subject status jobDate mailThreadId " );
+
+    res.status(200).send({ success: true, message: "All email list!", emails: emails, });
+
+
+ 
+
+  } catch (error) {
+    // next(error);
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while getting emails!",
+      error: error,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export const getAllSendTickets = async (req, res, next) => {
   try {
     

@@ -15,12 +15,15 @@ import { format } from "date-fns";
 import { GrCopy } from "react-icons/gr";
 import { FaTrophy } from "react-icons/fa6";
 import { GiBrokenHeart } from "react-icons/gi";
+import { IoTicketOutline } from "react-icons/io5";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { MdOutlineAnalytics, MdOutlineModeEdit } from "react-icons/md";
 import { RiProgress3Line } from "react-icons/ri";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { TbLoader2 } from "react-icons/tb";
+import { Popover, Typography } from "@mui/material";
+import Tickets from "./Tickets";
 
 
 const updates_object_init = {
@@ -729,8 +732,14 @@ const allColumns = [{
       setShow(false);
     };
 
+
+
+
+
+
     return (
-      <div className="w-full px-1">
+      <>
+        <div className="w-full px-1">
         {show ? (
           <input
             type="text"
@@ -744,6 +753,7 @@ const allColumns = [{
           <div
             onDoubleClick={() => setShow(true)}
             className="cursor-pointer w-full"
+             
           >
             {localClientName ? (
               localClientName
@@ -753,6 +763,14 @@ const allColumns = [{
           </div>
         )}
       </div>
+
+
+
+
+      </>
+
+
+        
     );
   },
 
@@ -2350,9 +2368,94 @@ const allColumns = [{
 {
   accessorKey: "actions",
   header: "Actions",
+  
   Cell: ({ cell, row }) => {
+
+    
+
+    const [anchorEl, setAnchorEl] = React.useState(null);
+
+    const handleClick = (event) => {
+      
+      setAnchorEl(event.currentTarget);
+    };
+  
+    const handleClose = () => {
+      setAnchorEl(null);
+    };
+  
+    const open = Boolean(anchorEl);
+    const id = open ? 'simple-popover' : undefined;
+
+
     return (
       <div className="flex items-center justify-center gap-4 w-full h-full">
+
+
+
+       <div>
+
+       <span title="Ticket" onClick={handleClick} id={id} className="text-2xl text-orange-500 cursor-pointer">
+         <IoTicketOutline />
+        </span>
+
+          
+
+      <Popover
+        id={id}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 20,
+           horizontal: 200,
+        }}
+        // transformOrigin={{
+        //   vertical: 'bottom',
+        //   horizontal: 'left',
+        // }}
+      >
+
+
+        
+
+
+
+
+
+      <Typography sx={{ p: 2, background: "#5F9EA0", width: "100%", textAlign: "center", fontFamily: "sans-serif", fontSize: "1.2rem", color: "whitesmoke" }}>Tickets for this Lead</Typography>
+
+      <div>
+        <Tickets  clientName={row?.original?.clientName}/>
+      </div>
+      </Popover>
+
+
+
+       </div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <span
           className="text-[1rem] cursor-pointer"
           onClick={() => {
@@ -2426,7 +2529,7 @@ const allColumns = [{
       </div>
     );
   },
-  size: 160,
+  size: 200,
 },
 //  --- Note--->
 {

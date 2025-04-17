@@ -12,6 +12,7 @@ import {
   getInboxDetail,
   getSingleEmailDetail,
   getTicketAttachments,
+  getTicketsByClientName,
   markAsRead,
   markAsReadInboxEmail,
   sendEmail,
@@ -37,6 +38,9 @@ router.get(
 
 // Get All Send Tickets
 router.get("/all/tickets", getAllSendTickets);
+
+// Get All Send Tickets      ------------------->>>    /api/v1/tickets/all/ticketsByClientName/:clientName
+router.get("/all/ticketsByClientName/:clientName", getTicketsByClientName);
 
  
 

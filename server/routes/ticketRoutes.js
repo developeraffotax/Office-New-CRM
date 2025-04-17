@@ -37,7 +37,7 @@ router.get(
 );
 
 // Get All Send Tickets
-router.get("/all/tickets", getAllSendTickets);
+router.get("/all/tickets",requiredSignIn, getAllSendTickets);
 
 // Get All Send Tickets      ------------------->>>    /api/v1/tickets/all/ticketsByClientName/:clientName
 router.get("/all/ticketsByClientName/:clientName", getTicketsByClientName);
@@ -75,7 +75,7 @@ router.put("/markAsRead/:id", markAsRead);
 router.get("/ticket/comments/:id", singleTicketComments);
 
 // Get Complete Ticket
-router.get("/complete/tickets", getCompleteTickets);
+router.get("/complete/tickets", requiredSignIn, getCompleteTickets);
 
 // Fetch All Inbox
 router.get("/fetch/inbox/:selectedCompany/:pageNo/:type", getAllInbox);

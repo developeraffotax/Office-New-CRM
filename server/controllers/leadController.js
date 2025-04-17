@@ -135,8 +135,17 @@ export const updateLead = async (req, res) => {
 
 // Get All Progress Leads
 export const getAllProgressLead = async (req, res) => {
+  const role = req.user?.user?.role?.name;
+  const userName =  req.user?.user?.name;
   try {
-    const leads = await leadModel.find({ status: { $eq: "progress" } });
+
+    let filter = { status: { $eq: "progress" } };
+
+    if (role !== "Admin") {
+      filter.jobHolder = userName;
+    }
+
+    const leads = await leadModel.find(filter);
 
     res.status(200).send({
       success: true,
@@ -155,9 +164,17 @@ export const getAllProgressLead = async (req, res) => {
 
 // Get All Won Leads
 export const getAllWonLead = async (req, res) => {
+  const role = req.user?.user?.role?.name;
+  const userName =  req.user?.user?.name;
   try {
-    const leads = await leadModel.find({ status: { $eq: "won" } });
+    let filter = { status: { $eq: "won" } };
 
+    if (role !== "Admin") {
+      filter.jobHolder = userName;
+    }
+
+    const leads = await leadModel.find(filter);
+    
     res.status(200).send({
       success: true,
       message: "All won lead list!",
@@ -175,8 +192,16 @@ export const getAllWonLead = async (req, res) => {
 
 // Get All Lost Leads
 export const getAlllostLead = async (req, res) => {
+  const role = req.user?.user?.role?.name;
+  const userName =  req.user?.user?.name;
   try {
-    const leads = await leadModel.find({ status: { $eq: "lost" } });
+    let filter = { status: { $eq: "lost" } };
+
+    if (role !== "Admin") {
+      filter.jobHolder = userName;
+    }
+
+    const leads = await leadModel.find(filter);
 
     res.status(200).send({
       success: true,

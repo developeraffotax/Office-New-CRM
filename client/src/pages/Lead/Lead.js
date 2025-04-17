@@ -2407,8 +2407,8 @@ const allColumns = [{
         anchorEl={anchorEl}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: 20,
-           horizontal: 200,
+          vertical: 'bottom',
+          horizontal: 'left',
         }}
         // transformOrigin={{
         //   vertical: 'bottom',

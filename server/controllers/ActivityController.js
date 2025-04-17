@@ -1,6 +1,7 @@
 import activityModel from "../models/activityModel.js";
 
 import moment from "moment";
+import jobsModel from "../models/jobsModel.js";
 
 // Get All Activity
 export const fetchActivities = async (req, res) => {
@@ -39,6 +40,56 @@ export const fetchActivities = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "An error occurred while fetching activities!",
+      error: error.message,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Create Activity
+export const createActivity = async (req, res) => {
+
+  
+  const activityText = req.body.activityText || "No activity text provided fron frontend!"
+  const entity = req.body.entity;
+  const details = req.body.details;
+
+  
+
+  try {
+    // const clientJob = await jobsModel.findOne({ _id: jobId });
+    // Add Activity Log
+    const user = req.user.user;
+    
+      const response = await activityModel.create({
+        user: user._id,
+        action: `${user.name.trim()} ${activityText}`,
+        entity: entity,
+        details: details,
+      });
+    
+
+    res.status(200).send({
+      success: true,
+      message: "Activity created successfully!",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      success: false,
+      message: "An error occurred while creating activity!",
       error: error.message,
     });
   }

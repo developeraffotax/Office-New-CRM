@@ -256,6 +256,39 @@ export default function AllJobs() {
         console.log(data);
         toast.success("Job Moved to Lead Successfully!💚");
 
+        const result = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/client/jobActivity/${client._id}`, { activityText : "moved this job to Leads!", });
+
+
+        // Options for formatting
+        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true, };
+        const date = new Date();
+        const formattedDate = date.toLocaleString('en-US', options);
+
+        const result2 = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/activies/create`, {
+
+          activityText : "moved this job to Leads!",
+          entity: "Jobs",
+          details: `Job Details:
+          - Company Name: ${client.companyName}
+          - Job Client: ${client.clientName || "No client provided"}
+          - Created At: ${formattedDate}`
+
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           // const res = await axios.delete(
           //   `${process.env.REACT_APP_API_URL}/api/v1/client/delete/job/${client._id}`
           // );

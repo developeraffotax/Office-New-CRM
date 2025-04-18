@@ -1120,17 +1120,28 @@ const calculateStartDate = (date, recurringType) => {
     return result;
   };
 
+  // const adjustForFridayAndWeekend = (date) => {
+  //   const day = date.getDay();
+  //   if (day === 5) {
+  //     date.setDate(date.getDate() + 3);
+  //   } else if (day === 6) {
+  //     date.setDate(date.getDate() + 2);
+  //   } else if (day === 0) {
+  //     date.setDate(date.getDate() + 1);
+  //   }
+  //   return date;
+  // };
+
   const adjustForFridayAndWeekend = (date) => {
     const day = date.getDay();
     if (day === 5) {
-      date.setDate(date.getDate() + 3);
-    } else if (day === 6) {
       date.setDate(date.getDate() + 2);
-    } else if (day === 0) {
+    } else if (day === 6) {
       date.setDate(date.getDate() + 1);
     }
     return date;
   };
+
 
   switch (recurringType) {
     case "daily":

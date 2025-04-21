@@ -22,8 +22,9 @@ import { MdOutlineAnalytics, MdOutlineModeEdit } from "react-icons/md";
 import { RiProgress3Line } from "react-icons/ri";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { TbLoader2 } from "react-icons/tb";
-import { Popover, Typography } from "@mui/material";
-import Tickets from "./Tickets";
+import {  Popover, Typography } from "@mui/material";
+ 
+import TicketsPopUp from "../../components/shared/TicketsPopUp";
 
 
 const updates_object_init = {
@@ -44,6 +45,10 @@ const updates_object_init = {
 }
 
 export default function Lead() {
+
+
+ 
+
   const navigate = useNavigate();
   const { auth } = useAuth();
   const [selectedTab, setSelectedTab] = useState("progress");
@@ -2402,6 +2407,7 @@ const allColumns = [{
           
 
       <Popover
+        
         id={id}
         open={open}
         anchorEl={anchorEl}
@@ -2426,7 +2432,7 @@ const allColumns = [{
       <Typography sx={{ p: 2, background: "#5F9EA0", width: "100%", textAlign: "center", fontFamily: "sans-serif", fontSize: "1.2rem", color: "whitesmoke" }}>Tickets for this Lead</Typography>
 
       <div>
-        <Tickets  clientName={row?.original?.clientName}/>
+        <TicketsPopUp  clientName={row?.original?.clientName} handleClose={handleClose}  />
       </div>
       </Popover>
 
@@ -3143,6 +3149,13 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
           )}
         </div>
       </div>
+
+
+
+
+
+
+
     </Layout>
   );
 }

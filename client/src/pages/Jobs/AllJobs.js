@@ -16,7 +16,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "../../context/authContext";
 import Loader from "../../utlis/Loader";
 import { TbCalendarDue, TbLoader2 } from "react-icons/tb";
-import { IoClose } from "react-icons/io5";
+import { IoClose, IoTicketOutline } from "react-icons/io5";
 import JobDetail from "./JobDetail";
 import { IoBriefcaseOutline } from "react-icons/io5";
 import { MdDriveFileMoveOutline } from "react-icons/md";
@@ -25,7 +25,7 @@ import JobCommentModal from "./JobCommentModal";
 import { MdAutoGraph } from "react-icons/md";
 import { Link, useLocation } from "react-router-dom";
 import { TbLoader } from "react-icons/tb";
-import { Box, Button, LinearProgress } from "@mui/material";
+import { Box, Button, LinearProgress, Popover, Typography } from "@mui/material";
 import { MdOutlineModeEdit } from "react-icons/md";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import { IoMdDownload } from "react-icons/io";
@@ -43,7 +43,11 @@ import AddDataLabel from "../../components/Modals/AddDataLabel";
 import InactiveClients from "./InactiveClients";
 import Swal from "sweetalert2";
 import HandleQualityModal from "../../components/Modals/HandleQualityModal";
-import { ImSpinner8 } from "react-icons/im";
+import TicketsPopUp from "../../components/shared/TicketsPopUp";
+ 
+
+
+
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -2245,12 +2249,80 @@ export default function AllJobs() {
           accessorKey: "actions",
           header: "Actions",
           Cell: ({ cell, row }) => {
+
+            
+                const [anchorEl, setAnchorEl] = React.useState(null);
+            
+                const handleClick = (event) => {
+                  
+                  setAnchorEl(event.currentTarget);
+                };
+              
+                const handleClose = () => {
+                  setAnchorEl(null);
+                };
+              
+                const open = Boolean(anchorEl);
+                const id = open ? 'simple-popover' : undefined;
             
             return (
-              <div
-                className="flex items-center justify-center gap-1 w-full h-full"
+              <div className="flex items-center justify-center gap-4 w-full h-full" >
+
                 
-              >
+                       <div>
+                
+                       <span title="Ticket" onClick={handleClick} id={id} className="text-2xl text-orange-500 cursor-pointer">
+                         <IoTicketOutline />
+                        </span>
+                
+                          
+                
+                      <Popover
+                        id={id}
+                        open={open}
+                        anchorEl={anchorEl}
+                        onClose={handleClose}
+                        anchorOrigin={{
+                          vertical: 'bottom',
+                          horizontal: 'left',
+                        }}
+                        // transformOrigin={{
+                        //   vertical: 'bottom',
+                        //   horizontal: 'left',
+                        // }}
+                      >
+                
+                
+                        
+                
+                
+                
+                
+                
+                      <Typography sx={{ p: 2, background: "#5F9EA0", width: "100%", textAlign: "center", fontFamily: "sans-serif", fontSize: "1.2rem", color: "whitesmoke" }}>Tickets for this Job</Typography>
+                
+                      <div>
+                        <TicketsPopUp  clientName={row?.original?.clientName} handleClose={handleClose}/>
+                      </div>
+                      </Popover>
+                
+                
+                
+                       </div>
+                
+                        
+                
+                
+
+
+
+
+
+
+
+
+
+
                 <div className="relative" title="Move to Lead" onClick={() => {
                   moveJobToLead(row.original);
                    
@@ -2261,10 +2333,14 @@ export default function AllJobs() {
                   </span>
                    
                 </div>
+
+
+
+
               </div>
             );
           },
-          size: 80,
+          size: 100,
         },
 
 

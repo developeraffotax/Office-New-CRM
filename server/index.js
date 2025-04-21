@@ -106,7 +106,7 @@ cron.schedule("0 13,20,23 * * *", () => {
 
 // Rest API's
 app.use("/", (req, res) => {
-  res.send(`<h1 style="color:red;">Server is running...</h1>`);
+  res.send(`<h1 style="color:green;">Server is running...</h1>`);
 });
 
 // Error-handling middleware (placed after all routes and other middleware)

@@ -1,3 +1,4 @@
+import { Drawer } from "@mui/material";
 import axios from "axios";
 import {
   MaterialReactTable,
@@ -5,11 +6,26 @@ import {
 } from "material-react-table";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import EmailDetailDrawer from "./EmailDetailDrawer";
+ 
+ 
 
 // /api/v1/tickets/all/ticketsByClientName/:clientName
-const Tickets = ({ clientName }) => {
+const TicketsPopUp = ({ clientName, handleClose }) => {
   const [tickets, setTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [ticketId, setTicketId] = useState("")
+
+  const [open, setOpen] = React.useState(false);
+
+  const toggleDrawer = (newOpen) => {
+     
+    setOpen(newOpen);
+  };
+
+
+
 
   const navigate = useNavigate();
 
@@ -66,8 +82,8 @@ const Tickets = ({ clientName }) => {
         Cell: ({ cell, row }) => {
           const clientName = row.original.clientName;
           return (
-            <div className="w-full px-1">
-              <span>{clientName}</span>
+            <div className="w-full px-1"  >
+              <span >{clientName}</span>
             </div>
           );
         },
@@ -86,12 +102,9 @@ const Tickets = ({ clientName }) => {
           return (
             <div className="w-full px-1">
               <span
-                onClick={(event) => {
-                  if (event.ctrlKey || event.metaKey) {
-                    window.open(`/ticket/detail/${row.original._id}`, "_blank");
-                  } else {
-                    navigate(`/ticket/detail/${row.original._id}`);
-                  }
+                onClick={() => {
+                  toggleDrawer(true);
+                  setTicketId(row.original._id)
                 }}
                 className="cursor-pointer text-blue-500 hover:text-blue-600 font-medium"
               >
@@ -126,8 +139,20 @@ const Tickets = ({ clientName }) => {
   return (
     <>
       <MaterialReactTable table={table} />
+      
+            <Drawer open={open} onClose={() => {toggleDrawer(false); } } anchor="right"   sx={{zIndex: 1400, '& .MuiDrawer-paper': {
+      width: 600, // Set your custom width here (px, %, etc.)
+    },}}  >
+              
+                <div className="  " >
+
+                  <EmailDetailDrawer id={ticketId} toggleDrawer={toggleDrawer} />
+                </div>
+
+            </Drawer>
+
     </>
   );
 };
 
-export default Tickets;
+export default TicketsPopUp;

@@ -6,6 +6,7 @@ import JobSourcePieChart from "./ClientSourceChart";
 import JobSourceClientPartnerDonutCharts from "./ClientpartnerChart";
 import { FaLongArrowAltUp } from "react-icons/fa";
 import { FaLongArrowAltDown } from "react-icons/fa";
+import { getLastTwelveMonths, getLastTwelveMonthsWithLabels, shiftArrFromThisMonth } from "./utils";
 
 export default function Clients({
   selectedMonth,
@@ -682,6 +683,8 @@ export default function Clients({
   //     matchesSearch
   //   );
   // });
+  console.log("UNIQUE CLIENTS>>>", uniqueClients)
+
   const filterData = uniqueClients.filter((job) => {
     const jobDate = new Date(job.currentDate);
     const jobMonth = jobDate.getMonth() + 1;
@@ -695,6 +698,31 @@ export default function Clients({
     }
 
     const matchesSearch = !search || (jobDate >= pastDate && jobDate <= today);
+
+    console.log("SELECTED YEAR >>>>>>", selectedYear)
+
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
+
+    const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
+
+    
+    if(!selectedYear) {
+      const jobDateN = new Date(jobYear, jobMonth - 1, 1); // month -1 because JS months are 0-indexed
+      return (
+        (!selectedMonth || jobMonth === parseInt(selectedMonth)) &&
+        (jobDateN >= startDate && jobDateN <= now) &&
+        (!selectedSource || job.source === selectedSource) &&
+        (!selectedClient || job.clientType === selectedClient) &&
+        (!selectedPartner || job.partner === selectedPartner) &&
+        (!selectedDepartment || job.jobName === selectedDepartment) &&
+        matchesSearch
+      )
+
+    }
+    
 
     return (
       (!selectedMonth || jobMonth === parseInt(selectedMonth)) &&
@@ -724,6 +752,8 @@ export default function Clients({
 
   // ------------------------>Format Months<--------------------->
 
+  console.log("MONTH DATA>>>", monthData)
+
   const monthOrder = [
     "Jan",
     "Feb",
@@ -750,12 +780,12 @@ export default function Clients({
     );
   });
 
-  const formattedMonths = months.map(
+  let formattedMonths = months.map(
     (month) => `${month} (${monthData[month]?.jobCount || 0})`
   );
 
   // Prepare data series for month-wise job count
-  const jobCountSeries = [
+  let jobCountSeries = [
     {
       name: "Total Jobs",
       data: months.map((month) => monthData[month]?.jobCount || 0),
@@ -770,11 +800,35 @@ export default function Clients({
     },
   ];
 
+
+
   // Render charts
   useEffect(() => {
     // Job Count Chart
+   
+    console.log("JOB COUNT SERIES >>>" ,jobCountSeries)
+    console.log("FORMATEED MONTHS >>>" ,formattedMonths)
+
+    const jobCountSeriesForPastOneYear = []
+
+    if(!selectedYear) {
+      
+
+      formattedMonths = getLastTwelveMonthsWithLabels();
+
+      const rotatedArr = shiftArrFromThisMonth([...jobCountSeries[0].data])
+
+      jobCountSeriesForPastOneYear.push({
+        name: "Total Jobs",
+        data: rotatedArr
+      },)
+
+    }
+
+    
+
     const jobCountChartOptions = {
-      series: jobCountSeries,
+      series: selectedYear ? jobCountSeries : jobCountSeriesForPastOneYear,
       chart: { type: selectChart, height: 300 },
       xaxis: { categories: formattedMonths, title: { text: "Month" } },
       yaxis: { title: { text: "Total Jobs" } },
@@ -802,11 +856,35 @@ export default function Clients({
     // eslint-disable-next-line
   }, [selectChart, months, jobCountSeries]);
 
+
+
+
+
+  
   // Department wise Fee
   useEffect(() => {
+
+    const FeeSeriesForPastOneYear = [ ]
+
+    if(!selectedYear) {
+      
+
+      formattedMonths = getLastTwelveMonthsWithLabels();
+
+      const rotatedArr = shiftArrFromThisMonth([...feeSeries[0].data])
+
+      FeeSeriesForPastOneYear.push({
+        name: "Total Fee",
+        data: rotatedArr
+      },)
+
+    }
+
+
+
     // Fee Total Chart
     const feeChartOptions = {
-      series: feeSeries,
+      series: selectedYear ? feeSeries : FeeSeriesForPastOneYear,
       chart: { type: selectChart, height: 300 },
       xaxis: { categories: formattedMonths, title: { text: "Month" } },
       yaxis: { title: { text: "Total Fee" } },

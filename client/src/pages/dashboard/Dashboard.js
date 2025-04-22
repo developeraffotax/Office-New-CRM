@@ -306,7 +306,7 @@ export default function Dashboard() {
                 Task Summary
               </button>
               <button
-                className={`py-[.4rem] px-2 outline-none min-w-[7rem]  w-[8rem] transition-all border-l-2 border-orange-600 duration-300  duration-300   ${
+                className={`py-[.4rem] px-2 outline-none min-w-[7rem]  w-[8rem] transition-all border-l-2 border-orange-600 duration-300     ${
                   selectedTab === "Clients"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
                     : "text-black bg-gray-100 "

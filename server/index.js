@@ -129,7 +129,7 @@ cron.schedule('0 0 */6 * *', () => {
   setWatch();
 }); 
 
-// await setWatch();
+await setWatch();
 
 
 

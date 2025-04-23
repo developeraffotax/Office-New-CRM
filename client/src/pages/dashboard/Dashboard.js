@@ -599,6 +599,7 @@ export default function Dashboard() {
                     search={search}
                     userData={userData}
                     isClients={isClients}
+                    salesData={salesData}
                   />
                 </div>
               ) : selectedTab === "Summary" ? (

@@ -21,6 +21,7 @@ export default function Clients({
   search,
   userData,
   isClients,
+  salesData
 }) {
   const [clients, setClients] = useState([]);
   const [fee, setFee] = useState("");
@@ -33,8 +34,10 @@ export default function Clients({
     totalClients: "0",
   });
 
+  console.log("SALES DATE", salesData)
+
   // Visibility Div
-  const initialState = [true, true, true, true, true, true];
+  const initialState = [true, true, true, true, true, true, true];
   const [visibility, setVisibility] = useState(() => {
     const savedState = localStorage.getItem("clients");
     return savedState ? JSON.parse(savedState) : initialState;
@@ -57,12 +60,8 @@ export default function Clients({
     return "grid grid-cols-1 sm:grid-cols-2";
   };
 
-  console.log("clients:", clients);
-
-  // console.log("Data:", activeClientJobs, activeClients);
-
-  // console.log("uniqueClients:", uniqueClients);
-
+ 
+ 
   const departments = [
     "Bookkeeping",
     "Payroll",
@@ -106,7 +105,7 @@ export default function Clients({
       return matchesDateFilter && matchesSearchFilter;
     });
 
-    console.log("filteredData", filteredData);
+ 
 
     setFilteredUniqueClient(filteredData);
   }, [selectedMonth, selectedYear, uniqueClients, search]);
@@ -265,7 +264,7 @@ export default function Clients({
       };
     });
 
-    console.log("departmentTotals:", departmentTotals);
+    //console.log("departmentTotals:", departmentTotals);
 
     setClients(departmentTotals);
 
@@ -303,6 +302,103 @@ export default function Clients({
     setFee(calculateTotalFee(clients).toFixed(0));
   }, [clients]);
 
+
+
+
+
+
+
+
+
+
+
+  const [lead_source_labels, set_lead_source_labels] = useState(['Upwork', "Fiverr", "PPH", "Referral", "Partner", "Google", "Facebook", "LinkedIn", "CRM", "Existing", "Other"])
+
+  const [filtered_leads, set_filtered_leads] = useState([])
+
+
+  // --Render Lead Source Chart(#888)------->
+  useEffect(() => {
+
+
+    const filteredLeads = salesData.totalLeads.filter((lead) => {
+       // Lead Date
+      const leadDate = new Date(lead.createdAt);
+      const leadMonth = leadDate.getMonth() + 1;
+      const leadYear = leadDate.getFullYear();
+
+      return  (!selectedMonth || leadMonth === parseInt(selectedMonth)) && (!selectedYear || leadYear === parseInt(selectedYear))
+      
+    })
+
+    // Count how many leads are in each source
+    const leadSourceCounts = lead_source_labels.map(label => {
+      // if (label === "Other") {
+      //   return filteredLeads.filter(lead => !lead_source_labels.includes(lead.lead_Source)).length;
+      // }
+      return filteredLeads.filter(lead => lead.lead_Source === label).length;
+    });
+
+ 
+
+ 
+
+    const optionsCount = {
+      series: [{ name: "Leads", data: leadSourceCounts }],
+      chart: { type: selectChart, height: 300 },
+      plotOptions: {
+        bar: { columnWidth: "50%", borderRadius: 5 },
+      },
+      xaxis: { categories: lead_source_labels, title: { text: "Source" } },
+      yaxis: { title: { text: "Leads" } },
+      colors: [ "#6C757D" ]
+    };
+
+    const chartElementCount = document.querySelector("#lead-source-chart");
+    if (chartElementCount) {
+      const chartCount = new ApexCharts(chartElementCount, optionsCount);
+      chartCount.render();
+      return () => chartCount.destroy();
+    }
+  }, [selectedYear, selectedMonth, selectChart]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // --Render Department Count Chart(#3)------->
   useEffect(() => {
     const departmentCounts = clients.map(
@@ -333,6 +429,7 @@ export default function Clients({
   useEffect(() => {
     const departmentFees = clients.map((client) => client.totalFee);
     const departmentLabels = clients.map((client) => client.department);
+
 
     const optionsFee = {
       series: [
@@ -446,7 +543,7 @@ export default function Clients({
       return filteredData;
     };
 
-    console.log("filterData", filterData());
+    // console.log("filterData", filterData());
 
     setFilterWorkFlow(filterData);
 
@@ -683,7 +780,7 @@ export default function Clients({
   //     matchesSearch
   //   );
   // });
-  console.log("UNIQUE CLIENTS>>>", uniqueClients)
+  // console.log("UNIQUE CLIENTS>>>", uniqueClients)
 
   const filterData = uniqueClients.filter((job) => {
     const jobDate = new Date(job.currentDate);
@@ -699,7 +796,7 @@ export default function Clients({
 
     const matchesSearch = !search || (jobDate >= pastDate && jobDate <= today);
 
-    console.log("SELECTED YEAR >>>>>>", selectedYear)
+    // console.log("SELECTED YEAR >>>>>>", selectedYear)
 
 
     const now = new Date();
@@ -735,7 +832,7 @@ export default function Clients({
     );
   });
 
-  console.log("FilterData2:", filterData);
+  //console.log("FilterData2:", filterData);
 
   // Map data for month-wise total job count and fee totals
   const monthData = filterData.reduce((acc, job) => {
@@ -752,7 +849,7 @@ export default function Clients({
 
   // ------------------------>Format Months<--------------------->
 
-  console.log("MONTH DATA>>>", monthData)
+  //console.log("MONTH DATA>>>", monthData)
 
   const monthOrder = [
     "Jan",
@@ -806,8 +903,7 @@ export default function Clients({
   useEffect(() => {
     // Job Count Chart
    
-    console.log("JOB COUNT SERIES >>>" ,jobCountSeries)
-    console.log("FORMATEED MONTHS >>>" ,formattedMonths)
+ 
 
     const jobCountSeriesForPastOneYear = []
 
@@ -1139,8 +1235,22 @@ export default function Clients({
               </div>
             )}
 
+
+             {/* ------------------Lead / Lead Source Graph----------------- */}
+             { visibility[4] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <h3 className="text-lg font-semibold text-center">
+                  Lead Source Chart
+                </h3>
+                <div id="lead-source-chart" />
+              </div>
+            )}
+
+
+
+
             {/* ------------------Source Analysis----------------- */}
-            {visibility[4] && (
+            {visibility[5] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <JobSourcePieChart
                   workFlowData={workFlowData}
@@ -1150,7 +1260,7 @@ export default function Clients({
                 />
               </div>
             )}
-            {visibility[5] && (
+            {visibility[6] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <JobSourceClientPartnerDonutCharts
                   workFlowData={workFlowData}

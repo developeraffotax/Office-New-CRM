@@ -142,6 +142,7 @@ const findUsersToNotify = async (ticket) => {
     name: ticket.lastMessageSentBy,
   });
   const jobHolder = await userModel.findOne({ name: ticket.jobHolder });
+  
   return { lastMessageSentBy, jobHolder };
 };
 
@@ -158,14 +159,16 @@ const createNotification = async (ticket) => {
     redirectLink: `/ticket/detail/${ticket._id}`,
     description: `You've received a response to a ticket with the subject "${ticket.subject}" from the company "${ticket.companyName}" and the client's name "${ticket.clientName}".`,
     taskId: ticket._id,
-    userId: lastMessageSentBy,
+    userId: lastMessageSentBy?._id,
   });
 
-  const notification2 = await notificationModel.create({
-    title: "Reply to a ticket received",
-    redirectLink: `/ticket/detail/${ticket._id}`,
-    description: `You've received a response to a ticket with the subject "${ticket.subject}" from the company "${ticket.companyName}" and the client's name "${ticket.clientName}".`,
-    taskId: ticket._id,
-    userId: jobHolder,
-  });
+  if(jobHolder?._id !== lastMessageSentBy?._id) {
+    const notification2 = await notificationModel.create({
+      title: "Reply to a ticket received",
+      redirectLink: `/ticket/detail/${ticket._id}`,
+      description: `You've received a response to a ticket with the subject "${ticket.subject}" from the company "${ticket.companyName}" and the client's name "${ticket.clientName}".`,
+      taskId: ticket._id,
+      userId: jobHolder?._id,
+    });
+  }
 };

@@ -102,6 +102,10 @@ export const Timer = forwardRef(
       return () => clearInterval(intervalId);
     }, [isRunning]);
 
+
+
+    
+
     // useEffect(() => {
     //   const timeId = localStorage.getItem("timer_Id");
     //   setTimerId(JSON.parse(timeId));
@@ -131,6 +135,8 @@ export const Timer = forwardRef(
           "timer_Id",
           JSON.stringify(response.data.timer._id)
         );
+
+        localStorage.setItem('timer_in', `${task ? '/tasks' : '/job-planning'}`);
 
         addTimerTaskStatus(response.data.timer._id);
         setIsRunning(true);

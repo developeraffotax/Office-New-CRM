@@ -7,6 +7,7 @@ import {
   fetchTimersbydate,
   getAllHolidays,
   getAllTimers,
+  getRunningTimer,
   getTimerStatus,
   removeTimerStatus,
   runningTimers,
@@ -30,6 +31,9 @@ router.put("/stop/timer/:id", requiredSignIn, stopTimer);
 
 // Get timer Status
 router.get("/status", requiredSignIn, timerStatus);
+
+// Get timer Status         /api/v1/timer/running-timer/:userId
+router.get("/running-timer/:userId", requiredSignIn, getRunningTimer);
 
 // Total time
 router.get("/total_time/:id", requiredSignIn, totalTime);

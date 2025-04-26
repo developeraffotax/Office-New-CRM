@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { IoMenu, IoClose } from "react-icons/io5";
 import { useAuth } from "../../context/authContext";
 import Spinner from "../../utlis/Spinner";
@@ -6,11 +6,13 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Draggable from "react-draggable";
 import socketIO from "socket.io-client";
 import toast from "react-hot-toast";
 import { CgList } from "react-icons/cg";
+
+
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -39,6 +41,106 @@ export default function Layout({ children }) {
     document.body.innerHTML = "<h1>Unauthorized key access !</h1>";
     throw new Error("Unauthorized key access!");
   }
+
+
+     const isInitialMount = useRef(true);
+    const [isRunning, setIsRunning] = useState(false);
+    const [elapsedTime, setElapsedTime] = useState(0);
+    const location = useLocation(); 
+
+
+  const fetchRunningTimer = async () => {
+    console.log("IN THE FETCH RUNNING TIMER", location.pathname);
+    try {
+      
+      const {data} = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/timer/running-timer/${auth?.user?.id}`);
+
+      const { _id, startTime, endTime, isRunning } = data.timer;
+
+      console.log("Timer:", data.timer);
+
+      if (startTime && !endTime) {
+        setIsRunning(isRunning);
+        const timeElapsed = Math.floor(
+          (new Date() - new Date(startTime)) / 1000
+        );
+        setElapsedTime(timeElapsed);
+      }
+
+    } catch (error) {
+      console.log(error)
+    }
+
+  }
+
+
+
+useEffect(() => {
+
+  const timer_running_in = localStorage.getItem('timer_in')
+
+  if(location.pathname !== timer_running_in) {
+    if (isInitialMount.current) {
+      fetchRunningTimer();
+      isInitialMount.current = false;
+    }
+    console.log(isRunning)
+  
+    if (isRunning) {
+      console.log("INSIDE THE RUNNING VLOVKK")
+      const hours = Math.floor(elapsedTime / 3600)
+        .toString()
+        .padStart(2, "0");
+      const minutes = Math.floor((elapsedTime % 3600) / 60)
+        .toString()
+        .padStart(2, "0");
+      const seconds = (elapsedTime % 60).toString().padStart(2, "0");
+      // setTime(`${hours}:${minutes}:${seconds}`);
+      document.title = `${hours}:${minutes}:${seconds} ⏱`;
+    } else {
+      document.title = "Affotax-CRM.";
+    }
+
+
+  }
+
+  
+
+}, [isRunning, elapsedTime]);
+
+    // ---------Timer-------
+    useEffect(() => {
+      let intervalId;
+
+      if (isRunning) {
+        intervalId = setInterval(() => {
+          setElapsedTime((prevTime) => prevTime + 1);
+        }, 1000);
+      }
+
+      return () => clearInterval(intervalId);
+    }, [isRunning]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Fetch reminders
   const getReminders = async () => {

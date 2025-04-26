@@ -142,6 +142,52 @@ export const timerStatus = async (req, res) => {
   }
 };
 
+
+
+ 
+
+
+// Get Running Timer For the User               
+export const getRunningTimer = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const filter = {
+      clientId: userId,
+      isRunning: true,
+
+    }
+
+    const timer = await timerModel.findOne(filter);
+
+
+
+    if (!timer) {
+      return res.status(200).json({ message: "Timer not running!" });
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Timer Status",
+      timer: timer,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: true,
+      message: "error in timer status controller",
+      error,
+    });
+  }
+};
+
+
+
+
+
+
+
+
 // Get Total Time(Task & Job)
 export const totalTime = async (req, res) => {
   try {

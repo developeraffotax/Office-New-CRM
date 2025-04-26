@@ -736,3 +736,49 @@ export const copyGoal = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// cron.schedule('0 0 1 * *', async () => { }
+
+
+// Create Recurring Goal for each user
+
+// export const createGoalsRecurring = async (req, res) => {
+//   try {
+//     const users = await userModel.find(); // Get all users
+//     const now = new Date();
+//     const startDate = new Date(now.getFullYear(), now.getMonth(), 1); // 1st of this month
+//     const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0); // last day of this month
+
+//     for (const user of users) {
+//       await goalModel.create({
+//         subject: 'Monthly Goal',
+//         achievement: 100, // or whatever default
+//         achievedCount: 0,
+//         startDate,
+//         endDate,
+//         goalType: 'monthly', // or however you define it
+//         jobHolder: user._id,
+//         note: '',
+//         usersList: [user._id],
+//       });
+//     }
+
+//     console.log('Monthly goals created for all users.');
+//   } catch (error) {
+//     console.error('Failed to create monthly goals:', error);
+//   }
+// }

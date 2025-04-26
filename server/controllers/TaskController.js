@@ -1113,12 +1113,31 @@ const calculateStartDate = (date, recurringType) => {
     let result = new Date(date);
     while (days > 0) {
       result.setDate(result.getDate() + 1);
-      if (result.getDay() !== 6 && result.getDay() !== 5) {
-        days--;
+      if (result.getDay() !== 0 && result.getDay() !== 6) {
+        days--; 
       }
     }
     return result;
   };
+
+
+
+
+
+
+
+
+ 
+
+  // Mon   1
+  // Tue   2
+  // Wed   3
+  // Thu   4
+  // Fri   5
+  // Sat   6
+  // Sun   0
+
+
 
   // const adjustForFridayAndWeekend = (date) => {
   //   const day = date.getDay();

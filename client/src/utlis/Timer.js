@@ -277,7 +277,7 @@ export const Timer = forwardRef(
           .padStart(2, "0");
         const seconds = (elapsedTime % 60).toString().padStart(2, "0");
         // setTime(`${hours}:${minutes}:${seconds}`);
-        document.title = `${hours}:${minutes}:${seconds}`;
+        document.title = `${hours}:${minutes}:${seconds} ⏱`;
       } else {
         document.title = "Affotax-CRM";
       }

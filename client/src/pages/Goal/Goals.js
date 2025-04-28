@@ -24,6 +24,8 @@ import { TbLoader2 } from "react-icons/tb";
 import { GrCopy } from "react-icons/gr";
 import { GoEye } from "react-icons/go";
 import GoalDetail from "../../components/Goal/GoalDetail";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { FaListOl } from "react-icons/fa";
 
 export default function Goals() {
   const { auth } = useAuth();
@@ -130,6 +132,32 @@ export default function Goals() {
     }
   };
 
+
+
+
+
+
+
+
+
+
+
+
+
+  function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
+    const savedSet = new Set(savedOrder);
+    console.log("savedSET>>>>", savedSet)
+    // Preserve the order from savedOrder, but only if the username still exists in the fetched data
+    const ordered = savedOrder.filter(name => fetchedUsernames.includes(name));
+    
+    // Add any new usernames that aren't in the saved order
+    const newOnes = fetchedUsernames.filter(name => !savedSet.has(name));
+    
+    return [...ordered, ...newOnes];
+  }
+
+
+
   //---------- Get All Users-----------
   const getAllUsers = async () => {
     try {
@@ -142,15 +170,27 @@ export default function Goals() {
         ) || []
       );
 
-      setUserName(
-        data?.users
-          ?.filter((user) =>
-            user.role?.access.some((item) =>
-              item?.permission?.includes("Goals")
-            )
-          )
-          ?.map((user) => user.name) || []
-      );
+      
+      const userNameArr = data?.users
+      ?.filter((user) =>
+        user.role?.access.some((item) =>
+          item?.permission?.includes("Goals")
+        )
+      )
+      ?.map((user) => user.name) || []
+
+      setUserName(userNameArr);
+
+      const savedOrder = JSON.parse(localStorage.getItem("usernamesOrder"));
+        if(savedOrder) {
+          const savedUserNames = mergeWithSavedOrder(userNameArr, savedOrder);
+          
+            setUserName(savedUserNames)
+        }
+
+
+
+
     } catch (error) {
       console.log(error);
     }
@@ -159,6 +199,15 @@ export default function Goals() {
   useEffect(() => {
     getAllUsers();
     // eslint-disable-next-line
+
+
+
+
+   
+
+
+
+
   }, []);
 
   // ---------------Filter Goals By User---------->
@@ -1465,6 +1514,92 @@ export default function Goals() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
   // completed
+
+
+
+
+
+
+
+
+
+
+
+  const [isReorderList, setIsReorderList] = useState(false)
+
+
+
+
+
+
+
+
+  const grid = userName?.length || 10;
+
+  const getListStyle = isDraggingOver => ({
+    background: isDraggingOver ? "#34495e" : "#34495e",
+    padding: grid,
+    width: 250,
+    borderRadius: "12px",
+  });
+
+  const getItemStyle = (isDragging, draggableStyle) => ({
+    // some basic styles to make the items look a bit nicer
+    userSelect: "none",
+    padding: 8,
+    margin: `0 0 ${grid}px 0`,
+    color: "black",
+    borderRadius: "5px",
+    
+  
+    // change background colour if dragging
+    background: isDragging ? "#95a5a6" : " #f0f3f4",
+  
+    // styles we need to apply on draggables
+    ...draggableStyle
+  });
+
+
+
+
+
+
+
+
+  // a little function to help us with reordering the result
+const reorder = (list, startIndex, endIndex) => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+
+  return result;
+};
+
+
+
+const onDragEnd = (result) => {
+  // dropped outside the list
+  if (!result.destination) {
+    return;
+  }
+
+  const items = reorder(
+    userName,
+    result.source.index,
+    result.destination.index
+  );
+
+
+  localStorage.setItem("usernamesOrder", JSON.stringify(items));
+  setUserName( items )
+}
+
+
+
+
+
+
+
   return (
     <Layout>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
@@ -1490,6 +1625,8 @@ export default function Goals() {
               >
                 <VscGraph className="h-6 w-6" />
               </span>
+
+              <button onClick={(e) => setIsReorderList(prev => !prev)} className={`ml-4 mb-1 p-2 ${isReorderList ? 'bg-orange-500 text-white' : "bg-gray-100"} rounded-md   text-xl  flex gap-2   cursor-pointer hover:shadow-md`}> <FaListOl  />  </button>
             </div>
           </div>
 
@@ -1544,8 +1681,31 @@ export default function Goals() {
             </button>
           </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           {/*----- Users ---------*/}
           {auth?.user?.role?.name === "Admin" && selectedTab === "progress" && (
+            <>
             <div className=" hidden sm:flex items-center  gap-3 overflow-x-auto hidden1">
               <button
                 onClick={() => filterGoalsByUser("All")}
@@ -1573,8 +1733,79 @@ export default function Goals() {
                 </button>
               ))}
             </div>
+
+
+
+
+            {
+              isReorderList && <div className="fixed top-[60px] right-0 z-[9999] shadow-lg ">
+              <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId="droppable">
+                  {(provided, snapshot) => (
+                    <div
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      style={getListStyle(snapshot.isDraggingOver)}
+                    >
+                      { userName?.map((item, index) => (
+                        <Draggable key={item} draggableId={item} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              style={getItemStyle(
+                                snapshot.isDragging,
+                                provided.draggableProps.style
+                              )}
+                            >
+                              {item}
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
+  
+              </div>
+            }
+            
+            
+            
+            </>
+
+
+
+
+
+
+
+
+
+
+
           )}
         </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         {/* Update Bulk Jobs */}
         {showEdit && (
           <div className="w-full  py-2">

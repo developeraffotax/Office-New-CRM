@@ -13,7 +13,7 @@ import Loader from "../../utlis/Loader";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { AiTwotoneDelete } from "react-icons/ai";
-import { MdCheckCircle, MdInsertComment } from "react-icons/md";
+import { MdCheckCircle, MdDeleteOutline, MdInsertComment, MdOutlineContentCopy } from "react-icons/md";
 import { MdOutlineModeEdit } from "react-icons/md";
 import Swal from "sweetalert2";
 import CompletedGoals from "./CompletedGoals";
@@ -215,9 +215,18 @@ export default function Goals() {
   useEffect(() => {
     const goals = selectedTab === "progress" ? goalsData : completeGoalsData;
     setFilterGoals(goals);
+
+    const selected_user = localStorage.getItem("selected_user_goals");
+
+    if(selected_user) {
+      filterGoalsByUser(selected_user)
+    }
+
+
   }, [goalsData, completeGoalsData, selectedTab]);
 
   const filterGoalsByUser = (user) => {
+    localStorage.setItem("selected_user_goals", user)
     setActiveUser(user);
     const goals = selectedTab === "progress" ? goalsData : completeGoalsData;
 
@@ -1600,6 +1609,104 @@ const onDragEnd = (result) => {
 
 
 
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  // ----------Copy Selected Goal---------->
+  const copySelectedGoals = async () => {
+
+    const selectedRowsArr = Object.keys(rowSelection)
+    const requestsArr = selectedRowsArr.map(id => axios.post( `${process.env.REACT_APP_API_URL}/api/v1/goals/copy/goal/${id}` ))
+
+    try {
+     
+       const responses = await Promise.all(requestsArr)
+    
+      if (responses) {
+        getGoals();
+        toast.success("Goals copied successfully!");
+
+       
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    }
+  };
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+  // ----------Delete Selected Goal---------->
+  const deleteSelectedGoals = async () => {
+
+    const result = await Swal.fire({ title: "Are you sure?", text: "You won't be able to revert this!", icon: "warning", showCancelButton: true, confirmButtonColor: "#3085d6", cancelButtonColor: "#d33", confirmButtonText: "Yes, delete it!", })
+    
+    
+
+    const selectedRowsArr = Object.keys(rowSelection)
+    const requestsArr = selectedRowsArr.map(id => axios.delete( `${process.env.REACT_APP_API_URL}/api/v1/goals/delete/goals/${id}` ))
+
+
+    if(result.isConfirmed) {
+      try {
+     
+        const responses = await Promise.all(requestsArr)
+        
+       if (responses) {
+         getGoals();
+         toast.success("Goals Deleted successfully!");
+         Swal.fire("Deleted!", "Your goals has been deleted.", "success");
+       }
+     } catch (error) {
+       console.log(error);
+       toast.error(error?.response?.data?.message);
+     }
+    }
+
+    
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <Layout>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
@@ -1626,7 +1733,10 @@ const onDragEnd = (result) => {
                 <VscGraph className="h-6 w-6" />
               </span>
 
-              <button onClick={(e) => setIsReorderList(prev => !prev)} className={`ml-4 mb-1 p-2 ${isReorderList ? 'bg-orange-500 text-white' : "bg-gray-100"} rounded-md   text-xl  flex gap-2   cursor-pointer hover:shadow-md`}> <FaListOl  />  </button>
+              {auth?.user?.role?.name === "Admin" && <button onClick={(e) => setIsReorderList(prev => !prev)} className={`ml-4 mb-1 p-2 ${isReorderList ? 'bg-orange-500 text-white' : "bg-gray-100"} rounded-md   text-xl  flex gap-2   cursor-pointer hover:shadow-md`}> <FaListOl  />  </button>}
+
+              {auth?.user?.role?.name === "Admin" && <button onClick={copySelectedGoals} title="Copy Multiple Goals" className="transition-all duration-500 ml-4 mb-1 p-2 bg-orange-400 hover:bg-orange-500 text-white rounded-md   text-xl disabled:text-black  disabled:bg-gray-100 disabled:cursor-not-allowed hover:cursor-pointer hover:shadow-md " disabled={Object.keys(rowSelection).length === 0}>   <MdOutlineContentCopy /> </button>}
+              {auth?.user?.role?.name === "Admin" && <button onClick={deleteSelectedGoals} title="Delete Multiple Goals" className="transition-all duration-500 ml-4 mb-1 p-2 bg-red-400 hover:bg-red-500 text-white rounded-md   text-xl disabled:text-black  disabled:bg-gray-100 disabled:cursor-not-allowed hover:cursor-pointer hover:shadow-md " disabled={Object.keys(rowSelection).length === 0}>   <MdDeleteOutline /> </button>}
             </div>
           </div>
 

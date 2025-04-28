@@ -98,7 +98,7 @@ useEffect(() => {
       // setTime(`${hours}:${minutes}:${seconds}`);
       document.title = `${hours}:${minutes}:${seconds} ⏱`;
     } else {
-      document.title = "Affotax-CRM.";
+      document.title = "Affotax-CRM";
     }
 
 

@@ -1278,8 +1278,8 @@ export const autoCreateRecurringTasks = async (req, res) => {
   }
 };
 
-// Schedule the task to run daily at 10 PM
-cron.schedule("0 22 * * *", async () => {
+// Schedule the task to run daily at 11:30 PM
+cron.schedule("30 23 * * *", async () => {
   console.log("Running task scheduler for recurring tasks at 10 PM...");
   await autoCreateRecurringTasks();
 });

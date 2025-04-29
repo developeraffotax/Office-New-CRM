@@ -44,6 +44,7 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import socketIO from "socket.io-client";
 import { Box, Typography } from "@mui/material";
 import Subtasks from "./Subtasks";
+import { ActiveTimer } from "../../utlis/ActiveTimer";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -136,7 +137,7 @@ const AllTasks = () => {
 
 
  
-
+  const [showActiveTimer, setShowActiveTimer] = useState(false)
 
 
 
@@ -2470,9 +2471,6 @@ useEffect(()=>{
 
 
 
-
-
-
   const setColumnFromOutsideTable = (colKey, filterVal) => {
 
     const col = table.getColumn(colKey);
@@ -2480,6 +2478,23 @@ useEffect(()=>{
   }
 
 
+
+  // To see the document.title timer even if the filter is applied to the Jobholder | coz it will unmount the grid timer
+  useEffect(() => {
+
+    const col = table.getColumn("jobHolder");
+
+    const filteredValue = col.getFilterValue();
+
+    if(filteredValue === auth?.user?.name) {
+      setShowActiveTimer(false)
+    } else {
+      console.log('set show timer trueeeee')
+      setShowActiveTimer(true)
+    }
+
+
+  }, [table.getColumn("jobHolder").getFilterValue])
 
 
   
@@ -3237,6 +3252,11 @@ useEffect(()=>{
           />
         </div>
       )}
+
+      {
+        showActiveTimer && <ActiveTimer />
+      }
+      
     </Layout>
   );
 };

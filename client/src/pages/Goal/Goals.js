@@ -1611,12 +1611,6 @@ const onDragEnd = (result) => {
 
 
 
-  
-
-
-
-
-
 
 
 
@@ -1627,8 +1621,9 @@ const onDragEnd = (result) => {
   const copySelectedGoals = async () => {
 
     const selectedRowsArr = Object.keys(rowSelection)
+    
     const requestsArr = selectedRowsArr.map(id => axios.post( `${process.env.REACT_APP_API_URL}/api/v1/goals/copy/goal/${id}` ))
-
+    
     try {
      
        const responses = await Promise.all(requestsArr)

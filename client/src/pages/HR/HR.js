@@ -7,7 +7,7 @@ import { useAuth } from "../../context/authContext";
 import HandleHRModal from "../../components/hr/HandleHRModal";
 import HandleDepartmentModal from "../../components/hr/HandleDepartmentModal";
 import { AiTwotoneDelete } from "react-icons/ai";
-import { MdOutlineEdit } from "react-icons/md";
+import { MdOutlineEdit, MdOutlineModeEdit } from "react-icons/md";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
@@ -19,6 +19,7 @@ import Loader from "../../utlis/Loader";
 import { RiEdit2Line } from "react-icons/ri";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { GrCopy } from "react-icons/gr";
+import { TbLoader2 } from "react-icons/tb";
 
 const months = [
   "January",
@@ -34,6 +35,13 @@ const months = [
   "November",
   "December",
 ];
+
+const updates_object_init = {
+  title: "",
+  department: "",
+  category: "",
+  software: "",
+};
 
 export default function HR() {
   const { auth } = useAuth();
@@ -268,6 +276,58 @@ export default function HR() {
       toast.error(error?.response?.data?.message);
     }
   };
+
+  // BULK EDITING
+  const [rowSelection, setRowSelection] = useState({});
+
+  const [showEdit, setShowEdit] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const [updates, setUpdates] = useState(updates_object_init);
+
+  const handle_on_change_update = (e) => {
+    setUpdates((prev) => {
+      return {
+        ...prev,
+        [e.target.name]: e.target.value,
+      };
+    });
+  };
+
+  // -------Update Bulk ROWS------------->
+
+  console.log(rowSelection, "ROW SLEECTION SSSSSS000")
+
+  const updateBulkRows = async (e) => {
+    e.preventDefault();
+    setIsUpdating(true);
+
+    console.log("Row Selection", rowSelection);
+
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/hr/update/bulk`,
+        {
+          rowSelection: Object.keys(rowSelection).filter(
+            (id) => rowSelection[id] === true
+          ),
+          updates,
+        }
+      );
+
+      if (data) {
+        setUpdates(updates_object_init);
+        toast.success("Rows Updated💚💚");
+        getAllTasks();
+      }
+    } catch (error) {
+      console.log(error?.response?.data?.message);
+      toast.error("Something went wrong!");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   // ---------------Table Detail------------->
   const columns = useMemo(
     () => [
@@ -619,6 +679,15 @@ export default function HR() {
   const table = useMaterialReactTable({
     columns,
     data: taskData || [],
+
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
+    state: { rowSelection },
+    enableBatchRowSelection: true,
+
+    getRowId: (row) => row._id,
+
+
     enableStickyHeader: true,
     enableStickyFooter: true,
     muiTableContainerProps: { sx: { maxHeight: "850px" } },
@@ -702,13 +771,13 @@ export default function HR() {
     <Layout>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex fles-start sm:items-center sm:justify-between flex-col sm:flex-row gap-4 ">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4 justify-start ">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
               HR
             </h1>
 
             <span
-              className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
+              className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400  hover:rotate-180 `}
               onClick={() => {
                 handleClearFilters();
               }}
@@ -716,6 +785,12 @@ export default function HR() {
             >
               <IoClose className="h-4 sm:h-6 w-4 sm:w-6 text-white" />
             </span>
+
+            <div className="flex justify-center items-center   ">
+              <span className={` p-1 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${ showEdit && "bg-gradient-to-tr from-rose-800 via-[#f43f5e] to-[#fb923c] text-white" }`} onClick={() => { setShowEdit(!showEdit); }} title="Edit Multiple Jobs" >
+                <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
+              </span>
+            </div>
           </div>
 
           {/* ---------Template Buttons */}
@@ -838,6 +913,82 @@ export default function HR() {
             <div class="loader"></div>
           </div>
         )}
+
+        {/* Update Bulk Jobs */}
+        {showEdit && (
+          <div className="w-full  p-4 ">
+            <form onSubmit={updateBulkRows} className="w-full grid grid-cols-12 gap-4 max-2xl:grid-cols-8  " >
+              
+
+              <div className="">
+                <select
+                  name="department"
+                  value={updates.department}
+                  onChange={handle_on_change_update}
+                  className={`${style.input} w-full`}
+                >
+                  <option value="empty">Department</option>
+                  {deparmentsData?.map((el, i) => (
+                    <option value={el._id} key={i}>
+                      {el.departmentName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="inputBox w-full">
+                <input
+                  name="category"
+                  type="text"
+                  value={updates.category}
+                  onChange={handle_on_change_update}
+                  className={`${style.input} w-full `}
+                />
+                <span>Category</span>
+              </div>
+
+              <div className="inputBox w-full">
+                <input
+                  name="software"
+                  type="text"
+                  value={updates.software}
+                  onChange={handle_on_change_update}
+                  className={`${style.input} w-full `}
+                />
+                <span>Software</span>
+              </div>
+
+              <div className="inputBox w-full">
+                <input
+                  name="title"
+                  type="text"
+                  value={updates.title}
+                  onChange={handle_on_change_update}
+                  className={`${style.input} w-full `}
+                  // placeholder="Company Name"
+                />
+                <span>Title</span>
+              </div>
+
+              <div className="w-full flex items-center justify-end  ">
+                <button
+                  className={`${style.button1} text-[15px] w-full  `}
+                  type="submit"
+                  disabled={isUpdating}
+                  style={{ padding: ".5rem  " }}
+                >
+                  {isUpdating ? (
+                    <TbLoader2 className="h-5 w-5 animate-spin text-white" />
+                  ) : (
+                    <span>Save</span>
+                  )}
+                </button>
+              </div>
+            </form>
+            <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
+          </div>
+        )}
+
         {/* -----------------Table Detail----------- */}
         <div className="w-full h-full">
           {isloading ? (

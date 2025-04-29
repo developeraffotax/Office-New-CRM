@@ -6,6 +6,7 @@ import {
   createHrTask,
   deleteHrTask,
   hrTaskDetail,
+  updateBulkHRs,
   updateHrTask,
   updateUserStatus,
 } from "../controllers/hrController.js";
@@ -32,5 +33,14 @@ router.post("/copy/task/:id", requiredSignIn, copyHrTask);
 
 // Update Status
 router.put("/update/status/:id", requiredSignIn, updateUserStatus);
+
+
+
+
+
+// Update Bulk        /api/v1/hr/update/bulk
+router.put("/update/bulk", requiredSignIn, updateBulkHRs);
+
+
 
 export default router;

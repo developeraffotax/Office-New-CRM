@@ -67,6 +67,7 @@ export default function HR() {
 
   console.log("copyDescription:", copyDescription);
 
+
   useEffect(() => {
     if (userName && userName.length > 0) {
       const savedVisibility = JSON.parse(
@@ -142,6 +143,8 @@ export default function HR() {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
+
+      console.log("THE DAT IS >>>>>>>>>>>>>>>>>>>",data,)
       setUsers(
         data?.users?.filter((user) =>
           user.role?.access.some((item) => item?.permission?.includes("HR"))
@@ -969,6 +972,39 @@ export default function HR() {
                 />
                 <span>Title</span>
               </div>
+
+
+              {
+                users?.filter(el => columnVisibility[el.name]).map( ({name, _id}) => {
+                    console.log("name is >>>>>", users)
+                    console.log("updated xxx", updates)
+                  return (
+                    <div className="">
+                      {/* <span>{name}</span> */}
+                      <select
+                        name={_id}
+                        value={updates[_id]}
+                        onChange={handle_on_change_update}
+                        className={`${style.input} w-full`}
+                      >
+                        {/* <option value="empty">{name}</option> */}
+                        <option value="">{name}</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                      </select>
+                    </div>
+                  )
+                })
+              }
+
+
+
+
+
+
+
+
+
 
               <div className="w-full flex items-center justify-end  ">
                 <button

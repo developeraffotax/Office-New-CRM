@@ -327,6 +327,88 @@ export const updateBulkHRs = async (req, res) => {
     }
 
 
+
+
+
+
+    const departmentDetail = await departmentModel.findById(updates.department);
+    if (!departmentDetail) {
+      return res.status(404).send({
+        success: false,
+        message: "Department not found!",
+      });
+    }
+
+
+
+
+
+
+
+
+
+
+    // const existingTask = await hrModel.findById(taskId);
+
+    const tasks = await hrModel.find({
+      _id: { $in: rowSelection },
+    });
+
+    if (!tasks) {
+      return res.status(404).send({
+        success: false,
+        message: "Hr task not found!",
+      });
+    }
+
+
+
+
+    for (const task of tasks) {
+      const existingUsersMap = new Map(
+        task.users.map((userObj) => [
+          userObj.user.toString(),
+          userObj.status,
+        ])
+      );
+  
+      const updatedUsers = departmentDetail.users.map((userObj) => {
+        return {
+          user: userObj.user,
+          status: existingUsersMap.get(userObj.user.toString()) || "No",
+        };
+      });
+  
+      const doc = await hrModel.findByIdAndUpdate(
+        { _id: task._id },
+        {
+          users: updatedUsers,
+        },
+        { new: true }
+      );
+  
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // const updates = {
     //   title: "x",
     //   department: "",
@@ -336,6 +418,11 @@ export const updateBulkHRs = async (req, res) => {
     //   "66cc48db9875942c91de33vf": "No"
     // };
 
+
+
+
+
+    
       // Separate top-level updates and user status updates
       const updateData = {};
       const arrayFilters = [];
@@ -357,6 +444,8 @@ export const updateBulkHRs = async (req, res) => {
         }
       });
 
+
+          
       // Step 2: Run updateMany
       const updatedRows = await hrModel.updateMany(
         {

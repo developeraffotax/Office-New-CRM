@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import departmentModel from "../models/departmentModel.js";
 import hrModel from "../models/hrModel.js";
 
@@ -324,21 +325,49 @@ export const updateBulkHRs = async (req, res) => {
       return res.status(400).send({ success: false, message: "No jobs selected for update.", });
     }
 
-    let updateData = {};
 
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value) {
-        updateData[key] = value;
-      }
-    });
+    // const updates = {
+    //   title: "x",
+    //   department: "",
+    //   category: "",
+    //   software: "",
+    //   "66cc48db9875942c91de45ac": "Yes",
+    //   "66cc48db9875942c91de33vf": "No"
+    // };
 
-    const updatedRows = await hrModel.updateMany(
-      {
-        _id: { $in: rowSelection },
-      },
-      { $set: updateData },
-       
-    );
+      // Separate top-level updates and user status updates
+      const updateData = {};
+      const arrayFilters = [];
+
+      // Step 1: Separate field updates vs user ID-based updates
+      Object.entries(updates).forEach(([key, value]) => {
+        if (!value) return;
+
+        if (mongoose.Types.ObjectId.isValid(key)) {
+          // Handle user ID-based status update
+          const filterKey = `elem${arrayFilters.length}`;
+          updateData[`users.$[${filterKey}].status`] = value;
+          arrayFilters.push({
+            [`${filterKey}.user`]: new mongoose.Types.ObjectId(key)
+          });
+        } else {
+          // Handle top-level field update
+          updateData[key] = value;
+        }
+      });
+
+      // Step 2: Run updateMany
+      const updatedRows = await hrModel.updateMany(
+        {
+          _id: { $in: rowSelection.map(id => new mongoose.Types.ObjectId(id)) }
+        },
+        {
+          $set: updateData
+        },
+        {
+          arrayFilters: arrayFilters
+        }
+      );
 
 
 

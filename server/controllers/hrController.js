@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import departmentModel from "../models/departmentModel.js";
 import hrModel from "../models/hrModel.js";
+import XLSX from "xlsx";
 
 // Create
 export const createHrTask = async (req, res) => {
@@ -381,5 +382,111 @@ export const updateBulkHRs = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send({ success: false, message: "Error in update bulk HRs!", error: error, });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Function to parse Excel/CSV data
+const parseData = (buffer) => {
+  const workbook = XLSX.read(buffer, { type: "buffer" });
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+  return XLSX.utils.sheet_to_json(sheet);
+};
+
+// const parseExcelDate = (serial) => {
+//   if (!serial || isNaN(serial)) return null;
+//   const excelEpoch = new Date(Date.UTC(1900, 0, 1));
+//   const daysOffset = Math.floor(serial - 1);
+//   const millisecondsInDay = 24 * 60 * 60 * 1000;
+//   return new Date(excelEpoch.getTime() + daysOffset * millisecondsInDay);
+// };
+
+// Controller to handle file upload
+export const importData = async (req, res) => {
+  try {
+    const file = req.file;
+    if (!file) {
+      return res.status(400).send("No file uploaded.");
+    }
+
+    const data = parseData(file.buffer);
+
+    console.log("data:", data);
+
+    const hr_tasks = await Promise.all(data.map(async (el) => {
+
+      const departmentDoc = await departmentModel.findOne({departmentName: el.department });
+
+      console.log(departmentDoc)
+      console.log("the element is", departmentDoc)
+
+
+      if(el && 'title' in el) {
+        return {
+          title: el.title,
+          department: departmentDoc ? departmentDoc._id : null,
+          category: el.category || "",
+          software: el.software || "",
+          description: el.description || "",
+          users: departmentDoc ? departmentDoc.users.map(user => ({user: user.user})) : []
+          
+          
+        }
+      }
+      
+
+    }));
+
+    console.log(hr_tasks)
+    const cleanArray = hr_tasks.filter(Boolean);
+    
+    await hrModel.insertMany(cleanArray);
+    res.status(200).send({
+      success: true,
+      message: "Data imported successfully!",
+    });
+  } catch (error) {
+    console.error("Error importing data:", error);
+    res.status(500).send("An error occurred while importing data.");
   }
 };

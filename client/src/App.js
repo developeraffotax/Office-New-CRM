@@ -32,6 +32,7 @@ import TemplateEditor from "./pages/Tickets/TemplateEditor";
 import PDFEditor from "./pages/Editor/PDFEditor";
 import Meeting from "./pages/Meeting/Meeting";
 import HR from "./pages/HR/HR"; 
+import Temp from "./components/Temp";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -107,6 +108,7 @@ function App() {
           {/* If the user is not authenticated, navigate to login */}
           {/* {!user && <Route path="*" element={<Navigate to="/" />} />} */}
           <Route path="/" element={<Login />} />
+          <Route path="/temp/:hrTaskId" element={<Temp />} />
           {userAccessRoutes}
           <Route path="/profile" element={<Profile />} />
           {/* Catch-all route: if no access to a route, show 404 */}

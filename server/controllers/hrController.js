@@ -331,62 +331,64 @@ export const updateBulkHRs = async (req, res) => {
 
 
 
-    const departmentDetail = await departmentModel.findById(updates.department);
-    if (!departmentDetail) {
-      return res.status(404).send({
-        success: false,
-        message: "Department not found!",
-      });
-    }
-
-
-
-
-
-
-
-
-
-
-    // const existingTask = await hrModel.findById(taskId);
-
-    const tasks = await hrModel.find({
-      _id: { $in: rowSelection },
-    });
-
-    if (!tasks) {
-      return res.status(404).send({
-        success: false,
-        message: "Hr task not found!",
-      });
-    }
-
-
-
-
-    for (const task of tasks) {
-      const existingUsersMap = new Map(
-        task.users.map((userObj) => [
-          userObj.user.toString(),
-          userObj.status,
-        ])
-      );
+    if(updates.department) {
+      const departmentDetail = await departmentModel.findById(updates.department);
+      if (!departmentDetail) {
+        return res.status(404).send({
+          success: false,
+          message: "Department not found!",
+        });
+      }
   
-      const updatedUsers = departmentDetail.users.map((userObj) => {
-        return {
-          user: userObj.user,
-          status: existingUsersMap.get(userObj.user.toString()) || "No",
-        };
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      // const existingTask = await hrModel.findById(taskId);
+  
+      const tasks = await hrModel.find({
+        _id: { $in: rowSelection },
       });
   
-      const doc = await hrModel.findByIdAndUpdate(
-        { _id: task._id },
-        {
-          users: updatedUsers,
-        },
-        { new: true }
-      );
+      if (!tasks) {
+        return res.status(404).send({
+          success: false,
+          message: "Hr task not found!",
+        });
+      }
   
+  
+  
+  
+      for (const task of tasks) {
+        const existingUsersMap = new Map(
+          task.users.map((userObj) => [
+            userObj.user.toString(),
+            userObj.status,
+          ])
+        );
+    
+        const updatedUsers = departmentDetail.users.map((userObj) => {
+          return {
+            user: userObj.user,
+            status: existingUsersMap.get(userObj.user.toString()) || "No",
+          };
+        });
+    
+        const doc = await hrModel.findByIdAndUpdate(
+          { _id: task._id },
+          {
+            users: updatedUsers,
+          },
+          { new: true }
+        );
+    
+      }
     }
 
 

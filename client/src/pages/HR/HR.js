@@ -19,7 +19,7 @@ import Loader from "../../utlis/Loader";
 import { RiEdit2Line } from "react-icons/ri";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { GrCopy } from "react-icons/gr";
-import { TbLoader2 } from "react-icons/tb";
+import { TbLoader, TbLoader2 } from "react-icons/tb";
 
 const months = [
   "January",
@@ -66,7 +66,6 @@ export default function HR() {
   const [month, setMonth] = useState(currentMonthIndex);
 
   console.log("copyDescription:", copyDescription);
-
 
   useEffect(() => {
     if (userName && userName.length > 0) {
@@ -144,7 +143,7 @@ export default function HR() {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
 
-      console.log("THE DAT IS >>>>>>>>>>>>>>>>>>>",data,)
+      console.log("THE DAT IS >>>>>>>>>>>>>>>>>>>", data);
       setUsers(
         data?.users?.filter((user) =>
           user.role?.access.some((item) => item?.permission?.includes("HR"))
@@ -299,7 +298,7 @@ export default function HR() {
 
   // -------Update Bulk ROWS------------->
 
-  console.log(rowSelection, "ROW SLEECTION SSSSSS000")
+  console.log(rowSelection, "ROW SLEECTION SSSSSS000");
 
   const updateBulkRows = async (e) => {
     e.preventDefault();
@@ -690,7 +689,6 @@ export default function HR() {
 
     getRowId: (row) => row._id,
 
-
     enableStickyHeader: true,
     enableStickyFooter: true,
     muiTableContainerProps: { sx: { maxHeight: "850px" } },
@@ -770,6 +768,72 @@ export default function HR() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       const [fLoading, setFLoading] = useState(false);
+
+
+    // Import CSV File
+    // --------------Import Job data------------>
+    const importJobData = async (file) => {
+      setFLoading(true);
+      if (!file) {
+        toast.error("File is required!");
+        setFLoading(false);
+        return;
+      }
+  
+      const formData = new FormData();
+      formData.append("file", file);
+  
+      try {
+        const { data } = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/v1/hr/import`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        if (data) {
+          getAllTasks();
+          toast.success("HR Tasks Data imported successfully!");
+        }
+      } catch (error) {
+        console.error("Error importing data:", error);
+        toast.error(
+          error?.response?.data?.message || "Failed to import data"
+        );
+      } finally {
+        setFLoading(false);
+      }
+    };
+
+
+
+
+
+
   return (
     <Layout>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
@@ -790,7 +854,16 @@ export default function HR() {
             </span>
 
             <div className="flex justify-center items-center   ">
-              <span className={` p-1 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${ showEdit && "bg-gradient-to-tr from-rose-800 via-[#f43f5e] to-[#fb923c] text-white" }`} onClick={() => { setShowEdit(!showEdit); }} title="Edit Multiple Jobs" >
+              <span
+                className={` p-1 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${
+                  showEdit &&
+                  "bg-gradient-to-tr from-rose-800 via-[#f43f5e] to-[#fb923c] text-white"
+                }`}
+                onClick={() => {
+                  setShowEdit(!showEdit);
+                }}
+                title="Edit Multiple Jobs"
+              >
                 <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
               </span>
             </div>
@@ -821,6 +894,35 @@ export default function HR() {
                 </div>
               )}
             </div>
+
+            <form>
+              <input
+                type="file"
+                name="file"
+                onChange={(e) => importJobData(e.target.files[0])}
+                accept=".csv, .xlsx"
+                id="importTasksHR"
+                className="hidden"
+              />
+              <label
+                htmlFor="importTasksHR"
+                className={`${
+                  style.button1
+                } !bg-gray-100 !shadow-none text-black hidden sm:flex  hover:bg-orange-500 text-[15px] bg-gradient-to-bl from-[#ffe4e6]  to-[#d8d8d8] ${
+                  fLoading ? "cursor-not-allowed opacity-90" : ""
+                }`}
+                style={{ padding: ".4rem 1.1rem", color: "#000" }}
+                title={"Import csv or excel file!"}
+                onClick={(e) => fLoading && e.preventDefault()}
+              >
+                {fLoading ? (
+                  <TbLoader className="h-6 w-6 animate-spin text-black" />
+                ) : (
+                  "Import"
+                )}
+              </label>
+            </form>
+
             {/* ----------Months Filter--------- */}
             {/* <div className="relative">
               <select
@@ -920,9 +1022,10 @@ export default function HR() {
         {/* Update Bulk Jobs */}
         {showEdit && (
           <div className="w-full  p-4 ">
-            <form onSubmit={updateBulkRows} className="w-full grid grid-cols-12 gap-4 max-2xl:grid-cols-8  " >
-              
-
+            <form
+              onSubmit={updateBulkRows}
+              className="w-full grid grid-cols-12 gap-4 max-2xl:grid-cols-8  "
+            >
               <div className="">
                 <select
                   name="department"
@@ -973,11 +1076,11 @@ export default function HR() {
                 <span>Title</span>
               </div>
 
-
-              {
-                users?.filter(el => columnVisibility[el.name]).map( ({name, _id}) => {
-                    console.log("name is >>>>>", users)
-                    console.log("updated xxx", updates)
+              {users
+                ?.filter((el) => columnVisibility[el.name])
+                .map(({ name, _id }) => {
+                  console.log("name is >>>>>", users);
+                  console.log("updated xxx", updates);
                   return (
                     <div className="">
                       {/* <span>{name}</span> */}
@@ -993,18 +1096,8 @@ export default function HR() {
                         <option value="No">No</option>
                       </select>
                     </div>
-                  )
-                })
-              }
-
-
-
-
-
-
-
-
-
+                  );
+                })}
 
               <div className="w-full flex items-center justify-end  ">
                 <button

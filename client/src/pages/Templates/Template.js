@@ -306,10 +306,17 @@ export default function Template() {
       html = html.replace(/<br\s*\/?>/gi, "\n");
       html = html.replace(/<\/p>/gi, "\n");
 
+      html = html.replace(/<li[^>]*>(.*?)<\/li>/gi, "\n- $1");
+
       // Remove all remaining HTML tags
       html = html.replace(/<[^>]*>/g, "");
 
       html = html.replace(/&nbsp;/g, " ");
+      html = html.replace(/&amp;/g, " ");
+      html = html.replace(/&lt;/g, " ");
+      html = html.replace(/&gt;/g, " ");
+
+
 
     return html;
   };

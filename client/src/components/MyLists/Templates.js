@@ -231,27 +231,47 @@ const Templates = forwardRef(
         toast.success("Template copy successfully!");
       }
     };
+const convertQuillHtmlToPlainText = (html) => {
 
-    const convertQuillHtmlToPlainText = (html) => {
-      html = html.replace(/<strong>|<b>/g, "**");
-      html = html.replace(/<\/strong>|<\/b>/g, "**");
+   
+    // html = html.replace(/<strong>|<b>/g, "**");
+    // html = html.replace(/<\/strong>|<\/b>/g, "**");
 
-      html = html.replace(/<em>|<i>/g, "_");
-      html = html.replace(/<\/em>|<\/i>/g, "_");
+    // html = html.replace(/<em>|<i>/g, "_");
+    // html = html.replace(/<\/em>|<\/i>/g, "_");
 
-      html = html.replace(/<u>/g, "__");
-      html = html.replace(/<\/u>/g, "__");
+    // html = html.replace(/<u>/g, "__");
+    // html = html.replace(/<\/u>/g, "__");
 
-      html = html.replace(/<a.*?href="(.*?)".*?>(.*?)<\/a>/g, "[$2]($1)");
+    // html = html.replace(/<a.*?href="(.*?)".*?>(.*?)<\/a>/g, "[$2]($1)");
 
-      html = html.replace(/<br\s*\/?>/g, "");
+    // html = html.replace(/<br\s*\/?>/g, "");
 
-      html = html.replace(/<\/p>/g, "\n");
+    // html = html.replace(/<\/p>/g, "\n");
 
+    // html = html.replace(/<[^>]*>/g, "");
+
+
+
+
+      // Replace line breaks and paragraph endings with newlines
+      html = html.replace(/<br\s*\/?>/gi, "\n");
+      html = html.replace(/<\/p>/gi, "\n");
+
+      html = html.replace(/<li[^>]*>(.*?)<\/li>/gi, "\n- $1");
+
+      // Remove all remaining HTML tags
       html = html.replace(/<[^>]*>/g, "");
 
-      return html;
-    };
+      html = html.replace(/&nbsp;/g, " ");
+      html = html.replace(/&amp;/g, " ");
+      html = html.replace(/&lt;/g, " ");
+      html = html.replace(/&gt;/g, " ");
+
+
+
+    return html;
+  };
 
     const copyTemplate = (template) => {
       const cleanText = convertQuillHtmlToPlainText(template);

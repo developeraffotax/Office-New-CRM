@@ -25,6 +25,7 @@ import { TbLoader2 } from "react-icons/tb";
 import {  Popover, Typography } from "@mui/material";
  
 import TicketsPopUp from "../../components/shared/TicketsPopUp";
+import SendEmailModal from "../../components/Tickets/SendEmailModal";
 
 
 const updates_object_init = {
@@ -47,8 +48,6 @@ const updates_object_init = {
 export default function Lead() {
 
 
- 
-
   const navigate = useNavigate();
   const { auth } = useAuth();
   const [selectedTab, setSelectedTab] = useState("progress");
@@ -59,6 +58,41 @@ export default function Lead() {
   const [userName, setUserName] = useState([]);
   const [load, setLoad] = useState(false);
   const [valueTotal, setValueTotal] = useState(0);
+
+
+
+
+
+    const [showSendModal, setShowSendModal] = useState(false);
+      const [access, setAccess] = useState([]);
+
+      // With Loading
+      const getEmails = async () => {
+        try {
+          const { data } = await axios.get(
+            `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets`
+          );
+          if (data) {
+            // setEmailData(data.emails);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      };
+
+
+        // Get Auth Access
+        useEffect(() => {
+          if (auth.user) {
+            const filterAccess = auth.user.role.access
+              .filter((role) => role.permission === "Tickets")
+              .flatMap((jobRole) => jobRole.subRoles);
+      
+            setAccess(filterAccess);
+          }
+        }, [auth]);
+
+
 
   
   const leadSource = [
@@ -668,6 +702,12 @@ const allColumns = [{
         ) : (
           <div
             onDoubleClick={() => setShow(true)}
+            onClick={(event) => {
+              if (event.ctrlKey) {
+                navigator.clipboard.writeText(companyName);
+                toast.success(`Copied to clipboard! | ${companyName}`);
+              }
+            }}
             className="cursor-pointer w-full"
           >
             {localCompanyName ? (
@@ -757,6 +797,12 @@ const allColumns = [{
         ) : (
           <div
             onDoubleClick={() => setShow(true)}
+            onClick={(event) => {
+              if (event.ctrlKey) {
+                navigator.clipboard.writeText(clientName);
+                toast.success(`Copied to clipboard! | ${clientName}`);
+              }
+            }}
             className="cursor-pointer w-full"
              
           >
@@ -2741,8 +2787,21 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
             }
           </div>
 
+
+
+         
           {/* ---------Template Buttons */}
           <div className="flex items-center gap-4">
+
+          <button
+              className={`${style.button1} text-[15px] flex items-center gap-1`}
+              onClick={() => setShowSendModal(true)}
+              style={{ padding: ".4rem 1rem" }}
+            >
+             <span className="text-xl "><IoTicketOutline /></span> New Ticket 
+            </button>
+
+
             <button
               className={`${style.button1} text-[15px] `}
               onClick={() => handleCreateLead()}
@@ -3151,7 +3210,16 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
       </div>
 
 
-
+      {/* ---------------------Send Email Modal------------------ */}
+      {showSendModal && (
+        <div className="fixed top-0 left-0 z-[999] w-full h-full py-1 bg-gray-700/70 flex items-center justify-center">
+          <SendEmailModal
+            setShowSendModal={setShowSendModal}
+            getEmails={getEmails}
+            access={access}
+          />
+        </div>
+      )}
 
 
 

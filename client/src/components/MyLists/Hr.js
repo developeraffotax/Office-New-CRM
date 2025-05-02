@@ -19,6 +19,7 @@ import Loader from "../../utlis/Loader";
 import { RiEdit2Line } from "react-icons/ri";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { GrCopy } from "react-icons/gr";
+import { LuLink } from "react-icons/lu";
 
 const months = [
   "January",
@@ -580,8 +581,29 @@ const HR = forwardRef(({taskData, loading, setTaskData, childRef, setIsload}, re
           accessorKey: "actions",
           header: "Actions",
           Cell: ({ cell, row }) => {
+
+            const copyToClipboard = async (id) => {
+              const origin = window.location.origin;
+  
+              await navigator.clipboard.writeText(`${origin}/temp/${id}`);
+              toast.success("Copied Successfully!")
+            }
+
+
             return (
               <div className="flex items-center justify-center gap-2 w-full h-full">
+
+                 <span
+                    className=""
+                    title="Copy URL"
+                    onClick={() => {
+                      copyToClipboard(row.original._id)
+                    }}
+                  >
+                    <LuLink className="h-6 w-6 cursor-pointer text-amber-500 hover:text-amber-600" />
+                  </span>
+
+
                 <span
                   className=""
                   title="Copy Task"
@@ -611,7 +633,7 @@ const HR = forwardRef(({taskData, loading, setTaskData, childRef, setIsload}, re
               </div>
             );
           },
-          size: 110,
+          size: 130,
         },
       ],
       // eslint-disable-next-line

@@ -67,6 +67,7 @@ export default function HR() {
   const [month, setMonth] = useState(currentMonthIndex);
 
   console.log("copyDescription:", copyDescription);
+  console.log("USERS>>>>>>>>>>>:", users);
 
   useEffect(() => {
     if (userName && userName.length > 0) {
@@ -334,6 +335,64 @@ export default function HR() {
   // ---------------Table Detail------------->
   const columns = useMemo(
     () => [
+
+      // {
+      //   accessorKey: "departmentsss",
+      //   minSize: 100,
+      //   maxSize: 200,
+      //   size: 170,
+      //   grow: false,
+      //   Header: ({ column }) => {
+      //     return (
+      //       <div className="flex flex-col gap-[2px]">
+      //         <span
+      //           className="ml-1 cursor-pointer"
+      //           title="Clear Filter"
+      //           onClick={() => column.setFilterValue("")}
+      //         >
+      //           Role
+      //         </span>
+      //         <select
+      //           value={column.getFilterValue() || ""}
+      //           onChange={(e) => column.setFilterValue(e.target.value)}
+      //           className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+      //         >
+      //           <option value="">Select</option>
+      //           {deparmentsData?.map((department) => (
+      //             <option
+      //               key={department?._id}
+      //               value={department?.departmentName || ""}
+      //             >
+      //               {department?.departmentName}
+      //             </option>
+      //           ))}
+      //         </select>
+      //       </div>
+      //     );
+      //   },
+      //   Cell: ({ cell, row }) => {
+      //     const department = row.original?.department?.departmentName || "N/A"; // Handle undefined
+      //     return (
+      //       <div className="w-full px-1">
+      //         <span>{department}</span>
+      //       </div>
+      //     );
+      //   },
+      //   filterFn: (row, columnId, filterValue) => {
+      //     const cellValue = row.getValue(columnId);
+      //     if (!filterValue) return true;
+      //     if (!cellValue) return false;
+      //     return (
+      //       cellValue.toString().toLowerCase() === filterValue.toLowerCase()
+      //     );
+      //   },
+      //   filterSelectOptions: deparmentsData?.map(
+      //     (dep) => dep?.departmentName || ""
+      //   ),
+      //   filterVariant: "select",
+      // },
+
+
       {
         accessorKey: "department.departmentName",
         minSize: 100,

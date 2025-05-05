@@ -3418,7 +3418,7 @@ useEffect(()=>{
                   setShowInactive(false);
                   setActive1("");
                   setFilterId("");
-                  active === "All" && allClientData();
+                  dep === "All" && allClientData();
                 }}
               >
                 {dep} ({getDepartmentCount(dep)})

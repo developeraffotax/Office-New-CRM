@@ -6,7 +6,7 @@ import XLSX from "xlsx";
 // Create
 export const createHrTask = async (req, res) => {
   try {
-    const { title, department, category, software, description } = req.body;
+    const { title, department, category, software, description, hrRole, } = req.body;
 
     const departmentDetail = await departmentModel.findById(department);
     if (!departmentDetail) {
@@ -16,8 +16,12 @@ export const createHrTask = async (req, res) => {
       });
     }
 
+
+    console.log("hrRole", hrRole)
+
     const task = await hrModel.create({
       title,
+      hrRole,
       department,
       category,
       software,
@@ -44,7 +48,7 @@ export const createHrTask = async (req, res) => {
 export const updateHrTask = async (req, res) => {
   try {
     const taskId = req.params.id;
-    const { title, department, category, software, description } = req.body;
+    const { title, department, category, software, description, hrRole, } = req.body;
 
     const existingTask = await hrModel.findById(taskId);
 
@@ -81,6 +85,7 @@ export const updateHrTask = async (req, res) => {
       { _id: existingTask._id },
       {
         title,
+        hrRole,
         department,
         category,
         software,
@@ -110,6 +115,7 @@ export const allHrTask = async (req, res) => {
   try {
     const tasks = await hrModel
       .find({})
+      .populate("hrRole")
       .populate({
         path: "users.user",
         select: "name email",
@@ -145,6 +151,7 @@ export const hrTaskDetail = async (req, res) => {
 
     const task = await hrModel
       .findById(taskId)
+      .populate("hrRole")
       .populate({
         path: "users.user",
         select: "name email",
@@ -581,3 +588,6 @@ export const importData = async (req, res) => {
     res.status(500).send("An error occurred while importing data.");
   }
 };
+
+
+

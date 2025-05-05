@@ -10,6 +10,10 @@ const hrSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "departments",
     },
+    hrRole: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "hrRole",
+    },
     category: {
       type: String,
       trim: true,

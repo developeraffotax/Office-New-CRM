@@ -14,9 +14,11 @@ export default function HandleHRModal({
   setTaskId,
   getAllTasks,
   deparmentsData,
+  hrRoleData,
   users,
 }) {
   const [department, setDepartment] = useState("");
+  const [hrRole, setHrRole] = useState("");
   const [category, setCategory] = useState("");
   const [software, setSoftware] = useState("");
   const [description, setDescription] = useState("");
@@ -34,6 +36,7 @@ export default function HandleHRModal({
 
       setSoftware(data?.task?.software);
       setDepartment(data?.task?.department?._id);
+      setHrRole(data?.task?.hrRole?._id);
       setCategory(data?.task?.category);
       setDescription(data?.task?.description);
       setTitle(data?.task?.title);
@@ -57,7 +60,7 @@ export default function HandleHRModal({
       if (taskId) {
         const { data } = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/v1/hr/edit/task/${taskId}`,
-          { software, department, description, category, title }
+          { software, department, description, category, title, hrRole }
         );
         if (data?.success) {
           setLoading(false);
@@ -65,6 +68,7 @@ export default function HandleHRModal({
           setTaskId("");
           setSoftware("");
           setDepartment("");
+          setHrRole("");
           setDescription("");
           setCategory("");
           setTitle("");
@@ -74,7 +78,7 @@ export default function HandleHRModal({
       } else {
         const { data } = await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/hr/create/task`,
-          { software, department, description, category, title }
+          { software, department, description, category, title, hrRole }
         );
         if (data) {
           getAllTasks();
@@ -83,6 +87,7 @@ export default function HandleHRModal({
           setShowAddTask(false);
           setSoftware("");
           setDepartment("");
+          setHrRole("");
           setDescription("");
           setCategory("");
           setTitle("");
@@ -195,6 +200,34 @@ export default function HandleHRModal({
                 onChange={(e) => setSoftware(e.target.value)}
               />
             </div>
+
+
+
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               
+              <select
+                value={hrRole}
+                className={`${style.input}`}
+                onChange={(e) => setHrRole(e.target.value)}
+              >
+                <option>Select Role</option>
+                {hrRoleData &&
+                  hrRoleData?.map((role, i) => (
+                    <option
+                      key={role._id}
+                      value={role._id}
+                      className=" flex items-center gap-1"
+                    >
+                      {role?.roleName}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+
+
+
 
             {/*------------ Desciption----------- */}
             <ReactQuill

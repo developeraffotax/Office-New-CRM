@@ -29,6 +29,7 @@ import reminderRoute from "./routes/reminderRoutes.js";
 import meetingRoute from "./routes/meetingRoutes.js";
 import hrRoute from "./routes/hrRoutes.js";
 import departmentRoute from "./routes/departmentRoutes.js";
+import hrRoleRoutes from "./routes/hrRoleRoutes.js";
 import quickListRoute from "./routes/quickListRoute.js";
 import qualityListRoute from "./routes/qualityRoutes.js";
 
@@ -89,6 +90,7 @@ app.use("/api/v1/reminders", reminderRoute);
 app.use("/api/v1/meetings", meetingRoute);
 app.use("/api/v1/hr", hrRoute);
 app.use("/api/v1/department", departmentRoute);
+app.use("/api/v1/hrRole", hrRoleRoutes);
 app.use("/api/v1/quicklist", quickListRoute);
 app.use("/api/v1/quicklist", qualityListRoute);
 app.use("/api/v1/googleSheet", sendDatatoGoogleSheet);

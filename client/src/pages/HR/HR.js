@@ -7,7 +7,7 @@ import { useAuth } from "../../context/authContext";
 import HandleHRModal from "../../components/hr/HandleHRModal";
 import HandleDepartmentModal from "../../components/hr/HandleDepartmentModal";
 import { AiTwotoneDelete } from "react-icons/ai";
-import { MdOutlineEdit, MdOutlineModeEdit } from "react-icons/md";
+import { MdOutlineEdit, MdOutlineModeEdit, MdOutlineSaveAlt } from "react-icons/md";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
@@ -21,6 +21,8 @@ import { GoEye, GoEyeClosed } from "react-icons/go";
 import { GrCopy } from "react-icons/gr";
 import { TbLoader, TbLoader2 } from "react-icons/tb";
 import { LuLink } from "react-icons/lu";
+import { CiSaveDown2 } from "react-icons/ci";
+import HandleHrRoleModal from "../../components/hr/HandleHrRoleModal";
 
 const months = [
   "January",
@@ -54,10 +56,14 @@ export default function HR() {
   const initialLoad = useRef(true);
   const [isloading, setIsLoading] = useState(false);
   const [deparmentsData, setDepartmentData] = useState([]);
+  const [hrRoleData, setHrRoleData] = useState([]);
   const [ishandleDepartment, setIshandleDepartment] = useState(false);
+  const [isHandleHrRole, setIsHandleHrRole] = useState(false);
   const [departmentId, setDepartmentId] = useState("");
+  const [hrRole, setHrRole] = useState(null);
   const closeProject = useRef(null);
   const [showDepartment, setShowDepartment] = useState(false);
+  const [showHrRoles, setShowHrRoles] = useState(false);
   const [copyDescription, setCopyDescription] = useState("");
   const [showDescription, setShowDescription] = useState(false);
   const [showcolumn, setShowColumn] = useState(false);
@@ -137,6 +143,37 @@ export default function HR() {
     fetchAllDepartments();
     // eslint-disable-next-line
   }, []);
+
+
+
+
+
+
+
+
+
+    // ----------Fetch All Roles-------->
+    const fetchAllHrRoles = async () => {
+      try {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/hrRole/all`
+        );
+        setHrRoleData(data.hrRoles);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+  
+    useEffect(() => {
+      fetchAllHrRoles();
+       
+    }, []);
+
+
+
+
+
+
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
@@ -233,7 +270,50 @@ export default function HR() {
       toast.error(error?.response?.data?.message);
     }
   };
-  // ---------Delete Departments-------->
+
+
+
+
+
+
+  // ---------Delete Role-------->
+  const handleDeleteRoleConfirmation = (id) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteRole(id);
+        Swal.fire("Deleted!", "Your role has been deleted.", "success");
+      }
+    });
+  };
+  const deleteRole = async (id) => {
+    try {
+      const { data } = await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/v1/hrRole/delete/${id}`
+      );
+      if (data) {
+        fetchAllHrRoles();
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    }
+  };
+
+
+
+
+
+
+
+  // ---------Delete Task-------->
   const handleDeleteTaskConfirmation = (tid) => {
     Swal.fire({
       title: "Are you sure?",
@@ -336,61 +416,64 @@ export default function HR() {
   const columns = useMemo(
     () => [
 
-      // {
-      //   accessorKey: "departmentsss",
-      //   minSize: 100,
-      //   maxSize: 200,
-      //   size: 170,
-      //   grow: false,
-      //   Header: ({ column }) => {
-      //     return (
-      //       <div className="flex flex-col gap-[2px]">
-      //         <span
-      //           className="ml-1 cursor-pointer"
-      //           title="Clear Filter"
-      //           onClick={() => column.setFilterValue("")}
-      //         >
-      //           Role
-      //         </span>
-      //         <select
-      //           value={column.getFilterValue() || ""}
-      //           onChange={(e) => column.setFilterValue(e.target.value)}
-      //           className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-      //         >
-      //           <option value="">Select</option>
-      //           {deparmentsData?.map((department) => (
-      //             <option
-      //               key={department?._id}
-      //               value={department?.departmentName || ""}
-      //             >
-      //               {department?.departmentName}
-      //             </option>
-      //           ))}
-      //         </select>
-      //       </div>
-      //     );
-      //   },
-      //   Cell: ({ cell, row }) => {
-      //     const department = row.original?.department?.departmentName || "N/A"; // Handle undefined
-      //     return (
-      //       <div className="w-full px-1">
-      //         <span>{department}</span>
-      //       </div>
-      //     );
-      //   },
-      //   filterFn: (row, columnId, filterValue) => {
-      //     const cellValue = row.getValue(columnId);
-      //     if (!filterValue) return true;
-      //     if (!cellValue) return false;
-      //     return (
-      //       cellValue.toString().toLowerCase() === filterValue.toLowerCase()
-      //     );
-      //   },
-      //   filterSelectOptions: deparmentsData?.map(
-      //     (dep) => dep?.departmentName || ""
-      //   ),
-      //   filterVariant: "select",
-      // },
+      {
+        accessorKey: "hrRole.roleName",
+        minSize: 100,
+        maxSize: 200,
+        size: 170,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className="flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => column.setFilterValue("")}
+              >
+                Role
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {hrRoleData?.map((role) => (
+                  <option
+                    key={role?._id}
+                    value={role?.roleName || ""}
+                  >
+                    {role?.roleName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const role = row.original?.hrRole?.roleName || "N/A"; // Handle undefined
+          return (
+            <div className="w-full px-1">
+              <span>{role}</span>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+          if (!filterValue) return true;
+          if (!cellValue) return false;
+
+          console.log("cellValue:", cellValue);
+          console.log("filterValue:", filterValue);
+          return (
+            cellValue.toString().toLowerCase() === filterValue.toLowerCase()
+          );
+        },
+        filterSelectOptions: hrRoleData?.map(
+          (role) => role?.roleName || ""
+        ),
+        filterVariant: "select",
+      },
 
 
       {
@@ -833,6 +916,9 @@ export default function HR() {
       ))}
     </div>
   );
+
+
+
   // -----------Handle Close Outsite
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -841,6 +927,7 @@ export default function HR() {
         !closeProject.current.contains(event.target)
       ) {
         setShowDepartment(false);
+        setShowHrRoles(false);
         setShowColumn(false);
       }
     };
@@ -1084,6 +1171,121 @@ export default function HR() {
             >
               Add Department
             </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            {/* ----------All ROLES--------- */}
+            <div
+              className="ml-5 hidden sm:flex items-center justify-between relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2  gap-1"
+              onClick={() => setShowHrRoles(!showHrRoles)}
+            >
+              <span className="text-[15px] text-gray-900 cursor-pointer">
+                Roles
+              </span>
+              <span
+                onClick={() => setShowHrRoles(!showHrRoles)}
+                className="cursor-pointer"
+              >
+                {!showHrRoles ? (
+                  <IoIosArrowDown className="h-5 w-5 text-black cursor-pointer" />
+                ) : (
+                  <IoIosArrowUp className="h-5 w-5 text-black cursor-pointer" />
+                )}
+              </span>
+              {/* -----------Roles------- */}
+              {showHrRoles && (
+                <div
+                  ref={closeProject}
+                  className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto hidden1 z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]"
+                >
+                  {hrRoleData &&
+                    hrRoleData?.map((role) => (
+                      <div
+                        key={role._id}
+                        className="w-full flex items-center justify-between gap-1 rounded-md bg-white border py-1 px-1 hover:bg-gray-100"
+                      >
+                        <p className="text-[13px] w-[8rem] ">
+                          {role?.roleName}
+                        </p>
+                        <div className="flex items-center gap-1">
+                          <span
+                            onClick={() => {
+                              setHrRole(role);
+                               
+                              setIsHandleHrRole(true);
+                            }}
+                            title="Edit Role"
+                          >
+                            <MdOutlineEdit className="h-5 w-5 cursor-pointer hover:text-sky-500 transition-all duration-200" />
+                          </span>
+                          <span
+                            title="Delete Role"
+                            onClick={() =>
+                              handleDeleteRoleConfirmation(role._id)
+                            }
+                          >
+                            <AiTwotoneDelete className="h-5 w-5 cursor-pointer hover:text-red-500 transition-all duration-200" />
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+            {/* --------- */}
+
+
+
+
+            <button
+              className={`${style.button1} text-[15px] `}
+              onClick={() => setIsHandleHrRole(true)}
+              style={{ padding: ".4rem 1rem" }}
+            >
+              Add Role
+            </button>
+
+
+
             <button
               className={`${style.button1} text-[15px] `}
               onClick={() => setShowAddTask(true)}
@@ -1100,13 +1302,46 @@ export default function HR() {
           </div>
         )}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         {/* Update Bulk Jobs */}
         {showEdit && (
           <div className="w-full  p-4 ">
             <form
               onSubmit={updateBulkRows}
               className="w-full grid grid-cols-12 gap-4 max-2xl:grid-cols-8  "
-            >
+            > 
+            <div className="">
+                <select
+                  name="hrRole"
+                  value={updates.hrRole}
+                  onChange={handle_on_change_update}
+                  className={`${style.input} w-full`}
+                >
+                  <option value="empty">Role</option>
+                  {hrRoleData?.map((el, i) => (
+                    <option value={el._id} key={i}>
+                      {el.roleName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+
               <div className="">
                 <select
                   name="department"
@@ -1163,7 +1398,7 @@ export default function HR() {
                   console.log("name is >>>>>", users);
                   console.log("updated xxx", updates);
                   return (
-                    <div className="">
+                    <div className="row-start-2 ">
                       {/* <span>{name}</span> */}
                       <select
                         name={_id}
@@ -1180,9 +1415,9 @@ export default function HR() {
                   );
                 })}
 
-              <div className="w-full flex items-center justify-end  ">
+              <div className="w-full flex items-center justify-end row-start-3 col-span-1   ">
                 <button
-                  className={`${style.button1} text-[15px] w-full  `}
+                  className={`${style.button1} text-lg h-10 w-full bg-gradient-to-r from-orange-600    to-[#fb923c]  `}
                   type="submit"
                   disabled={isUpdating}
                   style={{ padding: ".5rem  " }}
@@ -1190,7 +1425,7 @@ export default function HR() {
                   {isUpdating ? (
                     <TbLoader2 className="h-5 w-5 animate-spin text-white" />
                   ) : (
-                    <span>Save</span>
+                    <span className=" flex gap-1 items-center   "> <MdOutlineSaveAlt  className="mb-1"   /> Save</span>
                   )}
                 </button>
               </div>
@@ -1225,10 +1460,31 @@ export default function HR() {
                 setTaskId={setTaskId}
                 getAllTasks={getAllTasks}
                 deparmentsData={deparmentsData}
+                hrRoleData={hrRoleData}
               />
             </div>
           </div>
         )}
+
+
+        {/* -----------------Handle HR Roles--------------- */}
+        {isHandleHrRole && (
+          <div className="fixed top-0 left-0 z-[999] w-full h-full py-4 px-4 bg-gray-300/70 flex items-center justify-center">
+            <div className="w-[32rem]">
+              <HandleHrRoleModal
+                setIshandleDepartment={setIsHandleHrRole}
+                fetchAllHrRoles={fetchAllHrRoles}
+                hrRole={hrRole}
+                setHrRole={setHrRole}
+                
+                getAllTasks={getAllTasks}
+              />
+            </div>
+          </div>
+        )}
+
+
+
         {/* -----------------Handle Departments--------------- */}
         {ishandleDepartment && (
           <div className="fixed top-0 left-0 z-[999] w-full h-full py-4 px-4 bg-gray-300/70 flex items-center justify-center">

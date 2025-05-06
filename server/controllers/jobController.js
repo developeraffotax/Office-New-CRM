@@ -578,6 +578,8 @@ export const updateClientJob = async (req, res) => {
       });
     }
 
+    console.log("JOBS ARE HTESE>>>>", jobs);
+
     for (const jobData of jobs) {
       if (jobData.clientId) {
         await jobsModel.findByIdAndUpdate(

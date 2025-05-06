@@ -5,6 +5,10 @@ import { BiLoaderCircle } from "react-icons/bi";
 import axios from "axios";
 
 export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
+
+
+
+
   const [loading, setLoading] = useState(false);
   const [clientName, setClientName] = useState("");
   const [regNumber, setRegNumber] = useState("");
@@ -116,6 +120,41 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
 
   const [jobs, setJobs] = useState([]);
   const [users, setUsers] = useState([]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const [clientStatus, setClientStatus] = useState("");
+
+
+  useEffect(() => {
+
+    if(clientStatus === "Inactive") {
+      setJobs((prev) => prev.map((job) => ({ ...job, jobStatus: "Inactive" })));
+    }
+
+    if(clientStatus === "Progress") {
+      setJobs((prev) => prev.map((job) => ({ ...job, jobStatus: "Progress" })));
+    }
+
+
+
+
+  } , [clientStatus, jobs]);
+
+
+
+  
 
   console.log("jobs:", jobs);
 
@@ -559,6 +598,31 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 value={totalHours}
                 onChange={(e) => setTotalHours(e.target.value)}
               />
+
+
+              <label className="flex items-center space-x-2 w-full bg-gray-200">
+              <span className="font-medium w-[10rem]  rounded-md py-[5px] px-[.6rem]">
+                  Client Status
+                </span>
+                <select
+                value={clientStatus}
+                onChange={(e) =>
+                  setClientStatus(e.target.value)
+                }
+                className={`${style.input} w-full  bg-black  `}
+              >
+                <option value="">Select Status</option>
+                <option value="Progress">Progress</option>
+                <option value="Inactive">Inactive</option>
+                
+              </select>
+
+  {/* <span className={`font-medium w-[10rem]  rounded-md py-[5px] px-[.6rem] ${isClientInactive ? "text-red-500" : "text-green-500"}`}> {isClientInactive ? "Inactive" : "Active"} </span> */}
+                
+              </label>
+
+
+
             </div>
             {/* 2 */}
             <div className="flex flex-col gap-3">

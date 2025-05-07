@@ -100,11 +100,20 @@ app.post('/gmail-webhook', gmailWebhookHandler);
 
 
 
-// Send Data to Google Sheet
+
+
+if(process.env.pm_id === '0') {
+
+  // Send Data to Google Sheet
 cron.schedule("0 13,20,23 * * *", () => {
   console.log("Running task scheduler for recurring tasks...");
   sendDatatoGoogleSheet();
 });
+
+
+}
+
+
 
 // Rest API's
 app.use("/", (req, res) => {
@@ -126,12 +135,19 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 8080;
  
 
-cron.schedule('0 0 */6 * *', () => {
-  // Runs at midnight every 6 days
-  setWatch();
-}); 
+if(process.env.pm_id === '0') {
+  console.log("Starting cron job for setWatch...");
+  // Schedule the setWatch function to run every 6 days at midnight
+  cron.schedule('0 0 */6 * *', () => {
+    // Runs at midnight every 6 days
+    setWatch();
+  }); 
+  
+  await setWatch();
 
-await setWatch();
+}
+
+
 
 
 

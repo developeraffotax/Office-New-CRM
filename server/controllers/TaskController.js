@@ -1278,11 +1278,15 @@ export const autoCreateRecurringTasks = async (req, res) => {
   }
 };
 
-// Schedule the task to run daily at 11:30 PM
-cron.schedule("30 23 * * *", async () => {
-  console.log("Running task scheduler for recurring tasks at 10 PM...");
-  await autoCreateRecurringTasks();
+if(process.env.pm_id === '0') { 
+
+  // Schedule the task to run daily at 11:30 PM
+  cron.schedule("30 23 * * *", async () => {
+    console.log("Running task scheduler for recurring tasks at 10 PM...");
+    await autoCreateRecurringTasks();
 });
+
+}
 
 // ---------------------Delete Daily Recurring Tasks ---------------------->
 export const deleteDailyRecurringTasks = async (req, res) => {

@@ -5,6 +5,7 @@ import notificationModel from "../models/notificationModel.js";
 import userModel from "../models/userModel.js";
 import XLSX from "xlsx";
 import moment from "moment";
+import redisClient from "../utils/redisClient.js";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
@@ -120,6 +121,8 @@ export const createJob = async (req, res) => {
       });
     }
 
+    await redisClient.del('all_jobs');
+
     return res.status(200).send({
       success: true,
       message: "New client created and jobs added successfully",
@@ -137,7 +140,29 @@ export const createJob = async (req, res) => {
 
 // Get All Clients
 export const getAllClients = async (req, res) => {
+
+  const redisKey = 'all_jobs';
+
+
   try {
+
+    const cachedJobs = await redisClient.get(redisKey);
+    if (cachedJobs) {
+      console.log('✅ Redis cache hit');
+
+      const response = {
+        success: true,
+        message: "All clients",
+        clients: JSON.parse(cachedJobs),
+      }
+
+      return res.json(response);
+    }
+
+
+
+
+
     const clients = await jobsModel
       .find({
         status: { $ne: "completed" },
@@ -147,6 +172,20 @@ export const getAllClients = async (req, res) => {
         "clientName companyName regNumber email fee currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data activeClient clientType"
       )
       .populate("data");
+
+
+
+
+
+
+
+      
+
+    await redisClient.setEx(redisKey, 60, JSON.stringify(clients)); // TTL = 60 seconds
+    console.log('🆕 Redis cache set');
+
+
+
 
     res.status(200).send({
       success: true,
@@ -236,6 +275,7 @@ export const updateStatus = async (req, res) => {
 
     await clientJob.save();
 
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Job status updated successfully!",
@@ -297,7 +337,7 @@ export const updateLead = async (req, res) => {
     });
 
     await clientJob.save();
-
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Lead user updated successfully!",
@@ -359,7 +399,7 @@ export const updateJobHolder = async (req, res) => {
     });
 
     await clientJob.save();
-
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Job holder updated successfully!",
@@ -437,7 +477,7 @@ export const deleteClientJob = async (req, res) => {
     await jobsModel.findByIdAndDelete({
       _id: isExisting._id,
     });
-
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Job delete successfully!",
@@ -640,6 +680,8 @@ export const updateClientJob = async (req, res) => {
       }
     }
 
+
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Client job(s) updated successfully!",
@@ -751,6 +793,8 @@ export const updateDates = async (req, res) => {
 
     await clientJob.save();
 
+
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Date updated successfully!",
@@ -973,6 +1017,7 @@ export const createDublicateJob = async (req, res) => {
       });
     }
 
+    await redisClient.del('all_jobs');
     return res.status(200).send({
       success: true,
       message: "status completed!",
@@ -1014,6 +1059,7 @@ export const updateClientStatus = async (req, res) => {
 
     await clientJob.save();
 
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Client Job status updated successfully!",
@@ -1078,6 +1124,8 @@ export const importData = async (req, res) => {
     }));
 
     await jobsModel.insertMany(clients);
+
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Data imported successfully!",
@@ -1117,6 +1165,7 @@ export const addlabel = async (req, res) => {
 
     await updateJob.save();
 
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Label added!",
@@ -1169,6 +1218,7 @@ export const createSubTask = async (req, res) => {
 
     await job.save();
 
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Subtask added successfully!",
@@ -1227,6 +1277,8 @@ export const updateSubTaskStaus = async (req, res) => {
 
     await job.save();
 
+
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Subtask status updated!",
@@ -1291,6 +1343,7 @@ export const deleteSubTask = async (req, res) => {
 
     await job.save();
 
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Subtask deleted!",
@@ -1337,6 +1390,7 @@ export const addDatalabel = async (req, res) => {
 
     await updateJob.save();
 
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Data Label added!",
@@ -1371,6 +1425,7 @@ export const updateTime = async (req, res) => {
       { new: true }
     );
 
+    await redisClient.del('all_jobs');
     await res.status(200).send({
       success: true,
       message: "Time update successfully!",
@@ -1481,6 +1536,7 @@ export const updateBulkJob = async (req, res) => {
       });
     }
 
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Jobs updated successfully!",
@@ -1568,6 +1624,7 @@ export const getWorkflowClients = async (req, res) => {
       "job.jobStatus": "Inactive",
     });
 
+     
     res.status(200).send({
       success: true,
       message: "All Clients!",
@@ -1657,6 +1714,7 @@ export const updateWorkPlan = async (req, res) => {
 
     await clientJob.save();
 
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Work Plan update successfully!",
@@ -1699,6 +1757,7 @@ export const updateUsers = async (req, res) => {
       { new: true }
     );
 
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Job holder updated successfully!",
@@ -1758,6 +1817,8 @@ export const createQuality = async (req, res) => {
 
     await job.save();
 
+
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Quality check added successfully!",
@@ -1822,6 +1883,8 @@ export const updateQuality = async (req, res) => {
 
     await job.save();
 
+
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Quality check status updated!",
@@ -1886,6 +1949,8 @@ export const deleteQuality = async (req, res) => {
 
     await job.save();
 
+
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Quality check deleted!",
@@ -1941,6 +2006,7 @@ export const reordering = async (req, res) => {
       )
     );
 
+    await redisClient.del('all_jobs');
     res.status(200).json({
       success: true,
       message: "Quality check order updated successfully!",
@@ -1996,6 +2062,7 @@ export const createQualityForAllJobs = async (req, res) => {
     // Wait for all updates to complete
     await Promise.all(updatePromises);
 
+    await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Quality check added to all jobs in progress!",

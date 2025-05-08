@@ -544,12 +544,42 @@ export const importData = async (req, res) => {
   try {
     const file = req.file;
     if (!file) {
-      return res.status(400).send("No file uploaded.");
+      return res.status(400).send({message: "No file uploaded."});
     }
 
     const data = parseData(file.buffer);
 
     console.log("data:", data);
+
+    const errors = {};
+    const keys = ['title', 'department', 'category', 'software']
+    const isTitleInArr = data?.some(item => {
+
+      // if(!("title" in item)) {
+      //   errors.title = "title column is missing"
+      // }
+
+      for (const key of keys) {
+        if(!(key in item)) {
+          errors[key] = `${key} column is missing!`
+        }
+      }
+
+
+      
+    });
+    
+    if(Object.keys(errors).length > 0) {
+
+      return res.status(400).send({message: `These columns are missing : ${(Object.keys(errors).join(", "))}`});
+    }
+
+    
+
+   
+
+
+
 
     const hr_tasks = await Promise.all(data.map(async (el) => {
 
@@ -577,6 +607,10 @@ export const importData = async (req, res) => {
 
     console.log(hr_tasks)
     const cleanArray = hr_tasks.filter(Boolean);
+
+    console.log("CLEANED ARR:", cleanArray)
+
+
     
     await hrModel.insertMany(cleanArray);
     res.status(200).send({

@@ -181,7 +181,7 @@ export const getAllClients = async (req, res) => {
 
       
 
-    await redisClient.setEx(redisKey, 60, JSON.stringify(clients)); // TTL = 60 seconds
+    await redisClient.setEx(redisKey, 300, JSON.stringify(clients)); // TTL = 60 seconds
     console.log('🆕 Redis cache set');
 
 

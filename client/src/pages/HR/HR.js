@@ -983,9 +983,11 @@ export default function HR() {
             },
           }
         );
+
+        console.log(data)
         if (data) {
           getAllTasks();
-          toast.success("HR Tasks Data imported successfully!");
+          toast.success(data?.message);
         }
       } catch (error) {
         console.error("Error importing data:", error);

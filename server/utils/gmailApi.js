@@ -232,9 +232,32 @@ const getDetailedThreads = async (threadId, accessToken) => {
     const recipientHeaders = threadData.messages[0]?.payload.headers.filter(
       (header) => ["to", "cc", "bcc"].includes(header.name.toLowerCase())
     );
-    const recipients =
+    let recipients =
       recipientHeaders?.map((header) => header.value) || "No Recipient Found";
 
+
+    // Logic to get the right recepient email if the first message is send by client
+
+    if(recipients[0] === 'info@affotax.com' || recipients[0] === 'Affotax <info@affotax.com>') {
+
+      const recipientHeaders = threadData.messages[0]?.payload.headers.filter(
+        (header) => ["from"].includes(header.name.toLowerCase())
+      );
+
+      recipients = recipientHeaders?.map((header) => header.value) || "No Recipient Found";
+
+
+      const input = recipients[0];
+      const match = input.match(/<(.+?)>/);
+      const email = match ? match[1] : input;
+
+
+      recipients[0] = email;
+
+    }
+
+
+      console.log("RECIPIENTS??", recipients)
     const decryptedMessages = await Promise.all(
       threadData.messages.map(async (message) => {
         let decodedMessage = "";

@@ -27,6 +27,7 @@ export default function EmailDetail() {
   const [showReplay, setShowReply] = useState(false);
 
   console.log("Ticket Detail:", ticketDetail);
+  console.log("Email Detail:", emailDetail);
 
   //   Get Single Ticket
   const getSingleTicket = async () => {

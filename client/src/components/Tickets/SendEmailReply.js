@@ -25,6 +25,7 @@ export default function SendEmailReply({
   const [files, setFiles] = useState([]);
 
   console.log("message:", message);
+  console.log("emailSendTo:", emailSendTo);
 
   const customStyles = {
     control: (provided) => ({

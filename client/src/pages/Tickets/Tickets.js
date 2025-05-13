@@ -1448,7 +1448,7 @@ export default function Tickets() {
               (
                 <span
                 className={` p-1 rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
-                  showJobHolder && "bg-gradient-to-tr from-rose-800 via-[#f43f5e] to-[#fb923c] text-white"
+                  showJobHolder && "bg-orange-500 text-white"
                 }`}
                 onClick={() => {
                    

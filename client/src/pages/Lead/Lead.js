@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
-import { IoClose } from "react-icons/io5";
+import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import { useNavigate } from "react-router-dom";
 import Loader from "../../utlis/Loader";
@@ -26,6 +26,7 @@ import {  Popover, Typography } from "@mui/material";
  
 import TicketsPopUp from "../../components/shared/TicketsPopUp";
 import SendEmailModal from "../../components/Tickets/SendEmailModal";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 
 
 const updates_object_init = {
@@ -65,6 +66,11 @@ export default function Lead() {
 
     const [showSendModal, setShowSendModal] = useState(false);
       const [access, setAccess] = useState([]);
+
+      
+
+  const [showJobHolder, setShowJobHolder] = useState(false);
+  const [active1, setActive1] = useState("");
 
       // With Loading
       const getEmails = async () => {
@@ -401,6 +407,24 @@ export default function Lead() {
     return totalLead > 0 ? ((sourceCount / totalLead) * 100).toFixed(0) : 0;
   };
 
+
+
+
+  
+  function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
+    const savedSet = new Set(savedOrder);
+    console.log("savedSET>>>>", savedSet)
+    // Preserve the order from savedOrder, but only if the username still exists in the fetched data
+    const ordered = savedOrder.filter(name => fetchedUsernames.includes(name));
+    
+    // Add any new usernames that aren't in the saved order
+    const newOnes = fetchedUsernames.filter(name => !savedSet.has(name));
+    
+    return [...ordered, ...newOnes];
+  }
+
+
+
   //---------- Get All Users-----------
   const getAllUsers = async () => {
     try {
@@ -413,13 +437,20 @@ export default function Lead() {
         ) || []
       );
 
-      setUserName(
-        data?.users
-          ?.filter((user) =>
-            user.role?.access.some((item) => item?.permission.includes("Leads"))
-          )
-          .map((user) => user.name)
-      );
+      const userNameArr = data?.users
+      ?.filter((user) =>
+        user.role?.access.some((item) => item?.permission.includes("Leads"))
+      )
+      .map((user) => user.name)
+
+      setUserName(userNameArr );
+
+      const savedOrder = JSON.parse(localStorage.getItem("leads_usernamesOrder"));
+        if(savedOrder) {
+          const savedUserNames = mergeWithSavedOrder(userNameArr, savedOrder);
+          
+            setUserName(savedUserNames)
+        }
     } catch (error) {
       console.log(error);
     }
@@ -2763,6 +2794,99 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
     setFilteredData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // a little function to help us with reordering the result
+    const reorder = (list, startIndex, endIndex) => {
+      const result = Array.from(list);
+      const [removed] = result.splice(startIndex, 1);
+      result.splice(endIndex, 0, removed);
+    
+      return result;
+    };
+  
+  
+      //  -----------Handle drag end---------
+    const handleUserOnDragEnd = (result) => {
+   
+      const items = reorder( userName, result.source.index, result.destination.index );
+      localStorage.setItem("leads_usernamesOrder", JSON.stringify(items));
+      setUserName(items)
+  
+    };
+ 
+    
+  // --------------Job_Holder Length---------->
+
+  const getJobHolderCount = (user, status) => {
+    console.log("L:LEADS DATA", leadData)
+    if(user === "All") {
+      return leadData.filter((lead) =>
+        lead?.status === status
+      )?.length;
+    }
+    return leadData.filter((lead) =>
+      lead?.jobHolder === user && lead?.status === status
+    )?.length;
+  };
+    
+    
+        
+    
+        const setColumnFromOutsideTable = (colKey, filterVal) => {
+    
+          const col = table.getColumn(colKey);
+          return col.setFilterValue(filterVal);
+        }
+    
+
   return (
     <Layout>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
@@ -2905,6 +3029,29 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
           </div>
 
 
+
+
+          { auth?.user?.role?.name === "Admin" &&
+              (
+                <span
+                className={`p-[6px] rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  mt-[1.2rem] ${
+                  showJobHolder && "bg-orange-500 text-white"
+                }`}
+                onClick={() => {
+                   
+                  setShowJobHolder(prev => !prev);
+                }}
+                title="Filter by Job Holder"
+              >
+                <IoBriefcaseOutline className="  cursor-pointer text-[22px] " />
+              </span>
+              )
+            }
+
+
+
+
+
           </div>
           {load && (
             <div className="py-3">
@@ -2912,7 +3059,103 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
             </div>
           )}
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
-          {active && (
+          
+
+
+
+
+
+                    {/* ----------Job_Holder Summery Filters---------- */}
+                    {showJobHolder &&  (
+              <>
+                <div className="w-full  py-2 ">
+                  <div className="flex items-center flex-wrap gap-4">
+                    <DragDropContext onDragEnd={handleUserOnDragEnd}>
+                      <Droppable droppableId="users0" direction="horizontal">
+                        {(provided) => (
+                          <div
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                            className="flex items-center gap-3 overflow-x-auto hidden1"
+                          >
+                            
+
+                            <div
+                                      className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                                        active1 === "All" &&
+                                        "  border-b-2 text-orange-600 border-orange-600"
+                                      }`}
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      onClick={() => {
+                                        setActive1("All");
+                                        setColumnFromOutsideTable('jobHolder', "");
+                                       
+                                      }}
+                                    >
+                                     All  ( {getJobHolderCount("All", selectedTab)})
+
+                                    </div>
+
+
+                            {userName.map((user, index) => {
+
+                                console.log("THE USER IS", user)
+
+                                return (
+                                  <Draggable
+                                  key={user}
+                                  draggableId={user}
+                                  index={index}
+                                >
+                                  {(provided) => (
+                                    <div
+                                      className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                                        active1 === user &&
+                                        "  border-b-2 text-orange-600 border-orange-600"
+                                      }`}
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      onClick={() => {
+                                        setActive1(user)
+                                        setColumnFromOutsideTable('jobHolder', user);
+                                         
+                                        
+                                      }}
+                                    >
+                                      
+                                      {user} ( {getJobHolderCount(user, selectedTab)})
+
+                                    </div>
+                                  )}
+                                  
+                                  
+                                </Draggable>
+
+                                
+                                
+                              )
+
+                            }
+                                
+                              )}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
+                  </div>
+                </div>
+                <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
+              </>
+            )}
+
+
+
+
+{active && (
             <>
               <div className="flex flex-col gap-2  py-1 px-4">
                 <h3 className="font-semibold text-lg">Lead Source </h3>
@@ -2939,6 +3182,8 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
 
             
           )}
+
+
 
 
                   {/* Update Bulk Jobs */}

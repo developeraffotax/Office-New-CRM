@@ -5,7 +5,7 @@ import {
 } from "material-react-table";
 import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
-import { IoRemoveCircle } from "react-icons/io5";
+import { IoBriefcaseOutline, IoRemoveCircle } from "react-icons/io5";
 import Layout from "../../components/Loyout/Layout";
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
@@ -16,6 +16,7 @@ import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import JobCommentModal from "../Jobs/JobCommentModal";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 
 export default function CompleteTickets() {
   const { auth } = useAuth();
@@ -32,6 +33,10 @@ export default function CompleteTickets() {
   const commentStatusRef = useRef(null);
   const [commentTicketId, setCommentTicketId] = useState("");
   const [access, setAccess] = useState([]);
+
+  const [showJobHolder, setShowJobHolder] = useState(false);
+  const [active1, setActive1] = useState("");
+
 
   // console.log("Users:", users, userName);
 
@@ -81,6 +86,20 @@ export default function CompleteTickets() {
     }
   };
 
+
+
+  
+  function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
+    const savedSet = new Set(savedOrder);
+    console.log("savedSET>>>>", savedSet)
+    // Preserve the order from savedOrder, but only if the username still exists in the fetched data
+    const ordered = savedOrder.filter(name => fetchedUsernames.includes(name));
+    
+    // Add any new usernames that aren't in the saved order
+    const newOnes = fetchedUsernames.filter(name => !savedSet.has(name));
+    
+    return [...ordered, ...newOnes];
+  }
   //---------- Get All Users-----------
   const getAllUsers = async () => {
     try {
@@ -95,15 +114,27 @@ export default function CompleteTickets() {
         ) || []
       );
 
+
+      const userNameArr = data?.users
+      ?.filter((user) =>
+        user.role?.access.some((item) =>
+          item?.permission?.includes("Tickets")
+        )
+      )
+      .map((user) => user.name)
+
       setUserName(
-        data?.users
-          ?.filter((user) =>
-            user.role?.access.some((item) =>
-              item?.permission?.includes("Tickets")
-            )
-          )
-          .map((user) => user.name)
+        userNameArr
       );
+
+
+
+      const savedOrder = JSON.parse(localStorage.getItem("tickets_complete_usernamesOrder"));
+        if(savedOrder) {
+          const savedUserNames = mergeWithSavedOrder(userNameArr, savedOrder);
+          
+            setUserName(savedUserNames)
+        }
     } catch (error) {
       console.log(error);
     }
@@ -998,6 +1029,62 @@ export default function CompleteTickets() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+
+
+  
+
+
+
+
+
+
+
+
+
+    // a little function to help us with reordering the result
+    const reorder = (list, startIndex, endIndex) => {
+      const result = Array.from(list);
+      const [removed] = result.splice(startIndex, 1);
+      result.splice(endIndex, 0, removed);
+    
+      return result;
+    };
+  
+  
+      //  -----------Handle drag end---------
+    const handleUserOnDragEnd = (result) => {
+   
+      const items = reorder( userName, result.source.index, result.destination.index );
+      localStorage.setItem("tickets_complete_usernamesOrder", JSON.stringify(items));
+      setUserName(items)
+  
+    };
+ 
+    
+  // --------------Job_Holder Length---------->
+
+  const getJobHolderCount = (user, status) => {
+    console.log("Tickets DATA", emailData)
+    if(user === "All") {
+      return emailData.length;
+    }
+    return emailData.filter((ticket) =>
+      ticket?.jobHolder === user
+    )?.length;
+  };
+    
+    
+    
+        
+    
+        const setColumnFromOutsideTable = (colKey, filterVal) => {
+    
+          const col = table.getColumn(colKey);
+          return col.setFilterValue(filterVal);
+        }
+    
+
+
   return (
     <Layout>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
@@ -1020,7 +1107,9 @@ export default function CompleteTickets() {
         </div>
 
         <>
-          <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
+          <div className="w-full flex flex-row justify-start items-center gap-2  mt-5">
+
+          <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden transition-all duration-300 w-fit">
             <button
               className={`py-1 px-2 outline-none transition-all duration-300  w-[6rem] ${
                 selectedTab === "progress"
@@ -1061,10 +1150,130 @@ export default function CompleteTickets() {
               </button>
             )}
           </div>
+
+
+          { auth?.user?.role?.name === "Admin" &&
+              (
+                <span
+                className={` p-1 rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
+                  showJobHolder && "bg-gradient-to-tr from-rose-800 via-[#f43f5e] to-[#fb923c] text-white"
+                }`}
+                onClick={() => {
+                   
+                  setShowJobHolder(prev => !prev);
+                }}
+                title="Filter by Job Holder"
+              >
+                <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
+              </span>
+              )
+            }
+          </div>
+
+
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
         </>
 
-        <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
+
+
+
+
+
+
+
+
+
+                {/* ----------Job_Holder Summery Filters---------- */}
+                {showJobHolder &&  (
+              <>
+                <div className="w-full  py-2 ">
+                  <div className="flex items-center flex-wrap gap-4">
+                    <DragDropContext onDragEnd={handleUserOnDragEnd}>
+                      <Droppable droppableId="users0" direction="horizontal">
+                        {(provided) => (
+                          <div
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                            className="flex items-center gap-3 overflow-x-auto hidden1"
+                          >
+                            
+
+                            <div
+                                      className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                                        active1 === "All" &&
+                                        "  border-b-2 text-orange-600 border-orange-600"
+                                      }`}
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      onClick={() => {
+                                        setActive1("All");
+                                        setColumnFromOutsideTable('jobHolder', "");
+                                       
+                                      }}
+                                    >
+                                     All ({getJobHolderCount("All")})
+
+                                    </div>
+
+
+                            {userName.map((user, index) => {
+
+                                console.log("THE USER IS", user)
+
+                                return (
+                                  <Draggable
+                                  key={user}
+                                  draggableId={user}
+                                  index={index}
+                                >
+                                  {(provided) => (
+                                    <div
+                                      className={`py-1   px-2 cursor-pointer font-[500] text-[14px]   ${
+                                        active1 === user &&
+                                        "  border-b-2 text-orange-600 border-orange-600"
+                                      }`}
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      onClick={() => {
+                                        setActive1(user)
+                                        setColumnFromOutsideTable('jobHolder', user);
+                                         
+                                        
+                                      }}
+                                    >
+                                      
+                                      {user} ({getJobHolderCount(user)})
+
+                                    </div>
+                                  )}
+                                  
+                                  
+                                </Draggable>
+
+                                
+                                
+                              )
+
+                            }
+                                
+                              )}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
+                  </div>
+                </div>
+                <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
+              </>
+            )}
+
+
+
+
+        
 
         {/* ---------Table Detail---------- */}
         <div className="w-full h-full">

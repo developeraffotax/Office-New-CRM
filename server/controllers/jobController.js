@@ -338,7 +338,7 @@ export const updateFee = async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error in update job status !",
+      message: "Error in update job fee !",
       error: error,
     });
   }

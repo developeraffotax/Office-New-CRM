@@ -1921,6 +1921,7 @@ export default function AllJobs() {
               "Submission",
               "Billing",
               "Feedback",
+               
               
               
             ];
@@ -1949,6 +1950,8 @@ export default function AllJobs() {
                       {status}
                     </option>
                   ))}
+
+                <option value="empty">Empty</option>
                 </select>
               </div>
             );
@@ -1980,8 +1983,28 @@ export default function AllJobs() {
               </select>
             );
           },
+
+
+          // filterFn: (row, columnId, filterValue) => {
+          //   const labelName = row.original?.data?.name || "";
+          //   if (filterValue === "empty") {
+          //     return !labelName;
+          //   }
+          //   return labelName === filterValue;
+          // },
+
+
           filterFn: (row, columnId, filterValue) => {
             const cellValue = row.getValue(columnId);
+            
+            if (filterValue === "empty") {
+
+              return cellValue === "empty" ? true : !cellValue
+
+            
+                }
+
+
             return (cellValue || "").toString() === filterValue.toString();
           },
           filterSelectOptions: [
@@ -1993,6 +2016,7 @@ export default function AllJobs() {
             "Submission",
             "Billing",
             "Feedback",
+            "empty",
            
             "Inactive",
           ],
@@ -2028,6 +2052,7 @@ export default function AllJobs() {
                       {lead}
                     </option>
                   ))}
+                  <option value="empty">Empty</option>
                 </select>
               </div>
             );
@@ -2054,7 +2079,17 @@ export default function AllJobs() {
               </div>
             );
           },
-          filterFn: "equals",
+
+          filterFn: (row, columnId, filterValue) => {
+            const cellValue = row.getValue(columnId);
+          
+            if (filterValue === "empty") {
+              return !cellValue || cellValue === "empty";
+            }
+          
+            return String(cellValue ?? "") === String(filterValue);
+          },
+          // filterFn: "equals",
           filterSelectOptions: users.map((lead) => lead),
           filterVariant: "select",
           size: 100,

@@ -11,7 +11,7 @@ import {
   useMaterialReactTable,
 } from "material-react-table";
 import { addMonths, format, formatISO } from "date-fns";
-import { MdInsertComment } from "react-icons/md";
+import { MdAccountCircle, MdInsertComment } from "react-icons/md";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/authContext";
 import Loader from "../../utlis/Loader";
@@ -25,7 +25,7 @@ import JobCommentModal from "./JobCommentModal";
 import { MdAutoGraph } from "react-icons/md";
 import { Link, useLocation } from "react-router-dom";
 import { TbLoader } from "react-icons/tb";
-import { Box, Button, LinearProgress, Popover, Typography } from "@mui/material";
+import { Box, Button, LinearProgress, ListItemIcon, MenuItem, Popover, Typography } from "@mui/material";
 import { MdOutlineModeEdit } from "react-icons/md";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import { IoMdDownload } from "react-icons/io";
@@ -44,6 +44,7 @@ import InactiveClients from "./InactiveClients";
 import Swal from "sweetalert2";
 import HandleQualityModal from "../../components/Modals/HandleQualityModal";
 import TicketsPopUp from "../../components/shared/TicketsPopUp";
+import { BiSend } from "react-icons/bi";
  
 
 
@@ -148,7 +149,7 @@ export default function AllJobs() {
     "Owner",
     "Budget",
     "Timer",
-    "Comments",
+    // "Comments",
     "Labels",
     "Fee",
     "Source",
@@ -2203,12 +2204,58 @@ export default function AllJobs() {
           filterVariant: "select",
           size: 90,
         },
+        // {
+        //   id: "Comments",
+        //   accessorKey: "comments",
+        //   header: "Comments",
+        //   Cell: ({ cell, row }) => {
+        //     const comments = cell.getValue();
+        //     const [readComments, setReadComments] = useState([]);
+
+        //     useEffect(() => {
+        //       const filterComments = comments.filter(
+        //         (item) => item.status === "unread"
+        //       );
+        //       setReadComments(filterComments);
+        //       // eslint-disable-next-line
+        //     }, [comments]);
+
+        //     return (
+        //       <div
+        //         className="flex items-center justify-center gap-1 w-full h-full"
+        //         onClick={() => {
+        //           setJobId(row.original._id);
+        //           setIsComment(true);
+        //         }}
+        //       >
+        //         <div className="relative">
+        //           <span className="text-[1rem] cursor-pointer relative">
+        //             <MdInsertComment className="h-5 w-5 text-orange-600 " />
+        //           </span>
+        //           {/* {readComments?.length > 0 && (
+        //           <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
+        //             {readComments?.length}
+        //           </span>
+        //         )} */}
+        //         </div>
+        //       </div>
+        //     );
+        //   },
+        //   size: 60,
+        // },
+
+        // Actions move to leads
         {
-          id: "Comments",
-          accessorKey: "comments",
-          header: "Comments",
+          id: "Actions",
+          accessorKey: "actions",
+          header: "Actions",
+          
           Cell: ({ cell, row }) => {
-            const comments = cell.getValue();
+
+            console.log("THE ROW IS :>>>>",row)
+            // related to comments
+            //const comments = cell.getValue();
+            const comments = row.original?.comments;
             const [readComments, setReadComments] = useState([]);
 
             useEffect(() => {
@@ -2219,36 +2266,11 @@ export default function AllJobs() {
               // eslint-disable-next-line
             }, [comments]);
 
-            return (
-              <div
-                className="flex items-center justify-center gap-1 w-full h-full"
-                onClick={() => {
-                  setJobId(row.original._id);
-                  setIsComment(true);
-                }}
-              >
-                <div className="relative">
-                  <span className="text-[1rem] cursor-pointer relative">
-                    <MdInsertComment className="h-5 w-5 text-orange-600 " />
-                  </span>
-                  {/* {readComments?.length > 0 && (
-                  <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
-                    {readComments?.length}
-                  </span>
-                )} */}
-                </div>
-              </div>
-            );
-          },
-          size: 80,
-        },
 
-        // Actions move to leads
-        {
-          id: "Actions",
-          accessorKey: "actions",
-          header: "Actions",
-          Cell: ({ cell, row }) => {
+
+
+
+
 
             
                 const [anchorEl, setAnchorEl] = React.useState(null);
@@ -2266,7 +2288,28 @@ export default function AllJobs() {
                 const id = open ? 'simple-popover' : undefined;
             
             return (
-              <div className="flex items-center justify-center gap-4 w-full h-full" >
+              <div className="flex items-center justify-center gap-4 w-full h-full " >
+
+
+              <div
+                title="Comments"
+                className="flex items-center justify-center gap-1 w-full h-full"
+                onClick={() => {
+                  setJobId(row.original._id);
+                  setIsComment(true);
+                }}
+              >
+                <div className="relative">
+                  <span className="text-[1rem] cursor-pointer relative">
+                    <MdInsertComment className="h-5 w-5 text-orange-600 " />
+                  </span>
+                  {/* {readComments?.length > 0 && (
+                  <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
+                    {readComments?.length}
+                  </span>
+                )} */}
+                </div>
+              </div>
 
                 
                        <div>
@@ -2340,7 +2383,7 @@ export default function AllJobs() {
               </div>
             );
           },
-          size: 100,
+          size: 120,
         },
 
 
@@ -2732,8 +2775,8 @@ export default function AllJobs() {
 
                 filterVariant: "select",
                 filterSelectOptions: dataLable.map((label) => label.name),
-                size: 110,
-                minSize: 100,
+                size: 80,
+                minSize: 80,
                 maxSize: 210,
                 grow: false,
               },
@@ -3010,6 +3053,10 @@ export default function AllJobs() {
     enableTopToolbar: true,
     enableBottomToolbar: true,
     enableRowSelection: true,
+    // enableColumnPinning: true,
+     
+    // enableRowVirtualization: true,
+    // enableColumnVirtualization: true,
     onRowSelectionChange: setRowSelection,
     renderTopToolbar:() => (
       
@@ -3026,8 +3073,42 @@ export default function AllJobs() {
       </div>
     ),
 
+    // enableRowActions: true,
 
-    state: { rowSelection,   },
+    // renderRowActionMenuItems: ({ closeMenu }) => [
+    //   <MenuItem
+    //     key={0}
+    //     onClick={() => {
+    //       // View profile logic...
+    //       closeMenu();
+    //     }}
+    //     sx={{ m: 0 }}
+    //   >
+    //     <ListItemIcon>
+    //       <MdAccountCircle />
+    //     </ListItemIcon>
+    //     View Profile
+    //   </MenuItem>,
+    //   <MenuItem
+    //     key={1}
+    //     onClick={() => {
+    //       // Send email logic...
+    //       closeMenu();
+    //     }}
+    //     sx={{ m: 0 }}
+    //   >
+    //     <ListItemIcon>
+    //       <BiSend />
+    //     </ListItemIcon>
+    //     Send Email
+    //   </MenuItem>,
+    // ],
+
+
+     
+
+    // state: { rowSelection,  columnPinning: { right: ['mrt-row-actions'],}  },
+    state: { rowSelection,    },
     // enableEditing: true,
     // state: { isLoading: loading },
 
@@ -3036,6 +3117,10 @@ export default function AllJobs() {
       pagination: { pageSize: 30 },
       pageSize: 20,
       density: "compact",
+      // columnPinning: {
+        
+      //   right: ['mrt-row-actions'],
+      // },
     },
 
     muiTableHeadCellProps: {

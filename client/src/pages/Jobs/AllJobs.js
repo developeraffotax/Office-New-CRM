@@ -181,7 +181,7 @@ export default function AllJobs() {
     localStorage.setItem("columnVisibility", JSON.stringify(updatedVisibility));
   };
 
-  console.log("qualityData:", qualityData);
+ 
 
   // Extract the current path
   const currentPath = location.pathname;
@@ -219,7 +219,7 @@ export default function AllJobs() {
 
   // Move to Job Handler
   const moveJobToLead = async (client) => {
-    console.log(client);
+    
 
     // Get today's date
     const today = new Date();
@@ -258,7 +258,7 @@ export default function AllJobs() {
 
 
       if (data) {
-        console.log(data);
+        
         toast.success("Job Moved to Lead Successfully!💚");
 
         const result = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/client/jobActivity/${client._id}`, { activityText : "moved this job to Leads!", });
@@ -373,12 +373,19 @@ export default function AllJobs() {
       return data.reduce((sum, client) => sum + Number(client.fee), 0);
     };
 
+    console.log("USE EFFECT RUN FOR THE FEE CALCULATE< ", filterData)
     if (active === "All") {
       setTotalFee(calculateTotalFee(tableData).toFixed(0));
     } else if (filterData) {
       setTotalFee(calculateTotalFee(filterData).toFixed(0));
     }
   }, [tableData, filterData, active, active1]);
+
+
+
+
+
+
 
   // ---------------All Client_Job Data----------->
   const allClientJobData = async () => {
@@ -568,7 +575,7 @@ export default function AllJobs() {
           item?.companyName.toLowerCase().includes(searchValue.toLowerCase())
       );
       setFilterData(filteredData);
-      console.log("SearchData:", filteredData);
+      // console.log("SearchData:", filteredData);
     } else {
       setFilterData(tableData);
     }
@@ -712,6 +719,92 @@ export default function AllJobs() {
       console.error("Error updating status", error);
     }
   };
+
+
+
+
+
+
+
+
+
+
+
+  // ---------------Handle Update Fee ---------->
+  const handleUpdateFee = async (rowId, fee) => {
+
+    console.log("ROW ID IS", rowId, "& THE FEE IS", fee)
+    if (!rowId) {
+      return toast.error("Job id is required!");
+    }
+    try {
+      const { data } = await axios.patch(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/update/fee/${rowId}`,
+        {
+          fee: fee,
+        }
+      );
+
+      console.log("THE DATE RECEIVED AFTER THE UPDATE",data)
+      if (data) {
+        if (filterId || active || active1) {
+          setFilterData((prevData) => {
+             
+
+            return  prevData?.map((item) =>
+              item._id === rowId
+                ? { ...item, fee: fee }
+                : item
+            )
+          }
+            
+           
+          );
+        }
+        setTableData((prevData) => {
+
+           
+          return prevData?.map((item) =>
+            item._id === rowId
+              ? { ...item, fee: fee }
+              : item
+          )
+        }
+          
+        );
+        toast.success("Job Fee updated!");
+        
+      }
+    } catch (error) {
+      console.error("Error updating status", error);
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // ---------------Handle Update Lead ---------->
   const handleUpdateLead = async (rowId, lead) => {
@@ -1018,7 +1111,7 @@ export default function AllJobs() {
       );
       if (data) {
         const clientJob = data.job;
-        console.log("ClientJob:", clientJob);
+        // console.log("ClientJob:", clientJob);
 
         if (filterId || active || active1) {
           setFilterData((prevData) =>
@@ -2233,7 +2326,7 @@ export default function AllJobs() {
           },
           filterFn: (row, columnId, filterValue) => {
             const cellValue = row.original._id;
-            console.log("T_ID:", filterValue, cellValue);
+            // console.log("T_ID:", filterValue, cellValue);
             return cellValue === filterValue;
           },
           filterVariant: "select",
@@ -2287,7 +2380,7 @@ export default function AllJobs() {
           
           Cell: ({ cell, row }) => {
 
-            console.log("THE ROW IS :>>>>",row)
+            
             // related to comments
             //const comments = cell.getValue();
             const comments = row.original?.comments;
@@ -2533,14 +2626,17 @@ export default function AllJobs() {
               {
                 id: "Fee",
                 accessorKey: "fee",
+                
                 Header: ({ column }) => {
+                  
                   return (
                     <div className=" flex flex-col gap-[2px] w-full items-center justify-center  ">
                       <span
                         className="ml-1 w-full text-center cursor-pointer pr-6"
-                        title="Clear Filter"
+                        title="Filter out the empty fees"
                         onClick={() => {
-                          column.setFilterValue("");
+                          column.setFilterValue("empty");
+                           
                         }}
                       >
                         Fee
@@ -2555,20 +2651,77 @@ export default function AllJobs() {
                   );
                 },
                 Cell: ({ cell, row }) => {
+
                   const fee = row.original.fee;
+                 
+                  const [show, setShow] = useState(false);
+                  const [feeVal, setFeeVal] = useState(fee);
+                  const [showId, setShowId] = useState("");
                   return (
+
                     <div className="w-full flex items-center justify-center">
-                      <span className="text-[15px] font-medium">
-                        {fee && fee}
+                    {show && row.original._id === showId ? (
+                      <input
+                        type="text"
+                        value={feeVal}
+                        onChange={(e) => setFeeVal(e.target.value)}
+                        onBlur={(e) => {handleUpdateFee(row.original._id, e.target.value); setShowId("")}}
+                        className="w-full h-[1.7rem] px-[2px] outline-none rounded-md cursor-pointer"
+                      />
+                    ) : (
+                      <span
+                        className="text-[15px] font-medium"
+                        onDoubleClick={() => {
+                          setShowId(row.original._id);
+                          setShow(true);
+                        }}
+                      >
+                        {fee ? fee : <span className="text-white">.</span>}
+                         
                       </span>
-                    </div>
+                    )}
+                  </div>
+
+
+                    // <div className="w-full flex items-center justify-center">
+                    //   <span className="text-[15px] font-medium">
+                    //     {fee && fee}
+                    //   </span>
+                    // </div>
                   );
                 },
-                filterFn: "equals",
+
+
+
+                filterFn: (row, columnId, filterValue) => {
+                  const fee = row.getValue(columnId);
+
+                  if (filterValue === "empty") {
+                    return !fee;
+                  }
+
+                  return fee === filterValue;
+                },
                 size: 60,
+
+                 
               },
             ]
           : []),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         ...(auth?.user?.role?.name === "Admin" || access.includes("Source")
           ? [
               {
@@ -2742,7 +2895,7 @@ export default function AllJobs() {
                     const selectedLabel = dataLable.find(
                       (label) => label._id === labelName
                     );
-                    console.log("selectedLabel:", selectedLabel);
+                    // console.log("selectedLabel:", selectedLabel);
                     if (selectedLabel) {
                       addDatalabel1(
                         row.original._id,
@@ -2810,8 +2963,8 @@ export default function AllJobs() {
 
                 filterVariant: "select",
                 filterSelectOptions: dataLable.map((label) => label.name),
-                size: 80,
-                minSize: 80,
+                size: 90,
+                minSize: 90,
                 maxSize: 210,
                 grow: false,
               },
@@ -3376,12 +3529,10 @@ export default function AllJobs() {
 
 
 
-
+  const showingRows = table.getFilteredRowModel().rows  
 // To Change the total hours when filter is applied inside the table
 useEffect(()=>{
-  console.log("FIlter DATA>>>>>>>>>>>>", filterData)
 
-  console.log('table.getFilteredRowModel()', table.getFilteredRowModel())
 
   const showingRows = table.getFilteredRowModel().rows  
 
@@ -3396,7 +3547,7 @@ useEffect(()=>{
 
 
   })
-}, [table.getFilteredRowModel().rows ])
+}, [showingRows, filterData, tableData, table ])
 
 
 
@@ -3415,9 +3566,33 @@ useEffect(()=>{
 
     const col = table.getColumn(colKey);
 
-    console.log(col, 'THE COLUMN IS ');
     return col.setFilterValue(filterVal);
   }
+
+
+
+
+
+
+
+    // To Change the total hours when filter is applied inside the table
+useEffect(()=>{
+  
+  console.log("table.getFilteredRowModel().rows.length", table.getFilteredRowModel().rows.length)
+  const showingRows = table.getFilteredRowModel().rows  
+  setTotalFee((prev) => {
+
+    const totalFee = showingRows.reduce((acc, row) => {
+      console.log("ROWIS", row)
+      const fee = row.original.fee;
+      return acc + Number(fee);
+    }, 0);
+
+    return totalFee.toFixed(0)
+
+
+  })
+}, [showingRows, filterData, tableData, table] )
 
 
   return (

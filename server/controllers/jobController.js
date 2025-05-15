@@ -242,6 +242,112 @@ export const getTicketClients = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Update Client Fee
+export const updateFee = async (req, res) => {
+  try {
+    const clientId = req.params.id;
+    const { fee } = req.body;
+    if (!fee) {
+      return res.status(400).send({
+        success: false,
+        message: "Fee is required!",
+      });
+    }
+
+    if (!clientId) {
+      return res.status(400).send({
+        success: false,
+        message: "Job id is required!",
+      });
+    }
+
+    const clientJob = await jobsModel.findByIdAndUpdate(
+      { _id: clientId },
+      { $set: { "fee": fee } },
+      { new: true }
+    );
+
+    // Push activity to activities array
+    clientJob.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} update this job fee "${fee}".`,
+    });
+
+    await clientJob.save();
+
+    await redisClient.del('all_jobs');
+    res.status(200).send({
+      success: true,
+      message: "Job Fee updated successfully!",
+      clientJob: clientJob,
+    });
+
+    // Add Activity Log
+    const user = req.user.user;
+    if (clientJob) {
+      activityModel.create({
+        user: user._id,
+        action: `${user.name.trim()} is update a job fee.`,
+        entity: "Jobs",
+        details: `Job Details:
+          - Company Name: ${clientJob.companyName}
+          - Job Client: ${clientJob.clientName || "No client provided"}
+          - Created At: ${currentDateTime}`,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in update job status !",
+      error: error,
+    });
+  }
+};
+
+
+
+
+
 // Update Client Status
 export const updateStatus = async (req, res) => {
   try {
@@ -2132,3 +2238,21 @@ res.status(500).send({
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

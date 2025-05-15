@@ -27,6 +27,7 @@ import {
   updateClientJob,
   updateClientStatus,
   updateDates,
+  updateFee,
   updateJobHolder,
   updateLead,
   updateQuality,
@@ -49,6 +50,9 @@ router.post("/create/client/job", requiredSignIn, createJob);
 
 // Get All Client
 router.get("/all/client/job", getAllClients);
+
+// Update Fee
+router.patch("/update/fee/:id", requiredSignIn, updateFee);
 
 // Update Status
 router.patch("/update/status/:id", requiredSignIn, updateStatus);

@@ -120,7 +120,26 @@ export default function HR() {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/hr/all/tasks`
       );
-      setTaskData(data?.tasks);
+       
+      const rawTasks = data?.tasks
+
+      if (auth?.user?.role?.name === "Admin") {
+        setTaskData(rawTasks);
+      } else {
+
+        const filteredTasks = rawTasks?.filter((task) => {
+          return task.department.users.some(user => user.user.name === auth.user.name)
+        })
+
+        setTaskData(filteredTasks);
+      }
+      
+     
+      // console.log("AUTHENTICATION 🧡🧡 DATA:>>>", auth.user.role.name)
+
+      // console.log("TASK DATA:>>>", data?.tasks)
+
+
     } catch (error) {
       console.log(error);
     } finally {
@@ -143,6 +162,8 @@ export default function HR() {
         `${process.env.REACT_APP_API_URL}/api/v1/department/all`
       );
       setDepartmentData(data.departments);
+
+      console.log("fetchAllDepartments DATA:>>>", data?.departments)
     } catch (error) {
       console.log(error);
     }

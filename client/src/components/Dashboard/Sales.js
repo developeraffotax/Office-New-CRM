@@ -7,6 +7,7 @@ import {
   FaChartPie,
   FaChartLine,
 } from "react-icons/fa";
+import { getLastTwelveMonthsWithLabels, shiftArrFromThisMonth } from "./utils";
 
 export default function Sales({
   salesData,
@@ -37,6 +38,8 @@ export default function Sales({
     updatedVisibility[index] = !updatedVisibility[index];
     setVisibility(updatedVisibility);
   };
+
+  console.log("SALES DATA>>>>>>>>>>>>>>>>>>", salesData)
 
   const visibleCount = visibility.filter(Boolean).length;
 
@@ -259,6 +262,29 @@ export default function Sales({
           ? createdAtDate >= lastDaysDate && createdAtDate <= currentDate
           : true;
 
+
+
+           // LOGIC TO GET THE DATA FOR THE PAST 12 MONTH / Past year
+        // const now = new Date();
+        // const currentYear = now.getFullYear();
+        // const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
+    
+        // const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
+
+
+        // if(!year && !month) {
+        //   console.log("!INSIDE THE SELECTED YEAR BLOCK")
+        //   const leadDate2 = new Date(itemYear, itemMonth - 1, 1); // month -1 because JS months are 0-indexed
+        //   return (
+        //     (!selectedMonth || itemMonth === parseInt(selectedMonth)) &&
+        //     (leadDate2 >= startDate && leadDate2 <= now) 
+        //   )
+    
+        // }
+
+
+
+
         if (month && year) {
           return itemMonth === Number(month) && itemYear === Number(year);
         } else if (month) {
@@ -307,13 +333,21 @@ export default function Sales({
   const InactiveClientPercentage =
     (inactiveClient?.length / uniqueClients) * 100;
 
+
+
+
+
+
+
+
+
   // --------------Total Leads------------
   const [leadsChartData, setLeadsChartData] = useState({
     options: {
       chart: { id: "leads-area-chart" },
       xaxis: {
         categories: [
-          "Jan",
+          "Jans",
           "Feb",
           "Mar",
           "Apr",
@@ -345,6 +379,15 @@ export default function Sales({
     },
     series: [{ name: "Leads", data: Array(12).fill(0) }],
   });
+
+
+
+
+
+
+
+
+
 
   // ------------Total Proposal------------>
   const [proposalChartData, setProposalChartData] = useState({
@@ -553,6 +596,63 @@ export default function Sales({
     series: Array(12).fill(0),
   });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   useEffect(() => {
     const leadsByMonth = Array(12).fill(0);
     const proposalsByMonth = Array(12).fill(0);
@@ -577,6 +677,30 @@ export default function Sales({
         ? leadDate.isAfter(lastDaysDate) || leadDate.isSame(lastDaysDate)
         : true;
 
+
+
+
+
+
+
+
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
+    
+        const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
+
+
+        if(!selectedYear && !selectedMonth) {
+          console.log("!INSIDE THE SELECTED YEAR BLOCK")
+          const leadDate2 = new Date(leadDate.year(), leadDate.month() - 1, 1); // month -1 because JS months are 0-indexed
+          return (
+            (!selectedMonth || leadDate.month() === parseInt(selectedMonth)) &&
+            (leadDate2 >= startDate && leadDate2 <= now) 
+          )
+    
+        }
+
       return (
         (!selectedYear || leadDate.year() === parseInt(selectedYear, 10)) &&
         (!selectedMonth ||
@@ -593,6 +717,38 @@ export default function Sales({
       leadsByMonth[month] += 1;
     });
 
+    console.log(selectedYear)
+    console.error("FILTERED LEADS IN USEEFFECT", filteredLeads)
+    console.info("leadsByMonth IN USEEFFECT leadsByMonth", leadsByMonth)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // Filter proposals based on selected month and year
     const filteredProposals = salesData.totalProposals.filter((proposal) => {
       const proposalDate = dayjs(proposal.createdAt);
@@ -607,6 +763,27 @@ export default function Sales({
         ? proposalDate.isAfter(lastDaysDate) ||
           proposalDate.isSame(lastDaysDate)
         : true;
+
+
+
+
+        
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
+    
+        const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
+
+
+        if(!selectedYear && !selectedMonth) {
+          console.log("!INSIDE THE SELECTED YEAR BLOCK")
+          const leadDate2 = new Date(proposalDate.year(), proposalDate.month() - 1, 1); // month -1 because JS months are 0-indexed
+          return (
+            (!selectedMonth || proposalDate.month() === parseInt(selectedMonth)) &&
+            (leadDate2 >= startDate && leadDate2 <= now) 
+          )
+    
+        }
       return (
         (!selectedYear || proposalDate.year() === parseInt(selectedYear)) &&
         (!selectedMonth ||
@@ -621,6 +798,24 @@ export default function Sales({
       const month = dayjs(proposal.createdAt).month();
       proposalsByMonth[month] += 1;
     });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // --------------Lead Proposal--------->
     // Filter proposals based on selected month and year
@@ -639,6 +834,25 @@ export default function Sales({
           proposalDate.isSame(lastDaysDate)
         : true;
 
+
+          
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
+    
+        const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
+
+
+        if(!selectedYear && !selectedMonth) {
+          console.log("!INSIDE THE SELECTED YEAR BLOCK")
+          const leadDate2 = new Date(proposalDate.year(), proposalDate.month() - 1, 1); // month -1 because JS months are 0-indexed
+          return (
+            (!selectedMonth || proposalDate.month() === parseInt(selectedMonth)) &&
+            (leadDate2 >= startDate && leadDate2 <= now) 
+          )
+    
+        }
+
       return (
         (!selectedYear || proposalDate.year() === parseInt(selectedYear)) &&
         (!selectedMonth ||
@@ -653,6 +867,23 @@ export default function Sales({
       const month = dayjs(proposal.createdAt).month();
       leadProposalByMonth[month] += 1;
     });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // --------------PPC Lead--------->
     // Filter proposals based on selected month and year
@@ -669,6 +900,24 @@ export default function Sales({
         ? ppcLeadDate.isAfter(lastDaysDate) || ppcLeadDate.isSame(lastDaysDate)
         : true;
 
+
+          
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
+    
+        const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
+
+
+        if(!selectedYear && !selectedMonth) {
+          console.log("!INSIDE THE SELECTED YEAR BLOCK")
+          const leadDate2 = new Date(ppcLeadDate.year(), ppcLeadDate.month() - 1, 1); // month -1 because JS months are 0-indexed
+          return (
+            (!selectedMonth || ppcLeadDate.month() === parseInt(selectedMonth)) &&
+            (leadDate2 >= startDate && leadDate2 <= now) 
+          )
+    
+        }
       return (
         (!selectedYear || ppcLeadDate.year() === parseInt(selectedYear)) &&
         (!selectedMonth ||
@@ -685,25 +934,194 @@ export default function Sales({
     });
     // -----------
 
-    setLeadsChartData((prevData) => ({
-      ...prevData,
-      series: [{ name: "Leads", data: leadsByMonth }],
-    }));
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+    const monthsArr = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+   
+
+
+      
+
+      const formattedMonths = getLastTwelveMonthsWithLabels();
+
+      const rotatedLeadsByMonth = shiftArrFromThisMonth([...leadsByMonth]);
+      const rotatedProposalsByMonth = shiftArrFromThisMonth([...proposalsByMonth]);
+      const rotatedLeadProposalByMonth = shiftArrFromThisMonth([...leadProposalByMonth]);
+      const rotatedPPCleadByMonth = shiftArrFromThisMonth([...PPCleadByMonth]);
+
+
+    
+
+      setLeadsChartData((prevData) => ({
+        ...prevData,
+        options: {
+          xaxis: {
+            categories: selectedYear ? monthsArr : formattedMonths
+          },
+        },
+        series: [{ name: "Leads", data: selectedYear ? leadsByMonth : rotatedLeadsByMonth }],
+      }));
+  
 
     setProposalChartData((prevData) => ({
       ...prevData,
-      series: [{ name: "Proposals", data: proposalsByMonth }],
+      options: {
+        xaxis: {
+          categories: selectedYear ? monthsArr : formattedMonths
+        },
+      },
+      series: [{ name: "Proposals", data: selectedYear ?  proposalsByMonth : rotatedProposalsByMonth}],
     }));
 
     setLeadsProposalChartData((prevData) => ({
       ...prevData,
-      series: [{ name: "leadProposals", data: leadProposalByMonth }],
+      options: {
+        xaxis: {
+          categories: selectedYear ? monthsArr : formattedMonths
+        },
+      },
+      series: [{ name: "leadProposals", data: selectedYear ?  leadProposalByMonth : rotatedLeadProposalByMonth }],
     }));
+
     setPPCleadsChartData((prevData) => ({
       ...prevData,
-      series: [{ name: "PPCleads", data: PPCleadByMonth }],
+      options: {
+        xaxis: {
+          categories: selectedYear ? monthsArr : formattedMonths
+        },
+      },
+      series: [{ name: "PPCleads", data: selectedYear ?  PPCleadByMonth : rotatedPPCleadByMonth }],
     }));
+
   }, [salesData, selectedMonth, selectedYear, lastDays]);
+
+
+
+
+
+
+
+
+
+
+  // // Map data for month-wise total job count and fee totals
+  // const monthData = filteredLeads.reduce((acc, job) => {
+  //   const jobDate = new Date(job.currentDate);
+  //   const month = jobDate.toLocaleString("default", { month: "short" });
+
+  //   if (!acc[month]) acc[month] = { jobCount: 0, totalFee: 0 };
+
+  //   acc[month].jobCount += 1;
+  //   acc[month].totalFee += parseFloat(job.fee || 0);
+
+  //   return acc;
+  // }, {});
+
+  // // ------------------------>Format Months<--------------------->
+
+  // //console.log("MONTH DATA>>>", monthData)
+
+  // const monthOrder = [
+  //   "Jan",
+  //   "Feb",
+  //   "Mar",
+  //   "Apr",
+  //   "May",
+  //   "Jun",
+  //   "Jul",
+  //   "Aug",
+  //   "Sep",
+  //   "Oct",
+  //   "Nov",
+  //   "Dec",
+  // ];
+
+  // // Assuming `monthData`
+  // const months = Object.keys(monthData).sort((a, b) => {
+  //   const [monthA, yearA] = a.split(" ");
+  //   const [monthB, yearB] = b.split(" ");
+
+  //   return (
+  //     parseInt(yearA) - parseInt(yearB) ||
+  //     monthOrder.indexOf(monthA) - monthOrder.indexOf(monthB)
+  //   );
+  // });
+
+  // let formattedMonths = months.map(
+  //   (month) => `${month} (${monthData[month]?.jobCount || 0})`
+  // );
+
+  // // Prepare data series for month-wise job count
+  // let jobCountSeries = [
+  //   {
+  //     name: "Total Jobs",
+  //     data: months.map((month) => monthData[month]?.jobCount || 0),
+  //   },
+  // ];
+
+
+
+
+
+
+
+  // useEffect(() => {
+
+
+
+  //   const jobCountSeriesForPastOneYear = []
+
+  //   if(!selectedYear) {
+      
+
+  //     const formattedMonths = getLastTwelveMonthsWithLabels();
+
+      
+
+  //     const rotatedArr = shiftArrFromThisMonth([...jobCountSeries[0].data])
+
+  //     console.log(rotatedArr)
+
+  //     jobCountSeriesForPastOneYear.push({
+  //       name: "Total Jobs",
+  //       data: rotatedArr
+  //     },)
+
+  //   }
+
+
+
+
+  // })
 
   return (
     <div className="w-full h-full p-2">

@@ -2867,7 +2867,8 @@ export default function AllJobs() {
                           column.setFilterValue("");
                         }}
                       >
-                        CC Person
+                        {/* CC Person */}
+                        POC
                       </span>
                       <select
                         value={column.getFilterValue() || ""}
@@ -2963,9 +2964,9 @@ export default function AllJobs() {
 
                 filterVariant: "select",
                 filterSelectOptions: dataLable.map((label) => label.name),
-                size: 90,
-                minSize: 90,
-                maxSize: 210,
+                size: 80,
+                minSize: 80,
+                maxSize: 180,
                 grow: false,
               },
             ]

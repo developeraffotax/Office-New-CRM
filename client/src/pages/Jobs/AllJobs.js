@@ -131,6 +131,7 @@ export default function AllJobs() {
   const ctypes = ["Limited", "LLP", "Individual", "Non UK"];
   const [timerId, setTimerId] = useState("");
   const [showInactive, setShowInactive] = useState(false);
+  const [showUniqueClients, setShowUniqueClients] = useState(false);
   const [isLoad, setIsLoad] = useState(false);
   const [showcolumn, setShowColumn] = useState(false);
   const [showQuickList, setShowQuickList] = useState(false);
@@ -384,7 +385,28 @@ export default function AllJobs() {
 
 
 
+  const getUniqueClients = (clients) => {
 
+    
+      const uniqueClientsMap = new Map();
+
+      clients.forEach(client => {
+        // Use   companyName as a unique identifier
+        const key = `${client.companyName.trim().toLowerCase()}`;
+        if (!uniqueClientsMap.has(key)) {
+          uniqueClientsMap.set(key, client);
+        }
+      });
+
+      const uniqueClients = Array.from(uniqueClientsMap.values());
+
+      console.log("UNIQUE CLIENTS:",uniqueClients);
+
+      return uniqueClients;
+
+
+
+  }
 
 
   // ---------------All Client_Job Data----------->
@@ -3749,6 +3771,29 @@ useEffect(()=>{
           >
             Inactive
           </div>
+
+
+          {/* <div
+            className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+              activeBtn === "unique_clients" &&
+              showUniqueClients &&
+              " border-2 border-b-0 text-orange-600 border-gray-300"
+            }`}
+            onClick={() => {
+
+              setTableData((prev) => {
+                return getUniqueClients(prev)
+              })
+
+              setActiveBtn("unique_clients");
+              setShowUniqueClients(true);
+              setActive("");
+            }}
+          >
+            Unique Clients
+          </div> */}
+
+
           {/*  */}
           {/* -------------Filter Open Buttons-------- */}
           <span
@@ -3947,7 +3992,7 @@ useEffect(()=>{
                   className={`${style.input} w-full`}
                   style={{ width: "9rem" }}
                 >
-                  <option value="empty">Select Data</option>
+                  <option value="empty">Select POC</option>
                   {dataLable?.map((data, i) => (
                     <option value={data?._id} key={i}>
                       {data?.name}

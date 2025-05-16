@@ -900,6 +900,8 @@ const allColumns = [{
               {jobhold?.name}
             </option>
           ))}
+
+          <option value="empty">Empty</option>
         </select>
       </div>
     );
@@ -955,7 +957,19 @@ const allColumns = [{
       </div>
     );
   },
-  filterFn: "equals",
+
+  filterFn: (row, columnId, filterValue) => {
+    const cellValue = row.getValue(columnId);
+  
+    if (filterValue === "empty") {
+      return !cellValue || cellValue === "empty";
+    }
+  
+    return String(cellValue ?? "") === String(filterValue);
+  },
+
+
+  // filterFn: "equals",
   filterSelectOptions: users.map((jobhold) => jobhold.name),
   filterVariant: "select",
   size: 110,

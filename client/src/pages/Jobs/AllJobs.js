@@ -45,6 +45,7 @@ import Swal from "sweetalert2";
 import HandleQualityModal from "../../components/Modals/HandleQualityModal";
 import TicketsPopUp from "../../components/shared/TicketsPopUp";
 import { BiSend } from "react-icons/bi";
+import { BsPersonCheckFill } from "react-icons/bs";
  
 
 
@@ -402,11 +403,14 @@ export default function AllJobs() {
 
       console.log("UNIQUE CLIENTS:",uniqueClients);
 
+
+      // setTableData(uniqueClients);
       return uniqueClients;
 
 
 
   }
+
 
 
   // ---------------All Client_Job Data----------->
@@ -427,10 +431,29 @@ export default function AllJobs() {
     }
   };
 
+
+  
+
   useEffect(() => {
-    allClientJobData();
-    // eslint-disable-next-line
-  }, []);
+
+    if(showUniqueClients) {
+      setTableData(prev => {
+        return getUniqueClients(prev)
+      })
+      
+    } else {
+      allClientJobData();
+    }
+
+
+  }, [showUniqueClients])
+
+
+
+  // useEffect(() => {
+  //   allClientJobData();
+  //   // eslint-disable-next-line
+  // }, []);
 
   // -----------Get Client without Showing Loading-------->
   const allClientData = async () => {
@@ -3773,25 +3796,7 @@ useEffect(()=>{
           </div>
 
 
-          {/* <div
-            className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-              activeBtn === "unique_clients" &&
-              showUniqueClients &&
-              " border-2 border-b-0 text-orange-600 border-gray-300"
-            }`}
-            onClick={() => {
-
-              setTableData((prev) => {
-                return getUniqueClients(prev)
-              })
-
-              setActiveBtn("unique_clients");
-              setShowUniqueClients(true);
-              setActive("");
-            }}
-          >
-            Unique Clients
-          </div> */}
+          
 
 
           {/*  */}
@@ -3885,6 +3890,31 @@ useEffect(()=>{
               }`}
             />
           </span>
+
+
+
+          <div
+            className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+              showUniqueClients && "bg-orange-500 text-white"
+            }`}
+            title="Clients"
+            onClick={() => {
+
+              
+            
+              // setTableData((prev) => {
+              //   return getUniqueClients(prev)
+              // })
+
+              
+              setShowUniqueClients(prev => !prev);
+               
+            }}
+          >
+            <BsPersonCheckFill className="h-6 w-6  cursor-pointer" />
+          </div>
+
+
         </div>
         {/*  */}
         <hr className="mb-1 bg-gray-200 w-full h-[1px]" />

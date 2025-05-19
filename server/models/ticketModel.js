@@ -66,6 +66,19 @@ const ticketSchema = new mongoose.Schema(
       type: String,
     },
 
+
+
+    sent: {
+      type: Number,
+      default: 0,
+    },
+
+
+    received: {
+      type: Number,
+      default: 0,
+    },
+
     lastMessageSentTime: {
       type: Date,
     },

@@ -20,6 +20,7 @@ import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { Box } from "@mui/material";
 
 export default function Tickets() {
   const { auth } = useAuth();
@@ -42,6 +43,10 @@ export default function Tickets() {
   const [showJobHolder, setShowJobHolder] = useState(false);
   const [active1, setActive1] = useState("");
 
+
+  const [replyCounts, setReplyCounts] = useState({});
+  const initMount = useRef(true)
+
   // console.log("Email Data", emailData);
 
   // Get Auth Access
@@ -55,6 +60,39 @@ export default function Tickets() {
     }
   }, [auth]);
 
+  // const getReplies = async () => {
+
+  //   console.log("GET REPLIES RAN💚💚💚💚💛🧡🧡")
+     
+  //   try {
+  //     const { data } = await axios.get(
+  //       `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets-replies`
+  //     );
+  //     if (data) {
+
+  //       console.log(data)
+  //       const countsMap = {};
+  //       data.replies.forEach(item => {
+  //       countsMap[item.threadId] = {
+  //         totalSent: item.totalSent,
+  //         totalReceived: item.totalReceived
+  //       };
+  //     });
+         
+  //     setReplyCounts(countsMap);
+
+     
+  //     initMount.current = false;
+
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+       
+  //   }
+
+
+  // }
+
   // -------Get All Emails-------
   const getAllEmails = async () => {
     setIsLoading(true);
@@ -65,6 +103,12 @@ export default function Tickets() {
       if (data) {
         setEmailData(data.emails);
         setIsLoading(false);
+
+        // if(initMount) {
+        //   getReplies()
+        // }
+
+
       }
     } catch (error) {
       console.log(error);
@@ -551,6 +595,41 @@ export default function Tickets() {
         },
         filterVariant: "select",
       },
+
+
+
+
+      {
+        accessorKey: 'received',
+        header: 'Received',
+        Cell: ({ row }) => {
+          const received = row.original.received;
+          return <span  className="w-full flex justify-center text-lg bg-sky-600 text-white rounded-md ">{received}</span>
+        },
+        size: 60,
+
+       
+        
+        
+      },
+      {
+        accessorKey: 'sent',
+        header: 'Sent',
+        Cell: ({ row }) => {
+          console.log("THE ROW IS >>>>",row)
+          const sent = row.original.sent;
+          return <span className="w-full flex justify-center text-lg bg-orange-600 text-white rounded-md">{sent}</span>
+        },
+
+       
+
+        size: 60,
+        
+      },
+
+
+
+
       {
         accessorKey: "status",
         header: "Status",
@@ -608,6 +687,15 @@ export default function Tickets() {
         maxSize: 130,
         grow: false,
       },
+
+
+
+
+      
+
+
+
+
       // Created Date
       {
         accessorKey: "createdAt",

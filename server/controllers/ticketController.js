@@ -16,6 +16,11 @@ import notificationModel from "../models/notificationModel.js";
 import userModel from "../models/userModel.js";
 import mongoose from "mongoose";
 
+import { fileURLToPath } from "url";
+import { google } from "googleapis";
+import path from "path";
+import { JWT } from "google-auth-library";
+
 // Create Ticket \
 export const sendEmail = async (req, res) => {
   try {
@@ -347,6 +352,151 @@ export const getTicketsByClientName = async (req, res, next) => {
 
 
 
+ 
+
+export async function getSentReceivedCountsPerThread() {
+
+
+ 
+   // // Get __dirname
+   const __filename = fileURLToPath(import.meta.url);
+   const __dirname = path.dirname(__filename);
+ 
+   // Path for Credentials
+   const CREDENTIALS_PATH = path.join( __dirname, "..", "creds", "service-pubsub.json" );
+ 
+   // Scopes you need
+   const SCOPES = [ "https://www.googleapis.com/auth/gmail.readonly", "https://www.googleapis.com/auth/gmail.modify",  ];
+ 
+   // Create a JWT client using the Service Account key
+   const jwtClient = new JWT({
+     keyFile: CREDENTIALS_PATH,
+     scopes: SCOPES,
+     subject: "info@affotax.com",
+   });
+
+   try {
+
+    let filter = { state: { $ne: "complete" } };
+  
+   const threadIds = await ticketModel.find(filter).select( "mailThreadId" );
+    // console.log(threadIds)
+
+
+
+   await jwtClient.authorize(); 
+
+    const gmail = google.gmail({ version: 'v1', auth:jwtClient });
+
+    // Get your Gmail address
+    //const profile = await gmail.users.getProfile({ userId: 'me' });
+    const myEmail = "info@affotax.com";
+  
+    const results = [];
+  
+    for (const threadId of threadIds) {
+      let sent = 0;
+      let received = 0;
+  
+      try {
+        const thread = await gmail.users.threads.get({
+          userId: 'me',
+          id: threadId.mailThreadId,
+          format: 'metadata',
+          metadataHeaders: ['From'],
+        });
+  
+        for (const message of thread.data.messages || []) {
+          const headers = message.payload.headers || [];
+          const fromHeader = headers.find(
+            (h) => h.name.toLowerCase() === 'from'
+          );
+          if (!fromHeader) continue;
+  
+          const from = fromHeader.value;
+  
+          if (from.includes(`<${myEmail}>`)) {
+            sent++;
+          } else {
+            received++;
+          }
+        }
+        
+
+        
+        results.push({
+          threadId:threadId.mailThreadId,
+          totalSent: sent,
+          totalReceived: received,
+        });
+      } catch (err) {
+        console.error(`Failed to process thread ${threadId.mailThreadId}:`, err.message);
+        results.push({
+          threadId:threadId.mailThreadId,
+          totalSent: 0,
+          totalReceived: 0,
+          error: err.message,
+        });
+      }
+    }
+  
+    console.log("RESULT:",results)
+
+
+    // element structure { threadId: '19528fe4bffd55b6', totalSent: 4, totalReceived: 1 },
+
+    if(results.length > 0) {
+    await ticketModel.bulkWrite(
+      results.map(el => ({
+        updateOne: {
+          filter: { mailThreadId: el.threadId },
+          update: {
+            $set: {
+              sent: el.totalSent,
+              received: el.totalReceived,
+              
+              
+            }
+          }
+        }
+      }))
+    );
+
+  }
+
+    // return results;
+
+    // res.status(200).send({ success: true, message: "Number of Replies!", replies: results, });
+
+    
+   } catch (error) {
+    console.log("Error occured while getting number of replies", error);
+    res.status(500).send({ success: true, message: "Number of Replies!!", error: error, });
+   }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -379,7 +529,10 @@ export const getTicketsByClientName = async (req, res, next) => {
 
 export const getAllSendTickets = async (req, res, next) => {
 
-    
+   
+
+
+
     const role = req.user?.user?.role?.name;
     const userName =  req.user?.user?.name;
 
@@ -392,107 +545,107 @@ export const getAllSendTickets = async (req, res, next) => {
     } 
     
     
-    const emails = await ticketModel.find(filter).select( "clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy lastMessageSentTime createdAt" );
+    const emails = await ticketModel.find(filter).select( "sent received clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy lastMessageSentTime createdAt" );
     res.status(200).send({ success: true, message: "All email list!", emails: emails, });
     
 
 
     // We can comment this one for better performance,, will see it in future.
-    const ticketsList = emails.map((email) => ({
-      threadId: email.mailThreadId,
-      companyName: email.company,
-    }));
+    // const ticketsList = emails.map((email) => ({
+    //   threadId: email.mailThreadId,
+    //   companyName: email.company,
+    // }));
 
-    const emailData = await getAllEmails(ticketsList);
+    // const emailData = await getAllEmails(ticketsList);
 
-    // console.log("emailData:", emailData);
-    //NEED TO UPDATE THE BELOW CODE 
+    // // console.log("emailData:", emailData);
+    // //NEED TO UPDATE THE BELOW CODE 
    
 
-    if(!emailData.detailedThreads) {
-      return res.status(400).send({ success: false, message: "No email data found!" });
-    }
+    // if(!emailData.detailedThreads) {
+    //   return res.status(400).send({ success: false, message: "No email data found!" });
+    // }
 
-    const threadIds = emailData.detailedThreads.map(email => {
-      if(email?.threadId) {
-        return email.threadId;
-      }
-    });
-
-
-    const matchingTickets = await ticketModel.find({
-      mailThreadId: { $in: threadIds }
-    });
+    // const threadIds = emailData.detailedThreads.map(email => {
+    //   if(email?.threadId) {
+    //     return email.threadId;
+    //   }
+    // });
 
 
+    // const matchingTickets = await ticketModel.find({
+    //   mailThreadId: { $in: threadIds }
+    // });
 
 
 
-    // Map the tickets to the corresponding threadId for easier lookup
-      const ticketMap = matchingTickets.reduce((map, ticket) => {
-        map[ticket.mailThreadId] = ticket;
-        return map;
-      }, {});
+
+
+    // // Map the tickets to the corresponding threadId for easier lookup
+    //   const ticketMap = matchingTickets.reduce((map, ticket) => {
+    //     map[ticket.mailThreadId] = ticket;
+    //     return map;
+    //   }, {});
 
 
        
-    for (const email of emailData.detailedThreads) {
+    // for (const email of emailData.detailedThreads) {
        
     
       
       
-      if(email?.threadId) {  
-        const matchingTicket = ticketMap[email.threadId];
-        if (matchingTicket) {
-          let newStatus = "Unread";
+    //   if(email?.threadId) {  
+    //     const matchingTicket = ticketMap[email.threadId];
+    //     if (matchingTicket) {
+    //       let newStatus = "Unread";
   
-          if (email.readStatus === "Sent") {
-            newStatus = "Send";
-          } else if (email.readStatus === "Unread") {
-            newStatus = "Unread";
-          } else if (email.readStatus === "Read") {
-            newStatus = "Read";
-          }
+    //       if (email.readStatus === "Sent") {
+    //         newStatus = "Send";
+    //       } else if (email.readStatus === "Unread") {
+    //         newStatus = "Unread";
+    //       } else if (email.readStatus === "Read") {
+    //         newStatus = "Read";
+    //       }
   
-          await ticketModel.updateOne(
-            { mailThreadId: email.threadId },
-            {
-              $set: {
-                status: newStatus,
-              },
-            },
-            { new: true }
-          );
-          // console.log(
-          //   `Updated ticket ${matchingTicket._id} with new status: ${newStatus}`
-          // );
+    //       await ticketModel.updateOne(
+    //         { mailThreadId: email.threadId },
+    //         {
+    //           $set: {
+    //             status: newStatus,
+    //           },
+    //         },
+    //         { new: true }
+    //       );
+    //       // console.log(
+    //       //   `Updated ticket ${matchingTicket._id} with new status: ${newStatus}`
+    //       // );
   
-          // const user = await userModel.findOne({
-          //   name: matchingTicket.lastMessageSentBy,
-          // });
+    //       // const user = await userModel.findOne({
+    //       //   name: matchingTicket.lastMessageSentBy,
+    //       // });
   
-          // Create a notification
-          // if (email.readStatus === "Unread") {
-          //   const notiUser = user._id;
+    //       // Create a notification
+    //       // if (email.readStatus === "Unread") {
+    //       //   const notiUser = user._id;
   
-          //   await notificationModel.create({
-          //     title: "Reply to a ticket received",
-          //     redirectLink: `/ticket/detail/${matchingTicket._id}`,
-          //     description: `You've received a response to a ticket with the subject "${matchingTicket.subject}" from the company "${matchingTicket.companyName}" and the client's name "${matchingTicket.clientName}".`,
-          //     taskId: matchingTicket._id,
-          //     userId: notiUser,
-          //   });
-          // }
-        }  
+    //       //   await notificationModel.create({
+    //       //     title: "Reply to a ticket received",
+    //       //     redirectLink: `/ticket/detail/${matchingTicket._id}`,
+    //       //     description: `You've received a response to a ticket with the subject "${matchingTicket.subject}" from the company "${matchingTicket.companyName}" and the client's name "${matchingTicket.clientName}".`,
+    //       //     taskId: matchingTicket._id,
+    //       //     userId: notiUser,
+    //       //   });
+    //       // }
+    //     }  
 
 
 
 
 
-      } else {
-        //console.log(`No matching ticket found for threadId: ${email?.threadId}`);
-      }
-    }
+    //   } else {
+    //     //console.log(`No matching ticket found for threadId: ${email?.threadId}`);
+    //   }
+    // }
 
     
     

@@ -41,6 +41,7 @@ import { sendDatatoGoogleSheet } from "./utils/googleSheet.js";
 import { setWatch } from "./utils/setWatch.js";
  
 import { gmailWebhookHandler } from "./utils/pubSubPush.js";
+import { getSentReceivedCountsPerThread } from "./controllers/ticketController.js";
 
 // export const createServer = (port) => {
 // Verify the key
@@ -147,6 +148,17 @@ if(process.env.pm_id === '0') {
 
 }
 
+
+
+if(process.env.pm_id === '0') {
+  cron.schedule('0 23 * * *', () => {
+   // Runs every day at 11:00 PM
+    getSentReceivedCountsPerThread();
+  }); 
+  
+  await getSentReceivedCountsPerThread();
+
+}
 
 
 

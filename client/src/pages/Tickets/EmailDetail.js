@@ -15,6 +15,7 @@ import { LuDownload } from "react-icons/lu";
 import { ImAttachment } from "react-icons/im";
 import { TbLoader2 } from "react-icons/tb";
 import SendEmailReply from "../../components/Tickets/SendEmailReply";
+import * as cheerio from 'cheerio';
 
 export default function EmailDetail() {
   const navigate = useNavigate();
@@ -187,12 +188,77 @@ export default function EmailDetail() {
     }
   };
 
+
+
+
+  function extractCleanReply(rawHtml) {
+    
+    const replyMarkers = [
+      '<div id="divRplyFwdMsg"',
+      '<hr',
+      'From:',
+      'Sent:',
+      'Subject:',
+      'On ', // e.g., On April 6, 2024, ...
+      '-----Original Message-----'
+    ];
+  
+    // 1. Cut raw HTML at first known marker (string-based approach)
+    let cutoffIndex = -1;
+    for (const marker of replyMarkers) {
+      const index = rawHtml.indexOf(marker);
+      if (index !== -1) {
+        cutoffIndex = index;
+        break;
+      }
+    }
+    const trimmedHtml = cutoffIndex !== -1 ? rawHtml.slice(0, cutoffIndex) : rawHtml;
+  
+    // 2. Load into Cheerio to sanitize & remove reply blocks
+    const $ = cheerio.load(trimmedHtml);
+
+    
+
+    // Clean up common structures
+    $('hr, #divRplyFwdMsg, #ms-outlook-mobile-signature').remove();
+  
+    // Remove blocks that clearly contain reply headers (From:, Sent:)
+    $('p, div, span').each((_, el) => {
+      const text = $(el).text().toLowerCase().trim();
+      if (
+        text.startsWith('from:') ||
+        text.startsWith('sent:') ||
+        text.startsWith('subject:') ||
+        text.startsWith('to:') ||
+        text.startsWith('on ') // like "On April 5, 2024, Talal wrote:"
+      ) {
+        $(el).nextAll().remove();
+        $(el).remove();
+      }
+    });
+  
+    return $('body').html();
+  }
+  
+
+
+
+
+
+
+
+
+
   // Clean Email
   const cleanEmailBody = (emailHtml) => {
     const cleanedHtml = emailHtml
       .replace(/<div class="gmail_quote">([\s\S]*?)<\/div>/g, "")
       .replace(/<blockquote([\s\S]*?)<\/blockquote>/g, "");
 
+
+
+    
+    //return extractCleanReply(cleanedHtml);
     return cleanedHtml;
   };
 

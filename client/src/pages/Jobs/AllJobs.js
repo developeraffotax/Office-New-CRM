@@ -23,7 +23,7 @@ import { MdDriveFileMoveOutline } from "react-icons/md";
 import { Timer } from "../../utlis/Timer";
 import JobCommentModal from "./JobCommentModal";
 import { MdAutoGraph } from "react-icons/md";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { TbLoader } from "react-icons/tb";
 import { Box, Button, LinearProgress, ListItemIcon, MenuItem, Popover, Typography } from "@mui/material";
 import { MdOutlineModeEdit } from "react-icons/md";
@@ -184,6 +184,24 @@ export default function AllJobs() {
   };
 
  
+
+
+
+    const [searchParams] = useSearchParams();
+    const comment_taskId = searchParams.get('comment_taskId');
+  
+  
+    useEffect(() => {
+      if (comment_taskId) {
+        setJobId(comment_taskId);
+        setIsComment(true);
+      }
+  
+    }, [comment_taskId]);
+
+
+
+
 
   // Extract the current path
   const currentPath = location.pathname;

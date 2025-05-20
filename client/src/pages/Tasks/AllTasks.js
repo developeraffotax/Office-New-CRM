@@ -30,7 +30,7 @@ import {
 import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
 import { Timer } from "../../utlis/Timer";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import { GrCopy } from "react-icons/gr";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import JobCommentModal from "../Jobs/JobCommentModal";
@@ -137,7 +137,22 @@ const AllTasks = () => {
 
 
  
-  const [showActiveTimer, setShowActiveTimer] = useState(false)
+  const [showActiveTimer, setShowActiveTimer] = useState(false);
+
+
+  
+  const [searchParams] = useSearchParams();
+  const comment_taskId = searchParams.get('comment_taskId');
+
+
+  useEffect(() => {
+    if (comment_taskId) {
+      setCommentTaskId(comment_taskId);
+      setIsComment(true);
+    }
+
+  }, [comment_taskId]);
+  
 
 
 

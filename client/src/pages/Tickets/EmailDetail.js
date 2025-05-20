@@ -258,8 +258,8 @@ export default function EmailDetail() {
 
 
     
-    //return extractCleanReply(cleanedHtml);
-    return cleanedHtml;
+    return extractCleanReply(cleanedHtml);
+    //return cleanedHtml;
   };
 
   // ---------File Type--------->

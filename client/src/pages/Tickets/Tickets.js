@@ -17,7 +17,7 @@ import { useAuth } from "../../context/authContext";
 import { MdCheckCircle, MdInsertComment } from "react-icons/md";
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { Box } from "@mui/material";
@@ -59,6 +59,37 @@ export default function Tickets() {
       setAccess(filterAccess);
     }
   }, [auth]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  const [searchParams] = useSearchParams();
+  const comment_taskId = searchParams.get('comment_taskId');
+
+
+  useEffect(() => {
+    if (comment_taskId) {
+      setCommentTicketId(comment_taskId);
+      setIsComment(true);
+    }
+
+  }, [comment_taskId]);
+
+
+
+
+
+
 
   // const getReplies = async () => {
 

@@ -109,6 +109,7 @@ export const updateSubscription = async (req, res) => {
       authCode,
       utr,
       job,
+      
     } = req.body;
 
     if (!clientName) {
@@ -158,6 +159,7 @@ export const updateSubscription = async (req, res) => {
         authCode,
         utr,
         job,
+        
       },
       { new: true }
     );
@@ -211,7 +213,7 @@ export const updateSingleField = async (req, res) => {
         "job.deadline": deadline || existingSub.job.deadline,
         "job.lead": lead || existingSub.job.lead,
         "job.fee": fee || existingSub.job.fee,
-        note: note,
+        note: note || existingSub.note,
         status: status || existingSub.status,
         subscription: subscription || existingSub.subscription,
       },

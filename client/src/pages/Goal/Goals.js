@@ -26,6 +26,7 @@ import { GoEye } from "react-icons/go";
 import GoalDetail from "../../components/Goal/GoalDetail";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FaListOl } from "react-icons/fa";
+import { useSearchParams } from "react-router-dom";
 
 export default function Goals() {
   const { auth } = useAuth();
@@ -79,6 +80,24 @@ export default function Goals() {
 
   console.log("goalsData:", goalsData);
   console.log("filterGoals:", filterGoals);
+
+  
+    
+    const [searchParams] = useSearchParams();
+    const comment_taskId = searchParams.get('comment_taskId');
+  
+  
+    useEffect(() => {
+      if (comment_taskId) {
+        setCommentTaskId(comment_taskId);
+        setIsComment(true);
+      }
+  
+    }, [comment_taskId]);
+  
+
+
+
 
   // -------Get All Proposal-------
   const getAllGoals = async () => {

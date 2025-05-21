@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import { style } from "../../utlis/CommonStyle";
-import { IoClose } from "react-icons/io5";
+import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import SubscriptionModel from "../../components/SubscriptionModel";
 import axios from "axios";
 import {
@@ -11,7 +11,7 @@ import {
 import Loader from "../../utlis/Loader";
 import { useAuth } from "../../context/authContext";
 import toast from "react-hot-toast";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import { AiOutlineEdit, AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import DataLabel from "./DataLabel";
@@ -48,6 +48,18 @@ export default function Subscription() {
   const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
 
   console.log("rowSelection:", rowSelection);
+
+
+
+  const [showExternalFilters, setShowExternalFilters] = useState(false);
+  const [filter1, setFilter1] = useState("");
+  const [filter2, setFilter2] = useState("");
+  const [filter3, setFilter3] = useState("");
+   
+
+
+
+
 
   // -------Get Subscription Data-------
   const getAllSubscriptions = async () => {
@@ -1629,6 +1641,10 @@ export default function Subscription() {
   const handleClearFilters = () => {
     table.setColumnFilters([]);
     table.setGlobalFilter("");
+
+    setFilter1("");
+    setFilter2("");
+    setFilter3("");
   };
 
   const table = useMaterialReactTable({
@@ -1746,6 +1762,57 @@ export default function Subscription() {
     }
   };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const col = table.getColumn("subscription");
+
+    console.log(col, "THE COLUMN 💚")
+
+
+
+
+
+    const setColumnFromOutsideTable = (colKey, filterVal) => {
+
+    const col = table.getColumn(colKey);
+
+    console.log(col, "THE COLUMN 💚")
+    return col.setFilterValue(filterVal);
+  }
+
+
   return (
     <Layout>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4 pb-[2rem]">
@@ -1763,6 +1830,21 @@ export default function Subscription() {
               title="Clear filters"
             >
               <IoClose className="h-6 w-6 text-white" />
+            </span>
+
+
+
+            <span
+              className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${showExternalFilters && 'bg-orange-500 text-white '}  `}
+              onClick={() => {
+                // setActiveBtn("jobHolder");
+                // setShowJobHolder(!showJobHolder);
+                setShowExternalFilters(!showExternalFilters);
+
+              }}
+              title="Filter by Job Holder"
+            >
+              <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
             </span>
           </div>
 
@@ -1791,6 +1873,196 @@ export default function Subscription() {
             </button>
           </div>
         </div>
+
+
+
+
+        {/* --------------External Filter---------------- */}
+        {
+          showExternalFilters && (
+            <div className="w-full flex flex-row items-start justify-start gap-4 mt-4">
+              <div className="flex items-center gap-2">
+                {/* <span className="text-sm font-semibold text-gray-700">
+                  Job Holder
+                </span> */}
+                <ul className="flex items-center gap-2 list-none  ">
+                  {subscriptions.map((sub, i) => (
+                    <li
+                      key={i}
+                      className={`${
+                        filter1 === sub
+                          ? "bg-orange-500 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      } px-2 py-1 rounded-md cursor-pointer   m-0`}
+                      onClick={() => {
+
+
+                        setFilter1(prev => {
+                          const isSameUser = prev === sub;
+                          const newValue = isSameUser ? "" : sub;
+
+                          setColumnFromOutsideTable("subscription", newValue);
+                          return newValue;
+                        });
+
+
+
+                      }}
+                    >
+                      {sub}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+                  <span>|</span>
+
+              <div className="flex items-center gap-2">
+                {/* <span className="text-sm font-semibold text-gray-700">
+                  Job Holder
+                </span> */}
+                <ul className="flex items-center gap-2 list-none  ">
+                  {["Due", "Overdue"].map((el, i) => (
+                    <li
+                      key={i}
+                      className={`${
+                        filter2 === el
+                          ? "bg-orange-500 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      } px-2 py-1 rounded-md cursor-pointer  m-0 `}
+                      onClick={() => {
+                        
+                        setFilter2(prev => {
+                          const isSameUser = prev === el;
+                          const newValue = isSameUser ? "" : el;
+
+                          setColumnFromOutsideTable("state", newValue);
+                          return newValue;
+                        });
+                      }}
+                    >
+                      {el}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+                   <span>|</span>
+
+              <div className="flex items-center gap-2">
+                {/* <span className="text-sm font-semibold text-gray-700">
+                  Job Holder
+                </span> */}
+                <ul className="flex items-center gap-2 list-none  ">
+                  {userName?.map((user, i) => (
+                    <li
+                      key={i}
+                      className={`${
+                        filter3 === user
+                          ? "bg-orange-500 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      } px-2 py-1 rounded-md cursor-pointer m-0 `}
+                      onClick={() => {
+                        setFilter3(prev => {
+                          const isSameUser = prev === user;
+                          const newValue = isSameUser ? "" : user;
+
+                          setColumnFromOutsideTable("job.jobHolder", newValue);
+                          return newValue;
+                        });
+                         
+                      }}
+                    >
+                      {user}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+
+
+            </div>
+          )
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         {/* Update Bulk Jobs */}
         {showEdit && (
           <div className="w-full mt-4 py-2">

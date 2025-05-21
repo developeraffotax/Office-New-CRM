@@ -482,11 +482,19 @@ const convertQuillHtmlToPlainText = (html) => {
               </div>
             );
           },
+          // filterFn: (row, columnId, filterValue) => {
+          //   const cellValue =
+          //     row.original[columnId]?.toString().toLowerCase() || "";
+          //   return cellValue.includes(filterValue.toLowerCase());
+          // },
+
           filterFn: (row, columnId, filterValue) => {
-            const cellValue =
-              row.original[columnId]?.toString().toLowerCase() || "";
-            return cellValue.includes(filterValue.toLowerCase());
-          },
+          const cellValue = row.original[columnId]?.toString().toLowerCase() || "";
+          const keywords = filterValue.toLowerCase().split(" ").filter(Boolean); // split by space and remove empty strings
+          return keywords.every(keyword => cellValue.includes(keyword));
+        },
+
+
           size: 500,
           minSize: 350,
           maxSize: 560,

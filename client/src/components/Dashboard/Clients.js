@@ -105,7 +105,8 @@ export default function Clients({
       return matchesDateFilter && matchesSearchFilter;
     });
 
- 
+    
+    //console.log("Filtered Unique Clients💛🧡❤:", filteredData);
 
     setFilteredUniqueClient(filteredData);
   }, [selectedMonth, selectedYear, uniqueClients, search]);

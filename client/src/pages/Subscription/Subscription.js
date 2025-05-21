@@ -303,7 +303,7 @@ export default function Subscription() {
           const companyName = cell.getValue();
 
           return (
-            <div className="cursor-pointer text-[#0078c8] hover:text-[#0053c8] w-full h-full">
+            <div className="cursor-pointer text-[#0078c8] hover:text-[#0053c8] w-full h-full flex items-center justify-start">
               {companyName}
             </div>
           );
@@ -1222,9 +1222,9 @@ export default function Subscription() {
       //  --- Note--->
       {
         accessorKey: "note",
-        minSize: 200,
+        minSize: 220,
         maxSize: 500,
-        size: 250,
+        size: 220,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -1244,7 +1244,7 @@ export default function Subscription() {
                 onChange={(e) => {
                   column.setFilterValue(e.target.value);
                 }}
-                className="font-normal h-[1.8rem] w-[340px] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                className="font-normal h-[1.8rem] w-[200px] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
               />
             </div>
           );
@@ -1505,7 +1505,7 @@ export default function Subscription() {
                   column.setFilterValue("");
                 }}
               >
-                CC Person
+                POC
               </span>
               <select
                 value={column.getFilterValue() || ""}
@@ -1593,9 +1593,9 @@ export default function Subscription() {
 
         filterVariant: "select",
         filterSelectOptions: dataLable.map((label) => label.name),
-        size: 130,
-        minSize: 100,
-        maxSize: 210,
+        size: 80,
+        minSize: 80,
+        maxSize: 180,
         grow: false,
       },
       ...(auth?.user?.role?.name === "Admin"

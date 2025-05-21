@@ -1348,8 +1348,8 @@ export default function Tickets() {
     enableBottomToolbar: true,
     enablePagination: true,
     initialState: {
-      pagination: { pageSize: 20 },
-      pageSize: 20,
+      pagination: { pageSize: 50 },
+      pageSize: 50,
       density: "compact",
     },
 

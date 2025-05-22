@@ -22,6 +22,24 @@ import JobCommentModal from "../Jobs/JobCommentModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { Box } from "@mui/material";
 
+
+
+const jobStatusOptions = [
+              "Quote",
+              "Data",
+              "Progress",
+              "Queries",
+              "Approval",
+              "Submission",
+              "Billing",
+              "Feedback",
+               
+              
+              
+            ]
+
+
+
 export default function Tickets() {
   const { auth } = useAuth();
   const [showSendModal, setShowSendModal] = useState(false);
@@ -46,6 +64,14 @@ export default function Tickets() {
 
   const [replyCounts, setReplyCounts] = useState({});
   const initMount = useRef(true)
+
+
+  const [pagination, setPagination] = useState({
+  pageIndex: 0,
+  pageSize: 50, // ✅ default page size
+});
+
+
 
   // console.log("Email Data", emailData);
 
@@ -263,6 +289,77 @@ export default function Tickets() {
       toast.error(error?.response?.data?.message);
     }
   };
+
+
+
+
+
+
+
+
+  // ------------Update Status ------------>
+  const updateJobStatus = async (ticketId, status) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
+        { jobStatus: status }
+      );
+      if (data) {
+        const updateTicket = data?.ticket;
+        toast.success("Date updated successfully!");
+
+        console.log("UPDATE TICKET♾🆔♓♓♓", updateTicket);
+
+         
+        if (filteredData) {
+          setFilteredData((prevData) => {
+            if (Array.isArray(prevData)) {
+              return prevData.map((item) =>
+                item._id === updateTicket._id ? updateTicket : item
+              );
+            } else {
+              return [updateTicket];
+            }
+          });
+        }
+
+        setEmailData((prevData) => {
+          if (Array.isArray(prevData)) {
+            return prevData.map((item) =>
+              item._id === updateTicket._id ? updateTicket : item
+            );
+          } else {
+            return [updateTicket];
+          }
+        });
+
+        //getEmails();
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response?.data?.message || "An error occurred");
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // ------------Update Date ------------>
   const updateJobDate = async (ticketId, jobDate, jobHolder) => {
@@ -573,6 +670,159 @@ export default function Tickets() {
         maxSize: 130,
         grow: false,
       },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            {
+        accessorKey: "jobStatus",
+        header: "Job Status",
+        Header: ({ column }) => {
+          // const user = auth?.user?.name;
+
+          // useEffect(() => {
+          //   column.setFilterValue(user);
+
+          // }, []);
+
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Job Status
+              </span>
+              
+                <select
+                  value={column.getFilterValue() || ""}
+                  onChange={(e) => column.setFilterValue(e.target.value)}
+                  className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select</option>
+                  {jobStatusOptions?.map((status, i) => (
+                    <option key={i} value={status}>
+                      {status}
+                    </option>
+                  ))}
+
+                  <option value="empty">Empty</option>
+                </select>
+              
+            </div>
+          );
+        },
+        Cell: ({ cell, row, table  }) => {
+          const jobStatus = cell.getValue();
+           
+          const [show, setShow] = useState(false);
+          const [value, setValue] = useState(jobStatus);
+
+
+          
+
+          return (
+            <div className="w-full">
+              {show ? (
+                <select
+                  value={value || ""}
+                  className="w-full h-[2rem] rounded-md border-none  outline-none"
+                  onChange={(e) => {
+                    updateJobStatus(row.original._id,  e.target.value);
+                    //setValue(e.target.value);
+                    setShow(false);
+                  }}
+                >
+                  <option value="empty"></option>
+                  {jobStatusOptions?.map((status, i) => (
+                    <option value={status} key={i}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span
+                  onDoubleClick={() => setShow(true)}
+                  className="w-full h-full cursor-pointer"
+                >
+                  {jobStatus && jobStatus !== "empty" ? (
+                    jobStatus
+                  ) : (
+                    <div className="text-white w-full h-full  ">.</div>
+                  )}
+                </span>
+              )}
+            </div>
+          );
+        },
+
+              filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+        
+          if (filterValue === "empty") {
+            return !cellValue || cellValue === "empty";
+          }
+        
+          return String(cellValue ?? "") === String(filterValue);
+        },
+
+
+
+        // filterFn: "equals",
+        // filterSelectOptions: jobStatusOptions.map((el) => el),
+        // filterVariant: "select",
+        size: 120,
+        minSize: 80,
+        maxSize: 130,
+        grow: false,
+      },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       {
         accessorKey: "subject",
         minSize: 200,
@@ -1346,12 +1596,22 @@ export default function Tickets() {
     enableColumnResizing: true,
     enableTopToolbar: true,
     enableBottomToolbar: true,
+
     enablePagination: true,
-    initialState: {
-      pagination: { pageSize: 50 },
-      pageSize: 50,
-      density: "compact",
-    },
+    // initialState: {
+    //   pagination: { pageSize: 50 },
+    //   pageSize: 50,
+    //   density: "compact",
+    // },
+
+    state:{
+    pagination, // ✅ Controlled pagination
+    density: "compact" 
+  },
+    onPaginationChange:setPagination, // ✅ Hook for page changes
+
+    autoResetPageIndex: false,
+    
 
     muiTableHeadCellProps: {
       style: {

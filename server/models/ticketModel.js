@@ -67,6 +67,12 @@ const ticketSchema = new mongoose.Schema(
     },
 
 
+    jobStatus: {
+      type: String,
+       
+    },
+
+
 
     sent: {
       type: Number,

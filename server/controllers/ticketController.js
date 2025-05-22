@@ -545,7 +545,7 @@ export const getAllSendTickets = async (req, res, next) => {
     } 
     
     
-    const emails = await ticketModel.find(filter).select( "sent received clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy lastMessageSentTime createdAt" );
+    const emails = await ticketModel.find(filter).select( "sent received jobStatus clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy lastMessageSentTime createdAt" );
     res.status(200).send({ success: true, message: "All email list!", emails: emails, });
     
 
@@ -738,7 +738,7 @@ export const getSingleEmailDetail = async (req, res) => {
 export const updateTickets = async (req, res) => {
   try {
     const ticketId = req.params.id;
-    const { jobDate, state, jobHolder } = req.body;
+    const { jobDate, state, jobHolder, jobStatus } = req.body;
 
     console.log("State:", state);
 
@@ -758,6 +758,7 @@ export const updateTickets = async (req, res) => {
         jobDate: jobDate || existingTicket.jobDate,
         state: state ? state : existingTicket.state,
         jobHolder: jobHolder ? jobHolder : existingTicket.jobHolder,
+        jobStatus: jobStatus ? jobStatus : existingTicket.jobStatus,
       },
 
       { new: true }

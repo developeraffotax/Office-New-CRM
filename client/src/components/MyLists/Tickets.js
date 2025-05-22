@@ -24,6 +24,17 @@ import { useNavigate } from "react-router-dom";
 import JobCommentModal from "../../pages/Jobs/JobCommentModal";
 import { style } from "../../utlis/CommonStyle";
 
+const jobStatusOptions = [
+  "Quote",
+  "Data",
+  "Progress",
+  "Queries",
+  "Approval",
+  "Submission",
+  "Billing",
+  "Feedback",
+];
+
 const Tickets = forwardRef(
   ({ emailData, setEmailData, childRef, setIsload }, ref) => {
     const { auth } = useAuth();
@@ -40,7 +51,10 @@ const Tickets = forwardRef(
     const [commentTicketId, setCommentTicketId] = useState("");
     const [access, setAccess] = useState([]);
 
-    console.log("Email Data", emailData);
+    const [pagination, setPagination] = useState({
+      pageIndex: 0,
+      pageSize: 20, // ✅ default page size
+    });
 
     // Get Auth Access
     useEffect(() => {
@@ -182,6 +196,47 @@ const Tickets = forwardRef(
           });
 
           getEmails();
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error(error.response?.data?.message || "An error occurred");
+      }
+    };
+
+    // ------------Update Status ------------>
+    const updateJobStatus = async (ticketId, status) => {
+      try {
+        const { data } = await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
+          { jobStatus: status }
+        );
+        if (data) {
+          const updateTicket = data?.ticket;
+          toast.success("Date updated successfully!");
+
+          if (filteredData) {
+            setFilteredData((prevData) => {
+              if (Array.isArray(prevData)) {
+                return prevData.map((item) =>
+                  item._id === updateTicket._id ? updateTicket : item
+                );
+              } else {
+                return [updateTicket];
+              }
+            });
+          }
+
+          setEmailData((prevData) => {
+            if (Array.isArray(prevData)) {
+              return prevData.map((item) =>
+                item._id === updateTicket._id ? updateTicket : item
+              );
+            } else {
+              return [updateTicket];
+            }
+          });
+
+          //getEmails();
         }
       } catch (error) {
         console.log(error);
@@ -472,6 +527,107 @@ const Tickets = forwardRef(
           maxSize: 130,
           grow: false,
         },
+
+        {
+          accessorKey: "jobStatus",
+          header: "Job Status",
+          Header: ({ column }) => {
+            // const user = auth?.user?.name;
+
+            // useEffect(() => {
+            //   column.setFilterValue(user);
+
+            // }, []);
+
+            return (
+              <div className=" flex flex-col gap-[2px]">
+                <span
+                  className="ml-1 cursor-pointer"
+                  title="Clear Filter"
+                  onClick={() => {
+                    column.setFilterValue("");
+                  }}
+                >
+                  Job Status
+                </span>
+
+                <select
+                  value={column.getFilterValue() || ""}
+                  onChange={(e) => column.setFilterValue(e.target.value)}
+                  className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select</option>
+                  {jobStatusOptions?.map((status, i) => (
+                    <option key={i} value={status}>
+                      {status}
+                    </option>
+                  ))}
+
+                  <option value="empty">Empty</option>
+                </select>
+              </div>
+            );
+          },
+          Cell: ({ cell, row, table }) => {
+            const jobStatus = cell.getValue();
+
+            const [show, setShow] = useState(false);
+            const [value, setValue] = useState(jobStatus);
+
+            return (
+              <div className="w-full">
+                {show ? (
+                  <select
+                    value={value || ""}
+                    className="w-full h-[2rem] rounded-md border-none  outline-none"
+                    onChange={(e) => {
+                      updateJobStatus(row.original._id, e.target.value);
+                      //setValue(e.target.value);
+                      setShow(false);
+                    }}
+                  >
+                    <option value="empty"></option>
+                    {jobStatusOptions?.map((status, i) => (
+                      <option value={status} key={i}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <span
+                    onDoubleClick={() => setShow(true)}
+                    className="w-full h-full cursor-pointer"
+                  >
+                    {jobStatus && jobStatus !== "empty" ? (
+                      jobStatus
+                    ) : (
+                      <div className="text-white w-full h-full  ">.</div>
+                    )}
+                  </span>
+                )}
+              </div>
+            );
+          },
+
+          filterFn: (row, columnId, filterValue) => {
+            const cellValue = row.getValue(columnId);
+
+            if (filterValue === "empty") {
+              return !cellValue || cellValue === "empty";
+            }
+
+            return String(cellValue ?? "") === String(filterValue);
+          },
+
+          // filterFn: "equals",
+          // filterSelectOptions: jobStatusOptions.map((el) => el),
+          // filterVariant: "select",
+          size: 120,
+          minSize: 80,
+          maxSize: 130,
+          grow: false,
+        },
+
         {
           accessorKey: "subject",
           minSize: 200,
@@ -519,6 +675,35 @@ const Tickets = forwardRef(
           },
           filterVariant: "select",
         },
+
+        {
+          accessorKey: "received",
+          header: "Received",
+          Cell: ({ row }) => {
+            const received = row.original.received;
+            return (
+              <span className="w-full flex justify-center text-lg bg-sky-600 text-white rounded-md ">
+                {received}
+              </span>
+            );
+          },
+          size: 60,
+        },
+        {
+          accessorKey: "sent",
+          header: "Sent",
+          Cell: ({ row }) => {
+            const sent = row.original.sent;
+            return (
+              <span className="w-full flex justify-center text-lg bg-orange-600 text-white rounded-md">
+                {sent}
+              </span>
+            );
+          },
+
+          size: 60,
+        },
+
         {
           accessorKey: "status",
           header: "Status",
@@ -639,7 +824,6 @@ const Tickets = forwardRef(
           Cell: ({ cell, row }) => {
             const createdAt = row.original.createdAt;
 
-            console.log("createdAt", createdAt);
             return (
               <div className="w-full flex  ">
                 <p>{format(new Date(createdAt), "dd-MMM-yyyy")}</p>
@@ -974,11 +1158,19 @@ const Tickets = forwardRef(
       enableTopToolbar: true,
       enableBottomToolbar: true,
       enablePagination: true,
-      initialState: {
-        pagination: { pageSize: 20 },
-        pageSize: 20,
+      // initialState: {
+      //   pagination: { pageSize: 20 },
+      //   pageSize: 20,
+      //   density: "compact",
+      // },
+
+      state: {
+        pagination, // ✅ Controlled pagination
         density: "compact",
       },
+      onPaginationChange: setPagination, // ✅ Hook for page changes
+
+      autoResetPageIndex: false,
 
       muiTableHeadCellProps: {
         style: {

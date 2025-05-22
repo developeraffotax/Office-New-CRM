@@ -22,23 +22,16 @@ import JobCommentModal from "../Jobs/JobCommentModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { Box } from "@mui/material";
 
-
-
 const jobStatusOptions = [
-              "Quote",
-              "Data",
-              "Progress",
-              "Queries",
-              "Approval",
-              "Submission",
-              "Billing",
-              "Feedback",
-               
-              
-              
-            ]
-
-
+  "Quote",
+  "Data",
+  "Progress",
+  "Queries",
+  "Approval",
+  "Submission",
+  "Billing",
+  "Feedback",
+];
 
 export default function Tickets() {
   const { auth } = useAuth();
@@ -57,23 +50,16 @@ export default function Tickets() {
   const [commentTicketId, setCommentTicketId] = useState("");
   const [access, setAccess] = useState([]);
 
-
   const [showJobHolder, setShowJobHolder] = useState(false);
   const [active1, setActive1] = useState("");
 
-
   const [replyCounts, setReplyCounts] = useState({});
-  const initMount = useRef(true)
-
+  const initMount = useRef(true);
 
   const [pagination, setPagination] = useState({
-  pageIndex: 0,
-  pageSize: 50, // ✅ default page size
-});
-
-
-
-  // console.log("Email Data", emailData);
+    pageIndex: 0,
+    pageSize: 50, // ✅ default page size
+  });
 
   // Get Auth Access
   useEffect(() => {
@@ -86,41 +72,18 @@ export default function Tickets() {
     }
   }, [auth]);
 
-
-
-
-
-
-
-
-
-
-
-
-
-  
   const [searchParams] = useSearchParams();
-  const comment_taskId = searchParams.get('comment_taskId');
-
+  const comment_taskId = searchParams.get("comment_taskId");
 
   useEffect(() => {
     if (comment_taskId) {
       setCommentTicketId(comment_taskId);
       setIsComment(true);
     }
-
   }, [comment_taskId]);
-
-
-
-
-
-
 
   // const getReplies = async () => {
 
-  //   console.log("GET REPLIES RAN💚💚💚💚💛🧡🧡")
-     
   //   try {
   //     const { data } = await axios.get(
   //       `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets-replies`
@@ -135,18 +98,16 @@ export default function Tickets() {
   //         totalReceived: item.totalReceived
   //       };
   //     });
-         
+
   //     setReplyCounts(countsMap);
 
-     
   //     initMount.current = false;
 
   //     }
   //   } catch (error) {
   //     console.log(error);
-       
-  //   }
 
+  //   }
 
   // }
 
@@ -164,8 +125,6 @@ export default function Tickets() {
         // if(initMount) {
         //   getReplies()
         // }
-
-
       }
     } catch (error) {
       console.log(error);
@@ -191,19 +150,17 @@ export default function Tickets() {
     }
   };
 
-
-
-
-
   function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
     const savedSet = new Set(savedOrder);
-    console.log("savedSET>>>>", savedSet)
+    console.log("savedSET>>>>", savedSet);
     // Preserve the order from savedOrder, but only if the username still exists in the fetched data
-    const ordered = savedOrder.filter(name => fetchedUsernames.includes(name));
-    
+    const ordered = savedOrder.filter((name) =>
+      fetchedUsernames.includes(name)
+    );
+
     // Add any new usernames that aren't in the saved order
-    const newOnes = fetchedUsernames.filter(name => !savedSet.has(name));
-    
+    const newOnes = fetchedUsernames.filter((name) => !savedSet.has(name));
+
     return [...ordered, ...newOnes];
   }
 
@@ -222,22 +179,23 @@ export default function Tickets() {
       );
 
       const userNameArr = data?.users
-      ?.filter((user) =>
-        user.role?.access.some((item) =>
-          item?.permission?.includes("Tickets")
+        ?.filter((user) =>
+          user.role?.access.some((item) =>
+            item?.permission?.includes("Tickets")
+          )
         )
-      )
-      .map((user) => user.name);
+        .map((user) => user.name);
 
+      setUserName(userNameArr);
 
-      setUserName( userNameArr );
+      const savedOrder = JSON.parse(
+        localStorage.getItem("tickets_usernamesOrder")
+      );
+      if (savedOrder) {
+        const savedUserNames = mergeWithSavedOrder(userNameArr, savedOrder);
 
-      const savedOrder = JSON.parse(localStorage.getItem("tickets_usernamesOrder"));
-        if(savedOrder) {
-          const savedUserNames = mergeWithSavedOrder(userNameArr, savedOrder);
-          
-            setUserName(savedUserNames)
-        }
+        setUserName(savedUserNames);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -290,13 +248,6 @@ export default function Tickets() {
     }
   };
 
-
-
-
-
-
-
-
   // ------------Update Status ------------>
   const updateJobStatus = async (ticketId, status) => {
     try {
@@ -308,9 +259,6 @@ export default function Tickets() {
         const updateTicket = data?.ticket;
         toast.success("Date updated successfully!");
 
-        console.log("UPDATE TICKET♾🆔♓♓♓", updateTicket);
-
-         
         if (filteredData) {
           setFilteredData((prevData) => {
             if (Array.isArray(prevData)) {
@@ -340,26 +288,6 @@ export default function Tickets() {
       toast.error(error.response?.data?.message || "An error occurred");
     }
   };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   // ------------Update Date ------------>
   const updateJobDate = async (ticketId, jobDate, jobHolder) => {
@@ -671,27 +599,7 @@ export default function Tickets() {
         grow: false,
       },
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            {
+      {
         accessorKey: "jobStatus",
         header: "Job Status",
         Header: ({ column }) => {
@@ -713,33 +621,29 @@ export default function Tickets() {
               >
                 Job Status
               </span>
-              
-                <select
-                  value={column.getFilterValue() || ""}
-                  onChange={(e) => column.setFilterValue(e.target.value)}
-                  className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-                >
-                  <option value="">Select</option>
-                  {jobStatusOptions?.map((status, i) => (
-                    <option key={i} value={status}>
-                      {status}
-                    </option>
-                  ))}
 
-                  <option value="empty">Empty</option>
-                </select>
-              
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {jobStatusOptions?.map((status, i) => (
+                  <option key={i} value={status}>
+                    {status}
+                  </option>
+                ))}
+
+                <option value="empty">Empty</option>
+              </select>
             </div>
           );
         },
-        Cell: ({ cell, row, table  }) => {
+        Cell: ({ cell, row, table }) => {
           const jobStatus = cell.getValue();
-           
+
           const [show, setShow] = useState(false);
           const [value, setValue] = useState(jobStatus);
-
-
-          
 
           return (
             <div className="w-full">
@@ -748,7 +652,7 @@ export default function Tickets() {
                   value={value || ""}
                   className="w-full h-[2rem] rounded-md border-none  outline-none"
                   onChange={(e) => {
-                    updateJobStatus(row.original._id,  e.target.value);
+                    updateJobStatus(row.original._id, e.target.value);
                     //setValue(e.target.value);
                     setShow(false);
                   }}
@@ -776,17 +680,15 @@ export default function Tickets() {
           );
         },
 
-              filterFn: (row, columnId, filterValue) => {
+        filterFn: (row, columnId, filterValue) => {
           const cellValue = row.getValue(columnId);
-        
+
           if (filterValue === "empty") {
             return !cellValue || cellValue === "empty";
           }
-        
+
           return String(cellValue ?? "") === String(filterValue);
         },
-
-
 
         // filterFn: "equals",
         // filterSelectOptions: jobStatusOptions.map((el) => el),
@@ -796,32 +698,6 @@ export default function Tickets() {
         maxSize: 130,
         grow: false,
       },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       {
         accessorKey: "subject",
@@ -877,39 +753,33 @@ export default function Tickets() {
         filterVariant: "select",
       },
 
-
-
-
       {
-        accessorKey: 'received',
-        header: 'Received',
+        accessorKey: "received",
+        header: "Received",
         Cell: ({ row }) => {
           const received = row.original.received;
-          return <span  className="w-full flex justify-center text-lg bg-sky-600 text-white rounded-md ">{received}</span>
+          return (
+            <span className="w-full flex justify-center text-lg bg-sky-600 text-white rounded-md ">
+              {received}
+            </span>
+          );
         },
         size: 60,
-
-       
-        
-        
       },
       {
-        accessorKey: 'sent',
-        header: 'Sent',
+        accessorKey: "sent",
+        header: "Sent",
         Cell: ({ row }) => {
-          console.log("THE ROW IS >>>>",row)
           const sent = row.original.sent;
-          return <span className="w-full flex justify-center text-lg bg-orange-600 text-white rounded-md">{sent}</span>
+          return (
+            <span className="w-full flex justify-center text-lg bg-orange-600 text-white rounded-md">
+              {sent}
+            </span>
+          );
         },
 
-       
-
         size: 60,
-        
       },
-
-
-
 
       {
         accessorKey: "status",
@@ -968,14 +838,6 @@ export default function Tickets() {
         maxSize: 130,
         grow: false,
       },
-
-
-
-
-      
-
-
-
 
       // Created Date
       {
@@ -1291,10 +1153,6 @@ export default function Tickets() {
         grow: false,
       },
 
-
-
-
-
       {
         accessorKey: "lastMessageSentTime",
         Header: ({ column }) => {
@@ -1371,37 +1229,34 @@ export default function Tickets() {
           //   setShowStartDate(false);
           // };
 
-
           function getDaysOld(dateString) {
             const givenDate = new Date(dateString);
             const now = new Date();
-          
+
             // Calculate the difference in milliseconds
             const diffMs = now - givenDate;
-          
+
             // Convert milliseconds to days (1 day = 86400000 ms)
             const daysOld = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-          
+
             return daysOld;
           }
 
-          
-
-          
-
           return (
             <div className="w-full flex  ">
-             <p
-                  // onDoubleClick={() => setShowStartDate(true)}
-                  className="w-full"
-                >
-                  {lastReply ? (
-                    <div className="w-full flex flex-col justify-center items-center "><span>{format(new Date(lastReply), "dd-MMM-yyyy")}</span> <span>{getDaysOld(lastReply)} (days ago)</span></div>
-                    
-                  ) : (
-                    <span className="text-white">.</span>
-                  )}
-                </p>
+              <p
+                // onDoubleClick={() => setShowStartDate(true)}
+                className="w-full"
+              >
+                {lastReply ? (
+                  <div className="w-full flex flex-col justify-center items-center ">
+                    <span>{format(new Date(lastReply), "dd-MMM-yyyy")}</span>{" "}
+                    <span>{getDaysOld(lastReply)} (days ago)</span>
+                  </div>
+                ) : (
+                  <span className="text-white">.</span>
+                )}
+              </p>
             </div>
           );
         },
@@ -1474,33 +1329,6 @@ export default function Tickets() {
         maxSize: 120,
         grow: false,
       },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       {
         accessorKey: "comments",
@@ -1604,14 +1432,13 @@ export default function Tickets() {
     //   density: "compact",
     // },
 
-    state:{
-    pagination, // ✅ Controlled pagination
-    density: "compact" 
-  },
-    onPaginationChange:setPagination, // ✅ Hook for page changes
+    state: {
+      pagination, // ✅ Controlled pagination
+      density: "compact",
+    },
+    onPaginationChange: setPagination, // ✅ Hook for page changes
 
     autoResetPageIndex: false,
-    
 
     muiTableHeadCellProps: {
       style: {
@@ -1657,82 +1484,39 @@ export default function Tickets() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // a little function to help us with reordering the result
+  const reorder = (list, startIndex, endIndex) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
 
+    return result;
+  };
 
+  //  -----------Handle drag end---------
+  const handleUserOnDragEnd = (result) => {
+    const items = reorder(
+      userName,
+      result.source.index,
+      result.destination.index
+    );
+    localStorage.setItem("tickets_usernamesOrder", JSON.stringify(items));
+    setUserName(items);
+  };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // a little function to help us with reordering the result
-    const reorder = (list, startIndex, endIndex) => {
-      const result = Array.from(list);
-      const [removed] = result.splice(startIndex, 1);
-      result.splice(endIndex, 0, removed);
-    
-      return result;
-    };
-  
-  
-      //  -----------Handle drag end---------
-    const handleUserOnDragEnd = (result) => {
-   
-      const items = reorder( userName, result.source.index, result.destination.index );
-      localStorage.setItem("tickets_usernamesOrder", JSON.stringify(items));
-      setUserName(items)
-  
-    };
- 
-    
   // --------------Job_Holder Length---------->
 
   const getJobHolderCount = (user, status) => {
-    console.log("Tickets DATA", emailData)
-    if(user === "All") {
+    if (user === "All") {
       return emailData.length;
     }
-    return emailData.filter((ticket) =>
-      ticket?.jobHolder === user
-    )?.length;
+    return emailData.filter((ticket) => ticket?.jobHolder === user)?.length;
   };
-    
-    
-    
-        
-    
-        const setColumnFromOutsideTable = (colKey, filterVal) => {
-    
-          const col = table.getColumn(colKey);
-          return col.setFilterValue(filterVal);
-        }
-    
 
-
-
-
-
-
+  const setColumnFromOutsideTable = (colKey, filterVal) => {
+    const col = table.getColumn(colKey);
+    return col.setFilterValue(filterVal);
+  };
 
   return (
     <Layout>
@@ -1743,19 +1527,17 @@ export default function Tickets() {
               Tickets
             </h1>
 
-
-             
             {
-              // auth?.user?.role?.name === 'Admin' && 
+              // auth?.user?.role?.name === 'Admin' &&
               <span
-              className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
-              onClick={() => {
-                handleClearFilters();
-              }}
-              title="Clear filters"
-            >
-              <IoClose className="h-6 w-6 text-white" />
-            </span>
+                className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
+                onClick={() => {
+                  handleClearFilters();
+                }}
+                title="Clear filters"
+              >
+                <IoClose className="h-6 w-6 text-white" />
+              </span>
             }
           </div>
 
@@ -1773,169 +1555,133 @@ export default function Tickets() {
 
         <>
           <div className="w-full flex flex-row justify-start items-center gap-2 mt-5">
-
-          <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden  transition-all duration-300 w-fit">
-            <button
-              className={`py-1 px-2 outline-none w-[6rem] transition-all duration-300   ${
-                selectedTab === "progress"
-                  ? "bg-orange-500 text-white border-r-2 border-orange-500"
-                  : "text-black bg-gray-100"
-              }`}
-              onClick={() => setSelectedTab("progress")}
-            >
-              Progress
-            </button>
-            <button
-              className={`py-1 px-2 outline-none transition-all duration-300 w-[6rem]  ${
-                selectedTab === "complete"
-                  ? "bg-orange-500 text-white"
-                  : "text-black bg-gray-100 hover:bg-slate-200"
-              }`}
-              onClick={() => {
-                setSelectedTab("complete");
-                navigate("/tickets/complete");
-              }}
-            >
-              Completed
-            </button>
-            {(auth?.user?.role?.name === "Admin" ||
-              access.includes("Inbox")) && (
+            <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden  transition-all duration-300 w-fit">
               <button
-                className={`py-1 px-2 outline-none transition-all border-l-2  border-orange-500 duration-300 w-[6rem]  ${
-                  selectedTab === "inbox"
+                className={`py-1 px-2 outline-none w-[6rem] transition-all duration-300   ${
+                  selectedTab === "progress"
+                    ? "bg-orange-500 text-white border-r-2 border-orange-500"
+                    : "text-black bg-gray-100"
+                }`}
+                onClick={() => setSelectedTab("progress")}
+              >
+                Progress
+              </button>
+              <button
+                className={`py-1 px-2 outline-none transition-all duration-300 w-[6rem]  ${
+                  selectedTab === "complete"
                     ? "bg-orange-500 text-white"
                     : "text-black bg-gray-100 hover:bg-slate-200"
                 }`}
                 onClick={() => {
-                  // setSelectedTab("inbox");
-                  navigate("/tickets/inbox");
+                  setSelectedTab("complete");
+                  navigate("/tickets/complete");
                 }}
               >
-                Inbox
+                Completed
               </button>
+              {(auth?.user?.role?.name === "Admin" ||
+                access.includes("Inbox")) && (
+                <button
+                  className={`py-1 px-2 outline-none transition-all border-l-2  border-orange-500 duration-300 w-[6rem]  ${
+                    selectedTab === "inbox"
+                      ? "bg-orange-500 text-white"
+                      : "text-black bg-gray-100 hover:bg-slate-200"
+                  }`}
+                  onClick={() => {
+                    // setSelectedTab("inbox");
+                    navigate("/tickets/inbox");
+                  }}
+                >
+                  Inbox
+                </button>
+              )}
+            </div>
 
-
-
-              
-            )}
-
-            
-          </div>
-
-
-          { auth?.user?.role?.name === "Admin" &&
-              (
-                <span
+            {auth?.user?.role?.name === "Admin" && (
+              <span
                 className={` p-1 rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
                   showJobHolder && "bg-orange-500 text-white"
                 }`}
                 onClick={() => {
-                   
-                  setShowJobHolder(prev => !prev);
+                  setShowJobHolder((prev) => !prev);
                 }}
                 title="Filter by Job Holder"
               >
                 <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
               </span>
-              )
-            }
-
-
+            )}
           </div>
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-2 " />
 
-
-
-                    {/* ----------Job_Holder Summery Filters---------- */}
-                    {showJobHolder &&  (
-              <>
-                <div className="w-full  py-2 ">
-                  <div className="flex items-center flex-wrap gap-4">
-                    <DragDropContext onDragEnd={handleUserOnDragEnd}>
-                      <Droppable droppableId="users0" direction="horizontal">
-                        {(provided) => (
+          {/* ----------Job_Holder Summery Filters---------- */}
+          {showJobHolder && (
+            <>
+              <div className="w-full  py-2 ">
+                <div className="flex items-center flex-wrap gap-4">
+                  <DragDropContext onDragEnd={handleUserOnDragEnd}>
+                    <Droppable droppableId="users0" direction="horizontal">
+                      {(provided) => (
+                        <div
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                          className="flex items-center gap-3 overflow-x-auto hidden1"
+                        >
                           <div
-                            {...provided.droppableProps}
+                            className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                              active1 === "All" &&
+                              "  border-b-2 text-orange-600 border-orange-600"
+                            }`}
                             ref={provided.innerRef}
-                            className="flex items-center gap-3 overflow-x-auto hidden1"
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            onClick={() => {
+                              setActive1("All");
+                              setColumnFromOutsideTable("jobHolder", "");
+                            }}
                           >
-                            
-
-                            <div
-                                      className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                                        active1 === "All" &&
-                                        "  border-b-2 text-orange-600 border-orange-600"
-                                      }`}
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                      onClick={() => {
-                                        setActive1("All");
-                                        setColumnFromOutsideTable('jobHolder', "");
-                                       
-                                      }}
-                                    >
-                                     All ({getJobHolderCount("All")})
-
-                                    </div>
-
-
-                            {userName.map((user, index) => {
-
-                                console.log("THE USER IS", user)
-
-                                return (
-                                  <Draggable
-                                  key={user}
-                                  draggableId={user}
-                                  index={index}
-                                >
-                                  {(provided) => (
-                                    <div
-                                      className={`py-1   px-2 cursor-pointer font-[500] text-[14px]   ${
-                                        active1 === user &&
-                                        "  border-b-2 text-orange-600 border-orange-600"
-                                      }`}
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                      onClick={() => {
-                                        setActive1(user)
-                                        setColumnFromOutsideTable('jobHolder', user);
-                                         
-                                        
-                                      }}
-                                    >
-                                      
-                                      {user} ({getJobHolderCount(user)})
-
-                                    </div>
-                                  )}
-                                  
-                                  
-                                </Draggable>
-
-                                
-                                
-                              )
-
-                            }
-                                
-                              )}
-                            {provided.placeholder}
+                            All ({getJobHolderCount("All")})
                           </div>
-                        )}
-                      </Droppable>
-                    </DragDropContext>
-                  </div>
+
+                          {userName.map((user, index) => {
+                            return (
+                              <Draggable
+                                key={user}
+                                draggableId={user}
+                                index={index}
+                              >
+                                {(provided) => (
+                                  <div
+                                    className={`py-1   px-2 cursor-pointer font-[500] text-[14px]   ${
+                                      active1 === user &&
+                                      "  border-b-2 text-orange-600 border-orange-600"
+                                    }`}
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    onClick={() => {
+                                      setActive1(user);
+                                      setColumnFromOutsideTable(
+                                        "jobHolder",
+                                        user
+                                      );
+                                    }}
+                                  >
+                                    {user} ({getJobHolderCount(user)})
+                                  </div>
+                                )}
+                              </Draggable>
+                            );
+                          })}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
                 </div>
-                <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
-              </>
-            )}
-
-
-
-          
+              </div>
+              <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
+            </>
+          )}
         </>
 
         {/* <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" /> */}

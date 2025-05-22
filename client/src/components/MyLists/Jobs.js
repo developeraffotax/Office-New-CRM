@@ -16,12 +16,12 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
-import { format } from "date-fns";
-import { MdInsertComment } from "react-icons/md";
+import { addMonths, format, formatISO } from "date-fns";
+import { MdDriveFileMoveOutline, MdInsertComment } from "react-icons/md";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/authContext";
 import Loader from "../../utlis/Loader";
-import { IoClose } from "react-icons/io5";
+import { IoClose, IoTicketOutline } from "react-icons/io5";
 import { useLocation } from "react-router-dom";
 
 import socketIO from "socket.io-client";
@@ -30,6 +30,8 @@ import JobDetail from "../../pages/Jobs/JobDetail";
 import CompletedJobs from "../../pages/Jobs/CompletedJobs";
 import { Timer } from "../../utlis/Timer";
 import Swal from "sweetalert2";
+import { LinearProgress, Popover, Typography } from "@mui/material";
+import TicketsPopUp from "../shared/TicketsPopUp";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -220,6 +222,149 @@ const Jobs = forwardRef(
 
       // eslint-disable-next-line
     }, []);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+  const [isMoving, setIsMoving] = useState(false)
+
+  // Move to Job Handler
+  const moveJobToLead = async (client) => {
+    
+
+    // Get today's date
+    const today = new Date();
+
+    // Add one month to today's date
+    const nextMonthDate = addMonths(today, 1);
+
+    // Format the new date to ISO format (including the time and timezone)
+    const followUpDate = formatISO(nextMonthDate);
+
+    try {
+      setIsMoving(true)
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/leads/create/lead`,
+        { 
+          companyName: client.companyName,
+          clientName: client.clientName,
+          jobHolder: client.job?.jobHolder,
+          department: client.job?.jobName,
+          source: client.source || "",
+          brand: "Affotax",
+          lead_Source: "CRM",
+          followUpDate: followUpDate,
+          JobDate: client.job.workDeadline,   // it is actually a job date 
+          Note: '',
+          stage: "",
+          value: "",
+          number: "",
+
+          yearEnd: client.job.yearEnd,
+          jobDeadline: client.job.jobDeadline
+
+
+        }
+      );
+
+
+      if (data) {
+        
+        toast.success("Job Moved to Lead Successfully!💚");
+
+        const result = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/client/jobActivity/${client._id}`, { activityText : "moved this job to Leads!", });
+
+
+        // Options for formatting
+        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true, };
+        const date = new Date();
+        const formattedDate = date.toLocaleString('en-US', options);
+
+        const result2 = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/activies/create`, {
+
+          activityText : "moved this job to Leads!",
+          entity: "Jobs",
+          details: `Job Details:
+          - Company Name: ${client.companyName}
+          - Job Client: ${client.clientName || "No client provided"}
+          - Created At: ${formattedDate}`
+
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          // const res = await axios.delete(
+          //   `${process.env.REACT_APP_API_URL}/api/v1/client/delete/job/${client._id}`
+          // );
+          // if (res.data) {
+          //   const filterData = tableData.filter((item) => item._id !== client._id);
+          //   setTableData(filterData);
+          // }
+        
+ 
+
+
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    } finally {
+      setIsMoving(false)
+    }
+
+
+
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // ---------------Handle Status Change---------->
 
@@ -1404,6 +1549,8 @@ const Jobs = forwardRef(
                       {status}
                     </option>
                   ))}
+
+                  <option value="empty">Empty</option>
                 </select>
               </div>
             );
@@ -1435,10 +1582,27 @@ const Jobs = forwardRef(
               </select>
             );
           },
+
+          
           filterFn: (row, columnId, filterValue) => {
             const cellValue = row.getValue(columnId);
+            
+            if (filterValue === "empty") {
+
+              return cellValue === "empty" ? true : !cellValue
+
+            
+                }
+
+
             return (cellValue || "").toString() === filterValue.toString();
           },
+
+
+          // filterFn: (row, columnId, filterValue) => {
+          //   const cellValue = row.getValue(columnId);
+          //   return (cellValue || "").toString() === filterValue.toString();
+          // },
           filterSelectOptions: [
             "Quote",
             "Data",
@@ -1481,6 +1645,8 @@ const Jobs = forwardRef(
                       {lead}
                     </option>
                   ))}
+
+                  <option value="empty">Empty</option>
                 </select>
               </div>
             );
@@ -1507,7 +1673,15 @@ const Jobs = forwardRef(
               </div>
             );
           },
-          filterFn: "equals",
+          filterFn: (row, columnId, filterValue) => {
+            const cellValue = row.getValue(columnId);
+          
+            if (filterValue === "empty") {
+              return !cellValue || cellValue === "empty";
+            }
+          
+            return String(cellValue ?? "") === String(filterValue);
+          },
           filterSelectOptions: users.map((lead) => lead),
           filterVariant: "select",
           size: 100,
@@ -1654,44 +1828,246 @@ const Jobs = forwardRef(
           filterVariant: "select",
           size: 90,
         },
-        {
-          accessorKey: "comments",
-          header: "Comments",
-          Cell: ({ cell, row }) => {
-            const comments = cell.getValue();
-            const [readComments, setReadComments] = useState([]);
+        // {
+        //   accessorKey: "comments",
+        //   header: "Comments",
+        //   Cell: ({ cell, row }) => {
+        //     const comments = cell.getValue();
+        //     const [readComments, setReadComments] = useState([]);
 
-            useEffect(() => {
-              const filterComments = comments.filter(
-                (item) => item.status === "unread"
-              );
-              setReadComments(filterComments);
-              // eslint-disable-next-line
-            }, [comments]);
+        //     useEffect(() => {
+        //       const filterComments = comments.filter(
+        //         (item) => item.status === "unread"
+        //       );
+        //       setReadComments(filterComments);
+        //       // eslint-disable-next-line
+        //     }, [comments]);
 
-            return (
-              <div
-                className="flex items-center justify-center gap-1 w-full h-full"
-                onClick={() => {
-                  setJobId(row.original._id);
-                  setIsComment(true);
-                }}
-              >
-                <div className="relative">
-                  <span className="text-[1rem] cursor-pointer relative">
-                    <MdInsertComment className="h-5 w-5 text-orange-600 " />
-                  </span>
-                  {/* {readComments?.length > 0 && (
-                  <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
-                    {readComments?.length}
-                  </span>
-                )} */}
-                </div>
-              </div>
-            );
-          },
-          size: 80,
-        },
+        //     return (
+        //       <div
+        //         className="flex items-center justify-center gap-1 w-full h-full"
+        //         onClick={() => {
+        //           setJobId(row.original._id);
+        //           setIsComment(true);
+        //         }}
+        //       >
+        //         <div className="relative">
+        //           <span className="text-[1rem] cursor-pointer relative">
+        //             <MdInsertComment className="h-5 w-5 text-orange-600 " />
+        //           </span>
+        //           {/* {readComments?.length > 0 && (
+        //           <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
+        //             {readComments?.length}
+        //           </span>
+        //         )} */}
+        //         </div>
+        //       </div>
+        //     );
+        //   },
+        //   size: 80,
+        // },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                // Actions move to leads
+                {
+                  id: "Actions",
+                  accessorKey: "actions",
+                  header: "Actions",
+                  
+                  Cell: ({ cell, row }) => {
+        
+                    
+                    // related to comments
+                    //const comments = cell.getValue();
+                    const comments = row.original?.comments;
+                    const [readComments, setReadComments] = useState([]);
+        
+                    useEffect(() => {
+                      const filterComments = comments.filter(
+                        (item) => item.status === "unread"
+                      );
+                      setReadComments(filterComments);
+                      // eslint-disable-next-line
+                    }, [comments]);
+        
+        
+        
+        
+        
+        
+        
+                    
+                        const [anchorEl, setAnchorEl] = React.useState(null);
+                    
+                        const handleClick = (event) => {
+                          
+                          setAnchorEl(event.currentTarget);
+                        };
+                      
+                        const handleClose = () => {
+                          setAnchorEl(null);
+                        };
+                      
+                        const open = Boolean(anchorEl);
+                        const id = open ? 'simple-popover' : undefined;
+                    
+                    return (
+                      <div className="flex items-center justify-center gap-4 w-full h-full " >
+        
+        
+                      <div
+                        title="Comments"
+                        className="flex items-center justify-center gap-1 w-full h-full"
+                        onClick={() => {
+                          setJobId(row.original._id);
+                          setIsComment(true);
+                        }}
+                      >
+                        <div className="relative">
+                          <span className="text-[1rem] cursor-pointer relative">
+                            <MdInsertComment className="h-5 w-5 text-orange-600 " />
+                          </span>
+                          {/* {readComments?.length > 0 && (
+                          <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
+                            {readComments?.length}
+                          </span>
+                        )} */}
+                        </div>
+                      </div>
+        
+                        
+                               <div>
+                        
+                               <span title="Ticket" onClick={handleClick} id={id} className="text-2xl text-orange-500 cursor-pointer">
+                                 <IoTicketOutline />
+                                </span>
+                        
+                                  
+                        
+                              <Popover
+                                id={id}
+                                open={open}
+                                anchorEl={anchorEl}
+                                onClose={handleClose}
+                                anchorOrigin={{
+                                  vertical: 'bottom',
+                                  horizontal: 'left',
+                                }}
+                                // transformOrigin={{
+                                //   vertical: 'bottom',
+                                //   horizontal: 'left',
+                                // }}
+                              >
+                        
+                        
+                                
+                        
+                        
+                        
+                        
+                        
+                              <Typography sx={{ p: 2, background: "#5F9EA0", width: "100%", textAlign: "center", fontFamily: "sans-serif", fontSize: "1.2rem", color: "whitesmoke" }}>Tickets for this Job</Typography>
+                        
+                              <div>
+                                <TicketsPopUp  clientName={row?.original?.clientName} handleClose={handleClose}/>
+                              </div>
+                              </Popover>
+                        
+                        
+                        
+                               </div>
+                        
+                                
+                        
+                        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+                        <div className="relative" title="Move to Lead" onClick={() => {
+                          moveJobToLead(row.original);
+                           
+                        }}>
+                          <span className="text-[1rem] cursor-pointer relative">
+                           <MdDriveFileMoveOutline className="h-6 w-6 text-orange-600 " />
+                            
+                          </span>
+                           
+                        </div>
+        
+        
+        
+        
+                      </div>
+                    );
+                  },
+                  size: 120,
+                },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // Label
         {
           accessorKey: "label",
@@ -2275,6 +2651,28 @@ const Jobs = forwardRef(
         pageSize: 20,
         density: "compact",
       },
+
+
+
+
+
+      renderTopToolbar:() => (
+            
+            <div style={{ width: '100%' }}>
+              {isMoving && (
+                <LinearProgress
+                  sx={{
+                    width: '100%',
+                    marginBottom: '16px', // Space between the progress bar and table
+                     
+                  }}
+                />
+              )}
+            </div>
+          ),
+
+
+
 
       muiTableHeadCellProps: {
         style: {

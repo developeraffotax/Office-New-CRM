@@ -15,7 +15,13 @@ import { LuDownload } from "react-icons/lu";
 import { ImAttachment } from "react-icons/im";
 import { TbLoader2 } from "react-icons/tb";
 import SendEmailReply from "../../components/Tickets/SendEmailReply";
-import * as cheerio from 'cheerio';
+import * as cheerio from "cheerio";
+import Swal from "sweetalert2";
+import { MdCheckCircle } from "react-icons/md";
+import {
+  IoIosCheckmarkCircleOutline,
+  IoMdCheckboxOutline,
+} from "react-icons/io";
 
 export default function EmailDetail() {
   const navigate = useNavigate();
@@ -27,6 +33,8 @@ export default function EmailDetail() {
   const [attachmentId, setAttachmentId] = useState("");
   const [showReplay, setShowReply] = useState(false);
 
+  const [isCompleted, setIsCompleted] = useState(false);
+
   console.log("Ticket Detail:", ticketDetail);
   console.log("Email Detail:", emailDetail);
 
@@ -37,7 +45,9 @@ export default function EmailDetail() {
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/ticket/${params.id}`
       );
       if (data) {
+        console.log("SINGLE TICKET DATA >>>>>>>>>>>>>>>>>", data);
         setTicketDetail(data?.ticket);
+        setIsCompleted(data?.ticket?.state === "complete");
         getEmailDetail(data?.ticket?.mailThreadId, data?.ticket?.company);
       }
     } catch (error) {
@@ -59,7 +69,7 @@ export default function EmailDetail() {
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/email/detail/${mailThreadId}/${company}/${params.id}`
       );
       if (data) {
-        console.log("EMAIL DATA SINGLE>>>>>>>>>>>>>>>>>>>>>>>>", data)
+        console.log("EMAIL DATA SINGLE>>>>>>>>>>>>>>>>>>>>>>>>", data);
         setLoading(false);
         setEmailDetail(data.emailDetails);
         //
@@ -155,12 +165,9 @@ export default function EmailDetail() {
       if (data) {
         const jsonData = data;
 
-        
         const encodedData = jsonData.data;
 
         const decodedData = Buffer.from(encodedData, "base64");
-
-        
 
         const byteArray = new Uint8Array(decodedData.buffer);
 
@@ -188,21 +195,17 @@ export default function EmailDetail() {
     }
   };
 
-
-
-
   function extractCleanReply(rawHtml) {
-    
     const replyMarkers = [
       '<div id="divRplyFwdMsg"',
-      '<hr',
-      'From:',
-      'Sent:',
-      'Subject:',
-      'On ', // e.g., On April 6, 2024, ...
-      '-----Original Message-----'
+      "<hr",
+      "From:",
+      "Sent:",
+      "Subject:",
+      "On ", // e.g., On April 6, 2024, ...
+      "-----Original Message-----",
     ];
-  
+
     // 1. Cut raw HTML at first known marker (string-based approach)
     let cutoffIndex = -1;
     for (const marker of replyMarkers) {
@@ -212,42 +215,32 @@ export default function EmailDetail() {
         break;
       }
     }
-    const trimmedHtml = cutoffIndex !== -1 ? rawHtml.slice(0, cutoffIndex) : rawHtml;
-  
+    const trimmedHtml =
+      cutoffIndex !== -1 ? rawHtml.slice(0, cutoffIndex) : rawHtml;
+
     // 2. Load into Cheerio to sanitize & remove reply blocks
     const $ = cheerio.load(trimmedHtml);
 
-    
-
     // Clean up common structures
-    $('hr, #divRplyFwdMsg, #ms-outlook-mobile-signature').remove();
-  
+    $("hr, #divRplyFwdMsg, #ms-outlook-mobile-signature").remove();
+
     // Remove blocks that clearly contain reply headers (From:, Sent:)
-    $('p, div, span').each((_, el) => {
+    $("p, div, span").each((_, el) => {
       const text = $(el).text().toLowerCase().trim();
       if (
-        text.startsWith('from:') ||
-        text.startsWith('sent:') ||
-        text.startsWith('subject:') ||
-        text.startsWith('to:') ||
-        text.startsWith('on ') // like "On April 5, 2024, Talal wrote:"
+        text.startsWith("from:") ||
+        text.startsWith("sent:") ||
+        text.startsWith("subject:") ||
+        text.startsWith("to:") ||
+        text.startsWith("on ") // like "On April 5, 2024, Talal wrote:"
       ) {
         $(el).nextAll().remove();
         $(el).remove();
       }
     });
-  
-    return $('body').html();
+
+    return $("body").html();
   }
-  
-
-
-
-
-
-
-
-
 
   // Clean Email
   const cleanEmailBody = (emailHtml) => {
@@ -255,9 +248,6 @@ export default function EmailDetail() {
       .replace(/<div class="gmail_quote">([\s\S]*?)<\/div>/g, "")
       .replace(/<blockquote([\s\S]*?)<\/blockquote>/g, "");
 
-
-
-    
     return extractCleanReply(cleanedHtml);
     //return cleanedHtml;
   };
@@ -292,6 +282,59 @@ export default function EmailDetail() {
     }
   };
 
+  const handleStatusComplete = async (ticketId) => {
+    if (!ticketId) {
+      toast.error("Ticket id is required!");
+      return;
+    }
+    try {
+
+      const state = isCompleted ? "progress" : "complete";
+      
+
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
+        { state: state }
+      );
+      if (data?.success) {
+        const updateTicket = data?.ticket;
+        toast.success("Status completed successfully!");
+        setIsCompleted(data?.ticket?.state === "complete");
+
+        // setEmailData((prevData) =>
+        //   prevData.filter((item) => item._id !== updateTicket._id)
+        // );
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    }
+  };
+
+  // ------------Update Status------------>
+  const handleUpdateTicketStatusConfirmation = (ticketId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, Do it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleStatusComplete(ticketId);
+        Swal.fire(
+          "Success!",
+          "Your action completed successfully!",
+          "success"
+        );
+      }
+    });
+  };
+
+  console.log("TICKET DETAIL💛💛🧡🧡❤❤", ticketDetail?.state);
+
   return (
     <Layout>
       <div className=" relative w-full h-[100%] flex flex-col bg-gray-50">
@@ -308,13 +351,24 @@ export default function EmailDetail() {
               {ticketDetail?.subject}
             </h2>
           </div>
-          <button
-            className={`${style.button1} text-[15px] flex items-center gap-1 `}
-            onClick={() => setShowReply(true)}
-            style={{ padding: ".4rem 1rem" }}
-          >
-            <HiReply className="h-4 w-4" /> Reply
-          </button>
+
+          <div className="flex items-center gap-4">
+           <button
+                onClick={() => handleUpdateTicketStatusConfirmation(params?.id)}
+                className="flex items-center gap-1 text-[15px] bg-orange-500 text-white rounded-md px-4 py-2 hover:bg-orange-600 transition-all duration-300"
+              >
+                <IoMdCheckboxOutline className="text-[18px] mb-[2px]" />
+                <h3>  {isCompleted ? "Undo Complete" : "Complete"} </h3>
+              </button>
+
+            <button
+              className={`${style.button1} text-[15px] flex items-center gap-1 `}
+              onClick={() => setShowReply(true)}
+              style={{ padding: ".4rem 1rem" }}
+            >
+              <HiReply className="h-4 w-4" /> Reply
+            </button>
+          </div>
         </div>
         {/* Email Detail */}
         {loading ? (
@@ -329,7 +383,8 @@ export default function EmailDetail() {
                   {console.log("THE MESSAGE >>", message)}
 
                   {/* || message?.labelIds?.includes('SENT') */}
-                  {message?.payload?.body?.sentByMe || message?.labelIds?.includes('SENT')  ? (
+                  {message?.payload?.body?.sentByMe ||
+                  message?.labelIds?.includes("SENT") ? (
                     <div className="flex flex-col gap-2 bg-orange-50 px-2 py-2 rounded-md">
                       {/* Header */}
                       <div className="flex items-center justify-between">
@@ -342,14 +397,20 @@ export default function EmailDetail() {
                             />
                           </div>
                           <div className="flex flex-col gap-0">
-                            
-                          {/* {separate(message?.payload?.headers[1]?.value) } */}
-                            { separate(message?.payload?.headers.find(h => h.name === 'From')?.value)}
+                            {/* {separate(message?.payload?.headers[1]?.value) } */}
+                            {separate(
+                              message?.payload?.headers.find(
+                                (h) => h.name === "From"
+                              )?.value
+                            )}
                             <span className="text-[12px] text-gray-600 flex items-center gap-2 ">
                               to{" "}
                               {/* {message?.payload?.headers[2]?.value.slice(0, 12)}{" "} */}
-
-                              { message?.payload?.headers.find(h => h.name === 'To')?.value}
+                              {
+                                message?.payload?.headers.find(
+                                  (h) => h.name === "To"
+                                )?.value
+                              }
                               <span>
                                 <FaCaretDown className="h-4 w-4 cursor-pointer" />
                               </span>
@@ -397,39 +458,36 @@ export default function EmailDetail() {
                           <div className="flex items-center flex-wrap gap-4 py-3">
                             {message?.payload?.body?.messageAttachments?.map(
                               (item) => {
-
-
-
                                 return (
                                   <div
-                                  className=" flex items-center gap-4 border bg-gray-50 hover:bg-gray-100 cursor-pointer px-3 py-2 transition-all duration-300 rounded-md hover:shadow-md font-medium text-[13px] "
-                                  key={item.attachmentId}
-                                  onClick={() => {
-                                    downloadAttachments(
-                                      item.attachmentId,
-                                      item.attachmentMessageId,
-                                      ticketDetail.company,
-                                      item.attachmentFileName
-                                    );
-                                    setAttachmentId(item.attachmentId);
-                                  }}
-                                >
-                                  <div className="flex items-center gap-1">
-                                    <span className="bg-gray-500/30 rounded-full p-[7px]">
-                                      {FileIcon(item.attachmentFileName)}
+                                    className=" flex items-center gap-4 border bg-gray-50 hover:bg-gray-100 cursor-pointer px-3 py-2 transition-all duration-300 rounded-md hover:shadow-md font-medium text-[13px] "
+                                    key={item.attachmentId}
+                                    onClick={() => {
+                                      downloadAttachments(
+                                        item.attachmentId,
+                                        item.attachmentMessageId,
+                                        ticketDetail.company,
+                                        item.attachmentFileName
+                                      );
+                                      setAttachmentId(item.attachmentId);
+                                    }}
+                                  >
+                                    <div className="flex items-center gap-1">
+                                      <span className="bg-gray-500/30 rounded-full p-[7px]">
+                                        {FileIcon(item.attachmentFileName)}
+                                      </span>
+                                      <span>{item?.attachmentFileName}</span>
+                                    </div>
+                                    <span className="bg-gray-300/30 hover:bg-gray-500/30 transition-all duration-300 cursor-pointer rounded-full p-[7px]">
+                                      {isloading &&
+                                      attachmentId === item.attachmentId ? (
+                                        <TbLoader2 className="h-5 w-5 animate-spin text-orange-500" />
+                                      ) : (
+                                        <LuDownload className="h-5 w-5 text-sky-500" />
+                                      )}
                                     </span>
-                                    <span>{item?.attachmentFileName}</span>
                                   </div>
-                                  <span className="bg-gray-300/30 hover:bg-gray-500/30 transition-all duration-300 cursor-pointer rounded-full p-[7px]">
-                                    {isloading &&
-                                    attachmentId === item.attachmentId ? (
-                                      <TbLoader2 className="h-5 w-5 animate-spin text-orange-500" />
-                                    ) : (
-                                      <LuDownload className="h-5 w-5 text-sky-500" />
-                                    )}
-                                  </span>
-                                </div>
-                                )
+                                );
                               }
                             )}
                           </div>
@@ -510,63 +568,57 @@ export default function EmailDetail() {
                             {`(${message?.payload?.body?.messageAttachments.length})`}
                           </h3>
 
-
-
                           <div className="flex items-center flex-wrap gap-4 py-3">
                             {message?.payload.body?.messageAttachments?.map(
                               (item) => {
+                                console.log(
+                                  "ATTACHMENT HEADEERS",
+                                  item.attachmentHeaders
+                                );
 
+                                const contentDispositionHeader =
+                                  item.attachmentHeaders.find(
+                                    (header) =>
+                                      header.name === "Content-Disposition"
+                                  );
 
-                                                          
-                          console.log("ATTACHMENT HEADEERS",item.attachmentHeaders)
-
-                          const contentDispositionHeader = item.attachmentHeaders.find(header => header.name === 'Content-Disposition');
-                          
-                          const isInline = contentDispositionHeader?.value?.toLowerCase().includes("inline");
-
-
+                                const isInline = contentDispositionHeader?.value
+                                  ?.toLowerCase()
+                                  .includes("inline");
 
                                 return (
                                   <div
-                                  className=" flex items-center gap-4 border bg-gray-50 hover:bg-gray-100 cursor-pointer px-3 py-2 transition-all duration-300 rounded-md hover:shadow-md font-medium text-[13px] "
-                                  key={item.attachmentId}
-                                  onClick={() => {
-                                    downloadAttachments(
-                                      item.attachmentId,
-                                      item.attachmentMessageId,
-                                      ticketDetail.company,
-                                      item.attachmentFileName
-                                    );
-                                    setAttachmentId(item.attachmentId);
-                                  }}
-                                >
-                                  <div className="flex items-center gap-1">
-                                    <span className="bg-gray-500/30 rounded-full p-[7px]">
-                                      {FileIcon(item?.attachmentFileName)}
+                                    className=" flex items-center gap-4 border bg-gray-50 hover:bg-gray-100 cursor-pointer px-3 py-2 transition-all duration-300 rounded-md hover:shadow-md font-medium text-[13px] "
+                                    key={item.attachmentId}
+                                    onClick={() => {
+                                      downloadAttachments(
+                                        item.attachmentId,
+                                        item.attachmentMessageId,
+                                        ticketDetail.company,
+                                        item.attachmentFileName
+                                      );
+                                      setAttachmentId(item.attachmentId);
+                                    }}
+                                  >
+                                    <div className="flex items-center gap-1">
+                                      <span className="bg-gray-500/30 rounded-full p-[7px]">
+                                        {FileIcon(item?.attachmentFileName)}
+                                      </span>
+                                      <span>{item?.attachmentFileName}</span>
+                                    </div>
+
+                                    {/* { isInline && <h3>| Signature</h3> } */}
+
+                                    <span className="bg-gray-300/30 hover:bg-gray-500/30 transition-all duration-300 cursor-pointer rounded-full p-[7px]">
+                                      {isloading &&
+                                      attachmentId === item.attachmentId ? (
+                                        <TbLoader2 className="h-5 w-5 animate-spin text-orange-500" />
+                                      ) : (
+                                        <LuDownload className="h-5 w-5 text-sky-500" />
+                                      )}
                                     </span>
-                                    <span>{item?.attachmentFileName}</span>
                                   </div>
-
-                                  {/* { isInline && <h3>| Signature</h3> } */}
-
-
-                                  <span className="bg-gray-300/30 hover:bg-gray-500/30 transition-all duration-300 cursor-pointer rounded-full p-[7px]">
-                                    {isloading &&
-                                    attachmentId === item.attachmentId ? (
-                                      <TbLoader2 className="h-5 w-5 animate-spin text-orange-500" />
-                                    ) : (
-                                      <LuDownload className="h-5 w-5 text-sky-500" />
-                                    )}
-                                  </span>
-
-                                  
-
-
-
-
-
-                                </div>
-                                )
+                                );
                               }
                             )}
                           </div>

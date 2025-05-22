@@ -135,30 +135,36 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
 
       const clientDetail = data.clientJob;
       console.log("JobDetails", clientDetail);
-      const formattedDate = new Date(
-        clientDetail.currentDate
-      ).toLocaleDateString("en-CA");
+      // const formattedDate = new Date(
+      //   clientDetail.currentDate
+      // ).toLocaleDateString("en-CA");
+
+      const formattedDate = new Date().toLocaleDateString("en-CA");
+
+
 
       setClientName(clientDetail.clientName);
-      setRegNumber(clientDetail.regNumber);
-      setCompanyName(clientDetail.companyName);
+      // setRegNumber(clientDetail.regNumber);
+      // setCompanyName(clientDetail.companyName);
       setEmail(clientDetail.email);
       setTotalHours(clientDetail.totalHours);
       setCurrentDate(formattedDate);
       setSource(clientDetail.source);
       setClientType(clientDetail.clientType);
-      setCountry(clientDetail.country);
       setFee(clientDetail.fee);
-      setCtLogin(clientDetail.ctLogin);
-      setPyeLogin(clientDetail.pyeLogin);
-      setTrLogin(clientDetail.trLogin);
-      setVatLogin(clientDetail.vatLogin);
-      setAuthCode(clientDetail.authCode);
-      setUtr(clientDetail.utr);
-      setCtPassowrd(clientDetail.ctPassword);
-      setPyePassowrd(clientDetail.pyePassword);
-      setTrPassowrd(clientDetail.trPassword);
-      setVatPassowrd(clientDetail.vatPassword);
+      // setCountry(clientDetail.country);
+      // setCtLogin(clientDetail.ctLogin);
+      // setPyeLogin(clientDetail.pyeLogin);
+      // setTrLogin(clientDetail.trLogin);
+      // setVatLogin(clientDetail.vatLogin);
+      // setAuthCode(clientDetail.authCode);
+      // setUtr(clientDetail.utr);
+      // setCtPassowrd(clientDetail.ctPassword);
+      // setPyePassowrd(clientDetail.pyePassword);
+      // setTrPassowrd(clientDetail.trPassword);
+      // setVatPassowrd(clientDetail.vatPassword);
+
+      setPartner(clientDetail.partner);
 
       getJobs(clientDetail.companyName);
     } catch (error) {

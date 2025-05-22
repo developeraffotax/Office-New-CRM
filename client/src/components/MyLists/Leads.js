@@ -24,6 +24,9 @@ import { RiProgress3Line } from "react-icons/ri";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { TbLoader2 } from "react-icons/tb";
 import { style } from "../../utlis/CommonStyle";
+import TicketsPopUp from "../shared/TicketsPopUp";
+import { Popover, Typography } from "@mui/material";
+import { IoTicketOutline } from "react-icons/io5";
 
 
 
@@ -2341,93 +2344,174 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
 
 
 
+// <-----Action------>
+{
+  accessorKey: "actions",
+  header: "Actions",
+  
+  Cell: ({ cell, row }) => {
+
+    
+
+    const [anchorEl, setAnchorEl] = React.useState(null);
+
+    const handleClick = (event) => {
+      
+      setAnchorEl(event.currentTarget);
+    };
+  
+    const handleClose = () => {
+      setAnchorEl(null);
+    };
+  
+    const open = Boolean(anchorEl);
+    const id = open ? 'simple-popover' : undefined;
+
+
+    return (
+      <div className="flex items-center justify-center gap-4 w-full h-full">
+
+
+
+       <div>
+
+       <span title="Ticket" onClick={handleClick} id={id} className="text-2xl text-orange-500 cursor-pointer">
+         <IoTicketOutline />
+        </span>
+
+          
+
+      <Popover
+        
+        id={id}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        // transformOrigin={{
+        //   vertical: 'bottom',
+        //   horizontal: 'left',
+        // }}
+      >
+
+
+        
 
 
 
 
 
-      // <-----Action------>
-      {
-        accessorKey: "actions",
-        header: "Actions",
-        Cell: ({ cell, row }) => {
-          return (
-            <div className="flex items-center justify-center gap-4 w-full h-full">
-              <span
-                className="text-[1rem] cursor-pointer"
-                onClick={() => {
-                  handleCopyLead({
-                    jobHolder: row.original.jobHolder,
-                    department: row.original.department,
-                    source: row.original.source,
-                    brand: row.original.brand,
-                    lead_Source: row.original.lead_Source,
-                    followUpDate: row.original.followUpDate,
-                    JobDate: row.original.JobDate,
-                    stage: row.original.stage,
-                  });
-                }}
-                title="Copy Lead"
-              >
-                <GrCopy className="h-5 w-5 text-cyan-500 hover:text-cyan-600 " />
-              </span>
-              {selectedTab === "won" ? (
-                <span
-                  className=""
-                  title="Progress Lead"
-                  onClick={() => {
-                    handleLeadStatus(row.original._id, "progress");
-                  }}
-                >
-                  <RiProgress3Line className="h-6 w-6 cursor-pointer text-orange-500 hover:text-orange-600" />
-                </span>
-              ) : (
-                <span
-                  className=""
-                  title="Won Lead"
-                  onClick={() => {
-                    handleLeadStatus(row.original._id, "won");
-                  }}
-                >
-                  <FaTrophy className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
-                </span>
-              )}
-              {selectedTab === "lost" ? (
-                <div className="flex items-center gap-2">
-                  <span
-                    className=""
-                    title="Progress Lead"
-                    onClick={() => {
-                      handleLeadStatus(row.original._id, "progress");
-                    }}
-                  >
-                    <RiProgress3Line className="h-6 w-6 cursor-pointer text-orange-500 hover:text-orange-600" />
-                  </span>
-                </div>
-              ) : (
-                <span
-                  className=""
-                  title="Lost Lead"
-                  onClick={() => {
-                    handleLeadStatus(row.original._id, "lost");
-                  }}
-                >
-                  <GiBrokenHeart className="h-6 w-6 cursor-pointer text-red-500 hover:text-red-600" />
-                </span>
-              )}
+      <Typography sx={{ p: 2, background: "#5F9EA0", width: "100%", textAlign: "center", fontFamily: "sans-serif", fontSize: "1.2rem", color: "whitesmoke" }}>Tickets for this Lead</Typography>
 
-              <span
-                className="text-[1rem] cursor-pointer"
-                onClick={() => handleDeleteLeadConfirmation(row.original._id)}
-                title="Delete Lead!"
-              >
-                <AiTwotoneDelete className="h-5 w-5 text-pink-500 hover:text-pink-600 " />
-              </span>
-            </div>
-          );
-        },
-        size: 160,
-      },
+      <div>
+        <TicketsPopUp  clientName={row?.original?.clientName} handleClose={handleClose}  />
+      </div>
+      </Popover>
+
+
+
+       </div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <span
+          className="text-[1rem] cursor-pointer"
+          onClick={() => {
+            handleCopyLead({
+              jobHolder: row.original.jobHolder,
+              department: row.original.department,
+              source: row.original.source,
+              brand: row.original.brand,
+              lead_Source: row.original.lead_Source,
+              followUpDate: row.original.followUpDate,
+              JobDate: row.original.JobDate,
+              stage: row.original.stage,
+            });
+          }}
+          title="Copy Lead"
+        >
+          <GrCopy className="h-5 w-5 text-cyan-500 hover:text-cyan-600 " />
+        </span>
+        {selectedTab === "won" ? (
+          <span
+            className=""
+            title="Progress Lead"
+            onClick={() => {
+              handleLeadStatus(row.original._id, "progress");
+            }}
+          >
+            <RiProgress3Line className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
+          </span>
+        ) : (
+          <span
+            className=""
+            title="Won Lead"
+            onClick={() => {
+              handleLeadStatus(row.original._id, "won");
+            }}
+          >
+            <FaTrophy className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
+          </span>
+        )}
+        {selectedTab === "lost" ? (
+          <div className="flex items-center gap-2">
+            <span
+              className=""
+              title="Progress Lead"
+              onClick={() => {
+                handleLeadStatus(row.original._id, "progress");
+              }}
+            >
+              <RiProgress3Line className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
+            </span>
+          </div>
+        ) : (
+          <span
+            className=""
+            title="Lost Lead"
+            onClick={() => {
+              handleLeadStatus(row.original._id, "lost");
+            }}
+          >
+            <GiBrokenHeart className="h-6 w-6 cursor-pointer text-red-500 hover:text-red-600" />
+          </span>
+        )}
+
+        <span
+          className="text-[1rem] cursor-pointer"
+          onClick={() => handleDeleteLeadConfirmation(row.original._id)}
+          title="Delete Lead!"
+        >
+          <AiTwotoneDelete className="h-5 w-5 text-pink-500 hover:text-pink-600 " />
+        </span>
+      </div>
+    );
+  },
+  size: 200,
+},
       //  --- Note--->
       {
         accessorKey: "Note",

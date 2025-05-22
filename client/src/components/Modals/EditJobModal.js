@@ -206,6 +206,8 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
       setTrPassowrd(clientDetail.trPassword);
       setVatPassowrd(clientDetail.vatPassword);
 
+      setPartner(clientDetail.partner);
+
       getJobs(clientDetail.companyName);
     } catch (error) {
       console.log(error);

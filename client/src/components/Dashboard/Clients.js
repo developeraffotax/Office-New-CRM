@@ -37,7 +37,7 @@ export default function Clients({
   console.log("SALES DATE", salesData)
 
   // Visibility Div
-  const initialState = [true, true, true, true, true, true, true];
+  const initialState = [true, true, true, true, true, true,];
   const [visibility, setVisibility] = useState(() => {
     const savedState = localStorage.getItem("clients");
     return savedState ? JSON.parse(savedState) : initialState;
@@ -321,12 +321,38 @@ export default function Clients({
   // --Render Lead Source Chart(#888)------->
   useEffect(() => {
 
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
+
+    const startDate = new Date(currentYear, currentMonth - 11, 1);
+
+    
+
 
     const filteredLeads = salesData.totalLeads.filter((lead) => {
        // Lead Date
       const leadDate = new Date(lead.createdAt);
       const leadMonth = leadDate.getMonth() + 1;
       const leadYear = leadDate.getFullYear();
+
+
+
+
+
+
+       if(!selectedYear) {
+      const leadDateN = new Date(leadYear, leadMonth - 1, 1); // month -1 because JS months are 0-indexed
+      return (
+        (!selectedMonth || leadMonth === parseInt(selectedMonth)) &&
+        (leadDateN >= startDate && leadDateN <= now)  
+        
+      )
+
+    }
+
+
+
 
       return  (!selectedMonth || leadMonth === parseInt(selectedMonth)) && (!selectedYear || leadYear === parseInt(selectedYear))
       
@@ -1218,27 +1244,20 @@ export default function Clients({
             )}
 
             {/*  -------------Jobs Analysis----------- */}
-            {visibility[2] && (
+            {/* {visibility[2] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <h3 className="text-lg font-semibold text-center">
                   Department-wise Total Count
                 </h3>
                 <div id="department-count-chart" />
               </div>
-            )}
-            {/* ------------------Fee Analysis----------------- */}
-            {visibility[3] && (
-              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                <h3 className="text-lg font-semibold text-center">
-                  Department-wise Fee Count
-                </h3>
-                <div id="department-fee-chart" />
-              </div>
-            )}
+            )} */}
 
 
-             {/* ------------------Lead / Lead Source Graph----------------- */}
-             { visibility[4] && (
+
+
+            {/* ------------------Lead / Lead Source Graph----------------- */}
+             { visibility[2] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <h3 className="text-lg font-semibold text-center">
                   Lead Source Chart
@@ -1250,8 +1269,27 @@ export default function Clients({
 
 
 
+
+
+
+            {/* ------------------Fee Analysis----------------- */}
+            {visibility[3] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <h3 className="text-lg font-semibold text-center">
+                  Department-wise Fee Count
+                </h3>
+                <div id="department-fee-chart" />
+              </div>
+            )}
+
+
+             
+
+
+
+
             {/* ------------------Source Analysis----------------- */}
-            {visibility[5] && (
+            {visibility[4] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <JobSourcePieChart
                   workFlowData={workFlowData}
@@ -1261,7 +1299,7 @@ export default function Clients({
                 />
               </div>
             )}
-            {visibility[6] && (
+            {visibility[5] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <JobSourceClientPartnerDonutCharts
                   workFlowData={workFlowData}

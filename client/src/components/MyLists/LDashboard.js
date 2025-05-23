@@ -44,7 +44,8 @@ export default function Dashboard({ workFlowData, uniqueClients }) {
       );
       if (data) {
         setSalesData(data.salesData);
-      }
+
+       }
     } catch (error) {
       console.log(error);
     }
@@ -353,6 +354,9 @@ export default function Dashboard({ workFlowData, uniqueClients }) {
               uniqueClients={uniqueClients}
               loading={false}
               userData={userData}
+              salesData={salesData}
+
+               
 
             />
           </div>

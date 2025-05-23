@@ -34,7 +34,7 @@ export default function Clients({
     totalClients: "0",
   });
 
-  console.log("SALES DATE", salesData)
+  console.log("SALES DATA", salesData)
 
   // Visibility Div
   const initialState = [true, true, true, true, true, true,];
@@ -330,7 +330,7 @@ export default function Clients({
     
 
 
-    const filteredLeads = salesData.totalLeads.filter((lead) => {
+    const filteredLeads = salesData?.totalLeads?.filter((lead) => {
        // Lead Date
       const leadDate = new Date(lead.createdAt);
       const leadMonth = leadDate.getMonth() + 1;
@@ -363,11 +363,11 @@ export default function Clients({
       // if (label === "Other") {
       //   return filteredLeads.filter(lead => !lead_source_labels.includes(lead.lead_Source)).length;
       // }
-      return filteredLeads.filter(lead => lead.lead_Source === label).length;
+      return filteredLeads?.filter(lead => lead.lead_Source === label).length || 0;
     });
 
  
-
+    console.log("leadSourceCounts💚💚💚", leadSourceCounts)
  
 
     const optionsCount = {
@@ -387,7 +387,7 @@ export default function Clients({
       chartCount.render();
       return () => chartCount.destroy();
     }
-  }, [selectedYear, selectedMonth, selectChart]);
+  }, [selectedYear, selectedMonth, selectChart, salesData, lead_source_labels]);
 
 
 

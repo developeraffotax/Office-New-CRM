@@ -56,7 +56,7 @@ export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [tasksData, setTasksData] = useState([]);
   const [isSales, setIsSales] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(1);
+  const [zoomLevel, setZoomLevel] = useState(2);
 
   // Function to increase zoom
   const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 1, 4));
@@ -232,7 +232,7 @@ export default function Dashboard() {
             : zoomLevel === 2
             ? "zoomout2"
             : zoomLevel === 3
-            ? "zoomout2"
+            ? "zoomout3"
             : zoomLevel === 4
             ? "zoomout4"
             : ""
@@ -282,8 +282,8 @@ export default function Dashboard() {
             </div>
           </div>
           {/* ----------Tabs--------- */}
-          <div className="flex items-center flex-wrap  gap-5 overflow-x-auto hidden1 ">
-            <div className="flex items-center mt-3 sm:mt-0 ml-5 sm:ml-[5rem] border-2 border-orange-500 rounded-sm  transition-all duration-300 w-fit ">
+          <div className="flex   items-center flex-wrap  gap-5 overflow-x-auto hidden1 ">
+            <div className="flex text-lg items-center mt-3 sm:mt-0   border-2 border-orange-500 rounded-sm  transition-all duration-300 w-fit ">
               <button
                 className={`py-[.4rem] px-2 outline-none min-w-[9rem] w-[9rem] transition-all duration-300    ${
                   selectedTab === "Summary"
@@ -296,7 +296,7 @@ export default function Dashboard() {
                 Job Summary
               </button>
               <button
-                className={`py-[.4rem] px-2 outline-none min-w-[9rem]  w-[9rem] transition-all border-l-2 border-orange-600 duration-300   ${
+                className={`py-[.4rem] px-2 outline-none min-w-[9rem]   w-[9rem] transition-all border-l-2 border-orange-600 duration-300   ${
                   selectedTab === "tSummary"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
                     : "text-black bg-gray-100 "
@@ -307,7 +307,7 @@ export default function Dashboard() {
                 Task Summary
               </button>
               <button
-                className={`py-[.4rem] px-2 outline-none min-w-[7rem]  w-[8rem] transition-all border-l-2 border-orange-600 duration-300     ${
+                className={`py-[.4rem] px-2 outline-none min-w-[7rem]    w-[8rem] transition-all border-l-2 border-orange-600 duration-300     ${
                   selectedTab === "Clients"
                     ? "bg-orange-500 text-white border-r-2 border-orange-500"
                     : "text-black bg-gray-100 "
@@ -353,7 +353,7 @@ export default function Dashboard() {
 
             {/* --------------Date Filters------------- */}
             {selectedTab === "Clients" && (
-              <div className="flex gap-4 my-4 ml-5">
+              <div className="flex gap-4 my-4 ml-5  ">
                 {/* Department */}
                 <select
                   onChange={(e) => setSelectedDepartment(e.target.value)}

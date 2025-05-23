@@ -37,7 +37,7 @@ export default function Clients({
   console.log("SALES DATA", salesData)
 
   // Visibility Div
-  const initialState = [true, true, true, true, true, true,];
+  const initialState = [true, true, true, true, true, true, true];
   const [visibility, setVisibility] = useState(() => {
     const savedState = localStorage.getItem("clients");
     return savedState ? JSON.parse(savedState) : initialState;
@@ -1051,9 +1051,9 @@ export default function Clients({
       {loading ? (
         <Loader />
       ) : (
-        <div className="flex flex-col gap-4 w-full">
-          <div className="flex gap-4 overflow-x-auto py-4 mx-auto max-w-[100%] hidden1 scroll-smooth">
-            <div className="flex flex-col items-start min-w-[10rem] p-4 cursor-pointer bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
+        <div className="flex flex-col gap-4 w-full  ">
+          <div className="flex justify-start gap-4 overflow-x-auto py-4 mx-auto max-w-[100%] hidden1 scroll-smooth">
+            <div className="flex flex-col   items-start justify-start  min-w-[10rem] p-2 cursor-pointer bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
               <h2 className="text-xl font-bold text-gray-800 text-center mb-3">
                 Departments
               </h2>
@@ -1073,7 +1073,7 @@ export default function Clients({
             {clients?.map((job, index) => (
               <div
                 key={index}
-                className={` relative flex flex-col items-center min-w-[10rem]  p-4 cursor-pointer transition-transform duration-300 transform hover:scale-105 rounded-lg shadow-lg hover:shadow-xl ${
+                className={` relative flex flex-col  items-center min-w-[10rem]  p-2 cursor-pointer transition-transform duration-300 transform hover:scale-105 rounded-lg shadow-lg hover:shadow-xl ${
                   job?.department === "Bookkeeping"
                     ? "bg-gradient-to-br from-orange-100 via-orange-200 to-orange-300"
                     : job?.department === "Payroll"
@@ -1243,15 +1243,7 @@ export default function Clients({
               </div>
             )}
 
-            {/*  -------------Jobs Analysis----------- */}
-            {/* {visibility[2] && (
-              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                <h3 className="text-lg font-semibold text-center">
-                  Department-wise Total Count
-                </h3>
-                <div id="department-count-chart" />
-              </div>
-            )} */}
+            
 
 
 
@@ -1272,16 +1264,7 @@ export default function Clients({
 
 
 
-            {/* ------------------Fee Analysis----------------- */}
-            {visibility[3] && (
-              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                <h3 className="text-lg font-semibold text-center">
-                  Department-wise Fee Count
-                </h3>
-                <div id="department-fee-chart" />
-              </div>
-            )}
-
+          
 
              
 
@@ -1289,8 +1272,11 @@ export default function Clients({
 
 
             {/* ------------------Source Analysis----------------- */}
-            {visibility[4] && (
-              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+            {
+              visibility[3] || visibility[4] ? (
+                <div className="w-full flex justify-start items-center gap-2  shadow-md rounded-md cursor-pointer border ">
+                  {visibility[3] && (
+              <div className="w-[50%] shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <JobSourcePieChart
                   workFlowData={workFlowData}
                   selectedMonth={selectedMonth}
@@ -1299,8 +1285,8 @@ export default function Clients({
                 />
               </div>
             )}
-            {visibility[5] && (
-              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+            {visibility[4] && (
+              <div className="w-[50%] shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <JobSourceClientPartnerDonutCharts
                   workFlowData={workFlowData}
                   selectedMonth={selectedMonth}
@@ -1309,6 +1295,39 @@ export default function Clients({
                 />
               </div>
             )}
+                </div>
+              ) : null
+            }
+
+
+
+
+
+
+
+              {/* ------------------Fee Analysis----------------- */}
+            {visibility[5] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <h3 className="text-lg font-semibold text-center">
+                  Department-wise Fee Count
+                </h3>
+                <div id="department-fee-chart" />
+              </div>
+            )}
+
+            {/*  -------------Jobs Analysis----------- */}
+            {visibility[6] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <h3 className="text-lg font-semibold text-center">
+                  Department-wise Total Count
+                </h3>
+                <div id="department-count-chart" />
+              </div>
+            )}
+
+
+
+
           </div>
         </div>
       )}

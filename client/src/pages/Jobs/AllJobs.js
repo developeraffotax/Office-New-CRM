@@ -184,7 +184,10 @@ export default function AllJobs() {
   };
 
  
-
+      const [pagination, setPagination] = useState({
+        pageIndex: 0,
+        pageSize: 30, // ✅ default page size
+      });
 
 
     const [searchParams] = useSearchParams();
@@ -3311,6 +3314,9 @@ export default function AllJobs() {
     // enableRowVirtualization: true,
     // enableColumnVirtualization: true,
     onRowSelectionChange: setRowSelection,
+
+
+
     renderTopToolbar:() => (
       
       <div style={{ width: '100%' }}>
@@ -3361,20 +3367,24 @@ export default function AllJobs() {
      
 
     // state: { rowSelection,  columnPinning: { right: ['mrt-row-actions'],}  },
-    state: { rowSelection,    },
+    state: { rowSelection,  pagination, density: "compact"  },
     // enableEditing: true,
     // state: { isLoading: loading },
 
     enablePagination: true,
-    initialState: {
-      pagination: { pageSize: 30 },
-      pageSize: 20,
-      density: "compact",
-      // columnPinning: {
+    // initialState: {
+    //   pagination: { pageSize: 30 },
+    //   pageSize: 20,
+    //   density: "compact",
+    //   // columnPinning: {
         
-      //   right: ['mrt-row-actions'],
-      // },
-    },
+    //   //   right: ['mrt-row-actions'],
+    //   // },
+    // },
+
+    onPaginationChange: setPagination, // ✅ Hook for page changes
+
+    autoResetPageIndex: false,
 
     muiTableHeadCellProps: {
       style: {

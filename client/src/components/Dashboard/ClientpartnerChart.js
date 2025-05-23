@@ -26,6 +26,34 @@ const JobSourceClientPartnerDonutCharts = ({
     // Filter workFlowData by selected month and year
     let filteredData = workFlowData;
 
+
+
+     const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
+
+    const startDate = new Date(currentYear, currentMonth - 11, 1);
+
+
+
+
+    if(!selectedYear && !selectedMonth) {
+
+      filteredData = filteredData.filter((job) => {
+        const jobDate = new Date(job.currentDate)
+        return  jobDate >= startDate && jobDate <= now;
+      });
+
+      
+
+
+    }
+
+
+
+
+
+
     if (selectedYear) {
       filteredData = filteredData.filter((job) => {
         const jobYear = new Date(job.currentDate).getFullYear();

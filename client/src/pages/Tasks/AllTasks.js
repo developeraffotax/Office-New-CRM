@@ -45,6 +45,7 @@ import socketIO from "socket.io-client";
 import { Box, Typography } from "@mui/material";
 import Subtasks from "./Subtasks";
 import { ActiveTimer } from "../../utlis/ActiveTimer";
+import { use } from "react";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -1518,8 +1519,21 @@ const AllTasks = () => {
             if (filterValue === "Custom date") {
               column.setFilterValue(customDate);
             }
-            //eslint-disable-next-line
+            
           }, [customDate, filterValue]);
+
+
+          useEffect(() => {
+
+
+            
+            if(auth?.user?.role?.name === "Admin"){
+              column.setFilterValue("Today");
+              setFilterValue("Today");
+            }
+
+
+          }, [])
 
           const handleFilterChange = (e) => {
             setFilterValue(e.target.value);
@@ -2512,6 +2526,30 @@ useEffect(()=>{
   }, [table.getColumn("jobHolder").getFilterValue])
 
 
+
+
+
+
+
+
+  useEffect(() => {
+
+
+    if(auth.user?.role?.name === "Admin") {
+
+      console.log("Admin Role Detected, setting showJobHolder to true💛💛🧡🧡");
+      setShowJobHolder(true);
+      setActiveBtn("jobHolder");
+
+
+      //  const col = table.getColumn("deadline");
+      //   col.setFilterValue("Today")
+
+    }
+
+
+
+  }, [])
   
 
   return (
@@ -2753,7 +2791,7 @@ useEffect(()=>{
               {/* -------------Filter Open Buttons-------- */}
               <span
                 className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border  ${
-                  activeBtn === "jobHolder" && "bg-orange-500 text-white"
+                  activeBtn === "jobHolder" && showJobHolder &&  "bg-orange-500 text-white"
                 }`}
                 onClick={() => {
                   setActiveBtn("jobHolder");

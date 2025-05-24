@@ -3670,6 +3670,49 @@ useEffect(()=>{
 }, [showingRows, filterData, tableData, table] )
 
 
+
+
+
+
+
+
+
+  useEffect(() => {
+
+
+    if(auth.user?.role?.name === "Admin") {
+
+      // console.log("Admin Role Detected, setting showJobHolder to true💛💛🧡🧡");
+      setShowJobHolder(true);
+      setActiveBtn("jobHolder");
+
+    }
+
+
+
+  }, [])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <Layout>
       <div className="w-full h-[100%] py-4 px-2 sm:px-4 overflow-y-auto ">
@@ -3832,11 +3875,12 @@ useEffect(()=>{
           {/* -------------Filter Open Buttons-------- */}
           <span
             className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border  ${
-              activeBtn === "jobHolder" && "bg-orange-500 text-white"
+              activeBtn === "jobHolder" && showJobHolder && "bg-orange-500 text-white"
             }`}
             onClick={() => {
               setActiveBtn("jobHolder");
-              setShowJobHolder(!showJobHolder);
+              setShowJobHolder(prev => !prev);
+              setShowStatus(false);
             }}
             title="Filter by Job Holder"
           >
@@ -3856,11 +3900,13 @@ useEffect(()=>{
           </span> */}
           <span
             className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
-              activeBtn === "status" && "bg-orange-500 text-white"
+              activeBtn === "status" && showStatus && "bg-orange-500 text-white"
             }`}
             onClick={() => {
               setActiveBtn("status");
-              setShowStatus(!showStatus);
+              setShowStatus(prev => !prev);
+
+              setShowJobHolder(false);
             }}
             title="Filter by Job Status"
           >

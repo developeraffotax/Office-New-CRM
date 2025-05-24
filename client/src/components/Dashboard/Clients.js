@@ -530,6 +530,50 @@ export default function Clients({
         );
       }
 
+
+
+
+      if(!selectedYear && !selectedMonth) {
+
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
+    
+        const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
+
+
+        
+         filteredData = filteredData.filter((job) => {
+          const jobDate = new Date(job.currentDate);
+
+          return (
+            jobDate >= startDate && jobDate <= now
+          );
+        });
+
+
+
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       // Filter by month and year
       if (selectedMonth && selectedYear) {
         filteredData = filteredData.filter((job) => {

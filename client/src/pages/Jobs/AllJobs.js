@@ -134,7 +134,9 @@ export default function AllJobs() {
   const [showInactive, setShowInactive] = useState(false);
   const [showUniqueClients, setShowUniqueClients] = useState(false);
   const [isLoad, setIsLoad] = useState(false);
+
   const [showcolumn, setShowColumn] = useState(false);
+    const boxRef = useRef(null);
   const [showQuickList, setShowQuickList] = useState(false);
   const [qualityData, setQualityData] = useState([]);
   const columnData = [
@@ -2582,109 +2584,7 @@ export default function AllJobs() {
         },
 
 
-        // Label
-        {
-          id: "Labels",
-          accessorKey: "label",
 
-          Header: ({ column }) => {
-            return (
-              <div className="flex flex-col gap-[2px]">
-                <span
-                  className="ml-1 cursor-pointer"
-                  title="Clear Filter"
-                  onClick={() => {
-                    column.setFilterValue("");
-                  }}
-                >
-                  Labels
-                </span>
-                <select
-                  value={column.getFilterValue() || ""}
-                  onChange={(e) => column.setFilterValue(e.target.value)}
-                  className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-                >
-                  <option value="">Select</option>
-                  {labelData?.map((label, i) => (
-                    <option key={i} value={label?.name}>
-                      {label?.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            );
-          },
-
-          Cell: ({ cell, row }) => {
-            const [show, setShow] = useState(false);
-            const jobLabel = row.original.label || {};
-            const { name, color } = jobLabel;
-
-            const handleLabelChange = (labelName) => {
-              const selectedLabel = labelData.find(
-                (label) => label.name === labelName
-              );
-              if (selectedLabel) {
-                addJoblabel(row.original._id, labelName, selectedLabel.color);
-              } else {
-                addJoblabel(row.original._id, "", "");
-              }
-              setShow(false);
-            };
-
-            return (
-              <div className="w-full flex items-center justify-center">
-                {show ? (
-                  <select
-                    value={name || ""}
-                    onChange={(e) => handleLabelChange(e.target.value)}
-                    className="w-full h-[2rem] rounded-md border-none outline-none"
-                  >
-                    <option value="empty">Select Label</option>
-                    {labelData?.map((label, i) => (
-                      <option value={label?.name} key={i}>
-                        {label?.name}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <div
-                    className="cursor-pointer h-full min-w-full "
-                    onDoubleClick={() => setShow(true)}
-                  >
-                    {name ? (
-                      <span
-                        className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
-                        style={{ background: `${color}` }}
-                      >
-                        {name}
-                      </span>
-                    ) : (
-                      <span
-                        className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
-                        // style={{ background: `${color}` }}
-                      >
-                        .
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          },
-
-          filterFn: (row, columnId, filterValue) => {
-            const labelName = row.original?.label?.name || "";
-            return labelName === filterValue;
-          },
-
-          filterVariant: "select",
-          filterSelectOptions: labelData.map((label) => label.name),
-          size: 140,
-          minSize: 100,
-          maxSize: 210,
-          grow: false,
-        },
 
         // Source
         // || auth?.user?.role.access.some((item)=>)
@@ -3261,6 +3161,131 @@ export default function AllJobs() {
                 maxSize: 140,
                 grow: false,
               },
+
+
+
+
+
+
+
+
+
+
+
+                      // Label
+        {
+          id: "Labels",
+          accessorKey: "label",
+
+          Header: ({ column }) => {
+            return (
+              <div className="flex flex-col gap-[2px]">
+                <span
+                  className="ml-1 cursor-pointer"
+                  title="Clear Filter"
+                  onClick={() => {
+                    column.setFilterValue("");
+                  }}
+                >
+                  Labels
+                </span>
+                <select
+                  value={column.getFilterValue() || ""}
+                  onChange={(e) => column.setFilterValue(e.target.value)}
+                  className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                >
+                  <option value="">Select</option>
+                  {labelData?.map((label, i) => (
+                    <option key={i} value={label?.name}>
+                      {label?.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            );
+          },
+
+          Cell: ({ cell, row }) => {
+            const [show, setShow] = useState(false);
+            const jobLabel = row.original.label || {};
+            const { name, color } = jobLabel;
+
+            const handleLabelChange = (labelName) => {
+              const selectedLabel = labelData.find(
+                (label) => label.name === labelName
+              );
+              if (selectedLabel) {
+                addJoblabel(row.original._id, labelName, selectedLabel.color);
+              } else {
+                addJoblabel(row.original._id, "", "");
+              }
+              setShow(false);
+            };
+
+            return (
+              <div className="w-full flex items-center justify-center">
+                {show ? (
+                  <select
+                    value={name || ""}
+                    onChange={(e) => handleLabelChange(e.target.value)}
+                    className="w-full h-[2rem] rounded-md border-none outline-none"
+                  >
+                    <option value="empty">Select Label</option>
+                    {labelData?.map((label, i) => (
+                      <option value={label?.name} key={i}>
+                        {label?.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div
+                    className="cursor-pointer h-full min-w-full "
+                    onDoubleClick={() => setShow(true)}
+                  >
+                    {name ? (
+                      <span
+                        className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
+                        style={{ background: `${color}` }}
+                      >
+                        {name}
+                      </span>
+                    ) : (
+                      <span
+                        className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
+                        // style={{ background: `${color}` }}
+                      >
+                        .
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          },
+
+          filterFn: (row, columnId, filterValue) => {
+            const labelName = row.original?.label?.name || "";
+            return labelName === filterValue;
+          },
+
+          filterVariant: "select",
+          filterSelectOptions: labelData.map((label) => label.name),
+          size: 140,
+          minSize: 100,
+          maxSize: 210,
+          grow: false,
+        },
+
+
+
+
+
+
+
+
+
+
+
             ]
           : []),
       ];
@@ -3700,7 +3725,21 @@ useEffect(()=>{
 
 
 
+    useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (boxRef.current && !boxRef.current.contains(event.target)) {
+        setShowColumn(false);
+      }
+    };
 
+    if (showcolumn) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showcolumn]);
 
 
 
@@ -3939,7 +3978,7 @@ useEffect(()=>{
               )}
             </div>
             {showcolumn && (
-              <div className="fixed top-[11rem] right-[20%] z-[99] max-h-[80vh] overflow-y-auto hidden1  ">
+              <div className="fixed top-[11rem] right-[20%] z-[99] max-h-[80vh] overflow-y-auto hidden1  " ref={boxRef}>
                 {renderColumnControls()}
               </div>
             )}

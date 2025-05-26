@@ -131,7 +131,7 @@ export default function Dashboard({ workFlowData, uniqueClients }) {
   }, []);
 
   return (
-    <div className="relative w-full h-full overflow-y-auto   ">
+    <div className="relative w-full h-full overflow-y-auto zoomout2  ">
       <div className="flex flex-col gap-2">
         {/* ----------Tabs--------- */}
         <div className="flex items-center flex-wrap  gap-5">

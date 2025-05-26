@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import { style } from "../../utlis/CommonStyle";
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
@@ -166,20 +166,22 @@ export default function Subscription() {
 
   // --------------Update JobHolder------------>
   const handleUpdateSubscription = async (id, value, type) => {
+
+
+    const allowedFields = [ "jobHolder", "billingStart", "billingEnd", "deadline", "lead", "fee", "note", "status", "subscription", ];
+
+     if (!allowedFields.includes(type)) {
+      toast.error("Invalid field for update");
+      return;
+    }
+
+     // Build the update object dynamically
+    const updateObj = { [type]: value };
+    
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/update/single/${id}`,
-        {
-          jobHolder: type === "jobholder" && value,
-          billingStart: type === "billingStart" && value,
-          billingEnd: type === "billingEnd" && value,
-          deadline: type === "deadline" && value,
-          lead: type === "lead" && value,
-          fee: type === "fee" && value,
-          note: type === "note" && value,
-          status: type === "status" && value,
-          subscription: type === "subscription" && value,
-        }
+        updateObj
       );
       if (data) {
         fetchSubscriptions();
@@ -190,6 +192,66 @@ export default function Subscription() {
       toast.error(error?.response?.data?.message);
     }
   };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   // --------------Update JobHolder------------>
+  // const handleUpdateSubscription = async (id, value, type) => {
+
+
+
+
+
+
+    
+  //   try {
+  //     const { data } = await axios.put(
+  //       `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/update/single/${id}`,
+  //       {
+  //         jobHolder: type === "jobholder" && value,
+  //         billingStart: type === "billingStart" && value,
+  //         billingEnd: type === "billingEnd" && value,
+  //         deadline: type === "deadline" && value,
+  //         lead: type === "lead" && value,
+  //         fee: type === "fee" && value,
+  //         note: type === "note" && value,
+  //         status: type === "status" && value,
+  //         subscription: type === "subscription" && value,
+  //       }
+  //     );
+  //     if (data) {
+  //       fetchSubscriptions();
+  //       toast.success("Subscription updated.");
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     toast.error(error?.response?.data?.message);
+  //   }
+  // };
+
+
+
+
 
   // -----------Handle Custom date filter------
   const getCurrentMonthYear = () => {
@@ -224,9 +286,35 @@ export default function Subscription() {
   // Get Total Fee
 
   useEffect(() => {
+    // const calculateTotalHours = (data) => {
+    //   return data.reduce((sum, client) => {
+
+    //     if(!client.job || !client.job.fee) {
+    //       return sum; // Skip if job or fee is not available
+    //     }
+    //     return sum + Number(client.job.fee)
+
+    //   }, 0);
+    // };
+
     const calculateTotalHours = (data) => {
-      return data.reduce((sum, client) => sum + Number(client.job.fee), 0);
-    };
+  return data.reduce((sum, client) => {
+    const fee = client?.job?.fee;
+
+    // Check if fee exists and is a string containing only digits
+    if (typeof fee === 'string' && /^\d+$/.test(fee)) {
+      return sum + Number(fee);
+    }
+
+    // Skip if fee is not a valid numeric string
+    return sum;
+  }, 0);
+};
+
+
+
+
+    console.log("TOTAL FEEE💛🧡:", calculateTotalHours(subscriptionData));
 
     if (filterData) {
       setTotalFee(calculateTotalHours(filterData).toFixed(0));
@@ -1189,6 +1277,14 @@ export default function Subscription() {
           const [showFee, setShowFee] = useState(false);
           const [newFee, setNewFee] = useState(fee);
 
+          const inputRef = useRef(null);
+
+          useEffect(() => {
+            if (showFee && inputRef?.current) {
+              inputRef.current.focus();
+            }
+          }, [showFee]);
+
           const handleDateChange = () => {
             handleUpdateSubscription(row.original._id, newFee, "fee");
             setShowFee(false);
@@ -1199,6 +1295,7 @@ export default function Subscription() {
               {showFee ? (
                 <form onSubmit={handleDateChange}>
                   <input
+                    ref={inputRef}
                     type="text"
                     value={newFee}
                     onChange={(e) => setNewFee(e.target.value)}
@@ -1207,10 +1304,10 @@ export default function Subscription() {
                 </form>
               ) : (
                 <span
-                  className="text-[15px] font-medium"
+                  className="text-[15px] font-medium cursor-pointer"
                   onDoubleClick={() => setShowFee(true)}
                 >
-                  {fee}
+                  {fee ? fee : <span className="text-gray-400 cursor-pointer"><AiOutlineEdit /></span>}
                 </span>
               )}
             </div>

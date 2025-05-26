@@ -1512,6 +1512,20 @@ const AllTasks = () => {
         accessorKey: "deadline",
         header: "Deadline",
         Header: ({ column }) => {
+
+          const filterOps = [
+          "Expired",
+          "Today",
+          "Tomorrow",
+          "In 7 days",
+          "In 15 days",
+          "30 Days",
+          "60 Days",
+          // "Last 12 months",
+          "Custom date",
+        ]
+
+
           const [filterValue, setFilterValue] = useState("");
           const [customDate, setCustomDate] = useState(getCurrentMonthYear());
 
@@ -1523,17 +1537,17 @@ const AllTasks = () => {
           }, [customDate, filterValue]);
 
 
-          useEffect(() => {
+          // useEffect(() => {
 
 
             
-            if(auth?.user?.role?.name === "Admin"){
-              column.setFilterValue("Today");
-              setFilterValue("Today");
-            }
+          //   if(auth?.user?.role?.name === "Admin"){
+          //     column.setFilterValue("Today");
+          //     setFilterValue("Today");
+          //   }
 
 
-          }, [])
+          // }, [])
 
           const handleFilterChange = (e) => {
             setFilterValue(e.target.value);
@@ -1565,7 +1579,7 @@ const AllTasks = () => {
                 />
               ) : (
                 <select
-                  value={filterValue}
+                  value={column.getFilterValue() || ""}
                   onChange={handleFilterChange}
                   className="h-[1.8rem]  font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
                 >
@@ -2541,10 +2555,12 @@ useEffect(()=>{
       setShowJobHolder(true);
       setActiveBtn("jobHolder");
 
+      setActive1(auth?.user?.name)
 
-      //  const col = table.getColumn("deadline");
-      //   col.setFilterValue("Today")
+      setColumnFromOutsideTable("deadline", "Today");
 
+
+ 
     }
 
 
@@ -2901,6 +2917,12 @@ useEffect(()=>{
                                         filterByProjStat(user?.name, active);
                                         setColumnFromOutsideTable('status', 'Progress');
                                         setColumnFromOutsideTable('jobHolder', user?.name);
+
+                                        setColumnFromOutsideTable('deadline', '');
+                                        if(auth.user?.role?.name === "Admin" && user?.name === auth?.user?.name) {
+                                          setColumnFromOutsideTable('deadline', 'Today');
+                                           
+                                        }
                                         
                                       }}
                                     >

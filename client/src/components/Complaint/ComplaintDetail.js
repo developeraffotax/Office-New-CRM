@@ -44,8 +44,8 @@ export default function ComplaintDetail({
           <IoClose className="h-7 w-7 cursor-pointer" />
         </span>
       </div>
-      <div className="w-full min-h-[12rem] py-4 px-4 rounded-md border border-gray-300 text-justify text-[15px] ">
-        {note}
+      <div className="w-full min-h-[12rem] py-4 px-4 rounded-md border border-gray-300 text-justify text-[15px] " dangerouslySetInnerHTML={{__html: note }} >
+        {/* {note} */}
       </div>
     </div>
   );

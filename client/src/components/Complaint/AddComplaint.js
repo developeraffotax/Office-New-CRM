@@ -5,6 +5,7 @@ import { IoClose } from "react-icons/io5";
 import Select from "react-select";
 import { style } from "../../utlis/CommonStyle";
 import { TbLoader2 } from "react-icons/tb";
+import ReactQuill from "react-quill";
 
 export default function AddComplaint({
   setShow,
@@ -208,6 +209,43 @@ export default function AddComplaint({
     }),
   };
 
+
+
+
+
+
+    const modules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ["bold", "italic", "underline", "strike", "blockquote"],
+      [
+        { list: "ordered" },
+        { list: "bullet" },
+        { indent: "-1" },
+        { indent: "+1" },
+      ],
+      ["link", "image"],
+      ["clean"],
+    ],
+  };
+
+  const formats = [
+    "header",
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "blockquote",
+    "list",
+    "bullet",
+    "indent",
+    "link",
+    "image",
+  ];
+
+
+
+
   return (
     <div className=" w-[21rem] sm:w-[42rem] max-h-[105vh] mt-[3rem]  rounded-lg shadow-md bg-white">
       <div className="flex items-center justify-between py-4 px-3 sm:px-4 border-b border-gray-300">
@@ -340,17 +378,37 @@ export default function AddComplaint({
           </div>
         )}
 
-        <div className="inputBox">
-          <textarea
+        <div className="">
+          {/* <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
             className={`${style.input} w-full`}
             style={{ height: "9rem" }}
             placeholder="Write complaint here..."
-          />
-          <span>Note</span>
+          /> */}
+          <span className="font-semibold ">Note:</span>
+
+
+
+
+
+          {/*------------ NOTE----------- */}
+                      <ReactQuill
+                        theme="snow"
+                        modules={modules}
+                        formats={formats}
+                        className="rounded-md relative min-h-[11rem] max-[28rem] h-[12rem] 2xl:h-[22rem]"
+                        value={note}
+                        onChange={setNote}
+                        placeholder="Write complaint here..."
+                        style={{ height: "12rem" }}
+                      />
+                      {/*  */}
+
+
+
         </div>
-        <div className="flex items-center justify-end ">
+        <div className="flex items-center justify-end mt-12 ">
           <button
             disabled={loading}
             className={`${style.button1} text-[15px] `}

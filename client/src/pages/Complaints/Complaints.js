@@ -633,6 +633,17 @@ export default function Complaints() {
         Cell: ({ cell, row }) => {
           const note = row.original.note;
 
+
+          function stripHtml(html) {
+          const div = document.createElement("div");
+          html = html.replace(/<br\s*\/?>/gi, '\n').replace(/&nbsp;/gi, ' ');
+           // Handle <li> with bullets
+          html = html.replace(/<li[^>]*>/gi, '\n• ').replace(/<\/li>/gi, '');
+
+ 
+          div.innerHTML = html;
+          return div.textContent || div.innerText || "";
+        }
           return (
             <div className="w-full px-1">
               <div
@@ -640,15 +651,29 @@ export default function Complaints() {
                   setComplaintId(row.original._id);
                   setShowDetail(true);
                 }}
-                className="cursor-pointer w-full select-none text-blue-500 font-medium"
+                className="cursor-pointer w-full select-none text-blue-500  text-[15px]  "
+                title={note ? stripHtml(note) : "No note available"}
               >
-                {note ? (
-                  note.slice(0, 80) + "..."
-                ) : (
-                  <div className="text-white w-full h-full">.</div>
-                )}
+                {note ? stripHtml(note).slice(0, 80) + "..." : <div className="text-white w-full h-full">.</div>}
               </div>
             </div>
+
+
+
+            // <div className="w-full px-1">
+            //   <div
+            //     onClick={() => {
+            //       setComplaintId(row.original._id);
+            //       setShowDetail(true);
+            //     }}
+            //     className="cursor-pointer w-full select-none text-blue-500 font-medium "
+            //   >
+            //     <div className="w-full   max-h-7" dangerouslySetInnerHTML={{__html: note}}></div>
+            //   </div>
+            // </div>
+
+
+
           );
         },
         filterFn: (row, columnId, filterValue) => {

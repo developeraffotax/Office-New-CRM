@@ -1069,9 +1069,17 @@ const allColumns = [{
       </div>
     );
   },
-  filterFn: "equals",
-  filterSelectOptions: departments?.map((dep) => dep),
-  filterVariant: "select",
+  // filterFn: "equals",
+  // filterSelectOptions: departments?.map((dep) => dep),
+  // filterVariant: "select",
+
+  filterFn: (row, columnId, filterValue) => {
+    const cellValue = row.getValue(columnId);
+    return String(cellValue ?? "") === String(filterValue);
+  },
+
+
+
 },
 {
   accessorKey: "source",
@@ -1159,9 +1167,14 @@ const allColumns = [{
       </div>
     );
   },
-  filterFn: "equals",
-  filterSelectOptions: sources?.map((source) => source),
-  filterVariant: "select",
+  // filterFn: "equals",
+  // filterSelectOptions: sources?.map((source) => source),
+  // filterVariant: "select",
+
+  filterFn: (row, columnId, filterValue) => {
+    const cellValue = row.getValue(columnId);
+    return String(cellValue ?? "") === String(filterValue);
+  },
 },
 {
   accessorKey: "brand",
@@ -1250,9 +1263,16 @@ const allColumns = [{
       </div>
     );
   },
-  filterFn: "equals",
-  filterSelectOptions: brands?.map((brand) => brand),
-  filterVariant: "select",
+  // filterFn: "equals",
+  // filterSelectOptions: brands?.map((brand) => brand),
+  // filterVariant: "select",
+
+  filterFn: (row, columnId, filterValue) => {
+    const cellValue = row.getValue(columnId);
+    return String(cellValue ?? "") === String(filterValue);
+  },
+
+
 },
 {
   accessorKey: "value",
@@ -1505,9 +1525,14 @@ const allColumns = [{
       </div>
     );
   },
-  filterFn: "equals",
-  filterSelectOptions: leadSource?.map((leads) => leads),
-  filterVariant: "select",
+  // filterFn: "equals",
+  // filterSelectOptions: leadSource?.map((leads) => leads),
+  // filterVariant: "select",
+
+  filterFn: (row, columnId, filterValue) => {
+    const cellValue = row.getValue(columnId);
+    return String(cellValue ?? "") === String(filterValue);
+  },
 },
 //   Created At
 {

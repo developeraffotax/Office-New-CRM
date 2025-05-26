@@ -1109,17 +1109,32 @@ export const updateTaskHours = async (req, res) => {
 const calculateStartDate = (date, recurringType) => {
   const currentDate = new Date(date);
 
-  const addDaysSkippingWeekends = (date, days) => {
-    let result = new Date(date);
-    while (days > 0) {
-      result.setDate(result.getDate() + 1);
-      if (result.getDay() !== 0 && result.getDay() !== 6) {
-        days--; 
-      }
-    }
-    return result;
-  };
+  // const addDaysSkippingWeekends = (date, days) => {
+  //   let result = new Date(date);
+  //   while (days > 0) {
+  //     result.setDate(result.getDate() + 1);
+  //     if (result.getDay() !== 0 && result.getDay() !== 6) {
+  //       days--; 
+  //     }
+  //   }
+  //   return result;
+  // };
 
+
+  const addOneBusinessDay = (date) => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + 1);
+
+  // If Saturday, move to Monday (+2)
+  // If Sunday, move to Monday (+1)
+  if (result.getDay() === 6) {
+    result.setDate(result.getDate() + 2);
+  } else if (result.getDay() === 0) {
+    result.setDate(result.getDate() + 1);
+  }
+
+  return result;
+};
 
 
 
@@ -1151,11 +1166,21 @@ const calculateStartDate = (date, recurringType) => {
   //   return date;
   // };
 
-  const adjustForFridayAndWeekend = (date) => {
+  // const adjustForFridayAndWeekend = (date) => {
+  //   const day = date.getDay();
+  //   if (day === 5) {
+  //     date.setDate(date.getDate() + 2);
+  //   } else if (day === 6) {
+  //     date.setDate(date.getDate() + 1);
+  //   }
+  //   return date;
+  // };
+
+   const adjustForFridayAndWeekend = (date) => {
     const day = date.getDay();
-    if (day === 5) {
+    if (day === 6) {
       date.setDate(date.getDate() + 2);
-    } else if (day === 6) {
+    } else if (day === 0) {
       date.setDate(date.getDate() + 1);
     }
     return date;
@@ -1164,9 +1189,13 @@ const calculateStartDate = (date, recurringType) => {
 
   switch (recurringType) {
     case "daily":
-      return addDaysSkippingWeekends(currentDate, 1);
+      return addOneBusinessDay(currentDate);
     case "weekly":
-      return addDaysSkippingWeekends(currentDate, 7);
+      const nextWeek = new Date(currentDate);
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      return adjustForFridayAndWeekend(nextWeek);
+    // case "weekly":
+    //   return addDaysSkippingWeekends(currentDate, 7);
     case "monthly":
       const nextMonthDate = new Date(
         currentDate.setMonth(currentDate.getMonth() + 1)
@@ -1278,15 +1307,25 @@ export const autoCreateRecurringTasks = async (req, res) => {
   }
 };
 
-if(process.env.pm_id === '0') { 
+// if(process.env.pm_id === '0') { 
 
-  // Schedule the task to run daily at 11:30 PM
-  cron.schedule("30 23 * * *", async () => {
-    console.log("Running task scheduler for recurring tasks at 10 PM...");
+//   // Schedule the task to run daily at 11:30 PM
+//   cron.schedule("30 23 * * *", async () => {
+//     console.log("Running task scheduler for recurring tasks at 10 PM...");
+//     await autoCreateRecurringTasks();
+// });
+
+// }
+
+if (process.env.pm_id === '0') { 
+  // Schedule the task to run daily at 12:05 AM
+  cron.schedule("5 0 * * *", async () => {
+    console.log("Running task scheduler for recurring tasks at 12:05 AM...💛");
     await autoCreateRecurringTasks();
-});
-
+  });
 }
+
+
 
 // ---------------------Delete Daily Recurring Tasks ---------------------->
 export const deleteDailyRecurringTasks = async (req, res) => {

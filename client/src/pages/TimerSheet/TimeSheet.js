@@ -3,7 +3,7 @@ import Layout from "../../components/Loyout/Layout";
 import { useAuth } from "../../context/authContext";
 import axios from "axios";
 import { style } from "../../utlis/CommonStyle";
-import { IoClose } from "react-icons/io5";
+import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { IoMdDownload } from "react-icons/io";
 import { Box, Button } from "@mui/material";
 import {
@@ -110,6 +110,12 @@ export default function TimeSheet() {
   const [selectedTab, setSelectedTab] = useState("Single");
   const [showNote, setShowNote] = useState(false);
   const [note, setNote] = useState("");
+
+  
+    const [showExternalFilters, setShowExternalFilters] = useState(true);
+    const [filter1, setFilter1] = useState("");
+
+
 
   // console.log("TableFilterData:", tableFilterData);
 
@@ -920,7 +926,7 @@ export default function TimeSheet() {
             column.setFilterValue(user);
             setUsername(user);
 
-            // eslint-disable-next-line
+             
           }, []);
           return (
             <div className=" flex flex-col gap-[2px]">
@@ -941,7 +947,7 @@ export default function TimeSheet() {
               {(auth?.user?.role.name === "Admin" ||
                 access.includes("Job-holder")) && (
                 <select
-                  value={column.getFilterValue()}
+                  value={column.getFilterValue() || ""}
                   onChange={(e) => {
                     column.setFilterValue(e.target.value);
                     setUsername(e.target.value);
@@ -975,8 +981,8 @@ export default function TimeSheet() {
           const cellValue = row.getValue(columnId);
           return (cellValue || "").toString() === filterValue.toString();
         },
-        filterSelectOptions: users.map((jobhold) => jobhold?.name || ""),
-        filterVariant: "select",
+        // filterSelectOptions: users.map((jobhold) => jobhold?.name || ""),
+        // filterVariant: "select",
         size: 90,
         minSize: 80,
         maxSize: 130,
@@ -1840,6 +1846,47 @@ export default function TimeSheet() {
     },
   });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  console.log("users💞💕", users)
+  console.log("usersDATA💞💕", userData)
+
+
+
+
+
+
+
+
+
+
+
+  
+    const setColumnFromOutsideTable = (colKey, filterVal) => {
+
+    const col = table.getColumn(colKey);
+
+    //console.log(col, "THE COLUMN 💚")
+    return col.setFilterValue(filterVal);
+  }
+
+
+
   return (
     <Layout>
       <div className=" relative w-full h-[100%] py-4 px-2 sm:px-4 flex flex-col gap-2  ">
@@ -2039,7 +2086,9 @@ export default function TimeSheet() {
           </div>
         </div>
         {/* ---------------Filters---------- */}
-        <div className="flex items-center h-[2.2rem] border-2 border-orange-500 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
+
+        <div className="flex items-center justify-start gap-2  w-full mt-5">
+            <div className="flex items-center h-[2.2rem] border-2 border-orange-500 rounded-sm overflow-hidden  transition-all duration-300 w-fit">
           <button
             className={`min-h-[2.2rem] px-2 w-[6.5rem] outline-none transition-all duration-300 ${
               selectedTab === "Single"
@@ -2060,12 +2109,136 @@ export default function TimeSheet() {
           >
             Multiple
           </button>
+
+          
         </div>
+             {
+              auth?.user?.role?.name === "Admin" &&
+              <span
+                      className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${showExternalFilters && 'bg-orange-500 text-white '}  `}
+                      onClick={() => {
+                        // setActiveBtn("jobHolder");
+                        // setShowJobHolder(!showJobHolder);
+                        setShowExternalFilters(!showExternalFilters);
+        
+                      }}
+                      title="Filter by Job Holder"
+                    >
+                      <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
+                    </span>
+
+
+             }
+
+        </div>
+        
         {isload && (
           <div className="pb-1">
             <div class="loader"></div>
           </div>
         )}
+
+
+
+         
+
+
+         {/* --------------External Filter---------------- */}
+        {
+          auth?.user?.role?.name === "Admin" && showExternalFilters && (
+            <div className="w-full flex flex-row items-start justify-start gap-4 mt-4">
+              
+
+                 
+
+              <div className="flex items-center gap-2">
+                {/* <span className="text-sm font-semibold text-gray-700">
+                  Job Holder
+                </span> */}
+                <ul className="flex items-center gap-2 list-none  ">
+                  {users?.map((user, i) => (
+                    <li
+                      key={`user-${i}-${user?.name}`}
+                      className={`${
+                        filter1 === user?.name
+                          ? "bg-orange-500 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      } px-2 py-1 rounded-md cursor-pointer m-0 `}
+                      onClick={() => {
+                        setFilter1(prev => {
+                          const isSameUser = prev === user?.name;
+                          const newValue = isSameUser ? "" : user?.name;
+
+                          setColumnFromOutsideTable("jobHolderName", newValue);
+                          return newValue;
+                        });
+                         
+                      }}
+                    >
+                      {user?.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+
+
+            </div>
+          )
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <hr className="bg-gray-300 w-full h-[1px] my-2" />
         {/* -----------Tabledata--------------- */}
         {loading ? (

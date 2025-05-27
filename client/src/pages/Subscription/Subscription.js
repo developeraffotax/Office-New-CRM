@@ -51,7 +51,7 @@ export default function Subscription() {
 
 
 
-  const [showExternalFilters, setShowExternalFilters] = useState(false);
+  const [showExternalFilters, setShowExternalFilters] = useState(true);
   const [filter1, setFilter1] = useState("");
   const [filter2, setFilter2] = useState("");
   const [filter3, setFilter3] = useState("");

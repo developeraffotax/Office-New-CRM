@@ -25,7 +25,7 @@ export default function Clients({
 }) {
   const [clients, setClients] = useState([]);
   const [fee, setFee] = useState("");
-  const [selectChart, setSelectChart] = useState("area");
+  const [selectChart, setSelectChart] = useState("bar");
   const [filterWorkFlow, setFilterWorkFlow] = useState([]);
   const [filterUniqueClient, setFilteredUniqueClient] = useState([]);
   const [activeClientJobs, setActiveClientJobs] = useState([]);

@@ -50,7 +50,7 @@ export default function Tickets() {
   const [commentTicketId, setCommentTicketId] = useState("");
   const [access, setAccess] = useState([]);
 
-  const [showJobHolder, setShowJobHolder] = useState(false);
+  const [showJobHolder, setShowJobHolder] = useState(true);
   const [active1, setActive1] = useState("");
 
   const [replyCounts, setReplyCounts] = useState({});
@@ -1614,7 +1614,7 @@ export default function Tickets() {
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-2 " />
 
           {/* ----------Job_Holder Summery Filters---------- */}
-          {showJobHolder && (
+          {auth?.user?.role?.name === "Admin" && showJobHolder && (
             <>
               <div className="w-full  py-2 ">
                 <div className="flex items-center flex-wrap gap-4">

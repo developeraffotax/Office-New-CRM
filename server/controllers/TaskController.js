@@ -998,7 +998,7 @@ export const updateTaskHours = async (req, res) => {
     // Push activity to activities array
     updateTask.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} has update hours & add "${hours}h" in this task.`,
+      activity: `${req.user.user.name} has updated hours from "${task.hours}h" to "${hours}h" in this task.`,
     });
 
     await updateTask.save();

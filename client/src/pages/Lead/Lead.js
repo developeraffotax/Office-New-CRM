@@ -69,7 +69,7 @@ export default function Lead() {
 
       
 
-  const [showJobHolder, setShowJobHolder] = useState(false);
+  const [showJobHolder, setShowJobHolder] = useState(true);
   const [active1, setActive1] = useState("");
 
       // With Loading
@@ -3105,7 +3105,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
 
 
                     {/* ----------Job_Holder Summery Filters---------- */}
-                    {showJobHolder &&  (
+                    {auth?.user?.role?.name === "Admin" && showJobHolder &&  (
               <>
                 <div className="w-full  py-2 ">
                   <div className="flex items-center flex-wrap gap-4">

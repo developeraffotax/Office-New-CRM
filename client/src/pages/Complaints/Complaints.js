@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
-import { IoClose } from "react-icons/io5";
+import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import axios from "axios";
 import AddComplaint from "../../components/Complaint/AddComplaint";
@@ -34,6 +34,12 @@ export default function Complaints() {
   const [filteredData, setFilteredData] = useState([]);
   const [showDetail, setShowDetail] = useState(false);
   const [copyLoad, setCopyLoad] = useState(false);
+
+    const [showExternalFilters, setShowExternalFilters] = useState(true);
+      const [filter1, setFilter1] = useState("");
+      const [filter2, setFilter2] = useState("");
+
+
 
   // Get All Complaints
   const getAllComplaints = async () => {
@@ -916,6 +922,21 @@ export default function Complaints() {
     setFilteredData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
 
+
+
+  
+  
+    const setColumnFromOutsideTable = (colKey, filterVal) => {
+
+    const col = table.getColumn(colKey);
+
+    //console.log(col, "THE COLUMN 💚")
+    return col.setFilterValue(filterVal);
+  }
+
+
+
+
   return (
     <Layout>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
@@ -934,6 +955,20 @@ export default function Complaints() {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
+
+             <span
+                                  className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${showExternalFilters && 'bg-orange-500 text-white '}  `}
+                                  onClick={() => {
+                                    
+                                    setShowExternalFilters(!showExternalFilters);
+                    
+                                  }}
+                                  title="Filter by Job Holder"
+                                >
+                                  <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
+                                </span>
+
+
           </div>
 
           {/* ---------Template Buttons */}
@@ -961,7 +996,7 @@ export default function Complaints() {
             </button>
           </div>
         </div>
-        <hr className="w-full h-[1px] bg-gray-300 my-4" />
+        
         {/* Load */}
         {copyLoad && (
           <div className="pb-5">
@@ -969,6 +1004,117 @@ export default function Complaints() {
           </div>
         )}
         {/*  */}
+
+
+
+
+
+
+
+
+           {/* --------------External Filter---------------- */}
+        {
+          showExternalFilters && (
+            <div className="w-full flex flex-row items-start justify-start gap-4 mt-4">
+              
+
+                 
+
+              <div className="flex items-center gap-2">
+                 
+                <ul className="flex items-center gap-2 list-none  ">
+                  {users?.map((user, i) => (
+                    <li
+                      key={`user-${i}-${user?.name}`}
+                      className={`${
+                        filter1 === user?.name
+                          ? "bg-orange-500 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      } px-2 py-1 rounded-md cursor-pointer m-0 `}
+                      onClick={() => {
+                        setFilter1(prev => {
+                          const isSameUser = prev === user?.name;
+                          const newValue = isSameUser ? "" : user?.name;
+
+                          setColumnFromOutsideTable("assign", newValue);
+                          return newValue;
+                        });
+                         
+                      }}
+                    >
+                      {user?.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <span>|</span>
+
+              <div className="flex items-center gap-2">
+                 
+                <ul className="flex items-center gap-2 list-none  ">
+                  {[ "Bookkeeping", "Payroll", "Vat Return", "Personal Tax", "Accounts", "Company Sec", "Address", ]?.map((department, i) => (
+                    <li
+                      key={`department-${i}-${department}`}
+                      className={`${
+                        filter2 === department
+                          ? "bg-orange-500 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      } px-2 py-1 rounded-md cursor-pointer m-0 `}
+                      onClick={() => {
+                        setFilter2(prev => {
+                          const isSameDpt = prev === department
+                          const newValue = isSameDpt ? "" : department;
+
+                          setColumnFromOutsideTable("department", newValue);
+                          return newValue;
+                        });
+                         
+                      }}
+                    >
+                      {department}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+
+
+            </div>
+          )
+        }
+
+
+
+
+<hr className="w-full h-[1px] bg-gray-300 my-4" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         {/* ---------Table Detail---------- */}
         <div className="w-full h-full">

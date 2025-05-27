@@ -9,6 +9,17 @@ import XLSX from "xlsx";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
+const formatDate = (dateString) => {
+    
+    // const date = new Date(dateString);
+    // const formattedDate = date.toISOString().split('T')[0];
+    // return formattedDate;
+
+    const formattedDate = moment(new Date(dateString)).format('DD-MMM-YYYY');
+
+    return formattedDate;
+}
+
 // Create Task
 export const createTask = async (req, res) => {
   try {
@@ -303,7 +314,7 @@ export const updateJobHolderLS = async (req, res) => {
       // Push activity to activities array
       updateTask.activities.push({
         user: req.user.user._id,
-        activity: `${req.user.user.name} has updated this task assign "${jobHolder}".`,
+        activity: `${req.user.user.name} has updated task assign from "${task.jobHolder}" to "${updateTask.jobHolder}".`,
       });
 
       // Create Notification
@@ -336,7 +347,7 @@ export const updateJobHolderLS = async (req, res) => {
       // Push activity to activities array
       updateTask.activities.push({
         user: req.user.user._id,
-        activity: `${req.user.user.name} has updated this task owner "${lead}".`,
+        activity: `${req.user.user.name} has updated task owner from "${task.lead}" to "${updateTask.lead}".`,
       });
     } else {
       if (status === "completed") {
@@ -349,7 +360,7 @@ export const updateJobHolderLS = async (req, res) => {
         // Push activity to activities array
         updateTask.activities.push({
           user: req.user.user._id,
-          activity: `${req.user.user.name} has update this task status "${status}" .`,
+          activity: `${req.user.user.name} has updated task status from "${task.status}" to "${updateTask.status}".`,
         });
       } else {
         updateTask = await taskModel.findByIdAndUpdate(
@@ -361,7 +372,7 @@ export const updateJobHolderLS = async (req, res) => {
         // Push activity to activities array
         updateTask.activities.push({
           user: req.user.user._id,
-          activity: `${req.user.user.name} updated the task status "${status}" in task "${updateTask.task}" .`,
+          activity: `${req.user.user.name} has updated the task status from ${task.status} to ${updateTask.status}.`,
         });
       }
     }
@@ -422,6 +433,7 @@ export const updateAlocateTask = async (req, res) => {
       });
     }
 
+   
     let updateTask;
 
     if (allocateTask) {
@@ -434,7 +446,7 @@ export const updateAlocateTask = async (req, res) => {
       // Push activity to activities array
       updateTask.activities.push({
         user: req.user.user._id,
-        activity: `${req.user.user.name} has updated this allocate task .`,
+        activity: `${req.user.user.name} has updated this task. Updated task: "${allocateTask}"`,
       });
     } else if (startDate) {
       updateTask = await taskModel.findByIdAndUpdate(
@@ -446,7 +458,7 @@ export const updateAlocateTask = async (req, res) => {
       // Push activity to activities array
       updateTask.activities.push({
         user: req.user.user._id,
-        activity: `${req.user.user.name} updated the allocate task start date in task "${updateTask.task}".`,
+        activity: `${req.user.user.name} updated the task start date from "${formatDate(updateTask.startDate)}" to "${formatDate(task.startDate)}".`,
       });
     } else {
       updateTask = await taskModel.findByIdAndUpdate(
@@ -455,10 +467,12 @@ export const updateAlocateTask = async (req, res) => {
         { new: true }
       );
 
+      
+
       // Push activity to activities array
       updateTask.activities.push({
         user: req.user.user._id,
-        activity: `${req.user.user.name} updated the allocate task deadline date in task "${updateTask.task}".`,
+        activity: `${req.user.user.name} updated the task deadline from "${formatDate(updateTask.deadline)}" to "${formatDate(task.deadline)}".`,
       });
     }
 
@@ -727,6 +741,14 @@ export const createSubTask = async (req, res) => {
 
     task.subtasks.push({ subTask: subTask, order: subtaskCount + 1 });
 
+     // Push activity to activities array
+    task.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} has added a sub-task. Subtask: "${subTask}"`,
+    });
+
+
+
     await task.save();
 
     // Add Activity Log
@@ -802,7 +824,7 @@ export const updateSubTaskStaus = async (req, res) => {
     // Push activity to activities array
     task.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} updated the subtask in this task.`,
+      activity: `${req.user.user.name} updated the subtask in this task. Updated subtask status to "${task.subtasks[subtaskIndex].status}".`,
     });
 
     await task.save();
@@ -861,12 +883,15 @@ export const deleteSubTask = async (req, res) => {
       });
     }
 
+    const toBeDeletedSubtask = task.subtasks[subtaskIndex].subTask;
+
+    // Remove the subtask from the array
     task.subtasks.splice(subtaskIndex, 1);
 
     // Push activity to activities array
     task.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} has delete the subtask in this task.`,
+      activity: `${req.user.user.name} has deleted the subtask in this task. Deleted subtask: "${toBeDeletedSubtask}".`,
     });
 
     await task.save();

@@ -824,7 +824,8 @@ export const updateSubTaskStaus = async (req, res) => {
     // Push activity to activities array
     task.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} updated the subtask in this task. Updated subtask status to "${task.subtasks[subtaskIndex].status}".`,
+      activity: `${req.user.user.name} updated the subtask "${task.subtasks[subtaskIndex].subTask}" status from "${task.subtasks[subtaskIndex].status === "process" ? "complete" : "process"}" to "${task.subtasks[subtaskIndex].status}".`,
+      
     });
 
     await task.save();

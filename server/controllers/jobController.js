@@ -300,6 +300,17 @@ export const updateFee = async (req, res) => {
       });
     }
 
+
+    // Fetch the job first to get the old fee
+    const clientJobBeforeUpdate = await jobsModel.findById(clientId);
+
+    if (!clientJobBeforeUpdate) {
+      // Handle case where job is not found
+      return res.status(404).json({ message: "Job not found." });
+    }
+
+    const oldFee = clientJobBeforeUpdate.fee;
+
     const clientJob = await jobsModel.findByIdAndUpdate(
       { _id: clientId },
       { $set: { "fee": fee } },
@@ -309,7 +320,7 @@ export const updateFee = async (req, res) => {
     // Push activity to activities array
     clientJob.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} update this job fee "${fee}".`,
+      activity: `${req.user.user.name} updated job fee from "${oldFee ? oldFee : "empty"}" to "${fee}".`,
     });
 
     await clientJob.save();
@@ -367,6 +378,19 @@ export const updateStatus = async (req, res) => {
       });
     }
 
+
+     // Fetch the job first to get the old fee
+    const clientJobBeforeUpdate = await jobsModel.findById(jobId);
+
+    if (!clientJobBeforeUpdate) {
+      // Handle case where job is not found
+      return res.status(404).json({ message: "Job not found." });
+    }
+
+    const oldStatus = clientJobBeforeUpdate.job.jobStatus;
+
+
+
     const clientJob = await jobsModel.findByIdAndUpdate(
       { _id: jobId },
       { $set: { "job.jobStatus": status } },
@@ -376,7 +400,7 @@ export const updateStatus = async (req, res) => {
     // Push activity to activities array
     clientJob.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} update this job status "${status}".`,
+      activity: `${req.user.user.name} updated job status from "${oldStatus ? oldStatus : "empty"}" to "${status}".`,
     });
 
     await clientJob.save();
@@ -430,6 +454,16 @@ export const updateLead = async (req, res) => {
       });
     }
 
+    // Fetch the job first to get the old fee
+    const clientJobBeforeUpdate = await jobsModel.findById(jobId);
+
+    if (!clientJobBeforeUpdate) {
+      // Handle case where job is not found
+      return res.status(404).json({ message: "Job not found." });
+    }
+
+    const oldLead = clientJobBeforeUpdate.job.lead;
+
     const clientJob = await jobsModel.findByIdAndUpdate(
       { _id: jobId },
       { $set: { "job.lead": lead } },
@@ -439,7 +473,7 @@ export const updateLead = async (req, res) => {
     // Push activity to activities array
     clientJob.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} has update this job owner "${lead}"  .`,
+      activity: `${req.user.user.name} has updated job owner from "${oldLead ? oldLead : "empty"}" to "${lead}"  .`,
     });
 
     await clientJob.save();
@@ -492,6 +526,16 @@ export const updateJobHolder = async (req, res) => {
       });
     }
 
+    // Fetch the job first to get the old fee
+    const clientJobBeforeUpdate = await jobsModel.findById(jobId);
+
+    if (!clientJobBeforeUpdate) {
+      // Handle case where job is not found
+      return res.status(404).json({ message: "Job not found." });
+    }
+
+    const oldJobHolder = clientJobBeforeUpdate.job.jobHolder;
+
     const clientJob = await jobsModel.findByIdAndUpdate(
       { _id: jobId },
       { $set: { "job.jobHolder": jobHolder } },
@@ -501,7 +545,7 @@ export const updateJobHolder = async (req, res) => {
     // Push activity to activities array
     clientJob.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} has update this job assign "${jobHolder}".`,
+      activity: `${req.user.user.name} has updated job assign from "${oldJobHolder ? oldJobHolder : "empty"}" to "${jobHolder}".`,
     });
 
     await clientJob.save();
@@ -514,13 +558,15 @@ export const updateJobHolder = async (req, res) => {
 
     // Create Notification
     const user = await userModel.findOne({ name: jobHolder });
-    await notificationModel.create({
+    if(user) {
+      await notificationModel.create({
       title: "New Job Assigned",
       redirectLink: "/job-planning",
       description: `${req.user.user.name} assign a new job of "${clientJob.job.jobName}"`,
       taskId: `${clientJob._id}`,
       userId: user._id,
     });
+    }
 
     // Add Activity Log
     if (clientJob) {
@@ -833,6 +879,20 @@ export const updateDates = async (req, res) => {
       });
     }
 
+
+      // Fetch the job first to get the old fee
+    const clientJobBeforeUpdate = await jobsModel.findById(jobId);
+
+    if (!clientJobBeforeUpdate) {
+      // Handle case where job is not found
+      return res.status(404).json({ message: "Job not found." });
+    }
+
+    const {yearEnd: oldYearEnd, jobDeadline: oldJobDeadline, workDeadline: oldWorkDeadline, } = clientJobBeforeUpdate.job;
+    const oldCurrentDate = clientJobBeforeUpdate.currentDate;
+
+
+
     let clientJob;
 
     if (yearEnd) {
@@ -847,7 +907,7 @@ export const updateDates = async (req, res) => {
         user: req.user.user._id,
         activity: `${
           req.user.user.name
-        } has update this job year end date "${formatDate(yearEnd)}" .`,
+        } has updated Year-End from "${formatDate(oldYearEnd)}" to "${formatDate(yearEnd)}" .`,
       });
     }
     if (jobDeadline) {
@@ -862,7 +922,7 @@ export const updateDates = async (req, res) => {
         user: req.user.user._id,
         activity: `${
           req.user.user.name
-        } has update this job deadline date "${formatDate(jobDeadline)}".`,
+        } has updated Job-Deadline from "${formatDate(oldJobDeadline)}" to "${formatDate(jobDeadline)}".`,
       });
     }
     if (workDeadline) {
@@ -877,7 +937,7 @@ export const updateDates = async (req, res) => {
         user: req.user.user._id,
         activity: `${
           req.user.user.name
-        } has update this job Job_date "${formatDate(workDeadline)}".`,
+        } has updated Job-Date from "${formatDate(oldWorkDeadline)}" to "${formatDate(workDeadline)}".`,
       });
     }
 
@@ -893,7 +953,7 @@ export const updateDates = async (req, res) => {
         user: req.user.user._id,
         activity: `${
           req.user.user.name
-        } has update this job current date "${formatDate(currentDate)}".`,
+        } has updated Signup-Date from "${formatDate(oldCurrentDate)}" to "${formatDate(currentDate)}".`,
       });
     }
 
@@ -1257,6 +1317,17 @@ export const addlabel = async (req, res) => {
       });
     }
 
+     // Fetch the job first to get the old fee
+    const clientJobBeforeUpdate = await jobsModel.findById(jobId);
+
+    if (!clientJobBeforeUpdate) {
+      // Handle case where job is not found
+      return res.status(404).json({ message: "Job not found." });
+    }
+
+    const oldLabelName = clientJobBeforeUpdate?.label?.name || "";
+
+
     const updateJob = await jobsModel.findByIdAndUpdate(
       { _id: job._id },
       { "label.name": name, "label.color": color },
@@ -1266,7 +1337,7 @@ export const addlabel = async (req, res) => {
     // Push activity to activities array
     updateJob.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} add label "${name}" in this job.`,
+      activity: !oldLabelName ? `${req.user.user.name} added label "${name}" in this job.` : `${req.user.user.name} updated label from "${oldLabelName}" to "${name}".`,
     });
 
     await updateJob.save();
@@ -1306,6 +1377,9 @@ export const createSubTask = async (req, res) => {
     }
 
     const job = await jobsModel.findById(jobId);
+    
+    // .populate({ path: "activities.user", select: "name avatar" })
+    //   .populate({ path: "quality_Check.user", select: "name" });;
 
     if (!job) {
       return res.status(400).send({
@@ -1319,7 +1393,7 @@ export const createSubTask = async (req, res) => {
     // Push activity to activities array
     job.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} add subtask "${subTask}" in job.`,
+      activity: `${req.user.user.name} added subtask "${subTask}" in job.`,
     });
 
     await job.save();
@@ -1381,6 +1455,15 @@ export const updateSubTaskStaus = async (req, res) => {
     job.subtasks[subtaskIndex].status =
       job.subtasks[subtaskIndex].status === "process" ? "complete" : "process";
 
+      // Push activity to activities array
+    job.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} updated the subtask "${job.subtasks[subtaskIndex].subTask}" status from "${job.subtasks[subtaskIndex].status === "process" ? "complete" : "process"}" to "${job.subtasks[subtaskIndex].status}".`,
+    });
+
+
+
+
     await job.save();
 
 
@@ -1439,12 +1522,14 @@ export const deleteSubTask = async (req, res) => {
       });
     }
 
+     const toBeDeletedSubtask = job.subtasks[subtaskIndex].subTask;
+
     job.subtasks.splice(subtaskIndex, 1);
 
     // Push activity to activities array
     job.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} has deleted subtask in this job.`,
+      activity: `${req.user.user.name} has deleted subtask in this job. Deleted subtask: ${toBeDeletedSubtask}`,
     });
 
     await job.save();
@@ -1473,7 +1558,9 @@ export const addDatalabel = async (req, res) => {
 
     const label = await labelModel.findById(labelId);
 
-    const job = await jobsModel.findById(jobId);
+    const job = await jobsModel.findById(jobId).populate("data");
+
+    console.log("Job:", job.data);
 
     if (!job) {
       return res.status(400).send({
@@ -1481,6 +1568,8 @@ export const addDatalabel = async (req, res) => {
         message: "Job not found!",
       });
     }
+
+    const oldLabelName = job.data ? job.data.name : "";
 
     const updateJob = await jobsModel.findByIdAndUpdate(
       { _id: job._id },
@@ -1491,7 +1580,7 @@ export const addDatalabel = async (req, res) => {
     // Push activity to activities array
     updateJob.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} has update CC Person & add "${label?.name}" in this job.`,
+      activity: oldLabelName ? `${req.user.user.name} has updated CC Person from "${oldLabelName}" to "${label?.name}".` : `${req.user.user.name} has update CC Person & add "${label?.name}" in this job.`,
     });
 
     await updateJob.save();
@@ -1918,7 +2007,7 @@ export const createQuality = async (req, res) => {
     // Push activity to activities array
     job.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} add quality check "${quality}" in job.`,
+      activity: `${req.user.user.name} added quality check "${quality}" in job.`,
     });
 
     await job.save();
@@ -1987,8 +2076,14 @@ export const updateQuality = async (req, res) => {
         : "process";
     job.quality_Check[qualityIndex].user = userId;
 
+    
+    // Push activity to activities array
+    job.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} updated the quality check status from "${job.quality_Check[qualityIndex].status === "process" ? "complete" : "process"}" to "${job.quality_Check[qualityIndex].status}".`,
+    });
+    
     await job.save();
-
 
     await redisClient.del('all_jobs');
     res.status(200).send({
@@ -2045,12 +2140,14 @@ export const deleteQuality = async (req, res) => {
       });
     }
 
+    const toBeDeletedQuality = job.quality_Check[qualityIndex].subTask;
+
     job.quality_Check.splice(qualityIndex, 1);
 
     // Push activity to activities array
     job.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} has deleted quality check in this job.`,
+      activity: `${req.user.user.name} has deleted quality check in this job. Deleted quality check: ${toBeDeletedQuality}`,
     });
 
     await job.save();

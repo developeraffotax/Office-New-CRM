@@ -1436,10 +1436,11 @@ export default function JobDetail({
             ) : activeTab === "activities" ? (
               <div className="flex flex-col gap-2 w-full h-full overflow-y-auto p-2 ">
                 {clientDetail?.activities?.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map((activity) => (
+                  
                   <div
                     className="w-full flex flex-col gap-2 py-2 px-3 border border-gray-300 rounded-md shadow hover:shadow-md bg-white hover:bg-orange-50 transition-all duration-300 cursor-pointer hover:scale-[1.03] ease-in-out "
                     key={activity?._id}
-                  >
+                  >{console.log("THE ACTIVITY 💕💚💛🧡🤍🤎💜",activity)}
                     <p className="mb-2 text-[15px] font-medium text-green-500 mt-2 flex items-center gap-2">
                       <span className="w-[.8rem] h-[.8rem] rounded-full bg-green-500"></span>
                       {new Date(activity?.createdAt).toLocaleString()}
@@ -1461,7 +1462,7 @@ export default function JobDetail({
                               ).toString(16)}`,
                             }}
                           >
-                            {activity?.user?.name.slice(0, 1)}
+                            {activity?.user?.name?.slice(0, 1)}
                           </div>
                         )}
                       </div>

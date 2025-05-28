@@ -2586,6 +2586,75 @@ export default function AllJobs() {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         // Source
         // || auth?.user?.role.access.some((item)=>)
         ...(auth?.user?.role?.name === "Admin" || access.includes("Fee")
@@ -3162,6 +3231,8 @@ export default function AllJobs() {
                 grow: false,
               },
 
+            ]
+          : []),
 
 
 
@@ -3171,8 +3242,12 @@ export default function AllJobs() {
 
 
 
+            
 
-                      // Label
+
+
+
+        // Label
         {
           id: "Labels",
           accessorKey: "label",
@@ -3286,8 +3361,30 @@ export default function AllJobs() {
 
 
 
-            ]
-          : []),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       ];
       return allColumns.filter((col) => columnVisibility[col.id]);
     },

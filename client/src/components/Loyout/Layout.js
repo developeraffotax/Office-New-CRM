@@ -84,10 +84,10 @@ useEffect(() => {
       fetchRunningTimer();
       isInitialMount.current = false;
     }
-    console.log(isRunning)
+    // console.log(isRunning)
   
     if (isRunning) {
-      console.log("INSIDE THE RUNNING VLOVKK")
+      // console.log("INSIDE THE RUNNING VLOVKK")
       const hours = Math.floor(elapsedTime / 3600)
         .toString()
         .padStart(2, "0");

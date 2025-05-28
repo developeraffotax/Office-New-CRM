@@ -1691,6 +1691,7 @@ export default function TimeSheet() {
       userName,
       active,
       holidays,
+      
     ]
   );
 
@@ -1853,35 +1854,15 @@ export default function TimeSheet() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-  console.log("users💞💕", users)
-  console.log("usersDATA💞💕", userData)
-
-
-
-
-
-
-
-
-
-
-
   
     const setColumnFromOutsideTable = (colKey, filterVal) => {
+     
 
     const col = table.getColumn(colKey);
 
-    //console.log(col, "THE COLUMN 💚")
+    setUsername(filterVal);
+
+    
     return col.setFilterValue(filterVal);
   }
 
@@ -2158,7 +2139,7 @@ export default function TimeSheet() {
                 <ul className="flex items-center gap-2 list-none  ">
                   {users?.map((user, i) => (
                     <li
-                      key={`user-${i}-${user?.name}`}
+                      key={i}
                       className={`${
                         filter1 === user?.name
                           ? "bg-orange-500 text-white"
@@ -2169,6 +2150,7 @@ export default function TimeSheet() {
                           const isSameUser = prev === user?.name;
                           const newValue = isSameUser ? "" : user?.name;
 
+                          
                           setColumnFromOutsideTable("jobHolderName", newValue);
                           return newValue;
                         });

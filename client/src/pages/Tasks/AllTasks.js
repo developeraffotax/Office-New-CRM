@@ -46,6 +46,7 @@ import { Box, Typography } from "@mui/material";
 import Subtasks from "./Subtasks";
 import { ActiveTimer } from "../../utlis/ActiveTimer";
 import { use } from "react";
+import QuickAccess from "../../utlis/QuickAccess";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -2601,6 +2602,9 @@ useEffect(()=>{
               >
                 <IoClose className="h-6 w-6 text-white" />
               </span>
+
+              <QuickAccess />
+               
             </div>
 
             {/* Project Buttons */}

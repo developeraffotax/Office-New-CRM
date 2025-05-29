@@ -189,7 +189,7 @@ export const createTask = async (req, res) => {
 
 
      //now.setHours(1, 0, 0, 0); // Set time to midnight
-    // now.setHours(now.getHours() + 5); // Adds 5 hours to the current time
+     now.setHours(now.getHours() + 5); // Adds 5 hours to the current time
 
     let updatedNextRecurringDate = nextRecurringDate
       ? new Date(nextRecurringDate)

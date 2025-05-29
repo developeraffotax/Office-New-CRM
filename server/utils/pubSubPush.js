@@ -142,6 +142,8 @@ const findUsersToNotify = async (ticket) => {
     name: ticket.lastMessageSentBy,
   });
   const jobHolder = await userModel.findOne({ name: ticket.jobHolder });
+
+  
   
   return { lastMessageSentBy, jobHolder };
 };
@@ -154,21 +156,24 @@ const createNotification = async (ticket) => {
   // console.log("LAST MESSAGE SENT BY", lastMessageSentBy);
   // console.log("JOB HOLDER", jobHolder);
 
+  // console.log("jobHolder🧡", jobHolder?._id, jobHolder?.name);
+  // console.log("lastMessageSentBy💛", lastMessageSentBy?._id, lastMessageSentBy?.name);
+
   const notification1 = await notificationModel.create({
     title: "Reply to a ticket received",
     redirectLink: `/ticket/detail/${ticket._id}`,
     description: `You've received a response to a ticket with the subject "${ticket.subject}" from the company "${ticket.companyName}" and the client's name "${ticket.clientName}".`,
     taskId: ticket._id,
-    userId: lastMessageSentBy?._id,
+    userId: jobHolder?._id,
   });
 
-  if(jobHolder?._id !== lastMessageSentBy?._id) {
+  if(jobHolder?._id?.toString() !== lastMessageSentBy?._id?.toString()) {
     const notification2 = await notificationModel.create({
       title: "Reply to a ticket received",
       redirectLink: `/ticket/detail/${ticket._id}`,
       description: `You've received a response to a ticket with the subject "${ticket.subject}" from the company "${ticket.companyName}" and the client's name "${ticket.clientName}".`,
       taskId: ticket._id,
-      userId: jobHolder?._id,
+      userId: lastMessageSentBy?._id,
     });
   }
 };

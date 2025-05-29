@@ -20,6 +20,139 @@ const formatDate = (dateString) => {
     return formattedDate;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+// Function to calculate the next start date
+const calculateStartDate = (date, recurringType) => {
+  const currentDate = new Date(date);
+
+  // const addDaysSkippingWeekends = (date, days) => {
+  //   let result = new Date(date);
+  //   while (days > 0) {
+  //     result.setDate(result.getDate() + 1);
+  //     if (result.getDay() !== 0 && result.getDay() !== 6) {
+  //       days--; 
+  //     }
+  //   }
+  //   return result;
+  // };
+
+
+  const addOneBusinessDay = (date) => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + 1);
+
+  // If Saturday, move to Monday (+2)
+  // If Sunday, move to Monday (+1)
+  if (result.getDay() === 6) {
+    result.setDate(result.getDate() + 2);
+  } else if (result.getDay() === 0) {
+    result.setDate(result.getDate() + 1);
+  }
+
+  return result;
+};
+
+
+
+
+
+
+
+ 
+
+  // Mon   1
+  // Tue   2
+  // Wed   3
+  // Thu   4
+  // Fri   5
+  // Sat   6
+  // Sun   0
+
+
+
+  // const adjustForFridayAndWeekend = (date) => {
+  //   const day = date.getDay();
+  //   if (day === 5) {
+  //     date.setDate(date.getDate() + 3);
+  //   } else if (day === 6) {
+  //     date.setDate(date.getDate() + 2);
+  //   } else if (day === 0) {
+  //     date.setDate(date.getDate() + 1);
+  //   }
+  //   return date;
+  // };
+
+  // const adjustForFridayAndWeekend = (date) => {
+  //   const day = date.getDay();
+  //   if (day === 5) {
+  //     date.setDate(date.getDate() + 2);
+  //   } else if (day === 6) {
+  //     date.setDate(date.getDate() + 1);
+  //   }
+  //   return date;
+  // };
+
+   const adjustForFridayAndWeekend = (date) => {
+    const day = date.getDay();
+    if (day === 6) {
+      date.setDate(date.getDate() + 2);
+    } else if (day === 0) {
+      date.setDate(date.getDate() + 1);
+    }
+    return date;
+  };
+
+
+  switch (recurringType) {
+    case "daily":
+      return addOneBusinessDay(currentDate);
+    case "weekly":
+      const nextWeek = new Date(currentDate);
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      return adjustForFridayAndWeekend(nextWeek);
+    // case "weekly":
+    //   return addDaysSkippingWeekends(currentDate, 7);
+    case "monthly":
+      const nextMonthDate = new Date(
+        currentDate.setMonth(currentDate.getMonth() + 1)
+      );
+      return adjustForFridayAndWeekend(nextMonthDate);
+    case "quarterly":
+      const nextQuarterDate = new Date(
+        currentDate.setMonth(currentDate.getMonth() + 3)
+      );
+      return adjustForFridayAndWeekend(nextQuarterDate);
+    default:
+      return currentDate;
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Create Task
 export const createTask = async (req, res) => {
   try {
@@ -52,15 +185,23 @@ export const createTask = async (req, res) => {
       });
     }
 
+     const now = new Date();
+
+
+     //now.setHours(1, 0, 0, 0); // Set time to midnight
+    // now.setHours(now.getHours() + 5); // Adds 5 hours to the current time
+
     let updatedNextRecurringDate = nextRecurringDate
       ? new Date(nextRecurringDate)
-      : new Date();
+      : calculateStartDate(new Date(now), recurring);
 
-    if (recurring === "weekly") {
-      const prevDate = new Date();
-      prevDate.setDate(updatedNextRecurringDate.getDate() - 1);
-      updatedNextRecurringDate = prevDate;
-    }
+    // if (recurring === "weekly") {
+    //   const prevDate = new Date();
+    //   prevDate.setDate(updatedNextRecurringDate.getDate() - 1);
+    //   updatedNextRecurringDate = prevDate;
+    // }
+
+    console.log("Updated Next Recurring Date:💚", updatedNextRecurringDate);
 
     const tasks = await taskModel.create({
       project: {
@@ -1131,36 +1272,6 @@ export const updateTaskHours = async (req, res) => {
 //   autoCreateRecurringTasks();
 // });
 
-// Function to calculate the next start date
-const calculateStartDate = (date, recurringType) => {
-  const currentDate = new Date(date);
-
-  // const addDaysSkippingWeekends = (date, days) => {
-  //   let result = new Date(date);
-  //   while (days > 0) {
-  //     result.setDate(result.getDate() + 1);
-  //     if (result.getDay() !== 0 && result.getDay() !== 6) {
-  //       days--; 
-  //     }
-  //   }
-  //   return result;
-  // };
-
-
-  const addOneBusinessDay = (date) => {
-  const result = new Date(date);
-  result.setDate(result.getDate() + 1);
-
-  // If Saturday, move to Monday (+2)
-  // If Sunday, move to Monday (+1)
-  if (result.getDay() === 6) {
-    result.setDate(result.getDate() + 2);
-  } else if (result.getDay() === 0) {
-    result.setDate(result.getDate() + 1);
-  }
-
-  return result;
-};
 
 
 
@@ -1168,74 +1279,23 @@ const calculateStartDate = (date, recurringType) => {
 
 
 
- 
-
-  // Mon   1
-  // Tue   2
-  // Wed   3
-  // Thu   4
-  // Fri   5
-  // Sat   6
-  // Sun   0
 
 
 
-  // const adjustForFridayAndWeekend = (date) => {
-  //   const day = date.getDay();
-  //   if (day === 5) {
-  //     date.setDate(date.getDate() + 3);
-  //   } else if (day === 6) {
-  //     date.setDate(date.getDate() + 2);
-  //   } else if (day === 0) {
-  //     date.setDate(date.getDate() + 1);
-  //   }
-  //   return date;
-  // };
-
-  // const adjustForFridayAndWeekend = (date) => {
-  //   const day = date.getDay();
-  //   if (day === 5) {
-  //     date.setDate(date.getDate() + 2);
-  //   } else if (day === 6) {
-  //     date.setDate(date.getDate() + 1);
-  //   }
-  //   return date;
-  // };
-
-   const adjustForFridayAndWeekend = (date) => {
-    const day = date.getDay();
-    if (day === 6) {
-      date.setDate(date.getDate() + 2);
-    } else if (day === 0) {
-      date.setDate(date.getDate() + 1);
-    }
-    return date;
-  };
 
 
-  switch (recurringType) {
-    case "daily":
-      return addOneBusinessDay(currentDate);
-    case "weekly":
-      const nextWeek = new Date(currentDate);
-      nextWeek.setDate(nextWeek.getDate() + 7);
-      return adjustForFridayAndWeekend(nextWeek);
-    // case "weekly":
-    //   return addDaysSkippingWeekends(currentDate, 7);
-    case "monthly":
-      const nextMonthDate = new Date(
-        currentDate.setMonth(currentDate.getMonth() + 1)
-      );
-      return adjustForFridayAndWeekend(nextMonthDate);
-    case "quarterly":
-      const nextQuarterDate = new Date(
-        currentDate.setMonth(currentDate.getMonth() + 3)
-      );
-      return adjustForFridayAndWeekend(nextQuarterDate);
-    default:
-      return currentDate;
-  }
-};
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Main task scheduler
 export const autoCreateRecurringTasks = async (req, res) => {

@@ -14,6 +14,7 @@ import Subscriptions from "../../components/MyLists/Subscriptions";
 import Timesheet from "../../components/TimeSheet/Timesheet";
 import Dashboard from "../../components/MyLists/LDashboard";
 import HR from "../../components/MyLists/Hr";
+import QuickAccess from "../../utlis/QuickAccess";
 
 export default function AllLists() {
   const { auth } = useAuth();
@@ -265,7 +266,7 @@ export default function AllLists() {
     <Layout>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-5">
+          <div className="w-full justify-start flex items-end gap-5">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
               My List's
             </h1>
@@ -277,6 +278,8 @@ export default function AllLists() {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
+
+            <span><QuickAccess /></span>
           </div>
 
           {/* ---------Template Buttons--------- */}

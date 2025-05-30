@@ -25,6 +25,7 @@ import ApexCharts from "react-apexcharts";
 import { BsPieChartFill } from "react-icons/bs";
 import RunningTimers from "./RunningTimers";
 import UsersTimeSheet from "./UsersTimeSheet";
+import QuickAccess from "../../utlis/QuickAccess";
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -1872,7 +1873,7 @@ export default function TimeSheet() {
     <Layout>
       <div className=" relative w-full h-[100%] py-4 px-2 sm:px-4 flex flex-col gap-2  ">
         <div className="flex items-start sm:items-center sm:justify-between flex-col sm:flex-row gap-2">
-          <div className="relative flex items-start sm:items-center sm:flex-row flex-col gap-4">
+          <div className="relative flex items-start sm:items-center sm:flex-row flex-col gap-6">
             <div className="flex items-center gap-4">
               <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
                 Timesheet
@@ -1891,6 +1892,8 @@ export default function TimeSheet() {
                     <IoClose className="h-6 w-6 text-white" />
                   </span>
                 )}
+
+                <span className="mt-2"><QuickAccess /></span>
               </div>
             </div>
             {/* Select */}

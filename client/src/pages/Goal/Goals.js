@@ -27,6 +27,7 @@ import GoalDetail from "../../components/Goal/GoalDetail";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FaListOl } from "react-icons/fa";
 import { useSearchParams } from "react-router-dom";
+import QuickAccess from "../../utlis/QuickAccess";
 
 export default function Goals() {
   const { auth } = useAuth();
@@ -1730,7 +1731,7 @@ const onDragEnd = (result) => {
               Goal's
             </h1>
 
-            <div className="flex items-center ">
+            <div className="flex items-center gap-3">
               <span
                 className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
                 onClick={() => {
@@ -1740,6 +1741,8 @@ const onDragEnd = (result) => {
               >
                 <IoClose className="h-6 w-6 text-white" />
               </span>
+
+              <span className="mt-2"><QuickAccess /></span>
               <span
                 onClick={() => setShowGraph(!showGraph)}
                 className="ml-[2rem] hidden sm:block mb-1 p-1 rounded-md hover:shadow-md transition-all duration-300 cursor-pointer text-orange-500 hover:text-orange-600 bg-gray-200/60 hover:bg-gray-200/80 border"

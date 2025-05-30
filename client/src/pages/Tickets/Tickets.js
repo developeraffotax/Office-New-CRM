@@ -22,7 +22,6 @@ import JobCommentModal from "../Jobs/JobCommentModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { Box } from "@mui/material";
 import QuickAccess from "../../utlis/QuickAccess";
-import { BiEdit } from "react-icons/bi";
 
 const jobStatusOptions = [
   "Quote",
@@ -154,7 +153,7 @@ export default function Tickets() {
 
   function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
     const savedSet = new Set(savedOrder);
-    console.log("savedSET>>>>", savedSet);
+
     // Preserve the order from savedOrder, but only if the username still exists in the fetched data
     const ordered = savedOrder.filter((name) =>
       fetchedUsernames.includes(name)
@@ -259,7 +258,7 @@ export default function Tickets() {
       );
       if (data) {
         const updateTicket = data?.ticket;
-        toast.success("Date updated successfully!");
+        toast.success("Status updated successfully!");
 
         if (filteredData) {
           setFilteredData((prevData) => {
@@ -377,113 +376,44 @@ export default function Tickets() {
     }
   };
 
+  const updateTicketSingleField = async (ticketId, update) => {
+    // if (!ticketId || !updates) {
+    //   toast.error("Ticket ID and updates are required!");
+    //   return;
+    // }
 
-
-
-
-
-
-    const updateTicketSingleField = async (ticketId, update) => {
-      // if (!ticketId || !updates) {
-      //   toast.error("Ticket ID and updates are required!");
-      //   return;
-      // }
-
-
-      
-
-
-      try {
-         const { data } = await axios.put(
+    try {
+      const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
         update
       );
 
-        if(data) {
-          const updatedTicket = data?.ticket;
+      if (data) {
+        const updatedTicket = data?.ticket;
 
-          // Update the emailData state with the updated ticket
-          setEmailData((prevData) =>
+        // Update the emailData state with the updated ticket
+        setEmailData((prevData) =>
+          prevData.map((item) =>
+            item._id === updatedTicket._id ? updatedTicket : item
+          )
+        );
+
+        // Update the filteredData state if it exists
+        if (filteredData) {
+          setFilteredData((prevData) =>
             prevData.map((item) =>
               item._id === updatedTicket._id ? updatedTicket : item
             )
           );
-
-          // Update the filteredData state if it exists
-          if (filteredData) {
-            setFilteredData((prevData) =>
-              prevData.map((item) =>
-                item._id === updatedTicket._id ? updatedTicket : item
-              )
-            );
-          }
-
-          toast.success("Ticket updated successfully!");
         }
 
-
-      console.log(data)
-      } catch (error) {
-        console.log(error);
-        toast.error(error?.response?.data?.message || "An error occurred");
-        
+        toast.success("Ticket updated successfully!");
       }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message || "An error occurred");
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  };
 
   // ------------------------Table Detail------------->
 
@@ -523,14 +453,87 @@ export default function Tickets() {
             </div>
           );
         },
+        
+
         Cell: ({ cell, row }) => {
           const companyName = row.original.companyName;
+          const [isEditing, setIsEditing] = useState(false);
+          const [newcompanyName, setNewcompanyName] = useState("");
+
+          const inputRef = useRef(null);
+
+          const handleKeyDown = (e) => {
+            if (e.key === "Escape") {
+              setNewcompanyName(""); 
+              setIsEditing(false);
+            }
+
+            if (e.key === "Enter") {
+              if (newcompanyName !== companyName) {
+                updateTicketSingleField(row.original._id, {
+                  companyName: newcompanyName.trim(),
+                });
+              }
+
+              setIsEditing(false); 
+            }
+          };
+
+          useEffect(() => {
+            if (isEditing && inputRef?.current) {
+              inputRef.current.focus();
+              
+            }
+          }, [isEditing]);
+
           return (
-            <div className="w-full px-1">
-              <span>{companyName}</span>
-            </div>
+            <>
+              {row?.original?.clientId ? (
+                <span>{companyName}</span>
+              ) : (
+                <div className="w-full px-1">
+                  {isEditing ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        value={newcompanyName}
+                        onKeyDown={handleKeyDown}
+                        onChange={(e) => {
+                          setNewcompanyName(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          if (newcompanyName !== companyName) {
+                            updateTicketSingleField(row.original._id, {
+                              companyName: newcompanyName.trim(),
+                            });
+                          }
+                          setIsEditing(false);
+                        }}
+                        className="w-full h-[1.8rem] px-2 border border-gray-300 rounded-md outline-none"
+                      />
+                    </div>
+                  ) : (
+                    <span
+                      className="w-full flex"
+                      onDoubleClick={() => {
+                        setIsEditing(true);
+                        setNewcompanyName(companyName);
+                      }}
+                    >
+                      {companyName ? (
+                        companyName
+                      ) : (
+                        <AiOutlineEdit className="text-gray-400 text-lg cursor-pointer" />
+                      )}
+                    </span>
+                  )}
+                </div>
+              )}
+            </>
           );
         },
+
         filterFn: (row, columnId, filterValue) => {
           const cellValue =
             row.original[columnId]?.toString().toLowerCase() || "";
@@ -566,24 +569,8 @@ export default function Tickets() {
           );
         },
 
+       
 
-
-
-
-        // Cell: ({ cell, row }) => {
-        //   const clientName = row.original.clientName;
-        //   return (
-        //     <div className="w-full px-1">
-        //       <span>{clientName}</span>
-        //     </div>
-        //   );
-
-
-
-        // },
-
-
-        
         Cell: ({ cell, row }) => {
           const clientName = row.original.clientName;
           const [isEditing, setIsEditing] = useState(false);
@@ -591,96 +578,76 @@ export default function Tickets() {
 
           const inputRef = useRef(null);
 
-            const handleKeyDown = (e) => {
-            if (e.key === 'Escape') {
-              console.log('Escape key pressed during typing');
-              setNewClientName(''); // Reset input or custom logic
-              setIsEditing(false); // Exit editing mode
+          const handleKeyDown = (e) => {
+            if (e.key === "Escape") {
+              setNewClientName(""); 
+              setIsEditing(false); 
             }
 
-
-
-            if (e.key === 'Enter') {
-              console.log('Enter key pressed during typing');
-              updateTicketSingleField(row.original._id, { clientName: newClientName });
-              setIsEditing(false); // Exit editing mode
-            };
-
-          }
-
-
-
-
-
-
+            if (e.key === "Enter") {
+              if (newClientName !== clientName) {
+                updateTicketSingleField(row.original._id, {
+                  clientName: newClientName.trim(),
+                });
+              }
+              setIsEditing(false);
+            }
+          };
 
           useEffect(() => {
-
             if (isEditing && inputRef?.current) {
               inputRef.current.focus();
-              //inputRef.current.select(); // Select the text in the input
+             
             }
-
-
           }, [isEditing]);
 
           return (
-            <div className="w-full px-1">
-
-              {isEditing ? (
-                <div className="flex items-center gap-2">
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={newClientName}
-                    onKeyDown={handleKeyDown}
-                    onChange={(e) => {
-                      console.log(e)
-                      setNewClientName(e.target.value)
-                    }}
-                    onBlur={(e) => {
-                       
-
-                      if(newClientName.trim() && newClientName !== clientName) {
-                        updateTicketSingleField(row.original._id, { clientName: newClientName });
-
-                      }
-                      setIsEditing(false);
-                     }}
-                    className="w-full h-[1.8rem] px-2 border border-gray-300 rounded-md outline-none"
-                  />
-                   
-                  
+            <>
+              {row?.original?.clientId ? (
+                <span>{clientName}</span>
+              ) : (
+                <div className="w-full px-1">
+                  {isEditing ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        value={newClientName}
+                        onKeyDown={handleKeyDown}
+                        onChange={(e) => {
+                          setNewClientName(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          if (newClientName !== clientName) {
+                            updateTicketSingleField(row.original._id, {
+                              clientName: newClientName.trim(),
+                            });
+                          }
+                          setIsEditing(false);
+                        }}
+                        className="w-full h-[1.8rem] px-2 border border-gray-300 rounded-md outline-none"
+                      />
+                    </div>
+                  ) : (
+                    <span
+                      className="w-full flex"
+                      onDoubleClick={() => {
+                        setIsEditing(true);
+                        setNewClientName(clientName);
+                      }}
+                    >
+                      {clientName ? (
+                        clientName
+                      ) : (
+                        <AiOutlineEdit className="text-gray-400 text-lg cursor-pointer" />
+                      )}
+                    </span>
+                  )}
                 </div>
-              ) : <span className="w-full flex" onDoubleClick={() => {setIsEditing(true); setNewClientName(clientName);}}>{clientName ? clientName : <AiOutlineEdit className="text-gray-500 text-lg cursor-pointer"/>}</span>
-
-
-
-            }
-            </div>
+              )}
+            </>
           );
-
-
-          
         },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         filterFn: (row, columnId, filterValue) => {
           const cellValue =
@@ -688,14 +655,8 @@ export default function Tickets() {
           return cellValue.includes(filterValue.toLowerCase());
         },
 
-        
         filterVariant: "select",
-
       },
-
-
-
-
 
       {
         accessorKey: "company",
@@ -1604,7 +1565,6 @@ export default function Tickets() {
         accessorKey: "actions",
         header: "Actions",
         Cell: ({ cell, row }) => {
-
           const comments = row.original?.comments;
           const [readComments, setReadComments] = useState([]);
 
@@ -1616,29 +1576,21 @@ export default function Tickets() {
             // eslint-disable-next-line
           }, [comments]);
 
-
           return (
             <div className="flex items-center justify-center gap-4 w-full h-full">
-
-
-
               <div
-              className="flex items-center justify-center gap-1 relative w-full h-full"
-              onClick={() => {
-                setCommentTicketId(row.original._id);
-                setIsComment(true);
-              }}
-            >
-              <div className="relative">
-                <span className="text-[1rem] cursor-pointer relative">
-                  <MdInsertComment className="h-5 w-5 text-orange-600 " />
-                </span>
-                
+                className="flex items-center justify-center gap-1 relative w-full h-full"
+                onClick={() => {
+                  setCommentTicketId(row.original._id);
+                  setIsComment(true);
+                }}
+              >
+                <div className="relative">
+                  <span className="text-[1rem] cursor-pointer relative">
+                    <MdInsertComment className="h-5 w-5 text-orange-600 " />
+                  </span>
+                </div>
               </div>
-            </div>
-
-
-
 
               <span
                 className=""

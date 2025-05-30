@@ -599,7 +599,7 @@ export const updateAlocateTask = async (req, res) => {
       // Push activity to activities array
       updateTask.activities.push({
         user: req.user.user._id,
-        activity: `${req.user.user.name} updated the task start date from "${formatDate(updateTask.startDate)}" to "${formatDate(task.startDate)}".`,
+        activity: `${req.user.user.name} updated the task start date from "${formatDate(task.startDate)}" to "${formatDate(updateTask.startDate)}".`,
       });
     } else {
       updateTask = await taskModel.findByIdAndUpdate(
@@ -613,7 +613,7 @@ export const updateAlocateTask = async (req, res) => {
       // Push activity to activities array
       updateTask.activities.push({
         user: req.user.user._id,
-        activity: `${req.user.user.name} updated the task deadline from "${formatDate(updateTask.deadline)}" to "${formatDate(task.deadline)}".`,
+        activity: `${req.user.user.name} updated the task deadline from "${formatDate(task.deadline)}" to "${formatDate(updateTask.deadline)}".`,
       });
     }
 

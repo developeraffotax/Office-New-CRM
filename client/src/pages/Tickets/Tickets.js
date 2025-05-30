@@ -15,13 +15,14 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { useAuth } from "../../context/authContext";
 import { MdCheckCircle, MdInsertComment } from "react-icons/md";
-import { AiTwotoneDelete } from "react-icons/ai";
+import { AiOutlineEdit, AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { Box } from "@mui/material";
 import QuickAccess from "../../utlis/QuickAccess";
+import { BiEdit } from "react-icons/bi";
 
 const jobStatusOptions = [
   "Quote",
@@ -375,6 +376,115 @@ export default function Tickets() {
       toast.error(error?.response?.data?.message);
     }
   };
+
+
+
+
+
+
+
+    const updateTicketSingleField = async (ticketId, update) => {
+      // if (!ticketId || !updates) {
+      //   toast.error("Ticket ID and updates are required!");
+      //   return;
+      // }
+
+
+      
+
+
+      try {
+         const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
+        update
+      );
+
+        if(data) {
+          const updatedTicket = data?.ticket;
+
+          // Update the emailData state with the updated ticket
+          setEmailData((prevData) =>
+            prevData.map((item) =>
+              item._id === updatedTicket._id ? updatedTicket : item
+            )
+          );
+
+          // Update the filteredData state if it exists
+          if (filteredData) {
+            setFilteredData((prevData) =>
+              prevData.map((item) =>
+                item._id === updatedTicket._id ? updatedTicket : item
+              )
+            );
+          }
+
+          toast.success("Ticket updated successfully!");
+        }
+
+
+      console.log(data)
+      } catch (error) {
+        console.log(error);
+        toast.error(error?.response?.data?.message || "An error occurred");
+        
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // ------------------------Table Detail------------->
 
   const getCurrentMonthYear = () => {
@@ -455,21 +565,138 @@ export default function Tickets() {
             </div>
           );
         },
+
+
+
+
+
+        // Cell: ({ cell, row }) => {
+        //   const clientName = row.original.clientName;
+        //   return (
+        //     <div className="w-full px-1">
+        //       <span>{clientName}</span>
+        //     </div>
+        //   );
+
+
+
+        // },
+
+
+        
         Cell: ({ cell, row }) => {
           const clientName = row.original.clientName;
+          const [isEditing, setIsEditing] = useState(false);
+          const [newClientName, setNewClientName] = useState("");
+
+          const inputRef = useRef(null);
+
+            const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+              console.log('Escape key pressed during typing');
+              setNewClientName(''); // Reset input or custom logic
+              setIsEditing(false); // Exit editing mode
+            }
+
+
+
+            if (e.key === 'Enter') {
+              console.log('Enter key pressed during typing');
+              updateTicketSingleField(row.original._id, { clientName: newClientName });
+              setIsEditing(false); // Exit editing mode
+            };
+
+          }
+
+
+
+
+
+
+
+          useEffect(() => {
+
+            if (isEditing && inputRef?.current) {
+              inputRef.current.focus();
+              //inputRef.current.select(); // Select the text in the input
+            }
+
+
+          }, [isEditing]);
+
           return (
             <div className="w-full px-1">
-              <span>{clientName}</span>
+
+              {isEditing ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={newClientName}
+                    onKeyDown={handleKeyDown}
+                    onChange={(e) => {
+                      console.log(e)
+                      setNewClientName(e.target.value)
+                    }}
+                    onBlur={(e) => {
+                       
+
+                      if(newClientName.trim() && newClientName !== clientName) {
+                        updateTicketSingleField(row.original._id, { clientName: newClientName });
+
+                      }
+                      setIsEditing(false);
+                     }}
+                    className="w-full h-[1.8rem] px-2 border border-gray-300 rounded-md outline-none"
+                  />
+                   
+                  
+                </div>
+              ) : <span className="w-full flex" onDoubleClick={() => {setIsEditing(true); setNewClientName(clientName);}}>{clientName ? clientName : <AiOutlineEdit className="text-gray-500 text-lg cursor-pointer"/>}</span>
+
+
+
+            }
             </div>
           );
+
+
+          
         },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         filterFn: (row, columnId, filterValue) => {
           const cellValue =
             row.original[columnId]?.toString().toLowerCase() || "";
           return cellValue.includes(filterValue.toLowerCase());
         },
+
+        
         filterVariant: "select",
+
       },
+
+
+
+
+
       {
         accessorKey: "company",
         minSize: 100,

@@ -13,6 +13,7 @@ import TaskSummary from "../../components/Dashboard/TaskSummary";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import Loader from "../../utlis/Loader";
 import { FiZoomIn, FiZoomOut, FiRefreshCw } from "react-icons/fi";
+import QuickAccess from "../../utlis/QuickAccess";
 
 export default function Dashboard() {
   // Client
@@ -259,6 +260,8 @@ export default function Dashboard() {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
+
+            <QuickAccess />
             {/* Zoom Controls */}
             <div className="absolute hidden top-2 right-2 sm:flex gap-2 bg-white p-2 rounded-lg shadow">
               <button

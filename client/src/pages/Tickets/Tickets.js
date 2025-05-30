@@ -21,6 +21,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { Box } from "@mui/material";
+import QuickAccess from "../../utlis/QuickAccess";
 
 const jobStatusOptions = [
   "Quote",
@@ -1558,7 +1559,7 @@ export default function Tickets() {
     <Layout>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
               Tickets
             </h1>
@@ -1575,6 +1576,8 @@ export default function Tickets() {
                 <IoClose className="h-6 w-6 text-white" />
               </span>
             }
+
+            <QuickAccess />
           </div>
 
           {/* ---------Template Buttons */}

@@ -20,6 +20,7 @@ import Loader from "../../utlis/Loader";
 import { GrCopy } from "react-icons/gr";
 import { IoMdCopy } from "react-icons/io";
 import { RiEdit2Line } from "react-icons/ri";
+import QuickAccess from "../../utlis/QuickAccess";
 
 export default function Template() {
   const { auth } = useAuth();
@@ -704,7 +705,7 @@ export default function Template() {
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
         {selectedTab === "templates" && (
           <div className="flex items-start sm:items-center sm:justify-between flex-col gap-2 sm:flex-row">
-            <div className="flex items-center gap-2">
+            <div className="flex justify-start items-center gap-4">
               <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
                 Templates
               </h1>
@@ -718,6 +719,8 @@ export default function Template() {
               >
                 <IoClose className="h-6 w-6 text-white" />
               </span>
+
+              <span className="mt-1"><QuickAccess /></span>
             </div>
 
             {/* ---------Template Buttons */}

@@ -19,6 +19,7 @@ import { format } from "date-fns";
 import { GoEye } from "react-icons/go";
 import ComplaintDetail from "../../components/Complaint/ComplaintDetail";
 import { GrCopy } from "react-icons/gr";
+import QuickAccess from "../../utlis/QuickAccess";
 
 export default function Complaints() {
   const [show, setShow] = useState(false);
@@ -955,6 +956,8 @@ export default function Complaints() {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
+
+            <span className="mt-2"><QuickAccess /></span>
 
              <span
                                   className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${showExternalFilters && 'bg-orange-500 text-white '}  `}

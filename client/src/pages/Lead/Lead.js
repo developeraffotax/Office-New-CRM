@@ -27,6 +27,7 @@ import {  Popover, Typography } from "@mui/material";
 import TicketsPopUp from "../../components/shared/TicketsPopUp";
 import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import QuickAccess from "../../utlis/QuickAccess";
 
 
 const updates_object_init = {
@@ -2948,6 +2949,8 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                 <IoClose className="h-6 w-6 text-white" />
               </span>
             }
+
+            <QuickAccess />
           </div>
 
 

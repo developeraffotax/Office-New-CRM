@@ -46,6 +46,7 @@ import HandleQualityModal from "../../components/Modals/HandleQualityModal";
 import TicketsPopUp from "../../components/shared/TicketsPopUp";
 import { BiSend } from "react-icons/bi";
 import { BsPersonCheckFill } from "react-icons/bs";
+import QuickAccess from "../../utlis/QuickAccess";
  
 
 
@@ -3879,6 +3880,8 @@ useEffect(()=>{
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
+
+            <QuickAccess />
           </div>
 
           <div className="flex items-center gap-4">

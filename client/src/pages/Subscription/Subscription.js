@@ -16,6 +16,7 @@ import { AiOutlineEdit, AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import DataLabel from "./DataLabel";
 import { TbLoader2 } from "react-icons/tb";
+import QuickAccess from "../../utlis/QuickAccess";
 
 export default function Subscription() {
   const { auth } = useAuth();
@@ -1929,7 +1930,7 @@ const col = table.getColumn("subscription");
               <IoClose className="h-6 w-6 text-white" />
             </span>
 
-
+              <span className="mt-2"><QuickAccess /></span>
 
             <span
               className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${showExternalFilters && 'bg-orange-500 text-white '}  `}

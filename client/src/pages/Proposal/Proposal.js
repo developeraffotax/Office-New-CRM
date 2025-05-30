@@ -16,6 +16,7 @@ import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import AddProposal from "./AddProposal";
 import { CiEdit } from "react-icons/ci";
+import QuickAccess from "../../utlis/QuickAccess";
 
 export default function Proposal() {
   const { auth } = useAuth();
@@ -1809,7 +1810,7 @@ export default function Proposal() {
     <Layout>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
               Proposal's
             </h1>
@@ -1823,6 +1824,8 @@ export default function Proposal() {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
+
+            <span className="mt-1"><QuickAccess /></span>
           </div>
 
           {/* ---------Template Buttons */}

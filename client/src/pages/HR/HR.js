@@ -24,6 +24,7 @@ import { LuLink } from "react-icons/lu";
 import { CiSaveDown2 } from "react-icons/ci";
 import HandleHrRoleModal from "../../components/hr/HandleHrRoleModal";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import QuickAccess from "../../utlis/QuickAccess"
  
 
 const months = [
@@ -1144,6 +1145,8 @@ export default function HR() {
             >
               <IoClose className="h-4 sm:h-6 w-4 sm:w-6 text-white" />
             </span>
+
+            <span className="mt-3"><QuickAccess /></span>
 
             <div className="flex justify-center items-center  gap-2 ">
               <span

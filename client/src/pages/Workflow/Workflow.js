@@ -10,6 +10,7 @@ import {
 } from "material-react-table";
 import Loader from "../../utlis/Loader";
 import Leads from "./Lead";
+import QuickAccess from "../../utlis/QuickAccess";
 
 export default function Workflow() {
   const [loading, setLoading] = useState(false);
@@ -355,6 +356,8 @@ export default function Workflow() {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
+
+            <span className="mt-2"><QuickAccess /></span>
           </div>
         </div>
         {/* ---------Buttons--------- */}

@@ -734,35 +734,37 @@ export const getSingleEmailDetail = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
 // Update Ticket
 export const updateTickets = async (req, res) => {
   try {
     const ticketId = req.params.id;
-    const { jobDate, state, jobHolder, jobStatus } = req.body;
+    //const { jobDate, state, jobHolder, jobStatus } = req.body;
+     const updates = req.body; // Dynamic fields from client
+    const allowedUpdates = ['jobDate', 'state', 'jobHolder', 'jobStatus', 'clientName']; // Whitelist of allowed fields
+    const updateKeys = Object.keys(updates);
 
-    console.log("State:", state);
+      // Optional: Validate fields
+    const isValidUpdate = updateKeys.every(key => allowedUpdates.includes(key));
+    if (!isValidUpdate) {
+        return res.status(400).json({ success: false, message: "Invalid fields in update!"});
+    }
 
     const existingTicket = await ticketModel.findById(ticketId);
     if (!existingTicket) {
-      return res.status(400).send({
-        success: false,
-        message: "Ticket not found!",
-      });
+      return res.status(400).send({ success: false, message: "Ticket not found!", });
     }
 
-    const ticket = await ticketModel.findByIdAndUpdate(
-      {
-        _id: existingTicket._id,
-      },
-      {
-        jobDate: jobDate || existingTicket.jobDate,
-        state: state ? state : existingTicket.state,
-        jobHolder: jobHolder ? jobHolder : existingTicket.jobHolder,
-        jobStatus: jobStatus ? jobStatus : existingTicket.jobStatus,
-      },
-
-      { new: true }
-    );
+    const ticket = await ticketModel.findByIdAndUpdate( { _id: existingTicket._id, }, updates, { new: true } );
 
     res.status(200).send({
       success: true,
@@ -778,6 +780,98 @@ export const updateTickets = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // Update Ticket
+// export const updateTickets = async (req, res) => {
+//   try {
+//     const ticketId = req.params.id;
+//     const { jobDate, state, jobHolder, jobStatus } = req.body;
+
+//     console.log("State:", state);
+
+//     const existingTicket = await ticketModel.findById(ticketId);
+//     if (!existingTicket) {
+//       return res.status(400).send({
+//         success: false,
+//         message: "Ticket not found!",
+//       });
+//     }
+
+//     const ticket = await ticketModel.findByIdAndUpdate(
+//       {
+//         _id: existingTicket._id,
+//       },
+//       {
+//         jobDate: jobDate || existingTicket.jobDate,
+//         state: state ? state : existingTicket.state,
+//         jobHolder: jobHolder ? jobHolder : existingTicket.jobHolder,
+//         jobStatus: jobStatus ? jobStatus : existingTicket.jobStatus,
+//       },
+
+//       { new: true }
+//     );
+
+//     res.status(200).send({
+//       success: true,
+//       message: "Ticket update successfully!",
+//       ticket: ticket,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).send({
+//       success: false,
+//       message: "Error while update ticket!",
+//       error: error,
+//     });
+//   }
+// };
 
 // Delete Ticket
 export const deleteTicket = async (req, res) => {

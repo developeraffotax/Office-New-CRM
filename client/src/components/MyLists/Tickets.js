@@ -18,7 +18,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { useAuth } from "../../context/authContext";
 import { MdCheckCircle, MdInsertComment } from "react-icons/md";
-import { AiTwotoneDelete } from "react-icons/ai";
+import { AiOutlineEdit, AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import JobCommentModal from "../../pages/Jobs/JobCommentModal";
@@ -289,6 +289,70 @@ const Tickets = forwardRef(
         toast.error(error?.response?.data?.message);
       }
     };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      const updateTicketSingleField = async (ticketId, update) => {
+        // if (!ticketId || !updates) {
+        //   toast.error("Ticket ID and updates are required!");
+        //   return;
+        // }
+    
+        try {
+          const { data } = await axios.put(
+            `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
+            update
+          );
+    
+          if (data) {
+            const updatedTicket = data?.ticket;
+    
+            // Update the emailData state with the updated ticket
+            setEmailData((prevData) =>
+              prevData.map((item) =>
+                item._id === updatedTicket._id ? updatedTicket : item
+              )
+            );
+    
+            // Update the filteredData state if it exists
+            if (filteredData) {
+              setFilteredData((prevData) =>
+                prevData.map((item) =>
+                  item._id === updatedTicket._id ? updatedTicket : item
+                )
+              );
+            }
+    
+            toast.success("Ticket updated successfully!");
+          }
+        } catch (error) {
+          console.log(error);
+          toast.error(error?.response?.data?.message || "An error occurred");
+        }
+      };
+    
+
+
+
+
+
+
+
     // ------------------------Table Detail------------->
 
     // Clear table Filter
@@ -338,14 +402,89 @@ const Tickets = forwardRef(
               </div>
             );
           },
-          Cell: ({ cell, row }) => {
-            const companyName = row.original.companyName;
-            return (
-              <div className="w-full px-1">
-                <span>{companyName}</span>
-              </div>
-            );
-          },
+
+
+
+
+           Cell: ({ cell, row }) => {
+                    const companyName = row.original.companyName;
+                    const [isEditing, setIsEditing] = useState(false);
+                    const [newcompanyName, setNewcompanyName] = useState("");
+          
+                    const inputRef = useRef(null);
+          
+                    const handleKeyDown = (e) => {
+                      if (e.key === "Escape") {
+                        setNewcompanyName(""); 
+                        setIsEditing(false);
+                      }
+          
+                      if (e.key === "Enter") {
+                        if (newcompanyName !== companyName) {
+                          updateTicketSingleField(row.original._id, {
+                            companyName: newcompanyName.trim(),
+                          });
+                        }
+          
+                        setIsEditing(false); 
+                      }
+                    };
+          
+                    useEffect(() => {
+                      if (isEditing && inputRef?.current) {
+                        inputRef.current.focus();
+                        
+                      }
+                    }, [isEditing]);
+          
+                    return (
+                      <>
+                        {row?.original?.clientId ? (
+                          <span>{companyName}</span>
+                        ) : (
+                          <div className="w-full px-1">
+                            {isEditing ? (
+                              <div className="flex items-center gap-2">
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={newcompanyName}
+                                  onKeyDown={handleKeyDown}
+                                  onChange={(e) => {
+                                    setNewcompanyName(e.target.value);
+                                  }}
+                                  onBlur={(e) => {
+                                    if (newcompanyName !== companyName) {
+                                      updateTicketSingleField(row.original._id, {
+                                        companyName: newcompanyName.trim(),
+                                      });
+                                    }
+                                    setIsEditing(false);
+                                  }}
+                                  className="w-full h-[1.8rem] px-2 border border-gray-300 rounded-md outline-none"
+                                />
+                              </div>
+                            ) : (
+                              <span
+                                className="w-full flex"
+                                onDoubleClick={() => {
+                                  setIsEditing(true);
+                                  setNewcompanyName(companyName);
+                                }}
+                              >
+                                {companyName ? (
+                                  companyName
+                                ) : (
+                                  <AiOutlineEdit className="text-gray-400 text-lg cursor-pointer" />
+                                )}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    );
+                  },
+
           filterFn: (row, columnId, filterValue) => {
             const cellValue =
               row.original[columnId]?.toString().toLowerCase() || "";
@@ -380,14 +519,87 @@ const Tickets = forwardRef(
               </div>
             );
           },
+          
+          
           Cell: ({ cell, row }) => {
-            const clientName = row.original.clientName;
-            return (
-              <div className="w-full px-1">
-                <span>{clientName}</span>
-              </div>
-            );
-          },
+                    const clientName = row.original.clientName;
+                    const [isEditing, setIsEditing] = useState(false);
+                    const [newClientName, setNewClientName] = useState("");
+          
+                    const inputRef = useRef(null);
+          
+                    const handleKeyDown = (e) => {
+                      if (e.key === "Escape") {
+                        setNewClientName(""); 
+                        setIsEditing(false); 
+                      }
+          
+                      if (e.key === "Enter") {
+                        if (newClientName !== clientName) {
+                          updateTicketSingleField(row.original._id, {
+                            clientName: newClientName.trim(),
+                          });
+                        }
+                        setIsEditing(false);
+                      }
+                    };
+          
+                    useEffect(() => {
+                      if (isEditing && inputRef?.current) {
+                        inputRef.current.focus();
+                       
+                      }
+                    }, [isEditing]);
+          
+                    return (
+                      <>
+                        {row?.original?.clientId ? (
+                          <span>{clientName}</span>
+                        ) : (
+                          <div className="w-full px-1">
+                            {isEditing ? (
+                              <div className="flex items-center gap-2">
+                                <input
+                                  ref={inputRef}
+                                  type="text"
+                                  value={newClientName}
+                                  onKeyDown={handleKeyDown}
+                                  onChange={(e) => {
+                                    setNewClientName(e.target.value);
+                                  }}
+                                  onBlur={(e) => {
+                                    if (newClientName !== clientName) {
+                                      updateTicketSingleField(row.original._id, {
+                                        clientName: newClientName.trim(),
+                                      });
+                                    }
+                                    setIsEditing(false);
+                                  }}
+                                  className="w-full h-[1.8rem] px-2 border border-gray-300 rounded-md outline-none"
+                                />
+                              </div>
+                            ) : (
+                              <span
+                                className="w-full flex"
+                                onDoubleClick={() => {
+                                  setIsEditing(true);
+                                  setNewClientName(clientName);
+                                }}
+                              >
+                                {clientName ? (
+                                  clientName
+                                ) : (
+                                  <AiOutlineEdit className="text-gray-400 text-lg cursor-pointer" />
+                                )}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    );
+                  },
+
+                  
           filterFn: (row, columnId, filterValue) => {
             const cellValue =
               row.original[columnId]?.toString().toLowerCase() || "";

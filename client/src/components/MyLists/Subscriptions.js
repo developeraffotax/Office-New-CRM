@@ -106,32 +106,87 @@ const Subscriptions = forwardRef(
       getDatalable();
     }, []);
 
-    // --------------Update JobHolder------------>
-    const handleUpdateSubscription = async (id, value, type) => {
-      try {
-        const { data } = await axios.put(
-          `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/update/single/${id}`,
-          {
-            jobHolder: type === "jobholder" && value,
-            billingStart: type === "billingStart" && value,
-            billingEnd: type === "billingEnd" && value,
-            deadline: type === "deadline" && value,
-            lead: type === "lead" && value,
-            fee: type === "fee" && value,
-            note: type === "note" && value,
-            status: type === "status" && value,
-            subscription: type === "subscription" && value,
-          }
-        );
-        if (data) {
-          fetchSubscriptions();
-          toast.success("Subscription updated.");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      // --------------Update JobHolder------------>
+      const handleUpdateSubscription = async (id, value, type) => {
+    
+    
+        const allowedFields = [ "jobHolder", "billingStart", "billingEnd", "deadline", "lead", "fee", "note", "status", "subscription", ];
+    
+         if (!allowedFields.includes(type)) {
+          toast.error("Invalid field for update");
+          return;
         }
-      } catch (error) {
-        console.log(error);
-        toast.error(error?.response?.data?.message);
-      }
-    };
+    
+         // Build the update object dynamically
+        const updateObj = { [type]: value };
+        
+        try {
+          const { data } = await axios.put(
+            `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/update/single/${id}`,
+            updateObj
+          );
+          if (data) {
+            fetchSubscriptions();
+            toast.success("Subscription updated.");
+          }
+        } catch (error) {
+          console.log(error);
+          toast.error(error?.response?.data?.message);
+        }
+      };
+
+
+
+
+
+
+
+
+      
+
+    // // --------------Update JobHolder------------>
+    // const handleUpdateSubscription = async (id, value, type) => {
+    //   try {
+    //     const { data } = await axios.put(
+    //       `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/update/single/${id}`,
+    //       {
+    //         jobHolder: type === "jobholder" && value,
+    //         billingStart: type === "billingStart" && value,
+    //         billingEnd: type === "billingEnd" && value,
+    //         deadline: type === "deadline" && value,
+    //         lead: type === "lead" && value,
+    //         fee: type === "fee" && value,
+    //         note: type === "note" && value,
+    //         status: type === "status" && value,
+    //         subscription: type === "subscription" && value,
+    //       }
+    //     );
+    //     if (data) {
+    //       fetchSubscriptions();
+    //       toast.success("Subscription updated.");
+    //     }
+    //   } catch (error) {
+    //     console.log(error);
+    //     toast.error(error?.response?.data?.message);
+    //   }
+    // };
 
     // -----------Handle Custom date filter------
     const getCurrentMonthYear = () => {

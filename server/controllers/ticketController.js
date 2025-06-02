@@ -26,6 +26,8 @@ export const sendEmail = async (req, res) => {
   try {
     const { clientId, company, subject, message, email } = req.body;
 
+    console.log("Subject💙💚💛", subject)
+    
     const userName = req.user.user.name;
     let client;
 

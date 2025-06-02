@@ -263,13 +263,15 @@ export const createTask = async (req, res) => {
       return;
     }
 
-    await notificationModel.create({
-      title: "New Task Assigned",
-      redirectLink: "/tasks",
-      description: `${req.user.user.name} assign a new task of "${tasks.task}"`,
-      taskId: `${tasks?._id}`,
-      userId: notiUser?._id || null,
-    });
+    if(req.user?.user?.name !== jobHolder) {
+      await notificationModel.create({
+        title: "New Task Assigned",
+        redirectLink: "/tasks",
+        description: `${req.user.user.name} assign a new task of "${tasks.task}"`,
+        taskId: `${tasks?._id}`,
+        userId: notiUser?._id || null,
+      });
+    }
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -469,13 +471,16 @@ export const updateJobHolderLS = async (req, res) => {
         return;
       }
 
-      await notificationModel.create({
-        title: "New Task Assigned",
-        redirectLink: "/tasks",
-        description: `${req.user.user.name} assign a new task of "${updateTask.task}"`,
-        taskId: `${updateTask._id}`,
-        userId: notiUser._id,
-      });
+      if(req.user?.user?.name !== jobHolder) {
+        await notificationModel.create({
+          title: "New Task Assigned",
+          redirectLink: "/tasks",
+          description: `${req.user.user.name} assign a new task of "${updateTask.task}"`,
+          taskId: `${updateTask._id}`,
+          userId: notiUser._id,
+        });
+      }
+      
 
       //  -------------------Noti End---------
     } else if (lead) {

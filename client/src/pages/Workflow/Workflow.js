@@ -303,7 +303,7 @@ export default function Workflow() {
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "rgb(193, 183, 173, 0.8)",
+        backgroundColor: "#E5E7EB",
         color: "#000",
         padding: ".4rem 0.3rem",
       },

@@ -1216,9 +1216,9 @@ export default function AllJobs() {
         {
           id: "companyName",
           accessorKey: "companyName",
-          minSize: 190,
+          minSize: 150,
           maxSize: 300,
-          size: 210,
+          size: 200,
           grow: false,
           Header: ({ column }) => {
             return (
@@ -1383,7 +1383,7 @@ export default function AllJobs() {
           filterFn: "equals",
           filterSelectOptions: users.map((jobhold) => jobhold),
           filterVariant: "select",
-          size: 110,
+          size: 100,
           minSize: 80,
           maxSize: 150,
           grow: false,
@@ -1440,7 +1440,7 @@ export default function AllJobs() {
           ],
 
           filterVariant: "select",
-          size: 110,
+          size: 105,
           minSize: 100,
           maxSize: 140,
           grow: false,

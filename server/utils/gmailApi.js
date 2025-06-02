@@ -92,9 +92,19 @@ export const sendEmailWithAttachments = async (emailData) => {
 
     const emailMessageParts = [];
 
+
+
+
+
+
     emailMessageParts.push("From: " + fromEmail);
     emailMessageParts.push("To: " + emailData.email);
-    emailMessageParts.push("Subject: " + emailData.subject);
+
+    const subjectEncoded = Buffer.from(emailData.subject, 'utf-8').toString('base64');
+    emailMessageParts.push("Subject: =?UTF-8?B?" + subjectEncoded + "?=");
+
+    
+    // emailMessageParts.push("Subject: " + emailData.subject);
     emailMessageParts.push("MIME-Version: 1.0");
     emailMessageParts.push(
       'Content-Type: multipart/mixed; boundary="boundary_example"'

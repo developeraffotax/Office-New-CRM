@@ -558,7 +558,7 @@ export const updateJobHolder = async (req, res) => {
 
     // Create Notification
     const user = await userModel.findOne({ name: jobHolder });
-    if(user) {
+    if(user && req.user?.user?.name !== jobHolder) {
       await notificationModel.create({
       title: "New Job Assigned",
       redirectLink: "/job-planning",

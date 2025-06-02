@@ -290,16 +290,18 @@ export default function Tickets() {
     }
   };
 
-  // ------------Update Date ------------>
-  const updateJobDate = async (ticketId, jobDate, jobHolder) => {
+  // ------------Update jobHolder ------------>
+  const updateJobHolder = async (ticketId,  jobHolder) => {
+
+
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
-        { jobDate, jobHolder }
+        { jobHolder }
       );
       if (data) {
         const updateTicket = data?.ticket;
-        toast.success("Date updated successfully!");
+        toast.success("Job Holder updated successfully!");
         if (filteredData) {
           setFilteredData((prevData) => {
             if (Array.isArray(prevData)) {
@@ -329,6 +331,64 @@ export default function Tickets() {
       toast.error(error.response?.data?.message || "An error occurred");
     }
   };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // ------------Update Date ------------>
+    const updateJobDate = async (ticketId, jobDate) => {
+
+    
+      try {
+        const { data } = await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
+          { jobDate }
+        );
+        if (data) {
+          const updateTicket = data?.ticket;
+          toast.success("Job Date updated successfully!");
+          if (filteredData) {
+            setFilteredData((prevData) => {
+              if (Array.isArray(prevData)) {
+                return prevData.map((item) =>
+                  item._id === updateTicket._id ? updateTicket : item
+                );
+              } else {
+                return [updateTicket];
+              }
+            });
+          }
+  
+          setEmailData((prevData) => {
+            if (Array.isArray(prevData)) {
+              return prevData.map((item) =>
+                item._id === updateTicket._id ? updateTicket : item
+              );
+            } else {
+              return [updateTicket];
+            }
+          });
+  
+          getEmails();
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error(error.response?.data?.message || "An error occurred");
+      }
+    };
+
+
 
   // ------------Update Status------------>
   const handleUpdateTicketStatusConfirmation = (ticketId) => {
@@ -752,7 +812,7 @@ export default function Tickets() {
                   value={employee || ""}
                   className="w-full h-[2rem] rounded-md border-none  outline-none"
                   onChange={(e) => {
-                    updateJobDate(row.original._id, "", e.target.value);
+                    updateJobHolder(row.original._id, e.target.value);
                     setEmployee(e.target.value);
                     setShow(false);
                   }}
@@ -1238,7 +1298,7 @@ export default function Tickets() {
 
           const handleDateChange = (newDate) => {
             setDate(newDate);
-            updateJobDate(row.original._id, newDate, "");
+            updateJobDate(row.original._id, newDate);
             setShowStartDate(false);
           };
 

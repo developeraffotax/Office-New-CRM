@@ -251,10 +251,10 @@ export default function AllJobs() {
     const today = new Date();
 
     // Add one month to today's date
-    const nextMonthDate = addMonths(today, 1);
+    // const nextMonthDate = addMonths(today, 1);
 
     // Format the new date to ISO format (including the time and timezone)
-    const followUpDate = formatISO(nextMonthDate);
+    const followUpDate = formatISO(today);
 
     try {
       setIsMoving(true)

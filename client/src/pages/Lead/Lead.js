@@ -1902,7 +1902,7 @@ const allColumns = [{
 
     return (
       <div className="w-full text-center">
-        {dayDifference > 0 ? (
+        {dayDifference >= 0 ? (
           `${dayDifference} Days`
         ) : (
           <span className="text-red-500">Expired</span>

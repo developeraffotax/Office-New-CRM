@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+const { Schema } = mongoose;
 
 const userSchema = new mongoose.Schema(
   {
@@ -59,6 +60,13 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    juniors: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User'  // Refers to the same User model
+      }
+    ]
   },
   { timestamps: false }
 );

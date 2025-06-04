@@ -1301,6 +1301,7 @@ export default function Users() {
         {isOpen && (
           <div className="fixed top-[4rem] h-[100%] sm:top-0 left-0 w-full z-[99990] overflow-y-scroll bg-gray-100/70 flex items-center justify-center py-6 px-4">
             <Register
+              userData={userData}
               setIsOpen={setIsOpen}
               getAllUsers={getUsers}
               userId={userId}

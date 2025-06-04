@@ -20,6 +20,7 @@ import { fileURLToPath } from "url";
 import { google } from "googleapis";
 import path from "path";
 import { JWT } from "google-auth-library";
+import getJobHolderNames from "../utils/getJobHolderNames.js";
 
 // Create Ticket \
 export const sendEmail = async (req, res) => {
@@ -532,24 +533,52 @@ export async function getSentReceivedCountsPerThread() {
 export const getAllSendTickets = async (req, res, next) => {
 
    
-
-
-
     const role = req.user?.user?.role?.name;
     const userName =  req.user?.user?.name;
 
+    
   try {
 
-    let filter = { state: { $ne: "complete" } };
+
+    
+
+
+
+
+
+
+
+
+    let filter = { state: { $ne: "complete" }, };
 
     if(role !== 'Admin') {
-      filter.jobHolder = userName;
-    } 
+      let includedUsersArr = [userName];
+
+
+
+      const user = await userModel.findById(req.user.user._id).select("juniors");
+      const juniorsIdsArr = user.juniors;
+      
+        if(juniorsIdsArr && juniorsIdsArr.length > 0) {
+
+          const juniorsNamesArr = await getJobHolderNames(juniorsIdsArr);
+          
+          includedUsersArr = includedUsersArr.concat(juniorsNamesArr)
+        }
+
+        console.log("INCLUDED USERS 🧡🧡❤", includedUsersArr)
+      filter.jobHolder = { $in: includedUsersArr };
+    }
+
+
+
     
     
     const emails = await ticketModel.find(filter).select( "sent received jobStatus clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy lastMessageSentTime createdAt" );
     res.status(200).send({ success: true, message: "All email list!", emails: emails, });
     
+
+     
 
 
     // We can comment this one for better performance,, will see it in future.

@@ -11,6 +11,7 @@ export default function Register({
   getAllUsers,
   userId,
   setUserId,
+  userData
 }) {
   const [isloading, setIsloading] = useState(false);
   const [isShow, setIsShow] = useState(false);
@@ -23,6 +24,10 @@ export default function Register({
   const [address, setAddress] = useState("");
   const [role, setRole] = useState("");
   const [userRoles, setUserRoles] = useState([]);
+
+
+  console.log("USERS ARE>>>💙💚💚💛💛", userData)
+  const [juniors, setJuniors] = useState([])
   console.log("role:", role);
   // Get All Roles
   const getAllRoles = async () => {
@@ -58,6 +63,7 @@ export default function Register({
             emergency_contact,
             address,
             role,
+            juniors
           }
         );
         if (data) {
@@ -107,6 +113,7 @@ export default function Register({
       setAddress(data?.user?.address);
       setEmergency_contact(data?.user?.emergency_contact);
       setRole(data?.user?.role._id);
+      setJuniors(data?.user?.juniors)
     } catch (error) {
       console.log(error);
     }
@@ -263,7 +270,57 @@ export default function Register({
               ))}
             </select>
           </div>
+
+
+          
+
+
+
+
+
+
         </div>
+
+        <h2 className="text-2xl font-semibold text-gray-800 mt-4 text-center">Select Juniors</h2>
+
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3  bg-white rounded-xl  mt-2">
+
+          {userData?.filter(el => el.isActive && userId !== el._id ).map(user => (
+            <div key={user._id} className="">
+              
+              <label
+                
+                htmlFor={`junior-${user._id}`}
+                className="text-sm font-medium text-gray-700 cursor-pointer  flex items-center gap-1 justify-start  bg-gray-50 shadow-sm   rounded-lg hover:bg-gray-100 transition-colors p-2"
+              >
+
+<input
+                id={`junior-${user._id}`}
+                type="checkbox"
+                value={user._id}
+                checked={juniors.includes(user._id)}
+                onChange={e => {
+                  const isChecked = e.target.checked;
+                  setJuniors(prev =>
+                    isChecked
+                      ? [...prev, user._id]
+                      : prev.filter(id => id !== user._id)
+                  );
+                }}
+                className="accent-blue-600 w-4 h-4 rounded border-gray-300 focus:ring-blue-500"
+              />
+
+
+                {user.name}
+              </label>
+            </div>
+          ))}
+
+        </div>
+
+
+
+
 
         {/*  */}
         <div className="flex items-center justify-end">

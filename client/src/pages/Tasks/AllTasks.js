@@ -2603,7 +2603,7 @@ useEffect(()=>{
                 <IoClose className="h-6 w-6 text-white" />
               </span>
 
-              <QuickAccess />
+              <span><QuickAccess /></span>
                
             </div>
 
@@ -2735,7 +2735,7 @@ useEffect(()=>{
           {/*  */}
           <div className="flex flex-col gap-2 mt-3">
             {/* -----------Filters By Projects--------- */}
-            <div className="flex items-center flex-row overflow-x-auto hidden1 gap-2 mt-3">
+            <div className="flex items-center flex-row overflow-x-auto hidden1 gap-2 mt-3 max-lg:hidden">
               <div
                 className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
                   active === "All" &&
@@ -2885,12 +2885,12 @@ useEffect(()=>{
               </span>
             </div>
             {/*  */}
-            <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
+            <hr className="mb-1 bg-gray-300 w-full h-[1px] max-lg:hidden" />
 
             {/* ----------Job_Holder Summery Filters---------- */}
             {showJobHolder && activeBtn === "jobHolder" && (
               <>
-                <div className="w-full  py-2 ">
+                <div className="w-full  py-2 max-lg:hidden ">
                   <div className="flex items-center flex-wrap gap-4">
                     <DragDropContext onDragEnd={handleUserOnDragEnd}>
                       <Droppable droppableId="users" direction="horizontal">
@@ -2913,7 +2913,7 @@ useEffect(()=>{
                                 >
                                   {(provided) => (
                                     <div
-                                      className={`py-1 rounded-tl-md w-[5.8rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                                      className={`py-1 rounded-tl-md w-[5.8rem]   sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
                                         active1 === user.name &&
                                         "  border-b-2 text-orange-600 border-orange-600"
                                       }`}

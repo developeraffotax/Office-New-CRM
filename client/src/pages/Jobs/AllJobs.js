@@ -3953,7 +3953,7 @@ useEffect(()=>{
         {/*  */}
 
         {/* -----------Filters By Deparment--------- */}
-        <div className="flex items-center overflow-x-auto hidden1 gap-2 mt-6">
+        <div className="flex items-center overflow-x-auto hidden1 gap-2 mt-6 max-lg:hidden">
           {departments?.map((dep, i) => {
             getDueAndOverdueCountByDepartment(dep);
             return (
@@ -4131,7 +4131,7 @@ useEffect(()=>{
 
         </div>
         {/*  */}
-        <hr className="mb-1 bg-gray-200 w-full h-[1px]" />
+        <hr className="mb-1 bg-gray-200 w-full h-[1px] max-lg:hidden" />
 
         {/* Update Bulk Jobs */}
         {showEdit && (
@@ -4372,7 +4372,7 @@ useEffect(()=>{
                   ))}
               </div>
             </div> */}
-            <div className="w-full  py-2 ">
+            <div className="w-full  py-2 max-lg:hidden">
               <div className="flex items-center flex-wrap gap-4">
                 <DragDropContext onDragEnd={handleUserOnDragEnd}>
                   <Droppable droppableId="users" direction="horizontal">

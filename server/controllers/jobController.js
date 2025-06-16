@@ -959,12 +959,17 @@ export const updateDates = async (req, res) => {
 
     await clientJob.save();
 
+    const populatedClientJob = await jobsModel.findById(jobId).populate("data");
+
+
+    // console.log("Populated Client Job:", populatedClientJob);
+    // console.log("Non populated Client Job:", clientJob);
 
     // await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Date updated successfully!",
-      clientJob: clientJob,
+      clientJob: populatedClientJob,
     });
   } catch (error) {
     console.log(error);
@@ -1342,11 +1347,13 @@ export const addlabel = async (req, res) => {
 
     await updateJob.save();
 
+    const populatedJob = await jobsModel .findById(jobId).populate("data");
+
     // await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
       message: "Label added!",
-      job: updateJob,
+      job: populatedJob,
     });
   } catch (error) {
     console.log(error);

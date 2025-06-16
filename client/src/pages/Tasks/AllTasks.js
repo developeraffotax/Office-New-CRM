@@ -1178,7 +1178,7 @@ const AllTasks = () => {
           return (
             <div className="w-full flex items-start justify-start gap-1 flex-col "  >
 
-              <div  className="w-full   flex items-center justify-between gap-1 flex-row ">
+              <div  className="w-full   flex items-center justify-between gap-2 flex-row ">
               <div className="w-[90%] h-full ">
               {showEdit ? (
                 <input
@@ -1191,12 +1191,12 @@ const AllTasks = () => {
                 />
               ) : (
                 <div
-                  className="w-full h-full flex items-center justify-start "
+                  className="w-full h-full  text-wrap "
                   onDoubleClick={() => setShowEdit(true)}
                   title={allocateTask}
                 >
                   <p
-                    className="text-[#0078c8] hover:text-[#0053c8] cursor-pointer text-start  "
+                    className="text-[#0078c8] hover:text-[#0053c8] cursor-pointer text-start    "
                     onDoubleClick={() => setShowEdit(true)}
                     onClick={() => {
                       setTaskID(row.original._id);

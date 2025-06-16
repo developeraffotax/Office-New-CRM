@@ -713,7 +713,7 @@ const allColumns = [{
       }));
 
       handleUpdateData(row.original._id, {
-        ...formData,
+         
         companyName: localCompanyName,
       });
 
@@ -729,6 +729,18 @@ const allColumns = [{
             autoFocus
             onChange={(e) => setLocalCompanyName(e.target.value)}
             onBlur={(e) => handleSubmit(e.target.value)}
+
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault(); // optional: prevents form submission if inside a form
+                handleSubmit();
+              }
+              if (e.key === "Escape") {
+                  
+                  setShow(false); 
+              }
+            }}
+
             className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
           />
         ) : (
@@ -802,7 +814,7 @@ const allColumns = [{
       }));
 
       handleUpdateData(row.original._id, {
-        ...formData,
+        
         clientName: localClientName,
       });
 
@@ -823,7 +835,20 @@ const allColumns = [{
             value={localClientName}
             autoFocus
             onChange={(e) => setLocalClientName(e.target.value)}
+             
             onBlur={(e) => handleSubmit(e.target.value)}
+
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault(); // optional: prevents form submission if inside a form
+                handleSubmit();
+              }
+
+               if (e.key === "Escape") {
+                  
+                  setShow(false); 
+              }
+            }}
             className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
           />
         ) : (
@@ -922,7 +947,7 @@ const allColumns = [{
       }));
 
       handleUpdateData(row.original._id, {
-        ...formData,
+         
         jobHolder: selectedValue,
       });
       setShow(false);
@@ -1033,7 +1058,7 @@ const allColumns = [{
       }));
 
       handleUpdateData(row.original._id, {
-        ...formData,
+         
         department: selectedValue,
       });
 
@@ -1132,7 +1157,7 @@ const allColumns = [{
       }));
 
       handleUpdateData(row.original._id, {
-        ...formData,
+         
         source: selectedValue,
       });
 
@@ -1227,7 +1252,7 @@ const allColumns = [{
       }));
 
       handleUpdateData(row.original._id, {
-        ...formData,
+         
         brand: selectedValue,
       });
 
@@ -1319,7 +1344,7 @@ const allColumns = [{
       }));
 
       handleUpdateData(row.original._id, {
-        ...formData,
+         
         value: localValue,
       });
 
@@ -1400,7 +1425,7 @@ const allColumns = [{
       }));
 
       handleUpdateData(row.original._id, {
-        ...formData,
+         
         number: localValue,
       });
 
@@ -1489,7 +1514,7 @@ const allColumns = [{
       }));
 
       handleUpdateData(row.original._id, {
-        ...formData,
+         
         lead_Source: selectedValue,
       });
 
@@ -1747,7 +1772,7 @@ const allColumns = [{
     const handleDateChange = (newDate) => {
       setDate(newDate);
       handleUpdateData(row.original._id, {
-        ...formData,
+         
         followUpDate: newDate,
       });
       setShowStartDate(false);
@@ -2000,7 +2025,7 @@ const allColumns = [{
       }));
 
       handleUpdateData(row.original._id, {
-        ...formData,
+        
         stage: selectedValue,
       });
 
@@ -2140,7 +2165,7 @@ const allColumns = [{
                 yearEnd: date
               }));
               handleUpdateData(row.original._id, {
-                ...formData,
+                 
                 yearEnd: date
               });
 
@@ -2338,7 +2363,7 @@ const allColumns = [{
                 jobDeadline: date
               }));
               handleUpdateData(row.original._id, {
-                ...formData,
+                 
                 jobDeadline: date
               });
 
@@ -2698,7 +2723,7 @@ const allColumns = [{
         Note: localNote,
       }));
       handleUpdateData(row.original._id, {
-        ...formData,
+         
         Note: localNote,
       });
       setShow(false);

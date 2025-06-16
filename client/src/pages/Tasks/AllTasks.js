@@ -137,7 +137,7 @@ const AllTasks = () => {
 
   // console.log("tasksData:", tasksData);
 
-
+  const [showSubtaskId, setShowSubtaskId] = useState("");
  
   const [showActiveTimer, setShowActiveTimer] = useState(false);
 
@@ -788,6 +788,9 @@ const AllTasks = () => {
     if (timerRef.current) {
       timerRef.current.stopTimer();
     }
+
+
+    
   };
 
   // -----------Download in CSV------>
@@ -1090,22 +1093,23 @@ const AllTasks = () => {
         },
         Cell: ({ cell, row }) => {
           const jobholder = cell.getValue();
-
           return (
-            <select
-              value={jobholder || ""}
-              className="w-full h-[2rem] rounded-md border-none  outline-none"
-              onChange={(e) =>
-                updateTaskJLS(row.original?._id, e.target.value, "", "")
-              }
-            >
-              <option value="empty"></option>
-              {users?.map((jobHold, i) => (
-                <option value={jobHold?.name} key={i}>
-                  {jobHold.name}
-                </option>
-              ))}
-            </select>
+            <div className="flex flex-col items-center justify-center h-full">
+              <select
+                value={jobholder || ""}
+                className="w-full h-[2rem] rounded-md border-none outline-none"
+                onChange={(e) =>
+                  updateTaskJLS(row.original?._id, e.target.value, "", "")
+                }
+              >
+                <option value="empty"></option>
+                {users?.map((jobHold, i) => (
+                  <option value={jobHold?.name} key={i}>
+                    {jobHold.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           );
         },
         filterFn: "equals",
@@ -1148,11 +1152,15 @@ const AllTasks = () => {
 
           
           const [showSubtasks, setShowSubtasks] = useState(false);
-          const [showSubtaskId, setShowSubtaskId] = useState("");
+          
 
           const handleShowSubtasks = () => {
              
+            console.log("row.original._id:", row.original._id);
+            console.log("showSubtaskId:", showSubtaskId);
+
             if(showSubtaskId === row.original._id){
+              console.log("hide");
               setShowSubtaskId("");
             }else{
               setShowSubtaskId(row.original._id);
@@ -2014,6 +2022,9 @@ const AllTasks = () => {
                   task={row.original.task}
                   activity={activity}
                   setActivity={setActivity}
+
+                  setShowSubtaskId={setShowSubtaskId}
+                  showSubtaskId={showSubtaskId}
                 />
               </span>
             </div>
@@ -2283,6 +2294,7 @@ const AllTasks = () => {
       totalHours,
       tasksData,
       state,
+      showSubtaskId
     ]
   );
 
@@ -2343,9 +2355,14 @@ const AllTasks = () => {
         padding: ".7rem 0.3rem",
       },
     },
+
+     
+
+
     muiTableBodyCellProps: {
       sx: {
         border: "1px solid rgba(203, 201, 201, 0.5)",
+       
         
         
       },

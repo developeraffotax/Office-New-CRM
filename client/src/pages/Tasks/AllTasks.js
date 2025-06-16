@@ -1178,7 +1178,7 @@ const AllTasks = () => {
           return (
             <div className="w-full flex items-start justify-start gap-1 flex-col "  >
 
-              <div  className="w-full   flex items-center justify-between gap-2 flex-row ">
+              <div  className="w-full   flex items-start justify-between gap-2 flex-row ">
               <div className="w-[90%] h-full ">
               {showEdit ? (
                 <input

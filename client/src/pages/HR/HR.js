@@ -77,7 +77,7 @@ export default function HR() {
 
 
   // const [activeBtn, setActiveBtn] = useState("");
-  const [showJobHolder, setShowJobHolder] = useState(false);
+  const [showJobHolder, setShowJobHolder] = useState(true);
   const [active1, setActive1] = useState("");
 
 

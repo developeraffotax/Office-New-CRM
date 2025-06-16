@@ -64,25 +64,23 @@ export const createLead = async (req, res) => {
 export const updateLead = async (req, res) => {
   try {
     const leadId = req.params.id;
-    const {
-      companyName,
-      clientName,
-      jobHolder,
-      department,
-      source,
-      brand,
-      lead_Source,
-      followUpDate,
-      JobDate,
-      Note,
-      stage,
-      status,
-      value,
-      number,
+    // const { companyName, clientName, jobHolder, department, source, brand, lead_Source, followUpDate, JobDate, Note, stage, status, value, number, yearEnd, jobDeadline } = req.body;
 
-      yearEnd,
-      jobDeadline
-    } = req.body;
+    const updates = req.body;
+
+     const allowedUpdates = ['companyName', 'clientName', 'jobHolder', 'department', 'source', 'brand', 'lead_Source', 'followUpDate', 'JobDate', 'Note', 'stage', 'status', 'value', 'number', 'yearEnd', 'jobDeadline']; // Whitelist of allowed fields
+    const updateKeys = Object.keys(updates);
+
+      // Optional: Validate fields
+    const isValidUpdate = updateKeys.every(key => allowedUpdates.includes(key));
+    if (!isValidUpdate) {
+        return res.status(400).json({ success: false, message: "Invalid fields in update!"});
+    }
+     
+
+    console.log("Updates💚💚", updates);
+
+
 
     const lead = await leadModel.findById(leadId);
 
@@ -95,26 +93,7 @@ export const updateLead = async (req, res) => {
 
     const updataLead = await leadModel.findByIdAndUpdate(
       { _id: leadId },
-      {
-        companyName: companyName ? companyName : lead.companyName,
-        clientName: clientName ? clientName : lead.clientName,
-        jobHolder: jobHolder ? jobHolder : lead.jobHolder,
-        department: department ? department : lead.department,
-        source: source ? source : lead.source,
-        brand: brand ? brand : lead.brand,
-        lead_Source: lead_Source ? lead_Source : lead.lead_Source,
-        followUpDate: followUpDate ? followUpDate : lead.followUpDate,
-        JobDate: JobDate ? JobDate : lead.JobDate,
-        Note: Note ? Note : lead.Note,
-        stage: stage ? stage : lead.stage,
-        status: status ? status : lead.status,
-        value: value || lead.value,
-        number: number || lead.number,
-
-        yearEnd:  yearEnd ? yearEnd : lead.yearEnd,
-        jobDeadline:  jobDeadline ? jobDeadline : lead.jobDeadline,
-       
-      },
+      updates,
       { new: true }
     );
 

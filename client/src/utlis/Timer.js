@@ -34,6 +34,9 @@ export const Timer = forwardRef(
       activity,
       setActivity,
       reload,
+
+      setShowSubtaskId,
+      showSubtaaskId
     },
     ref
   ) => {
@@ -172,6 +175,12 @@ export const Timer = forwardRef(
         );
 
         if (data) {
+
+          if(task){
+
+            setShowSubtaskId(jobId);
+          }
+
           removeTimerStatus();
           localStorage.removeItem("timer_Id");
           setAnyTimerRunning(false);

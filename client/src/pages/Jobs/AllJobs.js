@@ -1049,6 +1049,9 @@ export default function AllJobs() {
         );
         toast.success("Date updated successfully!");
       }
+
+
+      
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message);
@@ -2929,6 +2932,9 @@ export default function AllJobs() {
                   const jobLabel = row.original.data || {};
                   const { name, color, _id } = jobLabel;
 
+
+                  console.log("ROW ORIGINIAL DATA FORM POC💔🧡💛💛", row.original.data)
+
                   const handleLabelChange = (labelName) => {
                     const selectedLabel = dataLable.find(
                       (label) => label._id === labelName
@@ -2975,7 +2981,7 @@ export default function AllJobs() {
                               }`}
                               style={{ background: `${color}` }}
                             >
-                              {name}
+                              {name} 
                             </span>
                           ) : (
                             <span

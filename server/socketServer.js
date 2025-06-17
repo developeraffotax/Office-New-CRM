@@ -1,10 +1,24 @@
 import { Server as SocketIOServer } from "socket.io";
+import { onlineUsers } from "./index.js";
+
+
+
+
 
 export const initSocketServer = (server) => {
   const io = new SocketIOServer(server);
 
   io.on("connection", (socket) => {
     console.log("User connected!");
+
+    // When user logs in or joins the chat, send their MongoDB userId
+    socket.on('userConnected', (userId) => {
+        if (!onlineUsers.has(userId)) {
+          onlineUsers.set(userId, new Set());
+        }
+        onlineUsers.get(userId).add(socket.id);
+        console.log(`🟢 User ${userId} connected with socket ${socket.id}`);
+      });
 
     // Listen "Notification"
     socket.on("notification", (data) => {
@@ -41,11 +55,24 @@ export const initSocketServer = (server) => {
       io.emit("newJob", data);
     });
 
-    // Disconnect
+    // Handle disconnect
     socket.on("disconnect", () => {
-      console.log("User disconnected!");
+      for (const [userId, socketSet] of onlineUsers.entries()) {
+        socketSet.delete(socket.id);
+        if (socketSet.size === 0) {
+          onlineUsers.delete(userId);
+        }
+      }
+      console.log(`🔴 Socket ${socket.id} disconnected`);
     });
+
+
+
   });
+
+
+
+  return io;
 };
 
 export const Skey = "salman@affotax";

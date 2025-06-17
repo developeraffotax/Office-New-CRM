@@ -62,9 +62,12 @@ app.use(cors());
 app.use(morgan("dev"));
 app.use(express.urlencoded({ limit: "20mb", extended: true }));
 
+
+export const onlineUsers = new Map();
+
 // Init Socket Server
 const server = http.createServer(app);
-initSocketServer(server);
+export const io = initSocketServer(server);
 
 // API's
 app.use("/api/v1/user", userRoute);

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { IoSearch } from "react-icons/io5";
 import { IoNotifications } from "react-icons/io5";
@@ -13,7 +13,7 @@ import { CgList } from "react-icons/cg";
 import { FaStopwatch } from "react-icons/fa6";
 import socketIO from "socket.io-client";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+const socketId = socketIO(ENDPOINT, { transports: ["websocket"], });
 
 const formatElapsedTime = (createdAt) => {
   const now = new Date();
@@ -131,8 +131,10 @@ export default function Header({
     // eslint-disable-next-line
   }, [auth.user, socketId]);
 
+
+
   // Get ALl User Notifications
-  const getNotifications = async () => {
+  const getNotifications = useCallback(async () => {
     if (!auth.user) {
       return;
     }
@@ -144,7 +146,9 @@ export default function Header({
     } catch (error) {
       console.log(error);
     }
-  };
+  }, []);
+
+
 
   // Player
   // const notificationPlayer = () => {
@@ -250,6 +254,85 @@ export default function Header({
       console.log(error);
     }
   };
+
+
+
+
+
+
+  //   useEffect(() => {
+       
+  //     if (!auth?.user?.id) return;
+  
+  //     const id = auth.user.id;
+  //     socketId.emit("userConnected", id);
+
+  
+  //     // return () => {
+  //     //   socketId.disconnect();
+  //     // };
+  //   }, [auth]);
+
+
+
+  // useEffect(() => {
+
+  //   if (!socketId) {
+  //     return;
+  //   }
+
+
+  //     socketId.on('newTicketNotification', (data) => {
+  //       console.log("New Ticket Notification:💛🧡💚💚", data);
+  //     getNotifications();
+      
+  //   })
+
+  //   // return () => {
+  //   //   socketId.disconnect();
+  //   // }
+    
+
+  // }, []);
+
+
+    const userId = auth?.user?.id;
+
+
+    useEffect(() => {
+
+      console.log("SocketId initialized:", socketId);
+      console.log("User ID:", userId);
+    // Check if userId and socketId are available
+    if (!userId || !socketId) return;
+
+    // Connect and register
+
+      // Connect only if not already connected
+      if (!socketId.connected) {
+        socketId.connect();
+        console.log("🔌 Socket connected");
+      }
+    socketId.emit("userConnected", userId);
+    console.log("✅ SocketId connected with user:", userId);
+
+    const handleNotification = (data) => {
+      console.log("📥 New Ticket Notification:", data);
+      getNotifications();
+    };
+
+    socketId.on("newTicketNotification", handleNotification);
+
+    // Cleanup on unmount or user change
+    return () => {
+      socketId.off("newTicketNotification", handleNotification);
+      //socketId.disconnect();
+      console.log("🛑 Socket disconnected");
+    };
+  }, [userId, getNotifications]);
+
+
+
 
   return (
     <div className="w-full h-[3.8rem] bg-gray-200">

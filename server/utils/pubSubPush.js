@@ -7,12 +7,11 @@ import ticketModel from "../models/ticketModel.js";
 import userModel from "../models/userModel.js";
 import notificationModel from "../models/notificationModel.js";
 import gmailModel from "../models/gmailModel.js";
-
+import { io, onlineUsers } from "../index.js";
 
 // Get __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 
 // Path for Credentials
 const CREDENTIALS_PATH = path.join(
@@ -35,9 +34,6 @@ const jwtClient = new JWT({
   scopes: SCOPES,
   subject: "info@affotax.com",
 });
-
-
-
 
 export async function gmailWebhookHandler(req, res) {
   const { message } = req.body;
@@ -65,16 +61,13 @@ export async function gmailWebhookHandler(req, res) {
 
     const history = historyResponse.data.history;
 
-  
     if (history && history.length > 0) {
       for (const item of history) {
-        
         if (item.messagesAdded && item.messagesAdded.length > 0) {
           for (const message of item.messagesAdded) {
             const messageId = message.message.id;
-            
-            const threadId = message.message.threadId;
 
+            const threadId = message.message.threadId;
 
             const emailResponse = await gmail.users.messages.get({
               userId: "me",
@@ -82,7 +75,6 @@ export async function gmailWebhookHandler(req, res) {
               format: "metadata", // Request only metadata for efficiency
               metadataHeaders: ["From"], // Specify the headers you need
             });
-
 
             const headers = emailResponse.data.payload.headers;
             const fromHeader = headers.find((header) => header.name === "From");
@@ -128,12 +120,10 @@ export async function gmailWebhookHandler(req, res) {
 
 
 
-
 const findTicketByThreadId = async (threadId) => {
   const ticket = await ticketModel.findOne({ mailThreadId: threadId });
   return ticket;
 };
-
 
 
 
@@ -143,21 +133,38 @@ const findUsersToNotify = async (ticket) => {
   });
   const jobHolder = await userModel.findOne({ name: ticket.jobHolder });
 
-  
-  
   return { lastMessageSentBy, jobHolder };
 };
 
 
 
 
+
+
+
+
+
+
+
+const sendSocketNotification = (notification, userId) => {
+  const toSocketIds = onlineUsers.get(userId?.toString());
+
+  if (toSocketIds && toSocketIds.size > 0) {
+    for (const socketId of toSocketIds) {
+      io.to(socketId).emit("newTicketNotification", {
+        notification,
+      });
+    }
+  }
+}
+
+
+
+
 const createNotification = async (ticket) => {
   const { lastMessageSentBy, jobHolder } = await findUsersToNotify(ticket);
-  // console.log("LAST MESSAGE SENT BY", lastMessageSentBy);
-  // console.log("JOB HOLDER", jobHolder);
 
-  // console.log("jobHolder🧡", jobHolder?._id, jobHolder?.name);
-  // console.log("lastMessageSentBy💛", lastMessageSentBy?._id, lastMessageSentBy?.name);
+  
 
   const notification1 = await notificationModel.create({
     title: "Reply to a ticket received",
@@ -167,6 +174,13 @@ const createNotification = async (ticket) => {
     userId: jobHolder?._id,
   });
 
+  sendSocketNotification(notification1, jobHolder?._id);
+
+
+
+
+  
+
   if(jobHolder?._id?.toString() !== lastMessageSentBy?._id?.toString()) {
     const notification2 = await notificationModel.create({
       title: "Reply to a ticket received",
@@ -175,5 +189,19 @@ const createNotification = async (ticket) => {
       taskId: ticket._id,
       userId: lastMessageSentBy?._id,
     });
+
+    sendSocketNotification(notification2, lastMessageSentBy?._id);
   }
+
+
+  
+
+
+
 };
+
+
+
+
+
+

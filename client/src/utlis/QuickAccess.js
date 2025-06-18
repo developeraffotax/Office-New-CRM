@@ -34,7 +34,7 @@ export default function QuickAccess() {
   return (
     <>
 
-      <button className="w-full   text-2xl" onClick={handleClick}>
+      <button className="   text-2xl" onClick={handleClick}>
         <FiPlusCircle className="hover:text-orange-500 transition-all duration-200 text-gray-600      " />
       </button>
 

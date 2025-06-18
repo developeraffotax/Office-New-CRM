@@ -47,6 +47,7 @@ import Subtasks from "./Subtasks";
 import { ActiveTimer } from "../../utlis/ActiveTimer";
 import { use } from "react";
 import QuickAccess from "../../utlis/QuickAccess";
+import SubtasksForNote from "./SubtasksForNote";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -137,7 +138,8 @@ const AllTasks = () => {
 
   // console.log("tasksData:", tasksData);
 
-  const [showSubtaskId, setShowSubtaskId] = useState("");
+ 
+  const [taskIdForNote, setTaskIdForNote] = useState("");
  
   const [showActiveTimer, setShowActiveTimer] = useState(false);
 
@@ -1152,7 +1154,7 @@ const AllTasks = () => {
 
           
           const [showSubtasks, setShowSubtasks] = useState(false);
-          
+            const [showSubtaskId, setShowSubtaskId] = useState("");
 
           const handleShowSubtasks = () => {
              
@@ -2023,8 +2025,8 @@ const AllTasks = () => {
                   activity={activity}
                   setActivity={setActivity}
 
-                  setShowSubtaskId={setShowSubtaskId}
-                  showSubtaskId={showSubtaskId}
+                  setTaskIdForNote={setTaskIdForNote}
+                  taskIdForNote={taskIdForNote}
                 />
               </span>
             </div>
@@ -2294,7 +2296,7 @@ const AllTasks = () => {
       totalHours,
       tasksData,
       state,
-      showSubtaskId
+      
     ]
   );
 
@@ -3262,8 +3264,8 @@ useEffect(()=>{
                       <IoClose className="text-black cursor-pointer h-6 w-6 " />
                     </span>
                   </div>
-                  <hr className="w-full h-[1px] bg-gray-500 " />
-                  <div className="flex items-start px-4 py-2 ">
+                  <hr className="w-full  h-[1px] bg-gray-500 " />
+                  <div className="flex  justify-start items-center gap-4   px-4 py-2 ">
                     {activity === "Chargeable" ? (
                       <button
                         className={`px-4 h-[2.6rem] min-w-[5rem] flex items-center justify-center  rounded-md cursor-pointer shadow-md  text-white border-none outline-none bg-green-500 hover:bg-green-600`}
@@ -3281,6 +3283,8 @@ useEffect(()=>{
                         Non-Chargeable
                       </button>
                     )}
+
+                    <SubtasksForNote taskId={taskIdForNote} onSelect={(option) => setNote(option)} />
                   </div>
                   <div className=" w-full px-4 py-2 flex-col gap-4">
                     <textarea

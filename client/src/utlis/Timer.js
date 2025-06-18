@@ -35,8 +35,8 @@ export const Timer = forwardRef(
       setActivity,
       reload,
 
-      setShowSubtaskId,
-      showSubtaaskId
+      setTaskIdForNote,
+       
     },
     ref
   ) => {
@@ -176,10 +176,7 @@ export const Timer = forwardRef(
 
         if (data) {
 
-          if(task){
-
-            setShowSubtaskId(jobId);
-          }
+          
 
           removeTimerStatus();
           localStorage.removeItem("timer_Id");
@@ -293,6 +290,15 @@ export const Timer = forwardRef(
       // eslint-disable-next-line
     }, [isRunning, elapsedTime]);
 
+    const stopTimerPopUpHandler = () => {
+      if(task){
+
+            setTaskIdForNote(jobId);
+          }
+      setIsShow(true);
+       
+    }
+
     return (
       <>
         <div className="w-full h-full relative">
@@ -300,7 +306,7 @@ export const Timer = forwardRef(
             <div className="flex space-x-4">
               {isRunning ? (
                 <button
-                  onClick={() => setIsShow(true)}
+                  onClick={stopTimerPopUpHandler}
                   disabled={!isRunning}
                   className="flex items-center justify-center  disabled:cursor-not-allowed"
                 >

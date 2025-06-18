@@ -21,7 +21,9 @@ export default function Clients({
   search,
   userData,
   isClients,
-  salesData
+  salesData,
+
+  featureFilter
 }) {
   const [clients, setClients] = useState([]);
   const [fee, setFee] = useState("");
@@ -34,7 +36,9 @@ export default function Clients({
     totalClients: "0",
   });
 
-  console.log("SALES DATA", salesData)
+  console.log("SALES DATA🧡", salesData);
+  console.log("workFlowData DATA💛", workFlowData);
+  console.log("uniqueClients DATA💚", uniqueClients);
 
   // Visibility Div
   const initialState = [true, true, true, true, true, true, true];

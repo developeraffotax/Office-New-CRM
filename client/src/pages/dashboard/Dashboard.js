@@ -14,6 +14,7 @@ import { GoEye, GoEyeClosed } from "react-icons/go";
 import Loader from "../../utlis/Loader";
 import { FiZoomIn, FiZoomOut, FiRefreshCw } from "react-icons/fi";
 import QuickAccess from "../../utlis/QuickAccess";
+import FilterSelect from "../../utlis/FilterSelect";
 
 export default function Dashboard() {
   // Client
@@ -35,6 +36,26 @@ export default function Dashboard() {
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
   const [isClients, setIsClients] = useState(false);
+
+  const [featureFilterOptions, setFeatureFilterOptions] = useState([
+    "This Month",
+    "This Quarter",
+    "Last 6 Months",
+    "Last 12 Months",
+  ]);
+  const [featureFilter, setFeatureFilter] = useState("");
+
+
+
+   const handleFeatureFilter = (value) => {
+    setFeatureFilter(value);
+    console.log('Selected💜💜💜:', value);
+  };
+
+
+
+
+
 
   const departments = [
     "Bookkeeping",
@@ -261,7 +282,15 @@ export default function Dashboard() {
               <IoClose className="h-6 w-6 text-white" />
             </span>
 
+
+            {/* <FilterSelect options={featureFilterOptions} onSelect={handleFeatureFilter} /> */}
+
+
             <QuickAccess />
+
+
+
+
             {/* Zoom Controls */}
             <div className="absolute hidden top-2 right-2 sm:flex gap-2 bg-white p-2 rounded-lg shadow">
               <button
@@ -448,6 +477,17 @@ export default function Dashboard() {
                     </option>
                   ))}
                 </select>
+
+
+
+
+                  
+
+
+
+
+
+
                 <div
                   className={` w-[2rem] h-[2rem] flex items-center justify-center mt-[.4rem] rounded-md hover:shadow-md mb-1 bg-gray-100 cursor-pointer border border-gray-300 ${
                     isClients && "bg-orange-500 text-white"
@@ -462,6 +502,7 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
+             
             {/* Sales */}
             {selectedTab === "Sales" && (
               <div className="flex gap-4 my-4 ml-5">
@@ -579,7 +620,49 @@ export default function Dashboard() {
                 <option value="overdue ">Overdue </option>
               </select>
             )} */}
+
+
+
+
+
+
+
+
+
+
+
+
+
+          
           </div>
+
+
+
+
+
+
+                
+              
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
           {/*  */}
           <hr className="mb-1 bg-gray-200 w-full h-[1px]" />
@@ -604,6 +687,8 @@ export default function Dashboard() {
                     userData={userData}
                     isClients={isClients}
                     salesData={salesData}
+
+                    featureFilter={featureFilter}
                   />
                 </div>
               ) : selectedTab === "Summary" ? (

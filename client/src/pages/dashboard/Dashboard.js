@@ -725,7 +725,7 @@ const handleFeatureFilter = (value) => {
                     isClients={isClients}
                     salesData={salesData}
 
-                    featureFilter={featureFilter}
+                     
                   />
                 </div>
               ) : selectedTab === "Summary" ? (

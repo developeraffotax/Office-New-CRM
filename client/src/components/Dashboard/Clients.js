@@ -7,6 +7,9 @@ import JobSourceClientPartnerDonutCharts from "./ClientpartnerChart";
 import { FaLongArrowAltUp } from "react-icons/fa";
 import { FaLongArrowAltDown } from "react-icons/fa";
 import { getLastTwelveMonths, getLastTwelveMonthsWithLabels, shiftArrFromThisMonth } from "./utils";
+import { addMonths, format, isAfter, startOfMonth, startOfQuarter, subMonths } from "date-fns";
+import JobCountChart from "./charts/JobCountChart";
+import ClientFeeChart from "./charts/ClientFeeChart";
 
 export default function Clients({
   selectedMonth,
@@ -109,11 +112,41 @@ export default function Clients({
       return matchesDateFilter && matchesSearchFilter;
     });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
     //console.log("Filtered Unique Clients💛🧡❤:", filteredData);
 
     setFilteredUniqueClient(filteredData);
-  }, [selectedMonth, selectedYear, uniqueClients, search]);
+  }, [selectedMonth, selectedYear, uniqueClients, search,]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   //------------ Department wise Total-------->
   // useEffect(() => {
@@ -1074,6 +1107,118 @@ export default function Clients({
     }
   }, [selectChart, months, feeSeries]);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+// // Helper to group fees by month
+// const buildChartSeries = (filteredWorkFlow = []) => {
+//   const groupedData = {};
+
+//   filteredWorkFlow.forEach((item) => {
+//     const date = new Date(item.currentDate);
+//     const month = format(date, "MMM yyyy"); // e.g. "Jun 2025"
+
+//     const fee = parseFloat(item.fee || 0);
+
+//     console.log(item, "WEEL THE ITEM 💕💚💙💙💙")
+
+//     if (!groupedData[month]) {
+//       groupedData[month] = 0;
+//     }
+
+//     groupedData[month] += fee;
+//   });
+
+//   // Sort months chronologically
+//   const sortedKeys = Object.keys(groupedData).sort(
+//     (a, b) => new Date(a) - new Date(b)
+//   );
+
+//   return [
+//     {
+//       name: "Total Fee",
+//       data: sortedKeys.map((key) => groupedData[key]),
+//     },
+//   ];
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <div className="w-full h-full relative">
       {isClients && (
@@ -1275,7 +1420,13 @@ export default function Clients({
                   </h3>
                 </div>
                 {/* (Month Wise) Department Total */}
-                <div className="mt-3" id="apex-jobcount-chart" />
+                {
+                  featureFilter ? (
+                    <JobCountChart featureFilter={featureFilter} selectChart={selectChart} selectedDepartment={selectedDepartment} selectedSource={selectedSource} selectedClient={selectedClient} selectedPartner={selectedPartner} uniqueClients={uniqueClients} setFilteredUniqueClient={setFilteredUniqueClient} />
+                  ) : (
+                    <div id="apex-jobcount-chart" />
+                  )
+                }
               </div>
             )}
             {/* ------------Month Wise Fee------------ */}
@@ -1287,7 +1438,13 @@ export default function Clients({
                   </h3>
                 </div>
                 {/* (Month Wise) Fee Total */}
-                <div className="mt-3" id="apex-fee-chart" />
+                {
+                  featureFilter ? (
+                    <ClientFeeChart featureFilter={featureFilter} selectChart={selectChart} selectedDepartment={selectedDepartment} uniqueClients={uniqueClients} setFilteredUniqueClient={setFilteredUniqueClient} />
+                  ) : (
+                    <div id="apex-fee-chart" />
+                  )
+                }
               </div>
             )}
 

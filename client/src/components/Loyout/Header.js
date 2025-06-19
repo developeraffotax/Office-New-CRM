@@ -189,6 +189,9 @@ export default function Header({
       if (data) {
         getNotifications();
         toast.success("Notification updated!");
+
+        // ✅ Trigger localStorage event so other tabs update too
+      localStorage.setItem("notification-sync", Date.now().toString());
       }
     } catch (error) {
       console.log(error);
@@ -204,11 +207,43 @@ export default function Header({
       if (data) {
         getNotifications();
         toast.success("Notification updated!");
+
+        // ✅ Trigger localStorage event so other tabs update too
+      localStorage.setItem("notification-sync", Date.now().toString());
       }
     } catch (error) {
       console.log(error);
     }
   };
+
+
+
+
+
+
+
+
+
+
+  useEffect(() => {
+  const handleStorageEvent = (event) => {
+    if (event.key === "notification-sync") {
+      console.log("🔁 Notification updated in another tab");
+      getNotifications(); // ✅ refresh in this tab
+    }
+  };
+
+  window.addEventListener("storage", handleStorageEvent);
+
+  return () => {
+    window.removeEventListener("storage", handleStorageEvent);
+  };
+}, [getNotifications]);
+
+
+
+
+
 
   // Handle Close Notification
   useEffect(() => {

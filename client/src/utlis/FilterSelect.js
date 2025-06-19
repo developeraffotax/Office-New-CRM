@@ -7,11 +7,12 @@ const FilterSelect = ({ options = [], onSelect }) => {
   const [selected, setSelected] = useState(null);
 
   const handleSelect = (option) => {
+    console.log('Selected option:', option);
     setSelected(option);
     setIsOpen(false);
     if (onSelect) onSelect(option);
   };
-
+ 
   return (
     <div className="relative inline-block text-left z-[999]">
       {/* Filter Button */}

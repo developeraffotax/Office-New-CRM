@@ -4,9 +4,11 @@ import Loader from "../../utlis/Loader";
 import { style } from "../../utlis/CommonStyle";
 import JobSourcePieChart from "./ClientSourceChart";
 import JobSourceClientPartnerDonutCharts from "./ClientpartnerChart";
-import { FaLongArrowAltUp } from "react-icons/fa";
-import { FaLongArrowAltDown } from "react-icons/fa";
+
 import { getLastTwelveMonths, getLastTwelveMonthsWithLabels, shiftArrFromThisMonth } from "./utils";
+import JobCountChart from "./charts/JobCountChart";
+import ClientFeeChart from "./charts/ClientFeeChart";
+
 
 export default function Clients({
   selectedMonth,
@@ -109,11 +111,41 @@ export default function Clients({
       return matchesDateFilter && matchesSearchFilter;
     });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
     //console.log("Filtered Unique Clients💛🧡❤:", filteredData);
 
     setFilteredUniqueClient(filteredData);
-  }, [selectedMonth, selectedYear, uniqueClients, search]);
+  }, [selectedMonth, selectedYear, uniqueClients, search,]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   //------------ Department wise Total-------->
   // useEffect(() => {
@@ -248,6 +280,7 @@ export default function Clients({
 
       // Calculate lead-wise totals and job counts
       const leadWiseTotals = departmentJobs.reduce((acc, job) => {
+        console.log("job.job.lead", job)
         const lead = job.job.lead;
         if (!acc[lead]) {
           acc[lead] = { totalHours: 0, totalFee: 0, departmentCount: 0 };
@@ -255,9 +288,14 @@ export default function Clients({
         acc[lead].totalHours += parseFloat(job.totalHours || 0);
         acc[lead].totalFee += parseFloat(job.fee || 0);
         acc[lead].departmentCount += 1;
+
+        console.log("acc[lead]", acc[lead])
+        console.log("acc[lead].totalFee", acc[lead].totalFee)
         return acc;
       }, {});
 
+
+      console.log("totalFee🧡🧡🧡", totalFee)
       return {
         department,
         totalHours,
@@ -267,13 +305,14 @@ export default function Clients({
         countPercentageChange: formattedCountChange,
         leadWiseTotals,
       };
+
+
+      
     });
 
-    //console.log("departmentTotals:", departmentTotals);
-
+    
     setClients(departmentTotals);
-
-    // eslint-disable-next-line
+   
   }, [workFlowData]);
 
   // Active Clients Total
@@ -460,6 +499,8 @@ export default function Clients({
   useEffect(() => {
     const departmentFees = clients.map((client) => client.totalFee);
     const departmentLabels = clients.map((client) => client.department);
+
+    console.log("departmentFees:💜💜", departmentFees);
 
 
     const optionsFee = {
@@ -1072,7 +1113,18 @@ export default function Clients({
       feeChart.render();
       return () => feeChart.destroy();
     }
-  }, [selectChart, months, feeSeries]);
+  }, [selectChart, months, feeSeries,]);
+
+
+
+
+
+
+
+
+
+
+
 
   return (
     <div className="w-full h-full relative">
@@ -1275,7 +1327,12 @@ export default function Clients({
                   </h3>
                 </div>
                 {/* (Month Wise) Department Total */}
-                <div className="mt-3" id="apex-jobcount-chart" />
+                
+                {/* {
+                  featureFilter ? <JobCountChart featureFilter={featureFilter} selectChart={selectChart} selectedDepartment={selectedDepartment} selectedSource={selectedSource} selectedClient={selectedClient} selectedPartner={selectedPartner} uniqueClients={uniqueClients} setFilteredUniqueClient={setFilteredUniqueClient} /> : <div id="apex-jobcount-chart" />
+                } */}
+
+                <div id="apex-jobcount-chart" />
               </div>
             )}
             {/* ------------Month Wise Fee------------ */}
@@ -1287,7 +1344,17 @@ export default function Clients({
                   </h3>
                 </div>
                 {/* (Month Wise) Fee Total */}
-                <div className="mt-3" id="apex-fee-chart" />
+                
+
+
+                <div id="apex-fee-chart" />
+
+
+                {/* {
+                  
+                  featureFilter ? <ClientFeeChart featureFilter={featureFilter} selectChart={selectChart} selectedDepartment={selectedDepartment} selectedSource={selectedSource} selectedClient={selectedClient} selectedPartner={selectedPartner} uniqueClients={uniqueClients} setFilteredUniqueClient={setFilteredUniqueClient} /> : <div id="apex-fee-chart" />
+
+                } */}
               </div>
             )}
 

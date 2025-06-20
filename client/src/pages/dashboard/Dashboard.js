@@ -15,6 +15,7 @@ import Loader from "../../utlis/Loader";
 import { FiZoomIn, FiZoomOut, FiRefreshCw } from "react-icons/fi";
 import QuickAccess from "../../utlis/QuickAccess";
 import FilterSelect from "../../utlis/FilterSelect";
+import { subMonths, startOfMonth, startOfQuarter, isAfter } from "date-fns";
 
 export default function Dashboard() {
   // Client
@@ -23,7 +24,7 @@ export default function Dashboard() {
   const [inactiveClient, setInactiveClient] = useState(0);
   const [loading, setLoading] = useState(false);
   //
-  const [selectedTab, setSelectedTab] = useState("Summary");
+  const [selectedTab, setSelectedTab] = useState("Clients");
   const [selectedMonth, setSelectedMonth] = useState("");
   // const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedYear, setSelectedYear] = useState("");
@@ -47,10 +48,46 @@ export default function Dashboard() {
 
 
 
-   const handleFeatureFilter = (value) => {
-    setFeatureFilter(value);
-    console.log('Selected💜💜💜:', value);
-  };
+
+const handleFeatureFilter = (value) => {
+  setFeatureFilter(value);
+  console.log("Selected💜💜💜:", value);
+
+  // const now = new Date();
+
+  // let filteredData = [];
+
+  // switch (value) {
+  //   case "This Month":
+  //     filteredData = uniqueClients.filter((item) =>
+  //       isAfter(new Date(item.currentDate), startOfMonth(now))
+  //     );
+  //     break;
+
+  //   case "This Quarter":
+  //     filteredData = uniqueClients.filter((item) =>
+  //       isAfter(new Date(item.currentDate), startOfQuarter(now))
+  //     );
+  //     break;
+
+  //   case "Last 6 Months":
+  //     filteredData = uniqueClients.filter((item) =>
+  //       isAfter(new Date(item.currentDate), subMonths(now, 6))
+  //     );
+  //     break;
+
+  //   case "Last 12 Months":
+  //     filteredData = uniqueClients.filter((item) =>
+  //       isAfter(new Date(item.currentDate), subMonths(now, 12))
+  //     );
+  //     break;
+
+  //   default:
+  //     filteredData = uniqueClients;
+  // }
+
+  // setUniqueClients(filteredData);
+};
 
 
 

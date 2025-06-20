@@ -300,6 +300,8 @@ export const updateFee = async (req, res) => {
       });
     }
 
+      console.log("Updating fee for client ID:", clientId);
+      console.log("New fee value:", fee);
 
     // Fetch the job first to get the old fee
     const clientJobBeforeUpdate = await jobsModel.findById(clientId);

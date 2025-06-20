@@ -6,6 +6,8 @@ import JobSourcePieChart from "./ClientSourceChart";
 import JobSourceClientPartnerDonutCharts from "./ClientpartnerChart";
 
 import { getLastTwelveMonths, getLastTwelveMonthsWithLabels, shiftArrFromThisMonth } from "./utils";
+import JobCountChart from "./charts/JobCountChart";
+import ClientFeeChart from "./charts/ClientFeeChart";
 
 
 export default function Clients({
@@ -278,6 +280,7 @@ export default function Clients({
 
       // Calculate lead-wise totals and job counts
       const leadWiseTotals = departmentJobs.reduce((acc, job) => {
+        console.log("job.job.lead", job)
         const lead = job.job.lead;
         if (!acc[lead]) {
           acc[lead] = { totalHours: 0, totalFee: 0, departmentCount: 0 };
@@ -285,9 +288,14 @@ export default function Clients({
         acc[lead].totalHours += parseFloat(job.totalHours || 0);
         acc[lead].totalFee += parseFloat(job.fee || 0);
         acc[lead].departmentCount += 1;
+
+        console.log("acc[lead]", acc[lead])
+        console.log("acc[lead].totalFee", acc[lead].totalFee)
         return acc;
       }, {});
 
+
+      console.log("totalFee🧡🧡🧡", totalFee)
       return {
         department,
         totalHours,
@@ -297,13 +305,14 @@ export default function Clients({
         countPercentageChange: formattedCountChange,
         leadWiseTotals,
       };
+
+
+      
     });
 
-    //console.log("departmentTotals:", departmentTotals);
-
+    
     setClients(departmentTotals);
-
-    // eslint-disable-next-line
+   
   }, [workFlowData]);
 
   // Active Clients Total
@@ -490,6 +499,8 @@ export default function Clients({
   useEffect(() => {
     const departmentFees = clients.map((client) => client.totalFee);
     const departmentLabels = clients.map((client) => client.department);
+
+    console.log("departmentFees:💜💜", departmentFees);
 
 
     const optionsFee = {
@@ -1102,7 +1113,7 @@ export default function Clients({
       feeChart.render();
       return () => feeChart.destroy();
     }
-  }, [selectChart, months, feeSeries]);
+  }, [selectChart, months, feeSeries,]);
 
 
 
@@ -1316,6 +1327,11 @@ export default function Clients({
                   </h3>
                 </div>
                 {/* (Month Wise) Department Total */}
+                
+                {/* {
+                  featureFilter ? <JobCountChart featureFilter={featureFilter} selectChart={selectChart} selectedDepartment={selectedDepartment} selectedSource={selectedSource} selectedClient={selectedClient} selectedPartner={selectedPartner} uniqueClients={uniqueClients} setFilteredUniqueClient={setFilteredUniqueClient} /> : <div id="apex-jobcount-chart" />
+                } */}
+
                 <div id="apex-jobcount-chart" />
               </div>
             )}
@@ -1328,7 +1344,17 @@ export default function Clients({
                   </h3>
                 </div>
                 {/* (Month Wise) Fee Total */}
+                
+
+
                 <div id="apex-fee-chart" />
+
+
+                {/* {
+                  
+                  featureFilter ? <ClientFeeChart featureFilter={featureFilter} selectChart={selectChart} selectedDepartment={selectedDepartment} selectedSource={selectedSource} selectedClient={selectedClient} selectedPartner={selectedPartner} uniqueClients={uniqueClients} setFilteredUniqueClient={setFilteredUniqueClient} /> : <div id="apex-fee-chart" />
+
+                } */}
               </div>
             )}
 

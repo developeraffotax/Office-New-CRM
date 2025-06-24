@@ -48,6 +48,7 @@ import { ActiveTimer } from "../../utlis/ActiveTimer";
 import { use } from "react";
 import QuickAccess from "../../utlis/QuickAccess";
 import SubtasksForNote from "./SubtasksForNote";
+import { useTimer } from "../../context/timerContext";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -94,8 +95,30 @@ const AllTasks = () => {
   const [play, setPlay] = useState(false);
   const timerRef = useRef();
   const [isShow, setIsShow] = useState(false);
+
+  // const {timerRef, handleStopTimer} = useTimer();
+
   const location = useLocation();
   const currentPath = location.pathname;
+
+ 
+  // const queryParams = new URLSearchParams(location.search);
+
+  // const taskIdQueryParam = queryParams.get('taskId');
+ 
+  // useEffect(() => {
+
+  //   if (taskIdQueryParam) {
+  //     //setTaskId(taskIdQueryParam);
+  //     setTaskIdForNote(taskIdQueryParam);
+  //     setIsShow(true);
+  //   } else {
+  //     setIsShow(false);
+  //   }
+
+  // }, [taskIdQueryParam]);
+
+
   const [fLoading, setFLoading] = useState(false);
   // Filters
   const [showJobHolder, setShowJobHolder] = useState(false);
@@ -785,7 +808,7 @@ const AllTasks = () => {
     }
   };
 
-  // ---------Stop Timer ----------->
+ // ---------Stop Timer ----------->
   const handleStopTimer = () => {
     if (timerRef.current) {
       timerRef.current.stopTimer();
@@ -2024,6 +2047,8 @@ const AllTasks = () => {
                   task={row.original.task}
                   activity={activity}
                   setActivity={setActivity}
+
+                  allocatedTime={row.original.hours}
 
                   setTaskIdForNote={setTaskIdForNote}
                   taskIdForNote={taskIdForNote}

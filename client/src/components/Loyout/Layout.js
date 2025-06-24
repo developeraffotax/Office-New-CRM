@@ -11,6 +11,7 @@ import Draggable from "react-draggable";
 import socketIO from "socket.io-client";
 import toast from "react-hot-toast";
 import { CgList } from "react-icons/cg";
+import OverdueModal from "../../utlis/OverdueModal";
 
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
@@ -422,6 +423,8 @@ useEffect(() => {
   };
 
   return (
+<>
+    <OverdueModal />
     <div className="relative w-full h-[111vh] overflow-hidden flex flex-col ">
       <Header
         reminderData={reminderData}
@@ -497,5 +500,6 @@ useEffect(() => {
         </Draggable>
       )}
     </div>
+    </>
   );
 }

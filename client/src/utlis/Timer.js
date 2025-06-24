@@ -11,6 +11,7 @@ import { IoStopCircle } from "react-icons/io5";
 import { useAuth } from "../context/authContext";
 import toast from "react-hot-toast";
 import socketIO from "socket.io-client";
+import { useTimer } from "../context/timerContext";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -35,6 +36,7 @@ export const Timer = forwardRef(
       setActivity,
       reload,
 
+      allocatedTime,
       setTaskIdForNote,
        
     },
@@ -48,6 +50,9 @@ export const Timer = forwardRef(
     const [totalTime, setTotalTime] = useState(null);
     const isInitialMount = useRef(true);
     const [runningId, setRunningId] = useState("");
+
+    console.log("Timer Component Rendered", allocatedTime);
+    const {startCountdown,  stopCountdown, registerStopTimer, unregisterStopTimer} = useTimer()
 
     useEffect(() => {
       if (!clientId || !jobId) {
@@ -102,6 +107,8 @@ export const Timer = forwardRef(
         }, 1000);
       }
 
+      
+
       return () => clearInterval(intervalId);
     }, [isRunning]);
 
@@ -141,6 +148,9 @@ export const Timer = forwardRef(
 
         localStorage.setItem('timer_in', `${task ? '/tasks' : '/job-planning'}`);
 
+        startCountdown(allocatedTime, jobId, task, response.data.timer._id);
+        
+
         addTimerTaskStatus(response.data.timer._id);
         setIsRunning(true);
         setStartTime(new Date());
@@ -177,7 +187,8 @@ export const Timer = forwardRef(
         if (data) {
 
           
-
+          stopCountdown();
+          
           removeTimerStatus();
           localStorage.removeItem("timer_Id");
           setAnyTimerRunning(false);
@@ -202,6 +213,17 @@ export const Timer = forwardRef(
         toast.success(error.response?.data?.message);
       }
     };
+
+
+
+
+
+
+
+ 
+
+
+
 
     // ------Automatically Stop Timer------>
     // useEffect(() => {
@@ -240,6 +262,8 @@ export const Timer = forwardRef(
     useImperativeHandle(ref, () => ({
       stopTimer,
     }));
+
+     
 
     // -----------Timer Status--------->
     const addTimerTaskStatus = async (tid) => {

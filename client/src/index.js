@@ -4,11 +4,13 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { AuthProvider } from "./context/authContext";
+import { TimerProvider } from "./context/timerContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <AuthProvider>
-    <App />
+    <TimerProvider><App /></TimerProvider>
+    
   </AuthProvider>
 );
 

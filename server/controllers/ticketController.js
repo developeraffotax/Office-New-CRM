@@ -1353,3 +1353,109 @@ export const getDashboardTickets = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Update Bulk Tickets
+ 
+export const updateBulkTickets = async (req, res) => {
+  try {
+    const {
+      rowSelection,
+      updates  // object which contains all the updates values 
+      
+    } = req.body;
+
+    console.log("Updates",updates)
+    console.log("rowSelection",rowSelection)
+    if (
+      !rowSelection ||
+      !Array.isArray(rowSelection) ||
+      rowSelection.length === 0
+    ) {
+      return res.status(400).send({
+        success: false,
+        message: "No jobs selected for update.",
+      });
+    }
+
+
+ 
+
+    let updateData = {};
+
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value) {
+        updateData[key] = value;
+      }
+    });
+
+    const updatedTickets = await ticketModel.updateMany(
+      {
+        _id: { $in: rowSelection },
+      },
+      { $set: updateData },
+       
+    );
+
+ 
+
+    // Check if any leads were updated
+    if (updatedTickets.modifiedCount === 0) {
+      return res.status(404).send({
+        success: false,
+        message: "No leads were updated.",
+      });
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Tickets updated successfully!",
+      updatedTickets,
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in update bulk tickets!",
+      error: error,
+    });
+  }
+};

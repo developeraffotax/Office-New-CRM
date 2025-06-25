@@ -14,7 +14,7 @@ import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useAuth } from "../../context/authContext";
-import { MdCheckCircle, MdInsertComment } from "react-icons/md";
+import { MdCheckCircle, MdInsertComment, MdOutlineModeEdit } from "react-icons/md";
 import { AiOutlineEdit, AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -22,6 +22,19 @@ import JobCommentModal from "../Jobs/JobCommentModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { Box } from "@mui/material";
 import QuickAccess from "../../utlis/QuickAccess";
+import { TbLoader2 } from "react-icons/tb";
+
+
+const updates_object_init = {
+       
+      jobHolder: '',
+      jobStatus: '',
+      jobDate: '',
+     
+}
+
+
+
 
 const jobStatusOptions = [
   "Quote",
@@ -61,6 +74,76 @@ export default function Tickets() {
     pageIndex: 0,
     pageSize: 50, // ✅ default page size
   });
+
+
+
+
+
+
+
+
+
+
+
+  
+    
+    // BULK EDITING
+    const [rowSelection, setRowSelection] = useState({});
+    
+    const [showEdit, setShowEdit] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+  
+    const [updates, setUpdates] = useState(updates_object_init)
+  
+  
+    const handle_on_change_update = (e) => {
+      setUpdates(prev => {
+        return {
+          ...prev,
+          [e.target.name]: e.target.value
+        }
+      })
+    }
+    
+    // -------Update Bulk Leads------------->
+  
+    const updateBulkLeads = async (e) => {
+      e.preventDefault();
+      setIsUpdating(true);
+  
+      console.log("Row Selection",rowSelection);
+      console.log("Updates",updates)
+  
+      try {
+        const { data } = await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/bulk/tickets`,
+          {
+            rowSelection: Object.keys(rowSelection).filter(
+              (id) => rowSelection[id] === true
+            ),
+            updates
+          }
+        );
+  
+        if (data) {
+          setUpdates(updates_object_init);
+          toast.success("Bulk Tickets Updated💚");
+          getAllEmails()
+        }
+      } catch (error) {
+         
+        console.log(error?.response?.data?.message);
+        toast.error("Something went wrong!");
+      } finally {
+        setIsUpdating(false);
+      }
+    };
+  
+  
+
+
+
+
 
   // Get Auth Access
   useEffect(() => {
@@ -1686,6 +1769,9 @@ export default function Tickets() {
     // table.resetColumnFilters();
   };
 
+
+  console.log(rowSelection, "THE ROW SELECTION")
+
   const table = useMaterialReactTable({
     columns,
     data: emailData || [],
@@ -1708,14 +1794,22 @@ export default function Tickets() {
     //   density: "compact",
     // },
 
+
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
+     
+    enableBatchRowSelection: true,
+
+    
     state: {
       pagination, // ✅ Controlled pagination
       density: "compact",
+      rowSelection
     },
     onPaginationChange: setPagination, // ✅ Hook for page changes
 
     autoResetPageIndex: false,
-
+    getRowId: (row) => row._id,
     muiTableHeadCellProps: {
       style: {
         fontWeight: "600",
@@ -1876,7 +1970,9 @@ export default function Tickets() {
             </div>
 
             {auth?.user?.role?.name === "Admin" && (
-              <span
+               <div className="flex justify-center items-center  gap-2">
+
+                <span
                 className={` p-1 rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
                   showJobHolder && "bg-orange-500 text-white"
                 }`}
@@ -1887,6 +1983,26 @@ export default function Tickets() {
               >
                 <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
               </span>
+
+
+                 
+                
+                               
+                                  <span
+                                      className={` p-1 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${
+                                          showEdit && "bg-orange-500 text-white"
+                                            }`}
+                                      onClick={() => {
+                                        setShowEdit(!showEdit);
+                                      }}
+                                      title="Edit Multiple Jobs"
+                                  >
+                                    <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
+                                  </span>
+                               
+
+                              </div>
+                
             )}
           </div>
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-2 " />
@@ -1957,6 +2073,118 @@ export default function Tickets() {
                   </DragDropContext>
                 </div>
               </div>
+
+
+
+
+
+
+
+
+
+                        {/* Update Bulk Jobs */}
+                      {showEdit && (
+                        <div className="w-full  p-4 ">
+                          <form
+                            onSubmit={updateBulkLeads}
+                            className="w-full grid grid-cols-12 gap-4 max-2xl:grid-cols-8  "
+                          >
+               
+                           
+                            
+                           
+              
+                       
+                              <div className="w-full">
+                                  <select
+                                    name="jobHolder"
+                                    value={updates.jobHolder}
+                                    
+                                    onChange={handle_on_change_update}
+                                    className={`${style.input} w-full`}
+                                     
+                                  >
+                                    <option value="empty">Job Holder</option>
+                                    {users.map((jobHolder, i) => (
+                                      <option value={jobHolder.name} key={i}>
+                                        {jobHolder.name}
+                                      </option>
+                                    ))}
+                                  </select>
+                              </div>
+              
+                                
+
+
+
+                                        <div className="">
+                                  <select
+                                    name="jobStatus"
+                                    value={updates.jobStatus}
+                                    
+                                    onChange={handle_on_change_update}
+                                    className={`${style.input} w-full`}
+                                     
+                                  >
+                                    <option value="empty">Job Status</option>
+                                    {jobStatusOptions.map((el, i) => (
+                                      <option value={el} key={i}>
+                                        {el}
+                                      </option>
+                                    ))}
+                                  </select>
+                            </div>
+              
+               
+              
+              
+                            <div className="inputBox" >
+                              <input
+                                type="date"
+                                name="jobDate"
+                                value={updates.jobDate}
+                                onChange={handle_on_change_update}
+                                className={`${style.input} w-full `}
+                              />
+                              <span>Job Date</span>
+                            </div>
+                           
+              
+              
+                      
+              
+              
+              
+              
+                          
+                              
+               
+              
+                           
+              
+                            <div className="w-full flex items-center justify-end  ">
+                              <button
+                                className={`${style.button1} text-[15px] w-full `}
+                                type="submit"
+                                disabled={isUpdating}
+                                style={{ padding: ".5rem  " }}
+                              >
+                                {isUpdating ? (
+                                  <TbLoader2 className="h-5 w-5 animate-spin text-white" />
+                                ) : (
+                                  <span>Save</span>
+                                )}
+                              </button>
+                            </div>
+                          </form>
+                          <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
+                        </div>
+                      )}
+
+
+
+
+
               <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
             </>
           )}

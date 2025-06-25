@@ -86,6 +86,12 @@ const OverdueModal = () => {
 
 
 
+useEffect(() => {
+  if (showModal) {
+    const audio = new Audio("/beep.mp3"); // if you have it in public folder
+    audio.play().catch((err) => console.log("Audio play failed:", err));
+  }
+}, [showModal]);
 
 
   if (!showModal) return null;
@@ -94,27 +100,34 @@ const OverdueModal = () => {
 
   return (
 <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-60 z-50">
-  <div className="bg-white p-6 rounded-xl shadow-lg text-center space-y-4 max-w-md w-full">
-    <h2 className="text-2xl font-semibold text-red-600">⏰ Time's Up!</h2>
+  <div className="bg-white p-8 rounded-xl shadow-lg text-center space-y-4 max-w-lg w-full">
+    <h2 className="text-2xl font-semibold text-red-600 animate-bounce">⏰ Time's Up!</h2>
     <p>Your task has exceeded its allocated time.</p>
     <p className="text-lg font-medium">Task: {task}</p>
 
-    <div className="flex flex-wrap justify-center gap-4">
-      <button
-        onClick={() => snooze(5)}
-        className="bg-yellow-400 px-4 py-2 rounded hover:bg-yellow-500"
-      >
-        Snooze 5 min
-      </button>
-      <button
-        onClick={() => snooze(1)}
-        className="bg-yellow-400 px-4 py-2 rounded hover:bg-yellow-500"
-      >
-        Snooze 1 min
-      </button>
+    <div className="w-full grid grid-cols-3  justify-center gap-4">
+
+      {[2, 5, 10, 20, 60].map((min) => (
+    <button
+      key={min}
+      onClick={() => snooze(min)}
+      className="bg-gradient-to-br from-yellow-300 to-yellow-400 text-gray-800 text-sm font-semibold px-4 py-1.5 rounded-full shadow-md hover:shadow-lg hover:from-yellow-400 hover:to-yellow-500 transition-all duration-200"
+    >
+      {min === 60 ? "Snooze 1 hr" : `Snooze ${min} min`}
+    </button>
+  ))}
+
+      {/* <button onClick={() => snooze(2)} className="bg-yellow-400 px-4 py-2 rounded hover:bg-yellow-500" > Snooze 2 min </button>
+      <button onClick={() => snooze(5)} className="bg-yellow-400 px-4 py-2 rounded hover:bg-yellow-500" > Snooze 5 min </button>
+      <button onClick={() => snooze(10)} className="bg-yellow-400 px-4 py-2 rounded hover:bg-yellow-500" > Snooze 10 min </button>
+      <button onClick={() => snooze(20)} className="bg-yellow-400 px-4 py-2 rounded hover:bg-yellow-500" > Snooze 20 min </button>
+      <button onClick={() => snooze(60)} className="bg-yellow-400 px-4 py-2 rounded hover:bg-yellow-500" > Snooze 1 hr </button> */}
+      
+      
+
       <button
         onClick={() => setIsNote(true)}
-        className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+        className="bg-gradient-to-br from-red-400 to-red-500 text-gray-100 text-sm font-semibold px-4 py-1.5 rounded-full shadow-md hover:shadow-lg hover:from-red-500 hover:to-red-600 transition-all duration-200"
       >
         Stop Timer
       </button>

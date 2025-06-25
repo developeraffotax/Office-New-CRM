@@ -2392,6 +2392,8 @@ export default function AllJobs() {
                     companyName={row.original.companyName}
                     activity={activity}
                     setActivity={setActivity}
+
+                    
                   />
                 </span>
               </div>

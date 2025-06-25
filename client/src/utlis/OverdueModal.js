@@ -107,7 +107,7 @@ useEffect(() => {
 
     <div className="w-full grid grid-cols-3  justify-center gap-4">
 
-      {[2, 5, 10, 20, 60].map((min) => (
+      {[1, 5, 10, 20, 60].map((min) => (
     <button
       key={min}
       onClick={() => snooze(min)}

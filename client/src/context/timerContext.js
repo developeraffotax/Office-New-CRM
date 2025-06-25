@@ -2,6 +2,9 @@ import React, { createContext, useState, useContext, useEffect, useRef } from "r
 
 const TimerContext = createContext();
 
+const channel = new BroadcastChannel("task-timer-channel"); // ✅
+
+
 export const TimerProvider = ({ children }) => {
   const [showModal, setShowModal] = useState(false);
   const [task, setTask] = useState("");
@@ -61,6 +64,9 @@ export const TimerProvider = ({ children }) => {
     localStorage.removeItem(`task-timer`);
     clearTimeout(timeoutRef.current); // Clear existing timeout
     setShowModal(false);
+
+     // 🔁 Inform all other tabs to stop their timers too
+    channel.postMessage({ type: "STOP_TIMER" });
     
   };
 
@@ -111,7 +117,7 @@ const scheduleTimeout = (endTime) => {
   timeoutRef.current = setTimeout(() => {
     setShowModal(true);
      console.log("Task is overdue!💛💛💛💛💛💛💛💛💛💛💛");
-    
+    channel.postMessage({ type: "SHOW_MODAL" }); // ✅ broadcast
   }, duration);
 };
 
@@ -124,16 +130,21 @@ const snooze = (SNOOZE_TIME) => {
     setTaskId(saved.taskId);
     setTimerId(saved.timerId);
 
-  let newEndTime = new Date(new Date(saved.endTime).getTime() + SNOOZE_TIME * 60000); // Convert minutes to milliseconds
+  // let newEndTime = new Date(new Date(saved.endTime).getTime() + SNOOZE_TIME * 60000); // Convert minutes to milliseconds
 
-  if(newEndTime.getTime() < Date.now()) {
-    newEndTime = new Date(Date.now() + SNOOZE_TIME * 60000); // Ensure snooze time is in the future
-  }
+  // if(newEndTime.getTime() < Date.now()) {
+  //   newEndTime = new Date(Date.now() + SNOOZE_TIME * 60000);  
+  // }
 
+
+  const newEndTime = new Date(Date.now() + SNOOZE_TIME * 60000);  
 
   saved.endTime = newEndTime.toISOString();
 
   localStorage.setItem(`task-timer`, JSON.stringify(saved));
+
+  channel.postMessage({ type: "SNOOZE", });
+  //channel.postMessage({ type: "SNOOZE", newEndTime: newEndTime.toISOString() });
 
   setShowModal(false);
  
@@ -174,8 +185,53 @@ const startCountdown = (ALLOCATED_TIME, taskId, task, timerId) => {
       })
     );
 
+
+     channel.postMessage({ type: "START_TIMER", task, timerId });
+
     scheduleTimeout(endTime);
   };
+
+
+
+
+
+
+  useEffect(() => {
+  channel.onmessage = (event) => {
+    const { type,task, timerId } = event.data;
+
+    if (type === "SHOW_MODAL") {
+
+      
+      setShowModal(true);
+    }
+
+    if (type === "SNOOZE" ) {
+      //const snoozedEndTime = new Date(newEndTime);
+      //clearTimeout(timeoutRef.current);
+      //scheduleTimeout(snoozedEndTime);
+      setShowModal(false);
+    }
+
+    if (type === "STOP_TIMER") {
+      console.log("[Broadcast] STOP_TIMER received");
+      clearTimeout(timeoutRef.current);
+      setShowModal(false);
+      localStorage.removeItem("task-timer"); // optional: keep tabs in sync
+    }
+
+    if(type === "START_TIMER") {
+      setTask(task)
+      setTimerId(timerId)
+    }
+
+
+  };
+
+  return () => channel.close(); // Cleanup on unmount
+}, []);
+
+
 
   return (
     <TimerContext.Provider value={{ showModal, snooze, startCountdown, setShowModal, task, taskId, timerId, stopCountdown,  }}>

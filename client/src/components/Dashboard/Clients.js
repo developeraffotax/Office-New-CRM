@@ -401,6 +401,8 @@ export default function Clients({
       
     })
 
+    console.log("filteredLeads💙💙💙", filteredLeads)
+
     // Count how many leads are in each source
     const leadSourceCounts = lead_source_labels.map(label => {
       // if (label === "Other") {
@@ -408,6 +410,34 @@ export default function Clients({
       // }
       return filteredLeads?.filter(lead => lead.lead_Source === label).length || 0;
     });
+
+    const leadSourceCounts2 = lead_source_labels.map(label => {
+
+      let countObject = {}
+      
+      const count = filteredLeads?.filter(lead => lead.lead_Source === label).length || 0;
+
+      countObject.label = label;
+      countObject.count = count;  
+       
+
+      return countObject;
+
+    });
+
+
+        set_filtered_leads(leadSourceCounts2);
+
+    console.log("leadSourceCounts2💙💙💙", leadSourceCounts2)
+
+
+
+    // const newleadSourceCounts = lead_source_labels.map((label) => {
+      
+    //   let countObject = filteredLeads?.reduce((acc, lead) => {
+    //     if (lead.lead_Source === label) {
+    //       acc.count += 1;
+    //     }
 
  
     console.log("leadSourceCounts💚💚💚", leadSourceCounts)
@@ -1364,14 +1394,161 @@ export default function Clients({
 
 
             {/* ------------------Lead / Lead Source Graph----------------- */}
-             { visibility[2] && (
+             {/* { visibility[2] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <h3 className="text-lg font-semibold text-center">
                   Lead Source Chart
                 </h3>
                 <div id="lead-source-chart" />
               </div>
-            )}
+            )} */}
+
+
+
+
+
+            
+        {/* 7----------Conversion Lead in Client in Proposal--------- */}
+        {visibility[2] && (
+          <div className=" w-full flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 shadow-lg hover:shadow-2xl  ">
+            <div className="flex flex-col gap-4 w-full">
+              <div className=" w-full flex items-center gap-2 p-2 rounded-md border shadow-md bg-white">
+                <h3 className="font-semibold text-xl w-[24%]">Source</h3>
+                <h3 className="font-semibold text-xl text-start w-full">
+                  Leads
+                </h3>
+              </div>
+
+              <div className=" w-full flex flex-col gap-2">
+                {filtered_leads?.map((lead) => (
+                  <div
+                    key={lead.label}
+                    className="w-full flex items-center gap-2 px-2 py-1 rounded-md border shadow-md bg-white/60 transition-all duration-300 ease-in-out transform hover:scale-[1.04]"
+                  >
+                    <h3 className="font-medium text-lg w-[24%]">
+                      {lead.label}
+                    </h3>
+                    <div className="bg-white  border overflow-hidden rounded-[2rem]  shadow-md drop-shadow-md w-full h-full">
+                      <div
+                        style={{
+                          width: `${lead?.count}%`,
+                          background:
+                            lead?.count >= 100
+                              ? "linear-gradient(90deg, #00E396, #00C853)"
+                              : "linear-gradient(90deg, #FF4560, #FF8A65)",
+                          transition: "width 0.4s ease-in-out",
+                        }}
+                        className={`h-[1.6rem] flex items-center justify-start  ${
+                          lead?.count < 15 ? "text-black" : "text-white"
+                        } font-semibold rounded-[2rem] shadow-md`}
+                      >
+                        <span
+                          className={`px-2 text-xs ${
+                            lead?.count < 3 ? "ml-3" : "ml-0"
+                          }`}
+                        >
+                          {lead?.count}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1389,7 +1566,7 @@ export default function Clients({
             {/* ------------------Source Analysis----------------- */}
             {
               visibility[3] || visibility[4] ? (
-                <div className="w-full flex justify-start items-center gap-2  shadow-md rounded-md cursor-pointer border ">
+                <div className="w-full flex justify-start items-start gap-2  rounded-md cursor-pointer   ">
                   {visibility[3] && (
               <div className="w-[50%] shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <JobSourcePieChart
@@ -1420,8 +1597,21 @@ export default function Clients({
 
 
 
-              {/* ------------------Fee Analysis----------------- */}
+            
+
+            {/*  -------------Jobs Analysis----------- */}
             {visibility[5] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <h3 className="text-lg font-semibold text-center">
+                  Department-wise Total Count
+                </h3>
+                <div id="department-count-chart" />
+              </div>
+            )}
+
+
+              {/* ------------------Fee Analysis----------------- */}
+            {visibility[6] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <h3 className="text-lg font-semibold text-center">
                   Department-wise Fee Count
@@ -1430,15 +1620,7 @@ export default function Clients({
               </div>
             )}
 
-            {/*  -------------Jobs Analysis----------- */}
-            {visibility[6] && (
-              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                <h3 className="text-lg font-semibold text-center">
-                  Department-wise Total Count
-                </h3>
-                <div id="department-count-chart" />
-              </div>
-            )}
+
 
 
 

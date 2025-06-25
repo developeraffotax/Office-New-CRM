@@ -154,6 +154,9 @@ const startCountdown = (ALLOCATED_TIME, taskId, task, timerId) => {
 
 
     console.log("Starting countdown for task:", taskId, ALLOCATED_TIME);
+
+
+    
     const startTime = new Date();
     const endTime = new Date(startTime.getTime() + Number(ALLOCATED_TIME) * 60 * 60000); // Convert hours to milliseconds
 

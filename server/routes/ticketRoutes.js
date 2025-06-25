@@ -1,5 +1,5 @@
 import express from "express";
-import { requiredSignIn } from "../middlewares/authMiddleware.js";
+import { isAdmin, requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
   assignEmail,
   deleteinboxEmail,
@@ -20,6 +20,7 @@ import {
   sendTicketReply,
   singleTicket,
   singleTicketComments,
+  updateBulkTickets,
   updateTickets,
 } from "../controllers/ticketController.js";
 import multer from "multer";
@@ -110,5 +111,14 @@ router.post("/assign/email", requiredSignIn, assignEmail);
 
 // Dashboard Tickets
 router.get("/dashboard/tickets", getDashboardTickets);
+
+
+
+
+
+
+
+// Update Bulk Tickets
+router.put("/update/bulk/tickets", requiredSignIn, isAdmin, updateBulkTickets);
 
 export default router;

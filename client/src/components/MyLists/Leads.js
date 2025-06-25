@@ -659,7 +659,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
             }));
 
             handleUpdateData(row.original._id, {
-              ...formData,
+              
               companyName: localCompanyName,
             });
 
@@ -742,7 +742,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
             }));
 
             handleUpdateData(row.original._id, {
-              ...formData,
+              
               clientName: localClientName,
             });
 
@@ -841,7 +841,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
             }));
 
             handleUpdateData(row.original._id, {
-              ...formData,
+              
               jobHolder: selectedValue,
             });
             setShow(false);
@@ -952,7 +952,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
             }));
 
             handleUpdateData(row.original._id, {
-              ...formData,
+               
               department: selectedValue,
             });
 
@@ -1043,7 +1043,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
             }));
 
             handleUpdateData(row.original._id, {
-              ...formData,
+               
               source: selectedValue,
             });
 
@@ -1133,7 +1133,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
             }));
 
             handleUpdateData(row.original._id, {
-              ...formData,
+               
               brand: selectedValue,
             });
 
@@ -1208,7 +1208,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
             }));
 
             handleUpdateData(row.original._id, {
-              ...formData,
+               
               value: localValue,
             });
 
@@ -1277,7 +1277,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
             }));
 
             handleUpdateData(row.original._id, {
-              ...formData,
+               
               number: localValue,
             });
 
@@ -1362,7 +1362,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
             }));
 
             handleUpdateData(row.original._id, {
-              ...formData,
+              
               lead_Source: selectedValue,
             });
 
@@ -1615,7 +1615,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
           const handleDateChange = (newDate) => {
             setDate(newDate);
             handleUpdateData(row.original._id, {
-              ...formData,
+               
               followUpDate: newDate,
             });
             setShowStartDate(false);
@@ -1855,7 +1855,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
             }));
 
             handleUpdateData(row.original._id, {
-              ...formData,
+               
               stage: selectedValue,
             });
 
@@ -2000,7 +2000,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
                 yearEnd: date
               }));
               handleUpdateData(row.original._id, {
-                ...formData,
+                 
                 yearEnd: date
               });
 
@@ -2198,7 +2198,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
                 jobDeadline: date
               }));
               handleUpdateData(row.original._id, {
-                ...formData,
+                 
                 jobDeadline: date
               });
 
@@ -2556,7 +2556,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
               Note: localNote,
             }));
             handleUpdateData(row.original._id, {
-              ...formData,
+               
               Note: localNote,
             });
             setShow(false);

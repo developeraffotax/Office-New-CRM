@@ -148,7 +148,10 @@ export const Timer = forwardRef(
 
         localStorage.setItem('timer_in', `${task ? '/tasks' : '/job-planning'}`);
 
-        startCountdown(allocatedTime, jobId, task, response.data.timer._id);
+         if (pageName === "Tasks") {
+
+           startCountdown(allocatedTime, jobId, task, response.data.timer._id);
+         }
         
 
         addTimerTaskStatus(response.data.timer._id);
@@ -186,8 +189,10 @@ export const Timer = forwardRef(
 
         if (data) {
 
+          if(pageName === "Tasks") {
+            stopCountdown();
+          }
           
-          stopCountdown();
           
           removeTimerStatus();
           localStorage.removeItem("timer_Id");

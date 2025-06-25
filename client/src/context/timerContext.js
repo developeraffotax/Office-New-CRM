@@ -59,7 +59,7 @@ export const TimerProvider = ({ children }) => {
 
  const stopCountdown = () => {
     localStorage.removeItem(`task-timer`);
-          clearTimeout(timeoutRef.current); // Clear existing timeout
+    clearTimeout(timeoutRef.current); // Clear existing timeout
     setShowModal(false);
     
   };

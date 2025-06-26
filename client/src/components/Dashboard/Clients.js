@@ -49,7 +49,7 @@ export default function Clients({
     return savedState ? JSON.parse(savedState) : initialState;
   });
   useEffect(() => {
-    localStorage.setItem("sales", JSON.stringify(visibility));
+    localStorage.setItem("clients", JSON.stringify(visibility));
   }, [visibility]);
 
   const toggleVisibility = (index) => {
@@ -523,7 +523,7 @@ export default function Clients({
       chartCount.render();
       return () => chartCount.destroy();
     }
-  }, [clients, selectChart]);
+  }, [clients, selectChart, salesData]);
 
   // ---------Render Department Fee Chart(#4)---------
   useEffect(() => {
@@ -590,7 +590,7 @@ export default function Clients({
       chartFee.render();
       return () => chartFee.destroy();
     }
-  }, [clients, selectChart]);
+  }, [clients, selectChart, salesData]);
 
   // -------Filter By Depertment--------------
 
@@ -1420,9 +1420,9 @@ export default function Clients({
               </div>
 
               <div className=" w-full flex flex-col gap-2">
-                {filtered_leads?.map((lead) => (
+                {filtered_leads.map((lead, i) => (
                   <div
-                    key={lead.label}
+                    key={`${lead.label}--${i}`}
                     className="w-full flex items-center gap-2 px-2 py-1 rounded-md border shadow-md bg-white/60 transition-all duration-300 ease-in-out transform hover:scale-[1.04]"
                   >
                     <h3 className="font-medium text-lg w-[24%]">
@@ -1468,96 +1468,6 @@ export default function Clients({
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-          
-
              
 
 
@@ -1597,10 +1507,21 @@ export default function Clients({
 
 
 
-            
-
-            {/*  -------------Jobs Analysis----------- */}
+             {/* ------------------Fee Analysis----------------- */}
             {visibility[5] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <h3 className="text-lg font-semibold text-center">
+                  Department-wise Fee Count
+                </h3>
+                <div id="department-fee-chart" />
+              </div>
+            )}
+
+
+
+
+             {/*  -------------Jobs Analysis----------- */}
+            {visibility[6] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <h3 className="text-lg font-semibold text-center">
                   Department-wise Total Count
@@ -1610,15 +1531,15 @@ export default function Clients({
             )}
 
 
-              {/* ------------------Fee Analysis----------------- */}
-            {visibility[6] && (
-              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                <h3 className="text-lg font-semibold text-center">
-                  Department-wise Fee Count
-                </h3>
-                <div id="department-fee-chart" />
-              </div>
-            )}
+
+
+
+             
+            
+
+           
+
+            
 
 
 

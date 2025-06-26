@@ -19,7 +19,10 @@ import { format } from "date-fns";
 import { GoEye } from "react-icons/go";
 import ComplaintDetail from "../../components/Complaint/ComplaintDetail";
 import { GrCopy } from "react-icons/gr";
+import { FcFilledFilter } from "react-icons/fc";
 import QuickAccess from "../../utlis/QuickAccess";
+import DraggableUserList from "../../utlis/DraggableUserList";
+import { LuFilter } from "react-icons/lu";
 
 export default function Complaints() {
   const [show, setShow] = useState(false);
@@ -37,6 +40,7 @@ export default function Complaints() {
   const [copyLoad, setCopyLoad] = useState(false);
 
     const [showExternalFilters, setShowExternalFilters] = useState(true);
+    const [showExternalFilters2, setShowExternalFilters2] = useState(false);
       const [filter1, setFilter1] = useState("");
       const [filter2, setFilter2] = useState("");
 
@@ -1040,6 +1044,21 @@ export default function Complaints() {
                                 </span>
 
 
+
+
+                                <span
+                                  className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${showExternalFilters2 && 'bg-orange-500 text-white '}  `}
+                                  onClick={() => {
+                                    
+                                    setShowExternalFilters2(!showExternalFilters2);
+                    
+                                  }}
+                                  title="Filter by Department"
+                                >
+                                  <LuFilter  className="h-6 w-6  cursor-pointer " />
+                                </span>
+
+
           </div>
 
           {/* ---------Template Buttons */}
@@ -1084,14 +1103,13 @@ export default function Complaints() {
 
 
            {/* --------------External Filter---------------- */}
-        {
-          showExternalFilters && (
-            <div className="w-full flex flex-row items-start justify-start gap-4 mt-4">
+        
+            <div className="w-full flex flex-col items-start justify-start gap-4 mt-4">
               
 
                  
 
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                  
                 <ul className="flex items-center gap-2 list-none  ">
                   {users?.map((user, i) => (
@@ -1117,11 +1135,21 @@ export default function Complaints() {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </div> */}
 
-              <span>|</span>
 
-              <div className="flex items-center gap-2">
+              {showExternalFilters && <DraggableUserList table={table} usersArray={users.map(el => el.name)} dataArr={complaintData.map(complain => { return { jobHolder: complain?.assign?.name } })}  listName={'complain'} filterColName="assign"  />}
+              
+
+
+
+
+
+
+
+              
+
+              {showExternalFilters2 && <div className="flex items-center gap-2">
                  
                 <ul className="flex items-center gap-2 list-none  ">
                   {[ "Bookkeeping", "Payroll", "Vat Return", "Personal Tax", "Accounts", "Company Sec", "Address", ]?.map((department, i) => (
@@ -1147,13 +1175,12 @@ export default function Complaints() {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </div>}
 
 
 
             </div>
-          )
-        }
+          
 
 
 

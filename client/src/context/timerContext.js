@@ -117,7 +117,7 @@ const scheduleTimeout = (endTime) => {
   timeoutRef.current = setTimeout(() => {
     setShowModal(true);
      console.log("Task is overdue!💛💛💛💛💛💛💛💛💛💛💛");
-    channel.postMessage({ type: "SHOW_MODAL" }); // ✅ broadcast
+    //channel.postMessage({ type: "SHOW_MODAL" }); // ✅ broadcast
   }, duration);
 };
 
@@ -143,8 +143,8 @@ const snooze = (SNOOZE_TIME) => {
 
   localStorage.setItem(`task-timer`, JSON.stringify(saved));
 
-  channel.postMessage({ type: "SNOOZE", });
-  //channel.postMessage({ type: "SNOOZE", newEndTime: newEndTime.toISOString() });
+  //channel.postMessage({ type: "SNOOZE", });
+  channel.postMessage({ type: "SNOOZE", newEndTime: newEndTime.toISOString() });
 
   setShowModal(false);
  
@@ -186,7 +186,7 @@ const startCountdown = (ALLOCATED_TIME, taskId, task, timerId) => {
     );
 
 
-     channel.postMessage({ type: "START_TIMER", task, timerId });
+     channel.postMessage({ type: "START_TIMER", task, timerId, endTime: endTime.toISOString() });
 
     scheduleTimeout(endTime);
   };
@@ -198,7 +198,7 @@ const startCountdown = (ALLOCATED_TIME, taskId, task, timerId) => {
 
   useEffect(() => {
   channel.onmessage = (event) => {
-    const { type,task, timerId } = event.data;
+    const { type, newEndTime, task, timerId, endTime } = event.data;
 
     if (type === "SHOW_MODAL") {
 
@@ -207,9 +207,14 @@ const startCountdown = (ALLOCATED_TIME, taskId, task, timerId) => {
     }
 
     if (type === "SNOOZE" ) {
-      //const snoozedEndTime = new Date(newEndTime);
-      //clearTimeout(timeoutRef.current);
-      //scheduleTimeout(snoozedEndTime);
+
+      // setTask(task)
+      // setTimerId(timerId);
+
+
+      const snoozedEndTime = new Date(newEndTime);
+      clearTimeout(timeoutRef.current);
+      scheduleTimeout(snoozedEndTime);
       setShowModal(false);
     }
 
@@ -220,9 +225,16 @@ const startCountdown = (ALLOCATED_TIME, taskId, task, timerId) => {
       localStorage.removeItem("task-timer"); // optional: keep tabs in sync
     }
 
+
+    
     if(type === "START_TIMER") {
       setTask(task)
-      setTimerId(timerId)
+      setTimerId(timerId);
+
+      const snoozedEndTime = new Date(endTime);
+      clearTimeout(timeoutRef.current);
+      scheduleTimeout(snoozedEndTime);
+      setShowModal(false);
     }
 
 

@@ -341,6 +341,74 @@ export default function Complaints() {
         maxSize: 140,
         grow: false,
       },
+
+
+
+
+
+
+
+
+
+            {
+        accessorKey: "lead",
+        Header: ({ column }) => {
+          console.log("users", users);
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Lead
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {users?.map((user, i) => (
+                  <option key={user._id} value={user.name}>
+                    {user.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const lead = cell.getValue();
+
+          return (
+            <div className="w-full flex items-center justify-start">
+              <span>{lead?.name}</span>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const user = row.original?.lead?.name || "";
+          return user === filterValue;
+        },
+        filterSelectOptions: users.map((el) => el.name),
+        filterVariant: "select",
+        size: 110,
+        minSize: 80,
+        maxSize: 150,
+        grow: false,
+      },
+
+
+
+
+
+
+
+
+
       {
         accessorKey: "assign",
         Header: ({ column }) => {

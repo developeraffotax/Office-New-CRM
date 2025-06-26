@@ -14,6 +14,10 @@ const complaintSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    lead: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Users",
+    },
     assign: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Users",

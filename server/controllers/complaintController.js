@@ -7,22 +7,26 @@ export const createComplain = async (req, res) => {
       company,
       client,
       department,
+      lead,
       assign,
       errorType,
       solution,
       points,
       note,
+      
     } = req.body;
 
     const complaint = await complainModel.create({
       company,
       client,
       department,
+      lead,
       assign,
       errorType,
       solution,
       points,
       note,
+       
     });
 
     res.status(200).send({
@@ -48,6 +52,7 @@ export const updateComplain = async (req, res) => {
       company,
       client,
       department,
+      lead,
       assign,
       errorType,
       solution,
@@ -72,6 +77,7 @@ export const updateComplain = async (req, res) => {
         company: company || complain.company,
         client: client || complain.client,
         department: department || complain.department,
+        lead: lead || complain.lead,
         assign: assign || complain.assign,
         errorType: errorType || complain.errorType,
         solution: solution || complain.solution,
@@ -104,6 +110,7 @@ export const fetchAllComplains = async (req, res) => {
       .find({})
       .populate([
         { path: "assign", select: "name" },
+        { path: "lead", select: "name" },
         { path: "errorType" },
         { path: "solution" },
       ]);

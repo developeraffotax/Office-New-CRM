@@ -20,6 +20,7 @@ export default function AddComplaint({
   const [company, setCompany] = useState("");
   const [client, setClient] = useState("");
   const [department, setDepartment] = useState("");
+  const [lead, setLead] = useState("");
   const [assign, setAssign] = useState("");
   const [errorType, setErrorType] = useState("");
   const [solution, setSolution] = useState("");
@@ -55,6 +56,7 @@ export default function AddComplaint({
         setCompany(data.complaint.company);
         setClient(data.complaint.client);
         setDepartment(data.complaint.department);
+        setLead(data.complaint.lead);
         setAssign(data.complaint.assign);
         setErrorType(data.complaint.errorType);
         setSolution(data.complaint.solution);
@@ -106,6 +108,7 @@ export default function AddComplaint({
             company,
             client,
             department,
+            lead,
             assign,
             errorType,
             solution,
@@ -128,6 +131,7 @@ export default function AddComplaint({
             company,
             client,
             department,
+            lead,
             assign,
             errorType,
             solution,
@@ -286,20 +290,25 @@ export default function AddComplaint({
           />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          
+
+
           <div className="inputBox">
             <select
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
+              value={lead}
+              onChange={(e) => setLead(e.target.value)}
               className={`${style.input} w-full `}
             >
-              <option value="">Select Department</option>
-              {departments?.map((dep, i) => (
-                <option key={i} value={dep}>
-                  {dep}
+              <option value="">Select Lead</option>
+              {users?.map((user, i) => (
+                <option key={i} value={user._id}>
+                  {user.name}
                 </option>
               ))}
             </select>
           </div>
+
+
           <div className="inputBox">
             <select
               value={assign}
@@ -314,6 +323,30 @@ export default function AddComplaint({
               ))}
             </select>
           </div>
+
+
+
+              <div className="inputBox">
+            <select
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              className={`${style.input} w-full `}
+            >
+              <option value="">Select Department</option>
+              {departments?.map((dep, i) => (
+                <option key={i} value={dep}>
+                  {dep}
+                </option>
+              ))}
+            </select>
+          </div>
+
+
+
+
+
+
+
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="inputBox">

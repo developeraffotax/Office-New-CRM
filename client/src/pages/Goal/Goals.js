@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
-import { IoClose } from "react-icons/io5";
+import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import HandleGoalModal from "../../components/Goal/HandleGoalModal";
 import axios from "axios";
@@ -28,6 +28,7 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FaListOl } from "react-icons/fa";
 import { useSearchParams } from "react-router-dom";
 import QuickAccess from "../../utlis/QuickAccess";
+import DraggableUserList from "../../utlis/DraggableUserList";
 
 export default function Goals() {
   const { auth } = useAuth();
@@ -83,7 +84,9 @@ export default function Goals() {
   console.log("filterGoals:", filterGoals);
 
   
-    
+        const [showJobHolderFilter, setShowJobHolderFilter] = useState(false);
+
+
     const [searchParams] = useSearchParams();
     const comment_taskId = searchParams.get('comment_taskId');
   
@@ -110,7 +113,7 @@ export default function Goals() {
       if (data) {
         // setGoalsData(data.goals);
         setLoading(false);
-
+         
         if (auth.user.role.name === "Admin") {
           setGoalsData(data.goals);
         } else {
@@ -431,10 +434,11 @@ export default function Goals() {
     () => [
       {
         accessorKey: "jobHolder._id",
+        id: "jobHolderId", // <-- Custom ID
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">
-              <span className="ml-1 cursor-pointer">Job Holder</span>
+              <span className="ml-1 cursor-pointer" onClick={() => column.setFilterValue("")}>Job Holder</span>
               {auth?.user?.role?.name === "Admin" && (
                 <select
                   value={column.getFilterValue() || ""}
@@ -445,7 +449,7 @@ export default function Goals() {
                 >
                   <option value="">Select</option>
                   {users?.map((jobhold, i) => (
-                    <option key={i} value={jobhold?._id}>
+                    <option key={i} value={jobhold?.name}>
                       {jobhold?.name}
                     </option>
                   ))}
@@ -507,9 +511,21 @@ export default function Goals() {
             </div>
           );
         },
-        filterFn: "equals",
-        filterSelectOptions: users.map((jobhold) => jobhold._id),
-        filterVariant: "select",
+        // filterFn: "equals",
+        // filterSelectOptions: users.map((jobhold) => jobhold._id),
+      //   filterSelectOptions: users.map((u) => ({
+      //   label: u.name,
+      //   value: u.name, // you’re filtering by name
+      // })),
+
+        filterFn: (row, columnId, filterValue) => {
+
+          const jobHolderName = row.original.jobHolder.name || "";
+          return jobHolderName === filterValue;
+        },
+
+
+        // filterVariant: "select",
         size: 110,
         minSize: 80,
         maxSize: 130,
@@ -1812,6 +1828,17 @@ const onDragEnd = (result) => {
 
 
 
+                           <span
+                                                className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${showJobHolderFilter && 'bg-orange-500 text-white '}  `}
+                                                onClick={() => {
+                                                  
+                                                  setShowJobHolderFilter(!showJobHolderFilter);
+                                  
+                                                }}
+                                                title="Filter by Job Holder"
+                                              >
+                                                <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
+                                              </span>
 
 
 
@@ -1830,7 +1857,11 @@ const onDragEnd = (result) => {
 
 
 
-          {/*----- Users ---------*/}
+
+
+
+
+          {/* ----- Users ---------
           {auth?.user?.role?.name === "Admin" && selectedTab === "progress" && (
             <>
             <div className=" hidden sm:flex items-center  gap-3 overflow-x-auto hidden1">
@@ -1914,7 +1945,7 @@ const onDragEnd = (result) => {
 
 
 
-          )}
+          )} */}
         </div>
 
 
@@ -1926,7 +1957,17 @@ const onDragEnd = (result) => {
 
 
 
-
+           {showJobHolderFilter && <DraggableUserList table={table} usersArray={users.map(el => el.name)} updateJobHolderCountMapFn={(map, totalCount) => {
+          
+                            for (const item of goalsData || []) {
+                                const holder = item.jobHolder.name ;
+                                map.set(holder, (map.get(holder) || 0) + 1);
+                                totalCount++;
+                              }
+          
+                              map.set("All", totalCount);
+                          
+                        } } listName={'goals'} filterColName="jobHolderId"  />}
 
 
 

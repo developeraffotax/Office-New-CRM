@@ -52,7 +52,7 @@ export const Timer = forwardRef(
     const [runningId, setRunningId] = useState("");
 
     console.log("Timer Component Rendered", allocatedTime);
-    const {startCountdown,  stopCountdown, registerStopTimer, unregisterStopTimer} = useTimer()
+    const {startCountdown,  stopCountdown, } = useTimer()
 
     useEffect(() => {
       if (!clientId || !jobId) {
@@ -318,6 +318,10 @@ export const Timer = forwardRef(
       }
       // eslint-disable-next-line
     }, [isRunning, elapsedTime]);
+
+
+
+    
 
     const stopTimerPopUpHandler = () => {
       if(task){

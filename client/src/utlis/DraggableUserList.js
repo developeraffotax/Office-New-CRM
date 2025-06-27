@@ -1,7 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 
-const DraggableUserList = ({ table, usersArray, listName, filterColName = "jobHolder", updateJobHolderCountMapFn, setColumnFromOutsideTableFn, }) => {
+const DraggableUserList = ({
+  table,
+  usersArray,
+  listName,
+  filterColName = "jobHolder",
+  updateJobHolderCountMapFn,
+  setColumnFromOutsideTableFn,
+}) => {
   const [userNameArray, setUserNameArray] = useState(usersArray);
   const [active, setActive] = useState("All");
 
@@ -13,7 +20,7 @@ const DraggableUserList = ({ table, usersArray, listName, filterColName = "jobHo
     return result;
   };
 
-  console.log("USER💚💛💛🧡🧡❤❤", usersArray)
+  console.log("USER💚💛💛🧡🧡❤❤", usersArray);
 
   function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
     const savedSet = new Set(savedOrder);
@@ -29,7 +36,6 @@ const DraggableUserList = ({ table, usersArray, listName, filterColName = "jobHo
     return [...ordered, ...newOnes];
   }
 
- 
   const handleUserOnDragEnd = (result) => {
     if (!result || !result.source?.index || !result.destination?.index) {
       return;
@@ -43,8 +49,6 @@ const DraggableUserList = ({ table, usersArray, listName, filterColName = "jobHo
     setUserNameArray(items);
   };
 
-
-
   const jobHolderCountMap = useMemo(() => {
     const map = new Map();
     let totalCount = 0;
@@ -54,29 +58,21 @@ const DraggableUserList = ({ table, usersArray, listName, filterColName = "jobHo
     }
 
     return map;
-  }, [  updateJobHolderCountMapFn,   ]);
-
-
+  }, [updateJobHolderCountMapFn]);
 
   const getJobHolderCount = (userName) => {
     console.log("THE MAP IS 💚💜💙💙💚💚💛💛🧡🧡", jobHolderCountMap);
     return jobHolderCountMap.get(userName) || 0;
   };
 
-
-
   const setColumnFromOutsideTable = (colKey, filterVal) => {
     const col = table.getColumn(colKey);
 
-    console.log("WELL THE COLUMN IS💚💛",col)
+    console.log("WELL THE COLUMN IS💚💛", col);
     return col.setFilterValue(filterVal);
   };
 
-
-
-
-
-   useEffect(() => {
+  useEffect(() => {
     const savedOrder = JSON.parse(
       localStorage.getItem(`${listName}_usernamesOrder`)
     );
@@ -89,27 +85,19 @@ const DraggableUserList = ({ table, usersArray, listName, filterColName = "jobHo
     }
   }, [listName, usersArray]);
 
-
-
-
-
-
   useEffect(() => {
     const col = table.getColumn(filterColName);
     const filterVal = col.getFilterValue();
     if (filterVal) {
       setActive(filterVal);
+    } else {
+      setActive("All")
     }
   }, [filterColName, table, usersArray]);
 
-
-
-
-
-
   return (
     <>
-      <div className="w-full py-3">
+      <div className="w-full ">
         <div className="flex items-center flex-wrap gap-2">
           <DragDropContext onDragEnd={handleUserOnDragEnd}>
             <Droppable droppableId="users0" direction="horizontal">
@@ -117,14 +105,14 @@ const DraggableUserList = ({ table, usersArray, listName, filterColName = "jobHo
                 <div
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  className="w-full flex items-center gap-2 overflow-x-auto no-scrollbar px-2"
+                  className="w-full flex items-center gap-3 overflow-x-auto no-scrollbar px-2"
                 >
                   {/* All Tab */}
                   <div
-                    className={`px-3 py-1 rounded-full text-sm font-medium cursor-pointer transition-all duration-150 ${
+                    className={`p-1 text-sm font-medium cursor-pointer transition-all duration-150 ${
                       active === "All"
-                        ? "bg-orange-600 text-white"
-                        : "bg-gray-100 hover:bg-gray-200 text-gray-800"
+                        ? "text-orange-500 border-b-2 border-orange-500"
+                        : "text-gray-800"
                     }`}
                     onClick={() => {
                       setActive("All");
@@ -133,7 +121,9 @@ const DraggableUserList = ({ table, usersArray, listName, filterColName = "jobHo
                       )(filterColName, "");
                     }}
                   >
-                    All {updateJobHolderCountMapFn && getJobHolderCount("All")}
+                    All{" "}
+                    {updateJobHolderCountMapFn &&
+                      ` (${getJobHolderCount("All")})`}
                   </div>
 
                   {/* User Tabs */}
@@ -148,10 +138,10 @@ const DraggableUserList = ({ table, usersArray, listName, filterColName = "jobHo
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className={`px-3 py-1 rounded-full text-nowrap  text-sm font-medium cursor-pointer transition-all duration-150 ${
+                          className={` p-1  text-nowrap  text-sm font-medium cursor-pointer transition-all duration-150 ${
                             active === userName
-                              ? "bg-orange-600 text-white"
-                              : "bg-gray-100 hover:bg-gray-200 text-gray-800"
+                              ? "  text-orange-500 border-b-2 border-orange-500 "
+                              : "  text-gray-800"
                           }`}
                           onClick={() => {
                             setActive(userName);
@@ -161,9 +151,9 @@ const DraggableUserList = ({ table, usersArray, listName, filterColName = "jobHo
                             )(filterColName, userName);
                           }}
                         >
-                          {userName}{" "}
-                          { 
-                            getJobHolderCount(userName)}
+                          {userName}
+                          {updateJobHolderCountMapFn &&
+                            ` (${getJobHolderCount(userName)})`}
                         </div>
                       )}
                     </Draggable>
@@ -180,65 +170,6 @@ const DraggableUserList = ({ table, usersArray, listName, filterColName = "jobHo
 };
 
 export default DraggableUserList;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

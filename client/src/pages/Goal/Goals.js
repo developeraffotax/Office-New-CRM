@@ -84,7 +84,7 @@ export default function Goals() {
   console.log("filterGoals:", filterGoals);
 
   
-        const [showJobHolderFilter, setShowJobHolderFilter] = useState(false);
+        const [showJobHolderFilter, setShowJobHolderFilter] = useState(true);
 
 
     const [searchParams] = useSearchParams();
@@ -1826,7 +1826,7 @@ const onDragEnd = (result) => {
 
 
 
-
+              {auth?.user?.role?.name === "Admin" &&
 
                            <span
                                                 className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${showJobHolderFilter && 'bg-orange-500 text-white '}  `}
@@ -1838,7 +1838,7 @@ const onDragEnd = (result) => {
                                                 title="Filter by Job Holder"
                                               >
                                                 <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
-                                              </span>
+                                              </span>}
 
 
 
@@ -1957,7 +1957,8 @@ const onDragEnd = (result) => {
 
 
 
-           {showJobHolderFilter && <DraggableUserList table={table} usersArray={users.map(el => el.name)} updateJobHolderCountMapFn={(map, totalCount) => {
+           <div className="w-full py-2">
+            {auth?.user?.role?.name === "Admin" && showJobHolderFilter && <DraggableUserList table={table} usersArray={users.map(el => el.name)} updateJobHolderCountMapFn={(map, totalCount) => {
           
                             for (const item of goalsData || []) {
                                 const holder = item.jobHolder.name ;
@@ -1969,6 +1970,7 @@ const onDragEnd = (result) => {
                           
                         } } listName={'goals'} filterColName="jobHolderId"  />}
 
+           </div>
 
 
 

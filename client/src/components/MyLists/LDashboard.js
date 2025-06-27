@@ -144,7 +144,7 @@ export default function Dashboard({ workFlowData, uniqueClients }) {
               }`}
               onClick={() => setSelectedTab("Clients")}
             >
-              Clients
+              Sales
             </button>
             <button
               className={`py-[.4rem] px-2 outline-none w-[8rem] border-l-2 border-orange-600 transition-all duration-300   ${
@@ -154,7 +154,7 @@ export default function Dashboard({ workFlowData, uniqueClients }) {
               }`}
               onClick={() => setSelectedTab("Sales")}
             >
-              Sales
+              Leads
             </button>
             <button
               className={`py-[.4rem] px-2 outline-none w-[8rem] border-l-2 border-orange-600 transition-all duration-300   ${

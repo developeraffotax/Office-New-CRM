@@ -122,17 +122,8 @@ export default function Clients({
 
 
 
-
-
-
-
-
-
-
-
-
     
-    //console.log("Filtered Unique Clients💛🧡❤:", filteredData);
+    console.log("Filtered Unique Clients💛🧡❤:", filteredData);
 
     setFilteredUniqueClient(filteredData);
   }, [selectedMonth, selectedYear, uniqueClients, search,]);

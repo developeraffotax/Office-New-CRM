@@ -383,7 +383,7 @@ const handleFeatureFilter = (value) => {
                 }`}
                 onClick={() => setSelectedTab("Clients")}
               >
-                Clients
+                Sales
               </button>
               <button
                 disabled={loading}
@@ -394,7 +394,7 @@ const handleFeatureFilter = (value) => {
                 }`}
                 onClick={() => setSelectedTab("Sales")}
               >
-                Sales
+                Leads
               </button>
               <button
                 disabled={loading}

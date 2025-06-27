@@ -1,14 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 
-const DraggableUserList = ({table, usersArray, dataArr, listName, filterColName = "jobHolder",  }) => {
-   
-    const [userNameArray, setUserNameArray] = useState(usersArray);
-    const [active, setActive] = useState("All")
+const DraggableUserList = ({
+  table,
+  usersArray,
 
+  listName,
+  filterColName = "jobHolder",
+  updateJobHolderCountMap,
+}) => {
+  const [userNameArray, setUserNameArray] = useState(usersArray);
+  const [active, setActive] = useState("All");
 
-    console.log("usersarr",usersArray)
-    console.log("DATA ARRAY ❤❤❤❤❤❤❤❤>>>>>>>>>>>>>>>>",dataArr)
+ 
 
   const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -16,51 +20,39 @@ const DraggableUserList = ({table, usersArray, dataArr, listName, filterColName 
     result.splice(endIndex, 0, removed);
 
     return result;
-  };    
+  };
 
-
-    
   function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
     const savedSet = new Set(savedOrder);
-    console.log("savedSET>>>>", savedSet)
+    console.log("savedSET>>>>", savedSet);
     // Preserve the order from savedOrder, but only if the username still exists in the fetched data
-    const ordered = savedOrder.filter(name => fetchedUsernames.includes(name));
-    
+    const ordered = savedOrder.filter((name) =>
+      fetchedUsernames.includes(name)
+    );
+
     // Add any new usernames that aren't in the saved order
-    const newOnes = fetchedUsernames.filter(name => !savedSet.has(name));
-    
+    const newOnes = fetchedUsernames.filter((name) => !savedSet.has(name));
+
     return [...ordered, ...newOnes];
   }
 
-
-
-
-
-
-
-
   useEffect(() => {
+    const savedOrder = JSON.parse(
+      localStorage.getItem(`${listName}_usernamesOrder`)
+    );
+    if (savedOrder) {
+      const savedUserNames = mergeWithSavedOrder(usersArray, savedOrder);
 
-     const savedOrder = JSON.parse(localStorage.getItem(`${listName}_usernamesOrder`));
-        if(savedOrder) {
-          const savedUserNames = mergeWithSavedOrder(usersArray, savedOrder);
-          
-            setUserNameArray(savedUserNames)
-        } else {
-            setUserNameArray(usersArray)
-        }
-
-
-
-    
-  }, [usersArray])
-
-
+      setUserNameArray(savedUserNames);
+    } else {
+      setUserNameArray(usersArray);
+    }
+  }, [usersArray]);
 
   //  -----------Handle drag end---------
   const handleUserOnDragEnd = (result) => {
-    if(!result || !result.source?.index || !result.destination?.index) {
-        return;
+    if (!result || !result.source?.index || !result.destination?.index) {
+      return;
     }
     const items = reorder(
       userNameArray,
@@ -71,141 +63,117 @@ const DraggableUserList = ({table, usersArray, dataArr, listName, filterColName 
     setUserNameArray(items);
   };
 
-
-
   // --------------Job_Holder Length---------->
 
-//   const getJobHolderCount = (userName, status) => {
-//     console.log(" DATA ARRAY 💛💛💛", dataArr);
-//     if (userName === "All") {
-//       return dataArr?.length
-//     }
-//     return dataArr.filter(
-//       (el) => el[filterColName] === userName
-//     )?.length;
-//   };
+  //   const getJobHolderCount = (userName, status) => {
+  //     console.log(" DATA ARRAY 💛💛💛", dataArr);
+  //     if (userName === "All") {
+  //       return dataArr?.length
+  //     }
+  //     return dataArr.filter(
+  //       (el) => el[filterColName] === userName
+  //     )?.length;
+  //   };
 
+  // const jobHolderCountMap = useMemo(() => {
+  //   const map = new Map();
+  //   let totalCount = 0;
 
+  //   for (const item of dataArr || []) {
+  //     const holder = item.jobHolder ;
+  //     map.set(holder, (map.get(holder) || 0) + 1);
+  //     totalCount++;
+  //   }
 
-const jobHolderCountMap = useMemo(() => {
-  const map = new Map();
-  let totalCount = 0;
+  //   map.set("All", totalCount); // Include total count for "All"
+  //   return map;
+  // }, [dataArr, filterColName]);
 
-  for (const item of dataArr || []) {
-    const holder = item.jobHolder ;
-    map.set(holder, (map.get(holder) || 0) + 1);
-    totalCount++;
-  }
+  const jobHolderCountMap = useMemo(() => {
+    const map = new Map();
+    let totalCount = 0;
 
-  map.set("All", totalCount); // Include total count for "All"
-  return map;
-}, [dataArr, filterColName]);
+    updateJobHolderCountMap(map, totalCount);
 
+    return map;
+  }, [ filterColName]);
 
-const getJobHolderCount = (userName) => {
-    console.log("THE MAP IS 💚💜💙💙💚💚💛💛🧡🧡", jobHolderCountMap)
-  return jobHolderCountMap.get(userName) || 0;
-};
+  const getJobHolderCount = (userName) => {
+    console.log("THE MAP IS 💚💜💙💙💚💚💛💛🧡🧡", jobHolderCountMap);
+    return jobHolderCountMap.get(userName) || 0;
+  };
 
   const setColumnFromOutsideTable = (colKey, filterVal) => {
     const col = table.getColumn(colKey);
     return col.setFilterValue(filterVal);
   };
 
-
-
-
-
-
-
-
-
-
-
-
-
-return (
-  <>
-    <div className="w-full py-3">
-      <div className="flex items-center flex-wrap gap-2">
-        <DragDropContext onDragEnd={handleUserOnDragEnd}>
-          <Droppable droppableId="users0" direction="horizontal">
-            {(provided) => (
-              <div
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                className="w-full flex items-center gap-2 overflow-x-auto no-scrollbar px-2"
-              >
-                {/* All Tab */}
+  return (
+    <>
+      <div className="w-full py-3">
+        <div className="flex items-center flex-wrap gap-2">
+          <DragDropContext onDragEnd={handleUserOnDragEnd}>
+            <Droppable droppableId="users0" direction="horizontal">
+              {(provided) => (
                 <div
-                  className={`px-3 py-1 rounded-full text-sm font-medium cursor-pointer transition-all duration-150 ${
-                    active === "All"
-                      ? "bg-orange-600 text-white"
-                      : "bg-gray-100 hover:bg-gray-200 text-gray-800"
-                  }`}
-                  onClick={() => {
-                    setActive("All");
-                    setColumnFromOutsideTable(filterColName, "");
-                  }}
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="w-full flex items-center gap-2 overflow-x-auto no-scrollbar px-2"
                 >
-                  All ({getJobHolderCount("All")})
-                </div>
+                  {/* All Tab */}
+                  <div
+                    className={`px-3 py-1 rounded-full text-sm font-medium cursor-pointer transition-all duration-150 ${
+                      active === "All"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-800"
+                    }`}
+                    onClick={() => {
+                      setActive("All");
+                      setColumnFromOutsideTable(filterColName, "");
+                    }}
+                  >
+                    All ({getJobHolderCount("All")})
+                  </div>
 
-                {/* User Tabs */}
-                {userNameArray.map((userName, index) => (
-                  <Draggable key={userName} draggableId={userName} index={index}>
-                    {(provided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        className={`px-3 py-1 rounded-full text-nowrap  text-sm font-medium cursor-pointer transition-all duration-150 ${
-                          active === userName
-                            ? "bg-orange-600 text-white"
-                            : "bg-gray-100 hover:bg-gray-200 text-gray-800"
-                        }`}
-                        onClick={() => {
-                          setActive(userName);
-                          setColumnFromOutsideTable(filterColName, userName);
-                        }}
-                      >
-                        {userName} ({getJobHolderCount(userName)})
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+                  {/* User Tabs */}
+                  {userNameArray.map((userName, index) => (
+                    <Draggable
+                      key={userName}
+                      draggableId={userName}
+                      index={index}
+                    >
+                      {(provided) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          className={`px-3 py-1 rounded-full text-nowrap  text-sm font-medium cursor-pointer transition-all duration-150 ${
+                            active === userName
+                              ? "bg-orange-600 text-white"
+                              : "bg-gray-100 hover:bg-gray-200 text-gray-800"
+                          }`}
+                          onClick={() => {
+                            setActive(userName);
+                            setColumnFromOutsideTable(filterColName, userName);
+                          }}
+                        >
+                          {userName} ({getJobHolderCount(userName)})
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </div>
       </div>
-    </div>
-  </>
-);
+    </>
+  );
 };
 
 export default DraggableUserList;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -278,6 +246,6 @@ export default DraggableUserList;
 //           </DragDropContext>
 //         </div>
 //       </div>
-     
+
 //     </>
 //   );

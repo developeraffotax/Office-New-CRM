@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import { style } from "../../utlis/CommonStyle";
 import { LuImport } from "react-icons/lu";
-import { IoClose } from "react-icons/io5";
+import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { useAuth } from "../../context/authContext";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -21,6 +21,7 @@ import { GrCopy } from "react-icons/gr";
 import { IoMdCopy } from "react-icons/io";
 import { RiEdit2Line } from "react-icons/ri";
 import QuickAccess from "../../utlis/QuickAccess";
+import DraggableUserList from "../../utlis/DraggableUserList";
 
 export default function Template() {
   const { auth } = useAuth();
@@ -42,6 +43,8 @@ export default function Template() {
   const [template, setTemplate] = useState("");
   const templateDetailref = useRef(null);
   const [access, setAccess] = useState([]);
+
+  const [showJobHolderFilter, setShowJobHolderFilter] = useState(false);
 
   // console.log("templateData:", templateData);
 
@@ -77,6 +80,7 @@ export default function Template() {
         `${process.env.REACT_APP_API_URL}/api/v1/templates/get/all/template`
       );
       if (auth.user.role.name === "Admin") {
+        console.log(data?.templates);
         setTemplateData(data?.templates);
       } else {
         const filteredTemplate = data?.templates.filter((template) =>
@@ -281,8 +285,6 @@ export default function Template() {
   };
 
   const convertQuillHtmlToPlainText = (html) => {
-
-   
     // html = html.replace(/<strong>|<b>/g, "**");
     // html = html.replace(/<\/strong>|<\/b>/g, "**");
 
@@ -300,24 +302,19 @@ export default function Template() {
 
     // html = html.replace(/<[^>]*>/g, "");
 
+    // Replace line breaks and paragraph endings with newlines
+    html = html.replace(/<br\s*\/?>/gi, "\n");
+    html = html.replace(/<\/p>/gi, "\n");
 
+    html = html.replace(/<li[^>]*>(.*?)<\/li>/gi, "\n- $1");
 
+    // Remove all remaining HTML tags
+    html = html.replace(/<[^>]*>/g, "");
 
-      // Replace line breaks and paragraph endings with newlines
-      html = html.replace(/<br\s*\/?>/gi, "\n");
-      html = html.replace(/<\/p>/gi, "\n");
-
-      html = html.replace(/<li[^>]*>(.*?)<\/li>/gi, "\n- $1");
-
-      // Remove all remaining HTML tags
-      html = html.replace(/<[^>]*>/g, "");
-
-      html = html.replace(/&nbsp;/g, " ");
-      html = html.replace(/&amp;/g, " ");
-      html = html.replace(/&lt;/g, " ");
-      html = html.replace(/&gt;/g, " ");
-
-
+    html = html.replace(/&nbsp;/g, " ");
+    html = html.replace(/&amp;/g, " ");
+    html = html.replace(/&lt;/g, " ");
+    html = html.replace(/&gt;/g, " ");
 
     return html;
   };
@@ -397,6 +394,7 @@ export default function Template() {
           );
         },
         Cell: ({ cell, row }) => {
+          console.log("ROW ORIGINAL💚💛💚", row);
           const categroyName = row.original.category;
           return (
             <div className="w-full px-1">
@@ -558,13 +556,12 @@ export default function Template() {
         //   return cellValue.includes(filterValue.toLowerCase());
         // },
 
-
         filterFn: (row, columnId, filterValue) => {
-          const cellValue = row.original[columnId]?.toString().toLowerCase() || "";
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
           const keywords = filterValue.toLowerCase().split(" ").filter(Boolean); // split by space and remove empty strings
-          return keywords.every(keyword => cellValue.includes(keyword));
+          return keywords.every((keyword) => cellValue.includes(keyword));
         },
-
 
         size: 500,
         minSize: 350,
@@ -637,8 +634,65 @@ export default function Template() {
         },
         size: 140,
       },
+
+      {
+        accessorKey: "userList",
+        minSize: 100,
+        maxSize: 500,
+        size: 170,
+        grow: true,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                User List
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {userName?.map((name, i) => (
+                  <option key={i} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+
+        Cell: ({ cell, row }) => {
+          const userList = row.original.userList;
+          return (
+            <ul className="w-full flex flex-row justify-start items-center gap-2 px-2 list-none">
+              {userList.map((user, index) => (
+                <li
+                  key={index}
+                  className="bg-gray-100 text-gray-800 text-sm px-4 py-1 rounded-full shadow-sm hover:bg-gray-200 transition m-0"
+                >
+                  {user.name}
+                </li>
+              ))}
+            </ul>
+          );
+        },
+
+        filterFn: (row, columnId, filterValue) => {
+          const cellArray = row.original[columnId];
+
+          return cellArray.some((user) => user.name === filterValue);
+        },
+      },
     ],
-    // eslint-disable-next-line
+
     [users, auth, categoryData, templateData]
   );
 
@@ -720,7 +774,9 @@ export default function Template() {
                 <IoClose className="h-6 w-6 text-white" />
               </span>
 
-              <span className="mt-1"><QuickAccess /></span>
+              <span className="mt-1">
+                <QuickAccess />
+              </span>
             </div>
 
             {/* ---------Template Buttons */}
@@ -801,29 +857,68 @@ export default function Template() {
         {/* ------------------ */}
         {selectedTab === "templates" && (
           <>
-            <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
-              <button
-                className={`py-1 px-2 w-[6.5rem] outline-none transition-all duration-300 ${
-                  selectedTab === "templates"
-                    ? "bg-orange-500 text-white border-r-2 border-orange-500"
-                    : "text-black bg-gray-100"
-                }`}
-                onClick={() => setSelectedTab("templates")}
-              >
-                Templates
-              </button>
-              <button
-                className={`py-1 px-2 w-[6.5rem] outline-none transition-all duration-300   ${
-                  selectedTab === "faq"
-                    ? "bg-orange-500 text-white"
-                    : "text-black bg-gray-100 hover:bg-slate-200"
-                }`}
-                onClick={() => setSelectedTab("faq")}
-              >
-                FAQ's
-              </button>
+            <div className="w-full flex flex-row justify-start items-center gap-2 ">
+              <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
+                <button
+                  className={`py-1 px-2 w-[6.5rem] outline-none transition-all duration-300 ${
+                    selectedTab === "templates"
+                      ? "bg-orange-500 text-white border-r-2 border-orange-500"
+                      : "text-black bg-gray-100"
+                  }`}
+                  onClick={() => setSelectedTab("templates")}
+                >
+                  Templates
+                </button>
+                <button
+                  className={`py-1 px-2 w-[6.5rem] outline-none transition-all duration-300   ${
+                    selectedTab === "faq"
+                      ? "bg-orange-500 text-white"
+                      : "text-black bg-gray-100 hover:bg-slate-200"
+                  }`}
+                  onClick={() => setSelectedTab("faq")}
+                >
+                  FAQ's
+                </button>
+              </div>
+
+              {auth?.user?.role?.name === "Admin" && (
+                <span
+                  className={`p-[6px] rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  mt-[1.2rem] ${
+                    showJobHolderFilter && "bg-orange-500 text-white"
+                  }`}
+                  onClick={() => {
+                    setShowJobHolderFilter((prev) => !prev);
+                  }}
+                  title="Filter by Job Holder"
+                >
+                  <IoBriefcaseOutline className="  cursor-pointer text-[22px] " />
+                </span>
+              )}
             </div>
             <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
+
+            {showJobHolderFilter && (
+              <DraggableUserList
+                table={table}
+                usersArray={users.map((el) => el.name)}
+                updateJobHolderCountMap={(map, totalCount) => {
+                  for (const item of templateData || []) {
+                    const holders = item.userList || [];
+
+                    for (const holder of holders) {
+                      if (!holder) continue; // skip null/undefined
+                      map.set(holder.name, (map.get(holder.name) || 0) + 1);
+                    }
+
+                    totalCount++; // still count 1 per job
+                  }
+
+                  map.set("All", totalCount); // Total number of jobs, not total assignments
+                }}
+                listName={"template"}
+                filterColName="userList"
+              />
+            )}
           </>
         )}
         <div className="w-full h-full">

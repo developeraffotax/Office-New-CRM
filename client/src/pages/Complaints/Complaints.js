@@ -1138,7 +1138,17 @@ export default function Complaints() {
               </div> */}
 
 
-              {showExternalFilters && <DraggableUserList table={table} usersArray={users.map(el => el.name)} dataArr={complaintData.map(complain => { return { jobHolder: complain?.assign?.name } })}  listName={'complain'} filterColName="assign"  />}
+              {showExternalFilters && <DraggableUserList table={table} usersArray={users.map(el => el.name)} updateJobHolderCountMap={(map, totalCount) => {
+
+                  for (const item of complaintData || []) {
+                      const holder = item.assign.name ;
+                      map.set(holder, (map.get(holder) || 0) + 1);
+                      totalCount++;
+                    }
+
+                    map.set("All", totalCount);
+                
+              } } listName={'complain'} filterColName="assign"  />}
               
 
 

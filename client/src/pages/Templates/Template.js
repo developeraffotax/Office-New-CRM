@@ -44,7 +44,7 @@ export default function Template() {
   const templateDetailref = useRef(null);
   const [access, setAccess] = useState([]);
 
-  const [showJobHolderFilter, setShowJobHolderFilter] = useState(false);
+  const [showJobHolderFilter, setShowJobHolderFilter] = useState(true);
 
   // console.log("templateData:", templateData);
 
@@ -897,8 +897,9 @@ export default function Template() {
             </div>
             <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
 
-            {showJobHolderFilter && (
-              <DraggableUserList
+            {auth?.user?.role?.name === "Admin" && showJobHolderFilter && (
+              <div className="w-full py-2">
+                <DraggableUserList
                 table={table}
                 usersArray={users.map((el) => el.name)}
                 updateJobHolderCountMapFn={(map, totalCount) => {
@@ -918,6 +919,7 @@ export default function Template() {
                 listName={"template"}
                 filterColName="userList"
               />
+              </div>
             )}
           </>
         )}

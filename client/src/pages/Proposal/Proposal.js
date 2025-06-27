@@ -50,7 +50,7 @@ export default function Proposal() {
   const [mail, setMail] = useState("");
   const mailDetailref = useRef(null);
 
-  const [showJobHolderFilter, setShowJobHolderFilter] = useState(false)
+  const [showJobHolderFilter, setShowJobHolderFilter] = useState(true)
 
   // console.log("filteredData:", filteredData);
 
@@ -1886,7 +1886,7 @@ export default function Proposal() {
 
 
         {/* ---------Table Detail---------- */}
-        <div className="w-full h-full">
+        <div className="w-full h-full mt-2">
           {isLoading ? (
             <div className="flex items-center justify-center w-full h-screen px-4 py-4">
               <Loader />

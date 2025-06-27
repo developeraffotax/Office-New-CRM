@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import ApexCharts from "apexcharts";
 import Loader from "../../utlis/Loader";
 import { style } from "../../utlis/CommonStyle";
@@ -41,6 +41,12 @@ export default function Clients({
   console.log("SALES DATA🧡", salesData);
   console.log("workFlowData DATA💛", workFlowData);
   console.log("uniqueClients DATA💚", uniqueClients);
+
+    const [lead_source_labels, set_lead_source_labels] = useState(['Upwork', "Fiverr", "PPH", "Referral", "Partner", "Google", "Facebook", "LinkedIn", "CRM", "Existing", "Other"])
+
+  const [filtered_leads, set_filtered_leads] = useState([])
+
+  
 
   // Visibility Div
   const initialState = [true, true, true, true, true, true, true];
@@ -356,111 +362,123 @@ export default function Clients({
 
 
 
-  const [lead_source_labels, set_lead_source_labels] = useState(['Upwork', "Fiverr", "PPH", "Referral", "Partner", "Google", "Facebook", "LinkedIn", "CRM", "Existing", "Other"])
 
-  const [filtered_leads, set_filtered_leads] = useState([])
+
+
+
+
+
 
 
   // --Render Lead Source Chart(#888)------->
-  useEffect(() => {
+  // useEffect(() => {
 
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
+  //   const now = new Date();
+  //   const currentYear = now.getFullYear();
+  //   const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
 
-    const startDate = new Date(currentYear, currentMonth - 11, 1);
+  //   const startDate = new Date(currentYear, currentMonth - 11, 1);
 
     
 
 
-    const filteredLeads = salesData?.totalLeads?.filter((lead) => {
-       // Lead Date
-      const leadDate = new Date(lead.createdAt);
-      const leadMonth = leadDate.getMonth() + 1;
-      const leadYear = leadDate.getFullYear();
+  //   const filteredLeads = salesData?.totalLeads?.filter((lead) => {
+  //      // Lead Date
+  //     const leadDate = new Date(lead.createdAt);
+  //     const leadMonth = leadDate.getMonth() + 1;
+  //     const leadYear = leadDate.getFullYear();
 
 
 
 
 
 
-       if(!selectedYear) {
-      const leadDateN = new Date(leadYear, leadMonth - 1, 1); // month -1 because JS months are 0-indexed
-      return (
-        (!selectedMonth || leadMonth === parseInt(selectedMonth)) &&
-        (leadDateN >= startDate && leadDateN <= now)  
+  //      if(!selectedYear) {
+  //     const leadDateN = new Date(leadYear, leadMonth - 1, 1); // month -1 because JS months are 0-indexed
+  //     return (
+  //       (!selectedMonth || leadMonth === parseInt(selectedMonth)) &&
+  //       (leadDateN >= startDate && leadDateN <= now)  
         
-      )
+  //     )
 
-    }
-
-
+  //   }
 
 
-      return  (!selectedMonth || leadMonth === parseInt(selectedMonth)) && (!selectedYear || leadYear === parseInt(selectedYear))
+
+
+  //     return  (!selectedMonth || leadMonth === parseInt(selectedMonth)) && (!selectedYear || leadYear === parseInt(selectedYear))
       
-    })
+  //   })
 
-    console.log("filteredLeads💙💙💙", filteredLeads)
+  //   console.log("filteredLeads💙💙💙", filteredLeads)
 
-    // Count how many leads are in each source
-    const leadSourceCounts = lead_source_labels.map(label => {
-      // if (label === "Other") {
-      //   return filteredLeads.filter(lead => !lead_source_labels.includes(lead.lead_Source)).length;
-      // }
-      return filteredLeads?.filter(lead => lead.lead_Source === label).length || 0;
-    });
+  //   // Count how many leads are in each source
+  //   // const leadSourceCounts = lead_source_labels.map(label => {
+  //   //   // if (label === "Other") {
+  //   //   //   return filteredLeads.filter(lead => !lead_source_labels.includes(lead.lead_Source)).length;
+  //   //   // }
+  //   //   return filteredLeads?.filter(lead => lead.lead_Source === label).length || 0;
+  //   // });
 
-    const leadSourceCounts2 = lead_source_labels.map(label => {
 
-      let countObject = {}
+
+
+
+
+
+  //   const leadSourceCounts2 = lead_source_labels.map(label => {
+
+  //     let countObject = {}
       
-      const count = filteredLeads?.filter(lead => lead.lead_Source === label).length || 0;
+  //     const count = filteredLeads?.filter(lead => lead.lead_Source === label).length || 0;
 
-      countObject.label = label;
-      countObject.count = count;  
+  //     countObject.label = label;
+  //     countObject.count = count;  
        
 
-      return countObject;
+  //     return countObject;
 
-    });
-
-
-        set_filtered_leads(leadSourceCounts2);
-
-    console.log("leadSourceCounts2💙💙💙", leadSourceCounts2)
+  //   });
 
 
 
-    // const newleadSourceCounts = lead_source_labels.map((label) => {
+  //     const f  = [{label: "AAAA", count: 2}]
+
+  //       set_filtered_leads(leadSourceCounts2);
+
+  //   console.log("leadSourceCounts2💙💙💙", leadSourceCounts2)
+
+
+
+  //   // const newleadSourceCounts = lead_source_labels.map((label) => {
       
-    //   let countObject = filteredLeads?.reduce((acc, lead) => {
-    //     if (lead.lead_Source === label) {
-    //       acc.count += 1;
-    //     }
+  //   //   let countObject = filteredLeads?.reduce((acc, lead) => {
+  //   //     if (lead.lead_Source === label) {
+  //   //       acc.count += 1;
+  //   //     }
 
  
-    console.log("leadSourceCounts💚💚💚", leadSourceCounts)
+     
  
 
-    const optionsCount = {
-      series: [{ name: "Leads", data: leadSourceCounts }],
-      chart: { type: selectChart, height: 300 },
-      plotOptions: {
-        bar: { columnWidth: "50%", borderRadius: 5 },
-      },
-      xaxis: { categories: lead_source_labels, title: { text: "Source" } },
-      yaxis: { title: { text: "Leads" } },
-      colors: [ "#6C757D" ]
-    };
+  //   // const optionsCount = {
+  //   //   series: [{ name: "Leads", data: leadSourceCounts }],
+  //   //   chart: { type: selectChart, height: 300 },
+  //   //   plotOptions: {
+  //   //     bar: { columnWidth: "50%", borderRadius: 5 },
+  //   //   },
+  //   //   xaxis: { categories: lead_source_labels, title: { text: "Source" } },
+  //   //   yaxis: { title: { text: "Leads" } },
+  //   //   colors: [ "#6C757D" ]
+  //   // };
 
-    const chartElementCount = document.querySelector("#lead-source-chart");
-    if (chartElementCount) {
-      const chartCount = new ApexCharts(chartElementCount, optionsCount);
-      chartCount.render();
-      return () => chartCount.destroy();
-    }
-  }, [selectedYear, selectedMonth, selectChart, salesData, lead_source_labels]);
+  //   // const chartElementCount = document.querySelector("#lead-source-chart");
+  //   // if (chartElementCount) {
+  //   //   const chartCount = new ApexCharts(chartElementCount, optionsCount);
+  //   //   chartCount.render();
+  //   //   return () => chartCount.destroy();
+  //   // }
+  // }, [selectedYear, selectedMonth, selectChart, salesData, lead_source_labels, clients, ]);
 
 
 
@@ -1152,6 +1170,67 @@ export default function Clients({
 
 
 
+  
+
+
+  useLayoutEffect(() => {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const startDate = new Date(currentYear, currentMonth - 11, 1);
+
+  const filteredLeads = salesData?.totalLeads?.filter((lead) => {
+    const leadDate = new Date(lead.createdAt);
+    const leadMonth = leadDate.getMonth() + 1;
+    const leadYear = leadDate.getFullYear();
+    const leadDateN = new Date(leadYear, leadMonth - 1, 1);
+
+    if (!selectedYear) {
+      return (
+        (!selectedMonth || leadMonth === parseInt(selectedMonth)) &&
+        leadDateN >= startDate &&
+        leadDateN <= now
+      );
+    }
+
+    return (
+      (!selectedMonth || leadMonth === parseInt(selectedMonth)) &&
+      (!selectedYear || leadYear === parseInt(selectedYear))
+    );
+  });
+
+  const leadSourceCounts2 = lead_source_labels.map(label => ({
+    label,
+    count: filteredLeads?.filter(lead => lead.lead_Source === label).length || 0,
+  }));
+
+  set_filtered_leads(leadSourceCounts2);
+
+  // 👇 Render chart
+  // const optionsCount = {
+  //   series: [{
+  //     name: "Leads",
+  //     data: leadSourceCounts2.map(item => item.count),
+  //   }],
+  //   chart: { type: selectChart || "bar", height: 300 },
+  //   plotOptions: {
+  //     bar: { columnWidth: "50%", borderRadius: 5 },
+  //   },
+  //   xaxis: {
+  //     categories: leadSourceCounts2.map(item => item.label),
+  //     title: { text: "Source" },
+  //   },
+  //   yaxis: { title: { text: "Leads" } },
+  //   colors: ["#6C757D"],
+  // };
+
+  // const chartElementCount = document.querySelector("#lead-source-chart");
+  // if (chartElementCount) {
+  //   const chartCount = new ApexCharts(chartElementCount, optionsCount);
+  //   chartCount.render();
+  //   return () => chartCount.destroy();
+  // }
+}, [selectedYear, selectedMonth, selectChart, salesData, lead_source_labels, clients]);
 
 
 
@@ -1332,7 +1411,7 @@ export default function Clients({
           </div>
 
           {/* -----------------------Bar/Line/Area Charts--------------- */}
-          <div className={`w-full ${getGridClasses()} gap-4`}>
+          <div className={`w-full ${getGridClasses()} gap-4 p-4`}>
             {/* ------------Month Wise Department Total------------ */}
             {visibility[0] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
@@ -1404,8 +1483,7 @@ export default function Clients({
             )} */}
 
 
-
-
+            
 
             
         {/* 7----------Conversion Lead in Client in Proposal--------- */}
@@ -1428,7 +1506,7 @@ export default function Clients({
                     <h3 className="font-medium text-lg w-[24%]">
                       {lead.label}
                     </h3>
-                    <div className="bg-white  border overflow-hidden rounded-[2rem]  shadow-md drop-shadow-md w-full h-full">
+                    <div className="bg-white border overflow-hidden rounded-[2rem] shadow-md drop-shadow-md w-full h-full">
                       <div
                         style={{
                           width: `${lead?.count}%`,
@@ -1438,7 +1516,7 @@ export default function Clients({
                               : "linear-gradient(90deg, #FF4560, #FF8A65)",
                           transition: "width 0.4s ease-in-out",
                         }}
-                        className={`h-[1.6rem] flex items-center justify-start  ${
+                        className={`h-[1.6rem] flex items-center justify-start ${
                           lead?.count < 15 ? "text-black" : "text-white"
                         } font-semibold rounded-[2rem] shadow-md`}
                       >
@@ -1507,21 +1585,8 @@ export default function Clients({
 
 
 
-             {/* ------------------Fee Analysis----------------- */}
+               {/*  -------------Jobs Analysis----------- */}
             {visibility[5] && (
-              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                <h3 className="text-lg font-semibold text-center">
-                  Department-wise Fee Count
-                </h3>
-                <div id="department-fee-chart" />
-              </div>
-            )}
-
-
-
-
-             {/*  -------------Jobs Analysis----------- */}
-            {visibility[6] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <h3 className="text-lg font-semibold text-center">
                   Department-wise Total Count
@@ -1532,6 +1597,23 @@ export default function Clients({
 
 
 
+              {/* ------------------Fee Analysis----------------- */}
+            {visibility[6] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <h3 className="text-lg font-semibold text-center">
+                  Department-wise Fee Count
+                </h3>
+                <div id="department-fee-chart" />
+              </div>
+            )}
+
+
+              
+
+                
+
+
+           
 
 
              

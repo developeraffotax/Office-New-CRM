@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
-import { IoClose } from "react-icons/io5";
+import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import Loader from "../../utlis/Loader";
 import {
@@ -17,6 +17,7 @@ import Swal from "sweetalert2";
 import AddProposal from "./AddProposal";
 import { CiEdit } from "react-icons/ci";
 import QuickAccess from "../../utlis/QuickAccess";
+import DraggableUserList from "../../utlis/DraggableUserList";
 
 export default function Proposal() {
   const { auth } = useAuth();
@@ -48,6 +49,8 @@ export default function Proposal() {
   const [showMail, setShowMail] = useState(false);
   const [mail, setMail] = useState("");
   const mailDetailref = useRef(null);
+
+  const [showJobHolderFilter, setShowJobHolderFilter] = useState(false)
 
   // console.log("filteredData:", filteredData);
 
@@ -1826,6 +1829,26 @@ export default function Proposal() {
             </span>
 
             <span className="mt-1"><QuickAccess /></span>
+
+
+               {
+                auth?.user?.role?.name === "Admin" &&
+              <span
+                className={`p-[6px] rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
+                  showJobHolderFilter && "bg-orange-500 text-white"
+                }`}
+                onClick={() => {
+                   
+                  setShowJobHolderFilter(prev => !prev);
+                }}
+                title="Filter by Job Holder"
+              >
+                <IoBriefcaseOutline className="  cursor-pointer text-[22px] " />
+              </span>
+               }
+
+
+
           </div>
 
           {/* ---------Template Buttons */}
@@ -1841,6 +1864,26 @@ export default function Proposal() {
         </div>
         <hr className="w-full h-[1px] bg-gray-300 my-4" />
         {/*  */}
+
+
+
+
+         {auth?.user?.role?.name === "Admin" && showJobHolderFilter && <DraggableUserList table={table} usersArray={users.map(el => el.name)} updateJobHolderCountMapFn={(map, totalCount) => {
+          
+                            for (const item of proposalData || []) {
+                              console.log("ITEM", item)
+                                const holder = item.jobHolder ;
+                                map.set(holder, (map.get(holder) || 0) + 1);
+                                totalCount++;
+                              }
+          
+                              map.set("All", totalCount);
+                          
+                        } } listName={'proposal'} filterColName="jobHolder"  />}
+
+
+
+
 
         {/* ---------Table Detail---------- */}
         <div className="w-full h-full">

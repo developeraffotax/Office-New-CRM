@@ -1489,7 +1489,7 @@ export default function Clients({
               </div>
 
               <div className=" w-full flex flex-col gap-2">
-                {filtered_leads.map((lead, i) => (
+                {[...filtered_leads].sort((a, b) => b.count - a.count).map((lead, i) => (
                   <div
                     key={`${lead.label}--${i}`}
                     className="w-full flex items-center gap-2 px-2 py-1 rounded-md border shadow-md bg-white/60 transition-all duration-300 ease-in-out transform hover:scale-[1.04]"

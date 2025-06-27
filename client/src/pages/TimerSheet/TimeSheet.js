@@ -26,6 +26,7 @@ import { BsPieChartFill } from "react-icons/bs";
 import RunningTimers from "./RunningTimers";
 import UsersTimeSheet from "./UsersTimeSheet";
 import QuickAccess from "../../utlis/QuickAccess";
+import DraggableUserList from "../../utlis/DraggableUserList";
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -979,6 +980,7 @@ export default function TimeSheet() {
           );
         },
         filterFn: (row, columnId, filterValue) => {
+          
           const cellValue = row.getValue(columnId);
           return (cellValue || "").toString() === filterValue.toString();
         },
@@ -2135,10 +2137,8 @@ export default function TimeSheet() {
 
                  
 
-              <div className="flex items-center gap-2">
-                {/* <span className="text-sm font-semibold text-gray-700">
-                  Job Holder
-                </span> */}
+              {/* <div className="flex items-center gap-2">
+                 
                 <ul className="flex items-center gap-2 list-none  ">
                   {users?.map((user, i) => (
                     <li
@@ -2164,7 +2164,18 @@ export default function TimeSheet() {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </div> */}
+
+
+
+
+
+
+
+
+
+
+              <DraggableUserList table={table} listName="timesheet" usersArray={users.map(el => el.name)} filterColName="jobHolderName"  setColumnFromOutsideTableFn={setColumnFromOutsideTable} />
 
 
 

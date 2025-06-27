@@ -901,7 +901,7 @@ export default function Template() {
               <DraggableUserList
                 table={table}
                 usersArray={users.map((el) => el.name)}
-                updateJobHolderCountMap={(map, totalCount) => {
+                updateJobHolderCountMapFn={(map, totalCount) => {
                   for (const item of templateData || []) {
                     const holders = item.userList || [];
 

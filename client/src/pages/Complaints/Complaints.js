@@ -1138,7 +1138,7 @@ export default function Complaints() {
               </div> */}
 
 
-              {showExternalFilters && <DraggableUserList table={table} usersArray={users.map(el => el.name)} updateJobHolderCountMap={(map, totalCount) => {
+              {showExternalFilters && <DraggableUserList table={table} usersArray={users.map(el => el.name)} updateJobHolderCountMapFn={(map, totalCount) => {
 
                   for (const item of complaintData || []) {
                       const holder = item.assign.name ;

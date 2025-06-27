@@ -1,18 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 
-const DraggableUserList = ({
-  table,
-  usersArray,
-
-  listName,
-  filterColName = "jobHolder",
-  updateJobHolderCountMap,
-}) => {
+const DraggableUserList = ({ table, usersArray, listName, filterColName = "jobHolder", updateJobHolderCountMapFn, setColumnFromOutsideTableFn, }) => {
   const [userNameArray, setUserNameArray] = useState(usersArray);
   const [active, setActive] = useState("All");
-
- 
 
   const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -21,6 +12,8 @@ const DraggableUserList = ({
 
     return result;
   };
+
+  console.log("USER💚💛💛🧡🧡❤❤", usersArray)
 
   function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
     const savedSet = new Set(savedOrder);
@@ -36,20 +29,7 @@ const DraggableUserList = ({
     return [...ordered, ...newOnes];
   }
 
-  useEffect(() => {
-    const savedOrder = JSON.parse(
-      localStorage.getItem(`${listName}_usernamesOrder`)
-    );
-    if (savedOrder) {
-      const savedUserNames = mergeWithSavedOrder(usersArray, savedOrder);
-
-      setUserNameArray(savedUserNames);
-    } else {
-      setUserNameArray(usersArray);
-    }
-  }, [usersArray]);
-
-  //  -----------Handle drag end---------
+ 
   const handleUserOnDragEnd = (result) => {
     if (!result || !result.source?.index || !result.destination?.index) {
       return;
@@ -63,50 +43,69 @@ const DraggableUserList = ({
     setUserNameArray(items);
   };
 
-  // --------------Job_Holder Length---------->
 
-  //   const getJobHolderCount = (userName, status) => {
-  //     console.log(" DATA ARRAY 💛💛💛", dataArr);
-  //     if (userName === "All") {
-  //       return dataArr?.length
-  //     }
-  //     return dataArr.filter(
-  //       (el) => el[filterColName] === userName
-  //     )?.length;
-  //   };
-
-  // const jobHolderCountMap = useMemo(() => {
-  //   const map = new Map();
-  //   let totalCount = 0;
-
-  //   for (const item of dataArr || []) {
-  //     const holder = item.jobHolder ;
-  //     map.set(holder, (map.get(holder) || 0) + 1);
-  //     totalCount++;
-  //   }
-
-  //   map.set("All", totalCount); // Include total count for "All"
-  //   return map;
-  // }, [dataArr, filterColName]);
 
   const jobHolderCountMap = useMemo(() => {
     const map = new Map();
     let totalCount = 0;
 
-    updateJobHolderCountMap(map, totalCount);
+    if (updateJobHolderCountMapFn) {
+      updateJobHolderCountMapFn(map, totalCount);
+    }
 
     return map;
-  }, [ filterColName]);
+  }, [  updateJobHolderCountMapFn,   ]);
+
+
 
   const getJobHolderCount = (userName) => {
     console.log("THE MAP IS 💚💜💙💙💚💚💛💛🧡🧡", jobHolderCountMap);
     return jobHolderCountMap.get(userName) || 0;
   };
 
+
+
   const setColumnFromOutsideTable = (colKey, filterVal) => {
     const col = table.getColumn(colKey);
+
+    console.log("WELL THE COLUMN IS💚💛",col)
     return col.setFilterValue(filterVal);
   };
+
+
+
+
+
+   useEffect(() => {
+    const savedOrder = JSON.parse(
+      localStorage.getItem(`${listName}_usernamesOrder`)
+    );
+    if (savedOrder) {
+      const savedUserNames = mergeWithSavedOrder(usersArray, savedOrder);
+
+      setUserNameArray(savedUserNames);
+    } else {
+      setUserNameArray(usersArray);
+    }
+  }, [listName, usersArray]);
+
+
+
+
+
+
+  useEffect(() => {
+    const col = table.getColumn(filterColName);
+    const filterVal = col.getFilterValue();
+    if (filterVal) {
+      setActive(filterVal);
+    }
+  }, [filterColName, table, usersArray]);
+
+
+
+
+
 
   return (
     <>
@@ -129,10 +128,12 @@ const DraggableUserList = ({
                     }`}
                     onClick={() => {
                       setActive("All");
-                      setColumnFromOutsideTable(filterColName, "");
+                      (
+                        setColumnFromOutsideTableFn ?? setColumnFromOutsideTable
+                      )(filterColName, "");
                     }}
                   >
-                    All ({getJobHolderCount("All")})
+                    All {updateJobHolderCountMapFn && getJobHolderCount("All")}
                   </div>
 
                   {/* User Tabs */}
@@ -154,10 +155,15 @@ const DraggableUserList = ({
                           }`}
                           onClick={() => {
                             setActive(userName);
-                            setColumnFromOutsideTable(filterColName, userName);
+                            (
+                              setColumnFromOutsideTableFn ??
+                              setColumnFromOutsideTable
+                            )(filterColName, userName);
                           }}
                         >
-                          {userName} ({getJobHolderCount(userName)})
+                          {userName}{" "}
+                          { 
+                            getJobHolderCount(userName)}
                         </div>
                       )}
                     </Draggable>
@@ -174,6 +180,70 @@ const DraggableUserList = ({
 };
 
 export default DraggableUserList;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -471,6 +471,15 @@ const handleFeatureFilter = (value) => {
                   value={search}
                   onChange={(e) => {
                     const value = Math.max(1, parseInt(e.target.value));
+
+                    if(!selectedYear) {
+                      setSelectedYear(new Date().getFullYear())
+                    }
+                    if(e.target.value === "") {
+                      setSelectedYear("")
+                    }
+
+                    
                     setSearch(value);
                   }}
                   placeholder="Search"

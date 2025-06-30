@@ -1170,7 +1170,7 @@ export default function Clients({
   const currentMonth = now.getMonth();
   const startDate = new Date(currentYear, currentMonth - 11, 1);
 
-  const filteredLeads = salesData?.totalLeads?.filter((lead) => {
+  let filteredLeads = salesData?.totalLeads?.filter((lead) => {
     const leadDate = new Date(lead.createdAt);
     const leadMonth = leadDate.getMonth() + 1;
     const leadYear = leadDate.getFullYear();
@@ -1189,6 +1189,11 @@ export default function Clients({
       (!selectedYear || leadYear === parseInt(selectedYear))
     );
   });
+
+
+  
+
+ 
 
   const leadSourceCounts2 = lead_source_labels.map(label => ({
     label,

@@ -30,7 +30,7 @@ import {
 import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
 import { Timer } from "../../utlis/Timer";
-import { useLocation, useParams, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { GrCopy } from "react-icons/gr";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import JobCommentModal from "../Jobs/JobCommentModal";
@@ -49,6 +49,7 @@ import { use } from "react";
 import QuickAccess from "../../utlis/QuickAccess";
 import SubtasksForNote from "./SubtasksForNote";
 import { useTimer } from "../../context/timerContext";
+import { filterByRowId } from "../../utlis/filterByRowId";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -170,15 +171,10 @@ const AllTasks = () => {
   
   const [searchParams] = useSearchParams();
   const comment_taskId = searchParams.get('comment_taskId');
+    const navigate = useNavigate();
 
 
-  useEffect(() => {
-    if (comment_taskId) {
-      setCommentTaskId(comment_taskId);
-      setIsComment(true);
-    }
 
-  }, [comment_taskId]);
   
 
 
@@ -272,7 +268,10 @@ const AllTasks = () => {
 
   useEffect(() => {
     getAllTasks();
-    // eslint-disable-next-line
+     
+
+
+
   }, []);
 
   //   Get All Labels
@@ -1012,6 +1011,18 @@ const AllTasks = () => {
   // ----------------------Table Data--------->
   const columns = useMemo(
     () => [
+      {
+  accessorKey: '_id',
+  header: 'ID',
+   
+    size: 0,
+    maxSize: 0,
+    minSize: 0,
+  enableColumnFilter: false,  // 🔒 no filter input
+  enableSorting: false,
+  
+  Cell: () => null,           // visually hides the content
+},
       {
         accessorKey: "project.projectName",
         header: "Project",
@@ -1831,15 +1842,19 @@ const AllTasks = () => {
         
         Header: ({ column }) => {
           const statusData = ["To do", "Progress", "Review", "Awaiting", "On hold"];
-          useEffect(() => {
-            column.setFilterValue(state);
-            console.log(state, "THE STATE VALUE IS >>")
-          }, [state]);
+
+          // useEffect(() => {
+          //   column.setFilterValue(state);
+          //   console.log(state, "THE STATE VALUE IS >>")
+          // }, [state]);
 
           useEffect(() => {
-            column.setFilterValue("Progress");
+            if(!comment_taskId){
 
-            // eslint-disable-next-line
+              column.setFilterValue("Progress");
+            }
+
+             
           }, []);
           return (
             <div className=" flex flex-col gap-[2px]">
@@ -2364,13 +2379,16 @@ const AllTasks = () => {
     state: { rowSelection,  },
     // enableEditing: true,
     
-
+   
         
     enablePagination: true,
     initialState: {
       pagination: { pageSize: 20 },
       pageSize: 20,
       density: "compact",
+      columnVisibility: {
+        _id: false
+      }
     },
 
     muiTableHeadCellProps: {
@@ -2614,7 +2632,20 @@ useEffect(()=>{
 
 
 
-  
+      useEffect(() => {
+    if (comment_taskId) {
+      
+      filterByRowId(table, comment_taskId, setCommentTaskId, setIsComment)
+
+    
+
+    searchParams.delete("comment_taskId");
+    navigate({ search: searchParams.toString() }, { replace: true });
+
+
+    }
+
+  }, [comment_taskId, searchParams, navigate, table]);
   
 
   return (

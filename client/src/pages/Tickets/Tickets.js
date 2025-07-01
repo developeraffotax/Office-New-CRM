@@ -23,6 +23,7 @@ import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { Box } from "@mui/material";
 import QuickAccess from "../../utlis/QuickAccess";
 import { TbLoader2 } from "react-icons/tb";
+import { filterByRowId } from "../../utlis/filterByRowId";
 
 
 const updates_object_init = {
@@ -89,6 +90,8 @@ export default function Tickets() {
     
     // BULK EDITING
     const [rowSelection, setRowSelection] = useState({});
+
+    console.log("Row Selected💚💚💛💛🧡", rowSelection)
     
     const [showEdit, setShowEdit] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
@@ -156,15 +159,40 @@ export default function Tickets() {
     }
   }, [auth]);
 
+
+
+
+
+
+
   const [searchParams] = useSearchParams();
   const comment_taskId = searchParams.get("comment_taskId");
 
-  useEffect(() => {
-    if (comment_taskId) {
-      setCommentTicketId(comment_taskId);
-      setIsComment(true);
-    }
-  }, [comment_taskId]);
+  // useEffect(() => {
+  //   if (comment_taskId) {
+  //     setCommentTicketId(comment_taskId);
+  //     setIsComment(true);
+  //     setRowSelection(prev => {
+  //       return {
+  //         ...prev,
+  //         [comment_taskId]:true
+  //       }
+  //     })
+
+      
+  //   searchParams.delete("comment_taskId");
+  //   navigate({ search: searchParams.toString() }, { replace: true });
+
+  //   }
+  // }, [comment_taskId, searchParams, navigate]);
+
+
+
+  
+
+
+
+
 
   // const getReplies = async () => {
 
@@ -569,6 +597,18 @@ export default function Tickets() {
 
   const columns = useMemo(
     () => [
+            {
+  accessorKey: '_id',
+  header: 'ID',
+   
+    size: 0,
+    maxSize: 0,
+    minSize: 0,
+  enableColumnFilter: false,  // 🔒 no filter input
+  enableSorting: false,
+  
+  Cell: () => null,           // visually hides the content
+},
       {
         accessorKey: "companyName",
         minSize: 100,
@@ -1719,6 +1759,8 @@ export default function Tickets() {
             // eslint-disable-next-line
           }, [comments]);
 
+          console.log("REaD COMMENTS", comments)
+
           return (
             <div className="flex items-center justify-center gap-4 w-full h-full">
               <div
@@ -1730,7 +1772,7 @@ export default function Tickets() {
               >
                 <div className="relative">
                   <span className="text-[1rem] cursor-pointer relative">
-                    <MdInsertComment className="h-5 w-5 text-orange-600 " />
+                    <MdInsertComment className={`h-5 w-5 text-orange-600 `} />
                   </span>
                 </div>
               </div>
@@ -1793,6 +1835,11 @@ export default function Tickets() {
     //   pageSize: 50,
     //   density: "compact",
     // },
+    initialState: {
+       columnVisibility: {
+      _id: false,
+    },
+    }, 
 
 
     enableRowSelection: true,
@@ -1887,6 +1934,19 @@ export default function Tickets() {
     const col = table.getColumn(colKey);
     return col.setFilterValue(filterVal);
   };
+
+
+  
+useEffect(() => {
+  if (comment_taskId) {
+      console.log(comment_taskId, "The comment taskid is 🤎💜💜💙💙💚💚💛💛🧡🧡❤")
+    filterByRowId(table, comment_taskId, setCommentTicketId, setIsComment);
+
+    searchParams.delete("comment_taskId");
+    navigate({ search: searchParams.toString() }, { replace: true });
+  }
+}, [comment_taskId, searchParams, navigate, table]);
+
 
   return (
     <Layout>

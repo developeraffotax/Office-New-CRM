@@ -26,9 +26,10 @@ import { GoEye } from "react-icons/go";
 import GoalDetail from "../../components/Goal/GoalDetail";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FaListOl } from "react-icons/fa";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import QuickAccess from "../../utlis/QuickAccess";
 import DraggableUserList from "../../utlis/DraggableUserList";
+import { filterByRowId } from "../../utlis/filterByRowId";
 
 export default function Goals() {
   const { auth } = useAuth();
@@ -80,8 +81,7 @@ export default function Goals() {
     "Manual Goal",
   ];
 
-  console.log("goalsData:", goalsData);
-  console.log("filterGoals:", filterGoals);
+ 
 
   
         const [showJobHolderFilter, setShowJobHolderFilter] = useState(true);
@@ -89,15 +89,9 @@ export default function Goals() {
 
     const [searchParams] = useSearchParams();
     const comment_taskId = searchParams.get('comment_taskId');
+    const navigate = useNavigate();
   
-  
-    useEffect(() => {
-      if (comment_taskId) {
-        setCommentTaskId(comment_taskId);
-        setIsComment(true);
-      }
-  
-    }, [comment_taskId]);
+ 
   
 
 
@@ -432,6 +426,18 @@ export default function Goals() {
 
   const columns = useMemo(
     () => [
+                  {
+  accessorKey: '_id',
+  header: 'ID',
+  
+    size: 0,
+    maxSize: 0,
+    minSize: 0,
+  enableColumnFilter: false,  // 🔒 no filter input
+  enableSorting: false,
+  
+  Cell: () => null,           // visually hides the content
+},
       {
         accessorKey: "jobHolder._id",
         id: "jobHolderId", // <-- Custom ID
@@ -1502,10 +1508,13 @@ export default function Goals() {
       pagination: { pageSize: 20 },
       pageSize: 20,
       density: "compact",
+      columnVisibility: {
+      _id: false,
+    },
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
-    state: { rowSelection },
+    state: { rowSelection, },
 
     muiTableHeadCellProps: {
       style: {
@@ -1727,6 +1736,17 @@ const onDragEnd = (result) => {
 
 
 
+
+  
+useEffect(() => {
+  if (comment_taskId) {
+      console.log(comment_taskId, "The comment taskid is 🤎💜💜💙💙💚💚💛💛🧡🧡❤")
+    filterByRowId(table, comment_taskId, setCommentTaskId, setIsComment);
+
+    searchParams.delete("comment_taskId");
+    navigate({ search: searchParams.toString() }, { replace: true });
+  }
+}, [comment_taskId, searchParams, navigate, table]);
 
 
 

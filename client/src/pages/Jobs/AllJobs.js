@@ -23,7 +23,7 @@ import { MdDriveFileMoveOutline } from "react-icons/md";
 import { Timer } from "../../utlis/Timer";
 import JobCommentModal from "./JobCommentModal";
 import { MdAutoGraph } from "react-icons/md";
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { TbLoader } from "react-icons/tb";
 import { Box, Button, LinearProgress, ListItemIcon, MenuItem, Popover, Typography } from "@mui/material";
 import { MdOutlineModeEdit } from "react-icons/md";
@@ -47,6 +47,7 @@ import TicketsPopUp from "../../components/shared/TicketsPopUp";
 import { BiSend } from "react-icons/bi";
 import { BsPersonCheckFill } from "react-icons/bs";
 import QuickAccess from "../../utlis/QuickAccess";
+import { filterByRowId } from "../../utlis/filterByRowId";
  
 
 
@@ -195,15 +196,27 @@ export default function AllJobs() {
 
     const [searchParams] = useSearchParams();
     const comment_taskId = searchParams.get('comment_taskId');
+      const navigate = useNavigate();
   
+    // useEffect(() => {
+    //   if (comment_taskId) {
+    //     setJobId(comment_taskId);
+    //     setIsComment(true);
+
+    //     setRowSelection(prev => {
+    //     return {
+    //       ...prev,
+    //       [comment_taskId]:true
+    //     }
+    //   })
+
+      
+    // searchParams.delete("comment_taskId");
+    // navigate({ search: searchParams.toString() }, { replace: true });
+
+    //   }
   
-    useEffect(() => {
-      if (comment_taskId) {
-        setJobId(comment_taskId);
-        setIsComment(true);
-      }
-  
-    }, [comment_taskId]);
+    // }, [comment_taskId, searchParams, navigate]);
 
 
 
@@ -466,6 +479,7 @@ export default function AllJobs() {
       })
       
     } else {
+      console.log("THE FIRST USEEFFECT MOUNT💛💛💛🧡🧡")
       allClientJobData();
     }
 
@@ -1216,6 +1230,18 @@ export default function AllJobs() {
   const columns = useMemo(
     () => {
       const allColumns = [
+              {
+  accessorKey: '_id',
+  header: 'ID',
+   
+    size: 0,
+    maxSize: 0,
+    minSize: 0,
+  enableColumnFilter: false,  // 🔒 no filter input
+  enableSorting: false,
+  
+  Cell: () => null,           // visually hides the content
+},
         {
           id: "companyName",
           accessorKey: "companyName",
@@ -1331,7 +1357,10 @@ export default function AllJobs() {
           Header: ({ column }) => {
             const user = auth?.user?.name;
             useEffect(() => {
-              column.setFilterValue(user);
+              if(!comment_taskId) {
+
+                column.setFilterValue(user);
+              }
 
               // eslint-disable-next-line
             }, []);
@@ -2092,7 +2121,10 @@ export default function AllJobs() {
             ];
 
             useEffect(() => {
-              column.setFilterValue("Progress");
+              if(!comment_taskId) {
+                column.setFilterValue("Progress");
+
+              }
             }, []);
 
             return (
@@ -3381,21 +3413,8 @@ export default function AllJobs() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
       ];
-      return allColumns.filter((col) => columnVisibility[col.id]);
+      return allColumns.filter((col) => columnVisibility[col.id] || col.accessorKey === "_id");
     },
     // eslint-disable-next-line
     [
@@ -3446,7 +3465,11 @@ export default function AllJobs() {
     // enableColumnVirtualization: true,
     onRowSelectionChange: setRowSelection,
 
-
+    initialState: {
+      columnVisibility: {
+        _id: false
+      }
+    },
 
     renderTopToolbar:() => (
       
@@ -3849,6 +3872,23 @@ useEffect(()=>{
 
 
 
+  
+
+
+
+
+
+
+
+useEffect(() => {
+  if (comment_taskId) {
+      console.log(comment_taskId, "The comment taskid is 🤎💜💜💙💙💚💚💛💛🧡🧡❤")
+    filterByRowId(table, comment_taskId, setJobId, setIsComment);
+
+    searchParams.delete("comment_taskId");
+    navigate({ search: searchParams.toString() }, { replace: true });
+  }
+}, [comment_taskId, searchParams, navigate, table]);
 
 
 

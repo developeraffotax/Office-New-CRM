@@ -3882,11 +3882,11 @@ useEffect(()=>{
 
 useEffect(() => {
   if (comment_taskId) {
-      console.log(comment_taskId, "The comment taskid is 🤎💜💜💙💙💚💚💛💛🧡🧡❤")
+    
     filterByRowId(table, comment_taskId, setJobId, setIsComment);
 
-    searchParams.delete("comment_taskId");
-    navigate({ search: searchParams.toString() }, { replace: true });
+    // searchParams.delete("comment_taskId");
+    // navigate({ search: searchParams.toString() }, { replace: true });
   }
 }, [comment_taskId, searchParams, navigate, table]);
 

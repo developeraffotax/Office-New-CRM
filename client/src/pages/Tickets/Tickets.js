@@ -1,12 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { mkConfig, generateCsv, download } from "export-to-csv";
-import {
-  MaterialReactTable,
-  useMaterialReactTable,
-} from "material-react-table";
+import { MaterialReactTable, useMaterialReactTable, } from "material-react-table";
 import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
-
 import Layout from "../../components/Loyout/Layout";
 import { style } from "../../utlis/CommonStyle";
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
@@ -14,42 +9,29 @@ import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useAuth } from "../../context/authContext";
-import { MdCheckCircle, MdInsertComment, MdOutlineModeEdit } from "react-icons/md";
+import { MdCheckCircle, MdInsertComment, MdOutlineModeEdit, } from "react-icons/md";
 import { AiOutlineEdit, AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
-import { Box } from "@mui/material";
 import QuickAccess from "../../utlis/QuickAccess";
 import { TbLoader2 } from "react-icons/tb";
 import { filterByRowId } from "../../utlis/filterByRowId";
 
 
-const updates_object_init = {
-       
-      jobHolder: '',
-      jobStatus: '',
-      jobDate: '',
-     
-}
+const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "", };
+const jobStatusOptions = [ "Quote", "Data", "Progress", "Queries", "Approval", "Submission", "Billing", "Feedback", ];
+const companyData = ["Affotax", "Outsource"];
+const status = ["Read", "Unread", "Send"];
 
-
-
-
-const jobStatusOptions = [
-  "Quote",
-  "Data",
-  "Progress",
-  "Queries",
-  "Approval",
-  "Submission",
-  "Billing",
-  "Feedback",
-];
 
 export default function Tickets() {
   const { auth } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const comment_taskId = searchParams.get("comment_taskId");
+
   const [showSendModal, setShowSendModal] = useState(false);
   const [emailData, setEmailData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -57,173 +39,127 @@ export default function Tickets() {
   const [selectedTab, setSelectedTab] = useState("progress");
   const [users, setUsers] = useState([]);
   const [userName, setUserName] = useState([]);
-  const companyData = ["Affotax", "Outsource"];
-  const status = ["Read", "Unread", "Send"];
-  const navigate = useNavigate();
+  const [access, setAccess] = useState([]);
+
   const [isComment, setIsComment] = useState(false);
   const commentStatusRef = useRef(null);
   const [commentTicketId, setCommentTicketId] = useState("");
-  const [access, setAccess] = useState([]);
 
   const [showJobHolder, setShowJobHolder] = useState(true);
   const [active1, setActive1] = useState("");
-
-  const [replyCounts, setReplyCounts] = useState({});
-  const initMount = useRef(true);
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 50, // ✅ default page size
   });
 
+  const [rowSelection, setRowSelection] = useState({});
+  const [updates, setUpdates] = useState(updates_object_init);
+  const [showEdit, setShowEdit] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
 
 
 
 
 
+  // ===== Utility functions =====
+
+
+  const handle_on_change_update = (e) => {
+    setUpdates((prev) => {
+      return {
+        ...prev,
+        [e.target.name]: e.target.value,
+      };
+    });
+  };
+
+
+  const mergeWithSavedOrder = (fetchedUsernames, savedOrder) => {
+    const savedSet = new Set(savedOrder);
+    const ordered = savedOrder.filter((name) => fetchedUsernames.includes(name) );
+    const newOnes = fetchedUsernames.filter((name) => !savedSet.has(name));
+    return [...ordered, ...newOnes];
+  };
+
+
+  const getCurrentMonthYear = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, "0");
+    return `${year}-${month}`;
+  };
 
 
 
+  const handleClearFilters = () => {
+    table.setColumnFilters([]);
+    table.setGlobalFilter("");
+  };
 
-  
-    
-    // BULK EDITING
-    const [rowSelection, setRowSelection] = useState({});
 
-    console.log("Row Selected💚💚💛💛🧡", rowSelection)
-    
-    const [showEdit, setShowEdit] = useState(false);
-    const [isUpdating, setIsUpdating] = useState(false);
-  
-    const [updates, setUpdates] = useState(updates_object_init)
-  
-  
-    const handle_on_change_update = (e) => {
-      setUpdates(prev => {
-        return {
-          ...prev,
-          [e.target.name]: e.target.value
-        }
-      })
+
+  const reorder = (list, startIndex, endIndex) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+    return result;
+  };
+
+
+
+  const handleUserOnDragEnd = (result) => {
+    const items = reorder( userName, result.source.index, result.destination.index );
+    localStorage.setItem("tickets_usernamesOrder", JSON.stringify(items));
+    setUserName(items);
+  };
+
+
+
+  const getJobHolderCount = (user, status) => {
+    if (user === "All") {
+      return emailData.length;
     }
-    
-    // -------Update Bulk Leads------------->
-  
-    const updateBulkLeads = async (e) => {
-      e.preventDefault();
-      setIsUpdating(true);
-  
-      console.log("Row Selection",rowSelection);
-      console.log("Updates",updates)
-  
-      try {
-        const { data } = await axios.put(
-          `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/bulk/tickets`,
-          {
-            rowSelection: Object.keys(rowSelection).filter(
-              (id) => rowSelection[id] === true
-            ),
-            updates
-          }
-        );
-  
-        if (data) {
-          setUpdates(updates_object_init);
-          toast.success("Bulk Tickets Updated💚");
-          getAllEmails()
-        }
-      } catch (error) {
-         
-        console.log(error?.response?.data?.message);
-        toast.error("Something went wrong!");
-      } finally {
-        setIsUpdating(false);
+    return emailData.filter((ticket) => ticket?.jobHolder === user)?.length;
+  };
+
+
+
+  const setColumnFromOutsideTable = (colKey, filterVal) => {
+    const col = table.getColumn(colKey);
+    return col.setFilterValue(filterVal);
+  };
+
+
+
+
+
+
+  // ===== Functions with api calls =====
+
+  const updateBulkLeads = async (e) => {
+    e.preventDefault();
+    setIsUpdating(true);
+    const selectedIds = Object.keys(rowSelection).filter((id) => rowSelection[id]);
+
+    try {
+      const { data } = await axios.put( `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/bulk/tickets`, { rowSelection: selectedIds, updates } );
+      if (data) {
+        setUpdates(updates_object_init);
+        toast.success("Bulk Tickets Updated💚");
+        getAllEmails();
       }
-    };
-  
-  
-
-
-
-
-
-  // Get Auth Access
-  useEffect(() => {
-    if (auth.user) {
-      const filterAccess = auth.user.role.access
-        .filter((role) => role.permission === "Tickets")
-        .flatMap((jobRole) => jobRole.subRoles);
-
-      setAccess(filterAccess);
+    } catch (error) {
+      console.log(error?.response?.data?.message);
+      toast.error("Something went wrong!");
+    } finally {
+      setIsUpdating(false);
     }
-  }, [auth]);
-
-
-
-
-
-
-
-  const [searchParams] = useSearchParams();
-  const comment_taskId = searchParams.get("comment_taskId");
-
-  // useEffect(() => {
-  //   if (comment_taskId) {
-  //     setCommentTicketId(comment_taskId);
-  //     setIsComment(true);
-  //     setRowSelection(prev => {
-  //       return {
-  //         ...prev,
-  //         [comment_taskId]:true
-  //       }
-  //     })
-
-      
-  //   searchParams.delete("comment_taskId");
-  //   navigate({ search: searchParams.toString() }, { replace: true });
-
-  //   }
-  // }, [comment_taskId, searchParams, navigate]);
-
-
+  };
 
   
-
-
-
-
-
-  // const getReplies = async () => {
-
-  //   try {
-  //     const { data } = await axios.get(
-  //       `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets-replies`
-  //     );
-  //     if (data) {
-
-  //       console.log(data)
-  //       const countsMap = {};
-  //       data.replies.forEach(item => {
-  //       countsMap[item.threadId] = {
-  //         totalSent: item.totalSent,
-  //         totalReceived: item.totalReceived
-  //       };
-  //     });
-
-  //     setReplyCounts(countsMap);
-
-  //     initMount.current = false;
-
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-
-  //   }
-
-  // }
-
-  // -------Get All Emails-------
+  
   const getAllEmails = async () => {
     setIsLoading(true);
     try {
@@ -233,10 +169,6 @@ export default function Tickets() {
       if (data) {
         setEmailData(data.emails);
         setIsLoading(false);
-
-        // if(initMount) {
-        //   getReplies()
-        // }
       }
     } catch (error) {
       console.log(error);
@@ -244,11 +176,8 @@ export default function Tickets() {
     }
   };
 
-  useEffect(() => {
-    getAllEmails();
-  }, []);
 
-  // With Loading
+  
   const getEmails = async () => {
     try {
       const { data } = await axios.get(
@@ -262,74 +191,38 @@ export default function Tickets() {
     }
   };
 
-  function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
-    const savedSet = new Set(savedOrder);
 
-    // Preserve the order from savedOrder, but only if the username still exists in the fetched data
-    const ordered = savedOrder.filter((name) =>
-      fetchedUsernames.includes(name)
-    );
-
-    // Add any new usernames that aren't in the saved order
-    const newOnes = fetchedUsernames.filter((name) => !savedSet.has(name));
-
-    return [...ordered, ...newOnes];
-  }
-
-  //---------- Get All Users-----------
+  
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers(
-        data?.users?.filter((user) =>
-          user.role?.access?.some((item) =>
-            item?.permission?.includes("Tickets")
-          )
-        ) || []
-      );
+      setUsers( data?.users?.filter((user) => user.role?.access?.some((item) => item?.permission?.includes("Tickets") ) ) || [] );
 
-      const userNameArr = data?.users
-        ?.filter((user) =>
-          user.role?.access.some((item) =>
-            item?.permission?.includes("Tickets")
-          )
-        )
-        .map((user) => user.name);
-
+      const userNameArr = data?.users?.filter((user) => user.role?.access.some((item) => item?.permission?.includes("Tickets") ) ).map((user) => user.name);
       setUserName(userNameArr);
 
-      const savedOrder = JSON.parse(
-        localStorage.getItem("tickets_usernamesOrder")
-      );
-      if (savedOrder) {
-        const savedUserNames = mergeWithSavedOrder(userNameArr, savedOrder);
+      const savedOrder = JSON.parse(localStorage.getItem("tickets_usernamesOrder") || "null");
+      if (savedOrder) setUserName(mergeWithSavedOrder(userNameArr, savedOrder));
 
-        setUserName(savedUserNames);
-      }
     } catch (error) {
       console.log(error);
     }
   };
 
-  useEffect(() => {
-    getAllUsers();
-    // eslint-disable-next-line
-  }, []);
 
-  // ---------Handle Delete Task-------------
+  
+
+
+
+
+
+
 
   const handleDeleteTicketConfirmation = (ticketId) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
+    Swal.fire({ title: "Are you sure?", text: "You won't be able to revert this!", icon: "warning", showCancelButton: true, confirmButtonColor: "#3085d6", cancelButtonColor: "#d33", confirmButtonText: "Yes, delete it!", })
+    .then((result) => {
       if (result.isConfirmed) {
         handleDeleteTicket(ticketId);
         Swal.fire("Deleted!", "Your ticket has been deleted.", "success");
@@ -360,7 +253,13 @@ export default function Tickets() {
     }
   };
 
-  // ------------Update Status ------------>
+
+  
+
+
+
+
+
   const updateJobStatus = async (ticketId, status) => {
     try {
       const { data } = await axios.put(
@@ -393,7 +292,7 @@ export default function Tickets() {
           }
         });
 
-        //getEmails();
+      
       }
     } catch (error) {
       console.log(error);
@@ -401,10 +300,12 @@ export default function Tickets() {
     }
   };
 
-  // ------------Update jobHolder ------------>
-  const updateJobHolder = async (ticketId,  jobHolder) => {
+
+  
 
 
+
+  const updateJobHolder = async (ticketId, jobHolder) => {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
@@ -452,36 +353,17 @@ export default function Tickets() {
 
 
 
-
-
-
-
-
-    // ------------Update Date ------------>
-    const updateJobDate = async (ticketId, jobDate) => {
-
-    
-      try {
-        const { data } = await axios.put(
-          `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
-          { jobDate }
-        );
-        if (data) {
-          const updateTicket = data?.ticket;
-          toast.success("Job Date updated successfully!");
-          if (filteredData) {
-            setFilteredData((prevData) => {
-              if (Array.isArray(prevData)) {
-                return prevData.map((item) =>
-                  item._id === updateTicket._id ? updateTicket : item
-                );
-              } else {
-                return [updateTicket];
-              }
-            });
-          }
-  
-          setEmailData((prevData) => {
+  const updateJobDate = async (ticketId, jobDate) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
+        { jobDate }
+      );
+      if (data) {
+        const updateTicket = data?.ticket;
+        toast.success("Job Date updated successfully!");
+        if (filteredData) {
+          setFilteredData((prevData) => {
             if (Array.isArray(prevData)) {
               return prevData.map((item) =>
                 item._id === updateTicket._id ? updateTicket : item
@@ -490,28 +372,39 @@ export default function Tickets() {
               return [updateTicket];
             }
           });
-  
-          getEmails();
         }
-      } catch (error) {
-        console.log(error);
-        toast.error(error.response?.data?.message || "An error occurred");
+
+        setEmailData((prevData) => {
+          if (Array.isArray(prevData)) {
+            return prevData.map((item) =>
+              item._id === updateTicket._id ? updateTicket : item
+            );
+          } else {
+            return [updateTicket];
+          }
+        });
+
+        getEmails();
       }
-    };
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response?.data?.message || "An error occurred");
+    }
+  };
+
+
+  
 
 
 
-  // ------------Update Status------------>
+
+
+
+
+
   const handleUpdateTicketStatusConfirmation = (ticketId) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, Complete it!",
-    }).then((result) => {
+    Swal.fire({ title: "Are you sure?", text: "You won't be able to revert this!", icon: "warning", showCancelButton: true, confirmButtonColor: "#3085d6", cancelButtonColor: "#d33", confirmButtonText: "Yes, Complete it!", })
+    .then((result) => {
       if (result.isConfirmed) {
         handleStatusComplete(ticketId);
         Swal.fire(
@@ -522,6 +415,7 @@ export default function Tickets() {
       }
     });
   };
+
 
   const handleStatusComplete = async (ticketId) => {
     if (!ticketId) {
@@ -547,12 +441,17 @@ export default function Tickets() {
     }
   };
 
-  const updateTicketSingleField = async (ticketId, update) => {
-    // if (!ticketId || !updates) {
-    //   toast.error("Ticket ID and updates are required!");
-    //   return;
-    // }
 
+
+
+
+
+
+
+
+
+
+  const updateTicketSingleField = async (ticketId, update) => {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
@@ -562,21 +461,9 @@ export default function Tickets() {
       if (data) {
         const updatedTicket = data?.ticket;
 
-        // Update the emailData state with the updated ticket
-        setEmailData((prevData) =>
-          prevData.map((item) =>
-            item._id === updatedTicket._id ? updatedTicket : item
-          )
-        );
+        setEmailData((prevData) => prevData.map((item) => item._id === updatedTicket._id ? updatedTicket : item ) );
 
-        // Update the filteredData state if it exists
-        if (filteredData) {
-          setFilteredData((prevData) =>
-            prevData.map((item) =>
-              item._id === updatedTicket._id ? updatedTicket : item
-            )
-          );
-        }
+        if (filteredData) setFilteredData((prevData) => prevData.map((item) => item._id === updatedTicket._id ? updatedTicket : item ) );
 
         toast.success("Ticket updated successfully!");
       }
@@ -586,29 +473,27 @@ export default function Tickets() {
     }
   };
 
-  // ------------------------Table Detail------------->
 
-  const getCurrentMonthYear = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = (today.getMonth() + 1).toString().padStart(2, "0");
-    return `${year}-${month}`;
-  };
+
+
+
+
+
+
+  // ===== Table Details =====
 
   const columns = useMemo(
     () => [
-            {
-  accessorKey: '_id',
-  header: 'ID',
-   
-    size: 0,
-    maxSize: 0,
-    minSize: 0,
-  enableColumnFilter: false,  // 🔒 no filter input
-  enableSorting: false,
-  
-  Cell: () => null,           // visually hides the content
-},
+      {
+        accessorKey: "_id",
+        header: "ID",
+        size: 0,
+        maxSize: 0,
+        minSize: 0,
+        enableColumnFilter: false,  
+        enableSorting: false,
+        Cell: () => null, 
+      },
       {
         accessorKey: "companyName",
         minSize: 100,
@@ -636,7 +521,6 @@ export default function Tickets() {
             </div>
           );
         },
-        
 
         Cell: ({ cell, row }) => {
           const companyName = row.original.companyName;
@@ -647,7 +531,7 @@ export default function Tickets() {
 
           const handleKeyDown = (e) => {
             if (e.key === "Escape") {
-              setNewcompanyName(""); 
+              setNewcompanyName("");
               setIsEditing(false);
             }
 
@@ -658,14 +542,13 @@ export default function Tickets() {
                 });
               }
 
-              setIsEditing(false); 
+              setIsEditing(false);
             }
           };
 
           useEffect(() => {
             if (isEditing && inputRef?.current) {
               inputRef.current.focus();
-              
             }
           }, [isEditing]);
 
@@ -752,8 +635,6 @@ export default function Tickets() {
           );
         },
 
-       
-
         Cell: ({ cell, row }) => {
           const clientName = row.original.clientName;
           const [isEditing, setIsEditing] = useState(false);
@@ -763,8 +644,8 @@ export default function Tickets() {
 
           const handleKeyDown = (e) => {
             if (e.key === "Escape") {
-              setNewClientName(""); 
-              setIsEditing(false); 
+              setNewClientName("");
+              setIsEditing(false);
             }
 
             if (e.key === "Enter") {
@@ -780,7 +661,6 @@ export default function Tickets() {
           useEffect(() => {
             if (isEditing && inputRef?.current) {
               inputRef.current.focus();
-             
             }
           }, [isEditing]);
 
@@ -891,8 +771,6 @@ export default function Tickets() {
 
           useEffect(() => {
             column.setFilterValue(user);
-
-            // eslint-disable-next-line
           }, []);
 
           return (
@@ -975,13 +853,6 @@ export default function Tickets() {
         accessorKey: "jobStatus",
         header: "Job Status",
         Header: ({ column }) => {
-          // const user = auth?.user?.name;
-
-          // useEffect(() => {
-          //   column.setFilterValue(user);
-
-          // }, []);
-
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -1062,9 +933,6 @@ export default function Tickets() {
           return String(cellValue ?? "") === String(filterValue);
         },
 
-        // filterFn: "equals",
-        // filterSelectOptions: jobStatusOptions.map((el) => el),
-        // filterVariant: "select",
         size: 120,
         minSize: 80,
         maxSize: 130,
@@ -1222,7 +1090,6 @@ export default function Tickets() {
             if (filterValue === "Custom date") {
               column.setFilterValue(customDate);
             }
-            //eslint-disable-next-line
           }, [customDate, filterValue]);
 
           const handleFilterChange = (e) => {
@@ -1535,7 +1402,6 @@ export default function Tickets() {
             if (filterValue === "Custom date") {
               column.setFilterValue(customDate);
             }
-            //eslint-disable-next-line
           }, [customDate, filterValue]);
 
           const handleFilterChange = (e) => {
@@ -1586,20 +1452,6 @@ export default function Tickets() {
         },
         Cell: ({ cell, row }) => {
           const lastReply = row.original.lastMessageSentTime;
-          // const [date, setDate] = useState(() => {
-          //   const cellDate = new Date(
-          //     cell.getValue() || "2024-09-20T12:43:36.002+00:00"
-          //   );
-          //   return cellDate.toISOString().split("T")[0];
-          // });
-
-          // const [showStartDate, setShowStartDate] = useState(false);
-
-          // const handleDateChange = (newDate) => {
-          //   setDate(newDate);
-          //   updateJobDate(row.original._id, newDate, "");
-          //   setShowStartDate(false);
-          // };
 
           function getDaysOld(dateString) {
             const givenDate = new Date(dateString);
@@ -1702,47 +1554,6 @@ export default function Tickets() {
         grow: false,
       },
 
-      // {
-      //   accessorKey: "comments",
-      //   header: "Comments",
-      //   Cell: ({ cell, row }) => {
-
-      //     console.log("THe row for comments💛",row)
-      //     const comments = cell.getValue();
-      //     const [readComments, setReadComments] = useState([]);
-
-      //     useEffect(() => {
-      //       const filterComments = comments.filter(
-      //         (item) => item.status === "unread"
-      //       );
-      //       setReadComments(filterComments);
-      //       // eslint-disable-next-line
-      //     }, [comments]);
-
-      //     return (
-      //       <div
-      //         className="flex items-center justify-center gap-1 relative w-full h-full"
-      //         onClick={() => {
-      //           setCommentTicketId(row.original._id);
-      //           setIsComment(true);
-      //         }}
-      //       >
-      //         <div className="relative">
-      //           <span className="text-[1rem] cursor-pointer relative">
-      //             <MdInsertComment className="h-5 w-5 text-orange-600 " />
-      //           </span>
-      //           {/* {readComments?.length > 0 && (
-      //             <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
-      //               {readComments?.length}
-      //             </span>
-      //           )} */}
-      //         </div>
-      //       </div>
-      //     );
-      //   },
-      //   size: 90,
-      // },
-
       // <-----Action------>
       {
         accessorKey: "actions",
@@ -1759,7 +1570,7 @@ export default function Tickets() {
             // eslint-disable-next-line
           }, [comments]);
 
-          console.log("REaD COMMENTS", comments)
+          console.log("REaD COMMENTS", comments);
 
           return (
             <div className="flex items-center justify-center gap-4 w-full h-full">
@@ -1803,17 +1614,6 @@ export default function Tickets() {
     [users, auth, emailData, filteredData]
   );
 
-  // Clear table Filter
-  const handleClearFilters = () => {
-    table.setColumnFilters([]);
-
-    table.setGlobalFilter("");
-    // table.resetColumnFilters();
-  };
-
-
-  console.log(rowSelection, "THE ROW SELECTION")
-
   const table = useMaterialReactTable({
     columns,
     data: emailData || [],
@@ -1836,22 +1636,20 @@ export default function Tickets() {
     //   density: "compact",
     // },
     initialState: {
-       columnVisibility: {
-      _id: false,
+      columnVisibility: {
+        _id: false,
+      },
     },
-    }, 
-
 
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
-     
+
     enableBatchRowSelection: true,
 
-    
     state: {
       pagination, // ✅ Controlled pagination
       density: "compact",
-      rowSelection
+      rowSelection,
     },
     onPaginationChange: setPagination, // ✅ Hook for page changes
 
@@ -1886,7 +1684,8 @@ export default function Tickets() {
     },
   });
 
-  // Close Comment Box to click anywhere
+  // ===== Side-effects =====
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -1901,52 +1700,29 @@ export default function Tickets() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // a little function to help us with reordering the result
-  const reorder = (list, startIndex, endIndex) => {
-    const result = Array.from(list);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
+  useEffect(() => {
+    getAllUsers();
+  }, []);
 
-    return result;
-  };
+  useEffect(() => {
+    getAllEmails();
+  }, []);
 
-  //  -----------Handle drag end---------
-  const handleUserOnDragEnd = (result) => {
-    const items = reorder(
-      userName,
-      result.source.index,
-      result.destination.index
-    );
-    localStorage.setItem("tickets_usernamesOrder", JSON.stringify(items));
-    setUserName(items);
-  };
+  useEffect(() => {
+    if (auth.user) {
+      const filterAccess = auth.user.role.access
+        .filter((role) => role.permission === "Tickets")
+        .flatMap((jobRole) => jobRole.subRoles);
 
-  // --------------Job_Holder Length---------->
-
-  const getJobHolderCount = (user, status) => {
-    if (user === "All") {
-      return emailData.length;
+      setAccess(filterAccess);
     }
-    return emailData.filter((ticket) => ticket?.jobHolder === user)?.length;
-  };
+  }, [auth]);
 
-  const setColumnFromOutsideTable = (colKey, filterVal) => {
-    const col = table.getColumn(colKey);
-    return col.setFilterValue(filterVal);
-  };
-
-
-  
-useEffect(() => {
-  if (comment_taskId) {
-      console.log(comment_taskId, "The comment taskid is 🤎💜💜💙💙💚💚💛💛🧡🧡❤")
-    filterByRowId(table, comment_taskId, setCommentTicketId, setIsComment);
-
-    searchParams.delete("comment_taskId");
-    navigate({ search: searchParams.toString() }, { replace: true });
-  }
-}, [comment_taskId, searchParams, navigate, table]);
-
+  useEffect(() => {
+    if (comment_taskId) {
+      filterByRowId(table, comment_taskId, setCommentTicketId, setIsComment);
+    }
+  }, [comment_taskId, searchParams, navigate, table]);
 
   return (
     <Layout>
@@ -1958,7 +1734,6 @@ useEffect(() => {
             </h1>
 
             {
-              // auth?.user?.role?.name === 'Admin' &&
               <span
                 className={`p-1 rounded-full hover:shadow-lg transition duration-200 ease-in-out transform hover:scale-105 bg-gradient-to-r from-orange-500 to-yellow-600 cursor-pointer border border-transparent hover:border-blue-400 mb-1 hover:rotate-180 `}
                 onClick={() => {
@@ -2020,7 +1795,6 @@ useEffect(() => {
                       : "text-black bg-gray-100 hover:bg-slate-200"
                   }`}
                   onClick={() => {
-                    // setSelectedTab("inbox");
                     navigate("/tickets/inbox");
                   }}
                 >
@@ -2030,39 +1804,31 @@ useEffect(() => {
             </div>
 
             {auth?.user?.role?.name === "Admin" && (
-               <div className="flex justify-center items-center  gap-2">
+              <div className="flex justify-center items-center  gap-2">
+                <span
+                  className={` p-1 rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
+                    showJobHolder && "bg-orange-500 text-white"
+                  }`}
+                  onClick={() => {
+                    setShowJobHolder((prev) => !prev);
+                  }}
+                  title="Filter by Job Holder"
+                >
+                  <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
+                </span>
 
                 <span
-                className={` p-1 rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
-                  showJobHolder && "bg-orange-500 text-white"
-                }`}
-                onClick={() => {
-                  setShowJobHolder((prev) => !prev);
-                }}
-                title="Filter by Job Holder"
-              >
-                <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
-              </span>
-
-
-                 
-                
-                               
-                                  <span
-                                      className={` p-1 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${
-                                          showEdit && "bg-orange-500 text-white"
-                                            }`}
-                                      onClick={() => {
-                                        setShowEdit(!showEdit);
-                                      }}
-                                      title="Edit Multiple Jobs"
-                                  >
-                                    <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
-                                  </span>
-                               
-
-                              </div>
-                
+                  className={` p-1 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${
+                    showEdit && "bg-orange-500 text-white"
+                  }`}
+                  onClick={() => {
+                    setShowEdit(!showEdit);
+                  }}
+                  title="Edit Multiple Jobs"
+                >
+                  <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
+                </span>
+              </div>
             )}
           </div>
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-2 " />
@@ -2134,116 +1900,74 @@ useEffect(() => {
                 </div>
               </div>
 
+              {/* Update Bulk Jobs */}
+              {showEdit && (
+                <div className="w-full  p-4 ">
+                  <form
+                    onSubmit={updateBulkLeads}
+                    className="w-full grid grid-cols-12 gap-4 max-2xl:grid-cols-8  "
+                  >
+                    <div className="w-full">
+                      <select
+                        name="jobHolder"
+                        value={updates.jobHolder}
+                        onChange={handle_on_change_update}
+                        className={`${style.input} w-full`}
+                      >
+                        <option value="empty">Job Holder</option>
+                        {users.map((jobHolder, i) => (
+                          <option value={jobHolder.name} key={i}>
+                            {jobHolder.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
+                    <div className="">
+                      <select
+                        name="jobStatus"
+                        value={updates.jobStatus}
+                        onChange={handle_on_change_update}
+                        className={`${style.input} w-full`}
+                      >
+                        <option value="empty">Job Status</option>
+                        {jobStatusOptions.map((el, i) => (
+                          <option value={el} key={i}>
+                            {el}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
+                    <div className="inputBox">
+                      <input
+                        type="date"
+                        name="jobDate"
+                        value={updates.jobDate}
+                        onChange={handle_on_change_update}
+                        className={`${style.input} w-full `}
+                      />
+                      <span>Job Date</span>
+                    </div>
 
-
-
-
-
-
-                        {/* Update Bulk Jobs */}
-                      {showEdit && (
-                        <div className="w-full  p-4 ">
-                          <form
-                            onSubmit={updateBulkLeads}
-                            className="w-full grid grid-cols-12 gap-4 max-2xl:grid-cols-8  "
-                          >
-               
-                           
-                            
-                           
-              
-                       
-                              <div className="w-full">
-                                  <select
-                                    name="jobHolder"
-                                    value={updates.jobHolder}
-                                    
-                                    onChange={handle_on_change_update}
-                                    className={`${style.input} w-full`}
-                                     
-                                  >
-                                    <option value="empty">Job Holder</option>
-                                    {users.map((jobHolder, i) => (
-                                      <option value={jobHolder.name} key={i}>
-                                        {jobHolder.name}
-                                      </option>
-                                    ))}
-                                  </select>
-                              </div>
-              
-                                
-
-
-
-                                        <div className="">
-                                  <select
-                                    name="jobStatus"
-                                    value={updates.jobStatus}
-                                    
-                                    onChange={handle_on_change_update}
-                                    className={`${style.input} w-full`}
-                                     
-                                  >
-                                    <option value="empty">Job Status</option>
-                                    {jobStatusOptions.map((el, i) => (
-                                      <option value={el} key={i}>
-                                        {el}
-                                      </option>
-                                    ))}
-                                  </select>
-                            </div>
-              
-               
-              
-              
-                            <div className="inputBox" >
-                              <input
-                                type="date"
-                                name="jobDate"
-                                value={updates.jobDate}
-                                onChange={handle_on_change_update}
-                                className={`${style.input} w-full `}
-                              />
-                              <span>Job Date</span>
-                            </div>
-                           
-              
-              
-                      
-              
-              
-              
-              
-                          
-                              
-               
-              
-                           
-              
-                            <div className="w-full flex items-center justify-end  ">
-                              <button
-                                className={`${style.button1} text-[15px] w-full `}
-                                type="submit"
-                                disabled={isUpdating}
-                                style={{ padding: ".5rem  " }}
-                              >
-                                {isUpdating ? (
-                                  <TbLoader2 className="h-5 w-5 animate-spin text-white" />
-                                ) : (
-                                  <span>Save</span>
-                                )}
-                              </button>
-                            </div>
-                          </form>
-                          <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
-                        </div>
-                      )}
-
-
-
-
+                    <div className="w-full flex items-center justify-end  ">
+                      <button
+                        className={`${style.button1} text-[15px] w-full `}
+                        type="submit"
+                        disabled={isUpdating}
+                        style={{ padding: ".5rem  " }}
+                      >
+                        {isUpdating ? (
+                          <TbLoader2 className="h-5 w-5 animate-spin text-white" />
+                        ) : (
+                          <span>Save</span>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                  <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
+                </div>
+              )}
 
               <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
             </>

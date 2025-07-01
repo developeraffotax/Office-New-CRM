@@ -1743,8 +1743,8 @@ useEffect(() => {
       console.log(comment_taskId, "The comment taskid is 🤎💜💜💙💙💚💚💛💛🧡🧡❤")
     filterByRowId(table, comment_taskId, setCommentTaskId, setIsComment);
 
-    searchParams.delete("comment_taskId");
-    navigate({ search: searchParams.toString() }, { replace: true });
+    // searchParams.delete("comment_taskId");
+    // navigate({ search: searchParams.toString() }, { replace: true });
   }
 }, [comment_taskId, searchParams, navigate, table]);
 

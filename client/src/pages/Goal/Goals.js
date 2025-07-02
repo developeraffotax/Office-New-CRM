@@ -1750,12 +1750,7 @@ useEffect(() => {
 
 
 
-
-
-
-
-
-
+ 
 
 
   return (
@@ -1978,7 +1973,7 @@ useEffect(() => {
 
 
            <div className="w-full py-2">
-            {auth?.user?.role?.name === "Admin" && showJobHolderFilter && <DraggableUserList table={table} usersArray={users.map(el => el.name)} updateJobHolderCountMapFn={(map, totalCount) => {
+            {auth?.user?.role?.name === "Admin" && showJobHolderFilter && selectedTab === "progress" && <DraggableUserList table={table} usersArray={users.map(el => el.name)} updateJobHolderCountMapFn={(map, totalCount) => {
           
                             for (const item of goalsData || []) {
                                 const holder = item.jobHolder.name ;
@@ -1993,7 +1988,7 @@ useEffect(() => {
            </div>
 
 
-
+                        
 
 
         {/* Update Bulk Jobs */}
@@ -2035,7 +2030,7 @@ useEffect(() => {
             </form>
           </div>
         )}
-        <hr className="w-full h-[1px] bg-gray-300 my-3" />
+       
 
         {/* ---------Table Detail---------- */}
         {selectedTab === "progress" ? (
@@ -2046,6 +2041,7 @@ useEffect(() => {
               </div>
             ) : (
               <div className="w-full min-h-[10vh] relative ">
+                 <hr className="w-full h-[1px] bg-gray-300 my-2" />
                 <div className="h-full hidden1 overflow-y-auto relative">
                   <MaterialReactTable table={table} />
                 </div>
@@ -2058,6 +2054,7 @@ useEffect(() => {
             setGoalId={setGoalId}
             setCompleteGoalsData={setCompleteGoalsData}
             fetchGoals={getGoals}
+            showJobHolderFilter={showJobHolderFilter}
           />
         )}
 

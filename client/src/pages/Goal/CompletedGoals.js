@@ -12,12 +12,14 @@ import { format } from "date-fns";
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import { MdOutlineRemoveCircle } from "react-icons/md";
+import DraggableUserList from "../../utlis/DraggableUserList";
 
 export default function CompletedGoals({
   fetchGoals,
   setShow,
   setGoalId,
   setCompleteGoalsData,
+  showJobHolderFilter
 }) {
   const { auth } = useAuth();
   const [users, setUsers] = useState([]);
@@ -244,6 +246,7 @@ export default function CompletedGoals({
     () => [
       {
         accessorKey: "jobHolder._id",
+        id: "jobHolderId",
         Header: ({ column }) => {
           return (
             <div className=" flex flex-col gap-[2px]">
@@ -265,7 +268,7 @@ export default function CompletedGoals({
               >
                 <option value="">Select</option>
                 {users?.map((jobhold, i) => (
-                  <option key={i} value={jobhold?._id}>
+                  <option key={i} value={jobhold?.name}>
                     {jobhold?.name}
                   </option>
                 ))}
@@ -326,9 +329,14 @@ export default function CompletedGoals({
             </div>
           );
         },
-        filterFn: "equals",
-        filterSelectOptions: users.map((jobhold) => jobhold._id),
-        filterVariant: "select",
+        // filterFn: "equals",
+        // filterSelectOptions: users.map((jobhold) => jobhold._id),
+        // filterVariant: "select",
+        filterFn: (row, columnId, filterValue) => {
+
+          const jobHolderName = row.original.jobHolder.name || "";
+          return jobHolderName === filterValue;
+        },
         size: 110,
         minSize: 80,
         maxSize: 130,
@@ -1259,17 +1267,37 @@ export default function CompletedGoals({
 
     setCompleteGoalsData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
+
+
+ 
+
+
   return (
     <div className=" relative w-full h-[100%] overflow-y-auto ">
       {/* ---------Table Detail---------- */}
       <div className="w-full h-full">
         {loading ? (
-          <div className="flex items-center justify-center w-full h-screen px-4 py-4">
+          <div className="flex items-center justify-center w-full h-screen px-4 py-2">
             <Loader />
           </div>
         ) : (
           <div className="w-full min-h-[10vh] relative ">
-            <div className="h-full hidden1 overflow-y-auto relative">
+             <div className="w-full  ">
+                        {auth?.user?.role?.name === "Admin" && showJobHolderFilter && <DraggableUserList table={table} usersArray={users.map(el => el.name)} updateJobHolderCountMapFn={(map, totalCount) => {
+                      
+                                        for (const item of goalsData || []) {
+                                            const holder = item.jobHolder.name ;
+                                            map.set(holder, (map.get(holder) || 0) + 1);
+                                            totalCount++;
+                                          }
+                      
+                                          map.set("All", totalCount);
+                                      
+                                    } } listName={'goals'} filterColName="jobHolderId"  />}
+            
+                       </div>
+                       <hr className="w-full h-[1px] bg-gray-300 my-2" />
+            <div className="h-full hidden1 overflow-y-auto relative  ">
               <MaterialReactTable table={table} />
             </div>
           </div>

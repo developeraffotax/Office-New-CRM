@@ -691,7 +691,7 @@ export default function Sales({
         const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
 
 
-        if(!selectedYear && !selectedMonth) {
+        if(!selectedYear && !selectedMonth && !lastDays) {
           console.log("!INSIDE THE SELECTED YEAR BLOCK")
           const leadDate2 = new Date(leadDate.year(), leadDate.month() - 1, 1); // month -1 because JS months are 0-indexed
           return (
@@ -775,7 +775,7 @@ export default function Sales({
         const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
 
 
-        if(!selectedYear && !selectedMonth) {
+        if(!selectedYear && !selectedMonth && !lastDays) {
           console.log("!INSIDE THE SELECTED YEAR BLOCK")
           const leadDate2 = new Date(proposalDate.year(), proposalDate.month() - 1, 1); // month -1 because JS months are 0-indexed
           return (
@@ -843,7 +843,7 @@ export default function Sales({
         const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
 
 
-        if(!selectedYear && !selectedMonth) {
+        if(!selectedYear && !selectedMonth && !lastDays) {
           console.log("!INSIDE THE SELECTED YEAR BLOCK")
           const leadDate2 = new Date(proposalDate.year(), proposalDate.month() - 1, 1); // month -1 because JS months are 0-indexed
           return (
@@ -909,7 +909,7 @@ export default function Sales({
         const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
 
 
-        if(!selectedYear && !selectedMonth) {
+        if(!selectedYear && !selectedMonth && !lastDays) {
           console.log("!INSIDE THE SELECTED YEAR BLOCK")
           const leadDate2 = new Date(ppcLeadDate.year(), ppcLeadDate.month() - 1, 1); // month -1 because JS months are 0-indexed
           return (

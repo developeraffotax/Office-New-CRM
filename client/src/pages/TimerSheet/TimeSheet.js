@@ -28,6 +28,30 @@ import UsersTimeSheet from "./UsersTimeSheet";
 import QuickAccess from "../../utlis/QuickAccess";
 import DraggableUserList from "../../utlis/DraggableUserList";
 
+          import {
+  FiCalendar,
+  FiClock,
+  FiActivity,
+  FiTrendingUp,
+  FiBarChart2,
+  FiSun,
+} from "react-icons/fi";
+import { MdOutlineWatchLater } from "react-icons/md";
+import { useWorkdayStats } from "./useWorkdayStats";
+
+// Optional icons per day
+const dayIcons = [
+  FiCalendar,
+  FiClock,
+  MdOutlineWatchLater,
+  FiActivity,
+  FiTrendingUp,
+  FiSun,
+  FiSun,
+];
+
+
+
 // CSV Configuration
 const csvConfig = mkConfig({
   filename: "full_table_data",
@@ -118,8 +142,241 @@ export default function TimeSheet() {
     const [filter1, setFilter1] = useState("");
 
 
+  const { weekdayCounts, totalWorkdays, requiredHours } = useWorkdayStats(active);
 
-  // console.log("TableFilterData:", tableFilterData);
+
+
+
+
+
+
+
+  const daysData = [
+  { label: "Monday", value: times?.monTotal, required: weekdayCounts["Monday"] * 8 },
+  { label: "Tuesday", value: times?.tueTotal, required: weekdayCounts["Tuesday"] * 8 },
+  { label: "Wednesday", value: times?.wedTotal, required: weekdayCounts["Wednesday"] * 8 },
+  { label: "Thursday", value: times?.thuTotal, required: weekdayCounts["Thursday"] * 8 },
+  { label: "Friday", value: times?.friTotal, required: weekdayCounts["Friday"] * 8 },
+  { label: "Saturday", value: times?.satTotal, required: weekdayCounts["Saturday"] * 8 },
+  { label: "Sunday", value: times?.sunTotal, required: weekdayCounts["Sunday"] * 8 },
+];
+
+
+const totalCards = [
+  {
+    label:
+      active === "Weekly"
+        ? "Week Total"
+        : active === "Monthly"
+        ? "Month Total"
+        : "Year Total",
+    required: requiredHours, // ✅ from the hook
+    value: times?.weekTotal,
+    icon: FiBarChart2,
+    color: "bg-orange-100 text-orange-800 border-orange-200 font-semibold",
+  },
+  
+   
+];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Get counts of each weekday in a month or year
+// function getWeekdayCounts({ year, month = null }) {
+//   const counts = {
+//     Monday: 0,
+//     Tuesday: 0,
+//     Wednesday: 0,
+//     Thursday: 0,
+//     Friday: 0,
+//     Saturday: 0,
+//     Sunday: 0,
+//   };
+
+//   console.log("YEAR AND MONTH", year , month)
+
+//   const date = new Date(year, month ?? 0, 1);
+//   const end = month !== null
+//     ? new Date(year, month + 1, 0) // end of month
+//     : new Date(year, 11, 31);     // end of year
+
+//   while (date <= end) {
+//     const day = date.getDay(); // 0: Sun, 1: Mon, ..., 6: Sat
+//     const labels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+//     const label = labels[day];
+//     counts[label]++;
+//     date.setDate(date.getDate() + 1);
+//   }
+
+
+//   console.log("COUNTS", counts)
+
+//   return counts;
+// }
+
+
+
+// function getRequiredHours(active) {
+//   // const today = new Date();
+//   // const year = today.getFullYear();
+//   // const month = today.getMonth(); // 0-based
+
+//     // const year = today.getFullYear();
+//   // const month = today.getMonth(); // 0-based
+
+//   const { Monday, Tuesday, Wednesday, Thursday, Friday } =
+//     active === "Monthly"
+//       ? getWeekdayCounts({ year, month })
+//       : active === "Yearly"
+//       ? getWeekdayCounts({ year })
+//       : { Monday: 1, Tuesday: 1, Wednesday: 1, Thursday: 1, Friday: 1 }; // for weekly
+
+//   const totalWorkdays =
+//     Monday + Tuesday + Wednesday + Thursday + Friday;
+
+//   return totalWorkdays * 8; // assuming 8 hours/day
+// }
+
+
+
+
+
+// const daysData = useMemo(() => {
+//   if (!times || !active) return [];
+
+//   const today = new Date();
+//   const year = today.getFullYear();
+//   const month = today.getMonth();
+
+//   const monthCounts = getWeekdayCounts({ year, month });
+//   const yearCounts = getWeekdayCounts({ year });
+
+//   const weekdaySource =
+//     active === "Weekly"
+//       ? {
+//           Monday: 1, Tuesday: 1, Wednesday: 1,
+//           Thursday: 1, Friday: 1, Saturday: 1, Sunday: 1
+//         }
+//       : active === "Monthly"
+//       ? monthCounts
+//       : yearCounts;
+
+//   return [
+//     { label: "Monday", value: times?.monTotal, required: weekdaySource["Monday"] * 8 },
+//     { label: "Tuesday", value: times?.tueTotal, required: weekdaySource["Tuesday"] * 8 },
+//     { label: "Wednesday", value: times?.wedTotal, required: weekdaySource["Wednesday"] * 8 },
+//     { label: "Thursday", value: times?.thuTotal, required: weekdaySource["Thursday"] * 8 },
+//     { label: "Friday", value: times?.friTotal, required: weekdaySource["Friday"] * 8 },
+//     { label: "Saturday", value: times?.satTotal, required: weekdaySource["Saturday"] * 8 },
+//     { label: "Sunday", value: times?.sunTotal, required: weekdaySource["Sunday"] * 8 },
+//   ];
+// }, [active, times]);
+
+
+// const totalCards = [
+//   {
+//     label: active === "Weekly" ? "Week Total" : active === "Monthly" ? "Month Total" : "Year Total",
+//     required: getRequiredHours(active),
+//     value: times?.weekTotal,
+//     icon: FiBarChart2,
+//     color: "bg-orange-100 text-orange-800 border-orange-200 font-semibold",
+//   },
+ 
+// ];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Converts "HH:MM" string into decimal hours (e.g., "07:30" → 7.5)
+const parseTimeToDecimal = (timeStr) => {
+  if (!timeStr || typeof timeStr !== 'string') return 0;
+
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  if (isNaN(hours) || isNaN(minutes)) return 0;
+
+  return hours + minutes / 60;
+};
+
+const getProgress = (timeStr, total) => {
+  const decimalHours = parseTimeToDecimal(timeStr);
+  // const total = 40; // your weekly max, can be dynamic too
+  const percent = Math.min(100, Math.round((decimalHours / total) * 100));
+  return isNaN(percent) ? 0 : percent;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   useEffect(() => {
     if (auth.user) {
@@ -1768,7 +2025,7 @@ export default function TimeSheet() {
         },
 
         "@media (min-width: 1800px)": {
-          maxHeight: "780px",
+          maxHeight: "600px",
         },
       },
     },
@@ -1787,6 +2044,8 @@ export default function TimeSheet() {
       pageSize: 20,
       density: "compact",
     },
+
+    
 
     muiTableHeadCellProps: {
       style: {
@@ -2268,7 +2527,7 @@ export default function TimeSheet() {
         )}
 
         {/* ---------------Total Time---------------- */}
-        {selectedTab === "Single" && (
+        {/* {selectedTab === "Single" && (
           <div className="w-full hidden absolute bottom-4 left-0 px-4 z-[20] sm:grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-9 gap-4 2xl:gap-5">
             <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
               <h4 className="text-[16px] font-medium">Monday</h4>
@@ -2315,7 +2574,98 @@ export default function TimeSheet() {
               </span>
             </div>
           </div>
-        )}
+        )} */}
+
+
+
+
+{/* 
+ {
+    label: "Chargeable",
+    value: `${totalCPercengate > 0 ? totalCPercengate : 0} %`,
+    required: 100,
+    icon: FiTrendingUp,
+    color: "bg-emerald-100 text-emerald-800 border-emerald-200 font-semibold",
+  }, */}
+
+
+
+
+
+
+
+
+{selectedTab === "Single" && (
+
+    <div className="w-full hidden absolute bottom-8 left-0 px-4 z-[20] sm:grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-9 gap-4 2xl:gap-5">
+      {[...daysData, ...totalCards].map(({ label, value, color, icon, required }, idx) => {
+        const Icon = icon || dayIcons[idx] || FiCalendar;
+        const progress = getProgress(value, required );
+
+        console.log(label, value)
+        console.log("progress", progress)
+
+        return (
+          <div
+            key={idx}
+            className={`   w-full  rounded-md px-4 py-3 flex flex-col justify-between text-left transition-all duration-200 cursor-pointer border shadow-sm hover:shadow-md hover:-translate-y-0.5
+              ${
+                color ||
+                "bg-slate-50 text-slate-800 border-slate-200 hover:bg-slate-100"
+              }`}
+            title={`${label}: ${value || 0}`}
+          >
+            {/* Top Row: Icon + Label + Value */}
+            <div className="flex items-center gap-2">
+              <Icon className="w-4 h-4 opacity-70" />
+              <div className="flex flex-col">
+                <span className="text-xs font-medium">{label} </span>
+                <span className="text-[13px] font-semibold leading-none">{value} / {required} hrs</span>
+              </div>
+            </div>
+
+            {/* Progress bar */}
+            <div className="mt-2 w-full h-2 bg-stone-200 rounded-full overflow-hidden">
+              <div
+                className={`h-full ${progress < 20 ? "bg-red-400" : (progress > 20 && progress < 70) ? "bg-yellow-400" : 'bg-green-400'} transition-all duration-300`}
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        );
+      })}
+
+
+
+      <div
+            key={"chargeable"}
+            className={`   w-full  rounded-md px-4 py-3 flex flex-col justify-between text-left transition-all duration-200 cursor-pointer border shadow-sm hover:shadow-md hover:-translate-y-0.5
+              bg-emerald-100 text-emerald-800 border-emerald-200 font-semibold}`}
+            title={`${"Chargeable"}: ${totalCPercengate || 0}`}
+          >
+            {/* Top Row: Icon + Label + Value */}
+            <div className="flex items-center gap-2">
+              <FiTrendingUp className="w-4 h-4 opacity-70" />
+              <div className="flex flex-col">
+                <span className="text-xs font-medium">Chargeable</span>
+                <span className="text-[13px] font-semibold leading-none">{(!isNaN(totalCPercengate) && totalCPercengate) || 0}%</span>
+              </div>
+            </div>
+
+            {/* Progress bar */}
+            <div className="mt-2 w-full h-2 bg-stone-200 rounded-full overflow-hidden">
+              <div
+                className={`h-full ${totalCPercengate < 20 ? "bg-red-400" : (totalCPercengate > 20 && totalCPercengate < 70) ? "bg-yellow-400" : 'bg-green-400'} transition-all duration-300`}
+                style={{ width: `${totalCPercengate}%` }}
+              />
+            </div>
+          </div>
+    </div>
+
+)}
+
+
+
 
 
 

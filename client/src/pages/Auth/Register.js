@@ -298,7 +298,7 @@ export default function Register({
                 id={`junior-${user._id}`}
                 type="checkbox"
                 value={user._id}
-                checked={juniors.includes(user._id)}
+                checked={juniors?.includes(user._id)}
                 onChange={e => {
                   const isChecked = e.target.checked;
                   setJuniors(prev =>

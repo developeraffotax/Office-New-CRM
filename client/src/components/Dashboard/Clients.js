@@ -28,6 +28,11 @@ export default function Clients({
   featureFilter
 }) {
   const [clients, setClients] = useState([]);
+
+
+  const [clientsForPastMonthOrYear, setClientsForPastMonthOrYear] = useState([]);
+
+
   const [fee, setFee] = useState("");
   const [selectChart, setSelectChart] = useState("bar");
   const [filterWorkFlow, setFilterWorkFlow] = useState([]);
@@ -45,6 +50,8 @@ export default function Clients({
     const [lead_source_labels, set_lead_source_labels] = useState(['Upwork', "Fiverr", "PPH", "Referral", "Partner", "Google", "Facebook", "LinkedIn", "CRM", "Existing", "Other"])
 
   const [filtered_leads, set_filtered_leads] = useState([])
+
+
 
   
 
@@ -602,6 +609,204 @@ export default function Clients({
   }, [clients, selectChart, salesData]);
 
   // -------Filter By Depertment--------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ // -------Filter By Depertment--------------
+
+  useEffect(() => {
+    const filterData = () => {
+      let filteredData = [...workFlowData];
+
+      // Filter by department
+      if (selectedDepartment) {
+        filteredData = filteredData.filter(
+          (job) => job.job.jobName === selectedDepartment
+        );
+      }
+
+
+
+
+      if(!selectedYear && !selectedMonth) {
+
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
+    
+        const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
+
+
+        
+         filteredData = filteredData.filter((job) => {
+          const jobDate = new Date(job.currentDate);
+
+          return (
+            jobDate >= startDate && jobDate <= now
+          );
+        });
+
+
+
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      // Filter by month and year
+      if (selectedMonth && selectedYear) {
+        filteredData = filteredData.filter((job) => {
+          const jobDate = new Date(job.currentDate);
+          const jobMonth = jobDate.getMonth() + 1;
+          const jobYear = jobDate.getFullYear();
+
+          return (
+            jobMonth === (parseInt(selectedMonth) - 1 ) &&
+            jobYear === (parseInt(selectedYear) - 1) 
+          );
+        });
+      } else if (selectedMonth) {
+        filteredData = filteredData.filter((job) => {
+          const jobDate = new Date(job.currentDate);
+          const jobMonth = jobDate.getMonth() + 1;
+          return jobMonth === (parseInt(selectedMonth) - 1);
+        });
+      } else if (selectedYear) {
+        filteredData = filteredData.filter((job) => {
+          const jobDate = new Date(job.currentDate);
+          const jobYear = jobDate.getFullYear();
+          return jobYear === (parseInt(selectedYear) - 1 );
+        });
+      }
+      // Filter by month and year
+      if (search && search >= 1) {
+        const today = new Date();
+        const pastDate = new Date();
+        pastDate.setDate(today.getDate() - search);
+
+        filteredData = filteredData.filter((job) => {
+          const jobDate = new Date(job.currentDate);
+          return jobDate >= pastDate && jobDate <= today;
+        });
+      }
+
+      return filteredData;
+    };
+
+    // console.log("filterData", filterData());
+
+    setFilterWorkFlow(filterData);
+
+    const departmentTotals = departments.map((department) => {
+      const departmentJobs = filterData().filter(
+        (job) => job.job.jobName === department
+      );
+
+      // Calculate total hours, fees, and job count for the department
+      const totalHours = departmentJobs
+        .reduce((sum, job) => sum + parseFloat(job.totalHours || 0), 0)
+        .toFixed(2);
+      const totalFee = departmentJobs.reduce(
+        (sum, job) => sum + parseFloat(job.fee || 0),
+        0
+      );
+      const totalDepartmentCount = departmentJobs.length;
+
+      // Calculate lead-wise totals and job counts
+      const leadWiseTotals = departmentJobs.reduce((acc, job) => {
+        const lead = job.job.lead;
+        if (!acc[lead]) {
+          acc[lead] = { totalHours: 0, totalFee: 0, departmentCount: 0 };
+        }
+        acc[lead].totalHours += parseFloat(job.totalHours || 0);
+        acc[lead].totalFee += parseFloat(job.fee || 0);
+        acc[lead].departmentCount += 1;
+        return acc;
+      }, {});
+
+      return {
+        department,
+        totalHours,
+        totalFee,
+        totalDepartmentCount,
+        leadWiseTotals,
+      };
+    });
+
+    setClientsForPastMonthOrYear(departmentTotals);
+    // eslint-disable-next-line
+  }, [workFlowData, selectedDepartment, selectedMonth, selectedYear, search]);
+
+
+
+
+
+
+  console.log("CLIENTS❤🧡💛💚💙", clients)
+  console.log("clientsForPastMonthOrYear", clientsForPastMonthOrYear)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   useEffect(() => {
     const filterData = () => {
@@ -1256,7 +1461,25 @@ export default function Clients({
 }, [selectedYear, selectedMonth, selectChart, salesData, lead_source_labels, clients]);
 
 
+function getPercentageChange(current, previous) {
 
+  console.log(current, "CURRENT")
+  console.log(previous, "previous")
+ // If either value is not a number, return 0 change
+  if (isNaN(current) || isNaN(previous)) {
+    return {
+      change: 0,
+      isPositive: true,
+    };
+  }
+
+  const change =
+    previous === 0 ? (current > 0 ? 100 : 0) : ((current - previous) / previous) * 100;
+  return {
+    change,
+    isPositive: change >= 0,
+  };
+}
 
   return (
     <div className="w-full h-full relative">
@@ -1302,8 +1525,17 @@ export default function Clients({
                 </p>
               </div>
             </div>
-            {clients?.map((job, index) => (
-              <div
+            {clients?.map((job, index) => {
+
+
+              const currentCount = parseFloat(job?.totalFee)
+              const previousCount = parseFloat(clientsForPastMonthOrYear.find(el => el.department === job.department).totalFee)
+
+
+
+              const { change, isPositive } = getPercentageChange(currentCount, previousCount);
+return (
+                <div
                 key={index}
                 className={` relative flex flex-col  items-center min-w-[10rem]  p-2 cursor-pointer transition-transform duration-300 transform hover:scale-105 rounded-lg shadow-lg hover:shadow-xl ${
                   job?.department === "Bookkeeping"
@@ -1334,12 +1566,20 @@ export default function Clients({
                     {job?.totalDepartmentCount}
                   </p>
 
-                  <p className="text-2xl font-bold text-gray-700 text-center">
+                  <p className="text-2xl font-bold text-gray-700 text-center flex justify-center items-center gap-2 flex-col">
                     ${" "}
                     {parseFloat(job?.totalFee).toLocaleString(undefined, {
                       minimumFractionDigits: 0,
                       maximumFractionDigits: 2,
                     })}
+ 
+
+                    
+
+                    <span className={`${isPositive ? "text-green-600" : "text-red-600"} text-lg flex justify-end items-center`}>
+                      {isPositive ? "↑" : "↓"}{Math.abs(change.toFixed(0))}%
+                    </span>
+
                   </p>
                 </div>
                 {/* <div className="flex items-center ">
@@ -1359,7 +1599,12 @@ export default function Clients({
                   </p>
                 </div> */}
               </div>
-            ))}
+
+
+
+
+)
+            })}
             <div className="flex flex-col items-center min-w-[10rem]  p-3 cursor-pointer bg-gradient-to-br from-rose-100 via-rose-200 to-rose-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
               <h2 className="text-lg font-medium text-gray-800 text-center mb-3">
                 Total

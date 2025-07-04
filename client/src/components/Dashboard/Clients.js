@@ -1184,6 +1184,7 @@ export default function Clients({
       );
     }
 
+
     return (
       (!selectedMonth || leadMonth === parseInt(selectedMonth)) &&
       (!selectedYear || leadYear === parseInt(selectedYear))
@@ -1191,7 +1192,33 @@ export default function Clients({
   });
 
 
-  
+
+
+
+    if(search) {
+      filteredLeads = filteredLeads.filter((lead) => {
+
+        const createdAtDate = new Date(lead.createdAt);
+        
+      const today = new Date();
+      const pastDate = new Date();
+      if (search && !isNaN(search) && search >= 1) {
+        pastDate.setDate(today.getDate() - parseInt(search));
+      }
+
+      return createdAtDate >= pastDate && createdAtDate <= today;
+
+      })
+    }
+
+
+
+
+
+
+
+
+
 
  
 
@@ -1468,6 +1495,52 @@ export default function Clients({
 
 
 
+
+
+
+
+
+
+
+            
+               {/*  -------------Jobs Analysis----------- */}
+            {visibility[2] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <h3 className="text-lg font-semibold text-center">
+                  Department-wise Total Count
+                </h3>
+                <div id="department-count-chart" />
+              </div>
+            )}
+
+
+
+              {/* ------------------Fee Analysis----------------- */}
+            {visibility[3] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <h3 className="text-lg font-semibold text-center">
+                  Department-wise Fee Count
+                </h3>
+                <div id="department-fee-chart" />
+              </div>
+            )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             {/* ------------------Lead / Lead Source Graph----------------- */}
              {/* { visibility[2] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
@@ -1483,7 +1556,7 @@ export default function Clients({
 
             
         {/* 7----------Conversion Lead in Client in Proposal--------- */}
-        {visibility[2] && (
+        {visibility[4] && (
           <div className=" w-full flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 shadow-lg hover:shadow-2xl  ">
             <div className="flex flex-col gap-4 w-full">
               <div className=" w-full flex items-center gap-2 p-2 rounded-md border shadow-md bg-white">
@@ -1549,9 +1622,9 @@ export default function Clients({
 
             {/* ------------------Source Analysis----------------- */}
             {
-              visibility[3] || visibility[4] ? (
+              visibility[5] || visibility[6] ? (
                 <div className="w-full flex justify-start items-start gap-2  rounded-md cursor-pointer   ">
-                  {visibility[3] && (
+                  {visibility[5] && (
               <div className="w-[50%] shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <JobSourcePieChart
                   workFlowData={workFlowData}
@@ -1561,7 +1634,7 @@ export default function Clients({
                 />
               </div>
             )}
-            {visibility[4] && (
+            {visibility[6] && (
               <div className="w-[50%] shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <JobSourceClientPartnerDonutCharts
                   workFlowData={workFlowData}
@@ -1581,27 +1654,6 @@ export default function Clients({
 
 
 
-               {/*  -------------Jobs Analysis----------- */}
-            {visibility[5] && (
-              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                <h3 className="text-lg font-semibold text-center">
-                  Department-wise Total Count
-                </h3>
-                <div id="department-count-chart" />
-              </div>
-            )}
-
-
-
-              {/* ------------------Fee Analysis----------------- */}
-            {visibility[6] && (
-              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                <h3 className="text-lg font-semibold text-center">
-                  Department-wise Fee Count
-                </h3>
-                <div id="department-fee-chart" />
-              </div>
-            )}
 
 
               

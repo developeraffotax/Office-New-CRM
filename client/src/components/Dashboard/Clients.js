@@ -4,11 +4,16 @@ import Loader from "../../utlis/Loader";
 import { style } from "../../utlis/CommonStyle";
 import JobSourcePieChart from "./ClientSourceChart";
 import JobSourceClientPartnerDonutCharts from "./ClientpartnerChart";
-
-import { getLastTwelveMonths, getLastTwelveMonthsWithLabels, shiftArrFromThisMonth } from "./utils";
+import { FiUsers, FiDollarSign, FiLayers } from "react-icons/fi";
+import {
+  getLastTwelveMonths,
+  getLastTwelveMonthsWithLabels,
+  shiftArrFromThisMonth,
+} from "./utils";
 import JobCountChart from "./charts/JobCountChart";
 import ClientFeeChart from "./charts/ClientFeeChart";
-
+import StatCard from "./StatCard";
+import { SummaryCard } from "./SummaryCard";
 
 export default function Clients({
   selectedMonth,
@@ -25,12 +30,22 @@ export default function Clients({
   isClients,
   salesData,
 
-  featureFilter
+  featureFilter,
 }) {
   const [clients, setClients] = useState([]);
 
+  const [clientsForPastMonthOrYear, setClientsForPastMonthOrYear] = useState(
+    []
+  );
+    const [feeForComparison, setFeeForComparison] = useState("");
+     const [filterWorkFlowForComparison, setFilterWorkFlowForComparison] = useState([]);
 
-  const [clientsForPastMonthOrYear, setClientsForPastMonthOrYear] = useState([]);
+       const [filterUniqueClientForComparison, setFilteredUniqueClientForComparison] = useState([]);
+
+         const [activeClientsForComparison, setActiveClientsForComparison] = useState({
+    totalFee: "0",
+    totalClients: "0",
+  });
 
 
   const [fee, setFee] = useState("");
@@ -47,13 +62,21 @@ export default function Clients({
   console.log("workFlowData DATA💛", workFlowData);
   console.log("uniqueClients DATA💚", uniqueClients);
 
-    const [lead_source_labels, set_lead_source_labels] = useState(['Upwork', "Fiverr", "PPH", "Referral", "Partner", "Google", "Facebook", "LinkedIn", "CRM", "Existing", "Other"])
+  const [lead_source_labels, set_lead_source_labels] = useState([
+    "Upwork",
+    "Fiverr",
+    "PPH",
+    "Referral",
+    "Partner",
+    "Google",
+    "Facebook",
+    "LinkedIn",
+    "CRM",
+    "Existing",
+    "Other",
+  ]);
 
-  const [filtered_leads, set_filtered_leads] = useState([])
-
-
-
-  
+  const [filtered_leads, set_filtered_leads] = useState([]);
 
   // Visibility Div
   const initialState = [true, true, true, true, true, true, true];
@@ -79,8 +102,6 @@ export default function Clients({
     return "grid grid-cols-1 sm:grid-cols-2";
   };
 
- 
- 
   const departments = [
     "Bookkeeping",
     "Payroll",
@@ -124,16 +145,10 @@ export default function Clients({
       return matchesDateFilter && matchesSearchFilter;
     });
 
-
-
-
-
-
-    
     console.log("Filtered Unique Clients💛🧡❤:", filteredData);
 
     setFilteredUniqueClient(filteredData);
-  }, [selectedMonth, selectedYear, uniqueClients, search,]);
+  }, [selectedMonth, selectedYear, uniqueClients, search]);
 
 
 
@@ -150,6 +165,51 @@ export default function Clients({
 
 
 
+    // ---------Filter Unique Clients FOR COMAPRISON------>
+  useEffect(() => {
+    const filteredData = uniqueClients?.filter((item) => {
+      const createdAtDate = new Date(item.currentDate);
+      const itemMonth = createdAtDate.getMonth() + 1;
+      const itemYear = createdAtDate.getFullYear();
+
+      const today = new Date();
+      const pastDate = new Date();
+       const doublePastDate = new Date();
+
+      if (search && !isNaN(search) && search >= 1) {
+        pastDate.setDate(today.getDate() - parseInt(search));
+
+
+       
+
+        pastDate.setDate(today.getDate() - search);
+        doublePastDate.setDate(today.getDate() - search * 2);
+      }
+
+      let matchesDateFilter = true;
+      let matchesSearchFilter = true;
+
+      // Filter by selected month and year
+      if (selectedMonth && selectedYear) {
+        matchesDateFilter =
+          itemMonth === parseInt(selectedMonth) -1 &&
+          itemYear === parseInt(selectedYear);
+      } else if (selectedMonth) {
+        matchesDateFilter = itemMonth === parseInt(selectedMonth) - 1; // Adjusted for past month comparison
+      } else if (selectedYear) {
+        matchesDateFilter = itemYear === parseInt(selectedYear) - 1; // Adjusted for past year comparison
+      }
+
+      matchesSearchFilter =
+        !search || (createdAtDate >= doublePastDate && createdAtDate <= pastDate);
+
+      return matchesDateFilter && matchesSearchFilter;
+    });
+
+    console.log("Filtered Unique Clients💛🧡❤:", filteredData);
+
+    setFilteredUniqueClientForComparison(filteredData);
+  }, [selectedMonth, selectedYear, uniqueClients, search]);
 
   //------------ Department wise Total-------->
   // useEffect(() => {
@@ -284,7 +344,7 @@ export default function Clients({
 
       // Calculate lead-wise totals and job counts
       const leadWiseTotals = departmentJobs.reduce((acc, job) => {
-        console.log("job.job.lead", job)
+        console.log("job.job.lead", job);
         const lead = job.job.lead;
         if (!acc[lead]) {
           acc[lead] = { totalHours: 0, totalFee: 0, departmentCount: 0 };
@@ -293,13 +353,12 @@ export default function Clients({
         acc[lead].totalFee += parseFloat(job.fee || 0);
         acc[lead].departmentCount += 1;
 
-        console.log("acc[lead]", acc[lead])
-        console.log("acc[lead].totalFee", acc[lead].totalFee)
+        console.log("acc[lead]", acc[lead]);
+        console.log("acc[lead].totalFee", acc[lead].totalFee);
         return acc;
       }, {});
 
-
-      console.log("totalFee🧡🧡🧡", totalFee)
+      console.log("totalFee🧡🧡🧡", totalFee);
       return {
         department,
         totalHours,
@@ -309,14 +368,9 @@ export default function Clients({
         countPercentageChange: formattedCountChange,
         leadWiseTotals,
       };
-
-
-      
     });
 
-    
     setClients(departmentTotals);
-   
   }, [workFlowData]);
 
   // Active Clients Total
@@ -341,6 +395,47 @@ export default function Clients({
     });
   }, [workFlowData, filterWorkFlow]);
 
+
+
+
+  // Active Clients Total for comparison
+  useEffect(() => {
+    const filteredJobs = filterWorkFlowForComparison.filter(
+      (job) => job.activeClient === "active"
+    );
+
+    // Calculate total fee
+    const totalFee = filteredJobs
+      .reduce((sum, job) => sum + parseFloat(job.fee || 0), 0)
+      .toFixed(0);
+
+    // Count total clients
+    const totalClients = filteredJobs.length;
+
+    // Set state
+    // setActiveClientJobs(filteredJobs);
+    setActiveClientsForComparison({
+      totalFee: totalFee,
+      totalClients: totalClients.toString(),
+    });
+  }, [workFlowData, filterWorkFlow]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // ------------Total Fee-------->
   useEffect(() => {
     const calculateTotalFee = (data) => {
@@ -348,25 +443,8 @@ export default function Clients({
     };
 
     setFee(calculateTotalFee(clients).toFixed(0));
+    setFeeForComparison(calculateTotalFee(clientsForPastMonthOrYear).toFixed(0));
   }, [clients]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   // --Render Lead Source Chart(#888)------->
   // useEffect(() => {
@@ -377,35 +455,24 @@ export default function Clients({
 
   //   const startDate = new Date(currentYear, currentMonth - 11, 1);
 
-    
-
-
   //   const filteredLeads = salesData?.totalLeads?.filter((lead) => {
   //      // Lead Date
   //     const leadDate = new Date(lead.createdAt);
   //     const leadMonth = leadDate.getMonth() + 1;
   //     const leadYear = leadDate.getFullYear();
 
-
-
-
-
-
   //      if(!selectedYear) {
   //     const leadDateN = new Date(leadYear, leadMonth - 1, 1); // month -1 because JS months are 0-indexed
   //     return (
   //       (!selectedMonth || leadMonth === parseInt(selectedMonth)) &&
-  //       (leadDateN >= startDate && leadDateN <= now)  
-        
+  //       (leadDateN >= startDate && leadDateN <= now)
+
   //     )
 
   //   }
 
-
-
-
   //     return  (!selectedMonth || leadMonth === parseInt(selectedMonth)) && (!selectedYear || leadYear === parseInt(selectedYear))
-      
+
   //   })
 
   //   console.log("filteredLeads💙💙💙", filteredLeads)
@@ -418,27 +485,18 @@ export default function Clients({
   //   //   return filteredLeads?.filter(lead => lead.lead_Source === label).length || 0;
   //   // });
 
-
-
-
-
-
-
   //   const leadSourceCounts2 = lead_source_labels.map(label => {
 
   //     let countObject = {}
-      
+
   //     const count = filteredLeads?.filter(lead => lead.lead_Source === label).length || 0;
 
   //     countObject.label = label;
-  //     countObject.count = count;  
-       
+  //     countObject.count = count;
 
   //     return countObject;
 
   //   });
-
-
 
   //     const f  = [{label: "AAAA", count: 2}]
 
@@ -446,18 +504,12 @@ export default function Clients({
 
   //   console.log("leadSourceCounts2💙💙💙", leadSourceCounts2)
 
-
-
   //   // const newleadSourceCounts = lead_source_labels.map((label) => {
-      
+
   //   //   let countObject = filteredLeads?.reduce((acc, lead) => {
   //   //     if (lead.lead_Source === label) {
   //   //       acc.count += 1;
   //   //     }
-
- 
-     
- 
 
   //   // const optionsCount = {
   //   //   series: [{ name: "Leads", data: leadSourceCounts }],
@@ -477,43 +529,6 @@ export default function Clients({
   //   //   return () => chartCount.destroy();
   //   // }
   // }, [selectedYear, selectedMonth, selectChart, salesData, lead_source_labels, clients, ]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   // --Render Department Count Chart(#3)------->
   useEffect(() => {
@@ -547,7 +562,6 @@ export default function Clients({
     const departmentLabels = clients.map((client) => client.department);
 
     console.log("departmentFees:💜💜", departmentFees);
-
 
     const optionsFee = {
       series: [
@@ -610,29 +624,7 @@ export default function Clients({
 
   // -------Filter By Depertment--------------
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- // -------Filter By Depertment--------------
+  // -------Filter By Depertment--------------
 
   useEffect(() => {
     const filterData = () => {
@@ -645,52 +637,32 @@ export default function Clients({
         );
       }
 
-
-
-
-      if(!selectedYear && !selectedMonth) {
-
+      if (!selectedYear && !selectedMonth) {
         const now = new Date();
         const currentYear = now.getFullYear();
         const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
-    
-              // Start of current 12-month window
+
+        // Start of current 12-month window
         const currentStartDate = new Date(currentYear, currentMonth - 11, 1);
 
-                // Previous year's start and end
-        const prevYearStart = new Date(currentStartDate.getFullYear(), currentStartDate.getMonth() - 12, 1);
-        const prevYearEnd = new Date(currentStartDate.getFullYear(), currentStartDate.getMonth(), 0); // Last day before currentStartDate
-        
-         filteredData = filteredData.filter((job) => {
+        // Previous year's start and end
+        const prevYearStart = new Date(
+          currentStartDate.getFullYear(),
+          currentStartDate.getMonth() - 12,
+          1
+        );
+        const prevYearEnd = new Date(
+          currentStartDate.getFullYear(),
+          currentStartDate.getMonth(),
+          0
+        ); // Last day before currentStartDate
+
+        filteredData = filteredData.filter((job) => {
           const jobDate = new Date(job.currentDate);
 
-          return (
-            jobDate >= prevYearStart && jobDate <= prevYearEnd
-          );
+          return jobDate >= prevYearStart && jobDate <= prevYearEnd;
         });
-
-
-
       }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       // Filter by month and year
       if (selectedMonth && selectedYear) {
@@ -700,21 +672,21 @@ export default function Clients({
           const jobYear = jobDate.getFullYear();
 
           return (
-            jobMonth === (parseInt(selectedMonth) - 1 ) &&
-            jobYear === (parseInt(selectedYear)) 
+            jobMonth === parseInt(selectedMonth) - 1 &&
+            jobYear === parseInt(selectedYear)
           );
         });
       } else if (selectedMonth) {
         filteredData = filteredData.filter((job) => {
           const jobDate = new Date(job.currentDate);
           const jobMonth = jobDate.getMonth() + 1;
-          return jobMonth === (parseInt(selectedMonth) - 1);
+          return jobMonth === parseInt(selectedMonth) - 1;
         });
       } else if (selectedYear) {
         filteredData = filteredData.filter((job) => {
           const jobDate = new Date(job.currentDate);
           const jobYear = jobDate.getFullYear();
-          return jobYear === (parseInt(selectedYear) - 1 );
+          return jobYear === parseInt(selectedYear) - 1;
         });
       }
       // Filter by month and year
@@ -724,9 +696,8 @@ export default function Clients({
 
         const doublePastDate = new Date();
 
-
-        pastDate.setDate(today.getDate() - (search));
-        doublePastDate.setDate(today.getDate() - (search * 2));
+        pastDate.setDate(today.getDate() - search);
+        doublePastDate.setDate(today.getDate() - search * 2);
 
         filteredData = filteredData.filter((job) => {
           const jobDate = new Date(job.currentDate);
@@ -739,7 +710,9 @@ export default function Clients({
 
     // console.log("filterData", filterData());
 
-    setFilterWorkFlow(filterData);
+    setFilterWorkFlowForComparison(filterData);
+
+ 
 
     const departmentTotals = departments.map((department) => {
       const departmentJobs = filterData().filter(
@@ -781,40 +754,8 @@ export default function Clients({
     // eslint-disable-next-line
   }, [workFlowData, selectedDepartment, selectedMonth, selectedYear, search]);
 
-
-
-
-
-
-  console.log("CLIENTS❤🧡💛💚💙", clients)
-  console.log("clientsForPastMonthOrYear", clientsForPastMonthOrYear)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  console.log("CLIENTS❤🧡💛💚💙", clients);
+  console.log("clientsForPastMonthOrYear", clientsForPastMonthOrYear);
 
   useEffect(() => {
     const filterData = () => {
@@ -827,49 +768,19 @@ export default function Clients({
         );
       }
 
-
-
-
-      if(!selectedYear && !selectedMonth) {
-
+      if (!selectedYear && !selectedMonth) {
         const now = new Date();
         const currentYear = now.getFullYear();
         const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
-    
+
         const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
 
-
-        
-         filteredData = filteredData.filter((job) => {
+        filteredData = filteredData.filter((job) => {
           const jobDate = new Date(job.currentDate);
 
-          return (
-            jobDate >= startDate && jobDate <= now
-          );
+          return jobDate >= startDate && jobDate <= now;
         });
-
-
-
       }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       // Filter by month and year
       if (selectedMonth && selectedYear) {
@@ -1166,28 +1077,25 @@ export default function Clients({
 
     // console.log("SELECTED YEAR >>>>>>", selectedYear)
 
-
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
 
     const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
 
-    
-    if(!selectedYear) {
+    if (!selectedYear) {
       const jobDateN = new Date(jobYear, jobMonth - 1, 1); // month -1 because JS months are 0-indexed
       return (
         (!selectedMonth || jobMonth === parseInt(selectedMonth)) &&
-        (jobDateN >= startDate && jobDateN <= now) &&
+        jobDateN >= startDate &&
+        jobDateN <= now &&
         (!selectedSource || job.source === selectedSource) &&
         (!selectedClient || job.clientType === selectedClient) &&
         (!selectedPartner || job.partner === selectedPartner) &&
         (!selectedDepartment || job.jobName === selectedDepartment) &&
         matchesSearch
-      )
-
+      );
     }
-    
 
     return (
       (!selectedMonth || jobMonth === parseInt(selectedMonth)) &&
@@ -1265,31 +1173,22 @@ export default function Clients({
     },
   ];
 
-
-
   // Render charts
   useEffect(() => {
     // Job Count Chart
-   
- 
 
-    const jobCountSeriesForPastOneYear = []
+    const jobCountSeriesForPastOneYear = [];
 
-    if(!selectedYear) {
-      
-
+    if (!selectedYear) {
       formattedMonths = getLastTwelveMonthsWithLabels();
 
-      const rotatedArr = shiftArrFromThisMonth([...jobCountSeries[0].data])
+      const rotatedArr = shiftArrFromThisMonth([...jobCountSeries[0].data]);
 
       jobCountSeriesForPastOneYear.push({
         name: "Total Jobs",
-        data: rotatedArr
-      },)
-
+        data: rotatedArr,
+      });
     }
-
-    
 
     const jobCountChartOptions = {
       series: selectedYear ? jobCountSeries : jobCountSeriesForPastOneYear,
@@ -1320,31 +1219,20 @@ export default function Clients({
     // eslint-disable-next-line
   }, [selectChart, months, jobCountSeries]);
 
-
-
-
-
-  
   // Department wise Fee
   useEffect(() => {
+    const FeeSeriesForPastOneYear = [];
 
-    const FeeSeriesForPastOneYear = [ ]
-
-    if(!selectedYear) {
-      
-
+    if (!selectedYear) {
       formattedMonths = getLastTwelveMonthsWithLabels();
 
-      const rotatedArr = shiftArrFromThisMonth([...feeSeries[0].data])
+      const rotatedArr = shiftArrFromThisMonth([...feeSeries[0].data]);
 
       FeeSeriesForPastOneYear.push({
         name: "Total Fee",
-        data: rotatedArr
-      },)
-
+        data: rotatedArr,
+      });
     }
-
-
 
     // Fee Total Chart
     const feeChartOptions = {
@@ -1365,129 +1253,108 @@ export default function Clients({
       feeChart.render();
       return () => feeChart.destroy();
     }
-  }, [selectChart, months, feeSeries,]);
-
-
-
-
-
-
-
-
-  
-
+  }, [selectChart, months, feeSeries]);
 
   useLayoutEffect(() => {
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-  const startDate = new Date(currentYear, currentMonth - 11, 1);
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const startDate = new Date(currentYear, currentMonth - 11, 1);
 
-  let filteredLeads = salesData?.totalLeads?.filter((lead) => {
-    const leadDate = new Date(lead.createdAt);
-    const leadMonth = leadDate.getMonth() + 1;
-    const leadYear = leadDate.getFullYear();
-    const leadDateN = new Date(leadYear, leadMonth - 1, 1);
+    let filteredLeads = salesData?.totalLeads?.filter((lead) => {
+      const leadDate = new Date(lead.createdAt);
+      const leadMonth = leadDate.getMonth() + 1;
+      const leadYear = leadDate.getFullYear();
+      const leadDateN = new Date(leadYear, leadMonth - 1, 1);
 
-    if (!selectedYear) {
-      return (
-        (!selectedMonth || leadMonth === parseInt(selectedMonth)) &&
-        leadDateN >= startDate &&
-        leadDateN <= now
-      );
-    }
-
-
-    return (
-      (!selectedMonth || leadMonth === parseInt(selectedMonth)) &&
-      (!selectedYear || leadYear === parseInt(selectedYear))
-    );
-  });
-
-
-
-
-
-    if(search) {
-      filteredLeads = filteredLeads.filter((lead) => {
-
-        const createdAtDate = new Date(lead.createdAt);
-        
-      const today = new Date();
-      const pastDate = new Date();
-      if (search && !isNaN(search) && search >= 1) {
-        pastDate.setDate(today.getDate() - parseInt(search));
+      if (!selectedYear) {
+        return (
+          (!selectedMonth || leadMonth === parseInt(selectedMonth)) &&
+          leadDateN >= startDate &&
+          leadDateN <= now
+        );
       }
 
-      return createdAtDate >= pastDate && createdAtDate <= today;
+      return (
+        (!selectedMonth || leadMonth === parseInt(selectedMonth)) &&
+        (!selectedYear || leadYear === parseInt(selectedYear))
+      );
+    });
 
-      })
+    if (search) {
+      filteredLeads = filteredLeads.filter((lead) => {
+        const createdAtDate = new Date(lead.createdAt);
+
+        const today = new Date();
+        const pastDate = new Date();
+        if (search && !isNaN(search) && search >= 1) {
+          pastDate.setDate(today.getDate() - parseInt(search));
+        }
+
+        return createdAtDate >= pastDate && createdAtDate <= today;
+      });
     }
 
+    const leadSourceCounts2 = lead_source_labels.map((label) => ({
+      label,
+      count:
+        filteredLeads?.filter((lead) => lead.lead_Source === label).length || 0,
+    }));
+
+    set_filtered_leads(leadSourceCounts2);
+
+    // 👇 Render chart
+    // const optionsCount = {
+    //   series: [{
+    //     name: "Leads",
+    //     data: leadSourceCounts2.map(item => item.count),
+    //   }],
+    //   chart: { type: selectChart || "bar", height: 300 },
+    //   plotOptions: {
+    //     bar: { columnWidth: "50%", borderRadius: 5 },
+    //   },
+    //   xaxis: {
+    //     categories: leadSourceCounts2.map(item => item.label),
+    //     title: { text: "Source" },
+    //   },
+    //   yaxis: { title: { text: "Leads" } },
+    //   colors: ["#6C757D"],
+    // };
+
+    // const chartElementCount = document.querySelector("#lead-source-chart");
+    // if (chartElementCount) {
+    //   const chartCount = new ApexCharts(chartElementCount, optionsCount);
+    //   chartCount.render();
+    //   return () => chartCount.destroy();
+    // }
+  }, [
+    selectedYear,
+    selectedMonth,
+    selectChart,
+    salesData,
+    lead_source_labels,
+    clients,
+  ]);
 
 
 
 
 
+  const getGradient = (department) => {
+  return (
+    {
+      Bookkeeping: "from-orange-100 to-orange-300",
+      Payroll: "from-pink-100 to-pink-300",
+      "Vat Return": "from-purple-100 to-purple-300",
+      "Personal Tax": "from-yellow-100 to-yellow-300",
+      Accounts: "from-sky-100 to-sky-300",
+      "Company Sec": "from-green-100 to-green-300",
+    }[department] || "from-fuchsia-100 to-fuchsia-300"
+  );
+};
 
 
 
-
- 
-
-  const leadSourceCounts2 = lead_source_labels.map(label => ({
-    label,
-    count: filteredLeads?.filter(lead => lead.lead_Source === label).length || 0,
-  }));
-
-  set_filtered_leads(leadSourceCounts2);
-
-  // 👇 Render chart
-  // const optionsCount = {
-  //   series: [{
-  //     name: "Leads",
-  //     data: leadSourceCounts2.map(item => item.count),
-  //   }],
-  //   chart: { type: selectChart || "bar", height: 300 },
-  //   plotOptions: {
-  //     bar: { columnWidth: "50%", borderRadius: 5 },
-  //   },
-  //   xaxis: {
-  //     categories: leadSourceCounts2.map(item => item.label),
-  //     title: { text: "Source" },
-  //   },
-  //   yaxis: { title: { text: "Leads" } },
-  //   colors: ["#6C757D"],
-  // };
-
-  // const chartElementCount = document.querySelector("#lead-source-chart");
-  // if (chartElementCount) {
-  //   const chartCount = new ApexCharts(chartElementCount, optionsCount);
-  //   chartCount.render();
-  //   return () => chartCount.destroy();
-  // }
-}, [selectedYear, selectedMonth, selectChart, salesData, lead_source_labels, clients]);
-
-
-function getPercentageChange(current, previous) {
-
-  console.log(current, "CURRENT")
-  console.log(previous, "previous")
- // If either value is not a number, return 0 change
-  if (isNaN(current) || isNaN(previous)) {
-    return {
-      change: 0,
-      isPositive: true,
-    };
-  }
-
-  const change =
-    previous === 0 ? (current > 0 ? 100 : 0) : ((current - previous) / previous) * 100;
-  return {
-    change,
-    isPositive: change >= 0,
-  };
-}
 
   return (
     <div className="w-full h-full relative">
@@ -1515,185 +1382,159 @@ function getPercentageChange(current, previous) {
         <Loader />
       ) : (
         <div className="flex flex-col gap-4 w-full  ">
-          <div className="flex justify-start gap-4 overflow-x-auto py-4 mx-auto max-w-[100%] hidden1 scroll-smooth">
-            <div className="flex flex-col   items-start justify-start  min-w-[10rem] p-2 cursor-pointer bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
-              <h2 className="text-xl font-bold text-gray-800 text-center mb-3">
-                Departments
-              </h2>
-              <div className="flex items-start flex-col  w-full gap-4">
-                <p className="text-xl  font-bold text-gray-700">
-                  <span className="font-semibold text-gray-900">
-                    Total Clients:
-                  </span>{" "}
-                </p>
-                <p className="text-xl  font-bold text-gray-700">
-                  <span className="font-semibold text-gray-900">
-                    Total Fee:
-                  </span>
-                </p>
-              </div>
-            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div className="w-full overflow-x-auto">
+
+
+  <div className=" w-full
+      grid
+      grid-cols-1
+      sm:grid-cols-2
+      md:grid-cols-3
+      lg:grid-cols-4
+      xl:grid-cols-6
+      2xl:grid-cols-8
+      3xl:grid-cols-[repeat(13,_minmax(0,_1fr))]
+      gap-4
+      p-4
+      scroll-smooth">
+            <div className="w-full flex flex-col  items-start justify-start p-2 bg-gradient-to-br from-[#f0fdfa] via-[#d9f3ef] to-[#c2e9e2] border border-[#b0ded7] rounded-xl shadow hover:shadow-md transition-transform duration-300 transform hover:scale-[1.02]">
+  <h2 className="text-base font-semibold text-[#065f46] uppercase tracking-wide mb-6 flex items-center gap-2">
+    <FiLayers className="text-[#047857]" size={18} />
+    Departments
+  </h2>
+
+  <div className="flex flex-col w-full gap-4 text-sm text-gray-700">
+    <div className="flex items-center gap-2">
+      <FiUsers className="text-gray-600" size={16} />
+      <span className="font-semibold text-gray-800">Total Clients</span>
+    </div>
+
+    <div className="flex items-center gap-2">
+      <FiDollarSign className="text-gray-600" size={16} />
+      <span className="font-semibold text-gray-800">Total Fee</span>
+    </div>
+  </div>
+</div>
+
             {clients?.map((job, index) => {
-
-
-              const currentCount = parseFloat(job?.totalFee)
-              const previousCount = parseFloat(clientsForPastMonthOrYear.find(el => el.department === job.department).totalFee)
-
-              const { change, isPositive } = getPercentageChange(currentCount, previousCount);
-
-
-
-              const currentDepartmentCount = job?.totalDepartmentCount || 0;
-              const previousDepartmentCount = clientsForPastMonthOrYear.find(el => el.department === job.department)?.totalDepartmentCount || 0;
-
-              const { change: departmentChange, isPositive: isDepartmentPositive } = getPercentageChange(currentDepartmentCount, previousDepartmentCount);
-
-return (
-                <div
-                key={index}
-                className={` relative flex flex-col  items-center min-w-[10rem]  p-2 cursor-pointer transition-transform duration-300 transform hover:scale-105 rounded-lg shadow-lg hover:shadow-xl ${
-                  job?.department === "Bookkeeping"
-                    ? "bg-gradient-to-br from-orange-100 via-orange-200 to-orange-300"
-                    : job?.department === "Payroll"
-                    ? "bg-gradient-to-br from-pink-100 via-pink-200 to-pink-300"
-                    : job?.department === "Vat Return"
-                    ? "bg-gradient-to-br from-purple-100 via-purple-200 to-purple-300"
-                    : job?.department === "Personal Tax"
-                    ? "bg-gradient-to-br from-yellow-100 via-yellow-200 to-yellow-300"
-                    : job?.department === "Accounts"
-                    ? "bg-gradient-to-br from-sky-100 via-sky-200 to-sky-300"
-                    : job?.department === "Company Sec"
-                    ? "bg-gradient-to-br from-green-100 via-green-200 to-green-300"
-                    : "bg-gradient-to-br from-fuchsia-100 via-fuchsia-200 to-fuchsia-300"
-                }  ${
-                  (job?.department === "Training" ||
-                    job?.department === "CRM.Affotax") &&
-                  "hidden"
-                }`}
-              >
-                <h2 className="text-lg font-medium text-gray-800 text-center mb-3">
-                  {job?.department}
-                </h2>
-                <div className="flex flex-col items-center w-full space-y-2">
-                  {/*  */}
-                  <p className=" relative text-3xl font-bold text-gray-700 text-center flex items-center gap-1">
-                    {job?.totalDepartmentCount}
-                    <span className={`${isDepartmentPositive ? "text-green-600" : "text-red-600"} text-lg flex justify-end items-center`}>
-                      {isDepartmentPositive ? "↑" : "↓"}{Math.abs(departmentChange.toFixed(0))}%
-                    </span>
-                  </p>
-
-                  <p className="text-2xl font-bold text-gray-700 text-center flex justify-center items-center gap-2 flex-col">
-                    ${" "}
-                    {parseFloat(job?.totalFee).toLocaleString(undefined, {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 2,
-                    })}
- 
-
-                    
-
-                    <span className={`${isPositive ? "text-green-600" : "text-red-600"} text-lg flex justify-end items-center`}>
-                      {isPositive ? "↑" : "↓"}{Math.abs(change.toFixed(0))}%
-                    </span>
-
-                  </p>
-                </div>
-                {/* <div className="flex items-center ">
-                  {job?.percentageChange >= 0 ? (
-                    <FaLongArrowAltUp className="text-green-500 text-[17px]" />
-                  ) : (
-                    <FaLongArrowAltDown className="text-red-500 text-[17px]" />
-                  )}
-                  <p
-                    className={`text-sm font-bold ${
-                      job?.percentageChange >= 0
-                        ? "text-green-500"
-                        : "text-red-500"
-                    }`}
-                  >
-                    {job?.percentageChange}
-                  </p>
-                </div> */}
-              </div>
-
-
-
-
-)
+              
+              return (
+                <StatCard job={job} clientsForPastMonthOrYear={clientsForPastMonthOrYear}  />
+              );
             })}
-            <div className="flex flex-col items-center min-w-[10rem]  p-3 cursor-pointer bg-gradient-to-br from-rose-100 via-rose-200 to-rose-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
-              <h2 className="text-lg font-medium text-gray-800 text-center mb-3">
-                Total
-              </h2>
-              <p className="text-3xl font-bold text-gray-700 text-center">
-                {filterWorkFlow ? filterWorkFlow.length : workFlowData?.length}
-              </p>
-              <p className="text-2xl font-bold text-gray-700 text-center">
-                ${" "}
-                {parseFloat(fee).toLocaleString(undefined, {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 2,
-                })}
-              </p>
-            </div>
-            {/* Unique Client */}
-            <div className="flex flex-col items-center min-w-[10rem]  p-3 cursor-pointer bg-gradient-to-br from-lime-100 via-lime-200 to-lime-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
-              <h2 className="text-lg font-medium text-lime-900 text-center mb-3">
-                Unique Clients
-              </h2>
-              <p className="text-4xl font-bold text-gray-700 text-center">
-                {filterUniqueClient?.length}
-              </p>
-            </div>
-            {/* Active Client */}
-            <div className="flex flex-col items-center min-w-[10rem]  p-3 cursor-pointer bg-gradient-to-br from-amber-100 via-amber-200 to-amber-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
-              <h2 className="text-lg font-medium text-gray-800 text-center mb-3">
-                AU Total
-              </h2>
-              <p className="text-3xl font-bold text-gray-700 text-center">
-                {activeClients.totalClients}
-              </p>
-              <p className="text-2xl font-bold text-gray-700 text-center">
-                ${" "}
-                {parseFloat(activeClients.totalFee).toLocaleString(undefined, {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 2,
-                })}
-              </p>
-            </div>
-            {/* RPC */}
-            <div className="flex flex-col items-center min-w-[10rem]  p-3 cursor-pointer bg-gradient-to-br from-indigo-100 via-indigo-200 to-indigo-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
-              <h2 className="text-lg font-medium text-gray-800 text-center mb-3">
-                RPC
-              </h2>
-              <p className="text-3xl font-bold text-gray-700 text-center">
-                {(
-                  (parseFloat(activeClients.totalFee) || 1) /
-                  activeClients.totalClients
-                )
-                  .toFixed(0)
-                  .toLocaleString(undefined, {
-                    minimumFractionDigits: 1,
-                    maximumFractionDigits: 2,
-                  })}
-              </p>
-            </div>
-            {/* RPU */}
-            <div className="flex flex-col items-center min-w-[10rem]  p-3 cursor-pointer bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 rounded-lg shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105">
-              <h2 className="text-lg font-medium text-gray-800 text-center mb-3">
-                RPU
-              </h2>
-              <p className="text-3xl font-bold text-gray-700 text-center">
-                {((parseFloat(activeClients.totalFee) || 1) / userData?.length)
-                  .toFixed(0)
-                  .toLocaleString(undefined, {
-                    minimumFractionDigits: 1,
-                    maximumFractionDigits: 2,
-                  })}
-              </p>
-            </div>
+ 
+                <SummaryCard
+                  title="Total"
+                  value={filterWorkFlow ? filterWorkFlow.length : workFlowData?.length}
+                  subValue={fee}
+bg="bg-gradient-to-br from-[#e0f7f4] via-[#c0ece6] to-[#a0e1d9]"
+border="border border-[#b5e6dd]"
+text="text-[#05676e]"
+                  prevValue={filterWorkFlowForComparison ? filterWorkFlowForComparison.length : workFlowData?.length}
+                  prevSubValue={feeForComparison}
+                />
+
+                <SummaryCard
+                  title="Unique Clients"
+                  value={filterUniqueClient?.length}
+bg="bg-gradient-to-br from-[#e0f7f4] via-[#c0ece6] to-[#a0e1d9]"
+border="border border-[#b5e6dd]"
+text="text-[#05676e]"
+                  prevValue={filterUniqueClientForComparison?.length}
+                />
+
+                <SummaryCard
+                  title="AU Total"
+                  value={activeClients.totalClients}
+                  subValue={activeClients.totalFee}
+bg="bg-gradient-to-br from-[#e0f7f4] via-[#c0ece6] to-[#a0e1d9]"
+border="border border-[#b5e6dd]"
+text="text-[#05676e]"
+                  prevValue={activeClientsForComparison.totalClients}
+                  prevSubValue={activeClientsForComparison.totalFee}
+                />
+
+                <SummaryCard
+                  title="RPC"
+                  value={( (parseFloat(activeClients.totalFee) || 1) / activeClients.totalClients ).toFixed(0)}
+                   bg="bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200"
+  border="border border-blue-200"
+  text="text-blue-900"
+                  prevValue={( (parseFloat(activeClientsForComparison.totalFee) || 1) / activeClientsForComparison.totalClients ).toFixed(0)}
+                />
+
+                <SummaryCard
+                  title="RPU"
+                  value={(
+                    (parseFloat(activeClients.totalFee) || 1) / userData?.length
+                  ).toFixed(0)}
+                   bg="bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200"
+  border="border border-blue-200"
+  text="text-blue-900"
+                  prevValue={( (parseFloat(activeClientsForComparison.totalFee) || 1) / userData?.length ).toFixed(0)}
+                />
+ 
           </div>
+
+          </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
           {/* -----------------------Bar/Line/Area Charts--------------- */}
           <div className={`w-full ${getGridClasses()} gap-4 p-4`}>
@@ -1721,7 +1562,7 @@ return (
                   </h3>
                 </div>
                 {/* (Month Wise) Department Total */}
-                
+
                 {/* {
                   featureFilter ? <JobCountChart featureFilter={featureFilter} selectChart={selectChart} selectedDepartment={selectedDepartment} selectedSource={selectedSource} selectedClient={selectedClient} selectedPartner={selectedPartner} uniqueClients={uniqueClients} setFilteredUniqueClient={setFilteredUniqueClient} /> : <div id="apex-jobcount-chart" />
                 } */}
@@ -1738,11 +1579,8 @@ return (
                   </h3>
                 </div>
                 {/* (Month Wise) Fee Total */}
-                
-
 
                 <div id="apex-fee-chart" />
-
 
                 {/* {
                   
@@ -1752,20 +1590,7 @@ return (
               </div>
             )}
 
-            
-
-
-
-
-
-
-
-
-
-
-
-            
-               {/*  -------------Jobs Analysis----------- */}
+            {/*  -------------Jobs Analysis----------- */}
             {visibility[2] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <h3 className="text-lg font-semibold text-center">
@@ -1775,9 +1600,7 @@ return (
               </div>
             )}
 
-
-
-              {/* ------------------Fee Analysis----------------- */}
+            {/* ------------------Fee Analysis----------------- */}
             {visibility[3] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <h3 className="text-lg font-semibold text-center">
@@ -1787,24 +1610,8 @@ return (
               </div>
             )}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             {/* ------------------Lead / Lead Source Graph----------------- */}
-             {/* { visibility[2] && (
+            {/* { visibility[2] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <h3 className="text-lg font-semibold text-center">
                   Lead Source Chart
@@ -1813,131 +1620,83 @@ return (
               </div>
             )} */}
 
-
-            
-
-            
-        {/* 7----------Conversion Lead in Client in Proposal--------- */}
-        {visibility[4] && (
-          <div className=" w-full flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 shadow-lg hover:shadow-2xl  ">
-            <div className="flex flex-col gap-4 w-full">
-              <div className=" w-full flex items-center gap-2 p-2 rounded-md border shadow-md bg-white">
-                <h3 className="font-semibold text-xl w-[24%]">Source</h3>
-                <h3 className="font-semibold text-xl text-start w-full">
-                  Leads
-                </h3>
-              </div>
-
-              <div className=" w-full flex flex-col gap-2">
-                {[...filtered_leads].sort((a, b) => b.count - a.count).map((lead, i) => (
-                  <div
-                    key={`${lead.label}--${i}`}
-                    className="w-full flex items-center gap-2 px-2 py-1 rounded-md border shadow-md bg-white/60 transition-all duration-300 ease-in-out transform hover:scale-[1.04]"
-                  >
-                    <h3 className="font-medium text-lg w-[24%]">
-                      {lead.label}
+            {/* 7----------Conversion Lead in Client in Proposal--------- */}
+            {visibility[4] && (
+              <div className=" w-full flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 shadow-lg hover:shadow-2xl  ">
+                <div className="flex flex-col gap-4 w-full">
+                  <div className=" w-full flex items-center gap-2 p-2 rounded-md border shadow-md bg-white">
+                    <h3 className="font-semibold text-xl w-[24%]">Source</h3>
+                    <h3 className="font-semibold text-xl text-start w-full">
+                      Leads
                     </h3>
-                    <div className="bg-white border overflow-hidden rounded-[2rem] shadow-md drop-shadow-md w-full h-full">
-                      <div
-                        style={{
-                          width: `${lead?.count}%`,
-                          background:
-                            lead?.count >= 100
-                              ? "linear-gradient(90deg, #00E396, #00C853)"
-                              : "linear-gradient(90deg, #FF4560, #FF8A65)",
-                          transition: "width 0.4s ease-in-out",
-                        }}
-                        className={`h-[1.6rem] flex items-center justify-start ${
-                          lead?.count < 15 ? "text-black" : "text-white"
-                        } font-semibold rounded-[2rem] shadow-md`}
-                      >
-                        <span
-                          className={`px-2 text-xs ${
-                            lead?.count < 3 ? "ml-3" : "ml-0"
-                          }`}
-                        >
-                          {lead?.count}
-                        </span>
-                      </div>
-                    </div>
                   </div>
-                ))}
+
+                  <div className=" w-full flex flex-col gap-2">
+                    {[...filtered_leads]
+                      .sort((a, b) => b.count - a.count)
+                      .map((lead, i) => (
+                        <div
+                          key={`${lead.label}--${i}`}
+                          className="w-full flex items-center gap-2 px-2 py-1 rounded-md border shadow-md bg-white/60 transition-all duration-300 ease-in-out transform hover:scale-[1.04]"
+                        >
+                          <h3 className="font-medium text-lg w-[24%]">
+                            {lead.label}
+                          </h3>
+                          <div className="bg-white border overflow-hidden rounded-[2rem] shadow-md drop-shadow-md w-full h-full">
+                            <div
+                              style={{
+                                width: `${lead?.count}%`,
+                                background:
+                                  lead?.count >= 100
+                                    ? "linear-gradient(90deg, #00E396, #00C853)"
+                                    : "linear-gradient(90deg, #FF4560, #FF8A65)",
+                                transition: "width 0.4s ease-in-out",
+                              }}
+                              className={`h-[1.6rem] flex items-center justify-start ${
+                                lead?.count < 15 ? "text-black" : "text-white"
+                              } font-semibold rounded-[2rem] shadow-md`}
+                            >
+                              <span
+                                className={`px-2 text-xs ${
+                                  lead?.count < 3 ? "ml-3" : "ml-0"
+                                }`}
+                              >
+                                {lead?.count}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
-
-
-
-
-
-
-
-
-
-
-
-             
-
-
-
+            )}
 
             {/* ------------------Source Analysis----------------- */}
-            {
-              visibility[5] || visibility[6] ? (
-                <div className="w-full flex justify-start items-start gap-2  rounded-md cursor-pointer   ">
-                  {visibility[5] && (
-              <div className="w-[50%] shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                <JobSourcePieChart
-                  workFlowData={workFlowData}
-                  selectedMonth={selectedMonth}
-                  selectedYear={selectedYear}
-                  lastDays={search}
-                />
+            {visibility[5] || visibility[6] ? (
+              <div className="w-full flex justify-start items-start gap-2  rounded-md cursor-pointer   ">
+                {visibility[5] && (
+                  <div className="w-[50%] shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                    <JobSourcePieChart
+                      workFlowData={workFlowData}
+                      selectedMonth={selectedMonth}
+                      selectedYear={selectedYear}
+                      lastDays={search}
+                    />
+                  </div>
+                )}
+                {visibility[6] && (
+                  <div className="w-[50%] shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                    <JobSourceClientPartnerDonutCharts
+                      workFlowData={workFlowData}
+                      selectedMonth={selectedMonth}
+                      selectedYear={selectedYear}
+                      lastDays={search}
+                    />
+                  </div>
+                )}
               </div>
-            )}
-            {visibility[6] && (
-              <div className="w-[50%] shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                <JobSourceClientPartnerDonutCharts
-                  workFlowData={workFlowData}
-                  selectedMonth={selectedMonth}
-                  selectedYear={selectedYear}
-                  lastDays={search}
-                />
-              </div>
-            )}
-                </div>
-              ) : null
-            }
-
-
-
-
-
-
-
-
-
-              
-
-                
-
-
-           
-
-
-             
-            
-
-           
-
-            
-
-
-
-
-
-
+            ) : null}
           </div>
         </div>
       )}

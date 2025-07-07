@@ -784,7 +784,7 @@ export default function Tickets() {
               >
                 Job Holder
               </span>
-              {auth?.user?.role?.name === "Admin" && (
+               
                 <select
                   value={column.getFilterValue() || ""}
                   onChange={(e) => column.setFilterValue(e.target.value)}
@@ -797,7 +797,7 @@ export default function Tickets() {
                     </option>
                   ))}
                 </select>
-              )}
+              
             </div>
           );
         },

@@ -2021,11 +2021,11 @@ const getProgress = (timeStr, total) => {
           xl: "490px",
         },
         "@media (min-width: 1500px) and (max-width: 1800px)": {
-          maxHeight: "700px",
+          maxHeight: "650px",
         },
 
         "@media (min-width: 1800px)": {
-          maxHeight: "600px",
+          maxHeight: "650px",
         },
       },
     },

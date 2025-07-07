@@ -724,7 +724,7 @@ export default function Sidebar({ hide, setHide }) {
             </>
           )}
           {/* Template Editor */}
-          {hasAccess("Editor") && (
+          {/* {hasAccess("Editor") && (
             <>
               <div
                 className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
@@ -759,7 +759,7 @@ export default function Sidebar({ hide, setHide }) {
                 </div>
               </div>
             </>
-          )}
+          )} */}
 
           {/* End */}
         </div>

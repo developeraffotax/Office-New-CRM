@@ -654,15 +654,18 @@ export default function Clients({
         const currentYear = now.getFullYear();
         const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
     
-        const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
+              // Start of current 12-month window
+        const currentStartDate = new Date(currentYear, currentMonth - 11, 1);
 
-
+                // Previous year's start and end
+        const prevYearStart = new Date(currentStartDate.getFullYear(), currentStartDate.getMonth() - 12, 1);
+        const prevYearEnd = new Date(currentStartDate.getFullYear(), currentStartDate.getMonth(), 0); // Last day before currentStartDate
         
          filteredData = filteredData.filter((job) => {
           const jobDate = new Date(job.currentDate);
 
           return (
-            jobDate >= startDate && jobDate <= now
+            jobDate >= prevYearStart && jobDate <= prevYearEnd
           );
         });
 
@@ -698,7 +701,7 @@ export default function Clients({
 
           return (
             jobMonth === (parseInt(selectedMonth) - 1 ) &&
-            jobYear === (parseInt(selectedYear) - 1) 
+            jobYear === (parseInt(selectedYear)) 
           );
         });
       } else if (selectedMonth) {
@@ -718,11 +721,16 @@ export default function Clients({
       if (search && search >= 1) {
         const today = new Date();
         const pastDate = new Date();
-        pastDate.setDate(today.getDate() - search);
+
+        const doublePastDate = new Date();
+
+
+        pastDate.setDate(today.getDate() - (search));
+        doublePastDate.setDate(today.getDate() - (search * 2));
 
         filteredData = filteredData.filter((job) => {
           const jobDate = new Date(job.currentDate);
-          return jobDate >= pastDate && jobDate <= today;
+          return jobDate >= doublePastDate && jobDate <= pastDate;
         });
       }
 
@@ -1531,9 +1539,15 @@ function getPercentageChange(current, previous) {
               const currentCount = parseFloat(job?.totalFee)
               const previousCount = parseFloat(clientsForPastMonthOrYear.find(el => el.department === job.department).totalFee)
 
-
-
               const { change, isPositive } = getPercentageChange(currentCount, previousCount);
+
+
+
+              const currentDepartmentCount = job?.totalDepartmentCount || 0;
+              const previousDepartmentCount = clientsForPastMonthOrYear.find(el => el.department === job.department)?.totalDepartmentCount || 0;
+
+              const { change: departmentChange, isPositive: isDepartmentPositive } = getPercentageChange(currentDepartmentCount, previousDepartmentCount);
+
 return (
                 <div
                 key={index}
@@ -1564,6 +1578,9 @@ return (
                   {/*  */}
                   <p className=" relative text-3xl font-bold text-gray-700 text-center flex items-center gap-1">
                     {job?.totalDepartmentCount}
+                    <span className={`${isDepartmentPositive ? "text-green-600" : "text-red-600"} text-lg flex justify-end items-center`}>
+                      {isDepartmentPositive ? "↑" : "↓"}{Math.abs(departmentChange.toFixed(0))}%
+                    </span>
                   </p>
 
                   <p className="text-2xl font-bold text-gray-700 text-center flex justify-center items-center gap-2 flex-col">

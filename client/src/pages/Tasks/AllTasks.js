@@ -1215,7 +1215,7 @@ const AllTasks = () => {
             <div className="w-full flex items-start justify-start gap-1 flex-col "  >
 
               <div  className="w-full   flex items-start justify-between gap-2 flex-row ">
-              <div className="w-[90%] h-full ">
+              
               {showEdit ? (
                 <input
                   type="text"
@@ -1223,39 +1223,39 @@ const AllTasks = () => {
                   value={allocateTask}
                   onChange={(e) => setAllocateTask(e.target.value)}
                   onBlur={(e) => updateAllocateTask(e.target.value)}
-                  className="w-full h-[2.3rem] focus:border border-gray-300 px-1 outline-none rounded"
+                  className="w-full h-[2rem] focus:border border-gray-300 px-1 outline-none rounded-lg"
                 />
               ) : (
-                <div
-                  className="w-full h-full  text-wrap "
-                  onDoubleClick={() => setShowEdit(true)}
-                  title={allocateTask}
-                >
-                  <p
-                    className="text-[#0078c8] hover:text-[#0053c8] cursor-pointer text-start    "
-                    onDoubleClick={() => setShowEdit(true)}
-                    onClick={() => {
-                      setTaskID(row.original._id);
-                      setProjectName(row.original.project.projectName);
-                      setShowDetail(true);
-                    }}
-                  >
-                    {allocateTask}
-                  </p>
-                </div>
+                      <div
+                        className="  h-full  text-wrap "
+                        onDoubleClick={() => setShowEdit(true)}
+                        title={allocateTask}
+                      >
+                        <p
+                          className="text-[#0078c8] hover:text-[#0053c8] cursor-pointer text-start    "
+                          onDoubleClick={() => setShowEdit(true)}
+                          onClick={() => {
+                            setTaskID(row.original._id);
+                            setProjectName(row.original.project.projectName);
+                            setShowDetail(true);
+                          }}
+                        >
+                          {allocateTask}
+                        </p>
+                      </div>
               )}
-            </div>
+            
 
-            <div className="w-[10%]">
-              <span className={`${showSubtaskId === row.original._id ? "text-orange-500 " : row.original?.subtasksLength > 0 ? "text-blue-400" : "text-gray-500"} cursor-pointer hover:text-orange-500 transition-all `} onClick={() => {
-                      setTaskID(row.original._id);
-                      setProjectName(row.original.project.projectName);
-                      handleShowSubtasks()
-                    }}>
-                <AssignmentIcon />
-              </span>
+                  <div className=" ">
+                    <span className={`${showSubtaskId === row.original._id ? "text-orange-500 " : row.original?.subtasksLength > 0 ? "text-blue-400" : "text-gray-500"} cursor-pointer hover:text-orange-500 transition-all `} onClick={() => {
+                            setTaskID(row.original._id);
+                            setProjectName(row.original.project.projectName);
+                            handleShowSubtasks()
+                          }}>
+                      <AssignmentIcon />
+                    </span>
 
-            </div>
+                  </div>
 
 
             </div>

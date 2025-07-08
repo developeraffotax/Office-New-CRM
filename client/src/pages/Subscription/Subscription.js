@@ -280,7 +280,7 @@ export default function Subscription() {
     } else if (deadline.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
       return "Due";
     } else {
-      return "";
+      return "Upcoming";
     }
   };
 
@@ -1182,7 +1182,7 @@ export default function Subscription() {
       {
         accessorKey: "state",
         Header: ({ column }) => {
-          const dateStatus = ["Overdue", "Due"];
+          const dateStatus = ["Overdue", "Due", "Upcoming"];
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -1223,7 +1223,7 @@ export default function Subscription() {
                     ? "bg-green-500  py-[6px] px-4 "
                     : status === "Overdue"
                     ? "bg-red-500  py-[6px] px-3 "
-                    : "bg-transparent"
+                    : "bg-gray-400  py-[6px] px-3"
                 }`}
               >
                 {status}

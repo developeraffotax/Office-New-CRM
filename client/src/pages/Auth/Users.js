@@ -17,6 +17,7 @@ import { RiEdit2Line } from "react-icons/ri";
 import Swal from "sweetalert2";
 import UserLabelModal from "../../components/user/UserLabelModal";
 import QuickAccess from "../../utlis/QuickAccess";
+import { LuFilter } from "react-icons/lu";
 
 export default function Users() {
   const { auth } = useAuth();
@@ -28,6 +29,9 @@ export default function Users() {
   const isActive = [true, false];
   const [labelData, setLabelData] = useState([]);
   const [showLabel, setShowLabel] = useState(false);
+
+  const [showDepartmentFilter, setShowDepartmentFilter] = useState(false);
+  const [departmentFilter, setDepartmentFilter] = useState("");
 
   // All Users
   const getAllUsers = async () => {
@@ -234,6 +238,27 @@ export default function Users() {
       toast.error(error?.response?.data?.message);
     }
   };
+
+
+
+
+
+
+
+
+    
+    const setColumnFromOutsideTable = (colKey, filterVal) => {
+
+    const col = table.getColumn(colKey);
+
+    //console.log(col, "THE COLUMN 💚")
+    return col.setFilterValue(filterVal);
+  }
+
+
+
+
+
 
   //   -------------------Table Data------------->
 
@@ -1188,6 +1213,9 @@ export default function Users() {
   const handleClearFilters = () => {
     table.setColumnFilters([]);
     table.setGlobalFilter("");
+
+     
+    setDepartmentFilter("");
   };
 
   const table = useMaterialReactTable({
@@ -1260,6 +1288,18 @@ export default function Users() {
             </span>
 
             <span className="mt-2"><QuickAccess /></span>
+
+             <span
+                                              className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${showDepartmentFilter && 'bg-orange-500 text-white '}  `}
+                                              onClick={() => {
+                                                
+                                                setShowDepartmentFilter(!showDepartmentFilter);
+                                
+                                              }}
+                                              title="Filter by Department"
+                                            >
+                                              <LuFilter  className="h-6 w-6  cursor-pointer " />
+                                            </span>
           </div>
 
           {/* ---------Template Buttons */}
@@ -1279,7 +1319,47 @@ export default function Users() {
               New User
             </button>
           </div>
+
+
+
+          
+             
+
+
+
         </div>
+
+         {showDepartmentFilter && <div className="flex items-center gap-4 pt-4">
+                 
+                <ul className="flex items-center gap-2 list-none  ">
+                  {labelData?.map((department, i) => (
+                    <li
+                      key={`department-${i}-${department.name}`}
+                      className={`${
+                        departmentFilter === department.name
+                          ? "bg-orange-500 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      } px-2 py-1 rounded-md cursor-pointer m-0 `}
+                      onClick={() => {
+                        setDepartmentFilter(prev => {
+                          const isSameDpt = prev === department.name
+                          const newValue = isSameDpt ? "" : department.name;
+
+
+                          
+                          setColumnFromOutsideTable("Data", newValue);
+                          return newValue;
+                        });
+                         
+                      }}
+                    >
+                      {department?.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>}
+
+              
         <hr className="w-full h-[1px] bg-gray-300 my-4" />
 
         {/* ---------Table Detail---------- */}

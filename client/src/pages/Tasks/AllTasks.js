@@ -1227,12 +1227,12 @@ const AllTasks = () => {
                 />
               ) : (
                       <div
-                        className="  h-full  text-wrap "
+                        className=" w-full h-full cursor-pointer text-wrap "
                         onDoubleClick={() => setShowEdit(true)}
                         title={allocateTask}
                       >
                         <p
-                          className="text-[#0078c8] hover:text-[#0053c8] cursor-pointer text-start    "
+                          className="text-[#0078c8] hover:text-[#0053c8] text-start inline  "
                           onDoubleClick={() => setShowEdit(true)}
                           onClick={() => {
                             setTaskID(row.original._id);

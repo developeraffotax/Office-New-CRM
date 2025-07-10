@@ -4,6 +4,10 @@ import { style } from "../../utlis/CommonStyle";
 import { BiLoaderCircle } from "react-icons/bi";
 import axios from "axios";
 
+
+const jobStatuses = [ "Quote", "Data", "Progress", "Queries", "Approval", "Submission", "Billing", "Feedback", ]
+
+
 export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
   const [loading, setLoading] = useState(false);
   const [clientName, setClientName] = useState("");
@@ -37,6 +41,8 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+
+    jobStatus: ""
   });
   const [clientPayRollFormData, setClientPayRollFormData] = useState({
     clientId: "",
@@ -48,6 +54,8 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+
+    jobStatus: ""
   });
   const [clientVatReturnFormData, setClientVatReturnFormData] = useState({
     clientId: "",
@@ -59,6 +67,8 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+
+    jobStatus: ""
   });
   const [clientPersonalTaxFormData, setClientPersonalTaxFormData] = useState({
     clientId: "",
@@ -70,6 +80,8 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+
+    jobStatus: ""
   });
   const [clientAccountsFormData, setClientAccountsFormData] = useState({
     clientId: "",
@@ -81,6 +93,8 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+
+    jobStatus: ""
   });
 
   const [clientCompanySecFormData, setClientCompanySecFormData] = useState({
@@ -93,6 +107,8 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+
+    jobStatus: ""
   });
 
   const [clientAddressFormData, setClientAddressFormData] = useState({
@@ -105,6 +121,8 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+
+    jobStatus: ""
   });
 
   const [jobs, setJobs] = useState([]);
@@ -210,6 +228,8 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+
+                jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -233,6 +253,8 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+
+                jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -256,6 +278,8 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+
+                jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -279,6 +303,8 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+
+                jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -302,6 +328,8 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+
+                jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -325,6 +353,8 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+
+                jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -348,6 +378,8 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+
+                jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
                 handleCheckboxChange(updatedFormData, true);
@@ -855,6 +887,28 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
                   </option>
                 ))}
               </select>
+
+               <select
+                              value={clientBookKeepingFormData.jobStatus}
+                              onChange={(e) =>
+                                handleFormDataChange(
+                                  clientBookKeepingFormData,
+                                  setClientBookKeepingFormData,
+                                  "jobStatus",
+                                  e.target.value
+                                )
+                              }
+                              className={`${style.input} w-full `}
+                            >
+                              <option value="">Job Status</option>
+                              {jobStatuses.map((el) => (
+                                <option key={el} value={el}>
+                                  {el}
+                                </option>
+                              ))}
+                            </select>
+
+
             </div>
 
             {/* Payroll */}
@@ -998,6 +1052,28 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
                   </option>
                 ))}
               </select>
+
+               <select
+                              value={clientPayRollFormData.jobStatus}
+                              onChange={(e) =>
+                                handleFormDataChange(
+                                  clientPayRollFormData,
+                                  setClientPayRollFormData,
+                                  "jobStatus",
+                                  e.target.value
+                                )
+                              }
+                              className={`${style.input} w-full `}
+                            >
+                              <option value="">Job Status</option>
+                              {jobStatuses.map((el) => (
+                                <option key={el} value={el}>
+                                  {el}
+                                </option>
+                              ))}
+                            </select>
+
+
             </div>
 
             {/* VAT Return */}
@@ -1141,6 +1217,26 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
                   </option>
                 ))}
               </select>
+
+              <select
+                              value={clientVatReturnFormData.jobStatus}
+                              onChange={(e) =>
+                                handleFormDataChange(
+                                  clientVatReturnFormData,
+                                  setClientVatReturnFormData,
+                                  "jobStatus",
+                                  e.target.value
+                                )
+                              }
+                              className={`${style.input} w-full `}
+                            >
+                              <option value="">Job Status</option>
+                              {jobStatuses.map((el) => (
+                                <option key={el} value={el}>
+                                  {el}
+                                </option>
+                              ))}
+                            </select>
             </div>
             {/* 4 */}
             <div className="flex items-center gap-4">
@@ -1283,6 +1379,29 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
                   </option>
                 ))}
               </select>
+
+               <select
+                              value={clientPersonalTaxFormData.jobStatus}
+                              onChange={(e) =>
+                                handleFormDataChange(
+                                  clientPersonalTaxFormData,
+                                  setClientPersonalTaxFormData,
+                                  "jobStatus",
+                                  e.target.value
+                                )
+                              }
+                              className={`${style.input} w-full `}
+                            >
+                              <option value="">Job Status</option>
+                              {jobStatuses.map((el) => (
+                                <option key={el} value={el}>
+                                  {el}
+                                </option>
+                              ))}
+                            </select>
+              
+
+
             </div>
             {/* 5 */}
             <div className="flex items-center gap-4">
@@ -1425,6 +1544,28 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
                   </option>
                 ))}
               </select>
+
+              <select
+                              value={clientAccountsFormData.jobStatus}
+                              onChange={(e) =>
+                                handleFormDataChange(
+                                  clientAccountsFormData,
+                                  setClientAccountsFormData,
+                                  "jobStatus",
+                                  e.target.value
+                                )
+                              }
+                              className={`${style.input} w-full `}
+                            >
+                              <option value="">Job Status</option>
+                              {jobStatuses.map((el) => (
+                                <option key={el} value={el}>
+                                  {el}
+                                </option>
+                              ))}
+                            </select>
+
+
             </div>
             {/* 6 */}
             <div className="flex items-center gap-4">
@@ -1567,6 +1708,28 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
                   </option>
                 ))}
               </select>
+
+               <select
+                              value={clientCompanySecFormData.jobStatus}
+                              onChange={(e) =>
+                                handleFormDataChange(
+                                  clientAccountsFormData,
+                                  setClientCompanySecFormData,
+                                  "jobStatus",
+                                  e.target.value
+                                )
+                              }
+                              className={`${style.input} w-full `}
+                            >
+                              <option value="">Job Status</option>
+                              {jobStatuses.map((el) => (
+                                <option key={el} value={el}>
+                                  {el}
+                                </option>
+                              ))}
+                            </select>
+
+
             </div>
             {/* 7 */}
             <div className="flex items-center gap-4">
@@ -1709,6 +1872,28 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
                   </option>
                 ))}
               </select>
+
+              <select
+                              value={clientAddressFormData.jobStatus}
+                              onChange={(e) =>
+                                handleFormDataChange(
+                                  clientAddressFormData,
+                                  setClientAddressFormData,
+                                  "jobStatus",
+                                  e.target.value
+                                )
+                              }
+                              className={`${style.input} w-full `}
+                            >
+                              <option value="">Job Status</option>
+                              {jobStatuses.map((el) => (
+                                <option key={el} value={el}>
+                                  {el}
+                                </option>
+                              ))}
+                            </select>
+
+
             </div>
           </div>
           {/*  */}

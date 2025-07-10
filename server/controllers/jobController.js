@@ -93,6 +93,8 @@ export const createJob = async (req, res) => {
             fee: job.fee,
             lead: job.lead,
             jobHolder: job.jobHolder,
+
+            jobStatus: job.jobStatus || "",
           },
         });
 

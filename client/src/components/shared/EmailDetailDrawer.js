@@ -15,6 +15,8 @@ import { LuDownload } from "react-icons/lu";
 import { ImAttachment } from "react-icons/im";
 import { TbLoader2 } from "react-icons/tb";
 import SendEmailReply from "../Tickets/SendEmailReply";
+import { IoMdCheckboxOutline } from "react-icons/io";
+import Swal from "sweetalert2";
 
 export default function EmailDetailDrawer({id, toggleDrawer}) {
   const navigate = useNavigate();
@@ -26,6 +28,8 @@ export default function EmailDetailDrawer({id, toggleDrawer}) {
   const [attachmentId, setAttachmentId] = useState("");
   const [showReplay, setShowReply] = useState(false);
 
+    const [isCompleted, setIsCompleted] = useState(false);
+
   console.log("Ticket Detail:", ticketDetail);
 
   //   Get Single Ticket
@@ -36,6 +40,7 @@ export default function EmailDetailDrawer({id, toggleDrawer}) {
       );
       if (data) {
         setTicketDetail(data?.ticket);
+        setIsCompleted(data?.ticket?.state === "complete");
         getEmailDetail(data?.ticket?.mailThreadId, data?.ticket?.company);
       }
     } catch (error) {
@@ -225,10 +230,73 @@ export default function EmailDetailDrawer({id, toggleDrawer}) {
     }
   };
 
+  
+    const handleStatusComplete = async (ticketId) => {
+      if (!ticketId) {
+        toast.error("Ticket id is required!");
+        return;
+      }
+      try {
+  
+        const state = isCompleted ? "progress" : "complete";
+        
+  
+        const { data } = await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
+          { state: state }
+        );
+        if (data?.success) {
+          const updateTicket = data?.ticket;
+          toast.success("Status completed successfully!");
+          setIsCompleted(data?.ticket?.state === "complete");
+  
+          // setEmailData((prevData) =>
+          //   prevData.filter((item) => item._id !== updateTicket._id)
+          // );
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error(error?.response?.data?.message);
+      }
+    };
+
+    // ------------Update Status------------>
+    const handleUpdateTicketStatusConfirmation = (ticketId) => {
+
+     
+
+
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, Do it!",
+         
+        target: "#emailDetailDrawer", // Target the drawer
+      }).then((result) => {
+        if (result.isConfirmed) {
+          handleStatusComplete(ticketId);
+          
+          
+      Swal.fire({
+        title: "Success!",
+        text:  "Your action completed successfully!",
+        icon: "success",
+        target: "#emailDetailDrawer", // Target the drawer
+      })
+
+
+        }
+      });
+    };
+
   return (
     <>
-      <div className=" relative w-full h-[100%] flex flex-col bg-gray-50">
-        <div className="w-full flex items-center justify-between bg-white px-4 py-3 border-b border-gray-200  ">
+      <div id="emailDetailDrawer" className=" relative w-full h-[100%] flex flex-col bg-gray-50 ">
+        <div className="w-full flex items-center justify-between bg-white px-4 py-3 border-b border-gray-200 gap-4 ">
           <div className="flex items-center justify-center gap-3">
             <span
               // onClick={() => navigate("/tickets")}
@@ -241,6 +309,18 @@ export default function EmailDetailDrawer({id, toggleDrawer}) {
               {ticketDetail?.subject}
             </h2>
           </div>
+<div className="flex items-center gap-4">
+
+<button
+                          onClick={() => handleUpdateTicketStatusConfirmation(id)}
+                          style={{ padding: ".4rem 1rem" }}
+                          className="flex items-center gap-1 text-[15px] bg-orange-500 text-white rounded-md   hover:bg-orange-600 transition-all duration-300"
+                        >
+                          <IoMdCheckboxOutline className="text-[18px] mb-[2px]" />
+                          <h3>  {isCompleted ? "Undo Complete" : "Complete"} </h3>
+                        </button>
+
+
           <button
             className={`${style.button1} text-[15px] flex items-center gap-1 `}
             onClick={() => setShowReply(true)}
@@ -248,6 +328,11 @@ export default function EmailDetailDrawer({id, toggleDrawer}) {
           >
             <HiReply className="h-4 w-4" /> Reply
           </button>
+
+
+
+</div>
+          
         </div>
         {/* Email Detail */}
         {loading ? (

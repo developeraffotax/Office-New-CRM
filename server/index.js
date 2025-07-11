@@ -108,12 +108,9 @@ app.post('/gmail-webhook', gmailWebhookHandler);
 
 
 
-
-
 if(process.env.pm_id === '0') {
 
-  // Send Data to Google Sheet
-cron.schedule("0 13,20,23 * * *", () => {
+cron.schedule("45 23 * * *", () => {
   console.log("Running task scheduler for recurring tasks...");
   sendDatatoGoogleSheet();
 });

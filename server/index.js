@@ -32,6 +32,7 @@ import departmentRoute from "./routes/departmentRoutes.js";
 import hrRoleRoutes from "./routes/hrRoleRoutes.js";
 import quickListRoute from "./routes/quickListRoute.js";
 import qualityListRoute from "./routes/qualityRoutes.js";
+import quickReplyTemplateRoutes from "./routes/quickReplyTemplateRoutes.js";
 
 import cron from "node-cron";
 const requiredKey = process.env.SERVER_SECRET_KEY;
@@ -42,6 +43,7 @@ import { setWatch } from "./utils/setWatch.js";
  
 import { gmailWebhookHandler } from "./utils/pubSubPush.js";
 import { getSentReceivedCountsPerThread } from "./controllers/ticketController.js";
+import { requiredSignIn } from "./middlewares/authMiddleware.js";
 
 // export const createServer = (port) => {
 // Verify the key
@@ -98,6 +100,8 @@ app.use("/api/v1/hrRole", hrRoleRoutes);
 app.use("/api/v1/quicklist", quickListRoute);
 app.use("/api/v1/quicklist", qualityListRoute);
 app.use("/api/v1/googleSheet", sendDatatoGoogleSheet);
+app.use("/api/templates", requiredSignIn, quickReplyTemplateRoutes);
+
 
 app.post('/gmail-webhook', gmailWebhookHandler);
 

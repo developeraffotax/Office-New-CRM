@@ -1136,18 +1136,31 @@ export default function AllJobs() {
 
   // Close Comment Box to click anywhere
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        commentStatusRef.current &&
-        !commentStatusRef.current.contains(event.target)
-      ) {
-        setIsComment(false);
-      }
-    };
+     const handleClickOutside = (event) => {
+
+         
+  const clickInside =
+    commentStatusRef.current?.contains(event.target) ||
+    document.querySelector(".MuiPopover-root")?.contains(event.target) || // for MUI Menu
+    document.querySelector(".EmojiPickerReact")?.contains(event.target) || // for emoji picker
+    document.querySelector(".MuiDialog-root")?.contains(event.target); // ✅ For Dialog
+
+  if (!clickInside) {
+    setIsComment(false);
+  }
+};
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+
+
+
+
+
+
+
 
   // Add label in Jobs
   const addJoblabel = async (id, name, color) => {

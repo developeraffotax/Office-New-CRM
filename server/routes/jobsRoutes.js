@@ -119,7 +119,7 @@ router.put("/add/job/data/:id", requiredSignIn, addDatalabel);
 router.put("/update/timer/:id", requiredSignIn, isAdmin, updateTime);
 
 // Update Bulk Jobs
-router.put("/update/bulk/job", requiredSignIn, isAdmin, updateBulkJob);
+router.put("/update/bulk/job", requiredSignIn,  updateBulkJob);
 
 // Get Workflow Clients
 router.get("/workflow/clients", getWorkflowClients);

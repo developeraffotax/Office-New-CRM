@@ -13,6 +13,25 @@ import { BsEmojiSmile } from "react-icons/bs";
 import { format } from "date-fns";
 import { AiFillLike, AiOutlineLike } from "react-icons/ai";
 import Loader from "../../utlis/Loader";
+
+import {
+  Menu,
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  IconButton,
+  Tabs,
+  Tab,
+  Typography,
+} from "@mui/material";
+import { Close, DeleteOutline, EditOutlined, MessageRounded, MoreVert, Add as AddIcon, } from "@mui/icons-material";
+import { v4 as uuidv4 } from "uuid";
+
+
 // import { MentionsInput, Mention } from "react-mentions";
 import socketIO from "socket.io-client";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
@@ -45,6 +64,134 @@ export default function JobCommentModal({
   const [mentionStart, setMentionStart] = useState(-1);
   const [selectedUser, setSelectedUser] = useState("");
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const [templates, setTemplates] = useState([]);
+
+const [quickReplyAnchorEl, setQuickReplyAnchorEl] = useState(null);
+const [selectedTemplate, setSelectedTemplate] = useState(null);
+const [templateText, setTemplateText] = useState("");
+const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+const isEditingTemplate = !!selectedTemplate;
+
+
+
+
+ 
+ 
+
+
+const handleUseTemplate = (text) => {
+  setComment((prev) => prev + text);
+  setQuickReplyAnchorEl(null);
+};
+
+const handleOpenTemplateDialog = (template = null) => {
+  setSelectedTemplate(template);
+  setTemplateText(template ? template.text : "");
+  setTemplateDialogOpen(true);
+};
+
+const handleSaveTemplate = async () => {
+  try {
+    const body = {
+      userId: auth.user.id,
+      type,
+      text: templateText,
+      templateId: selectedTemplate?._id,
+    };
+    const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/templates`, body);
+
+    if (isEditingTemplate) {
+      setTemplates((prev) =>
+        prev.map((t) => (t._id === selectedTemplate._id ? res.data.template : t))
+      );
+    } else {
+      setTemplates((prev) => [...prev, res.data.template]);
+    }
+
+    setTemplateDialogOpen(false);
+  } catch (error) {
+    toast.error("Failed to save template");
+  }
+};
+
+
+const handleDeleteTemplate = async (id) => {
+  try {
+    await axios.delete(`${process.env.REACT_APP_API_URL}/api/templates/${id}`);
+    setTemplates((prev) => prev.filter((t) => t._id !== id));
+    //setQuickReplyAnchorEl(null);
+  } catch (err) {
+    toast.error("Failed to delete template");
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+  useEffect(() => {
+  const fetchTemplates = async () => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/templates?type=${type}`);
+      setTemplates(res.data.templates);
+    } catch (err) {
+      toast.error("Failed to load templates");
+    }
+  };
+  fetchTemplates();
+}, [type]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // -----------Mention User----->
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -68,6 +215,26 @@ export default function JobCommentModal({
       setShowSuggestions(false);
     }
   };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   const handleMentionClick = (user) => {
     const newText =
@@ -198,6 +365,27 @@ export default function JobCommentModal({
     }
   };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // Socket
   useEffect(() => {
     socketId.on("addnewTaskComment", () => {
@@ -257,6 +445,56 @@ export default function JobCommentModal({
       toast.error(error?.response?.data?.message);
     }
   };
+
+
+
+
+
+
+
+
+  const sendComment = async (text) => {
+  if (!jobId) {
+    return toast.error("Job_id is required!");
+  }
+
+  try {
+    const { data } = await axios.post(
+      `${process.env.REACT_APP_API_URL}/api/v1/comments/post/comment`,
+      {
+        comment: text,
+        jobId: jobId,
+        type,
+        mentionUser: selectedUser,
+      }
+    );
+    if (data) {
+      getSingleComment();
+      getTasks1();
+      toast.success("Comment Posted!");
+
+      // Send Socket Notification
+      socketId.emit("notification", {
+        title: "New comment received!",
+        redirectLink: "/job-planning",
+        description: `${auth.user.name} add a new comment. ${text}`,
+        taskId: jobId,
+        userId: auth.user.id,
+        status: "unread",
+      });
+
+      socketId.emit("addTask", { note: "New Task Added" });
+      socketId.emit("addTaskComment", { note: "New Task Added" });
+    }
+  } catch (error) {
+    console.log(error);
+    toast.error(error?.response?.data?.message);
+  }
+};
+
+
+
+
 
   //   Add Comment Reply
   const handleCommentReply = async (e) => {
@@ -394,6 +632,9 @@ export default function JobCommentModal({
   }, [commentData]);
 
   return (
+<>
+
+
     <div className="w-full h-full flex items-center justify-center">
       <div
         className={`w-[45rem]  ${
@@ -600,6 +841,116 @@ export default function JobCommentModal({
           </>
         </div>
         {/* --------Add Comm... */}
+ 
+
+
+
+<div className="flex items-center justify-between px-4 py-2">
+    <div className="relative inline-block w-fit">
+    <Button
+      size="small"
+      variant="outlined"
+      onClick={(e) => setQuickReplyAnchorEl(e.currentTarget)}
+    >
+      💬 Quick Replies
+    </Button>
+<Menu
+  anchorEl={quickReplyAnchorEl}
+  open={Boolean(quickReplyAnchorEl)}
+  onClose={() => setQuickReplyAnchorEl(null)}
+  anchorOrigin={{
+    vertical: 'bottom',
+    horizontal: 'left',
+  }}
+  transformOrigin={{
+    vertical: 'center',
+    horizontal: 'center',
+  }}
+  slotProps={{
+    paper: {
+      sx: {
+        width: 360,
+        maxHeight: 420,
+        mt: 1.5,
+        borderRadius: 2,
+        px: 1,
+        py: 0.5,
+        boxShadow: 6,
+        ml: 0, // margin from left of button (optional)
+      },
+    },
+  }}
+>
+      <div className="p-2">
+        <h3 className="text-sm font-semibold text-gray-800 mb-2 ">
+          Saved Replies
+        </h3>
+
+        {templates.filter((t) => t.type === type).length === 0 ? (
+          <div className="text-sm text-gray-500 p-1">
+            No templates available
+          </div>
+        ) : (
+          templates
+            .filter((t) => t.type === type)
+            .map((t) => (
+              <div
+                key={t._id}
+               onClick={() => {
+  sendComment(t.text);
+  setQuickReplyAnchorEl(null);
+}}
+                className="flex items-center justify-between p-1 hover:bg-gray-50 rounded-md cursor-pointer transition"
+              >
+                <div className="text-sm text-gray-800 truncate max-w-[220px] pr-3">
+                  {t.text}
+                </div>
+                <div className="flex items-center gap-1">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenTemplateDialog(t);
+                    }}
+                  >
+                    <EditOutlined fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteTemplate(t._id);
+                    }}
+                  >
+                    <DeleteOutline fontSize="small" className="text-red-400" />
+                  </IconButton>
+                </div>
+              </div>
+            ))
+        )}
+      </div>
+
+      <div className="border-t border-gray-200 mt-2 pt-2 px-3">
+        <div
+          onClick={() => handleOpenTemplateDialog(null)}
+          className="flex items-center justify-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 py-2 rounded-md cursor-pointer transition"
+        >
+          <AddIcon fontSize="small" />
+          Add New Template
+        </div>
+      </div>
+    </Menu>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
         <div className={`flex flex-col gap-4 px-4 py-1 mb-2`}>
           <div className="flex items-start gap-1 w-full  ">
             <div className="w-[3.7rem] h-[3.7rem]">
@@ -673,5 +1024,88 @@ export default function JobCommentModal({
         </div>
       </div>
     </div>
+
+
+
+
+
+
+<Dialog
+  open={templateDialogOpen}
+  onClose={() => setTemplateDialogOpen(false)}
+  maxWidth="sm"
+  fullWidth
+  PaperProps={{
+    sx: {
+      borderRadius: 3,
+      p: 1,
+    },
+  }}
+>
+  <DialogTitle
+    sx={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      borderBottom: "1px solid #e0e0e0",
+      pb: 1,
+    }}
+  >
+    <Typography variant="h6">
+      {isEditingTemplate ? "Edit Quick Reply" : "Add New Quick Reply"}
+    </Typography>
+    <IconButton onClick={() => setTemplateDialogOpen(false)}>
+      <Close />
+    </IconButton>
+  </DialogTitle>
+
+  <DialogContent sx={{ mt: 2, p:3 }}>
+    <TextField
+      
+      value={templateText}
+      onChange={(e) => setTemplateText(e.target.value)}
+      placeholder="Enter your quick reply text here..."
+      fullWidth
+      multiline
+      minRows={4}
+      variant="outlined"
+
+       onKeyDown={(e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault(); // prevent newline
+          handleSaveTemplate(); // trigger save
+        }
+      }}
+      
+    />
+  </DialogContent>
+
+  <DialogActions
+    sx={{
+      px: 3,
+      pb: 2,
+      justifyContent: "flex-end",
+      gap: 1,
+    }}
+  >
+    <Button
+      onClick={() => setTemplateDialogOpen(false)}
+      variant="outlined"
+      color="secondary"
+    >
+      Cancel
+    </Button>
+    <Button
+      onClick={handleSaveTemplate}
+      variant="contained"
+      color="primary"
+    >
+      Save
+    </Button>
+  </DialogActions>
+</Dialog>
+
+</>
+
   );
 }

@@ -1553,23 +1553,28 @@ export default function Goals() {
     setFilterData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
 
-  // Close Comment Box to click anywhere
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        commentStatusRef.current &&
-        !commentStatusRef.current.contains(event.target)
-      ) {
-        setIsComment(false);
-      }
-    };
+  
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-  // completed
-
-
+    // Close Comment Box to click anywhere
+    useEffect(() => {
+       const handleClickOutside = (event) => {
+  
+           
+    const clickInside =
+      commentStatusRef.current?.contains(event.target) ||
+      document.querySelector(".MuiPopover-root")?.contains(event.target) || // for MUI Menu
+      document.querySelector(".EmojiPickerReact")?.contains(event.target) || // for emoji picker
+      document.querySelector(".MuiDialog-root")?.contains(event.target); // ✅ For Dialog
+  
+    if (!clickInside) {
+      setIsComment(false);
+    }
+  };
+  
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+  
 
 
 

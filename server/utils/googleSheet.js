@@ -1,5 +1,5 @@
 import { google } from "googleapis";
-import { GoogleAuth } from "google-auth-library";
+import { GoogleAuth, JWT } from "google-auth-library";
 import jobsModel from "../models/jobsModel.js";
 import dotenv from "dotenv";
 import fs from "fs";
@@ -21,9 +21,21 @@ const __dirname = path.dirname(__filename);
 const CREDENTIALS_PATH = path.join(
   __dirname,
   "..",
-  "config",
+  "creds",
   "credentials.json"
 );
+
+
+
+// Create a JWT client using the Service Account key
+const jwtClient = new JWT({
+  keyFile: CREDENTIALS_PATH,
+  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+   
+});
+
+
+
 
 // Authenticate with Google Sheets
 const authenticateGoogleSheets = async () => {
@@ -31,10 +43,17 @@ const authenticateGoogleSheets = async () => {
     throw new Error(`Credentials file not found at ${CREDENTIALS_PATH}`);
   }
 
+
+      
+
+
   const auth = new GoogleAuth({
     keyFile: CREDENTIALS_PATH,
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
+
+
+ 
   return await auth.getClient();
 };
 
@@ -105,8 +124,14 @@ const flattenClientData = (client) => {
 // Update Google Sheet with flattened data
 const updateGoogleSheet = async (data, range) => {
   try {
-    const authClient = await authenticateGoogleSheets();
-    const sheets = google.sheets({ version: "v4", auth: authClient });
+
+
+    //const authClient = await authenticateGoogleSheets();
+
+
+          await jwtClient.authorize();
+
+    const sheets = google.sheets({ version: "v4", auth: jwtClient });
 
     const header = [
       "ID",

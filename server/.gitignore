@@ -45,11 +45,6 @@ dist/
 *.swo
 *~
 
-# Ignore sensitive files
-# Any other files where sensitive data might be stored
-config.js
-credentials.json
-
 
 # Ignore compiled files
 *.out

@@ -1,11 +1,11 @@
-import setupCluster from "./cluster.js";
-import dotenv from "dotenv";
+// import setupCluster from "./cluster.js";
+// import dotenv from "dotenv";
 
-// Load environment variables
-dotenv.config();
+// // Load environment variables
+// dotenv.config();
 
-// Get port from environment variables
-const PORT = process.env.PORT || 8080;
+// // Get port from environment variables
+// const PORT = process.env.PORT || 8080;
 
-// Start clustering
-setupCluster(PORT);
+// // Start clustering
+// setupCluster(PORT);

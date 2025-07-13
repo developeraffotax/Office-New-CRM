@@ -171,8 +171,7 @@ const updateGoogleSheet = async (data, range) => {
     // Clear existing data on the specified sheet range
    // const clearRange = range.split("!")[0] + "!A1:Z1000";
 
-    const estimatedRowCount = data.length + 50; // Add buffer for deleted rows
-    const clearRange = `${range.split("!")[0]}!A1:AE${estimatedRowCount}`;
+      const clearRange = range.split("!")[0]; // e.g., "Client_jobs"
 
     await sheets.spreadsheets.values.clear({
       spreadsheetId: SHEET_ID,

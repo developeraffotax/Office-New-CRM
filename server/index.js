@@ -32,6 +32,10 @@ app.use(cors());
 app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 
+
+export const onlineUsers = new Map();
+
+
 // Create server and socket
 const server = http.createServer(app);
 export const io = initSocketServer(server);
@@ -50,9 +54,17 @@ app.get("/", (req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
-// Cron jobs (only for pm_id 0 in cluster)
-if (process.env.pm_id === "0") {
-  console.log("Starting scheduled tasks...");
+
+
+
+
+const isDev = process.env.NODE_ENV === "development";
+const isClusterPrimary = process.env.pm_id === "0";
+
+console.log(`🚀 Server running in ${isDev ? "development" : "production"} mode`.bgGreen.white);
+// Cron jobs
+if (isDev || isClusterPrimary) {
+  console.log("🕒 Starting scheduled tasks...");
   setupCronJobs();
 }
 

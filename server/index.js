@@ -58,12 +58,12 @@ app.use(errorHandler);
 
 
 
-const isDev = process.env.NODE_ENV === "development";
+// const isDev = process.env.NODE_ENV === "development";
 const isClusterPrimary = process.env.pm_id === "0";
 
-console.log(`🚀 Server running in ${isDev ? "development" : "production"} mode`.bgGreen.white);
+// console.log(`🚀 Server running in ${isDev ? "development" : "production"} mode`.bgGreen.white);
 // Cron jobs
-if (isDev || isClusterPrimary) {
+if (isClusterPrimary) {
   console.log("🕒 Starting scheduled tasks...");
   setupCronJobs();
 }

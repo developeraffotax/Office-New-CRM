@@ -303,6 +303,7 @@ export default function Template() {
     // html = html.replace(/<[^>]*>/g, "");
 
     // Replace line breaks and paragraph endings with newlines
+ 
     html = html.replace(/<br\s*\/?>/gi, "\n");
     html = html.replace(/<\/p>/gi, "\n");
 
@@ -316,7 +317,13 @@ export default function Template() {
     html = html.replace(/&lt;/g, " ");
     html = html.replace(/&gt;/g, " ");
 
-    return html;
+
+ 
+      // Remove multiple blank lines but keep single \n
+      html = html.replace(/\n{3,}/g, '\n\n');
+
+  // Trim leading/trailing whitespace
+  return html.trim();
   };
 
   // const convertQuillHtmlToPlainText = (html) => {

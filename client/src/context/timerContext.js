@@ -123,6 +123,53 @@ const scheduleTimeout = (endTime) => {
 
 
 
+
+
+
+
+
+
+
+
+
+const updateCountdown = (newAllocatedTimeInHours) => {
+  const saved = JSON.parse(localStorage.getItem("task-timer"));
+
+  if (!saved) {
+    console.warn("No existing task timer found to update.");
+    return;
+  }
+
+  const startTime = saved.timerStartedAt
+    ? new Date(saved.timerStartedAt)
+    : new Date(); // fallback to now
+
+  const newEndTime = new Date(
+    startTime.getTime() + Number(newAllocatedTimeInHours) * 60 * 60000
+  );
+
+  saved.endTime = newEndTime.toISOString();
+  localStorage.setItem("task-timer", JSON.stringify(saved));
+
+  clearTimeout(timeoutRef.current);
+  scheduleTimeout(newEndTime);
+
+  channel.postMessage({
+    type: "UPDATE_TIMER",
+    task: saved.task,
+    timerId: saved.timerId,
+    endTime: newEndTime.toISOString(),
+  });
+
+  console.log("Timer updated with new allocated time:", newAllocatedTimeInHours);
+};
+
+
+
+
+
+
+
 const snooze = (SNOOZE_TIME) => {
   const saved = JSON.parse(localStorage.getItem(`task-timer`));
 
@@ -238,6 +285,19 @@ const startCountdown = (ALLOCATED_TIME, taskId, task, timerId) => {
     }
 
 
+    if (type === "UPDATE_TIMER") {
+      setTask(task);
+      setTimerId(timerId);
+
+      const updatedEndTime = new Date(endTime);
+      clearTimeout(timeoutRef.current);
+      scheduleTimeout(updatedEndTime);
+      setShowModal(false);
+
+      console.log("[Broadcast] Timer updated with new end time");
+    }
+
+
   };
 
   return () => channel.close(); // Cleanup on unmount
@@ -246,7 +306,7 @@ const startCountdown = (ALLOCATED_TIME, taskId, task, timerId) => {
 
 
   return (
-    <TimerContext.Provider value={{ showModal, snooze, startCountdown, setShowModal, task, taskId, timerId, stopCountdown,  }}>
+    <TimerContext.Provider value={{ showModal, snooze, startCountdown, setShowModal, task, taskId, timerId, stopCountdown, updateCountdown }}>
       {children}
     </TimerContext.Provider>
   );

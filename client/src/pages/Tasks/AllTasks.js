@@ -50,6 +50,10 @@ import QuickAccess from "../../utlis/QuickAccess";
 import SubtasksForNote from "./SubtasksForNote";
 import { useTimer } from "../../context/timerContext";
 import { filterByRowId } from "../../utlis/filterByRowId";
+import TimeSelector from "../../utlis/TimeSelector";
+import TimeEditor from "../../utlis/TimeSelector";
+import { BiPencil } from "react-icons/bi";
+import { Edit } from "@mui/icons-material";
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -176,7 +180,7 @@ const AllTasks = () => {
 
 
   
-
+  const {  updateCountdown } = useTimer();
 
 
 
@@ -1306,10 +1310,16 @@ const AllTasks = () => {
         maxSize: 400,
         grow: true,
       },
-      // Hours
-      {
-        accessorKey: "hours",
-        Header: ({ column }) => {
+
+
+
+
+ 
+
+{
+  accessorKey: "hours",
+
+  Header: ({ column }) => {
           return (
             <div className=" flex flex-col items-center justify-center  w-[4rem] pr-2  gap-[2px]">
               <span
@@ -1327,24 +1337,33 @@ const AllTasks = () => {
             </div>
           );
         },
-        Cell: ({ cell, row, data }) => {
-          const hours = cell.getValue();
-          const [show, setShow] = useState(false);
-          const [hour, setHour] = useState(hours);
-          const [showId, setShowId] = useState("");
+Cell: ({ cell, row }) => {
+  const [showEditor, setShowEditor] = useState(false);
+  const [value, setValue] = useState(cell.getValue());
+  const anchorRef = useRef(null);
 
-          const updateHours = async (e) => {
-            try {
-              const { data } = await axios.put(
-                `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/hours/${showId}`,
-                { hours: hour }
-              );
-              if (data) {
-                if (filterId || active || active1) {
+  const formatDuration = (val) => {
+    const h = Math.floor(val);
+    const m = Math.round((val % 1) * 60);
+    return `${h}h${m > 0 ? ` ${m}m` : ""}`;
+  };
+
+  const handleApply = async (newHours) => {
+   
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/hours/${row.original._id}`,
+        { hours: newHours }
+      );
+       if(data) {
+        // updateCountdown(hour)
+        setValue(newHours);
+        toast.success("Hours updated");
+        if (filterId || active || active1) {
                   setFilterData((prevData) =>
                     prevData?.map((item) =>
                       item._id === data?.task?._id
-                        ? { ...item, hours: hour }
+                        ? { ...item, hours: newHours }
                         : item
                     )
                   );
@@ -1352,53 +1371,199 @@ const AllTasks = () => {
                 setTasksData((prevData) =>
                   prevData?.map((item) =>
                     item._id === data?.task?._id
-                      ? { ...item, hours: hour }
+                      ? { ...item, hours: newHours }
                       : item
                   )
                 );
-                setHour("");
-                setShow(false);
-                getTasks1();
-                toast.success("Hours Updated!");
-              }
-            } catch (error) {
-              console.log(error);
-              toast.error("Error in update hours!");
-            }
-          };
-          return (
-            <div className="w-full flex items-center justify-center">
-              {show && row.original._id === showId ? (
-                <input
-                  type="text"
-                  value={hour}
-                  onChange={(e) => setHour(e.target.value)}
-                  onBlur={(e) => updateHours(e.target.value)}
-                  className="w-full h-[1.7rem] px-[2px] outline-none rounded-md cursor-pointer"
-                />
-              ) : (
-                <span
-                  className="text-[15px] font-medium"
-                  onDoubleClick={() => {
-                    setShowId(row.original._id);
-                    setShow(true);
-                  }}
-                >
-                  {hours}
-                </span>
-              )}
-            </div>
-          );
-        },
-        filterFn: (row, columnId, filterValue) => {
-          const cellValue =
-            row.original[columnId]?.toString().toLowerCase() || "";
+       }
+    } catch (err) {
+      toast.error("Update failed");
+      console.error(err);
+    }
+  };
 
-          return cellValue.startsWith(filterValue.toLowerCase());
-        },
-        size: 70,
-        grow: false,
-      },
+   return (
+    <div ref={anchorRef} className="relative flex items-center gap-1">
+      <span onDoubleClick={() => setShowEditor(true)}>{formatDuration(value)}</span>
+      {/* <button onClick={() => setShowEditor(true)} className="text-gray-400 hover:text-black"> <BiPencil  /> </button> */}
+      {showEditor && (
+        <TimeEditor
+          anchorRef={anchorRef}
+          initialValue={value}
+          onApply={handleApply}
+          onClose={() => setShowEditor(false)}
+        />
+      )}
+    </div>
+  );
+},
+
+  size: 70,
+
+},
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+      // // Hours
+      // {
+      //   accessorKey: "hours",
+      //   Header: ({ column }) => {
+      //     return (
+      //       <div className=" flex flex-col items-center justify-center  w-[4rem] pr-2  gap-[2px]">
+      //         <span
+      //           className="cursor-pointer w-full text-center"
+      //           title="Clear Filter"
+      //           onClick={() => {
+      //             column.setFilterValue("");
+      //           }}
+      //         >
+      //           Hrs
+      //         </span>
+      //         <span className="font-medium w-full text-center px-1 py-1 ml-1 rounded-md bg-gray-50 text-black">
+      //           {totalHours}
+      //         </span>
+      //       </div>
+      //     );
+      //   },
+      //   Cell: ({ cell, row, data }) => {
+      //     const hours = cell.getValue();
+      //     const [show, setShow] = useState(false);
+      //     const [hour, setHour] = useState(hours);
+      //     const [showId, setShowId] = useState("");
+
+      //     const updateHours = async (e) => {
+      //       try {
+      //         const { data } = await axios.put(
+      //           `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/hours/${showId}`,
+      //           { hours: hour }
+      //         );
+      //         if (data) {
+      //           // updateCountdown(hour)
+      //           if (filterId || active || active1) {
+      //             setFilterData((prevData) =>
+      //               prevData?.map((item) =>
+      //                 item._id === data?.task?._id
+      //                   ? { ...item, hours: hour }
+      //                   : item
+      //               )
+      //             );
+      //           }
+      //           setTasksData((prevData) =>
+      //             prevData?.map((item) =>
+      //               item._id === data?.task?._id
+      //                 ? { ...item, hours: hour }
+      //                 : item
+      //             )
+      //           );
+      //           setHour("");
+      //           setShow(false);
+      //           getTasks1();
+      //           toast.success("Hours Updated!");
+      //         }
+      //       } catch (error) {
+      //         console.log(error);
+      //         toast.error("Error in update hours!");
+      //       }
+      //     };
+ 
+
+          
+      //     return (
+      //       <div className="w-full flex items-center justify-center relative">
+      //         {show && row.original._id === showId ? (
+      //           // <input
+      //           //   type="text"
+      //           //   value={hour}
+      //           //   onChange={(e) => setHour(e.target.value)}
+      //           //   onBlur={(e) => updateHours(e.target.value)}
+      //           //   className="w-full h-[1.7rem] px-[2px] outline-none rounded-md cursor-pointer"
+      //           // />
+
+      //              <TimeEditor
+      //       initialValue={hour}
+      //       onApply={updateHours}
+      //       onClose={() => setIsShow(false)}
+      //     />
+      //         ) : (
+      //           <span
+      //             className="text-[15px] font-medium"
+      //             onDoubleClick={() => {
+      //               setShowId(row.original._id);
+      //               setShow(true);
+      //             }}
+      //           >
+      //             {hours}
+      //           </span>
+      //         )}
+      //       </div>
+      //     );
+      //   },
+      //   filterFn: (row, columnId, filterValue) => {
+      //     const cellValue =
+      //       row.original[columnId]?.toString().toLowerCase() || "";
+
+      //     return cellValue.startsWith(filterValue.toLowerCase());
+      //   },
+      //   size: 70,
+      //   grow: false,
+      // },
       // Start Date
       {
         accessorKey: "startDate",

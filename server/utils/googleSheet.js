@@ -45,6 +45,29 @@ const authenticateGoogleSheets = async () => {
   return await auth.getClient();
 };
 
+
+
+
+  const getStatus = (jobDeadline, yearEnd) => {
+    const deadline = new Date(jobDeadline);
+    const yearEndDate = new Date(yearEnd);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (deadline.setHours(0, 0, 0, 0) < today.setHours(0, 0, 0, 0)) {
+      return "Overdue";
+    } else if (
+      yearEndDate.setHours(0, 0, 0, 0) <= today.setHours(0, 0, 0, 0) &&
+      !(deadline.setHours(0, 0, 0, 0) <= today.setHours(0, 0, 0, 0))
+    ) {
+      return "Due";
+    } else if (deadline.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
+      return "Due";
+    } else {
+      return "Upcoming";
+    }
+  };
+
 const flattenClientData = (client) => {
   const {
     _id,
@@ -81,6 +104,7 @@ const flattenClientData = (client) => {
     job && job.yearEnd ? new Date(job.yearEnd).toLocaleDateString() : "",
     job && job.jobDeadline ? new Date(job.jobDeadline).toLocaleDateString() : "",
     currentDate ? new Date(currentDate).toLocaleDateString() : "",
+    getStatus(job?.jobDeadline, job?.yearEnd),
     job ? job.jobStatus : "",
     job ? job.lead : "",
     totalTime,
@@ -161,6 +185,7 @@ const updateGoogleSheet = async (data, range) => {
       "Year End",
       "Job Deadline",
       "Current Date",
+      "Status",
       "Job Status",
       "Lead",
       "Total Time",

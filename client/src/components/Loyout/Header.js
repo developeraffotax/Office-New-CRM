@@ -423,7 +423,7 @@ export default function Header({
                           }}
                           className="cursor-pointer"
                         >
-                          <p className="p-2 text-gray-700  text-[14px]">
+                          <p className="p-2 text-gray-700  text-[14px] whitespace-pre-line">
                             {item?.description}
                           </p>
 

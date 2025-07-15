@@ -114,6 +114,10 @@ export default function Clients({
 
   // ---------Filter Unique Clients------>
   useEffect(() => {
+
+
+    console.log(uniqueClients.length, "uniqueClients length💚💚💛💛🧡🧡❤❤");
+
     const filteredData = uniqueClients?.filter((item) => {
       const createdAtDate = new Date(item.currentDate);
       const itemMonth = createdAtDate.getMonth() + 1;
@@ -125,9 +129,25 @@ export default function Clients({
         pastDate.setDate(today.getDate() - parseInt(search));
       }
 
-      let matchesDateFilter = true;
-      let matchesSearchFilter = true;
+     
 
+
+        if (!selectedYear && !selectedMonth) {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
+
+        const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
+
+        const jobDate = new Date(item.currentDate);
+
+
+        return jobDate >= startDate && jobDate <= now;
+      }
+
+
+         let matchesDateFilter = true;
+      let matchesSearchFilter = true;
       // Filter by selected month and year
       if (selectedMonth && selectedYear) {
         matchesDateFilter =
@@ -185,6 +205,89 @@ export default function Clients({
         pastDate.setDate(today.getDate() - search);
         doublePastDate.setDate(today.getDate() - search * 2);
       }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if (!selectedYear && !selectedMonth) {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
+
+        // Start of current 12-month window
+        const currentStartDate = new Date(currentYear, currentMonth - 11, 1);
+
+        // Previous year's start and end
+        const prevYearStart = new Date(
+          currentStartDate.getFullYear(),
+          currentStartDate.getMonth() - 12,
+          1
+        );
+        const prevYearEnd = new Date(
+          currentStartDate.getFullYear(),
+          currentStartDate.getMonth(),
+          0
+        ); // Last day before currentStartDate
+        const jobDate = new Date(item.currentDate);
+
+        return jobDate >= prevYearStart && jobDate <= prevYearEnd;
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       let matchesDateFilter = true;
       let matchesSearchFilter = true;
@@ -1459,14 +1562,7 @@ text="text-[#05676e]"
                   prevSubValue={feeForComparison}
                 />
 
-                <SummaryCard
-                  title="Unique Clients"
-                  value={filterUniqueClient?.length}
-bg="bg-gradient-to-br from-[#e0f7f4] via-[#c0ece6] to-[#a0e1d9]"
-border="border border-[#b5e6dd]"
-text="text-[#05676e]"
-                  prevValue={filterUniqueClientForComparison?.length}
-                />
+                
 
                 <SummaryCard
                   title="AU Total"
@@ -1478,6 +1574,17 @@ text="text-[#05676e]"
                   prevValue={activeClientsForComparison.totalClients}
                   prevSubValue={activeClientsForComparison.totalFee}
                 />
+
+                <SummaryCard
+                  title="Unique Clients"
+                  value={filterUniqueClient?.length}
+bg="bg-gradient-to-br from-[#e0f7f4] via-[#c0ece6] to-[#a0e1d9]"
+border="border border-[#b5e6dd]"
+text="text-[#05676e]"
+                  prevValue={filterUniqueClientForComparison?.length}
+                />
+
+                
 
                 <SummaryCard
                   title="RPC"

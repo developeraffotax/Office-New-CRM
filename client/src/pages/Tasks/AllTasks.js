@@ -1356,7 +1356,15 @@ Cell: ({ cell, row }) => {
         { hours: newHours }
       );
        if(data) {
-        // updateCountdown(hour)
+        
+
+        const savedTaskTimer =JSON.parse(localStorage.getItem("task-timer"));
+        if (savedTaskTimer && savedTaskTimer.taskId === row.original._id) {
+            updateCountdown(newHours)
+        }
+
+
+
         setValue(newHours);
         toast.success("Hours updated");
         if (filterId || active || active1) {

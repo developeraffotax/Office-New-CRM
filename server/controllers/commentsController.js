@@ -45,12 +45,12 @@ export const createComment = async (req, res) => {
       const notification = await notificationModel.create({
         title: "New comment received!",
         redirectLink: `/job-planning?comment_taskId=${jobId}`,
-        description: `${req?.user?.user?.name} added a new comment on job "${job?.job?.jobName}".`,
+        description: `${req?.user?.user?.name} added a new comment on job "${job?.job?.jobName}".\n\n— Company Name: ${job?.companyName}\n— Client Name: ${job?.clientName}`,
         taskId: jobId,
         userId: user?._id,
         
-        companyName: job?.companyName,
-        clientName: job?.clientName,
+        // companyName: job?.companyName,
+        // clientName: job?.clientName,
       });
 
       res.status(200).send({

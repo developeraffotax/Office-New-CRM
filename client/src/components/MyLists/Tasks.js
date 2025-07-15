@@ -32,6 +32,8 @@ import AddTaskModal from "../Tasks/AddTaskModal";
 import JobCommentModal from "../../pages/Jobs/JobCommentModal";
 import Loader from "../../utlis/Loader";
 import TaskDetail from "../../pages/Tasks/TaskDetail";
+import TimeEditor from "../../utlis/TimeSelector";
+import { useTimer } from "../../context/timerContext";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -72,6 +74,8 @@ const Tasks = forwardRef(
     const closeProject = useRef(null);
     const [activity, setActivity] = useState("Chargeable");
     const [access, setAccess] = useState([]);
+
+      const {  updateCountdown } = useTimer();
 
     console.log("filterData", filterData);
 
@@ -718,72 +722,78 @@ const Tasks = forwardRef(
               </div>
             );
           },
-          Cell: ({ cell, row, data }) => {
-            const hours = cell.getValue();
-            const [show, setShow] = useState(false);
-            const [hour, setHour] = useState(hours);
-            const [showId, setShowId] = useState("");
 
-            const updateHours = async (e) => {
-              try {
-                const { data } = await axios.put(
-                  `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/hours/${showId}`,
-                  { hours: hour }
-                );
-                if (data) {
-                  getAllTasks();
-                  if (filterData) {
-                    setFilterData((prevData) =>
-                      prevData?.map((item) =>
-                        item._id === data?.task?._id
-                          ? { ...item, hours: hour }
-                          : item
-                      )
-                    );
-                  }
 
-                  setTasksData((prevData) =>
+Cell: ({ cell, row }) => {
+  const [showEditor, setShowEditor] = useState(false);
+  const [value, setValue] = useState(cell.getValue());
+  const anchorRef = useRef(null);
+
+  const formatDuration = (val) => {
+    const h = Math.floor(val);
+    const m = Math.round((val % 1) * 60);
+    return `${h}h${m > 0 ? ` ${m}m` : ""}`;
+  };
+
+  const handleApply = async (newHours) => {
+   
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/hours/${row.original._id}`,
+        { hours: newHours }
+      );
+       if(data) {
+        
+
+        const savedTaskTimer =JSON.parse(localStorage.getItem("task-timer"));
+        if (savedTaskTimer && savedTaskTimer.taskId === row.original._id) {
+            updateCountdown(newHours)
+        }
+
+
+
+        setValue(newHours);
+        toast.success("Hours updated");
+        if (filterId || active || active1) {
+                  setFilterData((prevData) =>
                     prevData?.map((item) =>
                       item._id === data?.task?._id
-                        ? { ...item, hours: hour }
+                        ? { ...item, hours: newHours }
                         : item
                     )
                   );
-
-                  setHour("");
-                  setShow(false);
-
-                  toast.success("Hours Updated!");
                 }
-              } catch (error) {
-                console.log(error);
-                toast.error("Error in update hours!");
-              }
-            };
-            return (
-              <div className="w-full flex items-center justify-center">
-                {show && row.original._id === showId ? (
-                  <input
-                    type="text"
-                    value={hour}
-                    onChange={(e) => setHour(e.target.value)}
-                    onBlur={(e) => updateHours(e.target.value)}
-                    className="w-full h-[1.7rem] px-[2px] outline-none rounded-md cursor-pointer"
-                  />
-                ) : (
-                  <span
-                    className="text-[15px] font-medium"
-                    onDoubleClick={() => {
-                      setShowId(row.original._id);
-                      setShow(true);
-                    }}
-                  >
-                    {hours}
-                  </span>
-                )}
-              </div>
-            );
-          },
+                setTasksData((prevData) =>
+                  prevData?.map((item) =>
+                    item._id === data?.task?._id
+                      ? { ...item, hours: newHours }
+                      : item
+                  )
+                );
+       }
+    } catch (err) {
+      toast.error("Update failed");
+      console.error(err);
+    }
+  };
+
+   return (
+    <div ref={anchorRef} className="relative flex items-center gap-1">
+      <span onDoubleClick={() => setShowEditor(true)}>{formatDuration(value)}</span>
+      {/* <button onClick={() => setShowEditor(true)} className="text-gray-400 hover:text-black"> <BiPencil  /> </button> */}
+      {showEditor && (
+        <TimeEditor
+          anchorRef={anchorRef}
+          initialValue={value}
+          onApply={handleApply}
+          onClose={() => setShowEditor(false)}
+        />
+      )}
+    </div>
+  );
+},
+
+  
           filterFn: (row, columnId, filterValue) => {
             const cellValue =
               row.original[columnId]?.toString().toLowerCase() || "";

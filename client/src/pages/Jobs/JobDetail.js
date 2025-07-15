@@ -790,7 +790,7 @@ export default function JobDetail({
                   </div>
                 </div>
                 {/* --------Quality Check-------- */}
-                <div className="flex flex-col w-full px-2 gap-3">
+                {/* <div className="flex flex-col w-full px-2 gap-3">
                   <div className=" relative w-full flex items-center justify-between gap-4">
                     <h3 className="text-[17px] font-semibold text-gray-900">
                       Quality Check
@@ -982,7 +982,7 @@ export default function JobDetail({
                       )}
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
             ) : activeTab === "jobDetail" ? (
               <div className="flex flex-col gap-4">

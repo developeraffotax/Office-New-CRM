@@ -3753,7 +3753,7 @@ Cell: ({ row }) => {
           fee,
           totalHours: hours,
           activeClient,
-          qualities: qualityLabels,
+          // qualities: qualityLabels,
         }
       );
 
@@ -3775,7 +3775,7 @@ Cell: ({ row }) => {
         setFee("");
         setHours("");
         setActiveClient("");
-        setQualities([]);
+        // setQualities([]);
       }
     } catch (error) {
       setIsUpdate(false);
@@ -4475,16 +4475,17 @@ useEffect(() => {
                   value={activeClient}
                   onChange={(e) => setActiveClient(e.target.value)}
                   className={`${style.input} w-full`}
-                  style={{ width: "6rem" }}
+                  style={{ width: "6.4rem" }}
+                  title="Select Active Client"
                 >
-                  <option value="empty">Select Client</option>
+                  <option value="empty">Select AC</option>
 
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
                 </select>
               </div>
 
-              <div className=" z-[999]">
+              {/* <div className=" z-[999]">
                 <Select
                   options={qualityOptions}
                   value={qualities}
@@ -4493,7 +4494,7 @@ useEffect(() => {
                   placeholder="Quality Check"
                   className="min-w-[8rem]"
                 />
-              </div>
+              </div> */}
 
               <div className="flex items-center justify-end pl-4">
                 <button

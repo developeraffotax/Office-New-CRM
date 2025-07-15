@@ -415,7 +415,7 @@ export default function Header({
                           </p>
                         </div>
                         <Link
-                          to={`${item?.redirectLink}`}
+                          to={`${item?.redirectLink}?comment_taskId=${item?.taskId}`}
                           key={item?._id}
                           onClick={() => {
                             setFilterId(item?.taskId);

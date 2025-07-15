@@ -439,6 +439,93 @@ export const updateStatus = async (req, res) => {
   }
 };
 
+
+
+
+
+
+// Update Client Lead
+export const updateActiveClient = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const { activeClient } = req.body;
+    if (!activeClient) {
+      return res.status(400).send({ success: false, message: "activeClient value is required!", });
+    }
+
+    if (!jobId) {
+      return res.status(400).send({ success: false, message: "Job id is required!", });
+    }
+
+  
+    
+    const clientJob = await jobsModel.findByIdAndUpdate(
+      jobId,
+      {
+        $set: { activeClient: activeClient },
+        $push: {
+          activities: {
+            user: req.user.user._id,
+            activity: `${req.user.user.name} has updated activeClient from "${activeClient === "active" ? "inactive" : "active"}" to "${activeClient}".`,
+          },
+        },
+      },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Active Client in Job updated successfully!",
+      clientJob: clientJob,
+    });
+
+    // Add Activity Log
+    const user = req.user.user;
+    if (clientJob) {
+      activityModel.create({
+        user: user._id,
+        action: `${user.name.trim()} has updated the job client from "${activeClient === "active" ? "inactive" : "active"}" to "${activeClient}"..`,
+        entity: "Jobs",
+        details: `Job Details:
+          - Company Name: ${clientJob.companyName}
+          - Job Client: ${clientJob.clientName || "No client provided"}
+          - Created At: ${currentDateTime}`,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in update job lead !",
+      error: error,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Update Client Lead
 export const updateLead = async (req, res) => {
   try {

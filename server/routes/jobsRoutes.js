@@ -23,6 +23,7 @@ import {
   reordering,
   singleClientComments,
   singleClientJob,
+  updateActiveClient,
   updateBulkJob,
   updateClientJob,
   updateClientStatus,
@@ -59,6 +60,9 @@ router.patch("/update/status/:id", requiredSignIn, updateStatus);
 
 // Update Lead
 router.patch("/update/lead/:id", requiredSignIn, updateLead);
+
+// Update ActiveClient
+router.patch("/update/activeClient/:id", requiredSignIn, updateActiveClient);
 
 // Update Job Holder
 router.patch("/update/jobholder/:id", requiredSignIn, updateJobHolder);

@@ -44,10 +44,13 @@ export const createComment = async (req, res) => {
 
       const notification = await notificationModel.create({
         title: "New comment received!",
-        redirectLink: "/job-planning",
-        description: `${req?.user?.user?.name} add a new comment of "${job?.job?.jobName}". ${comment}`,
+        redirectLink: `/job-planning?comment_taskId=${jobId}`,
+        description: `${req?.user?.user?.name} added a new comment on job "${job?.job?.jobName}".`,
         taskId: jobId,
         userId: user?._id,
+        
+        companyName: job?.companyName,
+        clientName: job?.clientName,
       });
 
       res.status(200).send({
@@ -94,7 +97,7 @@ export const createComment = async (req, res) => {
 
       const notification = await notificationModel.create({
         title: "New comment received!",
-        redirectLink: "/tasks",
+        redirectLink:`/tasks?comment_taskId=${jobId}`,
         description: `${req.user.user.name} add a new comment in task "${task.task}". ${comment}`,
         taskId: jobId,
         userId: user._id,
@@ -144,7 +147,7 @@ export const createComment = async (req, res) => {
 
       const notification = await notificationModel.create({
         title: "New comment received!",
-        redirectLink: "/goals",
+        redirectLink: `/goals?comment_taskId=${jobId}`,
         description: `${req.user.user.name} add a new comment in goals "${goal.subject}". ${comment}`,
         taskId: jobId,
         userId: user._id,
@@ -186,7 +189,7 @@ export const createComment = async (req, res) => {
 
       const notification = await notificationModel.create({
         title: "New comment received!",
-        redirectLink: "/tickets",
+        redirectLink: `/tickets?comment_taskId=${jobId}`,
         description: `${req.user.user.name} add a new comment in ticket "${ticket.subject}". ${comment}`,
         taskId: jobId,
         userId: user._id,

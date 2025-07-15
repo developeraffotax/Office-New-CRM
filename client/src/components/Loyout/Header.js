@@ -415,7 +415,7 @@ export default function Header({
                           </p>
                         </div>
                         <Link
-                          to={`${item?.redirectLink}?comment_taskId=${item?.taskId}`}
+                          to={`${item?.redirectLink}`}
                           key={item?._id}
                           onClick={() => {
                             setFilterId(item?.taskId);
@@ -426,6 +426,12 @@ export default function Header({
                           <p className="p-2 text-gray-700  text-[14px]">
                             {item?.description}
                           </p>
+
+                          {/* {item?.companyName && ( <p className="px-2 text-gray-800 text-[13px]"> <span className="font-medium">Company Name:</span> {item.companyName} </p> )} */}
+
+          {item?.clientName && ( <p className="px-2 text-gray-800 text-[13px]"> <span className="font-medium">Client Name:</span> {item.clientName} </p> )}
+
+
                           <p className="p-2 text-black  text-[14px] ">
                             {format(item?.createdAt)}
                           </p>

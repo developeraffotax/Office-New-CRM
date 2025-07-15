@@ -28,6 +28,16 @@ const notificationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Users",
     },
+
+
+    companyName: {
+      type: String,
+       
+    },
+    clientName: {
+      type: String,
+       
+    },
   },
   { timestamps: true }
 );

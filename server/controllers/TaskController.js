@@ -331,6 +331,62 @@ export const getAllTasks = async (req, res) => {
   }
 };
 
+
+
+
+
+
+// Get ALl Tasks
+export const getCompletedTasks = async (req, res) => {
+  try {
+    // const tasks = await taskModel
+    //   .find({ status: { $ne: "completed" } })
+    //   .select(
+    //     "project jobHolder task hours startDate deadline status lead  estimate_Time comments._id comments.status labal recurring"
+    //   );
+
+      const tasks = await taskModel.aggregate([
+        {
+          $match: { status: { $eq: "completed" } }
+        },
+        {
+          $project: {
+            project: 1,
+            jobHolder: 1,
+            task: 1,
+            hours: 1,
+            startDate: 1,
+            deadline: 1,
+            status: 1,
+            lead: 1,
+            estimate_Time: 1,
+            comments: { _id: 1, status: 1 },
+            subtasksLength: { $size: "$subtasks" },
+            labal: 1,
+            recurring: 1
+          }
+        }
+      ]);
+
+
+
+    res.status(200).send({
+      success: true,
+      message: "All task list!",
+      tasks: tasks,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      messsage: "Error in get all tasks!",
+      error: error,
+    });
+  }
+};
+
+
+
 // Get Single Task
 export const getSingleTask = async (req, res) => {
   try {
@@ -1064,7 +1120,7 @@ export const getAllCompletedTasks = async (req, res) => {
     const tasks = await taskModel
       .find({ status: "completed" })
       .select(
-        "project jobHolder task hours startDate deadline status lead  estimate_Time comments._id labal recurring"
+        "project jobHolder task hours startDate deadline status lead  estimate_Time comments._id labal recurring subtasks"
       )
       .sort({ updatedAt: -1 });
 

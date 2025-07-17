@@ -33,6 +33,7 @@ import PDFEditor from "./pages/Editor/PDFEditor";
 import Meeting from "./pages/Meeting/Meeting";
 import HR from "./pages/HR/HR"; 
 import Temp from "./components/Temp";
+ 
 
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
@@ -48,7 +49,9 @@ function App() {
     Timesheet: <Route path="/timesheet" element={<TimeSheet />} />,
     Proposals: <Route path="/proposals" element={<Proposal />} />,
     Leads: <Route path="/leads" element={<Lead />} />,
+    // CompletedTasks: <Route path="/tasks/completed" element={<AllTasksCompleted />} />,
     Tasks: <Route path="/tasks" element={<AllTasks />} />,
+
     Jobs: <Route path="/job-planning" element={<AllJobs />} />,
     Goals: <Route path="/goals" element={<Goals />} />,
     Workflow: <Route path="/workflow" element={<Workflow />} />,
@@ -116,6 +119,7 @@ function App() {
           {/* {!user && <Route path="*" element={<Navigate to="/" />} />} */}
           <Route path="/" element={<Login />} />
           <Route path="/temp/:hrTaskId" element={<Temp />} />
+          {/* <Route path="/tasks/completed" element={<AllTasksCompleted />} /> */}
           {userAccessRoutes}
           <Route path="/profile" element={<Profile />} />
           {/* Catch-all route: if no access to a route, show 404 */}

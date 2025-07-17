@@ -27,6 +27,9 @@ import { mkConfig, generateCsv, download } from "export-to-csv";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import TaskDetail from "./TaskDetail";
 import { MdBackspace } from "react-icons/md";
+import TimeEditor from "../../utlis/TimeSelector";
+import Subtasks from "./Subtasks";
+import AssignmentIcon from '@mui/icons-material/Assignment';
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -710,6 +713,23 @@ const CompletedTasks = ({
           const [allocateTask, setAllocateTask] = useState(task);
           const [showEdit, setShowEdit] = useState(false);
 
+          
+          const [showSubtasks, setShowSubtasks] = useState(false);
+            const [showSubtaskId, setShowSubtaskId] = useState("");
+
+          const handleShowSubtasks = () => {
+             
+            console.log("row.original._id:", row.original._id);
+            console.log("showSubtaskId:", showSubtaskId);
+
+            if(showSubtaskId === row.original._id){
+              console.log("hide");
+              setShowSubtaskId("");
+            }else{
+              setShowSubtaskId(row.original._id);
+            }
+          }
+           
           useEffect(() => {
             setAllocateTask(row.original.task);
           }, [row.original]);
@@ -719,7 +739,10 @@ const CompletedTasks = ({
             setShowEdit(false);
           };
           return (
-            <div className="w-full h-full ">
+            <div className="w-full flex items-start justify-start gap-1 flex-col "  >
+
+              <div  className="w-full   flex items-start justify-between gap-2 flex-row ">
+              
               {showEdit ? (
                 <input
                   type="text"
@@ -727,27 +750,54 @@ const CompletedTasks = ({
                   value={allocateTask}
                   onChange={(e) => setAllocateTask(e.target.value)}
                   onBlur={(e) => updateAllocateTask(e.target.value)}
-                  className="w-full h-[2.3rem] focus:border border-gray-300 px-1 outline-none rounded"
+                  className="w-full h-[2rem] focus:border border-gray-300 px-1 outline-none rounded-lg"
                 />
               ) : (
-                <div
-                  className="w-full h-full flex items-center justify-start "
-                  onDoubleClick={() => setShowEdit(true)}
-                  title={allocateTask}
-                >
-                  <p
-                    className="text-[#0078c8] hover:text-[#0053c8] cursor-pointer text-start  "
-                    onDoubleClick={() => setShowEdit(true)}
-                    onClick={() => {
-                      setTaskID(row.original._id);
-                      setProjectName(row.original.project.projectName);
-                      setShowDetail(true);
-                    }}
-                  >
-                    {allocateTask}
-                  </p>
-                </div>
+                      <div
+                        className=" w-full h-full cursor-pointer text-wrap "
+                        onDoubleClick={() => setShowEdit(true)}
+                        title={allocateTask}
+                      >
+                        <p
+                          className="text-[#0078c8] hover:text-[#0053c8] text-start inline  "
+                          onDoubleClick={() => setShowEdit(true)}
+                          onClick={() => {
+                            setTaskID(row.original._id);
+                            setProjectName(row.original.project.projectName);
+                            setShowDetail(true);
+                          }}
+                        >
+                          {allocateTask}
+                        </p>
+                      </div>
               )}
+            
+
+                  <div className=" ">
+                    <span className={`${showSubtaskId === row.original._id ? "text-orange-500 " : row.original?.subtasks?.length > 0 ? "text-blue-400" : "text-gray-500"} cursor-pointer hover:text-orange-500 transition-all `} onClick={() => {
+                            setTaskID(row.original._id);
+                            setProjectName(row.original.project.projectName);
+                            handleShowSubtasks()
+                          }}>
+                      <AssignmentIcon />
+                    </span>
+
+                  </div>
+
+
+            </div>
+
+
+
+             {
+                 showSubtaskId === row.original._id && <div className={`  w-full h-full bg-gradient-to-br from-orange-200  rounded-lg shadow-md text-black `}>
+                <Subtasks taskId={showSubtaskId} />
+                </div>
+              }
+
+
+
+
             </div>
           );
         },
@@ -783,67 +833,85 @@ const CompletedTasks = ({
             </div>
           );
         },
-        Cell: ({ cell, row }) => {
-          const hours = cell.getValue();
-          const [show, setShow] = useState(false);
-          const [hour, setHour] = useState(hours);
-          const [showId, setShowId] = useState("");
 
-          const updateHours = async (e) => {
-            e.preventDefault();
+
+
+
+
+
+
+        Cell: ({ cell, row }) => {
+          const [showEditor, setShowEditor] = useState(false);
+          const [value, setValue] = useState(cell.getValue());
+          const anchorRef = useRef(null);
+        
+          const formatDuration = (val) => {
+            const h = Math.floor(val);
+            const m = Math.round((val % 1) * 60);
+            return `${h}h${m > 0 ? ` ${m}m` : ""}`;
+          };
+        
+          const handleApply = async (newHours) => {
+           
             try {
               const { data } = await axios.put(
-                `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/hours/${showId}`,
-                { hours: hour }
+                `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/hours/${row.original._id}`,
+                { hours: newHours }
               );
-              if (data) {
+               if(data) {
+                
+        
+                // const savedTaskTimer =JSON.parse(localStorage.getItem("task-timer"));
+                // if (savedTaskTimer && savedTaskTimer.taskId === row.original._id) {
+                //     updateCountdown(newHours)
+                // }
+        
+        
+        
+                setValue(newHours);
+                toast.success("Hours updated");
                 if (filterId || active || active1) {
-                  setFilterData((prevData) =>
-                    prevData?.map((item) =>
-                      item._id === taskId ? { ...item, hours: hours } : item
-                    )
-                  );
-                }
-                setTasksData((prevData) =>
-                  prevData?.map((item) =>
-                    item._id === taskId ? { ...item, hours: hours } : item
-                  )
-                );
-                setHour("");
-                setShow(false);
-                // getTasks1();
-                toast.success("Hours Updated!");
-              }
-            } catch (error) {
-              console.log(error);
-              toast.error("Error in update hours!");
+                          setFilterData((prevData) =>
+                            prevData?.map((item) =>
+                              item._id === data?.task?._id
+                                ? { ...item, hours: newHours }
+                                : item
+                            )
+                          );
+                        }
+                        setTasksData((prevData) =>
+                          prevData?.map((item) =>
+                            item._id === data?.task?._id
+                              ? { ...item, hours: newHours }
+                              : item
+                          )
+                        );
+               }
+            } catch (err) {
+              toast.error("Update failed");
+              console.error(err);
             }
           };
-          return (
-            <div className="w-full flex items-center justify-center">
-              {show && row.original._id === showId ? (
-                <form onSubmit={updateHours}>
-                  <input
-                    type="text"
-                    value={hour}
-                    onChange={(e) => setHour(e.target.value)}
-                    className="w-full h-[1.7rem] px-[2px] outline-none rounded-md cursor-pointer"
-                  />
-                </form>
-              ) : (
-                <span
-                  className="text-[15px] font-medium"
-                  onDoubleClick={() => {
-                    setShowId(row.original._id);
-                    setShow(true);
-                  }}
-                >
-                  {hours}
-                </span>
+        
+           return (
+            <div ref={anchorRef} className="relative flex items-center gap-1">
+              <span onDoubleClick={() => setShowEditor(true)}>{formatDuration(value)}</span>
+              {/* <button onClick={() => setShowEditor(true)} className="text-gray-400 hover:text-black"> <BiPencil  /> </button> */}
+              {showEditor && (
+                <TimeEditor
+                  anchorRef={anchorRef}
+                  initialValue={value}
+                  onApply={handleApply}
+                  onClose={() => setShowEditor(false)}
+                />
               )}
             </div>
           );
         },
+
+
+
+
         filterFn: (row, columnId, filterValue) => {
           const cellValue =
             row.original[columnId]?.toString().toLowerCase() || "";
@@ -1643,7 +1711,7 @@ const CompletedTasks = ({
       style: {
         fontWeight: "600",
         fontSize: "14px",
-        backgroundColor: "rgb(193, 183, 173, 0.8)",
+        backgroundColor: "#E5E7EB",
         color: "#000",
         padding: ".7rem 0.3rem",
       },

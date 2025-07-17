@@ -11,6 +11,8 @@ import {
   deleteTask,
   getAllCompletedTasks,
   getAllTasks,
+  getCompletedTasks,
+ 
   getDashboardTasks,
   getSingleTask,
   importData,
@@ -36,6 +38,9 @@ router.post("/create/task", requiredSignIn, createTask);
 
 // Get All Tasks
 router.get("/get/all", getAllTasks);
+
+// Completed Tasks
+router.get("/get/all/completed", getCompletedTasks);
 
 // Single task
 router.get("/get/single/:id", getSingleTask);

@@ -367,7 +367,24 @@ export default function AllJobs() {
 
 
 
+  
 
+  useEffect(() => {
+  const handleKeyDown = (e) => {
+
+    if (e.key === "Escape") {
+      
+      setShowDetail(false)
+      
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, []);
 
 
 

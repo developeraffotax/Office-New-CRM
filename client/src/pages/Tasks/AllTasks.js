@@ -184,6 +184,32 @@ const AllTasks = () => {
 
 
 
+  useEffect(() => {
+  const handleKeyDown = (e) => {
+    // // Ctrl + K shortcut
+    // if (e.ctrlKey && e.key === "k") {
+    //   e.preventDefault();
+    //   setShowDetail(false)
+    //   console.log("Ctrl + K triggered");
+    //   // your action here
+    // }
+
+    // Escape key shortcut
+    if (e.key === "Escape") {
+      
+      setShowDetail(false)
+      
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, []);
+
+
 
 
   useEffect(() => {
@@ -479,7 +505,7 @@ const AllTasks = () => {
     } else if (filterData) {
       setTotalHours(calculateTotalHours(filterData).toFixed(0));
     }
-  }, [tasksData, filterData, active, active1, activeBtn]);
+  }, [tasksData, filterData, active, active1, activeBtn, ]);
 
   // ------------Filter By Projects---------->
   const getProjectsCount = (project) => {
@@ -1342,11 +1368,22 @@ Cell: ({ cell, row }) => {
   const [value, setValue] = useState(cell.getValue());
   const anchorRef = useRef(null);
 
+  // const formatDuration = (val) => {
+  //   const h = Math.floor(val);
+  //   const m = Math.round((val % 1) * 60);
+  //   return `${h}h${m > 0 ? ` ${m}m` : ""}`;
+  // };
+
+
   const formatDuration = (val) => {
-    const h = Math.floor(val);
-    const m = Math.round((val % 1) * 60);
-    return `${h}h${m > 0 ? ` ${m}m` : ""}`;
-  };
+  const h = Math.floor(val);
+  const m = Math.round((val % 1) * 60);
+
+  if (h > 0 && m > 0) return `${h}h ${m}m`;
+  if (h > 0) return `${h}h`;
+  if (m > 0) return `${m}m`;
+  return "0m";
+};
 
   const handleApply = async (newHours) => {
    
@@ -1369,20 +1406,31 @@ Cell: ({ cell, row }) => {
         toast.success("Hours updated");
         if (filterId || active || active1) {
                   setFilterData((prevData) =>
-                    prevData?.map((item) =>
-                      item._id === data?.task?._id
-                        ? { ...item, hours: newHours }
-                        : item
-                    )
+                    Array.isArray(prevData)
+                      ? prevData.map((item) =>
+                          item._id === data?.task?._id ? { ...item, hours: newHours } : item
+                        )
+                      : []
                   );
                 }
                 setTasksData((prevData) =>
-                  prevData?.map((item) =>
-                    item._id === data?.task?._id
-                      ? { ...item, hours: newHours }
-                      : item
-                  )
-                );
+                    Array.isArray(prevData)
+                      ? prevData.map((item) =>
+                          item._id === data?.task?._id ? { ...item, hours: newHours } : item
+                        )
+                      : []
+                  );
+
+
+
+
+
+
+
+
+
+
+                  
        }
     } catch (err) {
       toast.error("Update failed");

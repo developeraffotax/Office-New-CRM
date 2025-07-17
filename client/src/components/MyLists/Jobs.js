@@ -70,6 +70,28 @@ const Jobs = forwardRef(
     // Extract the current path
     const currentPath = location.pathname;
 
+
+
+      useEffect(() => {
+      const handleKeyDown = (e) => {
+    
+        if (e.key === "Escape") {
+          
+          setShowDetail(false)
+          
+        }
+      };
+    
+      window.addEventListener("keydown", handleKeyDown);
+    
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    }, []);
+
+
+
+    
     // Get Auth Access
 
     useEffect(() => {

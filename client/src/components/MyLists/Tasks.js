@@ -81,6 +81,29 @@ const Tasks = forwardRef(
 
     console.log("jid:", jid);
 
+
+
+    
+    
+      useEffect(() => {
+      const handleKeyDown = (e) => {
+        
+        if (e.key === "Escape") {
+          setShowDetail(false)
+        }
+      };
+    
+      window.addEventListener("keydown", handleKeyDown);
+    
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    }, []);
+
+
+
+
+
     useEffect(() => {
       const timeId = localStorage.getItem("jobId");
       setTimerId(JSON.parse(timeId));
@@ -730,10 +753,14 @@ Cell: ({ cell, row }) => {
   const anchorRef = useRef(null);
 
   const formatDuration = (val) => {
-    const h = Math.floor(val);
-    const m = Math.round((val % 1) * 60);
-    return `${h}h${m > 0 ? ` ${m}m` : ""}`;
-  };
+  const h = Math.floor(val);
+  const m = Math.round((val % 1) * 60);
+
+  if (h > 0 && m > 0) return `${h}h ${m}m`;
+  if (h > 0) return `${h}h`;
+  if (m > 0) return `${m}m`;
+  return "0m";
+};
 
   const handleApply = async (newHours) => {
    
@@ -754,22 +781,22 @@ Cell: ({ cell, row }) => {
 
         setValue(newHours);
         toast.success("Hours updated");
-        if (filterId || active || active1) {
+         if (filterId || active || active1) {
                   setFilterData((prevData) =>
-                    prevData?.map((item) =>
-                      item._id === data?.task?._id
-                        ? { ...item, hours: newHours }
-                        : item
-                    )
+                    Array.isArray(prevData)
+                      ? prevData.map((item) =>
+                          item._id === data?.task?._id ? { ...item, hours: newHours } : item
+                        )
+                      : []
                   );
                 }
                 setTasksData((prevData) =>
-                  prevData?.map((item) =>
-                    item._id === data?.task?._id
-                      ? { ...item, hours: newHours }
-                      : item
-                  )
-                );
+                    Array.isArray(prevData)
+                      ? prevData.map((item) =>
+                          item._id === data?.task?._id ? { ...item, hours: newHours } : item
+                        )
+                      : []
+                  );
        }
     } catch (err) {
       toast.error("Update failed");

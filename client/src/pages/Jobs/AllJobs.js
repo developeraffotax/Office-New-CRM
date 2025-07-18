@@ -48,6 +48,7 @@ import { BiSend } from "react-icons/bi";
 import { BsPersonCheckFill } from "react-icons/bs";
 import QuickAccess from "../../utlis/QuickAccess";
 import { filterByRowId } from "../../utlis/filterByRowId";
+import CompanyInfo from "../../utlis/CompanyInfo";
  
 
 
@@ -1352,17 +1353,37 @@ export default function AllJobs() {
           Cell: ({ cell, row }) => {
             const companyName = cell.getValue();
 
+              const [showCompanyInfo, setShowCompanyInfo] = useState(false);
+              const anchorRef = useRef(null);
+
             return (
-              <div className="flex items-center justify-start text-[#0078c8] hover:text-[#0053c8] w-full h-full">
+              <div ref={anchorRef} className="flex items-center justify-start text-[#0078c8] hover:text-[#0053c8] w-full h-full">
                 <span
-                  onClick={() => {
-                    getSingleJobDetail(row.original._id);
-                    setCompanyName(companyName);
+                   onClick={(e) => {
+                    const isCtrlClick = e.ctrlKey || e.metaKey; // ctrl on Windows/Linux, ⌘ on Mac
+
+                    if (isCtrlClick) {
+                      console.log("CTRL + Click triggered!");
+                     setShowCompanyInfo(true)
+                    } else {
+                      getSingleJobDetail(row.original._id);
+                      setCompanyName(companyName);
+                    }
                   }}
                   className="cursor-pointer"
                 >
                   {companyName}
                 </span>
+
+
+
+                {showCompanyInfo && (
+                        <CompanyInfo
+                          anchorRef={anchorRef}
+                          clientId={row.original._id}
+                           onClose={() => setShowCompanyInfo(false)}
+                        />
+                      )}
               </div>
             );
           },

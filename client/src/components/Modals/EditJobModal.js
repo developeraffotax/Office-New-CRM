@@ -547,7 +547,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
   }, []);
 
   return (
-    <div className="relative w-full sm:w-[70%] h-[107vh]  z-[50]  px-12 py-5 shadow-md shadow-black/25 rounded-xl bg-gray-200 hidden1  ">
+    <div className="relative w-full sm:w-full lg:w-[95%] xl:w-[85%] 2xl:w-[80%] 3xl:w-[70%] h-[107vh]  z-[50]  px-12 py-5 shadow-md shadow-black/25 rounded-xl bg-gray-200 hidden1  ">
       {/* <div className="w-full py-1 bg-orange-500/35 flex items-center justify-center">
         <img src="/logo.png" alt="Logo" className="h-[3rem] w-[8rem]" />
       </div> */}
@@ -569,7 +569,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
         </svg>
       </button>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 ">
         <div className="w-full"></div>
         <h1 className="text-lg font-medium my-3 w-full text-center py-2 px-4 rounded-md text-white bg-[#254e7f]">
           Edit Client Job

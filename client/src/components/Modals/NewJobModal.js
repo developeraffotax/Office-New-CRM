@@ -263,31 +263,48 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
   }, []);
 
   return (
-    <div className="relative w-full sm:w-[85%] h-[107vh]  py-3 pb-4  px-3 sm:px-4 bg-gray-200 hidden1 overflow-y-scroll ">
-      <div className="w-full py-1 bg-orange-500/35 flex items-center justify-center">
+    <div className="relative w-full sm:w-[70%] h-[107vh]  z-[50]  px-12 py-5 shadow-md shadow-black/25 rounded-xl bg-gray-200 hidden1   ">
+      {/* <div className="w-full py-1 bg-orange-500/35 flex items-center justify-center">
         <img src="/logo.png" alt="Logo" className="h-[3rem] w-[8rem]" />
-      </div>
+      </div> */}
+
+               <button
+       onClick={() => setIsOpen(false)}
+        className="absolute top-0 translate-x-[50%] -translate-y-[50%] z-[9999] right-0 p-2 rounded-full bg-gray-500 shadow-md hover:shadow-lg transition-all duration-200 text-white  hover:bg-orange-500 outline-none"
+        aria-label="Close Modal"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-6 h-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
 
       <div className="flex flex-col gap-2">
         <div className="w-full"></div>
-        <h1 className="text-lg font-medium my-3 w-fit py-2 px-4 rounded-md text-white bg-[#254e7f]">
+        <h1 className="text-lg font-medium my-3 w-full text-center py-2 px-4 rounded-md text-white bg-[#254e7f]">
           Add New Client
         </h1>
 
         <form
-          className="w-full h-full flex flex-col gap-5 "
+          className="w-full h-full flex flex-col gap-8 "
           onSubmit={handleSubmit}
         >
-          <div className="w-full h-full grid grid-cols-1 gap-6 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
+          <div className="w-full max-w-[1000px] mx-auto    h-full grid grid-cols-1 gap-6 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
             {/* 1 */}
-            <div className="flex flex-col gap-3">
+            <div className=" flex flex-col gap-3  ">
               <h3 className="w-full h-[2.7rem] rounded-md text-white bg-[#254e7f] flex items-center justify-center text-[16px] sm:text-[18px] font-[300] ">
                 Job Details
               </h3>
               <input
                 type="text"
                 placeholder="Client Name"
-                className={`${style.input}`}
+                className={`${style.input} `}
                 value={clientName}
                 required
                 onChange={(e) => setClientName(e.target.value)}
@@ -380,7 +397,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
               />
             </div>
             {/* 3 */}
-            <div className="flex flex-col gap-3">
+            <div className=" flex flex-col gap-3">
               <h3 className="w-full h-[2.7rem] rounded-md text-white bg-[#254e7f] flex items-center justify-center text-[16px] sm:text-[18px] font-[300] ">
                 Login Information
               </h3>
@@ -481,7 +498,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
           </div>
 
           {/*---------- Jobs--------- */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 ">
             {/* Bookkeeping */}
             <div className="flex items-center gap-4">
               <label className="flex items-center space-x-2 w-full">
@@ -566,7 +583,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   className={`${style.input} w-full `}
                 />
               </div>
-              <div className="inputBox">
+              <div className="inputBox ">
                 <input
                   type="text"
                   placeholder="Fee"

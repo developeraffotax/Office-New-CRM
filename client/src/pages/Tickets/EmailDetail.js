@@ -35,8 +35,73 @@ export default function EmailDetail() {
 
   const [isCompleted, setIsCompleted] = useState(false);
 
+    const [users, setUsers] = useState([]);
+
   console.log("Ticket Detail:", ticketDetail);
   console.log("Email Detail:", emailDetail);
+
+
+
+
+
+  
+  
+  
+    const updateJobHolder = async (jobHolder) => {
+      try {
+        const { data } = await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${params.id}`,
+          { jobHolder }
+        );
+        if (data) {
+          const updatedTicket = data?.ticket;
+          toast.success("Job Holder updated successfully!");
+          setTicketDetail((prevData) => {
+            return {
+              ...prevData,
+              jobHolder: updatedTicket.jobHolder,
+            }
+        });
+
+
+
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error(error.response?.data?.message || "An error occurred");
+      }
+    };
+
+
+
+
+
+      
+      const getAllUsers = async () => {
+        try {
+          const { data } = await axios.get(
+            `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+          );
+          setUsers( data?.users?.filter((user) => user.role?.access?.some((item) => item?.permission?.includes("Tickets") ) ) || [] );
+    
+      
+    
+          
+    
+        } catch (error) {
+          console.log(error);
+        }
+      };
+
+
+      useEffect(() => {
+        getAllUsers();
+        //eslint-disable-next-line
+      }, []);
+
+
+
+
 
   //   Get Single Ticket
   const getSingleTicket = async () => {
@@ -353,6 +418,24 @@ export default function EmailDetail() {
           </div>
 
           <div className="flex items-center gap-4">
+
+            <select
+                  value={ticketDetail?.jobHolder || "empty"}
+                  className="w-full h-[2rem] rounded-md border border-gray-400 outline-none text-[15px] px-2 py-1 bg-gray-50"
+                  onChange={(e) => {
+                    updateJobHolder(e.target.value);
+                    
+                  }}
+                >
+                  <option value="empty">Select Jobholder</option>
+                  {users?.map((jobHold, i) => (
+                    <option value={jobHold?.name} key={i}>
+                      {jobHold.name}
+                    </option>
+                  ))}
+                </select>
+
+
            <button
                 onClick={() => handleUpdateTicketStatusConfirmation(params?.id)}
                 className="flex items-center gap-1 text-[15px] bg-orange-500 text-white rounded-md px-4 py-2 hover:bg-orange-600 transition-all duration-300"

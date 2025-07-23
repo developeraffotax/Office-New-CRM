@@ -13,6 +13,7 @@ import {
   deleteQuality,
   deleteSubTask,
   getAllClients,
+  getClientId,
   getClientJobs,
   getClientWithJobs,
   getDashboardClients,
@@ -168,6 +169,9 @@ router.post("/add/quality/all", requiredSignIn, createQualityForAllJobs);
 // /api/v1/client/jobActivity/:jobId
 router.post("/jobActivity/:jobId", requiredSignIn, addJobActivity);
 
+
+//  /api/v1/client/search?companyName=example
+router.get("/search",requiredSignIn, getClientId);
 
 
 export default router;

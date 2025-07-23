@@ -28,6 +28,8 @@ import TicketsPopUp from "../../components/shared/TicketsPopUp";
 import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import QuickAccess from "../../utlis/QuickAccess";
+import { FiPlusSquare } from "react-icons/fi";
+import NewTicketModal from "../../utlis/NewTicketModal";
 
 
 const updates_object_init = {
@@ -62,7 +64,8 @@ export default function Lead() {
   const [valueTotal, setValueTotal] = useState(0);
 
 
-
+    const [showNewTicketModal, setShowNewTicketModal] = useState(false);
+    const [clientCompanyName, setClientCompanyName] = useState("");
 
 
     const [showSendModal, setShowSendModal] = useState(false);
@@ -2539,7 +2542,10 @@ const allColumns = [{
       <div className="flex items-center justify-center gap-4 w-full h-full">
 
 
-
+       <div>
+                            <span title="Create New Ticket" onClick={() => {setClientCompanyName(row?.original?.companyName); setShowNewTicketModal(true);}}    className="text-xl text-orange-500 cursor-pointer">  <FiPlusSquare /></span>
+                            
+                          </div>
        <div>
 
        <span title="Ticket" onClick={handleClick} id={id} className="text-2xl text-orange-500 cursor-pointer">
@@ -2677,7 +2683,7 @@ const allColumns = [{
       </div>
     );
   },
-  size: 200,
+  size: 240,
 },
 //  --- Note--->
 {
@@ -3532,6 +3538,18 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
           />
         </div>
       )}
+
+
+       {/* ---------------New Ticket Modal------------- */}
+            {showNewTicketModal && (
+              <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
+                <NewTicketModal
+                  setShowSendModal={setShowNewTicketModal}
+                  
+                  clientCompanyName={clientCompanyName}
+                />
+              </div>
+            )}
 
 
 

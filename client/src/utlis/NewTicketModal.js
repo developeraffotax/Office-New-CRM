@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
-import { style } from "../../utlis/CommonStyle";
+
 import axios from "axios";
 import toast from "react-hot-toast";
 import Select from "react-select";
-import CustomEditor from "../../utlis/CustomEditor";
+
 import { TbLoader2 } from "react-icons/tb";
 import { RiUploadCloud2Fill } from "react-icons/ri";
-import { useAuth } from "../../context/authContext";
+import { useAuth } from "../context/authContext";
+import { style } from "./CommonStyle";
+import CustomEditor from "./CustomEditor";
 
 export default function NewTicketModal({
   setShowSendModal,
   clientIdFromProps,
+  clientCompanyName,
 }) {
   const { auth } = useAuth();
   const [company, setCompany] = useState("Affotax");
@@ -26,6 +29,34 @@ export default function NewTicketModal({
   const [email, setEmail] = useState("");
 
   const [access, setAccess] = useState([]);
+  const [isFetching, setIsFetching] = useState(false);
+
+  useEffect(() => {
+    const getClientId = async (companyName) => {
+      try {
+        setIsFetching(true);
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/client/search?companyName=${companyName}`
+        );
+
+        if (data) {
+          setClientId(data.client._id);
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error(
+          error?.response?.data?.message || "Error in getting client ID"
+        );
+      } finally {
+        setIsFetching(false);
+      }
+
+    };
+
+    if (clientCompanyName) {
+      getClientId(clientCompanyName);
+    }
+  }, [clientCompanyName]);
 
   // Get Auth Access
   useEffect(() => {
@@ -184,12 +215,21 @@ export default function NewTicketModal({
   };
 
   return (
-    <div className="w-full h-[100%] flex items-center justify-center py-3 px-4 overflow-y-auto rounded-md bg-white/10 backdrop-blur-sm">
-      <div className="w-[55rem] rounded-md  border flex flex-col gap-4 bg-white mt-[5rem] 3xl:mt-0">
+    
+    <div className="w-full h-[100%] flex items-center justify-center py-3 px-4 overflow-y-auto rounded-md bg-black/30 backdrop-blur-sm ">
+  
+
+      <div className="w-[55rem] rounded-md  border flex flex-col gap-4 bg-white mt-[5rem] 3xl:mt-0 relative">
+            
         <div className="flex items-center justify-between px-4 pt-2">
           <h1 className="text-[20px] font-semibold text-black">
             Create New Ticket
           </h1>
+
+          <div className="flex items-center gap-6">
+            {
+            isFetching && ( <div className="flex flex-row items-center gap-2  animate-pulse"> <TbLoader2 className="h-6 w-6 text-orange-500 animate-spin" /> <span className="text-gray-800 text-base font-medium">Loading client info...</span> </div> )
+          }
           <span
             className=" cursor-pointer"
             onClick={() => {
@@ -198,6 +238,7 @@ export default function NewTicketModal({
           >
             <IoClose className="h-6 w-6 " />
           </span>
+          </div>
         </div>
         <hr className="h-[1px] w-full bg-gray-400 " />
         <form

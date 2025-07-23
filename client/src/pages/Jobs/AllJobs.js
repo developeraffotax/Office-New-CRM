@@ -50,7 +50,8 @@ import QuickAccess from "../../utlis/QuickAccess";
 import { filterByRowId } from "../../utlis/filterByRowId";
 import CompanyInfo from "../../utlis/CompanyInfo";
 import { FiPlusSquare } from "react-icons/fi";
-import NewTicketModal from "./NewTicketModal";
+import NewTicketModal from "../../utlis/NewTicketModal";
+ 
  
 
 
@@ -2669,7 +2670,7 @@ export default function AllJobs() {
 
 
                     <div>
-                      <span title="Create New Ticket" onClick={() => {setClientIdFromProps(row.original?._id); setShowNewTicketModal(true);}}    className="text-2xl text-orange-500 cursor-pointer">  <FiPlusSquare /></span>
+                      <span title="Create New Ticket" onClick={() => {setClientIdFromProps(row.original?._id); setShowNewTicketModal(true);}}    className="text-xl text-orange-500 cursor-pointer">  <FiPlusSquare /></span>
                       
                     </div>
 
@@ -2747,7 +2748,7 @@ export default function AllJobs() {
               </div>
             );
           },
-          size: 150,
+          size: 160,
         },
 
 

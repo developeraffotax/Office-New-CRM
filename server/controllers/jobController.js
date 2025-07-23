@@ -2456,3 +2456,41 @@ res.status(500).send({
 
 
 
+export const getClientId = async (req, res) => {
+  try {
+    const { companyName } = req.query;
+
+    if (!companyName) {
+      return res.status(400).send({
+        success: false,
+        message: "Client ID is required.",
+      });
+    } 
+
+    console.log("companyName:", companyName);
+
+    const client = await jobsModel.findOne({
+      companyName: companyName
+    })
+
+    if (!client) {
+      return res.status(404).send({
+        success: false,
+        message: "Client not found.",
+      });
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Client found successfully!",
+      client: client,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while fetching client ID!",
+      error: error,
+    });
+  }
+}

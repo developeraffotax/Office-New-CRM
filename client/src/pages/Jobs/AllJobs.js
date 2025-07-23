@@ -146,6 +146,8 @@ export default function AllJobs() {
 
 
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
+
+   const [clientCompanyName, setClientCompanyName] = useState("");
   const [clientIdFromProps, setClientIdFromProps] = useState("");
  
 
@@ -2670,7 +2672,7 @@ export default function AllJobs() {
 
 
                     <div>
-                      <span title="Create New Ticket" onClick={() => {setClientIdFromProps(row.original?._id); setShowNewTicketModal(true);}}    className="text-xl text-orange-500 cursor-pointer">  <FiPlusSquare /></span>
+                      <span title="Create New Ticket" onClick={() => {setClientCompanyName(row?.original?.companyName); setShowNewTicketModal(true);}}    className="text-xl text-orange-500 cursor-pointer">  <FiPlusSquare /></span>
                       
                     </div>
 
@@ -4949,7 +4951,8 @@ useEffect(() => {
         <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
           <NewTicketModal
             setShowSendModal={setShowNewTicketModal}
-            clientIdFromProps={clientIdFromProps}
+            
+            clientCompanyName={clientCompanyName}
           />
         </div>
       )}

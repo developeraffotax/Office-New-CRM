@@ -133,6 +133,12 @@ const clientSchema = new mongoose.Schema(
     email: {
       type: String,
     },
+
+    phone: {
+      type: String,
+    },
+
+
     totalHours: {
       type: String,
     },

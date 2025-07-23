@@ -85,6 +85,7 @@ export default function JobDetail({
         `${process.env.REACT_APP_API_URL}/api/v1/client/single/client/${clientId}`
       );
       if (data) {
+        console.log("Client Data💚💛💛🧡🧡🧡❤💛💚💛💛💛🧡🧡", data.clientJob);
         setLoading(false);
         setClientDetail(data.clientJob);
         setSubTaskData(
@@ -1045,6 +1046,23 @@ export default function JobDetail({
                       </span>
                     </div>
                   )}
+
+                  {auth?.user?.role?.name === "Admin" && (
+                    <div className="grid grid-cols-2">
+                      <span className="border border-gray-300 text-black font-medium py-2 px-2 ">
+                        Phone
+                      </span>
+                      <span className="border border-gray-300 text-gray-600 py-2 px-2 ">
+                        {clientDetail?.phone ? (
+                          clientDetail?.phone
+                        ) : (
+                          <span className="text-red-500">N/A</span>
+                        )}
+                      </span>
+                    </div>
+                  )}
+
+
                   <div className="grid grid-cols-2">
                     <span className="border border-gray-300 text-black font-medium py-2 px-2 rounded-bl-md ">
                       Hours

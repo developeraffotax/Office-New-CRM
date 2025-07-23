@@ -160,6 +160,12 @@ useEffect(() => {
               {auth?.user?.role?.name === "Admin" && (
                 <InfoRow label="Email" value={clientDetail?.email} />
               )}
+
+               {auth?.user?.role?.name === "Admin" && (
+                <InfoRow label="Phone" value={clientDetail?.phone} />
+              )}
+
+
               <InfoRow label="Hours" value={clientDetail?.totalHours} />
             </div>
           </section>

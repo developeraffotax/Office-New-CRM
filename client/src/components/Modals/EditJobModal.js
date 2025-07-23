@@ -6,7 +6,7 @@ import axios from "axios";
 import StatusPills from "../../utlis/StatusPills";
 
 
-const jobStatuses = [ "Quote", "Data", "Progress", "Queries", "Approval", "Submission", "Billing", "Feedback", ]
+const jobStatuses = [ "Quote", "Data", "Progress", "Queries", "Approval", "Submission", "Billing", "Feedback", "Inactive"];
 
 
 export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
@@ -19,6 +19,9 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
   const [regNumber, setRegNumber] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
+    const [phone, setPhone] = useState("");
+
+
   const [totalHours, setTotalHours] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   const [source, setSource] = useState("");
@@ -142,21 +145,71 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
   const [clientStatus, setClientStatus] = useState("");
 
 
+  // useEffect(() => {
+
+  //   if(clientStatus === "Inactive") {
+  //     setJobs((prev) => prev.map((job) => ({ ...job, jobStatus: "Inactive" })));
+  //   }
+
+  //   if(clientStatus === "Progress") {
+  //     setJobs((prev) => prev.map((job) => ({ ...job, jobStatus: "Progress" })));
+  //   }
+
+
+
+  //   jobs.forEach((job) => {
+       
+
+  //     switch (job.jobName) {
+  //       case "Bookkeeping": return setClientBookKeepingFormData((prevFormData) => ({ ...prevFormData, jobStatus: job.jobStatus, }));
+  //       case "Payroll": return setClientPayRollFormData((prevFormData) => ({ ...prevFormData, jobStatus: job.jobStatus, }));
+  //       case "Vat Return": return setClientVatReturnFormData((prevFormData) => ({ ...prevFormData, jobStatus: job.jobStatus, }))
+  //       case "Personal Tax": return setClientPersonalTaxFormData((prevFormData) => ({ ...prevFormData, jobStatus: job.jobStatus, }));
+  //       case "Accounts": return setClientAccountsFormData((prevFormData) => ({ ...prevFormData, jobStatus: job.jobStatus, }));
+  //       case "Company Sec": return setClientCompanySecFormData((prevFormData) => ({ ...prevFormData, jobStatus: job.jobStatus, }));
+  //       case "Address": return setClientAddressFormData((prevFormData) => ({ ...prevFormData, jobStatus: job.jobStatus, }));
+  //       default: return null;
+  //     }
+  //   })
+
+
+  // } , [clientStatus, jobs]);
+
+
+
+
+
   useEffect(() => {
+  if (!clientStatus) return;
 
-    if(clientStatus === "Inactive") {
-      setJobs((prev) => prev.map((job) => ({ ...job, jobStatus: "Inactive" })));
-    }
+  // Set all job statuses in one go if status is Inactive or Progress
+  if (clientStatus === "Inactive" || clientStatus === "Progress") {
+    const updatedJobs = jobs.map((job) => ({
+      ...job,
+      jobStatus: clientStatus,
+    }));
+    setJobs(updatedJobs);
 
-    if(clientStatus === "Progress") {
-      setJobs((prev) => prev.map((job) => ({ ...job, jobStatus: "Progress" })));
-    }
+    // Map job name to updater function
+    const formUpdaters = {
+      Bookkeeping: setClientBookKeepingFormData,
+      Payroll: setClientPayRollFormData,
+      "Vat Return": setClientVatReturnFormData,
+      "Personal Tax": setClientPersonalTaxFormData,
+      Accounts: setClientAccountsFormData,
+      "Company Sec": setClientCompanySecFormData,
+      Address: setClientAddressFormData,
+    };
 
-
-
-
-  } , [clientStatus, jobs]);
-
+    // Loop once, call the updater functions
+    updatedJobs.forEach(({ jobName, jobStatus }) => {
+      const updater = formUpdaters[jobName];
+      if (updater) {
+        updater((prev) => ({ ...prev, jobStatus }));
+      }
+    });
+  }
+}, [clientStatus]);
 
 
   
@@ -194,6 +247,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
       setRegNumber(clientDetail.regNumber);
       setCompanyName(clientDetail.companyName);
       setEmail(clientDetail.email);
+      setPhone(clientDetail?.phone);
       setTotalHours(clientDetail.totalHours);
       setCurrentDate(formattedDate);
       setSource(clientDetail.source);
@@ -496,6 +550,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
           regNumber,
           companyName,
           email,
+          phone,
           totalHours,
           currentDate,
           source,
@@ -546,6 +601,20 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     setCurrentDate(date);
   }, []);
 
+
+
+
+
+
+  const handlePillChange = (value) => {
+    setJobs((prevJobs) =>
+      prevJobs.map((job) =>
+        job.jobName === value.jobName
+          ? { ...job, jobStatus: value.status }
+          : job
+      )
+    );
+  }
   return (
     <div className="relative w-full sm:w-full lg:w-[95%] xl:w-[85%] 2xl:w-[80%] 3xl:w-[70%] h-[107vh]  z-[50]  px-12 py-5 shadow-md shadow-black/25 rounded-xl bg-gray-200 hidden1  ">
       {/* <div className="w-full py-1 bg-orange-500/35 flex items-center justify-center">
@@ -579,7 +648,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
           className="w-full h-full flex flex-col gap-5 "
           onSubmit={handleUpdateJob}
         >
-          <div className="w-full max-w-[1000px] mx-auto  h-full grid grid-cols-1 gap-6 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
+          <div className="w-full max-w-[1000px] mx-auto  h-full grid grid-cols-1 gap-6 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:[grid-template-columns:1fr_1fr_1.5fr_1fr] ">
             {/* 1 */}
             <div className="flex flex-col gap-3">
               <h3 className="w-full h-[2.7rem] rounded-md text-white bg-[#254e7f] flex items-center justify-center text-[16px] sm:text-[18px] font-[300] ">
@@ -615,13 +684,15 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-              <input
-                type="text"
-                placeholder="Hours"
-                className={`${style.input}`}
-                value={totalHours}
-                onChange={(e) => setTotalHours(e.target.value)}
-              />
+
+               <input
+                  type="tel"
+                  placeholder="Phone Number"
+                  className={`${style.input}`}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              
 
 
               {/* <label className="flex items-center space-x-2 w-full bg-gray-200">
@@ -698,13 +769,29 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 ))}
               </select>
 
-              <input
+              
+
+              <div className="w-full flex items-center justify-between gap-2">
+              
+                <input
                 type="text"
                 placeholder="Fee"
-                className={`${style.input}`}
+                className={`${style.input} w-[50%]`}
                 value={fee}
                 onChange={(e) => setFee(e.target.value)}
               />
+
+              <input
+                type="text"
+                placeholder="Hours"
+                className={`${style.input} w-[50%]`}
+                value={totalHours}
+                onChange={(e) => setTotalHours(e.target.value)}
+              />
+
+              </div>
+
+
             </div>
             {/* 3 */}
             <div className="flex flex-col gap-3">

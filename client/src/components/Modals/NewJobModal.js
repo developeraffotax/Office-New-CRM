@@ -7,7 +7,7 @@ import socketIO from "socket.io-client";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
-const jobStatuses = [ "Quote", "Data", "Progress", "Queries", "Approval", "Submission", "Billing", "Feedback", ]
+const jobStatuses = [ "Quote", "Data", "Progress", "Queries", "Approval", "Submission", "Billing", "Feedback", "Inactive"]
 
 
 export default function NewJobModal({ setIsOpen, allClientJobData }) {
@@ -16,6 +16,9 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
   const [regNumber, setRegNumber] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
+
+  const [phone, setPhone] = useState("");
+
   const [totalHours, setTotalHours] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   const [source, setSource] = useState("");
@@ -208,6 +211,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
           regNumber,
           companyName,
           email,
+          phone,
           totalHours,
           currentDate,
           source,
@@ -295,7 +299,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
           className="w-full h-full flex flex-col gap-8 "
           onSubmit={handleSubmit}
         >
-          <div className="w-full max-w-[1000px] mx-auto    h-full grid grid-cols-1 gap-6 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
+          <div className="w-full max-w-[1000px] mx-auto    h-full grid grid-cols-1 gap-6 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:[grid-template-columns:1fr_1fr_1.5fr_1fr] ">
             {/* 1 */}
             <div className=" flex flex-col gap-3  ">
               <h3 className="w-full h-[2.7rem] rounded-md text-white bg-[#254e7f] flex items-center justify-center text-[16px] sm:text-[18px] font-[300] ">
@@ -331,13 +335,19 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
+
+
               <input
-                type="text"
-                placeholder="Hours"
+                type="tel"
+                placeholder="Phone Number"
                 className={`${style.input}`}
-                value={totalHours}
-                onChange={(e) => setTotalHours(e.target.value)}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
               />
+
+
+
+              
             </div>
             {/* 2 */}
             <div className="flex flex-col gap-3">
@@ -388,13 +398,27 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   </option>
                 ))}
               </select>
-              <input
+              
+              <div className="w-full flex items-center justify-between gap-2">
+
+                <input
                 type="text"
                 placeholder="Fee"
-                className={`${style.input}`}
+                className={`${style.input} w-[50%]`}
                 value={fee}
                 onChange={(e) => setFee(e.target.value)}
               />
+
+              <input
+                type="text"
+                placeholder="Hours"
+                className={`${style.input} w-[50%]`}
+                value={totalHours}
+                onChange={(e) => setTotalHours(e.target.value)}
+              />
+
+              </div>
+
             </div>
             {/* 3 */}
             <div className=" flex flex-col gap-3">

@@ -24,6 +24,7 @@ import {
   updateTickets,
 } from "../controllers/ticketController.js";
 import multer from "multer";
+import { getTicketActivities } from "../controllers/ticketActivityController.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -115,7 +116,7 @@ router.get("/dashboard/tickets", getDashboardTickets);
 
 
 
-
+router.get("/activity/:ticketId", requiredSignIn, getTicketActivities);
 
 
 // Update Bulk Tickets

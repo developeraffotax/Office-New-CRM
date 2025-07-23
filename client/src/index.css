@@ -544,3 +544,33 @@ inputBox > textarea:focus ~ span {
 .animate-fade-in {
   animation: fade-in 1.5s ease-in-out forwards;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+.activity-scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.activity-scroll-container::-webkit-scrollbar-track {
+  background: #D3D3D3; /* warm gray-orange background */
+  border-radius: 8px;
+}
+
+.activity-scroll-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #A9A9A9, #A9A9A9); /* orange-400 to orange-500 */
+  border-radius: 8px;
+}
+
+.activity-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #3b3b3b, #3b3b3b); /* deeper orange */
+}

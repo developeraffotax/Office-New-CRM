@@ -49,6 +49,8 @@ import { BsPersonCheckFill } from "react-icons/bs";
 import QuickAccess from "../../utlis/QuickAccess";
 import { filterByRowId } from "../../utlis/filterByRowId";
 import CompanyInfo from "../../utlis/CompanyInfo";
+import { FiPlusSquare } from "react-icons/fi";
+import NewTicketModal from "./NewTicketModal";
  
 
 
@@ -137,6 +139,24 @@ export default function AllJobs() {
   const [showInactive, setShowInactive] = useState(false);
   const [showUniqueClients, setShowUniqueClients] = useState(false);
   const [isLoad, setIsLoad] = useState(false);
+
+
+
+
+
+  const [showNewTicketModal, setShowNewTicketModal] = useState(false);
+  const [clientIdFromProps, setClientIdFromProps] = useState("");
+ 
+
+
+
+
+
+
+
+
+
+
 
   const [showcolumn, setShowColumn] = useState(false);
     const boxRef = useRef(null);
@@ -2605,7 +2625,7 @@ export default function AllJobs() {
 
 
 
-
+            console.log(row.original, "ORIGINAL ROW 🆔♓🆔🆔🆔🆔")
 
             
                 const [anchorEl, setAnchorEl] = React.useState(null);
@@ -2646,13 +2666,22 @@ export default function AllJobs() {
                 </div>
               </div>
 
+
+
+                    <div>
+                      <span title="Create New Ticket" onClick={() => {setClientIdFromProps(row.original?._id); setShowNewTicketModal(true);}}    className="text-2xl text-orange-500 cursor-pointer">  <FiPlusSquare /></span>
+                      
+                    </div>
+
+
+              
                 
                        <div>
                 
                        <span title="Ticket" onClick={handleClick} id={id} className="text-2xl text-orange-500 cursor-pointer">
                          <IoTicketOutline />
                         </span>
-                
+               
                           
                 
                       <Popover
@@ -2718,7 +2747,7 @@ export default function AllJobs() {
               </div>
             );
           },
-          size: 120,
+          size: 150,
         },
 
 
@@ -4909,6 +4938,17 @@ useEffect(() => {
           <HandleQualityModal
             setShowQuickList={setShowQuickList}
             getQuickList={getQuickList}
+          />
+        </div>
+      )}
+
+
+      {/* ---------------New Ticket Modal------------- */}
+      {showNewTicketModal && (
+        <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
+          <NewTicketModal
+            setShowSendModal={setShowNewTicketModal}
+            clientIdFromProps={clientIdFromProps}
           />
         </div>
       )}

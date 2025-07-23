@@ -16,8 +16,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import QuickAccess from "../../utlis/QuickAccess";
-import { TbLoader2 } from "react-icons/tb";
+import { TbLoader2, TbLogs } from "react-icons/tb";
 import { filterByRowId } from "../../utlis/filterByRowId";
+import ActivityLogDrawer from "../../components/Modals/ActivityLogDrawer";
 
 
 const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "", };
@@ -59,7 +60,8 @@ export default function Tickets() {
   const [isUpdating, setIsUpdating] = useState(false);
 
 
-
+  const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
+  const [activityDrawerTicketId, setActivityDrawerTicketId] = useState("");
 
 
 
@@ -1574,19 +1576,33 @@ export default function Tickets() {
 
           return (
             <div className="flex items-center justify-center gap-4 w-full h-full">
-              <div
-                className="flex items-center justify-center gap-1 relative w-full h-full"
+
+                 <span
+                className=""
+                title="View Logs"
                 onClick={() => {
-                  setCommentTicketId(row.original._id);
-                  setIsComment(true);
+                  setIsActivityDrawerOpen(true);
+                  setActivityDrawerTicketId(row.original._id);
                 }}
               >
-                <div className="relative">
-                  <span className="text-[1rem] cursor-pointer relative">
-                    <MdInsertComment className={`h-5 w-5 text-orange-600 `} />
-                  </span>
+                <TbLogs className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-600" />
+              </span>
+
+
+
+                <div
+                  className="flex items-center justify-center gap-1 relative w-full h-full"
+                  onClick={() => {
+                    setCommentTicketId(row.original._id);
+                    setIsComment(true);
+                  }}
+                >
+                  <div className="relative">
+                    <span className="text-[1rem] cursor-pointer relative">
+                      <MdInsertComment className={`h-5 w-5 text-orange-600 `} />
+                    </span>
+                  </div>
                 </div>
-              </div>
 
               <span
                 className=""
@@ -1607,7 +1623,7 @@ export default function Tickets() {
             </div>
           );
         },
-        size: 120,
+        size: 150,
       },
     ],
     // eslint-disable-next-line
@@ -1734,6 +1750,10 @@ export default function Tickets() {
   return (
     <Layout>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
+
+
+        
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
@@ -2027,6 +2047,13 @@ export default function Tickets() {
             />
           </div>
         )}
+
+
+
+        {/* ---------------------Activity Log Drawer------------------ */}
+        {isActivityDrawerOpen && (
+          <ActivityLogDrawer isOpen={isActivityDrawerOpen} onClose={() => setIsActivityDrawerOpen(false)} ticketId={activityDrawerTicketId} />
+)}
       </div>
     </Layout>
   );

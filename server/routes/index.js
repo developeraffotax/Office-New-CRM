@@ -58,6 +58,7 @@ export const registerRoutes = (app) => {
   app.use("/api/v1/hrRole", hrRoleRoutes);
   app.use("/api/v1/quicklist", quickListRoute);
   app.use("/api/v1/quicklist", qualityListRoute);
+
   app.use("/api/v1/googleSheet", sendDatatoGoogleSheet);
   app.use("/api/templates", requiredSignIn, quickReplyTemplateRoutes);
 };

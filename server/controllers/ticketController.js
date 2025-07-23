@@ -21,6 +21,7 @@ import { google } from "googleapis";
 import path from "path";
 import { JWT } from "google-auth-library";
 import getJobHolderNames from "../utils/getJobHolderNames.js";
+import TicketActivity from "../models/ticketActivityModel.js";
 
 // Create Ticket \
 export const sendEmail = async (req, res) => {
@@ -79,6 +80,17 @@ export const sendEmail = async (req, res) => {
       subject: subject,
       mailThreadId: threadId,
       lastMessageSentBy: userName,
+    });
+
+    const ticketActivity = await TicketActivity.create({
+      ticketId: sendEmail._id,
+      userId: req.user.user._id,
+      action: "created",
+      details: `"${req.user.user.name}" created the ticket with subject "${subject}"
+      -- Company: ${company}
+      -- Client: ${clientId ? client.clientName : "N/A"}
+      -- Email: ${email}
+      `,
     });
 
     res.status(200).send({
@@ -797,6 +809,32 @@ export const updateTickets = async (req, res) => {
 
     const ticket = await ticketModel.findByIdAndUpdate( { _id: existingTicket._id, }, updates, { new: true } );
 
+
+
+    const activities = [];
+
+    // Loop through updates to create individual activity logs
+    updateKeys.forEach(key => {
+      const oldValue = existingTicket[key];
+      const newValue = ticket[key];
+
+      if (oldValue !== newValue) {
+        activities.push({
+          ticketId,
+          userId: req.user.user._id,
+          action: "updated",
+          
+          details: `"${req.user.user.name}" updated the "${key}" from "${oldValue}" to "${newValue}"`,
+        });
+      }
+    });
+
+
+// Save activity logs in parallel
+    if (activities.length > 0) {
+      await TicketActivity.insertMany(activities);
+    }
+
     res.status(200).send({
       success: true,
       message: "Ticket update successfully!",
@@ -1032,6 +1070,18 @@ export const sendTicketReply = async (req, res) => {
     } else {
       console.log("Invalid ticketId");
     }
+
+
+
+    const ticketActivity = await TicketActivity.create({
+      ticketId: ticketId,
+      userId: req.user.user._id,
+      action: "replied",
+      details: `"${req.user.user.name}" replied to this ticket.
+      -- Company: ${company}
+      -- Email: ${emailSendTo}
+      `,
+    });
 
     res.status(200).send({
       success: true,

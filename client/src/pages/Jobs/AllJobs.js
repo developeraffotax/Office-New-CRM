@@ -4124,13 +4124,13 @@ useEffect(() => {
             >
               <LuImport className="h-6 w-6 " /> Export
             </button>
-            <button
+            {/* <button
               className={`${style.button1} hidden sm:flex text-[15px] `}
               onClick={() => setShowQuickList(true)}
               style={{ padding: ".4rem 1rem" }}
             >
               Quality List
-            </button>
+            </button> */}
             <button
               className={`${style.button1} text-[15px] `}
               onClick={() => setShowDataLable(true)}

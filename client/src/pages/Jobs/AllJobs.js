@@ -2626,7 +2626,7 @@ export default function AllJobs() {
 
 
 
-            console.log(row.original, "ORIGINAL ROW 🆔♓🆔🆔🆔🆔")
+             
 
             
                 const [anchorEl, setAnchorEl] = React.useState(null);

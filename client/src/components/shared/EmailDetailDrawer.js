@@ -18,7 +18,7 @@ import SendEmailReply from "../Tickets/SendEmailReply";
 import { IoMdCheckboxOutline } from "react-icons/io";
 import Swal from "sweetalert2";
 
-export default function EmailDetailDrawer({id, toggleDrawer}) {
+export default function EmailDetailDrawer({ id, toggleDrawer }) {
   const navigate = useNavigate();
   const params = useParams();
   const [ticketDetail, setTicketDetail] = useState([]);
@@ -28,9 +28,37 @@ export default function EmailDetailDrawer({id, toggleDrawer}) {
   const [attachmentId, setAttachmentId] = useState("");
   const [showReplay, setShowReply] = useState(false);
 
-    const [isCompleted, setIsCompleted] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+      const [users, setUsers] = useState([]);
 
   console.log("Ticket Detail:", ticketDetail);
+
+
+  
+        
+        const getAllUsers = async () => {
+          try {
+            const { data } = await axios.get(
+              `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+            );
+            setUsers( data?.users?.filter((user) => user.role?.access?.some((item) => item?.permission?.includes("Tickets") ) ) || [] );
+      
+        
+      
+            
+      
+          } catch (error) {
+            console.log(error);
+          }
+        };
+  
+  
+        useEffect(() => {
+          getAllUsers();
+          //eslint-disable-next-line
+        }, []);
+
+
 
   //   Get Single Ticket
   const getSingleTicket = async () => {
@@ -62,7 +90,7 @@ export default function EmailDetailDrawer({id, toggleDrawer}) {
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/email/detail/${mailThreadId}/${company}/${id}`
       );
       if (data) {
-        console.log("EMAIL DATA SINGLE>>>>>>>>>>>>>>>>>>>>>>>>", data)
+        console.log("EMAIL DATA SINGLE>>>>>>>>>>>>>>>>>>>>>>>>", data);
         setLoading(false);
         setEmailDetail(data.emailDetails);
         //
@@ -158,12 +186,9 @@ export default function EmailDetailDrawer({id, toggleDrawer}) {
       if (data) {
         const jsonData = data;
 
-        
         const encodedData = jsonData.data;
 
         const decodedData = Buffer.from(encodedData, "base64");
-
-        
 
         const byteArray = new Uint8Array(decodedData.buffer);
 
@@ -230,74 +255,99 @@ export default function EmailDetailDrawer({id, toggleDrawer}) {
     }
   };
 
-  
-    const handleStatusComplete = async (ticketId) => {
-      if (!ticketId) {
-        toast.error("Ticket id is required!");
-        return;
+  const handleStatusComplete = async (ticketId) => {
+    if (!ticketId) {
+      toast.error("Ticket id is required!");
+      return;
+    }
+    try {
+      const state = isCompleted ? "progress" : "complete";
+
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
+        { state: state }
+      );
+      if (data?.success) {
+        const updateTicket = data?.ticket;
+        toast.success("Status completed successfully!");
+        setIsCompleted(data?.ticket?.state === "complete");
+
+        // setEmailData((prevData) =>
+        //   prevData.filter((item) => item._id !== updateTicket._id)
+        // );
       }
-      try {
-  
-        const state = isCompleted ? "progress" : "complete";
-        
-  
-        const { data } = await axios.put(
-          `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
-          { state: state }
-        );
-        if (data?.success) {
-          const updateTicket = data?.ticket;
-          toast.success("Status completed successfully!");
-          setIsCompleted(data?.ticket?.state === "complete");
-  
-          // setEmailData((prevData) =>
-          //   prevData.filter((item) => item._id !== updateTicket._id)
-          // );
-        }
-      } catch (error) {
-        console.log(error);
-        toast.error(error?.response?.data?.message);
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    }
+  };
+
+  // ------------Update Status------------>
+  const handleUpdateTicketStatusConfirmation = (ticketId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, Do it!",
+
+      target: "#emailDetailDrawer", // Target the drawer
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleStatusComplete(ticketId);
+
+        Swal.fire({
+          title: "Success!",
+          text: "Your action completed successfully!",
+          icon: "success",
+          target: "#emailDetailDrawer", // Target the drawer
+        });
       }
-    };
-
-    // ------------Update Status------------>
-    const handleUpdateTicketStatusConfirmation = (ticketId) => {
-
-     
+    });
+  };
 
 
-      Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, Do it!",
-         
-        target: "#emailDetailDrawer", // Target the drawer
-      }).then((result) => {
-        if (result.isConfirmed) {
-          handleStatusComplete(ticketId);
-          
-          
-      Swal.fire({
-        title: "Success!",
-        text:  "Your action completed successfully!",
-        icon: "success",
-        target: "#emailDetailDrawer", // Target the drawer
-      })
 
-
+      const updateJobHolder = async (jobHolder) => {
+        try {
+          const { data } = await axios.put(
+            `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${id}`,
+            { jobHolder }
+          );
+          if (data) {
+            const updatedTicket = data?.ticket;
+            toast.success("Job Holder updated successfully!");
+            setTicketDetail((prevData) => {
+              return {
+                ...prevData,
+                jobHolder: updatedTicket.jobHolder,
+              }
+          });
+  
+  
+  
+          }
+        } catch (error) {
+          console.log(error);
+          toast.error(error.response?.data?.message || "An error occurred");
         }
-      });
-    };
+      };
 
   return (
     <>
-      <div id="emailDetailDrawer" className=" relative w-full h-[100%] flex flex-col bg-gray-50 ">
-        <div className="w-full flex items-center justify-between bg-white px-4 py-3 border-b border-gray-200 gap-4 ">
+      <div
+        id="emailDetailDrawer"
+        className=" relative w-full h-[100%] flex flex-col bg-gray-50 "
+      >
+        <div className="w-full flex flex-col items-start justify-start bg-white px-4 py-3 border-b border-gray-200 gap-4 ">
           <div className="flex items-center justify-center gap-3">
+
+             
+
+
+
             <span
               // onClick={() => navigate("/tickets")}
               onClick={() => toggleDrawer(false)}
@@ -309,30 +359,42 @@ export default function EmailDetailDrawer({id, toggleDrawer}) {
               {ticketDetail?.subject}
             </h2>
           </div>
-<div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 self-end">
 
-<button
-                          onClick={() => handleUpdateTicketStatusConfirmation(id)}
-                          style={{ padding: ".4rem 1rem" }}
-                          className="flex items-center gap-1 text-[15px] bg-orange-500 text-white rounded-md   hover:bg-orange-600 transition-all duration-300"
-                        >
-                          <IoMdCheckboxOutline className="text-[18px] mb-[2px]" />
-                          <h3>  {isCompleted ? "Undo Complete" : "Complete"} </h3>
-                        </button>
-
-
-          <button
-            className={`${style.button1} text-[15px] flex items-center gap-1 `}
-            onClick={() => setShowReply(true)}
-            style={{ padding: ".4rem 1rem" }}
-          >
-            <HiReply className="h-4 w-4" /> Reply
-          </button>
+            <select
+                  value={ticketDetail?.jobHolder || "empty"}
+                  className="w-full h-[2rem] rounded-md border border-gray-400 outline-none text-[15px] px-2 py-1 bg-gray-50"
+                  onChange={(e) => {
+                    updateJobHolder(e.target.value);
+                    
+                  }}
+                >
+                  <option value="empty">Select Jobholder</option>
+                  {users?.map((jobHold, i) => (
+                    <option value={jobHold?.name} key={i}>
+                      {jobHold.name}
+                    </option>
+                  ))}
+                </select>
 
 
+            <button
+              onClick={() => handleUpdateTicketStatusConfirmation(id)}
+              style={{ padding: ".4rem 1rem" }}
+              className="flex items-center gap-1 text-[15px] bg-orange-500 text-white rounded-md   hover:bg-orange-600 transition-all duration-300"
+            >
+              <IoMdCheckboxOutline className="text-[18px] mb-[2px]" />
+              <h3> {isCompleted ? "Undo Complete" : "Complete"} </h3>
+            </button>
 
-</div>
-          
+            <button
+              className={`${style.button1} text-[15px] flex items-center gap-1 `}
+              onClick={() => setShowReply(true)}
+              style={{ padding: ".4rem 1rem" }}
+            >
+              <HiReply className="h-4 w-4" /> Reply
+            </button>
+          </div>
         </div>
         {/* Email Detail */}
         {loading ? (
@@ -347,7 +409,8 @@ export default function EmailDetailDrawer({id, toggleDrawer}) {
                   {console.log("THE MESSAGE >>", message)}
 
                   {/* || message?.labelIds?.includes('SENT') */}
-                  {message?.payload?.body?.sentByMe || message?.labelIds?.includes('SENT')  ? (
+                  {message?.payload?.body?.sentByMe ||
+                  message?.labelIds?.includes("SENT") ? (
                     <div className="flex flex-col gap-2 bg-orange-50 px-2 py-2 rounded-md">
                       {/* Header */}
                       <div className="flex items-center justify-between">
@@ -360,14 +423,20 @@ export default function EmailDetailDrawer({id, toggleDrawer}) {
                             />
                           </div>
                           <div className="flex flex-col gap-0">
-                            
-                          {/* {separate(message?.payload?.headers[1]?.value) } */}
-                            { separate(message?.payload?.headers.find(h => h.name === 'From')?.value)}
+                            {/* {separate(message?.payload?.headers[1]?.value) } */}
+                            {separate(
+                              message?.payload?.headers.find(
+                                (h) => h.name === "From"
+                              )?.value
+                            )}
                             <span className="text-[12px] text-gray-600 flex items-center gap-2 ">
                               to{" "}
                               {/* {message?.payload?.headers[2]?.value.slice(0, 12)}{" "} */}
-
-                              { message?.payload?.headers.find(h => h.name === 'To')?.value}
+                              {
+                                message?.payload?.headers.find(
+                                  (h) => h.name === "To"
+                                )?.value
+                              }
                               <span>
                                 <FaCaretDown className="h-4 w-4 cursor-pointer" />
                               </span>
@@ -415,39 +484,36 @@ export default function EmailDetailDrawer({id, toggleDrawer}) {
                           <div className="flex items-center flex-wrap gap-4 py-3">
                             {message?.payload?.body?.messageAttachments?.map(
                               (item) => {
-
-
-
                                 return (
                                   <div
-                                  className=" flex items-center gap-4 border bg-gray-50 hover:bg-gray-100 cursor-pointer px-3 py-2 transition-all duration-300 rounded-md hover:shadow-md font-medium text-[13px] "
-                                  key={item.attachmentId}
-                                  onClick={() => {
-                                    downloadAttachments(
-                                      item.attachmentId,
-                                      item.attachmentMessageId,
-                                      ticketDetail.company,
-                                      item.attachmentFileName
-                                    );
-                                    setAttachmentId(item.attachmentId);
-                                  }}
-                                >
-                                  <div className="flex items-center gap-1">
-                                    <span className="bg-gray-500/30 rounded-full p-[7px]">
-                                      {FileIcon(item.attachmentFileName)}
+                                    className=" flex items-center gap-4 border bg-gray-50 hover:bg-gray-100 cursor-pointer px-3 py-2 transition-all duration-300 rounded-md hover:shadow-md font-medium text-[13px] "
+                                    key={item.attachmentId}
+                                    onClick={() => {
+                                      downloadAttachments(
+                                        item.attachmentId,
+                                        item.attachmentMessageId,
+                                        ticketDetail.company,
+                                        item.attachmentFileName
+                                      );
+                                      setAttachmentId(item.attachmentId);
+                                    }}
+                                  >
+                                    <div className="flex items-center gap-1">
+                                      <span className="bg-gray-500/30 rounded-full p-[7px]">
+                                        {FileIcon(item.attachmentFileName)}
+                                      </span>
+                                      <span>{item?.attachmentFileName}</span>
+                                    </div>
+                                    <span className="bg-gray-300/30 hover:bg-gray-500/30 transition-all duration-300 cursor-pointer rounded-full p-[7px]">
+                                      {isloading &&
+                                      attachmentId === item.attachmentId ? (
+                                        <TbLoader2 className="h-5 w-5 animate-spin text-orange-500" />
+                                      ) : (
+                                        <LuDownload className="h-5 w-5 text-sky-500" />
+                                      )}
                                     </span>
-                                    <span>{item?.attachmentFileName}</span>
                                   </div>
-                                  <span className="bg-gray-300/30 hover:bg-gray-500/30 transition-all duration-300 cursor-pointer rounded-full p-[7px]">
-                                    {isloading &&
-                                    attachmentId === item.attachmentId ? (
-                                      <TbLoader2 className="h-5 w-5 animate-spin text-orange-500" />
-                                    ) : (
-                                      <LuDownload className="h-5 w-5 text-sky-500" />
-                                    )}
-                                  </span>
-                                </div>
-                                )
+                                );
                               }
                             )}
                           </div>
@@ -528,63 +594,57 @@ export default function EmailDetailDrawer({id, toggleDrawer}) {
                             {`(${message?.payload?.body?.messageAttachments.length})`}
                           </h3>
 
-
-
                           <div className="flex items-center flex-wrap gap-4 py-3">
                             {message?.payload.body?.messageAttachments?.map(
                               (item) => {
+                                console.log(
+                                  "ATTACHMENT HEADEERS",
+                                  item.attachmentHeaders
+                                );
 
+                                const contentDispositionHeader =
+                                  item.attachmentHeaders.find(
+                                    (header) =>
+                                      header.name === "Content-Disposition"
+                                  );
 
-                                                          
-                          console.log("ATTACHMENT HEADEERS",item.attachmentHeaders)
-
-                          const contentDispositionHeader = item.attachmentHeaders.find(header => header.name === 'Content-Disposition');
-                          
-                          const isInline = contentDispositionHeader?.value?.toLowerCase().includes("inline");
-
-
+                                const isInline = contentDispositionHeader?.value
+                                  ?.toLowerCase()
+                                  .includes("inline");
 
                                 return (
                                   <div
-                                  className=" flex items-center gap-4 border bg-gray-50 hover:bg-gray-100 cursor-pointer px-3 py-2 transition-all duration-300 rounded-md hover:shadow-md font-medium text-[13px] "
-                                  key={item.attachmentId}
-                                  onClick={() => {
-                                    downloadAttachments(
-                                      item.attachmentId,
-                                      item.attachmentMessageId,
-                                      ticketDetail.company,
-                                      item.attachmentFileName
-                                    );
-                                    setAttachmentId(item.attachmentId);
-                                  }}
-                                >
-                                  <div className="flex items-center gap-1">
-                                    <span className="bg-gray-500/30 rounded-full p-[7px]">
-                                      {FileIcon(item?.attachmentFileName)}
+                                    className=" flex items-center gap-4 border bg-gray-50 hover:bg-gray-100 cursor-pointer px-3 py-2 transition-all duration-300 rounded-md hover:shadow-md font-medium text-[13px] "
+                                    key={item.attachmentId}
+                                    onClick={() => {
+                                      downloadAttachments(
+                                        item.attachmentId,
+                                        item.attachmentMessageId,
+                                        ticketDetail.company,
+                                        item.attachmentFileName
+                                      );
+                                      setAttachmentId(item.attachmentId);
+                                    }}
+                                  >
+                                    <div className="flex items-center gap-1">
+                                      <span className="bg-gray-500/30 rounded-full p-[7px]">
+                                        {FileIcon(item?.attachmentFileName)}
+                                      </span>
+                                      <span>{item?.attachmentFileName}</span>
+                                    </div>
+
+                                    {/* { isInline && <h3>| Signature</h3> } */}
+
+                                    <span className="bg-gray-300/30 hover:bg-gray-500/30 transition-all duration-300 cursor-pointer rounded-full p-[7px]">
+                                      {isloading &&
+                                      attachmentId === item.attachmentId ? (
+                                        <TbLoader2 className="h-5 w-5 animate-spin text-orange-500" />
+                                      ) : (
+                                        <LuDownload className="h-5 w-5 text-sky-500" />
+                                      )}
                                     </span>
-                                    <span>{item?.attachmentFileName}</span>
                                   </div>
-
-                                  {/* { isInline && <h3>| Signature</h3> } */}
-
-
-                                  <span className="bg-gray-300/30 hover:bg-gray-500/30 transition-all duration-300 cursor-pointer rounded-full p-[7px]">
-                                    {isloading &&
-                                    attachmentId === item.attachmentId ? (
-                                      <TbLoader2 className="h-5 w-5 animate-spin text-orange-500" />
-                                    ) : (
-                                      <LuDownload className="h-5 w-5 text-sky-500" />
-                                    )}
-                                  </span>
-
-                                  
-
-
-
-
-
-                                </div>
-                                )
+                                );
                               }
                             )}
                           </div>

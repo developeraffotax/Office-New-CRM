@@ -36,7 +36,7 @@ export default function NewTicketModal({
       try {
         setIsFetching(true);
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/client/search?companyName=${companyName}`
+          `${process.env.REACT_APP_API_URL}/api/v1/client/search?companyName=${encodeURIComponent(companyName)}`
         );
 
         if (data) {

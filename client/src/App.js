@@ -33,10 +33,12 @@ import PDFEditor from "./pages/Editor/PDFEditor";
 import Meeting from "./pages/Meeting/Meeting";
 import HR from "./pages/HR/HR"; 
 import Temp from "./components/Temp";
+import { SocketProvider } from "./context/socketContext";
+import { ReminderProvider } from "./context/reminderContext";
  
 
-const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+// const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
+// const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 function App() {
   const { auth } = useAuth();
@@ -76,11 +78,11 @@ function App() {
     })
     .filter(Boolean);
 
-  console.log("Access:", user?.role?.access);
+ 
 
-  useEffect(() => {
-    socketId.on("connection", () => {});
-  }, []);
+  // useEffect(() => {
+  //   socketId.on("connection", () => {});
+  // }, []);
 
   useEffect(() => {
     const cacheBuster = () => {
@@ -113,23 +115,28 @@ function App() {
 
   return (
     <div>
-      <BrowserRouter>
-        <Routes>
-          {/* If the user is not authenticated, navigate to login */}
-          {/* {!user && <Route path="*" element={<Navigate to="/" />} />} */}
-          <Route path="/" element={<Login />} />
-          <Route path="/temp/:hrTaskId" element={<Temp />} />
-          {/* <Route path="/tasks/completed" element={<AllTasksCompleted />} /> */}
-          {userAccessRoutes}
-          <Route path="/profile" element={<Profile />} />
-          {/* Catch-all route: if no access to a route, show 404 */}
-          <Route path="/employee/dashboard" element={<UDashboard />} />
-          <Route path="/editor/templates" element={<TemplateEditor />} />
-          <Route path="/pdf/editor" element={<PDFEditor />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <Toaster />
-      </BrowserRouter>
+      <SocketProvider userId={auth?.user?.id}> {/* ✅ Pass userId here */}
+        <ReminderProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* If the user is not authenticated, navigate to login */}
+              {/* {!user && <Route path="*" element={<Navigate to="/" />} />} */}
+              <Route path="/" element={<Login />} />
+              <Route path="/temp/:hrTaskId" element={<Temp />} />
+              {/* <Route path="/tasks/completed" element={<AllTasksCompleted />} /> */}
+              {userAccessRoutes}
+              <Route path="/profile" element={<Profile />} />
+              {/* Catch-all route: if no access to a route, show 404 */}
+              <Route path="/employee/dashboard" element={<UDashboard />} />
+              <Route path="/editor/templates" element={<TemplateEditor />} />
+              <Route path="/pdf/editor" element={<PDFEditor />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+          </BrowserRouter>
+        </ReminderProvider>
+      
+      </SocketProvider>
     </div>
   );
 }

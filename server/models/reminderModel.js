@@ -5,14 +5,30 @@ const reminderSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Users",
+      required: true,
     },
     title: { type: String, required: true },
     description: { type: String },
     taskId: { type: String, required: true },
-    date: { type: Date, required: true },
-    time: { type: String },
-    redirectLink: {
-      type: String,
+
+    // ✅ Single datetime field
+    scheduledAt: {
+      type: Date,
+      required: true,
+      index: true, // for efficient cron job queries
+    },
+
+    redirectLink: { type: String },
+
+    isRead: {
+      type: Boolean,
+      default: false,
+    
+    },
+    isCompleted: {
+      type: Boolean,
+      default: false,
+    
     },
   },
   { timestamps: true }

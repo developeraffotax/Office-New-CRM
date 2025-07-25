@@ -14,6 +14,8 @@ import { setupCronJobs } from "./cron/index.js";
 import { gmailWebhookHandler } from "./utils/pubSubPush.js";
 import { errorHandler } from "./middlewares/errorMiddleware.js";
 
+import agenda from "./utils/agenda.js";
+
 dotenv.config();
 
 // Validate secret key
@@ -34,11 +36,15 @@ app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 
 
 export const onlineUsers = new Map();
+console.log("OnlineUsers 💚",onlineUsers)
 
 
 // Create server and socket
 const server = http.createServer(app);
 export const io = initSocketServer(server);
+
+agenda.io = io;  
+
 
 // Register routes
 registerRoutes(app);

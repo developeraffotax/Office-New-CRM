@@ -13,8 +13,10 @@ export default function Reminder({ setShowReminder, taskId, link }) {
   const { auth } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  // const [date, setDate] = useState("");
+  // const [time, setTime] = useState("");
+
+  const [scheduledAt, setScheduledAt] = useState("");
   const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState([]);
   const [usersList, setUserList] = useState([]);
@@ -52,6 +54,12 @@ export default function Reminder({ setShowReminder, taskId, link }) {
     }
   }, [auth.user]);
 
+
+
+
+
+
+
   // Create Reminder
   const handleCreateReminder = async (e) => {
     e.preventDefault();
@@ -67,8 +75,7 @@ export default function Reminder({ setShowReminder, taskId, link }) {
           taskId,
           title,
           description,
-          date,
-          time,
+          scheduledAt,
           redirectLink: link,
           usersList,
         }
@@ -194,23 +201,12 @@ export default function Reminder({ setShowReminder, taskId, link }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="inputBox">
               <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
+                type="datetime-local"
+                value={scheduledAt}
+                onChange={(e) => setScheduledAt(e.target.value)}
                 className={`${style.input} w-full `}
                 required
               />
-              {/* <span>Date</span> */}
-            </div>
-            <div className="inputBox">
-              <input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className={`${style.input} w-full `}
-                required
-              />
-              {/* <span>Time</span> */}
             </div>
           </div>
           <div className="flex items-center justify-end w-full">

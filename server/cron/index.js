@@ -22,6 +22,10 @@ export const setupCronJobs = () => {
     sendDatatoGoogleSheet();
   });
 
+  cron.schedule("* * * * *", async () => {
+  
+  });
+
   // Run immediately once at startup
   sendDatatoGoogleSheet();
   setWatch();

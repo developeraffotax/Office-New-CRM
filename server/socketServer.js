@@ -22,13 +22,14 @@ export const initSocketServer = (server) => {
 
     // Listen "Notification"
     socket.on("notification", (data) => {
+      console.log("OnlineUsers 💚",onlineUsers)
       io.emit("newNotification", data);
     });
 
     // Listen "Reminder"
-    socket.on("reminder", (data) => {
-      io.emit("newReminder", data);
-    });
+    // socket.on("reminder", (data) => {
+    //   io.emit("newReminder", data);
+    // });
 
     // Listen Timer
     socket.on("timer", (data) => {
@@ -37,6 +38,7 @@ export const initSocketServer = (server) => {
 
     // Listen Add task
     socket.on("addTask", (data) => {
+      console.log("OnlineUsers 💚",onlineUsers)
       io.emit("newtask", data);
     });
 

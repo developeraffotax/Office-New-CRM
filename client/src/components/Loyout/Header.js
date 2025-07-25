@@ -12,8 +12,14 @@ import { TbBellRinging } from "react-icons/tb";
 import { CgList } from "react-icons/cg";
 import { FaStopwatch } from "react-icons/fa6";
 import socketIO from "socket.io-client";
-const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"], });
+import { renderNotification } from "./renderNoti";
+import ReminderPopup from "../../utlis/ReminderPopup";
+import { useSocket } from "../../context/socketContext";
+import { useReminder } from "../../context/reminderContext";
+import ReminderNotifications from "./ReminderNotificaitons";
+
+// const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
+// const socketId = socketIO(ENDPOINT, { transports: ["websocket"], });
 
 const formatElapsedTime = (createdAt) => {
   const now = new Date();
@@ -31,13 +37,12 @@ const formatElapsedTime = (createdAt) => {
 };
 
 export default function Header({
-  reminderData,
+ 
   setShowQuickList,
   showQuickList,
   getQuickList,
 }) {
-  const { auth, setAuth, setFilterId, time, searchValue, setSearchValue } =
-    useAuth();
+  const { auth, setAuth, setFilterId, time, searchValue, setSearchValue } = useAuth();
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
   const navigate = useNavigate();
@@ -51,10 +56,42 @@ export default function Header({
   );
   const notificationRef = useRef(null);
   const timerStatusRef = useRef(null);
-  const [showReminder, setShowReminder] = useState(false);
+
+ 
 
 
   
+  const {socket} = useSocket();
+
+
+
+  
+    const [showReminderNotificationPanel, setShowReminderNotificationPanel] = useState(false)
+
+
+    const {showReminder, setShowReminder, reminderData, setReminderData, unread_reminders_count, set_unread_reminders_count, getRemindersCount } = useReminder();
+
+
+
+
+
+
+
+
+
+
+  useEffect(() => {
+    getRemindersCount();
+
+
+  }, [])
+
+
+
+
+
+
+
 
 
 
@@ -62,7 +99,7 @@ export default function Header({
     if (audio) {
       audio.load();
     }
-    socketId.emit("notification", {
+    socket.emit("notification", {
       title: "New Job Assigned",
     });
   }, [audio]);
@@ -121,23 +158,23 @@ export default function Header({
 
   useEffect(() => {
     getTimerStatus();
-    socketId.on("newTimer", () => {
+    socket.on("newTimer", () => {
       getTimerStatus();
     });
 
     return () => {
-      socketId.off("newTimer", getTimerStatus);
+      socket.off("newTimer", getTimerStatus);
     };
     // eslint-disable-next-line
-  }, [auth.user, socketId]);
+  }, [auth.user, socket]);
 
 
 
   // Get ALl User Notifications
   const getNotifications = useCallback(async () => {
-    if (!auth.user) {
-      return;
-    }
+    // if (!auth.user) {
+    //   return;
+    // }
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/notification/get/notification/${auth.user.id}`
@@ -161,24 +198,26 @@ export default function Header({
 
   useEffect(() => {
     getNotifications();
-    // eslint-disable-next-line
+     
   }, [auth.user]);
 
   useEffect(() => {
-    if (!socketId) {
+    if (!socket) {
+      console.log("IN THE USE EFFECT !socket", socket)
       return;
     }
 
-    socketId.on("newNotification", () => {
-      getNotifications();
-      // notificationPlayer();
-    });
+    socket.on("newNotification", getNotifications);
 
     return () => {
-      socketId.off("newNotification", getNotifications);
+      socket.off("newNotification", getNotifications);
     };
-    // eslint-disable-next-line
-  }, [socketId]);
+    
+  }, [socket]);
+
+
+
+  
 
   // Update Notification
   const updateNotification = async (id) => {
@@ -246,21 +285,24 @@ export default function Header({
 
 
   // Handle Close Notification
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target)
-      ) {
-        setOpen(false);
-        setShowReminder(false);
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event) => {
+  //     if (
+  //       notificationRef.current &&
+  //       !notificationRef.current.contains(event.target)
+  //     ) {
+  //       setOpen(false);
+  //       setShowReminder(false);
+  //     }
+  //   };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => document.removeEventListener("mousedown", handleClickOutside);
+  // }, []);
 
+
+
+  
   // Close Timer Status to click anywhere
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -277,18 +319,18 @@ export default function Header({
   }, []);
 
   // Delete Reminders
-  const deleteReminder = async (id) => {
-    if (!auth.user) {
-      return;
-    }
-    try {
-      await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/reminders/delete/reminder/${id}`
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // const deleteReminder = async (id) => {
+  //   if (!auth.user) {
+  //     return;
+  //   }
+  //   try {
+  //     await axios.delete(
+  //       `${process.env.REACT_APP_API_URL}/api/v1/reminders/delete/reminder/${id}`
+  //     );
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
 
 
@@ -300,11 +342,11 @@ export default function Header({
   //     if (!auth?.user?.id) return;
   
   //     const id = auth.user.id;
-  //     socketId.emit("userConnected", id);
+  //     socket.emit("userConnected", id);
 
   
   //     // return () => {
-  //     //   socketId.disconnect();
+  //     //   socket.disconnect();
   //     // };
   //   }, [auth]);
 
@@ -312,19 +354,19 @@ export default function Header({
 
   // useEffect(() => {
 
-  //   if (!socketId) {
+  //   if (!socket) {
   //     return;
   //   }
 
 
-  //     socketId.on('newTicketNotification', (data) => {
+  //     socket.on('newTicketNotification', (data) => {
   //       console.log("New Ticket Notification:💛🧡💚💚", data);
   //     getNotifications();
       
   //   })
 
   //   // return () => {
-  //   //   socketId.disconnect();
+  //   //   socket.disconnect();
   //   // }
     
 
@@ -336,33 +378,31 @@ export default function Header({
 
     useEffect(() => {
 
-      console.log("SocketId initialized:", socketId);
-      console.log("User ID:", userId);
-    // Check if userId and socketId are available
-    if (!userId || !socketId) return;
+      
+    if (!userId || !socket) return;
 
     // Connect and register
 
       // Connect only if not already connected
-      if (!socketId.connected) {
-        socketId.connect();
-        console.log("🔌 Socket connected");
-      }
-    socketId.emit("userConnected", userId);
-    console.log("✅ SocketId connected with user:", userId);
+    //   if (!socket.connected) {
+    //     socket.connect();
+    //     console.log("🔌 Socket connected");
+    //   }
+    // socket.emit("userConnected", userId);
+    // console.log("✅ SocketId connected with user:", userId);
 
     const handleNotification = (data) => {
       console.log("📥 New Ticket Notification:", data);
       getNotifications();
     };
 
-    socketId.on("newTicketNotification", handleNotification);
+    socket.on("newTicketNotification", handleNotification);
 
     // Cleanup on unmount or user change
     return () => {
-      socketId.off("newTicketNotification", handleNotification);
-      //socketId.disconnect();
-      console.log("🛑 Socket disconnected");
+      socket.off("newTicketNotification", handleNotification);
+      //socket.disconnect();
+      
     };
   }, [userId, getNotifications]);
 
@@ -370,6 +410,9 @@ export default function Header({
 
 
   return (
+ <>
+ 
+ 
     <div className="w-full h-[3.8rem] bg-gray-200">
       <div className="w-full h-full flex items-center justify-between sm:px-4 px-6 py-2">
         {/* Logo/Notification */}
@@ -582,78 +625,20 @@ export default function Header({
               <div
                 className="relative cursor-pointer m-2"
                 onClick={() => {
-                  setShowReminder(!showReminder);
+                  setShowReminderNotificationPanel(!showReminderNotificationPanel)
                 }}
               >
                 <TbBellRinging className="text-2xl container text-black " />
-                {reminderData.length > 0 && (
+                {(unread_reminders_count > 0) && (
                   <span className="absolute -top-2 -right-2 bg-orange-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
-                    {reminderData && reminderData.length}
+                    {unread_reminders_count}
                   </span>
                 )}
               </div>
-              {showReminder && (
-                <div
-                  ref={notificationRef}
-                  className="shadow-xl  bg-gray-100 absolute z-[999] top-[2rem] right-[1.6rem] rounded-md "
-                >
-                  <h5 className=" relative text-[20px] text-center font-medium rounded-tl-md text-white bg-orange-600  p-3 font-Poppins">
-                    Reminders
-                    <div className="absolute right-[.5rem] top-[-1rem] animate-shake z-10">
-                      <img
-                        src="/reminder.png"
-                        alt="reminder"
-                        className="h-[5rem] w-[5rem]"
-                      />
-                    </div>
-                  </h5>
-                  <div className="w-[350px] flex flex-col gap-2 p-1 min-h-[30vh] max-h-[60vh]  overflow-y-auto   ">
-                    {reminderData &&
-                      reminderData?.map((item, index) => (
-                        <div
-                          key={index}
-                          className="dark:bg-[#2d3a4ea1] rounded-sm hover:shadow-md bg-[#00000013] hover:bg-gray-300 transition-all duration-200 font-Poppins border-b dark:border-b-[#ffffff47] border-b-[#fff]"
-                        >
-                          <div className="w-full relative flex items-center justify-between p-2">
-                            <p className="text-black text-[15px] font-medium ">
-                              {item?.title}
-                            </p>
-                            {/* <p
-                              className="text-red-500 absolute top-2 right-1 hover:text-red-600 transition-all duration-200  cursor-pointer"
-                              onClick={() => deleteReminder(item._id)}
-                            >
-                              <BiSolidBellMinus className="h-6 w-6 cursor-pointer " />
-                            </p> */}
-                          </div>
-                          <Link
-                            to={item?.redirectLink}
-                            key={item?._id}
-                            onClick={() => setFilterId(item?.taskId)}
-                            className="cursor-pointer"
-                          >
-                            <p className="p-2 text-gray-700  text-[14px]">
-                              <strong className="text-black font-medium text-[15px]">
-                                Description:
-                              </strong>
-                              {item?.description}
-                            </p>
-                          </Link>
-                        </div>
-                      ))}
-
-                    {reminderData.length === 0 && (
-                      <div className="w-full h-[30vh] text-[14px] text-black  flex items-center justify-center flex-col">
-                        <img
-                          src="/rb_616.png"
-                          alt="notfound"
-                          className="h-[8rem] w-[8rem] animate-pulse"
-                        />
-                        Reminder not available!.
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+              {
+                showReminderNotificationPanel && <ReminderNotifications />
+              }
+              
             </div>
           </div>
           {/* ----------Profile Image-------- */}
@@ -702,5 +687,10 @@ export default function Header({
         </div>
       </div>
     </div>
+
+
+ 
+      
+      </>
   );
 }

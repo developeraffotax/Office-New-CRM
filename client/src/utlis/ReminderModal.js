@@ -68,7 +68,7 @@ const ReminderModal = () => {
             {reminderData?.title}
           </p></Link>
           {reminderData?.description && (
-            <p className="text-sm text-gray-600">{reminderData.description}</p>
+            <div className="text-sm text-gray-600" dangerouslySetInnerHTML={{__html: reminderData?.description}}></div>
           )}
           
         </div>

@@ -21,8 +21,10 @@ export default function MeetingModal({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [results, setResults] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  // const [date, setDate] = useState("");
+  // const [time, setTime] = useState("");
+
+    const [scheduledAt, setScheduledAt] = useState("");
   const [color, setColor] = useState("#E85C0D");
   const [loading, setLoading] = useState(false);
   const [userData, setUserData] = useState([]);
@@ -42,8 +44,12 @@ export default function MeetingModal({
         setTitle(meeting.title);
         setDescription(meeting.description);
         setResults(meeting.results);
-        setDate(new Date(meeting.date).toISOString().split("T")[0]);
-        setTime(meeting.time);
+
+
+        setScheduledAt(new Date(meeting?.scheduledAt).toLocaleString());
+        
+
+
         setColor(meeting.color || "#E85C0D");
         setUserList(meeting.usersList);
       }
@@ -106,8 +112,7 @@ export default function MeetingModal({
             title,
             description,
             results,
-            date,
-            time,
+            scheduledAt,
             color,
             redirectLink: link,
             usersList,
@@ -123,8 +128,7 @@ export default function MeetingModal({
             title,
             description,
             results,
-            date,
-            time,
+           scheduledAt,
             color,
             redirectLink: link,
             usersList,
@@ -252,15 +256,15 @@ export default function MeetingModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="inputBox">
               <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
+                type="datetime-local"
+                value={scheduledAt}
+                onChange={(e) => setScheduledAt(e.target.value)}
                 className={`${style.input} w-full `}
                 required
               />
               {/* <span>Date</span> */}
             </div>
-            <div className="inputBox">
+            {/* <div className="inputBox">
               <input
                 type="time"
                 value={time}
@@ -268,8 +272,8 @@ export default function MeetingModal({
                 className={`${style.input} w-full `}
                 required
               />
-              {/* <span>Time</span> */}
-            </div>
+ 
+            </div> */}
           </div>
 
           <div className="w-full h-[9rem]">

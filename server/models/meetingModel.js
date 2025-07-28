@@ -15,14 +15,14 @@ const meetingSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    date: {
+
+    // ✅ Single datetime field
+    scheduledAt: {
       type: Date,
       required: true,
+       
     },
-    time: {
-      type: String,
-      required: true,
-    },
+    
     color: {
       type: String,
     },

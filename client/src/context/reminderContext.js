@@ -124,6 +124,8 @@ export const ReminderProvider = ({ children }) => {
         toast.success(`Snoozed for ${minutes} minutes`);
         setShowReminder(false);
 
+        getRemindersCount()
+        fetchReminders()
         
       }
     } catch (err) {
@@ -165,7 +167,7 @@ export const ReminderProvider = ({ children }) => {
         toast.success("Reminder is marked as completed!");
         setShowReminder(false);
 
-        set_unread_reminders_count(p => p -1);
+        getRemindersCount()
         fetchReminders()
       }
     } catch (err) {

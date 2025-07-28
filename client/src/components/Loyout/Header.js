@@ -55,6 +55,7 @@ export default function Header({
     typeof window !== "undefined" ? new Audio("/level-up-191997.mp3") : null
   );
   const notificationRef = useRef(null);
+  const reminderNotificationRef = useRef(null);
   const timerStatusRef = useRef(null);
 
  
@@ -70,6 +71,37 @@ export default function Header({
 
 
     const {showReminder, setShowReminder, reminderData, setReminderData, unread_reminders_count, set_unread_reminders_count, getRemindersCount } = useReminder();
+
+
+
+
+
+
+      // Handle Close Notification
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        reminderNotificationRef.current &&
+        !reminderNotificationRef.current.contains(event.target)
+      ) {
+         
+        setShowReminderNotificationPanel(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -206,7 +238,7 @@ export default function Header({
       console.log("IN THE USE EFFECT !socket", socket)
       return;
     }
-
+    
     socket.on("newNotification", getNotifications);
 
     return () => {
@@ -621,7 +653,7 @@ export default function Header({
               <CgList className="text-2xl container text-black " />
             </span>
             {/* --------Notifications------ */}
-            <div className="relative">
+            <div className="relative" ref={reminderNotificationRef}>
               <div
                 className="relative cursor-pointer m-2"
                 onClick={() => {
@@ -636,7 +668,7 @@ export default function Header({
                 )}
               </div>
               {
-                showReminderNotificationPanel && <ReminderNotifications />
+                showReminderNotificationPanel && <ReminderNotifications setShowReminderNotificationPanel={setShowReminderNotificationPanel}/>
               }
               
             </div>

@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 import { AiOutlineDelete } from "react-icons/ai";
 import { LuLock } from "react-icons/lu";
 import { LuClock8 } from "react-icons/lu";
-import { format, parse } from "date-fns";
+import { format, parse, parseISO } from "date-fns";
 import { BiDetail } from "react-icons/bi";
 import { IoPodiumOutline } from "react-icons/io5";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
@@ -80,18 +80,33 @@ export default function MeetingDetail({
     }
   };
 
-  const formatMeetingDate = (date, time) => {
-    if (!date || !time) return "";
+  // const formatMeetingDate = (date, time) => {
+  //   if (!date || !time) return "";
 
-    const meetingDate = new Date(date);
+  //   const meetingDate = new Date(date);
 
-    const options = { weekday: "short", month: "long", day: "numeric" };
-    const formattedDate = meetingDate.toLocaleDateString("en-US", options);
+  //   const options = { weekday: "short", month: "long", day: "numeric" };
+  //   const formattedDate = meetingDate.toLocaleDateString("en-US", options);
 
-    const formattedTime = format(parse(time, "HH:mm", new Date()), "h:mm a");
+  //   const formattedTime = format(parse(time, "HH:mm", new Date()), "h:mm a");
 
-    return `${formattedDate}, ${formattedTime}`;
-  };
+  //   return `${formattedDate}, ${formattedTime}`;
+  // };
+
+ const formatDateTime = (utcString) => {
+  if (!utcString) return "";
+
+  try {
+    const date = parseISO(utcString);
+
+    const formattedDate = format(date, "EEE, MMMM d, h:mm a"); // "Mon, July 28, 5:00 PM"
+    return formattedDate;
+  } catch (error) {
+    console.error("Invalid date string:", utcString);
+    return "";
+  }
+};
+
 
   return (
     <div className=" relative w-full  rounded-lg shadow-md bg-white max-h-[99vh] overflow-y-auto overflow-hidden hidden1">
@@ -134,7 +149,8 @@ export default function MeetingDetail({
               <LuClock8 className="text-[26px] text-green-600" />
             </span>
             <h3 className="text-[16px] text-gray-700 ">
-              {formatMeetingDate(meeting?.date, meeting?.time)}
+               {formatDateTime(meeting?.scheduledAt)} 
+              {/* {meeting.scheduledAt} */}
             </h3>
           </div>
           {meeting?.description && (

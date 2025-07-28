@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { CgEye } from "react-icons/cg";
 import { MdOutlineMarkChatRead } from "react-icons/md";
 
-const ReminderNotifications = () => {
+const ReminderNotifications = ({setShowReminderNotificationPanel}) => {
   //take it one above
   // const [reminders, setReminders] = useState([]);
 
@@ -67,6 +67,8 @@ const ReminderNotifications = () => {
                       setReminderData(reminder);
                       setShowReminder(true);
 
+                      setShowReminderNotificationPanel(false)
+
                       if(!reminder?.isRead) {
                         markAsReadReminder(reminder?._id)
                       }
@@ -77,11 +79,11 @@ const ReminderNotifications = () => {
                  
               </div>
 
-              <div className="block text-sm text-gray-800 ">
+              <div className="block text-sm text-gray-800 " dangerouslySetInnerHTML={{__html: reminder?.description}}>
                 {/* <span className="font-medium text-gray-800 ">
                   Description:{" "}
                 </span> */}
-                {reminder?.description}
+                {/* {reminder?.description} */}
               </div>
 
               <div className="flex items-center justify-between text-xs text-gray-600  pt-1">

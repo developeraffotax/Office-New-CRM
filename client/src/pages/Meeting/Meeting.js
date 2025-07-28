@@ -8,7 +8,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import MeetingDetail from "./MeetingDetail";
-import { format, parse } from "date-fns";
+import { format, parse, parseISO } from "date-fns";
 import { useAuth } from "../../context/authContext";
 import Loader from "../../utlis/Loader";
 import { FaLock } from "react-icons/fa";
@@ -53,32 +53,62 @@ export default function Meeting() {
   }, []);
 
   // Map meeting data to FullCalendar events format
-  const events = meetingData
-    .filter((meeting) => {
-      if (auth?.user?.role?.name === "Admin") return true;
-      return meeting.usersList.some((user) => user._id === userId);
-    })
-    .map((meeting) => {
-      const datePart = meeting.date.split("T")[0];
-      const combinedDatetime = `${datePart}T${meeting.time}:00`;
-      const formattedTime = format(
-        parse(meeting.time, "HH:mm", new Date()),
-        "h:mm a"
-      );
-      return {
-        id: meeting._id,
-        title: meeting.title,
-        start: combinedDatetime,
-        backgroundColor: meeting.color || "#000",
-        borderColor: meeting.color || "#000",
-        extendedProps: {
-          description: meeting.description,
-          results: meeting.results,
-          usersList: meeting.usersList,
-          time: formattedTime,
-        },
-      };
-    });
+  // const events = meetingData
+  //   .filter((meeting) => {
+  //     if (auth?.user?.role?.name === "Admin") return true;
+  //     return meeting.usersList.some((user) => user._id === userId);
+  //   })
+  //   .map((meeting) => {
+  //     const datePart = meeting.date.split("T")[0];
+  //     const combinedDatetime = `${datePart}T${meeting.time}:00`;
+  //     const formattedTime = format(
+  //       parse(meeting.time, "HH:mm", new Date()),
+  //       "h:mm a"
+  //     );
+  //     return {
+  //       id: meeting._id,
+  //       title: meeting.title,
+  //       start: combinedDatetime,
+  //       backgroundColor: meeting.color || "#000",
+  //       borderColor: meeting.color || "#000",
+  //       extendedProps: {
+  //         description: meeting.description,
+  //         results: meeting.results,
+  //         usersList: meeting.usersList,
+  //         time: formattedTime,
+  //       },
+  //     };
+  //   });
+
+
+
+
+
+const events = meetingData
+  .filter((meeting) => {
+    if (auth?.user?.role?.name === "Admin") return true;
+    return meeting.usersList.some((user) => user._id === userId);
+  })
+  .map((meeting) => {
+     
+    const dateTime = parseISO(meeting.scheduledAt); // e.g., "2025-07-28T14:30:00Z" or "2025-07-28T14:30"
+    const formattedTime = format(dateTime, "h:mm a");
+
+    return {
+      id: meeting._id,
+      title: meeting.title,
+      start: meeting.scheduledAt,
+      backgroundColor: meeting.color || "#000",
+      borderColor: meeting.color || "#000",
+      extendedProps: {
+        description: meeting.description,
+        results: meeting.results,
+        usersList: meeting.usersList,
+        time: formattedTime,
+      },
+    };
+  });
+
 
   // Handle event click to open the modal
   const handleEventClick = (info) => {

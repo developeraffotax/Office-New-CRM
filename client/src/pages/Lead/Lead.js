@@ -30,6 +30,7 @@ import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import QuickAccess from "../../utlis/QuickAccess";
 import { FiPlusSquare } from "react-icons/fi";
 import NewTicketModal from "../../utlis/NewTicketModal";
+import { ActionsCell } from "./ActionsCell";
 
 
 const updates_object_init = {
@@ -66,6 +67,7 @@ export default function Lead() {
 
     const [showNewTicketModal, setShowNewTicketModal] = useState(false);
     const [clientCompanyName, setClientCompanyName] = useState("");
+    const [clientEmail, setClientEmail] = useState("");
 
 
     const [showSendModal, setShowSendModal] = useState(false);
@@ -146,7 +148,9 @@ export default function Lead() {
     value: "",
     number: "",
     jobDeadline: "",
-    yearEnd: ""
+    yearEnd: "",
+
+    email: ""
   });
   const [active, setActive] = useState(false);
   const [selectFilter, setSelectFilter] = useState("");
@@ -249,7 +253,8 @@ export default function Lead() {
     "actions",
     "Note",
     "jobDeadline",
-    "yearEnd"
+    "yearEnd",
+    "email"
     // "Fee",
     // "Source",
     // "ClientType",
@@ -2518,173 +2523,160 @@ const allColumns = [{
 {
   accessorKey: "actions",
   header: "Actions",
+   
+   
   
-  Cell: ({ cell, row }) => {
+   Cell: ({ row }) => <ActionsCell row={row}  setClientCompanyName={setClientCompanyName} setClientEmail={setClientEmail} setShowNewTicketModal={setShowNewTicketModal} handleCopyLead={handleCopyLead} handleLeadStatus={handleLeadStatus} handleDeleteLeadConfirmation={handleDeleteLeadConfirmation}  selectedTab={selectedTab}  />,
+  size: 240,
+ 
 
+
+},
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//  --- Email--->
+{
+  accessorKey: "email",
+  minSize: 200,
+  maxSize: 500,
+  size: 250,
+  grow: false,
     
-
-    const [anchorEl, setAnchorEl] = React.useState(null);
-
-    const handleClick = (event) => {
-      
-      setAnchorEl(event.currentTarget);
-    };
-  
-    const handleClose = () => {
-      setAnchorEl(null);
-    };
-  
-    const open = Boolean(anchorEl);
-    const id = open ? 'simple-popover' : undefined;
-
-
+     
+    
+  Header: ({ column }) => {
     return (
-      <div className="flex items-center justify-center gap-4 w-full h-full">
-
-
-       <div>
-                            <span title="Create New Ticket" onClick={() => {setClientCompanyName(row?.original?.companyName); setShowNewTicketModal(true);}}    className="text-xl text-orange-500 cursor-pointer">  <FiPlusSquare /></span>
-                            
-                          </div>
-       <div>
-
-       <span title="Ticket" onClick={handleClick} id={id} className="text-2xl text-orange-500 cursor-pointer">
-         <IoTicketOutline />
-        </span>
-
-          
-
-      <Popover
-        
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
-        }}
-        // transformOrigin={{
-        //   vertical: 'bottom',
-        //   horizontal: 'left',
-        // }}
-      >
-
-
-        
-
-
-
-
-
-      <Typography sx={{ p: 2, background: "#5F9EA0", width: "100%", textAlign: "center", fontFamily: "sans-serif", fontSize: "1.2rem", color: "whitesmoke" }}>Tickets for this Lead</Typography>
-
-      <div>
-        <TicketsPopUp  clientName={row?.original?.clientName} handleClose={handleClose}  />
-      </div>
-      </Popover>
-
-
-
-       </div>
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      <div className=" flex flex-col gap-[2px]">
         <span
-          className="text-[1rem] cursor-pointer"
+          className="ml-1 cursor-pointer"
+          title="Clear Filter"
           onClick={() => {
-            handleCopyLead({
-              jobHolder: row.original.jobHolder,
-              department: row.original.department,
-              source: row.original.source,
-              brand: row.original.brand,
-              lead_Source: row.original.lead_Source,
-              followUpDate: row.original.followUpDate,
-              JobDate: row.original.JobDate,
-              stage: row.original.stage,
-            });
+            column.setFilterValue("");
+            setSelectFilter("");
           }}
-          title="Copy Lead"
         >
-          <GrCopy className="h-5 w-5 text-cyan-500 hover:text-cyan-600 " />
+          Email
         </span>
-        {selectedTab === "won" ? (
-          <span
-            className=""
-            title="Progress Lead"
-            onClick={() => {
-              handleLeadStatus(row.original._id, "progress");
-            }}
-          >
-            <RiProgress3Line className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
-          </span>
-        ) : (
-          <span
-            className=""
-            title="Won Lead"
-            onClick={() => {
-              handleLeadStatus(row.original._id, "won");
-            }}
-          >
-            <FaTrophy className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
-          </span>
-        )}
-        {selectedTab === "lost" ? (
-          <div className="flex items-center gap-2">
-            <span
-              className=""
-              title="Progress Lead"
-              onClick={() => {
-                handleLeadStatus(row.original._id, "progress");
-              }}
-            >
-              <RiProgress3Line className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
-            </span>
-          </div>
-        ) : (
-          <span
-            className=""
-            title="Lost Lead"
-            onClick={() => {
-              handleLeadStatus(row.original._id, "lost");
-            }}
-          >
-            <GiBrokenHeart className="h-6 w-6 cursor-pointer text-red-500 hover:text-red-600" />
-          </span>
-        )}
-
-        <span
-          className="text-[1rem] cursor-pointer"
-          onClick={() => handleDeleteLeadConfirmation(row.original._id)}
-          title="Delete Lead!"
-        >
-          <AiTwotoneDelete className="h-5 w-5 text-pink-500 hover:text-pink-600 " />
-        </span>
+        <input
+          type="search"
+          value={column.getFilterValue() || ""}
+          onChange={(e) => {
+            column.setFilterValue(e.target.value);
+            setSelectFilter(e.target.value);
+          }}
+          className="font-normal h-[1.8rem] w-[240px] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+        />
       </div>
     );
   },
-  size: 240,
+  Cell: ({ cell, row }) => {
+    const email = row.original.email;
+    const [show, setShow] = useState(false);
+    const [localEmail, setLocalEmail] = useState(email);
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      setFormData((prevData) => ({
+        ...prevData,
+        email: localEmail,
+      }));
+      handleUpdateData(row.original._id, {
+         
+        email: localEmail,
+      });
+      setShow(false);
+    };
+
+    return (
+      <div className="w-full px-1">
+        {show ? (
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              value={localEmail}
+              autoFocus
+              onChange={(e) => setLocalEmail(e.target.value)}
+              className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
+            />
+          </form>
+        ) : (
+          <div
+            onDoubleClick={() => setShow(true)}
+            className="cursor-pointer w-full"
+          >
+            {localEmail ? (
+              localEmail.length > 80 ? (
+                <span>{localEmail.slice(0, 80)}...</span>
+              ) : (
+                <span>{localEmail}</span>
+              )
+            ) : (
+              <div className="text-white w-full h-full">.</div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  },
+  filterFn: (row, columnId, filterValue) => {
+    const cellValue =
+      row.original[columnId]?.toString().toLowerCase() || "";
+    return cellValue.includes(filterValue.toLowerCase());
+  },
+  filterVariant: "select",
 },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //  --- Note--->
 {
   accessorKey: "Note",
@@ -2773,6 +2765,32 @@ const allColumns = [{
   },
   filterVariant: "select",
 },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ]
 
 
@@ -2803,15 +2821,18 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
     columns,
     data: leadData || [],
 
+     
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     state: { rowSelection },
     enableBatchRowSelection: true,
+    
      
+
     getRowId: (row) => row._id,
     enableStickyHeader: true,
     enableStickyFooter: true,
-    muiTableContainerProps: { sx: { maxHeight: "850px" } },
+    muiTableContainerProps: { sx: { maxHeight: "850px", overflowX: 'auto' } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -2825,7 +2846,10 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
       pagination: { pageSize: 30 },
       pageSize: 30,
       density: "compact",
-
+  //      columnPinning: {
+  //     right: ['actions'], 
+  // },
+       
     },
 
     muiTableHeadCellProps: {
@@ -2840,7 +2864,10 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
     muiTableBodyCellProps: {
       sx: {
         border: "1px solid rgba(203, 201, 201, 0.5)",
+ 
       },
+
+      
     },
     muiTableProps: {
       sx: {
@@ -3547,6 +3574,8 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                   setShowSendModal={setShowNewTicketModal}
                   
                   clientCompanyName={clientCompanyName}
+
+                  clientEmail= {clientEmail}
                 />
               </div>
             )}

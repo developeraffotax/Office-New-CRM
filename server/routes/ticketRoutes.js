@@ -47,7 +47,7 @@ router.get("/all/tickets",requiredSignIn, getAllSendTickets);
 router.get("/all/tickets-replies",requiredSignIn, getSentReceivedCountsPerThread);
 
 // Get All Send Tickets      ------------------->>>    /api/v1/tickets/all/ticketsByClientName/:clientName
-router.get("/all/ticketsByClientName/:clientName", getTicketsByClientName);
+router.get("/all/ticketsByClientName", getTicketsByClientName);
 
  
 

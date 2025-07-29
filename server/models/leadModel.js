@@ -46,6 +46,10 @@ const leadSchema = new mongoose.Schema(
       type: Number,
     },
 
+    email: {
+      type: String
+    },
+
 
     yearEnd: {
       type: Date,

@@ -11,7 +11,7 @@ import EmailDetailDrawer from "./EmailDetailDrawer";
  
 
 // /api/v1/tickets/all/ticketsByClientName/:clientName
-const TicketsPopUp = ({ clientName, handleClose }) => {
+const TicketsPopUp = ({ clientName, email, handleClose }) => {
   const [tickets, setTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -36,9 +36,11 @@ const TicketsPopUp = ({ clientName, handleClose }) => {
   const fetchTicketsByName = async () => {
     setIsLoading(true);
 
+    const url = email ? `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/ticketsByClientName?email=${email}` : `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/ticketsByClientName?clientName=${clientName}`
+
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/ticketsByClientName/${clientName}`
+        url
       );
 
       if (data) {
@@ -92,8 +94,8 @@ const TicketsPopUp = ({ clientName, handleClose }) => {
       {
         accessorKey: "subject",
         minSize: 200,
-        maxSize: 500,
-        size: 460,
+        maxSize: 400,
+        size: 360,
         grow: false,
         header: "Subject",
 
@@ -114,6 +116,67 @@ const TicketsPopUp = ({ clientName, handleClose }) => {
           );
         },
       },
+
+
+       {
+        accessorKey: "received",
+        minSize: 50,
+        maxSize: 50,
+        size: 50,
+        grow: false,
+        header: "Received",
+
+        Cell: ({ cell, row }) => {
+          const received = row.original.received;
+          return (
+           <div className="w-full px-1">
+        <button
+          onClick={() => {
+            toggleDrawer(true);
+            setTicketId(row.original._id);
+          }}
+          className="inline-flex items-center justify-center text-sm font-semibold text-blue-600 bg-blue-100 hover:bg-blue-200 transition rounded-full w-8 h-8 cursor-pointer shadow-sm"
+          title="View Received Emails"
+        >
+          {received}
+        </button>
+      </div>
+          );
+        },
+      },
+
+
+            {
+        accessorKey: "sent",
+        minSize: 50,
+        maxSize: 50,
+        size: 50,
+        grow: false,
+        header: "Sent",
+
+        Cell: ({ cell, row }) => {
+          const sent = row.original.sent;
+          return (
+           <div className="w-full px-1">
+        <button
+          onClick={() => {
+            toggleDrawer(true);
+            setTicketId(row.original._id);
+          }}
+          className="inline-flex items-center justify-center text-sm font-semibold text-orange-600 bg-orange-100 hover:bg-orange-200 transition rounded-full w-8 h-8 cursor-pointer shadow-sm"
+          title="View Sent Emails"
+        >
+          {sent}
+        </button>
+      </div>
+          );
+        },
+      },
+
+      
+
+
+
     ];
 
     return arr;

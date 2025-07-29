@@ -80,6 +80,9 @@ export const sendEmail = async (req, res) => {
       subject: subject,
       mailThreadId: threadId,
       lastMessageSentBy: userName,
+
+      email: email,
+      isManual: clientId ? false : true
     });
 
     const ticketActivity = await TicketActivity.create({
@@ -320,18 +323,50 @@ export const sendEmail = async (req, res) => {
 
 export const getTicketsByClientName = async (req, res, next) => {
 
-  const clientName = req.params.clientName;
+  const clientName = req.query.clientName?.trim();
+  const clientEmail = req.query.email?.trim();
 
-  console.log(clientName, "client name is")
+  console.log("Client Name:", clientName);
+  console.log("Client Email:", clientEmail);
 
 
   try {
+
+
+
+
+
+    let filter = { state: { $ne: "complete" } };
+
+    if (clientName) {
+      filter.clientName = clientName;
+    } else if (clientEmail) {
+      filter.email = clientEmail;  
+    } else {
+      return res.status(400).send({
+        success: false,
+        message: "Client name or email must be provided",
+      });
+    }
+
+    const emails = await ticketModel.find(filter).select(
+      "clientId companyName clientName company jobHolder subject status jobDate mailThreadId sent received"
+    );
+
+    console.log("EMAILs", emails)
+
     
-    const emails = await ticketModel.find({ state: { $ne: "complete" }, clientName: clientName.trim()  }).select( "clientId companyName clientName company jobHolder subject status jobDate mailThreadId " );
+    
+    // const emails = await ticketModel.find({ state: { $ne: "complete" }, clientName: clientName.trim()  }).select( "clientId companyName clientName company jobHolder subject status jobDate mailThreadId " );
 
-    res.status(200).send({ success: true, message: "All email list!", emails: emails, });
+    // res.status(200).send({ success: true, message: "All email list!", emails: emails, });
 
 
+    res.status(200).send({
+      success: true,
+      message: "Filtered email list!",
+      emails,
+    });
  
 
   } catch (error) {

@@ -88,6 +88,16 @@ const ticketSchema = new mongoose.Schema(
     lastMessageSentTime: {
       type: Date,
     },
+
+
+    email: {
+      type: String
+    },
+
+    isManual: {
+      type: Boolean,
+      default: false
+    }
   },
   { timestamps: true }
 );

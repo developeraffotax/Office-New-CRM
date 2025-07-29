@@ -14,7 +14,10 @@ import CustomEditor from "./CustomEditor";
 export default function NewTicketModal({
   setShowSendModal,
   clientIdFromProps,
+
   clientCompanyName,
+  clientEmail
+  
 }) {
   const { auth } = useAuth();
   const [company, setCompany] = useState("Affotax");
@@ -30,6 +33,18 @@ export default function NewTicketModal({
 
   const [access, setAccess] = useState([]);
   const [isFetching, setIsFetching] = useState(false);
+
+
+  useEffect(() => {
+
+    if(clientEmail) {
+      setType('manual');
+      setEmail(clientEmail)
+    }
+
+
+  }, [])
+
 
   useEffect(() => {
     const getClientId = async (companyName) => {
@@ -270,7 +285,7 @@ export default function NewTicketModal({
                 type="radio"
                 name="type"
                 value="client"
-                defaultChecked
+                checked={type === "client"}
                 onChange={(e) => setType(e.target.value)}
                 className="h-4 w-4  text-orange-600 focus:ring-orange-500"
               />
@@ -281,6 +296,7 @@ export default function NewTicketModal({
                 type="radio"
                 name="type"
                 value="manual"
+                checked={type === "manual"}
                 onChange={(e) => setType(e.target.value)}
                 className="h-4 w-4  text-orange-600 focus:ring-orange-500"
               />

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
@@ -31,6 +31,8 @@ import QuickAccess from "../../utlis/QuickAccess";
 import { FiPlusSquare } from "react-icons/fi";
 import NewTicketModal from "../../utlis/NewTicketModal";
 import { ActionsCell } from "./ActionsCell";
+import DateRangePopover from "../../utlis/DateRangePopover";
+import { DateFilterFn } from "../../utlis/DateFilterFn";
 
 
 const updates_object_init = {
@@ -1573,59 +1575,77 @@ const allColumns = [{
   accessorKey: "createdAt",
   Header: ({ column }) => {
     const [filterValue, setFilterValue] = useState("");
-    const [customDate, setCustomDate] = useState(getCurrentMonthYear());
+    
+    const [dateRange, setDateRange] = useState({ from: "", to: "" });
+    const [showPopover, setShowPopover] = useState(false);
+    const selectRef = useRef(null);
 
     useEffect(() => {
-      if (filterValue === "Custom date") {
-        column.setFilterValue(customDate);
+      if (filterValue === "Custom Range") {
+        column.setFilterValue(dateRange);
+      } else {
+        column.setFilterValue(filterValue);
       }
-      //eslint-disable-next-line
-    }, [customDate, filterValue]);
+    }, [dateRange, filterValue]);
 
     const handleFilterChange = (e) => {
-      setFilterValue(e.target.value);
-      column.setFilterValue(e.target.value);
+      const val = e.target.value;
+      setFilterValue(val);
+      
+      if (val === "Custom Range") {
+        setShowPopover(true);
+      } else {
+        setShowPopover(false);
+      }
     };
 
-    const handleCustomDateChange = (e) => {
-      setCustomDate(e.target.value);
-      column.setFilterValue(e.target.value);
+
+    
+
+    const handleRangeChange = (key, value) => {
+      setDateRange((prev) => ({ ...prev, [key]: value }));
     };
+
+
     return (
-      <div className="w-full flex flex-col gap-[2px]">
-        <span
-          className="cursor-pointer "
-          title="Clear Filter"
-          onClick={() => {
-            setFilterValue("");
-            column.setFilterValue("");
-          }}
-        >
-          Created Date
-        </span>
+      <div className="flex flex-col gap-[2px] relative">
+                    <span
+                      className="ml-1 cursor-pointer"
+                      title="Clear Filter"
+                      onClick={() => {
+                        setFilterValue("");
+                        setDateRange({ from: "", to: "" });
+                        column.setFilterValue("");
+                      }}
+                    >
+                      Created Date
+                    </span>
 
-        {filterValue === "Custom date" ? (
-          <input
-            type="month"
-            value={customDate}
-            onChange={handleCustomDateChange}
-            className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
-          />
-        ) : (
-          <select
-            value={filterValue}
-            onChange={handleFilterChange}
-            className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
-          >
-            <option value="">Select</option>
-            {column.columnDef.filterSelectOptions.map((option, idx) => (
-              <option key={idx} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
+                    <select
+                      ref={selectRef}
+                      value={filterValue}
+                      onChange={handleFilterChange}
+                      
+                      className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
+                    >
+                      <option value="">Select</option>
+                      {column.columnDef.filterSelectOptions.map((option, idx) => (
+                        <option key={idx} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                      <option  value="Custom Range">Custom Date</option>
+                    </select>
+
+                    {showPopover && (
+                      <DateRangePopover
+                        anchorRef={selectRef}
+                        
+                        onChange={handleRangeChange}
+                        onClose={() => setShowPopover(false)}
+                      />
+                    )}
+                  </div>
     );
   },
   Cell: ({ cell, row }) => {
@@ -1637,60 +1657,8 @@ const allColumns = [{
       </div>
     );
   },
-  filterFn: (row, columnId, filterValue) => {
-    const cellValue = row.getValue(columnId);
-    if (!cellValue) return false;
+  filterFn: DateFilterFn,
 
-    const cellDate = new Date(cellValue);
-    const today = new Date();
-
-    const startOfToday = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate()
-    );
-
-    // Handle "Custom date" filter (if it includes a specific month-year)
-    if (filterValue.includes("-")) {
-      const [year, month] = filterValue.split("-");
-      const cellYear = cellDate.getFullYear().toString();
-      const cellMonth = (cellDate.getMonth() + 1)
-        .toString()
-        .padStart(2, "0");
-
-      return year === cellYear && month === cellMonth;
-    }
-
-    // Other filter cases
-    switch (filterValue) {
-      case "Expired":
-        return cellDate < startOfToday;
-      case "Today":
-        return cellDate.toDateString() === today.toDateString();
-      case "Yesterday":
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() - 1);
-        return cellDate.toDateString() === tomorrow.toDateString();
-      case "Last 7 days":
-        const last7Days = new Date(today);
-        last7Days.setDate(today.getDate() - 7);
-        return cellDate >= last7Days && cellDate < startOfToday;
-      case "Last 15 days":
-        const last15Days = new Date(today);
-        last15Days.setDate(today.getDate() - 15);
-        return cellDate >= last15Days && cellDate < startOfToday;
-      case "Last 30 Days":
-        const last30Days = new Date(today);
-        last30Days.setDate(today.getDate() - 30);
-        return cellDate >= last30Days && cellDate < startOfToday;
-      case "Last 60 Days":
-        const last60Days = new Date(today);
-        last60Days.setDate(today.getDate() - 60);
-        return cellDate >= last60Days && cellDate < startOfToday;
-      default:
-        return false;
-    }
-  },
   filterSelectOptions: [
     "Today",
     "Yesterday",
@@ -1698,7 +1666,7 @@ const allColumns = [{
     "Last 15 days",
     "Last 30 Days",
     "Last 60 Days",
-    "Custom date",
+    
   ],
   filterVariant: "custom",
   size: 100,
@@ -1707,63 +1675,93 @@ const allColumns = [{
   grow: false,
 },
 //   Follow Up
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 {
   accessorKey: "followUpDate",
   Header: ({ column }) => {
     const [filterValue, setFilterValue] = useState("");
-    const [customDate, setCustomDate] = useState(getCurrentMonthYear());
+    const [dateRange, setDateRange] = useState({ from: "", to: "" });
+    const [showPopover, setShowPopover] = useState(false);
+    const selectRef = useRef(null);
 
     useEffect(() => {
-      if (filterValue === "Custom date") {
-        column.setFilterValue(customDate);
+      if (filterValue === "Custom Range") {
+        column.setFilterValue(dateRange);
+      } else {
+        column.setFilterValue(filterValue);
       }
-      //eslint-disable-next-line
-    }, [customDate, filterValue]);
+    }, [dateRange, filterValue]);
 
     const handleFilterChange = (e) => {
-      setFilterValue(e.target.value);
-      column.setFilterValue(e.target.value);
+      const val = e.target.value;
+      setFilterValue(val);
+      
+      if (val === "Custom Range") {
+        setShowPopover(true);
+      } else {
+        setShowPopover(false);
+      }
     };
 
-    const handleCustomDateChange = (e) => {
-      setCustomDate(e.target.value);
-      column.setFilterValue(e.target.value);
+
+    
+
+    const handleRangeChange = (key, value) => {
+      setDateRange((prev) => ({ ...prev, [key]: value }));
     };
+    
     return (
-      <div className="w-full flex flex-col gap-[2px]">
-        <span
-          className="cursor-pointer "
-          title="Clear Filter"
-          onClick={() => {
-            setFilterValue("");
-            column.setFilterValue("");
-          }}
-        >
-          Followup Date
-        </span>
+      <div className="flex flex-col gap-[2px] relative">
+                    <span
+                      className="ml-1 cursor-pointer"
+                      title="Clear Filter"
+                      onClick={() => {
+                        setFilterValue("");
+                        setDateRange({ from: "", to: "" });
+                        column.setFilterValue("");
+                      }}
+                    >
+                      Follow-Up Date
+                    </span>
 
-        {filterValue === "Custom date" ? (
-          <input
-            type="month"
-            value={customDate}
-            onChange={handleCustomDateChange}
-            className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
-          />
-        ) : (
-          <select
-            value={filterValue}
-            onChange={handleFilterChange}
-            className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
-          >
-            <option value="">Select</option>
-            {column.columnDef.filterSelectOptions.map((option, idx) => (
-              <option key={idx} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
+                    <select
+                      ref={selectRef}
+                      value={filterValue}
+                      onChange={handleFilterChange}
+                      
+                      className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
+                    >
+                      <option value="">Select</option>
+                      {column.columnDef.filterSelectOptions.map((option, idx) => (
+                        <option key={idx} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                      <option  value="Custom Range">Custom Date</option>
+                    </select>
+
+                    {showPopover && (
+                      <DateRangePopover
+                        anchorRef={selectRef}
+                         
+                        onChange={handleRangeChange}
+                        onClose={() => setShowPopover(false)}
+                      />
+                    )}
+                  </div>
     );
   },
   Cell: ({ cell, row }) => {
@@ -1817,15 +1815,15 @@ const allColumns = [{
 
     const cellDate = new Date(cellValue);
 
-    if (filterValue.includes("-")) {
-      const [year, month] = filterValue.split("-");
-      const cellYear = cellDate.getFullYear().toString();
-      const cellMonth = (cellDate.getMonth() + 1)
-        .toString()
-        .padStart(2, "0");
+    // if (filterValue.includes("-")) {
+    //   const [year, month] = filterValue.split("-");
+    //   const cellYear = cellDate.getFullYear().toString();
+    //   const cellMonth = (cellDate.getMonth() + 1)
+    //     .toString()
+    //     .padStart(2, "0");
 
-      return year === cellYear && month === cellMonth;
-    }
+    //   return year === cellYear && month === cellMonth;
+    // }
 
     // Other filter cases
     const today = new Date();
@@ -1835,6 +1833,13 @@ const allColumns = [{
       today.getMonth(),
       today.getDate()
     );
+
+
+    if (typeof filterValue === "object" && filterValue.from && filterValue.to) {
+    const fromDate = new Date(filterValue.from);
+    const toDate = new Date(filterValue.to);
+    return cellDate >= fromDate && cellDate <= toDate;
+  }
 
     switch (filterValue) {
       case "Expired":
@@ -1877,7 +1882,7 @@ const allColumns = [{
     "In 15 days",
     "30 Days",
     "60 Days",
-    "Custom date",
+    
   ],
   filterVariant: "custom",
   size: 120,
@@ -2090,58 +2095,74 @@ const allColumns = [{
           accessorKey: "yearEnd",
           Header: ({ column }) => {
             const [filterValue, setFilterValue] = useState("");
-            const [customDate, setCustomDate] = useState(getCurrentMonthYear());
-
-            useEffect(() => {
-              if (filterValue === "Custom date") {
-                column.setFilterValue(customDate);
-              }
-              //eslint-disable-next-line
-            }, [customDate, filterValue]);
-
-            const handleFilterChange = (e) => {
-              setFilterValue(e.target.value);
-              column.setFilterValue(e.target.value);
-            };
-
-            const handleCustomDateChange = (e) => {
-              setCustomDate(e.target.value);
-              column.setFilterValue(e.target.value);
-            };
+            const [dateRange, setDateRange] = useState({ from: "", to: "" });
+                           const [showPopover, setShowPopover] = useState(false);
+                           const selectRef = useRef(null);
+           
+                           useEffect(() => {
+                             if (filterValue === "Custom Range") {
+                               column.setFilterValue(dateRange);
+                             } else {
+                               column.setFilterValue(filterValue);
+                             }
+                           }, [dateRange, filterValue]);
+           
+                           const handleFilterChange = (e) => {
+                             const val = e.target.value;
+                             setFilterValue(val);
+                             
+                             if (val === "Custom Range") {
+                               setShowPopover(true);
+                             } else {
+                               setShowPopover(false);
+                             }
+                           };
+           
+           
+                           
+           
+                           const handleRangeChange = (key, value) => {
+                             setDateRange((prev) => ({ ...prev, [key]: value }));
+                           };
             return (
-              <div className=" flex flex-col gap-[2px]">
-                <span
-                  className="ml-1 cursor-pointer"
-                  title="Clear Filter"
-                  onClick={() => {
-                    setFilterValue("");
-                    column.setFilterValue("");
-                  }}
-                >
-                  Year End
-                </span>
-                {filterValue === "Custom date" ? (
-                  <input
-                    type="month"
-                    value={customDate}
-                    onChange={handleCustomDateChange}
-                    className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
-                  />
-                ) : (
-                  <select
-                    value={filterValue}
-                    onChange={handleFilterChange}
-                    className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
-                  >
-                    <option value="">Select</option>
-                    {column.columnDef.filterSelectOptions.map((option, idx) => (
-                      <option key={idx} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
+              <div className="flex flex-col gap-[2px] relative">
+                                  <span
+                                    className="ml-1 cursor-pointer"
+                                    title="Clear Filter"
+                                    onClick={() => {
+                                      setFilterValue("");
+                                      setDateRange({ from: "", to: "" });
+                                      column.setFilterValue("");
+                                    }}
+                                  >
+                                    Year End
+                                  </span>
+              
+                                  <select
+                                    ref={selectRef}
+                                    value={filterValue}
+                                    onChange={handleFilterChange}
+                                    
+                                    className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
+                                  >
+                                    <option value="">Select</option>
+                                    {column.columnDef.filterSelectOptions.map((option, idx) => (
+                                      <option key={idx} value={option}>
+                                        {option}
+                                      </option>
+                                    ))}
+                                    <option  value="Custom Range">Custom Date</option>
+                                  </select>
+              
+                                  {showPopover && (
+                                    <DateRangePopover
+                                      anchorRef={selectRef}
+                                       
+                                      onChange={handleRangeChange}
+                                      onClose={() => setShowPopover(false)}
+                                    />
+                                  )}
+                                </div>
             );
           },
           Cell: ({ cell, row }) => {
@@ -2207,15 +2228,7 @@ const allColumns = [{
 
             const cellDate = new Date(cellValue);
 
-            if (filterValue.includes("-")) {
-              const [year, month] = filterValue.split("-");
-              const cellYear = cellDate.getFullYear().toString();
-              const cellMonth = (cellDate.getMonth() + 1)
-                .toString()
-                .padStart(2, "0");
-
-              return year === cellYear && month === cellMonth;
-            }
+            
 
             // Other filter cases
             const today = new Date();
@@ -2224,6 +2237,12 @@ const allColumns = [{
               today.getMonth(),
               today.getDate()
             );
+
+                if (typeof filterValue === "object" && filterValue.from && filterValue.to) {
+                const fromDate = new Date(filterValue.from);
+                const toDate = new Date(filterValue.to);
+                return cellDate >= fromDate && cellDate <= toDate;
+              }
 
             switch (filterValue) {
               case "Expired":
@@ -2259,7 +2278,7 @@ const allColumns = [{
             }
           },
           filterSelectOptions: [
-            "Select",
+            
             "Expired",
             "Today",
             "Tomorrow",
@@ -2267,8 +2286,7 @@ const allColumns = [{
             "In 15 days",
             "30 Days",
             "60 Days",
-            // "Last 12 months",
-            "Custom date",
+          
           ],
           filterVariant: "custom",
           size: 115,
@@ -2289,58 +2307,74 @@ const allColumns = [{
           header: "Deadline",
           Header: ({ column }) => {
             const [filterValue, setFilterValue] = useState("");
-            const [customDate, setCustomDate] = useState(getCurrentMonthYear());
-
-            useEffect(() => {
-              if (filterValue === "Custom date") {
-                column.setFilterValue(customDate);
-              }
-              //eslint-disable-next-line
-            }, [customDate, filterValue]);
-
-            const handleFilterChange = (e) => {
-              setFilterValue(e.target.value);
-              column.setFilterValue(e.target.value);
-            };
-
-            const handleCustomDateChange = (e) => {
-              setCustomDate(e.target.value);
-              column.setFilterValue(e.target.value);
-            };
+            const [dateRange, setDateRange] = useState({ from: "", to: "" });
+                            const [showPopover, setShowPopover] = useState(false);
+                            const selectRef = useRef(null);
+            
+                            useEffect(() => {
+                              if (filterValue === "Custom Range") {
+                                column.setFilterValue(dateRange);
+                              } else {
+                                column.setFilterValue(filterValue);
+                              }
+                            }, [dateRange, filterValue]);
+            
+                            const handleFilterChange = (e) => {
+                              const val = e.target.value;
+                              setFilterValue(val);
+                              
+                              if (val === "Custom Range") {
+                                setShowPopover(true);
+                              } else {
+                                setShowPopover(false);
+                              }
+                            };
+            
+            
+                            
+            
+                            const handleRangeChange = (key, value) => {
+                              setDateRange((prev) => ({ ...prev, [key]: value }));
+                            };
             return (
-              <div className=" flex flex-col gap-[2px]">
-                <span
-                  className="ml-1 cursor-pointer"
-                  title="Clear Filter"
-                  onClick={() => {
-                    setFilterValue("");
-                    column.setFilterValue("");
-                  }}
-                >
-                  Deadline
-                </span>
-                {filterValue === "Custom date" ? (
-                  <input
-                    type="month"
-                    value={customDate}
-                    onChange={handleCustomDateChange}
-                    className="h-[1.8rem] font-normal w-full   cursor-pointer rounded-md border border-gray-200 outline-none"
-                  />
-                ) : (
-                  <select
-                    value={filterValue}
-                    onChange={handleFilterChange}
-                    className="h-[1.8rem] font-normal w-full  cursor-pointer rounded-md border border-gray-200 outline-none"
-                  >
-                    <option value="">Select</option>
-                    {column.columnDef.filterSelectOptions.map((option, idx) => (
-                      <option key={idx} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
+              <div className="flex flex-col gap-[2px] relative">
+                                  <span
+                                    className="ml-1 cursor-pointer"
+                                    title="Clear Filter"
+                                    onClick={() => {
+                                      setFilterValue("");
+                                      setDateRange({ from: "", to: "" });
+                                      column.setFilterValue("");
+                                    }}
+                                  >
+                                    Deadline
+                                  </span>
+              
+                                  <select
+                                    ref={selectRef}
+                                    value={filterValue}
+                                    onChange={handleFilterChange}
+                                    
+                                    className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
+                                  >
+                                    <option value="">Select</option>
+                                    {column.columnDef.filterSelectOptions.map((option, idx) => (
+                                      <option key={idx} value={option}>
+                                        {option}
+                                      </option>
+                                    ))}
+                                    <option  value="Custom Range">Custom Date</option>
+                                  </select>
+              
+                                  {showPopover && (
+                                    <DateRangePopover
+                                      anchorRef={selectRef}
+                                       
+                                      onChange={handleRangeChange}
+                                      onClose={() => setShowPopover(false)}
+                                    />
+                                  )}
+                                </div>
             );
           },
           Cell: ({ cell, row }) => {
@@ -2412,16 +2446,7 @@ const allColumns = [{
 
             const cellDate = new Date(cellValue);
 
-            if (filterValue.includes("-")) {
-              const [year, month] = filterValue.split("-");
-              const cellYear = cellDate.getFullYear().toString();
-              const cellMonth = (cellDate.getMonth() + 1)
-                .toString()
-                .padStart(2, "0");
-
-              return year === cellYear && month === cellMonth;
-            }
-
+            
             // Other filter cases
             const today = new Date();
             const startOfToday = new Date(
@@ -2429,6 +2454,12 @@ const allColumns = [{
               today.getMonth(),
               today.getDate()
             );
+
+            if (typeof filterValue === "object" && filterValue.from && filterValue.to) {
+    const fromDate = new Date(filterValue.from);
+    const toDate = new Date(filterValue.to);
+    return cellDate >= fromDate && cellDate <= toDate;
+  }
 
             switch (filterValue) {
               case "Expired":
@@ -2471,8 +2502,7 @@ const allColumns = [{
             "In 15 days",
             "30 Days",
             "60 Days",
-            // "Last 12 months",
-            "Custom date",
+           
           ],
           filterVariant: "custom",
           size: 115,

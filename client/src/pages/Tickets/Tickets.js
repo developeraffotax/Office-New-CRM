@@ -19,6 +19,8 @@ import QuickAccess from "../../utlis/QuickAccess";
 import { TbLoader2, TbLogs } from "react-icons/tb";
 import { filterByRowId } from "../../utlis/filterByRowId";
 import ActivityLogDrawer from "../../components/Modals/ActivityLogDrawer";
+import { NumberFilterPortal, NumderFilterFn } from "../../utlis/NumberFilterPortal";
+import { TiFilter } from "react-icons/ti";
 
 
 const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "", };
@@ -65,6 +67,44 @@ export default function Tickets() {
 
 
 
+  const anchorRef = useRef(null);
+
+const [filterInfo, setFilterInfo] = useState({
+  col: null,
+  value: "",
+  type: "eq",
+});
+const [appliedFilters, setAppliedFilters] = useState({});
+
+
+const handleFilterClick = (e, colKey) => {
+  e.stopPropagation();
+  anchorRef.current = e.currentTarget;
+  setFilterInfo({
+    col: colKey,
+    value: "",
+    type: "eq",
+  });
+};
+
+
+const handleCloseFilter = () => {
+  setFilterInfo({ col: null, value: "", type: "eq" });
+  anchorRef.current = null;
+};
+
+const applyFilter = (e) => {
+  e.stopPropagation()
+  const { col, value, type } = filterInfo;
+  if (col && value) {
+    table.getColumn(col)?.setFilterValue({ type, value: parseFloat(value) });
+  }
+  handleCloseFilter();
+};
+
+
+
+ 
   // ===== Utility functions =====
 
 
@@ -995,22 +1035,36 @@ export default function Tickets() {
         filterVariant: "select",
       },
 
-      {
-        accessorKey: "received",
-        header: "Received",
-        Cell: ({ row }) => {
-          const received = row.original.received;
-          return (
-            <span className="w-full flex justify-center text-lg bg-sky-600 text-white rounded-md ">
-              {received}
-            </span>
-          );
-        },
-        size: 60,
-      },
+{
+  accessorKey: "received",
+  Header: ({column}) => (
+    <div className="flex flex-col items-center justify-between">
+      <span title="Click to remove filter" onClick={() => column.setFilterValue("")} className="cursor-pointer ">Received</span>
+      <button ref={anchorRef} onClick={(e) => handleFilterClick(e, "received")}>
+        <TiFilter size={20} className="ml-1 text-gray-500 hover:text-black" />
+      </button>
+    </div>
+  ),
+  filterFn: NumderFilterFn,
+  Cell: ({ row }) => (
+    <span className="w-full flex justify-center text-lg bg-sky-600 text-white rounded-md">
+      {row.original.received}
+    </span>
+  ),
+  size: 60,
+},
+
       {
         accessorKey: "sent",
-        header: "Sent",
+        
+         Header: ({column}) => (
+    <div className="flex flex-col items-center justify-between">
+       <span title="Click to remove filter" onClick={() => column.setFilterValue("")} className="cursor-pointer ">Sent</span>
+      <button ref={anchorRef} onClick={(e) => handleFilterClick(e, "sent")}>
+        <TiFilter size={20} className="ml-1 text-gray-500 hover:text-black" />
+      </button>
+    </div>
+  ),
         Cell: ({ row }) => {
           const sent = row.original.sent;
           return (
@@ -1021,6 +1075,7 @@ export default function Tickets() {
         },
 
         size: 60,
+          filterFn: NumderFilterFn,
       },
 
       {
@@ -2053,6 +2108,28 @@ export default function Tickets() {
         {/* ---------------------Activity Log Drawer------------------ */}
         {isActivityDrawerOpen && (
           <ActivityLogDrawer isOpen={isActivityDrawerOpen} onClose={() => setIsActivityDrawerOpen(false)} ticketId={activityDrawerTicketId} />
+)}
+
+
+
+
+
+
+
+
+
+
+
+{filterInfo.col && anchorRef.current && (
+  <NumberFilterPortal
+    anchorRef={anchorRef}
+    value={filterInfo.value}
+    filterType={filterInfo.type}
+    onApply={applyFilter}
+    onClose={handleCloseFilter}
+    setValue={(val) => setFilterInfo((f) => ({ ...f, value: val }))}
+    setFilterType={(type) => setFilterInfo((f) => ({ ...f, type }))}
+  />
 )}
       </div>
     </Layout>

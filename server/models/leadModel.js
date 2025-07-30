@@ -60,6 +60,20 @@ const leadSchema = new mongoose.Schema(
       type: Date,
       
     },
+
+
+     sent: {
+      type: Number,
+      default: 0,
+    },
+
+
+    received: {
+      type: Number,
+      default: 0,
+    },
+
+    
   },
   { timestamps: true }
 );

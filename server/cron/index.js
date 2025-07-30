@@ -2,6 +2,7 @@ import cron from "node-cron";
 import { setWatch } from "../utils/setWatch.js";
 import { getSentReceivedCountsPerThread } from "../controllers/ticketController.js";
 import { sendDatatoGoogleSheet } from "../utils/googleSheet.js";
+import { updateSendReceivedLeads } from "../utils/updateSendReceivedLeads.js";
 
 export const setupCronJobs = () => {
   // Every 6 days at midnight
@@ -14,6 +15,15 @@ export const setupCronJobs = () => {
   cron.schedule("0 23 * * *", () => {
     console.log("🕒 Running getSentReceivedCountsPerThread at 11 PM...");
     getSentReceivedCountsPerThread();
+  });
+
+
+  
+
+   // Daily at 11:15 PM
+  cron.schedule("15 23 * * *", () => {
+    console.log("🕒 Running getSentReceivedCountsPerThread at 11:15 PM...");
+    updateSendReceivedLeads();
   });
 
   // Daily at 11:45 PM

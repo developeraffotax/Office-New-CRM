@@ -33,6 +33,8 @@ import NewTicketModal from "../../utlis/NewTicketModal";
 import { ActionsCell } from "./ActionsCell";
 import DateRangePopover from "../../utlis/DateRangePopover";
 import { DateFilterFn } from "../../utlis/DateFilterFn";
+import { TiFilter } from "react-icons/ti";
+import { NumberFilterPortal, NumderFilterFn } from "../../utlis/NumberFilterPortal";
 
 
 const updates_object_init = {
@@ -79,6 +81,50 @@ export default function Lead() {
 
   const [showJobHolder, setShowJobHolder] = useState(true);
   const [active1, setActive1] = useState("");
+
+
+
+
+
+  
+  const anchorRef = useRef(null);
+
+const [filterInfo, setFilterInfo] = useState({
+  col: null,
+  value: "",
+  type: "eq",
+});
+
+
+
+const handleFilterClick = (e, colKey) => {
+  e.stopPropagation();
+  anchorRef.current = e.currentTarget;
+  setFilterInfo({
+    col: colKey,
+    value: "",
+    type: "eq",
+  });
+};
+
+
+const handleCloseFilter = () => {
+  setFilterInfo({ col: null, value: "", type: "eq" });
+  anchorRef.current = null;
+};
+
+const applyFilter = (e) => {
+  e.stopPropagation()
+  const { col, value, type } = filterInfo;
+  if (col && value) {
+    table.getColumn(col)?.setFilterValue({ type, value: parseFloat(value) });
+  }
+  handleCloseFilter();
+};
+
+
+
+
 
       // With Loading
       const getEmails = async () => {
@@ -256,7 +302,9 @@ export default function Lead() {
     "Note",
     "jobDeadline",
     "yearEnd",
-    "email"
+    "email",
+    "received",
+    "sent"
     // "Fee",
     // "Source",
     // "ClientType",
@@ -1310,6 +1358,134 @@ const allColumns = [{
 
 
 },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{
+  accessorKey: "received",
+  Header: ({column}) => (
+    <div className="flex flex-col items-center justify-between">
+      <span title="Click to remove filter" onClick={() => column.setFilterValue("")} className="cursor-pointer ">Received</span>
+      <button ref={anchorRef} onClick={(e) => handleFilterClick(e, "received")}>
+        <TiFilter size={20} className="ml-1 text-gray-500 hover:text-black" />
+      </button>
+    </div>
+  ),
+  filterFn: NumderFilterFn,
+  Cell: ({ row }) => (
+    <span className="w-full flex justify-center text-lg bg-sky-600 text-white rounded-md">
+      {row.original.received}
+    </span>
+  ),
+  size: 60,
+},
+
+      {
+        accessorKey: "sent",
+        
+         Header: ({column}) => (
+    <div className="flex flex-col items-center justify-between">
+       <span title="Click to remove filter" onClick={() => column.setFilterValue("")} className="cursor-pointer ">Sent</span>
+      <button ref={anchorRef} onClick={(e) => handleFilterClick(e, "sent")}>
+        <TiFilter size={20} className="ml-1 text-gray-500 hover:text-black" />
+      </button>
+    </div>
+  ),
+        Cell: ({ row }) => {
+          const sent = row.original.sent;
+          return (
+            <span className="w-full flex justify-center text-lg bg-orange-600 text-white rounded-md">
+              {sent}
+            </span>
+          );
+        },
+
+        size: 60,
+          filterFn: NumderFilterFn,
+      },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 {
   accessorKey: "value",
   minSize: 50,
@@ -3608,6 +3784,27 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                   clientEmail= {clientEmail}
                 />
               </div>
+            )}
+
+
+
+
+
+
+
+
+       {/* ---------------Sent/Received PopOver Filter------------- */}
+
+            {filterInfo.col && anchorRef.current && (
+              <NumberFilterPortal
+                anchorRef={anchorRef}
+                value={filterInfo.value}
+                filterType={filterInfo.type}
+                onApply={applyFilter}
+                onClose={handleCloseFilter}
+                setValue={(val) => setFilterInfo((f) => ({ ...f, value: val }))}
+                setFilterType={(type) => setFilterInfo((f) => ({ ...f, type }))}
+              />
             )}
 
 

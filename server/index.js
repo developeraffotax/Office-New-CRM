@@ -15,6 +15,7 @@ import { gmailWebhookHandler } from "./utils/pubSubPush.js";
 import { errorHandler } from "./middlewares/errorMiddleware.js";
 
 import agenda from "./utils/agenda.js";
+import { updateSendReceivedLeads } from "./utils/updateSendReceivedLeads.js";
 
 dotenv.config();
 
@@ -49,6 +50,8 @@ agenda.io = io;
 // Register routes
 registerRoutes(app);
 
+
+
 // Gmail webhook route
 app.post("/gmail-webhook", gmailWebhookHandler);
 
@@ -72,6 +75,9 @@ const isClusterPrimary = process.env.pm_id === "0";
 if (isClusterPrimary) {
   console.log("🕒 Starting scheduled tasks...");
   setupCronJobs();
+
+  //comment it out later
+  updateSendReceivedLeads();
 }
 
 // Start server

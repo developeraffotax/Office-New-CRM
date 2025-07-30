@@ -284,6 +284,7 @@ const applyFilter = (e) => {
 
 
   const [showcolumn, setShowColumn] = useState(false);
+      const boxRef = useRef(null);
   const columnData = [
     "companyName",
     "clientName",
@@ -3191,6 +3192,31 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
         }
     
 
+
+
+
+
+        
+            useEffect(() => {
+            const handleClickOutside = (event) => {
+              if (boxRef.current && !boxRef.current.contains(event.target)) {
+                setShowColumn(false);
+              }
+            };
+        
+            if (showcolumn) {
+              document.addEventListener("mousedown", handleClickOutside);
+            }
+        
+            return () => {
+              document.removeEventListener("mousedown", handleClickOutside);
+            };
+          }, [showcolumn]);
+
+
+
+
+
   return (
     <Layout>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
@@ -3328,7 +3354,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
               )}
             </div>
             {showcolumn && (
-              <div className="fixed top-[11rem] right-[20%] z-[99] max-h-[80vh] overflow-y-auto hidden1  ">
+              <div className="fixed top-[11rem] right-[20%] z-[99] max-h-[80vh] overflow-y-auto hidden1  " ref={boxRef}>
                 {renderColumnControls()}
               </div>
             )}

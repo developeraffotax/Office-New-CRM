@@ -317,20 +317,20 @@ export default function Header({
 
 
   // Handle Close Notification
-  // useEffect(() => {
-  //   const handleClickOutside = (event) => {
-  //     if (
-  //       notificationRef.current &&
-  //       !notificationRef.current.contains(event.target)
-  //     ) {
-  //       setOpen(false);
-  //       setShowReminder(false);
-  //     }
-  //   };
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
+        setOpen(false);
+        setShowReminder(false);
+      }
+    };
 
-  //   document.addEventListener("mousedown", handleClickOutside);
-  //   return () => document.removeEventListener("mousedown", handleClickOutside);
-  // }, []);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
 
 

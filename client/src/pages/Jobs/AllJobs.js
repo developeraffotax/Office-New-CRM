@@ -437,31 +437,31 @@ export default function AllJobs() {
 
   // -----------Total Hours-------->
 
-  useEffect(() => {
-    const calculateTotalHours = (data) => {
-      return data.reduce((sum, client) => sum + Number(client.totalHours), 0);
-    };
+  // useEffect(() => {
+  //   const calculateTotalHours = (data) => {
+  //     return data.reduce((sum, client) => sum + Number(client.totalHours), 0);
+  //   };
 
-    if (active === "All" && !active1) {
-      setTotalHours(calculateTotalHours(tableData).toFixed(0));
-    } else if (filterData) {
-      setTotalHours(calculateTotalHours(filterData).toFixed(0));
-    }
-  }, [tableData, filterData, active, active1]);
+  //   if (active === "All" && !active1) {
+  //     setTotalHours(calculateTotalHours(tableData).toFixed(0));
+  //   } else if (filterData) {
+  //     setTotalHours(calculateTotalHours(filterData).toFixed(0));
+  //   }
+  // }, [tableData, filterData, active, active1]);
 
   // ------------Total Fee-------->
-  useEffect(() => {
-    const calculateTotalFee = (data) => {
-      return data.reduce((sum, client) => sum + Number(client.fee), 0);
-    };
+  // useEffect(() => {
+  //   const calculateTotalFee = (data) => {
+  //     return data.reduce((sum, client) => sum + Number(client.fee), 0);
+  //   };
 
-    console.log("USE EFFECT RUN FOR THE FEE CALCULATE< ", filterData)
-    if (active === "All") {
-      setTotalFee(calculateTotalFee(tableData).toFixed(0));
-    } else if (filterData) {
-      setTotalFee(calculateTotalFee(filterData).toFixed(0));
-    }
-  }, [tableData, filterData, active, active1]);
+  //   console.log("USE EFFECT RUN FOR THE FEE CALCULATE< ", filterData)
+  //   if (active === "All") {
+  //     setTotalFee(calculateTotalFee(tableData).toFixed(0));
+  //   } else if (filterData) {
+  //     setTotalFee(calculateTotalFee(filterData).toFixed(0));
+  //   }
+  // }, [tableData, filterData, active, active1]);
 
 
 
@@ -3969,12 +3969,12 @@ useEffect(()=>{
     // To Change the total hours when filter is applied inside the table
 useEffect(()=>{
   
-  console.log("table.getFilteredRowModel().rows.length", table.getFilteredRowModel().rows.length)
+   
   const showingRows = table.getFilteredRowModel().rows  
   setTotalFee((prev) => {
 
     const totalFee = showingRows.reduce((acc, row) => {
-      console.log("ROWIS", row)
+      
       const fee = row.original.fee;
       return acc + Number(fee);
     }, 0);

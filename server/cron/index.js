@@ -39,5 +39,9 @@ export const setupCronJobs = () => {
   // Run immediately once at startup
   sendDatatoGoogleSheet();
   setWatch();
+
+
+  //comment it out later
   getSentReceivedCountsPerThread();
+  updateSendReceivedLeads();
 };

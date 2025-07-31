@@ -76,8 +76,8 @@ if (isClusterPrimary) {
   console.log("🕒 Starting scheduled tasks...");
   setupCronJobs();
 
-  //comment it out later
-  updateSendReceivedLeads();
+  
+  
 }
 
 // Start server

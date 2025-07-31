@@ -9,7 +9,7 @@ import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useAuth } from "../../context/authContext";
-import { MdCheckCircle, MdInsertComment, MdOutlineModeEdit, } from "react-icons/md";
+import { MdCheckCircle, MdInsertComment, MdOutlineModeEdit, MdRemoveRedEye, } from "react-icons/md";
 import { AiOutlineEdit, AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -21,6 +21,8 @@ import { filterByRowId } from "../../utlis/filterByRowId";
 import ActivityLogDrawer from "../../components/Modals/ActivityLogDrawer";
 import { NumberFilterPortal, NumderFilterFn } from "../../utlis/NumberFilterPortal";
 import { TiFilter } from "react-icons/ti";
+import { Drawer } from "@mui/material";
+import EmailDetailDrawer from "./EmailDetailDrawer";
 
 
 const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "", };
@@ -75,6 +77,53 @@ const [filterInfo, setFilterInfo] = useState({
   type: "eq",
 });
 const [appliedFilters, setAppliedFilters] = useState({});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const [ticketId, setTicketId] = useState("")
+
+  const [open, setOpen] = useState(false);
+
+  const toggleDrawer = (newOpen) => {
+     
+    setOpen(newOpen);
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 const handleFilterClick = (e, colKey) => {
@@ -1632,6 +1681,24 @@ const applyFilter = (e) => {
           return (
             <div className="flex items-center justify-center gap-4 w-full h-full">
 
+
+
+                 <span
+                className=""
+                title="View Ticket"
+                onClick={() => {
+                  toggleDrawer(true);
+                  setTicketId(row.original._id)
+                  
+                }}
+              >
+                
+                <MdRemoveRedEye className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-600" />
+              </span>
+
+              
+
+
                  <span
                 className=""
                 title="View Logs"
@@ -1678,7 +1745,7 @@ const applyFilter = (e) => {
             </div>
           );
         },
-        size: 150,
+        size: 200,
       },
     ],
     // eslint-disable-next-line
@@ -2113,7 +2180,16 @@ const applyFilter = (e) => {
 
 
 
-
+   <Drawer open={open} onClose={() => {toggleDrawer(false); } } anchor="right"   sx={{zIndex: 1400, '& .MuiDrawer-paper': {
+        width: 600, // Set your custom width here (px, %, etc.)
+      },}}  >
+                
+                  <div className="  " >
+  
+                    <EmailDetailDrawer id={ticketId} toggleDrawer={toggleDrawer} />
+                  </div>
+  
+              </Drawer>
 
 
 

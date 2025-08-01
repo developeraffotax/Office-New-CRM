@@ -22,9 +22,9 @@ export const DateFilterFn = (row, columnId, filterValue) => {
       return cellDate < today;
     case "Today":
       return cellDate.toDateString() === today.toDateString();
-    case "Tomorrow":
+    case "Yesterday":
       const tomorrow = new Date(today);
-      tomorrow.setDate(today.getDate() + 1);
+      tomorrow.setDate(today.getDate() - 1);
       return cellDate.toDateString() === tomorrow.toDateString();
     case "Last 7 days":
       const last7 = new Date(today);
@@ -47,12 +47,12 @@ export const DateFilterFn = (row, columnId, filterValue) => {
       lastYear.setFullYear(today.getFullYear() - 1);
       return cellDate >= lastYear && cellDate <= today;
     default:
-      if (typeof filterValue === "string" && filterValue.includes("-")) {
-        const [year, month] = filterValue.split("-");
-        const cellYear = cellDate.getFullYear().toString();
-        const cellMonth = (cellDate.getMonth() + 1).toString().padStart(2, "0");
-        return year === cellYear && month === cellMonth;
-      }
+      // if (typeof filterValue === "string" && filterValue.includes("-")) {
+      //   const [year, month] = filterValue.split("-");
+      //   const cellYear = cellDate.getFullYear().toString();
+      //   const cellMonth = (cellDate.getMonth() + 1).toString().padStart(2, "0");
+      //   return year === cellYear && month === cellMonth;
+      // }
       return false;
   }
 };

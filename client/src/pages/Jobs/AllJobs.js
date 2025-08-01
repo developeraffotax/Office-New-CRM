@@ -86,6 +86,11 @@ export default function AllJobs() {
     anyTimerRunning,
   } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+
+
+ 
+
+
   const [active, setActive] = useState("All");
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
@@ -2763,6 +2768,7 @@ export default function AllJobs() {
 
 
 
+ 
 
 
 
@@ -2774,50 +2780,7 @@ export default function AllJobs() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
@@ -3304,6 +3267,16 @@ Cell: ({ row }) => {
                 const [showPopover, setShowPopover] = useState(false);
                 const selectRef = useRef(null);
 
+                const filterValues = [
+                  "Today",
+                  "Yesterday",
+                  "Last 7 days",
+                  "Last 15 days",
+                  "Last 30 Days",
+                  "Last 12 months",
+                   
+                ]
+
                 useEffect(() => {
                   if (filterValue === "Custom Range") {
                     column.setFilterValue(dateRange);
@@ -3311,6 +3284,17 @@ Cell: ({ row }) => {
                     column.setFilterValue(filterValue);
                   }
                 }, [dateRange, filterValue]);
+
+                
+              // 🔄 Reset local state when external filter is cleared
+              useEffect(() => {
+                const currentFilter = column.getFilterValue();
+                if (!currentFilter) {
+                  setFilterValue("");
+                  setDateRange({ from: "", to: "" });
+                  setShowPopover(false);
+                }
+              }, [column.getFilterValue()]);
 
                 const handleFilterChange = (e) => {
                   const val = e.target.value;
@@ -3352,7 +3336,7 @@ Cell: ({ row }) => {
                       className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
                     >
                       <option value="">Select</option>
-                      {column.columnDef.filterSelectOptions.map((option, idx) => (
+                      {filterValues.map((option, idx) => (
                         <option key={idx} value={option}>
                           {option}
                         </option>
@@ -3418,16 +3402,16 @@ Cell: ({ row }) => {
 
 
 
-                filterSelectOptions: [
-                  "Today",
-                  "Tomorrow",
-                  "Last 7 days",
-                  "Last 15 days",
-                  "Last 30 Days",
-                  "Last 12 months",
+                // filterSelectOptions: [
+                //   "Today",
+                //   "Yesterday",
+                //   "Last 7 days",
+                //   "Last 15 days",
+                //   "Last 30 Days",
+                //   "Last 12 months",
                    
-                ],
-                filterVariant: "select",
+                // ],
+                // filterVariant: "select",
                 size: 115,
                 minSize: 80,
                 maxSize: 140,
@@ -3585,6 +3569,7 @@ Cell: ({ row }) => {
       auth,
       note,
       totalHours,
+      totalFee,
       labelData,
       dataLable,
       filterData,
@@ -3920,35 +3905,25 @@ Cell: ({ row }) => {
 
 
 
-  const showingRows = table.getFilteredRowModel().rows  
-// To Change the total hours when filter is applied inside the table
-useEffect(()=>{
 
 
-  const showingRows = table.getFilteredRowModel().rows  
+  const tableColumnFilters = table.getState().columnFilters;
+useEffect(() => {
+  const filteredRows = table.getFilteredRowModel().rows;
 
-  setTotalHours((prev) => {
+  const totalHours = filteredRows.reduce((acc, row) => acc + Number(row.original.totalHours), 0);
+  const totalFee = filteredRows.reduce((acc, row) => acc + Number(row.original.fee), 0);
 
-    const totalHours = showingRows.reduce((acc, row) => {
-      const hours = row.original.totalHours;
-      return acc + Number(hours);
-    }, 0);
+  setTotalHours(totalHours.toFixed(0));
+  setTotalFee(totalFee.toFixed(0));
+}, [tableColumnFilters, table]);
 
-    return totalHours.toFixed(0); 
-
-
-  })
-}, [showingRows, filterData, tableData, table ])
+ 
 
 
 
 
-
-
-
-
-
-
+ 
 
 
 
@@ -3959,36 +3934,6 @@ useEffect(()=>{
 
     return col.setFilterValue(filterVal);
   }
-
-
-
-
-
-
-
-    // To Change the total hours when filter is applied inside the table
-useEffect(()=>{
-  
-   
-  const showingRows = table.getFilteredRowModel().rows  
-  setTotalFee((prev) => {
-
-    const totalFee = showingRows.reduce((acc, row) => {
-      
-      const fee = row.original.fee;
-      return acc + Number(fee);
-    }, 0);
-
-    return totalFee.toFixed(0)
-
-
-  })
-}, [showingRows, filterData, tableData, table] )
-
-
-
-
-
 
 
 

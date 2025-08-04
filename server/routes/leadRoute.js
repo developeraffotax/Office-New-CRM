@@ -11,6 +11,7 @@ import {
   updateBulkLeads,
   updateLead,
 } from "../controllers/leadController.js";
+import { updateSendReceivedLeads } from "../utils/updateSendReceivedLeads.js";
 
 const router = express.Router();
 
@@ -47,5 +48,23 @@ router.get("/dashboard/lead", getdashboardLead);
 
 // Update Bulk Leads
 router.put("/update/bulk/leads", requiredSignIn, isAdmin, updateBulkLeads);
+
+
+
+
+// Protected GET route to trigger the update manually
+router.get("/update-leads", async (req, res) => {
+  try {
+    await updateSendReceivedLeads();
+    res.status(200).json({ message: "Leads updated successfully." });
+  } catch (error) {
+    console.error("Manual update error:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+});
+
+
+
+
 
 export default router;

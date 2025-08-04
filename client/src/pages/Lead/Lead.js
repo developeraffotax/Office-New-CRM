@@ -35,6 +35,7 @@ import DateRangePopover from "../../utlis/DateRangePopover";
 import { DateFilterFn } from "../../utlis/DateFilterFn";
 import { TiFilter } from "react-icons/ti";
 import { NumberFilterPortal, NumderFilterFn } from "../../utlis/NumberFilterPortal";
+import { LuRefreshCcw } from "react-icons/lu";
 
 
 const updates_object_init = {
@@ -61,6 +62,9 @@ export default function Lead() {
   const { auth } = useAuth();
   const [selectedTab, setSelectedTab] = useState("progress");
   const [isLoading, setIsLoading] = useState(false);
+
+
+ 
   const [leadData, setLeadData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [users, setUsers] = useState([]);
@@ -374,7 +378,7 @@ const applyFilter = (e) => {
         );
         if (data) {
           setLeadData(data.leads);
-          setIsLoading(false);
+          
         }
       } else if (selectedTab === "won") {
         const { data } = await axios.get(
@@ -382,7 +386,7 @@ const applyFilter = (e) => {
         );
         if (data) {
           setLeadData(data.leads);
-          setIsLoading(false);
+           
         }
       } else {
         const { data } = await axios.get(
@@ -390,11 +394,13 @@ const applyFilter = (e) => {
         );
         if (data) {
           setLeadData(data.leads);
-          setIsLoading(false);
+           
         }
       }
     } catch (error) {
       console.log(error);
+       
+    } finally {
       setIsLoading(false);
     }
   };
@@ -520,6 +526,29 @@ const applyFilter = (e) => {
     getAllUsers();
     // eslint-disable-next-line
   }, []);
+
+
+
+
+
+
+  const refreshData = async () => {
+
+    try {
+      setIsLoading(true)
+      const {status} = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/leads/update-leads`);
+
+    if (status === 200) {
+      getAllLeads()
+    }
+    } catch (error) {
+      toast.error("Failed to load new leads")
+        console.log(error)
+    } finally {
+      setIsLoading(false)
+    }
+
+  }
 
   //   Create New Lead
   const handleCreateLead = async () => {
@@ -3031,7 +3060,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
      
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
-    state: { rowSelection },
+    state: { rowSelection, isLoading },
     enableBatchRowSelection: true,
     
      
@@ -3379,6 +3408,22 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
               </span>
               )
             }
+
+
+
+            { auth?.user?.role?.name === "Admin" &&
+              (
+                <span
+                className={`p-[6px] rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  mt-[1.2rem] `}
+                onClick={refreshData}
+                title="Refresh Data"
+              >
+                 
+                <LuRefreshCcw className="  cursor-pointer text-[22px] " />
+              </span>
+              )
+            }
+
 
 
 
@@ -3772,17 +3817,11 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
 
         {/* ---------Table Detail---------- */}
         <div className="w-full h-full">
-          {isLoading ? (
-            <div className="flex items-center justify-center w-full h-screen px-4 py-4">
-              <Loader />
-            </div>
-          ) : (
-            <div className="w-full min-h-[10vh] relative ">
+          <div className="w-full min-h-[10vh] relative ">
               <div className="h-full hidden1 overflow-y-auto relative">
                 <MaterialReactTable table={table} />
               </div>
             </div>
-          )}
         </div>
       </div>
 

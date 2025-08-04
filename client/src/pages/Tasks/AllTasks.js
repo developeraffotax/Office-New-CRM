@@ -54,9 +54,10 @@ import TimeSelector from "../../utlis/TimeSelector";
 import TimeEditor from "../../utlis/TimeSelector";
 import { BiPencil } from "react-icons/bi";
 import { Edit } from "@mui/icons-material";
+import { useSocket } from "../../context/socketContext";
 
-const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+// const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
+// const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -181,6 +182,8 @@ const AllTasks = () => {
 
   
   const {  updateCountdown } = useTimer();
+
+    const {socket: socketId} = useSocket();
 
 
 
@@ -712,6 +715,10 @@ const AllTasks = () => {
       // socketId.emit("addTask", {
       //   note: "New Task Added",
       // });
+
+      socketId.emit("notification", {
+            title: "Task  Updated",
+          });
     } catch (error) {
       console.log(error);
       toast.error(error.response?.data?.message || "An error occurred");

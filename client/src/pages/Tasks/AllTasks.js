@@ -572,6 +572,14 @@ const AllTasks = () => {
 
       setFilterData([...filteredData]);
     }
+
+
+
+    
+
+
+
+
   };
 
   useEffect(() => {
@@ -3104,9 +3112,13 @@ useEffect(()=>{
                                 setFilterData("");
                                 setActive(proj?.projectName);
                                 filterByDep(proj?.projectName);
+
                                 setShowCompleted(false);
                                 setActive1("");
                                 setFilterId("");
+
+                                setColumnFromOutsideTable('project.projectName', proj?.projectName);
+                                setColumnFromOutsideTable('jobHolder', "");
                               }}
                             >
                               {proj?.projectName} (
@@ -3195,7 +3207,7 @@ useEffect(()=>{
                   // setActive("All");
                   // setActiveBtn("");
                   // setActive1("");
-                  setFilterId("");
+                  //setFilterId("");
                   // setShowStatus(false);
                   // setShowJobHolder(false);
                 }}

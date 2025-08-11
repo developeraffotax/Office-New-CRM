@@ -19,6 +19,11 @@ const notificationSchema = new mongoose.Schema(
       required: true,
     },
 
+    type: {
+      type: String,
+       
+    },
+
     status: {
       type: String,
       required: true,

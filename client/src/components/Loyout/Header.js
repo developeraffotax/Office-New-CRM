@@ -115,6 +115,10 @@ const  notificationData  = useSelector((state) => state.notifications.notificati
     navigate("/");
   };
 
+
+
+
+
   // -----------Get Timer_Task_Status------
   const getTimerStatus = async () => {
     setLoading(true);
@@ -140,6 +144,12 @@ const  notificationData  = useSelector((state) => state.notifications.notificati
 useEffect(() => {
   if (auth?.user?.id) {
     dispatch(getNotifications(auth.user.id));
+
+    dispatch(getRemindersCount());
+    
+    getTimerStatus();
+
+
   }
 }, [auth.user, dispatch]);
 
@@ -201,11 +211,10 @@ useEffect(() => {
 
 
 
-    useEffect(() => {
-    dispatch(getRemindersCount());
-    getTimerStatus();
-    getNotifications();
-  }, []);
+  //   useEffect(() => {
+    
+  //   getNotifications();
+  // }, []);
 
 
 

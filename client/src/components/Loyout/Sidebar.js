@@ -27,6 +27,7 @@ import { MdCalendarMonth } from "react-icons/md";
 import { FaUserTie } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
 import { setActive } from "../../redux/slices/authSlice";
+import { selectJobAssignedCount, selectTaskAssignedCount, selectTicketAssignedCount, selectTicketReceivedCount } from "../../redux/slices/notificationSlice";
 
 export default function Sidebar({ hide, setHide }) {
   const router = useNavigate();
@@ -34,6 +35,12 @@ export default function Sidebar({ hide, setHide }) {
   const auth = useSelector((state) => state.auth.auth);
   const dispatch = useDispatch();
   const active = useSelector((state) => state.auth.active);
+
+    const taskCount = useSelector(selectTaskAssignedCount);
+    const jobCount = useSelector(selectJobAssignedCount);
+
+    const ticketAssignedCount = useSelector(selectTicketAssignedCount);
+    const ticketReceivedCount = useSelector(selectTicketReceivedCount);
 
   const [isProfile, setIsProfile] = useState(false);
   const [isActive, setIsActive] = useState(false);
@@ -166,27 +173,27 @@ export default function Sidebar({ hide, setHide }) {
           {/* 3 */}
           {hasAccess("Tasks") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                active === "tasks"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  
+                ${active === "tasks"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-              }   filter   overflow-hidden`}
+                } filter overflow-hidden`}
               onClick={() => {
                 router("/tasks");
-
                 dispatch(setActive("tasks"));
               }}
             >
-              <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+              <div className="relative w-full h-full flex items-center justify-between px-3 z-30 bg-transparent">
+                {/* Left side - Icon & Text */}
                 {hide ? (
                   <FaTasks
-                    className="h-6 w-6 cursor-pointer ml-2"
+                    className="h-6 w-6 cursor-pointer"
                     style={{ color: active === "tasks" && "#fff" }}
                   />
                 ) : (
                   <div className="flex items-center gap-2">
                     <FaTasks
-                      className="h-5 w-5 cursor-pointer ml-2"
+                      className="h-5 w-5 cursor-pointer"
                       style={{ color: active === "tasks" && "#fff" }}
                     />
                     <span
@@ -197,8 +204,22 @@ export default function Sidebar({ hide, setHide }) {
                     </span>
                   </div>
                 )}
+
+                {/* Right side - Count badge */}
+                {
+                  taskCount > 0 && (
+                    <span
+                    title="New Assigned Tasks"
+                  className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
+                    ${active === "tasks" ? "bg-white text-orange-600" : "bg-orange-600 text-white"}`}
+                >
+                  {taskCount || 0}
+                </span>
+                  )
+                }
               </div>
             </div>
+
           )}
           {/* 4 */}
           {hasAccess("Jobs") && (
@@ -213,7 +234,7 @@ export default function Sidebar({ hide, setHide }) {
                 dispatch(setActive("job-planning"));
               }}
             >
-              <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+              <div className="relative w-full h-full flex items-center justify-between px-3 z-30 bg-transparent">
                 {hide ? (
                   <BsBriefcase
                     className="h-6 w-6 cursor-pointer ml-2"
@@ -233,6 +254,23 @@ export default function Sidebar({ hide, setHide }) {
                     </span>
                   </div>
                 )}
+
+
+
+                {/* Right side - Count badge */}
+                {
+                  jobCount > 0 && (
+                    <span
+                    title="New Assigned Jobs"
+                  className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
+                    ${active === "job-planning" ? "bg-white text-orange-600" : "bg-orange-600 text-white"}`}
+                >
+                  {jobCount || 0}
+                </span>
+                  )
+                }
+
+
               </div>
             </div>
           )}
@@ -249,7 +287,7 @@ export default function Sidebar({ hide, setHide }) {
                 dispatch(setActive("tickets"));
               }}
             >
-              <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+              <div className="relative w-full h-full flex items-center justify-between px-2 z-30 bg-transparent">
                 {hide ? (
                   <BsFileEarmarkText
                     className="h-6 w-6 cursor-pointer ml-2"
@@ -267,13 +305,52 @@ export default function Sidebar({ hide, setHide }) {
                     >
                       Tickets
                     </span>
-                    {ticketNitification.length > 0 && (
+                    {/* {ticketNitification.length > 0 && (
                       <span className=" bg-orange-600 rounded-full w-[24px] h-[24px] text-[13px] text-white flex items-center justify-center ">
                         {ticketNitification && ticketNitification.length}
                       </span>
-                    )}
+                    )} */}
                   </div>
                 )}
+
+
+
+                 {/* Right side - Count badge */}
+
+                  <div className="flex items-center gap-1 ">
+
+                    
+                 {
+                  ticketReceivedCount > 0 && (
+                    <span
+                    title="New Received Tickets"
+                  className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
+                    ${active === "tickets" ? "bg-white text-green-500" : "bg-green-500 text-white"}`}
+                >
+                  {ticketReceivedCount || 0}
+                </span>
+                  )
+                }
+
+
+
+                {
+                  ticketAssignedCount > 0 && (
+                    <span
+                    title="New Assigned Tickets"
+                  className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
+                    ${active === "tickets" ? "bg-white text-orange-600" : "bg-orange-600 text-white"}`}
+                >
+                  {ticketAssignedCount || 0}
+                </span>
+                  )
+                }
+
+                </div>
+
+
+
+
               </div>
             </div>
           )}

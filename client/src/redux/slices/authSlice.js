@@ -16,6 +16,8 @@ const initialState = {
   filterId: "",
   searchValue: "",
   jid: "",
+  isLoading: false, // ✅ NEW
+  isInitializing: true,     // ✅ NEW for first app load
 };
 
 export const getUserDetail = createAsyncThunk(
@@ -130,19 +132,36 @@ const authSlice = createSlice({
         };
         axios.defaults.headers.common["Authorization"] = parsed.token;
       }
+      state.isInitializing = false; // ✅ Mark done after checking
     },
   },
-  extraReducers: (builder) => {
+   extraReducers: (builder) => {
     builder
-  .addCase(getUserDetail.fulfilled, (state, action) => {
-    state.auth = action.payload;
-    axios.defaults.headers.common["Authorization"] = action.payload.token;
-  })
-  .addCase(loginUser.fulfilled, (state, action) => {
-    state.auth = action.payload;
-    axios.defaults.headers.common["Authorization"] = action.payload.token;
-  });
+      // getUserDetail
+      .addCase(getUserDetail.pending, (state) => {
+        state.isLoading = true; // ✅
+      })
+      .addCase(getUserDetail.fulfilled, (state, action) => {
+        state.auth = action.payload;
+        axios.defaults.headers.common["Authorization"] = action.payload.token;
+        state.isLoading = false; // ✅
+      })
+      .addCase(getUserDetail.rejected, (state) => {
+        state.isLoading = false; // ✅
+      })
 
+      // loginUser
+      .addCase(loginUser.pending, (state) => {
+        state.isLoading = true; // ✅
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.auth = action.payload;
+        axios.defaults.headers.common["Authorization"] = action.payload.token;
+        state.isLoading = false; // ✅
+      })
+      .addCase(loginUser.rejected, (state) => {
+        state.isLoading = false; // ✅
+      });
   },
 });
 

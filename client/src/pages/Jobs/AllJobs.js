@@ -4130,6 +4130,10 @@ useEffect(() => {
                   setActive1("");
                   dispatch(setFilterId(""));
                   dep === "All" && allClientData();
+
+                  setColumnFromOutsideTable('Departments', dep);
+
+                  
                 }}
               >
                 {dep} ({getDepartmentCount(dep)})

@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, createSelector } from "@reduxjs/toolkit";
 import axios from "axios";
 import toast from "react-hot-toast";
 
@@ -94,6 +94,48 @@ const notificationSlice = createSlice({
       });
   }
 });
+
+
+// Memoized selector for task_assigned count
+export const selectTaskAssignedCount = createSelector(
+  (state) => state.notifications.notificationData,
+  (notifications) =>
+    notifications.filter(
+      (n) => n.type === "task_assigned"
+    ).length
+);
+
+
+// Memoized selector for job_assigned count
+export const selectJobAssignedCount = createSelector(
+  (state) => state.notifications.notificationData,
+  (notifications) =>
+    notifications.filter(
+      (n) => n.type === "job_assigned"
+    ).length
+);
+
+
+
+ 
+export const selectTicketAssignedCount = createSelector(
+  (state) => state.notifications.notificationData,
+  (notifications) =>
+    notifications.filter(
+      (n) => n.type === "ticket_assigned"
+    ).length
+);
+
+ 
+export const selectTicketReceivedCount = createSelector(
+  (state) => state.notifications.notificationData,
+  (notifications) =>
+    notifications.filter(
+      (n) => n.type === "ticket_received"
+    ).length
+);
+
+
 
 export const { clearNotifications } = notificationSlice.actions;
 export default notificationSlice.reducer;

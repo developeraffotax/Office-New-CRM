@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { ImSpinner10 } from "react-icons/im";
 import { useNavigate } from "react-router-dom";
 
+ 
+
 export default function Spinner() {
   const router = useNavigate();
   const [count, setCount] = useState(3);
@@ -35,3 +37,18 @@ export default function Spinner() {
     </div>
   );
 }
+
+
+
+
+
+
+
+// Spinner.jsx
+// export default function Spinner() {
+//   return (
+//     <div className="w-full min-h-screen flex items-center justify-center">
+//       <ImSpinner10 className="h-10 w-10 text-blue-500 animate-spin" />
+//     </div>
+//   );
+// }

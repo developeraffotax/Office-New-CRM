@@ -1,34 +1,31 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import { useNavigate } from "react-router-dom";
-import Loader from "../../utlis/Loader";
+ 
 import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
 import axios from "axios";
-import { AiTwotoneDelete } from "react-icons/ai";
-import { useAuth } from "../../context/authContext";
+ 
 import { format } from "date-fns";
-import { GrCopy } from "react-icons/gr";
-import { FaTrophy } from "react-icons/fa6";
-import { GiBrokenHeart } from "react-icons/gi";
+ 
 import { IoTicketOutline } from "react-icons/io5";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { MdOutlineAnalytics, MdOutlineModeEdit } from "react-icons/md";
-import { RiProgress3Line } from "react-icons/ri";
+ 
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { TbLoader2 } from "react-icons/tb";
-import {  Popover, Typography } from "@mui/material";
  
-import TicketsPopUp from "../../components/shared/TicketsPopUp";
+ 
+ 
 import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import QuickAccess from "../../utlis/QuickAccess";
-import { FiPlusSquare } from "react-icons/fi";
+ 
 import NewTicketModal from "../../utlis/NewTicketModal";
 import { ActionsCell } from "./ActionsCell";
 import DateRangePopover from "../../utlis/DateRangePopover";
@@ -36,6 +33,7 @@ import { DateFilterFn } from "../../utlis/DateFilterFn";
 import { TiFilter } from "react-icons/ti";
 import { NumberFilterPortal, NumderFilterFn } from "../../utlis/NumberFilterPortal";
 import { LuRefreshCcw } from "react-icons/lu";
+import { useSelector } from "react-redux";
 
 
 const updates_object_init = {
@@ -59,7 +57,11 @@ export default function Lead() {
 
 
   const navigate = useNavigate();
-  const { auth } = useAuth();
+
+
+  const  auth  = useSelector((state) => state.auth.auth);
+
+
   const [selectedTab, setSelectedTab] = useState("progress");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -3247,7 +3249,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
 
 
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-5">
@@ -3875,6 +3877,6 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
 
 
 
-    </Layout>
+    </>
   );
 }

@@ -19,7 +19,7 @@ import {
 import { addMonths, format, formatISO } from "date-fns";
 import { MdDriveFileMoveOutline, MdInsertComment } from "react-icons/md";
 import toast from "react-hot-toast";
-import { useAuth } from "../../context/authContext";
+ 
 import Loader from "../../utlis/Loader";
 import { IoClose, IoTicketOutline } from "react-icons/io5";
 import { useLocation } from "react-router-dom";
@@ -32,12 +32,22 @@ import { Timer } from "../../utlis/Timer";
 import Swal from "sweetalert2";
 import { LinearProgress, Popover, Typography } from "@mui/material";
 import TicketsPopUp from "../shared/TicketsPopUp";
+import { useSelector } from "react-redux";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 const Jobs = forwardRef(
   ({ tableData, setTableData, childRef, setIsload }, ref) => {
-    const { auth, anyTimerRunning, jid } = useAuth();
+     
+
+
+
+     const auth = useSelector((state => state.auth.auth));
+     const anyTimerRunning = useSelector((state => state.auth.anyTimerRunning));
+     const jid = useSelector((state => state.auth.jid));
+      
+
+
     const [isOpen, setIsOpen] = useState(false);
     const [active, setActive] = useState("All");
     const [loading, setLoading] = useState(false);

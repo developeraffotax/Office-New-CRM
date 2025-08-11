@@ -19,8 +19,8 @@ import {
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
-import { useAuth } from "../../context/authContext";
-import { TbCalendarDue, TbLoader, TbLoader2 } from "react-icons/tb";
+
+import {  TbLoader, TbLoader2 } from "react-icons/tb";
 import CompletedTasks from "./CompletedTasks";
 import AddTaskModal from "../../components/Tasks/AddTaskModal";
 import {
@@ -30,7 +30,7 @@ import {
 import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
 import { Timer } from "../../utlis/Timer";
-import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate,   useSearchParams } from "react-router-dom";
 import { GrCopy } from "react-icons/gr";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import JobCommentModal from "../Jobs/JobCommentModal";
@@ -41,23 +41,24 @@ import { LuImport } from "react-icons/lu";
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
-import socketIO from "socket.io-client";
-import { Box, Typography } from "@mui/material";
+ 
 import Subtasks from "./Subtasks";
 import { ActiveTimer } from "../../utlis/ActiveTimer";
-import { use } from "react";
+ 
 import QuickAccess from "../../utlis/QuickAccess";
 import SubtasksForNote from "./SubtasksForNote";
-import { useTimer } from "../../context/timerContext";
-import { filterByRowId } from "../../utlis/filterByRowId";
-import TimeSelector from "../../utlis/TimeSelector";
+ import { filterByRowId } from "../../utlis/filterByRowId";
+ 
 import TimeEditor from "../../utlis/TimeSelector";
-import { BiPencil } from "react-icons/bi";
-import { Edit } from "@mui/icons-material";
-import { useSocket } from "../../context/socketContext";
+ 
+ 
+import { useDispatch, useSelector } from "react-redux";
+import { setFilterId, setSearchValue } from "../../redux/slices/authSlice";
+ 
+import { updateCountdown } from "../../redux/slices/timerSlice";
+import { useSocket } from "../../context/socketProvider";
 
-// const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-// const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+ 
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -74,15 +75,21 @@ const csvConfig = mkConfig({
 });
 
 const AllTasks = () => {
-  const {
-    auth,
-    filterId,
-    setFilterId,
-    anyTimerRunning,
-    searchValue,
-    setSearchValue,
-    jid,
-  } = useAuth();
+ 
+
+  const {auth, filterId, anyTimerRunning, searchValue, jid} = useSelector((state) => state.auth);
+   
+  const dispatch = useDispatch();
+
+
+
+
+
+
+
+
+
+
   const [show, setShow] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [users, setUsers] = useState([]);
@@ -181,10 +188,22 @@ const AllTasks = () => {
 
 
   
-  const {  updateCountdown } = useTimer();
+ 
 
-    const {socket: socketId} = useSocket();
+    const socket  = useSocket();
 
+
+      useEffect(() => {
+
+
+        if (!socket) return;
+        console.log("Socket reg ⛔🆘🆘🅾🅾🅾🆑🆑🆎🆎🆎🅱🅱🅰🅰🅰🅰🈲🈵🈵🈴🈴㊗㊗㊗㊙㊙🉐🉐🉐💮💮🉑")
+        socket.on('task_updated', () => {
+          console.log("TASK UPDATED ⛔🆘🆘🅾🅾🅾🆑🆑🆎🆎🆎🅱🅱🅰🅰🅰🅰🈲🈵🈵🈴🈴㊗㊗㊗㊙㊙🉐🉐🉐💮💮🉑")
+
+          getAllTasks()
+        })
+      }, [socket])
 
 
   useEffect(() => {
@@ -254,19 +273,19 @@ const AllTasks = () => {
 
   useEffect(() => {
     getAllProjects();
-    // eslint-disable-next-line
+    
   }, [auth]);
 
-  useEffect(() => {
-    socketId.on("newProject", () => {
-      getAllProjects();
-    });
+  // useEffect(() => {
+  //   socketId.on("newProject", () => {
+  //     getAllProjects();
+  //   });
 
-    return () => {
-      socketId.off("newProject", getAllProjects);
-    };
-    // eslint-disable-next-line
-  }, [socketId]);
+  //   return () => {
+  //     socketId.off("newProject", getAllProjects);
+  //   };
+     
+  // }, [socketId]);
 
   // -------Get All Tasks----->
   const getAllTasks = async () => {
@@ -384,16 +403,16 @@ const AllTasks = () => {
     }
   };
 
-  useEffect(() => {
-    socketId.on("newtask", () => {
-      getTasks1();
-    });
+  // useEffect(() => {
+  //   socketId.on("newtask", () => {
+  //     getTasks1();
+  //   });
 
-    return () => {
-      socketId.off("newtask", getTasks1);
-    };
-    // eslint-disable-next-line
-  }, [socketId]);
+  //   return () => {
+  //     socketId.off("newtask", getTasks1);
+  //   };
+    
+  // }, [socketId]);
 
   // useEffect(() => {
   //   if (auth && auth?.user) {
@@ -438,12 +457,12 @@ const AllTasks = () => {
         getAllProjects();
         // toast.success("Project Deleted!");
         // Send Socket Timer
-        socketId.emit("addTask", {
-          note: "New Task Added",
-        });
-        socketId.emit("addproject", {
-          note: "New Project Added",
-        });
+        // socketId.emit("addTask", {
+        //   note: "New Task Added",
+        // });
+        // socketId.emit("addproject", {
+        //   note: "New Project Added",
+        // });
       }
     } catch (error) {
       console.log(error);
@@ -482,12 +501,12 @@ const AllTasks = () => {
         getAllTasks();
         setShowProject(false);
         // Send Socket Timer
-        socketId.emit("addTask", {
-          note: "New Task Added",
-        });
-        socketId.emit("addproject", {
-          note: "New Project Added",
-        });
+        // socketId.emit("addTask", {
+        //   note: "New Task Added",
+        // });
+        // socketId.emit("addproject", {
+        //   note: "New Project Added",
+        // });
       }
     } catch (error) {
       console.log(error);
@@ -669,9 +688,9 @@ const AllTasks = () => {
         }
       }
       // Send Socket Timer
-      socketId.emit("addTask", {
-        note: "New Task Added",
-      });
+      // socketId.emit("addTask", {
+      //   note: "New Task Added",
+      // });
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
@@ -724,9 +743,9 @@ const AllTasks = () => {
       //   note: "New Task Added",
       // });
 
-      socketId.emit("notification", {
-            title: "Task  Updated",
-          });
+      // socketId.emit("notification", {
+      //       title: "Task  Updated",
+      //     });
     } catch (error) {
       console.log(error);
       toast.error(error.response?.data?.message || "An error occurred");
@@ -846,9 +865,9 @@ const AllTasks = () => {
     );
     if (data) {
       // Send Socket Timer
-      socketId.emit("addTask", {
-        note: "New Task Added",
-      });
+      // socketId.emit("addTask", {
+      //   note: "New Task Added",
+      // });
     }
   };
 
@@ -918,9 +937,9 @@ const AllTasks = () => {
         toast.success("Task deleted successfully!");
 
         // Send Socket Timer
-        socketId.emit("addTask", {
-          note: "New Task Added",
-        });
+        // socketId.emit("addTask", {
+        //   note: "New Task Added",
+        // });
       }
     } catch (error) {
       console.log(error);
@@ -1412,7 +1431,7 @@ Cell: ({ cell, row }) => {
 
         const savedTaskTimer =JSON.parse(localStorage.getItem("task-timer"));
         if (savedTaskTimer && savedTaskTimer.taskId === row.original._id) {
-            updateCountdown(newHours)
+           dispatch(updateCountdown(newHours))
         }
 
 
@@ -2906,7 +2925,7 @@ useEffect(()=>{
   
 
   return (
-    <Layout>
+    <>
       {!showCompleted ? (
         <div className=" relative w-full h-full overflow-auto py-4 px-2 sm:px-4">
           <div className="flex text-start sm:items-center sm:justify-between gap-4 flex-col sm:flex-row">
@@ -2925,10 +2944,10 @@ useEffect(()=>{
                   // setShowStatus(false);
                   // setShowJobHolder(false);
                   // setShowDue(false);
-                  setFilterId("");
+                  dispatch(setFilterId(""));
                   handleClearFilters();
                   filterByState(state);
-                  setSearchValue("");
+                  dispatch(setSearchValue(""));
                 }}
                 title="Clear filters"
               >
@@ -3678,7 +3697,7 @@ useEffect(()=>{
         showActiveTimer && <ActiveTimer />
       }
       
-    </Layout>
+    </>
   );
 };
 

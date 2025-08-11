@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import HandleGoalModal from "../../components/Goal/HandleGoalModal";
 import axios from "axios";
-import { useAuth } from "../../context/authContext";
+ 
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -24,15 +24,20 @@ import { TbLoader2 } from "react-icons/tb";
 import { GrCopy } from "react-icons/gr";
 import { GoEye } from "react-icons/go";
 import GoalDetail from "../../components/Goal/GoalDetail";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+ 
 import { FaListOl } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import QuickAccess from "../../utlis/QuickAccess";
 import DraggableUserList from "../../utlis/DraggableUserList";
 import { filterByRowId } from "../../utlis/filterByRowId";
+import { useSelector } from "react-redux";
 
 export default function Goals() {
-  const { auth } = useAuth();
+
+
+   
+const auth = useSelector((state) => state.auth.auth);
+
   const [show, setShow] = useState(false);
   const [goalId, setGoalId] = useState("");
   const [users, setUsers] = useState([]);
@@ -1759,7 +1764,7 @@ useEffect(() => {
 
 
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-5">
@@ -2125,6 +2130,6 @@ useEffect(() => {
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 }

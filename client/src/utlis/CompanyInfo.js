@@ -1,10 +1,8 @@
 import { createPortal } from "react-dom";
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { use } from "react";
-import axios from "axios";
-import { useAuth } from "../context/authContext";
-import { IoClose } from "react-icons/io5";
+ import axios from "axios";
+ import { useSelector } from "react-redux";
 
 // Helper Components
 const InfoRow = ({ label, value, copyValue }) => {
@@ -33,7 +31,7 @@ const InfoRow = ({ label, value, copyValue }) => {
 const NA = () => <span className="text-red-500">N/A</span>;
 
 const CompanyInfo = ({ anchorRef, clientId, onClose }) => {
-  const { auth } = useAuth();
+      const auth = useSelector((state => state.auth.auth));
 
   const popupRef = useRef(null);
   const [position, setPosition] = useState(null);

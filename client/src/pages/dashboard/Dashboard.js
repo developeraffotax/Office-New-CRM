@@ -279,7 +279,7 @@ const handleFeatureFilter = (value) => {
   }, []);
 
   return (
-    <Layout>
+    <>
       <div
         // style={{
         //   transform: `scale(${zoomLevel})`,
@@ -791,6 +791,6 @@ const handleFeatureFilter = (value) => {
           )}
         </div>
       </div>
-    </Layout>
+    </>
   );
 }

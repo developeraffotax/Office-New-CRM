@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import { style } from "../../utlis/CommonStyle";
 import axios from "axios";
-import { useAuth } from "../../context/authContext";
+ 
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -20,7 +20,7 @@ import { AiTwotoneDelete } from "react-icons/ai";
 import { MdCheckCircle, MdInsertComment } from "react-icons/md";
 import { MdOutlineModeEdit } from "react-icons/md";
 import Swal from "sweetalert2";
-import ReactApexChart from "react-apexcharts";
+ 
 
 import { VscGraph } from "react-icons/vsc";
 import CompletedGoals from "../../pages/Goal/CompletedGoals";
@@ -30,10 +30,11 @@ import JobCommentModal from "../../pages/Jobs/JobCommentModal";
 import { GoEye } from "react-icons/go";
 import { GrCopy } from "react-icons/gr";
 import GoalDetail from "../Goal/GoalDetail";
+import { useSelector } from "react-redux";
 
 const Goals = forwardRef(
   ({ goalsData, setGoalsData, childRef, setIsload }, ref) => {
-    const { auth } = useAuth();
+     const auth = useSelector((state => state.auth.auth));
     const [show, setShow] = useState(false);
     const [goalId, setGoalId] = useState("");
     const [users, setUsers] = useState([]);

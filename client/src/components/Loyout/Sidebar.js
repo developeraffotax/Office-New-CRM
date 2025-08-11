@@ -1,12 +1,12 @@
-"use client";
+ 
 import React, { useEffect, useState } from "react";
 import { AiOutlineMenuFold } from "react-icons/ai";
 import { AiOutlineMenuUnfold } from "react-icons/ai";
 import { LuLayoutDashboard } from "react-icons/lu";
 import { BsFileEarmarkText } from "react-icons/bs";
 import { BsBriefcase } from "react-icons/bs";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/authContext";
+import { useLocation, useNavigate } from "react-router-dom";
+ 
 import { LiaClipboardListSolid } from "react-icons/lia";
 import ProfileModal from "../Modals/ProfileModal";
 import { FaUsers } from "react-icons/fa";
@@ -21,26 +21,33 @@ import { GoGoal } from "react-icons/go";
 import { FaTasks } from "react-icons/fa";
 import { LiaNetworkWiredSolid } from "react-icons/lia";
 import { BiMessageError } from "react-icons/bi";
-import { MdDesignServices } from "react-icons/md";
+ 
 import axios from "axios";
 import { MdCalendarMonth } from "react-icons/md";
 import { FaUserTie } from "react-icons/fa6";
+import { useDispatch, useSelector } from "react-redux";
+import { setActive } from "../../redux/slices/authSlice";
 
 export default function Sidebar({ hide, setHide }) {
   const router = useNavigate();
-  const { auth, active, setActive } = useAuth();
+
+  const auth = useSelector((state) => state.auth.auth);
+  const dispatch = useDispatch();
+  const active = useSelector((state) => state.auth.active);
+
   const [isProfile, setIsProfile] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const user = auth?.user;
   const [ticketNitification, setTicketNotification] = useState([]);
 
+ 
   useEffect(() => {
     const pathArray = window.location.pathname.split("/");
     const fileIdFromPath = pathArray[1];
-    setActive(fileIdFromPath);
+    dispatch(setActive(fileIdFromPath));
 
-    // exlint-disable-next-line
-  }, [setActive]);
+   
+  }, []);
 
   const hasAccess = (section) => {
     return user?.role?.access?.some((item) => item.permission === section);
@@ -94,6 +101,7 @@ export default function Sidebar({ hide, setHide }) {
               }   filter   overflow-hidden `}
               onClick={() => {
                 router("/dashboard");
+                dispatch(setActive("dashboard"));
               }}
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
@@ -129,6 +137,7 @@ export default function Sidebar({ hide, setHide }) {
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/all/lists");
+                dispatch(setActive("all"));
               }}
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
@@ -164,6 +173,8 @@ export default function Sidebar({ hide, setHide }) {
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/tasks");
+
+                dispatch(setActive("tasks"));
               }}
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
@@ -199,6 +210,7 @@ export default function Sidebar({ hide, setHide }) {
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/job-planning");
+                dispatch(setActive("job-planning"));
               }}
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
@@ -234,6 +246,7 @@ export default function Sidebar({ hide, setHide }) {
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/tickets");
+                dispatch(setActive("tickets"));
               }}
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
@@ -274,6 +287,7 @@ export default function Sidebar({ hide, setHide }) {
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/templates");
+                dispatch(setActive("templates"));
               }}
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
@@ -309,6 +323,7 @@ export default function Sidebar({ hide, setHide }) {
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/leads");
+                dispatch(setActive("leads"));
               }}
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
@@ -344,6 +359,7 @@ export default function Sidebar({ hide, setHide }) {
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/proposals");
+                dispatch(setActive("proposals"));
               }}
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
@@ -379,6 +395,7 @@ export default function Sidebar({ hide, setHide }) {
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/goals");
+                dispatch(setActive("goals"));
               }}
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
@@ -414,6 +431,7 @@ export default function Sidebar({ hide, setHide }) {
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/timesheet");
+                dispatch(setActive("timesheet"));
               }}
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
@@ -449,6 +467,7 @@ export default function Sidebar({ hide, setHide }) {
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/subscriptions");
+                dispatch(setActive("subscriptions"));
               }}
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
@@ -516,6 +535,7 @@ export default function Sidebar({ hide, setHide }) {
               }   filter   overflow-hidden `}
               onClick={() => {
                 router("/meetings");
+                dispatch(setActive("meetings"));
               }}
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
@@ -551,6 +571,7 @@ export default function Sidebar({ hide, setHide }) {
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/workflow");
+                dispatch(setActive("workflow"));
               }}
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
@@ -586,6 +607,7 @@ export default function Sidebar({ hide, setHide }) {
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/complaints");
+                dispatch(setActive("complaints"));
               }}
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
@@ -622,6 +644,7 @@ export default function Sidebar({ hide, setHide }) {
                 }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/roles");
+                  dispatch(setActive("roles"));
                 }}
               >
                 <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
@@ -659,6 +682,7 @@ export default function Sidebar({ hide, setHide }) {
                 }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/hr/tasks");
+                  dispatch(setActive("hr"));
                 }}
               >
                 <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
@@ -697,6 +721,7 @@ export default function Sidebar({ hide, setHide }) {
                 }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/users");
+                  dispatch(setActive("users"));
                 }}
               >
                 <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">

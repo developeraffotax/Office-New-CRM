@@ -6,7 +6,7 @@ import Jobs from "../../components/MyLists/Jobs";
 import Leads from "../../components/MyLists/Leads";
 import Proposals from "../../components/MyLists/Proposals";
 import axios from "axios";
-import { useAuth } from "../../context/authContext";
+ 
 import Tickets from "../../components/MyLists/Tickets";
 import Templates from "../../components/MyLists/Templates";
 import Goals from "../../components/MyLists/Goals";
@@ -17,8 +17,7 @@ import HR from "../../components/MyLists/Hr";
 import QuickAccess from "../../utlis/QuickAccess";
 
 export default function AllLists() {
-  const { auth } = useAuth();
-  const [selectedTab, setSelectedTab] = useState("Tasks");
+   const [selectedTab, setSelectedTab] = useState("Tasks");
   const [tasksData, setTasksData] = useState([]);
 
   const [hrTasks, setHrTasks] = useState([]);
@@ -263,7 +262,7 @@ export default function AllLists() {
   }, []);
 
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
           <div className="w-full justify-start flex items-end gap-5">
@@ -528,6 +527,6 @@ export default function AllLists() {
           )}
         </div>
       </div>
-    </Layout>
+    </>
   );
 }

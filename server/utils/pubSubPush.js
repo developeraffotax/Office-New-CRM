@@ -151,7 +151,7 @@ const sendSocketNotification = (notification, userId) => {
 
   if (toSocketIds && toSocketIds.size > 0) {
     for (const socketId of toSocketIds) {
-      io.to(socketId).emit("newTicketNotification", {
+      io.to(socketId).emit("newNotification", {
         notification,
       });
     }

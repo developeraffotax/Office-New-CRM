@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { LuImport } from "react-icons/lu";
 import { style } from "../../utlis/CommonStyle";
 import { AiTwotoneDelete } from "react-icons/ai";
 import { MdOutlineEdit } from "react-icons/md";
 import { IoClose } from "react-icons/io5";
-import { useAuth } from "../../context/authContext";
+ 
 import toast from "react-hot-toast";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -15,9 +14,15 @@ import { FaRegWindowMinimize } from "react-icons/fa6";
 import { RiEdit2Line } from "react-icons/ri";
 import Loader from "../../utlis/Loader";
 import { IoSearch } from "react-icons/io5";
+import { useSelector } from "react-redux";
 
 export default function FAQ({ setSelectedTab, selectedTab, access, page }) {
-  const { auth, searchValue } = useAuth();
+ 
+
+     const auth = useSelector((state => state.auth.auth));
+     const searchValue = useSelector((state => state.auth.searchValue));
+
+
   const [showCategory, setShowCategory] = useState(false);
   const [categoryData, setCategoryData] = useState([]);
   const [users, setUsers] = useState([]);

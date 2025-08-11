@@ -1,20 +1,15 @@
 import React, { useEffect } from "react";
-import { useReminder } from "../context/reminderContext";
-import { IoClose } from "react-icons/io5"; // Close icon
+ import { IoClose } from "react-icons/io5"; // Close icon
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { completeReminder, setReminderData, setShowReminder, snoozeReminder } from "../redux/slices/reminderSlice";
 
 const ReminderModal = () => {
-  const {
-    showReminder,
-    setShowReminder,
-    reminderData,
-    setReminderData,
-    snoozeReminder,
-    completeReminder,
-  } = useReminder();
+ 
 
-
-
+  const showReminder = useSelector(state => state.reminder.showReminder)
+  const reminderData = useSelector(state => state.reminder.reminderData)
+  const dispatch = useDispatch()
 
   // useEffect(() => {
     
@@ -23,8 +18,9 @@ const ReminderModal = () => {
 
 
    const handleCloseModal = () => {
-      setShowReminder(false);
-      setReminderData(null);
+      dispatch(setShowReminder(false))
+      dispatch(setReminderData(null))
+      
     }
   useEffect(() => {
 
@@ -45,7 +41,7 @@ const ReminderModal = () => {
   if (!showReminder) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-gray-300/50 backdrop-blur-sm  ">
+    <div id="myModal" className="fixed inset-0 z-[1000] flex items-center justify-center bg-gray-300/50 backdrop-blur-sm  ">
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 md:p-8 border border-gray-200">
         {/* Close Button */}
         <button
@@ -78,7 +74,7 @@ const ReminderModal = () => {
           {[2, 5, 10, 20, 60].map((min) => (
             <button
               key={min}
-              onClick={() => snoozeReminder(reminderData?._id, min)}
+              onClick={() => dispatch(snoozeReminder({ reminderId: reminderData?._id, minutes: min }))}
               className="bg-yellow-300 hover:bg-yellow-400 text-gray-900 text-sm font-medium py-1.5 rounded-full transition-all shadow-sm hover:shadow-md"
             >
               {min === 60 ? "Snooze 1 hr" : `Snooze ${min} min`}
@@ -88,7 +84,7 @@ const ReminderModal = () => {
 
         {/* Complete Button */}
         <button
-          onClick={() => completeReminder(reminderData?._id)}
+          onClick={() => dispatch(completeReminder(reminderData?._id))}
           className="my-5 w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-2 rounded-full shadow-md transition-all"
         >
           Mark as Completed

@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
-import { useAuth } from "../../context/authContext";
+ 
 import axios from "axios";
 import { style } from "../../utlis/CommonStyle";
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
@@ -38,6 +37,7 @@ import DraggableUserList from "../../utlis/DraggableUserList";
 } from "react-icons/fi";
 import { MdOutlineWatchLater } from "react-icons/md";
 import { useWorkdayStats } from "./useWorkdayStats";
+import { useSelector } from "react-redux";
 
 // Optional icons per day
 const dayIcons = [
@@ -67,7 +67,10 @@ const csvConfig = mkConfig({
 });
 
 export default function TimeSheet() {
-  const { auth } = useAuth();
+   
+
+  const auth = useSelector((state) => state.auth.auth);
+
   const [timerData, setTimerData] = useState([]);
   const [tableFilterData, setTableFilterDate] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -2131,7 +2134,7 @@ const getProgress = (timeStr, total) => {
 
 
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-[100%] py-4 px-2 sm:px-4 flex flex-col gap-2  ">
         <div className="flex items-start sm:items-center sm:justify-between flex-col sm:flex-row gap-2">
           <div className="relative flex items-start sm:items-center sm:flex-row flex-col gap-6">
@@ -2758,6 +2761,6 @@ const getProgress = (timeStr, total) => {
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 }

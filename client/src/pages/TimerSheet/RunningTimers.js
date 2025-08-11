@@ -2,14 +2,20 @@ import React, { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import axios from "axios";
 import Layout from "../../components/Loyout/Layout";
-import { useAuth } from "../../context/authContext";
 import { BsStopCircleFill } from "react-icons/bs";
 import toast from "react-hot-toast";
 import { style } from "../../utlis/CommonStyle";
 import { ImSpinner6 } from "react-icons/im";
+import { useDispatch, useSelector } from "react-redux";
+import { setSearchValue } from "../../redux/slices/authSlice";
 
 export default function RunningTimers({ setIsRunning, users }) {
-  const { searchValue, setSearchValue } = useAuth();
+  
+    const dispatch = useDispatch();
+     const auth = useSelector((state => state.auth.auth));
+     const searchValue = useSelector((state => state.auth.searchValue));
+ 
+
   const [timerData, setTimerData] = useState([]);
   const [filterUserData, setFilterUserData] = useState([]);
   const [note, setNote] = useState("");
@@ -99,7 +105,7 @@ export default function RunningTimers({ setIsRunning, users }) {
             <span
               className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
               onClick={() => {
-                setSearchValue("");
+                dispatch(setSearchValue(""));
               }}
               title="Clear filters"
             >

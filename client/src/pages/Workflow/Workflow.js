@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
 import axios from "axios";
@@ -337,7 +337,7 @@ export default function Workflow() {
   };
 
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -443,6 +443,6 @@ export default function Workflow() {
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 }

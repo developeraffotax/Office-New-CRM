@@ -1,14 +1,21 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from "./pages/Auth/Login";
+import { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux"; // ✅ NEW
+import {
+  loadAuthFromLocalStorage,
+  checkTokenExpiry,
+} from "./redux/slices/authSlice"; // ✅ NEW
+
+ 
+ 
+
 import { Toaster } from "react-hot-toast";
+import Login from "./pages/Auth/Login";
 import Dashboard from "./pages/dashboard/Dashboard";
 import AllJobs from "./pages/Jobs/AllJobs";
 import AllTasks from "./pages/Tasks/AllTasks";
-// import AllLists from "./pages/lists/AllLists";
 import Profile from "./pages/Auth/Profile";
-import { useEffect } from "react";
-import socketIO from "socket.io-client";
 import TimeSheet from "./pages/TimerSheet/TimeSheet";
 import Tickets from "./pages/Tickets/Tickets";
 import Template from "./pages/Templates/Template";
@@ -17,8 +24,6 @@ import CompleteTickets from "./pages/Tickets/CompleteTickets";
 import Lead from "./pages/Lead/Lead";
 import Proposal from "./pages/Proposal/Proposal";
 import Roles from "./pages/role/Roles";
-
-import { useAuth } from "./context/authContext";
 import NotFound from "./pages/NotFound/NotFound";
 import Users from "./pages/Auth/Users";
 import Subscription from "./pages/Subscription/Subscription";
@@ -31,18 +36,30 @@ import UDashboard from "./pages/Auth/Dashboard";
 import TemplateEditor from "./pages/Tickets/TemplateEditor";
 import PDFEditor from "./pages/Editor/PDFEditor";
 import Meeting from "./pages/Meeting/Meeting";
-import HR from "./pages/HR/HR"; 
+import HR from "./pages/HR/HR";
 import Temp from "./components/Temp";
-import { SocketProvider } from "./context/socketContext";
-import { ReminderProvider } from "./context/reminderContext";
+import Layout from "./components/Loyout/Layout";
+import SocketListeners from "./components/SocketListeners";
  
 
-// const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-// const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
-
 function App() {
-  const { auth } = useAuth();
-  const user = auth.user;
+  const dispatch = useDispatch(); // ✅
+  const user = useSelector((state) => state.auth.auth.user); // ✅
+ 
+
+
+  
+
+  useEffect(() => {
+    dispatch(loadAuthFromLocalStorage()); // ✅ Load localStorage auth
+    dispatch(checkTokenExpiry()); // ✅ Validate token expiry
+  }, [dispatch]);
+
+  
+  
+    
+ 
+
   const routeAccess = {
     Dashboard: <Route path="/dashboard" element={<Dashboard />} />,
     MyList: <Route path="/all/lists" element={<AllLists />} />,
@@ -51,9 +68,7 @@ function App() {
     Timesheet: <Route path="/timesheet" element={<TimeSheet />} />,
     Proposals: <Route path="/proposals" element={<Proposal />} />,
     Leads: <Route path="/leads" element={<Lead />} />,
-    // CompletedTasks: <Route path="/tasks/completed" element={<AllTasksCompleted />} />,
     Tasks: <Route path="/tasks" element={<AllTasks />} />,
-
     Jobs: <Route path="/job-planning" element={<AllJobs />} />,
     Goals: <Route path="/goals" element={<Goals />} />,
     Workflow: <Route path="/workflow" element={<Workflow />} />,
@@ -73,16 +88,8 @@ function App() {
   };
 
   const userAccessRoutes = user?.role?.access
-    ?.map((accessItem) => {
-      return routeAccess[accessItem.permission];
-    })
+    ?.map((accessItem) => routeAccess[accessItem.permission])
     .filter(Boolean);
-
- 
-
-  // useEffect(() => {
-  //   socketId.on("connection", () => {});
-  // }, []);
 
   useEffect(() => {
     const cacheBuster = () => {
@@ -94,49 +101,35 @@ function App() {
     };
 
     cacheBuster();
-
-    // Set cache-control headers on every API request
-    const defaultHeaders = new Headers();
-    defaultHeaders.append(
-      "Cache-Control",
-      "no-store, no-cache, must-revalidate, proxy-revalidate"
-    );
-    defaultHeaders.append("Pragma", "no-cache");
-    defaultHeaders.append("Expires", "0");
-    defaultHeaders.append("Surrogate-Control", "no-store");
   }, []);
-
-
-
-  
-
-
-
 
   return (
     <div>
-      <SocketProvider userId={auth?.user?.id}> {/* ✅ Pass userId here */}
-        <ReminderProvider>
           <BrowserRouter>
+          
+                <SocketListeners /> {/* one place for all socket events */}
+
             <Routes>
-              {/* If the user is not authenticated, navigate to login */}
-              {/* {!user && <Route path="*" element={<Navigate to="/" />} />} */}
-              <Route path="/" element={<Login />} />
-              <Route path="/temp/:hrTaskId" element={<Temp />} />
-              {/* <Route path="/tasks/completed" element={<AllTasksCompleted />} /> */}
-              {userAccessRoutes}
-              <Route path="/profile" element={<Profile />} />
-              {/* Catch-all route: if no access to a route, show 404 */}
-              <Route path="/employee/dashboard" element={<UDashboard />} />
-              <Route path="/editor/templates" element={<TemplateEditor />} />
-              <Route path="/pdf/editor" element={<PDFEditor />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+          {/* Public routes */}
+          <Route path="/" element={<Login />} />
+          <Route path="/temp/:hrTaskId" element={<Temp />} />
+
+          {/* Authenticated layout routes */}
+          <Route element={<Layout />}>
+            {userAccessRoutes}
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/employee/dashboard" element={<UDashboard />} />
+            <Route path="/editor/templates" element={<TemplateEditor />} />
+            <Route path="/pdf/editor" element={<PDFEditor />} />
+          </Route>
+
+          {/* Fallback route */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
             <Toaster />
           </BrowserRouter>
-        </ReminderProvider>
-      
-      </SocketProvider>
+         
+ 
     </div>
   );
 }

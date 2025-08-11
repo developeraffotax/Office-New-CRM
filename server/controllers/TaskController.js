@@ -6,6 +6,10 @@ import userModel from "../models/userModel.js";
 import cron from "node-cron";
 import moment from "moment";
 import XLSX from "xlsx";
+import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
+import { emitTaskUpdate } from "../utils/customFns/emitTaskUpdate.js";
+ 
+ 
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
@@ -29,24 +33,10 @@ const formatDate = (dateString) => {
 
 
 
-
-
-
 // Function to calculate the next start date
 const calculateStartDate = (date, recurringType) => {
   const currentDate = new Date(date);
-
-  // const addDaysSkippingWeekends = (date, days) => {
-  //   let result = new Date(date);
-  //   while (days > 0) {
-  //     result.setDate(result.getDate() + 1);
-  //     if (result.getDay() !== 0 && result.getDay() !== 6) {
-  //       days--; 
-  //     }
-  //   }
-  //   return result;
-  // };
-
+ 
 
   const addOneBusinessDay = (date) => {
   const result = new Date(date);
@@ -66,42 +56,7 @@ const calculateStartDate = (date, recurringType) => {
 
 
 
-
-
-
  
-
-  // Mon   1
-  // Tue   2
-  // Wed   3
-  // Thu   4
-  // Fri   5
-  // Sat   6
-  // Sun   0
-
-
-
-  // const adjustForFridayAndWeekend = (date) => {
-  //   const day = date.getDay();
-  //   if (day === 5) {
-  //     date.setDate(date.getDate() + 3);
-  //   } else if (day === 6) {
-  //     date.setDate(date.getDate() + 2);
-  //   } else if (day === 0) {
-  //     date.setDate(date.getDate() + 1);
-  //   }
-  //   return date;
-  // };
-
-  // const adjustForFridayAndWeekend = (date) => {
-  //   const day = date.getDay();
-  //   if (day === 5) {
-  //     date.setDate(date.getDate() + 2);
-  //   } else if (day === 6) {
-  //     date.setDate(date.getDate() + 1);
-  //   }
-  //   return date;
-  // };
 
    const adjustForFridayAndWeekend = (date) => {
     const day = date.getDay();
@@ -188,19 +143,14 @@ export const createTask = async (req, res) => {
      const now = new Date();
 
 
-     //now.setHours(1, 0, 0, 0); // Set time to midnight
+ 
      now.setHours(now.getHours() + 5); // Adds 5 hours to the current time
 
     let updatedNextRecurringDate = nextRecurringDate
       ? new Date(nextRecurringDate)
       : calculateStartDate(new Date(now), recurring);
 
-    // if (recurring === "weekly") {
-    //   const prevDate = new Date();
-    //   prevDate.setDate(updatedNextRecurringDate.getDate() - 1);
-    //   updatedNextRecurringDate = prevDate;
-    // }
-
+ 
     console.log("Updated Next Recurring Date:💚", updatedNextRecurringDate);
 
     const tasks = await taskModel.create({
@@ -230,11 +180,7 @@ export const createTask = async (req, res) => {
 
     await tasks.save();
 
-    res.status(200).send({
-      success: true,
-      message: "Task created successfully!",
-      task: tasks,
-    });
+    
 
     // Add Activity Log
     const user = req.user.user;
@@ -263,15 +209,33 @@ export const createTask = async (req, res) => {
       return;
     }
 
-    if(req.user?.user?.name !== jobHolder) {
-      await notificationModel.create({
+
+
+    const payload = {
         title: "New Task Assigned",
         redirectLink: "/tasks",
         description: `${req.user.user.name} assign a new task of "${tasks.task}"`,
         taskId: `${tasks?._id}`,
         userId: notiUser?._id || null,
-      });
-    }
+        type: "task_assigned",
+      }
+
+
+    scheduleNotification(req.user?.user?.name !== jobHolder, payload)
+ 
+
+    return res.status(200).send({
+      success: true,
+      message: "Task created successfully!",
+      task: tasks,
+    });
+
+
+     
+
+
+
+
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -527,15 +491,20 @@ export const updateJobHolderLS = async (req, res) => {
         return;
       }
 
-      if(req.user?.user?.name !== jobHolder) {
-        await notificationModel.create({
+      const payload = {
           title: "New Task Assigned",
           redirectLink: "/tasks",
           description: `${req.user.user.name} assign a new task of "${updateTask.task}"`,
           taskId: `${updateTask._id}`,
           userId: notiUser._id,
-        });
-      }
+          type: "task_assigned",
+        }
+
+
+        console.log("UPDATE JLD")
+      scheduleNotification(req.user?.user?.name !== jobHolder, payload)
+      emitTaskUpdate((req.user?.user?.name !== jobHolder ), {userId: notiUser._id, updated_task: null})
+      
       
 
       //  -------------------Noti End---------

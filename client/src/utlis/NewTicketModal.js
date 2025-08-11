@@ -7,9 +7,9 @@ import Select from "react-select";
 
 import { TbLoader2 } from "react-icons/tb";
 import { RiUploadCloud2Fill } from "react-icons/ri";
-import { useAuth } from "../context/authContext";
-import { style } from "./CommonStyle";
+ import { style } from "./CommonStyle";
 import CustomEditor from "./CustomEditor";
+import { useSelector } from "react-redux";
 
 export default function NewTicketModal({
   setShowSendModal,
@@ -19,7 +19,7 @@ export default function NewTicketModal({
   clientEmail
   
 }) {
-  const { auth } = useAuth();
+      const auth = useSelector((state => state.auth.auth));
   const [company, setCompany] = useState("Affotax");
   const [clientId, setClientId] = useState(clientIdFromProps || "");
   const [subject, setSubject] = useState("");

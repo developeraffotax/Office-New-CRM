@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { style } from "../../utlis/CommonStyle";
 import MeetingModal from "./MeetingModal";
 import axios from "axios";
@@ -9,13 +9,15 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import MeetingDetail from "./MeetingDetail";
 import { format, parse, parseISO } from "date-fns";
-import { useAuth } from "../../context/authContext";
+ 
 import Loader from "../../utlis/Loader";
 import { FaLock } from "react-icons/fa";
 import { FaUsers } from "react-icons/fa";
+import { useSelector } from "react-redux";
 
 export default function Meeting() {
-  const { auth } = useAuth();
+ 
+  const auth = useSelector((state) => state.auth.auth);
   const [show, setShow] = useState(false);
   const [meetingId, setMeetingId] = useState("");
   const [meetingData, setMeetingData] = useState([]);
@@ -141,7 +143,7 @@ const events = meetingData
   };
 
   return (
-    <Layout>
+    <>
       <div
         className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4"
         style={{ zoom: 1.1 }}
@@ -228,6 +230,6 @@ const events = meetingData
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 }

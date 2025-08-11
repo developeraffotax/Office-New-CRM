@@ -7,14 +7,16 @@ import Select from "react-select";
 import CustomEditor from "../../utlis/CustomEditor";
 import { TbLoader2 } from "react-icons/tb";
 import { RiUploadCloud2Fill } from "react-icons/ri";
-import { useAuth } from "../../context/authContext";
+import { useSelector } from "react-redux";
+ 
 
 export default function SendEmailModal({
   setShowSendModal,
   getEmails,
   access,
 }) {
-  const { auth } = useAuth();
+ 
+     const auth = useSelector((state => state.auth.auth));
   const [company, setCompany] = useState("");
   const [clientId, setClientId] = useState("");
   const [subject, setSubject] = useState("");

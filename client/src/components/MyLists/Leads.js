@@ -12,7 +12,7 @@ import {
 } from "material-react-table";
 import axios from "axios";
 import { AiTwotoneDelete } from "react-icons/ai";
-import { useAuth } from "../../context/authContext";
+ 
 import { format } from "date-fns";
 import { GrCopy } from "react-icons/gr";
 import { FaTrophy } from "react-icons/fa6";
@@ -27,6 +27,7 @@ import { style } from "../../utlis/CommonStyle";
 import TicketsPopUp from "../shared/TicketsPopUp";
 import { Popover, Typography } from "@mui/material";
 import { IoTicketOutline } from "react-icons/io5";
+import { useSelector } from "react-redux";
 
 
 
@@ -52,7 +53,8 @@ const updates_object_init = {
 
 
 const Leads = forwardRef(({ childRef, setIsload }, ref) => {
-  const { auth } = useAuth();
+ 
+   const auth = useSelector((state => state.auth.auth));
   const [selectedTab, setSelectedTab] = useState("progress");
   const [isLoading, setIsLoading] = useState(false);
   const [leadData, setLeadData] = useState([]);

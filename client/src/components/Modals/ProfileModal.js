@@ -1,10 +1,12 @@
 import React from "react";
 import { CgClose } from "react-icons/cg";
-import { useAuth } from "../../context/authContext";
+ 
 import { FaPen } from "react-icons/fa";
+import { useSelector } from "react-redux";
 
 export default function ProfileModal({ setIsProfile, setIsActive }) {
-  const { auth } = useAuth();
+  const auth = useSelector((state) => state.auth.auth); // Accessing user from Redux store
+ 
 
   return (
     <div className="relative w-[30rem]  bg-white rounded-lg overflow-hidden">

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { style } from "../../utlis/CommonStyle";
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import SubscriptionModel from "../../components/SubscriptionModel";
@@ -9,7 +9,7 @@ import {
   useMaterialReactTable,
 } from "material-react-table";
 import Loader from "../../utlis/Loader";
-import { useAuth } from "../../context/authContext";
+ 
 import toast from "react-hot-toast";
 import { format, set } from "date-fns";
 import { AiOutlineEdit, AiTwotoneDelete } from "react-icons/ai";
@@ -17,9 +17,11 @@ import Swal from "sweetalert2";
 import DataLabel from "./DataLabel";
 import { TbLoader2 } from "react-icons/tb";
 import QuickAccess from "../../utlis/QuickAccess";
+import { useSelector } from "react-redux";
 
 export default function Subscription() {
-  const { auth } = useAuth();
+   
+  const auth = useSelector((state) => state.auth.auth);
   const [show, setShow] = useState(false);
   const [subscriptionData, setSubscriptionData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -1912,7 +1914,7 @@ const col = table.getColumn("subscription");
 
 
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4 pb-[2rem]">
         <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-4 ">
           <div className="flex items-center gap-5">
@@ -2342,6 +2344,6 @@ const col = table.getColumn("subscription");
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 }

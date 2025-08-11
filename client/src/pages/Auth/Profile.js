@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
-import { useAuth } from "../../context/authContext";
-import { FaPen } from "react-icons/fa";
+ 
+ import { FaPen } from "react-icons/fa";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { style } from "../../utlis/CommonStyle";
 import { BiLoaderCircle } from "react-icons/bi";
+import { useSelector } from "react-redux";
 
 export default function Profile() {
-  const { auth } = useAuth();
+  
+  const auth = useSelector((state) => state.auth.auth);
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [emergency_contact, setEmergency_contact] = useState("");
@@ -112,7 +113,7 @@ export default function Profile() {
   };
 
   return (
-    <Layout>
+    <>
       <div className="w-full min-h-screen">
         <div className="bg-gradient-to-br from-orange-600 via-orange-300 to-orange-500 h-[10rem] rounded-b-lg"></div>
         <div className="flex items-center justify-center translate-y-[-10rem] w-full z-[10] py-4 px-3">
@@ -219,6 +220,6 @@ export default function Profile() {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 }

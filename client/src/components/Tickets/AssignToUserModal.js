@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
-import { useAuth } from "../../context/authContext";
-import axios from "axios";
+ import axios from "axios";
 import { style } from "../../utlis/CommonStyle";
 import { TbLoader2 } from "react-icons/tb";
 import toast from "react-hot-toast";
@@ -12,7 +11,8 @@ export default function AssignToUserModal({
   setSingleEmail,
   selectedCompany,
 }) {
-  const { auth } = useAuth();
+ 
+
   const [users, setUsers] = useState([]);
   const [userName, setUserName] = useState([]);
   const [selectedUser, setSelectUser] = useState("");

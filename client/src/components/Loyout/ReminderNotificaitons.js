@@ -1,26 +1,27 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+ 
 import moment from "moment";
-import { useReminder } from "../../context/reminderContext";
-import { Link } from "react-router-dom";
-import { CgEye } from "react-icons/cg";
+ import { Link } from "react-router-dom";
+
 import { MdOutlineMarkChatRead } from "react-icons/md";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchReminders, markAsReadReminder, setReminderData, setShowReminder } from "../../redux/slices/reminderSlice";
 
 const ReminderNotifications = ({setShowReminderNotificationPanel}) => {
   //take it one above
   // const [reminders, setReminders] = useState([]);
 
-  const { showReminder, setShowReminder, reminderData, setReminderData, snoozeReminder, markAsReadReminder, completeReminder, reminders, setReminders, set_unread_reminders_count, getRemindersCount, fetchReminders, loadingReminders } = useReminder();
+  // const { showReminder, setShowReminder, reminderData, setReminderData, snoozeReminder, markAsReadReminder, completeReminder, reminders, setReminders, set_unread_reminders_count, getRemindersCount, fetchReminders, loadingReminders } = useReminder();
 
+  const dispatch = useDispatch()
 
-
-
+  const reminders = useSelector(state => state.reminder.reminders)
 
 
   useEffect(() => {
     
 
-    fetchReminders();
+    dispatch(fetchReminders())
   }, []);
 
   return (
@@ -64,13 +65,13 @@ const ReminderNotifications = ({setShowReminderNotificationPanel}) => {
                   <button
                     className="text-orange-500 hover:underline font-medium text-lg"
                     onClick={() => {
-                      setReminderData(reminder);
-                      setShowReminder(true);
+                      dispatch(setReminderData(reminder))
+                      dispatch(setShowReminder(true))
 
                       setShowReminderNotificationPanel(false)
 
                       if(!reminder?.isRead) {
-                        markAsReadReminder(reminder?._id)
+                        dispatch(markAsReadReminder(reminder?._id))
                       }
                     }}
                   >
@@ -97,7 +98,7 @@ const ReminderNotifications = ({setShowReminderNotificationPanel}) => {
                       className="text-blue-500 hover:underline font-medium text-lg"
                       title="Mark as Read"
                       onClick={() => {
-                        markAsReadReminder(reminder?._id);
+                        dispatch(markAsReadReminder(reminder?._id))
                         
                       }}
                     >

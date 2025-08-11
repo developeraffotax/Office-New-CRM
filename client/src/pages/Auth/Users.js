@@ -10,7 +10,7 @@ import {
 } from "material-react-table";
 import { AiTwotoneDelete } from "react-icons/ai";
 import Loader from "../../utlis/Loader";
-import { useAuth } from "../../context/authContext";
+import { useSelector } from "react-redux";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { RiEdit2Line } from "react-icons/ri";
@@ -20,7 +20,7 @@ import QuickAccess from "../../utlis/QuickAccess";
 import { LuFilter } from "react-icons/lu";
 
 export default function Users() {
-  const { auth } = useAuth();
+  const auth = useSelector((state) => state.auth.auth);
   const [isOpen, setIsOpen] = useState(false);
   const [userId, setUserId] = useState("");
   const [userData, setUserData] = useState(false);
@@ -1269,7 +1269,7 @@ export default function Users() {
   });
 
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-[100%] py-4 px-2 sm:px-4 overflow-y-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -1400,6 +1400,6 @@ export default function Users() {
           />
         </div>
       )}
-    </Layout>
+    </>
   );
 }

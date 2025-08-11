@@ -401,7 +401,7 @@ export default function EmailDetail() {
   console.log("TICKET DETAIL💛💛🧡🧡❤❤", ticketDetail?.state);
 
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-[100%] flex flex-col bg-gray-50">
         <div className="w-full flex items-center justify-between bg-white px-4 py-3 border-b border-gray-200  ">
           <div className="flex items-center justify-center gap-3">
@@ -729,6 +729,6 @@ export default function EmailDetail() {
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 }

@@ -193,7 +193,7 @@ export default function Inbox() {
   const isChecked = (id) => ids.includes(id);
 
   return (
-    <Layout>
+    <>
       <div className="relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4 pb-[2rem]">
         <div className="flex items-center justify-between flex-wrap gap-5">
           <div className="relative flex items-center gap-4">
@@ -449,6 +449,6 @@ export default function Inbox() {
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 }

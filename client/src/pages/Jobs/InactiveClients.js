@@ -7,10 +7,11 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
-import { useAuth } from "../../context/authContext";
+ 
 import Loader from "../../utlis/Loader";
 import Swal from "sweetalert2";
-import { IoRemoveCircle } from "react-icons/io5";
+ 
+import { useSelector } from "react-redux";
 
 export default function InactiveClients({
   getSingleJobDetail,
@@ -25,7 +26,8 @@ export default function InactiveClients({
 }) {
   const [loading, setLoading] = useState(false);
   const [tableData, setTableData] = useState([]);
-  const { auth } = useAuth();
+ 
+     const auth = useSelector((state => state.auth.auth));
   const [labelData, setLabelData] = useState([]);
 
   // ---------------All Client_Job Status(Completed) ----------->

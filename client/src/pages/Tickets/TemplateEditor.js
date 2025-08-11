@@ -1,18 +1,17 @@
 import React, { useRef, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { RxScissors } from "react-icons/rx";
 import ImageUploader from "../../components/Certificates/ImageUploader";
 import TextInput from "../../components/Certificates/TextInput";
 import SignaturePad from "../../components/Certificates/SignaturePad";
-import { useAuth } from "../../context/authContext";
+
 import CertificateCanvas from "../../components/Certificates/CertificateCanvas";
 import PlaceholderPicker from "../../components/Certificates/PlaceholderPicker";
 import FilesUploader from "../../components/Certificates/FilesUploader";
 // import ImageMultiSelect from "../../components/Certificates/ImageMultiSelect";
 
 export default function TemplateEditor() {
-  const { auth } = useAuth();
-  const [designMode, setDesignMode] = useState("image");
+   const [designMode, setDesignMode] = useState("image");
   const [images, setImages] = useState([]);
   const [files, setFiles] = useState([]);
   const [texts, setTexts] = useState([]);
@@ -120,7 +119,7 @@ export default function TemplateEditor() {
     }
   };
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-full flex flex-col bg-gray-100 gap-4 overflow-y-auto py-4 px-2 sm:px-4">
         <div className="w-full flex items-center justify-between">
           <h1 className="text-xl sm:text-3xl font-semibold w-full flex items-center gap-1 tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
@@ -258,6 +257,6 @@ export default function TemplateEditor() {
 
         {/*  */}
       </div>
-    </Layout>
+    </>
   );
 }

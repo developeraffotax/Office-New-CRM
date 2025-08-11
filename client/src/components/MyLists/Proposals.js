@@ -20,12 +20,14 @@ import { GrCopy } from "react-icons/gr";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { CiEdit } from "react-icons/ci";
-import { useAuth } from "../../context/authContext";
+ 
 import AddProposal from "../../pages/Proposal/AddProposal";
+import { useSelector } from "react-redux";
 
 const Proposals = forwardRef(
   ({ proposalData, setProposalData, childRef, setIsload }, ref) => {
-    const { auth } = useAuth();
+     
+       const auth = useSelector((state => state.auth.auth));
     const [show, setShow] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 

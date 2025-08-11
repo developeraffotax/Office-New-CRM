@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 import axios from "axios";
-import { useAuth } from "../../context/authContext";
+ 
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -13,6 +13,7 @@ import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import { MdOutlineRemoveCircle } from "react-icons/md";
 import DraggableUserList from "../../utlis/DraggableUserList";
+import { useSelector } from "react-redux";
 
 export default function CompletedGoals({
   fetchGoals,
@@ -21,7 +22,8 @@ export default function CompletedGoals({
   setCompleteGoalsData,
   showJobHolderFilter
 }) {
-  const { auth } = useAuth();
+ 
+     const auth = useSelector((state => state.auth.auth));
   const [users, setUsers] = useState([]);
   const [goalsData, setGoalsData] = useState([]);
   const [loading, setLoading] = useState(false);

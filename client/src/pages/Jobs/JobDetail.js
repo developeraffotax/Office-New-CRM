@@ -7,7 +7,6 @@ import { RiLoaderFill, RiTimerLine } from "react-icons/ri";
 import { format } from "date-fns";
 import Loader from "../../utlis/Loader";
 import { Timer } from "../../utlis/Timer";
-import { useAuth } from "../../context/authContext";
 import { FaRegUser } from "react-icons/fa";
 import { FaEdit } from "react-icons/fa";
 import { CgClose } from "react-icons/cg";
@@ -26,8 +25,8 @@ import { BiBellPlus, BiSolidBellPlus } from "react-icons/bi";
 import { RiLoader2Fill } from "react-icons/ri";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { RiListView } from "react-icons/ri";
-import { MdOutlineAddBox } from "react-icons/md";
+ 
+import { useSelector } from "react-redux";
 
 export default function JobDetail({
   clientId,
@@ -40,7 +39,11 @@ export default function JobDetail({
   const [clientDetail, setClientDetail] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("subtasks");
-  const { auth, anyTimerRunning } = useAuth();
+ 
+
+     const auth = useSelector((state => state.auth.auth));
+     const anyTimerRunning = useSelector((state => state.auth.anyTimerRunning));
+
   const [isOpen, setIsOpen] = useState(false);
   const [jobId, setJobId] = useState("");
   const [isShow, setIsShow] = useState(false);

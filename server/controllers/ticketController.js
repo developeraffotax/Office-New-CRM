@@ -22,6 +22,7 @@ import path from "path";
 import { JWT } from "google-auth-library";
 import getJobHolderNames from "../utils/getJobHolderNames.js";
 import TicketActivity from "../models/ticketActivityModel.js";
+import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
 
 // Create Ticket \
 export const sendEmail = async (req, res) => {
@@ -846,6 +847,32 @@ export const updateTickets = async (req, res) => {
 
 
 
+
+   // Create Notification
+   if(updateKeys.includes('jobHolder') && (req.user?.user?.name !== ticket?.jobHolder)) {  
+    const user = await userModel.findOne({ name: ticket.jobHolder });
+    
+        const payload = {
+      title: "New Ticket Assigned",
+      redirectLink: "/tickets",
+      description: `${req.user.user.name} assigned a new ticket of "${ticket.subject}"`,
+      taskId: `${ticket._id}`,
+      userId: user._id,
+      type: "ticket_assigned",
+    }
+
+
+    scheduleNotification(true, payload)
+  }
+
+
+
+
+
+
+
+
+
     const activities = [];
 
     // Loop through updates to create individual activity logs
@@ -869,6 +896,15 @@ export const updateTickets = async (req, res) => {
     if (activities.length > 0) {
       await TicketActivity.insertMany(activities);
     }
+
+
+
+
+
+
+
+
+
 
     res.status(200).send({
       success: true,

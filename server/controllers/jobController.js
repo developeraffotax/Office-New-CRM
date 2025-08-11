@@ -1,11 +1,11 @@
 import activityModel from "../models/activityModel.js";
 import jobsModel from "../models/jobsModel.js";
 import labelModel from "../models/labelModel.js";
-import notificationModel from "../models/notificationModel.js";
 import userModel from "../models/userModel.js";
 import XLSX from "xlsx";
 import moment from "moment";
 import redisClient from "../utils/redisClient.js";
+import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
@@ -124,6 +124,38 @@ export const createJob = async (req, res) => {
         - Created At: ${currentDateTime}`,
       });
     }
+
+
+
+
+
+
+    
+    // 🔹 Send Notifications to ALL job holders
+    for (const job of createdJobs) {
+      if (req.user?.user?.name !== job?.job?.jobHolder) {
+        const jobHolderUser = await userModel.findOne({ name: job.job.jobHolder });
+
+        if (jobHolderUser) {
+          const payload = {
+            title: "New Job Assigned",
+            redirectLink: "/job-planning",
+            description: `${req.user.user.name} assigned a new job of "${job.job.jobName}"`,
+            taskId: `${job._id}`,
+            userId: jobHolderUser._id,
+            type: "job_assigned",
+          };
+
+          scheduleNotification(true, payload);
+        }
+      }
+    }
+
+
+
+
+
+
 
     //  await redisClient.del('all_jobs');
 
@@ -643,23 +675,36 @@ export const updateJobHolder = async (req, res) => {
 
     await clientJob.save();
     // await redisClient.del('all_jobs');
-    res.status(200).send({
-      success: true,
-      message: "Job holder updated successfully!",
-      clientJob: clientJob,
-    });
+    
 
     // Create Notification
     const user = await userModel.findOne({ name: jobHolder });
-    if(user && req.user?.user?.name !== jobHolder) {
-      await notificationModel.create({
+    
+        const payload = {
       title: "New Job Assigned",
       redirectLink: "/job-planning",
       description: `${req.user.user.name} assign a new job of "${clientJob.job.jobName}"`,
       taskId: `${clientJob._id}`,
       userId: user._id,
-    });
+      type: "job_assigned",
     }
+
+
+    scheduleNotification(req.user?.user?.name !== jobHolder, payload)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Add Activity Log
     if (clientJob) {
@@ -674,6 +719,16 @@ export const updateJobHolder = async (req, res) => {
              - Created At: ${currentDateTime}`,
       });
     }
+
+
+
+
+
+    res.status(200).send({
+      success: true,
+      message: "Job holder updated successfully!",
+      clientJob: clientJob,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).send({

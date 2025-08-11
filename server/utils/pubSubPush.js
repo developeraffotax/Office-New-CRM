@@ -172,6 +172,7 @@ const createNotification = async (ticket) => {
     description: `You've received a response to a ticket with the subject "${ticket.subject}" from the company "${ticket.companyName}" and the client's name "${ticket.clientName}".`,
     taskId: ticket._id,
     userId: jobHolder?._id,
+    type: "ticket_received"
   });
 
   sendSocketNotification(notification1, jobHolder?._id);
@@ -188,6 +189,7 @@ const createNotification = async (ticket) => {
       description: `You've received a response to a ticket with the subject "${ticket.subject}" from the company "${ticket.companyName}" and the client's name "${ticket.clientName}".`,
       taskId: ticket._id,
       userId: lastMessageSentBy?._id,
+      type: "ticket_received"
     });
 
     sendSocketNotification(notification2, lastMessageSentBy?._id);

@@ -26,6 +26,7 @@ export default function Layout({ children }) {
   const [show, setShow] = useState(false);
   const [hide, setHide] = useState(false);
   const auth = useSelector((state) => state.auth.auth);
+  const token = useSelector((state) => state.auth.token);
  
   const [showQuickList, setShowQuickList] = useState(false);
   const [quickListData, setQuickListData] = useState("");
@@ -301,9 +302,9 @@ useEffect(() => {
   // };
 
   // ----------------verify token-------------
-  if (!auth?.token) {
-    return <Spinner />;
-  }
+  // if (!(auth?.token)) {
+  //   return <Spinner />;
+  // }
 
 
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
-import { useAuth } from "../../context/authContext";
+ 
 import "froala-editor/js/froala_editor.pkgd.min.js";
 import "froala-editor/css/froala_editor.pkgd.min.css";
 import "froala-editor/css/froala_style.min.css";
@@ -29,11 +29,12 @@ import {
   Typography,
 } from "@mui/material";
 import { Close, DeleteOutline, EditOutlined, MessageRounded, MoreVert, Add as AddIcon, } from "@mui/icons-material";
-import { v4 as uuidv4 } from "uuid";
+ 
 
 
 // import { MentionsInput, Mention } from "react-mentions";
 import socketIO from "socket.io-client";
+import { useSelector } from "react-redux";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -46,7 +47,8 @@ export default function JobCommentModal({
   getTasks1,
   page,
 }) {
-  const { auth } = useAuth();
+ 
+     const auth = useSelector((state => state.auth.auth));
   const [loading, setLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [showPicker, setShowPicker] = useState(false);

@@ -22,8 +22,8 @@ import { format } from "date-fns";
 import { useLocation } from "react-router-dom";
 import { GrCopy } from "react-icons/gr";
 
-import socketIO from "socket.io-client";
-import { useAuth } from "../../context/authContext";
+ 
+ 
 import { Timer } from "../../utlis/Timer";
 import CompletedTasks from "../../pages/Tasks/CompletedTasks";
 import AddLabel from "../Modals/AddLabel";
@@ -33,13 +33,27 @@ import JobCommentModal from "../../pages/Jobs/JobCommentModal";
 import Loader from "../../utlis/Loader";
 import TaskDetail from "../../pages/Tasks/TaskDetail";
 import TimeEditor from "../../utlis/TimeSelector";
-import { useTimer } from "../../context/timerContext";
-const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+ 
+import { useDispatch, useSelector } from "react-redux";
+ 
+import { updateCountdown } from "../../redux/slices/timerSlice";
+import { useSocket } from "../../context/socketProvider";
+
+ 
 
 const Tasks = forwardRef(
   ({ tasksData, loading, setTasksData, childRef, setIsload }, ref) => {
-    const { auth, filterId, anyTimerRunning, jid } = useAuth();
+     
+      const dispatch = useDispatch()
+       const auth = useSelector((state => state.auth.auth));
+       const filterId = useSelector((state => state.auth.filterId));
+       const anyTimerRunning = useSelector((state => state.auth.anyTimerRunning));
+       const jid = useSelector((state => state.auth.jid));
+
+
+    const socketId = useSocket()
+
+
     const [isOpen, setIsOpen] = useState(false);
     const [users, setUsers] = useState([]);
     const [openAddProject, setOpenAddProject] = useState(false);
@@ -75,7 +89,7 @@ const Tasks = forwardRef(
     const [activity, setActivity] = useState("Chargeable");
     const [access, setAccess] = useState([]);
 
-      const {  updateCountdown } = useTimer();
+ 
 
     console.log("filterData", filterData);
 
@@ -774,7 +788,7 @@ Cell: ({ cell, row }) => {
 
         const savedTaskTimer =JSON.parse(localStorage.getItem("task-timer"));
         if (savedTaskTimer && savedTaskTimer.taskId === row.original._id) {
-            updateCountdown(newHours)
+            dispatch(updateCountdown(newHours))
         }
 
 

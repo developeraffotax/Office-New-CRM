@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { style } from "../../utlis/CommonStyle";
 import { LuImport } from "react-icons/lu";
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
-import { useAuth } from "../../context/authContext";
+ 
 import axios from "axios";
 import toast from "react-hot-toast";
 import { TbLoader2 } from "react-icons/tb";
@@ -22,9 +22,13 @@ import { IoMdCopy } from "react-icons/io";
 import { RiEdit2Line } from "react-icons/ri";
 import QuickAccess from "../../utlis/QuickAccess";
 import DraggableUserList from "../../utlis/DraggableUserList";
+import { useSelector } from "react-redux";
 
 export default function Template() {
-  const { auth } = useAuth();
+
+  const auth = useSelector((state) => state.auth.auth);
+
+
   const [showCategory, setShowCategory] = useState(false);
   const [categoryData, setCategoryData] = useState([]);
   const [users, setUsers] = useState([]);
@@ -762,7 +766,7 @@ export default function Template() {
   });
 
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
         {selectedTab === "templates" && (
           <div className="flex items-start sm:items-center sm:justify-between flex-col gap-2 sm:flex-row">
@@ -1073,6 +1077,6 @@ export default function Template() {
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 }

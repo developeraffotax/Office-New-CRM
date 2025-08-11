@@ -1,9 +1,9 @@
 import React from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 
 export default function NotFound() {
   return (
-    <Layout>
+    <>
       <div className="w-full h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center justify-center">
           <img
@@ -17,6 +17,6 @@ export default function NotFound() {
           </span>
         </div>
       </div>
-    </Layout>
+    </>
   );
 }

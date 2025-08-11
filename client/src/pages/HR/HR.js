@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import axios from "axios";
-import { useAuth } from "../../context/authContext";
+ 
 import HandleHRModal from "../../components/hr/HandleHRModal";
 import HandleDepartmentModal from "../../components/hr/HandleDepartmentModal";
 import { AiTwotoneDelete } from "react-icons/ai";
@@ -21,10 +21,11 @@ import { GoEye, GoEyeClosed } from "react-icons/go";
 import { GrCopy } from "react-icons/gr";
 import { TbLoader, TbLoader2 } from "react-icons/tb";
 import { LuLink } from "react-icons/lu";
-import { CiSaveDown2 } from "react-icons/ci";
+ 
 import HandleHrRoleModal from "../../components/hr/HandleHrRoleModal";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import QuickAccess from "../../utlis/QuickAccess"
+import { useSelector } from "react-redux";
  
 
 const months = [
@@ -50,7 +51,8 @@ const updates_object_init = {
 };
 
 export default function HR() {
-  const { auth } = useAuth();
+  const auth = useSelector((state) => state.auth.auth);
+  
   const [showAddTask, setShowAddTask] = useState(false);
   const [taskId, setTaskId] = useState("");
   const [users, setUsers] = useState([]);
@@ -1128,7 +1130,7 @@ export default function HR() {
 
 
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex fles-start sm:items-center sm:justify-between flex-col sm:flex-row gap-4 ">
           <div className="flex items-center gap-4 justify-start ">
@@ -1771,6 +1773,6 @@ export default function HR() {
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 }

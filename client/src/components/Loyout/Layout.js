@@ -1,38 +1,32 @@
 import React, { useEffect, useRef, useState } from "react";
 import { IoMenu, IoClose } from "react-icons/io5";
-import { useAuth } from "../../context/authContext";
+
 import Spinner from "../../utlis/Spinner";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import axios from "axios";
-import { Link, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import Draggable from "react-draggable";
-import socketIO from "socket.io-client";
+ 
 import toast from "react-hot-toast";
 import { CgList } from "react-icons/cg";
 import OverdueModal from "../../utlis/OverdueModal";
 import ReminderModal from "../../utlis/ReminderModal";
+import { useSelector } from "react-redux";
+ 
 
 
-const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+ 
 
 export default function Layout({ children }) {
+    // useSocket(); 
+
+
   const [show, setShow] = useState(false);
   const [hide, setHide] = useState(false);
-  const { auth } = useAuth();
-  const [reminderData, setReminderData] = useState([]);
-  const [snoozeTimers, setSnoozeTimers] = useState({});
-  const hours = [2, 3, 4, 5, 6, 7];
-  const colors = [
-    "bg-red-500 hover:bg-red-600",
-    "bg-green-700 hover:bg-perple-800",
-    "bg-lime-500 hover:bg-lime-600",
-    "bg-yellow-500 hover:bg-yellow-600",
-    "bg-indigo-500 hover:bg-indigo-600",
-    "bg-orange-500 hover:bg-orange-600",
-  ];
+  const auth = useSelector((state) => state.auth.auth);
+ 
   const [showQuickList, setShowQuickList] = useState(false);
   const [quickListData, setQuickListData] = useState("");
   const [editId, setEditId] = useState("");
@@ -315,6 +309,7 @@ useEffect(() => {
 
   return (
 <>  
+     
     <ReminderModal />
     <OverdueModal />
     <div className="relative w-full h-[111vh] overflow-hidden flex flex-col ">
@@ -355,7 +350,8 @@ useEffect(() => {
           </div>
         )}
         <div className="flex-[1.8] border-r-red-500  w-full h-[100%] pb-[3rem] pt-[2.5rem] overflow-y-auto hidden1   sm:pt-0 border-l-[2px]  ">
-          {children}
+          {/* {children} */}
+           <Outlet />
         </div>
       </div>
 

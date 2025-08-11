@@ -7,7 +7,7 @@ import { RiTimerLine } from "react-icons/ri";
 import { format } from "date-fns";
 import Loader from "../../utlis/Loader";
 import { Timer } from "../../utlis/Timer";
-import { useAuth } from "../../context/authContext";
+ 
 import { FaRegUser } from "react-icons/fa";
 import { FaEdit } from "react-icons/fa";
 import { AiFillDelete } from "react-icons/ai";
@@ -21,8 +21,9 @@ import { IoCloseCircleOutline } from "react-icons/io5";
 import { RiLoaderFill } from "react-icons/ri";
 import { BiBellPlus } from "react-icons/bi";
 import { BiSolidBellPlus } from "react-icons/bi";
-import { MdOutlineDriveFileMove } from "react-icons/md";
+ 
 import Reminder from "../../utlis/Reminder";
+import { useSelector } from "react-redux";
 
 export default function TaskDetail({
   taskId,
@@ -37,21 +38,28 @@ export default function TaskDetail({
   assignedPerson,
    
 }) {
+ 
+  const auth = useSelector((state) => state.auth.auth);
+  const anyTimerRunning = useSelector((state) => state.auth.anyTimerRunning);
+
+  const timerRef = useRef();
+  const initialLoad = useRef(true);
+
   const [taskDetal, setTaskDetal] = useState(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("subtasks");
-  const { auth, anyTimerRunning } = useAuth();
+
+
+
   const [isOpen, setIsOpen] = useState(false);
   const [isShow, setIsShow] = useState(false);
   const [note, setNote] = useState("");
   const [editId, setEditId] = useState("");
-  const timerRef = useRef();
   const [subTask, setSubtask] = useState("");
   const [subTaskLoading, setSubTaskLoading] = useState(false);
   const [subTaskData, setSubTaskData] = useState([]);
   const [timerId, setTimerId] = useState("");
   const [showReminder, setShowReminder] = useState(false);
-  const initialLoad = useRef(true);
 
   const [showMoveProject, setShowMoveProject] = useState(false);
   const [usersTasksArr, setUsersTasksArr] = useState([]);

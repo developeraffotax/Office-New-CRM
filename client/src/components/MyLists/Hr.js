@@ -1,14 +1,13 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { IoClose } from "react-icons/io5";
-import { style } from "../../utlis/CommonStyle";
+ 
 import axios from "axios";
-import { useAuth } from "../../context/authContext";
+ 
 import HandleHRModal from "../../components/hr/HandleHRModal";
 import HandleDepartmentModal from "../../components/hr/HandleDepartmentModal";
 import { AiTwotoneDelete } from "react-icons/ai";
-import { MdOutlineEdit } from "react-icons/md";
-import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
+ 
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 import {
@@ -17,9 +16,10 @@ import {
 } from "material-react-table";
 import Loader from "../../utlis/Loader";
 import { RiEdit2Line } from "react-icons/ri";
-import { GoEye, GoEyeClosed } from "react-icons/go";
+ 
 import { GrCopy } from "react-icons/gr";
 import { LuLink } from "react-icons/lu";
+import { useSelector } from "react-redux";
 
 const months = [
   "January",
@@ -37,7 +37,8 @@ const months = [
 ];
 
 const HR = forwardRef(({taskData, loading, setTaskData, childRef, setIsload}, ref) => {
-    const { auth } = useAuth();
+   
+     const auth = useSelector((state => state.auth.auth));
     const [showAddTask, setShowAddTask] = useState(false);
     const [taskId, setTaskId] = useState("");
     const [users, setUsers] = useState([]);

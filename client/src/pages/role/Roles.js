@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { style } from "../../utlis/CommonStyle";
 import AddRole from "./AddRole";
 import axios from "axios";
@@ -257,7 +257,7 @@ export default function Roles() {
   };
 
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4 bg-gray-100">
         {/*  */}
         {loading ? (
@@ -485,6 +485,6 @@ export default function Roles() {
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 }

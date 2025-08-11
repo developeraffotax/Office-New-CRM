@@ -5,10 +5,10 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { useAuth } from "../../context/authContext";
+ 
 import axios from "axios";
 import { style } from "../../utlis/CommonStyle";
-import { IoClose } from "react-icons/io5";
+ 
 import { IoMdDownload } from "react-icons/io";
 import { Box, Button } from "@mui/material";
 import {
@@ -29,6 +29,7 @@ import ApexCharts from "react-apexcharts";
 import { BsPieChartFill } from "react-icons/bs";
 import AddTimerModal from "../../pages/TimerSheet/AddTimerModal";
 import RunningTimers from "../../pages/TimerSheet/RunningTimers";
+import { useSelector } from "react-redux";
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -46,7 +47,8 @@ const csvConfig = mkConfig({
 
 const TimeSheet = forwardRef(
   ({ timerData, setTimerData, childRef, setIsload }, ref) => {
-    const { auth } = useAuth();
+     
+       const auth = useSelector((state => state.auth.auth));
     const [tableFilterData, setTableFilterDate] = useState([]);
     const [loading, setLoading] = useState(false);
     const [users, setUsers] = useState([]);

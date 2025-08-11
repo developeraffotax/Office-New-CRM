@@ -8,10 +8,12 @@ import React, {
 import axios from "axios";
 import { FaCirclePlay } from "react-icons/fa6";
 import { IoStopCircle } from "react-icons/io5";
-import { useAuth } from "../context/authContext";
-import toast from "react-hot-toast";
+ import toast from "react-hot-toast";
 import socketIO from "socket.io-client";
-import { useTimer } from "../context/timerContext";
+ 
+import { useDispatch, useSelector } from "react-redux";
+import { setAnyTimerRunning, setJid } from "../redux/slices/authSlice";
+import { startCountdown, stopCountdown } from "../redux/slices/timerSlice";
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -42,7 +44,13 @@ export const Timer = forwardRef(
     },
     ref
   ) => {
-    const { anyTimerRunning, setAnyTimerRunning, auth, setJid } = useAuth();
+    
+
+    const dispatch = useDispatch();
+    const auth = useSelector((state) => state.auth.auth);
+    const anyTimerRunning = useSelector((state) => state.auth.anyTimerRunning);
+
+
     const [timerId, setTimerId] = useState(null);
     const [isRunning, setIsRunning] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
@@ -52,7 +60,7 @@ export const Timer = forwardRef(
     const [runningId, setRunningId] = useState("");
 
     console.log("Timer Component Rendered", allocatedTime);
-    const {startCountdown,  stopCountdown, } = useTimer()
+ 
 
     useEffect(() => {
       if (!clientId || !jobId) {
@@ -73,12 +81,12 @@ export const Timer = forwardRef(
             setTimerId(_id);
             setStartTime(new Date(startTime));
             setIsRunning(isRunning);
-            setAnyTimerRunning(isRunning);
+            dispatch(setAnyTimerRunning(isRunning));
             const timeElapsed = Math.floor(
               (new Date() - new Date(startTime)) / 1000
             );
             setElapsedTime(timeElapsed);
-            setJid(response.data.timer.jobId);
+            dispatch(setJid(response.data.timer.jobId));
           }
         } catch (error) {
           console.error(error);
@@ -150,7 +158,7 @@ export const Timer = forwardRef(
 
          if (pageName === "Tasks") {
 
-           startCountdown(allocatedTime, jobId, task, response.data.timer._id);
+           dispatch(startCountdown(allocatedTime, jobId, task, response.data.timer._id))
          }
         
 
@@ -190,7 +198,7 @@ export const Timer = forwardRef(
         if (data) {
 
           if(pageName === "Tasks") {
-            stopCountdown();
+            dispatch(stopCountdown())
           }
           
           

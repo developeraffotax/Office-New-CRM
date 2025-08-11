@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../../context/authContext";
-import Layout from "../../components/Loyout/Layout";
+ 
+ 
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Loader from "../../utlis/Loader";
@@ -11,6 +11,7 @@ import {
   FiTag,
   FiUsers,
 } from "react-icons/fi";
+import { useSelector } from "react-redux";
 // import Chart from "react-apexcharts";
 // import { style } from "../../utlis/CommonStyle";
 // import RunningGame from "../../utlis/RunningGame";
@@ -18,7 +19,7 @@ import {
 // import PuzzleGame from "../../components/games/PuzzleGame";
 
 export default function UDashboard() {
-  const { auth } = useAuth();
+  const auth = useSelector((state) => state.auth.auth);
   const router = useNavigate();
   const [projects, setProjects] = useState(0);
   const [clients, setClients] = useState(0);
@@ -169,7 +170,7 @@ export default function UDashboard() {
   }, [auth]);
 
   return (
-    <Layout>
+    <>
       <div className="w-full flex flex-col gap-4 py-4 px-4">
         <h1 className="text-xl sm:text-3xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
           Welcome, {auth?.user?.name}!
@@ -268,6 +269,6 @@ export default function UDashboard() {
           {/* <PuzzleGame /> */}
         </div>
       </div>
-    </Layout>
+    </>
   );
 }

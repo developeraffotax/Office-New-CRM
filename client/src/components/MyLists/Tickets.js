@@ -16,13 +16,14 @@ import { format } from "date-fns";
 import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { useAuth } from "../../context/authContext";
+ 
 import { MdCheckCircle, MdInsertComment } from "react-icons/md";
 import { AiOutlineEdit, AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import JobCommentModal from "../../pages/Jobs/JobCommentModal";
 import { style } from "../../utlis/CommonStyle";
+import { useSelector } from "react-redux";
 
 const jobStatusOptions = [
   "Quote",
@@ -37,7 +38,8 @@ const jobStatusOptions = [
 
 const Tickets = forwardRef(
   ({ emailData, setEmailData, childRef, setIsload }, ref) => {
-    const { auth } = useAuth();
+     
+       const auth = useSelector((state => state.auth.auth));
     const [showSendModal, setShowSendModal] = useState(false);
     const [filteredData, setFilteredData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);

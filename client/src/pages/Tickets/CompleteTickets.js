@@ -6,20 +6,26 @@ import {
 import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
 import { IoBriefcaseOutline, IoRemoveCircle } from "react-icons/io5";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { useAuth } from "../../context/authContext";
+ 
 import { MdInsertComment } from "react-icons/md";
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { useSelector } from "react-redux";
 
 export default function CompleteTickets() {
-  const { auth } = useAuth();
+
+
+  
+
+  const auth = useSelector((state) => state.auth.auth);
+
   const [emailData, setEmailData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -1086,7 +1092,7 @@ export default function CompleteTickets() {
 
 
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-5">
@@ -1309,6 +1315,6 @@ export default function CompleteTickets() {
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 }

@@ -1,21 +1,19 @@
 import React, {
   useState,
   useEffect,
-  useImperativeHandle,
-  forwardRef,
+  
   useRef,
 } from "react";
 import axios from "axios";
-import { FaCirclePlay } from "react-icons/fa6";
-import { IoStopCircle } from "react-icons/io5";
-import { useAuth } from "../context/authContext";
+ 
+import { useSelector } from "react-redux";
 
 
 
 export const ActiveTimer = () => {
 
 
-  const { anyTimerRunning, setAnyTimerRunning, auth, setJid } = useAuth();
+  const auth = useSelector((state) => state.auth.auth);
   const [isRunning, setIsRunning] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const isInitialMount = useRef(true);

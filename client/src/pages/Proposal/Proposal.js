@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import Loader from "../../utlis/Loader";
@@ -9,7 +9,7 @@ import {
 } from "material-react-table";
 import axios from "axios";
 import { AiTwotoneDelete } from "react-icons/ai";
-import { useAuth } from "../../context/authContext";
+ 
 import { format } from "date-fns";
 import { GrCopy } from "react-icons/gr";
 import toast from "react-hot-toast";
@@ -18,9 +18,14 @@ import AddProposal from "./AddProposal";
 import { CiEdit } from "react-icons/ci";
 import QuickAccess from "../../utlis/QuickAccess";
 import DraggableUserList from "../../utlis/DraggableUserList";
+import { useSelector } from "react-redux";
 
 export default function Proposal() {
-  const { auth } = useAuth();
+
+
+  const auth = useSelector((state) => state.auth.auth);
+
+
   const [show, setShow] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [proposalData, setProposalData] = useState([]);
@@ -1810,7 +1815,7 @@ export default function Proposal() {
   };
 
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -1960,6 +1965,6 @@ export default function Proposal() {
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 }

@@ -13,7 +13,7 @@ import {
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
-import { useAuth } from "../../context/authContext";
+ 
 import { TbCalendarDue } from "react-icons/tb";
 import AddTaskModal from "../../components/Tasks/AddTaskModal";
 import {
@@ -30,6 +30,8 @@ import { MdBackspace } from "react-icons/md";
 import TimeEditor from "../../utlis/TimeSelector";
 import Subtasks from "./Subtasks";
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import { useDispatch, useSelector } from "react-redux";
+import { setFilterId } from "../../redux/slices/authSlice";
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -51,7 +53,12 @@ const CompletedTasks = ({
   getTasks,
   getAllProj1,
 }) => {
-  const { auth, filterId, setFilterId } = useAuth();
+ 
+
+  const dispatch = useDispatch();
+  const auth = useSelector((state) => state.auth.auth);
+  const filterId = useSelector((state) => state.auth.filterId);
+
   const [isOpen, setIsOpen] = useState(false);
   const [users, setUsers] = useState([]);
   const [openAddProject, setOpenAddProject] = useState(false);
@@ -1856,7 +1863,7 @@ const CompletedTasks = ({
               setActive("All");
               filterByDep("All");
               setActive1("");
-              setFilterId("");
+              dispatch(setFilterId(""));
             }}
           >
             All ({getProjectsCount("All")})
@@ -1874,7 +1881,7 @@ const CompletedTasks = ({
                   setActive(proj?.projectName);
                   filterByDep(proj?.projectName);
                   setActive1("");
-                  setFilterId("");
+                   dispatch(setFilterId(""));
                 }}
               >
                 {proj?.projectName} ({getProjectsCount(proj?.projectName)})
@@ -1929,7 +1936,7 @@ const CompletedTasks = ({
               setShowJobHolder(false);
               setShowDue(false);
               setActive1("");
-              setFilterId("");
+               dispatch(setFilterId(""));
             }}
             title="Clear filters"
           >

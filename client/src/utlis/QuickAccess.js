@@ -4,11 +4,12 @@ import MenuItem from "@mui/material/MenuItem";
 
 import { FiPlusCircle } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/authContext";
+ 
+import { useSelector } from "react-redux";
 
 export default function QuickAccess() {
 
-  const {auth} = useAuth();
+  const auth = useSelector((state) => state.auth.auth);
 
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);

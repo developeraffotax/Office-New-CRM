@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import axios from "axios";
@@ -19,7 +19,7 @@ import { format } from "date-fns";
 import { GoEye } from "react-icons/go";
 import ComplaintDetail from "../../components/Complaint/ComplaintDetail";
 import { GrCopy } from "react-icons/gr";
-import { FcFilledFilter } from "react-icons/fc";
+ 
 import QuickAccess from "../../utlis/QuickAccess";
 import DraggableUserList from "../../utlis/DraggableUserList";
 import { LuFilter } from "react-icons/lu";
@@ -1011,7 +1011,7 @@ export default function Complaints() {
 
 
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-start sm:items-center sm:justify-between flex-col sm:flex-row gap-4 ">
           <div className="flex items-center gap-5">
@@ -1285,6 +1285,6 @@ export default function Complaints() {
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 }

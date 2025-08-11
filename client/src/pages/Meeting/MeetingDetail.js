@@ -13,7 +13,8 @@ import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { FaUsers } from "react-icons/fa";
 import { MdOutlineEdit } from "react-icons/md";
-import { useAuth } from "../../context/authContext";
+ 
+import { useSelector } from "react-redux";
 
 export default function MeetingDetail({
   setShowDetail,
@@ -22,7 +23,8 @@ export default function MeetingDetail({
   setMeetingId,
   setShow,
 }) {
-  const { auth } = useAuth();
+ 
+     const auth = useSelector((state => state.auth.auth));
   const [meeting, setMeeting] = useState([]);
   const [loading, setLoading] = useState(false);
 

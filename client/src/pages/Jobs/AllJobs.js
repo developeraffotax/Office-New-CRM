@@ -13,7 +13,7 @@ import {
 import { addMonths, format, formatISO } from "date-fns";
 import { MdAccountCircle, MdInsertComment } from "react-icons/md";
 import toast from "react-hot-toast";
-import { useAuth } from "../../context/authContext";
+ 
 import Loader from "../../utlis/Loader";
 import { TbCalendarDue, TbLoader2 } from "react-icons/tb";
 import { IoClose, IoTicketOutline } from "react-icons/io5";
@@ -53,13 +53,17 @@ import { FiPlusSquare } from "react-icons/fi";
 import NewTicketModal from "../../utlis/NewTicketModal";
 import DateRangePopover from "../../utlis/DateRangePopover";
 import { DateFilterFn } from "../../utlis/DateFilterFn";
+import { useDispatch, useSelector } from "react-redux";
+ 
+import { setFilterId, setSearchValue } from "../../redux/slices/authSlice";
+import { useSocket } from "../../context/socketProvider";
  
  
+ 
 
 
 
-const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+ 
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -76,19 +80,19 @@ const csvConfig = mkConfig({
 });
 
 export default function AllJobs() {
-  const {
-    auth,
-    filterId,
-    setFilterId,
-    searchValue,
-    setSearchValue,
-    jid,
-    anyTimerRunning,
-  } = useAuth();
+ 
+  const dispatch = useDispatch();
+  const auth = useSelector((state) => state.auth.auth);
+  const filterId = useSelector((state) => state.auth.filterId);
+  const searchValue = useSelector((state) => state.auth.searchValue);
+  const jid = useSelector((state) => state.auth.jid);
+  const anyTimerRunning = useSelector((state) => state.auth.anyTimerRunning);
+
+   
   const [isOpen, setIsOpen] = useState(false);
 
 
- 
+ const socketId = useSocket();
 
 
   const [active, setActive] = useState("All");
@@ -437,7 +441,7 @@ export default function AllJobs() {
   // Get Timer ID
   useEffect(() => {
     const timeId = localStorage.getItem("jobId");
-    setTimerId(JSON.parse(timeId));
+    setTimerId(JSON.parse(timeId)); 
   }, [anyTimerRunning]);
 
   // -----------Total Hours-------->
@@ -567,16 +571,16 @@ export default function AllJobs() {
   };
 
   // Socket
-  useEffect(() => {
-    socketId.on("newJob", () => {
-      allClientData();
-    });
+  // useEffect(() => {
+  //   socketId.on("newJob", () => {
+  //     allClientData();
+  //   });
 
-    return () => {
-      socketId.off("newJob", allClientData);
-    };
-    // eslint-disable-next-line
-  }, [socketId]);
+  //   return () => {
+  //     socketId.off("newJob", allClientData);
+  //   };
+     
+  // }, [socketId]);
 
   //   Get All Labels
   const getlabel = async () => {
@@ -1062,14 +1066,14 @@ export default function AllJobs() {
         //   note: "New Task Added",
         // });
         // Send Socket Notification
-        socketId.emit("notification", {
-          title: "New Job Assigned",
-          redirectLink: "/job-planning",
-          description: data?.notification?.description,
-          taskId: data?.notification?.taskId,
-          userId: data?.notification?.userId,
-          status: "unread",
-        });
+        // socketId.emit("notification", {
+        //   title: "New Job Assigned",
+        //   redirectLink: "/job-planning",
+        //   description: data?.notification?.description,
+        //   taskId: data?.notification?.taskId,
+        //   userId: data?.notification?.userId,
+        //   status: "unread",
+        // });
       }
     } catch (error) {
       console.error("Error updating status", error);
@@ -1117,9 +1121,9 @@ export default function AllJobs() {
         setShowDetail(false);
         toast.success("Client job deleted successfully!");
         // Socket
-        socketId.emit("addJob", {
-          note: "New Task Added",
-        });
+        // socketId.emit("addJob", {
+        //   note: "New Task Added",
+        // });
       }
     } catch (error) {
       console.log(error);
@@ -1326,9 +1330,9 @@ export default function AllJobs() {
         toast.success("Data label Updated!");
 
         // Socket
-        socketId.emit("addJob", {
-          note: "New Task Added",
-        });
+        // socketId.emit("addJob", {
+        //   note: "New Task Added",
+        // });
       }
     } catch (error) {
       console.log(error);
@@ -4006,7 +4010,7 @@ useEffect(() => {
 
 
   return (
-    <Layout>
+    <>
       <div className="w-full h-[100%] py-4 px-2 sm:px-4 overflow-y-auto ">
         <div className="flex items-start sm:items-center sm:justify-between flex-col sm:flex-row gap-3 ">
           <div className="flex items-center gap-5">
@@ -4027,9 +4031,9 @@ useEffect(() => {
                 // setShowJobHolder(false);
                 // setShowDue(false);
                 setActive1("");
-                setFilterId("");
+                dispatch(setFilterId(""));
                 handleClearFilters();
-                setSearchValue("");
+                dispatch(setSearchValue(""));
               }}
               title="Clear filters"
             >
@@ -4124,7 +4128,7 @@ useEffect(() => {
                   setShowCompleted(false);
                   setShowInactive(false);
                   setActive1("");
-                  setFilterId("");
+                  dispatch(setFilterId(""));
                   dep === "All" && allClientData();
                 }}
               >
@@ -4249,7 +4253,7 @@ useEffect(() => {
               // setShowJobHolder(false);
               // setShowDue(false);
               // setActive1("");
-              setFilterId("");
+              dispatch(setFilterId(""));
             }}
             title="Refresh Data"
           >
@@ -4875,6 +4879,6 @@ useEffect(() => {
           />
         </div>
       )}
-    </Layout>
+    </>
   );
 }

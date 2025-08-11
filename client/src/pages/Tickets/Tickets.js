@@ -2,13 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { MaterialReactTable, useMaterialReactTable, } from "material-react-table";
 import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { style } from "../../utlis/CommonStyle";
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { useAuth } from "../../context/authContext";
+ 
 import { MdCheckCircle, MdInsertComment, MdOutlineModeEdit, MdRemoveRedEye, } from "react-icons/md";
 import { AiOutlineEdit, AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
@@ -23,6 +23,7 @@ import { NumberFilterPortal, NumderFilterFn } from "../../utlis/NumberFilterPort
 import { TiFilter } from "react-icons/ti";
 import { Drawer } from "@mui/material";
 import EmailDetailDrawer from "./EmailDetailDrawer";
+import { useSelector } from "react-redux";
 
 
 const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "", };
@@ -32,7 +33,12 @@ const status = ["Read", "Unread", "Send"];
 
 
 export default function Tickets() {
-  const { auth } = useAuth();
+
+
+  const auth = useSelector((state) => state.auth.auth);
+ 
+
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const comment_taskId = searchParams.get("comment_taskId");
@@ -1870,7 +1876,7 @@ const applyFilter = (e) => {
   }, [comment_taskId, searchParams, navigate, table]);
 
   return (
-    <Layout>
+    <>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
 
 
@@ -2208,6 +2214,6 @@ const applyFilter = (e) => {
   />
 )}
       </div>
-    </Layout>
+    </>
   );
 }

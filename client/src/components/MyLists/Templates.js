@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import { style } from "../../utlis/CommonStyle";
 import { IoClose } from "react-icons/io5";
-import { useAuth } from "../../context/authContext";
+ 
 import axios from "axios";
 import toast from "react-hot-toast";
 import { TbLoader2 } from "react-icons/tb";
@@ -25,10 +25,11 @@ import { GrCopy } from "react-icons/gr";
 import { RiEdit2Line } from "react-icons/ri";
 import FAQ from "../../pages/Templates/FAQ";
 import { IoMdCopy } from "react-icons/io";
+import { useSelector } from "react-redux";
 
 const Templates = forwardRef(
   ({ templateData, setTemplateData, childRef, setIsload }, ref) => {
-    const { auth } = useAuth();
+        const auth = useSelector((state => state.auth.auth));
     const [showCategory, setShowCategory] = useState(false);
     const [categoryData, setCategoryData] = useState([]);
     const [users, setUsers] = useState([]);

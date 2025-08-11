@@ -5,12 +5,16 @@ import { IoClose } from "react-icons/io5";
 import { style } from "./CommonStyle";
 import { TbLoader2 } from "react-icons/tb";
 import socketIO from "socket.io-client";
-import { useAuth } from "../context/authContext";
+ import { useSelector } from "react-redux";
+
+
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 export default function Reminder({ setShowReminder, taskId, link }) {
-  const { auth } = useAuth();
+ 
+  const auth = useSelector((state) => state.auth.auth);
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   // const [date, setDate] = useState("");
@@ -84,9 +88,9 @@ export default function Reminder({ setShowReminder, taskId, link }) {
       if (data) {
         toast.success(data?.message);
         setShowReminder(false);
-        socketId.emit("reminder", {
-          note: "New Reminder Added",
-        });
+        // socketId.emit("reminder", {
+        //   note: "New Reminder Added",
+        // });
       }
     } catch (error) {
       console.error("Error crete reminder:", error);

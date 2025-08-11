@@ -1,52 +1,48 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import axios from "axios";
-import { useAuth } from "../../context/authContext";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { loginUser } from "../../redux/slices/authSlice";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import { TbLoader3 } from "react-icons/tb";
-import { useNavigate } from "react-router-dom";
 import { style } from "../../utlis/CommonStyle";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { auth, setAuth } = useAuth();
   const [isShow, setIsShow] = useState(false);
+
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const auth = useSelector((state) => state.auth.auth);
 
   useEffect(() => {
     if (auth.token) {
       navigate("/employee/dashboard");
     }
-  }, [auth]);
+  }, [auth.token, navigate]);
 
-  //   Login User
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      setLoading(true);
-      const { data } = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/login/user`,
-        {
-          email,
-          password,
-        }
-      );
+      const resultAction = await dispatch(loginUser({ email, password }));
+      
 
-      if (data?.success) {
-        setAuth({ ...auth, user: data?.user, token: data?.token });
-        localStorage.setItem("auth", JSON.stringify(data));
-        navigate("/employee/dashboard");
+      if (loginUser.fulfilled.match(resultAction)) {
         toast.success("Login successfully!", { duration: 2000 });
-        setLoading(false);
+        navigate("/employee/dashboard");
+      } else {
+        toast.error(resultAction.payload || "Login failed", { duration: 2000 });
       }
-    } catch (error) {
-      console.log(error);
-      toast.error(error?.response?.data?.message, { duration: 2000 });
+    } catch (err) {
+      toast.error("Something went wrong", { duration: 2000 });
+    } finally {
       setLoading(false);
     }
   };
+
   return (
     <div className="w-full h-[111vh] flex items-center justify-center py-6 px-4 backgroundC">
       <div className="rounded-md shadow1 py-4 px-4 w-[30rem] bg-white">
@@ -57,12 +53,7 @@ export default function Login() {
             className="w-[6] h-[6rem] drop-shadow-2xl shadow-gray-200 shadow-opacity-50 shadow-offset-2"
           />
         </div>
-        {/* <h3
-          className="text-2xl font-semibold text-white text-center w-full mb-[1.2rem] "
-          style={{ textShadow: "-1px 0px 1px #000" }}
-        >
-          Sign In to Affotax
-        </h3> */}
+
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <div className="inputBox">
@@ -71,22 +62,19 @@ export default function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`${style.input} w-full py-2 px-3 border-2 bg-white  text-[15px] outline-none border-gray-900 rounded-md shadow-md `}
+                className={`${style.input} w-full py-2 px-3 border-2 bg-white text-[15px] outline-none border-gray-900 rounded-md shadow-md`}
               />
               <span>Enter your Email</span>
             </div>
           </div>
+
           <div className="flex flex-col gap-2">
             <div className="relative w-full">
               <div
                 className="absolute top-2 right-2 z-10 cursor-pointer"
                 onClick={() => setIsShow(!isShow)}
               >
-                {!isShow ? (
-                  <IoMdEyeOff size={25} className="cursor-pointer" />
-                ) : (
-                  <IoMdEye size={25} className="cursor-pointer" />
-                )}
+                {!isShow ? <IoMdEyeOff size={25} /> : <IoMdEye size={25} />}
               </div>
 
               <div className="inputBox">
@@ -94,36 +82,21 @@ export default function Login() {
                   type={!isShow ? "password" : "text"}
                   required
                   value={password}
-                  // minLength={8}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`${style.input} w-full py-2 px-3 border-2  bg-white text-[15px] outline-none border-gray-900 rounded-md shadow-md `}
+                  className={`${style.input} w-full py-2 px-3 border-2 bg-white text-[15px] outline-none border-gray-900 rounded-md shadow-md`}
                 />
                 <span>Password</span>
               </div>
             </div>
-            {/* <div className="flex items-start sm:items-center flex-col sm:flex-row justify-normal sm:justify-between my-3">
-              <span
-                type="button"
-                // onClick={() => setRoute("ResetPassword")}
-                className="text-blue-500 font-Poppins font-medium text-[1.1rem] hover:text-blue-600 cursor-pointer "
-              >
-                Reset Password
-              </span>
-            </div> */}
-            <div className=" w-full flex items-center justify-end mt-4">
+
+            <div className="w-full flex items-center justify-end mt-4">
               <button
                 type="submit"
-                className={`py-[.5rem] px-[1.6rem] ${
-                  style.btn
-                }  flex items-center justify-center text-white shadow cursor-pointer  ${
-                  loading && "animate-pulse pointer-events-none "
+                className={`py-[.5rem] px-[1.6rem] ${style.btn} flex items-center justify-center text-white shadow cursor-pointer ${
+                  loading && "animate-pulse pointer-events-none"
                 }`}
               >
-                {loading ? (
-                  <TbLoader3 className="h-5 w-5 animate-spin " />
-                ) : (
-                  "Sign In"
-                )}
+                {loading ? <TbLoader3 className="h-5 w-5 animate-spin" /> : "Sign In"}
               </button>
             </div>
           </div>

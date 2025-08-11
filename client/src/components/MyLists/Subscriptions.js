@@ -11,16 +11,18 @@ import {
   useMaterialReactTable,
 } from "material-react-table";
 import Loader from "../../utlis/Loader";
-import { useAuth } from "../../context/authContext";
+ 
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { AiOutlineEdit, AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import SubscriptionModel from "../SubscriptionModel";
+import { useSelector } from "react-redux";
 
 const Subscriptions = forwardRef(
   ({ subscriptionData, setSubscriptionData, childRef, setIsload }, ref) => {
-    const { auth } = useAuth();
+ 
+       const auth = useSelector((state => state.auth.auth));
     const [show, setShow] = useState(false);
     const [loading, setLoading] = useState(false);
     const [users, setUsers] = useState([]);

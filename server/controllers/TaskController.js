@@ -367,7 +367,7 @@ export const getSingleTask = async (req, res) => {
       .populate({ path: "activities.user", select: "name avatar" });
 
     // Sort subtasks by `order`
-    const sortedSubtasks = task.subtasks.sort((a, b) => a.order - b.order);
+    const sortedSubtasks = task.subtasks.sort((a, b) => b.order - a.order);
 
     res.status(200).send({
       success: true,

@@ -34,6 +34,8 @@ import { TiFilter } from "react-icons/ti";
 import { NumberFilterPortal, NumderFilterFn } from "../../utlis/NumberFilterPortal";
 import { LuRefreshCcw } from "react-icons/lu";
 import { useSelector } from "react-redux";
+import RefreshLeadsButton from "./ui/RefreshLeadsButton";
+import { Box, LinearProgress } from "@mui/material";
 
 
 const updates_object_init = {
@@ -532,26 +534,7 @@ const applyFilter = (e) => {
 
 
 
-
-
-  const refreshData = async () => {
-
-    try {
-      setIsLoading(true)
-      const {status} = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/leads/update-leads`);
-
-    if (status === 200) {
-      getAllLeads()
-    }
-    } catch (error) {
-      toast.error("Failed to load new leads")
-        console.log(error)
-    } finally {
-      setIsLoading(false)
-    }
-
-  }
-
+ 
   //   Create New Lead
   const handleCreateLead = async () => {
     try {
@@ -3062,10 +3045,17 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
      
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
-    state: { rowSelection, isLoading },
-    enableBatchRowSelection: true,
-    
+    state: { rowSelection,
+      isLoading: isLoading,
+      showSkeletons: false
+        
      
+
+      
+      },
+    enableBatchRowSelection: true,
+ 
+
 
     getRowId: (row) => row._id,
     enableStickyHeader: true,
@@ -3300,7 +3290,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
         </div>
         {/*  */}
         <>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center  gap-5">
             <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
               <button
                 className={`py-1 px-4  outline-none transition-all duration-300  w-[6rem] ${
@@ -3394,7 +3384,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
 
 
 
-          { auth?.user?.role?.name === "Admin" &&
+           { auth?.user?.role?.name === "Admin" &&
               (
                 <span
                 className={`p-[6px] rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  mt-[1.2rem] ${
@@ -3415,14 +3405,9 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
 
             { auth?.user?.role?.name === "Admin" &&
               (
-                <span
-                className={`p-[6px] rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  mt-[1.2rem] `}
-                onClick={refreshData}
-                title="Refresh Data"
-              >
-                 
-                <LuRefreshCcw className="  cursor-pointer text-[22px] " />
-              </span>
+               <div className=" mt-[1.2rem] ">
+                <RefreshLeadsButton getAllLeads={getAllLeads}/>
+                </div>
               )
             }
 

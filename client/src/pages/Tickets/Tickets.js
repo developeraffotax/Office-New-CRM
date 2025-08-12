@@ -24,6 +24,8 @@ import { TiFilter } from "react-icons/ti";
 import { Drawer } from "@mui/material";
 import EmailDetailDrawer from "./EmailDetailDrawer";
 import { useSelector } from "react-redux";
+import { LuRefreshCcw } from "react-icons/lu";
+import RefreshTicketsButton from "./ui/RefreshTicketsButton";
 
 
 const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "", };
@@ -571,10 +573,7 @@ const applyFilter = (e) => {
   };
 
 
-
-
-
-
+ 
 
 
   // ===== Table Details =====
@@ -1983,6 +1982,11 @@ const applyFilter = (e) => {
                 >
                   <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
                 </span>
+
+
+                <RefreshTicketsButton getAllEmails={getAllEmails}/>
+
+
               </div>
             )}
           </div>

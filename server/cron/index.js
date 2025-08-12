@@ -42,6 +42,6 @@ export const setupCronJobs = () => {
 
 
   //comment it out later
-  getSentReceivedCountsPerThread();
-  updateSendReceivedLeads();
+  // getSentReceivedCountsPerThread();
+  // updateSendReceivedLeads();
 };

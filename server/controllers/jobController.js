@@ -637,6 +637,8 @@ export const updateJobHolder = async (req, res) => {
   try {
     const jobId = req.params.id;
     const { jobHolder } = req.body;
+
+     
     if (!jobHolder) {
       return res.status(400).send({
         success: false,
@@ -680,17 +682,19 @@ export const updateJobHolder = async (req, res) => {
     // Create Notification
     const user = await userModel.findOne({ name: jobHolder });
     
-        const payload = {
-      title: "New Job Assigned",
-      redirectLink: "/job-planning",
-      description: `${req.user.user.name} assign a new job of "${clientJob.job.jobName}"`,
-      taskId: `${clientJob._id}`,
-      userId: user._id,
-      type: "job_assigned",
-    }
+    if (user) {
+      const payload = {
+          title: "New Job Assigned",
+          redirectLink: "/job-planning",
+          description: `${req.user.user.name} assign a new job of "${clientJob.job.jobName}"`,
+          taskId: `${clientJob._id}`,
+          userId: user._id,
+          type: "job_assigned",
+        }
 
 
     scheduleNotification(req.user?.user?.name !== jobHolder, payload)
+      }
 
 
 

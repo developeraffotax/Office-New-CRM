@@ -399,6 +399,161 @@ export const getTicketsByClientName = async (req, res, next) => {
 
 
 
+export const updateReadUnreadTickets = async (req, res, next) => {
+
+   
+    const role = req.user?.user?.role?.name;
+    const userName =  req.user?.user?.name;
+
+    
+  try {
+
+
+    
+
+
+
+
+
+
+
+
+    let filter = { state: { $ne: "complete" }, };
+
+    if(role !== 'Admin') {
+      let includedUsersArr = [userName];
+
+
+
+      const user = await userModel.findById(req.user.user._id).select("juniors");
+      const juniorsIdsArr = user.juniors;
+      
+        if(juniorsIdsArr && juniorsIdsArr.length > 0) {
+
+          const juniorsNamesArr = await getJobHolderNames(juniorsIdsArr);
+          
+          includedUsersArr = includedUsersArr.concat(juniorsNamesArr)
+        }
+
+        console.log("INCLUDED USERS 🧡🧡❤", includedUsersArr)
+      filter.jobHolder = { $in: includedUsersArr };
+    }
+
+
+
+    
+    
+    const emails = await ticketModel.find(filter).select( "sent received jobStatus clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy lastMessageSentTime createdAt" );
+    // res.status(200).send({ success: true, message: "All email list!", emails: emails, });
+    
+
+     
+
+
+    // We can comment this one for better performance,, will see it in future.
+    const ticketsList = emails.map((email) => ({
+      threadId: email.mailThreadId,
+      companyName: email.company,
+    }));
+
+    const emailData = await getAllEmails(ticketsList);
+
+    // console.log("emailData:", emailData);
+    //NEED TO UPDATE THE BELOW CODE 
+   
+
+    if(!emailData.detailedThreads) {
+      return res.status(400).send({ success: false, message: "No email data found!" });
+    }
+
+    const threadIds = emailData.detailedThreads.map(email => {
+      if(email?.threadId) {
+        return email.threadId;
+      }
+    });
+
+
+    const matchingTickets = await ticketModel.find({
+      mailThreadId: { $in: threadIds }
+    });
+
+
+
+
+
+    // Map the tickets to the corresponding threadId for easier lookup
+      const ticketMap = matchingTickets.reduce((map, ticket) => {
+        map[ticket.mailThreadId] = ticket;
+        return map;
+      }, {});
+
+
+       
+    for (const email of emailData.detailedThreads) {
+       
+    
+      
+      
+      if(email?.threadId) {  
+        const matchingTicket = ticketMap[email.threadId];
+        if (matchingTicket) {
+          let newStatus = "Unread";
+  
+          if (email.readStatus === "Sent") {
+            newStatus = "Send";
+          } else if (email.readStatus === "Unread") {
+            newStatus = "Unread";
+          } else if (email.readStatus === "Read") {
+            newStatus = "Read";
+          }
+  
+          await ticketModel.updateOne(
+            { mailThreadId: email.threadId },
+            {
+              $set: {
+                status: newStatus,
+              },
+            },
+            { new: true }
+          );
+          
+        }  
+
+
+
+
+
+      } else {
+        //console.log(`No matching ticket found for threadId: ${email?.threadId}`);
+      }
+    }
+
+    
+    
+
+  } catch (error) {
+    // next(error);
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while getting emails!",
+      error: error,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -629,102 +784,102 @@ export const getAllSendTickets = async (req, res, next) => {
      
 
 
-    // We can comment this one for better performance,, will see it in future.
-    const ticketsList = emails.map((email) => ({
-      threadId: email.mailThreadId,
-      companyName: email.company,
-    }));
+    // // We can comment this one for better performance,, will see it in future.
+    // const ticketsList = emails.map((email) => ({
+    //   threadId: email.mailThreadId,
+    //   companyName: email.company,
+    // }));
 
-    const emailData = await getAllEmails(ticketsList);
+    // const emailData = await getAllEmails(ticketsList);
 
-    // console.log("emailData:", emailData);
-    //NEED TO UPDATE THE BELOW CODE 
+    // // console.log("emailData:", emailData);
+    // //NEED TO UPDATE THE BELOW CODE 
    
 
-    if(!emailData.detailedThreads) {
-      return res.status(400).send({ success: false, message: "No email data found!" });
-    }
+    // if(!emailData.detailedThreads) {
+    //   return res.status(400).send({ success: false, message: "No email data found!" });
+    // }
 
-    const threadIds = emailData.detailedThreads.map(email => {
-      if(email?.threadId) {
-        return email.threadId;
-      }
-    });
-
-
-    const matchingTickets = await ticketModel.find({
-      mailThreadId: { $in: threadIds }
-    });
+    // const threadIds = emailData.detailedThreads.map(email => {
+    //   if(email?.threadId) {
+    //     return email.threadId;
+    //   }
+    // });
 
 
+    // const matchingTickets = await ticketModel.find({
+    //   mailThreadId: { $in: threadIds }
+    // });
 
 
 
-    // Map the tickets to the corresponding threadId for easier lookup
-      const ticketMap = matchingTickets.reduce((map, ticket) => {
-        map[ticket.mailThreadId] = ticket;
-        return map;
-      }, {});
+
+
+    // // Map the tickets to the corresponding threadId for easier lookup
+    //   const ticketMap = matchingTickets.reduce((map, ticket) => {
+    //     map[ticket.mailThreadId] = ticket;
+    //     return map;
+    //   }, {});
 
 
        
-    for (const email of emailData.detailedThreads) {
+    // for (const email of emailData.detailedThreads) {
        
     
       
       
-      if(email?.threadId) {  
-        const matchingTicket = ticketMap[email.threadId];
-        if (matchingTicket) {
-          let newStatus = "Unread";
+    //   if(email?.threadId) {  
+    //     const matchingTicket = ticketMap[email.threadId];
+    //     if (matchingTicket) {
+    //       let newStatus = "Unread";
   
-          if (email.readStatus === "Sent") {
-            newStatus = "Send";
-          } else if (email.readStatus === "Unread") {
-            newStatus = "Unread";
-          } else if (email.readStatus === "Read") {
-            newStatus = "Read";
-          }
+    //       if (email.readStatus === "Sent") {
+    //         newStatus = "Send";
+    //       } else if (email.readStatus === "Unread") {
+    //         newStatus = "Unread";
+    //       } else if (email.readStatus === "Read") {
+    //         newStatus = "Read";
+    //       }
   
-          await ticketModel.updateOne(
-            { mailThreadId: email.threadId },
-            {
-              $set: {
-                status: newStatus,
-              },
-            },
-            { new: true }
-          );
-          // console.log(
-          //   `Updated ticket ${matchingTicket._id} with new status: ${newStatus}`
-          // );
+    //       await ticketModel.updateOne(
+    //         { mailThreadId: email.threadId },
+    //         {
+    //           $set: {
+    //             status: newStatus,
+    //           },
+    //         },
+    //         { new: true }
+    //       );
+    //       // console.log(
+    //       //   `Updated ticket ${matchingTicket._id} with new status: ${newStatus}`
+    //       // );
   
-          // const user = await userModel.findOne({
-          //   name: matchingTicket.lastMessageSentBy,
-          // });
+    //       // const user = await userModel.findOne({
+    //       //   name: matchingTicket.lastMessageSentBy,
+    //       // });
   
-          // Create a notification
-          // if (email.readStatus === "Unread") {
-          //   const notiUser = user._id;
+    //       // Create a notification
+    //       // if (email.readStatus === "Unread") {
+    //       //   const notiUser = user._id;
   
-          //   await notificationModel.create({
-          //     title: "Reply to a ticket received",
-          //     redirectLink: `/ticket/detail/${matchingTicket._id}`,
-          //     description: `You've received a response to a ticket with the subject "${matchingTicket.subject}" from the company "${matchingTicket.companyName}" and the client's name "${matchingTicket.clientName}".`,
-          //     taskId: matchingTicket._id,
-          //     userId: notiUser,
-          //   });
-          // }
-        }  
+    //       //   await notificationModel.create({
+    //       //     title: "Reply to a ticket received",
+    //       //     redirectLink: `/ticket/detail/${matchingTicket._id}`,
+    //       //     description: `You've received a response to a ticket with the subject "${matchingTicket.subject}" from the company "${matchingTicket.companyName}" and the client's name "${matchingTicket.clientName}".`,
+    //       //     taskId: matchingTicket._id,
+    //       //     userId: notiUser,
+    //       //   });
+    //       // }
+    //     }  
 
 
 
 
 
-      } else {
-        //console.log(`No matching ticket found for threadId: ${email?.threadId}`);
-      }
-    }
+    //   } else {
+    //     //console.log(`No matching ticket found for threadId: ${email?.threadId}`);
+    //   }
+    // }
 
     
     

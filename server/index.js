@@ -15,7 +15,7 @@ import { gmailWebhookHandler } from "./utils/pubSubPush.js";
 import { errorHandler } from "./middlewares/errorMiddleware.js";
 
 import agenda from "./utils/agenda.js";
-import { updateSendReceivedLeads } from "./utils/updateSendReceivedLeads.js";
+ 
 
 dotenv.config();
 

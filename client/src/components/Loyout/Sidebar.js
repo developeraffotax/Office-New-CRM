@@ -325,7 +325,7 @@ export default function Sidebar({ hide, setHide }) {
                     <span
                     title="New Received Tickets"
                   className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${active === "tickets" ? "bg-white text-green-500" : "bg-green-500 text-white"}`}
+                    ${active === "tickets" ? "bg-white text-blue-500" : "bg-blue-500 text-white"}`}
                 >
                   {ticketReceivedCount || 0}
                 </span>

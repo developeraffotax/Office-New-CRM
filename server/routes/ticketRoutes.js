@@ -21,6 +21,7 @@ import {
   singleTicket,
   singleTicketComments,
   updateBulkTickets,
+  updateReadUnreadTickets,
   updateTickets,
 } from "../controllers/ticketController.js";
 import multer from "multer";
@@ -121,5 +122,28 @@ router.get("/activity/:ticketId", requiredSignIn, getTicketActivities);
 
 // Update Bulk Tickets
 router.put("/update/bulk/tickets", requiredSignIn, isAdmin, updateBulkTickets);
+
+
+
+
+
+
+
+
+
+
+
+
+// Protected GET route to trigger the update manually
+router.get("/update-tickets", requiredSignIn, async (req, res) => {
+  try {
+    await getSentReceivedCountsPerThread();
+    // await updateReadUnreadTickets(req, res)
+    res.status(200).json({ message: "Tickets updated successfully." });
+  } catch (error) {
+    console.error("Manual update error:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+});
 
 export default router;

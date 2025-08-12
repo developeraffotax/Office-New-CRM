@@ -12,6 +12,7 @@ import {
   updateLead,
 } from "../controllers/leadController.js";
 import { updateSendReceivedLeads } from "../utils/updateSendReceivedLeads.js";
+import { getSentReceivedCountsPerThread } from "../controllers/ticketController.js";
 
 const router = express.Router();
 
@@ -53,8 +54,9 @@ router.put("/update/bulk/leads", requiredSignIn, isAdmin, updateBulkLeads);
 
 
 // Protected GET route to trigger the update manually
-router.get("/update-leads", async (req, res) => {
+router.get("/update-leads",requiredSignIn, async (req, res) => {
   try {
+    await getSentReceivedCountsPerThread()
     await updateSendReceivedLeads();
     res.status(200).json({ message: "Leads updated successfully." });
   } catch (error) {

@@ -237,13 +237,13 @@ useEffect(() => {
   // Add listeners
   socket.on("newTimer", handleNewTimer);
   socket.on("newNotification", handleNewNotification);
-  socket.on("newTicketNotification", handleNewNotification);
+  // socket.on("newTicketNotification", handleNewNotification);
  
   // Cleanup
   return () => {
     socket.off("newTimer", handleNewTimer);
     socket.off("newNotification", handleNewNotification);
-    socket.off("newTicketNotification", handleNewNotification);
+    // socket.off("newTicketNotification", handleNewNotification);
   };
 }, [socket]);
 

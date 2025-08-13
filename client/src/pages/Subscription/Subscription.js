@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
- 
+
 import { style } from "../../utlis/CommonStyle";
-import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
+import { IoBriefcaseOutline, IoClose, IoTicketOutline } from "react-icons/io5";
 import SubscriptionModel from "../../components/SubscriptionModel";
 import axios from "axios";
 import {
@@ -9,7 +9,7 @@ import {
   useMaterialReactTable,
 } from "material-react-table";
 import Loader from "../../utlis/Loader";
- 
+
 import toast from "react-hot-toast";
 import { format, set } from "date-fns";
 import { AiOutlineEdit, AiTwotoneDelete } from "react-icons/ai";
@@ -18,9 +18,13 @@ import DataLabel from "./DataLabel";
 import { TbLoader2 } from "react-icons/tb";
 import QuickAccess from "../../utlis/QuickAccess";
 import { useSelector } from "react-redux";
+import { Popover, Typography } from "@mui/material";
+import TicketsPopUp from "../../components/shared/TicketsPopUp";
+import { FiPlusSquare } from "react-icons/fi";
+import NewTicketModal from "../../utlis/NewTicketModal";
+import ActionsCell from "./ActionsCell";
 
 export default function Subscription() {
-   
   const auth = useSelector((state) => state.auth.auth);
   const [show, setShow] = useState(false);
   const [subscriptionData, setSubscriptionData] = useState([]);
@@ -52,17 +56,13 @@ export default function Subscription() {
 
   console.log("rowSelection:", rowSelection);
 
-
+  const [showNewTicketModal, setShowNewTicketModal] = useState(false);
+  const [clientCompanyName, setClientCompanyName] = useState("");
 
   const [showExternalFilters, setShowExternalFilters] = useState(true);
   const [filter1, setFilter1] = useState("");
   const [filter2, setFilter2] = useState("");
   const [filter3, setFilter3] = useState("");
-   
-
-
-
-
 
   // -------Get Subscription Data-------
   const getAllSubscriptions = async () => {
@@ -169,18 +169,26 @@ export default function Subscription() {
 
   // --------------Update JobHolder------------>
   const handleUpdateSubscription = async (id, value, type) => {
+    const allowedFields = [
+      "jobHolder",
+      "billingStart",
+      "billingEnd",
+      "deadline",
+      "lead",
+      "fee",
+      "note",
+      "status",
+      "subscription",
+    ];
 
-
-    const allowedFields = [ "jobHolder", "billingStart", "billingEnd", "deadline", "lead", "fee", "note", "status", "subscription", ];
-
-     if (!allowedFields.includes(type)) {
+    if (!allowedFields.includes(type)) {
       toast.error("Invalid field for update");
       return;
     }
 
-     // Build the update object dynamically
+    // Build the update object dynamically
     const updateObj = { [type]: value };
-    
+
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/update/single/${id}`,
@@ -196,37 +204,9 @@ export default function Subscription() {
     }
   };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   // --------------Update JobHolder------------>
+  // --------------Update JobHolder------------>
   // const handleUpdateSubscription = async (id, value, type) => {
 
-
-
-
-
-
-    
   //   try {
   //     const { data } = await axios.put(
   //       `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/update/single/${id}`,
@@ -251,10 +231,6 @@ export default function Subscription() {
   //     toast.error(error?.response?.data?.message);
   //   }
   // };
-
-
-
-
 
   // -----------Handle Custom date filter------
   const getCurrentMonthYear = () => {
@@ -301,21 +277,18 @@ export default function Subscription() {
     // };
 
     const calculateTotalHours = (data) => {
-  return data.reduce((sum, client) => {
-    const fee = client?.job?.fee;
+      return data.reduce((sum, client) => {
+        const fee = client?.job?.fee;
 
-    // Check if fee exists and is a string containing only digits
-    if (typeof fee === 'string' && /^\d+$/.test(fee)) {
-      return sum + Number(fee);
-    }
+        // Check if fee exists and is a string containing only digits
+        if (typeof fee === "string" && /^\d+$/.test(fee)) {
+          return sum + Number(fee);
+        }
 
-    // Skip if fee is not a valid numeric string
-    return sum;
-  }, 0);
-};
-
-
-
+        // Skip if fee is not a valid numeric string
+        return sum;
+      }, 0);
+    };
 
     console.log("TOTAL FEEE💛🧡:", calculateTotalHours(subscriptionData));
 
@@ -1310,7 +1283,13 @@ export default function Subscription() {
                   className="text-[15px] font-medium cursor-pointer"
                   onDoubleClick={() => setShowFee(true)}
                 >
-                  {fee ? fee : <span className="text-gray-400 cursor-pointer"><AiOutlineEdit /></span>}
+                  {fee ? (
+                    fee
+                  ) : (
+                    <span className="text-gray-400 cursor-pointer">
+                      <AiOutlineEdit />
+                    </span>
+                  )}
                 </span>
               )}
             </div>
@@ -1703,32 +1682,17 @@ export default function Subscription() {
             {
               accessorKey: "actions",
               header: "Actions",
-              Cell: ({ cell, row }) => {
-                const subId = row.original._id;
-                return (
-                  <div className="flex items-center justify-center gap-3 w-full h-full">
-                    <span
-                      className="text-[1rem] cursor-pointer"
-                      title="Edit this column"
-                      onClick={() => {
-                        setSubscriptionId(subId);
-                        setShow(true);
-                      }}
-                    >
-                      <AiOutlineEdit className="h-5 w-5 text-cyan-600 " />
-                    </span>
-
-                    <span
-                      className="text-[1rem] cursor-pointer"
-                      title="Delete Task!"
-                      onClick={() => handleDeleteConfirmation(subId)}
-                    >
-                      <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
-                    </span>
-                  </div>
-                );
-              },
-              size: 60,
+              Cell: ({ row }) => (
+                <ActionsCell
+                  row={row}
+                  setSubscriptionId={setSubscriptionId}
+                  setShow={setShow}
+                  handleDeleteConfirmation={handleDeleteConfirmation}
+                  setClientCompanyName={setClientCompanyName}
+                  setShowNewTicketModal={setShowNewTicketModal}
+                />
+              ),
+              size: 160,
             },
           ]
         : []),
@@ -1862,56 +1826,16 @@ export default function Subscription() {
     }
   };
 
+  const col = table.getColumn("subscription");
 
+ 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const col = table.getColumn("subscription");
-
-    console.log(col, "THE COLUMN 💚")
-
-
-
-
-
-    const setColumnFromOutsideTable = (colKey, filterVal) => {
-
+  const setColumnFromOutsideTable = (colKey, filterVal) => {
     const col = table.getColumn(colKey);
 
-    console.log(col, "THE COLUMN 💚")
+     
     return col.setFilterValue(filterVal);
-  }
-
+  };
 
   return (
     <>
@@ -1932,15 +1856,18 @@ const col = table.getColumn("subscription");
               <IoClose className="h-6 w-6 text-white" />
             </span>
 
-              <span className="mt-2"><QuickAccess /></span>
+            <span className="mt-2">
+              <QuickAccess />
+            </span>
 
             <span
-              className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${showExternalFilters && 'bg-orange-500 text-white '}  `}
+              className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${
+                showExternalFilters && "bg-orange-500 text-white "
+              }  `}
               onClick={() => {
                 // setActiveBtn("jobHolder");
                 // setShowJobHolder(!showJobHolder);
                 setShowExternalFilters(!showExternalFilters);
-
               }}
               title="Filter by Job Holder"
             >
@@ -1974,194 +1901,101 @@ const col = table.getColumn("subscription");
           </div>
         </div>
 
-
-
-
         {/* --------------External Filter---------------- */}
-        {
-          showExternalFilters && (
-            <div className="w-full flex flex-row items-start justify-start gap-4 mt-4">
-              <div className="flex items-center gap-2">
-                {/* <span className="text-sm font-semibold text-gray-700">
+        {showExternalFilters && (
+          <div className="w-full flex flex-row items-start justify-start gap-4 mt-4">
+            <div className="flex items-center gap-2">
+              {/* <span className="text-sm font-semibold text-gray-700">
                   Job Holder
                 </span> */}
-                <ul className="flex items-center gap-2 list-none  ">
-                  {subscriptions.map((sub, i) => (
-                    <li
-                      key={i}
-                      className={`${
-                        filter1 === sub
-                          ? "bg-orange-500 text-white"
-                          : "bg-gray-200 text-gray-700"
-                      } px-2 py-1 rounded-md cursor-pointer   m-0`}
-                      onClick={() => {
+              <ul className="flex items-center gap-2 list-none  ">
+                {subscriptions.map((sub, i) => (
+                  <li
+                    key={i}
+                    className={`${
+                      filter1 === sub
+                        ? "bg-orange-500 text-white"
+                        : "bg-gray-200 text-gray-700"
+                    } px-2 py-1 rounded-md cursor-pointer   m-0`}
+                    onClick={() => {
+                      setFilter1((prev) => {
+                        const isSameUser = prev === sub;
+                        const newValue = isSameUser ? "" : sub;
 
-
-                        setFilter1(prev => {
-                          const isSameUser = prev === sub;
-                          const newValue = isSameUser ? "" : sub;
-
-                          setColumnFromOutsideTable("subscription", newValue);
-                          return newValue;
-                        });
-
-
-
-                      }}
-                    >
-                      {sub}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-                  <span>|</span>
-
-              <div className="flex items-center gap-2">
-                {/* <span className="text-sm font-semibold text-gray-700">
-                  Job Holder
-                </span> */}
-                <ul className="flex items-center gap-2 list-none  ">
-                  {["Due", "Overdue"].map((el, i) => (
-                    <li
-                      key={i}
-                      className={`${
-                        filter2 === el
-                          ? "bg-orange-500 text-white"
-                          : "bg-gray-200 text-gray-700"
-                      } px-2 py-1 rounded-md cursor-pointer  m-0 `}
-                      onClick={() => {
-                        
-                        setFilter2(prev => {
-                          const isSameUser = prev === el;
-                          const newValue = isSameUser ? "" : el;
-
-                          setColumnFromOutsideTable("state", newValue);
-                          return newValue;
-                        });
-                      }}
-                    >
-                      {el}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-                   <span>|</span>
-
-              <div className="flex items-center gap-2">
-                {/* <span className="text-sm font-semibold text-gray-700">
-                  Job Holder
-                </span> */}
-                <ul className="flex items-center gap-2 list-none  ">
-                  {userName?.map((user, i) => (
-                    <li
-                      key={i}
-                      className={`${
-                        filter3 === user
-                          ? "bg-orange-500 text-white"
-                          : "bg-gray-200 text-gray-700"
-                      } px-2 py-1 rounded-md cursor-pointer m-0 `}
-                      onClick={() => {
-                        setFilter3(prev => {
-                          const isSameUser = prev === user;
-                          const newValue = isSameUser ? "" : user;
-
-                          setColumnFromOutsideTable("job.jobHolder", newValue);
-                          return newValue;
-                        });
-                         
-                      }}
-                    >
-                      {user}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-
-
+                        setColumnFromOutsideTable("subscription", newValue);
+                        return newValue;
+                      });
+                    }}
+                  >
+                    {sub}
+                  </li>
+                ))}
+              </ul>
             </div>
-          )
-        }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            <span>|</span>
+
+            <div className="flex items-center gap-2">
+              {/* <span className="text-sm font-semibold text-gray-700">
+                  Job Holder
+                </span> */}
+              <ul className="flex items-center gap-2 list-none  ">
+                {["Due", "Overdue"].map((el, i) => (
+                  <li
+                    key={i}
+                    className={`${
+                      filter2 === el
+                        ? "bg-orange-500 text-white"
+                        : "bg-gray-200 text-gray-700"
+                    } px-2 py-1 rounded-md cursor-pointer  m-0 `}
+                    onClick={() => {
+                      setFilter2((prev) => {
+                        const isSameUser = prev === el;
+                        const newValue = isSameUser ? "" : el;
+
+                        setColumnFromOutsideTable("state", newValue);
+                        return newValue;
+                      });
+                    }}
+                  >
+                    {el}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <span>|</span>
+
+            <div className="flex items-center gap-2">
+              {/* <span className="text-sm font-semibold text-gray-700">
+                  Job Holder
+                </span> */}
+              <ul className="flex items-center gap-2 list-none  ">
+                {userName?.map((user, i) => (
+                  <li
+                    key={i}
+                    className={`${
+                      filter3 === user
+                        ? "bg-orange-500 text-white"
+                        : "bg-gray-200 text-gray-700"
+                    } px-2 py-1 rounded-md cursor-pointer m-0 `}
+                    onClick={() => {
+                      setFilter3((prev) => {
+                        const isSameUser = prev === user;
+                        const newValue = isSameUser ? "" : user;
+
+                        setColumnFromOutsideTable("job.jobHolder", newValue);
+                        return newValue;
+                      });
+                    }}
+                  >
+                    {user}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
 
         {/* Update Bulk Jobs */}
         {showEdit && (
@@ -2340,6 +2174,16 @@ const col = table.getColumn("subscription");
             <DataLabel
               setShowDataLable={setShowDataLable}
               getDatalable={getDatalable}
+            />
+          </div>
+        )}
+
+        {/* ---------------New Ticket Modal------------- */}
+        {showNewTicketModal && (
+          <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
+            <NewTicketModal
+              setShowSendModal={setShowNewTicketModal}
+              clientCompanyName={clientCompanyName}
             />
           </div>
         )}

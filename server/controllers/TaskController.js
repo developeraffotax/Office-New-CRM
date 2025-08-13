@@ -1588,14 +1588,14 @@ export const reordering = async (req, res) => {
       });
     }
 
-    if (req.user?.user?.name !== task?.jobHolder) {
-      const notiUser = await userModel
-        .findOne({ name: task?.jobHolder })
-        .select("_id");
-      if (notiUser) {
-        emitTaskUpdate(true, { userId: notiUser._id, updated_task: null });
-      }
-    }
+    // if (req.user?.user?.name !== task?.jobHolder) {
+    //   const notiUser = await userModel
+    //     .findOne({ name: task?.jobHolder })
+    //     .select("_id");
+    //   if (notiUser) {
+    //     emitTaskUpdate(true, { userId: notiUser._id, updated_task: null });
+    //   }
+    // }
 
     res.status(200).json({
       success: true,

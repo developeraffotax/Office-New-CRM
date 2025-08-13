@@ -232,6 +232,39 @@ export default function AllJobs() {
     const [searchParams] = useSearchParams();
     const comment_taskId = searchParams.get('comment_taskId');
       const navigate = useNavigate();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+          const socket  = useSocket();
+      
+      
+            useEffect(() => {
+      
+      
+              if (!socket) return;
+              console.log("Socket reg ⛔🆘🆘🅾🅾🅾🆑🆑🆎🆎🆎🅱🅱🅰🅰🅰🅰🈲🈵🈵🈴🈴㊗㊗㊗㊙㊙🉐🉐🉐💮💮🉑")
+              socket.on('job_updated', () => {
+                console.log("Job UPDATED ⛔🆘🆘🅾🅾🅾🆑🆑🆎🆎🆎🅱🅱🅰🅰🅰🅰🈲🈵🈵🈴🈴㊗㊗㊗㊙㊙🉐🉐🉐💮💮🉑")
+      
+                allClientData()
+              })
+            }, [socket])
+
+
+
+
   
     // useEffect(() => {
     //   if (comment_taskId) {
@@ -3581,6 +3614,7 @@ Cell: ({ row }) => {
       isLoad,
       showcolumn,
       columnVisibility,
+      
     ]
   );
 
@@ -4131,7 +4165,7 @@ useEffect(() => {
                   dispatch(setFilterId(""));
                   dep === "All" && allClientData();
 
-                  setColumnFromOutsideTable('Departments', dep);
+                  setColumnFromOutsideTable('Departments', (dep === "All" ? "" : dep));
 
                   
                 }}

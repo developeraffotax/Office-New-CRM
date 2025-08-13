@@ -3102,8 +3102,11 @@ useEffect(()=>{
                   filterByDep("");
                   setShowCompleted(false);
                   setActive1("");
-                  setFilterId("");
+                  dispatch(setFilterId(""));
                   setFilterData("");
+
+                  setColumnFromOutsideTable('project.projectName', "");
+                  setColumnFromOutsideTable('jobHolder', "");
                 }}
               >
                 All ({getProjectsCount("All")})
@@ -3139,7 +3142,7 @@ useEffect(()=>{
 
                                 setShowCompleted(false);
                                 setActive1("");
-                                setFilterId("");
+                                dispatch(setFilterId(""));
 
                                 setColumnFromOutsideTable('project.projectName', proj?.projectName);
                                 setColumnFromOutsideTable('jobHolder', "");

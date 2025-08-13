@@ -83,6 +83,10 @@ const AllTasks = () => {
 
 
 
+  const [pagination, setPagination] = useState({
+          pageIndex: 0,
+          pageSize: 30, // ✅ default page size
+        });
 
 
 
@@ -2652,16 +2656,17 @@ Cell: ({ cell, row }) => {
     enableBottomToolbar: true,
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
-    state: { rowSelection,  },
+     
     // enableEditing: true,
     
-   
-        
+   state: { rowSelection,  pagination, density: "compact"  },
+         onPaginationChange: setPagination, // ✅ Hook for page changes
+        autoResetPageIndex: false,
     enablePagination: true,
     initialState: {
-      pagination: { pageSize: 20 },
-      pageSize: 20,
-      density: "compact",
+      // pagination: { pageSize: 20 },
+      // pageSize: 20,
+      // density: "compact",
       columnVisibility: {
         _id: false
       }

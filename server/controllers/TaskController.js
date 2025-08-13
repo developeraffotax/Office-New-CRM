@@ -8,57 +8,40 @@ import moment from "moment";
 import XLSX from "xlsx";
 import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
 import { emitTaskUpdate } from "../utils/customFns/emitTaskUpdate.js";
- 
- 
+import { SiTrueup } from "react-icons/si";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
 const formatDate = (dateString) => {
-    
-    // const date = new Date(dateString);
-    // const formattedDate = date.toISOString().split('T')[0];
-    // return formattedDate;
+  // const date = new Date(dateString);
+  // const formattedDate = date.toISOString().split('T')[0];
+  // return formattedDate;
 
-    const formattedDate = moment(new Date(dateString)).format('DD-MMM-YYYY');
+  const formattedDate = moment(new Date(dateString)).format("DD-MMM-YYYY");
 
-    return formattedDate;
-}
-
-
-
-
-
-
-
-
-
+  return formattedDate;
+};
 
 // Function to calculate the next start date
 const calculateStartDate = (date, recurringType) => {
   const currentDate = new Date(date);
- 
 
   const addOneBusinessDay = (date) => {
-  const result = new Date(date);
-  result.setDate(result.getDate() + 1);
-
-  // If Saturday, move to Monday (+2)
-  // If Sunday, move to Monday (+1)
-  if (result.getDay() === 6) {
-    result.setDate(result.getDate() + 2);
-  } else if (result.getDay() === 0) {
+    const result = new Date(date);
     result.setDate(result.getDate() + 1);
-  }
 
-  return result;
-};
+    // If Saturday, move to Monday (+2)
+    // If Sunday, move to Monday (+1)
+    if (result.getDay() === 6) {
+      result.setDate(result.getDate() + 2);
+    } else if (result.getDay() === 0) {
+      result.setDate(result.getDate() + 1);
+    }
 
+    return result;
+  };
 
-
-
- 
-
-   const adjustForFridayAndWeekend = (date) => {
+  const adjustForFridayAndWeekend = (date) => {
     const day = date.getDay();
     if (day === 6) {
       date.setDate(date.getDate() + 2);
@@ -67,7 +50,6 @@ const calculateStartDate = (date, recurringType) => {
     }
     return date;
   };
-
 
   switch (recurringType) {
     case "daily":
@@ -92,21 +74,6 @@ const calculateStartDate = (date, recurringType) => {
       return currentDate;
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Create Task
 export const createTask = async (req, res) => {
@@ -140,17 +107,14 @@ export const createTask = async (req, res) => {
       });
     }
 
-     const now = new Date();
+    const now = new Date();
 
-
- 
-     now.setHours(now.getHours() + 5); // Adds 5 hours to the current time
+    now.setHours(now.getHours() + 5); // Adds 5 hours to the current time
 
     let updatedNextRecurringDate = nextRecurringDate
       ? new Date(nextRecurringDate)
       : calculateStartDate(new Date(now), recurring);
 
- 
     console.log("Updated Next Recurring Date:💚", updatedNextRecurringDate);
 
     const tasks = await taskModel.create({
@@ -180,8 +144,6 @@ export const createTask = async (req, res) => {
 
     await tasks.save();
 
-    
-
     // Add Activity Log
     const user = req.user.user;
     if (tasks) {
@@ -199,43 +161,29 @@ export const createTask = async (req, res) => {
 
     // Create Notification
     const notiUser = await userModel.findOne({ name: jobHolder });
-    console.log(notiUser);
 
-    if (!notiUser) {
-      res.status(200).send({
-        success: true,
-        message: "Notification User not found while creating task!",
-      });
-      return;
-    }
-
-
-
-    const payload = {
+    if (notiUser) {
+      const payload = {
         title: "New Task Assigned",
         redirectLink: "/tasks",
         description: `${req.user.user.name} assign a new task of "${tasks.task}"`,
         taskId: `${tasks?._id}`,
         userId: notiUser?._id || null,
         type: "task_assigned",
-      }
+      };
 
-
-    scheduleNotification(req.user?.user?.name !== jobHolder, payload)
- 
+      scheduleNotification(req.user?.user?.name !== jobHolder, payload);
+      emitTaskUpdate(req.user?.user?.name !== jobHolder, {
+        userId: notiUser._id,
+        updated_task: null,
+      });
+    }
 
     return res.status(200).send({
       success: true,
       message: "Task created successfully!",
       task: tasks,
     });
-
-
-     
-
-
-
-
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -255,30 +203,28 @@ export const getAllTasks = async (req, res) => {
     //     "project jobHolder task hours startDate deadline status lead  estimate_Time comments._id comments.status labal recurring"
     //   );
 
-      const tasks = await taskModel.aggregate([
-        {
-          $match: { status: { $ne: "completed" } }
+    const tasks = await taskModel.aggregate([
+      {
+        $match: { status: { $ne: "completed" } },
+      },
+      {
+        $project: {
+          project: 1,
+          jobHolder: 1,
+          task: 1,
+          hours: 1,
+          startDate: 1,
+          deadline: 1,
+          status: 1,
+          lead: 1,
+          estimate_Time: 1,
+          comments: { _id: 1, status: 1 },
+          subtasksLength: { $size: "$subtasks" },
+          labal: 1,
+          recurring: 1,
         },
-        {
-          $project: {
-            project: 1,
-            jobHolder: 1,
-            task: 1,
-            hours: 1,
-            startDate: 1,
-            deadline: 1,
-            status: 1,
-            lead: 1,
-            estimate_Time: 1,
-            comments: { _id: 1, status: 1 },
-            subtasksLength: { $size: "$subtasks" },
-            labal: 1,
-            recurring: 1
-          }
-        }
-      ]);
-
-
+      },
+    ]);
 
     res.status(200).send({
       success: true,
@@ -294,11 +240,6 @@ export const getAllTasks = async (req, res) => {
     });
   }
 };
-
-
-
-
-
 
 // Get ALl Tasks
 export const getCompletedTasks = async (req, res) => {
@@ -309,30 +250,28 @@ export const getCompletedTasks = async (req, res) => {
     //     "project jobHolder task hours startDate deadline status lead  estimate_Time comments._id comments.status labal recurring"
     //   );
 
-      const tasks = await taskModel.aggregate([
-        {
-          $match: { status: { $eq: "completed" } }
+    const tasks = await taskModel.aggregate([
+      {
+        $match: { status: { $eq: "completed" } },
+      },
+      {
+        $project: {
+          project: 1,
+          jobHolder: 1,
+          task: 1,
+          hours: 1,
+          startDate: 1,
+          deadline: 1,
+          status: 1,
+          lead: 1,
+          estimate_Time: 1,
+          comments: { _id: 1, status: 1 },
+          subtasksLength: { $size: "$subtasks" },
+          labal: 1,
+          recurring: 1,
         },
-        {
-          $project: {
-            project: 1,
-            jobHolder: 1,
-            task: 1,
-            hours: 1,
-            startDate: 1,
-            deadline: 1,
-            status: 1,
-            lead: 1,
-            estimate_Time: 1,
-            comments: { _id: 1, status: 1 },
-            subtasksLength: { $size: "$subtasks" },
-            labal: 1,
-            recurring: 1
-          }
-        }
-      ]);
-
-
+      },
+    ]);
 
     res.status(200).send({
       success: true,
@@ -348,8 +287,6 @@ export const getCompletedTasks = async (req, res) => {
     });
   }
 };
-
-
 
 // Get Single Task
 export const getSingleTask = async (req, res) => {
@@ -436,6 +373,15 @@ export const updatetaskProject = async (req, res) => {
 
     await updateTask.save();
 
+    if (req.user?.user?.name !== task?.jobHolder) {
+      const user = await userModel
+        .findOne({ name: task.jobHolder })
+        .select("_id");
+      if (user) {
+        emitTaskUpdate(true, { userId: user?._id, updated_task: null });
+      }
+    }
+
     res.status(200).send({
       success: true,
       message: "Task project updated!",
@@ -480,33 +426,6 @@ export const updateJobHolderLS = async (req, res) => {
         activity: `${req.user.user.name} has updated task assign from "${task.jobHolder}" to "${updateTask.jobHolder}".`,
       });
 
-      // Create Notification
-      const notiUser = await userModel.findOne({ name: jobHolder });
-      if (!notiUser) {
-        res.status(200).send({
-          success: true,
-          message: "Notification User not found while create task!",
-        });
-
-        return;
-      }
-
-      const payload = {
-          title: "New Task Assigned",
-          redirectLink: "/tasks",
-          description: `${req.user.user.name} assign a new task of "${updateTask.task}"`,
-          taskId: `${updateTask._id}`,
-          userId: notiUser._id,
-          type: "task_assigned",
-        }
-
-
-        console.log("UPDATE JLD")
-      scheduleNotification(req.user?.user?.name !== jobHolder, payload)
-      emitTaskUpdate((req.user?.user?.name !== jobHolder ), {userId: notiUser._id, updated_task: null})
-      
-      
-
       //  -------------------Noti End---------
     } else if (lead) {
       updateTask = await taskModel.findByIdAndUpdate(
@@ -549,6 +468,26 @@ export const updateJobHolderLS = async (req, res) => {
     }
 
     await updateTask.save();
+
+    if (req.user?.user?.name !== updateTask?.jobHolder) {
+      const notiUser = await userModel.findOne({ name: updateTask?.jobHolder });
+
+      if (notiUser) {
+        emitTaskUpdate(true, { userId: notiUser._id, updated_task: null });
+        if (jobHolder) {
+          const payload = {
+            title: "New Task Assigned",
+            redirectLink: "/tasks",
+            description: `${req.user.user.name} assign a new task of "${updateTask.task}"`,
+            taskId: `${updateTask._id}`,
+            userId: notiUser._id,
+            type: "task_assigned",
+          };
+
+          scheduleNotification(true, payload);
+        }
+      }
+    }
 
     const user = req.user.user;
 
@@ -604,7 +543,6 @@ export const updateAlocateTask = async (req, res) => {
       });
     }
 
-   
     let updateTask;
 
     if (allocateTask) {
@@ -629,7 +567,11 @@ export const updateAlocateTask = async (req, res) => {
       // Push activity to activities array
       updateTask.activities.push({
         user: req.user.user._id,
-        activity: `${req.user.user.name} updated the task start date from "${formatDate(task.startDate)}" to "${formatDate(updateTask.startDate)}".`,
+        activity: `${
+          req.user.user.name
+        } updated the task start date from "${formatDate(
+          task.startDate
+        )}" to "${formatDate(updateTask.startDate)}".`,
       });
     } else {
       updateTask = await taskModel.findByIdAndUpdate(
@@ -638,16 +580,27 @@ export const updateAlocateTask = async (req, res) => {
         { new: true }
       );
 
-      
-
       // Push activity to activities array
       updateTask.activities.push({
         user: req.user.user._id,
-        activity: `${req.user.user.name} updated the task deadline from "${formatDate(task.deadline)}" to "${formatDate(updateTask.deadline)}".`,
+        activity: `${
+          req.user.user.name
+        } updated the task deadline from "${formatDate(
+          task.deadline
+        )}" to "${formatDate(updateTask.deadline)}".`,
       });
     }
 
     await updateTask.save();
+
+    if (req.user?.user?.name !== updateTask?.jobHolder) {
+      const notiUser = await userModel
+        .findOne({ name: updateTask?.jobHolder })
+        .select("_id");
+      if (notiUser) {
+        emitTaskUpdate(true, { userId: notiUser._id, updated_task: null });
+      }
+    }
 
     // Add Activity Log
     const user = req.user.user;
@@ -749,6 +702,15 @@ export const deleteTask = async (req, res) => {
 
     await taskModel.findByIdAndDelete({ _id: taskId });
 
+    if (req.user?.user?.name !== task?.jobHolder) {
+      const notiUser = await userModel
+        .findOne({ name: task?.jobHolder })
+        .select("_id");
+      if (notiUser) {
+        emitTaskUpdate(true, { userId: notiUser._id, updated_task: null });
+      }
+    }
+
     res.status(200).send({
       success: true,
       message: "Task deleted!",
@@ -776,7 +738,7 @@ export const updateTask = async (req, res) => {
       lead,
       recurring,
       nextRecurringDate,
-      deleteCompletedRecurringSubtasks
+      deleteCompletedRecurringSubtasks,
     } = req.body;
 
     if (!projectId) {
@@ -835,7 +797,7 @@ export const updateTask = async (req, res) => {
         lead,
         recurring: recurring ? recurring : null,
         nextRecurringDate: updatedNextRecurringDate.toISOString(),
-        deleteCompletedRecurringSubtasks
+        deleteCompletedRecurringSubtasks,
       },
       { new: true }
     );
@@ -847,6 +809,15 @@ export const updateTask = async (req, res) => {
     });
 
     await tasks.save();
+
+    if (req.user?.user?.name !== tasks?.jobHolder) {
+      const notiUser = await userModel
+        .findOne({ name: tasks?.jobHolder })
+        .select("_id");
+      if (notiUser) {
+        emitTaskUpdate(true, { userId: notiUser._id, updated_task: null });
+      }
+    }
 
     // Add Activity Log
     const user = req.user.user;
@@ -912,15 +883,22 @@ export const createSubTask = async (req, res) => {
 
     task.subtasks.push({ subTask: subTask, order: subtaskCount + 1 });
 
-     // Push activity to activities array
+    // Push activity to activities array
     task.activities.push({
       user: req.user.user._id,
       activity: `${req.user.user.name} has added a sub-task. Subtask: "${subTask}"`,
     });
 
-
-
     await task.save();
+
+    if (req.user?.user?.name !== task?.jobHolder) {
+      const notiUser = await userModel
+        .findOne({ name: task?.jobHolder })
+        .select("_id");
+      if (notiUser) {
+        emitTaskUpdate(true, { userId: notiUser._id, updated_task: null });
+      }
+    }
 
     // Add Activity Log
     const user = req.user.user;
@@ -995,11 +973,25 @@ export const updateSubTaskStaus = async (req, res) => {
     // Push activity to activities array
     task.activities.push({
       user: req.user.user._id,
-      activity: `${req.user.user.name} updated the subtask "${task.subtasks[subtaskIndex].subTask}" status from "${task.subtasks[subtaskIndex].status === "process" ? "complete" : "process"}" to "${task.subtasks[subtaskIndex].status}".`,
-      
+      activity: `${req.user.user.name} updated the subtask "${
+        task.subtasks[subtaskIndex].subTask
+      }" status from "${
+        task.subtasks[subtaskIndex].status === "process"
+          ? "complete"
+          : "process"
+      }" to "${task.subtasks[subtaskIndex].status}".`,
     });
 
     await task.save();
+
+    if (req.user?.user?.name !== task?.jobHolder) {
+      const notiUser = await userModel
+        .findOne({ name: task?.jobHolder })
+        .select("_id");
+      if (notiUser) {
+        emitTaskUpdate(true, { userId: notiUser._id, updated_task: null });
+      }
+    }
 
     res.status(200).send({
       success: true,
@@ -1068,6 +1060,15 @@ export const deleteSubTask = async (req, res) => {
 
     await task.save();
 
+    if (req.user?.user?.name !== task?.jobHolder) {
+      const notiUser = await userModel
+        .findOne({ name: task?.jobHolder })
+        .select("_id");
+      if (notiUser) {
+        emitTaskUpdate(true, { userId: notiUser._id, updated_task: null });
+      }
+    }
+
     res.status(200).send({
       success: true,
       message: "Subtask deleted!",
@@ -1130,6 +1131,15 @@ export const addlabel = async (req, res) => {
 
     await updateTask.save();
 
+    if (req.user?.user?.name !== updateTask?.jobHolder) {
+      const notiUser = await userModel
+        .findOne({ name: updateTask?.jobHolder })
+        .select("_id");
+      if (notiUser) {
+        emitTaskUpdate(true, { userId: notiUser._id, updated_task: null });
+      }
+    }
+
     res.status(200).send({
       success: true,
       message: "Label added!",
@@ -1174,6 +1184,15 @@ export const updateTaskHours = async (req, res) => {
     });
 
     await updateTask.save();
+
+    if (req.user?.user?.name !== updateTask?.jobHolder) {
+      const notiUser = await userModel
+        .findOne({ name: updateTask?.jobHolder })
+        .select("_id");
+      if (notiUser) {
+        emitTaskUpdate(true, { userId: notiUser._id, updated_task: null });
+      }
+    }
 
     res.status(200).send({
       success: true,
@@ -1302,31 +1321,6 @@ export const updateTaskHours = async (req, res) => {
 //   autoCreateRecurringTasks();
 // });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Main task scheduler
 export const autoCreateRecurringTasks = async (req, res) => {
   try {
@@ -1351,14 +1345,16 @@ export const autoCreateRecurringTasks = async (req, res) => {
         status: "process",
       }));
 
-      console.log(subtasksIncludingCompleted, "SUBTASKS INC COMPLETED")
+      console.log(subtasksIncludingCompleted, "SUBTASKS INC COMPLETED");
 
-      const subtasksNotIncludingCompleted = task.subtasks?.filter(el => el.status !== "complete").map((subtask) => ({
-        ...subtask,
-        status: "process",
-      }));
+      const subtasksNotIncludingCompleted = task.subtasks
+        ?.filter((el) => el.status !== "complete")
+        .map((subtask) => ({
+          ...subtask,
+          status: "process",
+        }));
 
-      const result  = await taskModel.create({
+      const result = await taskModel.create({
         project: task.project,
         jobHolder: task.jobHolder,
         task: `${task.task}`,
@@ -1369,17 +1365,18 @@ export const autoCreateRecurringTasks = async (req, res) => {
         recurring: task.recurring,
         label: task?.label,
         status: "Progress",
-        subtasks: task.deleteCompletedRecurringSubtasks ? subtasksNotIncludingCompleted : subtasksIncludingCompleted,
+        subtasks: task.deleteCompletedRecurringSubtasks
+          ? subtasksNotIncludingCompleted
+          : subtasksIncludingCompleted,
         nextRecurringDate: calculateStartDate(
           task.nextRecurringDate,
           task.recurring
         ),
 
-        deleteCompletedRecurringSubtasks: task.deleteCompletedRecurringSubtasks
+        deleteCompletedRecurringSubtasks: task.deleteCompletedRecurringSubtasks,
       });
 
-
-      console.log(result)
+      console.log(result);
       // if(task.deleteCompletedRecurringSubtasks) {
       //   await taskModel.create({
       //     project: task.project,
@@ -1397,12 +1394,10 @@ export const autoCreateRecurringTasks = async (req, res) => {
       //       task.nextRecurringDate,
       //       task.recurring
       //     ),
-  
+
       //     deleteCompletedRecurringSubtasks: task.deleteCompletedRecurringSubtasks
       //   });
       // }
-
-       
     }
 
     if (res) {
@@ -1423,7 +1418,7 @@ export const autoCreateRecurringTasks = async (req, res) => {
   }
 };
 
-// if(process.env.pm_id === '0') { 
+// if(process.env.pm_id === '0') {
 
 //   // Schedule the task to run daily at 11:30 PM
 //   cron.schedule("30 23 * * *", async () => {
@@ -1433,15 +1428,13 @@ export const autoCreateRecurringTasks = async (req, res) => {
 
 // }
 
-if (process.env.pm_id === '0') { 
+if (process.env.pm_id === "0") {
   // Schedule the task to run daily at 12:05 AM
   cron.schedule("5 0 * * *", async () => {
     console.log("Running task scheduler for recurring tasks at 12:05 AM...💛");
     await autoCreateRecurringTasks();
   });
 }
-
-
 
 // ---------------------Delete Daily Recurring Tasks ---------------------->
 export const deleteDailyRecurringTasks = async (req, res) => {
@@ -1593,6 +1586,15 @@ export const reordering = async (req, res) => {
         message: "Some subtasks could not be updated!",
         updateSubtasks,
       });
+    }
+
+    if (req.user?.user?.name !== task?.jobHolder) {
+      const notiUser = await userModel
+        .findOne({ name: task?.jobHolder })
+        .select("_id");
+      if (notiUser) {
+        emitTaskUpdate(true, { userId: notiUser._id, updated_task: null });
+      }
     }
 
     res.status(200).json({

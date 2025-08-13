@@ -6,6 +6,7 @@ import XLSX from "xlsx";
 import moment from "moment";
 import redisClient from "../utils/redisClient.js";
 import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
+import { emitJobUpdate } from "../utils/customFns/emitJobUpdate.js";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
@@ -147,12 +148,15 @@ export const createJob = async (req, res) => {
           };
 
           scheduleNotification(true, payload);
+          emitJobUpdate(true, { userId: jobHolderUser._id, updated_job: null });
         }
       }
     }
 
 
 
+
+ 
 
 
 
@@ -364,6 +368,21 @@ export const updateFee = async (req, res) => {
     await clientJob.save();
 
     // await redisClient.del('all_jobs');
+
+
+     if (req.user?.user?.name !== clientJob?.job?.jobHolder) {
+          const notiUser = await userModel
+            .findOne({ name: clientJob?.job?.jobHolder })
+            .select("_id");
+          if (notiUser) {
+            emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+          }
+        }
+
+
+
+
+
     res.status(200).send({
       success: true,
       message: "Job Fee updated successfully!",
@@ -443,6 +462,18 @@ export const updateStatus = async (req, res) => {
 
     await clientJob.save();
 
+
+         if (req.user?.user?.name !== clientJob?.job?.jobHolder) {
+          const notiUser = await userModel
+            .findOne({ name: clientJob?.job?.jobHolder })
+            .select("_id");
+          if (notiUser) {
+            emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+          }
+        }
+
+
+
     // await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
@@ -506,6 +537,16 @@ export const updateActiveClient = async (req, res) => {
       },
       { new: true }
     );
+
+
+      if (req.user?.user?.name !== clientJob?.job?.jobHolder) {
+      const notiUser = await userModel
+        .findOne({ name: clientJob?.job?.jobHolder })
+        .select("_id");
+      if (notiUser) {
+        emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+      }
+    }
 
     res.status(200).send({
       success: true,
@@ -603,6 +644,20 @@ export const updateLead = async (req, res) => {
 
     await clientJob.save();
     // await redisClient.del('all_jobs');
+
+
+    
+     if (req.user?.user?.name !== clientJob?.job?.jobHolder) {
+          const notiUser = await userModel
+            .findOne({ name: clientJob?.job?.jobHolder })
+            .select("_id");
+          if (notiUser) {
+            emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+          }
+        }
+
+
+
     res.status(200).send({
       success: true,
       message: "Lead user updated successfully!",
@@ -677,30 +732,32 @@ export const updateJobHolder = async (req, res) => {
 
     await clientJob.save();
     // await redisClient.del('all_jobs');
-    
 
-    // Create Notification
-    const user = await userModel.findOne({ name: jobHolder });
-    
-    if (user) {
-      const payload = {
-          title: "New Job Assigned",
-          redirectLink: "/job-planning",
-          description: `${req.user.user.name} assign a new job of "${clientJob.job.jobName}"`,
-          taskId: `${clientJob._id}`,
-          userId: user._id,
-          type: "job_assigned",
+ 
+
+
+
+     if (req.user?.user?.name !== clientJob?.job?.jobHolder) {
+          const notiUser = await userModel.findOne({ name: clientJob?.job?.jobHolder }).select("_id");
+
+          if (notiUser) {
+            
+
+            const payload = {
+                title: "New Job Assigned",
+                redirectLink: "/job-planning",
+                description: `${req.user.user.name} assign a new job of "${clientJob.job.jobName}"`,
+                taskId: `${clientJob._id}`,
+                userId: notiUser._id,
+                type: "job_assigned",
+              }
+
+              scheduleNotification(true, payload)
+
+              emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+
+          }
         }
-
-
-    scheduleNotification(req.user?.user?.name !== jobHolder, payload)
-      }
-
-
-
-
-
-
 
 
 
@@ -755,9 +812,9 @@ export const deleteClientJob = async (req, res) => {
       });
     }
 
-    const isExisting = await jobsModel.findById({ _id: jobId });
+    const clientJob = await jobsModel.findById({ _id: jobId });
 
-    if (!isExisting) {
+    if (!clientJob) {
       return res.status(400).send({
         success: false,
         message: "Job not found!",
@@ -766,22 +823,40 @@ export const deleteClientJob = async (req, res) => {
 
     // Add Activity Log
     const currectUser = req.user.user;
-    if (isExisting) {
+    if (clientJob) {
       activityModel.create({
         user: currectUser._id,
         action: `${currectUser.name.trim()} delete a job.`,
         entity: "Jobs",
         details: `Job Details:
-              - Company Name: ${isExisting.companyName || "No company provided"}
-              - Job Client: ${isExisting.clientName || "No client provided"}
+              - Company Name: ${clientJob.companyName || "No company provided"}
+              - Job Client: ${clientJob.clientName || "No client provided"}
               - Created At: ${currentDateTime}`,
       });
     }
 
-    await jobsModel.findByIdAndDelete({
-      _id: isExisting._id,
+     await jobsModel.findByIdAndDelete({
+      _id: clientJob._id,
     });
     // await redisClient.del('all_jobs');
+
+
+
+
+         if (req.user?.user?.name !== clientJob?.job?.jobHolder) {
+          const notiUser = await userModel
+            .findOne({ name: clientJob?.job?.jobHolder })
+            .select("_id");
+          if (notiUser) {
+            emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+          }
+        }
+
+
+
+
+
+
     res.status(200).send({
       success: true,
       message: "Job delete successfully!",
@@ -1116,6 +1191,15 @@ export const updateDates = async (req, res) => {
 
     const populatedClientJob = await jobsModel.findById(jobId).populate("data");
 
+     
+    if (req.user?.user?.name !== populatedClientJob?.job?.jobHolder) {
+      const notiUser = await userModel
+        .findOne({ name: populatedClientJob?.job?.jobHolder })
+        .select("_id");
+      if (notiUser) {
+        emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+      }
+    }
 
     // console.log("Populated Client Job:", populatedClientJob);
     // console.log("Non populated Client Job:", clientJob);
@@ -1343,6 +1427,16 @@ export const createDublicateJob = async (req, res) => {
       });
     }
 
+
+
+    if (req.user?.user?.name !== clientJob?.job?.jobHolder) {
+        const notiUser = await userModel
+          .findOne({ name: clientJob?.job?.jobHolder })
+          .select("_id");
+        if (notiUser) {
+          emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+        }
+      }
     // await redisClient.del('all_jobs');
     return res.status(200).send({
       success: true,
@@ -1384,6 +1478,15 @@ export const updateClientStatus = async (req, res) => {
     });
 
     await clientJob.save();
+
+        if (req.user?.user?.name !== clientJob?.job?.jobHolder) {
+        const notiUser = await userModel
+          .findOne({ name: clientJob?.job?.jobHolder })
+          .select("_id");
+        if (notiUser) {
+          emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+        }
+      }
 
     // await redisClient.del('all_jobs');
     res.status(200).send({
@@ -1505,6 +1608,17 @@ export const addlabel = async (req, res) => {
     const populatedJob = await jobsModel .findById(jobId).populate("data");
 
     // await redisClient.del('all_jobs');
+
+        if (req.user?.user?.name !== updateJob?.job?.jobHolder) {
+        const notiUser = await userModel
+          .findOne({ name: updateJob?.job?.jobHolder })
+          .select("_id");
+        if (notiUser) {
+          emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+        }
+      }
+
+
     res.status(200).send({
       success: true,
       message: "Label added!",
@@ -1560,6 +1674,15 @@ export const createSubTask = async (req, res) => {
 
     await job.save();
 
+
+    if (req.user?.user?.name !== job?.job?.jobHolder) {
+        const notiUser = await userModel
+          .findOne({ name: job?.job?.jobHolder })
+          .select("_id");
+        if (notiUser) {
+          emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+        }
+      }
     // await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
@@ -1629,6 +1752,14 @@ export const updateSubTaskStaus = async (req, res) => {
     await job.save();
 
 
+            if (req.user?.user?.name !== job?.job?.jobHolder) {
+        const notiUser = await userModel
+          .findOne({ name: job?.job?.jobHolder })
+          .select("_id");
+        if (notiUser) {
+          emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+        }
+      }
     // await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
@@ -1696,6 +1827,17 @@ export const deleteSubTask = async (req, res) => {
 
     await job.save();
 
+
+    if (req.user?.user?.name !== job?.job?.jobHolder) {
+      const notiUser = await userModel
+        .findOne({ name: job?.job?.jobHolder })
+        .select("_id");
+      if (notiUser) {
+        emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+      }
+    }
+
+
     // await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
@@ -1747,6 +1889,15 @@ export const addDatalabel = async (req, res) => {
 
     await updateJob.save();
 
+    if (req.user?.user?.name !== updateJob?.job?.jobHolder) {
+  const notiUser = await userModel
+    .findOne({ name: updateJob?.job?.jobHolder })
+    .select("_id");
+  if (notiUser) {
+    emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+  }
+}
+
     // await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,
@@ -1782,6 +1933,16 @@ export const updateTime = async (req, res) => {
       { new: true }
     );
 
+
+    if (req.user?.user?.name !== clientJob?.job?.jobHolder) {
+      const notiUser = await userModel
+        .findOne({ name: clientJob?.job?.jobHolder })
+        .select("_id");
+      if (notiUser) {
+        emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+      }
+    }
+    
     // await redisClient.del('all_jobs');
     await res.status(200).send({
       success: true,
@@ -2114,6 +2275,15 @@ export const updateUsers = async (req, res) => {
       { new: true }
     );
 
+
+        if (req.user?.user?.name !== clientJob?.job?.jobHolder) {
+      const notiUser = await userModel
+        .findOne({ name: clientJob?.job?.jobHolder })
+        .select("_id");
+      if (notiUser) {
+        emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+      }
+    }
     // await redisClient.del('all_jobs');
     res.status(200).send({
       success: true,

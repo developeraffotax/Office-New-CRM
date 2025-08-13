@@ -28,9 +28,37 @@ export default function SendEmailModal({
   const [type, setType] = useState("client");
   const [email, setEmail] = useState("");
 
+  const [users, setUsers] = useState([]);
+  const [jobHolder, setJobHolder] = useState("");
   console.log("Files:", files);
 
   console.log("message:", message);
+
+
+         
+          const getAllUsers = async () => {
+            try {
+              const { data } = await axios.get(
+                `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+              );
+              setUsers( data?.users?.filter((user) => user.role?.access?.some((item) => item?.permission?.includes("Tickets") ) ) || [] );
+        
+          
+        
+              
+        
+            } catch (error) {
+              console.log(error);
+            }
+          };
+    
+    
+          useEffect(() => {
+            getAllUsers();
+            //eslint-disable-next-line
+          }, []);
+
+
 
   const allClientJobData = async () => {
     try {
@@ -320,10 +348,40 @@ export default function SendEmailModal({
             </div>
           </div>
 
-          <div className="flex items-center justify-end ">
+          <div className={`w-full flex items-center ${ auth?.user?.role?.name === "Admin" ? "justify-between" : "justify-end"} gap-8`}>
+
+
+             {
+                  auth?.user?.role?.name === "Admin" && (
+                     
+
+                  <select
+                  value={jobHolder}
+                  className="w-[160px] h-[2rem] rounded-md border border-gray-400 outline-none text-[15px] px-2 py-1 bg-gray-50"
+                  onChange={(e) => {
+                    setJobHolder(e.target.value);
+                    
+                  }}
+                >
+                  <option value="">Select Jobholder</option>
+                  {users?.map((jobHold, i) => (
+                    <option value={jobHold?.name} key={i}>
+                      {jobHold.name}
+                    </option>
+                  ))}
+                </select>
+
+
+              )
+
+
+                }
+
+
+
             <button
               disabled={loading}
-              className={`${style.button1} text-[15px] `}
+              className={`${style.button1} text-[15px]  `}
               type="submit"
               style={{ padding: ".4rem 1rem" }}
             >

@@ -27,11 +27,13 @@ import { scheduleNotification } from "../utils/customFns/scheduleNotification.js
 // Create Ticket \
 export const sendEmail = async (req, res) => {
   try {
-    const { clientId, company, subject, message, email } = req.body;
+    const { clientId, company, subject, message, email, jobHolder } = req.body;
 
     console.log("Subject💙💚💛", subject)
     
     const userName = req.user.user.name;
+
+    const jobHolderToAssign = jobHolder ? jobHolder : userName ;
     let client;
 
     if (clientId) {
@@ -77,7 +79,7 @@ export const sendEmail = async (req, res) => {
       companyName: (clientId && client?.companyName) || "",
       clientName: (clientId && client?.clientName) || "",
       company: company,
-      jobHolder: userName,
+      jobHolder: jobHolderToAssign,
       subject: subject,
       mailThreadId: threadId,
       lastMessageSentBy: userName,

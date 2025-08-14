@@ -2133,6 +2133,15 @@ const getProgress = (timeStr, total) => {
 
 
 
+
+  if(isRunning) {
+    return (
+       <div className="  w-full h-[112vh]   bg-gray-50 flex items-start justify-center ">
+            <RunningTimers users={userData} setIsRunning={setIsRunning} />
+          </div>
+    );
+  }
+
   return (
     <>
       <div className=" relative w-full h-[100%] py-4 px-2 sm:px-4 flex flex-col gap-2  ">
@@ -2734,11 +2743,7 @@ const getProgress = (timeStr, total) => {
         )}
 
         {/* -----------All Running Timers-------------- */}
-        {isRunning && (
-          <div className="fixed top-0 left-0 w-full h-[112vh] z-[999] bg-gray-50 flex items-center justify-center ">
-            <RunningTimers users={userData} setIsRunning={setIsRunning} />
-          </div>
-        )}
+        
         {/* -----------Note Modal-------------- */}
         {showNote && (
           <div className="fixed top-0 left-0 w-full h-full z-[999] bg-gray-200/70 flex items-center justify-center ">

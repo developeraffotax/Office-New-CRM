@@ -94,7 +94,7 @@ export default function RunningTimers({ setIsRunning, users }) {
 
   return (
      
-      <div className="relative w-full min-h-[100vh] bg-gray-100 mt-2 overflow-y-auto overflow-hidden scroll-smooth  ">
+      <div className="relative w-full min-h-[100vh] bg-gray-100  p-8 overflow-y-auto overflow-hidden scroll-smooth  ">
         <div className="flex items-center justify-between py-4 px-4 ">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">

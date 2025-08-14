@@ -11,14 +11,20 @@ import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
 import axios from "axios";
  
-import { MdInsertComment } from "react-icons/md";
+import { MdInsertComment, MdRemoveRedEye } from "react-icons/md";
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { useSelector } from "react-redux";
+import EmailDetailDrawer from "./EmailDetailDrawer";
+import { Drawer } from "@mui/material";
+import ActivityLogDrawer from "../../components/Modals/ActivityLogDrawer";
+import { TbLogs } from "react-icons/tb";
 
+
+const jobStatusOptions = [ "Quote", "Data", "Progress", "Queries", "Approval", "Submission", "Billing", "Feedback", ];
 export default function CompleteTickets() {
 
 
@@ -44,6 +50,20 @@ export default function CompleteTickets() {
   const [active1, setActive1] = useState("");
 
 
+  const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
+  const [activityDrawerTicketId, setActivityDrawerTicketId] = useState("");
+
+  const [ticketId, setTicketId] = useState("")
+
+  const [open, setOpen] = useState(false);
+
+  const toggleDrawer = (newOpen) => {
+     
+    setOpen(newOpen);
+  };
+
+
+
   // console.log("Users:", users, userName);
 
   // Get Auth Access
@@ -65,6 +85,7 @@ export default function CompleteTickets() {
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/complete/tickets`
       );
       if (data) {
+         
         setEmailData(data.emails);
         setIsLoading(false);
       }
@@ -471,6 +492,79 @@ export default function CompleteTickets() {
         maxSize: 130,
         grow: false,
       },
+
+      
+            {
+              accessorKey: "jobStatus",
+              header: "Job Status",
+              Header: ({ column }) => {
+                return (
+                  <div className=" flex flex-col gap-[2px]">
+                    <span
+                      className="ml-1 cursor-pointer"
+                      title="Clear Filter"
+                      onClick={() => {
+                        column.setFilterValue("");
+                      }}
+                    >
+                      Job Status
+                    </span>
+      
+                    <select
+                      value={column.getFilterValue() || ""}
+                      onChange={(e) => column.setFilterValue(e.target.value)}
+                      className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                    >
+                      <option value="">Select</option>
+                      {jobStatusOptions?.map((status, i) => (
+                        <option key={i} value={status}>
+                          {status}
+                        </option>
+                      ))}
+      
+                      <option value="empty">Empty</option>
+                    </select>
+                  </div>
+                );
+              },
+              Cell: ({ cell, row, table }) => {
+                const jobStatus = cell.getValue();
+      
+               
+      
+                return (
+                  <div className="w-full">
+                    <span
+                         
+                        className="w-full h-full cursor-pointer"
+                      >
+                        {jobStatus && jobStatus !== "empty" ? (
+                          jobStatus
+                        ) : (
+                          <div className="text-white w-full h-full  ">.</div>
+                        )}
+                      </span>
+                  </div>
+                );
+              },
+      
+              filterFn: (row, columnId, filterValue) => {
+                const cellValue = row.getValue(columnId);
+      
+                if (filterValue === "empty") {
+                  return !cellValue || cellValue === "empty";
+                }
+      
+                return String(cellValue ?? "") === String(filterValue);
+              },
+      
+              size: 120,
+              minSize: 80,
+              maxSize: 130,
+              grow: false,
+            },
+
+
       {
         accessorKey: "subject",
         minSize: 200,
@@ -936,6 +1030,35 @@ export default function CompleteTickets() {
         Cell: ({ cell, row }) => {
           return (
             <div className="flex items-center justify-center gap-4 w-full h-full">
+
+                               <span
+                              className=""
+                              title="View Ticket"
+                              onClick={() => {
+                                toggleDrawer(true);
+                                setTicketId(row.original._id)
+                                
+                              }}
+                            >
+                              
+                              <MdRemoveRedEye className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-600" />
+                            </span>
+              
+                            
+              
+              
+                               <span
+                              className=""
+                              title="View Logs"
+                              onClick={() => {
+                                setIsActivityDrawerOpen(true);
+                                setActivityDrawerTicketId(row.original._id);
+                              }}
+                            >
+                              <TbLogs className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-600" />
+                            </span>
+
+
               <span
                 className=""
                 title="Complete Ticket"
@@ -955,7 +1078,7 @@ export default function CompleteTickets() {
             </div>
           );
         },
-        size: 100,
+        size: 160,
       },
     ],
     // eslint-disable-next-line
@@ -1314,6 +1437,30 @@ export default function CompleteTickets() {
             />
           </div>
         )}
+
+
+        
+                {/* ---------------------Activity Log Drawer------------------ */}
+                {isActivityDrawerOpen && (
+                  <ActivityLogDrawer isOpen={isActivityDrawerOpen} onClose={() => setIsActivityDrawerOpen(false)} ticketId={activityDrawerTicketId} />
+        )}
+        
+        
+        
+        
+           <Drawer open={open} onClose={() => {toggleDrawer(false); } } anchor="right"   sx={{zIndex: 1400, '& .MuiDrawer-paper': {
+                width: 600, // Set your custom width here (px, %, etc.)
+              },}}  >
+                        
+                          <div className="  " >
+          
+                            <EmailDetailDrawer id={ticketId} toggleDrawer={toggleDrawer} />
+                          </div>
+          
+                      </Drawer>
+
+
+
       </div>
     </>
   );

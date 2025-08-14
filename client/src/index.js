@@ -8,6 +8,18 @@ import reportWebVitals from "./reportWebVitals";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import { SocketProvider } from "./context/socketProvider";
+import { getNotifications } from "./redux/slices/notificationSlice";
+
+const notificationChannel = new BroadcastChannel("notification-sync");
+
+notificationChannel.onmessage = (event) => {
+  const { type, userId } = event.data || {};
+  if (type === "REFRESH_NOTIFICATIONS" && userId) {
+    store.dispatch(getNotifications(userId));
+  }
+};
+
+
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -26,3 +38,5 @@ root.render(
 );
  
 reportWebVitals();
+
+

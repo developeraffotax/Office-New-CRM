@@ -594,7 +594,7 @@ const applyFilter = (e) => {
         accessorKey: "companyName",
         minSize: 100,
         maxSize: 300,
-        size: 280,
+        size: 240,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -707,7 +707,7 @@ const applyFilter = (e) => {
         accessorKey: "clientName",
         minSize: 100,
         maxSize: 200,
-        size: 160,
+        size: 140,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -821,7 +821,7 @@ const applyFilter = (e) => {
         accessorKey: "company",
         minSize: 100,
         maxSize: 200,
-        size: 120,
+        size: 100,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -939,7 +939,7 @@ const applyFilter = (e) => {
         filterFn: "equals",
         filterSelectOptions: users.map((jobhold) => jobhold.name),
         filterVariant: "select",
-        size: 120,
+        size: 100,
         minSize: 80,
         maxSize: 130,
         grow: false,
@@ -1029,9 +1029,9 @@ const applyFilter = (e) => {
           return String(cellValue ?? "") === String(filterValue);
         },
 
-        size: 120,
+        size: 100,
         minSize: 80,
-        maxSize: 130,
+        maxSize: 150,
         grow: false,
       },
 
@@ -1039,7 +1039,7 @@ const applyFilter = (e) => {
         accessorKey: "subject",
         minSize: 200,
         maxSize: 500,
-        size: 460,
+        size: 440,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -1497,7 +1497,7 @@ const applyFilter = (e) => {
           "Custom date",
         ],
         filterVariant: "custom",
-        size: 120,
+        size: 100,
         minSize: 90,
         maxSize: 120,
         grow: false,
@@ -1659,7 +1659,7 @@ const applyFilter = (e) => {
           "Custom date",
         ],
         filterVariant: "custom",
-        size: 120,
+        size: 100,
         minSize: 90,
         maxSize: 120,
         grow: false,

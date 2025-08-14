@@ -874,6 +874,8 @@ const AllTasks = () => {
       // socketId.emit("addTask", {
       //   note: "New Task Added",
       // });
+      toast.success("Task copied successfully!");
+      setTasksData((prevData) => [...prevData, data?.task]);
     }
   };
 
@@ -2409,7 +2411,7 @@ Cell: ({ cell, row }) => {
               <span
                 className="text-[1rem] cursor-pointer"
                 onClick={() => copyTask(row.original)}
-                title="Copy this column"
+                title="Copy this task"
               >
                 <GrCopy className="h-5 w-5 text-cyan-600 " />
               </span>

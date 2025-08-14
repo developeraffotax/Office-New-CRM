@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../../redux/slices/authSlice";
@@ -44,6 +44,8 @@ export default function Login() {
   };
 
   return (
+    <>
+    <Toaster />
     <div className="w-full h-[111vh] flex items-center justify-center py-6 px-4 backgroundC">
       <div className="rounded-md shadow1 py-4 px-4 w-[30rem] bg-white">
         <div className="flex items-center justify-center flex-col">
@@ -103,5 +105,7 @@ export default function Login() {
         </form>
       </div>
     </div>
+    </>
+    
   );
 }

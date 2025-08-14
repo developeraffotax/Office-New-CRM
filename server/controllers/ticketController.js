@@ -1396,10 +1396,10 @@ export const getCompleteTickets = async (req, res) => {
   try {
 
     if(role === 'Admin') {
-      const emails = await ticketModel .find({ state: { $ne: "progress" } }) .select( "clientId jobStatus companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt" );
+      const emails = await ticketModel .find({ state: { $ne: "progress" } }) .select( "clientId jobStatus companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt received sent" );
       res.status(200).send({ success: true, message: "All complete email list!", emails: emails, });
     } else {
-      const emails = await ticketModel .find({ state: { $ne: "progress" }, jobHolder: userName }) .select( "clientId jobStatus companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt" );
+      const emails = await ticketModel .find({ state: { $ne: "progress" }, jobHolder: userName }) .select( "clientId jobStatus companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt received sent" );
       res.status(200).send({ success: true, message: "All complete email list!", emails: emails, });
     }
    

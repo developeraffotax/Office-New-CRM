@@ -340,7 +340,7 @@ export default function Subscription() {
         accessorKey: "companyName",
         minSize: 190,
         maxSize: 300,
-        size: 230,
+        size: 200,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -1148,7 +1148,7 @@ export default function Subscription() {
           return monthDifference.toString().includes(filterValue);
         },
         enableColumnFilter: true,
-        size: 90,
+        size: 80,
         minSize: 60,
         maxSize: 120,
         grow: false,
@@ -1226,7 +1226,7 @@ export default function Subscription() {
         accessorKey: "job.fee",
         Header: ({ column }) => {
           return (
-            <div className=" flex flex-col gap-[2px] w-[5.5rem] items-center justify-center pr-2 ">
+            <div className=" flex flex-col gap-[2px] w-[80px]  items-center justify-center pr-2 ">
               <span
                 className="ml-1 w-full text-center cursor-pointer"
                 title="Clear Filter"
@@ -1296,14 +1296,17 @@ export default function Subscription() {
           );
         },
         filterFn: "equals",
-        size: 90,
+        size: 80,
+         minSize: 50,
+        maxSize: 120,
+         
       },
       //  --- Note--->
       {
         accessorKey: "note",
-        minSize: 220,
+        minSize: 200,
         maxSize: 500,
-        size: 220,
+        size: 200,
         grow: false,
         Header: ({ column }) => {
           return (
@@ -1501,7 +1504,7 @@ export default function Subscription() {
         filterFn: "equals",
         filterSelectOptions: userName.map((lead) => lead),
         filterVariant: "select",
-        size: 110,
+        size: 100,
         minSize: 70,
         maxSize: 140,
         grow: false,

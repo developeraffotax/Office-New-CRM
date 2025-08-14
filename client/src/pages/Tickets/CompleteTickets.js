@@ -22,6 +22,8 @@ import EmailDetailDrawer from "./EmailDetailDrawer";
 import { Drawer } from "@mui/material";
 import ActivityLogDrawer from "../../components/Modals/ActivityLogDrawer";
 import { TbLogs } from "react-icons/tb";
+import { TiFilter } from "react-icons/ti";
+import { NumberFilterPortal, NumderFilterFn } from "../../utlis/NumberFilterPortal";
 
 
 const jobStatusOptions = [ "Quote", "Data", "Progress", "Queries", "Approval", "Submission", "Billing", "Feedback", ];
@@ -63,6 +65,39 @@ export default function CompleteTickets() {
   };
 
 
+
+
+
+  const anchorRef = useRef(null);
+
+const [filterInfo, setFilterInfo] = useState({
+  col: null,
+  value: "",
+  type: "eq",
+});
+  const handleFilterClick = (e, colKey) => {
+  e.stopPropagation();
+  anchorRef.current = e.currentTarget;
+  setFilterInfo({
+    col: colKey,
+    value: "",
+    type: "eq",
+  });
+};
+
+const handleCloseFilter = () => {
+  setFilterInfo({ col: null, value: "", type: "eq" });
+  anchorRef.current = null;
+};
+
+const applyFilter = (e) => {
+  e.stopPropagation()
+  const { col, value, type } = filterInfo;
+  if (col && value) {
+    table.getColumn(col)?.setFilterValue({ type, value: parseFloat(value) });
+  }
+  handleCloseFilter();
+};
 
   // console.log("Users:", users, userName);
 
@@ -619,6 +654,57 @@ export default function CompleteTickets() {
         },
         filterVariant: "select",
       },
+
+
+
+
+      {
+  accessorKey: "received",
+  Header: ({column}) => (
+    <div className="flex flex-col items-center justify-between">
+      <span title="Click to remove filter" onClick={() => column.setFilterValue("")} className="cursor-pointer ">Received</span>
+      <button ref={anchorRef} onClick={(e) => handleFilterClick(e, "received")}>
+        <TiFilter size={20} className="ml-1 text-gray-500 hover:text-black" />
+      </button>
+    </div>
+  ),
+  filterFn: NumderFilterFn,
+  Cell: ({ row }) => (
+    <span className="w-full flex justify-center text-lg bg-sky-600 text-white rounded-md">
+      {row.original.received}
+    </span>
+  ),
+  size: 60,
+},
+
+      {
+        accessorKey: "sent",
+        
+         Header: ({column}) => (
+    <div className="flex flex-col items-center justify-between">
+       <span title="Click to remove filter" onClick={() => column.setFilterValue("")} className="cursor-pointer ">Sent</span>
+      <button ref={anchorRef} onClick={(e) => handleFilterClick(e, "sent")}>
+        <TiFilter size={20} className="ml-1 text-gray-500 hover:text-black" />
+      </button>
+    </div>
+  ),
+        Cell: ({ row }) => {
+          const sent = row.original.sent;
+          return (
+            <span className="w-full flex justify-center text-lg bg-orange-600 text-white rounded-md">
+              {sent}
+            </span>
+          );
+        },
+
+        size: 60,
+          filterFn: NumderFilterFn,
+      },
+
+
+
+
+
       {
         accessorKey: "status",
         header: "Status",
@@ -1461,6 +1547,19 @@ export default function CompleteTickets() {
 
 
 
+
+
+              {filterInfo.col && anchorRef.current && (
+                <NumberFilterPortal
+                  anchorRef={anchorRef}
+                  value={filterInfo.value}
+                  filterType={filterInfo.type}
+                  onApply={applyFilter}
+                  onClose={handleCloseFilter}
+                  setValue={(val) => setFilterInfo((f) => ({ ...f, value: val }))}
+                  setFilterType={(type) => setFilterInfo((f) => ({ ...f, type }))}
+                />
+              )}
       </div>
     </>
   );

@@ -1,6 +1,6 @@
-// src/redux/slices/authSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -16,8 +16,8 @@ const initialState = {
   filterId: "",
   searchValue: "",
   jid: "",
-  isLoading: false, // ✅ NEW
-  isInitializing: true,     // ✅ NEW for first app load
+  isLoading: false,
+  isInitializing: true,
 };
 
 export const getUserDetail = createAsyncThunk(
@@ -44,33 +44,27 @@ export const getUserDetail = createAsyncThunk(
   }
 );
 
-
-
-
-
 export const loginUser = createAsyncThunk(
-    "auth/loginUser",
-    async ({ email, password }, { rejectWithValue }) => {
-      try {
-        const { data } = await axios.post(
-          `${process.env.REACT_APP_API_URL}/api/v1/user/login/user`,
-          { email, password }
-        );
-  
-        if (data?.success) {
-          localStorage.setItem("auth", JSON.stringify(data));
-          return { user: data.user, token: data.token };
-        } else {
-          return rejectWithValue("Login failed");
-        }
-      } catch (error) {
-        return rejectWithValue(error?.response?.data?.message || "Login error");
+  "auth/loginUser",
+  async ({ email, password }, { rejectWithValue }) => {
+    try {
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/login/user`,
+        { email, password }
+      );
+
+      if (data?.success) {
+        localStorage.setItem("auth", JSON.stringify(data));
+        axios.defaults.headers.common["Authorization"] = data.token;
+        return { user: data.user, token: data.token };
+      } else {
+        return rejectWithValue("Login failed");
       }
+    } catch (error) {
+      return rejectWithValue(error?.response?.data?.message || "Login error");
     }
-  );
-
-
-  
+  }
+);
 
 const authSlice = createSlice({
   name: "auth",
@@ -117,7 +111,6 @@ const authSlice = createSlice({
           }
         }
       } catch (error) {
-        console.error("Token decode failed:", error.message);
         localStorage.removeItem("auth");
         state.auth = { user: null, token: "" };
       }
@@ -132,35 +125,36 @@ const authSlice = createSlice({
         };
         axios.defaults.headers.common["Authorization"] = parsed.token;
       }
-      state.isInitializing = false; // ✅ Mark done after checking
+      state.isInitializing = false;
     },
   },
-   extraReducers: (builder) => {
+  extraReducers: (builder) => {
     builder
       // getUserDetail
       .addCase(getUserDetail.pending, (state) => {
-        state.isLoading = true; // ✅
+        state.isLoading = true;
       })
       .addCase(getUserDetail.fulfilled, (state, action) => {
         state.auth = action.payload;
         axios.defaults.headers.common["Authorization"] = action.payload.token;
-        state.isLoading = false; // ✅
+        state.isLoading = false;
       })
       .addCase(getUserDetail.rejected, (state) => {
-        state.isLoading = false; // ✅
+        state.isLoading = false;
       })
 
       // loginUser
       .addCase(loginUser.pending, (state) => {
-        state.isLoading = true; // ✅
+        state.isLoading = true;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.auth = action.payload;
         axios.defaults.headers.common["Authorization"] = action.payload.token;
-        state.isLoading = false; // ✅
+        state.isLoading = false;
       })
-      .addCase(loginUser.rejected, (state) => {
-        state.isLoading = false; // ✅
+      .addCase(loginUser.rejected, (state,) => {
+        
+        state.isLoading = false;
       });
   },
 });

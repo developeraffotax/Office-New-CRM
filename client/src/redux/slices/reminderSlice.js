@@ -2,6 +2,11 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import toast from "react-hot-toast";
 
+
+
+const channel = new BroadcastChannel("reminder-sync");
+
+
 // ------------------- Async Actions -------------------
 
 export const fetchReminders = createAsyncThunk(
@@ -53,6 +58,16 @@ export const snoozeReminder = createAsyncThunk(
         dispatch(setShowReminder(false));
         dispatch(getRemindersCount());
         dispatch(fetchReminders());
+
+
+         // 🔄 Broadcast snooze event to other tabs
+        channel.postMessage({
+          type: "SNOOZE_REMINDER",
+          reminderId,
+          minutes,
+        });
+
+
       }
     } catch (err) {
       toast.error("Failed to snooze reminder");
@@ -73,6 +88,15 @@ export const markAsReadReminder = createAsyncThunk(
         toast.success("Marked as Read");
         dispatch(decrementUnreadCount());
         dispatch(fetchReminders());
+
+
+         // 🔄 Broadcast snooze event to other tabs
+        channel.postMessage({
+          type: "MARK_AS_READ_REMINDER",
+           
+        });
+
+
       }
     } catch (err) {
       toast.error("Failed to mark as read reminder");
@@ -94,6 +118,15 @@ export const completeReminder = createAsyncThunk(
         dispatch(setShowReminder(false));
         dispatch(getRemindersCount());
         dispatch(fetchReminders());
+
+          // 🔄 Broadcast snooze event to other tabs
+        channel.postMessage({
+          type: "COMPLETE_REMINDER",
+           
+        });
+
+
+
       }
     } catch (err) {
       toast.error("Failed to stop reminder");
@@ -153,5 +186,52 @@ export const {
   incrementUnreadCount,
   decrementUnreadCount,
 } = reminderSlice.actions;
+
+
+
+
+// ------------------- Init Broadcast Listener -------------------
+
+export const initReminderListener = () => (dispatch) => {
+  channel.onmessage = (event) => {
+    const { type,  } = event.data || {};
+
+    if (type === "SNOOZE_REMINDER") {
+     
+      dispatch(setShowReminder(false));
+      dispatch(getRemindersCount());
+      dispatch(fetchReminders());
+    }
+
+
+    if (type === "MARK_AS_READ_REMINDER" ) {
+      dispatch(decrementUnreadCount());
+        dispatch(fetchReminders());
+    }
+
+
+    if (type === "COMPLETE_REMINDER" ) {
+      dispatch(setShowReminder(false));
+        dispatch(getRemindersCount());
+        dispatch(fetchReminders());
+    }
+
+
+    // if (type === "CANCEL_REMINDER" ) {
+    //   dispatch(setShowReminder(false));
+       
+    // }
+
+
+
+  };
+};
+
+
+
+
+
+
+
 
 export default reminderSlice.reducer;

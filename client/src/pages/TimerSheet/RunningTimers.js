@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import axios from "axios";
-import Layout from "../../components/Loyout/Layout";
 import { BsStopCircleFill } from "react-icons/bs";
 import toast from "react-hot-toast";
 import { style } from "../../utlis/CommonStyle";
@@ -94,7 +93,7 @@ export default function RunningTimers({ setIsRunning, users }) {
   }, [searchValue, timerData]);
 
   return (
-    <Layout>
+     
       <div className="relative w-full min-h-[100vh] bg-gray-100 mt-2 overflow-y-auto overflow-hidden scroll-smooth  ">
         <div className="flex items-center justify-between py-4 px-4 ">
           <div className="flex items-center gap-4">
@@ -281,6 +280,6 @@ export default function RunningTimers({ setIsRunning, users }) {
           </div>
         )}
       </div>
-    </Layout>
+     
   );
 }

@@ -1,6 +1,21 @@
 import { createSlice, createAsyncThunk, createSelector } from "@reduxjs/toolkit";
 import axios from "axios";
 import toast from "react-hot-toast";
+ 
+
+
+
+
+const notificationChannel = new BroadcastChannel("notification-sync");
+
+// notificationChannel.onmessage = (event) => {
+//   const { type, userId } = event.data || {};
+//   if (type === "REFRESH_NOTIFICATIONS" && userId) {
+//     store.dispatch(getNotifications(userId));
+//   }
+// };
+
+
 
 // Get all notifications
 export const getNotifications = createAsyncThunk(
@@ -29,7 +44,13 @@ export const updateNotification = createAsyncThunk(
       if (data) {
         dispatch(getNotifications(userId));
         toast.success("Notification updated!");
-        localStorage.setItem("notification-sync", Date.now().toString());
+         
+
+                // 🔄 Broadcast to other tabs
+        notificationChannel.postMessage({
+          type: "REFRESH_NOTIFICATIONS",
+          userId
+        });
       }
       return id;
     } catch (error) {
@@ -50,7 +71,13 @@ export const updateAllNotification = createAsyncThunk(
       if (data) {
         dispatch(getNotifications(userId));
         toast.success("All notifications marked as read!");
-        localStorage.setItem("notification-sync", Date.now().toString());
+        
+
+        // 🔄 Broadcast to other tabs
+        notificationChannel.postMessage({
+          type: "REFRESH_NOTIFICATIONS",
+          userId
+        });
       }
       return true;
     } catch (error) {
@@ -135,7 +162,15 @@ export const selectTicketReceivedCount = createSelector(
     ).length
 );
 
-
+// Init function (call this after login or app start)
+export const initNotificationListener = () => (dispatch) => {
+  notificationChannel.onmessage = (event) => {
+  const { type, userId } = event.data || {};
+  if (type === "REFRESH_NOTIFICATIONS" && userId) {
+     dispatch(getNotifications(userId));
+  }
+};
+};
 
 export const { clearNotifications } = notificationSlice.actions;
 export default notificationSlice.reducer;

@@ -42,6 +42,9 @@ import Meeting from "./pages/Meeting/Meeting";
 import HR from "./pages/HR/HR";
 import NotFound from "./pages/NotFound/NotFound";
 import Temp from "./components/Temp";
+import { initTimerListener } from "./redux/slices/timerSlice";
+import { initNotificationListener } from "./redux/slices/notificationSlice";
+import { initReminderListener } from "./redux/slices/reminderSlice";
 
 function App() {
   const navigate = useNavigate();
@@ -105,6 +108,16 @@ const { auth, isLoading, isInitializing } = useSelector((state) => state.auth);
         .filter(Boolean),
     [user, routeAccess]
   );
+
+
+  useEffect(() => {
+   
+    dispatch(initTimerListener());
+    dispatch(initNotificationListener());
+    dispatch(initReminderListener());
+   
+}, []);
+
 
 // Show spinner if app is still initializing OR doing an async call
 if (isInitializing || isLoading) {

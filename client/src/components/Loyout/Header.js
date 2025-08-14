@@ -154,43 +154,7 @@ useEffect(() => {
 }, [auth.user, dispatch]);
 
 
-
-
-  // Update Notification
-  // const updateNotification = async (id) => {
-  //   try {
-  //     const { data } = await axios.put(
-  //       `${process.env.REACT_APP_API_URL}/api/v1/notification/update/notification/${id}`
-  //     );
-  //     if (data) {
-  //       getNotifications();
-  //       toast.success("Notification updated!");
-
-  //       // ✅ Trigger localStorage event so other tabs update too
-  //       localStorage.setItem("notification-sync", Date.now().toString());
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  // Update All Notifications
-  // const updateAllNotification = async (id) => {
-  //   try {
-  //     const { data } = await axios.put(
-  //       `${process.env.REACT_APP_API_URL}/api/v1/notification/marks/all/${id}`
-  //     );
-  //     if (data) {
-  //       getNotifications();
-  //       toast.success("Notification updated!");
-
-  //       // ✅ Trigger localStorage event so other tabs update too
-  //       localStorage.setItem("notification-sync", Date.now().toString());
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+ 
 
 
 
@@ -304,20 +268,20 @@ useEffect(() => {
 
 
 
-  useEffect(() => {
-    const handleStorageEvent = (event) => {
-      if (event.key === "notification-sync") {
-        console.log("🔁 Notification updated in another tab");
-        getNotifications(); // ✅ refresh in this tab
-      }
-    };
+  // useEffect(() => {
+  //   const handleStorageEvent = (event) => {
+  //     if (event.key === "notification-sync") {
+  //       console.log("🔁 Notification updated in another tab");
+  //       getNotifications(); // ✅ refresh in this tab
+  //     }
+  //   };
 
-    window.addEventListener("storage", handleStorageEvent);
+  //   window.addEventListener("storage", handleStorageEvent);
 
-    return () => {
-      window.removeEventListener("storage", handleStorageEvent);
-    };
-  }, [getNotifications]);
+  //   return () => {
+  //     window.removeEventListener("storage", handleStorageEvent);
+  //   };
+  // }, [getNotifications]);
 
 
 

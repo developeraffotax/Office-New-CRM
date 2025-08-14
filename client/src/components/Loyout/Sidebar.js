@@ -47,14 +47,15 @@ export default function Sidebar({ hide, setHide }) {
   const user = auth?.user;
   const [ticketNitification, setTicketNotification] = useState([]);
 
+  const location = useLocation();
  
-  useEffect(() => {
-    const pathArray = window.location.pathname.split("/");
-    const fileIdFromPath = pathArray[1];
-    dispatch(setActive(fileIdFromPath));
-
-   
-  }, []);
+ useEffect(() => {
+    const pathArray = location.pathname.split("/");
+    const fileIdFromPath = pathArray[1]; // index stays the same
+    if (fileIdFromPath) {
+      dispatch(setActive(fileIdFromPath));
+    }
+  }, [location.pathname, dispatch]);
 
   const hasAccess = (section) => {
     return user?.role?.access?.some((item) => item.permission === section);

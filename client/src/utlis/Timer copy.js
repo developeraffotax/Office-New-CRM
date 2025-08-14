@@ -14,7 +14,6 @@ import socketIO from "socket.io-client";
 import { useDispatch, useSelector } from "react-redux";
 import { setAnyTimerRunning, setJid } from "../redux/slices/authSlice";
 import { startCountdown, stopCountdown } from "../redux/slices/timerSlice";
-
 const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
@@ -166,13 +165,13 @@ export const Timer = forwardRef(
         addTimerTaskStatus(response.data.timer._id);
         setIsRunning(true);
         setStartTime(new Date());
-        dispatch(setAnyTimerRunning(true));
+        setAnyTimerRunning(true);
         // Send Socket Timer
-        // socketId.emit("timer", {
-        //   clientId: clientId,
-        //   jobId: jobId,
-        //   note: "Started work on job",
-        // });
+        socketId.emit("timer", {
+          clientId: clientId,
+          jobId: jobId,
+          note: "Started work on job",
+        });
       } catch (error) {
         console.error(error?.response?.data?.message);
         toast.error(error?.response?.data?.message || "Some thing went wrong!");
@@ -205,7 +204,7 @@ export const Timer = forwardRef(
           
           removeTimerStatus();
           localStorage.removeItem("timer_Id");
-          dispatch(setAnyTimerRunning(false));
+          setAnyTimerRunning(false);
           setIsShow(false);
           gettotalTime(timerId);
           setTimerId(null);
@@ -213,10 +212,10 @@ export const Timer = forwardRef(
           setIsRunning(false);
           setRunningId("");
           // Send Socket Timer
-          // socketId.emit("timer", {
-          //   timerId: timerId,
-          //   note: note,
-          // });
+          socketId.emit("timer", {
+            timerId: timerId,
+            note: note,
+          });
           setNote("");
           setActivity("Chargeable");
           localStorage.removeItem("jobId");

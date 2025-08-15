@@ -348,7 +348,7 @@ const AllTasks = () => {
     getlabel();
   }, []);
 
-  console.log("THE USERS ARE💚💛💛🧡🧡❤💜💜💙💙💚💚💛", users)
+ 
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
@@ -956,36 +956,33 @@ const AllTasks = () => {
   };
 
   // Close Comment Box to click anywhere
-  useEffect(() => {
-    // const handleClickOutside = (event) => {
-    //   if (
-    //     commentStatusRef.current &&
-    //     !commentStatusRef.current.contains(event.target)
-    //   ) {
-    //     setIsComment(false);
-    //   }
-    // };
+// useEffect(() => {
+//   const handleClickOutside = (event) => {
+//     const clickInside =
+//       commentStatusRef.current?.contains(event.target) ||
+//       document.querySelector(".MuiPopover-root")?.contains(event.target) || // MUI Menu
+//       document.querySelector(".EmojiPickerReact")?.contains(event.target) || // Emoji picker
+//       document.querySelector(".MuiDialog-root")?.contains(event.target); // Dialog
 
+//     if (!clickInside) {
+//       setIsComment(false);
+//     }
+//   };
 
-      const handleClickOutside = (event) => {
+//   const handleEscKey = (event) => {
+//     if (event.key === "Escape") {
+//       setIsComment(false);
+//     }
+//   };
 
-         
-  const clickInside =
-    commentStatusRef.current?.contains(event.target) ||
-    document.querySelector(".MuiPopover-root")?.contains(event.target) || // for MUI Menu
-    document.querySelector(".EmojiPickerReact")?.contains(event.target) || // for emoji picker
-    document.querySelector(".MuiDialog-root")?.contains(event.target); // ✅ For Dialog
+//   document.addEventListener("mousedown", handleClickOutside);
+//   document.addEventListener("keydown", handleEscKey);
 
-  if (!clickInside) {
-    setIsComment(false);
-  }
-};
-
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
+//   return () => {
+//     document.removeEventListener("mousedown", handleClickOutside);
+//     document.removeEventListener("keydown", handleEscKey);
+//   };
+// }, []);
 
 
 

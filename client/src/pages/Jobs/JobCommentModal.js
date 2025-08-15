@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { IoClose } from "react-icons/io5";
  
 import "froala-editor/js/froala_editor.pkgd.min.js";
@@ -69,7 +69,7 @@ export default function JobCommentModal({
 
 
 
-
+  const commentStatusRef = useRef(null);
 
 
 
@@ -321,6 +321,36 @@ const handleDeleteTemplate = async (id) => {
     getSingleJobComment();
     // eslint-disable-next-line
   }, [jobId]);
+
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const clickInside =
+        commentStatusRef.current?.contains(event.target) ||
+        document.querySelector(".MuiPopover-root")?.contains(event.target) || // MUI Menu
+        document.querySelector(".EmojiPickerReact")?.contains(event.target) || // Emoji picker
+        document.querySelector(".MuiDialog-root")?.contains(event.target); // Dialog
+  
+      if (!clickInside) {
+        setIsComment(false);
+      }
+    };
+  
+    const handleEscKey = (event) => {
+      if (event.key === "Escape") {
+        setIsComment(false);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscKey);
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscKey);
+    };
+  }, []);
+  
 
   // ----------Get Comment Without Load--------->
   const getSingleComment = async () => {
@@ -637,7 +667,7 @@ const handleDeleteTemplate = async (id) => {
 <>
 
 
-    <div className="w-full h-full flex items-center justify-center">
+    <div ref={commentStatusRef} className="w-full h-full flex items-center justify-center">
       <div
         className={`w-[45rem]  ${
           page === "detail"

@@ -811,25 +811,30 @@ const AllTasks = () => {
     return `${year}-${month}`;
   };
 
-  const getStatus = (startDate, deadline) => {
-    const startDates = new Date(startDate);
-    const deadlines = new Date(deadline);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+const getStatus = (startDate, deadline) => {
+  const start = new Date(startDate);
+  const end = new Date(deadline);
+  const today = new Date();
 
-    if (deadlines.setHours(0, 0, 0, 0) < today.setHours(0, 0, 0, 0)) {
-      return "Overdue";
-    } else if (
-      startDates.setHours(0, 0, 0, 0) <= today.setHours(0, 0, 0, 0) &&
-      !(deadlines.setHours(0, 0, 0, 0) <= today.setHours(0, 0, 0, 0))
-    ) {
-      return "Due";
-    } else if (deadlines.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
-      return "Due";
-    } else {
-      return "";
-    }
-  };
+  // Remove time parts for accurate date comparison
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  if (end < today) {
+    return "Overdue";
+  } 
+  
+  if (end.getTime() === today.getTime()) {
+    return "Due";
+  }
+
+  if (end > today) {
+    return "Upcoming";
+  }
+
+  return "";
+};
 
   // Filter by Header Search
   useEffect(() => {
@@ -1998,6 +2003,12 @@ Cell: ({ cell, row }) => {
           switch (filterValue) {
             case "Expired":
               return cellDate < startOfToday;
+
+            case "Yesterday":
+            const Yesterday = new Date(today);
+            Yesterday.setDate(today.getDate() - 1);
+            return cellDate.toDateString() === Yesterday.toDateString();
+
             case "Today":
               return cellDate.toDateString() === today.toDateString();
             case "Tomorrow":
@@ -2030,6 +2041,7 @@ Cell: ({ cell, row }) => {
         },
         filterSelectOptions: [
           "Expired",
+          "Yesterday",
           "Today",
           "Tomorrow",
           "In 7 days",
@@ -2049,7 +2061,7 @@ Cell: ({ cell, row }) => {
       {
         accessorKey: "datestatus",
         Header: ({ column }) => {
-          const dateStatus = ["Overdue", "Due"];
+          const dateStatus = ["Overdue", "Due", "Upcoming"];
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -2085,9 +2097,11 @@ Cell: ({ cell, row }) => {
           );
 
           return (
-            <div className="w-full">
+            <div className="w-full flex items-center justify-center">
               <span
                 className={`text-white text-[14px]  rounded-[2rem] ${
+                  status === "Upcoming"
+                    ? "bg-gray-500 text-black  py-[6px] px-4 " :
                   status === "Due"
                     ? "bg-green-500  py-[6px] px-4 "
                     : status === "Overdue"

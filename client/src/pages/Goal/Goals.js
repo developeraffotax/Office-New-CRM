@@ -1561,24 +1561,24 @@ const auth = useSelector((state) => state.auth.auth);
   
 
     // Close Comment Box to click anywhere
-    useEffect(() => {
-       const handleClickOutside = (event) => {
+  //   useEffect(() => {
+  //      const handleClickOutside = (event) => {
   
            
-    const clickInside =
-      commentStatusRef.current?.contains(event.target) ||
-      document.querySelector(".MuiPopover-root")?.contains(event.target) || // for MUI Menu
-      document.querySelector(".EmojiPickerReact")?.contains(event.target) || // for emoji picker
-      document.querySelector(".MuiDialog-root")?.contains(event.target); // ✅ For Dialog
+  //   const clickInside =
+  //     commentStatusRef.current?.contains(event.target) ||
+  //     document.querySelector(".MuiPopover-root")?.contains(event.target) || // for MUI Menu
+  //     document.querySelector(".EmojiPickerReact")?.contains(event.target) || // for emoji picker
+  //     document.querySelector(".MuiDialog-root")?.contains(event.target); // ✅ For Dialog
   
-    if (!clickInside) {
-      setIsComment(false);
-    }
-  };
+  //   if (!clickInside) {
+  //     setIsComment(false);
+  //   }
+  // };
   
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+  //     document.addEventListener("mousedown", handleClickOutside);
+  //     return () => document.removeEventListener("mousedown", handleClickOutside);
+  //   }, []);
   
 
 

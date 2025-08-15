@@ -289,15 +289,15 @@ useEffect(() => {
 
 
 
+ 
+ 
 
 
-  useEffect(() => {
+useEffect(() => {
   const handleClickOutside = (event) => {
-
     if (event.target.closest("#myModal")) {
-  return; // Clicked inside modal
-}
-
+      return; // Clicked inside modal
+    }
 
     // Close Notification
     if (
@@ -305,7 +305,7 @@ useEffect(() => {
       !notificationRef.current.contains(event.target)
     ) {
       setOpen(false);
-      dispatch(setShowReminder(false));
+      // dispatch(setShowReminder(false));
     }
 
     // Close Timer Status
@@ -319,25 +319,28 @@ useEffect(() => {
     // Close Reminder Notification Panel
     if (
       reminderNotificationRef.current &&
-       
       !reminderNotificationRef.current.contains(event.target)
     ) {
       setShowReminderNotificationPanel(false);
     }
   };
 
+  const handleEscape = (event) => {
+    if (event.key === "Escape") {
+      setOpen(false); // Close Notification
+      setShowTimerStatus(false);
+      setShowReminderNotificationPanel(false);
+    }
+  };
+
   document.addEventListener("mousedown", handleClickOutside);
+  document.addEventListener("keydown", handleEscape);
+
   return () => {
     document.removeEventListener("mousedown", handleClickOutside);
+    document.removeEventListener("keydown", handleEscape);
   };
 }, [dispatch]);
-
-
-
-
-
-
-
 
 
 

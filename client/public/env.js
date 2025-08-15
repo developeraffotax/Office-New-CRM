@@ -54,7 +54,7 @@ window.env = {
   "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.CPL",
   "POSH_AZURE_ENABLED": "False",
   "POSH_CURSOR_COLUMN": "1",
-  "POSH_CURSOR_LINE": "7",
+  "POSH_CURSOR_LINE": "39",
   "POSH_GIT_ENABLED": "False",
   "POSH_INSTALLER": "manual",
   "POSH_PID": "11868",

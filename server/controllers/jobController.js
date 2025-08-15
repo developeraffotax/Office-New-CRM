@@ -209,7 +209,7 @@ export const getAllClients = async (req, res) => {
         "job.jobStatus": { $ne: "Inactive" },
       })
       .select(
-        "clientName companyName regNumber email fee currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data activeClient clientType"
+        "clientName companyName regNumber email fee currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data activeClient clientType partner"
       )
       .populate("data");
 

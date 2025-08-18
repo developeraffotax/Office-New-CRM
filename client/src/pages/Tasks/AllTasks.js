@@ -811,30 +811,62 @@ const AllTasks = () => {
     return `${year}-${month}`;
   };
 
-const getStatus = (startDate, deadline) => {
-  const start = new Date(startDate);
-  const end = new Date(deadline);
+const getStatus = (startDateOfTask, deadlineOfTask) => {
+  const startDate = new Date(startDateOfTask);
+  const deadline = new Date(deadlineOfTask);
   const today = new Date();
 
   // Remove time parts for accurate date comparison
-  start.setHours(0, 0, 0, 0);
-  end.setHours(0, 0, 0, 0);
+  startDate.setHours(0, 0, 0, 0);
+  deadline.setHours(0, 0, 0, 0);
   today.setHours(0, 0, 0, 0);
 
-  if (end < today) {
+  if (deadline < today) {
     return "Overdue";
-  } 
-  
-  if (end.getTime() === today.getTime()) {
-    return "Due";
-  }
-
-  if (end > today) {
+  } else if (
+    startDate <= today &&
+    !(deadline < today)
+  ) {
+     return "Due";
+  } else {
     return "Upcoming";
   }
+  
+  // if (end.getTime() === today.getTime()) {
+  //   return "Due";
+  // }
 
-  return "";
+  // if (end > today) {
+  //   return "Upcoming";
+  // }
+
+  // return "";
 };
+
+
+
+  // const getStatus = (jobDeadline, yearEnd) => {
+  //   const deadline = new Date(jobDeadline);
+  //   const yearEndDate = new Date(yearEnd);
+  //   const today = new Date();
+  //   today.setHours(0, 0, 0, 0);
+
+  //   if (deadline.setHours(0, 0, 0, 0) < today.setHours(0, 0, 0, 0)) {
+  //     return "Overdue";
+  //   } else if (
+  //     yearEndDate.setHours(0, 0, 0, 0) <= today.setHours(0, 0, 0, 0) &&
+  //     !(deadline.setHours(0, 0, 0, 0) <= today.setHours(0, 0, 0, 0))
+  //   ) {
+  //     return "Due";
+  //   } else if (deadline.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
+  //     return "Due";
+  //   } else {
+  //     return "Upcoming";
+  //   }
+  // };
+
+
+
 
   // Filter by Header Search
   useEffect(() => {
@@ -1104,7 +1136,7 @@ const getStatus = (startDate, deadline) => {
   };
 
   // ----------------------Table Data--------->
-  const columns = useMemo(
+   const columns = useMemo(
     () => [
       {
   accessorKey: '_id',
@@ -2099,16 +2131,14 @@ Cell: ({ cell, row }) => {
           return (
             <div className="w-full flex items-center justify-center">
               <span
-                className={`text-white text-[14px]  rounded-[2rem] ${
-                  status === "Upcoming"
-                    ? "bg-gray-500 text-black  py-[6px] px-4 " :
-                  status === "Due"
-                    ? "bg-green-500  py-[6px] px-4 "
-                    : status === "Overdue"
-                    ? "bg-red-500  py-[6px] px-3 "
-                    : "bg-transparent"
-                }`}
-              >
+                  className={`   rounded-[2rem] ${
+                    status === "Due"
+                      ? "bg-green-500  py-[6px] px-4 text-white"
+                      : status === "Overdue"
+                      ? "bg-red-500  py-[6px] px-3 text-white"
+                      : "bg-gray-200  py-[6px] px-3 text-black ml-[-5px]"
+                  }`}
+                >
                 {status}
               </span>
             </div>

@@ -772,14 +772,14 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
               
 
               <div className="w-full flex items-center justify-between gap-2">
-              
+{/*               
                 <input
                 type="text"
                 placeholder="Fee"
                 className={`${style.input} w-[50%]`}
                 value={fee}
                 onChange={(e) => setFee(e.target.value)}
-              />
+              /> */}
 
               <input
                 type="text"

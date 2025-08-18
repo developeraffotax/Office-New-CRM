@@ -75,7 +75,7 @@ export const createJob = async (req, res) => {
           clientType,
           partner,
           country,
-          fee,
+          fee: job.fee || "",
           ctLogin,
           pyeLogin,
           trLogin,
@@ -355,7 +355,7 @@ export const updateFee = async (req, res) => {
 
     const clientJob = await jobsModel.findByIdAndUpdate(
       { _id: clientId },
-      { $set: { "fee": fee } },
+      { $set: { "fee": fee, "job.fee": fee } },
       { new: true }
     );
 
@@ -1016,7 +1016,7 @@ export const updateClientJob = async (req, res) => {
             clientType,
             partner,
             country,
-            fee,
+            fee: jobData?.fee || "",
             ctLogin,
             pyeLogin,
             trLogin,
@@ -1045,7 +1045,7 @@ export const updateClientJob = async (req, res) => {
           clientType,
           partner,
           country,
-          fee,
+          fee: jobData?.fee || "",
           ctLogin,
           pyeLogin,
           trLogin,

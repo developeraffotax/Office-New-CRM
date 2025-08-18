@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { style } from "../../utlis/CommonStyle";
 import NewJobModal from "../../components/Modals/NewJobModal";
-import { CgClose } from "react-icons/cg";
+ 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import axios from "axios";
@@ -10,12 +10,12 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
-import { addMonths, format, formatISO } from "date-fns";
-import { MdAccountCircle, MdInsertComment } from "react-icons/md";
+import {  format, formatISO } from "date-fns";
+import {  MdInsertComment } from "react-icons/md";
 import toast from "react-hot-toast";
  
 import Loader from "../../utlis/Loader";
-import { TbCalendarDue, TbLoader2 } from "react-icons/tb";
+import {   TbLoader2 } from "react-icons/tb";
 import { IoClose, IoTicketOutline } from "react-icons/io5";
 import JobDetail from "./JobDetail";
 import { IoBriefcaseOutline } from "react-icons/io5";
@@ -25,17 +25,16 @@ import JobCommentModal from "./JobCommentModal";
 import { MdAutoGraph } from "react-icons/md";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { TbLoader } from "react-icons/tb";
-import { Box, Button, LinearProgress, ListItemIcon, MenuItem, Popover, Typography } from "@mui/material";
+import { Box, Button, LinearProgress,   Popover, Typography } from "@mui/material";
 import { MdOutlineModeEdit } from "react-icons/md";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import { IoMdDownload } from "react-icons/io";
 import { GoEye } from "react-icons/go";
 import { GoEyeClosed } from "react-icons/go";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import Select from "react-select";
-
+ 
 import CompletedJobs from "./CompletedJobs";
-import socketIO from "socket.io-client";
+ 
 import { GrUpdate } from "react-icons/gr";
 import AddLabel from "../../components/Modals/AddLabel";
 import { LuImport } from "react-icons/lu";
@@ -44,7 +43,7 @@ import InactiveClients from "./InactiveClients";
 import Swal from "sweetalert2";
 import HandleQualityModal from "../../components/Modals/HandleQualityModal";
 import TicketsPopUp from "../../components/shared/TicketsPopUp";
-import { BiSend } from "react-icons/bi";
+ 
 import { BsPersonCheckFill } from "react-icons/bs";
 import QuickAccess from "../../utlis/QuickAccess";
 import { filterByRowId } from "../../utlis/filterByRowId";
@@ -92,7 +91,7 @@ export default function AllJobs() {
   const [isOpen, setIsOpen] = useState(false);
 
 
- const socketId = useSocket();
+ 
 
 
   const [active, setActive] = useState("All");
@@ -159,7 +158,7 @@ export default function AllJobs() {
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
 
    const [clientCompanyName, setClientCompanyName] = useState("");
-  const [clientIdFromProps, setClientIdFromProps] = useState("");
+ 
  
 
 

@@ -131,6 +131,17 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
   const partners = ["Affotax", "Outsource", "OTL"];
 
+
+
+
+
+   const isJobSelected = (jobs, jobName) => {
+  return jobs.some((job) => job.jobName === jobName);
+};
+
+
+
+
   // Get All Users
 
   const getAllUsers = async () => {
@@ -401,13 +412,13 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
               
               <div className="w-full flex items-center justify-between gap-2">
 
-                <input
+                {/* <input
                 type="text"
                 placeholder="Fee"
                 className={`${style.input} w-[50%]`}
                 value={fee}
                 onChange={(e) => setFee(e.target.value)}
-              />
+              /> */}
 
               <input
                 type="text"
@@ -535,6 +546,12 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                     )
                   }
                   style={{ width: "18px", height: "18px" }}
+
+                  
+
+
+                   
+
                 />
                 <span className="font-medium w-[10rem] bg-gray-300 rounded-md py-[5px] px-[.6rem]">
                   {clientBookKeepingFormData.jobName}
@@ -620,7 +637,12 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       e.target.value
                     )
                   }
-                  className={`${style.input} w-full `}
+                  className={`${style.input} w-full ${
+                    isJobSelected(jobs, clientBookKeepingFormData.jobName) && (clientBookKeepingFormData.fee?.length <= 0)
+                      ? "placeholder-red-500 !border-red-500 "
+                      : ""
+                  }`}
+                  required={isJobSelected(jobs, clientBookKeepingFormData.jobName)}
                 />
               </div>
               <select
@@ -782,7 +804,13 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       e.target.value
                     )
                   }
-                  className={`${style.input} w-full `}
+                   
+                  className={`${style.input} w-full ${
+                    isJobSelected(jobs, clientPayRollFormData.jobName) && (clientPayRollFormData.fee?.length <= 0)
+                      ? "placeholder-red-500 !border-red-500 "
+                      : ""
+                  }`}
+                  required={isJobSelected(jobs, clientPayRollFormData.jobName)}
                 />
               </div>
               <select
@@ -944,7 +972,12 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       e.target.value
                     )
                   }
-                  className={`${style.input} w-full `}
+                  className={`${style.input} w-full ${
+                    isJobSelected(jobs, clientVatReturnFormData.jobName) && (clientVatReturnFormData.fee?.length <= 0)
+                      ? "placeholder-red-500 !border-red-500 "
+                      : ""
+                  }`}
+                  required={isJobSelected(jobs, clientVatReturnFormData.jobName)}
                 />
               </div>
               <select
@@ -1105,7 +1138,12 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       e.target.value
                     )
                   }
-                  className={`${style.input} w-full `}
+                  className={`${style.input} w-full ${
+                    isJobSelected(jobs, clientPersonalTaxFormData.jobName) && (clientPersonalTaxFormData.fee?.length <= 0)
+                      ? "placeholder-red-500 !border-red-500 "
+                      : ""
+                  }`}
+                  required={isJobSelected(jobs, clientPersonalTaxFormData.jobName)}
                 />
               </div>
               <select
@@ -1266,7 +1304,12 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       e.target.value
                     )
                   }
-                  className={`${style.input} w-full `}
+                  className={`${style.input} w-full ${
+                    isJobSelected(jobs, clientAccountsFormData.jobName) && (clientAccountsFormData.fee?.length <= 0)
+                      ? "placeholder-red-500 !border-red-500 "
+                      : ""
+                  }`}
+                  required={isJobSelected(jobs, clientAccountsFormData.jobName)}
                 />
               </div>
               <select
@@ -1427,7 +1470,12 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       e.target.value
                     )
                   }
-                  className={`${style.input} w-full `}
+                  className={`${style.input} w-full ${
+                    isJobSelected(jobs, clientCompanySecFormData.jobName) && (clientCompanySecFormData.fee?.length <= 0)
+                      ? "placeholder-red-500 !border-red-500 "
+                      : ""
+                  }`}
+                  required={isJobSelected(jobs, clientCompanySecFormData.jobName)}
                 />
               </div>
               <select
@@ -1589,7 +1637,12 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       e.target.value
                     )
                   }
-                  className={`${style.input} w-full `}
+                  className={`${style.input} w-full ${
+                    isJobSelected(jobs, clientAddressFormData.jobName) && (clientAddressFormData.fee?.length <= 0)
+                      ? "placeholder-red-500 !border-red-500 "
+                      : ""
+                  }`}
+                  required={isJobSelected(jobs, clientAddressFormData.jobName)}
                 />
               </div>
               <select

@@ -118,12 +118,7 @@ export const createTask = async (req, res) => {
     console.log("Updated Next Recurring Date:💚", updatedNextRecurringDate);
 
     const tasks = await taskModel.create({
-      project: {
-        _id: project._id,
-        projectName: project.projectName,
-        users_list: project.users_list,
-        status: project.status,
-      },
+      project: projectId,
       jobHolder,
       task,
       hours,
@@ -195,14 +190,9 @@ export const createTask = async (req, res) => {
 };
 
 // Get ALl Tasks
+// Get All Tasks
 export const getAllTasks = async (req, res) => {
   try {
-    // const tasks = await taskModel
-    //   .find({ status: { $ne: "completed" } })
-    //   .select(
-    //     "project jobHolder task hours startDate deadline status lead  estimate_Time comments._id comments.status labal recurring"
-    //   );
-
     const tasks = await taskModel.aggregate([
       {
         $match: { status: { $ne: "completed" } },
@@ -224,19 +214,40 @@ export const getAllTasks = async (req, res) => {
           recurring: 1,
         },
       },
+      // lookup projects
+      {
+        $lookup: {
+          from: "projects", // collection name (lowercase plural of model)
+          localField: "project",
+          foreignField: "_id",
+          as: "project",
+        },
+      },
+      { $unwind: "$project" },
+
+      // lookup departments inside project
+      {
+        $lookup: {
+          from: "taskdepartments", // collection name for department model
+          localField: "project.department",
+          foreignField: "_id",
+          as: "project.department",
+        },
+      },
+      { $unwind: { path: "$project.department", preserveNullAndEmptyArrays: true } },
     ]);
 
     res.status(200).send({
       success: true,
       message: "All task list!",
-      tasks: tasks,
+      tasks,
     });
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
-      messsage: "Error in get all tasks!",
-      error: error,
+      message: "Error in get all tasks!",
+      error,
     });
   }
 };
@@ -271,6 +282,32 @@ export const getCompletedTasks = async (req, res) => {
           recurring: 1,
         },
       },
+
+
+            // lookup projects
+      {
+        $lookup: {
+          from: "projects", // collection name (lowercase plural of model)
+          localField: "project",
+          foreignField: "_id",
+          as: "project",
+        },
+      },
+      { $unwind: "$project" },
+
+      // lookup departments inside project
+      {
+        $lookup: {
+          from: "taskdepartments", // collection name for department model
+          localField: "project.department",
+          foreignField: "_id",
+          as: "project.department",
+        },
+      },
+      { $unwind: { path: "$project.department", preserveNullAndEmptyArrays: true } },
+
+
+
     ]);
 
     res.status(200).send({
@@ -301,7 +338,9 @@ export const getSingleTask = async (req, res) => {
 
     const task = await taskModel
       .findById(taskId)
-      .populate({ path: "activities.user", select: "name avatar" });
+      .populate({ path: "activities.user", select: "name avatar" })
+      .populate("project")
+ 
 
     // Sort subtasks by `order`
     const sortedSubtasks = task.subtasks.sort((a, b) => a.order - b.order);
@@ -348,23 +387,23 @@ export const updatetaskProject = async (req, res) => {
     if (!project) {
       return res.status(400).send({
         success: false,
-        message: "Task not found!",
+        message: "Project not found!",
       });
     }
-
-    const updateTask = await taskModel.findByIdAndUpdate(
-      task._id,
-      {
-        project: {
-          _id: project._id,
-          projectName: project.projectName,
-          users_list: project.users_list,
-          status: project.status,
-        },
-      },
-      { new: true }
-    );
-
+    const updateTask = await taskModel
+      .findByIdAndUpdate(
+        task._id,
+        { project: projectId },
+        { new: true }
+      )
+      .populate({
+        path: "project",
+        select: "projectName department", // only fields you need
+        populate: { 
+          path: "department", 
+          select: "departmentName" 
+        }
+      });
     // Push activity to activities array
     updateTask.activities.push({
       user: req.user.user._id,
@@ -418,7 +457,7 @@ export const updateJobHolderLS = async (req, res) => {
         task._id,
         { jobHolder: jobHolder },
         { new: true }
-      );
+      )  
 
       // Push activity to activities array
       updateTask.activities.push({
@@ -783,12 +822,7 @@ export const updateTask = async (req, res) => {
     const tasks = await taskModel.findByIdAndUpdate(
       { _id: existingTask._id },
       {
-        project: {
-          _id: project._id,
-          projectName: project.projectName,
-          users_list: project.users_list,
-          status: project.status,
-        },
+        project: projectId,
         jobHolder,
         task,
         hours,

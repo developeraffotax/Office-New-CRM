@@ -4,9 +4,14 @@ import taskModel from "../models/taskModel.js";
 // Create Project
 export const createProject = async (req, res) => {
   try {
-    const { projectName, users_list } = req.body;
+    const { projectName, users_list, department } = req.body;
 
-    if (!projectName) {
+
+    console.log("Project Name:", projectName);
+    console.log("Users List:", users_list);
+    console.log("Department ID:", department);
+
+    if (!projectName) { 
       return res.status(400).send({
         success: false,
         message: "Project Name is required!",
@@ -30,6 +35,7 @@ export const createProject = async (req, res) => {
       projectName,
       users_list,
       order: projectCount,
+      department: department || ""
     });
 
     res.status(200).send({
@@ -57,7 +63,7 @@ export const updateProject = async (req, res) => {
         message: "Project Id is required!",
       });
     }
-    const { projectName, users_list } = req.body;
+    const { projectName, users_list, department } = req.body;
 
     if (!projectName) {
       return res.status(400).send({
@@ -76,7 +82,7 @@ export const updateProject = async (req, res) => {
 
     const project = await projectModel.findByIdAndUpdate(
       { _id: existingProject._id },
-      { projectName, users_list },
+      { projectName, users_list, department: department || "" },
       { new: true }
     );
 
@@ -108,7 +114,7 @@ export const updateProject = async (req, res) => {
 export const getAllProjects = async (req, res) => {
   try {
     const projects = await projectModel
-      .find({ status: { $ne: "completed" } })
+      .find({ status: { $ne: "completed" } }).populate("department")
       .sort({ order: 1 });
 
     res.status(200).send({

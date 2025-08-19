@@ -49,7 +49,7 @@ export default function TaskDetail({
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("subtasks");
 
-
+  console.log("THE TASK DETAIL:💚", taskDetal);
 
   const [isOpen, setIsOpen] = useState(false);
   const [isShow, setIsShow] = useState(false);

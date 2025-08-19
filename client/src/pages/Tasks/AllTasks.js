@@ -57,6 +57,10 @@ import { setFilterId, setSearchValue } from "../../redux/slices/authSlice";
  
 import { updateCountdown } from "../../redux/slices/timerSlice";
 import { useSocket } from "../../context/socketProvider";
+import AddDepartmentModal from "../../components/Tasks/AddTaskDepartmentModal";
+import AddTaskDepartmentModal from "../../components/Tasks/AddTaskDepartmentModal";
+import ProjectDropdown from "./components/ProjectsDropdown/ProjectDropdown";
+import DepartmentDropdown from "./components/DepartmentsDropdown/DepartmentDropdown";
 
  
 
@@ -97,6 +101,13 @@ const AllTasks = () => {
   const [show, setShow] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [users, setUsers] = useState([]);
+
+    const [openAddDepartment, setOpenAddDepartment] = useState(false);
+  const [departments, setDepartments] = useState([]);
+  const [departmentId, setDepartmentId] = useState("");
+  const [showDepartment, setShowDepartment] = useState(false)
+ 
+
   const [openAddProject, setOpenAddProject] = useState(false);
   const [projects, setProjects] = useState([]);
   const [projectId, setProjectId] = useState("");
@@ -157,7 +168,7 @@ const AllTasks = () => {
   const [timerId, setTimerId] = useState("");
   const dateStatus = ["Due", "Overdue"];
   const status = ["To do", "Progress", "Review", "Onhold"];
-  const closeProject = useRef(null);
+ 
   const [state, setState] = useState("");
   const [stateData, setStateData] = useState([]);
   const [activity, setActivity] = useState("Chargeable");
@@ -279,6 +290,31 @@ const AllTasks = () => {
     getAllProjects();
     
   }, [auth]);
+
+
+
+
+
+
+
+
+    //---------- Get All Projects-----------
+  const getAllDepartments = async () => {
+    try {
+      const { data } = await axios.get( `${process.env.REACT_APP_API_URL}/api/v1/tasks/department` );
+      if(data?.success) {
+        setDepartments(data?.departments || []);  
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllDepartments();
+    
+  }, [auth]);
+
 
   // useEffect(() => {
   //   socketId.on("newProject", () => {
@@ -438,87 +474,87 @@ const AllTasks = () => {
   // }, [auth]);
 
   // ---------Delete Project-------->
-  const handleDeleteConfirmation = (projectId) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        deleteProject(projectId);
-        Swal.fire("Deleted!", "Your project has been deleted.", "success");
-      }
-    });
-  };
-  const deleteProject = async (id) => {
-    try {
-      const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/projects/delete/project/${id}`
-      );
-      if (data) {
-        getAllProjects();
-        // toast.success("Project Deleted!");
-        // Send Socket Timer
-        // socketId.emit("addTask", {
-        //   note: "New Task Added",
-        // });
-        // socketId.emit("addproject", {
-        //   note: "New Project Added",
-        // });
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error(error?.response?.data?.message);
-    }
-  };
+  // const handleDeleteConfirmation = (projectId) => {
+  //   Swal.fire({
+  //     title: "Are you sure?",
+  //     text: "You won't be able to revert this!",
+  //     icon: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonColor: "#3085d6",
+  //     cancelButtonColor: "#d33",
+  //     confirmButtonText: "Yes, delete it!",
+  //   }).then((result) => {
+  //     if (result.isConfirmed) {
+  //       deleteProject(projectId);
+  //       Swal.fire("Deleted!", "Your project has been deleted.", "success");
+  //     }
+  //   });
+  // };
+  // const deleteProject = async (id) => {
+  //   try {
+  //     const { data } = await axios.delete(
+  //       `${process.env.REACT_APP_API_URL}/api/v1/projects/delete/project/${id}`
+  //     );
+  //     if (data) {
+  //       getAllProjects();
+  //       // toast.success("Project Deleted!");
+  //       // Send Socket Timer
+  //       // socketId.emit("addTask", {
+  //       //   note: "New Task Added",
+  //       // });
+  //       // socketId.emit("addproject", {
+  //       //   note: "New Project Added",
+  //       // });
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     toast.error(error?.response?.data?.message);
+  //   }
+  // };
 
-  const handleUpdateStatus = (projectId) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this project!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, update it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        updateProjectStatus(projectId);
-        Swal.fire(
-          "Project Completed!",
-          "Your project has been updated.",
-          "success"
-        );
-      }
-    });
-  };
+  // const handleUpdateStatus = (projectId) => {
+  //   Swal.fire({
+  //     title: "Are you sure?",
+  //     text: "You won't be able to revert this project!",
+  //     icon: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonColor: "#3085d6",
+  //     cancelButtonColor: "#d33",
+  //     confirmButtonText: "Yes, update it!",
+  //   }).then((result) => {
+  //     if (result.isConfirmed) {
+  //       updateProjectStatus(projectId);
+  //       Swal.fire(
+  //         "Project Completed!",
+  //         "Your project has been updated.",
+  //         "success"
+  //       );
+  //     }
+  //   });
+  // };
 
-  const updateProjectStatus = async (id) => {
-    try {
-      const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/projects/update/status/${id}`
-      );
-      if (data) {
-        getAllProjects();
-        getAllTasks();
-        setShowProject(false);
-        // Send Socket Timer
-        // socketId.emit("addTask", {
-        //   note: "New Task Added",
-        // });
-        // socketId.emit("addproject", {
-        //   note: "New Project Added",
-        // });
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error(error?.response?.data?.message);
-    }
-  };
+  // const updateProjectStatus = async (id) => {
+  //   try {
+  //     const { data } = await axios.put(
+  //       `${process.env.REACT_APP_API_URL}/api/v1/projects/update/status/${id}`
+  //     );
+  //     if (data) {
+  //       getAllProjects();
+  //       getAllTasks();
+  //       setShowProject(false);
+  //       // Send Socket Timer
+  //       // socketId.emit("addTask", {
+  //       //   note: "New Task Added",
+  //       // });
+  //       // socketId.emit("addproject", {
+  //       //   note: "New Project Added",
+  //       // });
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     toast.error(error?.response?.data?.message);
+  //   }
+  // };
   // ------------------------------Tasks----------------->
 
   // ---------Total Hours-------->
@@ -693,10 +729,7 @@ const AllTasks = () => {
           );
         }
       }
-      // Send Socket Timer
-      // socketId.emit("addTask", {
-      //   note: "New Task Added",
-      // });
+       
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
@@ -1150,71 +1183,148 @@ const getStatus = (startDateOfTask, deadlineOfTask) => {
   
   Cell: () => null,           // visually hides the content
 },
-      {
-        accessorKey: "project.projectName",
-        header: "Project",
-        minSize: 150,
-        maxSize: 200,
-        size: 160,
-        grow: false,
-        
-        Header: ({ column }) => {
-          return (
-            <div className=" flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                Project
-              </span>
-              <select
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              >
-                <option value="">Select</option>
-                {allProjects?.map((proj) => (
-                  <option key={proj._id} value={proj.projectName}>
-                    {proj.projectName}
-                  </option>
-                ))}
-              </select>
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const projectId = row.original.project._id;
 
-          return (
-            
-              <select
-              value={projectId}
-              onChange={(e) => {
-                const selectedProjectId = e.target.value;
-                updateTaskProject(row.original._id, selectedProjectId);
-              }}
-              className="w-full h-[2rem] rounded-md bg-transparent border-none outline-none    "
-            >
-              <option value="">Select</option>
-              {allProjects &&
-                allProjects?.map((proj) => (
-                  <option value={proj._id} key={proj._id}>
-                    {proj?.projectName}
-                  </option>
-                ))}
-            </select>
-            
-          );
-        },
-        filterFn: "equals",
-        filterSelectOptions: allProjects?.map(
-          (project) => project?.projectName
-        ),
-        filterVariant: "select",
-      },
+
+
+
+
+
+
+{
+  accessorFn: (row) => row.project?.department?.departmentName || "",
+  id: "departmentName",
+  minSize: 150,
+  maxSize: 200,
+  size: 160,
+  grow: false,
+
+  Header: ({ column }) => (
+    <div className="flex flex-col gap-[2px]">
+      <span
+        className="ml-1 cursor-pointer"
+        title="Clear Filter"
+        onClick={() => column.setFilterValue("")}
+      >
+        Department
+      </span>
+      <select
+        value={column.getFilterValue() || ""}
+        onChange={(e) => column.setFilterValue(e.target.value)}
+        className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+      >
+        <option value="">Select</option>
+        {departments?.map((dpt) => (
+          <option key={dpt._id} value={dpt.departmentName}>
+            {dpt.departmentName}
+          </option>
+        ))}
+      </select>
+    </div>
+  ),
+
+  Cell: ({ cell }) => <span>{cell.getValue()}</span>,
+  
+  filterFn: "equals",
+},
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{
+  // 1. Accessor for filtering/sorting
+  accessorFn: (row) => row.project?.projectName || "",
+  id: "projectName",
+
+  minSize: 150,
+  maxSize: 200,
+  size: 160,
+  grow: false,
+
+  // 2. Header with custom filter
+  Header: ({ column }) => (
+    <div className="flex flex-col gap-[2px]">
+      <span
+        className="ml-1 cursor-pointer"
+        title="Clear Filter"
+        onClick={() => column.setFilterValue("")}
+      >
+        Project
+      </span>
+      <select
+        value={column.getFilterValue() || ""}
+        onChange={(e) => column.setFilterValue(e.target.value)}
+        className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+      >
+        <option value="">Select</option>
+        {allProjects?.map((proj) => (
+          <option key={proj._id} value={proj.projectName}>
+            {proj.projectName}
+          </option>
+        ))}
+      </select>
+    </div>
+  ),
+
+  // 3. Cell for editing project assignment
+  Cell: ({ row }) => {
+    const currentProjectId = row.original.project?._id || "";
+
+    return (
+      <select
+        value={currentProjectId}
+        onChange={(e) =>
+          updateTaskProject(row.original._id, e.target.value)
+        }
+        className="w-full h-[2rem] rounded-md border-none outline-none"
+      >
+        <option value="">Select</option>
+        {allProjects?.map((proj) => (
+          <option key={proj._id} value={proj._id}>
+            {proj.projectName}
+          </option>
+        ))}
+      </select>
+    );
+  },
+
+  // 4. Safe filter
+  filterFn: "equals",
+ 
+
+},
+
+
+
+
+
+
       {
         accessorKey: "jobHolder",
         header: "Job Holder",
@@ -2757,19 +2867,19 @@ Cell: ({ cell, row }) => {
 
   });
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        closeProject.current &&
-        !closeProject.current.contains(event.target)
-      ) {
-        setShowProject(false);
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event) => {
+  //     if (
+  //       closeProject.current &&
+  //       !closeProject.current.contains(event.target)
+  //     ) {
+  //       setShowProject(false);
+  //     }
+  //   };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => document.removeEventListener("mousedown", handleClickOutside);
+  // }, []);
 
   //  -----------Handle drag end---------
   const handleUserOnDragEnd = (result) => {
@@ -3008,8 +3118,82 @@ useEffect(()=>{
                
             </div>
 
+
+
+
+
+                     
+
             {/* Project Buttons */}
             <div className="flex items-center gap-4">
+
+
+              {(auth?.user?.role?.name === "Admin") && (
+                <div
+                  className=" relative w-[8rem]    border-2 border-gray-200 rounded-md py-1 px-2 hidden sm:flex items-center justify-between gap-1"
+                  onClick={() => setShowDepartment(!showDepartment)}
+                >
+                  <span className="text-[15px] text-gray-900 cursor-pointer">
+                    Departments
+                  </span>
+                  <span
+                    onClick={() => setShowDepartment(!showDepartment)}
+                    className="cursor-pointer"
+                  >
+                    {!showDepartment ? (
+                      <IoIosArrowDown className="h-5 w-5 text-black cursor-pointer" />
+                    ) : (
+                      <IoIosArrowUp className="h-5 w-5 text-black cursor-pointer" />
+                    )}
+                  </span>
+
+
+
+
+
+ 
+                    
+                  {/* -----------Departments------- */}
+                  <DepartmentDropdown 
+
+                      showDepartment={showDepartment}
+                       
+                      departments={departments}
+
+                      getAllDepartments={getAllDepartments}
+
+                      setShowDepartment={setShowDepartment}
+                      setDepartmentId={setDepartmentId}
+                      setOpenAddDepartment={setOpenAddDepartment}
+                    
+                    
+                    
+                      />
+ 
+
+
+                  
+
+                </div>
+              )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
               {/*  */}
               {(auth?.user?.role?.name === "Admin" ||
                 access.includes("Projects")) && (
@@ -3030,52 +3214,39 @@ useEffect(()=>{
                       <IoIosArrowUp className="h-5 w-5 text-black cursor-pointer" />
                     )}
                   </span>
+
+
+
+
+
+
                   {/* -----------Projects------- */}
-                  {showProject && (
-                    <div
-                      ref={closeProject}
-                      className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto hidden1 z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]"
-                    >
-                      {projects &&
-                        projects?.map((project) => (
-                          <div
-                            key={project._id}
-                            className="w-full flex items-center justify-between gap-1 rounded-md bg-white border py-1 px-1 hover:bg-gray-100"
-                          >
-                            <p className="text-[13px] w-[8rem] ">
-                              {project?.projectName}
-                            </p>
-                            <div className="flex items-center gap-1">
-                              <span
-                                title="Complete this Project"
-                                onClick={() => handleUpdateStatus(project._id)}
-                              >
-                                <IoCheckmarkDoneCircleSharp className="h-5 w-5 cursor-pointer text-green-500 hover:text-green-600 transition-all duration-200" />
-                              </span>
-                              <span
-                                onClick={() => {
-                                  setProjectId(project._id);
-                                  setOpenAddProject(true);
-                                }}
-                                title="Edit Project"
-                              >
-                                <MdOutlineEdit className="h-5 w-5 cursor-pointer hover:text-sky-500 transition-all duration-200" />
-                              </span>
-                              <span
-                                title="Delete Project"
-                                onClick={() =>
-                                  handleDeleteConfirmation(project._id)
-                                }
-                              >
-                                <AiTwotoneDelete className="h-5 w-5 cursor-pointer hover:text-red-500 transition-all duration-200" />
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  )}
+                  <ProjectDropdown 
+                    showProject={showProject}
+                    
+                    projects={projects}
+                     
+                    getAllProjects={getAllProjects}
+                    getAllTasks={getAllTasks}
+                    
+                    
+                    setShowProject={setShowProject}
+                    setProjectId={setProjectId}
+                    setOpenAddProject={setOpenAddProject}
+                   
+
+                  />
+
+                  
+
                 </div>
               )}
+
+
+
+              
+
+
               <form>
                 <input
                   type="file"
@@ -3117,6 +3288,15 @@ useEffect(()=>{
               >
                 Add Label
               </button>
+
+              <button
+                className={`${style.button1} text-[15px] `}
+                onClick={() => setOpenAddDepartment(true)}
+                style={{ padding: ".4rem 1rem" }}
+              >
+                Add Department
+              </button>
+
               <button
                 className={`${style.button1} text-[15px] `}
                 onClick={() => setOpenAddProject(true)}
@@ -3589,7 +3769,21 @@ useEffect(()=>{
             )}
           </div>
 
-          {/* ----------------Add Project-------- */}
+          {/* ----------------Add Task Department-------- */}
+          {openAddDepartment && (
+            <div className="fixed top-0 left-0 w-full h-screen z-[999] bg-gray-100/70 flex items-center justify-center py-6  px-4">
+              <AddTaskDepartmentModal
+                users={users}
+                setOpenAddDepartment={setOpenAddDepartment}
+                getAllDepartments={getAllDepartments}
+                departmentId={departmentId}
+                setDepartmentId={setDepartmentId}
+                getTasks1={getTasks1}
+              />
+            </div>
+          )}
+
+           {/* ----------------Add Project-------- */}
           {openAddProject && (
             <div className="fixed top-0 left-0 w-full h-screen z-[999] bg-gray-100/70 flex items-center justify-center py-6  px-4">
               <AddProjectModal
@@ -3598,6 +3792,9 @@ useEffect(()=>{
                 getAllProjects={getAllProjects}
                 projectId={projectId}
                 setProjectId={setProjectId}
+
+                getTasks1={getTasks1}
+                departments={departments}
               />
             </div>
           )}

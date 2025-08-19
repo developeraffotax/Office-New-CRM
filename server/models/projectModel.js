@@ -14,6 +14,8 @@ const projectSchema = new mongoose.Schema(
     order: {
       type: Number,
     },
+
+    department: { type: mongoose.Schema.Types.ObjectId, ref: "taskDepartment" },
   },
   { timestamps: true }
 );

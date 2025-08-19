@@ -58,16 +58,19 @@ const subtask = new mongoose.Schema(
 
 const taskSchema = new mongoose.Schema(
   {
-    project: {
-      _id: {
-        type: String,
-      },
-      projectName: {
-        type: String,
-      },
-      users_list: [Object],
-      status: { type: String },
-    },
+    // project: {
+    //   _id: {
+    //     type: String,
+    //   },
+    //   projectName: {
+    //     type: String,
+    //   },
+    //   users_list: [Object],
+    //   status: { type: String },
+    // },
+
+     project: { type: mongoose.Schema.Types.ObjectId, ref: "Projects" },
+
     jobHolder: {
       type: String,
     },

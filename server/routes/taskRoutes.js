@@ -27,6 +27,7 @@ import {
   updatetaskProject,
 } from "../controllers/TaskController.js";
 import multer from "multer";
+import { createDepartment, deleteDepartment, getDepartmentById, getDepartments, updateDepartment } from "../controllers/taskDepartment.controller.js";
 // Configure multer for file upload
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -103,5 +104,41 @@ router.post("/import", requiredSignIn, upload.single("file"), importData);
 
 // Update Multiple Tasks
 router.put("/update/multiple", requiredSignIn, updateMultipleTasks);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Create department
+router.post("/department", createDepartment);
+
+// Get all departments
+router.get("/department", getDepartments);
+
+// Get single department by ID
+router.get("/department/:id", getDepartmentById);
+
+// Update department
+router.put("/department/:id", updateDepartment);
+
+// Delete department
+router.delete("/department/:id", deleteDepartment);
 
 export default router;

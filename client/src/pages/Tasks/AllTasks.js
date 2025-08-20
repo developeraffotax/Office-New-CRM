@@ -65,6 +65,48 @@ import DraggableFilterTabs from "./DraggableFilterTabs";
 
  
 
+
+
+
+
+
+
+
+
+function useColumnFilterSync(table, columnId, value, setValue) {
+  useEffect(() => {
+    if (!table) return;
+    const col = table.getColumn(columnId);
+    if (!col) return;
+
+    const val = col.getFilterValue() || "";
+    if (val !== value) setValue(val);
+  }, [table, columnId, table.getState().columnFilters, value, setValue]);
+
+  // For outside → table, just call this instead of another effect:
+  const updateFilter = (val) => {
+    table.getColumn(columnId)?.setFilterValue(val || undefined);
+    setValue(val);
+  };
+
+  return updateFilter;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // CSV Configuration
 const csvConfig = mkConfig({
   filename: "full_table_data",
@@ -139,6 +181,11 @@ const AllTasks = () => {
     const [filter1, setFilter1] = useState("");
     const [filter2, setFilter2] = useState("");
     const [filter3, setFilter3] = useState("");
+
+
+
+
+
 
  
         const [projectUsers, setProjectUsers] = useState([])
@@ -349,9 +396,30 @@ const projectUsers = users.filter(u => activeProject?.users_list?.some(p_user =>
   const getAllDepartments = async () => {
     try {
       const { data } = await axios.get( `${process.env.REACT_APP_API_URL}/api/v1/tasks/department` );
-      if(data?.success) {
-        setDepartments(data?.departments || []);  
+       if (data?.success) {
+
+
+        
+      if (auth?.user?.role?.name === "Admin") {
+        // Admin: show all
+        setDepartments(data?.departments || []);
+      } else {
+        // Non-admin: only include departments linked to projects user is in
+        const userProjects = allProjects.filter((project) =>
+          project.users_list.some((user) => user._id === auth?.user?.id)
+        );
+
+        const projectDepartmentIds = userProjects
+          .map((proj) => proj.department?._id) // assuming project.department is populated
+          .filter(Boolean);
+
+        const filteredDepartments = data.departments.filter((dep) =>
+          projectDepartmentIds.includes(dep._id)
+        );
+
+        setDepartments(filteredDepartments);
       }
+    }
     } catch (error) {
       console.log(error);
     }
@@ -671,13 +739,13 @@ const getUserTaskCount = (userName, tasks) => {
 
   // --------------Job_Holder Length---------->
 
-  // const getJobHolderCount = (user, project) => {
-  //   return tasksData.filter((item) =>
-  //     project === "All"
-  //       ? item?.jobHolder === user
-  //       : item?.jobHolder === user && item?.project?.projectName === project
-  //   )?.length;
-  // };
+  const getJobHolderCount = (user, project) => {
+    return tasksData.filter((item) =>
+      project === "All"
+        ? item?.jobHolder === user
+        : item?.jobHolder === user && item?.project?.projectName === project
+    )?.length;
+  };
 
 
 
@@ -3231,61 +3299,56 @@ useEffect(()=>{
 
 
 
-const columnFilters = table.getState().columnFilters;
+// const columnFilters = table.getState().columnFilters;
 
 
 
 
-useEffect(() => {
-  if (!table) return;
+// useEffect(() => {
+//   if (!table) return;
 
-  const col = table.getColumn("departmentName");
-  if (!col) return;
+//   const col = table.getColumn("departmentName");
+//   if (!col) return;
 
-  const val = col.getFilterValue() || "";
+//   const val = col.getFilterValue() || "";
     
-  if(!val) return
-  if (val !== filter1) {
-    setFilter1(val);
-  }
-}, [table, columnFilters]);
+//   if(!val) return
+//   if (val !== filter1) {
+//     setFilter1(val);
+//   }
+// }, [table, columnFilters]);
 
 
 
 
-useEffect(() => {
-  if (!table) return;
+// useEffect(() => {
+//   if (!table) return;
 
-  const col = table.getColumn("projectName");
-  if (!col) return;
+//   const col = table.getColumn("projectName");
+//   if (!col) return;
 
-  const val = col.getFilterValue() || "";
-
-
-  if (val !== filter2) {
-    setFilter2(val);
-  }
-}, [table, columnFilters]);
+//   const val = col.getFilterValue() || "";
 
 
-
-useEffect(() => {
-  if (!table) return;
-
-  const col = table.getColumn("jobHolder");
-  if (!col) return;
-
-  const val = col.getFilterValue() || "";
-
-  if (val !== filter3) {
-    setFilter3(val);
-  }
-}, [table, columnFilters]);
+//   if (val !== filter2) {
+//     setFilter2(val);
+//   }
+// }, [table, columnFilters]);
 
 
 
+// useEffect(() => {
+//   if (!table) return;
 
+//   const col = table.getColumn("jobHolder");
+//   if (!col) return;
 
+//   const val = col.getFilterValue() || "";
+
+//   if (val !== filter3) {
+//     setFilter3(val);
+//   }
+// }, [table, columnFilters]);
 
 
 
@@ -3312,11 +3375,24 @@ useEffect(() => {
 
 
 
+    // Hook returns an updater for each column
+const updateDepartment = useColumnFilterSync(table, "departmentName", filter1, setFilter1);
+const updateProject    = useColumnFilterSync(table, "projectName", filter2, setFilter2);
+const updateJobHolder  = useColumnFilterSync(table, "jobHolder", filter3, setFilter3);
 
 
 
 
 
+
+
+
+
+// helper to check if "all departments" are selected
+const allDepartmentsSelected =
+  filter1 === "" || 
+  filter1 === "All" ||
+  (Array.isArray(filter1) && filter1.length === departments.length);
 
 
 
@@ -3445,8 +3521,7 @@ useEffect(() => {
 
 
               {/*  */}
-              {(auth?.user?.role?.name === "Admin" ||
-                access.includes("Projects")) && (
+              {(auth?.user?.role?.name === "Admin") && (
                 <div
                   className=" relative w-[8rem]    border-2 border-gray-200 rounded-md py-1 px-2 hidden sm:flex items-center justify-between gap-1"
                   onClick={() => setShowProject(!showProject)}
@@ -3569,32 +3644,19 @@ useEffect(() => {
             <div className="flex items-center flex-row overflow-x-auto hidden1 gap-2 mt-3 max-lg:hidden">
               <div
                 className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                  filter1 === "All" &&
+                  allDepartmentsSelected &&
                   " border-2 border-b-0 text-orange-600 border-gray-300"
                 }`}
                 onClick={() => {
-                  // setActive("All");
-                  // filterByDep("");
-                  // setActive1("");
-                  // dispatch(setFilterId(""));
-                  // setFilterData("");
-                  
-                   setShowCompleted(false);
-                  //setColumnFromOutsideTable('departmentName', "");
-                  // setColumnFromOutsideTable('jobHolder', "");
+                setShowCompleted(false);
 
-                  setFilter1((prev) => {
-                    // const isSameUser = prev === dpt?.departmentName;
-                    // const newValue = isSameUser ? "" : dpt?.departmentName;
+                // clear all filters when clicking "All"
+                updateDepartment("");
+                updateProject("");
+                updateJobHolder("");
 
-                    setColumnFromOutsideTable("departmentName", "");
-                    setColumnFromOutsideTable("projectName", "");
-                    setColumnFromOutsideTable("jobHolder", "");
-                    return "All";
-                  });
-
-
-                }}
+                setFilter1("All");
+              }}
               >
                 All 
               </div>
@@ -3613,18 +3675,26 @@ useEffect(() => {
                 }
                   getLabelFn={(department) => department?.departmentName}
                   
-                  onClick={
-                    (department) => setFilter1((prev) => {
-                      const isSameUser = prev === department?.departmentName;
-                      const newValue = isSameUser ? "" : department?.departmentName;
+                  // onClick={
+                  //   (department) => setFilter1((prev) => {
+                  //     const isSameUser = prev === department?.departmentName;
+                  //     const newValue = isSameUser ? "" : department?.departmentName;
 
-                        setColumnFromOutsideTable("departmentName", newValue);
+                  //       setColumnFromOutsideTable("departmentName", newValue);
 
-                         setColumnFromOutsideTable("projectName", "");
-                         setColumnFromOutsideTable("jobHolder", "");
-                      return newValue;
-                    })
-                  }
+                  //        setColumnFromOutsideTable("projectName", "");
+                  //        setColumnFromOutsideTable("jobHolder", "");
+                  //     return newValue;
+                  //   })
+                  // }
+
+
+                  onClick={(dep) => {
+                      const newValue = filter1 === dep.departmentName ? "" : dep.departmentName;
+                      updateDepartment(newValue);
+                      updateProject("");   // reset project filter when department changes
+                      updateJobHolder(""); // reset jobHolder filter when department changes
+                    }}
                   onDragEnd={() => {}}
                   activeClassName={filter1 ? "border-2 border-b-0 text-orange-600 border-gray-300" : ""}
                 
@@ -3814,7 +3884,7 @@ useEffect(() => {
                 <DraggableFilterTabs 
 
                   droppableId={"projects"}
-                  items={departmentProjects}
+                  items={filter1 ? departmentProjects : projects}
                   filterValue={filter2}
                   tasks={tasksData}
                    getCountFn={(proj, tasks) =>
@@ -3822,17 +3892,26 @@ useEffect(() => {
                 }
                   getLabelFn={(project) => project.projectName}
                   
-                  onClick={
-                    (project) => setFilter2((prev) => {
-                      const isSameUser = prev === project?.projectName;
-                      const newValue = isSameUser ? "" : project?.projectName;
+                  // onClick={
+                  //   (project) => setFilter2((prev) => {
+                  //     const isSameUser = prev === project?.projectName;
+                  //     const newValue = isSameUser ? "" : project?.projectName;
 
-                      setColumnFromOutsideTable("projectName", newValue);
+                  //     setColumnFromOutsideTable("projectName", newValue);
 
-                      setColumnFromOutsideTable("jobHolder", "");
-                      return newValue;
-                    })
-                  }
+                  //     setColumnFromOutsideTable("jobHolder", "");
+                  //     return newValue;
+                  //   })
+                  // }
+
+
+
+                  onClick={(project) => {
+                      const newValue = filter2 === project?.projectName ? "" : project?.projectName;
+                      
+                      updateProject(newValue);   // reset project filter when department changes
+                      updateJobHolder(""); // reset jobHolder filter when department changes
+                    }}
                   onDragEnd={() => {}}
                   activeClassName={filter2 ? "border-2 border-b-0 text-orange-600 border-gray-300" : ""}
                 
@@ -3909,7 +3988,7 @@ useEffect(() => {
 
 
 
-                    |💚|
+                    | 
 
 
 
@@ -3919,7 +3998,7 @@ useEffect(() => {
                      <DraggableFilterTabs 
 
                   droppableId={"users"}
-                  items={projectUsers}
+                  items={filter2 ? projectUsers.filter(user => getJobHolderCount(user?.name, active) > 0) : users.filter(user => getJobHolderCount(user?.name, active) > 0)}
                   filterValue={filter3}
                   tasks={tasksData}
                    getCountFn={(user, tasks) =>
@@ -3927,16 +4006,32 @@ useEffect(() => {
                 }
                   getLabelFn={(user) => user.name}
                   
-                  onClick={
-                    (user) =>setFilter3((prev) => {
-                                            const isSameUser = prev === user?.name;
-                                            const newValue = isSameUser ? "" : user?.name;
+                  // onClick={
+                  //   (user) =>setFilter3((prev) => {
+                  //                           const isSameUser = prev === user?.name;
+                  //                           const newValue = isSameUser ? "" : user?.name;
 
-                                            setColumnFromOutsideTable("jobHolder", newValue);
-                                            return newValue;
-                                  })
+                  //                           setColumnFromOutsideTable("jobHolder", newValue);
+                  //                           return newValue;
+                  //                 })
 
-                  }
+                  // }
+
+
+
+
+
+
+
+
+
+
+                   onClick={(user) => {
+                      const newValue = filter3 === user?.name ? "" : user?.name;
+                      
+                     
+                      updateJobHolder(newValue); // reset jobHolder filter when department changes
+                    }}
                   onDragEnd={() => {}}
                   activeClassName={filter3 ? "border-2 border-b-0 text-orange-600 border-gray-300" : ""}
                 

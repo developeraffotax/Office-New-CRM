@@ -417,7 +417,7 @@ const projectUsers = users.filter(u => activeProject?.users_list?.some(p_user =>
           projectDepartmentIds.includes(dep._id)
         );
 
-        setDepartments(filteredDepartments);
+        setDepartments(filteredDepartments || []);
       }
     }
     } catch (error) {
@@ -425,22 +425,14 @@ const projectUsers = users.filter(u => activeProject?.users_list?.some(p_user =>
     }
   };
 
-  useEffect(() => {
+useEffect(() => {
+  if (auth) {
     getAllDepartments();
-    
-  }, [auth]);
+  }
+}, [auth, allProjects]); 
 
 
-  // useEffect(() => {
-  //   socketId.on("newProject", () => {
-  //     getAllProjects();
-  //   });
-
-  //   return () => {
-  //     socketId.off("newProject", getAllProjects);
-  //   };
-     
-  // }, [socketId]);
+ 
 
   // -------Get All Tasks----->
   const getAllTasks = async () => {

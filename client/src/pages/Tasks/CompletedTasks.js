@@ -575,6 +575,7 @@ const CompletedTasks = ({
 
   // ----------------------Table Data--------->
 
+  console.log("TAKS DATA:", tasksData);
   const columns = useMemo(
     () => [
       {

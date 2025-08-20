@@ -61,6 +61,7 @@ import AddDepartmentModal from "../../components/Tasks/AddTaskDepartmentModal";
 import AddTaskDepartmentModal from "../../components/Tasks/AddTaskDepartmentModal";
 import ProjectDropdown from "./components/ProjectsDropdown/ProjectDropdown";
 import DepartmentDropdown from "./components/DepartmentsDropdown/DepartmentDropdown";
+import DraggableFilterTabs from "./DraggableFilterTabs";
 
  
 
@@ -129,22 +130,68 @@ const AllTasks = () => {
   const location = useLocation();
   const currentPath = location.pathname;
 
+
+
+
+
+
+
+    const [filter1, setFilter1] = useState("");
+    const [filter2, setFilter2] = useState("");
+    const [filter3, setFilter3] = useState("");
+
  
-  // const queryParams = new URLSearchParams(location.search);
+        const [projectUsers, setProjectUsers] = useState([])
 
-  // const taskIdQueryParam = queryParams.get('taskId');
+        useEffect(() => {
+            const activeProject = projects.find(p => p.projectName === filter2);
+
+            
+
+
+            
+const projectUsers = users.filter(u => activeProject?.users_list?.some(p_user => p_user._id === u._id))
+
+
+          
+          setProjectUsers(projectUsers);
+
+        }, [filter2, projects, users]);
+
+        
+
+
+
+        const [departmentProjects, setDepartmentProjects] = useState([])
+
+
+        useEffect(() => {
+            const activeDepartment = departments.find(d => d.departmentName === filter1);
+
+            console.log(activeDepartment, "activeDepartment");
+
+            const departmentProjects = projects.filter(p => p?.department?._id === activeDepartment?._id);
+             
  
-  // useEffect(() => {
+            console.log(departmentProjects, "departmentProjects");
 
-  //   if (taskIdQueryParam) {
-  //     //setTaskId(taskIdQueryParam);
-  //     setTaskIdForNote(taskIdQueryParam);
-  //     setIsShow(true);
-  //   } else {
-  //     setIsShow(false);
-  //   }
+            setDepartmentProjects(departmentProjects);
+          
 
-  // }, [taskIdQueryParam]);
+        }, [ projects, departments, filter1]);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   const [fLoading, setFLoading] = useState(false);
@@ -572,23 +619,89 @@ const AllTasks = () => {
   }, [tasksData, filterData, active, active1, activeBtn, ]);
 
   // ------------Filter By Projects---------->
-  const getProjectsCount = (project) => {
-    if (project === "All") {
-      return tasksData?.length;
-    }
-    return tasksData.filter((item) => item?.project?.projectName === project)
-      ?.length;
-  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  console.log("TASKS💛💛💛", tasksData)
+const getDepartmentTaskCount = (departmentId, tasks) => {
+  return tasks.filter(
+    (task) => task.project?.department?._id === departmentId
+  ).length;
+};
+
+const getProjectTaskCount = (projectId, tasks) => {
+  return tasks.filter(
+    (task) => task.project?._id === projectId
+  ).length;
+};
+
+
+
+const getUserTaskCount = (userName, tasks) => {
+  return tasks.filter(
+    (task) => task.jobHolder === userName
+  ).length;
+};
+
+
+
+
+  // const getProjectsCount = (project) => {
+  //   if (project === "All") {
+  //     return tasksData?.length;
+  //   }
+  //   return tasksData.filter((item) => item?.project?.projectName === project)
+  //     ?.length;
+  // };
+
+
+
+
 
   // --------------Job_Holder Length---------->
 
-  const getJobHolderCount = (user, project) => {
-    return tasksData.filter((item) =>
-      project === "All"
-        ? item?.jobHolder === user
-        : item?.jobHolder === user && item?.project?.projectName === project
-    )?.length;
-  };
+  // const getJobHolderCount = (user, project) => {
+  //   return tasksData.filter((item) =>
+  //     project === "All"
+  //       ? item?.jobHolder === user
+  //       : item?.jobHolder === user && item?.project?.projectName === project
+  //   )?.length;
+  // };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // -------Due & Overdue count------->
   const getDueAndOverdueCountByDepartment = (project) => {
@@ -647,7 +760,7 @@ const AllTasks = () => {
     if (tasksData && filterId) {
       filterByDep(filterId);
     }
-    // eslint-disable-next-line
+    
   }, [tasksData, filterId]);
 
   // -------------- Filter Data By Department || Status || Placeholder ----------->
@@ -2759,7 +2872,7 @@ Cell: ({ cell, row }) => {
         grow: false,
       },
     ],
-    // eslint-disable-next-line
+     
     [
       users,
       play,
@@ -2771,7 +2884,7 @@ Cell: ({ cell, row }) => {
       totalHours,
       tasksData,
       state,
-      
+       
     ]
   );
 
@@ -3084,6 +3197,143 @@ useEffect(()=>{
   }, [comment_taskId, searchParams, navigate, table]);
   
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const columnFilters = table.getState().columnFilters;
+
+
+
+
+useEffect(() => {
+  if (!table) return;
+
+  const col = table.getColumn("departmentName");
+  if (!col) return;
+
+  const val = col.getFilterValue() || "";
+    
+  if(!val) return
+  if (val !== filter1) {
+    setFilter1(val);
+  }
+}, [table, columnFilters]);
+
+
+
+
+useEffect(() => {
+  if (!table) return;
+
+  const col = table.getColumn("projectName");
+  if (!col) return;
+
+  const val = col.getFilterValue() || "";
+
+
+  if (val !== filter2) {
+    setFilter2(val);
+  }
+}, [table, columnFilters]);
+
+
+
+useEffect(() => {
+  if (!table) return;
+
+  const col = table.getColumn("jobHolder");
+  if (!col) return;
+
+  const val = col.getFilterValue() || "";
+
+  if (val !== filter3) {
+    setFilter3(val);
+  }
+}, [table, columnFilters]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <>
       {!showCompleted ? (
@@ -3319,42 +3569,90 @@ useEffect(()=>{
             <div className="flex items-center flex-row overflow-x-auto hidden1 gap-2 mt-3 max-lg:hidden">
               <div
                 className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                  active === "All" &&
+                  filter1 === "All" &&
                   " border-2 border-b-0 text-orange-600 border-gray-300"
                 }`}
                 onClick={() => {
-                  setActive("All");
-                  filterByDep("");
-                  setShowCompleted(false);
-                  setActive1("");
-                  dispatch(setFilterId(""));
-                  setFilterData("");
+                  // setActive("All");
+                  // filterByDep("");
+                  // setActive1("");
+                  // dispatch(setFilterId(""));
+                  // setFilterData("");
+                  
+                   setShowCompleted(false);
+                  //setColumnFromOutsideTable('departmentName', "");
+                  // setColumnFromOutsideTable('jobHolder', "");
 
-                  setColumnFromOutsideTable('project.projectName', "");
-                  setColumnFromOutsideTable('jobHolder', "");
+                  setFilter1((prev) => {
+                    // const isSameUser = prev === dpt?.departmentName;
+                    // const newValue = isSameUser ? "" : dpt?.departmentName;
+
+                    setColumnFromOutsideTable("departmentName", "");
+                    setColumnFromOutsideTable("projectName", "");
+                    setColumnFromOutsideTable("jobHolder", "");
+                    return "All";
+                  });
+
+
                 }}
               >
-                All ({getProjectsCount("All")})
+                All 
               </div>
 
-              <DragDropContext onDragEnd={handleOnDragEnd}>
-                <Droppable droppableId="projects" direction="horizontal">
+
+                
+
+                     <DraggableFilterTabs 
+
+                  droppableId={"departments"}
+                  items={departments}
+                  filterValue={filter1}
+                  tasks={tasksData}
+                   getCountFn={(department, tasks) =>
+                  tasks.filter((t) => t.project?.department?._id === department?._id).length
+                }
+                  getLabelFn={(department) => department?.departmentName}
+                  
+                  onClick={
+                    (department) => setFilter1((prev) => {
+                      const isSameUser = prev === department?.departmentName;
+                      const newValue = isSameUser ? "" : department?.departmentName;
+
+                        setColumnFromOutsideTable("departmentName", newValue);
+
+                         setColumnFromOutsideTable("projectName", "");
+                         setColumnFromOutsideTable("jobHolder", "");
+                      return newValue;
+                    })
+                  }
+                  onDragEnd={() => {}}
+                  activeClassName={filter1 ? "border-2 border-b-0 text-orange-600 border-gray-300" : ""}
+                
+                
+                />
+                    
+
+
+
+
+              {/* <DragDropContext onDragEnd={handleOnDragEnd}>
+                <Droppable droppableId="departments" direction="horizontal">
                   {(provided) => (
                     <div
                       {...provided.droppableProps}
                       ref={provided.innerRef}
                       className="flex items-center gap-2 "
                     >
-                      {projects?.map((proj, index) => (
+                      {departments?.map((dpt, index) => (
                         <Draggable
-                          key={proj._id}
-                          draggableId={proj._id}
+                          key={dpt._id}
+                          draggableId={dpt._id}
                           index={index}
                         >
                           {(provided) => (
                             <div
                               className={`py-1 rounded-tl-md rounded-tr-md px-1 w-fit cursor-pointer font-[500] text-[14px] ${
-                                active === proj?.projectName &&
+                                filter1 === dpt?.departmentName &&
                                 " border-2 border-b-0 text-orange-600 border-gray-300"
                               }`}
                               ref={provided.innerRef}
@@ -3362,19 +3660,30 @@ useEffect(()=>{
                               {...provided.dragHandleProps}
                               onClick={() => {
                                 setFilterData("");
-                                setActive(proj?.projectName);
-                                filterByDep(proj?.projectName);
+                                setActive(dpt?.departmentName);
+                                filterByDep(dpt?.departmentName);
 
                                 setShowCompleted(false);
                                 setActive1("");
+
                                 dispatch(setFilterId(""));
 
-                                setColumnFromOutsideTable('project.projectName', proj?.projectName);
+                                setColumnFromOutsideTable('departmentName', dpt?.departmentName);
                                 setColumnFromOutsideTable('jobHolder', "");
+
+                                 setFilter1((prev) => {
+                                    const isSameUser = prev === dpt?.departmentName;
+                                    const newValue = isSameUser ? "" : dpt?.departmentName;
+
+                                    setColumnFromOutsideTable("departmentName", newValue);
+                                    return newValue;
+                                  });
                               }}
                             >
-                              {proj?.projectName} (
-                              {getProjectsCount(proj?.projectName)})
+                              {dpt?.departmentName} (
+                                {getDepartmentTaskCount(dpt._id, tasksData)}
+                             
+                              )
                             </div>
                           )}
                         </Draggable>
@@ -3383,7 +3692,7 @@ useEffect(()=>{
                     </div>
                   )}
                 </Droppable>
-              </DragDropContext>
+              </DragDropContext> */}
 
               <div
                 className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
@@ -3480,6 +3789,166 @@ useEffect(()=>{
               <>
                 <div className="w-full  py-2 max-lg:hidden ">
                   <div className="flex items-center flex-wrap gap-4">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <DraggableFilterTabs 
+
+                  droppableId={"projects"}
+                  items={departmentProjects}
+                  filterValue={filter2}
+                  tasks={tasksData}
+                   getCountFn={(proj, tasks) =>
+                  tasks.filter((t) => t.project?._id === proj._id).length
+                }
+                  getLabelFn={(project) => project.projectName}
+                  
+                  onClick={
+                    (project) => setFilter2((prev) => {
+                      const isSameUser = prev === project?.projectName;
+                      const newValue = isSameUser ? "" : project?.projectName;
+
+                      setColumnFromOutsideTable("projectName", newValue);
+
+                      setColumnFromOutsideTable("jobHolder", "");
+                      return newValue;
+                    })
+                  }
+                  onDragEnd={() => {}}
+                  activeClassName={filter2 ? "border-2 border-b-0 text-orange-600 border-gray-300" : ""}
+                
+                
+                />
+                    
+
+                    {/* <DragDropContext onDragEnd={handleOnDragEnd}>
+                <Droppable droppableId="projects" direction="horizontal">
+                  {(provided) => (
+                    <div
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className="flex items-center gap-2 "
+                    >
+                      {projects?.map((project, index) => (
+                        <Draggable
+                          key={project._id}
+                          draggableId={project._id}
+                          index={index}
+                        >
+                          {(provided) => (
+                            <div
+                              className={`py-1 rounded-tl-md rounded-tr-md px-1 w-fit cursor-pointer font-[500] text-[14px] ${
+                                filter2 === project?.projectName &&
+                                " border-2 border-b-0 text-orange-600 border-gray-300"
+                              }`}
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              onClick={() => {
+                                setFilterData("");
+                                setActive(project?.projectName);
+                                filterByDep(project?.projectName);
+
+                                setShowCompleted(false);
+                                setActive1("");
+
+                                dispatch(setFilterId(""));
+
+
+                                setFilter2((prev) => {
+                                    const isSameUser = prev === project?.projectName;
+                                    const newValue = isSameUser ? "" : project?.projectName;
+
+                                    setColumnFromOutsideTable("projectName", newValue);
+                                    return newValue;
+                                  });
+
+
+                                setColumnFromOutsideTable('projectName', project?.projectName);
+                                setColumnFromOutsideTable('jobHolder', "");
+                              }}
+                            >
+                              {project?.projectName} (
+                                {getProjectTaskCount(project._id, tasksData)}
+                              
+                              )
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext> */}
+
+
+
+
+
+
+
+
+
+                    |💚|
+
+
+
+
+
+
+                     <DraggableFilterTabs 
+
+                  droppableId={"users"}
+                  items={projectUsers}
+                  filterValue={filter3}
+                  tasks={tasksData}
+                   getCountFn={(user, tasks) =>
+                  tasks.filter((t) => t.jobHolder === user.name).length
+                }
+                  getLabelFn={(user) => user.name}
+                  
+                  onClick={
+                    (user) =>setFilter3((prev) => {
+                                            const isSameUser = prev === user?.name;
+                                            const newValue = isSameUser ? "" : user?.name;
+
+                                            setColumnFromOutsideTable("jobHolder", newValue);
+                                            return newValue;
+                                  })
+
+                  }
+                  onDragEnd={() => {}}
+                  activeClassName={filter3 ? "border-2 border-b-0 text-orange-600 border-gray-300" : ""}
+                
+                
+                />
+
+
+
+
+
+{/* 
+
                     <DragDropContext onDragEnd={handleUserOnDragEnd}>
                       <Droppable droppableId="users" direction="horizontal">
                         {(provided) => (
@@ -3489,10 +3958,10 @@ useEffect(()=>{
                             className="flex items-center gap-2 overflow-x-auto hidden1"
                           >
                             {users
-                              ?.filter(
-                                (user) =>
-                                  getJobHolderCount(user?.name, active) > 0
-                              )
+                              // ?.filter(
+                              //   (user) =>
+                              //     getJobHolderCount(user?.name, active) > 0
+                              // )
                               ?.map((user, index) => (
                                 <Draggable
                                   key={user._id}
@@ -3502,28 +3971,38 @@ useEffect(()=>{
                                   {(provided) => (
                                     <div
                                       className={`py-1 rounded-tl-md w-[5.8rem]   sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                                        active1 === user.name &&
+                                        filter3 === user.name &&
                                         "  border-b-2 text-orange-600 border-orange-600"
                                       }`}
                                       ref={provided.innerRef}
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
                                       onClick={() => {
-                                        setActive1(user?.name);
-                                        filterByProjStat(user?.name, active);
-                                        setColumnFromOutsideTable('status', 'Progress');
-                                        setColumnFromOutsideTable('jobHolder', user?.name);
+                                        // setActive1(user?.name);
+                                        // filterByProjStat(user?.name, active);
+                                        // setColumnFromOutsideTable('status', 'Progress');
+                                        // setColumnFromOutsideTable('jobHolder', user?.name);
 
-                                        setColumnFromOutsideTable('deadline', '');
-                                        if(auth.user?.role?.name === "Admin" && user?.name === auth?.user?.name) {
-                                          setColumnFromOutsideTable('deadline', 'Today');
+                                        // setColumnFromOutsideTable('deadline', '');
+                                        // if(auth.user?.role?.name === "Admin" && user?.name === auth?.user?.name) {
+                                        //   setColumnFromOutsideTable('deadline', 'Today');
                                            
-                                        }
+                                        // }
                                         
+
+                                         setFilter3((prev) => {
+                                            const isSameUser = prev === user?.name;
+                                            const newValue = isSameUser ? "" : user?.name;
+
+                                            setColumnFromOutsideTable("jobHolder", newValue);
+                                            return newValue;
+                                  });
+
+
                                       }}
                                     >
                                       {user.name} (
-                                      {getJobHolderCount(user?.name, active)})
+                                      {getUserTaskCount(user?.name, tasksData)})
                                     </div>
                                   )}
                                 </Draggable>
@@ -3532,7 +4011,65 @@ useEffect(()=>{
                           </div>
                         )}
                       </Droppable>
-                    </DragDropContext>
+                    </DragDropContext> */}
+
+
+
+
+                  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                   </div>
                 </div>
                 <hr className="mb-1 bg-gray-300 w-full h-[1px]" />

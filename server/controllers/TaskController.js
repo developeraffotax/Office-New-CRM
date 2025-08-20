@@ -223,7 +223,7 @@ export const getAllTasks = async (req, res) => {
           as: "project",
         },
       },
-      { $unwind: "$project" },
+      { $unwind: { path: "$project", preserveNullAndEmptyArrays: true } },
 
       // lookup departments inside project
       {
@@ -293,7 +293,7 @@ export const getCompletedTasks = async (req, res) => {
           as: "project",
         },
       },
-      { $unwind: "$project" },
+      { $unwind: { path: "$project", preserveNullAndEmptyArrays: true } },
 
       // lookup departments inside project
       {
@@ -1125,7 +1125,7 @@ export const getAllCompletedTasks = async (req, res) => {
       .find({ status: "completed" })
       .select(
         "project jobHolder task hours startDate deadline status lead  estimate_Time comments._id labal recurring subtasks"
-      )
+      ).populate("project")
       .sort({ updatedAt: -1 });
 
     res.status(200).send({

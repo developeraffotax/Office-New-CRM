@@ -89,6 +89,23 @@ export default function HR() {
   console.log("copyDescription:", copyDescription);
   console.log("USERS>>>>>>>>>>>:", users);
 
+useEffect(() => {
+  const handleKeyDown = (event) => {
+    if (event.key === "Escape") {
+      
+      setShowDescription(false)
+    }
+  };
+
+  document.addEventListener("keydown", handleKeyDown);
+
+  return () => {
+    document.removeEventListener("keydown", handleKeyDown);
+  };
+}, []);
+
+
+
   useEffect(() => {
     if (userName && userName.length > 0) {
       const savedVisibility = JSON.parse(
@@ -1514,10 +1531,11 @@ export default function HR() {
                                   key={user}
                                   draggableId={user}
                                   index={index}
+                                  
                                 >
                                   {(provided) => (
                                     <div
-                                      className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                                      className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 !cursor-pointer font-[500] text-[14px] ${
                                         active1 === user &&
                                         "  border-b-2 text-orange-600 border-orange-600"
                                       }`}
@@ -1698,7 +1716,7 @@ export default function HR() {
         {/* -----------------Handle HR Tasks--------------- */}
         {showAddTask && (
           <div className="fixed top-0 left-0 z-[999] w-full h-full py-4 px-4 bg-gray-300/70 flex items-center justify-center">
-            <div className="w-[50rem]">
+            <div className="  w-[65%] h-[85%] ">
               <HandleHRModal
                 setShowAddTask={setShowAddTask}
                 users={users}
@@ -1749,7 +1767,7 @@ export default function HR() {
         {/* -----------------template Details----------- */}
         {showDescription && (
           <div className="fixed top-0 left-0 z-[999] w-full h-full py-4 px-4 bg-gray-300/70 flex items-center justify-center">
-            <div className="flex flex-col gap-2 bg-white rounded-md shadow-md w-[55rem] max-h-[100vh] ">
+            <div className="flex flex-col gap-2 bg-white rounded-md shadow-md w-[65%] h-[85%]    ">
               <div className="flex items-center justify-between px-4 pt-2">
                 <h1 className="text-[20px] font-semibold text-black">
                   Task Detail

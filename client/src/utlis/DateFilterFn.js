@@ -46,6 +46,31 @@ export const DateFilterFn = (row, columnId, filterValue) => {
       const lastYear = new Date(today);
       lastYear.setFullYear(today.getFullYear() - 1);
       return cellDate >= lastYear && cellDate <= today;
+
+    // 🔹 New filters
+    case "This Month": {
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      return cellDate >= startOfMonth && cellDate <= endOfMonth;
+    }
+
+    case "Last Month": {
+      const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+      return cellDate >= startOfLastMonth && cellDate <= endOfLastMonth;
+    }
+
+    case "This Year": {
+      const startOfYear = new Date(today.getFullYear(), 0, 1);
+      const endOfYear = new Date(today.getFullYear(), 11, 31);
+      return cellDate >= startOfYear && cellDate <= endOfYear;
+    }
+
+    case "Last Year": {
+      const startOfLastYear = new Date(today.getFullYear() - 1, 0, 1);
+      const endOfLastYear = new Date(today.getFullYear() - 1, 11, 31);
+      return cellDate >= startOfLastYear && cellDate <= endOfLastYear;
+    }
     default:
       // if (typeof filterValue === "string" && filterValue.includes("-")) {
       //   const [year, month] = filterValue.split("-");

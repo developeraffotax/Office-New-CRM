@@ -3533,14 +3533,17 @@ Cell: ({ row }) => {
                 const selectRef = useRef(null);
 
                 const filterValues = [
-                  "Today",
-                  "Yesterday",
-                  "Last 7 days",
-                  "Last 15 days",
-                  "Last 30 Days",
-                  "Last 12 months",
-                   
-                ]
+                    "Today",
+                    "Yesterday",
+                    "Last 7 days",
+                    "Last 15 days",
+                    "Last 30 Days",
+                    "Last 12 months",
+                    "This Month",
+                    "Last Month",
+                    "This Year",
+                    "Last Year",
+                  ];
 
                 useEffect(() => {
                   if (filterValue === "Custom Range") {

@@ -1585,8 +1585,8 @@ const applyFilter = (e) => {
               >
                 {lastReply ? (
                   <div className="w-full flex flex-col justify-center items-center ">
-                    <span>{format(new Date(lastReply), "dd-MMM-yyyy")}</span>{" "}
-                    <span>{getDaysOld(lastReply)} (days ago)</span>
+                    {/* <span>{format(new Date(lastReply), "dd-MMM-yyyy")}</span>{" "} */}
+                    <span>{getDaysOld(lastReply)} days ago</span>
                   </div>
                 ) : (
                   <span className="text-white">.</span>

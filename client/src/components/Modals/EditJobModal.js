@@ -39,6 +39,10 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
   const [trPassword, setTrPassowrd] = useState("");
   const [vatPassword, setVatPassowrd] = useState("");
   const [utr, setUtr] = useState("");
+
+  const [clientPaidFee, setClientPaidFee] = useState("");
+
+
   const [clientBookKeepingFormData, setClientBookKeepingFormData] = useState({
     clientId: "",
     jobName: "Bookkeeping",
@@ -265,6 +269,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
       setTrPassowrd(clientDetail.trPassword);
       setVatPassowrd(clientDetail.vatPassword);
 
+      setClientPaidFee(clientDetail?.clientPaidFee);
       setPartner(clientDetail.partner);
 
       getJobs(clientDetail.companyName);
@@ -568,6 +573,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
           trPassword,
           vatPassword,
           utr,
+          clientPaidFee,
           jobs,
         }
       );
@@ -771,15 +777,16 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
 
               
 
-              <div className="w-full flex items-center justify-between gap-2">
-{/*               
-                <input
+              <div className="w-full flex items-center justify-between gap-2">  
+
+
+             <input
                 type="text"
-                placeholder="Fee"
+                placeholder="Paid Fee"
                 className={`${style.input} w-[50%]`}
-                value={fee}
-                onChange={(e) => setFee(e.target.value)}
-              /> */}
+                value={clientPaidFee}
+                onChange={(e) => setClientPaidFee(e.target.value)}
+              />
 
               <input
                 type="text"

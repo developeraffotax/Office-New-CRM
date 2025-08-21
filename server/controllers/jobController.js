@@ -37,6 +37,7 @@ export const createJob = async (req, res) => {
       authCode,
       utr,
       isActive,
+      clientPaidFee,
       jobs,
     } = req.body;
 
@@ -87,6 +88,7 @@ export const createJob = async (req, res) => {
           authCode,
           utr,
           isActive,
+          clientPaidFee: clientPaidFee || "0",
           job: {
             jobName: job.jobName,
             yearEnd: job.yearEnd || new Date().toISOString(),
@@ -209,7 +211,7 @@ export const getAllClients = async (req, res) => {
         "job.jobStatus": { $ne: "Inactive" },
       })
       .select(
-        "clientName companyName regNumber email fee currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data activeClient clientType partner"
+        "clientName companyName regNumber email fee currentDate totalHours totalTime job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data activeClient clientType partner clientPaidFee"
       )
       .populate("data");
 
@@ -975,6 +977,7 @@ export const updateClientJob = async (req, res) => {
       vatPassword,
       utr,
       isActive,
+      clientPaidFee,
       jobs,
     } = req.body;
 
@@ -1028,6 +1031,7 @@ export const updateClientJob = async (req, res) => {
             authCode,
             utr,
             isActive,
+            clientPaidFee: clientPaidFee || "0",
             job: jobData,
           },
           { new: true }
@@ -1057,6 +1061,7 @@ export const updateClientJob = async (req, res) => {
           authCode,
           utr,
           isActive,
+          clientPaidFee: clientPaidFee || "0",
           job: jobData,
         });
       }

@@ -229,6 +229,14 @@ const clientSchema = new mongoose.Schema(
     filed: {
       type: String,
     },
+
+
+
+
+    clientPaidFee: {
+      type: String,
+      
+    },
     activities: [activitySchema],
   },
   { timestamps: true }

@@ -36,6 +36,9 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
   const [vatPassword, setVatPassowrd] = useState("");
   const [authCode, setAuthCode] = useState("");
   const [utr, setUtr] = useState("");
+
+  const [clientPaidFee, setClientPaidFee] = useState("");
+
   const [clientBookKeepingFormData, setClientBookKeepingFormData] = useState({
     jobName: "Bookkeeping",
     yearEnd: "",
@@ -240,6 +243,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
           vatPassword,
           authCode,
           utr,
+          clientPaidFee,
           jobs,
         }
       );
@@ -412,13 +416,13 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
               
               <div className="w-full flex items-center justify-between gap-2">
 
-                {/* <input
+                <input
                 type="text"
-                placeholder="Fee"
+                placeholder="Paid Fee"
                 className={`${style.input} w-[50%]`}
-                value={fee}
-                onChange={(e) => setFee(e.target.value)}
-              /> */}
+                value={clientPaidFee}
+                onChange={(e) => setClientPaidFee(e.target.value)}
+              />
 
               <input
                 type="text"

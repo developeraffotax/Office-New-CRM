@@ -21,7 +21,7 @@ export const createMeeting = async (req, res) => {
     if (!title || !description || !scheduledAt) {
       return res.status(400).send({
         success: false,
-        message: "Users list is required and should not be empty!",
+        message: "Title, Description & Date/Time should not be empty!",
       });
     }
 

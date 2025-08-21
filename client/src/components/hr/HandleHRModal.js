@@ -130,7 +130,7 @@ export default function HandleHRModal({
   ];
 
   return (
-    <div className="w-full rounded-md shadow border flex flex-col gap-4 bg-white">
+    <div className="w-full h-full rounded-md shadow border flex flex-col gap-4 bg-white">
       <div className="flex items-center justify-between px-4 pt-2">
         <h1 className="text-[20px] font-semibold text-black">
           {taskId ? "Update HR Task" : "Add HR Task"}
@@ -234,7 +234,7 @@ export default function HandleHRModal({
               theme="snow"
               modules={modules}
               formats={formats}
-              className="rounded-md relative min-h-[11rem] max-[28rem] h-[12rem] 2xl:h-[22rem]"
+              className="rounded-md relative min-h-[28rem] max-[28rem] h-[12rem] 2xl:h-[22rem]"
               value={description}
               onChange={setDescription}
             />

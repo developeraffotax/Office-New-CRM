@@ -37,7 +37,7 @@ export default function Temp() {
         </h1>
       </div>
       <div className="fixed top-0 left-0 z-[998] w-full h-full py-4 px-4 bg-gray-300/70 flex items-center justify-center">
-        <div className="flex flex-col gap-2 bg-white rounded-md shadow-md w-[55rem] max-h-[100vh] ">
+        <div className="flex flex-col gap-2 bg-white rounded-md shadow-md w-[65%] h-[85%] ">
           <div className="flex items-center justify-between px-4 pt-2">
             <h1 className="text-[20px] font-semibold text-black">
               {" "}

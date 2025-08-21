@@ -3964,8 +3964,8 @@ const allDepartmentsSelected =
 
 
 
-              <div className=" hidden sm:flex relative  ">
-                            <div className={`  p-1 rounded-md hover:shadow-md bg-gray-50 cursor-pointer border ${ showcolumn && "bg-orange-500 text-white" }`} onClick={() => setShowColumn(!showcolumn)} > {showcolumn ? ( <GoEyeClosed className="text-[22px]" /> ) : ( <GoEye className="text-[22px]" /> )} </div>
+              <div className="relative">
+                            <div className={`  p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${ showcolumn && "bg-orange-500 text-white" }`} onClick={() => setShowColumn(!showcolumn)} > {showcolumn ? ( <GoEyeClosed className="h-5 w-5" /> ) : ( <GoEye className="h-5 w-5" /> )} </div>
                             {showcolumn && (
                               <div
                                 ref={showColumnRef}
@@ -3977,6 +3977,28 @@ const allDepartmentsSelected =
                           </div>
 
 
+
+
+                            <span
+                className={` p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+                onClick={() => {
+                  getTasks1();
+                  getAllProjects();
+                  // setActive("All");
+                  // setActiveBtn("");
+                  // setActive1("");
+                  //setFilterId("");
+                  // setShowStatus(false);
+                  // setShowJobHolder(false);
+                }}
+                title="Refresh Data"
+              >
+                <GrUpdate
+                  className={`h-5 w-5  cursor-pointer ${
+                    isLoad && "animate-spin text-sky-500"
+                  }`}
+                />
+              </span>
 
             </div>
             {/*  */}
@@ -4048,6 +4070,19 @@ const allDepartmentsSelected =
                       
                      
                       updateJobHolder(newValue); // reset jobHolder filter when department changes
+
+
+                      setColumnFromOutsideTable('status', 'Progress');
+                                         
+                      setColumnFromOutsideTable('deadline', '');
+                      if(auth.user?.role?.name === "Admin" && user?.name === auth?.user?.name) {
+                        setColumnFromOutsideTable('deadline', 'Today');
+                          
+                      }
+
+
+
+
                     }}
                   onDragEnd={() => {}}
                   activeClassName={filter3 ? "border-b-2 text-orange-600 border-orange-600" : ""}

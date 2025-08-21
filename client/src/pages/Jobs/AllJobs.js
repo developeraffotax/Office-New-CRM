@@ -28,8 +28,8 @@ import { TbLoader } from "react-icons/tb";
 import { Box, Button, LinearProgress,   Popover, Typography } from "@mui/material";
 import { MdOutlineModeEdit } from "react-icons/md";
 import { mkConfig, generateCsv, download } from "export-to-csv";
-import { IoMdDownload } from "react-icons/io";
-import { GoEye } from "react-icons/go";
+import { IoIosCheckmarkCircleOutline, IoMdDownload } from "react-icons/io";
+import { GoCheckCircleFill, GoEye } from "react-icons/go";
 import { GoEyeClosed } from "react-icons/go";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
  
@@ -124,6 +124,7 @@ export default function AllJobs() {
   const [showDataLable, setShowDataLable] = useState(false);
   const [dataLable, setDataLabel] = useState([]);
   const [totalFee, setTotalFee] = useState(0);
+  const [totalClientPaidFee, setTotalClientPaidFee] = useState(0);
   const [activity, setActivity] = useState("Chargeable");
   const [access, setAccess] = useState([]);
   const [rowSelection, setRowSelection] = useState({});
@@ -517,6 +518,8 @@ export default function AllJobs() {
         // Use   companyName as a unique identifier
         const key = `${client.companyName.trim().toLowerCase()}`;
         if (!uniqueClientsMap.has(key)) {
+
+
           uniqueClientsMap.set(key, client);
         }
       });
@@ -2829,7 +2832,7 @@ export default function AllJobs() {
 
         // Source
         // || auth?.user?.role.access.some((item)=>)
-        ...(auth?.user?.role?.name === "Admin" || access.includes("Fee")
+        ...((auth?.user?.role?.name === "Admin" || access.includes("Fee")) && !showUniqueClients
           ? [
               {
                 id: "Fee",
@@ -2916,6 +2919,148 @@ export default function AllJobs() {
               },
             ]
           : []),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          ...(auth?.user?.role?.name === "Admin" && showUniqueClients
+          ? [
+              {
+                id: "Fee",
+                accessorKey: "fee",
+                
+                Header: ({ column }) => {
+                  
+                  return (
+                    <div className=" flex flex-col gap-[2px] w-full items-center justify-center  ">
+                      <span
+                        className="ml-1 w-full flex items-center gap-0.5  text-center cursor-pointer "
+                        title="Filter out the empty fees"
+                        onClick={() => {
+                          column.setFilterValue("empty");
+                           
+                        }}
+                      >
+                       Fee<GoCheckCircleFill className="text-green-500 text-lg"/>
+                      </span>
+                      <span
+                        title={totalClientPaidFee}
+                        className="font-medium w-full flex cursor-pointer text-center text-[12px] px-2 py-1 rounded-md bg-gray-50 text-black"
+                      >
+                        {totalClientPaidFee}
+                      </span>
+                    </div>
+                  );
+                },
+                Cell: ({ cell, row }) => {
+
+                  const clientPaidFee = row.original.clientPaidFee;
+                 
+                   
+                  return (
+
+                    <div className="w-full flex items-center justify-center">
+                    <span
+                        className="text-[15px] font-medium"
+                        
+                      >
+                        {clientPaidFee ? clientPaidFee : <span className="text-white">.</span>}
+                         
+                      </span>
+                  </div>
+ 
+                  );
+                },
+
+
+ 
+                size: 60,
+
+                 
+              },
+            ]
+          : []),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3697,6 +3842,7 @@ Cell: ({ row }) => {
       isLoad,
       showcolumn,
       columnVisibility,
+      showUniqueClients
       
     ]
   );
@@ -4031,13 +4177,26 @@ Cell: ({ row }) => {
   const tableColumnFilters = table.getState().columnFilters;
 useEffect(() => {
   const filteredRows = table.getFilteredRowModel().rows;
-
   const totalHours = filteredRows.reduce((acc, row) => acc + Number(row.original.totalHours), 0);
-  const totalFee = filteredRows.reduce((acc, row) => acc + Number(row.original.fee), 0);
-
   setTotalHours(totalHours.toFixed(0));
-  setTotalFee(totalFee.toFixed(0));
-}, [tableColumnFilters, table]);
+  
+
+  if(!showUniqueClients) {
+    const filteredRows = table.getFilteredRowModel().rows;
+   const totalFee = filteredRows.reduce((acc, row) => acc + Number(row.original.fee), 0);
+    setTotalFee(totalFee.toFixed(0));
+  }
+
+
+  if(showUniqueClients) {
+    const filteredRows = table.getFilteredRowModel().rows;
+    const totalClientPaidFee = filteredRows.reduce((acc, row) => acc + Number(row.original.clientPaidFee || '0'), 0);
+    setTotalClientPaidFee(totalClientPaidFee.toFixed(0))
+  }
+
+  
+
+}, [tableColumnFilters, table, showUniqueClients, tableData]);
 
  
 

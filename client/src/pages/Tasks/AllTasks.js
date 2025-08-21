@@ -70,25 +70,25 @@ import { useClickOutside } from "../../utlis/useClickOutside";
 
  const colVisibility = {
      
-    "departmentName" : false,
-    "projectName" : false,
-    "jobHolder" : false,
-    "task" : false,
-    "hours": false,
-    "startDate" : false,
-    "deadline" : false,
-    "datestatus" : false,
+    "departmentName" : true,
+    "projectName" : true,
+    "jobHolder" : true,
+    "task" : true,
+    "hours": true,
+    "startDate" : true,
+    "deadline" : true,
+    "datestatus" : true,
 
-    "status" : false,
-    "lead": false,
-    "estimate_Time": false,
-    "timertracker" : false,
-    "comments": false,
+    "status" : true,
+    "lead": true,
+    "estimate_Time": true,
+    "timertracker" : true,
+    "comments": true,
     
     
-    "actions" : false,
-    "labal": false,
-    "recurring": false,
+    "actions" : true,
+    "labal": true,
+    "recurring": true,
  }
 
 
@@ -342,13 +342,7 @@ const projectUsers = users.filter(u => activeProject?.users_list?.some(p_user =>
     
           if (savedVisibility) {
             setColumnVisibility(savedVisibility);
-          } else {
-            const initialVisibility = userName.reduce((acc, col) => {
-              acc[col] = true;
-              return acc;
-            }, {});
-            setColumnVisibility(initialVisibility);
-          }
+          }  
          
       }, []);
     

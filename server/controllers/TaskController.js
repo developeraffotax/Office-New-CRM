@@ -1735,10 +1735,10 @@ export const updateMultipleTasks = async (req, res) => {
     }
 
     let updateData = {};
-    if (project) updateData["project._id"] = project._id;
-    if (project) updateData["project.projectName"] = project.projectName;
-    if (project) updateData["project.users_list"] = project.users_list;
-    if (project) updateData["project.status"] = project.status;
+    if (project) updateData["project"] = project._id;
+    // if (project) updateData["project.projectName"] = project.projectName;
+    // if (project) updateData["project.users_list"] = project.users_list;
+    // if (project) updateData["project.status"] = project.status;
     if (jobHolder) updateData["jobHolder"] = jobHolder;
     if (hours) updateData["hours"] = hours;
     if (startDate) updateData["startDate"] = startDate;

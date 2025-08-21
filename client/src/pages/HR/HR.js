@@ -71,6 +71,8 @@ export default function HR() {
   const [showHrRoles, setShowHrRoles] = useState(false);
   const [copyDescription, setCopyDescription] = useState("");
   const [showDescription, setShowDescription] = useState(false);
+
+  
   const [showcolumn, setShowColumn] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [copyLoad, setCopyLoad] = useState(false);

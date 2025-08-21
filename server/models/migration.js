@@ -3,7 +3,7 @@ import taskModel from "./taskModel.js";
 
 const migrateTasks = async () => {
   try {
-    await mongoose.connect("mongodb+srv://developeraffotax:developer%402024%24@cluster0.aodvoa5.mongodb.net/test_newcrmoffice");
+    await mongoose.connect("mongodb+srv://developeraffotax:developer%402024%24@cluster0.aodvoa5.mongodb.net/newcrmoffice");
 
      
     // Bulk update with $toObjectId

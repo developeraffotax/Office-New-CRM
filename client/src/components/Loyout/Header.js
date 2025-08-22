@@ -26,6 +26,7 @@ import {
 } from "../../redux/slices/reminderSlice";
 import { useSocket } from "../../context/socketProvider";
 import { getNotifications, updateAllNotification, updateNotification } from "../../redux/slices/notificationSlice";
+import OnlineUsers from "../../utlis/OnlineUsers";
  
 
 const formatElapsedTime = (createdAt) => {
@@ -478,6 +479,21 @@ useEffect(() => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               {/* --------Timer Status------ */}
+
+
+               {
+                      <OnlineUsers />
+                    
+                    
+              }
+
+
+
+
+
+
+
+
               <div className="relative" ref={timerStatusRef}>
                 <div className="flex items-center">
                   <div
@@ -512,6 +528,14 @@ useEffect(() => {
                     </span>
                   )}
                 </div>
+
+
+
+                   
+
+
+
+
 
                 {showTimerStatus && (
                   <div className="w-[370px] min-h-[20vh] max-h-[60vh]  overflow-y-auto border border-gray-300  pb-2 shadow-xl  bg-gray-100 absolute z-[999] top-[2rem] right-[1.6rem] rounded">

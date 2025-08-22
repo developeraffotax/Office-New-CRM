@@ -3475,7 +3475,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                                 >
                                   {(provided) => (
                                     <div
-                                      className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                                      className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 !cursor-pointer font-[500] text-[14px] ${
                                         active1 === user &&
                                         "  border-b-2 text-orange-600 border-orange-600"
                                       }`}

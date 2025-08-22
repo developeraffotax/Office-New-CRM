@@ -3937,27 +3937,7 @@ const allDepartmentsSelected =
                 <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
               </span>
 
-              <span
-                className={` p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
-                onClick={() => {
-                  getTasks1();
-                  getAllProjects();
-                  // setActive("All");
-                  // setActiveBtn("");
-                  // setActive1("");
-                  //setFilterId("");
-                  // setShowStatus(false);
-                  // setShowJobHolder(false);
-                }}
-                title="Refresh Data"
-              >
-                <GrUpdate
-                  className={`h-5 w-5  cursor-pointer ${
-                    isLoad && "animate-spin text-sky-500"
-                  }`}
-                />
-              </span>
-
+              
 
 
 

@@ -2030,7 +2030,7 @@ const applyFilter = (e) => {
                               >
                                 {(provided) => (
                                   <div
-                                    className={`py-1   px-2 cursor-pointer font-[500] text-[14px]   ${
+                                    className={`py-1   px-2 !cursor-pointer font-[500] text-[14px]   ${
                                       active1 === user &&
                                       "  border-b-2 text-orange-600 border-orange-600"
                                     }`}

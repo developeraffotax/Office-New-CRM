@@ -4837,7 +4837,7 @@ useEffect(() => {
                             >
                               {(provided) => (
                                 <div
-                                  className={`py-1 rounded-tl-md rounded-tr-md w-[5.8rem] sm:w-fit px-1 cursor-pointer font-[500] text-[14px] ${
+                                  className={`py-1 rounded-tl-md rounded-tr-md w-[5.8rem] sm:w-fit px-1 !cursor-pointer font-[500] text-[14px] ${
                                     active1 === user?.name &&
                                     "  border-b-2 text-orange-600 border-orange-600"
                                   }`}
@@ -5007,7 +5007,7 @@ useEffect(() => {
 
       {/* ------------Add Client_Job Modal -------------*/}
       {isOpen && (
-        <div className="fixed top-0 left-0 w-full min-h-screen overflow-y-auto z-[999] bg-gray-100/80 backdrop-blur-md flex items-center justify-center py-6  px-4">
+        <div className="fixed top-0 left-0 w-full min-h-full overflow-y-auto z-[999] bg-gray-100   flex items-center justify-center py-6  px-4">
           {/* <span
             className="absolute  top-[4px] right-[.8rem]  cursor-pointer z-10 p-1 rounded-lg bg-white/50 hover:bg-gray-300/70 transition-all duration-150 flex items-center justify-center"
             onClick={() => setIsOpen(false)}

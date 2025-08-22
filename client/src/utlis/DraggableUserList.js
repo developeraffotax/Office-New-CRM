@@ -138,7 +138,7 @@ const DraggableUserList = ({
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className={` p-1  text-nowrap  text-sm font-medium cursor-pointer transition-all duration-150 ${
+                          className={` p-1  text-nowrap  text-sm font-medium !cursor-pointer transition-all duration-150 ${
                             active === userName
                               ? "  text-orange-500 border-b-2 border-orange-500 "
                               : "  text-gray-800"

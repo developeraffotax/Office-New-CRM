@@ -7,10 +7,20 @@ import userModel from "./models/userModel.js";
 
 
 export const initSocketServer = (server) => {
+
   const io = new SocketIOServer(server);
 
+
+  // const io = new SocketIOServer(server, {
+  //   cors: {
+  //     origin: ["http://localhost:5173", "http://localhost:3000", "https://affotax.com"],
+  //     methods: ["GET", "POST"],
+  //     credentials: true,
+  //   },
+  // });
+
   io.on("connection", (socket) => {
-    console.log("User connected!💚💚💚💚💚");
+  console.log("User connected!💚💚💚💚💚");
 
     // When user logs in or joins the chat, send their MongoDB userId
     socket.on('userConnected', (userId) => {
@@ -123,7 +133,7 @@ async function broadcastOnlineUsers(io) {
     // Emit the user list
     io.emit("onlineUsersUpdate", users);
 
-    console.log("👥 Online users:", users.map(u => u.name).join(", "));
+    // console.log("👥 Online users:", users.map(u => u.name).join(", "));
   } catch (err) {
     console.error("Error broadcasting online users:", err);
   }

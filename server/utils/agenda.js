@@ -30,8 +30,11 @@ agenda.define("send reminder", async (job) => {
     scheduledAt: reminder.scheduledAt
   };
 
+
+  console.log("Sending reminder to user:", userId, "with sockets:", sockets);
   if (sockets && sockets.size > 0) {
     sockets.forEach((socketId) => {
+      console.log("Sending to socket:💜", socketId);
       agenda.io.to(socketId).emit("receive_reminder", payload);
     });
   } 

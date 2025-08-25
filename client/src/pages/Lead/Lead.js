@@ -2782,24 +2782,17 @@ const allColumns = [{
 
 
 
-
-
-
-
-
-//  --- Email--->
+// --- Email Column --->
 {
   accessorKey: "email",
   minSize: 200,
   maxSize: 500,
   size: 250,
   grow: false,
-    
-     
-    
+
   Header: ({ column }) => {
     return (
-      <div className=" flex flex-col gap-[2px]">
+      <div className="flex flex-col gap-[2px]">
         <span
           className="ml-1 cursor-pointer"
           title="Clear Filter"
@@ -2822,55 +2815,85 @@ const allColumns = [{
       </div>
     );
   },
-  Cell: ({ cell, row }) => {
-    const email = row.original.email;
-    const [show, setShow] = useState(false);
-    const [localEmail, setLocalEmail] = useState(email);
 
-    const handleSubmit = (e) => {
+  Cell: ({ row }) => {
+  const email = row.original.email;
+  const [show, setShow] = React.useState(false);
+  const [localEmail, setLocalEmail] = React.useState(email);
+
+  const handleSubmit = React.useCallback(() => {
+    setFormData((prevData) => ({
+      ...prevData,
+      email: localEmail,
+    }));
+    handleUpdateData(row.original._id, { email: localEmail });
+    setShow(false);
+  }, [localEmail, row.original._id]);
+
+  const handleCancel = () => {
+    setLocalEmail(email); // reset to original value
+    setShow(false);
+  };
+
+  const handleCopy = async () => {
+    if (localEmail) {
+      await navigator.clipboard.writeText(localEmail);
+      toast.success("Email copied to clipboard!");
+    }
+  };
+
+  const handleClick = (e) => {
+    if (e.ctrlKey || e.metaKey) {
+      // support Ctrl+Click (Windows/Linux) and Cmd+Click (Mac)
+      handleCopy();
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
       e.preventDefault();
-      setFormData((prevData) => ({
-        ...prevData,
-        email: localEmail,
-      }));
-      handleUpdateData(row.original._id, {
-         
-        email: localEmail,
-      });
-      setShow(false);
-    };
+      handleSubmit();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      handleCancel();
+    }
+  };
 
-    return (
-      <div className="w-full px-1">
-        {show ? (
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              value={localEmail}
-              autoFocus
-              onChange={(e) => setLocalEmail(e.target.value)}
-              className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
-            />
-          </form>
-        ) : (
-          <div
-            onDoubleClick={() => setShow(true)}
-            className="cursor-pointer w-full"
-          >
-            {localEmail ? (
-              localEmail.length > 80 ? (
-                <span>{localEmail.slice(0, 80)}...</span>
-              ) : (
-                <span>{localEmail}</span>
-              )
+  return (
+    <div className="w-full px-1">
+      {show ? (
+        <input
+          type="text"
+          value={localEmail}
+          autoFocus
+          onChange={(e) => setLocalEmail(e.target.value)}
+          onBlur={handleSubmit}
+          onKeyDown={handleKeyDown} // 👈 handles Enter + Escape
+          className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
+        />
+      ) : (
+        <div
+          onClick={handleClick} // 👈 Ctrl/Cmd + click = copy
+          onDoubleClick={() => setShow(true)} // 👈 Double click = edit
+          className="cursor-pointer w-full"
+          title="Double-click to edit, Ctrl+Click (or ⌘+Click) to copy"
+        >
+          {localEmail ? (
+            localEmail.length > 80 ? (
+              <span>{localEmail.slice(0, 80)}...</span>
             ) : (
-              <div className="text-white w-full h-full">.</div>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  },
+              <span>{localEmail}</span>
+            )
+          ) : (
+            <div className="text-white w-full h-full">.</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+},
+
+
   filterFn: (row, columnId, filterValue) => {
     const cellValue =
       row.original[columnId]?.toString().toLowerCase() || "";
@@ -2878,6 +2901,7 @@ const allColumns = [{
   },
   filterVariant: "select",
 },
+
 
 
 

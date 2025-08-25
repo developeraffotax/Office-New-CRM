@@ -23,7 +23,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
   const [currentDate, setCurrentDate] = useState("");
   const [source, setSource] = useState("");
   const [clientType, setClientType] = useState("");
-  const [partner, setPartner] = useState("");
+  const [partner, setPartner] = useState("Affotax");
   const [country, setCountry] = useState("");
   const [fee, setFee] = useState("");
   const [ctLogin, setCtLogin] = useState("");
@@ -377,6 +377,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 className={`${style.input}`}
               />
               <select
+                required
                 className={`${style.input} h-[2.5rem] `}
                 value={source}
                 onChange={(e) => setSource(e.target.value)}
@@ -402,6 +403,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 ))}
               </select>
               <select
+                required
                 className={`${style.input} h-[2.5rem] `}
                 value={partner}
                 onChange={(e) => setPartner(e.target.value)}

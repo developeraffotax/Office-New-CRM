@@ -70,7 +70,7 @@ export const updateLead = async (req, res) => {
 
     const updates = req.body;
 
-     const allowedUpdates = ['companyName', 'clientName', 'jobHolder', 'department', 'source', 'brand', 'lead_Source', 'followUpDate', 'JobDate', 'Note', 'stage', 'status', 'value', 'number', 'yearEnd', 'jobDeadline', 'email']; // Whitelist of allowed fields
+     const allowedUpdates = ['leadCreatedAt', 'companyName', 'clientName', 'jobHolder', 'department', 'source', 'brand', 'lead_Source', 'followUpDate', 'JobDate', 'Note', 'stage', 'status', 'value', 'number', 'yearEnd', 'jobDeadline', 'email']; // Whitelist of allowed fields
     const updateKeys = Object.keys(updates);
 
       // Optional: Validate fields

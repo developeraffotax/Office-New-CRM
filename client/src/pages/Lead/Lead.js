@@ -1848,6 +1848,67 @@ const allColumns = [{
       </div>
     );
   },
+
+//   Cell: ({ cell, row }) => {
+//   const createdAt = row.original.createdAt;
+
+//   const [date, setDate] = useState(() => {
+//     const rawValue = cell.getValue();
+//     if (!rawValue) return ""; // no value case
+//     const cellDate = new Date(rawValue);
+//     return isNaN(cellDate.getTime())
+//       ? ""
+//       : cellDate.toISOString().split("T")[0]; // format yyyy-mm-dd for input
+//   });
+
+//   const [showStartDate, setShowStartDate] = useState(false);
+
+//   const handleDateChange = (newDate) => {
+
+     
+
+     
+//       setDate(newDate);
+//       handleUpdateData(row.original._id, {
+//         createdAt: newDate,
+//       });
+     
+//     setShowStartDate(false);
+//   };
+
+//   return (
+//     <div className="w-full flex">
+//       {!showStartDate ? (
+//         <p
+//           onDoubleClick={() => setShowStartDate(true)}
+//           className="w-full cursor-pointer"
+//         >
+//           {createdAt ? (
+//             (() => {
+//               const parsed = new Date(createdAt);
+//               return isNaN(parsed.getTime())
+//                 ? "-"
+//                 : format(parsed, "dd-MMM-yyyy");
+//             })()
+//           ) : (
+//             <span className="text-gray-400">-</span>
+//           )}
+//         </p>
+//       ) : (
+//         <input
+//           type="date"
+//           value={date || ""}
+//           onChange={(e) => setDate(e.target.value)}
+//           onBlur={(e) => handleDateChange(e.target.value)}
+//           className="h-[2rem] w-full cursor-pointer rounded-md border border-gray-200 outline-none"
+//           autoFocus
+//         />
+//       )}
+//     </div>
+//   );
+// },
+
+
   filterFn: DateFilterFn,
 
   filterSelectOptions: [

@@ -4151,7 +4151,7 @@ const allDepartmentsSelected =
 
 
 
-                    | 
+                     
 
 
 
@@ -4162,7 +4162,7 @@ const allDepartmentsSelected =
 
 
 
-                  
+{/*                   
                 <DraggableFilterTabs 
 
                   droppableId={"projects"}
@@ -4174,17 +4174,7 @@ const allDepartmentsSelected =
                 }
                   getLabelFn={(project) => project.projectName}
                   
-                  // onClick={
-                  //   (project) => setFilter2((prev) => {
-                  //     const isSameUser = prev === project?.projectName;
-                  //     const newValue = isSameUser ? "" : project?.projectName;
-
-                  //     setColumnFromOutsideTable("projectName", newValue);
-
-                  //     setColumnFromOutsideTable("jobHolder", "");
-                  //     return newValue;
-                  //   })
-                  // }
+                  
 
 
 
@@ -4198,7 +4188,16 @@ const allDepartmentsSelected =
                   activeClassName={filter2 ? "border-b-2 text-orange-600 border-orange-600" : ""}
                 
                 
-                />
+                /> */}
+
+
+
+
+
+
+
+
+
 
 
 

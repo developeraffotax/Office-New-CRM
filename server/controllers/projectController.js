@@ -1,31 +1,27 @@
 import projectModel from "../models/projectModel.js";
 import taskModel from "../models/taskModel.js";
 
-// Create Project
+// ✅ Create Project
 export const createProject = async (req, res) => {
   try {
-    const { projectName, users_list, department } = req.body;
-
+    const { projectName, users_list, departments } = req.body;
 
     console.log("Project Name:", projectName);
     console.log("Users List:", users_list);
-    console.log("Department ID:", department);
+    console.log("Department IDs:", departments);
 
-    if (!projectName) { 
+    if (!projectName) {
       return res.status(400).send({
         success: false,
         message: "Project Name is required!",
       });
     }
 
-    const existingProject = await projectModel.findOne({
-      projectName: projectName,
-    });
-
+    const existingProject = await projectModel.findOne({ projectName });
     if (existingProject) {
       return res.status(400).send({
         success: false,
-        message: "Project with this name already exist!",
+        message: "Project with this name already exists!",
       });
     }
 
@@ -33,27 +29,27 @@ export const createProject = async (req, res) => {
 
     const project = await projectModel.create({
       projectName,
-      users_list,
+      users_list: users_list || [],
       order: projectCount,
-      department: department || ""
+      departments: Array.isArray(departments) ? departments : [], // ✅ store multiple departments
     });
 
     res.status(200).send({
       success: true,
       message: "Project created successfully!",
-      project: project,
+      project,
     });
   } catch (error) {
-    console.log(error);
-    res.status(200).send({
+    console.error("❌ Error creating project:", error);
+    res.status(500).send({
       success: false,
       message: "Error in create project!",
-      error: error,
+      error,
     });
   }
 };
 
-// Update Project
+// ✅ Update Project
 export const updateProject = async (req, res) => {
   try {
     const projectId = req.params.id;
@@ -63,7 +59,8 @@ export const updateProject = async (req, res) => {
         message: "Project Id is required!",
       });
     }
-    const { projectName, users_list, department } = req.body;
+
+    const { projectName, users_list, departments } = req.body;
 
     if (!projectName) {
       return res.status(400).send({
@@ -74,37 +71,39 @@ export const updateProject = async (req, res) => {
 
     const existingProject = await projectModel.findById(projectId);
     if (!existingProject) {
-      return res.status(400).send({
+      return res.status(404).send({
         success: false,
         message: "Project not found!",
       });
     }
 
     const project = await projectModel.findByIdAndUpdate(
-      { _id: existingProject._id },
-      { projectName, users_list, department: department || "" },
+      projectId,
+      {
+        projectName,
+        users_list: users_list || [],
+        departments: Array.isArray(departments) ? departments : [], // ✅ update multiple departments
+      },
       { new: true }
     );
 
-    const tasks = await taskModel.updateMany(
-      { "project._id": project._id },
-      { $set: { project: project } },
-      { new: true }
-    );
-
-    console.log("tasks", tasks);
+    // // ✅ Update tasks if they embed project object
+    // await taskModel.updateMany(
+    //   { "project._id": project._id },
+    //   { $set: { project } }
+    // );
 
     res.status(200).send({
       success: true,
-      message: "Project update successfully!",
-      project: project,
+      message: "Project updated successfully!",
+      project,
     });
   } catch (error) {
-    console.log(error);
-    res.status(200).send({
+    console.error("❌ Error updating project:", error);
+    res.status(500).send({
       success: false,
       message: "Error in update project!",
-      error: error,
+      error,
     });
   }
 };
@@ -114,7 +113,7 @@ export const updateProject = async (req, res) => {
 export const getAllProjects = async (req, res) => {
   try {
     const projects = await projectModel
-      .find({ status: { $ne: "completed" } }).populate("department")
+      .find({ status: { $ne: "completed" } }).populate("departments") // ✅ populate departments
       .sort({ order: 1 });
 
     res.status(200).send({

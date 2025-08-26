@@ -23,6 +23,10 @@ const leadSchema = new mongoose.Schema(
     lead_Source: {
       type: String,
     },
+    leadCreatedAt: {
+      type: Date,
+      default: Date.now,
+    },
     followUpDate: {
       type: Date,
     },

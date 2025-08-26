@@ -92,6 +92,14 @@ export default function Lead() {
 
 
 
+  
+  
+    const [pagination, setPagination] = useState({
+            pageIndex: 0,
+            pageSize: 30, // ✅ default page size
+          });
+  
+  
 
 
   
@@ -303,7 +311,7 @@ const applyFilter = (e) => {
     "value",
     "number",
     "lead_Source",
-    "createdAt",
+    "leadCreatedAt",
     "followUpDate",
     "Days",
     "stage",
@@ -656,16 +664,33 @@ const applyFilter = (e) => {
         { ...updateData }
       );
       if (data?.success) {
-        const updateLead = data?.lead;
+        const updatedLead = data?.lead;
 
-        setLeadData((prevData) =>
-          prevData.filter((item) => item._id !== updateLead._id)
+        // setLeadData((prevData) =>
+        //   prevData.filter((item) => item._id !== updateLead._id)
+        // );
+        // if (filteredData) {
+        //   setFilteredData((prevData) =>
+        //     prevData.filter((item) => item._id !== updateLead._id)
+        //   );
+        // }
+
+
+         // ✅ Update leadData in-place instead of filtering it out
+      setLeadData((prevData) =>
+        prevData.map((item) =>
+          item._id === updatedLead._id ? updatedLead : item
+        )
+      );
+
+      // ✅ If you maintain filteredData, also update it
+      if (filteredData) {
+        setFilteredData((prevData) =>
+          prevData.map((item) =>
+            item._id === updatedLead._id ? updatedLead : item
+          )
         );
-        if (filteredData) {
-          setFilteredData((prevData) =>
-            prevData.filter((item) => item._id !== updateLead._id)
-          );
-        }
+      }
         setFormData({
           companyName: "",
           clientName: "",
@@ -682,7 +707,7 @@ const applyFilter = (e) => {
           number: "",
         });
         toast.success("Lead data updated!");
-        getLeads();
+        //getLeads();
       }
     } catch (error) {
       console.log(error);
@@ -721,6 +746,8 @@ const applyFilter = (e) => {
           followUpDate,
           JobDate,
           stage,
+          jobDeadline: new Date().toISOString()
+
         }
       );
       if (data) {
@@ -1763,7 +1790,7 @@ const allColumns = [{
 },
 //   Created At
 {
-  accessorKey: "createdAt",
+  accessorKey: "leadCreatedAt",
   Header: ({ column }) => {
     const [filterValue, setFilterValue] = useState("");
     
@@ -1839,74 +1866,74 @@ const allColumns = [{
                   </div>
     );
   },
+  // Cell: ({ cell, row }) => {
+  //   const createdAt = row.original.leadCreatedAt;
+
+  //   return (
+  //     <div className="w-full flex  ">
+  //       <p>{format(new Date(createdAt), "dd-MMM-yyyy")}</p>
+  //     </div>
+  //   );
+  // },
+
   Cell: ({ cell, row }) => {
-    const createdAt = row.original.createdAt;
+  const createdAt = row.original.leadCreatedAt;
 
-    return (
-      <div className="w-full flex  ">
-        <p>{format(new Date(createdAt), "dd-MMM-yyyy")}</p>
-      </div>
-    );
-  },
+  const [date, setDate] = useState(() => {
+    const rawValue = cell.getValue();
+    if (!rawValue) return ""; // no value case
+    const cellDate = new Date(rawValue);
+    return isNaN(cellDate.getTime())
+      ? ""
+      : cellDate.toISOString().split("T")[0]; // format yyyy-mm-dd for input
+  });
 
-//   Cell: ({ cell, row }) => {
-//   const createdAt = row.original.createdAt;
+  const [showStartDate, setShowStartDate] = useState(false);
 
-//   const [date, setDate] = useState(() => {
-//     const rawValue = cell.getValue();
-//     if (!rawValue) return ""; // no value case
-//     const cellDate = new Date(rawValue);
-//     return isNaN(cellDate.getTime())
-//       ? ""
-//       : cellDate.toISOString().split("T")[0]; // format yyyy-mm-dd for input
-//   });
-
-//   const [showStartDate, setShowStartDate] = useState(false);
-
-//   const handleDateChange = (newDate) => {
+  const handleDateChange = (newDate) => {
 
      
 
      
-//       setDate(newDate);
-//       handleUpdateData(row.original._id, {
-//         createdAt: newDate,
-//       });
+      setDate(newDate);
+      handleUpdateData(row.original._id, {
+        leadCreatedAt: newDate,
+      });
      
-//     setShowStartDate(false);
-//   };
+    setShowStartDate(false);
+  };
 
-//   return (
-//     <div className="w-full flex">
-//       {!showStartDate ? (
-//         <p
-//           onDoubleClick={() => setShowStartDate(true)}
-//           className="w-full cursor-pointer"
-//         >
-//           {createdAt ? (
-//             (() => {
-//               const parsed = new Date(createdAt);
-//               return isNaN(parsed.getTime())
-//                 ? "-"
-//                 : format(parsed, "dd-MMM-yyyy");
-//             })()
-//           ) : (
-//             <span className="text-gray-400">-</span>
-//           )}
-//         </p>
-//       ) : (
-//         <input
-//           type="date"
-//           value={date || ""}
-//           onChange={(e) => setDate(e.target.value)}
-//           onBlur={(e) => handleDateChange(e.target.value)}
-//           className="h-[2rem] w-full cursor-pointer rounded-md border border-gray-200 outline-none"
-//           autoFocus
-//         />
-//       )}
-//     </div>
-//   );
-// },
+  return (
+    <div className="w-full flex">
+      {!showStartDate ? (
+        <p
+          onDoubleClick={() => setShowStartDate(true)}
+          className="w-full cursor-pointer"
+        >
+          {createdAt ? (
+            (() => {
+              const parsed = new Date(createdAt);
+              return isNaN(parsed.getTime())
+                ? "-"
+                : format(parsed, "dd-MMM-yyyy");
+            })()
+          ) : (
+            <span className="text-gray-400">-</span>
+          )}
+        </p>
+      ) : (
+        <input
+          type="date"
+          value={date || ""}
+          onChange={(e) => setDate(e.target.value)}
+          onBlur={(e) => handleDateChange(e.target.value)}
+          className="h-[2rem] w-full cursor-pointer rounded-md border border-gray-200 outline-none"
+          autoFocus
+        />
+      )}
+    </div>
+  );
+},
 
 
   filterFn: DateFilterFn,
@@ -3132,8 +3159,10 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
     onRowSelectionChange: setRowSelection,
     state: { rowSelection,
       isLoading: isLoading,
-      showSkeletons: false
-        
+      showSkeletons: false,
+      
+
+      pagination
      
 
       
@@ -3164,6 +3193,10 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
   // },
        
     },
+
+    onPaginationChange: setPagination, // ✅ Hook for page changes
+        autoResetPageIndex: false,
+     
 
     muiTableHeadCellProps: {
       style: {

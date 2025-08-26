@@ -24,7 +24,7 @@ import Loader from "../../utlis/Loader";
 import { IoClose, IoTicketOutline } from "react-icons/io5";
 import { useLocation } from "react-router-dom";
 
-import socketIO from "socket.io-client";
+ 
 import JobCommentModal from "../../pages/Jobs/JobCommentModal";
 import JobDetail from "../../pages/Jobs/JobDetail";
 import CompletedJobs from "../../pages/Jobs/CompletedJobs";
@@ -33,8 +33,7 @@ import Swal from "sweetalert2";
 import { LinearProgress, Popover, Typography } from "@mui/material";
 import TicketsPopUp from "../shared/TicketsPopUp";
 import { useSelector } from "react-redux";
-const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+ 
 
 const Jobs = forwardRef(
   ({ tableData, setTableData, childRef, setIsload }, ref) => {
@@ -598,14 +597,14 @@ const Jobs = forwardRef(
           // Socket
           allClientData();
           // Send Socket Notification
-          socketId.emit("notification", {
-            title: "New Job Assigned",
-            redirectLink: "/job-planning",
-            description: data?.notification?.description,
-            taskId: data?.notification?.taskId,
-            userId: data?.notification?.userId,
-            status: "unread",
-          });
+          // socketId.emit("notification", {
+          //   title: "New Job Assigned",
+          //   redirectLink: "/job-planning",
+          //   description: data?.notification?.description,
+          //   taskId: data?.notification?.taskId,
+          //   userId: data?.notification?.userId,
+          //   status: "unread",
+          // });
         }
       } catch (error) {
         console.error("Error updating status", error);

@@ -9,14 +9,13 @@ import axios from "axios";
 import { FaCirclePlay } from "react-icons/fa6";
 import { IoStopCircle } from "react-icons/io5";
  import toast from "react-hot-toast";
-import socketIO from "socket.io-client";
+ 
  
 import { useDispatch, useSelector } from "react-redux";
 import { setAnyTimerRunning, setJid } from "../redux/slices/authSlice";
 import { startCountdown, stopCountdown } from "../redux/slices/timerSlice";
 
-const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+ 
 
 export const Timer = forwardRef(
   (

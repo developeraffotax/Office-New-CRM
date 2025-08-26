@@ -516,12 +516,17 @@ const AllTasks = () => {
           project.users_list.some((user) => user._id === auth?.user?.id)
         );
 
+        // Collect all department IDs from user's projects
         const projectDepartmentIds = userProjects
-          .map((proj) => proj.department?._id) // assuming project.department is populated
+          .flatMap((proj) => proj.departments?.map((d) => d._id)) // many-to-many
           .filter(Boolean);
 
+        // Deduplicate IDs (in case user has multiple projects in the same department)
+        const uniqueDeptIds = [...new Set(projectDepartmentIds)];
+
+        // Filter the full department list based on user's accessible departments
         const filteredDepartments = data.departments.filter((dep) =>
-          projectDepartmentIds.includes(dep._id)
+          uniqueDeptIds.includes(dep._id)
         );
 
         setDepartments(filteredDepartments || []);

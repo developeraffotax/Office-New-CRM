@@ -3,13 +3,12 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { IoClose } from "react-icons/io5";
 import { TbLoader2 } from "react-icons/tb";
-import socketIO from "socket.io-client";
+ 
 import { style } from "../../utlis/CommonStyle";
 import ReactQuill from "react-quill";
  
 import { useSelector } from "react-redux";
-const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+ 
 
 export default function MeetingModal({
   setShowReminder,
@@ -148,12 +147,12 @@ export default function MeetingModal({
       fetchMeetingData();
       setLoading(false);
       setShowReminder(false);
-      socketId.emit("reminder", {
-        note: "New Reminder Added",
-      });
-      socketId.emit("notification", {
-        note: "New Notification Added",
-      });
+      // socketId.emit("reminder", {
+      //   note: "New Reminder Added",
+      // });
+      // socketId.emit("notification", {
+      //   note: "New Notification Added",
+      // });
     }
   };
 

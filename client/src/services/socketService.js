@@ -50,11 +50,15 @@ export const connectSocket = (userId) => {
   }
 
   // Create socket instance (force websocket only)
-  socket = io(ENDPOINT, {
-    transports: ["websocket"],   // avoid multiple IDs from polling upgrade
-    reconnection: true,          // optional: allow auto reconnect
-    reconnectionAttempts: 3,
-  });
+socket = io(ENDPOINT, {
+  transports: ["websocket"],     // skip long-polling upgrade
+  reconnection: true,            // auto-reconnect enabled
+  reconnectionAttempts: Infinity,// never give up
+  reconnectionDelay: 2000,       // start retrying after 2s
+  reconnectionDelayMax: 5000,    // max backoff delay 5s
+  timeout: 20000,                // 20s before a connect attempt fails
+  autoConnect: true,             // connect immediately (default)
+});
 
   socket.on("connect", () => {
     console.log("✅ Socket connected:", socket.id);

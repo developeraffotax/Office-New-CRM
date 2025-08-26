@@ -4,12 +4,10 @@ import axios from "axios";
 import { IoClose } from "react-icons/io5";
 import { style } from "./CommonStyle";
 import { TbLoader2 } from "react-icons/tb";
-import socketIO from "socket.io-client";
+ 
  import { useSelector } from "react-redux";
 
-
-const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+ 
 
 export default function Reminder({ setShowReminder, taskId, link }) {
  

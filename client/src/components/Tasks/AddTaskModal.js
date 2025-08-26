@@ -5,9 +5,7 @@ import { IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import { TbLoader2 } from "react-icons/tb";
 import format from "date-fns/format";
-import socketIO from "socket.io-client";
-const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+ 
 
 export default function AddTaskModal({
   users,
@@ -81,9 +79,9 @@ export default function AddTaskModal({
           setIsOpen(false);
           toast.success("Task Updated!");
           // Send Socket Notification
-          socketId.emit("notification", {
-            title: "Task  Updated",
-          });
+          // socketId.emit("notification", {
+          //   title: "Task  Updated",
+          // });
           getAllTasks();
         }
       } else {
@@ -108,16 +106,16 @@ export default function AddTaskModal({
           setIsOpen(false);
           toast.success("Task created successfully!");
           // Send Socket Notification
-          socketId.emit("notification", {
-            title: "Task  added",
-          });
+          // socketId.emit("notification", {
+          //   title: "Task  added",
+          // });
           getAllTasks();
         }
       }
       // Send Socket
-      socketId.emit("addTask", {
-        note: "New Task Added",
-      });
+      // socketId.emit("addTask", {
+      //   note: "New Task Added",
+      // });
     } catch (error) {
       console.log(error);
       setLoading(false);

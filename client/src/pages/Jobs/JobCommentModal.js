@@ -31,12 +31,11 @@ import {
 import { Close, DeleteOutline, EditOutlined, MessageRounded, MoreVert, Add as AddIcon, } from "@mui/icons-material";
  
 
-
-// import { MentionsInput, Mention } from "react-mentions";
-import socketIO from "socket.io-client";
+ 
 import { useSelector } from "react-redux";
-const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+
+
+ 
 
 export default function JobCommentModal({
   setIsComment,
@@ -273,9 +272,9 @@ const handleDeleteTemplate = async (id) => {
           setCommentData(data?.comments?.comments);
 
           // Socket
-          socketId.emit("addJob", {
-            note: "New Task Added",
-          });
+          // socketId.emit("addJob", {
+          //   note: "New Task Added",
+          // });
         }
       } else if (type === "Task") {
         const { data } = await axios.get(
@@ -285,9 +284,9 @@ const handleDeleteTemplate = async (id) => {
           setIsLoading(false);
           setCommentData(data?.comments?.comments);
           // Send Socket Timer
-          socketId.emit("addTask", {
-            note: "New Task Added",
-          });
+          // socketId.emit("addTask", {
+          //   note: "New Task Added",
+          // });
         }
       } else if (type === "Goals") {
         const { data } = await axios.get(
@@ -297,9 +296,9 @@ const handleDeleteTemplate = async (id) => {
           setIsLoading(false);
           setCommentData(data?.comments?.comments);
           // Send Socket Timer
-          socketId.emit("addTask", {
-            note: "New Task Added",
-          });
+          // socketId.emit("addTask", {
+          //   note: "New Task Added",
+          // });
         }
       } else {
         const { data } = await axios.get(
@@ -378,9 +377,9 @@ const handleDeleteTemplate = async (id) => {
           setIsLoading(false);
           setCommentData(data?.comments?.comments);
           // Send Socket
-          socketId.emit("addTask", {
-            note: "New Task Added",
-          });
+          // socketId.emit("addTask", {
+          //   note: "New Task Added",
+          // });
         }
       } else {
         const { data } = await axios.get(
@@ -419,16 +418,16 @@ const handleDeleteTemplate = async (id) => {
 
 
   // Socket
-  useEffect(() => {
-    socketId.on("addnewTaskComment", () => {
-      getSingleComment();
-    });
+  // useEffect(() => {
+  //   socketId.on("addnewTaskComment", () => {
+  //     getSingleComment();
+  //   });
 
-    return () => {
-      socketId.off("addnewTaskComment", getSingleComment);
-    };
-    // eslint-disable-next-line
-  }, [socketId]);
+  //   return () => {
+  //     socketId.off("addnewTaskComment", getSingleComment);
+  //   };
+  //   // eslint-disable-next-line
+  // }, [socketId]);
 
   //   Add Comment
   const handleComment = async (e) => {
@@ -454,22 +453,22 @@ const handleDeleteTemplate = async (id) => {
         setLoading(false);
         toast.success("Comment Posted!");
         // Send Socket Notification
-        socketId.emit("notification", {
-          title: "New comment received!",
-          redirectLink: "/job-planning",
-          description: `${auth.user.name} add a new comment. ${comment}`,
-          taskId: jobId,
-          userId: auth.user.id,
-          status: "unread",
-        });
+        // socketId.emit("notification", {
+        //   title: "New comment received!",
+        //   redirectLink: "/job-planning",
+        //   description: `${auth.user.name} add a new comment. ${comment}`,
+        //   taskId: jobId,
+        //   userId: auth.user.id,
+        //   status: "unread",
+        // });
       }
       // Send Socket Timer
-      socketId.emit("addTask", {
-        note: "New Task Added",
-      });
-      socketId.emit("addTaskComment", {
-        note: "New Task Added",
-      });
+      // socketId.emit("addTask", {
+      //   note: "New Task Added",
+      // });
+      // socketId.emit("addTaskComment", {
+      //   note: "New Task Added",
+      // });
     } catch (error) {
       console.log(error);
       setLoading(false);
@@ -506,17 +505,17 @@ const handleDeleteTemplate = async (id) => {
       toast.success("Comment Posted!");
 
       // Send Socket Notification
-      socketId.emit("notification", {
-        title: "New comment received!",
-        redirectLink: "/job-planning",
-        description: `${auth.user.name} add a new comment. ${text}`,
-        taskId: jobId,
-        userId: auth.user.id,
-        status: "unread",
-      });
+      // socketId.emit("notification", {
+      //   title: "New comment received!",
+      //   redirectLink: "/job-planning",
+      //   description: `${auth.user.name} add a new comment. ${text}`,
+      //   taskId: jobId,
+      //   userId: auth.user.id,
+      //   status: "unread",
+      // });
 
-      socketId.emit("addTask", { note: "New Task Added" });
-      socketId.emit("addTaskComment", { note: "New Task Added" });
+      // socketId.emit("addTask", { note: "New Task Added" });
+      // socketId.emit("addTaskComment", { note: "New Task Added" });
     }
   } catch (error) {
     console.log(error);
@@ -543,23 +542,23 @@ const handleDeleteTemplate = async (id) => {
         getSingleComment();
         toast.success("Reply added successfully!");
         // Send Socket Notification
-        socketId.emit("notification", {
-          title: "New comment reply received!",
-          redirectLink: "/job-planning",
-          description: `${auth.user.name} add a new comment reply . ${commentReply}`,
-          taskId: jobId,
-          userId: auth.user.id,
-          status: "unread",
-        });
+        // socketId.emit("notification", {
+        //   title: "New comment reply received!",
+        //   redirectLink: "/job-planning",
+        //   description: `${auth.user.name} add a new comment reply . ${commentReply}`,
+        //   taskId: jobId,
+        //   userId: auth.user.id,
+        //   status: "unread",
+        // });
       }
 
       // Send Socket Timer
-      socketId.emit("addTask", {
-        note: "New Task Added",
-      });
-      socketId.emit("addTaskComment", {
-        note: "New Task Added",
-      });
+      // socketId.emit("addTask", {
+      //   note: "New Task Added",
+      // });
+      // socketId.emit("addTaskComment", {
+      //   note: "New Task Added",
+      // });
     } catch (error) {
       console.log(error);
       setReplyLoading(false);

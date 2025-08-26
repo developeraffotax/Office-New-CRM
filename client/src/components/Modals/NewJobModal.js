@@ -3,9 +3,9 @@ import toast from "react-hot-toast";
 import { style } from "../../utlis/CommonStyle";
 import { BiLoaderCircle } from "react-icons/bi";
 import axios from "axios";
-import socketIO from "socket.io-client";
-const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
+ 
+
+ 
 
 const jobStatuses = [ "Quote", "Data", "Progress", "Queries", "Approval", "Submission", "Billing", "Feedback", "Inactive"]
 
@@ -250,9 +250,9 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
       if (data) {
         allClientJobData();
         // Socket
-        socketId.emit("addJob", {
-          note: "New Task Added",
-        });
+        // socketId.emit("addJob", {
+        //   note: "New Task Added",
+        // });
         toast.success("Job added successfully!");
         setIsOpen(false);
       }

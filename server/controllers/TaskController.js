@@ -229,12 +229,12 @@ export const getAllTasks = async (req, res) => {
       {
         $lookup: {
           from: "taskdepartments", // collection name for department model
-          localField: "project.department",
+          localField: "project.departments",
           foreignField: "_id",
-          as: "project.department",
+          as: "project.departments",
         },
       },
-      { $unwind: { path: "$project.department", preserveNullAndEmptyArrays: true } },
+      // { $unwind: { path: "$project.department", preserveNullAndEmptyArrays: true } },
     ]);
 
     res.status(200).send({
@@ -397,13 +397,13 @@ export const updatetaskProject = async (req, res) => {
         { new: true }
       )
       .populate({
-        path: "project",
-        select: "projectName department", // only fields you need
-        populate: { 
-          path: "department", 
-          select: "departmentName" 
-        }
-      });
+          path: "project",
+          select: "projectName departments",
+          populate: {
+            path: "departments",
+            select: "departmentName"
+          }
+        });
     // Push activity to activities array
     updateTask.activities.push({
       user: req.user.user._id,

@@ -207,44 +207,44 @@ const AllTasks = () => {
 
 
  
-        const [projectUsers, setProjectUsers] = useState([])
+//         const [projectUsers, setProjectUsers] = useState([])
 
-        useEffect(() => {
-            const activeProject = projects.find(p => p.projectName === filter2);
-
-            
-
+//         useEffect(() => {
+//             const activeProject = projects.find(p => p.projectName === filter2);
 
             
-const projectUsers = users.filter(u => activeProject?.users_list?.some(p_user => p_user._id === u._id))
+
+
+            
+// const projectUsers = users.filter(u => activeProject?.users_list?.some(p_user => p_user._id === u._id))
 
 
           
-          setProjectUsers(projectUsers);
+//           setProjectUsers(projectUsers);
 
-        }, [filter2, projects, users]);
+//         }, [filter2, projects, users]);
 
         
 
 
 
-        const [departmentProjects, setDepartmentProjects] = useState([])
+//         const [departmentProjects, setDepartmentProjects] = useState([])
 
 
-        useEffect(() => {
-            const activeDepartment = departments.find(d => d.departmentName === filter1);
+//         useEffect(() => {
+//             const activeDepartment = departments.find(d => d.departmentName === filter1);
 
-            console.log(activeDepartment, "activeDepartment");
+//             console.log(activeDepartment, "activeDepartment");
 
-            const departmentProjects = projects.filter(p => p?.department?._id === activeDepartment?._id);
+//             const departmentProjects = projects.filter(p => p?.department?._id === activeDepartment?._id);
              
  
-            console.log(departmentProjects, "departmentProjects");
+//             console.log(departmentProjects, "departmentProjects");
 
-            setDepartmentProjects(departmentProjects);
+//             setDepartmentProjects(departmentProjects);
           
 
-        }, [ projects, departments, filter1]);
+//         }, [ projects, departments, filter1]);
 
 
 
@@ -1468,10 +1468,9 @@ const getStatus = (startDateOfTask, deadlineOfTask) => {
 
 
 
-
-
 {
-  accessorFn: (row) => row.project?.department?.departmentName || "",
+  accessorFn: (row) =>
+    row.project?.departments?.map((d) => d.departmentName) || [], // array of names
   id: "departmentName",
   minSize: 150,
   maxSize: 200,
@@ -1485,7 +1484,7 @@ const getStatus = (startDateOfTask, deadlineOfTask) => {
         title="Clear Filter"
         onClick={() => column.setFilterValue("")}
       >
-        Department
+        Department(s)
       </span>
       <select
         value={column.getFilterValue() || ""}
@@ -1502,11 +1501,29 @@ const getStatus = (startDateOfTask, deadlineOfTask) => {
     </div>
   ),
 
-  Cell: ({ cell }) => <span>{cell.getValue()}</span>,
-  
-  filterFn: "equals",
-},
+  Cell: ({ cell }) => {
+    const values = cell.getValue(); // array of department names
+    if (!values?.length) return <span>-</span>;
 
+    return (
+      <div className="flex flex-wrap gap-1">
+        {values.map((name, idx) => (
+          <span
+            key={idx}
+            className="px-2 py-[2px] text-xs rounded-md bg-blue-100 text-blue-700"
+          >
+            {name}
+          </span>
+        ))}
+      </div>
+    );
+  },
+
+  filterFn: (row, columnId, filterValue) => {
+    const values = row.getValue(columnId) || [];
+    return values.includes(filterValue); // match if departmentName exists in array
+  },
+},
 
 
 
@@ -3787,7 +3804,9 @@ const allDepartmentsSelected =
                   filterValue={filter1}
                   tasks={tasksData}
                    getCountFn={(department, tasks) =>
-                  tasks.filter((t) => t.project?.department?._id === department?._id).length
+                  tasks.filter((t) =>
+                    t.project?.departments?.some((d) => d._id === department?._id)
+                  ).length
                 }
                   getLabelFn={(department) => department?.departmentName}
                   
@@ -4026,7 +4045,8 @@ const allDepartmentsSelected =
                    <DraggableFilterTabs 
 
                   droppableId={"users"}
-                  items={filter2 ? projectUsers.filter(user => getJobHolderCount(user?.name, active) > 0) : users.filter(user => getJobHolderCount(user?.name, active) > 0)}
+                  // items={filter2 ? projectUsers.filter(user => getJobHolderCount(user?.name, active) > 0) : users.filter(user => getJobHolderCount(user?.name, active) > 0)}
+                  items={users.filter(user => getJobHolderCount(user?.name, active) > 0)}
                   filterValue={filter3}
                   tasks={tasksData}
                    getCountFn={(user, tasks) =>

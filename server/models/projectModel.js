@@ -15,7 +15,12 @@ const projectSchema = new mongoose.Schema(
       type: Number,
     },
 
-    department: { type: mongoose.Schema.Types.ObjectId, ref: "taskDepartment" },
+    // department: { type: mongoose.Schema.Types.ObjectId, ref: "taskDepartment" },
+     // ✅ Many-to-many: A project can have multiple departments
+    departments: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "taskDepartment" }
+    ],
+
   },
   { timestamps: true }
 );

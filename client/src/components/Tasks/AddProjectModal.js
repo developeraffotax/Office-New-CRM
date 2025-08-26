@@ -4,9 +4,6 @@ import { IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import { TbLoader2 } from "react-icons/tb";
 import axios from "axios";
-import socketIO from "socket.io-client";
-const ENDPOINT = process.env.REACT_APP_SOCKET_ENDPOINT || "";
-const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 export default function AddProjectModal({
   users,
@@ -14,14 +11,13 @@ export default function AddProjectModal({
   getAllProjects,
   projectId,
   setProjectId,
-  departments = [], // ✅ departments array passed as prop
-
-      getTasks1
+  departments = [],
+  getTasks1,
 }) {
   const [loading, setLoading] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [usersList, setUserList] = useState([]);
-  const [department, setDepartment] = useState(""); // ✅ state for department
+  const [departmentsList, setDepartmentsList] = useState([]); // ✅ array of IDs
 
   //---------- Get Single Project-----------
   const getSingleProject = async () => {
@@ -29,10 +25,10 @@ export default function AddProjectModal({
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/projects/get_single/project/${projectId}`
       );
-      console.log("Project Data:", data);
-      setProjectName(data?.project?.projectName);
-      setUserList(data?.project?.users_list);
-      setDepartment(data?.project?.department || ""); // ✅ pre-fill department when editing
+
+      setProjectName(data?.project?.projectName || "");
+      setUserList(data?.project?.users_list || []);
+      setDepartmentsList(data?.project?.departments || []); // ✅ IDs only
     } catch (error) {
       console.log(error);
     }
@@ -43,66 +39,76 @@ export default function AddProjectModal({
     // eslint-disable-next-line
   }, [projectId]);
 
-  // -----------Create / Update Project-------->
+  // -----------Create / Update Project--------->
   const handleProject = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
+      const payload = {
+        projectName,
+        users_list: usersList,
+        departments: departmentsList, // ✅ send IDs only
+      };
+
       if (projectId) {
         const { data } = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/v1/projects/update/project/${projectId}`,
-          { projectName, users_list: usersList, department } // ✅ include departmentId
+          payload
         );
         if (data?.success) {
-          setLoading(false);
-          setProjectId("");
-          getAllProjects();
-          setProjectName("");
-          setUserList([]);
-          setDepartment("");
-          setOpenAddProject(false);
           toast.success("Project Updated!");
-          getTasks1()
+          setProjectId("");
         }
       } else {
         const { data } = await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/projects/create/project`,
-          { projectName, users_list: usersList, department } // ✅ include departmentId
+          payload
         );
         if (data?.success) {
-          setLoading(false);
-          getAllProjects();
-          setProjectName("");
-          setUserList([]);
-          setDepartment("");
-          setOpenAddProject(false);
           toast.success("Project Created successfully!");
-           getTasks1()
         }
       }
+
+      setLoading(false);
+      getAllProjects();
+      getTasks1();
+      setProjectName("");
+      setUserList([]);
+      setDepartmentsList([]);
+      setOpenAddProject(false);
     } catch (error) {
       console.log(error);
       setLoading(false);
-      toast.error(error?.response?.data?.message);
+      toast.error(error?.response?.data?.message || "Error saving project!");
     }
   };
 
-  //   Add Users
+  //   Add User
   const handleAddUser = (user) => {
-    if (!Array.isArray(usersList)) {
-      setUserList([user]);
-      return;
-    }
     if (usersList.some((existingUser) => existingUser._id === user._id)) {
       return toast.error("User already exists!");
     }
     setUserList([...usersList, user]);
   };
 
-  //   Remove user
+  //   Remove User
   const handleRemoveUser = (id) => {
     const newUsers = usersList.filter((user) => user._id !== id);
     setUserList(newUsers);
+  };
+
+  //   Add Department (by ID)
+  const handleAddDepartment = (deptId) => {
+    if (!deptId) return;
+    if (departmentsList.includes(deptId)) {
+      return toast.error("Department already selected!");
+    }
+    setDepartmentsList([...departmentsList, deptId]);
+  };
+
+  //   Remove Department
+  const handleRemoveDepartment = (id) => {
+    setDepartmentsList(departmentsList.filter((deptId) => deptId !== id));
   };
 
   return (
@@ -134,12 +140,35 @@ export default function AddProjectModal({
             onChange={(e) => setProjectName(e.target.value)}
           />
 
-          {/* Department Select */}
+          {/* Departments */}
+          {departmentsList?.length > 0 && (
+            <div className="w-full flex items-center gap-2 flex-wrap border py-2 px-2 rounded-md border-gray-400">
+              {departmentsList.map((deptId) => {
+                const dept = departments.find((d) => d._id === deptId);
+                return (
+                  <div
+                    key={deptId}
+                    className="flex items-center gap-3 py-1 px-2 rounded-md text-white bg-blue-600"
+                  >
+                    <span className="text-white text-[15px]">
+                      {dept?.departmentName}
+                    </span>
+                    <span
+                      className="cursor-pointer bg-red-500/50 p-[2px] rounded-full hover:bg-red-500"
+                      onClick={() => handleRemoveDepartment(deptId)}
+                    >
+                      <IoClose className="h-4 w-4 " />
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           <select
-            value={department}
-            onChange={(e) => setDepartment(e.target.value)}
-            required
-            className={`${style.input} w-full`}
+            value=""
+            className={`${style.input}`}
+            onChange={(e) => handleAddDepartment(e.target.value)}
           >
             <option value="">Select Department</option>
             {departments.map((dept) => (
@@ -149,9 +178,9 @@ export default function AddProjectModal({
             ))}
           </select>
 
-          {/* Selected Users */}
+          {/* Users */}
           {usersList?.length > 0 && (
-            <div className="w-full flex items-center gap-4 flex-wrap border py-2 px-2 rounded-md border-gray-400">
+            <div className="w-full flex items-center gap-2 flex-wrap border py-2 px-2 rounded-md border-gray-400">
               {usersList.map((user) => (
                 <div
                   key={user?._id}
@@ -169,7 +198,6 @@ export default function AddProjectModal({
             </div>
           )}
 
-          {/* Users Select */}
           <select
             value=""
             className={`${style.input}`}

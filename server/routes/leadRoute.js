@@ -7,6 +7,10 @@ import {
   getAllProgressLead,
   getAllWonLead,
   getdashboardLead,
+  getLeadConversionStats,
+  getLeadStats,
+  getLeadStatsWonLost,
+  getLeadStatusStats,
   getSingleLead,
   updateBulkLeads,
   updateLead,
@@ -67,6 +71,12 @@ router.get("/update-leads",requiredSignIn, async (req, res) => {
 
 
 
+
+
+router.get("/stats", requiredSignIn,  getLeadStats);
+router.get("/status-stats", requiredSignIn,  getLeadStatusStats);
+router.get("/won-lost-stats", requiredSignIn,  getLeadStatsWonLost);
+router.get("/conversion-stats", requiredSignIn,  getLeadConversionStats);
 
 
 export default router;

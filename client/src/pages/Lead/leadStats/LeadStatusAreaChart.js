@@ -3,7 +3,10 @@ import Chart from "react-apexcharts";
 import axios from "axios";
 import { FaSpinner } from "react-icons/fa";
 
-const LeadAreaChart = ({ start, end }) => {
+const LeadAreaChart = ({ start, end,  lead_Source ,
+             setLeadSource ,
+             department ,
+             setDepartment }) => {
   const [chartData, setChartData] = useState({ series: [], labels: [] });
   const [loading, setLoading] = useState(false);
 
@@ -14,7 +17,7 @@ const LeadAreaChart = ({ start, end }) => {
       try {
         const { data } = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/v1/leads/won-lost-stats`,
-          { params: { start, end } }
+          { params: { start, end, lead_Source, department  } }
         );
 
         if (data.success) {
@@ -33,7 +36,7 @@ const LeadAreaChart = ({ start, end }) => {
     if (start && end) {
       fetchData();
     }
-  }, [start, end]);
+  }, [start, end, lead_Source, department]);
 
   const options = {
     chart: {

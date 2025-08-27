@@ -490,7 +490,19 @@ export const updateBulkLeads = async (req, res) => {
 
 
 
-
+  const leadSources = [
+    "Upwork",
+    "Fiverr",
+    "PPH",
+    "Referral",
+    "Partner",
+    "Google",
+    "Facebook",
+    "LinkedIn",
+    "CRM",
+    "Existing",
+    "Other",
+  ];
 
 
 
@@ -499,7 +511,7 @@ export const updateBulkLeads = async (req, res) => {
 
 export const getLeadStats = async (req, res) => {
   try {
-    const { start, end, status } = req.query;
+    const { start, end, status, lead_Source, department } = req.query;
 
     if (!start || !end) {
       return res.status(400).json({
@@ -518,6 +530,25 @@ export const getLeadStats = async (req, res) => {
     // Status filter
     if (status && status !== "all") {
       matchQuery.status = status;
+    }
+
+    // Lead Source filter
+    if (lead_Source && lead_Source !== "all") {
+      if (lead_Source === "Other") {
+        // Match leads where lead_Source is missing or not in the predefined list
+        matchQuery.$or = [
+          { lead_Source: { $exists: false } },
+          { lead_Source: { $nin: leadSources.filter((src) => src !== "Other") } },
+          { lead_Source: "" },
+          { lead_Source: null },
+        ];
+      } else {
+        matchQuery.lead_Source = lead_Source;
+      }
+    }
+
+    if(department && department !== "all") {
+      matchQuery.department = department;
     }
 
     // Aggregation: group by day
@@ -584,7 +615,7 @@ export const getLeadStats = async (req, res) => {
 
 export const getLeadStatusStats = async (req, res) => {
   try {
-    const { start, end } = req.query;
+    const { start, end,  lead_Source, department  } = req.query;
 
     if (!start || !end) {
       return res.status(400).json({
@@ -600,6 +631,26 @@ export const getLeadStatusStats = async (req, res) => {
     const matchQuery = {
       leadCreatedAt: { $gte: startDate, $lte: endDate },
     };
+
+   
+    // Lead Source filter
+    if (lead_Source && lead_Source !== "all") {
+      if (lead_Source === "Other") {
+        // Match leads where lead_Source is missing or not in the predefined list
+        matchQuery.$or = [
+          { lead_Source: { $exists: false } },
+          { lead_Source: { $nin: leadSources.filter((src) => src !== "Other") } },
+          { lead_Source: "" },
+          { lead_Source: null },
+        ];
+      } else {
+        matchQuery.lead_Source = lead_Source;
+      }
+    }
+    if(department && department !== "all") {
+      matchQuery.department = department;
+    }
+
 
     // Aggregate by status
     const stats = await leadModel.aggregate([
@@ -687,7 +738,7 @@ export const getLeadStatusStats = async (req, res) => {
 
 export const getLeadStatsWonLost = async (req, res) => {
   try {
-    const { start, end } = req.query;
+    const { start, end, lead_Source, department  } = req.query;
 
     if (!start || !end) {
       return res.status(400).json({
@@ -702,6 +753,27 @@ export const getLeadStatsWonLost = async (req, res) => {
     const matchQuery = {
       leadCreatedAt: { $gte: startDate.toDate(), $lte: endDate.toDate() },
     };
+
+
+        // Lead Source filter
+    if (lead_Source && lead_Source !== "all") {
+      if (lead_Source === "Other") {
+        // Match leads where lead_Source is missing or not in the predefined list
+        matchQuery.$or = [
+          { lead_Source: { $exists: false } },
+          { lead_Source: { $nin: leadSources.filter((src) => src !== "Other") } },
+          { lead_Source: "" },
+          { lead_Source: null },
+        ];
+      } else {
+        matchQuery.lead_Source = lead_Source;
+      }
+    }
+
+    if(department && department !== "all") {
+      matchQuery.department = department;
+    }
+
 
     // Group by date + status
     const stats = await leadModel.aggregate([
@@ -785,7 +857,7 @@ export const getLeadStatsWonLost = async (req, res) => {
  
 export const getLeadConversionStats = async (req, res) => {
   try {
-    const { start, end } = req.query;
+    const { start, end, lead_Source, department  } = req.query;
 
     // Optional filters
     const matchQuery = {};
@@ -795,6 +867,26 @@ export const getLeadConversionStats = async (req, res) => {
         $lte: new Date(end),
       };
     }
+
+    // Lead Source filter
+    if (lead_Source && lead_Source !== "all") {
+      if (lead_Source === "Other") {
+        // Match leads where lead_Source is missing or not in the predefined list
+        matchQuery.$or = [
+          { lead_Source: { $exists: false } },
+          { lead_Source: { $nin: leadSources.filter((src) => src !== "Other") } },
+          { lead_Source: "" },
+          { lead_Source: null },
+        ];
+      } else {
+        matchQuery.lead_Source = lead_Source;
+      }
+    }
+
+    if(department && department !== "all") {
+      matchQuery.department = department;
+    }
+
 
     // Count total, won, lost
     const [stats] = await leadModel.aggregate([

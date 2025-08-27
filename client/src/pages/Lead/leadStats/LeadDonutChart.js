@@ -3,7 +3,10 @@ import Chart from "react-apexcharts";
 import axios from "axios";
 import { FaSpinner } from "react-icons/fa";
 
-const LeadDonutChart = ({ start, end }) => {
+const LeadDonutChart = ({ start, end,  lead_Source ,
+             setLeadSource ,
+             department ,
+             setDepartment }) => {
   const [series, setSeries] = useState([0, 0, 0]);
   const [labels, setLabels] = useState(["Progress", "Won", "Lost"]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +18,7 @@ const LeadDonutChart = ({ start, end }) => {
         const { data } = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/v1/leads/status-stats`,
           {
-            params: { start, end },
+            params: { start, end, lead_Source, department },
           }
         );
         if (data.success) {
@@ -30,7 +33,7 @@ const LeadDonutChart = ({ start, end }) => {
     };
 
     if (start && end) fetchStats();
-  }, [start, end]);
+  }, [start, end, lead_Source, department]);
 
   const options = {
     chart: {

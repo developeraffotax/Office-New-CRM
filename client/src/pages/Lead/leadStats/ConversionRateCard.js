@@ -8,7 +8,10 @@ import {
   FaPercentage,
 } from "react-icons/fa";
 
-const LeadStatsCards = ({ start, end }) => {
+const LeadStatsCards = ({ start, end,  lead_Source ,
+             setLeadSource ,
+             department ,
+             setDepartment }) => {
   const [stats, setStats] = useState({
     total: null,
     won: null,
@@ -21,7 +24,7 @@ const LeadStatsCards = ({ start, end }) => {
     const fetchStats = async () => {
       try {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/leads/conversion-stats?start=${start}&end=${end}`
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/conversion-stats?start=${start}&end=${end}&lead_Source=${lead_Source}&department=${department}`
         );
         if (data.success) {
           setStats(data.stats);
@@ -32,7 +35,7 @@ const LeadStatsCards = ({ start, end }) => {
     };
 
     if (start && end) fetchStats();
-  }, [start, end]);
+  }, [start, end,lead_Source, department]);
 
   const cards = [
     {

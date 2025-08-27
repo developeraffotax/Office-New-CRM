@@ -15,7 +15,7 @@ import { format } from "date-fns";
 import { IoTicketOutline } from "react-icons/io5";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
-import { MdOutlineAnalytics, MdOutlineModeEdit } from "react-icons/md";
+import { MdOutlineAnalytics, MdOutlineModeEdit, MdOutlineQueryStats } from "react-icons/md";
  
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { TbLoader2 } from "react-icons/tb";
@@ -3515,9 +3515,25 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                 title="Filter by Job Holder"
               >
                 <IoBriefcaseOutline className="  cursor-pointer text-[22px] " />
+              
               </span>
               )
             }
+
+
+           {auth?.user?.role?.name === "Admin" && (
+       
+          <button
+            title="Go to Leads Analytics"
+            className="  p-[6px] rounded-md  bg-gray-50 hover:bg-orange-500 hover:text-white  hover:shadow-md transition   border  mt-[1.2rem] cursor-pointer"
+            onClick={() => navigate("/leads/stats")}
+          >
+           
+             <MdOutlineQueryStats className="   text-[22px] "/>
+          </button>
+        
+      )}
+
 
 
 

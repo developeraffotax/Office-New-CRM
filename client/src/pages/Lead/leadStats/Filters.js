@@ -19,14 +19,43 @@ import dayjs from "dayjs";
 import quarterOfYear from "dayjs/plugin/quarterOfYear";
 dayjs.extend(quarterOfYear);
 
+
+  const leadSources = [
+    "Upwork",
+    "Fiverr",
+    "PPH",
+    "Referral",
+    "Partner",
+    "Google",
+    "Facebook",
+    "LinkedIn",
+    "CRM",
+    "Existing",
+    "Other",
+  ];
+
+    const departments = [
+    "Bookkeeping",
+    "Payroll",
+    "VAT Return",
+    "Accounts",
+    "Personal Tax",
+    "Company Sec",
+    "Address",
+    "Billing",
+  ];
+
+
 export default function Filters({
   dateRange,
   setDateRange,
-  status,
-  setStatus,
+ lead_Source ,
+             setLeadSource ,
+             department ,
+             setDepartment
 }) {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [activeLabel, setActiveLabel] = useState("This Month");
+  const [activeLabel, setActiveLabel] = useState("Last 30 Days");
 
   const open = Boolean(anchorEl);
 
@@ -39,6 +68,13 @@ export default function Filters({
     const now = dayjs().subtract(1, "quarter");
     return [now.startOf("quarter"), now.endOf("quarter")];
   };
+
+  // Add this inside your Filters component
+const recentFilters = {
+  "Last 7 Days": [dayjs().subtract(7, "day"), dayjs()],
+  "Last 15 Days": [dayjs().subtract(15, "day"), dayjs()],
+  "Last 30 Days": [dayjs().subtract(30, "day"), dayjs()],
+};
 
   const monthlyFilters = {
     "This Month": [dayjs().startOf("month"), dayjs().endOf("month")],
@@ -76,15 +112,59 @@ export default function Filters({
   };
 
   const clearFilters = () => {
-    setDateRange(monthlyFilters["This Month"]);
-    setActiveLabel("This Month");
-    setStatus("all");
+    setDateRange(recentFilters["Last 30 Days"]);
+    setActiveLabel("Last 30 Days");
+
+    setDepartment("");
+    setLeadSource("")
+     
   };
 
   return (
     <div className="   ">
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Stack direction="row" spacing={1.5} alignItems="center">
+
+
+          
+          {/* Lead Source Select */}
+          <FormControl size="small" sx={{ minWidth: 140 }}>
+            <InputLabel>Lead Source</InputLabel>
+            <Select
+              value={lead_Source}
+              label="Lead Source"
+              onChange={(e) => setLeadSource(e.target.value)}
+            >
+              <MenuItem value="">All</MenuItem>
+              {
+                leadSources.map(el => <MenuItem  key={el} value={el}>{el}</MenuItem>)
+              }
+            </Select>
+          </FormControl>
+
+          {/* Department Select */}
+          <FormControl size="small" sx={{ minWidth: 140 }}>
+            <InputLabel>Department</InputLabel>
+            <Select
+              value={department}
+              label="Department"
+              onChange={(e) => setDepartment(e.target.value)}
+            >
+              <MenuItem value="">All</MenuItem>
+              {
+                departments.map(el => <MenuItem key={el} value={el}>{el}</MenuItem>)
+              }
+              
+            </Select>
+          </FormControl>
+
+
+
+
+
+
+
+
           {/* Date Range Pickers */}
           <DatePicker
             label="Start Date"
@@ -99,9 +179,9 @@ export default function Filters({
             slotProps={{ textField: { size: "small", variant: "outlined" } }}
           />
 
+          
           {/* Status Filter */}
-          {/* Status Filter */}
-          <FormControl size="small" sx={{ minWidth: 140 }}>
+          {/* <FormControl size="small" sx={{ minWidth: 140 }}>
             <InputLabel>Status</InputLabel>
             <Select
               value={status}
@@ -122,7 +202,15 @@ export default function Filters({
               <MenuItem value="won">Won</MenuItem>
               <MenuItem value="lost">Lost</MenuItem>
             </Select>
-          </FormControl>
+          </FormControl> */}
+
+
+
+
+
+
+
+
 
           {/* Preset Filters */}
           <div>
@@ -146,6 +234,16 @@ export default function Filters({
               anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
               transformOrigin={{ vertical: "top", horizontal: "left" }}
             >
+
+                 <ListSubheader sx={{ m: 0 }}>⏱️ Recent Filters</ListSubheader>
+  {Object.entries(recentFilters).map(([label, range]) => (
+    <MenuItem key={label} onClick={() => handlePreset(label, range)}>
+      {label}
+    </MenuItem>
+  ))}
+
+
+
               <ListSubheader sx={{ m: 0 }}>📆 Monthly Filters</ListSubheader>
               {Object.entries(monthlyFilters).map(([label, range]) => (
                 <MenuItem

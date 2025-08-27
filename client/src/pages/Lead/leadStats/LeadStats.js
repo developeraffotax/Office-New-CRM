@@ -4,7 +4,7 @@ import LeadsChart from "./LeadChart";
 import LeadDonutChart from "./LeadDonutChart";
 import Filters from "./Filters";
 import PageHeading from "./PageHeading";
- 
+
 import LeadStatusAreaChart from "./LeadStatusAreaChart";
 import ConversionRateCard from "./ConversionRateCard";
 
@@ -16,13 +16,13 @@ const LeadsStats = () => {
   // });
 
   const [dateRange, setDateRange] = useState([
-    dayjs().startOf("month"),
-    dayjs().endOf("month"),
+    dayjs().subtract(30, "day"),
+    dayjs(),
   ]);
+  const [lead_Source, setLeadSource] = useState("");
+  const [department, setDepartment] = useState("");
 
   const [start, end] = dateRange;
-
-  const [status, setStatus] = useState("all");
 
   return (
     <div className="w-full ">
@@ -39,8 +39,10 @@ const LeadsStats = () => {
           <Filters
             dateRange={dateRange}
             setDateRange={setDateRange}
-            status={status}
-            setStatus={setStatus}
+            lead_Source={lead_Source}
+            setLeadSource={setLeadSource}
+            department={department}
+            setDepartment={setDepartment}
           />
         </div>
       </div>
@@ -50,22 +52,44 @@ const LeadsStats = () => {
       <div className="w-full p-5 ">
         <div className="w-full flex flex-row justify-center gap-12 items-start mb-8 ">
           <div className="w-[70%] space-y-8">
+            <LeadsChart
+              start={start}
+              end={end}
+              lead_Source={lead_Source}
+              setLeadSource={setLeadSource}
+              department={department}
+              setDepartment={setDepartment}
+            />
 
-            <LeadsChart start={start} end={end} status={status} />
-
-            <LeadStatusAreaChart start={start} end={end}   />
-
+            <LeadStatusAreaChart
+              start={start}
+              end={end}
+              lead_Source={lead_Source}
+              setLeadSource={setLeadSource}
+              department={department}
+              setDepartment={setDepartment}
+            />
           </div>
-
-
 
           <div className="w-[30%]">
-            <ConversionRateCard start={start} end={end} />
-            <LeadDonutChart start={start} end={end} />
+            <ConversionRateCard
+              start={start}
+              end={end}
+              lead_Source={lead_Source}
+              setLeadSource={setLeadSource}
+              department={department}
+              setDepartment={setDepartment}
+            />
+            <LeadDonutChart
+              start={start}
+              end={end}
+              lead_Source={lead_Source}
+              setLeadSource={setLeadSource}
+              department={department}
+              setDepartment={setDepartment}
+            />
           </div>
         </div>
-
-        
       </div>
     </div>
   );

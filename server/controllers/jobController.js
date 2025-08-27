@@ -4,7 +4,7 @@ import labelModel from "../models/labelModel.js";
 import userModel from "../models/userModel.js";
 import XLSX from "xlsx";
 import moment from "moment";
-import redisClient from "../utils/redisClient.js";
+// import redisClient from "../utils/redisClient.js";
 import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
 import { emitJobUpdate } from "../utils/customFns/emitJobUpdate.js";
 

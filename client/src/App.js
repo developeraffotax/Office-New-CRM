@@ -45,6 +45,7 @@ import Temp from "./components/Temp";
 import { initTimerListener } from "./redux/slices/timerSlice";
 import { initNotificationListener } from "./redux/slices/notificationSlice";
 import { initReminderListener } from "./redux/slices/reminderSlice";
+import LeadsStats from "./pages/Lead/leadStats/LeadStats";
 
 function App() {
   const navigate = useNavigate();
@@ -79,6 +80,7 @@ const { auth, isLoading, isInitializing } = useSelector((state) => state.auth);
       Timesheet: <Route path="/timesheet" element={<TimeSheet />} />,
       Proposals: <Route path="/proposals" element={<Proposal />} />,
       Leads: <Route path="/leads" element={<Lead />} />,
+      
       Tasks: <Route path="/tasks" element={<AllTasks />} />,
       Jobs: <Route path="/job-planning" element={<AllJobs />} />,
       Goals: <Route path="/goals" element={<Goals />} />,
@@ -145,6 +147,7 @@ if (isInitializing || isLoading) {
         {/* Authenticated layout routes */}
         <Route element={<Layout />}>
           {userAccessRoutes}
+          <Route path="/leads/stats" element={<LeadsStats />} />,
           <Route path="/profile" element={<Profile />} />
           <Route path="/employee/dashboard" element={<UDashboard />} />
           <Route path="/editor/templates" element={<TemplateEditor />} />

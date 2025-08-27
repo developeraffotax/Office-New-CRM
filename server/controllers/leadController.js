@@ -1,6 +1,7 @@
 import jobsModel from "../models/jobsModel.js";
 import leadModel from "../models/leadModel.js";
 import proposalModel from "../models/proposalModel.js";
+import moment from "moment";
 
 // Create Lead
 export const createLead = async (req, res) => {
@@ -405,3 +406,433 @@ export const updateBulkLeads = async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+export const getLeadStats = async (req, res) => {
+  try {
+    const { start, end, status } = req.query;
+
+    if (!start || !end) {
+      return res.status(400).json({
+        success: false,
+        message: "Start and end dates are required",
+      });
+    }
+
+    const startDate = moment(start).startOf("day");
+    const endDate = moment(end).endOf("day");
+
+    let matchQuery = {
+      leadCreatedAt: { $gte: startDate.toDate(), $lte: endDate.toDate() },
+    };
+
+    // Status filter
+    if (status && status !== "all") {
+      matchQuery.status = status;
+    }
+
+    // Aggregation: group by day
+    const stats = await leadModel.aggregate([
+      { $match: matchQuery },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$leadCreatedAt" } },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // Convert to object for quick lookup
+    const statsMap = {};
+    stats.forEach((s) => {
+      statsMap[s._id] = s.count;
+    });
+
+    // Generate all dates between start & end
+    const labels = [];
+    const data = [];
+
+    let current = startDate.clone();
+    while (current.isSameOrBefore(endDate, "day")) {
+      const dateStr = current.format("YYYY-MM-DD");
+      labels.push(dateStr);
+      data.push(statsMap[dateStr] || 0);
+      current.add(1, "day");
+    }
+
+    res.json({
+      success: true,
+      filters: { start, end, status: status || "all" },
+      labels,
+      series: [
+        {
+          name: "Leads",
+          data,
+        },
+      ],
+    });
+  } catch (error) {
+    console.error("Error fetching lead stats:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+export const getLeadStatusStats = async (req, res) => {
+  try {
+    const { start, end } = req.query;
+
+    if (!start || !end) {
+      return res.status(400).json({
+        success: false,
+        message: "Start and end dates are required",
+      });
+    }
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    // Match query
+    const matchQuery = {
+      leadCreatedAt: { $gte: startDate, $lte: endDate },
+    };
+
+    // Aggregate by status
+    const stats = await leadModel.aggregate([
+      { $match: matchQuery },
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Convert to object for easy mapping
+    const statsMap = {};
+    stats.forEach((s) => {
+      statsMap[s._id] = s.count;
+    });
+
+    res.json({
+      success: true,
+      filters: { start, end },
+      series: [
+        statsMap["progress"] || 0,
+        statsMap["won"] || 0,
+        statsMap["lost"] || 0,
+      ],
+      labels: ["Progress", "Won", "Lost"],
+    });
+  } catch (error) {
+    console.error("Error fetching lead status stats:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+export const getLeadStatsWonLost = async (req, res) => {
+  try {
+    const { start, end } = req.query;
+
+    if (!start || !end) {
+      return res.status(400).json({
+        success: false,
+        message: "Start and end dates are required",
+      });
+    }
+
+    const startDate = moment(start).startOf("day");
+    const endDate = moment(end).endOf("day");
+
+    const matchQuery = {
+      leadCreatedAt: { $gte: startDate.toDate(), $lte: endDate.toDate() },
+    };
+
+    // Group by date + status
+    const stats = await leadModel.aggregate([
+      { $match: matchQuery },
+      {
+        $group: {
+          _id: {
+            date: { $dateToString: { format: "%Y-%m-%d", date: "$leadCreatedAt" } },
+            status: "$status",
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { "_id.date": 1 } },
+    ]);
+
+    // Prepare maps for won/lost counts by date
+    const wonMap = {};
+    const lostMap = {};
+
+    stats.forEach((s) => {
+      if (s._id.status === "won") {
+        wonMap[s._id.date] = s.count;
+      } else if (s._id.status === "lost") {
+        lostMap[s._id.date] = s.count;
+      }
+    });
+
+    // Build labels + aligned data arrays
+    const labels = [];
+    const wonData = [];
+    const lostData = [];
+
+    let current = startDate.clone();
+    while (current.isSameOrBefore(endDate, "day")) {
+      const dateStr = current.format("YYYY-MM-DD");
+      labels.push(dateStr);
+      wonData.push(wonMap[dateStr] || 0);
+      lostData.push(lostMap[dateStr] || 0);
+      current.add(1, "day");
+    }
+
+    res.json({
+      success: true,
+      filters: { start, end },
+      labels,
+      series: [
+        { name: "Won", data: wonData },
+        { name: "Lost", data: lostData },
+      ],
+    });
+  } catch (error) {
+    console.error("Error fetching lead stats:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+export const getLeadConversionStats = async (req, res) => {
+  try {
+    const { start, end } = req.query;
+
+    // Optional filters
+    const matchQuery = {};
+    if (start && end) {
+      matchQuery.leadCreatedAt = {
+        $gte: new Date(start),
+        $lte: new Date(end),
+      };
+    }
+
+    // Count total, won, lost
+    const [stats] = await leadModel.aggregate([
+      { $match: matchQuery },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: 1 },
+          won: { $sum: { $cond: [{ $eq: ["$status", "won"] }, 1, 0] } },
+          lost: { $sum: { $cond: [{ $eq: ["$status", "lost"] }, 1, 0] } },
+          progress: { $sum: { $cond: [{ $eq: ["$status", "progress"] }, 1, 0] } },
+        },
+      },
+    ]);
+
+    if (!stats) {
+      return res.json({
+        success: true,
+        stats: { total: 0, won: 0, lost: 0, progress: 0, conversionRate: 0 },
+      });
+    }
+
+    // Conversion = Won / Total * 100
+    const conversionRate = stats.total > 0 ? ((stats.won / stats.total) * 100).toFixed(2) : 0;
+
+    res.json({
+      success: true,
+      filters: { start, end },
+      stats: {
+        total: stats.total,
+        won: stats.won,
+        lost: stats.lost,
+        progress: stats.progress,
+        conversionRate: Number(conversionRate), // percentage
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching conversion stats:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};

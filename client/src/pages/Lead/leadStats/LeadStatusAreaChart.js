@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import axios from "axios";
 import { FaSpinner } from "react-icons/fa";
-
+ 
 const LeadAreaChart = ({ start, end,  lead_Source ,
              setLeadSource ,
              department ,
@@ -27,7 +27,7 @@ const LeadAreaChart = ({ start, end,  lead_Source ,
           });
         }
       } catch (error) {
-        console.error("Error fetching lead stats:", error);
+         console.error("Error fetching lead stats:", error);
       } finally {
         setLoading(false);
       }

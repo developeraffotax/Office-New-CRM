@@ -57,7 +57,7 @@ window.env = {
   "POSH_CURSOR_LINE": "7",
   "POSH_GIT_ENABLED": "False",
   "POSH_INSTALLER": "manual",
-  "POSH_PID": "10732",
+  "POSH_PID": "13708",
   "POSH_SHELL_VERSION": "5.1.19041.5607",
   "POSH_THEME": "C:\\Users\\dell\\AppData\\Local\\oh-my-posh\\config.aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0phbkRlRG9iYmVsZWVyL29oLW15LXBvc2gvbWFpbi90aGVtZXMvamFuZGVkb2JiZWxlZXIub21wLmpzb24=.omp.json",
   "POSH_THEMES_PATH": "C:\\Users\\dell\\AppData\\Local\\Programs\\oh-my-posh\\themes",
@@ -88,6 +88,6 @@ window.env = {
   "windir": "C:\\WINDOWS",
   "WSLENV": "WT_SESSION:WT_PROFILE_ID:",
   "WT_PROFILE_ID": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
-  "WT_SESSION": "5d6ef9be-3174-4b9b-b085-2dd8a1a3ab8a",
+  "WT_SESSION": "35dfb4e9-6cb8-451c-a551-2650b202769a",
   "ZES_ENABLE_SYSMAN": "1"
 };

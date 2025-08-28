@@ -84,12 +84,12 @@ export const updateCountdown = (newAllocatedTimeInHours) => (dispatch) => {
   clearTimeout(timeoutRef);
   scheduleTimeout(dispatch, newEndTime);
 
-  channel.postMessage({
-    type: "UPDATE_TIMER",
-    task: saved.task,
-    timerId: saved.timerId,
-    endTime: newEndTime.toISOString(),
-  });
+  // channel.postMessage({
+  //   type: "UPDATE_TIMER",
+  //   task: saved.task,
+  //   timerId: saved.timerId,
+  //   endTime: newEndTime.toISOString(),
+  // });
 
   console.log("Timer updated with new allocated time:", newAllocatedTimeInHours);
 };

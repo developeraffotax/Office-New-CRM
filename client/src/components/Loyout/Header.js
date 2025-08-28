@@ -482,7 +482,7 @@ useEffect(() => {
 
 
                {
-                      <OnlineUsers />
+                    auth?.user?.role?.name === "Admin" && <OnlineUsers />
                     
                     
               }

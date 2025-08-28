@@ -1,3 +1,4 @@
+import { io } from "../index.js";
 import jobsModel from "../models/jobsModel.js";
 import taskModel from "../models/taskModel.js";
 import timerModel from "../models/timerModel.js";
@@ -54,6 +55,8 @@ export const startTimer = async (req, res) => {
       { new: true }
     );
 
+    io.emit("runningTimersUpdate");
+
     res.status(200).send({
       success: true,
       message: "Timer Start",
@@ -91,6 +94,8 @@ export const stopTimer = async (req, res) => {
     );
 
     removeStatus(updateTimer._id);
+
+    io.emit("runningTimersUpdate");
 
     res.status(200).send({
       success: true,

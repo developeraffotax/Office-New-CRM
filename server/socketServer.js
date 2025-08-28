@@ -30,7 +30,7 @@ export const initSocketServer = (server) => {
         onlineUsers.get(userId).add(socket.id);
 
         //logOnlineUsers();
-         broadcastOnlineUsers(io); // 👈 send to frontend
+        // broadcastOnlineUsers(io); // 👈 send to frontend
         console.log(`🟢 User ${userId} connected with socket ${socket.id}`);
       });
 
@@ -80,7 +80,7 @@ export const initSocketServer = (server) => {
         }
       }
       //logOnlineUsers();
-       broadcastOnlineUsers(io); // 👈 send to frontend
+       //broadcastOnlineUsers(io); // 👈 send to frontend
       console.log(`🔴 Socket ${socket.id} disconnected`);
     });
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 import axios from "axios";
 import { FaSpinner } from "react-icons/fa";
+import toast from "react-hot-toast";
  
 
 const LeadsChart = ({ start, end,  lead_Source ,
@@ -31,6 +32,7 @@ const LeadsChart = ({ start, end,  lead_Source ,
       setLabels(data.labels);
       setSeries(data.series);
     } catch (err) {
+      toast.error( "Error Updating Leads Charts")
       console.error("Error fetching lead stats:", err);
     } finally {
       setLoading(false);

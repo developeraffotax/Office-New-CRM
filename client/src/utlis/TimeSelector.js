@@ -72,7 +72,7 @@ const TimeEditor = ({ anchorRef, initialValue, onApply, onClose }) => {
             value={minutes}
             onChange={(e) => setMinutes(Number(e.target.value))}
           >
-            {[0, 5, 10, 15, 30, 45, 50, 55].map((m) => (
+            {[0, 1, 5, 10, 15, 30, 45, 50, 55].map((m) => (
               <option key={m}>{m}</option>
             ))}
           </select>

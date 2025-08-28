@@ -46,6 +46,7 @@ import { initTimerListener } from "./redux/slices/timerSlice";
 import { initNotificationListener } from "./redux/slices/notificationSlice";
 import { initReminderListener } from "./redux/slices/reminderSlice";
 import LeadsStats from "./pages/Lead/leadStats/LeadStats";
+import TimerDueListener from "./components/TimerDueListener";
 
 function App() {
   const navigate = useNavigate();
@@ -138,6 +139,7 @@ if (isInitializing || isLoading) {
   return (
     <main>
       <SocketListeners />
+      <TimerDueListener />
 
       <Routes>
         {/* Public routes */}

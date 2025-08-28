@@ -10,12 +10,12 @@ export default function OnlineUsers() {
 
   const socket = useSocket();
 
-  // useEffect(() => {
-  //   if (!socket) return;
+  useEffect(() => {
+    if (!socket) return;
 
-  //   socket.on("runningTimersUpdate", getTimers);
-  //   return () => socket.off("runningTimersUpdate", getTimers);
-  // }, [socket]);
+    socket.on("runningTimersUpdate", getTimers);
+    return () => socket.off("runningTimersUpdate", getTimers);
+  }, [socket]);
 
   // Fetch Running Timer
   const getTimers = async () => {

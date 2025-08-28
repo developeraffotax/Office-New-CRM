@@ -8,6 +8,8 @@ import moment from "moment";
 import XLSX from "xlsx";
 import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
 import { emitTaskUpdate } from "../utils/customFns/emitTaskUpdate.js";
+import { io } from "../index.js";
+import { emitTaskHoursUpdate } from "../utils/customFns/emitTaskHoursUpdate.js";
  
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -1219,14 +1221,35 @@ export const updateTaskHours = async (req, res) => {
 
     await updateTask.save();
 
-    if (req.user?.user?.name !== updateTask?.jobHolder) {
+    if (true) {
       const notiUser = await userModel
         .findOne({ name: updateTask?.jobHolder })
         .select("_id");
       if (notiUser) {
-        emitTaskUpdate(true, { userId: notiUser._id, updated_task: null });
+        emitTaskUpdate((req.user?.user?.name !== updateTask?.jobHolder), { userId: notiUser._id, updated_task: null });
+
+        //to update the task hours for the running timer due modal
+        emitTaskHoursUpdate(true, { userId: notiUser._id, hours: hours } )
+
+
+        const payload = {
+        title: "Allocated time updated",
+        redirectLink: "/tasks",
+        description: `${req.user.user.name} updated the allocated time of "${updateTask.task}"`,
+        taskId: `${updateTask?._id}`,
+        userId: notiUser?._id || null,
+        type: "task_allocated_time_update",
+      };
+        scheduleNotification((req.user?.user?.name !== updateTask?.jobHolder), payload)
+
+
       }
     }
+
+
+    
+
+
 
     res.status(200).send({
       success: true,

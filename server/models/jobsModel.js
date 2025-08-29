@@ -151,6 +151,7 @@ const clientSchema = new mongoose.Schema(
     },
     status: {
       type: String,
+      default: "process"
     },
     clientType: {
       type: String,
@@ -243,3 +244,20 @@ const clientSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("Client", clientSchema);
+
+
+
+
+
+
+
+
+ 
+
+
+// {
+//   $or: [
+//       { status: "" },
+//       { status: { $exists: false } },
+//     ]
+// }

@@ -1,5 +1,5 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import { useEffect, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Toaster } from "react-hot-toast";
@@ -13,6 +13,8 @@ import {
 import Layout from "./components/Loyout/Layout";
 import SocketListeners from "./components/SocketListeners";
 import Spinner from "./utlis/Spinner";
+import TimerDueListener from "./components/TimerDueListener";
+import Temp from "./components/Temp";
 
 // Pages
 import Login from "./pages/Auth/Login";
@@ -31,6 +33,7 @@ import Template from "./pages/Templates/Template";
 import TemplateEditor from "./pages/Tickets/TemplateEditor";
 import PDFEditor from "./pages/Editor/PDFEditor";
 import Lead from "./pages/Lead/Lead";
+import LeadsStats from "./pages/Lead/leadStats/LeadStats";
 import Proposal from "./pages/Proposal/Proposal";
 import Roles from "./pages/role/Roles";
 import Subscription from "./pages/Subscription/Subscription";
@@ -41,37 +44,44 @@ import Complaints from "./pages/Complaints/Complaints";
 import Meeting from "./pages/Meeting/Meeting";
 import HR from "./pages/HR/HR";
 import NotFound from "./pages/NotFound/NotFound";
-import Temp from "./components/Temp";
+
+// Redux listeners
 import { initTimerListener } from "./redux/slices/timerSlice";
 import { initNotificationListener } from "./redux/slices/notificationSlice";
 import { initReminderListener } from "./redux/slices/reminderSlice";
-import LeadsStats from "./pages/Lead/leadStats/LeadStats";
-import TimerDueListener from "./components/TimerDueListener";
 
 function App() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Redux state
-const { auth, isLoading, isInitializing } = useSelector((state) => state.auth);
+  const { auth, isLoading, isInitializing } = useSelector((state) => state.auth);
   const { user, token } = auth || {};
 
-  // Load auth state & check token expiry
+  // Load auth from storage & check token expiry
   useEffect(() => {
     dispatch(loadAuthFromLocalStorage());
     dispatch(checkTokenExpiry());
   }, [dispatch]);
 
-  // Cache-busting to avoid stale assets
+  // Clear caches on load (safe wrapped)
   useEffect(() => {
     if ("caches" in window) {
-      caches.keys().then((cacheNames) => {
-        cacheNames.forEach((cacheName) => caches.delete(cacheName));
-      });
+      caches.keys()
+        .then((cacheNames) =>
+          Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)))
+        )
+        .catch((err) => console.error("Cache clear failed:", err));
     }
   }, []);
 
-  // Route access map
+  // Initialize socket listeners
+  useEffect(() => {
+    dispatch(initTimerListener());
+    dispatch(initNotificationListener());
+    dispatch(initReminderListener());
+  }, [dispatch]);
+
+  // Define access-controlled routes
   const routeAccess = useMemo(
     () => ({
       Dashboard: <Route path="/dashboard" element={<Dashboard />} />,
@@ -81,7 +91,6 @@ const { auth, isLoading, isInitializing } = useSelector((state) => state.auth);
       Timesheet: <Route path="/timesheet" element={<TimeSheet />} />,
       Proposals: <Route path="/proposals" element={<Proposal />} />,
       Leads: <Route path="/leads" element={<Lead />} />,
-      
       Tasks: <Route path="/tasks" element={<AllTasks />} />,
       Jobs: <Route path="/job-planning" element={<AllJobs />} />,
       Goals: <Route path="/goals" element={<Goals />} />,
@@ -103,37 +112,22 @@ const { auth, isLoading, isInitializing } = useSelector((state) => state.auth);
     []
   );
 
-  // Build allowed routes from user permissions
+  // Filter routes based on user permissions
   const userAccessRoutes = useMemo(
     () =>
-      user?.role?.access
-        ?.map((accessItem) => routeAccess[accessItem.permission])
+      (user?.role?.access || [])
+        .map((accessItem) => routeAccess[accessItem.permission])
         .filter(Boolean),
     [user, routeAccess]
   );
 
-
-  useEffect(() => {
-   
-    dispatch(initTimerListener());
-    dispatch(initNotificationListener());
-    dispatch(initReminderListener());
-   
-}, []);
-
-
-// Show spinner if app is still initializing OR doing an async call
-if (isInitializing || isLoading) {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Spinner />
-    </div>
-  );
-}
-
-  // If not logged in
-  if (!token) {
-    return <Login />;
+  // Show spinner while initializing
+  if (isInitializing || isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner />
+      </div>
+    );
   }
 
   return (
@@ -143,20 +137,26 @@ if (isInitializing || isLoading) {
 
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/temp/:hrTaskId" element={<Temp />} />
 
-        {/* Authenticated layout routes */}
-        <Route element={<Layout />}>
-          {userAccessRoutes}
-          <Route path="/leads/stats" element={<LeadsStats />} />,
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/employee/dashboard" element={<UDashboard />} />
-          <Route path="/editor/templates" element={<TemplateEditor />} />
-          <Route path="/pdf/editor" element={<PDFEditor />} />
-        </Route>
+        {token ? (
+          // Private routes (only for logged-in users)
+          <Route element={<Layout />}>
+            {userAccessRoutes}
+            <Route path="/" element={<Navigate to="/employee/dashboard" replace />} />
+            <Route path="/leads/stats" element={<LeadsStats />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/employee/dashboard" element={<UDashboard />} />
+            <Route path="/editor/templates" element={<TemplateEditor />} />
+            <Route path="/pdf/editor" element={<PDFEditor />} />
+          </Route>
+        ) : (
+          // If no token, redirect any private route access to login
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        )}
 
-        {/* Fallback route */}
+        {/* Catch-all fallback */}
         <Route path="*" element={<NotFound />} />
       </Routes>
 

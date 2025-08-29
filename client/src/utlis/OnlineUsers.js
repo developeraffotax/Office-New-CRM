@@ -140,7 +140,7 @@ export default function OnlineUsers() {
                         </span>
                       </div>
                     </div>
-                    <span className="text-xs text-gray-600 truncate mt-0.5">
+                    <span className="text-xs text-gray-600 truncate mt-0.5" title={timer?.task || timer?.clientName}>
                       {timer?.task || timer?.clientName}
                     </span>
                   </div>
@@ -149,7 +149,7 @@ export default function OnlineUsers() {
             })}
 
           {runningTimers.length === 0 && (
-            <li className="px-4 py-5 text-gray-400 text-sm text-center">
+            <li className="px-4 py-5 text-gray-400 text-sm text-center m-0">
               No users online
             </li>
           )}

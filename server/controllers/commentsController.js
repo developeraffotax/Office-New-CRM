@@ -4,6 +4,7 @@ import notificationModel from "../models/notificationModel.js";
 import taskModel from "../models/taskModel.js";
 import ticketModel from "../models/ticketModel.js";
 import userModel from "../models/userModel.js";
+import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
 
 // Create Comment
 export const createComment = async (req, res) => {
@@ -42,22 +43,37 @@ export const createComment = async (req, res) => {
 
       console.log("userData:", user);
 
-      const notification = await notificationModel.create({
+      // const notification = await notificationModel.create({
+      //   title: "New comment received!",
+      //   redirectLink: `/job-planning`,
+      //   description: `${req?.user?.user?.name} added a new comment on job "${job?.job?.jobName}".\n\n— Company Name: ${job?.companyName}\n— Client Name: ${job?.clientName}`,
+      //   taskId: jobId,
+      //   userId: user?._id,
+        
+        
+      // });
+
+
+
+
+
+      const payload = {
         title: "New comment received!",
         redirectLink: `/job-planning`,
         description: `${req?.user?.user?.name} added a new comment on job "${job?.job?.jobName}".\n\n— Company Name: ${job?.companyName}\n— Client Name: ${job?.clientName}`,
         taskId: jobId,
-        userId: user?._id,
-        
-        // companyName: job?.companyName,
-        // clientName: job?.clientName,
-      });
+        userId: user?._id, 
+      }
+      
+        scheduleNotification(req.user?.user?.name !== user.name, payload);
+
+     
 
       res.status(200).send({
         success: true,
         message: "Comment Posted!",
         job: job,
-        notification: notification,
+        notification: payload,
       });
     } else if (type === "Task") {
       const task = await taskModel.findById(jobId);
@@ -93,21 +109,37 @@ export const createComment = async (req, res) => {
         return res.status(404).json({ error: "Task holder not found" });
       }
 
-      console.log("Task User:", user);
+      // console.log("Task User:", user);
 
-      const notification = await notificationModel.create({
+      // const notification = await notificationModel.create({
+      //   title: "New comment received!",
+      //   redirectLink:`/tasks`,
+      //   description: `${req.user.user.name} add a new comment in task "${task.task}". ${comment}`,
+      //   taskId: jobId,
+      //   userId: user._id,
+      // });
+
+
+
+
+      const payload ={
         title: "New comment received!",
         redirectLink:`/tasks`,
         description: `${req.user.user.name} add a new comment in task "${task.task}". ${comment}`,
         taskId: jobId,
         userId: user._id,
-      });
+      }
+      
+        scheduleNotification(req.user?.user?.name !== user.name, payload);
+
+
+        
 
       res.status(200).send({
         success: true,
         message: "Comment Posted!",
         job: task,
-        notification: notification,
+        notification: payload,
       });
     } else if (type === "Goals") {
       const goal = await goalModel.findById({ _id: jobId });
@@ -143,21 +175,25 @@ export const createComment = async (req, res) => {
         return res.status(404).json({ error: "Jobholder not found!" });
       }
 
-      console.log("Goal User:", user);
+       
 
-      const notification = await notificationModel.create({
+
+      const payload = {
         title: "New comment received!",
         redirectLink: `/goals`,
         description: `${req.user.user.name} add a new comment in goals "${goal.subject}". ${comment}`,
         taskId: jobId,
         userId: user._id,
-      });
+      }
+      
+        scheduleNotification(req.user?.user?.name !== user.name, payload);
+
 
       res.status(200).send({
         success: true,
         message: "Comment Posted!",
         job: goal,
-        notification: notification,
+        notification: payload,
       });
     } else {
       const ticket = await ticketModel.findById(jobId);
@@ -187,19 +223,27 @@ export const createComment = async (req, res) => {
         })
         .exec();
 
-      const notification = await notificationModel.create({
+       
+
+
+
+      const payload = {
         title: "New comment received!",
         redirectLink: `/tickets`,
         description: `${req.user.user.name} add a new comment in ticket "${ticket.subject}". ${comment}`,
         taskId: jobId,
         userId: user._id,
-      });
+      }
+      
+        scheduleNotification(req.user?.user?.name !== user.name, payload);
+
+
 
       res.status(200).send({
         success: true,
         message: "Comment Posted!",
         job: ticket,
-        notification: notification,
+        notification: payload,
       });
     }
   } catch (error) {
@@ -247,21 +291,33 @@ export const commentReply = async (req, res) => {
       await job.save();
 
       // Create Notification
-      const user = await userModel.findOne({ name: job.job.jobHolder });
+      // const user = await userModel.findOne({ name: job.job.jobHolder });
 
-      const notification = await notificationModel.create({
+      // const notification = await notificationModel.create({
+      //   title: "New comment reply received!",
+      //   redirectLink: "/job-planning",
+      //   description: `${req.user.user.name} add a new comment reply in "${job.job.jobName}". ${commentReply}`,
+      //   taskId: jobId,
+      //   userId: comment.senderId,
+      // });
+
+
+        const payload = {
         title: "New comment reply received!",
         redirectLink: "/job-planning",
         description: `${req.user.user.name} add a new comment reply in "${job.job.jobName}". ${commentReply}`,
         taskId: jobId,
         userId: comment.senderId,
-      });
+      }
+      
+         scheduleNotification(req.user?.user?.name !== comment.user.name, payload);
+
 
       res.status(200).send({
         success: true,
         message: "Reply Posted!",
         job: job,
-        notification: notification,
+        notification: payload,
       });
     } else if (type === "Task") {
       const task = await taskModel.findById(jobId);
@@ -293,21 +349,34 @@ export const commentReply = async (req, res) => {
       await task.save();
 
       // Create Notification
-      const user = await userModel.findOne({ name: task.jobHolder });
+      // const user = await userModel.findOne({ name: task.jobHolder });
 
-      const notification = await notificationModel.create({
+      // const notification = await notificationModel.create({
+      //   title: "New comment reply received!",
+      //   redirectLink: "/tasks",
+      //   description: `${req.user.user.name} add a new comment reply of task "${task.task}". ${commentReply}`,
+      //   taskId: jobId,
+      //   userId: comment.senderId,
+      // });
+
+
+
+      const payload = {
         title: "New comment reply received!",
         redirectLink: "/tasks",
         description: `${req.user.user.name} add a new comment reply of task "${task.task}". ${commentReply}`,
         taskId: jobId,
         userId: comment.senderId,
-      });
+      }
+
+        scheduleNotification(req.user?.user?.name !== comment.user.name, payload);
+
 
       res.status(200).send({
         success: true,
         message: "Reply Posted!",
         job: task,
-        notification: notification,
+        notification: payload,
       });
     } else if (type === "Goals") {
       const goal = await goalModel.findById(jobId);
@@ -339,19 +408,30 @@ export const commentReply = async (req, res) => {
       await goal.save();
 
       // Create Notification
-      const user = await userModel.findOne(
-        mentionUser ? { name: mentionUser } : { _id: goal.jobHolder }
-      );
+      // const user = await userModel.findOne(
+      //   mentionUser ? { name: mentionUser } : { _id: goal.jobHolder }
+      // );
 
-      console.log("user:", user);
+      // console.log("user:", user);
 
-      const notification = await notificationModel.create({
+     
+
+
+      const payload = {
         title: "New comment reply received!",
         redirectLink: "/goals",
         description: `${req.user.user.name} add a new comment reply of goals "${goal.subject}". ${commentReply}`,
         taskId: jobId,
         userId: comment.senderId,
-      });
+      }
+
+        scheduleNotification(req.user?.user?.name !== comment.user.name, payload);
+
+
+
+
+
+
 
       res.status(200).send({
         success: true,
@@ -391,15 +471,21 @@ export const commentReply = async (req, res) => {
       await ticket.save();
 
       // Create Notification
-      const user = await userModel.findOne({ name: ticket.jobHolder });
+      // const user = await userModel.findOne({ name: ticket.jobHolder });
 
-      const notification = await notificationModel.create({
+       
+        const payload = {
         title: "New comment reply received!",
         redirectLink: "/tickets",
         description: `${req.user.user.name} add a new comment reply of ticket "${ticket.subject}". ${commentReply}`,
         taskId: jobId,
         userId: comment.senderId,
-      });
+      }
+        scheduleNotification(req.user?.user?.name !== comment.user.name, payload);
+
+
+
+
 
       res.status(200).send({
         success: true,

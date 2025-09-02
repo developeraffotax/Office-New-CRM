@@ -424,6 +424,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 className={`${style.input} w-[50%]`}
                 value={clientPaidFee}
                 onChange={(e) => setClientPaidFee(e.target.value)}
+                required
               />
 
               <input

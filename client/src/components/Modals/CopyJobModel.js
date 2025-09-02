@@ -688,6 +688,7 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
                   className={`${style.input} w-[50%]`}
                   value={clientPaidFee}
                   onChange={(e) => setClientPaidFee(e.target.value)}
+                  required
                 />
   
                 <input

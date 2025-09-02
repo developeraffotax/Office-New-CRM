@@ -93,17 +93,17 @@ export default function OnlineUsers() {
     <div className="relative inline-block" ref={wrapperRef}>
       {/* Trigger */}
       <div
-className={`group flex items-center gap-2 cursor-pointer 
+className={` flex items-center gap-2 cursor-pointer 
   backdrop-blur-md px-4 py-1.5 rounded-xl text-sm font-medium 
-  transition-all duration-200 hover:bg-emerald-500 hover:text-white
+  transition-all duration-200  
   ${
     showDropdown
       ? "bg-emerald-500 text-white shadow-md scale-[0.98]"
-      : "bg-white/70 text-emerald-600 shadow-sm hover:shadow-md hover:bg-white/90"
+      : "bg-white/70 text-emerald-600 shadow-sm hover:shadow-md "
   }`}
         onClick={() => setShowDropdown((prev) => !prev)} // ✅ toggle
       >
-        <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${showDropdown ? "bg-white" : "bg-emerald-500"}  group-hover:bg-white`}></span> 
+        <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${showDropdown ? "bg-white" : "bg-emerald-500"}   `}></span> 
         {runningTimers.length} Online
       </div>
 

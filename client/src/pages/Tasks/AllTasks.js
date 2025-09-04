@@ -1394,12 +1394,24 @@ const getStatus = (startDateOfTask, deadlineOfTask) => {
         setShowDetail(false);
         toast.success("Status completed successfully!");
 
-        setTasksData((prevData) =>
-          prevData.filter((item) => item._id !== updateTask._id)
+        setTasksData((prevData = []) => {
+           console.log("PREVDATA", prevData)
+         return  prevData.filter((item) => item._id !== updateTask._id)
+        }
+         
         );
-        setFilterData((prevData) =>
-          prevData.filter((item) => item._id !== updateTask._id)
+
+        if(filterData) {
+            setFilterData((prevData = []) => {
+
+          console.log("PREVDATA 2💜💜💜💙💚💚💛💛", prevData)
+         return prevData.filter((item) => item._id !== updateTask._id)
+          
+        }
+          
         );
+        }
+        
       }
     } catch (error) {
       console.log(error);
@@ -1452,6 +1464,39 @@ const getStatus = (startDateOfTask, deadlineOfTask) => {
       console.log(error);
     }
   };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 
   // ----------------------Table Data--------->
    const columns = useMemo(
@@ -3179,11 +3224,18 @@ Cell: ({ cell, row }) => {
 
   });
 
+
+
+
+
  
 
   //  -----------Handle drag end---------
   const handleUserOnDragEnd = (result) => {
     const { destination, source } = result;
+
+    console.log("destination", destination)
+    console.log("source", source)
 
     if (!destination || destination.index === source.index) return;
 
@@ -3806,6 +3858,7 @@ const allDepartmentsSelected =
 
                   droppableId={"departments"}
                   items={departments}
+                   
                   filterValue={filter1}
                   tasks={tasksData}
                    getCountFn={(department, tasks) =>
@@ -4052,6 +4105,7 @@ const allDepartmentsSelected =
                   droppableId={"users"}
                   // items={filter2 ? projectUsers.filter(user => getJobHolderCount(user?.name, active) > 0) : users.filter(user => getJobHolderCount(user?.name, active) > 0)}
                   items={users.filter(user => getJobHolderCount(user?.name, active) > 0)}
+                  
                   filterValue={filter3}
                   tasks={tasksData}
                    getCountFn={(user, tasks) =>
@@ -4098,7 +4152,7 @@ const allDepartmentsSelected =
 
 
                     }}
-                  onDragEnd={() => {}}
+                  onDragEnd={handleUserOnDragEnd}
                   activeClassName={filter3 ? "border-b-2 text-orange-600 border-orange-600" : ""}
                 
                 

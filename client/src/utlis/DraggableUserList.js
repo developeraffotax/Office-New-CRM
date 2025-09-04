@@ -12,6 +12,11 @@ const DraggableUserList = ({
   const [userNameArray, setUserNameArray] = useState(usersArray);
   const [active, setActive] = useState("All");
 
+
+
+
+
+  
   const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
     const [removed] = result.splice(startIndex, 1);
@@ -20,7 +25,7 @@ const DraggableUserList = ({
     return result;
   };
 
-  console.log("USER💚💛💛🧡🧡❤❤", usersArray);
+ 
 
   function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
     const savedSet = new Set(savedOrder);

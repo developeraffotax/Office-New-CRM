@@ -207,6 +207,7 @@ export const getAllTasks = async (req, res) => {
           hours: 1,
           startDate: 1,
           deadline: 1,
+          taskDate: 1,
           status: 1,
           lead: 1,
           estimate_Time: 1,
@@ -574,7 +575,7 @@ export const updateJobHolderLS = async (req, res) => {
 export const updateAlocateTask = async (req, res) => {
   try {
     const taskId = req.params.id;
-    const { allocateTask, startDate, deadline } = req.body;
+    const { allocateTask, startDate, deadline, taskDate } = req.body;
 
     const task = await taskModel.findById(taskId);
     if (!task) {
@@ -613,6 +614,22 @@ export const updateAlocateTask = async (req, res) => {
         } updated the task start date from "${formatDate(
           task.startDate
         )}" to "${formatDate(updateTask.startDate)}".`,
+      });
+    } else if (taskDate) {
+      updateTask = await taskModel.findByIdAndUpdate(
+        task._id,
+        { taskDate: taskDate },
+        { new: true }
+      );
+
+      // Push activity to activities array
+      updateTask.activities.push({
+        user: req.user.user._id,
+        activity: `${
+          req.user.user.name
+        } updated the task date from "${formatDate(
+          task.taskDate
+        )}" to "${formatDate(updateTask.taskDate)}".`,
       });
     } else {
       updateTask = await taskModel.findByIdAndUpdate(

@@ -89,6 +89,15 @@ const taskSchema = new mongoose.Schema(
       type: Date,
       default: () => new Date(),
     },
+
+
+    taskDate: {
+      type: Date,
+      default: Date.now,
+    },
+
+
+
     status: {
       type: String,
     },

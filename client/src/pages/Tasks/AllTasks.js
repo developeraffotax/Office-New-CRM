@@ -1,63 +1,41 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+
 import { style } from "../../utlis/CommonStyle";
 import axios from "axios";
 import AddProjectModal from "../../components/Tasks/AddProjectModal";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
-import {
-  IoBriefcaseOutline,
-  IoCheckmarkDoneCircleSharp,
-  IoClose,
-} from "react-icons/io5";
-import {
-  MdAutoGraph,
-  MdCheckCircle,
-  MdInsertComment,
-  MdOutlineEdit,
-  MdOutlineModeEdit,
-} from "react-icons/md";
-import { AiTwotoneDelete } from "react-icons/ai";
+import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
+import { MdAutoGraph, MdOutlineModeEdit } from "react-icons/md";
+
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 
-import {  TbLoader, TbLoader2 } from "react-icons/tb";
+import { TbLoader, TbLoader2 } from "react-icons/tb";
 import CompletedTasks from "./CompletedTasks";
 import AddTaskModal from "../../components/Tasks/AddTaskModal";
-import {
-  MaterialReactTable,
-  useMaterialReactTable,
-} from "material-react-table";
+import { useMaterialReactTable } from "material-react-table";
 import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
-import { Timer } from "../../utlis/Timer";
-import { useLocation, useNavigate,   useSearchParams } from "react-router-dom";
-import { GrCopy } from "react-icons/gr";
+
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import AddLabel from "../../components/Modals/AddLabel";
 import TaskDetail from "./TaskDetail";
 import { GrUpdate } from "react-icons/gr";
 import { LuImport } from "react-icons/lu";
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
- 
-import Subtasks from "./Subtasks";
 import { ActiveTimer } from "../../utlis/ActiveTimer";
- 
+
 import QuickAccess from "../../utlis/QuickAccess";
 import SubtasksForNote from "./SubtasksForNote";
- import { filterByRowId } from "../../utlis/filterByRowId";
- 
-import TimeEditor from "../../utlis/TimeSelector";
- 
- 
+import { filterByRowId } from "../../utlis/filterByRowId";
+
 import { useDispatch, useSelector } from "react-redux";
 import { setFilterId, setSearchValue } from "../../redux/slices/authSlice";
- 
-import { updateCountdown } from "../../redux/slices/timerSlice";
+
 import { useSocket } from "../../context/socketProvider";
-import AddDepartmentModal from "../../components/Tasks/AddTaskDepartmentModal";
 import AddTaskDepartmentModal from "../../components/Tasks/AddTaskDepartmentModal";
 import ProjectDropdown from "./components/ProjectsDropdown/ProjectDropdown";
 import DepartmentDropdown from "./components/DepartmentsDropdown/DepartmentDropdown";
@@ -65,38 +43,29 @@ import DraggableFilterTabs from "./DraggableFilterTabs";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { useClickOutside } from "../../utlis/useClickOutside";
 import { getTaskColumns } from "./table/columns";
+import { TasksTable } from "./table/TasksTable";
 
- 
+const colVisibility = {
+  departmentName: true,
+  projectName: true,
+  jobHolder: true,
+  task: true,
+  hours: true,
+  startDate: true,
+  deadline: true,
+  taskDate: true,
+  datestatus: true,
 
+  status: true,
+  lead: true,
+  estimate_Time: true,
+  timertracker: true,
+  comments: true,
 
- const colVisibility = {
-     
-    "departmentName" : true,
-    "projectName" : true,
-    "jobHolder" : true,
-    "task" : true,
-    "hours": true,
-    "startDate" : true,
-    "deadline" : true,
-    "taskDate" : true,
-    "datestatus" : true,
-
-    "status" : true,
-    "lead": true,
-    "estimate_Time": true,
-    "timertracker" : true,
-    "comments": true,
-    
-    
-    "actions" : true,
-    "labal": true,
-    "recurring": true,
- }
-
-
-
-
-
+  actions: true,
+  labal: true,
+  recurring: true,
+};
 
 function useColumnFilterSync(table, columnId, value, setValue) {
   useEffect(() => {
@@ -117,21 +86,6 @@ function useColumnFilterSync(table, columnId, value, setValue) {
   return updateFilter;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // CSV Configuration
 const csvConfig = mkConfig({
   filename: "full_table_data",
@@ -146,31 +100,20 @@ const csvConfig = mkConfig({
   useKeysAsHeaders: true,
 });
 
-const AllTasks = () => {
- 
+const AllTasks = ({ justShowTable = false }) => {
+  const { auth, filterId, anyTimerRunning, searchValue, jid } = useSelector(
+    (state) => state.auth
+  );
 
-  const {auth, filterId, anyTimerRunning, searchValue, jid} = useSelector((state) => state.auth);
-   
   const dispatch = useDispatch();
 
-
-
-
-
-
-
-
-
-
-  const [show, setShow] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [users, setUsers] = useState([]);
 
-    const [openAddDepartment, setOpenAddDepartment] = useState(false);
+  const [openAddDepartment, setOpenAddDepartment] = useState(false);
   const [departments, setDepartments] = useState([]);
   const [departmentId, setDepartmentId] = useState("");
-  const [showDepartment, setShowDepartment] = useState(false)
- 
+  const [showDepartment, setShowDepartment] = useState(false);
 
   const [openAddProject, setOpenAddProject] = useState(false);
   const [projects, setProjects] = useState([]);
@@ -188,79 +131,12 @@ const AllTasks = () => {
   const timerRef = useRef();
   const [isShow, setIsShow] = useState(false);
 
-  // const {timerRef, handleStopTimer} = useTimer();
-
   const location = useLocation();
   const currentPath = location.pathname;
 
-
-
-
-
-
-
-    const [filter1, setFilter1] = useState("");
-    const [filter2, setFilter2] = useState("");
-    const [filter3, setFilter3] = useState("");
-
-
-
-
-
-
- 
-//         const [projectUsers, setProjectUsers] = useState([])
-
-//         useEffect(() => {
-//             const activeProject = projects.find(p => p.projectName === filter2);
-
-            
-
-
-            
-// const projectUsers = users.filter(u => activeProject?.users_list?.some(p_user => p_user._id === u._id))
-
-
-          
-//           setProjectUsers(projectUsers);
-
-//         }, [filter2, projects, users]);
-
-        
-
-
-
-//         const [departmentProjects, setDepartmentProjects] = useState([])
-
-
-//         useEffect(() => {
-//             const activeDepartment = departments.find(d => d.departmentName === filter1);
-
-//             console.log(activeDepartment, "activeDepartment");
-
-//             const departmentProjects = projects.filter(p => p?.department?._id === activeDepartment?._id);
-             
- 
-//             console.log(departmentProjects, "departmentProjects");
-
-//             setDepartmentProjects(departmentProjects);
-          
-
-//         }, [ projects, departments, filter1]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  const [filter1, setFilter1] = useState("");
+  const [filter2, setFilter2] = useState("");
+  const [filter3, setFilter3] = useState("");
 
   const [fLoading, setFLoading] = useState(false);
   // Filters
@@ -283,7 +159,7 @@ const AllTasks = () => {
   const [timerId, setTimerId] = useState("");
   const dateStatus = ["Due", "Overdue"];
   const status = ["To do", "Progress", "Review", "Onhold"];
- 
+
   const [state, setState] = useState("");
   const [stateData, setStateData] = useState([]);
   const [activity, setActivity] = useState("Chargeable");
@@ -304,153 +180,76 @@ const AllTasks = () => {
 
   // console.log("tasksData:", tasksData);
 
- 
   const [taskIdForNote, setTaskIdForNote] = useState("");
- 
+
   const [showActiveTimer, setShowActiveTimer] = useState(false);
 
-
-  
   const [searchParams] = useSearchParams();
-  const comment_taskId = searchParams.get('comment_taskId');
-    const navigate = useNavigate();
+  const comment_taskId = searchParams.get("comment_taskId");
+  const navigate = useNavigate();
 
+  const [showcolumn, setShowColumn] = useState(false);
+  const [columnVisibility, setColumnVisibility] = useState({
+    _id: false,
+    ...colVisibility,
+  });
 
+  const showColumnRef = useRef(false);
 
-
-    const [showcolumn, setShowColumn] = useState(false);
-    const [columnVisibility, setColumnVisibility] = useState({
-
-      
-    "_id": false, 
-   ...colVisibility,
-    
-
-
-    });
-
-    const showColumnRef = useRef(false);
-
-      useClickOutside(showColumnRef, () => setShowColumn(false));
-
-
-
-
-      useEffect(() => {
-          // Load saved column visibility from localStorage
-          const savedVisibility = JSON.parse(
-            localStorage.getItem("visibileTasksColumn")
-          );
-    
-          if (savedVisibility) {
-            setColumnVisibility(savedVisibility);
-          }  
-         
-      }, []);
-    
-      const toggleColumnVisibility = (column) => {
-        const updatedVisibility = {
-          ...columnVisibility,
-          [column]: !columnVisibility[column],
-        };
-        setColumnVisibility(updatedVisibility);
-        localStorage.setItem("visibileTasksColumn", JSON.stringify(updatedVisibility));
-      };
-
-
-
-
-
-
-
-
-
-
-
-
-
-  const [pagination, setPagination] = useState({
-          pageIndex: 0,
-          pageSize: 30, // ✅ default page size
-        });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
-    const socket  = useSocket();
-
-
-      useEffect(() => {
-
-
-        if (!socket) return;
-        console.log("Socket reg ⛔🆘🆘🅾🅾🅾🆑🆑🆎🆎🆎🅱🅱🅰🅰🅰🅰🈲🈵🈵🈴🈴㊗㊗㊗㊙㊙🉐🉐🉐💮💮🉑")
-        socket.on('task_updated', () => {
-          console.log("TASK UPDATED ⛔🆘🆘🅾🅾🅾🆑🆑🆎🆎🆎🅱🅱🅰🅰🅰🅰🈲🈵🈵🈴🈴㊗㊗㊗㊙㊙🉐🉐🉐💮💮🉑")
-
-          getAllTasks()
-        })
-      }, [socket])
-
+  useClickOutside(showColumnRef, () => setShowColumn(false));
 
   useEffect(() => {
-  const handleKeyDown = (e) => {
-    // // Ctrl + K shortcut
-    // if (e.ctrlKey && e.key === "k") {
-    //   e.preventDefault();
-    //   setShowDetail(false)
-    //   console.log("Ctrl + K triggered");
-    //   // your action here
-    // }
+    // Load saved column visibility from localStorage
+    const savedVisibility = JSON.parse(
+      localStorage.getItem("visibileTasksColumn")
+    );
 
-    // Escape key shortcut
-    if (e.key === "Escape") {
-      
-      setShowDetail(false)
-      
+    if (savedVisibility) {
+      setColumnVisibility(savedVisibility);
     }
+  }, []);
+
+  const toggleColumnVisibility = (column) => {
+    const updatedVisibility = {
+      ...columnVisibility,
+      [column]: !columnVisibility[column],
+    };
+    setColumnVisibility(updatedVisibility);
+    localStorage.setItem(
+      "visibileTasksColumn",
+      JSON.stringify(updatedVisibility)
+    );
   };
 
-  window.addEventListener("keydown", handleKeyDown);
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 30, // ✅ default page size
+  });
 
-  return () => {
-    window.removeEventListener("keydown", handleKeyDown);
-  };
-}, []);
+  const socket = useSocket();
 
+  useEffect(() => {
+    if (!socket) return;
 
+    socket.on("task_updated", () => {
+      getAllTasks();
+    });
+  }, [socket]);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Escape key shortcut
+      if (e.key === "Escape") {
+        setShowDetail(false);
+      }
+    };
 
+    window.addEventListener("keydown", handleKeyDown);
 
-
-
-
-
-
-
-
-
-
-
-
-
-        
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   useEffect(() => {
     const timeId = localStorage.getItem("jobId");
@@ -491,62 +290,50 @@ const AllTasks = () => {
 
   useEffect(() => {
     getAllProjects();
-    
   }, [auth]);
 
-
-
-
-
-
-
-
-    //---------- Get All Projects-----------
+  //---------- Get All Projects-----------
   const getAllDepartments = async () => {
     try {
-      const { data } = await axios.get( `${process.env.REACT_APP_API_URL}/api/v1/tasks/department` );
-       if (data?.success) {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/department`
+      );
+      if (data?.success) {
+        if (auth?.user?.role?.name === "Admin") {
+          // Admin: show all
+          setDepartments(data?.departments || []);
+        } else {
+          // Non-admin: only include departments linked to projects user is in
+          const userProjects = allProjects.filter((project) =>
+            project.users_list.some((user) => user._id === auth?.user?.id)
+          );
 
+          // Collect all department IDs from user's projects
+          const projectDepartmentIds = userProjects
+            .flatMap((proj) => proj.departments?.map((d) => d._id)) // many-to-many
+            .filter(Boolean);
 
-        
-      if (auth?.user?.role?.name === "Admin") {
-        // Admin: show all
-        setDepartments(data?.departments || []);
-      } else {
-        // Non-admin: only include departments linked to projects user is in
-        const userProjects = allProjects.filter((project) =>
-          project.users_list.some((user) => user._id === auth?.user?.id)
-        );
+          // Deduplicate IDs (in case user has multiple projects in the same department)
+          const uniqueDeptIds = [...new Set(projectDepartmentIds)];
 
-        // Collect all department IDs from user's projects
-        const projectDepartmentIds = userProjects
-          .flatMap((proj) => proj.departments?.map((d) => d._id)) // many-to-many
-          .filter(Boolean);
+          // Filter the full department list based on user's accessible departments
+          const filteredDepartments = data.departments.filter((dep) =>
+            uniqueDeptIds.includes(dep._id)
+          );
 
-        // Deduplicate IDs (in case user has multiple projects in the same department)
-        const uniqueDeptIds = [...new Set(projectDepartmentIds)];
-
-        // Filter the full department list based on user's accessible departments
-        const filteredDepartments = data.departments.filter((dep) =>
-          uniqueDeptIds.includes(dep._id)
-        );
-
-        setDepartments(filteredDepartments || []);
+          setDepartments(filteredDepartments || []);
+        }
       }
-    }
     } catch (error) {
       console.log(error);
     }
   };
 
-useEffect(() => {
-  if (auth) {
-    getAllDepartments();
-  }
-}, [auth, allProjects]); 
-
-
- 
+  useEffect(() => {
+    if (auth) {
+      getAllDepartments();
+    }
+  }, [auth, allProjects]);
 
   // -------Get All Tasks----->
   const getAllTasks = async () => {
@@ -581,10 +368,6 @@ useEffect(() => {
 
   useEffect(() => {
     getAllTasks();
-     
-
-
-
   }, []);
 
   //   Get All Labels
@@ -604,8 +387,6 @@ useEffect(() => {
   useEffect(() => {
     getlabel();
   }, []);
-
- 
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
@@ -666,120 +447,6 @@ useEffect(() => {
     }
   };
 
-  // useEffect(() => {
-  //   socketId.on("newtask", () => {
-  //     getTasks1();
-  //   });
-
-  //   return () => {
-  //     socketId.off("newtask", getTasks1);
-  //   };
-    
-  // }, [socketId]);
-
-  // useEffect(() => {
-  //   if (auth && auth?.user) {
-  //     if (auth.user.role.name === "Admin") {
-  //       setTasksData(tasksData);
-  //     } else {
-  //       const filteredTasks = tasksData.filter((task) => {
-  //         return task.project?.users_list?.some(
-  //           (user) => user._id === auth.user.id
-  //         );
-  //       });
-
-  //       setTasksData(filteredTasks);
-  //     }
-  //   }
-  //   //eslint-disable-next-line
-  // }, [auth]);
-
-  // ---------Delete Project-------->
-  // const handleDeleteConfirmation = (projectId) => {
-  //   Swal.fire({
-  //     title: "Are you sure?",
-  //     text: "You won't be able to revert this!",
-  //     icon: "warning",
-  //     showCancelButton: true,
-  //     confirmButtonColor: "#3085d6",
-  //     cancelButtonColor: "#d33",
-  //     confirmButtonText: "Yes, delete it!",
-  //   }).then((result) => {
-  //     if (result.isConfirmed) {
-  //       deleteProject(projectId);
-  //       Swal.fire("Deleted!", "Your project has been deleted.", "success");
-  //     }
-  //   });
-  // };
-  // const deleteProject = async (id) => {
-  //   try {
-  //     const { data } = await axios.delete(
-  //       `${process.env.REACT_APP_API_URL}/api/v1/projects/delete/project/${id}`
-  //     );
-  //     if (data) {
-  //       getAllProjects();
-  //       // toast.success("Project Deleted!");
-  //       // Send Socket Timer
-  //       // socketId.emit("addTask", {
-  //       //   note: "New Task Added",
-  //       // });
-  //       // socketId.emit("addproject", {
-  //       //   note: "New Project Added",
-  //       // });
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //     toast.error(error?.response?.data?.message);
-  //   }
-  // };
-
-  // const handleUpdateStatus = (projectId) => {
-  //   Swal.fire({
-  //     title: "Are you sure?",
-  //     text: "You won't be able to revert this project!",
-  //     icon: "warning",
-  //     showCancelButton: true,
-  //     confirmButtonColor: "#3085d6",
-  //     cancelButtonColor: "#d33",
-  //     confirmButtonText: "Yes, update it!",
-  //   }).then((result) => {
-  //     if (result.isConfirmed) {
-  //       updateProjectStatus(projectId);
-  //       Swal.fire(
-  //         "Project Completed!",
-  //         "Your project has been updated.",
-  //         "success"
-  //       );
-  //     }
-  //   });
-  // };
-
-  // const updateProjectStatus = async (id) => {
-  //   try {
-  //     const { data } = await axios.put(
-  //       `${process.env.REACT_APP_API_URL}/api/v1/projects/update/status/${id}`
-  //     );
-  //     if (data) {
-  //       getAllProjects();
-  //       getAllTasks();
-  //       setShowProject(false);
-  //       // Send Socket Timer
-  //       // socketId.emit("addTask", {
-  //       //   note: "New Task Added",
-  //       // });
-  //       // socketId.emit("addproject", {
-  //       //   note: "New Project Added",
-  //       // });
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //     toast.error(error?.response?.data?.message);
-  //   }
-  // };
-  // ------------------------------Tasks----------------->
-
-  // ---------Total Hours-------->
-
   useEffect(() => {
     const calculateTotalHours = (data) => {
       return data?.reduce((sum, client) => sum + Number(client.hours), 0);
@@ -790,46 +457,24 @@ useEffect(() => {
     } else if (filterData) {
       setTotalHours(calculateTotalHours(filterData).toFixed(0));
     }
-  }, [tasksData, filterData, active, active1, activeBtn, ]);
+  }, [tasksData, filterData, active, active1, activeBtn]);
 
   // ------------Filter By Projects---------->
 
+  console.log("TASKS💛💛💛", tasksData);
+  const getDepartmentTaskCount = (departmentId, tasks) => {
+    return tasks.filter(
+      (task) => task.project?.department?._id === departmentId
+    ).length;
+  };
 
+  const getProjectTaskCount = (projectId, tasks) => {
+    return tasks.filter((task) => task.project?._id === projectId).length;
+  };
 
-
-
-
-
-
-
-
-
-
-
-
-  console.log("TASKS💛💛💛", tasksData)
-const getDepartmentTaskCount = (departmentId, tasks) => {
-  return tasks.filter(
-    (task) => task.project?.department?._id === departmentId
-  ).length;
-};
-
-const getProjectTaskCount = (projectId, tasks) => {
-  return tasks.filter(
-    (task) => task.project?._id === projectId
-  ).length;
-};
-
-
-
-const getUserTaskCount = (userName, tasks) => {
-  return tasks.filter(
-    (task) => task.jobHolder === userName
-  ).length;
-};
-
-
-
+  const getUserTaskCount = (userName, tasks) => {
+    return tasks.filter((task) => task.jobHolder === userName).length;
+  };
 
   // const getProjectsCount = (project) => {
   //   if (project === "All") {
@@ -838,10 +483,6 @@ const getUserTaskCount = (userName, tasks) => {
   //   return tasksData.filter((item) => item?.project?.projectName === project)
   //     ?.length;
   // };
-
-
-
-
 
   // --------------Job_Holder Length---------->
 
@@ -852,30 +493,6 @@ const getUserTaskCount = (userName, tasks) => {
         : item?.jobHolder === user && item?.project?.projectName === project
     )?.length;
   };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   // -------Due & Overdue count------->
   const getDueAndOverdueCountByDepartment = (project) => {
@@ -920,21 +537,12 @@ const getUserTaskCount = (userName, tasks) => {
 
       setFilterData([...filteredData]);
     }
-
-
-
-    
-
-
-
-
   };
 
   useEffect(() => {
     if (tasksData && filterId) {
       filterByDep(filterId);
     }
-    
   }, [tasksData, filterId]);
 
   // -------------- Filter Data By Department || Status || Placeholder ----------->
@@ -1016,7 +624,6 @@ const getUserTaskCount = (userName, tasks) => {
           );
         }
       }
-       
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
@@ -1113,73 +720,31 @@ const getUserTaskCount = (userName, tasks) => {
         }
       }
 
- 
       getTasks1();
-      
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
     }
   };
 
+  const getStatus = (startDateOfTask, deadlineOfTask) => {
+    const startDate = new Date(startDateOfTask);
+    const deadline = new Date(deadlineOfTask);
+    const today = new Date();
 
+    // Remove time parts for accurate date comparison
+    startDate.setHours(0, 0, 0, 0);
+    deadline.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
 
-const getStatus = (startDateOfTask, deadlineOfTask) => {
-  const startDate = new Date(startDateOfTask);
-  const deadline = new Date(deadlineOfTask);
-  const today = new Date();
-
-  // Remove time parts for accurate date comparison
-  startDate.setHours(0, 0, 0, 0);
-  deadline.setHours(0, 0, 0, 0);
-  today.setHours(0, 0, 0, 0);
-
-  if (deadline < today) {
-    return "Overdue";
-  } else if (
-    startDate <= today &&
-    !(deadline < today)
-  ) {
-     return "Due";
-  } else {
-    return "Upcoming";
-  }
-  
-  // if (end.getTime() === today.getTime()) {
-  //   return "Due";
-  // }
-
-  // if (end > today) {
-  //   return "Upcoming";
-  // }
-
-  // return "";
-};
-
-
-
-  // const getStatus = (jobDeadline, yearEnd) => {
-  //   const deadline = new Date(jobDeadline);
-  //   const yearEndDate = new Date(yearEnd);
-  //   const today = new Date();
-  //   today.setHours(0, 0, 0, 0);
-
-  //   if (deadline.setHours(0, 0, 0, 0) < today.setHours(0, 0, 0, 0)) {
-  //     return "Overdue";
-  //   } else if (
-  //     yearEndDate.setHours(0, 0, 0, 0) <= today.setHours(0, 0, 0, 0) &&
-  //     !(deadline.setHours(0, 0, 0, 0) <= today.setHours(0, 0, 0, 0))
-  //   ) {
-  //     return "Due";
-  //   } else if (deadline.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
-  //     return "Due";
-  //   } else {
-  //     return "Upcoming";
-  //   }
-  // };
-
-
-
+    if (deadline < today) {
+      return "Overdue";
+    } else if (startDate <= today && !(deadline < today)) {
+      return "Due";
+    } else {
+      return "Upcoming";
+    }
+  };
 
   // Filter by Header Search
   useEffect(() => {
@@ -1220,23 +785,16 @@ const getStatus = (startDateOfTask, deadlineOfTask) => {
       }
     );
     if (data) {
-      // Send Socket Timer
-      // socketId.emit("addTask", {
-      //   note: "New Task Added",
-      // });
       toast.success("Task copied successfully!");
       setTasksData((prevData) => [...prevData, data?.task]);
     }
   };
 
- // ---------Stop Timer ----------->
+  // ---------Stop Timer ----------->
   const handleStopTimer = () => {
     if (timerRef.current) {
       timerRef.current.stopTimer();
     }
-
-
-    
   };
 
   // -----------Download in CSV------>
@@ -1305,39 +863,6 @@ const getStatus = (startDateOfTask, deadlineOfTask) => {
     }
   };
 
-  // Close Comment Box to click anywhere
-// useEffect(() => {
-//   const handleClickOutside = (event) => {
-//     const clickInside =
-//       commentStatusRef.current?.contains(event.target) ||
-//       document.querySelector(".MuiPopover-root")?.contains(event.target) || // MUI Menu
-//       document.querySelector(".EmojiPickerReact")?.contains(event.target) || // Emoji picker
-//       document.querySelector(".MuiDialog-root")?.contains(event.target); // Dialog
-
-//     if (!clickInside) {
-//       setIsComment(false);
-//     }
-//   };
-
-//   const handleEscKey = (event) => {
-//     if (event.key === "Escape") {
-//       setIsComment(false);
-//     }
-//   };
-
-//   document.addEventListener("mousedown", handleClickOutside);
-//   document.addEventListener("keydown", handleEscKey);
-
-//   return () => {
-//     document.removeEventListener("mousedown", handleClickOutside);
-//     document.removeEventListener("keydown", handleEscKey);
-//   };
-// }, []);
-
-
-
-
-
   // Add label in Task
   const addlabelTask = async (id, name, color) => {
     try {
@@ -1390,23 +915,16 @@ const getStatus = (startDateOfTask, deadlineOfTask) => {
         toast.success("Status completed successfully!");
 
         setTasksData((prevData = []) => {
-           console.log("PREVDATA", prevData)
-         return  prevData.filter((item) => item._id !== updateTask._id)
-        }
-         
-        );
+          console.log("PREVDATA", prevData);
+          return prevData.filter((item) => item._id !== updateTask._id);
+        });
 
-        if(filterData) {
-            setFilterData((prevData = []) => {
-
-          console.log("PREVDATA 2💜💜💜💙💚💚💛💛", prevData)
-         return prevData.filter((item) => item._id !== updateTask._id)
-          
+        if (filterData) {
+          setFilterData((prevData = []) => {
+            console.log("PREVDATA 2💜💜💜💙💚💚💛💛", prevData);
+            return prevData.filter((item) => item._id !== updateTask._id);
+          });
         }
-          
-        );
-        }
-        
       }
     } catch (error) {
       console.log(error);
@@ -1431,176 +949,130 @@ const getStatus = (startDateOfTask, deadlineOfTask) => {
     });
   };
 
-  // ----------------------Handle Drag & Drop Features-------->
-  const handleOnDragEnd = (result) => {
-    if (!result.destination) return;
+  // ----------------------------
+  // 🔑 Authentication & User Data
+  // ----------------------------
+  const authCtx = useMemo(
+    () => ({
+      auth,
+      users,
+      departments,
+    }),
+    [auth, users, departments]
+  );
 
-    const updatedProjects = Array.from(projects);
-    const [reorderedProject] = updatedProjects.splice(result.source.index, 1);
-    updatedProjects.splice(result.destination.index, 0, reorderedProject);
+  // ----------------------------
+  // 📂 Projects
+  // ----------------------------
+  const projectCtx = useMemo(
+    () => ({
+      allProjects,
+      updateTaskProject,
+      updateTaskJLS,
+      updateAlocateTask,
+    }),
+    [allProjects]
+  );
 
-    setProjects(updatedProjects);
+  // ----------------------------
+  // 📊 Tasks / Filtering
+  // ----------------------------
+  const taskCtx = useMemo(
+    () => ({
+      totalHours,
+      filterId,
+      active,
+      active1,
+      setFilterData,
+      setTasksData,
+      setTaskID,
+      setProjectName,
+      setShowDetail,
+      copyTask,
+      handleCompleteStatus,
+      handleDeleteTaskConfirmation,
+    }),
+    [totalHours, filterId, active, active1]
+  );
 
-    // Save the new order to the backend
-    updateProjectOrderInDB(updatedProjects);
-  };
+  // ----------------------------
+  // 💬 Comments
+  // ----------------------------
+  const commentCtx = useMemo(
+    () => ({
+      comment_taskId,
+      setCommentTaskId,
+      setIsComment,
+    }),
+    [comment_taskId]
+  );
 
-  const updateProjectOrderInDB = async (updatedProjects) => {
-    try {
-      const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/projects/reordering`,
-        { projects: updatedProjects }
-      );
+  // ----------------------------
+  // ⏱️ Timer / Tracking
+  // ----------------------------
+  const timerCtx = useMemo(
+    () => ({
+      anyTimerRunning,
+      timerId,
+      jid,
+      play,
+      reload,
+      note,
+      currentPath,
+      activity,
+      taskIdForNote,
+      timerRef,
+      setIsShow,
+      setReload,
+      setPlay,
+      setNote,
+      setActivity,
+      setTaskIdForNote,
+    }),
+    [
+      anyTimerRunning,
+      timerId,
+      jid,
+      play,
+      reload,
+      note,
+      currentPath,
+      activity,
+      taskIdForNote,
+      timerRef,
+    ]
+  );
 
-      if (data) {
-        toast.success("Reordering successfully!");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // ----------------------------
+  // 🏷️ Labels
+  // ----------------------------
+  const labelCtx = useMemo(
+    () => ({
+      labelData,
+      addlabelTask,
+    }),
+    [labelData]
+  );
 
+  // ----------------------------
+  // 📦 Merge into one ctx if needed
+  // ----------------------------
+  const ctx = useMemo(
+    () => ({
+      ...authCtx,
+      ...projectCtx,
+      ...taskCtx,
+      ...commentCtx,
+      ...timerCtx,
+      ...labelCtx,
+    }),
+    [authCtx, projectCtx, taskCtx, commentCtx, timerCtx, labelCtx]
+  );
 
-
-
-
-// ----------------------------
-// 🔑 Authentication & User Data
-// ----------------------------
-const authCtx = useMemo(
-  () => ({
-    auth,
-    users,
-    departments,
-  }),
-  [auth, users, departments]
-);
-
-// ----------------------------
-// 📂 Projects
-// ----------------------------
-const projectCtx = useMemo(
-  () => ({
-    allProjects,
-    updateTaskProject,
-    updateTaskJLS,
-    updateAlocateTask,
-  }),
-  [allProjects]
-);
-
-// ----------------------------
-// 📊 Tasks / Filtering
-// ----------------------------
-const taskCtx = useMemo(
-  () => ({
-    totalHours,
-    filterId,
-    active,
-    active1,
-    setFilterData,
-    setTasksData,
-    setTaskID,
-    setProjectName,
-    setShowDetail,
-    copyTask,
-    handleCompleteStatus,
-    handleDeleteTaskConfirmation,
-  }),
-  [
-    totalHours,
-    filterId,
-    active,
-    active1,
-     
-  ]
-);
-
-// ----------------------------
-// 💬 Comments
-// ----------------------------
-const commentCtx = useMemo(
-  () => ({
-    comment_taskId,
-    setCommentTaskId,
-    setIsComment,
-  }),
-  [comment_taskId,  ]
-);
-
-// ----------------------------
-// ⏱️ Timer / Tracking
-// ----------------------------
-const timerCtx = useMemo(
-  () => ({
-    anyTimerRunning,
-    timerId,
-    jid,
-    play,
-    reload,
-    note,
-    currentPath,
-    activity,
-    taskIdForNote,
-    timerRef,
-    setIsShow,
-    setReload,
-    setPlay,
-    setNote,
-    setActivity,
-    setTaskIdForNote,
-  }),
-  [
-    anyTimerRunning,
-    timerId,
-    jid,
-    play,
-    reload,
-    note,
-    currentPath,
-    activity,
-    taskIdForNote,
-    timerRef,
-     
-  ]
-);
-
-// ----------------------------
-// 🏷️ Labels
-// ----------------------------
-const labelCtx = useMemo(
-  () => ({
-    labelData,
-    addlabelTask,
-  }),
-  [labelData,  ]
-);
-
-// ----------------------------
-// 📦 Merge into one ctx if needed
-// ----------------------------
-const ctx = useMemo(
-  () => ({
-    ...authCtx,
-    ...projectCtx,
-    ...taskCtx,
-    ...commentCtx,
-    ...timerCtx,
-    ...labelCtx,
-  }),
-  [authCtx, projectCtx, taskCtx, commentCtx, timerCtx, labelCtx]
-);
-
-// ----------------------------
-// 📑 Columns
-// ----------------------------
-const columns = useMemo(() => getTaskColumns(ctx), [ctx]);
-
-
-
-
-
-
+  // ----------------------------
+  // 📑 Columns
+  // ----------------------------
+  const columns = useMemo(() => getTaskColumns(ctx), [ctx]);
 
   // Clear table Filter
   const handleClearFilters = () => {
@@ -1610,10 +1082,6 @@ const columns = useMemo(() => getTaskColumns(ctx), [ctx]);
     // table.resetColumnFilters();
   };
 
-
-
-
-
   const table = useMaterialReactTable({
     columns,
     data:
@@ -1621,13 +1089,12 @@ const columns = useMemo(() => getTaskColumns(ctx), [ctx]);
         ? tasksData
         : filterData) || [],
     getRowId: (row) => row._id,
-    
+
     enableStickyHeader: true,
     enableStickyFooter: true,
     // columnFilterDisplayMode: "popover",
     muiTableContainerProps: { sx: { maxHeight: "860px" } },
 
-    
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -1638,13 +1105,18 @@ const columns = useMemo(() => getTaskColumns(ctx), [ctx]);
     enableBottomToolbar: true,
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
-     
+
     // enableEditing: true,
-    
-   state: { rowSelection,  pagination, density: "compact", columnVisibility: columnVisibility },
-   onColumnVisibilityChange:setColumnVisibility,
-         onPaginationChange: setPagination, // ✅ Hook for page changes
-        autoResetPageIndex: false,
+
+    state: {
+      rowSelection,
+      pagination,
+      density: "compact",
+      columnVisibility: columnVisibility,
+    },
+    onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: setPagination, // ✅ Hook for page changes
+    autoResetPageIndex: false,
     enablePagination: true,
     initialState: {
       // pagination: { pageSize: 20 },
@@ -1665,15 +1137,9 @@ const columns = useMemo(() => getTaskColumns(ctx), [ctx]);
       },
     },
 
-     
-
-
     muiTableBodyCellProps: {
       sx: {
         border: "1px solid rgba(203, 201, 201, 0.5)",
-       
-        
-        
       },
     },
 
@@ -1690,49 +1156,7 @@ const columns = useMemo(() => getTaskColumns(ctx), [ctx]);
         },
       },
     },
-
-
-
   });
-
-
-
-
-
- 
-
-  //  -----------Handle drag end---------
-  const handleUserOnDragEnd = (result) => {
-    const { destination, source } = result;
-
-    console.log("destination", destination)
-    console.log("source", source)
-
-    if (!destination || destination.index === source.index) return;
-
-    const newTodos = Array.from(users);
-    const [movedTodo] = newTodos.splice(source.index, 1);
-    newTodos.splice(destination.index, 0, movedTodo);
-
-    setUsers(newTodos);
-
-    handleReorderingUsers(newTodos);
-  };
-  // Handle Reordering
-  const handleReorderingUsers = async (newTodos) => {
-    try {
-      const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/reordering`,
-        { usersData: newTodos }
-      );
-      if (data) {
-        toast.success("Reordering successfully!");
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error(error.response.data.message);
-    }
-  };
 
   // Import CSV File
   // --------------Import Job data------------>
@@ -1813,116 +1237,62 @@ const columns = useMemo(() => getTaskColumns(ctx), [ctx]);
     }
   };
 
+  // To Change the total hours when filter is applied inside the table
+  useEffect(() => {
+    console.log(
+      "table.getFilteredRowModel().rows.length",
+      table.getFilteredRowModel().rows.length
+    );
+    const showingRows = table.getFilteredRowModel().rows;
+    setTotalHours((prev) => {
+      const totalHours = showingRows.reduce((acc, row) => {
+        const hours = row.original.hours;
+        return acc + Number(hours);
+      }, 0);
 
-
-// To Change the total hours when filter is applied inside the table
-useEffect(()=>{
-  
-  console.log("table.getFilteredRowModel().rows.length", table.getFilteredRowModel().rows.length)
-  const showingRows = table.getFilteredRowModel().rows  
-  setTotalHours((prev) => {
-
-    const totalHours = showingRows.reduce((acc, row) => {
-      const hours = row.original.hours;
-      return acc + Number(hours);
-    }, 0);
-
-    return totalHours.toFixed(0); 
-
-
-  })
-}, [table.getFilteredRowModel().rows])
-
-
-
+      return totalHours.toFixed(0);
+    });
+  }, [table.getFilteredRowModel().rows]);
 
   const setColumnFromOutsideTable = (colKey, filterVal) => {
-
     const col = table.getColumn(colKey);
     return col.setFilterValue(filterVal);
-  }
-
-
+  };
 
   // To see the document.title timer even if the filter is applied to the Jobholder | coz it will unmount the grid timer
   useEffect(() => {
-
     const col = table.getColumn("jobHolder");
 
     const filteredValue = col.getFilterValue();
 
-    if(filteredValue === auth?.user?.name) {
-      setShowActiveTimer(false)
+    if (filteredValue === auth?.user?.name) {
+      setShowActiveTimer(false);
     } else {
-      console.log('set show timer trueeeee')
-      setShowActiveTimer(true)
+      console.log("set show timer trueeeee");
+      setShowActiveTimer(true);
     }
-
-
-  }, [table.getColumn("jobHolder").getFilterValue])
-
-
-
-
-
-
-
+  }, [table.getColumn("jobHolder").getFilterValue]);
 
   useEffect(() => {
-
-
-    if(auth.user?.role?.name === "Admin") {
-
+    if (auth.user?.role?.name === "Admin" && !justShowTable) {
       console.log("Admin Role Detected, setting showJobHolder to true💛💛🧡🧡");
       setShowJobHolder(true);
       setActiveBtn("jobHolder");
 
-      setActive1(auth?.user?.name)
+      setActive1(auth?.user?.name);
 
       setColumnFromOutsideTable("deadline", "Today");
-
-
- 
     }
+  }, []);
 
-
-
-  }, [])
-
-
-
-      useEffect(() => {
+  useEffect(() => {
     if (comment_taskId) {
-      
-      filterByRowId(table, comment_taskId, setCommentTaskId, setIsComment)
+      filterByRowId(table, comment_taskId, setCommentTaskId, setIsComment);
 
-    
-
-    // searchParams.delete("comment_taskId");
-    // navigate({ search: searchParams.toString() }, { replace: true });
-
-
+      // searchParams.delete("comment_taskId");
+      // navigate({ search: searchParams.toString() }, { replace: true });
     }
-
   }, [comment_taskId, searchParams, navigate, table]);
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   const renderColumnControls = () => (
     <div className="flex flex-col gap-3 bg-white rounded-md border p-4">
@@ -1942,134 +1312,85 @@ useEffect(()=>{
     </div>
   );
 
-
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const columnFilters = table.getState().columnFilters;
-
-
-
-
-// useEffect(() => {
-//   if (!table) return;
-
-//   const col = table.getColumn("departmentName");
-//   if (!col) return;
-
-//   const val = col.getFilterValue() || "";
-    
-//   if(!val) return
-//   if (val !== filter1) {
-//     setFilter1(val);
-//   }
-// }, [table, columnFilters]);
-
-
-
-
-// useEffect(() => {
-//   if (!table) return;
-
-//   const col = table.getColumn("projectName");
-//   if (!col) return;
-
-//   const val = col.getFilterValue() || "";
-
-
-//   if (val !== filter2) {
-//     setFilter2(val);
-//   }
-// }, [table, columnFilters]);
-
-
-
-// useEffect(() => {
-//   if (!table) return;
-
-//   const col = table.getColumn("jobHolder");
-//   if (!col) return;
-
-//   const val = col.getFilterValue() || "";
-
-//   if (val !== filter3) {
-//     setFilter3(val);
-//   }
-// }, [table, columnFilters]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // Hook returns an updater for each column
-const updateDepartment = useColumnFilterSync(table, "departmentName", filter1, setFilter1);
-const updateProject    = useColumnFilterSync(table, "projectName", filter2, setFilter2);
-const updateJobHolder  = useColumnFilterSync(table, "jobHolder", filter3, setFilter3);
-
-
-
-
-
-
-
-
-
-// helper to check if "all departments" are selected
-const allDepartmentsSelected =
-  filter1 === "" || 
-  filter1 === "All" ||
-  (Array.isArray(filter1) && filter1.length === departments.length);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  // const columnFilters = table.getState().columnFilters;
+
+  // useEffect(() => {
+  //   if (!table) return;
+
+  //   const col = table.getColumn("departmentName");
+  //   if (!col) return;
+
+  //   const val = col.getFilterValue() || "";
+
+  //   if(!val) return
+  //   if (val !== filter1) {
+  //     setFilter1(val);
+  //   }
+  // }, [table, columnFilters]);
+
+  // useEffect(() => {
+  //   if (!table) return;
+
+  //   const col = table.getColumn("projectName");
+  //   if (!col) return;
+
+  //   const val = col.getFilterValue() || "";
+
+  //   if (val !== filter2) {
+  //     setFilter2(val);
+  //   }
+  // }, [table, columnFilters]);
+
+  // useEffect(() => {
+  //   if (!table) return;
+
+  //   const col = table.getColumn("jobHolder");
+  //   if (!col) return;
+
+  //   const val = col.getFilterValue() || "";
+
+  //   if (val !== filter3) {
+  //     setFilter3(val);
+  //   }
+  // }, [table, columnFilters]);
+
+  // Hook returns an updater for each column
+  const updateDepartment = useColumnFilterSync(
+    table,
+    "departmentName",
+    filter1,
+    setFilter1
+  );
+  const updateProject = useColumnFilterSync(
+    table,
+    "projectName",
+    filter2,
+    setFilter2
+  );
+  const updateJobHolder = useColumnFilterSync(
+    table,
+    "jobHolder",
+    filter3,
+    setFilter3
+  );
+
+  // helper to check if "all departments" are selected
+  const allDepartmentsSelected =
+    filter1 === "" ||
+    filter1 === "All" ||
+    (Array.isArray(filter1) && filter1.length === departments.length);
+
+  // return (
+  //   <div className="w-full min-h-[10vh] relative -mt-[10px] ">
+  //                 <div className="h-full hidden1 overflow-y-scroll relative">
+  //                   <MaterialReactTable table={table}   />
+  //                 </div>
+  //               </div>
+  // )
+
+  if (justShowTable) {
+    return <TasksTable table={table} />;
+  }
 
   return (
     <>
@@ -2101,21 +1422,14 @@ const allDepartmentsSelected =
                 <IoClose className="h-6 w-6 text-white" />
               </span>
 
-              <span><QuickAccess /></span>
-               
+              <span>
+                <QuickAccess />
+              </span>
             </div>
-
-
-
-
-
-                     
 
             {/* Project Buttons */}
             <div className="flex items-center gap-4">
-
-
-              {(auth?.user?.role?.name === "Admin") && (
+              {auth?.user?.role?.name === "Admin" && (
                 <div
                   className=" relative w-[8rem]    border-2 border-gray-200 rounded-md py-1 px-2 hidden sm:flex items-center justify-between gap-1"
                   onClick={() => setShowDepartment(!showDepartment)}
@@ -2134,55 +1448,20 @@ const allDepartmentsSelected =
                     )}
                   </span>
 
-
-
-
-
- 
-                    
                   {/* -----------Departments------- */}
-                  <DepartmentDropdown 
-
-                      showDepartment={showDepartment}
-                       
-                      departments={departments}
-
-                      getAllDepartments={getAllDepartments}
-
-                      setShowDepartment={setShowDepartment}
-                      setDepartmentId={setDepartmentId}
-                      setOpenAddDepartment={setOpenAddDepartment}
-                    
-                    
-                    
-                      />
- 
-
-
-                  
-
+                  <DepartmentDropdown
+                    showDepartment={showDepartment}
+                    departments={departments}
+                    getAllDepartments={getAllDepartments}
+                    setShowDepartment={setShowDepartment}
+                    setDepartmentId={setDepartmentId}
+                    setOpenAddDepartment={setOpenAddDepartment}
+                  />
                 </div>
               )}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
               {/*  */}
-              {(auth?.user?.role?.name === "Admin") && (
+              {auth?.user?.role?.name === "Admin" && (
                 <div
                   className=" relative w-[8rem]    border-2 border-gray-200 rounded-md py-1 px-2 hidden sm:flex items-center justify-between gap-1"
                   onClick={() => setShowProject(!showProject)}
@@ -2201,37 +1480,18 @@ const allDepartmentsSelected =
                     )}
                   </span>
 
-
-
-
-
-
                   {/* -----------Projects------- */}
-                  <ProjectDropdown 
+                  <ProjectDropdown
                     showProject={showProject}
-                    
                     projects={projects}
-                     
                     getAllProjects={getAllProjects}
                     getAllTasks={getAllTasks}
-                    
-                    
                     setShowProject={setShowProject}
                     setProjectId={setProjectId}
                     setOpenAddProject={setOpenAddProject}
-                   
-
                   />
-
-                  
-
                 </div>
               )}
-
-
-
-              
-
 
               <form>
                 <input
@@ -2309,65 +1569,59 @@ const allDepartmentsSelected =
                   " border-2 border-b-0 text-orange-600 border-gray-300"
                 }`}
                 onClick={() => {
-                setShowCompleted(false);
+                  setShowCompleted(false);
 
-                // clear all filters when clicking "All"
-                updateDepartment("");
-                updateProject("");
-                updateJobHolder("");
+                  // clear all filters when clicking "All"
+                  updateDepartment("");
+                  updateProject("");
+                  updateJobHolder("");
 
-                setFilter1("All");
-              }}
+                  setFilter1("All");
+                }}
               >
-                All 
+                All
               </div>
 
-
-                
-
-                     <DraggableFilterTabs 
-
-                  droppableId={"departments"}
-                  items={departments}
-                   
-                  filterValue={filter1}
-                  tasks={tasksData}
-                   getCountFn={(department, tasks) =>
+              <DraggableFilterTabs
+                droppableId={"departments"}
+                items={departments}
+                filterValue={filter1}
+                tasks={tasksData}
+                getCountFn={(department, tasks) =>
                   tasks.filter((t) =>
-                    t.project?.departments?.some((d) => d._id === department?._id)
+                    t.project?.departments?.some(
+                      (d) => d._id === department?._id
+                    )
                   ).length
                 }
-                  getLabelFn={(department) => department?.departmentName}
-                  
-                  // onClick={
-                  //   (department) => setFilter1((prev) => {
-                  //     const isSameUser = prev === department?.departmentName;
-                  //     const newValue = isSameUser ? "" : department?.departmentName;
+                getLabelFn={(department) => department?.departmentName}
+                // onClick={
+                //   (department) => setFilter1((prev) => {
+                //     const isSameUser = prev === department?.departmentName;
+                //     const newValue = isSameUser ? "" : department?.departmentName;
 
-                  //       setColumnFromOutsideTable("departmentName", newValue);
+                //       setColumnFromOutsideTable("departmentName", newValue);
 
-                  //        setColumnFromOutsideTable("projectName", "");
-                  //        setColumnFromOutsideTable("jobHolder", "");
-                  //     return newValue;
-                  //   })
-                  // }
+                //        setColumnFromOutsideTable("projectName", "");
+                //        setColumnFromOutsideTable("jobHolder", "");
+                //     return newValue;
+                //   })
+                // }
 
-
-                  onClick={(dep) => {
-                      const newValue = filter1 === dep.departmentName ? "" : dep.departmentName;
-                      updateDepartment(newValue);
-                      updateProject("");   // reset project filter when department changes
-                      updateJobHolder(""); // reset jobHolder filter when department changes
-                    }}
-                  onDragEnd={() => {}}
-                  activeClassName={filter1 ? "border-2 border-b-0 text-orange-600 border-gray-300" : ""}
-                
-                
-                />
-                    
-
-
-
+                onClick={(dep) => {
+                  const newValue =
+                    filter1 === dep.departmentName ? "" : dep.departmentName;
+                  updateDepartment(newValue);
+                  updateProject(""); // reset project filter when department changes
+                  updateJobHolder(""); // reset jobHolder filter when department changes
+                }}
+                onDragEnd={() => {}}
+                activeClassName={
+                  filter1
+                    ? "border-2 border-b-0 text-orange-600 border-gray-300"
+                    : ""
+                }
+              />
 
               {/* <DragDropContext onDragEnd={handleOnDragEnd}>
                 <Droppable droppableId="departments" direction="horizontal">
@@ -2446,7 +1700,9 @@ const allDepartmentsSelected =
               {/* -------------Filter Open Buttons-------- */}
               <span
                 className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border  ${
-                  activeBtn === "jobHolder" && showJobHolder &&  "bg-orange-500 text-white"
+                  activeBtn === "jobHolder" &&
+                  showJobHolder &&
+                  "bg-orange-500 text-white"
                 }`}
                 onClick={() => {
                   setActiveBtn("jobHolder");
@@ -2494,29 +1750,31 @@ const allDepartmentsSelected =
                 <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
               </span>
 
-              
-
-
-
-
-
-
               <div className="relative">
-                            <div className={`  p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${ showcolumn && "bg-orange-500 text-white" }`} onClick={() => setShowColumn(!showcolumn)} > {showcolumn ? ( <GoEyeClosed className="h-5 w-5" /> ) : ( <GoEye className="h-5 w-5" /> )} </div>
-                            {showcolumn && (
-                              <div
-                                ref={showColumnRef}
-                                className="fixed top-32 left-[50%] z-[9999]    w-[12rem]"
-                              >
-                                {renderColumnControls()}
-                              </div>
-                            )}
-                          </div>
+                <div
+                  className={`  p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+                    showcolumn && "bg-orange-500 text-white"
+                  }`}
+                  onClick={() => setShowColumn(!showcolumn)}
+                >
+                  {" "}
+                  {showcolumn ? (
+                    <GoEyeClosed className="h-5 w-5" />
+                  ) : (
+                    <GoEye className="h-5 w-5" />
+                  )}{" "}
+                </div>
+                {showcolumn && (
+                  <div
+                    ref={showColumnRef}
+                    className="fixed top-32 left-[50%] z-[9999]    w-[12rem]"
+                  >
+                    {renderColumnControls()}
+                  </div>
+                )}
+              </div>
 
-
-
-
-                            <span
+              <span
                 className={` p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
                 onClick={() => {
                   getTasks1();
@@ -2536,7 +1794,6 @@ const allDepartmentsSelected =
                   }`}
                 />
               </span>
-
             </div>
             {/*  */}
             <hr className="mb-1 bg-gray-300 w-full h-[1px] max-lg:hidden" />
@@ -2546,343 +1803,40 @@ const allDepartmentsSelected =
               <>
                 <div className="w-full  py-2 max-lg:hidden ">
                   <div className="flex items-center flex-wrap gap-4">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                   <DraggableFilterTabs 
-
-                  droppableId={"users"}
-                  // items={filter2 ? projectUsers.filter(user => getJobHolderCount(user?.name, active) > 0) : users.filter(user => getJobHolderCount(user?.name, active) > 0)}
-                  items={users.filter(user => getJobHolderCount(user?.name, active) > 0)}
-                  
-                  filterValue={filter3}
-                  tasks={tasksData}
-                   getCountFn={(user, tasks) =>
-                  tasks.filter((t) => t.jobHolder === user.name).length
-                }
-                  getLabelFn={(user) => user.name}
-                  
-                  // onClick={
-                  //   (user) =>setFilter3((prev) => {
-                  //                           const isSameUser = prev === user?.name;
-                  //                           const newValue = isSameUser ? "" : user?.name;
-
-                  //                           setColumnFromOutsideTable("jobHolder", newValue);
-                  //                           return newValue;
-                  //                 })
-
-                  // }
-
-
-
-
-
-
-
-
-
-
-                   onClick={(user) => {
-                      const newValue = filter3 === user?.name ? "" : user?.name;
-                      
-                     
-                      updateJobHolder(newValue); // reset jobHolder filter when department changes
-
-
-                      setColumnFromOutsideTable('status', 'Progress');
-                                         
-                      setColumnFromOutsideTable('deadline', '');
-                      if(auth.user?.role?.name === "Admin" && user?.name === auth?.user?.name) {
-                        setColumnFromOutsideTable('deadline', 'Today');
-                          
+                    <DraggableFilterTabs
+                      droppableId={"users"}
+                      // items={filter2 ? projectUsers.filter(user => getJobHolderCount(user?.name, active) > 0) : users.filter(user => getJobHolderCount(user?.name, active) > 0)}
+                      items={users.filter(
+                        (user) => getJobHolderCount(user?.name, active) > 0
+                      )}
+                      filterValue={filter3}
+                      tasks={tasksData}
+                      getCountFn={(user, tasks) =>
+                        tasks.filter((t) => t.jobHolder === user.name).length
                       }
-
-
-
-
-                    }}
-                  onDragEnd={handleUserOnDragEnd}
-                  activeClassName={filter3 ? "border-b-2 text-orange-600 border-orange-600" : ""}
-                
-                
-                />
-
-
-
-
-
-
-
-
-
-
-
-                    
-
-                    {/* <DragDropContext onDragEnd={handleOnDragEnd}>
-                <Droppable droppableId="projects" direction="horizontal">
-                  {(provided) => (
-                    <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      className="flex items-center gap-2 "
-                    >
-                      {projects?.map((project, index) => (
-                        <Draggable
-                          key={project._id}
-                          draggableId={project._id}
-                          index={index}
-                        >
-                          {(provided) => (
-                            <div
-                              className={`py-1 rounded-tl-md rounded-tr-md px-1 w-fit cursor-pointer font-[500] text-[14px] ${
-                                filter2 === project?.projectName &&
-                                " border-2 border-b-0 text-orange-600 border-gray-300"
-                              }`}
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              onClick={() => {
-                                setFilterData("");
-                                setActive(project?.projectName);
-                                filterByDep(project?.projectName);
-
-                                setShowCompleted(false);
-                                setActive1("");
-
-                                dispatch(setFilterId(""));
-
-
-                                setFilter2((prev) => {
-                                    const isSameUser = prev === project?.projectName;
-                                    const newValue = isSameUser ? "" : project?.projectName;
-
-                                    setColumnFromOutsideTable("projectName", newValue);
-                                    return newValue;
-                                  });
-
-
-                                setColumnFromOutsideTable('projectName', project?.projectName);
-                                setColumnFromOutsideTable('jobHolder', "");
-                              }}
-                            >
-                              {project?.projectName} (
-                                {getProjectTaskCount(project._id, tasksData)}
-                              
-                              )
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext> */}
-
-
-
-
-
-
-
-
-
-                     
-
-
-
-
-
-
-                    
-
-
-
-{/*                   
-                <DraggableFilterTabs 
-
-                  droppableId={"projects"}
-                  items={filter1 ? departmentProjects : projects}
-                  filterValue={filter2}
-                  tasks={tasksData}
-                   getCountFn={(proj, tasks) =>
-                  tasks.filter((t) => t.project?._id === proj._id).length
-                }
-                  getLabelFn={(project) => project.projectName}
-                  
-                  
-
-
-
-                  onClick={(project) => {
-                      const newValue = filter2 === project?.projectName ? "" : project?.projectName;
-                      
-                      updateProject(newValue);   // reset project filter when department changes
-                      updateJobHolder(""); // reset jobHolder filter when department changes
-                    }}
-                  onDragEnd={() => {}}
-                  activeClassName={filter2 ? "border-b-2 text-orange-600 border-orange-600" : ""}
-                
-                
-                /> */}
-
-
-
-
-
-
-
-
-
-
-
-
-{/* 
-
-                    <DragDropContext onDragEnd={handleUserOnDragEnd}>
-                      <Droppable droppableId="users" direction="horizontal">
-                        {(provided) => (
-                          <div
-                            {...provided.droppableProps}
-                            ref={provided.innerRef}
-                            className="flex items-center gap-2 overflow-x-auto hidden1"
-                          >
-                            {users
-                              // ?.filter(
-                              //   (user) =>
-                              //     getJobHolderCount(user?.name, active) > 0
-                              // )
-                              ?.map((user, index) => (
-                                <Draggable
-                                  key={user._id}
-                                  draggableId={user._id}
-                                  index={index}
-                                >
-                                  {(provided) => (
-                                    <div
-                                      className={`py-1 rounded-tl-md w-[5.8rem]   sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                                        filter3 === user.name &&
-                                        "  border-b-2 text-orange-600 border-orange-600"
-                                      }`}
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                      onClick={() => {
-                                        // setActive1(user?.name);
-                                        // filterByProjStat(user?.name, active);
-                                        // setColumnFromOutsideTable('status', 'Progress');
-                                        // setColumnFromOutsideTable('jobHolder', user?.name);
-
-                                        // setColumnFromOutsideTable('deadline', '');
-                                        // if(auth.user?.role?.name === "Admin" && user?.name === auth?.user?.name) {
-                                        //   setColumnFromOutsideTable('deadline', 'Today');
-                                           
-                                        // }
-                                        
-
-                                         setFilter3((prev) => {
-                                            const isSameUser = prev === user?.name;
-                                            const newValue = isSameUser ? "" : user?.name;
-
-                                            setColumnFromOutsideTable("jobHolder", newValue);
-                                            return newValue;
-                                  });
-
-
-                                      }}
-                                    >
-                                      {user.name} (
-                                      {getUserTaskCount(user?.name, tasksData)})
-                                    </div>
-                                  )}
-                                </Draggable>
-                              ))}
-                            {provided.placeholder}
-                          </div>
-                        )}
-                      </Droppable>
-                    </DragDropContext> */}
-
-
-
-
-                  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                      getLabelFn={(user) => user.name}
+                      onClick={(user) => {
+                        const newValue =
+                          filter3 === user?.name ? "" : user?.name;
+
+                        updateJobHolder(newValue); // reset jobHolder filter when department changes
+
+                        setColumnFromOutsideTable("status", "Progress");
+
+                        setColumnFromOutsideTable("deadline", "");
+                        if (
+                          auth.user?.role?.name === "Admin" &&
+                          user?.name === auth?.user?.name
+                        ) {
+                          setColumnFromOutsideTable("deadline", "Today");
+                        }
+                      }}
+                      activeClassName={
+                        filter3
+                          ? "border-b-2 text-orange-600 border-orange-600"
+                          : ""
+                      }
+                    />
                   </div>
                 </div>
                 <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
@@ -3111,11 +2065,7 @@ const allDepartmentsSelected =
                 <Loader />
               </div>
             ) : (
-              <div className="w-full min-h-[10vh] relative -mt-[10px] ">
-                <div className="h-full hidden1 overflow-y-scroll relative">
-                  <MaterialReactTable table={table}   />
-                </div>
-              </div>
+              <TasksTable table={table} />
             )}
           </div>
 
@@ -3133,7 +2083,7 @@ const allDepartmentsSelected =
             </div>
           )}
 
-           {/* ----------------Add Project-------- */}
+          {/* ----------------Add Project-------- */}
           {openAddProject && (
             <div className="fixed top-0 left-0 w-full h-screen z-[999] bg-gray-100/70 flex items-center justify-center py-6  px-4">
               <AddProjectModal
@@ -3142,7 +2092,6 @@ const allDepartmentsSelected =
                 getAllProjects={getAllProjects}
                 projectId={projectId}
                 setProjectId={setProjectId}
-
                 getTasks1={getTasks1}
                 departments={departments}
               />
@@ -3220,7 +2169,10 @@ const allDepartmentsSelected =
                       </button>
                     )}
 
-                    <SubtasksForNote taskId={taskIdForNote} onSelect={(option) => setNote(option)} />
+                    <SubtasksForNote
+                      taskId={taskIdForNote}
+                      onSelect={(option) => setNote(option)}
+                    />
                   </div>
                   <div className=" w-full px-4 py-2 flex-col gap-4">
                     <textarea
@@ -3265,8 +2217,7 @@ const allDepartmentsSelected =
                 projects={projects}
                 setFilterData={setFilterData}
                 tasksData={tasksData}
-                
-                assignedPerson = {(table.getRow(taskID)).original.jobHolder}
+                assignedPerson={table.getRow(taskID).original.jobHolder}
               />
             </div>
           )}
@@ -3293,18 +2244,9 @@ const allDepartmentsSelected =
         </div>
       )}
 
-      {
-        showActiveTimer && <ActiveTimer />
-      }
-      
+      {showActiveTimer && <ActiveTimer />}
     </>
   );
 };
 
 export default AllTasks;
-
-
-
-
-
-// bg-gradient-to-br from-[#ffe4e6] 

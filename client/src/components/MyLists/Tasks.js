@@ -38,6 +38,7 @@ import { useDispatch, useSelector } from "react-redux";
  
 import { updateCountdown } from "../../redux/slices/timerSlice";
 import { useSocket } from "../../context/socketProvider";
+import { getTaskColumns } from "../../pages/Tasks/table/columns";
 
  
 
@@ -59,6 +60,7 @@ const Tasks = forwardRef(
     const [openAddProject, setOpenAddProject] = useState(false);
     const [projectId, setProjectId] = useState("");
     const [projects, setProjects] = useState([]);
+      const [departments, setDepartments] = useState([]);
     const [allProjects, setAllProjects] = useState([]);
     const [showProject, setShowProject] = useState(false);
     const [active, setActive] = useState("All");
@@ -88,7 +90,9 @@ const Tasks = forwardRef(
     const closeProject = useRef(null);
     const [activity, setActivity] = useState("Chargeable");
     const [access, setAccess] = useState([]);
-
+      const [reload, setReload] = useState(false);
+    
+  const [taskIdForNote, setTaskIdForNote] = useState("");
  
 
     console.log("filterData", filterData);
@@ -133,6 +137,44 @@ const Tasks = forwardRef(
         setAccess(filterAccess);
       }
     }, [auth]);
+
+
+
+
+
+
+
+
+
+
+
+
+        //---------- Get All Projects-----------
+      const getAllDepartments = async () => {
+        try {
+          const { data } = await axios.get( `${process.env.REACT_APP_API_URL}/api/v1/tasks/department` );
+           if (data?.success) {
+    
+    
+            
+          if (auth?.user?.role?.name === "Admin") {
+            // Admin: show all
+            setDepartments(data?.departments || []);
+          } 
+        }
+        } catch (error) {
+          console.log(error);
+        }
+      };
+    
+    useEffect(() => {
+      if (auth) {
+        getAllDepartments();
+      }
+    }, [auth, allProjects]); 
+
+
+    
 
     //---------- Get All Projects-----------
     const getAllProjects = async () => {
@@ -1770,8 +1812,170 @@ Cell: ({ cell, row }) => {
       handleClearFilters,
     }));
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+    // ----------------------------
+    // 🔑 Authentication & User Data
+    // ----------------------------
+    const authCtx = useMemo(
+      () => ({
+        auth,
+        users,
+        departments,
+      }),
+      [auth, users, departments]
+    );
+    
+    // ----------------------------
+    // 📂 Projects
+    // ----------------------------
+    const projectCtx = useMemo(
+      () => ({
+        allProjects,
+        updateTaskProject,
+        updateTaskJLS,
+        updateAlocateTask,
+      }),
+      [allProjects]
+    );
+    
+    // ----------------------------
+    // 📊 Tasks / Filtering
+    // ----------------------------
+    const taskCtx = useMemo(
+      () => ({
+        totalHours,
+        filterId,
+        active,
+        active1,
+        setFilterData,
+        setTasksData,
+        setTaskID,
+        setProjectName,
+        setShowDetail,
+        copyTask,
+        handleCompleteStatus,
+        handleDeleteTaskConfirmation,
+      }),
+      [
+        totalHours,
+        filterId,
+        active,
+        active1,
+         
+      ]
+    );
+    
+    // ----------------------------
+ // ----------------------------
+ // 💬 Comments
+ // ----------------------------
+ const commentCtx = useMemo(
+   () => ({
+      
+     setCommentTaskId,
+     setIsComment,
+   }),
+   [ ]
+ );
+    
+    // ----------------------------
+    // ⏱️ Timer / Tracking
+    // ----------------------------
+    const timerCtx = useMemo(
+      () => ({
+        anyTimerRunning,
+        timerId,
+        jid,
+        play,
+        reload,
+        note,
+        currentPath,
+        activity,
+        taskIdForNote,
+        timerRef,
+        setIsShow,
+        setReload,
+        setPlay,
+        setNote,
+        setActivity,
+        setTaskIdForNote,
+      }),
+      [
+        anyTimerRunning,
+        timerId,
+        jid,
+        play,
+        reload,
+        note,
+        currentPath,
+        activity,
+        taskIdForNote,
+        timerRef,
+         
+      ]
+    );
+    
+    // ----------------------------
+    // 🏷️ Labels
+    // ----------------------------
+    const labelCtx = useMemo(
+      () => ({
+        labelData,
+        addlabelTask,
+      }),
+      [labelData,  ]
+    );
+    
+    // ----------------------------
+    // 📦 Merge into one ctx if needed
+    // ----------------------------
+    const ctx = useMemo(
+      () => ({
+        ...authCtx,
+        ...projectCtx,
+        ...taskCtx,
+        ...commentCtx,
+        ...timerCtx,
+        ...labelCtx,
+      }),
+      [authCtx, projectCtx, taskCtx, commentCtx, timerCtx, labelCtx]
+    );
+    
+    // ----------------------------
+    // 📑 Columns
+    // ----------------------------
+    const columns2 = useMemo(() => getTaskColumns(ctx), [ctx]);
+
+
+
+
+
+
+
+
+
+
     const table = useMaterialReactTable({
-      columns,
+      columns: columns2,
       data: (active === "All" ? tasksData : filterData) || [],
       enableStickyHeader: true,
       enableStickyFooter: true,
@@ -1786,11 +1990,15 @@ Cell: ({ cell, row }) => {
       enableTopToolbar: true,
       enableBottomToolbar: true,
 
+      
       enablePagination: true,
       initialState: {
         pagination: { pageSize: 20 },
         pageSize: 20,
         density: "compact",
+         columnVisibility: {
+          _id: false
+        }
       },
 
       muiTableHeadCellProps: {

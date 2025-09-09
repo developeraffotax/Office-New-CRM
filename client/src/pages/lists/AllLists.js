@@ -15,6 +15,7 @@ import Timesheet from "../../components/TimeSheet/Timesheet";
 import Dashboard from "../../components/MyLists/LDashboard";
 import HR from "../../components/MyLists/Hr";
 import QuickAccess from "../../utlis/QuickAccess";
+import AllTasks from "../Tasks/AllTasks";
 
 export default function AllLists() {
    const [selectedTab, setSelectedTab] = useState("Tasks");
@@ -448,6 +449,7 @@ export default function AllLists() {
               childRef={childRef}
               setIsload={setIsload}
             />
+             
           ) : selectedTab === "Jobs" ? (
             <Jobs
               ref={tasksRef}

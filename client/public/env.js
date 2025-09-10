@@ -42,10 +42,10 @@ window.env = {
   "NUMBER_OF_PROCESSORS": "4",
   "OneDrive": "C:\\Users\\affot\\OneDrive",
   "OS": "Windows_NT",
-  "Path": "C:\\Users\\affot\\Desktop\\Code\\CRM\\client\\node_modules\\.bin;C:\\Users\\affot\\Desktop\\Code\\CRM\\node_modules\\.bin;C:\\Users\\affot\\Desktop\\Code\\node_modules\\.bin;C:\\Users\\affot\\Desktop\\node_modules\\.bin;C:\\Users\\affot\\node_modules\\.bin;C:\\Users\\node_modules\\.bin;C:\\node_modules\\.bin;C:\\Program Files\\nodejs\\node_modules\\npm\\node_modules\\@npmcli\\run-script\\lib\\node-gyp-bin;C:\\Program Files (x86)\\oh-my-posh\\bin\\;C:\\Python313\\Scripts\\;C:\\Python313\\;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Windows\\System32\\OpenSSH\\;C:\\ProgramData\\chocolatey\\bin;C:\\Program Files\\nodejs\\;C:\\Program Files\\Microsoft VS Code\\bin;C:\\Program Files\\dotnet\\;C:\\Program Files\\Git\\cmd;C:\\Users\\affot\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\affot\\AppData\\Roaming\\npm",
+  "Path": "C:\\Users\\affot\\Desktop\\Code\\CRM\\client\\node_modules\\.bin;C:\\Users\\affot\\Desktop\\Code\\CRM\\node_modules\\.bin;C:\\Users\\affot\\Desktop\\Code\\node_modules\\.bin;C:\\Users\\affot\\Desktop\\node_modules\\.bin;C:\\Users\\affot\\node_modules\\.bin;C:\\Users\\node_modules\\.bin;C:\\node_modules\\.bin;C:\\Program Files\\nodejs\\node_modules\\npm\\node_modules\\@npmcli\\run-script\\lib\\node-gyp-bin;C:\\Program Files (x86)\\oh-my-posh\\bin\\;C:\\Python313\\Scripts\\;C:\\Python313\\;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Windows\\System32\\OpenSSH\\;C:\\ProgramData\\chocolatey\\bin;C:\\Program Files\\nodejs\\;C:\\Program Files\\Microsoft VS Code\\bin;C:\\Program Files\\dotnet\\;C:\\Program Files\\Git\\cmd;C:\\Users\\affot\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\affot\\AppData\\Roaming\\npm;C:\\Users\\affot\\AppData\\Local\\Programs\\cursor\\resources\\app\\bin",
   "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.PY;.PYW;.CPL",
   "POSH_CURSOR_COLUMN": "1",
-  "POSH_CURSOR_LINE": "1",
+  "POSH_CURSOR_LINE": "7",
   "POSH_INSTALLER": "manual",
   "POSH_SESSION_ID": "29b920cb-a201-4d9a-9a68-7268bf55ba7e",
   "POSH_SHELL": "pwsh",
@@ -80,6 +80,6 @@ window.env = {
   "windir": "C:\\Windows",
   "WSLENV": "WT_SESSION:WT_PROFILE_ID:",
   "WT_PROFILE_ID": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
-  "WT_SESSION": "f69ebe05-1a62-454c-985f-a18d9f70f154",
+  "WT_SESSION": "932ec063-85fc-433a-8c31-c8b26f2e8b31",
   "ZES_ENABLE_SYSMAN": "1"
 };

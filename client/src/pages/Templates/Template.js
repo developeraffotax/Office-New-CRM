@@ -385,13 +385,6 @@ export default function Template() {
       }),
     [
       categoryData,
-      setTemplate,
-      setShowTemplate,
-      copyTemplate,
-      duplicateTemplate,
-      setTemplateId,
-      setAddTemplate,
-      handleDeleteTemplateConfirmation,
       userName,
     ]
   );

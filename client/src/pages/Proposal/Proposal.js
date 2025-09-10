@@ -19,6 +19,7 @@ import { CiEdit } from "react-icons/ci";
 import QuickAccess from "../../utlis/QuickAccess";
 import DraggableUserList from "../../utlis/DraggableUserList";
 import { useSelector } from "react-redux";
+import getProposalColumns from "./table/columns";
 
 export default function Proposal() {
 
@@ -279,17 +280,27 @@ export default function Proposal() {
     }
   };
 
-  //   ------------------------Table Data----------->
-  const getCurrentMonthYear = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = (today.getMonth() + 1).toString().padStart(2, "0");
-    return `${year}-${month}`;
-  };
+
 
   const columns = useMemo(
-    () => [
-      {
+    () =>
+      getProposalColumns({
+        auth,
+        users,
+        status,
+        sources,
+        setSelectFilter,
+        setFormData,
+        handleUpdateData,
+        handleCopyProposal,
+        setProposalId,
+        setShow,
+        handleDeleteLeadConfirmation,
+         
+      }),
+    [auth, users, status, sources, ]
+  );
+  /*      {
         accessorKey: "jobHolder",
         header: "Job Holder",
         Header: ({ column }) => {
@@ -1672,7 +1683,7 @@ export default function Proposal() {
     ],
     // eslint-disable-next-line
     [users, auth, proposalData, filteredData, load]
-  );
+  );*/
 
   // Clear table Filter
   const handleClearFilters = () => {

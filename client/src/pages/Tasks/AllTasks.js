@@ -1274,14 +1274,14 @@ const AllTasks = ({ justShowTable = false }) => {
   }, [table.getColumn("jobHolder").getFilterValue]);
 
   useEffect(() => {
-    if (auth.user?.role?.name === "Admin" && !justShowTable) {
+    if (auth.user?.role?.name === "Admin") {
       console.log("Admin Role Detected, setting showJobHolder to true💛💛🧡🧡");
       setShowJobHolder(true);
       setActiveBtn("jobHolder");
 
       setActive1(auth?.user?.name);
 
-      setColumnFromOutsideTable("deadline", "Today");
+      // setColumnFromOutsideTable("taskDate", "Today");
     }
   }, []);
 
@@ -1380,17 +1380,7 @@ const AllTasks = ({ justShowTable = false }) => {
     filter1 === "All" ||
     (Array.isArray(filter1) && filter1.length === departments.length);
 
-  // return (
-  //   <div className="w-full min-h-[10vh] relative -mt-[10px] ">
-  //                 <div className="h-full hidden1 overflow-y-scroll relative">
-  //                   <MaterialReactTable table={table}   />
-  //                 </div>
-  //               </div>
-  // )
-
-  if (justShowTable) {
-    return <TasksTable table={table} />;
-  }
+ 
 
   return (
     <>
@@ -1823,12 +1813,12 @@ const AllTasks = ({ justShowTable = false }) => {
 
                         setColumnFromOutsideTable("status", "Progress");
 
-                        setColumnFromOutsideTable("deadline", "");
+                        setColumnFromOutsideTable("taskDate", "");
                         if (
                           auth.user?.role?.name === "Admin" &&
                           user?.name === auth?.user?.name
                         ) {
-                          setColumnFromOutsideTable("deadline", "Today");
+                          setColumnFromOutsideTable("taskDate", "Today");
                         }
                       }}
                       activeClassName={

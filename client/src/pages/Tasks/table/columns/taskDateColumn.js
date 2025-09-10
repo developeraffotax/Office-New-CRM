@@ -11,7 +11,11 @@ export const taskDateColumn = (ctx) => {
     accessorKey: "taskDate",
 
     Header: ({ column }) => {
-      const [filterValue, setFilterValue] = useState("");
+      const [filterValue, setFilterValue] = useState(() => {
+
+
+        return ctx.auth.user?.role?.name === "Admin" ? "Today" : ""
+      });
       const [dateRange, setDateRange] = useState({ from: "", to: "" });
       const [showPopover, setShowPopover] = useState(false);
       const selectRef = useRef(null);
@@ -36,14 +40,14 @@ export const taskDateColumn = (ctx) => {
       }, [dateRange, filterValue]);
 
       // 🔄 Reset local state when external filter is cleared
-      useEffect(() => {
-        const currentFilter = column.getFilterValue();
-        if (!currentFilter) {
-          setFilterValue("");
-          setDateRange({ from: "", to: "" });
-          setShowPopover(false);
-        }
-      }, [column.getFilterValue()]);
+      // useEffect(() => {
+      //   const currentFilter = column.getFilterValue();
+      //   if (!currentFilter) {
+      //      setFilterValue("");
+      //     setDateRange({ from: "", to: "" });
+      //     setShowPopover(false);
+      //   }
+      // }, [column.getFilterValue()]);
 
       const handleFilterChange = (e) => {
         const val = e.target.value;
@@ -76,7 +80,7 @@ export const taskDateColumn = (ctx) => {
 
           <select
             ref={selectRef}
-            value={filterValue}
+             value={column.getFilterValue() || ""}
             onChange={handleFilterChange}
             className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
           >

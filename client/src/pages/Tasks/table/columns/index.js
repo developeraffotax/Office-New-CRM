@@ -1,5 +1,5 @@
 import { actionsColumn } from "./actionsColumn";
-import { commentsColumn } from "./commentsColumn";
+ 
 import { dateStatusColumn } from "./dateStatusColumn";
 import { deadlineColumn } from "./deadlineColumn";
 import { departmentColumn } from "./departmentColumn";
@@ -37,7 +37,7 @@ export const getTaskColumns = (ctx) => [
   leadColumn(ctx),
   budgetColumn(ctx),
   timerColumn(ctx),
-  commentsColumn(ctx),
+   
   actionsColumn(ctx),
   labelColumn(ctx),
   recurringColumn(ctx)

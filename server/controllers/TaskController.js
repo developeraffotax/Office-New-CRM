@@ -699,11 +699,20 @@ export const updateAlocateTask = async (req, res) => {
   }
 };
 
-// Get Single Task Comments
+
+
+
+
+
+
+
+// Get Single Task Comments & mark user comments as read
 export const singleTaskComments = async (req, res) => {
   try {
     const taskId = req.params.id;
+    const requesting_userId = req.user.user._id;
 
+     
     if (!taskId) {
       return res.status(400).send({
         success: false,
@@ -711,23 +720,57 @@ export const singleTaskComments = async (req, res) => {
       });
     }
 
-    const taskComments = await taskModel
-      .findById({ _id: taskId })
-      .select("comments");
+    // ✅ Find task and update comments status for current user's comments
+    const task = await taskModel.findById(taskId).select("comments jobHolder");
 
+    if (!task) {
+      return res.status(404).send({
+        success: false, 
+        message: "Task not found!",
+      });
+    }
+
+ 
+
+    //✅ Update status of comments for this user
+    // let updated = false;
+    // task.comments.forEach((comment) => {
+    //   if (taskUser?._id?.toString() === requesting_userId && comment.status === "unread") {
+    //     comment.status = "read";
+    //     updated = true;
+    //   }
+    // });
+
+    // if (updated) {
+    //   await task.save();
+    // }
+ 
     res.status(200).send({
       success: true,
-      comments: taskComments,
+      comments: task,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send({
       success: false,
-      message: "Error in get single job!",
-      error: error,
+      message: "Error in get single task comments!",
+      error,
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Delete Task
 export const deleteTask = async (req, res) => {
@@ -1410,9 +1453,12 @@ export const autoCreateRecurringTasks = async (req, res) => {
       },
     });
 
+    console.log("TASK LENGTH", tasks.length)
+
     for (const task of tasks) {
       let newStartDate = calculateStartDate(task.startDate, task.recurring);
       let newDeadline = calculateStartDate(task.deadline, task.recurring);
+      let newTaskDate = calculateStartDate(task.taskDate, task.recurring);
 
       const subtasksIncludingCompleted = task.subtasks?.map((subtask) => ({
         ...subtask,
@@ -1435,6 +1481,7 @@ export const autoCreateRecurringTasks = async (req, res) => {
         hours: task.hours,
         startDate: newStartDate,
         deadline: newDeadline,
+        taskDate: newTaskDate,
         lead: task.lead,
         recurring: task.recurring,
         label: task?.label,
@@ -1501,7 +1548,7 @@ export const autoCreateRecurringTasks = async (req, res) => {
 // });
 
 // }
-
+ 
 if (process.env.pm_id === "0") {
   // Schedule the task to run daily at 12:05 AM
   cron.schedule("5 0 * * *", async () => {

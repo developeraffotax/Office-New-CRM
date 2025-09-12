@@ -150,7 +150,7 @@ export const taskDateColumn = (ctx) => {
 
     filterFn: DateFilterFn,
 
-    size: 115,
+    size: 100,
     minSize: 80,
     maxSize: 140,
     grow: false,

@@ -56,7 +56,7 @@ router.put("/update/task/JLS/:id", requiredSignIn, updateJobHolderLS);
 router.put("/update/allocate/task/:id", requiredSignIn, updateAlocateTask);
 
 // Get Single Task Comments
-router.get("/task/comments/:id", singleTaskComments);
+router.get("/task/comments/:id", requiredSignIn, singleTaskComments);
 
 // Delete Task
 router.delete("/delete/task/:id", requiredSignIn, deleteTask);

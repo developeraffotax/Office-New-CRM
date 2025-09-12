@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { style } from "../../utlis/CommonStyle";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { HiReply } from "react-icons/hi";

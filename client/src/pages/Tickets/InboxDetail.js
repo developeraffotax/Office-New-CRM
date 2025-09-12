@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { style } from "../../utlis/CommonStyle";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { HiReply } from "react-icons/hi";
 import { Buffer } from "buffer";
 import { FaCaretDown } from "react-icons/fa";
-import { useNavigate, useParams } from "react-router-dom";
+ 
 import axios from "axios";
 import toast from "react-hot-toast";
 import Loader from "../../utlis/Loader";
@@ -234,7 +234,7 @@ export default function InboxDetail({
   };
 
   return (
-    <Layout>
+     
       <div className=" relative w-full h-[100%] flex flex-col bg-gray-50">
         <div className="w-full flex items-center justify-between bg-white px-4 py-3 border-b border-gray-200  ">
           <div className="flex items-center justify-center gap-3">
@@ -485,6 +485,6 @@ export default function InboxDetail({
           </div>
         )}
       </div>
-    </Layout>
+     
   );
 }

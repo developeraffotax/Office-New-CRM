@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import Layout from "../../components/Loyout/Layout";
+ 
 import { IoArrowBackOutline, IoSearch } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import toast from "react-hot-toast";

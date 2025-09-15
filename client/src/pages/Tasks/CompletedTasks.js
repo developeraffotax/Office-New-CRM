@@ -32,6 +32,39 @@ import Subtasks from "./Subtasks";
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import { useDispatch, useSelector } from "react-redux";
 import { setFilterId } from "../../redux/slices/authSlice";
+import { getCompletedTaskColumns } from "./table/columns";
+import DraggableFilterTabs from "./DraggableFilterTabs";
+
+
+
+
+
+
+
+function useColumnFilterSync(table, columnId, value, setValue) {
+  useEffect(() => {
+    if (!table) return;
+    const col = table.getColumn(columnId);
+    if (!col) return;
+
+    const val = col.getFilterValue() || "";
+    if (val !== value) setValue(val);
+  }, [table, columnId, table.getState().columnFilters, value, setValue]);
+
+  // For outside → table, just call this instead of another effect:
+  const updateFilter = (val) => {
+    table.getColumn(columnId)?.setFilterValue(val || undefined);
+    setValue(val);
+  };
+
+  return updateFilter;
+}
+
+
+
+
+
+
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -58,6 +91,10 @@ const CompletedTasks = ({
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth.auth);
   const filterId = useSelector((state) => state.auth.filterId);
+
+
+  const [departments, setDepartments] = useState([]);
+  const [allProjects, setAllProjects] = useState([]);
 
   const [isOpen, setIsOpen] = useState(false);
   const [users, setUsers] = useState([]);
@@ -92,11 +129,121 @@ const CompletedTasks = ({
   const [labelData, setLabelData] = useState([]);
   const [totalHours, setTotalHours] = useState("0");
 
+
+
+
+
+  const [filter1, setFilter1] = useState("");
+  const [filter2, setFilter2] = useState("");
+  const [filter3, setFilter3] = useState("");
+
+
+
+
+
+
+
+
+
+
+
+
+
   const dateStatus = ["Due", "Overdue"];
 
   const status = ["Todo", "Progress", "Review", "Onhold"];
 
   console.log("projects:", projects);
+ 
+  //---------- Get All Departments-----------
+  const getAllDepartments = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/department`
+      );
+      if (data?.success) {
+        if (auth?.user?.role?.name === "Admin") {
+          // Admin: show all
+          setDepartments(data?.departments || []);
+        } else {
+          // Non-admin: only include departments linked to projects user is in
+          const userProjects = allProjects.filter((project) =>
+            project.users_list.some((user) => user._id === auth?.user?.id)
+          );
+
+          // Collect all department IDs from user's projects
+          const projectDepartmentIds = userProjects
+            .flatMap((proj) => proj.departments?.map((d) => d._id)) // many-to-many
+            .filter(Boolean);
+
+          // Deduplicate IDs (in case user has multiple projects in the same department)
+          const uniqueDeptIds = [...new Set(projectDepartmentIds)];
+
+          // Filter the full department list based on user's accessible departments
+          const filteredDepartments = data.departments.filter((dep) =>
+            uniqueDeptIds.includes(dep._id)
+          );
+
+          setDepartments(filteredDepartments || []);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (auth) {
+      getAllDepartments();
+    }
+  }, [auth, allProjects]);
+
+
+
+
+
+
+
+
+    // Add label in Task
+    const addlabelTask = async (id, name, color) => {
+      try {
+        const { data } = await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/v1/tasks/add/label/${id}`,
+          { name, color }
+        );
+        if (data) {
+          if (filterId || active !== "All" || filterData || active1) {
+            setFilterData((prevData = []) =>
+              prevData?.map((item) =>
+                item._id === id ? { ...item, label: { name, color } } : item
+              )
+            );
+          }
+          setTasksData((prevData = []) =>
+            prevData?.map((item) =>
+              item._id === id ? { ...item, label: { name, color } } : item
+            )
+          );
+  
+          if (name) {
+            toast.success("label added!");
+          } else {
+            toast.success("label Updated!");
+          }
+  
+          getAllTasks();
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error("Error while add label");
+      }
+    };
+
+
+
+
+
 
   // -------Get All Tasks----->
   const getAllTasks = async () => {
@@ -150,6 +297,8 @@ const CompletedTasks = ({
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/projects/get_all/project`
       );
+
+      setAllProjects(data?.projects);
       setProjects(data?.projects);
     } catch (error) {
       console.log(error);
@@ -576,1116 +725,98 @@ const CompletedTasks = ({
   // ----------------------Table Data--------->
 
   console.log("TAKS DATA:", tasksData);
-  const columns = useMemo(
-    () => [
-      {
-        accessorKey: "project.projectName",
-        header: "Project",
-        minSize: 150,
-        maxSize: 200,
-        size: 160,
-        grow: false,
-        Header: ({ column }) => {
-          return (
-            <div className=" flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                Project
-              </span>
-              <select
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] w-full cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              >
-                <option value="">Select</option>
-                {projects?.map((proj) => (
-                  <option key={proj._id} value={proj.projectName}>
-                    {proj.projectName}
-                  </option>
-                ))}
-              </select>
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const projectId = row.original.project._id;
-
-          return (
-            <div className="flex">
-              <span>{row.original.project.projectName}</span>
-            </div>
-          );
-        },
-        filterFn: "equals",
-        filterSelectOptions: projects?.map((project) => project?.projectName),
-        filterVariant: "select",
-      },
-      {
-        accessorKey: "jobHolder",
-        header: "Job Holder",
-        Header: ({ column }) => {
-          const user = auth?.user?.name;
-
-          useEffect(() => {
-            column.setFilterValue(user);
-
-            // eslint-disable-next-line
-          }, []);
-
-          return (
-            <div className=" flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                Job Holder
-              </span>
-              <select
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              >
-                <option value="">Select</option>
-                {users?.map((jobhold, i) => (
-                  <option key={i} value={jobhold?.name}>
-                    {jobhold?.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const jobholder = cell.getValue();
-
-          return (
-            <select
-              value={jobholder || ""}
-              className="w-full h-[2rem] rounded-md border-none  outline-none"
-              onChange={(e) =>
-                updateTaskJLS(row.original?._id, e.target.value, "", "")
-              }
-            >
-              <option value="empty"></option>
-              {users?.map((jobHold, i) => (
-                <option value={jobHold?.name} key={i}>
-                  {jobHold.name}
-                </option>
-              ))}
-            </select>
-          );
-        },
-        filterFn: "equals",
-        filterSelectOptions: users.map((jobhold) => jobhold.name),
-        filterVariant: "select",
-        size: 100,
-        minSize: 80,
-        maxSize: 130,
-        grow: false,
-      },
-      // Task
-      {
-        accessorKey: "task",
-        header: "Tasks",
-        Header: ({ column }) => {
-          return (
-            <div className=" w-[380px] flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                Tasks
-              </span>
-              <input
-                type="search"
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              />
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const task = row.original.task;
-          const [allocateTask, setAllocateTask] = useState(task);
-          const [showEdit, setShowEdit] = useState(false);
-
-          
-          const [showSubtasks, setShowSubtasks] = useState(false);
-            const [showSubtaskId, setShowSubtaskId] = useState("");
-
-          const handleShowSubtasks = () => {
-             
-            console.log("row.original._id:", row.original._id);
-            console.log("showSubtaskId:", showSubtaskId);
-
-            if(showSubtaskId === row.original._id){
-              console.log("hide");
-              setShowSubtaskId("");
-            }else{
-              setShowSubtaskId(row.original._id);
-            }
-          }
-           
-          useEffect(() => {
-            setAllocateTask(row.original.task);
-          }, [row.original]);
-
-          const updateAllocateTask = (task) => {
-            updateAlocateTask(row.original._id, allocateTask, "", "");
-            setShowEdit(false);
-          };
-          return (
-            <div className="w-full flex items-start justify-start gap-1 flex-col "  >
-
-              <div  className="w-full   flex items-start justify-between gap-2 flex-row ">
-              
-              {showEdit ? (
-                <input
-                  type="text"
-                  placeholder="Enter Task..."
-                  value={allocateTask}
-                  onChange={(e) => setAllocateTask(e.target.value)}
-                  onBlur={(e) => updateAllocateTask(e.target.value)}
-                  className="w-full h-[2rem] focus:border border-gray-300 px-1 outline-none rounded-lg"
-                />
-              ) : (
-                      <div
-                        className=" w-full h-full cursor-pointer text-wrap "
-                        onDoubleClick={() => setShowEdit(true)}
-                        title={allocateTask}
-                      >
-                        <p
-                          className="text-[#0078c8] hover:text-[#0053c8] text-start inline  "
-                          onDoubleClick={() => setShowEdit(true)}
-                          onClick={() => {
-                            setTaskID(row.original._id);
-                            setProjectName(row.original.project.projectName);
-                            setShowDetail(true);
-                          }}
-                        >
-                          {allocateTask}
-                        </p>
-                      </div>
-              )}
-            
-
-                  <div className=" ">
-                    <span className={`${showSubtaskId === row.original._id ? "text-orange-500 " : row.original?.subtasks?.length > 0 ? "text-blue-400" : "text-gray-500"} cursor-pointer hover:text-orange-500 transition-all `} onClick={() => {
-                            setTaskID(row.original._id);
-                            setProjectName(row.original.project.projectName);
-                            handleShowSubtasks()
-                          }}>
-                      <AssignmentIcon />
-                    </span>
-
-                  </div>
-
-
-            </div>
-
-
-
-             {
-                 showSubtaskId === row.original._id && <div className={`  w-full h-full bg-gradient-to-br from-orange-200  rounded-lg shadow-md text-black `}>
-                <Subtasks taskId={showSubtaskId} />
-                </div>
-              }
-
-
-
-
-            </div>
-          );
-        },
-        filterFn: (row, columnId, filterValue) => {
-          const cellValue =
-            row.original[columnId]?.toString().toLowerCase() || "";
-
-          return cellValue.startsWith(filterValue.toLowerCase());
-        },
-        size: 390,
-        minSize: 200,
-        maxSize: 400,
-        grow: true,
-      },
-      // Hours
-      {
-        accessorKey: "hours",
-        Header: ({ column }) => {
-          return (
-            <div className=" flex flex-col items-center justify-center  w-[4rem] pr-2  gap-[2px]">
-              <span
-                className="cursor-pointer w-full text-center"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                Hrs
-              </span>
-              <span className="font-medium w-full text-center px-1 py-1 ml-1 rounded-md bg-gray-50 text-black">
-                {totalHours}
-              </span>
-            </div>
-          );
-        },
-
-
-
-
-
-
-
-        Cell: ({ cell, row }) => {
-          const [showEditor, setShowEditor] = useState(false);
-          const [value, setValue] = useState(cell.getValue());
-          const anchorRef = useRef(null);
-        
-          const formatDuration = (val) => {
-            const h = Math.floor(val);
-            const m = Math.round((val % 1) * 60);
-            return `${h}h${m > 0 ? ` ${m}m` : ""}`;
-          };
-        
-          const handleApply = async (newHours) => {
-           
-            try {
-              const { data } = await axios.put(
-                `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/hours/${row.original._id}`,
-                { hours: newHours }
-              );
-               if(data) {
-                
-        
-                // const savedTaskTimer =JSON.parse(localStorage.getItem("task-timer"));
-                // if (savedTaskTimer && savedTaskTimer.taskId === row.original._id) {
-                //     updateCountdown(newHours)
-                // }
+ 
+   // ----------------------------
+   // 🔑 Authentication & User Data
+   // ----------------------------
+   const authCtx = useMemo(
+     () => ({
+       auth,
+       users,
+       departments,
+     }),
+     [auth, users, departments]
+   );
+ 
+   // ----------------------------
+   // 📂 Projects
+   // ----------------------------
+   const projectCtx = useMemo(
+     () => ({
+       allProjects,
+       updateTaskProject,
+       updateTaskJLS,
+       updateAlocateTask,
+     }),
+     [allProjects]
+   );
+ 
+   // ----------------------------
+   // 📊 Tasks / Filtering
+   // ----------------------------
+   const taskCtx = useMemo(
+     () => ({
+       totalHours,
+       filterId,
+       active,
+       active1,
+       setFilterData,
+       setTasksData,
+       setTaskID,
+       setProjectName,
+       setShowDetail,
+       copyTask,
         
         
+     }),
+     [totalHours, filterId, active, active1]
+   );
+ 
+   // ----------------------------
+   // 💬 Comments
+   // ----------------------------
+   const commentCtx = useMemo(
+     () => ({
         
-                setValue(newHours);
-                toast.success("Hours updated");
-                if (filterId || active || active1) {
-                          setFilterData((prevData) =>
-                            prevData?.map((item) =>
-                              item._id === data?.task?._id
-                                ? { ...item, hours: newHours }
-                                : item
-                            )
-                          );
-                        }
-                        setTasksData((prevData) =>
-                          prevData?.map((item) =>
-                            item._id === data?.task?._id
-                              ? { ...item, hours: newHours }
-                              : item
-                          )
-                        );
-               }
-            } catch (err) {
-              toast.error("Update failed");
-              console.error(err);
-            }
-          };
-        
-           return (
-            <div ref={anchorRef} className="relative flex items-center gap-1">
-              <span onDoubleClick={() => setShowEditor(true)}>{formatDuration(value)}</span>
-              {/* <button onClick={() => setShowEditor(true)} className="text-gray-400 hover:text-black"> <BiPencil  /> </button> */}
-              {showEditor && (
-                <TimeEditor
-                  anchorRef={anchorRef}
-                  initialValue={value}
-                  onApply={handleApply}
-                  onClose={() => setShowEditor(false)}
-                />
-              )}
-            </div>
-          );
-        },
-
-
-
-
-        filterFn: (row, columnId, filterValue) => {
-          const cellValue =
-            row.original[columnId]?.toString().toLowerCase() || "";
-
-          return cellValue.startsWith(filterValue.toLowerCase());
-        },
-        size: 70,
-        grow: false,
-      },
-      // Start Date
-
-      {
-        accessorKey: "startDate",
-        Header: ({ column }) => {
-          const [filterValue, setFilterValue] = useState("");
-          const [customDate, setCustomDate] = useState(getCurrentMonthYear());
-
-          useEffect(() => {
-            if (filterValue === "Custom date") {
-              column.setFilterValue(customDate);
-            }
-            //eslint-disable-next-line
-          }, [customDate, filterValue]);
-
-          const handleFilterChange = (e) => {
-            setFilterValue(e.target.value);
-            column.setFilterValue(e.target.value);
-          };
-
-          const handleCustomDateChange = (e) => {
-            setCustomDate(e.target.value);
-            column.setFilterValue(e.target.value);
-          };
-          return (
-            <div className="w-full flex flex-col gap-[2px]">
-              <span
-                className="cursor-pointer "
-                title="Clear Filter"
-                onClick={() => {
-                  setFilterValue("");
-                  column.setFilterValue("");
-                }}
-              >
-                Start Date
-              </span>
-
-              {filterValue === "Custom date" ? (
-                <input
-                  type="month"
-                  value={customDate}
-                  onChange={handleCustomDateChange}
-                  className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
-                />
-              ) : (
-                <select
-                  value={filterValue}
-                  onChange={handleFilterChange}
-                  className="h-[1.8rem] font-normal  cursor-pointer rounded-md border border-gray-200 outline-none"
-                >
-                  <option value="">Select</option>
-                  {column.columnDef.filterSelectOptions.map((option, idx) => (
-                    <option key={idx} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const [date, setDate] = useState(() => {
-            const cellDate = new Date(cell.getValue());
-            return cellDate.toISOString().split("T")[0];
-          });
-
-          const [showStartDate, setShowStartDate] = useState(false);
-
-          const handleDateChange = (newDate) => {
-            setDate(newDate);
-            updateAlocateTask(row.original._id, "", date, "");
-            setShowStartDate(false);
-          };
-
-          return (
-            <div className="w-full flex  ">
-              {!showStartDate ? (
-                <p onDoubleClick={() => setShowStartDate(true)}>
-                  {format(new Date(date), "dd-MMM-yyyy")}
-                </p>
-              ) : (
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  onBlur={(e) => handleDateChange(e.target.value)}
-                  className={`h-[2rem] w-full cursor-pointer rounded-md border border-gray-200 outline-none `}
-                />
-              )}
-            </div>
-          );
-        },
-        filterFn: (row, columnId, filterValue) => {
-          const cellValue = row.getValue(columnId);
-          if (!cellValue) return false;
-
-          const cellDate = new Date(cellValue);
-          const today = new Date();
-
-          const startOfToday = new Date(
-            today.getFullYear(),
-            today.getMonth(),
-            today.getDate()
-          );
-
-          // Handle "Custom date" filter (if it includes a specific month-year)
-          if (filterValue.includes("-")) {
-            const [year, month] = filterValue.split("-");
-            const cellYear = cellDate.getFullYear().toString();
-            const cellMonth = (cellDate.getMonth() + 1)
-              .toString()
-              .padStart(2, "0");
-
-            return year === cellYear && month === cellMonth;
-          }
-
-          // Other filter cases
-          switch (filterValue) {
-            case "Expired":
-              return cellDate < startOfToday;
-            case "Today":
-              return cellDate.toDateString() === today.toDateString();
-            case "Yesterday":
-              const tomorrow = new Date(today);
-              tomorrow.setDate(today.getDate() - 1);
-              return cellDate.toDateString() === tomorrow.toDateString();
-            case "Last 7 days":
-              const last7Days = new Date(today);
-              last7Days.setDate(today.getDate() - 7);
-              return cellDate >= last7Days && cellDate < startOfToday;
-            case "Last 15 days":
-              const last15Days = new Date(today);
-              last15Days.setDate(today.getDate() - 15);
-              return cellDate >= last15Days && cellDate < startOfToday;
-            case "Last 30 Days":
-              const last30Days = new Date(today);
-              last30Days.setDate(today.getDate() - 30);
-              return cellDate >= last30Days && cellDate < startOfToday;
-            case "Last 60 Days":
-              const last60Days = new Date(today);
-              last60Days.setDate(today.getDate() - 60);
-              return cellDate >= last60Days && cellDate < startOfToday;
-            default:
-              return false;
-          }
-        },
-        filterSelectOptions: [
-          "Today",
-          "Yesterday",
-          "Last 7 days",
-          "Last 15 days",
-          "Last 30 Days",
-          "Last 60 Days",
-          "Custom date",
-        ],
-        filterVariant: "custom",
-        size: 100,
-        minSize: 90,
-        maxSize: 110,
-        grow: false,
-      },
-
-      // Task DeadLine
-      {
-        accessorKey: "deadline",
-        header: "Deadline",
-        Header: ({ column }) => {
-          const [filterValue, setFilterValue] = useState("");
-          const [customDate, setCustomDate] = useState(getCurrentMonthYear());
-
-          useEffect(() => {
-            if (filterValue === "Custom date") {
-              column.setFilterValue(customDate);
-            }
-            //eslint-disable-next-line
-          }, [customDate, filterValue]);
-
-          const handleFilterChange = (e) => {
-            setFilterValue(e.target.value);
-            column.setFilterValue(e.target.value);
-          };
-
-          const handleCustomDateChange = (e) => {
-            setCustomDate(e.target.value);
-            column.setFilterValue(e.target.value);
-          };
-          return (
-            <div className=" flex flex-col gap-[2px]">
-              <span
-                className=" w-full cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  setFilterValue("");
-                  column.setFilterValue("");
-                }}
-              >
-                Deadline
-              </span>
-              {filterValue === "Custom date" ? (
-                <input
-                  type="month"
-                  value={customDate}
-                  onChange={handleCustomDateChange}
-                  className="h-[1.8rem] font-normal   cursor-pointer rounded-md border border-gray-200 outline-none"
-                />
-              ) : (
-                <select
-                  value={filterValue}
-                  onChange={handleFilterChange}
-                  className="h-[1.8rem]  font-normal cursor-pointer rounded-md border border-gray-200 outline-none"
-                >
-                  <option value="">Select</option>
-                  {column.columnDef.filterSelectOptions.map((option, idx) => (
-                    <option key={idx} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const [date, setDate] = useState(() => {
-            const cellDate = new Date(cell.getValue());
-            return cellDate.toISOString().split("T")[0];
-          });
-          const [allocateDate, setAllocateDate] = useState(date);
-
-          useEffect(() => {
-            setAllocateDate(date);
-          }, [date]);
-
-          const [showDeadline, setShowDeadline] = useState(false);
-
-          const handleDateChange = (newDate) => {
-            setDate(newDate);
-            updateAlocateTask(row.original._id, "", "", date);
-            setShowDeadline(false);
-          };
-
-          const cellDate = new Date(date);
-          const today = new Date();
-          const isExpired = cellDate < today;
-
-          return (
-            <div className="w-full ">
-              {!showDeadline ? (
-                <p onDoubleClick={() => setShowDeadline(true)}>
-                  {format(new Date(allocateDate), "dd-MMM-yyyy")}
-                </p>
-              ) : (
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  onBlur={(e) => handleDateChange(e.target.value)}
-                  className={`h-[2rem] w-full cursor-pointer rounded-md border border-gray-200 outline-none ${
-                    isExpired ? "text-red-500" : ""
-                  }`}
-                />
-              )}
-            </div>
-          );
-        },
-        filterFn: (row, columnId, filterValue) => {
-          const cellValue = row.getValue(columnId);
-          if (!cellValue) return false;
-
-          const cellDate = new Date(cellValue);
-
-          if (filterValue.includes("-")) {
-            const [year, month] = filterValue.split("-");
-            const cellYear = cellDate.getFullYear().toString();
-            const cellMonth = (cellDate.getMonth() + 1)
-              .toString()
-              .padStart(2, "0");
-
-            return year === cellYear && month === cellMonth;
-          }
-
-          // Other filter cases
-          const today = new Date();
-          const startOfToday = new Date(
-            today.getFullYear(),
-            today.getMonth(),
-            today.getDate()
-          );
-          switch (filterValue) {
-            case "Expired":
-              return cellDate < startOfToday;
-            case "Today":
-              return cellDate.toDateString() === today.toDateString();
-            case "Yesterday":
-              const tomorrow = new Date(today);
-              tomorrow.setDate(today.getDate() - 1);
-              return cellDate.toDateString() === tomorrow.toDateString();
-            case "In 7 days":
-              const in7Days = new Date(today);
-              in7Days.setDate(today.getDate() + 7);
-              return cellDate <= in7Days && cellDate > today;
-            case "In 15 days":
-              const in15Days = new Date(today);
-              in15Days.setDate(today.getDate() + 15);
-              return cellDate <= in15Days && cellDate > today;
-            case "30 Days":
-              const in30Days = new Date(today);
-              in30Days.setDate(today.getDate() + 30);
-              return cellDate <= in30Days && cellDate > today;
-            case "60 Days":
-              const in60Days = new Date(today);
-              in60Days.setDate(today.getDate() + 60);
-              return cellDate <= in60Days && cellDate > today;
-            case "Last 12 months":
-              const lastYear = new Date(today);
-              lastYear.setFullYear(today.getFullYear() - 1);
-              return cellDate >= lastYear && cellDate <= today;
-            default:
-              return false;
-          }
-        },
-        filterSelectOptions: [
-          "Today",
-          "Yesterday",
-          "In 7 days",
-          "In 15 days",
-          "30 Days",
-          "60 Days",
-          // "Last 12 months",
-          "Custom date",
-        ],
-        filterVariant: "custom",
-        size: 100,
-        minSize: 80,
-        maxSize: 140,
-        grow: false,
-      },
-      //  -----Due & Over Due Status----->
-      {
-        accessorKey: "datestatus",
-        Header: ({ column }) => {
-          const dateStatus = ["Overdue", "Due"];
-          return (
-            <div className=" flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer "
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                Status
-              </span>
-              <form className="w-full flex ">
-                <select
-                  value={column.getFilterValue() || ""}
-                  onChange={(e) => column.setFilterValue(e.target.value)}
-                  className="font-normal h-[1.8rem] w-full  cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-                >
-                  <option value="">Select </option>
-                  {dateStatus?.map((status, i) => (
-                    <option key={i} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
-              </form>
-            </div>
-          );
-        },
-        Cell: ({ row }) => {
-          const status = getStatus(
-            row.original.startDate,
-            row.original.deadline
-          );
-
-          return (
-            <div className="w-full">
-              <span
-                className={`text-white text-[14px]  rounded-[2rem] ${
-                  status === "Due"
-                    ? "bg-green-500  py-[6px] px-4 "
-                    : status === "Overdue"
-                    ? "bg-red-500  py-[6px] px-3 "
-                    : "bg-transparent"
-                }`}
-              >
-                {status}
-              </span>
-            </div>
-          );
-        },
-        filterFn: (row, id, filterValue) => {
-          const status = getStatus(
-            row.original.startDate,
-            row.original.deadline
-          );
-          if (status === undefined || status === null) return false;
-          return status.toString().toLowerCase() === filterValue.toLowerCase();
-        },
-        filterSelectOptions: ["Overdue", "Due"],
-        filterVariant: "select",
-        size: 100,
-        minSize: 90,
-        maxSize: 110,
-        grow: false,
-      },
-      //
-      {
-        accessorKey: "status",
-        header: "Task Status",
-        Header: ({ column }) => {
-          const statusData = [
-            "To do",
-            "Progress",
-            "Review",
-            "On hold",
-            "Completed",
-          ];
-          return (
-            <div className=" flex flex-col gap-[2px]">
-              <span
-                className=" text-center"
-                title="Clear Filter "
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                Task Status
-              </span>
-              <div className="flex ">
-                <select
-                  value={column.getFilterValue() || ""}
-                  onChange={(e) => column.setFilterValue(e.target.value)}
-                  className="ml-1 font-normal w-full  h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-                >
-                  <option value="">Select</option>
-                  {statusData?.map((status, i) => (
-                    <option key={i} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const statusValue = cell.getValue();
-
-          return (
-            <div className="flex items-center justify-center w-full">
-              <select
-                value={statusValue}
-                onChange={(e) =>
-                  updateTaskJLS(row.original?._id, "", "", e.target.value)
-                }
-                className="w-[6rem] h-[2rem] rounded-md border border-sky-300 outline-none"
-              >
-                <option value="empty"></option>
-                <option value="To do">To do</option>
-                <option value="Progress">Progress</option>
-                <option value="Review">Review</option>
-                <option value="On hold">On hold</option>
-                <option value="completed">Completed</option>
-              </select>
-            </div>
-          );
-        },
-        // filterFn: "equals",
-        filterFn: (row, columnId, filterValue) => {
-          const cellValue = row.getValue(columnId);
-          return (cellValue || "").toString() === filterValue.toString();
-        },
-        filterSelectOptions: [
-          "Select",
-          "To do",
-          "Progress",
-          "Review",
-          "On hold",
-          "completed",
-        ],
-        filterVariant: "select",
-        minSize: 90,
-        size: 100,
-        maxSize: 140,
-        grow: false,
-      },
-      {
-        accessorKey: "lead",
-        Header: ({ column }) => {
-          return (
-            <div className=" flex flex-col gap-[2px] ml-1">
-              <span
-                className="ml-1 cursor-pointer "
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                Lead
-              </span>
-              <select
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className=" font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              >
-                <option value="">Select</option>
-                {users?.map((lead, i) => (
-                  <option key={i} value={lead?.name}>
-                    {lead?.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const leadValue = cell.getValue();
-
-          return (
-            <div className="flex items-center justify-center w-full">
-              <select
-                value={leadValue || ""}
-                onChange={(e) =>
-                  updateTaskJLS(row.original?._id, "", e.target.value, "")
-                }
-                className="w-full h-[2rem] rounded-md border-none bg-transparent outline-none"
-              >
-                <option value="empty"></option>
-                {users.map((lead, i) => (
-                  <option value={lead?.name} key={i}>
-                    {lead?.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          );
-        },
-        filterFn: "equals",
-        filterSelectOptions: users.map((lead) => lead),
-        filterVariant: "select",
-        size: 100,
-        minSize: 60,
-        maxSize: 120,
-        grow: false,
-      },
-      {
-        accessorKey: "estimate_Time",
-        header: "Budget",
-        Cell: ({ cell, row }) => {
-          const estimateTime = cell.getValue();
-          return (
-            <div className="flex items-center gap-1">
-              <span className="text-[1rem]">⏳</span>
-              <span>{estimateTime}</span>
-            </div>
-          );
-        },
-        size: 80,
-      },
-
-      {
-        accessorKey: "comments",
-        header: "Comments",
-        Cell: ({ cell, row }) => {
-          const comments = cell.getValue();
-          const [readComments, setReadComments] = useState([]);
-
-          useEffect(() => {
-            const filterComments = comments.filter(
-              (item) => item.status === "unread"
-            );
-            setReadComments(filterComments);
-            // eslint-disable-next-line
-          }, [comments]);
-
-          return (
-            <div
-              className="flex items-center justify-center gap-1 relative w-full h-full"
-              onClick={() => {
-                setCommentTaskId(row.original._id);
-                setIsComment(true);
-              }}
-            >
-              <div className="relative">
-                <span className="text-[1rem] cursor-pointer relative">
-                  <MdInsertComment className="h-5 w-5 text-orange-600 " />
-                </span>
-                {/* {readComments?.length > 0 && (
-                  <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
-                    {readComments?.length}
-                  </span>
-                )} */}
-              </div>
-            </div>
-          );
-        },
-        size: 90,
-      },
-
-      // Label
-      {
-        accessorKey: "labal",
-
-        Header: ({ column }) => {
-          return (
-            <div className="flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                Labels
-              </span>
-              <select
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              >
-                <option value="">Select</option>
-                {labelData?.map((label, i) => (
-                  <option key={i} value={label?.name}>
-                    {label?.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          );
-        },
-
-        Cell: ({ cell, row }) => {
-          const [show, setShow] = useState(false);
-          const jobLabel = row.original.labal || {};
-          const { name, color } = jobLabel;
-
-          return (
-            <div className="w-full flex items-center justify-center">
-              {show ? (
-                <select
-                  value={name || ""}
-                  className="w-full h-[2rem] rounded-md border-none outline-none"
-                >
-                  <option value="clear">Select Label</option>
-                  {labelData?.map((label, i) => (
-                    <option value={label?.name} key={i}>
-                      {label?.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <div
-                  className="cursor-pointer h-full min-w-full "
-                  // onDoubleClick={() => setShow(true)}
-                >
-                  {name ? (
-                    <span
-                      className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
-                      style={{ background: `${color}` }}
-                    >
-                      {name}
-                    </span>
-                  ) : (
-                    <span
-                      className={`label relative py-[4px] px-2 rounded-md hover:shadow  cursor-pointer text-white`}
-                    >
-                      .
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        },
-
-        filterFn: (row, columnId, filterValue) => {
-          const labelName = row.original?.labal?.name || "";
-          return labelName === filterValue;
-        },
-
-        filterVariant: "select",
-        filterSelectOptions: labelData.map((label) => label.name),
-        size: 160,
-        minSize: 100,
-        maxSize: 210,
-        grow: false,
-      },
-      // Recurring
-      {
-        accessorKey: "recurring",
-        Header: ({ column }) => {
-          const recurringData = ["daily", "weekly", "monthly", "quarterly"];
-          return (
-            <div className=" flex flex-col items-center justify-center  w-full pr-2  gap-[2px]">
-              <span
-                className="cursor-pointer w-full text-center"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                Recurring
-              </span>
-              <select
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal w-full h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              >
-                <option value="">Select</option>
-                {recurringData?.map((recurr, i) => (
-                  <option key={i} value={recurr} className="capitalize">
-                    {recurr}
-                  </option>
-                ))}
-              </select>
-            </div>
-          );
-        },
-        Cell: ({ cell, row, data }) => {
-          const recurring = row.original.recurring;
-
-          return (
-            <div className="w-full flex items-center justify-center">
-              <span
-                className={`text-[15px] font-medium capitalize py-1 px-2 rounded-md  ${
-                  recurring === "daily"
-                    ? "bg-orange-600 text-white"
-                    : recurring === "weekly"
-                    ? "bg-green-600 text-white"
-                    : recurring === "monthly"
-                    ? "bg-sky-600 text-white"
-                    : recurring === "quarterly"
-                    ? "bg-pink-600 text-white"
-                    : ""
-                } `}
-              >
-                {recurring}
-              </span>
-            </div>
-          );
-        },
-        filterFn: (row, columnId, filterValue) => {
-          const cellValue =
-            row.original[columnId]?.toString().toLowerCase() || "";
-
-          return cellValue.startsWith(filterValue.toLowerCase());
-        },
-        size: 100,
-        grow: false,
-      },
-    ],
-    // eslint-disable-next-line
-    [users, play, note, auth, currentPath, projects, filterData, totalHours]
-  );
+       setCommentTaskId,
+       setIsComment,
+     }),
+     []
+   );
+ 
+ 
+ 
+   // ----------------------------
+   // 🏷️ Labels
+   // ----------------------------
+   const labelCtx = useMemo(
+     () => ({
+       labelData,
+       addlabelTask,
+     }),
+     [labelData]
+   );
+ 
+   // ----------------------------
+   // 📦 Merge into one ctx if needed
+   // ----------------------------
+   const ctx = useMemo(
+     () => ({
+       ...authCtx,
+       ...projectCtx,
+       ...taskCtx,
+       ...commentCtx,
+       
+       ...labelCtx,
+     }),
+     [authCtx, projectCtx, taskCtx, commentCtx,  labelCtx]
+   );
+ 
+   // ----------------------------
+   // 📑 Columns
+   // ----------------------------
+   const columns = useMemo(() => getCompletedTaskColumns(ctx), [ctx]);
+ 
 
   const table = useMaterialReactTable({
     columns,
@@ -1743,6 +874,36 @@ const CompletedTasks = ({
       },
     },
   });
+
+
+
+  
+  // Hook returns an updater for each column
+  const updateDepartment = useColumnFilterSync(
+    table,
+    "departmentName",
+    filter1,
+    setFilter1
+  );
+  const updateProject = useColumnFilterSync(
+    table,
+    "projectName",
+    filter2,
+    setFilter2
+  );
+  const updateJobHolder = useColumnFilterSync(
+    table,
+    "jobHolder",
+    filter3,
+    setFilter3
+  );
+
+  // helper to check if "all departments" are selected
+  const allDepartmentsSelected =
+    filter1 === "" ||
+    filter1 === "All" ||
+    (Array.isArray(filter1) && filter1.length === departments.length);
+
 
   return (
     <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
@@ -1855,40 +1016,54 @@ const CompletedTasks = ({
       <div className="flex flex-col gap-2">
         {/* -----------Filters By Projects--------- */}
         <div className="flex items-center flex-wrap gap-2 mt-3">
-          <div
-            className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-              active === "All" &&
-              " border-2 border-b-0 text-orange-600 border-gray-300"
-            }`}
-            onClick={() => {
-              setActive("All");
-              filterByDep("All");
-              setActive1("");
-              dispatch(setFilterId(""));
-            }}
-          >
-            All ({getProjectsCount("All")})
-          </div>
-          {projects?.map((proj, i) => {
-            getDueAndOverdueCountByDepartment(proj?.projectName);
-            return (
-              <div
+           <div
                 className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                  active === proj?.projectName &&
+                  allDepartmentsSelected &&
                   " border-2 border-b-0 text-orange-600 border-gray-300"
                 }`}
-                key={i}
                 onClick={() => {
-                  setActive(proj?.projectName);
-                  filterByDep(proj?.projectName);
-                  setActive1("");
-                   dispatch(setFilterId(""));
+                  // setShowCompleted(false);
+
+                  // clear all filters when clicking "All"
+                  updateDepartment("");
+                  updateProject("");
+                  updateJobHolder("");
+
+                  setFilter1("All");
                 }}
               >
-                {proj?.projectName} ({getProjectsCount(proj?.projectName)})
+                All
               </div>
-            );
-          })}
+
+              <DraggableFilterTabs
+                droppableId={"departments"}
+                items={departments}
+                filterValue={filter1}
+                tasks={tasksData}
+                getCountFn={(department, tasks) =>
+                  tasks.filter((t) =>
+                    t.project?.departments?.some(
+                      (d) => d._id === department?._id
+                    )
+                  ).length
+                }
+                getLabelFn={(department) => department?.departmentName}
+                 
+
+                onClick={(dep) => {
+                  const newValue =
+                    filter1 === dep.departmentName ? "" : dep.departmentName;
+                  updateDepartment(newValue);
+                  updateProject(""); // reset project filter when department changes
+                  updateJobHolder(""); // reset jobHolder filter when department changes
+                }}
+                onDragEnd={() => {}}
+                activeClassName={
+                  filter1
+                    ? "border-2 border-b-0 text-orange-600 border-gray-300"
+                    : ""
+                }
+              />
 
           {/*  */}
           {/* -------------Filter Open Buttons-------- */}
@@ -1955,21 +1130,40 @@ const CompletedTasks = ({
                 Job Holder Summary
               </h3>
               <div className="flex items-center flex-wrap gap-4">
-                {users?.map((user, i) => (
-                  <div
-                    className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                      active1 === user.name &&
-                      "  border-b-2 text-orange-600 border-orange-600"
-                    }`}
-                    key={i}
-                    onClick={() => {
-                      setActive1(user?.name);
-                      filterByProjStat(user?.name, active);
-                    }}
-                  >
-                    {user.name} ({getJobHolderCount(user?.name, active)})
-                  </div>
-                ))}
+                <DraggableFilterTabs
+                                      droppableId={"users"}
+                                      // items={filter2 ? projectUsers.filter(user => getJobHolderCount(user?.name, active) > 0) : users.filter(user => getJobHolderCount(user?.name, active) > 0)}
+                                      items={users.filter(
+                                        (user) => getJobHolderCount(user?.name, active) > 0
+                                      )}
+                                      filterValue={filter3}
+                                      tasks={tasksData}
+                                      getCountFn={(user, tasks) =>
+                                        tasks.filter((t) => t.jobHolder === user.name).length
+                                      }
+                                      getLabelFn={(user) => user.name}
+                                      onClick={(user) => {
+                                        const newValue =
+                                          filter3 === user?.name ? "" : user?.name;
+                
+                                        updateJobHolder(newValue); // reset jobHolder filter when department changes
+                
+                                        // setColumnFromOutsideTable("status", "Progress");
+                
+                                        // setColumnFromOutsideTable("taskDate", "");
+                                        // if (
+                                        //   auth.user?.role?.name === "Admin" &&
+                                        //   user?.name === auth?.user?.name
+                                        // ) {
+                                        //   setColumnFromOutsideTable("taskDate", "Today");
+                                        // }
+                                      }}
+                                      activeClassName={
+                                        filter3
+                                          ? "border-b-2 text-orange-600 border-orange-600"
+                                          : ""
+                                      }
+                                    />
               </div>
             </div>
             <hr className="mb-1 bg-gray-300 w-full h-[1px]" />

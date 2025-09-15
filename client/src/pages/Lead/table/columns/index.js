@@ -1234,7 +1234,8 @@ export const getLeadColumns = (ctx) => {
               className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
             >
               <option value="">Select</option>
-              <option value="0-10">0-10</option>
+              <option value="0-5">0-5</option>
+              <option value="5-10">5-10</option>
               <option value="10-20">10-20</option>
               <option value="20-30">20-30</option>
               <option value="30+">30+</option>

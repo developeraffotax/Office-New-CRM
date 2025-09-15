@@ -142,7 +142,14 @@ const Tasks = forwardRef(
 
 
 
+    useEffect(() => {
 
+      handleClearFilters();
+
+      table.setColumnFilters([{ id: 'status', value: 'Progress' }]);
+
+
+    }, [])
 
 
 

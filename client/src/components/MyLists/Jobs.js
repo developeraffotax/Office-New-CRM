@@ -104,7 +104,14 @@ const Jobs = forwardRef(
     }, []);
 
 
+    useEffect(() => {
 
+      handleClearFilters();
+
+      table?.setColumnFilters([{ id: 'Job_Status', value: 'Progress' }]);
+
+
+    }, [])
     
     // Get Auth Access
 

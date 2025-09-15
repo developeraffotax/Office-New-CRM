@@ -58,9 +58,25 @@ const HR = forwardRef(({taskData, loading, setTaskData, childRef, setIsload}, re
     const [copyLoad, setCopyLoad] = useState(false);
     const currentMonthIndex = new Date().getMonth();
     const [month, setMonth] = useState(currentMonthIndex);
-  
+    const [hrRoleData, setHrRoleData] = useState([]);
     console.log("copyDescription:", copyDescription);
   
+    // ----------Fetch All Roles-------->
+    const fetchAllHrRoles = async () => {
+      try {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/hrRole/all`
+        );
+        setHrRoleData(data.hrRoles);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+  
+    useEffect(() => {
+      fetchAllHrRoles();
+       
+    }, []);
     useEffect(() => {
       if (userName && userName.length > 0) {
         const savedVisibility = JSON.parse(
@@ -280,366 +296,426 @@ const HR = forwardRef(({taskData, loading, setTaskData, childRef, setIsload}, re
         toast.error(error?.response?.data?.message);
       }
     };
-    // ---------------Table Detail------------->
-    const columns = useMemo(
-      () => [
-        {
-          accessorKey: "department.departmentName",
-          minSize: 100,
-          maxSize: 200,
-          size: 170,
-          grow: false,
+  // ---------------Table Detail------------->
+  const columns = useMemo(
+    () => [
+
+      {
+        accessorKey: "hrRole.roleName",
+        minSize: 100,
+        maxSize: 200,
+        size: 170,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className="flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => column.setFilterValue("")}
+              >
+                Role
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {hrRoleData?.map((role) => (
+                  <option
+                    key={role?._id}
+                    value={role?.roleName || ""}
+                  >
+                    {role?.roleName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const role = row.original?.hrRole?.roleName || "N/A"; // Handle undefined
+          return (
+            <div className="w-full px-1">
+              <span>{role}</span>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+          if (!filterValue) return true;
+          if (!cellValue) return false;
+
+          console.log("cellValue:", cellValue);
+          console.log("filterValue:", filterValue);
+          return (
+            cellValue.toString().toLowerCase() === filterValue.toLowerCase()
+          );
+        },
+        filterSelectOptions: hrRoleData?.map(
+          (role) => role?.roleName || ""
+        ),
+        filterVariant: "select",
+      },
+
+
+      {
+        accessorKey: "department.departmentName",
+        minSize: 100,
+        maxSize: 200,
+        size: 170,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className="flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => column.setFilterValue("")}
+              >
+                Department
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {deparmentsData?.map((department) => (
+                  <option
+                    key={department?._id}
+                    value={department?.departmentName || ""}
+                  >
+                    {department?.departmentName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const department = row.original?.department?.departmentName || "N/A"; // Handle undefined
+          return (
+            <div className="w-full px-1">
+              <span>{department}</span>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+          if (!filterValue) return true;
+          if (!cellValue) return false;
+          return (
+            cellValue.toString().toLowerCase() === filterValue.toLowerCase()
+          );
+        },
+        filterSelectOptions: deparmentsData?.map(
+          (dep) => dep?.departmentName || ""
+        ),
+        filterVariant: "select",
+      },
+
+      {
+        accessorKey: "category",
+        Header: ({ column }) => {
+          return (
+            <div className=" w-[130px] flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Category
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const category = row.original.category;
+
+          return (
+            <div className="w-full h-full ">
+              <div
+                className="w-full h-full flex items-center justify-start "
+                title={category}
+              >
+                <span className="cursor-pointer text-start  ">{category}</span>
+              </div>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
+        size: 180,
+        minSize: 120,
+        maxSize: 200,
+        grow: false,
+      },
+      {
+        accessorKey: "software",
+        Header: ({ column }) => {
+          return (
+            <div className=" w-[130px] flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Software
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const software = row.original.software;
+
+          return (
+            <div className="w-full h-full ">
+              <div
+                className="w-full h-full flex items-center justify-start "
+                title={software}
+              >
+                <span className="cursor-pointer text-start  ">{software}</span>
+              </div>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
+        size: 180,
+        minSize: 120,
+        maxSize: 200,
+        grow: false,
+      },
+      {
+        accessorKey: "title",
+        Header: ({ column }) => {
+          return (
+            <div className=" w-[480px] flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Task Detail
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              />
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const title = row.original.title || "";
+
+          return (
+            <div className="w-full h-full ">
+              <div className="w-full h-full flex items-center justify-start ">
+                <div
+                  onClick={() => {
+                    setShowDescription(true);
+                    setCopyDescription(row.original?.description);
+                  }}
+                  className="px-1 w-full text-[14px] text-blue-600 cursor-pointer"
+                >
+                  {title.length > 65 ? `${title.slice(0, 65)}...` : title}
+                </div>
+              </div>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+          return cellValue.includes(filterValue.toLowerCase());
+        },
+        size: 500,
+        minSize: 350,
+        maxSize: 560,
+        grow: false,
+      },
+      // User List
+      ...userName
+        .map((name) => ({
+          accessorKey: `${name}`,
+          // Header: `${name}`,
           Header: ({ column }) => {
             return (
-              <div className="flex flex-col gap-[2px]">
+              <div className=" flex flex-col gap-[2px]">
                 <span
                   className="ml-1 cursor-pointer"
                   title="Clear Filter"
-                  onClick={() => column.setFilterValue("")}
+                  onClick={() => {
+                    column.setFilterValue("");
+                  }}
                 >
-                  Department
+                  {name}
                 </span>
                 <select
                   value={column.getFilterValue() || ""}
                   onChange={(e) => column.setFilterValue(e.target.value)}
-                  className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                  className="font-normal h-[1.8rem] w-[5.5rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
                 >
                   <option value="">Select</option>
-                  {deparmentsData?.map((department) => (
-                    <option
-                      key={department?._id}
-                      value={department?.departmentName || ""}
-                    >
-                      {department?.departmentName}
-                    </option>
-                  ))}
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
                 </select>
               </div>
             );
           },
-          Cell: ({ cell, row }) => {
-            const department = row.original?.department?.departmentName || "N/A"; // Handle undefined
-            return (
-              <div className="w-full px-1">
-                <span>{department}</span>
-              </div>
+          Cell: ({ row }) => {
+            const matchedUser = row.original.users?.find(
+              (u) => u?.user?.name === name
             );
-          },
-          filterFn: (row, columnId, filterValue) => {
-            const cellValue = row.getValue(columnId);
-            if (!filterValue) return true;
-            if (!cellValue) return false;
+
+            console.log("matchedUser:", matchedUser);
+
+            const [isShow, setIsShow] = useState(false);
+            const [status, setStatus] = useState(matchedUser?.status || "");
+
+            const handleStatus = (value, statusId) => {
+              setStatus(value);
+              updateUserStatus(row.original._id, statusId, value);
+              setIsShow(false);
+            };
             return (
-              cellValue.toString().toLowerCase() === filterValue.toLowerCase()
-            );
-          },
-          filterSelectOptions: deparmentsData?.map(
-            (dep) => dep?.departmentName || ""
-          ),
-          filterVariant: "select",
-        },
-  
-        {
-          accessorKey: "category",
-          Header: ({ column }) => {
-            return (
-              <div className=" w-[130px] flex flex-col gap-[2px]">
-                <span
-                  className="ml-1 cursor-pointer"
-                  title="Clear Filter"
-                  onClick={() => {
-                    column.setFilterValue("");
-                  }}
-                >
-                  Category
-                </span>
-                <input
-                  type="search"
-                  value={column.getFilterValue() || ""}
-                  onChange={(e) => column.setFilterValue(e.target.value)}
-                  className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-                />
-              </div>
-            );
-          },
-          Cell: ({ cell, row }) => {
-            const category = row.original.category;
-  
-            return (
-              <div className="w-full h-full ">
-                <div
-                  className="w-full h-full flex items-center justify-start "
-                  title={category}
-                >
-                  <span className="cursor-pointer text-start  ">{category}</span>
-                </div>
-              </div>
-            );
-          },
-          filterFn: (row, columnId, filterValue) => {
-            const cellValue =
-              row.original[columnId]?.toString().toLowerCase() || "";
-            return cellValue.includes(filterValue.toLowerCase());
-          },
-          size: 180,
-          minSize: 120,
-          maxSize: 200,
-          grow: false,
-        },
-        {
-          accessorKey: "software",
-          Header: ({ column }) => {
-            return (
-              <div className=" w-[130px] flex flex-col gap-[2px]">
-                <span
-                  className="ml-1 cursor-pointer"
-                  title="Clear Filter"
-                  onClick={() => {
-                    column.setFilterValue("");
-                  }}
-                >
-                  Software
-                </span>
-                <input
-                  type="search"
-                  value={column.getFilterValue() || ""}
-                  onChange={(e) => column.setFilterValue(e.target.value)}
-                  className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-                />
-              </div>
-            );
-          },
-          Cell: ({ cell, row }) => {
-            const software = row.original.software;
-  
-            return (
-              <div className="w-full h-full ">
-                <div
-                  className="w-full h-full flex items-center justify-start "
-                  title={software}
-                >
-                  <span className="cursor-pointer text-start  ">{software}</span>
-                </div>
-              </div>
-            );
-          },
-          filterFn: (row, columnId, filterValue) => {
-            const cellValue =
-              row.original[columnId]?.toString().toLowerCase() || "";
-            return cellValue.includes(filterValue.toLowerCase());
-          },
-          size: 180,
-          minSize: 120,
-          maxSize: 200,
-          grow: false,
-        },
-        {
-          accessorKey: "title",
-          Header: ({ column }) => {
-            return (
-              <div className=" w-[480px] flex flex-col gap-[2px]">
-                <span
-                  className="ml-1 cursor-pointer"
-                  title="Clear Filter"
-                  onClick={() => {
-                    column.setFilterValue("");
-                  }}
-                >
-                  Task Detail
-                </span>
-                <input
-                  type="search"
-                  value={column.getFilterValue() || ""}
-                  onChange={(e) => column.setFilterValue(e.target.value)}
-                  className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-                />
-              </div>
-            );
-          },
-          Cell: ({ cell, row }) => {
-            const title = row.original.title || "";
-  
-            return (
-              <div className="w-full h-full ">
-                <div className="w-full h-full flex items-center justify-start ">
+              <div className="w-full h-full">
+                {!isShow ? (
                   <div
-                    onClick={() => {
-                      setShowDescription(true);
-                      setCopyDescription(row.original?.description);
-                    }}
-                    className="px-1 w-full text-[14px] text-blue-600 cursor-pointer"
+                    className={`text-center w-full h-full cursor-pointer ${
+                      matchedUser?.status === "Yes"
+                        ? "text-green-500"
+                        : matchedUser?.status === "No"
+                        ? "text-red-500"
+                        : "text-white"
+                    }`}
+                    onDoubleClick={() => setIsShow(true)}
                   >
-                    {title.length > 65 ? `${title.slice(0, 65)}...` : title}
+                    {matchedUser?.status || ""}
                   </div>
-                </div>
-              </div>
-            );
-          },
-          filterFn: (row, columnId, filterValue) => {
-            const cellValue =
-              row.original[columnId]?.toString().toLowerCase() || "";
-            return cellValue.includes(filterValue.toLowerCase());
-          },
-          size: 500,
-          minSize: 350,
-          maxSize: 560,
-          grow: false,
-        },
-        // User List
-        ...userName
-          .filter((name) => columnVisibility[name])
-          .map((name) => ({
-            accessorKey: `${name}`,
-            // Header: `${name}`,
-            Header: ({ column }) => {
-              return (
-                <div className=" flex flex-col gap-[2px]">
-                  <span
-                    className="ml-1 cursor-pointer"
-                    title="Clear Filter"
-                    onClick={() => {
-                      column.setFilterValue("");
-                    }}
-                  >
-                    {name}
-                  </span>
+                ) : (
                   <select
-                    value={column.getFilterValue() || ""}
-                    onChange={(e) => column.setFilterValue(e.target.value)}
-                    className="font-normal h-[1.8rem] w-[5.5rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                    value={status}
+                    onChange={(e) =>
+                      handleStatus(e.target.value, matchedUser?._id)
+                    }
+                    onBlur={() => setIsShow(false)}
+                    className="font-normal w-full h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
                   >
-                    <option value="">Select</option>
+                    <option value="."></option>
                     <option value="Yes">Yes</option>
                     <option value="No">No</option>
                   </select>
-                </div>
-              );
-            },
-            Cell: ({ row }) => {
-              const matchedUser = row.original.users?.find(
-                (u) => u?.user?.name === name
-              );
-  
-              console.log("matchedUser:", matchedUser);
-  
-              const [isShow, setIsShow] = useState(false);
-              const [status, setStatus] = useState(matchedUser?.status || "");
-  
-              const handleStatus = (value, statusId) => {
-                setStatus(value);
-                updateUserStatus(row.original._id, statusId, value);
-                setIsShow(false);
-              };
-              return (
-                <div className="w-full h-full">
-                  {!isShow ? (
-                    <div
-                      className={`text-center w-full h-full cursor-pointer ${
-                        matchedUser?.status === "Yes"
-                          ? "text-green-500"
-                          : matchedUser?.status === "No"
-                          ? "text-red-500"
-                          : "text-white"
-                      }`}
-                      onDoubleClick={() => setIsShow(true)}
-                    >
-                      {matchedUser?.status || ""}
-                    </div>
-                  ) : (
-                    <select
-                      value={status}
-                      onChange={(e) =>
-                        handleStatus(e.target.value, matchedUser?._id)
-                      }
-                      onBlur={() => setIsShow(false)}
-                      className="font-normal w-full h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-                    >
-                      <option value="."></option>
-                      <option value="Yes">Yes</option>
-                      <option value="No">No</option>
-                    </select>
-                  )}
-                </div>
-              );
-            },
-            size: 100,
-            minSize: 80,
-            maxSize: 160,
-            grow: false,
-            filterFn: (row, columnId, filterValue) => {
-              const status = row.original.users?.find(
-                (u) => u?.user?.name === name
-              )?.status;
-  
-              return status === filterValue || filterValue === "";
-            },
-            filterSelectOptions: ["Yes", "No"],
-            filterVariant: "select",
-          })),
-  
-        // <-----Action------>
-        {
-          accessorKey: "actions",
-          header: "Actions",
-          Cell: ({ cell, row }) => {
-
-            const copyToClipboard = async (id) => {
-              const origin = window.location.origin;
-  
-              await navigator.clipboard.writeText(`${origin}/temp/${id}`);
-              toast.success("Copied Successfully!")
-            }
-
-
-            return (
-              <div className="flex items-center justify-center gap-2 w-full h-full">
-
-                 <span
-                    className=""
-                    title="Copy URL"
-                    onClick={() => {
-                      copyToClipboard(row.original._id)
-                    }}
-                  >
-                    <LuLink className="h-6 w-6 cursor-pointer text-amber-500 hover:text-amber-600" />
-                  </span>
-
-
-                <span
-                  className=""
-                  title="Copy Task"
-                  onClick={() => {
-                    handleCopyTask(row.original._id);
-                  }}
-                >
-                  <GrCopy className="h-6 w-6 cursor-pointer text-sky-500 hover:text-sky-600" />
-                </span>
-                <span
-                  className=""
-                  title="Edit Task"
-                  onClick={() => {
-                    setTaskId(row.original._id);
-                    setShowAddTask(true);
-                  }}
-                >
-                  <RiEdit2Line className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
-                </span>
-                <span
-                  className="text-[1rem] cursor-pointer"
-                  onClick={() => handleDeleteTaskConfirmation(row.original._id)}
-                  title="Delete Task!"
-                >
-                  <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
-                </span>
+                )}
               </div>
             );
           },
-          size: 130,
+          size: 100,
+          minSize: 80,
+          maxSize: 160,
+          grow: false,
+          filterFn: (row, columnId, filterValue) => {
+            const status = row.original.users?.find(
+              (u) => u?.user?.name === name
+            )?.status;
+
+            return status === filterValue || filterValue === "";
+          },
+          filterSelectOptions: ["Yes", "No"],
+          filterVariant: "select",
+        })),
+
+      // <-----Action------>
+      {
+        accessorKey: "actions",
+        header: "Actions",
+        Cell: ({ cell, row }) => {
+
+          const copyToClipboard = async (id) => {
+            const origin = window.location.origin;
+
+            await navigator.clipboard.writeText(`${origin}/temp/${id}`);
+            toast.success("Copied Successfully!")
+          }
+
+          return (
+            <div className="flex items-center justify-center gap-2 w-full h-full">
+              
+
+              <span
+                className=""
+                title="Copy URL"
+                onClick={() => {
+                  copyToClipboard(row.original._id)
+                }}
+              >
+                <LuLink className="h-6 w-6 cursor-pointer text-amber-500 hover:text-amber-600" />
+              </span>
+
+
+              <span
+                className=""
+                title="Copy Task"
+                onClick={() => {
+                  handleCopyTask(row.original._id);
+                }}
+              >
+                <GrCopy className="h-6 w-6 cursor-pointer text-sky-500 hover:text-sky-600" />
+              </span>
+              <span
+                className=""
+                title="Edit Task"
+                onClick={() => {
+                  setTaskId(row.original._id);
+                  setShowAddTask(true);
+                }}
+              >
+                <RiEdit2Line className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
+              </span>
+              <span
+                className="text-[1rem] cursor-pointer"
+                onClick={() => handleDeleteTaskConfirmation(row.original._id)}
+                title="Delete Task!"
+              >
+                <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
+              </span>
+            </div>
+          );
         },
-      ],
-      // eslint-disable-next-line
-      [users, auth, taskData, deparmentsData, columnVisibility]
-    );
+        size: 130,
+      },
+    ],
+    // eslint-disable-next-line
+    [users, auth, taskData, deparmentsData, columnVisibility]
+  );
   
     // Clear table Filter
     const handleClearFilters = () => {
@@ -768,6 +844,7 @@ const HR = forwardRef(({taskData, loading, setTaskData, childRef, setIsload}, re
                   setTaskId={setTaskId}
                   getAllTasks={getAllTasks}
                   deparmentsData={deparmentsData}
+                  hrRoleData={hrRoleData}
                 />
               </div>
             </div>

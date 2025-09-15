@@ -73,6 +73,9 @@ export default function Template() {
         .filter((role) => role.permission === "Templates")
         .flatMap((jobRole) => jobRole.subRoles);
 
+
+        console.log("FILTER ACCES IS 🧡💛", filterAccess)
+        console.log("FILTER ACCES IS auth 🧡💛", auth)
       setAccess(filterAccess);
     }
   }, [auth]);
@@ -288,6 +291,9 @@ export default function Template() {
       toast.success("Template copy successfully!");
     }
   };
+
+  console.log("ACCESS IS HERE:", access);
+
 
   const convertQuillHtmlToPlainText = (html) => {
     // html = html.replace(/<strong>|<b>/g, "**");

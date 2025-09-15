@@ -2,8 +2,8 @@ import React from "react";
 import ActionsCell from "../../ActionsCell";
 
 export const createActionsColumn = ({ auth, setSubscriptionId, setShow, handleDeleteConfirmation, setClientCompanyName, setShowNewTicketModal }) => (
-  auth?.user?.role?.name === "Admin"
-    ? {
+  
+   {
         accessorKey: "actions",
         header: "Actions",
         Cell: ({ row }) => (
@@ -18,7 +18,7 @@ export const createActionsColumn = ({ auth, setSubscriptionId, setShow, handleDe
         ),
         size: 160,
       }
-    : null
+     
 );
 
 export default createActionsColumn;

@@ -26,10 +26,14 @@ import { RiEdit2Line } from "react-icons/ri";
 import FAQ from "../../pages/Templates/FAQ";
 import { IoMdCopy } from "react-icons/io";
 import { useSelector } from "react-redux";
+import createTemplateColumns from "../../pages/Templates/table/columns";
 
 const Templates = forwardRef(
   ({ templateData, setTemplateData, childRef, setIsload }, ref) => {
         const auth = useSelector((state => state.auth.auth));
+
+    const [templates, setTemplates] = useState([]);
+
     const [showCategory, setShowCategory] = useState(false);
     const [categoryData, setCategoryData] = useState([]);
     const [users, setUsers] = useState([]);
@@ -48,6 +52,12 @@ const Templates = forwardRef(
     const [access, setAccess] = useState([]);
 
     console.log("templateData:", templateData);
+
+    useEffect(() => {
+      setTemplates(templateData);
+    }, [templateData]);
+
+
 
     useEffect(() => {
       const handleClickOutside = (event) => {
@@ -294,282 +304,25 @@ const Templates = forwardRef(
       );
     };
 
-    // ---------------------Table Data-------------------->
-    const columns = useMemo(
-      () => [
-        {
-          accessorKey: "category",
-          minSize: 100,
-          maxSize: 200,
-          size: 170,
-          grow: false,
-          Header: ({ column }) => {
-            return (
-              <div className=" flex flex-col gap-[2px]">
-                <span
-                  className="ml-1 cursor-pointer"
-                  title="Clear Filter"
-                  onClick={() => {
-                    column.setFilterValue("");
-                  }}
-                >
-                  Category
-                </span>
-                <select
-                  value={column.getFilterValue() || ""}
-                  onChange={(e) => column.setFilterValue(e.target.value)}
-                  className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-                >
-                  <option value="">Select</option>
-                  {categoryData?.map((cate) => (
-                    <option key={cate._id} value={cate.name}>
-                      {cate.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            );
-          },
-          Cell: ({ cell, row }) => {
-            const categroyName = row.original.category;
-            return (
-              <div className="w-full px-1">
-                <span>{categroyName}</span>
-              </div>
-            );
-          },
-          filterFn: "equals",
-          filterSelectOptions: categoryData?.map((category) => category?.name),
-          filterVariant: "select",
-        },
-        {
-          accessorKey: "name",
-          header: "Template Name",
-          Header: ({ column }) => {
-            return (
-              <div className=" w-[130px] flex flex-col gap-[2px]">
-                <span
-                  className="ml-1 cursor-pointer"
-                  title="Clear Filter"
-                  onClick={() => {
-                    column.setFilterValue("");
-                  }}
-                >
-                  Template Name
-                </span>
-                <input
-                  type="search"
-                  value={column.getFilterValue() || ""}
-                  onChange={(e) => column.setFilterValue(e.target.value)}
-                  className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-                />
-              </div>
-            );
-          },
-          Cell: ({ cell, row }) => {
-            const name = row.original.name;
-            const [allocateName, setAllocateName] = useState(name);
-            const [showEdit, setShowEdit] = useState(false);
-            useEffect(() => {
-              setAllocateName(row.original.name);
-            }, [row.original]);
-            const updateAllocateTask = (task) => {
-              setShowEdit(false);
-            };
-            return (
-              <div className="w-full h-full ">
-                {showEdit ? (
-                  <input
-                    type="text"
-                    placeholder="Enter Task..."
-                    value={allocateName}
-                    onChange={(e) => setAllocateName(e.target.value)}
-                    onBlur={(e) => updateAllocateTask(e.target.value)}
-                    className="w-full h-[2.3rem] focus:border border-gray-300 px-1 outline-none rounded"
-                  />
-                ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-start "
-                    onDoubleClick={() => setShowEdit(true)}
-                    title={allocateName}
-                  >
-                    <p
-                      className="cursor-pointer text-start  "
-                      onDoubleClick={() => setShowEdit(true)}
-                      // onClick={() => {
-                      //   setTaskID(row.original._id);
-                      //   setProjectName(row.original.project.projectName);
-                      //   setShowDetail(true);
-                      // }}
-                    >
-                      {allocateName}
-                    </p>
-                  </div>
-                )}
-              </div>
-            );
-          },
-          filterFn: (row, columnId, filterValue) => {
-            const cellValue =
-              row.original[columnId]?.toString().toLowerCase() || "";
-            return cellValue.includes(filterValue.toLowerCase());
-          },
-          size: 180,
-          minSize: 120,
-          maxSize: 200,
-          grow: false,
-        },
-        {
-          accessorKey: "description",
-          header: "Description",
-          Header: ({ column }) => {
-            useEffect(() => {
-              column.setFilterValue("");
-            }, [templateData]);
-            return (
-              <div className=" w-[480px] flex flex-col gap-[2px]">
-                <span
-                  className="ml-1 cursor-pointer"
-                  title="Clear Filter"
-                  onClick={() => {
-                    column.setFilterValue("");
-                  }}
-                >
-                  Description
-                </span>
-                <input
-                  type="search"
-                  value={column.getFilterValue() || ""}
-                  onChange={(e) => column.setFilterValue(e.target.value)}
-                  className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-                />
-              </div>
-            );
-          },
-          Cell: ({ cell, row }) => {
-            const description = row.original.description;
-            const [allocateDescription, setAllocateDescription] =
-              useState(description);
-            const [showEdit, setShowEdit] = useState(false);
-            useEffect(() => {
-              setAllocateDescription(row.original.description);
-            }, [row.original]);
-            const updateAllocateTask = (task) => {
-              setShowEdit(false);
-            };
-            return (
-              <div className="w-full h-full ">
-                {showEdit ? (
-                  <input
-                    type="text"
-                    placeholder="Enter Task..."
-                    value={allocateDescription}
-                    onChange={(e) => setAllocateDescription(e.target.value)}
-                    onBlur={(e) => updateAllocateTask(e.target.value)}
-                    className="w-full h-[2.3rem] focus:border border-gray-300 px-1 outline-none rounded"
-                  />
-                ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-start "
-                    onDoubleClick={() => setShowEdit(true)}
-                    title={allocateDescription}
-                  >
-                    <p
-                      className="text-blue-600 hover:text-blue-700 cursor-pointer text-start  "
-                      onDoubleClick={() => setShowEdit(true)}
-                      onClick={() => {
-                        setTemplate(row.original.template);
-                        setShowTemplate(true);
-                      }}
-                    >
-                      {allocateDescription}
-                    </p>
-                  </div>
-                )}
-              </div>
-            );
-          },
-          // filterFn: (row, columnId, filterValue) => {
-          //   const cellValue =
-          //     row.original[columnId]?.toString().toLowerCase() || "";
-          //   return cellValue.includes(filterValue.toLowerCase());
-          // },
-
-          filterFn: (row, columnId, filterValue) => {
-          const cellValue = row.original[columnId]?.toString().toLowerCase() || "";
-          const keywords = filterValue.toLowerCase().split(" ").filter(Boolean); // split by space and remove empty strings
-          return keywords.every(keyword => cellValue.includes(keyword));
-        },
-
-
-          size: 500,
-          minSize: 350,
-          maxSize: 560,
-          grow: false,
-        },
-        {
-          accessorKey: "template",
-          header: "Copy",
-          Cell: ({ cell, row }) => {
-            const template = row.original.template;
-
-            return (
-              <div className="flex items-center justify-center gap-3 w-full h-full">
-                <span
-                  className="text-[1rem] cursor-pointer"
-                  onClick={() => copyTemplate(template)}
-                  title="Copy Template"
-                >
-                  <IoMdCopy className="h-7 w-7 text-cyan-500 hover:text-cyan-600 " />
-                </span>
-              </div>
-            );
-          },
-          size: 60,
-        },
-
-        // <-----Action------>
-        {
-          accessorKey: "actions",
-          header: "Actions",
-          Cell: ({ cell, row }) => {
-            return (
-              <div className="flex items-center justify-center gap-4 w-full h-full">
-                <span
-                  className="text-[1rem] cursor-pointer"
-                  onClick={() => duplicateTemplate(row.original)}
-                  title="Copy Template"
-                >
-                  <GrCopy className="h-5 w-5 text-cyan-500 hover:text-cyan-600 " />
-                </span>
-                <span
-                  className=""
-                  title="Edit Template"
-                  onClick={() => {
-                    setTemplateId(row.original._id);
-                    setAddTemplate(true);
-                  }}
-                >
-                  <RiEdit2Line className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
-                </span>
-                <span
-                  className="text-[1rem] cursor-pointer"
-                  onClick={() =>
-                    handleDeleteTemplateConfirmation(row.original._id)
-                  }
-                  title="Delete Template!"
-                >
-                  <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
-                </span>
-              </div>
-            );
-          },
-          size: 140,
-        },
-      ],
-      // eslint-disable-next-line
-      [users, auth, categoryData, templateData]
-    );
+      // ---------------------Table Data-------------------->
+      const columns = useMemo(
+        () =>
+          createTemplateColumns({
+            categoryData,
+            setTemplate,
+            setShowTemplate,
+            copyTemplate,
+            duplicateTemplate,
+            setTemplateId,
+            setAddTemplate,
+            handleDeleteTemplateConfirmation,
+            userName,
+          }),
+        [
+          categoryData,
+          userName,
+        ]
+      );
 
     // Clear table Filter
     const handleClearFilters = () => {
@@ -584,7 +337,7 @@ const Templates = forwardRef(
 
     const table = useMaterialReactTable({
       columns,
-      data: templateData || [],
+      data: templates || [],
       enableStickyHeader: true,
       enableStickyFooter: true,
       muiTableContainerProps: { sx: { maxHeight: "850px" } },

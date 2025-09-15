@@ -32,11 +32,15 @@ export const getSubscriptionColumns = (ctx) => {
     createOwnerColumn(ctx),
     createSubscriptionTypeColumn(ctx),
     createDataLabelColumn(ctx),
-    createActionsColumn(ctx)
+     
   ];
 
-  // const actions = createActionsColumn(ctx);
-  // if (actions) columns.push(actions);
+
+  if (ctx?.auth?.user?.role?.name === "Admin") {
+
+ 
+    columns.push(createActionsColumn(ctx));
+  }
 
   return columns;
 };

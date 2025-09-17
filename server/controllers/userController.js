@@ -486,3 +486,90 @@ export const reordering = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Get Active Team Members
+export const getAllTeamMembers = async (req, res) => {
+
+    
+  const userId = req.user.user._id
+
+  console.log("Logged-in User ID:", userId);
+
+  try {
+    // assume req.user is set by auth middleware (decoded JWT)
+    const loggedInUser = await userModel.findById(userId).populate("role");
+
+    let users;
+
+    if (loggedInUser.role.name === "Admin") {
+      // Admin → fetch all active users
+      users = await userModel
+        .find({ isActive: { $ne: false } })
+        .select("-password")
+        .populate("role")
+        .populate("juniors")
+        .sort({ order: 1 });
+    } else {
+      // Non-admin → fetch only his/her juniors
+      users = await userModel
+        .find({ _id: { $in: loggedInUser.juniors }, isActive: { $ne: false } })
+        .select("-password")
+        .populate("role")
+        .sort({ order: 1 });
+
+      users.unshift(loggedInUser); // add logged-in user at the start of the array
+    }
+
+    
+
+    res.status(200).send({
+      total: users.length,
+      success: true,
+      message: "Users list",
+      users,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while getting users!",
+    });
+  }
+};

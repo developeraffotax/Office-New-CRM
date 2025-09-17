@@ -928,3 +928,114 @@ export const getLeadConversionStats = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getWonLeadData = async ( req, res) => {
+
+
+
+    try {
+    const { user, startDate, endDate } = req.query;
+
+    const filters = { status: "won" };
+
+    if (user) {
+      filters.jobHolder = user;
+    }
+
+    if (startDate && endDate) {
+      filters.leadCreatedAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+      const leads = await leadModel.aggregate([
+        { $match: filters },
+        {
+          $group: {
+            _id: { $month: "$leadCreatedAt" },
+            count: { $sum: 1 },
+            totalValue: {
+              $sum: {
+                $cond: [
+                  {
+                    $and: [
+                      { $ne: ["$value", ""] },        // not empty string
+                      { $ne: ["$value", null] },      // not null
+                    ],
+                  },
+                  { $toDouble: "$value" }, // convert when valid
+                  0, // otherwise add 0
+                ],
+              },
+            },
+          },
+        },
+        { $sort: { "_id": 1 } },
+      ]);
+
+
+    // Initialize arrays for 12 months
+    const counts = Array(12).fill(0);
+    const values = Array(12).fill(0);
+
+    leads.forEach((item) => {
+      counts[item._id - 1] = item.count;
+      values[item._id - 1] = item.totalValue;
+    });
+
+    res.json({counts, values });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server Error" });
+  }
+
+
+}

@@ -64,7 +64,7 @@ const userSchema = new mongoose.Schema(
     juniors: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'User'  // Refers to the same User model
+        ref: 'Users'  // Refers to the same User model
       }
     ]
   },

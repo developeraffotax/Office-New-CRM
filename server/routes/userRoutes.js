@@ -3,6 +3,7 @@ import {
   addDatalabel,
   deleteUser,
   getAllActiveUsers,
+  getAllTeamMembers,
   getAllUsers,
   getDashboardUsers,
   loginUser,
@@ -48,5 +49,16 @@ router.put("/label/:id", requiredSignIn, addDatalabel);
 
 // Reordering
 router.put("/reordering", requiredSignIn, reordering);
+
+
+
+
+
+
+
+
+
+// Get All Team Members
+router.get("/get/active/team",requiredSignIn, getAllTeamMembers);
 
 export default router;

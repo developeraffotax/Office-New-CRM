@@ -37,6 +37,9 @@ import { useSelector } from "react-redux";
 import RefreshLeadsButton from "./ui/RefreshLeadsButton";
 import { Box, LinearProgress } from "@mui/material";
 import getLeadColumns from "./table/columns";
+import WonLeadsStats from "./userLeadChart/UserLeadChart";
+import UserLeadChart from "./userLeadChart/UserLeadChart";
+import { BsGraphUpArrow } from "react-icons/bs";
 
 const updates_object_init = {
       companyName: '',
@@ -67,7 +70,7 @@ export default function Lead() {
   const [selectedTab, setSelectedTab] = useState("progress");
   const [isLoading, setIsLoading] = useState(false);
 
-
+  const [showUserLeadChart, setShowUserLeadChart] = useState(false);
  
   const [leadData, setLeadData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -1138,6 +1141,25 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
             </button>
 
 
+
+              <div className="flex justify-center items-center  mt-[1.2rem]   ">
+                  <span
+                      className={` p-2 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+                          showUserLeadChart && "bg-orange-500 text-white"
+                            }`}
+                      onClick={() => {
+                        setShowUserLeadChart(prev => !prev);
+                      }}
+                      title="Show User Lead Chart"
+                  > 
+                  
+                    <BsGraphUpArrow className="h-5 w-5  cursor-pointer" />
+                  </span>
+              </div>
+
+
+              
+
               {/* Edit Multiple Job Button */}
 
               <div className="flex justify-center items-center  mt-[1.2rem]   ">
@@ -1621,7 +1643,8 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
         <div className="w-full h-full">
           <div className="w-full min-h-[10vh] relative ">
               <div className="h-full hidden1 overflow-y-auto relative">
-                <MaterialReactTable table={table} />
+                {showUserLeadChart && <WonLeadsStats  users={users} auth={auth}/> }
+                { !showUserLeadChart && <MaterialReactTable table={table} /> }
               </div>
             </div>
         </div>
@@ -1676,7 +1699,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
 
 
 
-
+           
     </>
   );
 }

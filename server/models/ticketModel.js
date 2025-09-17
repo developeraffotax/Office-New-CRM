@@ -44,7 +44,7 @@ const ticketSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Read", "Unread", "Send"],
+      enum: ["Read", "Unread", "Send", "Sent"],
       default: "Send",
     },
     state: {

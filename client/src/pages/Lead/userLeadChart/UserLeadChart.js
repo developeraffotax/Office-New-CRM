@@ -81,7 +81,15 @@ export default function UserLeadChart({auth}) {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get/active/team`
       );
-      setUsers(data?.users);
+
+      
+      setUsers((prev) => {
+        return data?.users?.filter((user) =>
+          user.role?.access?.some((item) => item?.permission.includes("Leads"))
+        ) || [];
+      })
+
+      
     } catch (error) {
       console.log(error);
     }

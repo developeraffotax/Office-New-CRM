@@ -125,9 +125,10 @@ export default function UserLeadChart({auth}) {
   }, [fetchData]);
 
   const options = useMemo(() => {
+    const width = chartType === 'bar' ? 0 : 3; // bar width or line width
     return {
       chart: { toolbar: { show: true }, type: chartType,   },
-      stroke: { width: [2, 2, 2], dashArray: [0, 0, 0],  curve: "smooth" },
+      stroke: { width: [width, width, width], dashArray: [0, 0, 0],  curve: "smooth" },
       xaxis: {
         categories: MONTHS,
       },
@@ -142,9 +143,9 @@ export default function UserLeadChart({auth}) {
         },
         {
           opposite: true,
-          title: { text: "Total Value ($)" },
+          title: { text: "Total Value (£)" },
           labels: {
-            formatter: (val) => `$${val.toLocaleString()}`,
+            formatter: (val) => `£${val.toLocaleString()}`,
             style: { colors: SERIES_COLORS[1] }, // same color as Value series
           },
           min: 0,
@@ -191,25 +192,9 @@ export default function UserLeadChart({auth}) {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Card
-        sx={{ py: 6, px: 5, boxShadow: 4, borderRadius: 3, bgcolor: "#f9f9f9" }}
+        sx={{ py: 4, px: 4, boxShadow: 4, borderRadius: 3, bgcolor: "#f9f9f9" }}
       >
-        <Typography
-          variant="h5"
-          fontWeight="bold"
-          gutterBottom
-          sx={{ mb: 3, textAlign: "center" }}
-        >
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800">
-              User Lead Statistics
-            </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Track won leads, values, and progress over time
-            </p>
-            <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mt-2 rounded-full"></div>
-          </div>
-        </Typography>
-
+        
         {/* Filters */}
         <Box
           display="flex"
@@ -217,7 +202,7 @@ export default function UserLeadChart({auth}) {
           gap={3}
           flexWrap="wrap"
           mb={2}
-          sx={{backgroundColor: "#ffffff", borderRadius: 1, boxShadow: 1, py: 3, px: 4}}
+          sx={{backgroundColor: "#ffffff", borderRadius: 1, boxShadow: 1, py: 2, px: 4}}
         >
           {/* User Filter */}
 
@@ -241,6 +226,27 @@ export default function UserLeadChart({auth}) {
               </Select>
             </FormControl>
           </div>
+
+
+
+
+          <Typography
+          variant="h4"
+          fontWeight="bold"
+          gutterBottom
+          sx={{ mb: 0, textAlign: "center" }}
+        >
+          <div className="text-center  ">
+            <h2 className="text-2xl font-bold text-gray-800">
+              User Lead Statistics
+            </h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Track won leads, values, and progress over time
+            </p>
+            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mt-2 rounded-full"></div>
+          </div>
+        </Typography>
+
 
           <div className="flex gap-5 ">
             {/* Custom Date Pickers */}
@@ -301,7 +307,7 @@ export default function UserLeadChart({auth}) {
               variant="contained"
               color="info"
               onClick={clearFilter}
-              sx={{ ml: "auto" }}
+              sx={{ ml: "auto", height: 40 }}
             >
               Reset
             </Button>

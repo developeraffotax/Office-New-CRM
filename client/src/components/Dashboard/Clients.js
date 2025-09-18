@@ -14,6 +14,9 @@ import JobCountChart from "./charts/JobCountChart";
 import ClientFeeChart from "./charts/ClientFeeChart";
 import StatCard from "./StatCard";
 import { SummaryCard } from "./SummaryCard";
+import { buildDateFilter, buildJobFilter, fillMissingMonths, monthOrder, sortMonths } from "./helpers/filters";
+import { aggregateJobs, aggregateLeads, buildSeries } from "./helpers/aggregators";
+import { renderChart } from "./helpers/chartUtils";
 
 export default function Clients({
   selectedMonth,
@@ -79,7 +82,7 @@ export default function Clients({
   const [filtered_leads, set_filtered_leads] = useState([]);
 
   // Visibility Div
-  const initialState = [true, true, true, true, true, true, true];
+  const initialState = [true, true, true, true, true, true, true, true];
   const [visibility, setVisibility] = useState(() => {
     const savedState = localStorage.getItem("clients");
     return savedState ? JSON.parse(savedState) : initialState;
@@ -99,7 +102,7 @@ export default function Clients({
   // Dynamically set grid classes based on visible divs
   const getGridClasses = () => {
     if (visibleCount === 1) return "grid grid-cols-1";
-    return "grid grid-cols-1 sm:grid-cols-2";
+    return "grid grid-cols-1 sm:grid-cols-2  items-start ";
   };
 
   const departments = [
@@ -1160,278 +1163,154 @@ if (!selectedYear && !selectedMonth) {
   //   );
   // });
   // console.log("UNIQUE CLIENTS>>>", uniqueClients)
+const now = new Date();
+const startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
 
-  const filterData = uniqueClients.filter((job) => {
-    const jobDate = new Date(job.currentDate);
-    const jobMonth = jobDate.getMonth() + 1;
-    const jobYear = jobDate.getFullYear();
+const jobFilterFn = buildJobFilter({ search, selectedMonth, selectedYear, startDate, now, selectedSource, selectedClient, selectedPartner, selectedDepartment, });
+const filteredJobs = uniqueClients.filter(jobFilterFn);
 
-    const today = new Date();
-    const pastDate = new Date();
+// Aggregate jobs
+const monthData = aggregateJobs(filteredJobs);
+let months = Object.keys(monthData).sort(sortMonths);
 
-    if (search && !isNaN(search) && search >= 1) {
-      pastDate.setDate(today.getDate() - parseInt(search));
-    }
+// Filter leads
+const leadFilterFn = buildDateFilter({ search, selectedMonth, selectedYear, startDate, now });
+const filteredLeads = salesData?.totalLeads?.filter(lead => leadFilterFn(new Date(lead.createdAt))) || [];
 
-    const matchesSearch = !search || (jobDate >= pastDate && jobDate <= today);
+// Aggregate leads
+const leadsMonthData = aggregateLeads(filteredLeads);
 
+const filledLeadsMonthData = fillMissingMonths(leadsMonthData)
+
+let monthsForLeadsArr = Object.keys(filledLeadsMonthData).sort(sortMonths);
+
+
+
+
+
+// Build chart series
+const jobCountSeries = buildSeries(monthData, months, "Total Jobs");
+const feeSeries = buildSeries(monthData, months, "Total Fee");
+const totalLeadCountSeries = buildSeries(leadsMonthData, monthsForLeadsArr, "Total Leads");
+
+console.log("jobCountSeries", jobCountSeries);
+console.log("feeSeries", feeSeries);
+console.log("totalLeadCountSeries", totalLeadCountSeries);
  
 
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
-
-    const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
-
-    if (!selectedYear) {
-      const jobDateN = new Date(jobYear, jobMonth - 1, 1); // month -1 because JS months are 0-indexed
-      return (
-        (!selectedMonth || jobMonth === parseInt(selectedMonth)) &&
-        jobDateN >= startDate &&
-        jobDateN <= now &&
-        (!selectedSource || job.source === selectedSource) &&
-        (!selectedClient || job.clientType === selectedClient) &&
-        (!selectedPartner || job.partner === selectedPartner) &&
-        (!selectedDepartment || job.jobName === selectedDepartment) &&
-        matchesSearch
-      );
-    }
-
-    return (
-      (!selectedMonth || jobMonth === parseInt(selectedMonth)) &&
-      (!selectedYear || jobYear === parseInt(selectedYear)) &&
-      (!selectedSource || job.source === selectedSource) &&
-      (!selectedClient || job.clientType === selectedClient) &&
-      (!selectedPartner || job.partner === selectedPartner) &&
-      (!selectedDepartment || job.jobName === selectedDepartment) &&
-      matchesSearch
-    );
-  });
-
- 
-
-  // Map data for month-wise total job count and fee totals
-  const monthData = filterData.reduce((acc, job) => {
-    const jobDate = new Date(job.currentDate);
-    const month = jobDate.toLocaleString("default", { month: "short" });
-
-    if (!acc[month]) acc[month] = { jobCount: 0, totalFee: 0 };
-
-    acc[month].jobCount += 1;
-    acc[month].totalFee += parseFloat(job.fee || 0);
-
-    return acc;
-  }, {});
-
-
-  
-
-
-
-
-
-    const filteredLeads = salesData?.totalLeads?.filter((lead) => {
-    const leadDate = new Date(lead.createdAt);
-    const leadMonth = leadDate.getMonth() + 1;
-    const leadYear = leadDate.getFullYear();
-
-    const today = new Date();
-    const pastDate = new Date();
-
-    if (search && !isNaN(search) && search >= 1) {
-      pastDate.setDate(today.getDate() - parseInt(search));
-    }
-
-    const matchesSearch = !search || (leadDate >= pastDate && leadDate <= today);
-
- 
-
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
-
-    const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
-
-    if (!selectedYear) {
-      const jobDateN = new Date(leadYear, leadMonth - 1, 1); // month -1 because JS months are 0-indexed
-      return (
-        (!selectedMonth || leadMonth === parseInt(selectedMonth)) &&
-        jobDateN >= startDate &&
-        jobDateN <= now &&
-        // (!selectedSource || lead.lead_Source === selectedSource) &&
-        // (!selectedClient || job.clientType === selectedClient) &&
-        // (!selectedPartner || job.partner === selectedPartner) &&
-        // (!selectedDepartment || job.jobName === selectedDepartment) &&
-        matchesSearch
-      );
-    }
-
-    return (
-      (!selectedMonth || leadMonth === parseInt(selectedMonth)) &&
-      (!selectedYear || leadYear === parseInt(selectedYear)) &&
-      // (!selectedSource || lead.lead_Source === selectedSource) &&
-      // (!selectedClient || job.clientType === selectedClient) &&
-      // (!selectedPartner || job.partner === selectedPartner) &&
-      // (!selectedDepartment || job.jobName === selectedDepartment) &&
-      matchesSearch
-    );
-  });
-
-
-
-
-  const monthOrder = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-
- 
-
-const leadsMonthData = filteredLeads?.reduce((acc, lead) => {
-  const leadDate = new Date(lead.createdAt);
-  const month = leadDate.toLocaleString("default", { month: "short" });
-  if (!acc[month]) acc[month] = { leadCount: 0 };
-  acc[month].leadCount += 1;
-  return acc;
-}, {}) ?? {}; // <-- ensures it's {} when filteredLeads is undefined
-
-// ensure missing months are added with leadCount 0
-monthOrder.forEach(month => {
-  if (!leadsMonthData[month]) leadsMonthData[month] = { leadCount: 0 };
-});
-  // ------------------------>Format Months<--------------------->
 
  
 
 
 
-  // Assuming `monthData`
-  const months = Object.keys(monthData).sort((a, b) => {
-    const [monthA, yearA] = a.split(" ");
-    const [monthB, yearB] = b.split(" ");
 
-    return (
-      parseInt(yearA) - parseInt(yearB) ||
-      monthOrder.indexOf(monthA) - monthOrder.indexOf(monthB)
-    );
-  });
-
-
-  let monthsForLeadsArr = [];
-  if(leadsMonthData) {
-
-      monthsForLeadsArr = Object.keys(leadsMonthData).sort((a, b) => {
-    const [monthA, yearA] = a.split(" ");
-    const [monthB, yearB] = b.split(" ");
-
-    return (
-      parseInt(yearA) - parseInt(yearB) ||
-      monthOrder.indexOf(monthA) - monthOrder.indexOf(monthB)
-    );
-  });
-
+useEffect(() => {
+  const jobCountSeriesForPastOneYear = [];
+  if (!selectedYear) {
+    months = getLastTwelveMonthsWithLabels();
+    const rotatedArr = shiftArrFromThisMonth([...jobCountSeries[0].data]);
+    jobCountSeriesForPastOneYear.push({ name: "Total Jobs", data: rotatedArr });
   }
-    
-  console.log("monthsForLeads💚💚💚", monthsForLeadsArr)
 
-  let formattedMonths = months.map(
-    (month) => `${month} (${monthData[month]?.jobCount || 0})`
-  );
-
-    let formattedMonthsForLeads = monthsForLeadsArr.map(
-    (month) => `${month} (${leadsMonthData[month]?.leadCount || 0})`
-  );
-
-  // Prepare data series for month-wise job count
-  let jobCountSeries = [
-    {
-      name: "Total Jobs",
-      data: months.map((month) => monthData[month]?.jobCount || 0),
-    },
-  ];
-
-  // Prepare data series for month-wise fee totals
-  const feeSeries = [
-    {
-      name: "Total Fee",
-      data: months.map((month) => monthData[month]?.totalFee || 0),
-    },
-  ];
+  return renderChart({
+    selector: "#apex-jobCount-chart",
+    series: jobCountSeries,
+    seriesForPastYear: jobCountSeriesForPastOneYear,
+    months,
+    chartType: selectChart,
+    yAxisTitle: "Total Jobs",
+    selectedYear,
+    selectedMonth,
+  });
+}, [selectChart, months, jobCountSeries]);
 
 
 
 
 
 
-  //   // Prepare data series for month-wise job count
-  let totalLeadCountSeries = [
-    {
+
+useEffect(() => {
+  const totalLeadCountSeriesForPastOneYear = [];
+  if (!selectedYear) {
+    monthsForLeadsArr = getLastTwelveMonthsWithLabels();
+    const rotatedArr = shiftArrFromThisMonth([...totalLeadCountSeries[0].data]);
+    totalLeadCountSeriesForPastOneYear.push({
       name: "Total Leads",
-      data: monthsForLeadsArr.map((month) => leadsMonthData[month]?.leadCount || 0),
-    },
-  ];
+      data: rotatedArr,
+    });
+  }
+
+  return renderChart({
+    selector: "#apex-total-leads-chart",
+    series: totalLeadCountSeries,
+    seriesForPastYear: totalLeadCountSeriesForPastOneYear,
+    months: monthsForLeadsArr,
+    chartType: selectChart,
+    yAxisTitle: "Total Leads",
+    selectedYear,
+    selectedMonth,
+  });
+}, [selectChart, months, totalLeadCountSeries]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+useEffect(() => {
+  const FeeSeriesForPastOneYear = [];
+  if (!selectedYear) {
+    months = getLastTwelveMonthsWithLabels();
+    const rotatedArr = shiftArrFromThisMonth([...feeSeries[0].data]);
+    FeeSeriesForPastOneYear.push({ name: "Total Fee", data: rotatedArr });
+  }
+
+  return renderChart({
+    selector: "#apex-fee-chart",
+    series: feeSeries,
+    seriesForPastYear: FeeSeriesForPastOneYear,
+    months,
+    chartType: selectChart,
+    yAxisTitle: "Total Fee",
+    selectedYear,
+    selectedMonth,
+    colors: ["#FF5733", "#33FF57", "#3357FF"], // optional
+  });
+}, [selectChart, months, feeSeries]);
+
 
  
 
 
-  // Render charts
-  useEffect(() => {
-    // Job Count Chart
 
-    const jobCountSeriesForPastOneYear = [];
 
-    if (!selectedYear) {
-      formattedMonths = getLastTwelveMonthsWithLabels();
 
-      const rotatedArr = shiftArrFromThisMonth([...jobCountSeries[0].data]);
 
-      jobCountSeriesForPastOneYear.push({
-        name: "Total Jobs",
-        data: rotatedArr,
-      });
-    }
 
-    const jobCountChartOptions = {
-      series: selectedYear ? jobCountSeries : jobCountSeriesForPastOneYear,
-      chart: { type: selectChart, height: 300 },
-      xaxis: { categories: formattedMonths, title: { text: "Month" } },
-      yaxis: { title: { text: "Total Jobs" } },
-      plotOptions:
-        selectChart === "bar"
-          ? {
-              bar: {
-                columnWidth: `${selectedMonth ? "10%" : "40%"}`,
-                borderRadius: 5,
-              },
-            }
-          : {},
-    };
 
-    const jobCountChartElement = document.querySelector("#apex-jobCount-chart");
-    if (jobCountChartElement) {
-      const jobCountChart = new ApexCharts(
-        jobCountChartElement,
-        jobCountChartOptions
-      );
-      jobCountChart.render();
-      return () => jobCountChart.destroy();
-    }
 
 
 
 
-    // eslint-disable-next-line
-  }, [selectChart, months, jobCountSeries]);
 
 
 
@@ -1448,136 +1327,6 @@ monthOrder.forEach(month => {
 
 
 
-
-
-
-  // Render charts
-  useEffect(() => {
-    // Job Count Chart
-
-    const totalLeadCountSeriesForPastOneYear = [];
-
-    if (!selectedYear) {
-      formattedMonthsForLeads = getLastTwelveMonthsWithLabels();
-
-      const rotatedArr = shiftArrFromThisMonth([...totalLeadCountSeries[0].data]);
-
-      totalLeadCountSeriesForPastOneYear.push({
-        name: "Total Leads",
-        data: rotatedArr,
-      });
-    }
-
-    const jobCountChartOptions = {
-      series: selectedYear ? totalLeadCountSeries : totalLeadCountSeriesForPastOneYear,
-      chart: { type: selectChart, height: 300 },
-      xaxis: { categories: formattedMonthsForLeads, title: { text: "Month" } },
-      yaxis: { title: { text: "Total Leads" } },
-      plotOptions:
-        selectChart === "bar"
-          ? {
-              bar: {
-                columnWidth: `${selectedMonth ? "10%" : "40%"}`,
-                borderRadius: 5,
-              },
-            }
-          : {},
-    };
-
-    const jobCountChartElement = document.querySelector("#apex-total-leads-chart");
-    if (jobCountChartElement) {
-      const jobCountChart = new ApexCharts(
-        jobCountChartElement,
-        jobCountChartOptions
-      );
-      jobCountChart.render();
-      return () => jobCountChart.destroy();
-    }
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-    // eslint-disable-next-line
-  }, [selectChart, months, totalLeadCountSeries]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // Department wise Fee
-  useEffect(() => {
-    const FeeSeriesForPastOneYear = [];
-
-    if (!selectedYear) {
-      formattedMonths = getLastTwelveMonthsWithLabels();
-
-      const rotatedArr = shiftArrFromThisMonth([...feeSeries[0].data]);
-
-      FeeSeriesForPastOneYear.push({
-        name: "Total Fee",
-        data: rotatedArr,
-      });
-    }
-
-    // Fee Total Chart
-    const feeChartOptions = {
-      series: selectedYear ? feeSeries : FeeSeriesForPastOneYear,
-      chart: { type: selectChart, height: 300 },
-      xaxis: { categories: formattedMonths, title: { text: "Month" } },
-      yaxis: { title: { text: "Total Fee" } },
-      plotOptions:
-        selectChart === "bar"
-          ? { bar: { columnWidth: "50%", borderRadius: 5 } }
-          : {},
-      colors: ["#FF5733", "#33FF57", "#3357FF"],
-    };
-
-    const feeChartElement = document.querySelector("#apex-fee-chart");
-    if (feeChartElement) {
-      const feeChart = new ApexCharts(feeChartElement, feeChartOptions);
-      feeChart.render();
-      return () => feeChart.destroy();
-    }
-  }, [selectChart, months, feeSeries]);
 
   useLayoutEffect(() => {
     const now = new Date();
@@ -1866,8 +1615,17 @@ text="text-[#05676e]"
 
           {/* -----------------------Bar/Line/Area Charts--------------- */}
           <div className={`w-full ${getGridClasses()} gap-4 p-4`}>
-            {/* ------------Month Wise Department Total------------ */}
-            {visibility[0] && (
+
+
+
+
+
+
+                    
+                  <div className="flex flex-col justify-start items-start gap-4 "> 
+
+
+                      {visibility[0] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <div className="flex items-center justify-between  w-full gap-4">
                   <div className="flex items-center gap-4">
@@ -1898,7 +1656,109 @@ text="text-[#05676e]"
                 <div id="apex-jobCount-chart" />
               </div>
             )}
-            {/* ------------Month Wise Fee------------ */}
+
+
+
+
+
+
+
+
+ {/*  -------------Jobs Analysis----------- */}
+            {visibility[2] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <h3 className="text-lg font-semibold text-center">
+                  Department-wise Total Count
+                </h3>
+                <div id="department-count-chart" />
+              </div>
+            )}
+
+
+
+
+
+
+               {visibility[4] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white   ">
+                <div className="flex items-center justify-between  w-full gap-4">
+                  <div className="flex items-center gap-4">
+                    <h3 className="text-lg sm:text-xl font-semibold text-center">
+                      Total Leads
+                    </h3>
+                    <select
+                      onChange={(e) => setSelectChart(e.target.value)}
+                      value={selectChart}
+                      className={`${style.input} shadow-md drop-shadow-md`}
+                      style={{ height: "2.2rem" }}
+                    >
+                      <option value={"bar"}>Bar Chart</option>
+                      <option value={"line"}>Line Chart</option>
+                      <option value={"area"}>Area Chart</option>
+                    </select>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-semibold">
+                    ({filteredLeads?.length})
+                  </h3>
+                </div>
+                {/* (Month Wise) Department Total */}
+
+                {/* {
+                  featureFilter ? <JobCountChart featureFilter={featureFilter} selectChart={selectChart} selectedDepartment={selectedDepartment} selectedSource={selectedSource} selectedClient={selectedClient} selectedPartner={selectedPartner} uniqueClients={uniqueClients} setFilteredUniqueClient={setFilteredUniqueClient} /> : <div id="#apex-total-leads-chart" />
+                } */}
+
+                <div id="apex-total-leads-chart" />
+              </div>
+            )}
+
+
+
+
+
+{/* ------------------Source Analysis----------------- */}
+            {visibility[6] || visibility[7] ? (
+              <div className="w-full flex justify-start items-start gap-2  rounded-md cursor-pointer   columns-1 " style={{"gridColumn": 1}}>
+                {visibility[6] && (
+                  <div className="w-[50%] shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                    <JobSourcePieChart
+                      workFlowData={workFlowData}
+                      selectedMonth={selectedMonth}
+                      selectedYear={selectedYear}
+                      lastDays={search}
+                    />
+                  </div>
+                )}
+                {visibility[7] && (
+                  <div className="w-[50%] shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                    <JobSourceClientPartnerDonutCharts
+                      workFlowData={workFlowData}
+                      selectedMonth={selectedMonth}
+                      selectedYear={selectedYear}
+                      lastDays={search}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : null}
+
+                    
+                     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+                  <div  className="flex flex-col justify-start items-start gap-4 ">
+                    
+                    
+                               {/* ------------Month Wise Fee------------ */}
             {visibility[1] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <div className="flex items-center gap-6">
@@ -1917,18 +1777,12 @@ text="text-[#05676e]"
                 } */}
               </div>
             )}
-
-            {/*  -------------Jobs Analysis----------- */}
-            {visibility[2] && (
-              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                <h3 className="text-lg font-semibold text-center">
-                  Department-wise Total Count
-                </h3>
-                <div id="department-count-chart" />
-              </div>
-            )}
-
-            {/* ------------------Fee Analysis----------------- */}
+            
+            
+            
+            
+            
+              {/* ------------------Fee Analysis----------------- */}
             {visibility[3] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
                 <h3 className="text-lg font-semibold text-center">
@@ -1937,20 +1791,12 @@ text="text-[#05676e]"
                 <div id="department-fee-chart" />
               </div>
             )}
-
-            {/* ------------------Lead / Lead Source Graph----------------- */}
-            {/* { visibility[2] && (
-              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                <h3 className="text-lg font-semibold text-center">
-                  Lead Source Chart
-                </h3>
-                <div id="lead-source-chart" />
-              </div>
-            )} */}
-
-            {/* 7----------Conversion Lead in Client in Proposal--------- */}
-            {visibility[4] && (
-              <div className=" w-full flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 shadow-lg hover:shadow-2xl  ">
+            
+            
+            
+            
+            {visibility[5] && (
+              <div   className=" w-full flex flex-col items-center p-4 rounded-xl bg-gradient-to-br from-teal-100 via-teal-200 to-teal-300 shadow-lg hover:shadow-2xl  ">
                 <div className="flex flex-col gap-4 w-full">
                   <div className=" w-full flex items-center gap-2 p-2 rounded-md border shadow-md bg-white">
                     <h3 className="font-semibold text-xl w-[24%]">Source</h3>
@@ -2000,75 +1846,52 @@ text="text-[#05676e]"
               </div>
             )}
 
+            
+            
+             </div>
 
 
 
 
 
+            {/* ------------Month Wise Department Total------------ */}
+            
+ 
 
+           
 
+          
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            {visibility[0] && (
+            {/* ------------------Lead / Lead Source Graph----------------- */}
+            {/* { visibility[2] && (
               <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                <div className="flex items-center justify-between  w-full gap-4">
-                  <div className="flex items-center gap-4">
-                    <h3 className="text-lg sm:text-xl font-semibold text-center">
-                      Total Leads
-                    </h3>
-                    <select
-                      onChange={(e) => setSelectChart(e.target.value)}
-                      value={selectChart}
-                      className={`${style.input} shadow-md drop-shadow-md`}
-                      style={{ height: "2.2rem" }}
-                    >
-                      <option value={"bar"}>Bar Chart</option>
-                      <option value={"line"}>Line Chart</option>
-                      <option value={"area"}>Area Chart</option>
-                    </select>
-                  </div>
-                  <h3 className="text-lg sm:text-xl font-semibold">
-                    ({filterUniqueClient?.length})
-                  </h3>
-                </div>
-                {/* (Month Wise) Department Total */}
-
-                {/* {
-                  featureFilter ? <JobCountChart featureFilter={featureFilter} selectChart={selectChart} selectedDepartment={selectedDepartment} selectedSource={selectedSource} selectedClient={selectedClient} selectedPartner={selectedPartner} uniqueClients={uniqueClients} setFilteredUniqueClient={setFilteredUniqueClient} /> : <div id="#apex-total-leads-chart" />
-                } */}
-
-                <div id="apex-total-leads-chart" />
+                <h3 className="text-lg font-semibold text-center">
+                  Lead Source Chart
+                </h3>
+                <div id="lead-source-chart" />
               </div>
-            )}
+            )} */}
+
+
+
+
+
+
+
+
+            
+
+
+
+
+
+
+
+
+
+
+            {/* 7----------Conversion Lead in Client in Proposal--------- */}
+            
 
 
 
@@ -2101,32 +1924,77 @@ text="text-[#05676e]"
 
 
 
-            {/* ------------------Source Analysis----------------- */}
-            {visibility[5] || visibility[6] ? (
-              <div className="w-full flex justify-start items-start gap-2  rounded-md cursor-pointer   ">
-                {visibility[5] && (
-                  <div className="w-[50%] shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                    <JobSourcePieChart
-                      workFlowData={workFlowData}
-                      selectedMonth={selectedMonth}
-                      selectedYear={selectedYear}
-                      lastDays={search}
-                    />
-                  </div>
-                )}
-                {visibility[6] && (
-                  <div className="w-[50%] shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                    <JobSourceClientPartnerDonutCharts
-                      workFlowData={workFlowData}
-                      selectedMonth={selectedMonth}
-                      selectedYear={selectedYear}
-                      lastDays={search}
-                    />
-                  </div>
-                )}
-              </div>
-            ) : null}
+
+
+
+
+
+
+           
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+
+
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         </div>
       )}
     </div>

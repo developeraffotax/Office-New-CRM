@@ -34,6 +34,8 @@ export default function Clients({
 }) {
   const [clients, setClients] = useState([]);
 
+  console.log("Sales DATA💙", salesData);
+
   const [clientsForPastMonthOrYear, setClientsForPastMonthOrYear] = useState(
     []
   );
@@ -58,9 +60,7 @@ export default function Clients({
     totalClients: "0",
   });
 
-  console.log("SALES DATA🧡", salesData);
-  console.log("workFlowData DATA💛", workFlowData);
-  console.log("uniqueClients DATA💚", uniqueClients);
+  
 
   const [lead_source_labels, set_lead_source_labels] = useState([
     "Upwork",
@@ -116,7 +116,7 @@ export default function Clients({
   useEffect(() => {
 
 
-    console.log(uniqueClients.length, "uniqueClients length💚💚💛💛🧡🧡❤❤");
+ 
 
     const filteredData = uniqueClients?.filter((item) => {
       const createdAtDate = new Date(item.currentDate);
@@ -165,7 +165,7 @@ export default function Clients({
       return matchesDateFilter && matchesSearchFilter;
     });
 
-    console.log("Filtered Unique Clients💛🧡❤:", filteredData);
+ 
 
     setFilteredUniqueClient(filteredData);
   }, [selectedMonth, selectedYear, uniqueClients, search]);
@@ -309,7 +309,7 @@ if (!selectedYear && !selectedMonth) {
       return matchesDateFilter && matchesSearchFilter;
     });
 
-    console.log("Filtered Unique Clients💛🧡❤:", filteredData);
+ 
 
     setFilteredUniqueClientForComparison(filteredData);
   }, [selectedMonth, selectedYear, uniqueClients, search]);
@@ -447,7 +447,7 @@ if (!selectedYear && !selectedMonth) {
 
       // Calculate lead-wise totals and job counts
       const leadWiseTotals = departmentJobs.reduce((acc, job) => {
-        console.log("job.job.lead", job);
+         
         const lead = job.job.lead;
         if (!acc[lead]) {
           acc[lead] = { totalHours: 0, totalFee: 0, departmentCount: 0 };
@@ -456,12 +456,10 @@ if (!selectedYear && !selectedMonth) {
         acc[lead].totalFee += parseFloat(job.fee || 0);
         acc[lead].departmentCount += 1;
 
-        console.log("acc[lead]", acc[lead]);
-        console.log("acc[lead].totalFee", acc[lead].totalFee);
+       
         return acc;
       }, {});
-
-      console.log("totalFee🧡🧡🧡", totalFee);
+ 
       return {
         department,
         totalHours,
@@ -664,7 +662,7 @@ if (!selectedYear && !selectedMonth) {
     const departmentFees = clients.map((client) => client.totalFee);
     const departmentLabels = clients.map((client) => client.department);
 
-    console.log("departmentFees:💜💜", departmentFees);
+    
 
     const optionsFee = {
       series: [
@@ -811,7 +809,7 @@ if (!selectedYear && !selectedMonth) {
       return filteredData;
     };
 
-    // console.log("filterData", filterData());
+   
 
     setFilterWorkFlowForComparison(filterData);
 
@@ -857,8 +855,7 @@ if (!selectedYear && !selectedMonth) {
     // eslint-disable-next-line
   }, [workFlowData, selectedDepartment, selectedMonth, selectedYear, search]);
 
-  console.log("CLIENTS❤🧡💛💚💙", clients);
-  console.log("clientsForPastMonthOrYear", clientsForPastMonthOrYear);
+ 
 
   useEffect(() => {
     const filterData = () => {
@@ -925,7 +922,7 @@ if (!selectedYear && !selectedMonth) {
       return filteredData;
     };
 
-    // console.log("filterData", filterData());
+ 
 
     setFilterWorkFlow(filterData);
 
@@ -1178,7 +1175,7 @@ if (!selectedYear && !selectedMonth) {
 
     const matchesSearch = !search || (jobDate >= pastDate && jobDate <= today);
 
-    // console.log("SELECTED YEAR >>>>>>", selectedYear)
+ 
 
     const now = new Date();
     const currentYear = now.getFullYear();
@@ -1211,7 +1208,7 @@ if (!selectedYear && !selectedMonth) {
     );
   });
 
-  //console.log("FilterData2:", filterData);
+ 
 
   // Map data for month-wise total job count and fee totals
   const monthData = filterData.reduce((acc, job) => {
@@ -1226,9 +1223,62 @@ if (!selectedYear && !selectedMonth) {
     return acc;
   }, {});
 
-  // ------------------------>Format Months<--------------------->
 
-  //console.log("MONTH DATA>>>", monthData)
+  
+
+
+
+
+
+    const filteredLeads = salesData?.totalLeads?.filter((lead) => {
+    const leadDate = new Date(lead.createdAt);
+    const leadMonth = leadDate.getMonth() + 1;
+    const leadYear = leadDate.getFullYear();
+
+    const today = new Date();
+    const pastDate = new Date();
+
+    if (search && !isNaN(search) && search >= 1) {
+      pastDate.setDate(today.getDate() - parseInt(search));
+    }
+
+    const matchesSearch = !search || (leadDate >= pastDate && leadDate <= today);
+
+ 
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth(); // 0 = Jan, 11 = Dec
+
+    const startDate = new Date(currentYear, currentMonth - 11, 1); // First day of the month 11 months ago
+
+    if (!selectedYear) {
+      const jobDateN = new Date(leadYear, leadMonth - 1, 1); // month -1 because JS months are 0-indexed
+      return (
+        (!selectedMonth || leadMonth === parseInt(selectedMonth)) &&
+        jobDateN >= startDate &&
+        jobDateN <= now &&
+        // (!selectedSource || lead.lead_Source === selectedSource) &&
+        // (!selectedClient || job.clientType === selectedClient) &&
+        // (!selectedPartner || job.partner === selectedPartner) &&
+        // (!selectedDepartment || job.jobName === selectedDepartment) &&
+        matchesSearch
+      );
+    }
+
+    return (
+      (!selectedMonth || leadMonth === parseInt(selectedMonth)) &&
+      (!selectedYear || leadYear === parseInt(selectedYear)) &&
+      // (!selectedSource || lead.lead_Source === selectedSource) &&
+      // (!selectedClient || job.clientType === selectedClient) &&
+      // (!selectedPartner || job.partner === selectedPartner) &&
+      // (!selectedDepartment || job.jobName === selectedDepartment) &&
+      matchesSearch
+    );
+  });
+
+
+
 
   const monthOrder = [
     "Jan",
@@ -1245,6 +1295,26 @@ if (!selectedYear && !selectedMonth) {
     "Dec",
   ];
 
+ 
+
+const leadsMonthData = filteredLeads?.reduce((acc, lead) => {
+  const leadDate = new Date(lead.createdAt);
+  const month = leadDate.toLocaleString("default", { month: "short" });
+  if (!acc[month]) acc[month] = { leadCount: 0 };
+  acc[month].leadCount += 1;
+  return acc;
+}, {}) ?? {}; // <-- ensures it's {} when filteredLeads is undefined
+
+// ensure missing months are added with leadCount 0
+monthOrder.forEach(month => {
+  if (!leadsMonthData[month]) leadsMonthData[month] = { leadCount: 0 };
+});
+  // ------------------------>Format Months<--------------------->
+
+ 
+
+
+
   // Assuming `monthData`
   const months = Object.keys(monthData).sort((a, b) => {
     const [monthA, yearA] = a.split(" ");
@@ -1256,8 +1326,30 @@ if (!selectedYear && !selectedMonth) {
     );
   });
 
+
+  let monthsForLeadsArr = [];
+  if(leadsMonthData) {
+
+      monthsForLeadsArr = Object.keys(leadsMonthData).sort((a, b) => {
+    const [monthA, yearA] = a.split(" ");
+    const [monthB, yearB] = b.split(" ");
+
+    return (
+      parseInt(yearA) - parseInt(yearB) ||
+      monthOrder.indexOf(monthA) - monthOrder.indexOf(monthB)
+    );
+  });
+
+  }
+    
+  console.log("monthsForLeads💚💚💚", monthsForLeadsArr)
+
   let formattedMonths = months.map(
     (month) => `${month} (${monthData[month]?.jobCount || 0})`
+  );
+
+    let formattedMonthsForLeads = monthsForLeadsArr.map(
+    (month) => `${month} (${leadsMonthData[month]?.leadCount || 0})`
   );
 
   // Prepare data series for month-wise job count
@@ -1275,6 +1367,22 @@ if (!selectedYear && !selectedMonth) {
       data: months.map((month) => monthData[month]?.totalFee || 0),
     },
   ];
+
+
+
+
+
+
+  //   // Prepare data series for month-wise job count
+  let totalLeadCountSeries = [
+    {
+      name: "Total Leads",
+      data: monthsForLeadsArr.map((month) => leadsMonthData[month]?.leadCount || 0),
+    },
+  ];
+
+ 
+
 
   // Render charts
   useEffect(() => {
@@ -1309,7 +1417,7 @@ if (!selectedYear && !selectedMonth) {
           : {},
     };
 
-    const jobCountChartElement = document.querySelector("#apex-jobcount-chart");
+    const jobCountChartElement = document.querySelector("#apex-jobCount-chart");
     if (jobCountChartElement) {
       const jobCountChart = new ApexCharts(
         jobCountChartElement,
@@ -1319,8 +1427,121 @@ if (!selectedYear && !selectedMonth) {
       return () => jobCountChart.destroy();
     }
 
+
+
+
     // eslint-disable-next-line
   }, [selectChart, months, jobCountSeries]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // Render charts
+  useEffect(() => {
+    // Job Count Chart
+
+    const totalLeadCountSeriesForPastOneYear = [];
+
+    if (!selectedYear) {
+      formattedMonthsForLeads = getLastTwelveMonthsWithLabels();
+
+      const rotatedArr = shiftArrFromThisMonth([...totalLeadCountSeries[0].data]);
+
+      totalLeadCountSeriesForPastOneYear.push({
+        name: "Total Leads",
+        data: rotatedArr,
+      });
+    }
+
+    const jobCountChartOptions = {
+      series: selectedYear ? totalLeadCountSeries : totalLeadCountSeriesForPastOneYear,
+      chart: { type: selectChart, height: 300 },
+      xaxis: { categories: formattedMonthsForLeads, title: { text: "Month" } },
+      yaxis: { title: { text: "Total Leads" } },
+      plotOptions:
+        selectChart === "bar"
+          ? {
+              bar: {
+                columnWidth: `${selectedMonth ? "10%" : "40%"}`,
+                borderRadius: 5,
+              },
+            }
+          : {},
+    };
+
+    const jobCountChartElement = document.querySelector("#apex-total-leads-chart");
+    if (jobCountChartElement) {
+      const jobCountChart = new ApexCharts(
+        jobCountChartElement,
+        jobCountChartOptions
+      );
+      jobCountChart.render();
+      return () => jobCountChart.destroy();
+    }
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+    // eslint-disable-next-line
+  }, [selectChart, months, totalLeadCountSeries]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Department wise Fee
   useEffect(() => {
@@ -1671,10 +1892,10 @@ text="text-[#05676e]"
                 {/* (Month Wise) Department Total */}
 
                 {/* {
-                  featureFilter ? <JobCountChart featureFilter={featureFilter} selectChart={selectChart} selectedDepartment={selectedDepartment} selectedSource={selectedSource} selectedClient={selectedClient} selectedPartner={selectedPartner} uniqueClients={uniqueClients} setFilteredUniqueClient={setFilteredUniqueClient} /> : <div id="apex-jobcount-chart" />
+                  featureFilter ? <JobCountChart featureFilter={featureFilter} selectChart={selectChart} selectedDepartment={selectedDepartment} selectedSource={selectedSource} selectedClient={selectedClient} selectedPartner={selectedPartner} uniqueClients={uniqueClients} setFilteredUniqueClient={setFilteredUniqueClient} /> : <div id="#apex-total-leads-chart" />
                 } */}
 
-                <div id="apex-jobcount-chart" />
+                <div id="apex-jobCount-chart" />
               </div>
             )}
             {/* ------------Month Wise Fee------------ */}
@@ -1778,6 +1999,107 @@ text="text-[#05676e]"
                 </div>
               </div>
             )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            {visibility[0] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <div className="flex items-center justify-between  w-full gap-4">
+                  <div className="flex items-center gap-4">
+                    <h3 className="text-lg sm:text-xl font-semibold text-center">
+                      Total Leads
+                    </h3>
+                    <select
+                      onChange={(e) => setSelectChart(e.target.value)}
+                      value={selectChart}
+                      className={`${style.input} shadow-md drop-shadow-md`}
+                      style={{ height: "2.2rem" }}
+                    >
+                      <option value={"bar"}>Bar Chart</option>
+                      <option value={"line"}>Line Chart</option>
+                      <option value={"area"}>Area Chart</option>
+                    </select>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-semibold">
+                    ({filterUniqueClient?.length})
+                  </h3>
+                </div>
+                {/* (Month Wise) Department Total */}
+
+                {/* {
+                  featureFilter ? <JobCountChart featureFilter={featureFilter} selectChart={selectChart} selectedDepartment={selectedDepartment} selectedSource={selectedSource} selectedClient={selectedClient} selectedPartner={selectedPartner} uniqueClients={uniqueClients} setFilteredUniqueClient={setFilteredUniqueClient} /> : <div id="#apex-total-leads-chart" />
+                } */}
+
+                <div id="apex-total-leads-chart" />
+              </div>
+            )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             {/* ------------------Source Analysis----------------- */}
             {visibility[5] || visibility[6] ? (

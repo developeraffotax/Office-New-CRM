@@ -33,6 +33,51 @@ export function buildDateFilter({ search, selectedMonth, selectedYear, startDate
   };
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+// 2. Job Filter (composes Date Filter)
+export function buildJobFilter({
+  search,
+  selectedMonth,
+  selectedYear,
+  startDate,
+  now,
+  selectedSource,
+  selectedClient,
+  selectedPartner,
+  selectedDepartment,
+}) {
+  const dateFilterFn = buildDateFilter({ search, selectedMonth, selectedYear, startDate, now });
+
+  return function (job) {
+    const jobDate = new Date(job.currentDate);
+
+    return (
+      dateFilterFn(jobDate) &&
+      (!selectedSource || job.source === selectedSource) &&
+      (!selectedClient || job.clientType === selectedClient) &&
+      (!selectedPartner || job.partner === selectedPartner) &&
+      (!selectedDepartment || job.jobName === selectedDepartment)
+    );
+  };
+}
+
+
+
+
+
+
+
 // Month order for sorting
 export const monthOrder = [
   "Jan","Feb","Mar","Apr","May","Jun",
@@ -47,4 +92,29 @@ export function sortMonths(a, b) {
     parseInt(yearA) - parseInt(yearB) ||
     monthOrder.indexOf(monthA) - monthOrder.indexOf(monthB)
   );
+}
+
+
+
+
+
+ 
+
+export function fillMissingMonths(leadsMonthData) {
+  const months = Object.keys(leadsMonthData).sort(sortMonths);
+  if (months.length === 0) return leadsMonthData;
+
+  // find first and last month indices in monthOrder
+  const firstMonthIndex = monthOrder.indexOf(months[0]);
+  const lastMonthIndex = monthOrder.indexOf(months[months.length - 1]);
+
+  // loop only between first and last month
+  for (let i = firstMonthIndex; i <= lastMonthIndex; i++) {
+    const month = monthOrder[i];
+    if (!leadsMonthData[month]) {
+      leadsMonthData[month] = { leadCount: 0 };
+    }
+  }
+
+  return leadsMonthData;
 }

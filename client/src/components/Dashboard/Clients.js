@@ -1221,6 +1221,7 @@ useEffect(() => {
     yAxisTitle: "Total Jobs",
     selectedYear,
     selectedMonth,
+    
   });
 }, [selectChart, months, jobCountSeries]);
 
@@ -1250,6 +1251,7 @@ useEffect(() => {
     yAxisTitle: "Total Leads",
     selectedYear,
     selectedMonth,
+    colors: ["#A86523", ], // optional
   });
 }, [selectChart, months, totalLeadCountSeries]);
 

@@ -18,12 +18,25 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import quarterOfYear from "dayjs/plugin/quarterOfYear";
 import { isAdmin } from "../../../utlis/isAdmin";
- 
+
 dayjs.extend(quarterOfYear);
 
-const MONTHS = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", ];
-const SERIES_COLORS  = ["#008FFB", "#14B8A6", "#c2c1be"];  
- 
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+const SERIES_COLORS = ["#008FFB", "#14B8A6", "#F59E0B"];
+
 // Utility: get start and end dates for filters
 const getDateRange = (filter) => {
   const now = dayjs();
@@ -54,7 +67,7 @@ const getDateRange = (filter) => {
   }
 };
 
-export default function UserLeadChart({auth}) {
+export default function UserLeadChart({ auth }) {
   const [chartType, setChartType] = useState("bar");
 
   const [user, setUser] = useState(() => {
@@ -64,10 +77,12 @@ export default function UserLeadChart({auth}) {
 
   const [dateFilter, setDateFilter] = useState("thisYear");
   const [dateRange, setDateRange] = useState(getDateRange("thisYear"));
+  const [tableData, setTableData] = useState([]);
 
   const [series, setSeries] = useState([
     { name: "Lead Count", data: [] },
     { name: "Total Value", data: [] },
+    { name: "Target Value", data: [] },
   ]);
 
   const clearFilter = () => {
@@ -82,14 +97,15 @@ export default function UserLeadChart({auth}) {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get/active/team`
       );
 
-      
       setUsers((prev) => {
-        return data?.users?.filter((user) =>
-          user.role?.access?.some((item) => item?.permission.includes("Leads"))
-        ) || [];
-      })
-
-      
+        return (
+          data?.users?.filter((user) =>
+            user.role?.access?.some((item) =>
+              item?.permission.includes("Leads")
+            )
+          ) || []
+        );
+      });
     } catch (error) {
       console.log(error);
     }
@@ -102,7 +118,7 @@ export default function UserLeadChart({auth}) {
         `${process.env.REACT_APP_API_URL}/api/v1/leads/userchart/won`,
         {
           params: {
-            user:  user !== "all" ? user : null,
+            user: user !== "all" ? user : null,
             startDate: start ? start.toISOString() : null,
             endDate: end ? end.toISOString() : null,
           },
@@ -112,17 +128,13 @@ export default function UserLeadChart({auth}) {
       setSeries([
         { name: "Lead Count", data: data.counts },
         { name: "Value", data: data.values },
+        { name: "Target Value", data: data.targetValues },
         // { name: "Target Value", data: [1500, 2000, 2100, 2200, 2300] },
       ]);
     } catch (err) {
       console.error(err);
     }
-  }, [user, dateRange ]);
-
-
-
-  
-
+  }, [user, dateRange]);
 
   useEffect(() => {
     getAllUsers();
@@ -133,10 +145,14 @@ export default function UserLeadChart({auth}) {
   }, [fetchData]);
 
   const options = useMemo(() => {
-    const width = chartType === 'bar' ? 0 : 3; // bar width or line width
+    const width = chartType === "bar" ? 0 : 3; // bar width or line width
     return {
-      chart: { toolbar: { show: true }, type: chartType,   },
-      stroke: { width: [width, width, width], dashArray: [0, 0, 0],  curve: "smooth" },
+      chart: { toolbar: { show: true }, type: chartType },
+      stroke: {
+        width: [width, width, width],
+        dashArray: [0, 0, 0],
+        curve: "smooth",
+      },
       xaxis: {
         categories: MONTHS,
       },
@@ -160,40 +176,24 @@ export default function UserLeadChart({auth}) {
         },
       ],
 
-       colors: SERIES_COLORS, // blue=leads, green=actual, red=target
+      colors: SERIES_COLORS, // blue=leads, green=actual, red=target
       legend: { position: "top" },
-      
-       dataLabels: {
-          enabled: true, // show numbers
-          style: {
-            colors: chartType !== 'bar' ? SERIES_COLORS : ["#ffffff", "#ffffff", "#ffffff"], // 👈 set custom color
-            fontSize: "12px",
-            fontWeight: "bold",
-          },
-           
-          background: {
-            enabled: chartType !== 'bar', // remove the default white background box
 
-          },
+      dataLabels: {
+        enabled: true, // show numbers
+        style: {
+          colors:
+            chartType !== "bar"
+              ? SERIES_COLORS
+              : ["#ffffff", "#ffffff", "#ffffff"], // 👈 set custom color
+          fontSize: "12px",
+          fontWeight: "bold",
         },
 
-
-
-
-        fill: {
-          type: "gradient",
-          gradient: {
-            shade: "dark",
-            type: "vertical",
-            shadeIntensity: 0.6,
-            gradientToColors: ["#3BAEF5", "#2DD4BF", "#E5E5E5"], // lighter matching end colors
-            inverseColors: false,
-            opacityFrom: 1,
-            opacityTo: 0.8,
-            stops: [0, 100],
-          },
-  },
- 
+        background: {
+          enabled: chartType !== "bar", // remove the default white background box
+        },
+      },
     };
   }, [chartType]);
 
@@ -202,7 +202,6 @@ export default function UserLeadChart({auth}) {
       <Card
         sx={{ py: 4, px: 4, boxShadow: 4, borderRadius: 3, bgcolor: "#f9f9f9" }}
       >
-        
         {/* Filters */}
         <Box
           display="flex"
@@ -210,7 +209,13 @@ export default function UserLeadChart({auth}) {
           gap={3}
           flexWrap="wrap"
           mb={2}
-          sx={{backgroundColor: "#ffffff", borderRadius: 1, boxShadow: 1, py: 2, px: 4}}
+          sx={{
+            backgroundColor: "#ffffff",
+            borderRadius: 1,
+            boxShadow: 1,
+            py: 2,
+            px: 4,
+          }}
         >
           {/* User Filter */}
 
@@ -225,8 +230,7 @@ export default function UserLeadChart({auth}) {
                   setUser(val);
                 }}
                 sx={{ minWidth: 180 }}
-                 
-              > 
+              >
                 {isAdmin(auth) && <MenuItem value="all">All Users</MenuItem>}
                 {users.map((user) => (
                   <MenuItem value={user.name}>{user.name}</MenuItem>
@@ -235,26 +239,22 @@ export default function UserLeadChart({auth}) {
             </FormControl>
           </div>
 
-
-
-
           <Typography
-          variant="h4"
-          fontWeight="bold"
-          gutterBottom
-          sx={{ mb: 0, textAlign: "center" }}
-        >
-          <div className="text-center  ">
-            <h2 className="text-2xl font-bold text-gray-800">
-              User Lead Statistics
-            </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Track won leads, values, and progress over time
-            </p>
-            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mt-2 rounded-full"></div>
-          </div>
-        </Typography>
-
+            variant="h4"
+            fontWeight="bold"
+            gutterBottom
+            sx={{ mb: 0, textAlign: "center" }}
+          >
+            <div className="text-center  ">
+              <h2 className="text-2xl font-bold text-gray-800">
+                User Lead Statistics
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Track won leads, values, and progress over time
+              </p>
+              <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mt-2 rounded-full"></div>
+            </div>
+          </Typography>
 
           <div className="flex gap-5 ">
             {/* Custom Date Pickers */}

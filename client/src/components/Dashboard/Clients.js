@@ -1666,15 +1666,6 @@ text="text-[#05676e]"
 
 
 
- {/*  -------------Jobs Analysis----------- */}
-            {visibility[2] && (
-              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                <h3 className="text-lg font-semibold text-center">
-                  Department-wise Total Count
-                </h3>
-                <div id="department-count-chart" />
-              </div>
-            )}
 
 
 
@@ -1744,6 +1735,19 @@ text="text-[#05676e]"
             ) : null}
 
                     
+ {/*  -------------Jobs Analysis----------- */}
+            {visibility[2] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <h3 className="text-lg font-semibold text-center">
+                  Department-wise Total Count
+                </h3>
+                <div id="department-count-chart" />
+              </div>
+            )}
+
+
+
+            
                      </div>
 
 
@@ -1784,16 +1788,7 @@ text="text-[#05676e]"
             
             
             
-              {/* ------------------Fee Analysis----------------- */}
-            {visibility[3] && (
-              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
-                <h3 className="text-lg font-semibold text-center">
-                  Department-wise Fee Count
-                </h3>
-                <div id="department-fee-chart" />
-              </div>
-            )}
-            
+           
             
             
             
@@ -1848,6 +1843,15 @@ text="text-[#05676e]"
               </div>
             )}
 
+               {/* ------------------Fee Analysis----------------- */}
+            {visibility[3] && (
+              <div className="w-full shadow-md rounded-md cursor-pointer border p-2 bg-white">
+                <h3 className="text-lg font-semibold text-center">
+                  Department-wise Fee Count
+                </h3>
+                <div id="department-fee-chart" />
+              </div>
+            )}
             
             
              </div>

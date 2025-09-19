@@ -193,6 +193,28 @@ export default function UserLeadChart({ auth }) {
         background: {
           enabled: chartType !== "bar", // remove the default white background box
         },
+
+        formatter: function (val, opts) {
+            const seriesIndex = opts.seriesIndex;
+            const dataPointIndex = opts.dataPointIndex;
+
+            // Check if this series is currently visible
+            const isTargetVisisble =   opts.w?.globals?.seriesVisibility?.[2] ?? true;
+            
+
+            // For the "Value" series (index 1)
+            if (seriesIndex === 1 && chartType !== "bar" && isTargetVisisble) {
+              const targetVal = opts.w.config.series[2].data[dataPointIndex]; // Target Value
+              if (targetVal) {
+                const percent = ((val / targetVal) * 100).toFixed(1);
+                return `${val} (${percent}%)`;
+              }
+            }
+
+            // Default: just show value
+            return val;
+          },
+
       },
     };
   }, [chartType]);

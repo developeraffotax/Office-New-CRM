@@ -2,6 +2,8 @@ import jobsModel from "../models/jobsModel.js";
 import leadModel from "../models/leadModel.js";
 import proposalModel from "../models/proposalModel.js";
 import moment from "moment";
+import goalModel from "../models/goalModel.js";
+import userModel from "../models/userModel.js";
 
 // Create Lead
 export const createLead = async (req, res) => {
@@ -976,14 +978,93 @@ export const getLeadConversionStats = async (req, res) => {
 
 
 
-export const getWonLeadData = async ( req, res) => {
+// export const getWonLeadData = async ( req, res) => {
 
 
 
-    try {
+//     try {
+//     const { user, startDate, endDate } = req.query;
+
+//     const filters = { status: "won" };
+
+//     if (user) {
+//       filters.jobHolder = user;
+//     }
+
+//     if (startDate && endDate) {
+//       filters.leadCreatedAt = {
+//         $gte: new Date(startDate),
+//         $lte: new Date(endDate),
+//       };
+//     }
+
+//       const leads = await leadModel.aggregate([
+//         { $match: filters },
+//         {
+//           $group: {
+//             _id: { $month: "$leadCreatedAt" },
+//             count: { $sum: 1 },
+//             totalValue: {
+//               $sum: {
+//                 $cond: [
+//                   {
+//                     $and: [
+//                       { $ne: ["$value", ""] },        // not empty string
+//                       { $ne: ["$value", null] },      // not null
+//                     ],
+//                   },
+//                   { $toDouble: "$value" }, // convert when valid
+//                   0, // otherwise add 0
+//                 ],
+//               },
+//             },
+//           },
+//         },
+//         { $sort: { "_id": 1 } },
+//       ]);
+
+
+//     // Initialize arrays for 12 months
+//     const counts = Array(12).fill(0);
+//     const values = Array(12).fill(0);
+
+//     leads.forEach((item) => {
+//       counts[item._id - 1] = item.count;
+//       values[item._id - 1] = item.totalValue;
+//     });
+
+//     res.json({counts, values });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Server Error" });
+//   }
+
+
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+export const getWonLeadData = async (req, res) => {
+  try {
     const { user, startDate, endDate } = req.query;
 
     const filters = { status: "won" };
+
+    const fetchedUser = await userModel.findOne({ name: user }).lean();
 
     if (user) {
       filters.jobHolder = user;
@@ -996,46 +1077,70 @@ export const getWonLeadData = async ( req, res) => {
       };
     }
 
-      const leads = await leadModel.aggregate([
-        { $match: filters },
-        {
-          $group: {
-            _id: { $month: "$leadCreatedAt" },
-            count: { $sum: 1 },
-            totalValue: {
-              $sum: {
-                $cond: [
-                  {
-                    $and: [
-                      { $ne: ["$value", ""] },        // not empty string
-                      { $ne: ["$value", null] },      // not null
-                    ],
-                  },
-                  { $toDouble: "$value" }, // convert when valid
-                  0, // otherwise add 0
-                ],
-              },
+    // --- Get leads data ---
+    const leads = await leadModel.aggregate([
+      { $match: filters },
+      {
+        $group: {
+          _id: { $month: "$leadCreatedAt" },
+          count: { $sum: 1 },
+          totalValue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ["$value", ""] }, // not empty string
+                    { $ne: ["$value", null] }, // not null
+                  ],
+                },
+                { $toDouble: "$value" }, // convert when valid
+                0, // otherwise add 0
+              ],
             },
           },
         },
-        { $sort: { "_id": 1 } },
-      ]);
+      },
+      { $sort: { "_id": 1 } },
+    ]);
 
-
-    // Initialize arrays for 12 months
+    // --- Initialize arrays for 12 months ---
     const counts = Array(12).fill(0);
     const values = Array(12).fill(0);
+    const targetValues = Array(12).fill(0);
 
     leads.forEach((item) => {
       counts[item._id - 1] = item.count;
       values[item._id - 1] = item.totalValue;
     });
 
-    res.json({counts, values });
+
+    if(!fetchedUser) {
+      return res.json({ counts, values, targetValues });
+    } 
+    // --- Fetch goals (monthly goals) ---
+    const goalFilters = {};
+    if (user) {
+      goalFilters.jobHolder = fetchedUser._id;
+    }
+    if (startDate && endDate) {
+      goalFilters.startDate = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+    const goals = await goalModel.find(goalFilters).lean();
+
+    goals.forEach((goal) => {
+      if (goal.startDate) {
+        const monthIndex = new Date(goal.startDate).getMonth(); // 0–11
+        targetValues[monthIndex] += goal.achievement || 0;
+      }
+    });
+
+    res.json({ counts, values, targetValues });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server Error" });
   }
-
-
-}
+};

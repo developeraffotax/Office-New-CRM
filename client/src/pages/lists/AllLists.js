@@ -16,6 +16,7 @@ import Dashboard from "../../components/MyLists/LDashboard";
 import HR from "../../components/MyLists/Hr";
 import QuickAccess from "../../utlis/QuickAccess";
 import AllTasks from "../Tasks/AllTasks";
+import Users from "../../components/MyLists/Users";
 
 export default function AllLists() {
    const [selectedTab, setSelectedTab] = useState("Tasks");
@@ -411,6 +412,19 @@ export default function AllLists() {
 
 
 
+                <button
+                className={`py-[6px] px-2 min-w-[8rem] text-[13px] sm:text-[15px] outline-none w-[8.5rem] border-l-2 border-orange-600  transition-all duration-300   ${
+                  selectedTab === "Users"
+                    ? "bg-orange-500 text-white border-r-2 border-orange-500 scale-105 shadow-md"
+                    : "text-black bg-gray-100"
+                }`}
+                onClick={() => setSelectedTab("Users")}
+              >
+                Users
+              </button>
+
+
+
               <button
                 className={`py-[6px] px-2 min-w-[8rem] text-[13px] sm:text-[15px] outline-none w-[8.5rem] border-l-2 border-orange-600  transition-all duration-300   ${
                   selectedTab === "Dashboard"
@@ -508,6 +522,12 @@ export default function AllLists() {
               childRef={childRef}
               setIsload={setIsload}
             />
+          )  : selectedTab === "Users" ? (
+            <Users 
+            ref={tasksRef}
+             
+              childRef={childRef}
+              setIsload={setIsload} />
           ) : selectedTab === "Dashboard" ? (
             <Dashboard
               workFlowData={workFlowData}

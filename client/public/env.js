@@ -45,9 +45,9 @@ window.env = {
   "Path": "C:\\Users\\affot\\Desktop\\Code\\CRM\\client\\node_modules\\.bin;C:\\Users\\affot\\Desktop\\Code\\CRM\\node_modules\\.bin;C:\\Users\\affot\\Desktop\\Code\\node_modules\\.bin;C:\\Users\\affot\\Desktop\\node_modules\\.bin;C:\\Users\\affot\\node_modules\\.bin;C:\\Users\\node_modules\\.bin;C:\\node_modules\\.bin;C:\\Program Files\\nodejs\\node_modules\\npm\\node_modules\\@npmcli\\run-script\\lib\\node-gyp-bin;C:\\Program Files (x86)\\oh-my-posh\\bin\\;C:\\Python313\\Scripts\\;C:\\Python313\\;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Windows\\System32\\OpenSSH\\;C:\\ProgramData\\chocolatey\\bin;C:\\Program Files\\nodejs\\;C:\\Program Files\\Microsoft VS Code\\bin;C:\\Program Files\\dotnet\\;C:\\Program Files\\Git\\cmd;C:\\Users\\affot\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\affot\\AppData\\Roaming\\npm;C:\\Users\\affot\\AppData\\Local\\Programs\\cursor\\resources\\app\\bin",
   "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.PY;.PYW;.CPL",
   "POSH_CURSOR_COLUMN": "1",
-  "POSH_CURSOR_LINE": "6",
+  "POSH_CURSOR_LINE": "7",
   "POSH_INSTALLER": "manual",
-  "POSH_SESSION_ID": "ca7245c3-de71-4ebf-9046-6b8e459d10e9",
+  "POSH_SESSION_ID": "678dd32d-9f1c-42c1-9403-5de11c57f137",
   "POSH_SHELL": "pwsh",
   "POSH_SHELL_VERSION": "5.1.19041.6328",
   "POSH_THEMES_PATH": "C:\\Program Files (x86)\\oh-my-posh\\themes\\",
@@ -80,6 +80,6 @@ window.env = {
   "windir": "C:\\Windows",
   "WSLENV": "WT_SESSION:WT_PROFILE_ID:",
   "WT_PROFILE_ID": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
-  "WT_SESSION": "ede3eabe-8160-49a8-9fce-84e619a324af",
+  "WT_SESSION": "4ac79ba4-eb1e-4649-97b0-200875bc0514",
   "ZES_ENABLE_SYSMAN": "1"
 };

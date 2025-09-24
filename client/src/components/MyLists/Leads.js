@@ -35,6 +35,8 @@ import DateRangePopover from "../../utlis/DateRangePopover";
 import { ActionsCell } from "../../pages/Lead/ActionsCell";
 import NewTicketModal from "../../utlis/NewTicketModal";
 import { useNavigate } from "react-router-dom";
+import { BsGraphUpArrow } from "react-icons/bs";
+import UserLeadChart from "../../pages/Lead/userLeadChart/UserLeadChart";
 
 
 
@@ -117,8 +119,8 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
 
 
 
-
-
+      const boxRef = useRef(null);
+  const [showUserLeadChart, setShowUserLeadChart] = useState(false);
 
   
   // BULK EDITING
@@ -301,7 +303,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
     "value",
     "number",
     "lead_Source",
-    "createdAt",
+    "leadCreatedAt",
     "followUpDate",
     "Days",
     "stage",
@@ -724,7 +726,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
    
 
   
-  return allColumns;
+  return allColumns.filter((col) => columnVisibility[col.accessorKey]);
   
   
   
@@ -816,6 +818,27 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
     setFilteredData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
 
+
+
+   useEffect(() => {
+              const handleClickOutside = (event) => {
+                if (boxRef.current && !boxRef.current.contains(event.target)) {
+                  setShowColumn(false);
+                }
+              };
+          
+              if (showcolumn) {
+                document.addEventListener("mousedown", handleClickOutside);
+              }
+          
+              return () => {
+                document.removeEventListener("mousedown", handleClickOutside);
+              };
+            }, [showcolumn]);
+  
+
+
+
   return (
     <>
       <div className=" relative w-full h-full overflow-y-auto">
@@ -858,64 +881,70 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
                 Lost
               </button>
             </div>
-            <button
-              onClick={() => setActive(!active)}
-              className={`flex items-center justify-center px-2 py-[4px] mt-[6px] bg-gray-100  border border-gray-300 ${
-                active && "bg-orange-600 text-white border-orange-500"
-              }   rounded-md hover:shadow-md `}
-            >
-              <MdOutlineAnalytics className="h-7 w-7" />
-            </button>
+{/* Toggle Analytics Button */}
+<button
+  onClick={() => setActive(!active)}
+  title="Toggle Analytics"
+  className={`flex items-center justify-center p-2 mt-2 bg-gray-50 border rounded-md hover:shadow-md transition
+    ${active ? "bg-orange-600 text-white border-orange-500" : "border-gray-300"}`}
+>
+  <MdOutlineAnalytics className="h-6 w-6" />
+</button>
 
+{/* Edit Multiple Job Button */}
+<button
+  onClick={() => setShowEdit(!showEdit)}
+  title="Edit Multiple Jobs"
+  className={`flex items-center justify-center p-2 mt-2 bg-gray-50 border rounded-md hover:shadow-md transition
+    ${showEdit ? "bg-orange-500 text-white" : ""}`}
+>
+  <MdOutlineModeEdit className="h-6 w-6" />
+</button>
 
+{/* Leads Analytics Button */}
+<button
+  title="Go to Leads Analytics"
+  onClick={() => navigate("/leads/stats")}
+  className="flex items-center justify-center p-2 mt-2 bg-gray-50 border rounded-md hover:shadow-md transition"
+>
+  <MdOutlineQueryStats className="h-6 w-6" />
+</button>
 
-               {/* Edit Multiple Job Button */}
+{/* User Lead Chart Button */}
+<button
+  onClick={() => setShowUserLeadChart((prev) => !prev)}
+  title="Show User Lead Chart"
+  className={`flex items-center justify-center p-2 mt-2 bg-gray-50 border rounded-md hover:shadow-md transition
+    ${showUserLeadChart ? "bg-orange-500 text-white" : ""}`}
+>
+  <BsGraphUpArrow className="h-6 w-6" />
+</button>
 
-               <div className="flex justify-center items-center  mt-2   ">
-                  <span
-                      className={` p-2 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
-                          showEdit && "bg-orange-500 text-white"
-                            }`}
-                      onClick={() => {
-                        setShowEdit(!showEdit);
-                      }}
-                      title="Edit Multiple Jobs"
-                  >
-                    <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
-                  </span>
-              </div>
+{/* Hide & Show Column Button */}
+<div className="flex justify-center items-center mt-2">
+  <button
+    onClick={() => setShowColumn(!showcolumn)}
+    title="Toggle Columns"
+    className={`flex items-center justify-center p-2 bg-gray-50 border rounded-md hover:shadow-md transition
+      ${showcolumn ? "bg-orange-500 text-white" : ""}`}
+  >
+    {showcolumn ? (
+      <GoEyeClosed className="h-6 w-6" />
+    ) : (
+      <GoEye className="h-6 w-6" />
+    )}
+  </button>
 
+  {showcolumn && (
+    <div
+      ref={boxRef}
+      className="fixed top-[11rem] right-[20%] z-[99] max-h-[80vh] overflow-y-auto"
+    >
+      {renderColumnControls()}
+    </div>
+  )}
+</div>
 
-              <button
-                          title="Go to Leads Analytics"
-                          className="  p-[6px] rounded-md  bg-gray-50  hover:text-white  hover:shadow-md transition   border  mt-2 cursor-pointer"
-                          onClick={() => navigate("/leads/stats")}
-                        >
-                         
-                           <MdOutlineQueryStats className="  h-6 w-6  cursor-pointer "/>
-                        </button>
-
-                          
-            {/* Hide & Show Button And Fixed Component*/}
-          <div className="flex justify-center items-center  mt-2   ">
-            <div
-              className={`  p-2  rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border  ${
-                showcolumn && "bg-orange-500 text-white"
-              }`}
-              onClick={() => setShowColumn(!showcolumn)}
-            >
-              {showcolumn ? (
-                <GoEyeClosed className="text-[20px]" />
-              ) : (
-                <GoEye className="text-[20px]" />
-              )}
-            </div>
-            {showcolumn && (
-              <div className="fixed top-[11rem] right-[20%] z-[99] max-h-[80vh] overflow-y-auto hidden1  ">
-                {renderColumnControls()}
-              </div>
-            )}
-          </div>
 
 
           </div>
@@ -1216,7 +1245,8 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
           ) : (
             <div className="w-full min-h-[10vh] relative ">
               <div className="h-full hidden1 overflow-y-scroll relative">
-                <MaterialReactTable table={table} />
+               {showUserLeadChart && <UserLeadChart   auth={auth}/> }
+                               { !showUserLeadChart && <MaterialReactTable table={table} /> }
               </div>
             </div>
           )}

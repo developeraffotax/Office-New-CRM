@@ -378,8 +378,17 @@ export default function UserLeadChart({ auth, active1 }) {
             boxShadow: 3,
           }}
         >
-          <div className="flex justify-end  mb-2 mr-8 ">
-            <select
+          <div className="flex justify-between  px-8 mb-2  ">
+<h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2 mb-4">
+  <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm">
+    Stats
+  </span>
+  <span>
+    User Lead Statistics <span className="text-gray-500 font-normal">(Won Leads)</span> – {user}
+  </span>
+</h2>
+            <div>
+              <select
               value={chartType}
               onChange={(e) => setChartType(e.target.value)}
               className="border rounded px-3 py-1 text-sm"
@@ -388,7 +397,10 @@ export default function UserLeadChart({ auth, active1 }) {
               <option value="line">Line</option>
               <option value="area">Area</option>
             </select>
+            </div>
           </div>
+
+          
 
           <Chart
             options={options}

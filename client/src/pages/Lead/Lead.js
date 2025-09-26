@@ -1643,7 +1643,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
         <div className="w-full h-full">
           <div className="w-full min-h-[10vh] relative ">
               <div className="h-full hidden1 overflow-y-auto relative">
-                {showUserLeadChart && <WonLeadsStats  users={users} auth={auth}/> }
+                {showUserLeadChart && <WonLeadsStats  users={users} auth={auth} active1={active1}/> }
                 { !showUserLeadChart && <MaterialReactTable table={table} /> }
               </div>
             </div>

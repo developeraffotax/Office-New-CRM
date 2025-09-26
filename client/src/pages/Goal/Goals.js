@@ -70,6 +70,8 @@ const auth = useSelector((state) => state.auth.auth);
     jobHolder: "",
   });
   const goalTypes = [
+    "Target Lead Count",
+    "Target Lead Value",
     "Increase Client",
     "Increase Fee",
     "Total Proposal",

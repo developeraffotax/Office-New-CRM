@@ -1058,13 +1058,157 @@ export const getLeadConversionStats = async (req, res) => {
 
  
 
+// export const getWonLeadData = async (req, res) => {
+//   try {
+//     const { user, startDate, endDate } = req.query;
+
+//     const filters = { status: "won" };
+
+//     const fetchedUser = await userModel.findOne({ name: user }).lean();
+
+//     if (user) {
+//       filters.jobHolder = user;
+//     }
+
+//     if (startDate && endDate) {
+//       filters.leadCreatedAt = {
+//         $gte: new Date(startDate),
+//         $lte: new Date(endDate),
+//       };
+//     }
+
+//     // --- Get leads data ---
+//     const leads = await leadModel.aggregate([
+//       { $match: filters },
+//       {
+//         $group: {
+//           _id: { $month: "$leadCreatedAt" },
+//           count: { $sum: 1 },
+//           totalValue: {
+//             $sum: {
+//               $cond: [
+//                 {
+//                   $and: [
+//                     { $ne: ["$value", ""] }, // not empty string
+//                     { $ne: ["$value", null] }, // not null
+//                   ],
+//                 },
+//                 { $toDouble: "$value" }, // convert when valid
+//                 0, // otherwise add 0
+//               ],
+//             },
+//           },
+//         },
+//       },
+//       { $sort: { "_id": 1 } },
+//     ]);
+
+//     // --- Initialize arrays for 12 months ---
+//     const counts = Array(12).fill(0);
+//     const values = Array(12).fill(0);
+//     const targetValues = Array(12).fill(0);
+//     const targetCounts = Array(12).fill(0);
+
+//     leads.forEach((item) => {
+//       counts[item._id - 1] = item.count;
+//       values[item._id - 1] = item.totalValue;
+//     });
+
+
+//     // if(!fetchedUser) {
+//     //   return res.json({ counts, values, targetValues, targetCounts  });
+//     // } 
+//     // --- Fetch goals (monthly goals) ---
+//     const goalFilters = { goalType: "Target Lead Value"};
+//     if (user) {
+//       goalFilters.jobHolder = fetchedUser._id;
+//     }
+//     if (startDate && endDate) {
+//       goalFilters.startDate = {
+//         $gte: new Date(startDate),
+//         $lte: new Date(endDate),
+//       };
+//     }
+
+//     const goals = await goalModel.find(goalFilters).lean();
+
+//     goals.forEach((goal) => {
+//       if (goal.startDate) {
+//         const monthIndex = new Date(goal.startDate).getMonth(); // 0–11
+//         targetValues[monthIndex] += goal.achievement || 0;
+//         // targetCounts[monthIndex] += goal.achievement || 0;
+//       }
+//     });
+
+//     res.json({ counts, values, targetValues, targetCounts });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Server Error" });
+//   }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export const getWonLeadData = async (req, res) => {
   try {
     const { user, startDate, endDate } = req.query;
 
     const filters = { status: "won" };
 
-    const fetchedUser = await userModel.findOne({ name: user }).lean();
+    const fetchedUser = user
+      ? await userModel.findOne({ name: user }).lean()
+      : null;
 
     if (user) {
       filters.jobHolder = user;
@@ -1089,12 +1233,12 @@ export const getWonLeadData = async (req, res) => {
               $cond: [
                 {
                   $and: [
-                    { $ne: ["$value", ""] }, // not empty string
-                    { $ne: ["$value", null] }, // not null
+                    { $ne: ["$value", ""] },
+                    { $ne: ["$value", null] },
                   ],
                 },
-                { $toDouble: "$value" }, // convert when valid
-                0, // otherwise add 0
+                { $toDouble: "$value" },
+                0,
               ],
             },
           },
@@ -1107,18 +1251,159 @@ export const getWonLeadData = async (req, res) => {
     const counts = Array(12).fill(0);
     const values = Array(12).fill(0);
     const targetValues = Array(12).fill(0);
+    const targetCounts = Array(12).fill(0);
 
     leads.forEach((item) => {
       counts[item._id - 1] = item.count;
       values[item._id - 1] = item.totalValue;
     });
 
+    // --- Fetch goals using aggregate ---
+    
+      const matchStage = {
+        $match: {
+          
+          goalType: { $in: ["Target Lead Value", "Target Lead Count"] },
+        },
+      };
 
-    if(!fetchedUser) {
-      return res.json({ counts, values, targetValues });
-    } 
-    // --- Fetch goals (monthly goals) ---
-    const goalFilters = {};
+
+      if (fetchedUser) {
+        matchStage.$match.jobHolder = fetchedUser._id;
+
+      }
+
+      if (startDate && endDate) {
+        matchStage.$match.startDate = {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate),
+        };
+      }
+
+      const goals = await goalModel.aggregate([
+        matchStage,
+        {
+          $group: {
+            _id: {
+              month: { $month: "$startDate" },
+              type: "$goalType",
+            },
+            total: { $sum: { $ifNull: ["$achievement", 0] } },
+          },
+        },
+      ]);
+
+      goals.forEach((goal) => {
+        const monthIndex = goal._id.month - 1;
+        if (goal._id.type === "Target Lead Value") {
+          targetValues[monthIndex] = goal.total;
+        } else if (goal._id.type === "Target Lead Count") {
+          targetCounts[monthIndex] = goal.total;
+        }
+      });
+ 
+    console.log({ counts, values, targetValues, targetCounts })
+    res.json({ counts, values, targetValues, targetCounts });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getWonLeadStats = async (req, res) => {
+  try {
+    const { user, startDate, endDate } = req.query;
+
+    const filters = { status: "won" };
+
+    // find the user (to map goals properly)
+    const fetchedUser = user ? await userModel.findOne({ name: user }).lean() : null;
+
+    if (user) {
+      filters.jobHolder = user;
+    }
+
+    if (startDate && endDate) {
+      filters.leadCreatedAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+    // --- Total values from leads ---
+    const leadsAgg = await leadModel.aggregate([
+      { $match: filters },
+      {
+        $group: {
+          _id: null,
+          totalValue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ["$value", ""] }, // not empty string
+                    { $ne: ["$value", null] }, // not null
+                  ],
+                },
+                { $toDouble: "$value" },
+                0,
+              ],
+            },
+          },
+
+           totalCount: { $sum: 1 }, // ✅ count of leads
+        },
+      },
+    ]);
+
+    const totalValues = leadsAgg.length > 0 ? leadsAgg[0].totalValue : 0;
+     const totalCount = leadsAgg.length > 0 ? leadsAgg[0].totalCount : 0;
+
+    // --- Total targeted values (goals) ---
+    let targetValues = 0;
+    let targetCount = 0;
+
+     const goalFilters = {};
     if (user) {
       goalFilters.jobHolder = fetchedUser._id;
     }
@@ -1129,16 +1414,26 @@ export const getWonLeadData = async (req, res) => {
       };
     }
 
+    // fetch both types of goals
     const goals = await goalModel.find(goalFilters).lean();
 
-    goals.forEach((goal) => {
-      if (goal.startDate) {
-        const monthIndex = new Date(goal.startDate).getMonth(); // 0–11
-        targetValues[monthIndex] += goal.achievement || 0;
-      }
+    targetValues = goals
+      .filter((g) => g.goalType === "Target Lead Value")
+      .reduce((acc, g) => acc + (g.achievement || 0), 0);
+
+    targetCount = goals
+      .filter((g) => g.goalType === "Target Lead Count")
+      .reduce((acc, g) => acc + (g.achievement || 0), 0);
+
+    return res.json({
+      totalValues,
+      targetValues,
+      
+      totalCount,
+      targetCount,
+      // percentage calculations are better done in frontend
     });
 
-    res.json({ counts, values, targetValues });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server Error" });

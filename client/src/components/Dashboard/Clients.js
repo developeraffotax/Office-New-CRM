@@ -37,7 +37,7 @@ export default function Clients({
 }) {
   const [clients, setClients] = useState([]);
 
-  console.log("Sales DATA💙", salesData);
+ 
 
   const [clientsForPastMonthOrYear, setClientsForPastMonthOrYear] = useState(
     []

@@ -13,6 +13,7 @@ import {
   getLeadStatusStats,
   getSingleLead,
   getWonLeadData,
+  getWonLeadStats,
   updateBulkLeads,
   updateLead,
 } from "../controllers/leadController.js";
@@ -84,6 +85,7 @@ router.get("/conversion-stats", requiredSignIn,  getLeadConversionStats);
 
 
 router.get("/userchart/won",    getWonLeadData);
+router.get("/userchart/won/stats",    getWonLeadStats);
 
 
 

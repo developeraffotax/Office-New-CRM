@@ -72,7 +72,7 @@ const getDateRange = (filter) => {
 export default function UserLeadChart({ auth, active1 }) {
   const [chartType, setChartType] = useState("bar");
 
-  const [user, setUser] = useState('');
+  const [user, setUser] = useState("");
   const [users, setUsers] = useState([]);
 
   const [dateFilter, setDateFilter] = useState("thisYear");
@@ -80,11 +80,11 @@ export default function UserLeadChart({ auth, active1 }) {
   const [tableData, setTableData] = useState([]);
 
   const [series, setSeries] = useState([
-    { name: "Count", data: [],   },
-    { name: "Target Count", data: [],  },
+    { name: "Count", data: [] },
+    { name: "Target Count", data: [] },
 
-    { name: "Value", data: [],  },
-    { name: "Target Value", data: [],  },
+    { name: "Value", data: [] },
+    { name: "Target Value", data: [] },
   ]);
 
   const clearFilter = () => {
@@ -128,11 +128,10 @@ export default function UserLeadChart({ auth, active1 }) {
       );
 
       setSeries([
-        { name: "Count", data: data.counts,   },
-        { name: "Target Count", data: data.targetCounts,  },
-        { name: "Value", data: data.values,   },
-        { name: "Target Value", data: data.targetValues,   },
-      
+        { name: "Count", data: data.counts },
+        { name: "Target Count", data: data.targetCounts },
+        { name: "Value", data: data.values },
+        { name: "Target Value", data: data.targetValues },
       ]);
     } catch (err) {
       console.error(err);
@@ -165,8 +164,8 @@ export default function UserLeadChart({ auth, active1 }) {
         categories: MONTHS,
       },
       yaxis: [
-        { 
-           seriesName: 'Count',
+        {
+          seriesName: "Count",
           title: { text: "Lead Count" },
           labels: {
             formatter: (val) => val.toFixed(0),
@@ -175,14 +174,13 @@ export default function UserLeadChart({ auth, active1 }) {
           min: 0,
         },
 
-            {
-          seriesName: 'Count',
-          show: false
+        {
+          seriesName: "Count",
+          show: false,
         },
 
-
         {
-          seriesName: 'Value',
+          seriesName: "Value",
           opposite: true,
           title: { text: "Total Value (£)" },
           labels: {
@@ -192,19 +190,11 @@ export default function UserLeadChart({ auth, active1 }) {
           min: 0,
         },
 
-            {
-          seriesName: 'Value',
-          show: false
+        {
+          seriesName: "Value",
+          show: false,
         },
-
-        
       ],
-
-
-
-      
- 
-
 
       colors: SERIES_COLORS, // blue=leads, green=actual, red=target
       legend: { position: "top" },
@@ -225,35 +215,43 @@ export default function UserLeadChart({ auth, active1 }) {
         },
 
         formatter: function (val, opts) {
-            const seriesIndex = opts.seriesIndex;
-            const dataPointIndex = opts.dataPointIndex;
+          const seriesIndex = opts.seriesIndex;
+          const dataPointIndex = opts.dataPointIndex;
 
-            // Check if this series is currently visible
-            const isTargetVisisbleForCount =   opts.w?.globals?.seriesVisibility?.[1] ?? true;
-            
+          // Check if this series is currently visible
+          const isTargetVisisbleForCount =
+            opts.w?.globals?.seriesVisibility?.[1] ?? true;
 
-            // For the "Value" series (index 1)
-            if (seriesIndex === 0 && chartType !== "bar" && isTargetVisisbleForCount) {
-              const targetVal = opts.w.config.series[1].data[dataPointIndex]; // Target Value
-              if (targetVal) {
-                const percent = ((val / targetVal) * 100).toFixed(1);
-                return `${val} (${percent}%)`;
-              }
+          // For the "Value" series (index 1)
+          if (
+            seriesIndex === 0 &&
+            chartType !== "bar" &&
+            isTargetVisisbleForCount
+          ) {
+            const targetVal = opts.w.config.series[1].data[dataPointIndex]; // Target Value
+            if (targetVal) {
+              const percent = ((val / targetVal) * 100).toFixed(1);
+              return `${val} (${percent}%)`;
             }
+          }
 
-             const isTargetVisisbleForValue =   opts.w?.globals?.seriesVisibility?.[3] ?? true;
-            if (seriesIndex === 2 && chartType !== "bar" && isTargetVisisbleForValue) {
-              const targetVal = opts.w.config.series[3].data[dataPointIndex]; // Target Value
-              if (targetVal) {
-                const percent = ((val / targetVal) * 100).toFixed(1);
-                return `${val} (${percent}%)`;
-              }
+          const isTargetVisisbleForValue =
+            opts.w?.globals?.seriesVisibility?.[3] ?? true;
+          if (
+            seriesIndex === 2 &&
+            chartType !== "bar" &&
+            isTargetVisisbleForValue
+          ) {
+            const targetVal = opts.w.config.series[3].data[dataPointIndex]; // Target Value
+            if (targetVal) {
+              const percent = ((val / targetVal) * 100).toFixed(1);
+              return `${val} (${percent}%)`;
             }
+          }
 
-            // Default: just show value
-            return val;
-          },
-
+          // Default: just show value
+          return val;
+        },
       },
     };
   }, [chartType]);
@@ -263,148 +261,114 @@ export default function UserLeadChart({ auth, active1 }) {
       <Card
         sx={{ py: 4, px: 4, boxShadow: 4, borderRadius: 3, bgcolor: "#f9f9f9" }}
       >
-        {/* Filters */}
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          gap={3}
-          flexWrap="wrap"
-          mb={2}
-          sx={{
-            backgroundColor: "#ffffff",
-            borderRadius: 1,
-            boxShadow: 1,
-            py: 2,
-            px: 4,
-          }}
-        >
-          {/* User Filter */}
+        <div className="mb-2 w-full  h-[100px]   flex justify-between items-end  gap-5 ">
+          {/* Filters */}
+           
+         
 
-          <div>
-            <FormControl size="small">
-              <InputLabel>User Filter</InputLabel>
-              <Select
-                value={user}
-                label="User Filter"
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setUser(val);
-                }}
-                sx={{ minWidth: 180 }}
+
+            
+           
+
+
+
+
+ 
+
+            
+
+
+            <div className="flex gap-5 w-[75%]  justify-end items-end  h-full px-4 py-2 ">
+              {/* Custom Date Pickers */}
+              {dateFilter === "custom" && (
+                <>
+                  <DatePicker
+                    label="Start Date"
+                    value={dateRange[0]}
+                    onChange={(newValue) =>
+                      setDateRange([newValue, dateRange[1]])
+                    }
+                    slotProps={{
+                      textField: { size: "small", variant: "outlined" },
+                    }}
+                     
+                  />
+                  <DatePicker
+                    label="End Date"
+                    value={dateRange[1]}
+                    onChange={(newValue) =>
+                      setDateRange([dateRange[0], newValue])
+                    }
+                    slotProps={{
+                      textField: { size: "small", variant: "outlined" },
+                    }}
+                  />
+                </>
+              )}
+
+              {/* Date Filter Dropdown */}
+              <FormControl size="small">
+                <InputLabel>Date Filter</InputLabel>
+                <Select
+                  value={dateFilter}
+                  label="Date Filter"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setDateFilter(val);
+                    if (val !== "custom") {
+                      setDateRange(getDateRange(val));
+                    } else {
+                      setDateRange([null, null]);
+                    }
+                  }}
+                  sx={{ minWidth: 180,   }}
+                >
+                  <MenuItem value="thisYear">This Year</MenuItem>
+                  <MenuItem value="lastYear">Last Year</MenuItem>
+                  <MenuItem value="thisMonth">This Month</MenuItem>
+                  <MenuItem value="lastMonth">Last Month</MenuItem>
+                  <MenuItem value="thisQuarter">This Quarter</MenuItem>
+                  <MenuItem value="lastQuarter">Last Quarter</MenuItem>
+                  <MenuItem value="custom">Custom Range</MenuItem>
+                </Select>
+              </FormControl>
+
+
+                  <div>
+              <FormControl size="small">
+                <InputLabel>User Filter</InputLabel>
+                <Select
+                  value={user}
+                  label="User Filter"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setUser(val);
+                  }}
+                  sx={{ minWidth: 180 }}
+                >
+                  {isAdmin(auth) && <MenuItem value="All">All Users</MenuItem>}
+                  {users.map((user) => (
+                    <MenuItem value={user.name}>{user.name}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+               </div>
+
+
+              {/* Apply Button */}
+              <Button
+                variant="contained"
+                color="info"
+                onClick={clearFilter}
+                sx={{   height: 40 }}
               >
-                {isAdmin(auth) && <MenuItem value="All">All Users</MenuItem>}
-                {users.map((user) => (
-                  <MenuItem value={user.name}>{user.name}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </div>
-
-          <Typography
-            variant="h4"
-            fontWeight="bold"
-            gutterBottom
-            sx={{ mb: 0, textAlign: "center" }}
-          >
-            <div className="text-center  ">
-              <h2 className="text-2xl font-bold text-gray-800">
-                User Lead Statistics
-              </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Track won leads, values, and progress over time
-              </p>
-              <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto mt-2 rounded-full"></div>
+                Reset
+              </Button>
             </div>
-          </Typography>
+        
 
-          <div className="flex gap-5 ">
-            {/* Custom Date Pickers */}
-            {dateFilter === "custom" && (
-              <>
-                <DatePicker
-                  label="Start Date"
-                  value={dateRange[0]}
-                  onChange={(newValue) =>
-                    setDateRange([newValue, dateRange[1]])
-                  }
-                  slotProps={{
-                    textField: { size: "small", variant: "outlined" },
-                  }}
-                />
-                <DatePicker
-                  label="End Date"
-                  value={dateRange[1]}
-                  onChange={(newValue) =>
-                    setDateRange([dateRange[0], newValue])
-                  }
-                  slotProps={{
-                    textField: { size: "small", variant: "outlined" },
-                  }}
-                />
-              </>
-            )}
-
-
-
-
-
-
-
-
-
-
-
-            <WonLeadStats user={user} dateRange={dateRange}  />
-
-
-
-
-
-
-
-
-
-
-
-
-            {/* Date Filter Dropdown */}
-            <FormControl size="small">
-              <InputLabel>Date Filter</InputLabel>
-              <Select
-                value={dateFilter}
-                label="Date Filter"
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setDateFilter(val);
-                  if (val !== "custom") {
-                    setDateRange(getDateRange(val));
-                  } else {
-                    setDateRange([null, null]);
-                  }
-                }}
-                sx={{ minWidth: 180 }}
-              >
-                <MenuItem value="thisYear">This Year</MenuItem>
-                <MenuItem value="lastYear">Last Year</MenuItem>
-                <MenuItem value="thisMonth">This Month</MenuItem>
-                <MenuItem value="lastMonth">Last Month</MenuItem>
-                <MenuItem value="thisQuarter">This Quarter</MenuItem>
-                <MenuItem value="lastQuarter">Last Quarter</MenuItem>
-                <MenuItem value="custom">Custom Range</MenuItem>
-              </Select>
-            </FormControl>
-
-            {/* Apply Button */}
-            <Button
-              variant="contained"
-              color="info"
-              onClick={clearFilter}
-              sx={{ ml: "auto", height: 40 }}
-            >
-              Reset
-            </Button>
-          </div>
-        </Box>
+          <WonLeadStats user={user} dateRange={dateRange} />
+        </div>
 
         {/* Chart */}
         <CardContent
@@ -425,7 +389,6 @@ export default function UserLeadChart({ auth, active1 }) {
               <option value="area">Area</option>
             </select>
           </div>
-
 
           <Chart
             options={options}

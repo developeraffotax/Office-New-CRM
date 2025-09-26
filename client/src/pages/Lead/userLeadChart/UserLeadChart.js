@@ -18,6 +18,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import quarterOfYear from "dayjs/plugin/quarterOfYear";
 import { isAdmin } from "../../../utlis/isAdmin";
+import WonLeadStats from "./WonLeadStats";
 
 dayjs.extend(quarterOfYear);
 
@@ -35,7 +36,8 @@ const MONTHS = [
   "Nov",
   "Dec",
 ];
-const SERIES_COLORS = ["#008FFB", "#14B8A6", "#F59E0B"];
+//const SERIES_COLORS = ["#008FFB", "#14B8A6", "#F59E0B"];
+const SERIES_COLORS = ["#008FFB", "#14B8A6", "#F59E0B", "#EF4444"];
 
 // Utility: get start and end dates for filters
 const getDateRange = (filter) => {
@@ -67,12 +69,10 @@ const getDateRange = (filter) => {
   }
 };
 
-export default function UserLeadChart({ auth }) {
+export default function UserLeadChart({ auth, active1 }) {
   const [chartType, setChartType] = useState("bar");
 
-  const [user, setUser] = useState(() => {
-    return isAdmin(auth) ? "all" : auth?.user?.name;
-  });
+  const [user, setUser] = useState('');
   const [users, setUsers] = useState([]);
 
   const [dateFilter, setDateFilter] = useState("thisYear");
@@ -80,15 +80,17 @@ export default function UserLeadChart({ auth }) {
   const [tableData, setTableData] = useState([]);
 
   const [series, setSeries] = useState([
-    { name: "Lead Count", data: [] },
-    { name: "Total Value", data: [] },
-    { name: "Target Value", data: [] },
+    { name: "Count", data: [],   },
+    { name: "Target Count", data: [],  },
+
+    { name: "Value", data: [],  },
+    { name: "Target Value", data: [],  },
   ]);
 
   const clearFilter = () => {
     setDateFilter("thisYear");
     setDateRange(getDateRange("thisYear"));
-    setUser((prev) => (isAdmin(auth) ? "all" : auth?.user?.name));
+    setUser((prev) => (isAdmin(auth) ? "All" : auth?.user?.name));
   };
 
   const getAllUsers = useCallback(async () => {
@@ -118,7 +120,7 @@ export default function UserLeadChart({ auth }) {
         `${process.env.REACT_APP_API_URL}/api/v1/leads/userchart/won`,
         {
           params: {
-            user: user !== "all" ? user : null,
+            user: user !== "All" ? user : null,
             startDate: start ? start.toISOString() : null,
             endDate: end ? end.toISOString() : null,
           },
@@ -126,10 +128,11 @@ export default function UserLeadChart({ auth }) {
       );
 
       setSeries([
-        { name: "Lead Count", data: data.counts },
-        { name: "Value", data: data.values },
-        { name: "Target Value", data: data.targetValues },
-        // { name: "Target Value", data: [1500, 2000, 2100, 2200, 2300] },
+        { name: "Count", data: data.counts,   },
+        { name: "Target Count", data: data.targetCounts,  },
+        { name: "Value", data: data.values,   },
+        { name: "Target Value", data: data.targetValues,   },
+      
       ]);
     } catch (err) {
       console.error(err);
@@ -144,20 +147,26 @@ export default function UserLeadChart({ auth }) {
     fetchData();
   }, [fetchData]);
 
+  useEffect(() => {
+    const active = active1 || "All";
+    setUser((prev) => (isAdmin(auth) ? active : auth?.user?.name));
+  }, [active1, auth]);
+
   const options = useMemo(() => {
     const width = chartType === "bar" ? 0 : 3; // bar width or line width
     return {
       chart: { toolbar: { show: true }, type: chartType },
       stroke: {
-        width: [width, width, width],
-        dashArray: [0, 0, 0],
+        width: [width, width, width, width],
+        dashArray: [0, 0, 0, 0],
         curve: "smooth",
       },
       xaxis: {
         categories: MONTHS,
       },
       yaxis: [
-        {
+        { 
+           seriesName: 'Count',
           title: { text: "Lead Count" },
           labels: {
             formatter: (val) => val.toFixed(0),
@@ -165,7 +174,15 @@ export default function UserLeadChart({ auth }) {
           },
           min: 0,
         },
+
+            {
+          seriesName: 'Count',
+          show: false
+        },
+
+
         {
+          seriesName: 'Value',
           opposite: true,
           title: { text: "Total Value (£)" },
           labels: {
@@ -174,7 +191,20 @@ export default function UserLeadChart({ auth }) {
           },
           min: 0,
         },
+
+            {
+          seriesName: 'Value',
+          show: false
+        },
+
+        
       ],
+
+
+
+      
+ 
+
 
       colors: SERIES_COLORS, // blue=leads, green=actual, red=target
       legend: { position: "top" },
@@ -185,8 +215,8 @@ export default function UserLeadChart({ auth }) {
           colors:
             chartType !== "bar"
               ? SERIES_COLORS
-              : ["#ffffff", "#ffffff", "#ffffff"], // 👈 set custom color
-          fontSize: "12px",
+              : ["#ffffff", "#ffffff", "#ffffff", "#ffffff"], // 👈 set custom color
+          fontSize: "13px",
           fontWeight: "bold",
         },
 
@@ -199,12 +229,21 @@ export default function UserLeadChart({ auth }) {
             const dataPointIndex = opts.dataPointIndex;
 
             // Check if this series is currently visible
-            const isTargetVisisble =   opts.w?.globals?.seriesVisibility?.[2] ?? true;
+            const isTargetVisisbleForCount =   opts.w?.globals?.seriesVisibility?.[1] ?? true;
             
 
             // For the "Value" series (index 1)
-            if (seriesIndex === 1 && chartType !== "bar" && isTargetVisisble) {
-              const targetVal = opts.w.config.series[2].data[dataPointIndex]; // Target Value
+            if (seriesIndex === 0 && chartType !== "bar" && isTargetVisisbleForCount) {
+              const targetVal = opts.w.config.series[1].data[dataPointIndex]; // Target Value
+              if (targetVal) {
+                const percent = ((val / targetVal) * 100).toFixed(1);
+                return `${val} (${percent}%)`;
+              }
+            }
+
+             const isTargetVisisbleForValue =   opts.w?.globals?.seriesVisibility?.[3] ?? true;
+            if (seriesIndex === 2 && chartType !== "bar" && isTargetVisisbleForValue) {
+              const targetVal = opts.w.config.series[3].data[dataPointIndex]; // Target Value
               if (targetVal) {
                 const percent = ((val / targetVal) * 100).toFixed(1);
                 return `${val} (${percent}%)`;
@@ -253,7 +292,7 @@ export default function UserLeadChart({ auth }) {
                 }}
                 sx={{ minWidth: 180 }}
               >
-                {isAdmin(auth) && <MenuItem value="all">All Users</MenuItem>}
+                {isAdmin(auth) && <MenuItem value="All">All Users</MenuItem>}
                 {users.map((user) => (
                   <MenuItem value={user.name}>{user.name}</MenuItem>
                 ))}
@@ -304,6 +343,29 @@ export default function UserLeadChart({ auth }) {
                 />
               </>
             )}
+
+
+
+
+
+
+
+
+
+
+
+            <WonLeadStats user={user} dateRange={dateRange}  />
+
+
+
+
+
+
+
+
+
+
+
 
             {/* Date Filter Dropdown */}
             <FormControl size="small">
@@ -363,6 +425,8 @@ export default function UserLeadChart({ auth }) {
               <option value="area">Area</option>
             </select>
           </div>
+
+
           <Chart
             options={options}
             series={series}

@@ -26,6 +26,7 @@ import hrRoleRoutes from "./hrRoleRoutes.js";
 import quickListRoute from "./quickListRoute.js";
 import qualityListRoute from "./qualityRoutes.js";
 import quickReplyTemplateRoutes from "./quickReplyTemplateRoutes.js";
+import overviewRoutes from "./overviewRoutes.js";
 
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import { sendDatatoGoogleSheet } from "../utils/googleSheet.js";
@@ -58,6 +59,8 @@ export const registerRoutes = (app) => {
   app.use("/api/v1/hrRole", hrRoleRoutes);
   app.use("/api/v1/quicklist", quickListRoute);
   app.use("/api/v1/quicklist", qualityListRoute);
+  
+  app.use("/api/v1/overview", overviewRoutes);
 
   app.use("/api/v1/googleSheet", sendDatatoGoogleSheet);
   app.use("/api/templates", requiredSignIn, quickReplyTemplateRoutes);

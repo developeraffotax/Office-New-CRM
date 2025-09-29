@@ -710,12 +710,14 @@ const AllTasks = ({ justShowTable = false }) => {
             item._id === updateTask._id ? updateTask : item
           )
         );
-
-        if (filterData) {
+        
+        if (Array.isArray(filterData)) {
           setFilterData((prevData) =>
-            prevData?.map((item) =>
-              item?._id === updateTask?._id ? updateTask : item
-            )
+            Array.isArray(prevData)
+              ? prevData.map((item) =>
+                  item?._id === updateTask?._id ? updateTask : item
+                )
+              : [updateTask] // fallback if somehow prevData isn't an array
           );
         }
       }

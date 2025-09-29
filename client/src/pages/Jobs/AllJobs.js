@@ -233,6 +233,7 @@ export default function AllJobs() {
 
     const [searchParams] = useSearchParams();
     const comment_taskId = searchParams.get('comment_taskId');
+      const show_completed = searchParams.get("completed");
       const navigate = useNavigate();
 
 
@@ -1915,7 +1916,15 @@ useEffect(() => {
 
 
 
+  
+  useEffect(() => {
+    if (show_completed) {
 
+      setActiveBtn("completed");
+              setShowCompleted(true);
+              setActive("");
+    }
+  }, [show_completed]);
 
 
   return (

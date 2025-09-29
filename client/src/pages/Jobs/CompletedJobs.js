@@ -238,6 +238,12 @@ export default function CompletedJobs({
       {
         accessorKey: "job.jobHolder",
         Header: ({ column }) => {
+          const user = auth?.user?.name;
+            useEffect(() => {
+              if(user) {
+                  column.setFilterValue(user);
+              }
+                }, []);
           return (
             <div className=" flex flex-col gap-[2px]">
               <span

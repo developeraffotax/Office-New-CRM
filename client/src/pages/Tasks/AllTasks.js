@@ -186,7 +186,11 @@ const AllTasks = ({ justShowTable = false }) => {
 
   const [searchParams] = useSearchParams();
   const comment_taskId = searchParams.get("comment_taskId");
+  const show_completed = searchParams.get("completed");
   const navigate = useNavigate();
+
+
+
 
   const [showcolumn, setShowColumn] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState({
@@ -1295,6 +1299,19 @@ const AllTasks = ({ justShowTable = false }) => {
       // navigate({ search: searchParams.toString() }, { replace: true });
     }
   }, [comment_taskId, searchParams, navigate, table]);
+
+  
+  useEffect(() => {
+    if (show_completed) {
+
+      setActiveBtn("completed");
+                  setShowCompleted(true);
+                  setActive("");
+
+    }
+  }, [show_completed])
+
+  
 
   const renderColumnControls = () => (
     <div className="flex flex-col gap-3 bg-white rounded-md border p-4">

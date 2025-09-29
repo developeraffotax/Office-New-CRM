@@ -7,6 +7,7 @@ import Select from "react-select";
 import CustomEditor from "../../utlis/CustomEditor";
 import { TbLoader2 } from "react-icons/tb";
 import { RiUploadCloud2Fill } from "react-icons/ri";
+import { filterOption, HighlightedOption, sortOptions } from "./HighlightedOption";
 
 export default function SendEmailReply({
   setShowReply,
@@ -21,11 +22,16 @@ export default function SendEmailReply({
   const [message, setMessage] = useState("");
   const [templates, setTemplates] = useState([]);
 
+
+
+const [inputValue, setInputValue] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState([]);
 
   console.log("message:", message);
   console.log("emailSendTo:", emailSendTo);
+
 
   const customStyles = {
     control: (provided) => ({
@@ -42,12 +48,16 @@ export default function SendEmailReply({
       ...provided,
       padding: 0,
     }),
-    option: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isSelected ? "#f0f0f0" : "white",
-      color: state.isSelected ? "black" : "black",
-      cursor: "pointer",
-    }),
+     option: (provided, state) => ({
+        ...provided,
+        backgroundColor: state.isSelected
+          ? "#f0f0f0" // selected
+          : state.isFocused
+          ? "#e6f0ff" // hover/focus
+          : "white",
+        color: "black",
+        cursor: "pointer",
+      }),
   };
   // --------------Get All Templates---------->
   const getAllTemplates = async () => {
@@ -152,13 +162,16 @@ export default function SendEmailReply({
         >
           {/*  */}
           <Select
-            className={`${style.input} h-[2.6rem] flex items-center justify-center px-0 py-0`}
+            className={`${style.input} w-full h-[2.6rem] flex items-center justify-center px-0 py-0`}
             value={selectedTemplateOption}
             onChange={handleTemplateChange}
-            options={templateOptions}
+            options={sortOptions(templateOptions, inputValue)} // sorted each render
             placeholder="Template"
-            styles={customStyles}
+            components={{ Option: HighlightedOption }}
+            filterOption={filterOption} // keep react-select filtering
             isClearable
+            styles={customStyles}
+            onInputChange={(val) => setInputValue(val)}
           />
           {/*  */}
           <CustomEditor template={message} setTemplate={setMessage} />

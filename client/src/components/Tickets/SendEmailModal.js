@@ -8,15 +8,14 @@ import CustomEditor from "../../utlis/CustomEditor";
 import { TbLoader2 } from "react-icons/tb";
 import { RiUploadCloud2Fill } from "react-icons/ri";
 import { useSelector } from "react-redux";
- 
+import { filterOption, HighlightedOption, sortOptions } from "./HighlightedOption";
 
 export default function SendEmailModal({
   setShowSendModal,
   getEmails,
   access,
 }) {
- 
-     const auth = useSelector((state => state.auth.auth));
+  const auth = useSelector((state) => state.auth.auth);
   const [company, setCompany] = useState("");
   const [clientId, setClientId] = useState("");
   const [subject, setSubject] = useState("");
@@ -28,37 +27,32 @@ export default function SendEmailModal({
   const [type, setType] = useState("client");
   const [email, setEmail] = useState("");
 
+const [inputValue, setInputValue] = useState("");
+
   const [users, setUsers] = useState([]);
   const [jobHolder, setJobHolder] = useState("");
-  console.log("Files:", files);
 
-  console.log("message:", message);
+  const getAllUsers = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+      );
+      setUsers(
+        data?.users?.filter((user) =>
+          user.role?.access?.some((item) =>
+            item?.permission?.includes("Tickets")
+          )
+        ) || []
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-
-         
-          const getAllUsers = async () => {
-            try {
-              const { data } = await axios.get(
-                `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
-              );
-              setUsers( data?.users?.filter((user) => user.role?.access?.some((item) => item?.permission?.includes("Tickets") ) ) || [] );
-        
-          
-        
-              
-        
-            } catch (error) {
-              console.log(error);
-            }
-          };
-    
-    
-          useEffect(() => {
-            getAllUsers();
-            //eslint-disable-next-line
-          }, []);
-
-
+  useEffect(() => {
+    getAllUsers();
+    //eslint-disable-next-line
+  }, []);
 
   const allClientJobData = async () => {
     try {
@@ -110,12 +104,16 @@ export default function SendEmailModal({
       ...provided,
       padding: 0,
     }),
-    option: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isSelected ? "#f0f0f0" : "white",
-      color: state.isSelected ? "black" : "black",
-      cursor: "pointer",
-    }),
+     option: (provided, state) => ({
+        ...provided,
+        backgroundColor: state.isSelected
+          ? "#f0f0f0" // selected
+          : state.isFocused
+          ? "#e6f0ff" // hover/focus
+          : "white",
+        color: "black",
+        cursor: "pointer",
+      }),
   };
   // --------------Get All Templates---------->
   const getAllTemplates = async () => {
@@ -280,6 +278,7 @@ export default function SendEmailModal({
               placeholder="To"
               styles={customStyles}
               isClearable
+               
             />
           ) : (
             <input
@@ -302,13 +301,16 @@ export default function SendEmailModal({
           />
           {/*  */}
           <Select
-            className={`${style.input} h-[2.6rem] flex items-center justify-center px-0 py-0`}
+            className={`${style.input} w-full h-[2.6rem] flex items-center justify-center px-0 py-0`}
             value={selectedTemplateOption}
             onChange={handleTemplateChange}
-            options={templateOptions}
+            options={sortOptions(templateOptions, inputValue)} // sorted each render
             placeholder="Template"
-            styles={customStyles}
+            components={{ Option: HighlightedOption }}
+            filterOption={filterOption} // keep react-select filtering
             isClearable
+            styles={customStyles}
+            onInputChange={(val) => setInputValue(val)}
           />
           {/*  */}
           <CustomEditor template={message} setTemplate={setMessage} />
@@ -348,36 +350,29 @@ export default function SendEmailModal({
             </div>
           </div>
 
-          <div className={`w-full flex items-center ${ auth?.user?.role?.name === "Admin" ? "justify-between" : "justify-end"} gap-8`}>
-
-
-             {
-                  auth?.user?.role?.name === "Admin" && (
-                     
-
-                  <select
-                  value={jobHolder}
-                  className="w-[160px] h-[2rem] rounded-md border border-gray-400 outline-none text-[15px] px-2 py-1 bg-gray-50"
-                  onChange={(e) => {
-                    setJobHolder(e.target.value);
-                    
-                  }}
-                >
-                  <option value="">Select Jobholder</option>
-                  {users?.map((jobHold, i) => (
-                    <option value={jobHold?.name} key={i}>
-                      {jobHold.name}
-                    </option>
-                  ))}
-                </select>
-
-
-              )
-
-
-                }
-
-
+          <div
+            className={`w-full flex items-center ${
+              auth?.user?.role?.name === "Admin"
+                ? "justify-between"
+                : "justify-end"
+            } gap-8`}
+          >
+            {auth?.user?.role?.name === "Admin" && (
+              <select
+                value={jobHolder}
+                className="w-[160px] h-[2rem] rounded-md border border-gray-400 outline-none text-[15px] px-2 py-1 bg-gray-50"
+                onChange={(e) => {
+                  setJobHolder(e.target.value);
+                }}
+              >
+                <option value="">Select Jobholder</option>
+                {users?.map((jobHold, i) => (
+                  <option value={jobHold?.name} key={i}>
+                    {jobHold.name}
+                  </option>
+                ))}
+              </select>
+            )}
 
             <button
               disabled={loading}

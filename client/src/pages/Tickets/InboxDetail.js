@@ -33,6 +33,23 @@ export default function InboxDetail({
   console.log("emailDetail:", emailDetail);
 
   //   Email Detail
+  const getTicketDetail = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/mailThreadId/${singleEmail.emailData.threadId}`
+      );
+      if (data) {
+        setTicketDetail(data.ticket);
+      }
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+    }
+  };
+
+
+  //   Email Detail
   const getEmailDetail = async () => {
     setLoading(true);
     try {
@@ -57,6 +74,7 @@ export default function InboxDetail({
 
   useEffect(() => {
     getEmailDetail();
+    getTicketDetail();
   }, [singleEmail, company]);
 
   // Get Email Detail without load

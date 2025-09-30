@@ -892,6 +892,21 @@ export default function AllJobs() {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   
   // ---------------Handle Update Fee ---------->
   const updateActiveClient = async (rowId, newValue) => {

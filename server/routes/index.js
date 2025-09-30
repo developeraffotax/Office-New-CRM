@@ -28,6 +28,8 @@ import qualityListRoute from "./qualityRoutes.js";
 import quickReplyTemplateRoutes from "./quickReplyTemplateRoutes.js";
 import overviewRoutes from "./overviewRoutes.js";
 
+import onedriveRoute from "./onedriveRoutes.js";
+
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import { sendDatatoGoogleSheet } from "../utils/googleSheet.js";
 
@@ -64,4 +66,6 @@ export const registerRoutes = (app) => {
 
   app.use("/api/v1/googleSheet", sendDatatoGoogleSheet);
   app.use("/api/templates", requiredSignIn, quickReplyTemplateRoutes);
+
+  app.use("/api/v1", requiredSignIn, onedriveRoute);
 };

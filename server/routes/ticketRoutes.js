@@ -19,6 +19,7 @@ import {
   sendEmail,
   sendTicketReply,
   singleTicket,
+  singleTicketByMailThreadId,
   singleTicketComments,
   updateBulkTickets,
   updateReadUnreadTickets,
@@ -60,6 +61,10 @@ router.put("/update/ticket/:id", requiredSignIn, updateTickets);
 
 // Get Single Ticket
 router.get("/single/ticket/:id", singleTicket);
+
+
+//get single ticket using the mail thrad id
+router.get("/get/mailThreadId/:id", singleTicketByMailThreadId);
 
 // Get Attachment
 router.get(

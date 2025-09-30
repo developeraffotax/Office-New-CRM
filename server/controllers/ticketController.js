@@ -1229,6 +1229,49 @@ export const singleTicket = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+// Single Ticket
+export const singleTicketByMailThreadId = async (req, res) => {
+  try {
+    const mailThreadId = req.params.id;
+
+    const ticket = await ticketModel.findOne({mailThreadId: mailThreadId})
+
+    if (!ticket) {
+      return res.status(400).send({
+        success: false,
+        message: "Ticket not found!",
+      });
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Single ticket!",
+      ticket: ticket,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while delete ticket!",
+      error: error,
+    });
+  }
+};
+
+
+
+
+
 // Get Attachments
 export const getTicketAttachments = async (req, res) => {
   try {

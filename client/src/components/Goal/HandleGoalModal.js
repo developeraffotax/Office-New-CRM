@@ -25,6 +25,8 @@ export default function HandleGoalModal({
   const [userList, setUserList] = useState([]);
 
   const goalTypes = [
+    "Target Lead Count",
+    "Target Lead Value",
     "Increase Client",
     "Increase Fee",
     "Total Proposal",

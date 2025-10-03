@@ -37,7 +37,7 @@ const MONTHS = [
   "Dec",
 ];
 //const SERIES_COLORS = ["#008FFB", "#14B8A6", "#F59E0B"];
-const SERIES_COLORS = ["#008FFB", "#14B8A6", "#F59E0B", "#EF4444"];
+const SERIES_COLORS = [ "#14B8A6","#008FFB",  "#EF4444", "#F59E0B"];
 
 // Utility: get start and end dates for filters
 const getDateRange = (filter) => {
@@ -80,11 +80,11 @@ export default function UserLeadChart({ auth, active1 }) {
   const [tableData, setTableData] = useState([]);
 
   const [series, setSeries] = useState([
-    { name: "Count", data: [] },
     { name: "Target Count", data: [] },
+    { name: "Count", data: [] },
 
-    { name: "Value", data: [] },
     { name: "Target Value", data: [] },
+    { name: "Value", data: [] },
   ]);
 
   const clearFilter = () => {
@@ -128,10 +128,10 @@ export default function UserLeadChart({ auth, active1 }) {
       );
 
       setSeries([
-        { name: "Count", data: data.counts },
         { name: "Target Count", data: data.targetCounts },
-        { name: "Value", data: data.values },
+        { name: "Count", data: data.counts },
         { name: "Target Value", data: data.targetValues },
+        { name: "Value", data: data.values },
       ]);
     } catch (err) {
       console.error(err);
@@ -220,15 +220,15 @@ export default function UserLeadChart({ auth, active1 }) {
 
           // Check if this series is currently visible
           const isTargetVisisbleForCount =
-            opts.w?.globals?.seriesVisibility?.[1] ?? true;
+            opts.w?.globals?.seriesVisibility?.[0] ?? true;
 
           // For the "Value" series (index 1)
           if (
-            seriesIndex === 0 &&
+            seriesIndex === 1 &&
             chartType !== "bar" &&
             isTargetVisisbleForCount
           ) {
-            const targetVal = opts.w.config.series[1].data[dataPointIndex]; // Target Value
+            const targetVal = opts.w.config.series[0].data[dataPointIndex]; // Target Value
             if (targetVal) {
               const percent = ((val / targetVal) * 100).toFixed(1);
               return `${val} (${percent}%)`;
@@ -236,13 +236,13 @@ export default function UserLeadChart({ auth, active1 }) {
           }
 
           const isTargetVisisbleForValue =
-            opts.w?.globals?.seriesVisibility?.[3] ?? true;
+            opts.w?.globals?.seriesVisibility?.[2] ?? true;
           if (
-            seriesIndex === 2 &&
+            seriesIndex === 3 &&
             chartType !== "bar" &&
             isTargetVisisbleForValue
           ) {
-            const targetVal = opts.w.config.series[3].data[dataPointIndex]; // Target Value
+            const targetVal = opts.w.config.series[2].data[dataPointIndex]; // Target Value
             if (targetVal) {
               const percent = ((val / targetVal) * 100).toFixed(1);
               return `${val} (${percent}%)`;

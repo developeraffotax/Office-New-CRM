@@ -57,6 +57,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { setFilterId, setSearchValue } from "../../redux/slices/authSlice";
 import { useSocket } from "../../context/socketProvider";
 import { getJobsColumns } from "./table/columns";
+import OverviewForPages from "../../utlis/overview/OverviewForPages";
+import { isAdmin } from "../../utlis/isAdmin";
  
  
  
@@ -1972,7 +1974,7 @@ useEffect(() => {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
-
+               {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
             <QuickAccess />
           </div>
 

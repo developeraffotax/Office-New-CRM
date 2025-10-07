@@ -24,6 +24,8 @@ import { FiPlusSquare } from "react-icons/fi";
 import NewTicketModal from "../../utlis/NewTicketModal";
 import ActionsCell from "./ActionsCell";
 import getSubscriptionColumns from "./table/columns";
+import { isAdmin } from "../../utlis/isAdmin";
+import OverviewForPages from "../../utlis/overview/OverviewForPages";
 
 export default function Subscription() {
   const auth = useSelector((state) => state.auth.auth);
@@ -491,7 +493,7 @@ export default function Subscription() {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
-
+              {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
             <span className="mt-2">
               <QuickAccess />
             </span>

@@ -44,6 +44,8 @@ import { GoEye, GoEyeClosed } from "react-icons/go";
 import { useClickOutside } from "../../utlis/useClickOutside";
 import { getTaskColumns } from "./table/columns";
 import { TasksTable } from "./table/TasksTable";
+import OverviewForPages from "../../utlis/overview/OverviewForPages";
+import { isAdmin } from "../../utlis/isAdmin";
 
 const colVisibility = {
   departmentName: true,
@@ -1409,7 +1411,7 @@ const AllTasks = ({ justShowTable = false }) => {
       {!showCompleted ? (
         <div className=" relative w-full h-full overflow-auto py-4 px-2 sm:px-4">
           <div className="flex text-start sm:items-center sm:justify-between gap-4 flex-col sm:flex-row">
-            <div className="flex items-center gap-5 ">
+            <div className="flex items-center gap-3 ">
               <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
                 Tasks
               </h1>
@@ -1434,9 +1436,15 @@ const AllTasks = ({ justShowTable = false }) => {
                 <IoClose className="h-6 w-6 text-white" />
               </span>
 
-              <span>
+
+                {isAdmin(auth) && <span className=" mb-2"> <OverviewForPages /> </span>}
+
+                
+              <span >
                 <QuickAccess />
               </span>
+
+                
             </div>
 
             {/* Project Buttons */}

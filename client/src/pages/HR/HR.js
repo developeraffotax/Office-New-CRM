@@ -26,6 +26,8 @@ import HandleHrRoleModal from "../../components/hr/HandleHrRoleModal";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import QuickAccess from "../../utlis/QuickAccess"
 import { useSelector } from "react-redux";
+import { isAdmin } from "../../utlis/isAdmin";
+import OverviewForPages from "../../utlis/overview/OverviewForPages";
  
 
 const months = [
@@ -1166,7 +1168,7 @@ useEffect(() => {
             >
               <IoClose className="h-4 sm:h-6 w-4 sm:w-6 text-white" />
             </span>
-
+              {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
             <span className="mt-3"><QuickAccess /></span>
 
             <div className="flex justify-center items-center  gap-2 ">

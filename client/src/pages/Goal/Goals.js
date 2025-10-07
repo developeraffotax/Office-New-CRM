@@ -32,6 +32,8 @@ import DraggableUserList from "../../utlis/DraggableUserList";
 import { filterByRowId } from "../../utlis/filterByRowId";
 import { useSelector } from "react-redux";
 import getGoalColumns from "./table/columns";
+import OverviewForPages from "../../utlis/overview/OverviewForPages";
+import { isAdmin } from "../../utlis/isAdmin";
 
 export default function Goals() {
 
@@ -749,7 +751,7 @@ useEffect(() => {
               >
                 <IoClose className="h-6 w-6 text-white" />
               </span>
-
+                {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
               <span className="mt-2"><QuickAccess /></span>
               <span
                 onClick={() => setShowGraph(!showGraph)}

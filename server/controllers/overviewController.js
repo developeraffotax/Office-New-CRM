@@ -1,4 +1,5 @@
 import jobsModel from "../models/jobsModel.js";
+import leadModel from "../models/leadModel.js";
 import taskModel from "../models/taskModel.js";
 import ticketModel from "../models/ticketModel.js";
 
@@ -65,9 +66,20 @@ export const getOverview = async (req, res) => {
     });
 
 
-     
+
+
+
+    //leads
+    const leadsLength = await leadModel.countDocuments({
+      status: { $eq: "progress" },
+      jobHolder: name
+       
+    });
+
 
      
+
+      console.log("Leads Length", leadsLength)
 
 
 
@@ -75,7 +87,8 @@ export const getOverview = async (req, res) => {
       success: true,
       tasks: {tasksLength, completedTasksLength},
       jobs: {jobsLength, completedJobsLength},
-      tickets: {ticketsLength, completedTicketsLength}
+      tickets: {ticketsLength, completedTicketsLength},
+      leads: {leadsLength}
 
       
     });

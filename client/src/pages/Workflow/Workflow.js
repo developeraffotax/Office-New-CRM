@@ -11,6 +11,9 @@ import {
 import Loader from "../../utlis/Loader";
 import Leads from "./Lead";
 import QuickAccess from "../../utlis/QuickAccess";
+import { isAdmin } from "../../utlis/isAdmin";
+import OverviewForPages from "../../utlis/overview/OverviewForPages";
+import { useSelector } from "react-redux";
 
 export default function Workflow() {
   const [loading, setLoading] = useState(false);
@@ -20,6 +23,12 @@ export default function Workflow() {
   const [selectedUser, setSelectedUser] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [clients, setClients] = useState([]);
+
+
+
+
+  const auth = useSelector( (state) => state.auth.auth );
+
 
   const departments = [
     "Bookkeeping",
@@ -356,7 +365,7 @@ export default function Workflow() {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
-
+              {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
             <span className="mt-2"><QuickAccess /></span>
           </div>
         </div>

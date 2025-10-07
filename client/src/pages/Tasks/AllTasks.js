@@ -174,6 +174,7 @@ const AllTasks = ({ justShowTable = false }) => {
   const [hours, setHours] = useState("");
   const [startDate, setStartDate] = useState("");
   const [deadline, setDeadline] = useState("");
+  const [taskDate, setTaskDate] = useState("");
   const [tstatus, setTStatus] = useState("");
   const [isUpload, setIsUpdate] = useState(false);
   const [reload, setReload] = useState(false);
@@ -1218,6 +1219,7 @@ const AllTasks = ({ justShowTable = false }) => {
           hours,
           startDate,
           deadline,
+          taskDate,
           status: tstatus,
         }
       );
@@ -1231,6 +1233,7 @@ const AllTasks = ({ justShowTable = false }) => {
         setHours("");
         setStartDate("");
         setDeadline("");
+        setTaskDate("")
         setTStatus("");
       }
     } catch (error) {
@@ -2007,6 +2010,16 @@ const AllTasks = ({ justShowTable = false }) => {
                       className={`${style.input} w-full `}
                     />
                     <span>Deadline</span>
+                  </div>
+
+                  <div className="inputBox" style={{ width: "8.5rem" }}>
+                    <input
+                      type="date"
+                      value={taskDate}
+                      onChange={(e) => setTaskDate(e.target.value)}
+                      className={`${style.input} w-full `}
+                    />
+                    <span>Task Date</span>
                   </div>
 
                   {/*  */}

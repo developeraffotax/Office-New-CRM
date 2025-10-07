@@ -38,6 +38,8 @@ import DraggableUserList from "../../utlis/DraggableUserList";
 import { MdOutlineWatchLater } from "react-icons/md";
 import { useWorkdayStats } from "./useWorkdayStats";
 import { useSelector } from "react-redux";
+import { isAdmin } from "../../utlis/isAdmin";
+import OverviewForPages from "../../utlis/overview/OverviewForPages";
 
 // Optional icons per day
 const dayIcons = [
@@ -2165,7 +2167,7 @@ const getProgress = (timeStr, total) => {
                     <IoClose className="h-6 w-6 text-white" />
                   </span>
                 )}
-
+                {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
                 <span className="mt-2"><QuickAccess /></span>
               </div>
             </div>

@@ -20,6 +20,8 @@ import QuickAccess from "../../utlis/QuickAccess";
 import DraggableUserList from "../../utlis/DraggableUserList";
 import { useSelector } from "react-redux";
 import getProposalColumns from "./table/columns";
+import { isAdmin } from "../../utlis/isAdmin";
+import OverviewForPages from "../../utlis/overview/OverviewForPages";
 
 export default function Proposal() {
 
@@ -1843,7 +1845,7 @@ export default function Proposal() {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
-
+              {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
             <span className="mt-1"><QuickAccess /></span>
 
 

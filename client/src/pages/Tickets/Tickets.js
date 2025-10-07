@@ -27,6 +27,8 @@ import { useSelector } from "react-redux";
 import { LuRefreshCcw } from "react-icons/lu";
 import RefreshTicketsButton from "./ui/RefreshTicketsButton";
 import { getTicketsColumns } from "./table/columns";
+import OverviewForPages from "../../utlis/overview/OverviewForPages";
+import { isAdmin } from "../../utlis/isAdmin";
 
 
 const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "", };
@@ -818,6 +820,9 @@ const applyFilter = (e) => {
               </span>
             }
 
+
+
+              {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
             <QuickAccess />
           </div>
 

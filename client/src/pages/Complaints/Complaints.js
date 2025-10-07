@@ -23,6 +23,9 @@ import { GrCopy } from "react-icons/gr";
 import QuickAccess from "../../utlis/QuickAccess";
 import DraggableUserList from "../../utlis/DraggableUserList";
 import { LuFilter } from "react-icons/lu";
+import { useSelector } from "react-redux";
+import { isAdmin } from "../../utlis/isAdmin";
+import OverviewForPages from "../../utlis/overview/OverviewForPages";
 
 export default function Complaints() {
   const [show, setShow] = useState(false);
@@ -44,7 +47,7 @@ export default function Complaints() {
       const [filter1, setFilter1] = useState("");
       const [filter2, setFilter2] = useState("");
 
-
+  const auth = useSelector( (state) => state.auth.auth );
 
   // Get All Complaints
   const getAllComplaints = async () => {
@@ -1028,7 +1031,7 @@ export default function Complaints() {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
-
+              {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
             <span className="mt-2"><QuickAccess /></span>
 
              <span

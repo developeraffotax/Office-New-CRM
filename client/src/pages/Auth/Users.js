@@ -18,6 +18,8 @@ import Swal from "sweetalert2";
 import UserLabelModal from "../../components/user/UserLabelModal";
 import QuickAccess from "../../utlis/QuickAccess";
 import { LuFilter } from "react-icons/lu";
+import { isAdmin } from "../../utlis/isAdmin";
+import OverviewForPages from "../../utlis/overview/OverviewForPages";
 
 export default function Users() {
   const auth = useSelector((state) => state.auth.auth);
@@ -1286,7 +1288,7 @@ export default function Users() {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
-
+              {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
             <span className="mt-2"><QuickAccess /></span>
 
              <span

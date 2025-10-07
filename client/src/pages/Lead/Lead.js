@@ -40,6 +40,8 @@ import getLeadColumns from "./table/columns";
 import WonLeadsStats from "./userLeadChart/UserLeadChart";
 import UserLeadChart from "./userLeadChart/UserLeadChart";
 import { BsGraphUpArrow } from "react-icons/bs";
+import { isAdmin } from "../../utlis/isAdmin";
+import OverviewForPages from "../../utlis/overview/OverviewForPages";
 
 const updates_object_init = {
       companyName: '',
@@ -1062,7 +1064,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                 <IoClose className="h-6 w-6 text-white" />
               </span>
             }
-
+            {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
             <QuickAccess />
           </div>
 

@@ -9,6 +9,7 @@ import {
   getAllTimers,
   getRunningTimer,
   getTimerStatus,
+  getTimerStatusForAffoStaff,
   removeTimerStatus,
   runningTimers,
   singleTimer,
@@ -72,5 +73,20 @@ router.put("/update/holiday/:id", updateHoliday);
 router.get("/fetch/holidays", getAllHolidays);
 // Get date wise timers
 router.get("/fetch/timers/:startDate/:endDate", fetchTimersbydate);
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Get timer Status
+router.get("/agent/timer-status", requiredSignIn, getTimerStatusForAffoStaff);
 
 export default router;

@@ -33,6 +33,18 @@ export default function MeetingModal({
 
   console.log("userData:", userData);
 
+
+  // Convert UTC string to local datetime-local format
+const formatDateForInput = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const offset = date.getTimezoneOffset();
+  const local = new Date(date.getTime() - offset * 60000);
+  return local.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:mm"
+};
+
+
+
   // Meeting Detail
   const meetingData = async () => {
     setLoading(true);
@@ -41,13 +53,14 @@ export default function MeetingModal({
         `${process.env.REACT_APP_API_URL}/api/v1/meetings/meeting/detail/${meetingId}`
       );
       if (data) {
+        console.log("THE METTING DATA IS",data)
         const meeting = data.meeting;
         setTitle(meeting.title);
         setDescription(meeting.description);
         setResults(meeting.results);
 
 
-        setScheduledAt(new Date(meeting?.scheduledAt).toLocaleString());
+        setScheduledAt(formatDateForInput(meeting?.scheduledAt));
         
 
 

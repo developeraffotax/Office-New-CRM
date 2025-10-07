@@ -1793,6 +1793,7 @@ export const updateMultipleTasks = async (req, res) => {
       hours,
       startDate,
       deadline,
+      taskDate,
       lead,
       status,
     } = req.body;
@@ -1830,6 +1831,7 @@ export const updateMultipleTasks = async (req, res) => {
     if (hours) updateData["hours"] = hours;
     if (startDate) updateData["startDate"] = startDate;
     if (deadline) updateData["deadline"] = deadline;
+    if (taskDate) updateData["taskDate"] = taskDate;
     if (lead) updateData["lead"] = lead;
     if (status) updateData["status"] = status;
 

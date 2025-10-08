@@ -47,7 +47,7 @@ window.env = {
   "POSH_CURSOR_COLUMN": "1",
   "POSH_CURSOR_LINE": "7",
   "POSH_INSTALLER": "manual",
-  "POSH_SESSION_ID": "7478a272-d61e-4e84-9605-9df7db44d6e2",
+  "POSH_SESSION_ID": "b072cd3c-78b4-4e08-a61e-90bf3b4f9ce0",
   "POSH_SHELL": "pwsh",
   "POSH_SHELL_VERSION": "5.1.19041.6328",
   "POSH_THEMES_PATH": "C:\\Program Files (x86)\\oh-my-posh\\themes\\",
@@ -80,6 +80,6 @@ window.env = {
   "windir": "C:\\Windows",
   "WSLENV": "WT_SESSION:WT_PROFILE_ID:",
   "WT_PROFILE_ID": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
-  "WT_SESSION": "cd09fa52-b836-4a42-925b-1546936e1db4",
+  "WT_SESSION": "33b5fbfc-b0fa-4a5f-bcc5-6eff002f46e0",
   "ZES_ENABLE_SYSMAN": "1"
 };

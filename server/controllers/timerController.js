@@ -1,4 +1,4 @@
-import { io } from "../index.js";
+import { io, onlineAgents } from "../index.js";
 import jobsModel from "../models/jobsModel.js";
 import taskModel from "../models/taskModel.js";
 import timerModel from "../models/timerModel.js";
@@ -57,6 +57,20 @@ export const startTimer = async (req, res) => {
 
     io.emit("runningTimersUpdate");
 
+    const onlineAgent = onlineAgents.get(clientId);
+
+    if (onlineAgent) {
+      const timer = {
+        _id: newTimer?._id.toString(),
+        isRunning: newTimer?.isRunning,
+        startTime: newTimer?.startTime.toString(),
+        department: newTimer?.department.toString(),
+        clientName: newTimer?.clientName.toString(),
+        task: newTimer?.task.toString(),
+      }
+      io.to(onlineAgent.socketId).emit("timer:state", timer);
+    }
+
     res.status(200).send({
       success: true,
       message: "Timer Start",
@@ -87,15 +101,32 @@ export const stopTimer = async (req, res) => {
       });
     }
 
-    const updateTimer = await timerModel.findByIdAndUpdate(
-      { _id: isExisting._id },
-      { endTime: endTime, note: note, activity: activity, isRunning: false },
-      { new: true }
-    );
+    const updateTimer = await timerModel
+      .findByIdAndUpdate(
+        { _id: isExisting._id },
+        { endTime: endTime, note: note, activity: activity, isRunning: false },
+        { new: true }
+      )
+      .lean();
 
     removeStatus(updateTimer._id);
 
     io.emit("runningTimersUpdate");
+
+    const onlineAgent = onlineAgents.get(updateTimer?.clientId?.toString());
+    console.log(onlineAgent, "ONLINE AGENT IS");
+    console.log("clientId", updateTimer?.clientId);
+    if (onlineAgent) {
+      io.to(onlineAgent.socketId).emit("timer:state", {
+        _id: updateTimer?._id.toString(),
+
+        isRunning: updateTimer?.isRunning,
+        // startTime: updateTimer?.startTime.toString(),
+        // department: updateTimer?.department.toString(),
+        // clientName: updateTimer?.clientName.toString(),
+        // task: updateTimer?.task.toString(),
+      });
+    }
 
     res.status(200).send({
       success: true,
@@ -111,9 +142,6 @@ export const stopTimer = async (req, res) => {
     });
   }
 };
-
-
-
 
 // Get Timer Status
 export const timerStatus = async (req, res) => {
@@ -150,34 +178,14 @@ export const timerStatus = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Get Timer Status
 export const getTimerStatusForAffoStaff = async (req, res) => {
   try {
-     
-    const userId = req.user.user.id;
-
+    const userId = req.user.user._id;
 
     const timer = await timerModel.findOne({
       clientId: userId,
-       
+
       isRunning: true,
       // $or: [
       //   { endTime: { $exists: false } },
@@ -205,18 +213,7 @@ export const getTimerStatusForAffoStaff = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
- 
-
-
-// Get Running Timer For the User               
+// Get Running Timer For the User
 export const getRunningTimer = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -224,12 +221,9 @@ export const getRunningTimer = async (req, res) => {
     const filter = {
       clientId: userId,
       isRunning: true,
-
-    }
+    };
 
     const timer = await timerModel.findOne(filter);
-
-
 
     if (!timer) {
       return res.status(200).json({ message: "Timer not running!" });
@@ -249,13 +243,6 @@ export const getRunningTimer = async (req, res) => {
     });
   }
 };
-
-
-
-
-
-
-
 
 // Get Total Time(Task & Job)
 export const totalTime = async (req, res) => {

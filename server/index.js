@@ -40,6 +40,9 @@ export const onlineUsers = new Map();
 console.log("OnlineUsers 💚",onlineUsers)
 
 
+
+export const onlineAgents = new Map();
+
 // Create server and socket
 const server = http.createServer(app);
 export const io = initSocketServer(server);

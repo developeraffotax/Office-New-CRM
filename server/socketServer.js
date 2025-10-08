@@ -1,77 +1,63 @@
 import { Server as SocketIOServer } from "socket.io";
-import { onlineUsers } from "./index.js";
+import { onlineAgents, onlineUsers } from "./index.js";
 import userModel from "./models/userModel.js";
 
-
-
-
+// 👇 Separate tracker for connected agents (Electron devices)
+ // key: email or userId, value: { socketId, deviceId }
 
 export const initSocketServer = (server) => {
-
   const io = new SocketIOServer(server);
 
-
-  // const io = new SocketIOServer(server, {
-  //   cors: {
-  //     origin: ["http://localhost:5173", "http://localhost:3000", "https://affotax.com"],
-  //     methods: ["GET", "POST"],
-  //     credentials: true,
-  //   },
-  // });
-
   io.on("connection", (socket) => {
-  console.log("User connected!💚💚💚💚💚");
+    console.log("✅ Socket connected:", socket.id);
 
-    // When user logs in or joins the chat, send their MongoDB userId
-    socket.on('userConnected', (userId) => {
-        if (!onlineUsers.has(userId)) {
-          onlineUsers.set(userId, new Set());
-        }
-        onlineUsers.get(userId).add(socket.id);
+    // ---- CRM USERS ----
+    socket.on("userConnected", (userId) => {
+      if (!onlineUsers.has(userId)) {
+        onlineUsers.set(userId, new Set());
+      }
+      onlineUsers.get(userId).add(socket.id);
+      console.log(`🟢 User ${userId} connected (${socket.id})`);
+    });
 
-        //logOnlineUsers();
-        // broadcastOnlineUsers(io); // 👈 send to frontend
-        console.log(`🟢 User ${userId} connected with socket ${socket.id}`);
-      });
+    // ---- ELECTRON AGENT ----
+    socket.on("agent:subscribe", ({ id, }) => {
+      //id is userId
+      if (id) {
+        onlineAgents.set(id, { socketId: socket.id, });
+        console.log(`💻 Agent connected for ${id}  `);
+      }
+    });
 
-    // Listen "Notification"
+
+    
+
+    // ---- Existing Events ----
     socket.on("notification", (data) => {
-      console.log("OnlineUsers 💚",onlineUsers)
       io.emit("newNotification", data);
     });
 
-    // Listen "Reminder"
-    // socket.on("reminder", (data) => {
-    //   io.emit("newReminder", data);
-    // });
-
-    // Listen Timer
     socket.on("timer", (data) => {
       io.emit("newTimer", data);
     });
 
-    // Listen Add task
     socket.on("addTask", (data) => {
-      console.log("OnlineUsers 💚",onlineUsers)
       io.emit("newtask", data);
     });
 
-    // Add Comment
     socket.on("addTaskComment", (data) => {
       io.emit("addnewTaskComment", data);
     });
 
-    // Project
     socket.on("addproject", (data) => {
       io.emit("newProject", data);
     });
 
-    // Listen Add/Update Job
     socket.on("addJob", (data) => {
       io.emit("newJob", data);
     });
 
-    // Handle disconnect
+    // ---- Handle Disconnect ----
     socket.on("disconnect", () => {
       for (const [userId, socketSet] of onlineUsers.entries()) {
         socketSet.delete(socket.id);
@@ -79,62 +65,29 @@ export const initSocketServer = (server) => {
           onlineUsers.delete(userId);
         }
       }
-      //logOnlineUsers();
-       //broadcastOnlineUsers(io); // 👈 send to frontend
-      console.log(`🔴 Socket ${socket.id} disconnected`);
+
+      for (const [email, agent] of onlineAgents.entries()) {
+        if (agent.socketId === socket.id) {
+          onlineAgents.delete(email);
+          console.log(`🔴 Agent disconnected: ${email}`);
+        }
+      }
+
+      console.log(`⚡ Socket disconnected: ${socket.id}`);
     });
-
-
-
   });
-
-
 
   return io;
 };
 
-export const Skey = "salman@affotax";
-
-
-
-
-
-
-
-
-
-
-
-function logOnlineUsers() {
-  const uniqueUsers = onlineUsers.size;
-  const totalSockets = Array.from(onlineUsers.values())
-    .reduce((sum, set) => sum + set.size, 0);
-
-  console.log(`👥 Online users: ${uniqueUsers} | 🔗 Total sockets: ${totalSockets}`);
-}
-
-
-
-
-
-
-
-async function broadcastOnlineUsers(io) {
-  try {
-    // Get just the keys (userIds) from onlineUsers Map
-    const userIds = Array.from(onlineUsers.keys());
-
-    // Fetch their names (or any fields you want)
-    const users = await userModel.find(
-      { _id: { $in: userIds } },
-      { _id: 1, name: 1, avatar: 1 } // projection: only send needed fields
-    ).lean();
-
-    // Emit the user list
-    io.emit("onlineUsersUpdate", users);
-
-    // console.log("👥 Online users:", users.map(u => u.name).join(", "));
-  } catch (err) {
-    console.error("Error broadcasting online users:", err);
+// Optional: helper to push timer state externally (e.g., from controller)
+export const emitTimerState = (io, email, running) => {
+  const agent = onlineAgents.get(email);
+  if (agent) {
+    io.to(agent.socketId).emit("timer:state", { running });
+    console.log(`⏱ Emitted timer state externally to ${email}`);
   }
-}
+};
+
+
+export const Skey = "salman@affotax";

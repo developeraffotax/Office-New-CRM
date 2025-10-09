@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import Chart from "react-apexcharts";
 import {
@@ -70,6 +70,8 @@ const getDateRange = (filter) => {
 };
 
 export default function UserLeadChart({ auth, active1 }) {
+  const chartRef = useRef(null);
+  const initialHideDone = useRef(false);
   const [chartType, setChartType] = useState("bar");
 
   const [user, setUser] = useState("");
@@ -128,8 +130,8 @@ export default function UserLeadChart({ auth, active1 }) {
       );
 
       setSeries([
-        { name: "Target Count", data: data.targetCounts },
-        { name: "Count", data: data.counts },
+        { name: "Target Count", data: data.targetCounts, hidden: true },
+        { name: "Count", data: data.counts, hidden: true },
         { name: "Target Value", data: data.targetValues },
         { name: "Value", data: data.values },
       ]);
@@ -150,11 +152,12 @@ export default function UserLeadChart({ auth, active1 }) {
     const active = active1 || "All";
     setUser((prev) => (isAdmin(auth) ? active : auth?.user?.name));
   }, [active1, auth]);
+ 
 
   const options = useMemo(() => {
     const width = chartType === "bar" ? 0 : 3; // bar width or line width
     return {
-      chart: { toolbar: { show: true }, type: chartType },
+      chart: { toolbar: { show: true }, type: chartType, },
       stroke: {
         width: [width, width, width, width],
         dashArray: [0, 0, 0, 0],
@@ -197,7 +200,7 @@ export default function UserLeadChart({ auth, active1 }) {
       ],
 
       colors: SERIES_COLORS, // blue=leads, green=actual, red=target
-      legend: { position: "top" },
+      legend: { position: "top",  },
 
       dataLabels: {
         enabled: true, // show numbers
@@ -403,6 +406,7 @@ export default function UserLeadChart({ auth, active1 }) {
           
 
           <Chart
+            ref={chartRef}
             options={options}
             series={series}
             type={chartType}

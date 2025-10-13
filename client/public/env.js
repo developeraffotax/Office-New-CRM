@@ -41,7 +41,7 @@ window.env = {
   "NUMBER_OF_PROCESSORS": "4",
   "OneDrive": "C:\\Users\\affot\\OneDrive",
   "OS": "Windows_NT",
-  "Path": "C:\\Users\\affot\\Desktop\\Code\\CRM\\client\\node_modules\\.bin;C:\\Users\\affot\\Desktop\\Code\\CRM\\node_modules\\.bin;C:\\Users\\affot\\Desktop\\Code\\node_modules\\.bin;C:\\Users\\affot\\Desktop\\node_modules\\.bin;C:\\Users\\affot\\node_modules\\.bin;C:\\Users\\node_modules\\.bin;C:\\node_modules\\.bin;C:\\Program Files\\nodejs\\node_modules\\npm\\node_modules\\@npmcli\\run-script\\lib\\node-gyp-bin;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Windows\\System32\\OpenSSH\\;C:\\Program Files\\nodejs\\;C:\\Users\\affot\\AppData\\Local\\Programs\\Python\\Python314\\Scripts\\;C:\\Users\\affot\\AppData\\Local\\Programs\\Python\\Python314\\;C:\\Users\\affot\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\affot\\AppData\\Roaming\\npm;C:\\Users\\affot\\AppData\\Local\\Programs\\cursor\\resources\\app\\bin;C:\\Users\\affot\\AppData\\Local\\Programs\\mongosh\\;C:\\Program Files\\Git\\cmd;",
+  "Path": "C:\\Users\\affot\\Desktop\\Code\\CRM\\client\\node_modules\\.bin;C:\\Users\\affot\\Desktop\\Code\\CRM\\node_modules\\.bin;C:\\Users\\affot\\Desktop\\Code\\node_modules\\.bin;C:\\Users\\affot\\Desktop\\node_modules\\.bin;C:\\Users\\affot\\node_modules\\.bin;C:\\Users\\node_modules\\.bin;C:\\node_modules\\.bin;C:\\Program Files\\nodejs\\node_modules\\npm\\node_modules\\@npmcli\\run-script\\lib\\node-gyp-bin;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Windows\\System32\\OpenSSH\\;C:\\Program Files\\nodejs\\;;C:\\Program Files\\Docker\\Docker\\resources\\bin;C:\\Users\\affot\\AppData\\Local\\Programs\\Python\\Python314\\Scripts\\;C:\\Users\\affot\\AppData\\Local\\Programs\\Python\\Python314\\;C:\\Users\\affot\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\affot\\AppData\\Roaming\\npm;C:\\Users\\affot\\AppData\\Local\\Programs\\cursor\\resources\\app\\bin;C:\\Users\\affot\\AppData\\Local\\Programs\\mongosh\\;C:\\Program Files\\Git\\cmd;",
   "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.CPL",
   "PROCESSOR_ARCHITECTURE": "AMD64",
   "PROCESSOR_IDENTIFIER": "Intel64 Family 6 Model 94 Stepping 3, GenuineIntel",
@@ -69,6 +69,6 @@ window.env = {
   "windir": "C:\\Windows",
   "WSLENV": "WT_SESSION:WT_PROFILE_ID:",
   "WT_PROFILE_ID": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
-  "WT_SESSION": "11c3eef4-5942-47bb-b4d0-9b8ba6bc6a62",
+  "WT_SESSION": "8b123894-6653-4122-b43a-d72b8fb74e3d",
   "ZES_ENABLE_SYSMAN": "1"
 };

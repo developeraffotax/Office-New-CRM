@@ -33,7 +33,7 @@ export const taskDateColumn = (ctx) => {
       ];
 
       useEffect(() => {
-        if (filterValue === "Custom Range") {
+        if (filterValue === "Custom Range" || filterValue === "Custom Day") {
           column.setFilterValue(dateRange);
         } else {
           column.setFilterValue(filterValue);
@@ -45,7 +45,7 @@ export const taskDateColumn = (ctx) => {
         const val = e.target.value;
         setFilterValue(val);
 
-        if (val === "Custom Range") {
+        if (val === "Custom Range" || val === "Custom Day") {
           setShowPopover(true);
         } else {
           setShowPopover(false);
@@ -82,13 +82,14 @@ export const taskDateColumn = (ctx) => {
                 {option}
               </option>
             ))}
+            <option value="Custom Day">Custom Day</option>
             <option value="Custom Range">Custom Date</option>
           </select>
 
           {showPopover && (
             <DateRangePopover
               anchorRef={selectRef}
-              value={dateRange}
+              type={filterValue === "Custom Day" ? "day" : "range"}
               onChange={handleRangeChange}
               onClose={() => setShowPopover(false)}
             />

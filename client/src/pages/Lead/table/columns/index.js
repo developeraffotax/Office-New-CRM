@@ -1928,6 +1928,7 @@ export const getLeadColumns = (ctx) => {
                   value={localNote}
                   autoFocus
                   onChange={(e) => setLocalNote(e.target.value)}
+                  onBlur={handleSubmit} // <-- this triggers submit on click outside
                   className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
                 />
               </form>

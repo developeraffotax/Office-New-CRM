@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DateFilterFn, getCurrentMonthYear } from "../../utils";
+import { DateFilterFn, getCurrentMonthYear, TaskDateFilterFn } from "../../utils";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import DateRangePopover from "../../../../utlis/DateRangePopover";
@@ -22,6 +22,7 @@ export const taskDateColumn = (ctx) => {
 
       const filterValues = [
         "Expired",
+        "Yesterday",
         "Today",
         "Tomorrow",
         "In 7 days",
@@ -38,16 +39,7 @@ export const taskDateColumn = (ctx) => {
           column.setFilterValue(filterValue);
         }
       }, [dateRange, filterValue]);
-
-      // 🔄 Reset local state when external filter is cleared
-      // useEffect(() => {
-      //   const currentFilter = column.getFilterValue();
-      //   if (!currentFilter) {
-      //      setFilterValue("");
-      //     setDateRange({ from: "", to: "" });
-      //     setShowPopover(false);
-      //   }
-      // }, [column.getFilterValue()]);
+ 
 
       const handleFilterChange = (e) => {
         const val = e.target.value;
@@ -123,7 +115,7 @@ export const taskDateColumn = (ctx) => {
       return;
     }
     setDate(newDate);
-    // handleUpdateDates(row.original._id, newDate, "taskDate");
+    
     ctx.updateAlocateTask(row.original._id, "", "", "", newDate);
     setShowInput(false);
   };
@@ -148,71 +140,7 @@ export const taskDateColumn = (ctx) => {
 },
 
 
-    filterFn: (row, columnId, filterValue) => {
-            const cellValue = row.getValue(columnId);
-            if (!cellValue) return false;
-    
-            const cellDate = new Date(cellValue);
-    
-            if (filterValue.includes("-")) {
-              const [year, month] = filterValue.split("-");
-              const cellYear = cellDate.getFullYear().toString();
-              const cellMonth = (cellDate.getMonth() + 1)
-                .toString()
-                .padStart(2, "0");
-    
-              return year === cellYear && month === cellMonth;
-            }
-    
-            // Other filter cases
-            const today = new Date();
-            const startOfToday = new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate()
-            );
-    
-            const tomorrow = new Date(today);
-            tomorrow.setDate(today.getDate() + 1);
-    
-            switch (filterValue) {
-              case "Expired":
-                return cellDate < startOfToday;
-    
-              case "Yesterday":
-                const Yesterday = new Date(today);
-                Yesterday.setDate(today.getDate() - 1);
-                return cellDate.toDateString() === Yesterday.toDateString();
-    
-              case "Today":
-                return cellDate.toDateString() === today.toDateString();
-              case "Tomorrow":
-                return cellDate.toDateString() === tomorrow.toDateString();
-              case "In 7 days":
-                const in7Days = new Date(today);
-                in7Days.setDate(today.getDate() + 7);
-    
-                return cellDate <= in7Days && cellDate > tomorrow;
-              case "In 15 days":
-                const in15Days = new Date(today);
-                in15Days.setDate(today.getDate() + 15);
-                return cellDate <= in15Days && cellDate > tomorrow;
-              case "30 Days":
-                const in30Days = new Date(today);
-                in30Days.setDate(today.getDate() + 30);
-                return cellDate <= in30Days && cellDate > tomorrow;
-              case "60 Days":
-                const in60Days = new Date(today);
-                in60Days.setDate(today.getDate() + 60);
-                return cellDate <= in60Days && cellDate > tomorrow;
-              case "Last 12 months":
-                const lastYear = new Date(today);
-                lastYear.setFullYear(today.getFullYear() - 1);
-                return cellDate >= lastYear && cellDate <= tomorrow;
-              default:
-                return false;
-            }
-          },
+    filterFn:  TaskDateFilterFn,
 
     size: 100,
     minSize: 80,

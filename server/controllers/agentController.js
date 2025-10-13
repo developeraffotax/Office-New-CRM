@@ -11,6 +11,8 @@ export const takeScreenshot = async (req, res) => {
     const s3Url = req.file.location || `${req.protocol}://${req.get('host')}/uploads/screenshots/${userId}/${s3Key}`; // Adjusted for local storage
 
     console.log("Received screenshot upload:", req.file);
+    // const activity = req.body.activity;
+    // console.log("Activity data💙💚💚💛💛🧡🧡❤❤:", activity);
 
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });

@@ -1437,13 +1437,13 @@ const AllTasks = ({ justShowTable = false }) => {
               </span>
 
 
-                {isAdmin(auth) && <span className=" mb-2"> <OverviewForPages /> </span>}
 
                 
               <span >
                 <QuickAccess />
               </span>
 
+                {isAdmin(auth) && <span className=" mb-2"> <OverviewForPages /> </span>}
                 
             </div>
 

@@ -474,10 +474,10 @@ export default function Template() {
               >
                 <IoClose className="h-6 w-6 text-white" />
               </span>
-                {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
               <span className="mt-1">
                 <QuickAccess />
               </span>
+                {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
             </div>
 
             {/* ---------Template Buttons */}

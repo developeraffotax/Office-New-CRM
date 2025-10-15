@@ -751,8 +751,8 @@ useEffect(() => {
               >
                 <IoClose className="h-6 w-6 text-white" />
               </span>
-                {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
               <span className="mt-2"><QuickAccess /></span>
+                {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
               <span
                 onClick={() => setShowGraph(!showGraph)}
                 className="ml-[2rem] hidden sm:block mb-1 p-1 rounded-md hover:shadow-md transition-all duration-300 cursor-pointer text-orange-500 hover:text-orange-600 bg-gray-200/60 hover:bg-gray-200/80 border"

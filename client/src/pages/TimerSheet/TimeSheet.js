@@ -2167,8 +2167,8 @@ const getProgress = (timeStr, total) => {
                     <IoClose className="h-6 w-6 text-white" />
                   </span>
                 )}
-                {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
                 <span className="mt-2"><QuickAccess /></span>
+                {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
               </div>
             </div>
             {/* Select */}

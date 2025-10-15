@@ -162,7 +162,7 @@ export const loginUser = async (req, res) => {
 export const getAllUsers = async (req, res) => {
   try {
     const users = await userModel
-      .find({ name: { $ne: "Salmans" } })
+      .find({ name: { $ne: "Admin" } })
       .select("-password")
       .populate("role")
       .populate("data")
@@ -187,7 +187,7 @@ export const getAllUsers = async (req, res) => {
 export const getAllActiveUsers = async (req, res) => {
   try {
     const users = await userModel
-      .find({ isActive: { $ne: false }, name: { $ne: "Salmans" } })
+      .find({ isActive: { $ne: false }, name: { $ne: "Admin" } })
       .select("-password")
       .populate("role")
       .sort({ order: 1 });
@@ -405,7 +405,7 @@ export const updateRole = async (req, res) => {
 export const getDashboardUsers = async (req, res) => {
   try {
     const users = await userModel
-      .find({ name: { $ne: "Salmans" }, isActive: { $ne: false } })
+      .find({ name: { $ne: "Admin" }, isActive: { $ne: false } })
       .populate("role", "name")
       .select(" name createdAt role")
       .sort({ order: 1 });

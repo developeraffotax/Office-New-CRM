@@ -1974,8 +1974,8 @@ useEffect(() => {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
-               {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
             <QuickAccess />
+               {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
           </div>
 
           <div className="flex items-center gap-4">

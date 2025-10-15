@@ -69,6 +69,6 @@ window.env = {
   "windir": "C:\\Windows",
   "WSLENV": "WT_SESSION:WT_PROFILE_ID:",
   "WT_PROFILE_ID": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
-  "WT_SESSION": "6bdd826a-aaa5-4d27-a87f-b4fad2813c58",
+  "WT_SESSION": "f5e1c79c-3d65-4a85-9873-b8359c46d339",
   "ZES_ENABLE_SYSMAN": "1"
 };

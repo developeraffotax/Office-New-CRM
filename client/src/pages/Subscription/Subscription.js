@@ -493,10 +493,10 @@ export default function Subscription() {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
-              {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
             <span className="mt-2">
               <QuickAccess />
             </span>
+              {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
 
             <span
               className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${

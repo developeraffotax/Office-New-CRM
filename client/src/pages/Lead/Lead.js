@@ -1064,8 +1064,8 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                 <IoClose className="h-6 w-6 text-white" />
               </span>
             }
-            {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
             <QuickAccess />
+            {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
           </div>
 
 

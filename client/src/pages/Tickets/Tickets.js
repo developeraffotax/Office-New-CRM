@@ -822,8 +822,8 @@ const applyFilter = (e) => {
 
 
 
-              {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
             <QuickAccess />
+              {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
           </div>
 
           {/* ---------Template Buttons */}

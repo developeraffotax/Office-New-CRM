@@ -134,35 +134,68 @@ const DateRangePopover = ({ anchorRef, type = "range", onClose, onChange }) => {
         </form>
       ) : (
         // 📅 Custom Day Mode
-        <div className="p-2 w-[240px]">
-          <div className="text-sm text-gray-600 mb-2 text-center font-medium">
-            {new Date(year, month - 1).toLocaleString("default", {
-              month: "long",
-              year: "numeric",
-            })}
-          </div>
-          <div className="grid grid-cols-7 gap-2">
-            {days.map((day) => {
-              // Build full ISO date for this day
-              const isoDate = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+       
+<div className="p-2 w-[280px]">
+  {/* Month/Year header */}
+  <div className="text-sm text-gray-600 mb-2 text-center font-medium">
+    {new Date(year, month - 1).toLocaleString("default", {
+      month: "long",
+      year: "numeric",
+    })}
+  </div>
 
-              return (
-                <button
-                  key={day}
-                  onClick={() => {
-                    // 👇 both from and to are the same date
-                    onChange("from", isoDate);
-                    onChange("to", isoDate);
-                    onClose();
-                  }}
-                  className="w-8 h-8 flex items-center justify-center rounded hover:bg-blue-500 hover:text-white text-sm border border-gray-200"
-                >
-                  {day}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+  {/* Weekday headers */}
+  <div className="grid grid-cols-7 gap-2 text-center text-xs font-medium text-gray-500 mb-1">
+    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+      <div key={d}>{d}</div>
+    ))}
+  </div>
+
+  {/* Days grid */}
+  <div className="grid grid-cols-7 gap-2">
+    {(() => {
+      const firstDayOfMonth = new Date(year, month - 1, 1).getDay(); // 0 = Sun, 6 = Sat
+      const blanks = Array.from({ length: firstDayOfMonth }); // Empty slots before the 1st
+
+      return (
+        <>
+          {/* Empty slots to align the first date correctly */}
+          {blanks.map((_, i) => (
+            <div key={`blank-${i}`} />
+          ))}
+
+          {/* Actual days */}
+          {days.map((day) => {
+            const date = new Date(year, month - 1, day);
+            const isoDate = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+            const dayOfWeek = date.getDay();
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+            return (
+              <button
+                key={day}
+                onClick={() => {
+                  onChange("from", isoDate);
+                  onChange("to", isoDate);
+                  onClose();
+                }}
+                className={`w-8 h-8 flex items-center justify-center rounded text-sm border border-gray-200
+                  hover:bg-blue-500 hover:text-white
+                  ${isWeekend ? "text-red-500 font-semibold" : "text-gray-700"}
+                `}
+                title={date.toLocaleDateString("en-US", { weekday: "long" })}
+              >
+                {day}
+              </button>
+            );
+          })}
+        </>
+      );
+    })()}
+  </div>
+</div>
+
       )}
     </div>,
     document.body

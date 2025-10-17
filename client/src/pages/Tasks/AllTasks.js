@@ -2226,29 +2226,38 @@ const AllTasks = ({ justShowTable = false }) => {
           )}
 
           {/*---------------Task Details---------------*/}
-          {showDetail && (
-            <div className="fixed right-0 top-[3.8rem] z-[999] bg-gray-100 w-[97%] sm:w-[33%] 3xl:w-[22%]  h-[calc(103vh-0rem)] py-3 px-3 ">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">{projectName}</h3>
-                <span
-                  className="p-1 rounded-md bg-gray-50 border  hover:shadow-md hover:bg-gray-100"
-                  onClick={() => setShowDetail(false)}
-                >
-                  <IoClose className="h-5 w-5 cursor-pointer" />
-                </span>
+         {showDetail && (
+            <div className="fixed inset-0 z-[499] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+              <div className="bg-gray-100 rounded-xl shadow-lg w-[95%] sm:w-[80%] md:w-[75%] lg:w-[70%] xl:w-[70%] 3xl:w-[60%]    py-4 px-5   ">
+                <div className="h-full w-full flex flex-col justify-start items-center relative">
+
+                  <div className="flex items-center justify-between border-b pb-2 mb-3 self-start w-full">
+                  <h3 className="text-lg font-semibold">Project: {projectName}</h3>
+                  <button
+                    className="p-1 rounded-2xl bg-gray-50 border hover:shadow-md hover:bg-gray-100"
+                    onClick={() => setShowDetail(false)}
+                  >
+                    <IoClose className="h-5 w-5" />
+                  </button>
+                  </div>
+
+                <TaskDetail
+                  taskId={taskID}
+                  getAllTasks={getAllTasks}
+                  handleDeleteTask={handleDeleteTask}
+                  setTasksData={setTasksData}
+                  setShowDetail={setShowDetail}
+                  users={users}
+                  projects={projects}
+                  setFilterData={setFilterData}
+                  tasksData={tasksData}
+                  assignedPerson={table.getRow(taskID).original.jobHolder}
+                  setTaskIdForNote={setTaskIdForNote}
+                   
+                />
+
+                </div>
               </div>
-              <TaskDetail
-                taskId={taskID}
-                getAllTasks={getAllTasks}
-                handleDeleteTask={handleDeleteTask}
-                setTasksData={setTasksData}
-                setShowDetail={setShowDetail}
-                users={users}
-                projects={projects}
-                setFilterData={setFilterData}
-                tasksData={tasksData}
-                assignedPerson={table.getRow(taskID).original.jobHolder}
-              />
             </div>
           )}
 

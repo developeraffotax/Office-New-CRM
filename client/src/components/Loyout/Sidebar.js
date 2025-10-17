@@ -571,6 +571,49 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </div>
           )}
+
+
+          {/* HR */}
+          {hasAccess("HR") && (
+            <>
+              <div
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                  active === "hr"
+                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+                }   filter   overflow-hidden`}
+                onClick={() => {
+                  router("/hr/tasks");
+                  dispatch(setActive("hr"));
+                }}
+              >
+                <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                  {hide ? (
+                    <FaUserTie
+                      className="h-6 w-6 cursor-pointer ml-2"
+                      style={{ color: active === "hr" && "#fff" }}
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <FaUserTie
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "hr" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{ color: active === "hr" && "#fff" }}
+                      >
+                        HR
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+
+          
           {/*  */}
           {(hasAccess("Workflow") ||
             hasAccess("Roles") ||
@@ -749,44 +792,7 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </>
           )}
-          {/* HR */}
-          {hasAccess("HR") && (
-            <>
-              <div
-                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                  active === "hr"
-                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
-                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
-                onClick={() => {
-                  router("/hr/tasks");
-                  dispatch(setActive("hr"));
-                }}
-              >
-                <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-                  {hide ? (
-                    <FaUserTie
-                      className="h-6 w-6 cursor-pointer ml-2"
-                      style={{ color: active === "hr" && "#fff" }}
-                    />
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <FaUserTie
-                        className="h-5 w-5 cursor-pointer ml-2"
-                        style={{ color: active === "hr" && "#fff" }}
-                      />
-                      <span
-                        className="text-[14px] font-[400] "
-                        style={{ color: active === "hr" && "#fff" }}
-                      >
-                        HR
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
+          
 
           {/* User Info */}
           {hasAccess("Users") && (

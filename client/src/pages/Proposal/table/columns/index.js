@@ -17,6 +17,9 @@ export const getProposalColumns = (ctx) => {
     setProposalId,
     setShow,
     handleDeleteLeadConfirmation,
+
+    setMail,
+    setShowMail,
      
   } = ctx;
 
@@ -219,7 +222,15 @@ export const getProposalColumns = (ctx) => {
                 onDoubleClick={() => setShowEdit(true)}
                 title={subject}
               >
-                <p className="text-blue-600 hover:text-blue-700 cursor-pointer text-start  ">
+                <p className="text-blue-600 hover:text-blue-700 cursor-pointer text-start  "
+                
+                onDoubleClick={() => setShowEdit(true)}
+                    onClick={() => {
+                      setMail(row.original.mail);
+                      setShowMail(true);
+                    }}
+                    
+                    >
                   {subject}
                 </p>
               </div>
@@ -236,6 +247,79 @@ export const getProposalColumns = (ctx) => {
       maxSize: 560,
       grow: false,
     },
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     {
       accessorKey: "value",

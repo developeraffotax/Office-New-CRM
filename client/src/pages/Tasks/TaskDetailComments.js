@@ -602,195 +602,195 @@ const handleDeleteTemplate = async (id) => {
 
   return (
  
-<div
-  ref={commentStatusRef}
-  className="w-full  h-full flex items-center justify-center shadow-md"
->
-  <div className="w-full max-w-[45rem] h-full flex flex-col border rounded-xl shadow-sm bg-white relative">
-    {/* Header */}
-    <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 border-b bg-gray-50">
-      <h3 className="text-lg font-semibold text-gray-800">Comments</h3>
-    </div>
-
-    {/* Comments Section */}
-    <div className="  overflow-y-auto px-3 py-2 space-y-3   " id="message-container">
-      {isLoading ? (
-        <div className="flex justify-center items-center ">
-          {/* <Loader /> */}
-          Loading...
+ <div
+      ref={commentStatusRef}
+      className="w-full h-full flex items-center justify-center px-3"
+    >
+      <div className="w-full max-w-[44rem] h-full flex flex-col justify-between rounded-xl border bg-white shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 border-b bg-gray-50">
+          <h3 className="text-base font-semibold text-gray-800">Comments</h3>
         </div>
-      ) : (
-        commentData?.map((comment) => (
-          <div
-            key={comment._id}
-            className="border rounded-lg p-2 space-y-2 hover:shadow-sm transition"
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <img
-                  src={comment?.user?.avatar || "/profile1.jpeg"}
-                  alt="Avatar"
-                  className="w-8 h-8 rounded-full border-2 border-orange-500"
-                />
-                <span className="font-medium text-gray-800 text-sm">
-                  {comment?.user?.name}
-                </span>
-              </div>
-              <span className="text-xs text-gray-500">
-                {format(new Date(comment?.createdAt), "MMM dd 'at' p")}
-              </span>
+
+        {/* Comments */}
+        <div
+          id="message-container"
+          className="flex-1 overflow-y-auto px-3 py-2 space-y-2 bg-gray-50"
+        >
+          {isLoading ? (
+            <div className="flex justify-center items-center py-4 text-sm text-gray-500">
+              Loading comments...
             </div>
-
-            {/* Message */}
-            <p className="ml-10 bg-sky-100 rounded-lg rounded-tl-none px-3 py-1 text-gray-800 text-sm">
-              {comment?.comment}
-            </p>
-
-            {/* Actions */}
-            <div className="flex items-center justify-between px-4">
-              <button
-                className="flex items-center gap-1 text-sm text-gray-700 hover:text-orange-600 transition"
-                onClick={() =>
-                  commentLikes[comment._id]
-                    ? unlikeComment(comment._id)
-                    : likeComment(comment._id)
-                }
+          ) : commentData?.length ? (
+            commentData.map((comment) => (
+              <div
+                key={comment._id}
+                className="rounded-lg border border-gray-100 p-2.5 hover:bg-gray-50 transition"
               >
-                {commentLikes[comment._id] ? (
-                  <AiFillLike className="h-4 w-4 text-orange-500" />
-                ) : (
-                  <AiOutlineLike className="h-4 w-4" />
-                )}
-                ({likeCounts[comment._id] || 0})
-              </button>
-
-              <button
-                className="text-sm text-orange-600 hover:text-orange-700 flex gap-1"
-                onClick={() => {
-                  setCommentId(comment._id);
-                  setShowReply(!shopReply);
-                }}
-              >
-                Reply ({comment?.commentReplies?.length})
-              </button>
-            </div>
-
-            {/* Reply Input */}
-            {shopReply && comment._id === commentId && (
-              <div className="border-t pt-2 px-4">
-                <form
-                  onSubmit={handleCommentReply}
-                  className="flex flex-col gap-2"
-                >
-                  <div className="flex items-center gap-2">
-                    <input
-                      value={commentReply}
-                      onChange={(e) => setCommentReply(e.target.value)}
-                      placeholder="Enter your reply..."
-                      required
-                      className="flex-1 border rounded-md px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-orange-400"
-                    />
-                    <button
-                      disabled={replyLoading}
-                      className={`px-3 py-1 rounded-md text-white text-sm bg-orange-500 hover:bg-orange-600 transition ${
-                        replyLoading && "opacity-60 cursor-not-allowed"
-                      }`}
-                    >
-                      {replyLoading ? (
-                        <BiLoaderCircle className="animate-spin w-4 h-4" />
-                      ) : (
-                        "Reply"
-                      )}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
-
-            {/* Replies */}
-            {shopReply &&
-              comment.commentReplies?.map((reply) => (
-                <div key={reply._id} className="ml-10 border-l pl-3 mt-2">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
                     <img
-                      src={reply?.user?.avatar || "/profile1.jpeg"}
+                      src={comment?.user?.avatar || "/profile1.jpeg"}
                       alt="Avatar"
-                      className="w-6 h-6 rounded-full border-2 border-sky-500"
+                      className="w-7 h-7 rounded-full border border-orange-400"
                     />
-                    <span className="text-sm font-medium text-gray-800">
-                      {reply?.user?.name}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {format(new Date(reply?.createdAt), "MMM dd 'at' p")}
+                    <span className="font-medium text-gray-800 text-sm">
+                      {comment?.user?.name}
                     </span>
                   </div>
-                  <p className="ml-8 bg-orange-100 rounded-lg rounded-tl-none px-2 py-1 text-sm text-gray-700">
-                    {reply?.reply}
-                  </p>
+                  <span className="text-[11px] text-gray-400">
+                    {format(new Date(comment?.createdAt), "MMM dd, h:mm a")}
+                  </span>
                 </div>
-              ))}
-          </div>
-        ))
-      )}
-    </div>
 
-    {/* Footer (Quick Replies + New Comment) */}
-    <div className="  w-full border-t bg-gray-50 px-3 py-2 space-y-2">
- 
+                {/* Message */}
+                <div className="ml-9 bg-orange-50 text-gray-800 text-[13px] px-3 py-1.5 rounded-lg rounded-tl-none">
+                  {comment?.comment}
+                </div>
 
-      {/* New Comment */}
-      <form
-        onSubmit={handleComment}
-        className="flex items-start gap-2 border border-orange-400 rounded-lg p-2 bg-white"
-      >
-        <img
-          src={auth?.user?.avatar || "/profile1.jpeg"}
-          alt="Avatar"
-          className="w-10 h-10 rounded-full border-2 border-orange-500"
-        />
-        <div className="flex-1 flex flex-col">
-          <textarea
-            value={comment}
-            onChange={handleInputChange}
-            required
-            placeholder="Enter your comment..."
-            className="w-full h-10 resize-none outline-none p-2 text-sm border-none"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) handleComment(e);
-            }}
-          />
-            <div className="flex items-center justify-between  ">
-                          <div className="relative " title="Add Emoji">
-                            <span onClick={() => setShowPicker(!showPicker)}>
-                              <BsEmojiSmile className="text-yellow-600 z-20 h-6 w-6 cursor-pointer" />
-                            </span>
-                            {showPicker && (
-                              <span className="absolute bottom-5 left-5 z-[9999]">
-                                <EmojiPicker onEmojiClick={onEmojiClick} />
-                              </span>
-                            )}
-                          </div>
-          
-                          <button
-                            disabled={loading || !comment}
-                            className={`${style.btn} ${
-                              !comment && "cursor-not-allowed opacity-[.5]"
-                            }   ${loading && "cursor-no-drop"} shadow`}
-                            type="submit"
-                          >
-                            {loading ? (
-                              <BiLoaderCircle className="w-5 h-5 animate-spin text-white" />
-                            ) : (
-                              "Send"
-                            )}
-                          </button>
-                        </div>
+                {/* Actions */}
+                <div className="flex items-center gap-3 ml-9 mt-1">
+                  <button
+                    onClick={() =>
+                      commentLikes[comment._id]
+                        ? unlikeComment(comment._id)
+                        : likeComment(comment._id)
+                    }
+                    className="flex items-center gap-1 text-xs text-gray-600 hover:text-orange-600 transition"
+                  >
+                    {commentLikes[comment._id] ? (
+                      <AiFillLike className="w-3.5 h-3.5 text-orange-500" />
+                    ) : (
+                      <AiOutlineLike className="w-3.5 h-3.5" />
+                    )}
+                    {likeCounts[comment._id] || 0}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setCommentId(comment._id);
+                      setShowReply(!shopReply);
+                    }}
+                    className="text-xs text-orange-600 hover:underline"
+                  >
+                    Reply ({comment?.commentReplies?.length})
+                  </button>
+                </div>
+
+                {/* Reply Input */}
+                {shopReply && comment._id === commentId && (
+                  <div className="ml-9 mt-2">
+                    <form
+                      onSubmit={handleCommentReply}
+                      className="flex items-center gap-2"
+                    >
+                      <input
+                        value={commentReply}
+                        onChange={(e) => setCommentReply(e.target.value)}
+                        placeholder="Write a reply..."
+                        className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-xs focus:ring-1 focus:ring-orange-400 outline-none"
+                      />
+                      <button
+                        disabled={replyLoading}
+                        className="px-3 py-1 bg-orange-500 hover:bg-orange-600 text-white text-xs rounded-md flex items-center justify-center transition"
+                      >
+                        {replyLoading ? (
+                          <BiLoaderCircle className="w-4 h-4 animate-spin" />
+                        ) : (
+                          "Reply"
+                        )}
+                      </button>
+                    </form>
+                  </div>
+                )}
+
+                {/* Replies */}
+                {shopReply &&
+                  comment.commentReplies?.map((reply) => (
+                    <div key={reply._id} className="ml-12 mt-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <img
+                          src={reply?.user?.avatar || "/profile1.jpeg"}
+                          alt="Avatar"
+                          className="w-6 h-6 rounded-full border border-orange-400"
+                        />
+                        <span className="text-xs font-medium text-gray-800">
+                          {reply?.user?.name}
+                        </span>
+                        <span className="text-[10px] text-gray-400">
+                          {format(new Date(reply?.createdAt), "MMM dd, h:mm a")}
+                        </span>
+                      </div>
+                      <p className="ml-8 bg-gray-100 text-gray-700 text-[13px] px-2.5 py-1 rounded-lg rounded-tl-none">
+                        {reply?.reply}
+                      </p>
+                    </div>
+                  ))}
+              </div>
+            ))
+          ) : (
+            <div className="text-center text-sm text-gray-500 py-4">
+              No comments yet.
+            </div>
+          )}
         </div>
-      </form>
+
+        {/* Footer */}
+        <div className="border-t bg-gray-50 px-3 py-2">
+          <form
+            onSubmit={handleComment}
+            className="flex items-start gap-2 bg-white border border-gray-200 rounded-md p-2"
+          >
+            <img
+              src={auth?.user?.avatar || "/profile1.jpeg"}
+              alt="Avatar"
+              className="w-9 h-9 rounded-full border border-orange-400"
+            />
+            <div className="flex-1 flex flex-col gap-1">
+              <textarea
+                value={comment}
+                onChange={handleInputChange}
+                placeholder="Write a comment..."
+                required
+                className="w-full resize-none h-10 text-sm border-none outline-none p-1"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) handleComment(e);
+                }}
+              />
+              <div className="flex items-center justify-between">
+                <div className="relative" title="Add Emoji">
+                  <BsEmojiSmile
+                    onClick={() => setShowPicker(!showPicker)}
+                    className="text-yellow-600 w-5 h-5 cursor-pointer hover:scale-110 transition"
+                  />
+                  {showPicker && (
+                    <div className="absolute bottom-6 left-0 z-50">
+                      <EmojiPicker onEmojiClick={onEmojiClick} />
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading || !comment}
+                  className={`px-4 py-1.5 text-sm rounded-md text-white transition ${
+                    loading
+                      ? "bg-orange-400 opacity-70 cursor-not-allowed"
+                      : "bg-orange-500 hover:bg-orange-600 shadow-sm"
+                  }`}
+                >
+                  {loading ? (
+                    <BiLoaderCircle className="w-4 h-4 animate-spin mx-auto" />
+                  ) : (
+                    "Send"
+                  )}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
  
 

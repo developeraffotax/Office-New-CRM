@@ -2682,9 +2682,34 @@ useEffect(() => {
       {/*---------------Job Details---------------*/}
 
       {showDetail && (
-        <div className="fixed right-0 top-[3.8rem] z-[999] bg-gray-100 w-[97%] sm:w-[37%] 3xl:w-[26%] h-[calc(103vh-0rem)] py-3 px-3 ">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">{companyName}</h3>
+        // <div className="fixed right-0 top-[3.8rem] z-[999] bg-gray-100 w-[97%] sm:w-[37%] 3xl:w-[26%] h-[calc(103vh-0rem)] py-3 px-3 ">
+        //   <div className="flex items-center justify-between">
+        //     <h3 className="text-lg font-semibold">Company: {companyName}</h3>
+        //     <span
+        //       className="p-1 rounded-md bg-gray-50 border  hover:shadow-md hover:bg-gray-100"
+        //       onClick={() => setShowDetail(false)}
+        //     >
+        //       <IoClose className="h-5 w-5 cursor-pointer" />
+        //     </span>
+        //   </div>
+        //   <JobDetail
+        //     clientId={clientId}
+        //     handleStatus={handleStatusChange}
+        //     allClientJobData={allClientJobData}
+        //     handleDeleteJob={handleDeleteJob}
+        //     users={users}
+        //     allClientData={allClientData}
+        //   />
+        // </div>
+
+
+
+            <div className="fixed inset-0 z-[499] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+              <div className="bg-gray-100 rounded-xl shadow-lg w-[95%] sm:w-[80%] md:w-[75%] lg:w-[70%] xl:w-[70%] 3xl:w-[60%]    py-4 px-5   ">
+                <div className="h-full w-full flex flex-col justify-start items-center relative">
+
+                 <div className="flex items-center justify-between border-b px-4 py-2 self-start w-full">
+            <h3 className="text-lg font-semibold">Company: {companyName}</h3>
             <span
               className="p-1 rounded-md bg-gray-50 border  hover:shadow-md hover:bg-gray-100"
               onClick={() => setShowDetail(false)}
@@ -2692,7 +2717,8 @@ useEffect(() => {
               <IoClose className="h-5 w-5 cursor-pointer" />
             </span>
           </div>
-          <JobDetail
+
+                  <JobDetail
             clientId={clientId}
             handleStatus={handleStatusChange}
             allClientJobData={allClientJobData}
@@ -2700,7 +2726,13 @@ useEffect(() => {
             users={users}
             allClientData={allClientData}
           />
-        </div>
+
+                </div>
+              </div>
+            </div>
+
+
+
       )}
       {/* ------------Comment Modal---------*/}
 

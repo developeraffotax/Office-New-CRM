@@ -298,6 +298,10 @@ export default function Proposal() {
         setProposalId,
         setShow,
         handleDeleteLeadConfirmation,
+
+        setMail,
+    setShowMail,
+     
          
       }),
     [auth, users, status, sources, ]

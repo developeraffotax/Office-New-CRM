@@ -526,6 +526,7 @@ export default function JobDetail({
                 className="w-[8rem] h-[2rem] rounded-md border border-sky-500 outline-none"
               >
                 <option value="empty"></option>
+                <option value="Quote">Quote</option>
                 <option value="Data">Data</option>
                 <option value="Progress">Progress</option>
                 <option value="Queries">Queries</option>

@@ -74,6 +74,8 @@ const auth = useSelector((state) => state.auth.auth);
   const goalTypes = [
     "Target Lead Count",
     "Target Lead Value",
+    "Target Proposal Count",
+    "Target Proposal Value",
     "Increase Client",
     "Increase Fee",
     "Total Proposal",

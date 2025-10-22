@@ -1,4 +1,6 @@
+import goalModel from "../models/goalModel.js";
 import proposalModel from "../models/proposalModel.js";
+import userModel from "../models/userModel.js";
 
 // Create Proposal
 export const createProposal = async (req, res) => {
@@ -235,5 +237,350 @@ export const fetchSingleProposal = async (req, res) => {
       message: "Error while fetch single proposal!",
       error: error,
     });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getWonProposalData = async (req, res) => {
+  try {
+    const { user, startDate, endDate } = req.query;
+
+    const filters = { };
+
+    const fetchedUser = user
+      ? await userModel.findOne({ name: user }).lean()
+      : null;
+
+    if (user) {
+      filters.jobHolder = user;
+    }
+
+    if (startDate && endDate) {
+      filters.createdAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+    // --- Get proposals data ---
+    const proposals = await proposalModel.aggregate([
+      { $match: filters },
+      {
+        $group: {
+          _id: { $month: "$createdAt" },
+          count: { $sum: 1 },
+          totalValue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ["$value", ""] },
+                    { $ne: ["$value", null] },
+                  ],
+                },
+                { $toDouble: "$value" },
+                0,
+              ],
+            },
+          },
+        },
+      },
+      { $sort: { "_id": 1 } },
+    ]);
+
+    // --- Initialize arrays for 12 months ---
+    const counts = Array(12).fill(0);
+    const values = Array(12).fill(0);
+    const targetValues = Array(12).fill(0);
+    const targetCounts = Array(12).fill(0);
+
+    proposals.forEach((item) => {
+      counts[item._id - 1] = item.count;
+      values[item._id - 1] = item.totalValue;
+    });
+
+    // --- Fetch goals using aggregate ---
+    
+      const matchStage = {
+        $match: {
+          
+          goalType: { $in: ["Target Proposal Value", "Target Proposal Count"] },
+        },
+      };
+
+
+      if (fetchedUser) {
+        matchStage.$match.jobHolder = fetchedUser._id;
+
+      }
+
+      if (startDate && endDate) {
+        matchStage.$match.startDate = {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate),
+        };
+      }
+
+      const goals = await goalModel.aggregate([
+        matchStage,
+        {
+          $group: {
+            _id: {
+              month: { $month: "$startDate" },
+              type: "$goalType",
+            },
+            total: { $sum: { $ifNull: ["$achievement", 0] } },
+          },
+        },
+      ]);
+
+      goals.forEach((goal) => {
+        const monthIndex = goal._id.month - 1;
+        if (goal._id.type === "Target Proposal Value") {
+          targetValues[monthIndex] = goal.total;
+        } else if (goal._id.type === "Target Proposal Count") {
+          targetCounts[monthIndex] = goal.total;
+        }
+      });
+ 
+    console.log({ counts, values, targetValues, targetCounts })
+    res.json({ counts, values, targetValues, targetCounts });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// stats
+
+
+
+
+
+export const getWonProposaStats = async (req, res) => {
+  try {
+    const { user, startDate, endDate } = req.query;
+
+    const filters = { };
+
+    // find the user (to map goals properly)
+    const fetchedUser = user ? await userModel.findOne({ name: user }).lean() : null;
+
+    if (user) {
+      filters.jobHolder = user;
+    }
+
+    if (startDate && endDate) {
+      filters.createdAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+    // --- Total values from leads ---
+    const proposalsAgg = await proposalModel.aggregate([
+      { $match: filters },
+      {
+        $group: {
+          _id: null,
+          totalValue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ["$value", ""] }, // not empty string
+                    { $ne: ["$value", null] }, // not null
+                  ],
+                },
+                { $toDouble: "$value" },
+                0,
+              ],
+            },
+          },
+
+           totalCount: { $sum: 1 }, // ✅ count of leads
+        },
+      },
+    ]);
+
+    const totalValues = proposalsAgg.length > 0 ? proposalsAgg[0].totalValue : 0;
+     const totalCount = proposalsAgg.length > 0 ? proposalsAgg[0].totalCount : 0;
+
+    // --- Total targeted values (goals) ---
+    let targetValues = 0;
+    let targetCount = 0;
+
+     const goalFilters = {};
+    if (user) {
+      goalFilters.jobHolder = fetchedUser._id;
+    }
+    if (startDate && endDate) {
+      goalFilters.startDate = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+    // fetch both types of goals
+    const goals = await goalModel.find(goalFilters).lean();
+
+    targetValues = goals
+      .filter((g) => g.goalType === "Target Proposal Value")
+      .reduce((acc, g) => acc + (g.achievement || 0), 0);
+
+    targetCount = goals
+      .filter((g) => g.goalType === "Target Proposal Count")
+      .reduce((acc, g) => acc + (g.achievement || 0), 0);
+
+    return res.json({
+      totalValues,
+      targetValues,
+      
+      totalCount,
+      targetCount,
+      // percentage calculations are better done in frontend
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server Error" });
   }
 };

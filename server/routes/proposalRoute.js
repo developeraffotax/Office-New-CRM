@@ -6,6 +6,8 @@ import {
   deleteProposal,
   fetchProposals,
   fetchSingleProposal,
+  getWonProposalData,
+  getWonProposaStats,
   updateProposal,
 } from "../controllers/proposalController.js";
 
@@ -28,5 +30,16 @@ router.post("/copy/proposal/:id", requiredSignIn, copyProposal);
 
 // Fetch Single Proposal
 router.get("/fetch/proposal/:id", fetchSingleProposal);
+
+
+
+
+
+
+
+
+
+router.get("/userchart/won",    getWonProposalData);
+router.get("/userchart/won/stats",    getWonProposaStats);
 
 export default router;

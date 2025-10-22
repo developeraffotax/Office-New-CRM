@@ -22,13 +22,15 @@ import { useSelector } from "react-redux";
 import getProposalColumns from "./table/columns";
 import { isAdmin } from "../../utlis/isAdmin";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
+import UserProposalChart from "./userLeadChart/UserProposalChart";
+import { BsGraphUpArrow } from "react-icons/bs";
 
 export default function Proposal() {
 
 
   const auth = useSelector((state) => state.auth.auth);
 
-
+  const [showUserProposalChart, setShowUserProposalChart] = useState(false);
   const [show, setShow] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [proposalData, setProposalData] = useState([]);
@@ -1871,6 +1873,26 @@ export default function Proposal() {
 
 
 
+
+
+                <div className="flex justify-center items-center    ">
+                                 <span
+                                     className={` p-1.5 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${
+                                         showUserProposalChart && "bg-orange-500 text-white"
+                                           }`}
+                                     onClick={() => {
+                                       setShowUserProposalChart(prev => !prev);
+                                     }}
+                                     title="Show User Proposal Chart"
+                                 > 
+                                 
+                                   <BsGraphUpArrow className="h-5 w-5  cursor-pointer" />
+                                 </span>
+                             </div>
+               
+
+
+
           </div>
 
           {/* ---------Template Buttons */}
@@ -1916,7 +1938,9 @@ export default function Proposal() {
           ) : (
             <div className="w-full min-h-[10vh] relative ">
               <div className="h-full hidden1 overflow-y-auto relative">
-                <MaterialReactTable table={table} />
+                {showUserProposalChart && <UserProposalChart  users={users} auth={auth}  /> }
+                                { !showUserProposalChart && <MaterialReactTable table={table} /> }
+                {/* <MaterialReactTable table={table} /> */}
               </div>
             </div>
           )}

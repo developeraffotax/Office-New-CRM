@@ -27,6 +27,8 @@ export default function HandleGoalModal({
   const goalTypes = [
     "Target Lead Count",
     "Target Lead Value",
+     "Target Proposal Count",
+    "Target Proposal Value",
     "Increase Client",
     "Increase Fee",
     "Total Proposal",

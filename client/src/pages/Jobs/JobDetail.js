@@ -227,6 +227,36 @@ export default function JobDetail({
     }
   };
 
+
+
+
+    // ----------Crate Subtask---------->
+  const handleCreateSubtaskFromTemplate = async (subTask) => {
+     
+    setSubTaskLoading(true);
+    try {
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/create/subTask/${clientId}`,
+        { subTask }
+      );
+      if (data) {
+        setClientDetail(data?.job);
+        setSubTaskData(
+          data?.job?.subtasks?.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          )
+        );
+        setSubtask("");
+        toast.success("Subtask added successfully!");
+        setSubTaskLoading(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setSubTaskLoading(false);
+      toast.error(error.response.data.message);
+    }
+  };
+
   //  Handle drag end
   const handleOnDragEnd = (result) => {
     const { destination, source } = result;
@@ -467,6 +497,7 @@ export default function JobDetail({
                 subTask={subTask}
                 setSubtask={setSubtask}
                 handleCreateSubtask={handleCreateSubtask}
+                handleCreateSubtaskFromTemplate={handleCreateSubtaskFromTemplate}
                 subTaskLoading={subTaskLoading}
                 handleOnDragEnd={handleOnDragEnd}
                 updateSubtaskStatus={updateSubtaskStatus}

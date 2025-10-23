@@ -1,24 +1,39 @@
+import { useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { FaEdit } from "react-icons/fa";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { RiLoaderFill } from "react-icons/ri";
+import { ModalPortal } from "../ModalPortal";
+import { SubtaskListManager } from "../SubtaskListManager";
+ 
 
 export const SubtasksTab = ({
   subTaskData,
   subTask,
   setSubtask,
   handleCreateSubtask,
+  handleCreateSubtaskFromTemplate,
   subTaskLoading,
   handleOnDragEnd,
   updateSubtaskStatus,
   handleDeleteSubTask,
 }) => {
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+
+  const handleApplyTemplate = async (items) => {
+    for (const item of items) {
+      await handleCreateSubtaskFromTemplate(item.title);
+    }
+    setShowTemplateModal(false);
+  };
+
   return (
-    <div className="flex flex-col w-full px-2 h-[90%] ">
-      <div className="flex items-center gap-2 w-full ">
+    <div className="flex flex-col w-full px-2 h-[90%]">
+      {/* Header / Add Subtask */}
+      <div className="flex items-center gap-2 w-full">
         <form
           onSubmit={handleCreateSubtask}
-          className="flex items-center gap-2 w-full py-1 px-2 border bg-gray-50 border-gray-300 rounded-lg  "
+          className="flex items-center gap-2 w-full py-1 px-2 border bg-gray-50 border-gray-300 rounded-lg"
         >
           <input
             type="text"
@@ -29,7 +44,7 @@ export const SubtasksTab = ({
           />
           <button
             type="submit"
-            className="py-[7px] px-4 rounded-md shadow cursor-pointer bg-orange-500 hover:bg-orange-600 text-white"
+            className="py-[7px] px-4 rounded-md shadow bg-orange-500 hover:bg-orange-600 text-white"
           >
             {subTaskLoading ? (
               <RiLoaderFill className="h-6 w-6 animate-spin text-white" />
@@ -37,17 +52,26 @@ export const SubtasksTab = ({
               "Add"
             )}
           </button>
+
+          {/* 🔸 New Templates Button */}
+          <button
+            type="button"
+            onClick={() => setShowTemplateModal(true)}
+            className="py-[7px] px-4 rounded-md shadow bg-gray-200 hover:bg-gray-300 text-gray-800"
+          >
+            Templates
+          </button>
         </form>
       </div>
-      <div className="mt-2 py-1  rounded-md border border-gray-300 flex flex-col gap-3 overflow-hidden  ">
+
+      {/* Checklist */}
+      <div className="mt-2 py-1 rounded-md border border-gray-300 flex flex-col gap-3 overflow-hidden">
         <h3 className="text-[17px] w-full font-semibold py-2 text-gray-900 border-b-[1px] px-2 border-gray-300">
           Checklist (
-          {
-            subTaskData.filter((subtask) => subtask.status === "complete")
-              .length
-          }
-          /{subTaskData?.length})
+          {subTaskData.filter((s) => s.status === "complete").length}/
+          {subTaskData?.length})
         </h3>
+
         <div className="px-2 overflow-y-auto">
           {subTaskData.length > 0 ? (
             <DragDropContext onDragEnd={handleOnDragEnd}>
@@ -76,22 +100,17 @@ export const SubtasksTab = ({
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "space-between",
-                              marginLeft: 0,
                             }}
                             className="flex items-center justify-between gap-2"
                           >
                             <div className="flex items-center gap-2 w-full">
-                              <div className="w-6 h-full mt-1">
-                                <input
-                                  type="checkbox"
-                                  checked={status === "complete"}
-                                  onChange={() => updateSubtaskStatus(_id)}
-                                  style={{
-                                    accentColor: "orangered",
-                                  }}
-                                  className="h-5 w-5 cursor-pointer  checked:bg-orange-600"
-                                />
-                              </div>
+                              <input
+                                type="checkbox"
+                                checked={status === "complete"}
+                                onChange={() => updateSubtaskStatus(_id)}
+                                style={{ accentColor: "orangered" }}
+                                className="h-5 w-5 cursor-pointer"
+                              />
                               <p
                                 className={`text-[15px] ${
                                   status === "complete" && "line-through"
@@ -102,22 +121,15 @@ export const SubtasksTab = ({
                             </div>
 
                             <div className="flex items-center gap-1">
-                              <span
-                                className="p-1 cursor-pointer"
+                              <FaEdit
+                                className="h-5 w-5 cursor-pointer text-gray-800 hover:text-sky-600"
                                 onClick={() => setSubtask(subTask)}
-                              >
-                                <FaEdit className="h-5 w-5 cursor-pointer text-gray-800 hover:text-sky-600" />
-                              </span>
-                              <span
-                                className="p-1 cursor-pointer"
+                              />
+                              <IoCloseCircleOutline
+                                size={22}
+                                className="cursor-pointer hover:text-red-500"
                                 onClick={() => handleDeleteSubTask(_id)}
-                              >
-                                <IoCloseCircleOutline
-                                  size={24}
-                                  className="cursor-pointer hover:text-red-500 "
-                                  title="Delete Subtask"
-                                />
-                              </span>
+                              />
                             </div>
                           </li>
                         )}
@@ -142,6 +154,15 @@ export const SubtasksTab = ({
           )}
         </div>
       </div>
+
+      {/* 🔹 Template Modal */}
+      
+        {showTemplateModal && <div className="absolute inset-0 z-50">
+          
+          <SubtaskListManager onApplyList={handleApplyTemplate} onClose={() => setShowTemplateModal(false)} />
+            
+            </div>}
+       
     </div>
   );
 };

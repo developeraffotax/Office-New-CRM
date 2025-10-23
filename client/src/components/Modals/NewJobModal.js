@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { style } from "../../utlis/CommonStyle";
 import { BiLoaderCircle } from "react-icons/bi";
 import axios from "axios";
+import { CompactSelect } from "../../pages/Jobs/utils/CompactSelect";
  
 
  
@@ -39,6 +40,8 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
 
   const [clientPaidFee, setClientPaidFee] = useState("");
 
+  const [subtaskTemplates, setSubtaskTemplates] = useState([]);
+
   const [clientBookKeepingFormData, setClientBookKeepingFormData] = useState({
     jobName: "Bookkeeping",
     yearEnd: "",
@@ -49,7 +52,8 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     lead: "",
     jobHolder: "",
 
-    jobStatus: ""
+    jobStatus: "",
+    subtaskTemplate: ""
   });
   const [clientPayRollFormData, setClientPayRollFormData] = useState({
     jobName: "Payroll",
@@ -61,7 +65,8 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     lead: "",
     jobHolder: "",
 
-    jobStatus: ""
+    jobStatus: "",
+    subtaskTemplate: ""
   });
   const [clientVatReturnFormData, setClientVatReturnFormData] = useState({
     jobName: "Vat Return",
@@ -73,7 +78,8 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     lead: "",
     jobHolder: "",
 
-    jobStatus: ""
+    jobStatus: "",
+    subtaskTemplate: ""
   });
   const [clientPersonalTaxFormData, setClientPersonalTaxFormData] = useState({
     jobName: "Personal Tax",
@@ -85,7 +91,8 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     lead: "",
     jobHolder: "",
 
-    jobStatus: ""
+    jobStatus: "",
+    subtaskTemplate: ""
   });
   const [clientAccountsFormData, setClientAccountsFormData] = useState({
     jobName: "Accounts",
@@ -97,7 +104,8 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     lead: "",
     jobHolder: "",
 
-    jobStatus: ""
+    jobStatus: "",
+    subtaskTemplate: ""
   });
 
   const [clientCompanySecFormData, setClientCompanySecFormData] = useState({
@@ -110,7 +118,8 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     lead: "",
     jobHolder: "",
 
-    jobStatus: ""
+    jobStatus: "",
+    subtaskTemplate: ""
   });
 
   const [clientAddressFormData, setClientAddressFormData] = useState({
@@ -123,7 +132,8 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     lead: "",
     jobHolder: "",
 
-    jobStatus: ""
+    jobStatus: "",
+    subtaskTemplate: ""
   });
 
   const [jobs, setJobs] = useState([]);
@@ -143,7 +153,26 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
 };
 
 
+  const getAllTemplates = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/subtask-lists`
+      );
+       
+      if (data && data.success) {
+        const templates = data.data;
+          if(templates?.length !== 0){
+          setSubtaskTemplates((prev) => {
+            return templates.map((template) => template.name);
+          });
+    }
+      }
 
+    } catch (error) {
+      console.log(error);
+    }
+
+  };
 
   // Get All Users
 
@@ -165,7 +194,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
 
   useEffect(() => {
     getAllUsers();
-
+    getAllTemplates();
     //eslint-disable-next-line
   }, []);
 
@@ -712,6 +741,22 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
               </select>
 
 
+
+              <CompactSelect
+                value={clientBookKeepingFormData.subtaskTemplate}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientBookKeepingFormData,
+                    setClientBookKeepingFormData,
+                    "subtaskTemplate",
+                    e.target.value
+                  )
+                }
+                options={subtaskTemplates}
+              />
+
+
+
             </div>
 
             {/* Payroll */}
@@ -878,6 +923,21 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   </option>
                 ))}
               </select>
+
+
+
+               <CompactSelect
+                value={clientPayRollFormData.subtaskTemplate}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientPayRollFormData,
+                    setClientPayRollFormData,
+                    "subtaskTemplate",
+                    e.target.value
+                  )
+                }
+                options={subtaskTemplates}
+              />
 
 
             </div>
@@ -1047,6 +1107,22 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
               </select>
 
 
+
+
+               <CompactSelect
+                value={clientVatReturnFormData.subtaskTemplate}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientVatReturnFormData,
+                    setClientVatReturnFormData,
+                    "subtaskTemplate",
+                    e.target.value
+                  )
+                }
+                options={subtaskTemplates}
+              />
+
+
             </div>
             {/* 4 */}
             <div className="flex items-center gap-4">
@@ -1211,6 +1287,23 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   </option>
                 ))}
               </select>
+
+ 
+
+              
+               <CompactSelect
+                value={clientPersonalTaxFormData.subtaskTemplate}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientPersonalTaxFormData,
+                    setClientPersonalTaxFormData,
+                    "subtaskTemplate",
+                    e.target.value
+                  )
+                }
+                options={subtaskTemplates}
+              />
+
 
 
             </div>
@@ -1377,6 +1470,23 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   </option>
                 ))}
               </select>
+
+
+
+              
+               <CompactSelect
+                value={clientAccountsFormData.subtaskTemplate}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientAccountsFormData,
+                    setClientAccountsFormData,
+                    "subtaskTemplate",
+                    e.target.value
+                  )
+                }
+                options={subtaskTemplates}
+              />
+
 
 
             </div>
@@ -1546,6 +1656,20 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
               </select>
 
 
+               <CompactSelect
+                value={clientCompanySecFormData.subtaskTemplate}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientCompanySecFormData,
+                    setClientCompanySecFormData,
+                    "subtaskTemplate",
+                    e.target.value
+                  )
+                }
+                options={subtaskTemplates}
+              />
+
+
             </div>
             {/* 7 */}
             <div className="flex items-center gap-4">
@@ -1710,6 +1834,27 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   </option>
                 ))}
               </select>
+
+
+
+
+              
+               <CompactSelect
+                value={clientAddressFormData.subtaskTemplate}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientAddressFormData,
+                    setClientAddressFormData,
+                    "subtaskTemplate",
+                    e.target.value
+                  )
+                }
+                options={subtaskTemplates}
+              />
+
+
+
+
             </div>
           </div>
           {/*  */}

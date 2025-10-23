@@ -7,6 +7,7 @@ import moment from "moment";
 // import redisClient from "../utils/redisClient.js";
 import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
 import { emitJobUpdate } from "../utils/customFns/emitJobUpdate.js";
+import subtaskListModel from "../models/subtaskListModel.js";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
@@ -64,7 +65,27 @@ export const createJob = async (req, res) => {
 
     const createdJobs = await Promise.all(
       jobs.map(async (job) => {
+
+        console.log("TASK TEMPLATE💚:", job.subtaskTemplate);
+        // 🟠 Step 1: Fetch Subtask Template
+        let subtasksFromTemplate = [];
+        if (job.subtaskTemplate) {
+          const template = await subtaskListModel.findOne({ name: job.subtaskTemplate });
+          if (template) {
+            subtasksFromTemplate = template.items.map((item) => ({
+              subTask: item.title,
+              status: "process",
+            }));
+          }
+        }
+
+
+
+
+
+
         const client = new jobsModel({
+           subtasks: subtasksFromTemplate, // 🟢 Attach subtasks here
           clientName,
           regNumber,
           companyName,

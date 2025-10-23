@@ -27,6 +27,7 @@ import quickListRoute from "./quickListRoute.js";
 import qualityListRoute from "./qualityRoutes.js";
 import quickReplyTemplateRoutes from "./quickReplyTemplateRoutes.js";
 import overviewRoutes from "./overviewRoutes.js";
+import subtaskListRoutes from "./subtaskListRoutes.js";
 
 import onedriveRoutes from "./onedriveRoutes.js";
 import agentRoutes from "./agentRoutes.js";
@@ -62,6 +63,8 @@ export const registerRoutes = (app) => {
   app.use("/api/v1/hrRole", hrRoleRoutes);
   app.use("/api/v1/quicklist", quickListRoute);
   app.use("/api/v1/quicklist", qualityListRoute);
+
+  app.use("/api/v1/subtask-lists", subtaskListRoutes);
   
   app.use("/api/v1/overview", overviewRoutes);
 

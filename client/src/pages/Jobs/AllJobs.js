@@ -59,6 +59,7 @@ import { useSocket } from "../../context/socketProvider";
 import { getJobsColumns } from "./table/columns";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { isAdmin } from "../../utlis/isAdmin";
+import { SubtaskListManager } from "./SubtaskListManager";
  
  
  
@@ -125,6 +126,7 @@ export default function AllJobs() {
   const [showlabel, setShowlabel] = useState(false);
   const [labelData, setLabelData] = useState([]);
   const [showDataLable, setShowDataLable] = useState(false);
+  const [showSubtaskList, setShowSubtaskList] = useState(false);
   const [dataLable, setDataLabel] = useState([]);
   const [totalFee, setTotalFee] = useState(0);
   const [totalClientPaidFee, setTotalClientPaidFee] = useState(0);
@@ -2021,6 +2023,13 @@ useEffect(() => {
             >
               Quality List
             </button> */}
+             <button
+              className={`${style.button1} text-[15px] `}
+              onClick={() => setShowSubtaskList(true)}
+              style={{ padding: ".4rem 1rem" }}
+            >
+              Manage SubtaskList
+            </button>
             <button
               className={`${style.button1} text-[15px] `}
               onClick={() => setShowDataLable(true)}
@@ -2850,6 +2859,18 @@ useEffect(() => {
           />
         </div>
       )}
+
+       {/* ---------------New Ticket Modal------------- */}
+      {showSubtaskList && (
+        <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
+          <SubtaskListManager
+            onApplyList={(subtasks) => console.log(subtasks)}
+             onClose={() => setShowSubtaskList(false)}
+            />
+        </div>
+      )}
+
+
     </>
   );
 }

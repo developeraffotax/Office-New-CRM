@@ -21,9 +21,12 @@ export const SubtasksTab = ({
   const [showTemplateModal, setShowTemplateModal] = useState(false);
 
   const handleApplyTemplate = async (items) => {
-    for (const item of items) {
+    console.log("Applying template items💚💚💚💚💚💚💚💛💚💛💛🧡:", items);
+    const reverseArr = [...items].reverse();
+    for (const item of reverseArr) {
       await handleCreateSubtaskFromTemplate(item.title);
     }
+    
     setShowTemplateModal(false);
   };
 

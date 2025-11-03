@@ -17,6 +17,7 @@ import HR from "../../components/MyLists/Hr";
 import QuickAccess from "../../utlis/QuickAccess";
 import AllTasks from "../Tasks/AllTasks";
 import Users from "../../components/MyLists/Users";
+import { GoEye, GoEyeClosed } from "react-icons/go";
 
 export default function AllLists() {
    const [selectedTab, setSelectedTab] = useState("Tasks");
@@ -34,6 +35,9 @@ export default function AllLists() {
   const childRef = useRef(null);
   const [isload, setIsload] = useState(false);
   const [timerData, setTimerData] = useState([]);
+
+  const [showList, setShowList] = useState(true)
+
   // DashboardClients
   // Client
   const [workFlowData, setWorkflowData] = useState([]);
@@ -267,7 +271,7 @@ export default function AllLists() {
     <>
       <div className=" relative w-full h-[100%] overflow-y-auto py-4 px-2 sm:px-4">
         <div className="flex items-center justify-between">
-          <div className="w-full justify-start flex items-end gap-5">
+          <div className="w-full justify-start flex items-end gap-4">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
               My List's
             </h1>
@@ -281,12 +285,18 @@ export default function AllLists() {
             </span>
 
             <span><QuickAccess /></span>
+
+            <span className={`border p-1 cursor-pointer rounded-md mb-1 ${!showList && "bg-orange-500"}`} onClick={() => setShowList(p => !p)}>{!showList ? <GoEye className="h-5 w-5" title="Show MyList Navigation" /> : <GoEyeClosed className="h-5 w-5 " title="Hide MyList Navigation" />}</span>
           </div>
 
           {/* ---------Template Buttons--------- */}
         </div>
         {/*  */}
         <>
+
+          {
+            showList && 
+          
           <div className=" w-full flex items-center gap-4 overflow-x-auto hidden1">
             <div className="flex items-center  border-2  border-orange-500 overflow-x-auto hidden1 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
               <button
@@ -445,6 +455,8 @@ export default function AllLists() {
               <IoReload className="h-6 w-6 text-orange-500 hover:text-orange-600" />
             </span>
           </div>
+          }
+
 
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
         </>

@@ -6,12 +6,53 @@ import ticketModel from "../models/ticketModel.js";
 import userModel from "../models/userModel.js";
 import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
 
+
+
+
+
+
+
+
+  const notifyMentionedUser = async (req, mentionUser, task, comment, jobId) => {
+  try {
+    if (!mentionUser?.trim()) return;
+
+    // Fetch mentioned user
+    const user = await userModel.findOne({ name: mentionUser.trim() });
+    if (!user) return; // no such user found
+
+    // Don’t notify the same user who commented
+    if (req.user.user.name === user.name) return;
+
+    const payload = {
+      title: "New comment received!",
+      redirectLink: `/tasks`,
+      description: `${req.user.user.name} added a new comment in task "${task.task}". ${comment}`,
+      taskId: jobId,
+      userId: user._id,
+    };
+
+    await scheduleNotification(true, payload);
+  } catch (error) {
+    console.error("Error notifying mentioned user:", error.message);
+  }
+};
+
+
+
+
+
+
 // Create Comment
 export const createComment = async (req, res) => {
   const senderId = req.user.user._id;
   // console.log("senderId:", senderId);
   try {
     const { comment, jobId, type, mentionUser } = req.body;
+
+
+
+    console.log("THE MENTIONED USER IS >> ", mentionUser)
 
     if (type === "Jobs") {
       const job = await jobsModel.findById(jobId);
@@ -102,24 +143,13 @@ export const createComment = async (req, res) => {
       console.log("Task User Name:", taskHolderName);
 
       // Create Notification
-      const user = await userModel.findOne({ name: taskHolderName });
+      const user = await userModel.findOne({ name: mentionUser ? mentionUser.trim() : taskHolderName });
 
       if (!user) {
         console.log("Task User: null");
         return res.status(404).json({ error: "Task holder not found" });
       }
-
-      // console.log("Task User:", user);
-
-      // const notification = await notificationModel.create({
-      //   title: "New comment received!",
-      //   redirectLink:`/tasks`,
-      //   description: `${req.user.user.name} add a new comment in task "${task.task}". ${comment}`,
-      //   taskId: jobId,
-      //   userId: user._id,
-      // });
-
-
+ 
 
 
       const payload ={
@@ -132,7 +162,11 @@ export const createComment = async (req, res) => {
       
         scheduleNotification(req.user?.user?.name !== user.name, payload);
 
+     
 
+      //  if (mentionUser && (user.name !== mentionUser?.trim())) {
+      //     await notifyMentionedUser(req, mentionUser, task, comment, jobId);
+      // }
         
 
       res.status(200).send({
@@ -791,3 +825,28 @@ export const unLikeComment = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

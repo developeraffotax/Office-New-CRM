@@ -10,8 +10,7 @@ router.get("/", async (req, res) => {
 
 const userId = req.user.id;
 
-  console.log("Fetching templates for user:", req);
-  console.log("Fetching templates for user:", userId);
+ 
   try { 
  
     const { type } = req.query;
@@ -23,7 +22,7 @@ const userId = req.user.id;
 
     const templates = await QuickReplyTemplate.find(filter);
 
-    console.log("Templates fetched:", templates);
+    
     res.json({ templates });
   } catch (err) {
     res.status(500).json({ message: "Server error" });

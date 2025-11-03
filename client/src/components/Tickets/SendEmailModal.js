@@ -298,6 +298,11 @@ const [inputValue, setInputValue] = useState("");
             className={`${style.input} w-full`}
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault(); // ✅ Prevent form submission
+              }
+            }}
           />
           {/*  */}
           <Select

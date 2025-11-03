@@ -19,7 +19,7 @@ import { IoMdCheckboxOutline } from "react-icons/io";
 import Swal from "sweetalert2";
 import SendEmailReply from "../../components/Tickets/SendEmailReply";
 
-export default function EmailDetailDrawer({ id, setTicketSubject }) {
+export default function EmailDetailDrawer({ id, toggleDrawer }) {
   const navigate = useNavigate();
   const params = useParams();
   const [ticketDetail, setTicketDetail] = useState([]);
@@ -63,20 +63,16 @@ export default function EmailDetailDrawer({ id, setTicketSubject }) {
 
   //   Get Single Ticket
   const getSingleTicket = async () => {
-    
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/ticket/${id}`
       );
       if (data) {
-       
         setTicketDetail(data?.ticket);
-        setTicketSubject(data?.ticket?.subject || "No Subject");
         setIsCompleted(data?.ticket?.state === "complete");
         getEmailDetail(data?.ticket?.mailThreadId, data?.ticket?.company);
       }
     } catch (error) {
-       
       console.log(error);
     }
   };
@@ -341,13 +337,13 @@ export default function EmailDetailDrawer({ id, setTicketSubject }) {
       };
 
   return (
-     
+    <>
       <div
         id="emailDetailDrawer"
-        className=" relative w-full h-[100%] flex flex-col  border border-gray-200 rounded-lg  shadow-sm "
+        className=" relative w-full h-[100%] flex flex-col bg-gray-50 "
       >
-        <div className="w-full flex flex-col items-start justify-start   px-4 py-3 border-b border-gray-200 gap-4 ">
-          {/* <div className="flex items-center justify-center gap-3">
+        <div className="w-full flex flex-col items-start justify-start bg-white px-4 py-3 border-b border-gray-200 gap-4 ">
+          <div className="flex items-center justify-center gap-3">
 
              
 
@@ -363,12 +359,12 @@ export default function EmailDetailDrawer({ id, setTicketSubject }) {
             <h2 className="text-[2xl] font-semibold text-black">
               {ticketDetail?.subject}
             </h2>
-          </div> */}
+          </div>
           <div className="flex items-center gap-4 self-end">
 
             <select
                   value={ticketDetail?.jobHolder || "empty"}
-                  className="w-full h-[2rem] rounded-md border border-gray-400 outline-none text-[15px] px-2 py-1 "
+                  className="w-full h-[2rem] rounded-md border border-gray-400 outline-none text-[15px] px-2 py-1 bg-gray-50"
                   onChange={(e) => {
                     updateJobHolder(e.target.value);
                     
@@ -389,7 +385,7 @@ export default function EmailDetailDrawer({ id, setTicketSubject }) {
               className="flex items-center gap-1 text-[15px] bg-orange-500 text-white rounded-md   hover:bg-orange-600 transition-all duration-300"
             >
               <IoMdCheckboxOutline className="text-[18px] mb-[2px]" />
-              <h3 className="text-sm text-nowrap"> {isCompleted ? "Undo Complete" : "Complete"} </h3>
+              <h3> {isCompleted ? "Undo Complete" : "Complete"} </h3>
             </button>
 
             <button
@@ -407,7 +403,7 @@ export default function EmailDetailDrawer({ id, setTicketSubject }) {
             <Loader />
           </div>
         ) : (
-          <div className="flex flex-col gap-4    py-2 pb-4 px-4 w-full h-[100%] overflow-y-auto bg-white">
+          <div className="flex flex-col gap-4  bg-white py-2 pb-4 px-4 w-full h-[100%] overflow-y-auto">
             {emailDetail?.decryptedMessages &&
               emailDetail?.decryptedMessages?.map((message, i) => (
                 <div className="flex flex-col gap-4" key={i}>
@@ -677,6 +673,6 @@ export default function EmailDetailDrawer({ id, setTicketSubject }) {
           </div>
         )}
       </div>
-    
+    </>
   );
 }

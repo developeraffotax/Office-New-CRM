@@ -29,6 +29,7 @@ import RefreshTicketsButton from "./ui/RefreshTicketsButton";
 import { getTicketsColumns } from "./table/columns";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { isAdmin } from "../../utlis/isAdmin";
+import DetailComments from "../Tasks/TaskDetailComments"
 
 
 const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "", };
@@ -91,7 +92,7 @@ const [appliedFilters, setAppliedFilters] = useState({});
 
 
 
-
+  const [ticketSubject, setTicketSubject] = useState("")
 
 
 
@@ -123,7 +124,22 @@ const [appliedFilters, setAppliedFilters] = useState({});
 
 
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Escape key shortcut
+      if (e.key === "Escape") {
+        setOpen(false);
+        setTicketId("");
+        setTicketSubject("");
+      }
+    };
 
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
 
 
@@ -1107,7 +1123,7 @@ const applyFilter = (e) => {
 
 
         {/* ---------------------Activity Log Drawer------------------ */}
-        {isActivityDrawerOpen && (
+        {/* {isActivityDrawerOpen && (
           <ActivityLogDrawer isOpen={isActivityDrawerOpen} onClose={() => setIsActivityDrawerOpen(false)} ticketId={activityDrawerTicketId} />
 )}
 
@@ -1119,11 +1135,128 @@ const applyFilter = (e) => {
       },}}  >
                 
                   <div className="  " >
-  
+
+                       <ActivityLogDrawer isOpen={isActivityDrawerOpen} onClose={() => setIsActivityDrawerOpen(false)} ticketId={activityDrawerTicketId} />
                     <EmailDetailDrawer id={ticketId} toggleDrawer={toggleDrawer} />
                   </div>
   
-              </Drawer>
+              </Drawer> */}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            {
+              open && <div className="fixed inset-0 z-[499] flex items-center justify-center bg-black/30 backdrop-blur-sm  h-full     ">
+                          <div className="h-[95%] bg-gray-100 rounded-xl shadow-lg w-[95%] sm:w-[80%] md:w-[75%] lg:w-[70%] xl:w-[70%] 3xl:w-[60%]    py-4 px-5   ">
+                            <div className="h-full w-full flex flex-col justify-start items-center relative">
+            
+                              <div className="flex items-center justify-between border-b pb-2 mb-3 self-start w-full">
+                              <h3 className="text-lg font-semibold">Ticket: {(ticketSubject) ? ticketSubject : "Loading..."}</h3>
+                              <button
+                                className="p-1 rounded-2xl bg-gray-50 border hover:shadow-md hover:bg-gray-100"
+                                onClick={() => {toggleDrawer(false); setTicketId(""); setTicketSubject("")}}
+                              >
+                                <IoClose className="h-5 w-5" />
+                              </button>
+                              </div>
+            
+ 
+
+
+
+                              
+      <div className=" w-full h-full flex justify-center items-center gap-8 px-8 py-4 overflow-hidden " >
+
+ 
+                        
+                        <EmailDetailDrawer id={ticketId} setTicketSubject={setTicketSubject} />
+
+                        <div className="w-full h-full flex flex-col justify-start items-start gap-5 ">
+
+                           
+
+                              
+
+                               <div className="max-w-lg w-full h-[50%] px-3">
+
+                               <ActivityLogDrawer isOpen={isActivityDrawerOpen} onClose={() => setIsActivityDrawerOpen(false)} ticketId={ticketId} />
+                            </div>
+
+                            <div className="max-w-lg w-full  h-[50%]">
+                                
+                                <DetailComments type={"ticket"} jobId={ticketId} getTasks1={getEmails} />
+
+                              </div>
+
+
+
+
+                        </div>
+
+
+                  </div>
+  
+
+
+                            </div>
+                          </div>
+                        </div>
+
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

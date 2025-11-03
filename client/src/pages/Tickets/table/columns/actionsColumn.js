@@ -45,7 +45,7 @@ export const actionsColumn = (ctx) => {
                   
     
     
-                     <span
+                     {/* <span
                     className=""
                     title="View Logs"
                     onClick={() => {
@@ -54,7 +54,7 @@ export const actionsColumn = (ctx) => {
                     }}
                   >
                     <TbLogs className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-600" />
-                  </span>
+                  </span> */}
     
     
     
@@ -91,6 +91,6 @@ export const actionsColumn = (ctx) => {
                 </div>
               );
             },
-            size: 200,
+            size: 150,
           }
 }

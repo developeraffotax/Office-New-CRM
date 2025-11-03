@@ -13,6 +13,8 @@ import { BsEmojiSmile } from "react-icons/bs";
 import { format } from "date-fns";
 import { AiFillLike, AiOutlineLike } from "react-icons/ai";
 import Loader from "../../utlis/Loader";
+import { GoDotFill } from "react-icons/go";
+
 
 import {
   Menu,
@@ -747,17 +749,43 @@ const handleDeleteTemplate = async (id) => {
               alt="Avatar"
               className="w-9 h-9 rounded-full border border-orange-400"
             />
-            <div className="flex-1 flex flex-col gap-1">
+            <div className="flex-1 flex flex-col gap-1 relative">
               <textarea
                 value={comment}
                 onChange={handleInputChange}
                 placeholder="Write a comment..."
                 required
-                className="w-full resize-none h-10 text-sm border-none outline-none p-1"
+                className="w-full resize-none h-10 text-sm border-none outline-none p-1 "
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) handleComment(e);
                 }}
-              />
+              > 
+              
+              
+              
+              
+                
+                
+                </textarea>
+
+                   {showSuggestions && (
+                  <ul className="absolute top-[-8rem] w-[8rem] bg-gray-50   rounded-md mt-1 shadow-md   max-h-48 overflow-y-auto z-10 list-none">
+                    {suggestions.map((user, index) => (
+                      <li
+                        key={index}
+                        onClick={() => handleMentionClick(user)}
+                        className="px-2 py-1 text-sm border-b   cursor-pointer hover:bg-gray-200 m-0 flex justify-start items-center gap-2 "
+                      > 
+                      <span><GoDotFill className="h-3 w-3 text-orange-500"/></span>
+                      <span>{user}</span>
+                        
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+
+
               <div className="flex items-center justify-between">
                 <div className="relative" title="Add Emoji">
                   <BsEmojiSmile

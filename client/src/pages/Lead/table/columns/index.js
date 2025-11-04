@@ -1244,7 +1244,7 @@ export const getLeadColumns = (ctx) => {
         );
       },
       Cell: ({ row }) => {
-        const createdAt = new Date(row.original.createdAt);
+        const createdAt = new Date(row.original.leadCreatedAt);
         const deadline = new Date(row.original.followUpDate);
         if (!createdAt || !deadline) return <div>N/A</div>;
         const timeDifference = deadline.getTime() - createdAt.getTime();
@@ -1256,7 +1256,7 @@ export const getLeadColumns = (ctx) => {
         );
       },
       filterFn: (row, columnId, filterValue) => {
-        const createdAt = new Date(row.original.createdAt);
+        const createdAt = new Date(row.original.leadCreatedAt);
         const deadline = new Date(row.original.followUpDate);
         if (!createdAt || !deadline) return false;
         const timeDifference = deadline.getTime() - createdAt.getTime();

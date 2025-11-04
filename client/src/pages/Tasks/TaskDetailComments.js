@@ -811,7 +811,7 @@ const handleDeleteTemplate = async (id) => {
                   dangerouslySetInnerHTML={{
                     __html: comment.replace(
                       /@(\w+)/g,
-                      '<span class="text-blue-500 font-medium">@$1</span>'
+                      '<span class="text-blue-500 font-medium text-sm">@$1</span>'
                     ),
                   }}
                 />

@@ -32,11 +32,14 @@ export const actionsColumn = (ctx) => {
                      <span
                     className=""
                     title="View Ticket"
-                    onClick={() => {
-                      ctx.toggleDrawer(true);
-                      ctx.setTicketId(row.original._id)
-                      
-                    }}
+                    
+                    onClick={(event) => {
+                  if (event.ctrlKey || event.metaKey) {
+                    window.open(`/ticket/detail/${row.original._id}`, "_blank");
+                  } else {
+                    ctx.navigate(`/ticket/detail/${row.original._id}`);
+                  }
+                }}
                   >
                     
                     <MdRemoveRedEye className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-600" />

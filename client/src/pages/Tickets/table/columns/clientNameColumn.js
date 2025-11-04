@@ -96,6 +96,7 @@ export const clientNameColumn = (ctx) => {
                             setIsEditing(true);
                             setNewClientName(clientName);
                           }}
+                          
                         >
                           {clientName ? (
                             clientName

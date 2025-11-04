@@ -92,6 +92,52 @@ const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
 const isEditingTemplate = !!selectedTemplate;
 
 
+const [highlightedIndex, setHighlightedIndex] = useState(0);
+
+const suggestionRefs = useRef([]);
+suggestionRefs.current = []; // reset before rendering new list
+
+
+
+const handleKeyDown = (e) => {
+  
+  if (showSuggestions && suggestions.length > 0) {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightedIndex((prev) => (prev + 1) % suggestions.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedIndex((prev) =>
+        prev === 0 ? suggestions.length - 1 : prev - 1
+      );
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      handleMentionClick(suggestions[highlightedIndex]);
+    } else if (e.key === "Enter" && !e.shiftKey) {
+      if (showSuggestions) {
+        e.preventDefault();
+        handleMentionClick(suggestions[highlightedIndex]);
+      }
+    }
+  } else {
+    if (e.key === "Enter" && !e.shiftKey) {
+      handleComment(e);
+  }
+  }
+};
+
+useEffect(() => {
+  if (
+    highlightedIndex !== null &&
+    suggestionRefs?.current[highlightedIndex]
+  ) {
+    suggestionRefs.current[highlightedIndex].scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    });
+  }
+}, [highlightedIndex]);
+
 
 
    //---------- Get All Users-----------
@@ -411,11 +457,15 @@ const handleDeleteTemplate = async (id) => {
 
   //   Add Comment
   const handleComment = async (e) => {
-    setLoading(true);
     e.preventDefault();
     if (!jobId) {
       return toast.error("Job_id is required!");
     }
+    
+    if (!comment?.trim()) {
+      return toast.error("Comment is required!");
+    }
+    setLoading(true);
     try {
       const { data } = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/comments/post/comment`,
@@ -648,7 +698,13 @@ const handleDeleteTemplate = async (id) => {
 
                 {/* Message */}
                 <div className="ml-9 bg-orange-50 text-gray-800 text-[13px] px-3 py-1.5 rounded-lg rounded-tl-none">
-                  {comment?.comment}
+                  {comment?.comment.split(/(@\w+)/g).map((part, i) =>
+                    part.startsWith("@") ? (
+                      <span key={i} className="text-blue-600 font-semibold">{part}</span>
+                    ) : (
+                      part
+                    )
+                  )}
                 </div>
 
                 {/* Actions */}
@@ -750,15 +806,24 @@ const handleDeleteTemplate = async (id) => {
               className="w-9 h-9 rounded-full border border-orange-400"
             />
             <div className="flex-1 flex flex-col gap-1 relative">
+               <div
+                  className="absolute inset-0 whitespace-pre-wrap text-sm text-gray-800 p-1 pointer-events-none"
+                  dangerouslySetInnerHTML={{
+                    __html: comment.replace(
+                      /@(\w+)/g,
+                      '<span class="text-blue-500 font-medium">@$1</span>'
+                    ),
+                  }}
+                />
               <textarea
                 value={comment}
                 onChange={handleInputChange}
                 placeholder="Write a comment..."
                 required
                 className="w-full resize-none h-10 text-sm border-none outline-none p-1 "
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) handleComment(e);
-                }}
+                
+
+                 onKeyDown={handleKeyDown}
               > 
               
               
@@ -769,21 +834,27 @@ const handleDeleteTemplate = async (id) => {
                 </textarea>
 
                    {showSuggestions && (
-                  <ul className="absolute top-[-8rem] w-[8rem] bg-gray-50   rounded-md mt-1 shadow-md   max-h-48 overflow-y-auto z-10 list-none">
-                    {suggestions.map((user, index) => (
-                      <li
-                        key={index}
-                        onClick={() => handleMentionClick(user)}
-                        className="px-2 py-1 text-sm border-b   cursor-pointer hover:bg-gray-200 m-0 flex justify-start items-center gap-2 "
-                      > 
-                      <span><GoDotFill className="h-3 w-3 text-orange-500"/></span>
-                      <span>{user}</span>
-                        
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
+                      <ul
+                        id="mention-list"
+                        className="absolute bottom-[110%] left-0 w-48 bg-white rounded-lg border border-gray-200 shadow-lg max-h-48 overflow-y-auto z-10"
+                      >
+                        {suggestions.map((user, index) => (
+                          <li
+                            key={index}
+                            ref={(el) => (suggestionRefs.current[index] = el)}
+                            onClick={() => handleMentionClick(user)}
+                            className={`flex items-center gap-2 px-3 py-2 text-sm cursor-pointer transition m-0 ${
+                              index === highlightedIndex
+                                ? "bg-orange-100 text-orange-700"
+                                : "hover:bg-gray-100"
+                            }`}
+                          >
+                            <GoDotFill className="h-3 w-3 text-orange-500" />
+                            <span>{user}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
 
 
               <div className="flex items-center justify-between">

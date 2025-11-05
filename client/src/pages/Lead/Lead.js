@@ -86,6 +86,9 @@ export default function Lead() {
     const [clientCompanyName, setClientCompanyName] = useState("");
     const [clientEmail, setClientEmail] = useState("");
 
+    const [clientName, setClientName] = useState("");   // for creating the new ticket
+    const [companyName, setCompanyName] = useState("");
+
 
     const [showSendModal, setShowSendModal] = useState(false);
       const [access, setAccess] = useState([]);
@@ -806,6 +809,9 @@ const allColumns = getLeadColumns({
   handleLeadStatus,
   handleDeleteLeadConfirmation,
   stages,
+
+  setClientName,
+  setCompanyName
 });
 
  
@@ -1674,6 +1680,9 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                   clientCompanyName={clientCompanyName}
 
                   clientEmail= {clientEmail}
+
+                  clientName={clientName}
+                  companyName={companyName}
                 />
               </div>
             )}

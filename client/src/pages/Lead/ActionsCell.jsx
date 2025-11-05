@@ -13,7 +13,7 @@ import { FiPlusSquare } from "react-icons/fi";
  
 import { FiMoreHorizontal } from "react-icons/fi"; // modern icon
 
-export const ActionsCell = ({ row, setClientCompanyName, setClientEmail, setShowNewTicketModal, handleCopyLead, handleLeadStatus, handleDeleteLeadConfirmation,  selectedTab  }) => {
+export const ActionsCell = ({ row, setClientCompanyName, setClientEmail, setShowNewTicketModal, handleCopyLead, handleLeadStatus, handleDeleteLeadConfirmation,  selectedTab, setClientName, setCompanyName  }) => {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -31,6 +31,11 @@ export const ActionsCell = ({ row, setClientCompanyName, setClientEmail, setShow
             setClientCompanyName(row?.original?.companyName);
             setClientEmail(row?.original?.email);
             setShowNewTicketModal(true);
+
+            if(row?.original?.email) {
+              setClientName(row?.original?.clientName);
+              setCompanyName(row?.original?.companyName)
+            }
           }}
           className="text-xl text-orange-500 cursor-pointer"
         >

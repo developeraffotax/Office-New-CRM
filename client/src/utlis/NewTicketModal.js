@@ -17,7 +17,10 @@ export default function NewTicketModal({
   clientIdFromProps,
 
   clientCompanyName,
-  clientEmail
+  clientEmail,
+
+  clientName,
+  companyName
   
 }) {
       const auth = useSelector((state => state.auth.auth));
@@ -41,6 +44,7 @@ export default function NewTicketModal({
 
   const [inputValue, setInputValue] = useState("");
 
+ 
 
   useEffect(() => {
 
@@ -241,6 +245,14 @@ export default function NewTicketModal({
       emailData.append("message", message);
       emailData.append("email", email);
       emailData.append("jobHolder", jobHolder);
+
+      if (clientEmail) {
+        emailData.append("clientName", clientName);
+        emailData.append("companyName", companyName);
+      }
+
+
+
       files.forEach((file) => {
         emailData.append("files", file);
       });

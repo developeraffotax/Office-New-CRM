@@ -27,7 +27,7 @@ import { scheduleNotification } from "../utils/customFns/scheduleNotification.js
 // Create Ticket \
 export const sendEmail = async (req, res) => {
   try {
-    const { clientId, company, subject, message, email, jobHolder } = req.body;
+    const { clientId, company, subject, message, email, jobHolder, clientName, companyName } = req.body;
 
     console.log("Subject💙💚💛", subject)
     
@@ -76,8 +76,8 @@ export const sendEmail = async (req, res) => {
 
     const sendEmail = await ticketModel.create({
       clientId: clientId || "",
-      companyName: (clientId && client?.companyName) || "",
-      clientName: (clientId && client?.clientName) || "",
+      companyName: (clientId && client?.companyName) || companyName || "",
+      clientName: (clientId && client?.clientName) || clientName || "",
       company: company,
       jobHolder: jobHolderToAssign,
       subject: subject,
@@ -94,7 +94,7 @@ export const sendEmail = async (req, res) => {
       action: "created",
       details: `"${req.user.user.name}" created the ticket with subject "${subject}"
       -- Company: ${company}
-      -- Client: ${clientId ? client.clientName : "N/A"}
+      -- Client: ${clientId ? client.clientName :  clientName ? clientName : "N/A"}
       -- Email: ${email}
       `,
     });

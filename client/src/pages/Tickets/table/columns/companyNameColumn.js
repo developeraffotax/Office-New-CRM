@@ -66,7 +66,7 @@ export const companyNameColumn = (ctx) => {
               return (
                 <>
                   {row?.original?.clientId ? (
-                    <span>{companyName}</span>
+                    <span className="text-gray-500">{companyName}</span>
                   ) : (
                     <div className="w-full px-1">
                       {isEditing ? (

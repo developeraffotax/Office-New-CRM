@@ -30,6 +30,9 @@ export const getLeadColumns = (ctx) => {
     handleLeadStatus,
     handleDeleteLeadConfirmation,
     stages,
+
+    setClientName,
+    setCompanyName
   } = ctx;
 
   return [
@@ -1752,6 +1755,8 @@ export const getLeadColumns = (ctx) => {
           handleLeadStatus={handleLeadStatus}
           handleDeleteLeadConfirmation={handleDeleteLeadConfirmation}
           selectedTab={selectedTab}
+          setClientName={setClientName}
+          setCompanyName={setCompanyName}
         />
       ),
       size: 240,

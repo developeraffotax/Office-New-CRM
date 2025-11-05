@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { IoClose } from "react-icons/io5";
- 
+
 import "froala-editor/js/froala_editor.pkgd.min.js";
 import "froala-editor/css/froala_editor.pkgd.min.css";
 import "froala-editor/css/froala_style.min.css";
@@ -14,7 +14,6 @@ import { format } from "date-fns";
 import { AiFillLike, AiOutlineLike } from "react-icons/ai";
 import Loader from "../../utlis/Loader";
 import { GoDotFill } from "react-icons/go";
-
 
 import {
   Menu,
@@ -30,26 +29,24 @@ import {
   Tab,
   Typography,
 } from "@mui/material";
-import { Close, DeleteOutline, EditOutlined, MessageRounded, MoreVert, Add as AddIcon, } from "@mui/icons-material";
- 
+import {
+  Close,
+  DeleteOutline,
+  EditOutlined,
+  MessageRounded,
+  MoreVert,
+  Add as AddIcon,
+} from "@mui/icons-material";
 
- 
 import { useSelector } from "react-redux";
 
-
- 
-
 export default function DetailComments({
-   
   jobId,
 
- 
   type,
   getTasks1,
- 
 }) {
- 
-     const auth = useSelector((state => state.auth.auth));
+  const auth = useSelector((state) => state.auth.auth);
   const [loading, setLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [showPicker, setShowPicker] = useState(false);
@@ -67,86 +64,75 @@ export default function DetailComments({
   const [mentionStart, setMentionStart] = useState(-1);
   const [selectedUser, setSelectedUser] = useState("");
 
-
-    const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([]);
 
   const commentStatusRef = useRef(null);
 
+  const [templates, setTemplates] = useState([]);
 
+  const [quickReplyAnchorEl, setQuickReplyAnchorEl] = useState(null);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [templateText, setTemplateText] = useState("");
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const isEditingTemplate = !!selectedTemplate;
 
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
 
+  const suggestionRefs = useRef([]);
+  suggestionRefs.current = []; // reset before rendering new list
 
-
-
-
-
-
-
-
-const [templates, setTemplates] = useState([]);
-
-const [quickReplyAnchorEl, setQuickReplyAnchorEl] = useState(null);
-const [selectedTemplate, setSelectedTemplate] = useState(null);
-const [templateText, setTemplateText] = useState("");
-const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
-const isEditingTemplate = !!selectedTemplate;
-
-
-const [highlightedIndex, setHighlightedIndex] = useState(0);
-
-const suggestionRefs = useRef([]);
-suggestionRefs.current = []; // reset before rendering new list
-
-
-
-const handleKeyDown = (e) => {
-  
-  if (showSuggestions && suggestions.length > 0) {
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setHighlightedIndex((prev) => (prev + 1) % suggestions.length);
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setHighlightedIndex((prev) =>
-        prev === 0 ? suggestions.length - 1 : prev - 1
-      );
-    } else if (e.key === "Tab") {
-      e.preventDefault();
-      handleMentionClick(suggestions[highlightedIndex]);
-    } else if (e.key === "Enter" && !e.shiftKey) {
-      if (showSuggestions) {
+  const handleKeyDown = (e) => {
+    if (showSuggestions && suggestions.length > 0) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setHighlightedIndex((prev) => (prev + 1) % suggestions.length);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setHighlightedIndex((prev) =>
+          prev === 0 ? suggestions.length - 1 : prev - 1
+        );
+      } else if (e.key === "Tab") {
         e.preventDefault();
         handleMentionClick(suggestions[highlightedIndex]);
+      } else if (e.key === "Enter" && !e.shiftKey) {
+        if (showSuggestions) {
+          e.preventDefault();
+          handleMentionClick(suggestions[highlightedIndex]);
+        }
+      }
+    } else {
+      if (e.key === "Enter" && !e.shiftKey) {
+        handleComment(e);
       }
     }
-  } else {
-    if (e.key === "Enter" && !e.shiftKey) {
-      handleComment(e);
-  }
-  }
-};
+  };
 
-useEffect(() => {
-  if (
-    highlightedIndex !== null &&
-    suggestionRefs?.current[highlightedIndex]
-  ) {
-    suggestionRefs.current[highlightedIndex].scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-    });
-  }
-}, [highlightedIndex]);
+  useEffect(() => {
+    if (
+      highlightedIndex !== null &&
+      suggestionRefs?.current[highlightedIndex]
+    ) {
+      suggestionRefs.current[highlightedIndex].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [highlightedIndex]);
 
+  const textareaRef = useRef(null);
 
+  useEffect(() => {
+    if (textareaRef) {
+      textareaRef.current?.focus();
+    }
+  }, []);
 
-   //---------- Get All Users-----------
+  //---------- Get All Users-----------
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      
 
       setUsers(
         data?.users
@@ -160,114 +146,85 @@ useEffect(() => {
     }
   };
 
-
   useEffect(() => {
     getAllUsers();
   }, []);
- 
 
+  const handleUseTemplate = (text) => {
+    setComment((prev) => prev + text);
+    setQuickReplyAnchorEl(null);
+  };
 
-const handleUseTemplate = (text) => {
-  setComment((prev) => prev + text);
-  setQuickReplyAnchorEl(null);
-};
+  const handleOpenTemplateDialog = (template = null) => {
+    setSelectedTemplate(template);
+    setTemplateText(template ? template.text : "");
+    setTemplateDialogOpen(true);
+  };
 
-const handleOpenTemplateDialog = (template = null) => {
-  setSelectedTemplate(template);
-  setTemplateText(template ? template.text : "");
-  setTemplateDialogOpen(true);
-};
-
-const handleSaveTemplate = async () => {
-  try {
-    const body = {
-      userId: auth.user.id,
-      type,
-      text: templateText,
-      templateId: selectedTemplate?._id,
-    };
-    const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/templates`, body);
-
-    if (isEditingTemplate) {
-      setTemplates((prev) =>
-        prev.map((t) => (t._id === selectedTemplate._id ? res.data.template : t))
-      );
-    } else {
-      setTemplates((prev) => [...prev, res.data.template]);
-    }
-
-    setTemplateDialogOpen(false);
-  } catch (error) {
-    toast.error("Failed to save template");
-  }
-};
-
-
-const handleDeleteTemplate = async (id) => {
-  try {
-    await axios.delete(`${process.env.REACT_APP_API_URL}/api/templates/${id}`);
-    setTemplates((prev) => prev.filter((t) => t._id !== id));
-    //setQuickReplyAnchorEl(null);
-  } catch (err) {
-    toast.error("Failed to delete template");
-  }
-};
-
-
-
-
-
-
-
-
-
-
-
-
-  useEffect(() => {
-  const fetchTemplates = async () => {
+  const handleSaveTemplate = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/templates?type=${type}`);
-      setTemplates(res.data.templates);
-    } catch (err) {
-      toast.error("Failed to load templates");
+      const body = {
+        userId: auth.user.id,
+        type,
+        text: templateText,
+        templateId: selectedTemplate?._id,
+      };
+      const res = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/templates`,
+        body
+      );
+
+      if (isEditingTemplate) {
+        setTemplates((prev) =>
+          prev.map((t) =>
+            t._id === selectedTemplate._id ? res.data.template : t
+          )
+        );
+      } else {
+        setTemplates((prev) => [...prev, res.data.template]);
+      }
+
+      setTemplateDialogOpen(false);
+    } catch (error) {
+      toast.error("Failed to save template");
     }
   };
-  fetchTemplates();
-}, [type]);
 
+  const handleDeleteTemplate = async (id) => {
+    try {
+      await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/templates/${id}`
+      );
+      setTemplates((prev) => prev.filter((t) => t._id !== id));
+      //setQuickReplyAnchorEl(null);
+    } catch (err) {
+      toast.error("Failed to delete template");
+    }
+  };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/templates?type=${type}`
+        );
+        setTemplates(res.data.templates);
+      } catch (err) {
+        toast.error("Failed to load templates");
+      }
+    };
+    fetchTemplates();
+  }, [type]);
 
   // -----------Mention User----->
   const handleInputChange = (e) => {
     const value = e.target.value;
     setComment(value);
+
+    // 🔹 Reset height first, then set to scrollHeight
+        e.target.style.height = "auto";
+        e.target.style.height = `${e.target.scrollHeight}px`;
+    
 
     // Check for "@" mention trigger
     const mentionIndex = value.lastIndexOf("@");
@@ -287,26 +244,6 @@ const handleDeleteTemplate = async (id) => {
       setShowSuggestions(false);
     }
   };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   const handleMentionClick = (user) => {
     const newText =
@@ -392,9 +329,6 @@ const handleDeleteTemplate = async (id) => {
     // eslint-disable-next-line
   }, [jobId]);
 
- 
-  
-
   // ----------Get Comment Without Load--------->
   const getSingleComment = async () => {
     try {
@@ -420,7 +354,6 @@ const handleDeleteTemplate = async (id) => {
         if (data) {
           setIsLoading(false);
           setCommentData(data?.comments?.comments);
-        
         }
       } else {
         const { data } = await axios.get(
@@ -437,31 +370,13 @@ const handleDeleteTemplate = async (id) => {
     }
   };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
   //   Add Comment
   const handleComment = async (e) => {
     e.preventDefault();
     if (!jobId) {
       return toast.error("Job_id is required!");
     }
-    
+
     if (!comment?.trim()) {
       return toast.error("Comment is required!");
     }
@@ -482,9 +397,7 @@ const handleDeleteTemplate = async (id) => {
         getTasks1();
         setLoading(false);
         toast.success("Comment Posted!");
-       
       }
-       
     } catch (error) {
       console.log(error);
       setLoading(false);
@@ -493,43 +406,31 @@ const handleDeleteTemplate = async (id) => {
     }
   };
 
-
-
-
-
-
-
-
   const sendComment = async (text) => {
-  if (!jobId) {
-    return toast.error("Job_id is required!");
-  }
-
-  try {
-    const { data } = await axios.post(
-      `${process.env.REACT_APP_API_URL}/api/v1/comments/post/comment`,
-      {
-        comment: text,
-        jobId: jobId,
-        type,
-        mentionUser: selectedUser,
-      }
-    );
-    if (data) {
-      getSingleComment();
-      getTasks1();
-      toast.success("Comment Posted!");
- 
+    if (!jobId) {
+      return toast.error("Job_id is required!");
     }
-  } catch (error) {
-    console.log(error);
-    toast.error(error?.response?.data?.message);
-  }
-};
 
-
-
-
+    try {
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/comments/post/comment`,
+        {
+          comment: text,
+          jobId: jobId,
+          type,
+          mentionUser: selectedUser,
+        }
+      );
+      if (data) {
+        getSingleComment();
+        getTasks1();
+        toast.success("Comment Posted!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    }
+  };
 
   //   Add Comment Reply
   const handleCommentReply = async (e) => {
@@ -545,10 +446,7 @@ const handleDeleteTemplate = async (id) => {
         setCommentReply("");
         getSingleComment();
         toast.success("Reply added successfully!");
-        
       }
-
-      
     } catch (error) {
       console.log(error);
       setReplyLoading(false);
@@ -653,8 +551,7 @@ const handleDeleteTemplate = async (id) => {
   }, [commentData]);
 
   return (
- 
- <div
+    <div
       ref={commentStatusRef}
       className="w-full h-full flex items-center justify-center px-3"
     >
@@ -700,7 +597,9 @@ const handleDeleteTemplate = async (id) => {
                 <div className="ml-9 bg-orange-50 text-gray-800 text-[13px] px-3 py-1.5 rounded-lg rounded-tl-none">
                   {comment?.comment.split(/(@\w+)/g).map((part, i) =>
                     part.startsWith("@") ? (
-                      <span key={i} className="text-blue-600 font-semibold">{part}</span>
+                      <span key={i} className="text-blue-600 font-semibold">
+                        {part}
+                      </span>
                     ) : (
                       part
                     )
@@ -795,7 +694,7 @@ const handleDeleteTemplate = async (id) => {
         </div>
 
         {/* Footer */}
-        <div className="border-t bg-gray-50 px-3 py-2">
+        <div className="border-t bg-gray-50 px-3 py-2 ">
           <form
             onSubmit={handleComment}
             className="flex items-start gap-2 bg-white border border-gray-200 rounded-md p-2"
@@ -805,57 +704,56 @@ const handleDeleteTemplate = async (id) => {
               alt="Avatar"
               className="w-9 h-9 rounded-full border border-orange-400"
             />
-            <div className="flex-1 flex flex-col gap-1 relative">
-               <div
-                  className="absolute inset-0 whitespace-pre-wrap text-sm text-gray-800 p-1 pointer-events-none"
-                  dangerouslySetInnerHTML={{
-                    __html: comment.replace(
+            <div className="flex-1 flex flex-col gap-1 relative w-full">
+              {/* Highlighted mirror div */}
+              <div
+                className="absolute inset-0 whitespace-pre-wrap break-words text-sm text-gray-800 p-1 pointer-events-none"
+                dangerouslySetInnerHTML={{
+                  __html: comment
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(
                       /@(\w+)/g,
-                      '<span class="text-blue-500 font-medium text-sm">@$1</span>'
-                    ),
-                  }}
-                />
+                      '<span class="text-blue-500 text-sm ">@$1</span>'
+                    )
+                    .replace(/\n$/g, "\n "),
+                }}
+              />
+
+              {/* Actual textarea */}
               <textarea
+                ref={textareaRef}
                 value={comment}
                 onChange={handleInputChange}
                 placeholder="Write a comment..."
-                required
-                className="w-full resize-none h-10 text-sm border-none outline-none p-1 "
-                
+                className="relative w-full resize-none text-sm border-none outline-none p-1 bg-transparent text-transparent caret-black"
+                // rows={1}
+                onKeyDown={handleKeyDown}
+              />
 
-                 onKeyDown={handleKeyDown}
-              > 
-              
-              
-              
-              
-                
-                
-                </textarea>
-
-                   {showSuggestions && (
-                      <ul
-                        id="mention-list"
-                        className="absolute bottom-[110%] left-0 w-48 bg-white rounded-lg border border-gray-200 shadow-lg max-h-48 overflow-y-auto z-10"
-                      >
-                        {suggestions.map((user, index) => (
-                          <li
-                            key={index}
-                            ref={(el) => (suggestionRefs.current[index] = el)}
-                            onClick={() => handleMentionClick(user)}
-                            className={`flex items-center gap-2 px-3 py-2 text-sm cursor-pointer transition m-0 ${
-                              index === highlightedIndex
-                                ? "bg-orange-100 text-orange-700"
-                                : "hover:bg-gray-100"
-                            }`}
-                          >
-                            <GoDotFill className="h-3 w-3 text-orange-500" />
-                            <span>{user}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-
+              {showSuggestions && (
+                <ul
+                  id="mention-list"
+                  className="absolute bottom-[110%] left-0 w-48 bg-white rounded-lg border border-gray-200 shadow-lg max-h-48 overflow-y-auto z-10"
+                >
+                  {suggestions.map((user, index) => (
+                    <li
+                      key={index}
+                      ref={(el) => (suggestionRefs.current[index] = el)}
+                      onClick={() => handleMentionClick(user)}
+                      className={`flex items-center gap-2 px-3 py-2 text-sm cursor-pointer transition m-0 ${
+                        index === highlightedIndex
+                          ? "bg-orange-100 text-orange-700"
+                          : "hover:bg-gray-100"
+                      }`}
+                    >
+                      <GoDotFill className="h-3 w-3 text-orange-500" />
+                      <span>{user}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
 
               <div className="flex items-center justify-between">
                 <div className="relative" title="Add Emoji">
@@ -890,13 +788,5 @@ const handleDeleteTemplate = async (id) => {
         </div>
       </div>
     </div>
-
- 
-
-
- 
- 
-
-
   );
 }

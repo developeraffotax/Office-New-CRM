@@ -141,6 +141,33 @@ const [inputValue, setInputValue] = useState("");
     }
   };
 
+
+
+
+
+
+
+
+  useEffect(() => {
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      e.stopPropagation(); // prevent parent handler
+      setShowReply(false);
+    }
+  };
+
+  
+    window.addEventListener("keydown", handleKeyDown);
+  
+
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, []);
+
+
+
+
   return (
     <div className="w-full h-[100%] flex items-center justify-center py-3 px-4 overflow-y-auto rounded-md ">
       <div className="w-[55rem] rounded-md  border flex flex-col gap-4 bg-white mt-[5rem] 3xl:mt-0">

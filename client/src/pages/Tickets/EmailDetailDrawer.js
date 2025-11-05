@@ -19,7 +19,7 @@ import { IoMdCheckboxOutline } from "react-icons/io";
 import Swal from "sweetalert2";
 import SendEmailReply from "../../components/Tickets/SendEmailReply";
 
-export default function EmailDetailDrawer({ id, setTicketSubject }) {
+export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOpenCb }) {
   const navigate = useNavigate();
   const params = useParams();
   const [ticketDetail, setTicketDetail] = useState([]);
@@ -32,10 +32,12 @@ export default function EmailDetailDrawer({ id, setTicketSubject }) {
   const [isCompleted, setIsCompleted] = useState(false);
       const [users, setUsers] = useState([]);
 
-  console.log("Ticket Detail:", ticketDetail);
+ 
 
 
-  
+    useEffect(() => {
+      isReplyModalOpenCb(showReplay)
+    }, [showReplay, isReplyModalOpenCb])
         
         const getAllUsers = async () => {
           try {
@@ -396,6 +398,7 @@ export default function EmailDetailDrawer({ id, setTicketSubject }) {
               className={`${style.button1} text-[15px] flex items-center gap-1 `}
               onClick={() => setShowReply(true)}
               style={{ padding: ".4rem 1rem" }}
+              disabled={loading}
             >
               <HiReply className="h-4 w-4" /> Reply
             </button>

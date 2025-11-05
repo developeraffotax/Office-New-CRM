@@ -3,6 +3,7 @@ import { DateFilterFn } from "../../../../utlis/DateFilterFn";
 import { TiFilter } from "react-icons/ti";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
+import { IoTicket } from "react-icons/io5";
 export const getLeadColumns = (ctx) => {
   const {
     setSelectFilter,
@@ -32,7 +33,9 @@ export const getLeadColumns = (ctx) => {
     stages,
 
     setClientName,
-    setCompanyName
+    setCompanyName,
+
+    setEmailPopup
   } = ctx;
 
   return [
@@ -121,6 +124,8 @@ export const getLeadColumns = (ctx) => {
                 ) : (
                   <div className="text-white w-full h-full">.</div>
                 )}
+
+                
               </div>
             )}
           </div>
@@ -133,6 +138,46 @@ export const getLeadColumns = (ctx) => {
       },
       filterVariant: "select",
     },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     {
       accessorKey: "clientName",
@@ -205,20 +250,54 @@ export const getLeadColumns = (ctx) => {
               />
             ) : (
               <div
+                
+                className="cursor-pointer w-full flex justify-between items-center gap-2"
+              >
+                
+
+
+                <span 
+                title={clientName}
+                className={`overflow-hidden ${(auth?.user?.role?.name === 'Admin') ? 'w-[90%]' : "w-full"}`}
                 onDoubleClick={() => setShow(true)}
                 onClick={(event) => {
                   if (event.ctrlKey) {
                     navigator.clipboard.writeText(clientName);
                     toast.success(`Copied to clipboard! | ${clientName}`);
                   }
-                }}
-                className="cursor-pointer w-full"
-              >
-                {localClientName ? (
+                }}>
+                  
+                  {localClientName ? (
                   localClientName
                 ) : (
                   <div className="text-white w-full h-full">.</div>
-                )}
+                )}</span>
+
+
+                {
+                  auth?.user?.role?.name === 'Admin' && (
+                    <span 
+                      title="Client's latest ticket"
+                      className="w-[10%] "
+                        onClick={() => {
+
+                          setEmailPopup({
+                            open: true,
+                            email: row.original.email,
+                            clientName: row.original.clientName
+
+                          })
+
+
+                        }}
+                      >
+                
+                  <IoTicket className="w-4 h-4 text-gray-600 hover:text-orange-500"/>
+                </span>
+                  )
+                }
+
+                
               </div>
             )}
           </div>
@@ -231,6 +310,51 @@ export const getLeadColumns = (ctx) => {
       },
       filterVariant: "select",
     },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     {
       accessorKey: "jobHolder",

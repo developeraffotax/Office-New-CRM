@@ -42,6 +42,7 @@ import UserLeadChart from "./userLeadChart/UserLeadChart";
 import { BsGraphUpArrow } from "react-icons/bs";
 import { isAdmin } from "../../utlis/isAdmin";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
+import EmailDetailDrawerNewWrapper from "../../components/shared/EmailDetailDrawerNewWrapper";
 
 const updates_object_init = {
       companyName: '',
@@ -99,7 +100,12 @@ export default function Lead() {
   const [active1, setActive1] = useState("");
 
 
+  const [emailPopup, setEmailPopup] = useState({
+    open: false,
+    email: '',
+    clientName: ''
 
+  })
   
   
     const [pagination, setPagination] = useState({
@@ -811,7 +817,9 @@ const allColumns = getLeadColumns({
   stages,
 
   setClientName,
-  setCompanyName
+  setCompanyName,
+
+  setEmailPopup
 });
 
  
@@ -1708,6 +1716,10 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
               />
             )}
 
+            {
+              emailPopup.open && <EmailDetailDrawerNewWrapper {...emailPopup} setEmailPopup={setEmailPopup}/>
+
+            }
 
 
            

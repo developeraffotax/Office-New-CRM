@@ -119,18 +119,23 @@ const [appliedFilters, setAppliedFilters] = useState({});
   };
 
 
+  const [isReplyModalOpen, setIsReplyModalOpen] = useState(false)
 
-
-
-
+  const isReplyModalOpenCb = (isOpen) => {
+    setIsReplyModalOpen(isOpen)
+  }
 
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Escape key shortcut
       if (e.key === "Escape") {
-        setOpen(false);
-        setTicketId("");
-        setTicketSubject("");
+
+        if(!isReplyModalOpen) {
+            toggleDrawer(false);
+            setTicketId("");
+            setTicketSubject("");
+        }
+        
       }
     };
 
@@ -139,7 +144,25 @@ const [appliedFilters, setAppliedFilters] = useState({});
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [isReplyModalOpen]);
+
+
+  // useEffect(() => {
+  //   const handleKeyDown = (e) => {
+  //     // Escape key shortcut
+  //     if (e.key === "Escape") {
+  //       setOpen(false);
+  //       setTicketId("");
+  //       setTicketSubject("");
+  //     }
+  //   };
+
+  //   window.addEventListener("keydown", handleKeyDown);
+
+  //   return () => {
+  //     window.removeEventListener("keydown", handleKeyDown);
+  //   };
+  // }, []);
 
 
 
@@ -1195,7 +1218,7 @@ const applyFilter = (e) => {
 
  
                         
-                        <EmailDetailDrawer id={ticketId} setTicketSubject={setTicketSubject} />
+                        <EmailDetailDrawer id={ticketId} setTicketSubject={setTicketSubject} isReplyModalOpenCb={isReplyModalOpenCb}/>
 
                         <div className="w-full h-full flex flex-col justify-start items-start gap-5 ">
 

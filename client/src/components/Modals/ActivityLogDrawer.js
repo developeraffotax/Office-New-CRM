@@ -25,14 +25,14 @@ const ActivityLogDrawer = ({ onClose, ticketId }) => {
     fetchLogs();
   }, [ticketId]);
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") onClose();
-    };
+  // useEffect(() => {
+  //   const handleKeyDown = (event) => {
+  //     if (event.key === "Escape") onClose();
+  //   };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  //   document.addEventListener("keydown", handleKeyDown);
+  //   return () => document.removeEventListener("keydown", handleKeyDown);
+  // }, [onClose]);
 
   return (
     <div className="h-full w-full  border border-gray-200 rounded-lg shadow-sm flex flex-col bg-white">

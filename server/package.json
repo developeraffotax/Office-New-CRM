@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "worker": "node workers.js"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +21,7 @@
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
+    "bullmq": "^5.63.0",
     "cloudinary": "^2.2.0",
     "cluster": "^0.7.7",
     "colors": "^1.4.0",
@@ -33,6 +35,7 @@
     "express-session": "^1.18.1",
     "google-auth-library": "^9.14.2",
     "googleapis": "^105.0.0",
+    "ioredis": "^5.8.2",
     "jsonwebtoken": "^9.0.2",
     "moment": "^2.30.1",
     "mongoose": "^8.4.1",

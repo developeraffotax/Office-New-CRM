@@ -1,41 +1,76 @@
+import { addScreenshotJob } from "../jobs/queues/screenshotQueue.js";
 import screenshotModel from "../models/screenshotModel.js";
 import { getFileUrl, listFiles } from "../utils/s3/s3Actions.js";
 
 
 
 
-// takeScreenshot
+
+
+
+
+
+
+
 export const takeScreenshot = async (req, res) => {
   try {
-    const { timestamp, userId} = req.body;
-    const s3Key = req.file.key || req.file.filename; // Adjusted for local storage
-    const s3Url = req.file.location || `${req.protocol}://${req.get('host')}/uploads/screenshots/${userId}/${s3Key}`; // Adjusted for local storage
-
-     
-    const activeWindow = req.body.activeWindow;
-    const activity = req.body.activity;
-
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
-    const doc = await screenshotModel.create({
-      userId,
-       
-      timestamp: timestamp ? new Date(timestamp) : new Date(),
-       
-      s3Key,
-      s3Url,
 
-      activeWindow: activeWindow ? JSON.parse(activeWindow) : undefined,
-      activity: activity ? JSON.parse(activity) : undefined,
+    // Queue the job
+    const job = await addScreenshotJob({
+      file: req.file,
+      body: req.body,
     });
-    
-    res.status(201).json({ success: true, id: doc._id, s3Url });
+
+    res.status(202).json({ success: true, message: "Screenshot queued for processing" });
   } catch (e) {
-    console.error("Error in Controller takeScreenshot:", e);
-    res.status(500).json({ error: "Upload failed" });
+    console.error("Error in takeScreenshot controller:", e);
+    res.status(500).json({ error: "Failed to queue screenshot" });
   }
 };
+
+
+
+
+
+// takeScreenshot
+// export const takeScreenshot = async (req, res) => {
+//   try {
+//     const { timestamp, userId} = req.body;
+//     const s3Key = req.file.key || req.file.filename; // Adjusted for local storage
+//     const s3Url = req.file.location || `${req.protocol}://${req.get('host')}/uploads/screenshots/${userId}/${s3Key}`; // Adjusted for local storage
+
+     
+//     const activeWindow = req.body.activeWindow;
+//     const activity = req.body.activity;
+
+//     if (!req.file) {
+//       return res.status(400).json({ error: "No file uploaded" });
+//     }
+//     const doc = await screenshotModel.create({
+//       userId,
+       
+//       timestamp: timestamp ? new Date(timestamp) : new Date(),
+       
+//       s3Key,
+//       s3Url,
+
+//       activeWindow: activeWindow ? JSON.parse(activeWindow) : undefined,
+//       activity: activity ? JSON.parse(activity) : undefined,
+//     });
+    
+//     res.status(201).json({ success: true, id: doc._id, s3Url });
+//   } catch (e) {
+//     console.error("Error in Controller takeScreenshot:", e);
+//     res.status(500).json({ error: "Upload failed" });
+//   }
+// };
+
+
+
+
 
 
 

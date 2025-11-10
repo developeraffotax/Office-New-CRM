@@ -20,9 +20,9 @@ export const takeScreenshot = async (req, res) => {
 
     //const { s3Key, timestamp, userId, activeWindow, activity } = req.body;
     const { s3Key, timestamp,  activeWindow, activity } = req.body;
-    
-     const userId = req.user?.user?._id;
 
+     const userId = req.user?.user?._id;
+    
 
     const s3Url = await getFileUrl(s3Key);
     console.log("THE USER ID IS ", userId)

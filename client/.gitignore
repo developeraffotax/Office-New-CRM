@@ -10,7 +10,7 @@
 
 # production
 /build
-/public.env.js
+/public/env.js
 
 # misc
 .DS_Store

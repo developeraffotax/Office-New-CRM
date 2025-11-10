@@ -2,8 +2,7 @@ import express from "express";
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
 
 import { getPresignedUrl, takeScreenshot } from "../controllers/agentController.js";
-import { upload } from "../utils/s3/s3Upload.js";
-import { addTimestamp } from "../middlewares/addTimeStamp.js";
+
 
 const router = express.Router();
 

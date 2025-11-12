@@ -40,6 +40,7 @@ export const Timer = forwardRef(
 
       allocatedTime,
       setTaskIdForNote,
+      
        
     },
     ref
@@ -74,8 +75,20 @@ export const Timer = forwardRef(
               params: { clientId, jobId },
             }
           );
-          const { _id, startTime, endTime, isRunning } = response.data.timer;
+          const { _id, startTime, endTime, isRunning, clientName } = response.data.timer;
           // console.log("Timer:", response.data.timer);
+
+          if (pageName === "Jobs") {
+          const isNonChargeable = clientName === "Affotax" || clientName === "Training";
+
+          if (isNonChargeable) {
+            setActivity("Non-Chargeable");
+          } else {
+            setActivity("Chargeable");
+          }
+          
+         }
+
 
           if (startTime && !endTime) {
             setTimerId(_id);
@@ -161,6 +174,19 @@ export const Timer = forwardRef(
            dispatch(startCountdown(allocatedTime, jobId, task, response.data.timer._id))
          }
         
+
+
+         if (pageName === "Jobs") {
+          const isNonChargeable = clientName === "Affotax" || clientName === "Training";
+
+          if (isNonChargeable) {
+            setActivity("Non-Chargeable");
+          } else {
+            setActivity("Chargeable");
+          }
+          
+         }
+
 
         addTimerTaskStatus(response.data.timer._id);
         setIsRunning(true);

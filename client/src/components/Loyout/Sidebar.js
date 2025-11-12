@@ -1,4 +1,3 @@
- 
 import React, { useEffect, useState } from "react";
 import { AiOutlineMenuFold } from "react-icons/ai";
 import { AiOutlineMenuUnfold } from "react-icons/ai";
@@ -6,7 +5,7 @@ import { LuLayoutDashboard } from "react-icons/lu";
 import { BsFileEarmarkText } from "react-icons/bs";
 import { BsBriefcase } from "react-icons/bs";
 import { useLocation, useNavigate } from "react-router-dom";
- 
+
 import { LiaClipboardListSolid } from "react-icons/lia";
 import ProfileModal from "../Modals/ProfileModal";
 import { FaUsers } from "react-icons/fa";
@@ -21,13 +20,19 @@ import { GoGoal } from "react-icons/go";
 import { FaTasks } from "react-icons/fa";
 import { LiaNetworkWiredSolid } from "react-icons/lia";
 import { BiMessageError } from "react-icons/bi";
- 
+
 import axios from "axios";
 import { MdCalendarMonth } from "react-icons/md";
+import { IoIosArrowDown } from "react-icons/io";
 import { FaUserTie } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
 import { setActive } from "../../redux/slices/authSlice";
-import { selectJobAssignedCount, selectTaskAssignedCount, selectTicketAssignedCount, selectTicketReceivedCount } from "../../redux/slices/notificationSlice";
+import {
+  selectJobAssignedCount,
+  selectTaskAssignedCount,
+  selectTicketAssignedCount,
+  selectTicketReceivedCount,
+} from "../../redux/slices/notificationSlice";
 
 export default function Sidebar({ hide, setHide }) {
   const router = useNavigate();
@@ -36,20 +41,22 @@ export default function Sidebar({ hide, setHide }) {
   const dispatch = useDispatch();
   const active = useSelector((state) => state.auth.active);
 
-    const taskCount = useSelector(selectTaskAssignedCount);
-    const jobCount = useSelector(selectJobAssignedCount);
+  const taskCount = useSelector(selectTaskAssignedCount);
+  const jobCount = useSelector(selectJobAssignedCount);
 
-    const ticketAssignedCount = useSelector(selectTicketAssignedCount);
-    const ticketReceivedCount = useSelector(selectTicketReceivedCount);
+  const ticketAssignedCount = useSelector(selectTicketAssignedCount);
+  const ticketReceivedCount = useSelector(selectTicketReceivedCount);
 
   const [isProfile, setIsProfile] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const user = auth?.user;
   const [ticketNitification, setTicketNotification] = useState([]);
 
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   const location = useLocation();
- 
- useEffect(() => {
+
+  useEffect(() => {
     const pathArray = location.pathname.split("/");
     const fileIdFromPath = pathArray[1]; // index stays the same
     if (fileIdFromPath) {
@@ -175,9 +182,10 @@ export default function Sidebar({ hide, setHide }) {
           {hasAccess("Tasks") && (
             <div
               className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  
-                ${active === "tasks"
-                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
-                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+                ${
+                  active === "tasks"
+                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
                 } filter overflow-hidden`}
               onClick={() => {
                 router("/tasks");
@@ -207,20 +215,21 @@ export default function Sidebar({ hide, setHide }) {
                 )}
 
                 {/* Right side - Count badge */}
-                {
-                  taskCount > 0 && (
-                    <span
+                {taskCount > 0 && (
+                  <span
                     title="New Assigned Tasks"
-                  className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${active === "tasks" ? "bg-white text-orange-600" : "bg-orange-600 text-white"}`}
-                >
-                  {taskCount || 0}
-                </span>
-                  )
-                }
+                    className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
+                    ${
+                      active === "tasks"
+                        ? "bg-white text-orange-600"
+                        : "bg-orange-600 text-white"
+                    }`}
+                  >
+                    {taskCount || 0}
+                  </span>
+                )}
               </div>
             </div>
-
           )}
           {/* 4 */}
           {hasAccess("Jobs") && (
@@ -256,22 +265,20 @@ export default function Sidebar({ hide, setHide }) {
                   </div>
                 )}
 
-
-
                 {/* Right side - Count badge */}
-                {
-                  jobCount > 0 && (
-                    <span
+                {jobCount > 0 && (
+                  <span
                     title="New Assigned Jobs"
-                  className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${active === "job-planning" ? "bg-white text-orange-600" : "bg-orange-600 text-white"}`}
-                >
-                  {jobCount || 0}
-                </span>
-                  )
-                }
-
-
+                    className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
+                    ${
+                      active === "job-planning"
+                        ? "bg-white text-orange-600"
+                        : "bg-orange-600 text-white"
+                    }`}
+                  >
+                    {jobCount || 0}
+                  </span>
+                )}
               </div>
             </div>
           )}
@@ -314,44 +321,37 @@ export default function Sidebar({ hide, setHide }) {
                   </div>
                 )}
 
+                {/* Right side - Count badge */}
 
-
-                 {/* Right side - Count badge */}
-
-                  <div className="flex items-center gap-1 ">
-
-                    
-                 {
-                  ticketReceivedCount > 0 && (
+                <div className="flex items-center gap-1 ">
+                  {ticketReceivedCount > 0 && (
                     <span
-                    title="New Received Tickets"
-                  className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${active === "tickets" ? "bg-white text-blue-500" : "bg-blue-500 text-white"}`}
-                >
-                  {ticketReceivedCount || 0}
-                </span>
-                  )
-                }
+                      title="New Received Tickets"
+                      className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
+                    ${
+                      active === "tickets"
+                        ? "bg-white text-blue-500"
+                        : "bg-blue-500 text-white"
+                    }`}
+                    >
+                      {ticketReceivedCount || 0}
+                    </span>
+                  )}
 
-
-
-                {
-                  ticketAssignedCount > 0 && (
+                  {ticketAssignedCount > 0 && (
                     <span
-                    title="New Assigned Tickets"
-                  className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${active === "tickets" ? "bg-white text-orange-600" : "bg-orange-600 text-white"}`}
-                >
-                  {ticketAssignedCount || 0}
-                </span>
-                  )
-                }
-
+                      title="New Assigned Tickets"
+                      className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
+                    ${
+                      active === "tickets"
+                        ? "bg-white text-orange-600"
+                        : "bg-orange-600 text-white"
+                    }`}
+                    >
+                      {ticketAssignedCount || 0}
+                    </span>
+                  )}
                 </div>
-
-
-
-
               </div>
             </div>
           )}
@@ -572,7 +572,6 @@ export default function Sidebar({ hide, setHide }) {
             </div>
           )}
 
-
           {/* HR */}
           {hasAccess("HR") && (
             <>
@@ -612,8 +611,6 @@ export default function Sidebar({ hide, setHide }) {
             </>
           )}
 
-
-          
           {/*  */}
           {(hasAccess("Workflow") ||
             hasAccess("Roles") ||
@@ -636,18 +633,32 @@ export default function Sidebar({ hide, setHide }) {
               {(hasAccess("Workflow") ||
                 hasAccess("Roles") ||
                 hasAccess("Users")) && (
-                <h4 className="text-[16] font-semibold px-2 flex items-center gap-1">
-                  {" "}
-                  <span>
-                    <RiSettings4Fill className="h-7 w-7 text-gray-900" />
-                  </span>
-                  Settings
+                <h4
+                  className={`text-[16px] font-semibold px-4 py-2 flex items-center justify-between transition-all cursor-pointer rounded-e-3xl ${
+                    isSettingsOpen
+                      ? "bg-orange-200"
+                      : "bg-gray-100 hover:bg-orange-200 text-gray-800"
+                  }`}
+                  onClick={() => setIsSettingsOpen((prev) => !prev)}
+                >
+                  <div className="flex items-center gap-2">
+                    <RiSettings4Fill className="h-6 w-6 text-gray-900" />
+                    <span>Settings</span>
+                  </div>
+
+                  {/* Rotating Arrow */}
+                  <IoIosArrowDown
+                    className={`h-4 w-4 text-gray-700 transform transition-transform duration-300 ${
+                      isSettingsOpen ? "rotate-180" : "rotate-0"
+                    }`}
+                  />
                 </h4>
               )}
             </>
           )}
+
           {/* Meeting */}
-          {hasAccess("Meeting") && (
+          {isSettingsOpen && hasAccess("Meeting") && (
             <div
               className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "meetings"
@@ -683,7 +694,7 @@ export default function Sidebar({ hide, setHide }) {
             </div>
           )}
           {/* Workflow */}
-          {hasAccess("Workflow") && (
+          {isSettingsOpen && hasAccess("Workflow") && (
             <div
               className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "workflow"
@@ -719,7 +730,7 @@ export default function Sidebar({ hide, setHide }) {
             </div>
           )}
           {/* Complaints */}
-          {hasAccess("Complaints") && (
+          {isSettingsOpen && hasAccess("Complaints") && (
             <div
               className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "complaints"
@@ -755,7 +766,7 @@ export default function Sidebar({ hide, setHide }) {
             </div>
           )}
           {/*  */}
-          {hasAccess("Roles") && (
+          {isSettingsOpen && hasAccess("Roles") && (
             <>
               <div
                 className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
@@ -792,10 +803,9 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </>
           )}
-          
 
           {/* User Info */}
-          {hasAccess("Users") && (
+          {isSettingsOpen && hasAccess("Users") && (
             <>
               <div
                 className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${

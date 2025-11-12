@@ -41,7 +41,7 @@ export const Timer = forwardRef(
       allocatedTime,
       setTaskIdForNote,
       
-       
+      setIsNonChargeable 
     },
     ref
   ) => {
@@ -75,19 +75,10 @@ export const Timer = forwardRef(
               params: { clientId, jobId },
             }
           );
-          const { _id, startTime, endTime, isRunning, clientName } = response.data.timer;
+          const { _id, startTime, endTime, isRunning, activity: fetchedActivity } = response.data.timer;
           // console.log("Timer:", response.data.timer);
 
-          if (pageName === "Jobs") {
-          const isNonChargeable = clientName === "Affotax" || clientName === "Training";
-
-          if (isNonChargeable) {
-            setActivity("Non-Chargeable");
-          } else {
-            setActivity("Chargeable");
-          }
           
-         }
 
 
           if (startTime && !endTime) {
@@ -100,6 +91,12 @@ export const Timer = forwardRef(
             );
             setElapsedTime(timeElapsed);
             dispatch(setJid(response.data.timer.jobId));
+
+            if(pageName === "Jobs") {
+               setActivity(fetchedActivity);
+            setIsNonChargeable(fetchedActivity === "Non-Chargeable")
+            }
+           
           }
         } catch (error) {
           console.error(error);
@@ -145,6 +142,18 @@ export const Timer = forwardRef(
     // -------------------Start Timer---------->
     const startTimer = async () => {
       localStorage.setItem("jobId", JSON.stringify(jobId));
+      let chargeableActivity = "Chargeable";
+
+      if (pageName === "Jobs") {
+        const isNonChargeable = clientName === "Affotax" || clientName === "Training";
+        if (isNonChargeable) {
+          chargeableActivity = "Non-Chargeable";
+          setActivity("Non-Chargeable");
+           
+        }  
+
+      }
+
       try {
         const response = await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/timer/start/timer`,
@@ -159,6 +168,7 @@ export const Timer = forwardRef(
             JobHolderName,
             projectName,
             task,
+            activity: chargeableActivity
           }
         );
         setTimerId(response.data.timer._id);
@@ -173,19 +183,16 @@ export const Timer = forwardRef(
 
            dispatch(startCountdown(allocatedTime, jobId, task, response.data.timer._id))
          }
-        
-
+         
 
          if (pageName === "Jobs") {
-          const isNonChargeable = clientName === "Affotax" || clientName === "Training";
-
-          if (isNonChargeable) {
-            setActivity("Non-Chargeable");
-          } else {
-            setActivity("Chargeable");
-          }
-          
+          const fetchedActivity = response.data.timer?.activity;
+         setActivity(fetchedActivity);
+          setIsNonChargeable(fetchedActivity === "Non-Chargeable")
          }
+         
+
+      
 
 
         addTimerTaskStatus(response.data.timer._id);

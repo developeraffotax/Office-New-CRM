@@ -131,6 +131,7 @@ export default function AllJobs() {
   const [totalFee, setTotalFee] = useState(0);
   const [totalClientPaidFee, setTotalClientPaidFee] = useState(0);
   const [activity, setActivity] = useState("Chargeable");
+  const [isNonChargeable, setIsNonChargeable] = useState(false);
   const [access, setAccess] = useState([]);
   const [rowSelection, setRowSelection] = useState({});
   // -------Update Multiple------>
@@ -1464,6 +1465,8 @@ const timerCtx = useMemo(() => {
     setNote,     
     activity,     
     setActivity, 
+
+    setIsNonChargeable
   }
 }, [timerRef, timerId, jid, play, note, currentPath, activity])
 
@@ -2794,6 +2797,7 @@ useEffect(() => {
                     className={`px-4 h-[2.6rem] min-w-[5rem] flex items-center justify-center  rounded-md cursor-pointer shadow-md  text-white border-none outline-none bg-red-500 hover:bg-red-600`}
                     onClick={() => setActivity("Chargeable")}
                     style={{ width: "9rem", fontSize: "14px" }}
+                    disabled={isNonChargeable}
                   >
                     Non-Chargeable
                   </button>

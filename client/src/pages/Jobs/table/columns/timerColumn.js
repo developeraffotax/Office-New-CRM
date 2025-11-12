@@ -65,6 +65,7 @@ export const timerColumn = ({auth, timerRef, timerId ,jid, play, setPlay, setIsS
                     activity={activity}
                     setActivity={setActivity}
 
+                    setIsNonChargeable={setIsNonChargeable}
                    
                   />
                 </span>

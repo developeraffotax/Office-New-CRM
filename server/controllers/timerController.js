@@ -17,6 +17,7 @@ export const startTimer = async (req, res) => {
       task,
       companyName,
       holiday,
+      activity
     } = req.body;
     const startTime = new Date().toISOString();
 
@@ -46,6 +47,7 @@ export const startTimer = async (req, res) => {
       companyName,
       isRunning: true,
       holiday,
+      activity: activity || "Chargeable",
     });
     await newTimer.save();
 

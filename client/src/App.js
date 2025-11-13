@@ -49,6 +49,7 @@ import NotFound from "./pages/NotFound/NotFound";
 import { initTimerListener } from "./redux/slices/timerSlice";
 import { initNotificationListener } from "./redux/slices/notificationSlice";
 import { initReminderListener } from "./redux/slices/reminderSlice";
+import ScreenshotDashboard from "./pages/AffoStaff/ScreenshotDashboard";
 
 function App() {
   const navigate = useNavigate();
@@ -150,6 +151,7 @@ function App() {
             <Route path="/employee/dashboard" element={<UDashboard />} />
             <Route path="/editor/templates" element={<TemplateEditor />} />
             <Route path="/pdf/editor" element={<PDFEditor />} />
+            <Route path="/activity" element={<ScreenshotDashboard />} />
           </Route>
         ) : (
           // If no token, redirect any private route access to login

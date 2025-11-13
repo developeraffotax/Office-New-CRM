@@ -79,45 +79,7 @@ console.log("THE USER ID IS>> ", userId)
 
 
 
-
-
-
-
-// takeScreenshot
-// export const takeScreenshot = async (req, res) => {
-//   try {
-//     const { timestamp, userId} = req.body;
-//     const s3Key = req.file.key || req.file.filename; // Adjusted for local storage
-//     const s3Url = req.file.location || `${req.protocol}://${req.get('host')}/uploads/screenshots/${userId}/${s3Key}`; // Adjusted for local storage
-
-     
-//     const activeWindow = req.body.activeWindow;
-//     const activity = req.body.activity;
-
-//     if (!req.file) {
-//       return res.status(400).json({ error: "No file uploaded" });
-//     }
-//     const doc = await screenshotModel.create({
-//       userId,
-       
-//       timestamp: timestamp ? new Date(timestamp) : new Date(),
-       
-//       s3Key,
-//       s3Url,
-
-//       activeWindow: activeWindow ? JSON.parse(activeWindow) : undefined,
-//       activity: activity ? JSON.parse(activity) : undefined,
-//     });
-    
-//     res.status(201).json({ success: true, id: doc._id, s3Url });
-//   } catch (e) {
-//     console.error("Error in Controller takeScreenshot:", e);
-//     res.status(500).json({ error: "Upload failed" });
-//   }
-// };
-
-
-
+ 
 
 
 
@@ -158,13 +120,55 @@ export const getAllScreenshots = async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export const getUserScreenshots = async (req, res) => {
+  const userId = req.params.userId;
+  const { date } = req.query; // single date from frontend
 
- const userId = req.params.userId;
+  try {
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
 
- try {
-     
-    const screenshots = await screenshotModel.find({ userId }).sort({ timestamp: -1 });
+    const query = {
+      userId
+    };
+
+    // Default to today if no date provided
+    const targetDate = date ? new Date(date) : new Date();
+    const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
+
+    query.timestamp = { $gte: startOfDay, $lte: endOfDay };
+
+    const screenshots = await screenshotModel
+      .find(query)
+      .sort({ timestamp: -1 });
 
     const results = await Promise.all(
       screenshots.map(async (shot) => ({
@@ -173,17 +177,11 @@ export const getUserScreenshots = async (req, res) => {
       }))
     );
 
+    console.log("✅ Fetched screenshots:", results.length);
+
     res.json(results);
   } catch (err) {
-    console.error(err);
+    console.error("❌ Failed to fetch screenshots:", err);
     res.status(500).json({ error: "Failed to fetch screenshots" });
   }
-
-
-
-
-
-
-
-
-}
+};

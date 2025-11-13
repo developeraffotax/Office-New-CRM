@@ -65,6 +65,7 @@
     "react-konva": "^18.2.10",
     "react-loading-skeleton": "^3.4.0",
     "react-markdown": "^9.0.1",
+    "react-medium-image-zoom": "^5.4.0",
     "react-mentions": "^4.4.10",
     "react-paginate": "^8.2.0",
     "react-pdf": "^9.1.1",

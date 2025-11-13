@@ -20,6 +20,8 @@ import { GoGoal } from "react-icons/go";
 import { FaTasks } from "react-icons/fa";
 import { LiaNetworkWiredSolid } from "react-icons/lia";
 import { BiMessageError } from "react-icons/bi";
+import { LuClock2 } from "react-icons/lu";
+
 
 import axios from "axios";
 import { MdCalendarMonth } from "react-icons/md";
@@ -842,6 +844,75 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </>
           )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          {/*  */}
+          {isSettingsOpen && hasAccess("Roles") && (
+            <>
+              <div
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                  active === "activity"
+                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+                }   filter   overflow-hidden`}
+                onClick={() => {
+                  router("/activity");
+                  dispatch(setActive("activity"));
+                }}
+              >
+                <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                  <div className="flex items-center gap-2">
+                     
+                      <LuClock2
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "activity" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{ color: active === "activity" && "#fff" }}
+                      >
+                        Activity
+                      </span>
+                    </div>
+                </div>
+              </div>
+            </>
+          )}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           {/* Template Editor */}
           {/* {hasAccess("Editor") && (
             <>

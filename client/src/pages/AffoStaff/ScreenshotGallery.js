@@ -58,7 +58,7 @@ const ScreenshotGallery = ({ screenshots }) => {
   };
 
   return (
-    <div className="bg-white p-8 rounded-xl shadow border">
+    <div className="bg-white p-8 rounded-none shadow border">
       {/* Header */}
       <h3 className="text-[17px] font-semibold mb-6 flex items-center gap-2 text-gray-800">
         <FaRegImages className="text-blue-500 text-[18px]" />

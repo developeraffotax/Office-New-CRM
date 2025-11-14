@@ -8,6 +8,9 @@ import ScreenshotGallery from "./ScreenshotGallery";
 import Filters from "./Filters";
 
 export default function ScreenshotDashboard() {
+
+  const [timers, setTimers] = useState([]);
+
   const [screenshots, setScreenshots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
@@ -28,6 +31,25 @@ export default function ScreenshotDashboard() {
       console.error("❌ Failed to load users:", error);
     }
   };
+
+
+  const fetchTimers = async () => {
+  if (!selectedUser) return;
+
+  try {
+    const isoDate = selectedDate.format("YYYY-MM-DD");
+
+    const { data } = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/v1/agent/timers/${selectedUser}`,
+      { params: { date: isoDate } }
+    );
+
+    setTimers(data);
+  } catch (err) {
+    console.error("❌ Failed to load timers:", err);
+  }
+};
+
 
   // ---------- Fetch Screenshots ----------
   const fetchScreenshots = async () => {
@@ -55,12 +77,13 @@ export default function ScreenshotDashboard() {
   }, []);
   useEffect(() => {
     fetchScreenshots();
+    fetchTimers();
   }, [selectedUser, selectedDate]);
 
 
   // ---------- Render Dashboard ----------
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6  bg-slate-50">
       <Filters
         users={users}
         selectedUser={selectedUser}
@@ -78,8 +101,10 @@ export default function ScreenshotDashboard() {
           {
             screenshots.length > 0 && (
               <>
-              <Summary screenshots={screenshots} />
+              <div className="w-full flex gap-8  justify-center items-stretch mb-2  py-4 ">
+                <Summary screenshots={screenshots} timers={timers} />
           <Activity screenshots={screenshots} />
+              </div>
           <Timeline screenshots={screenshots} />
           <ScreenshotGallery screenshots={screenshots} /></>)
           }

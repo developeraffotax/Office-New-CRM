@@ -1,5 +1,6 @@
 import { addScreenshotJob } from "../jobs/queues/screenshotQueue.js";
 import screenshotModel from "../models/screenshotModel.js";
+import timerModel from "../models/timerModel.js";
 import { getFileUrl, getUploadPresignedUrl, listFiles } from "../utils/s3/s3Actions.js";
 
 
@@ -183,5 +184,44 @@ export const getUserScreenshots = async (req, res) => {
   } catch (err) {
     console.error("❌ Failed to fetch screenshots:", err);
     res.status(500).json({ error: "Failed to fetch screenshots" });
+  }
+};
+
+
+
+
+
+export const getUserTimers = async (req, res) => {
+  const userId = req.params.userId;
+  const { date } = req.query; // single date from frontend
+
+  try {
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const query = {
+      clientId: userId,
+       endTime: { $ne: null }
+      
+    };
+
+    // Default to today if no date provided
+    const targetDate = date ? new Date(date) : new Date();
+    const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
+
+    query.date = { $gte: startOfDay, $lte: endOfDay };
+
+    const timers = await timerModel
+          .find(query)
+          .sort({ date: 1 });
+
+    
+
+    res.json(timers);
+  } catch (err) {
+    console.error("❌ Failed to fetch timers:", err);
+    res.status(500).json({ error: "Failed to fetch timers" });
   }
 };

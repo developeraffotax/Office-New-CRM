@@ -6,6 +6,7 @@ import {
   getAlllostLead,
   getAllProgressLead,
   getAllWonLead,
+  getAvailableTicketsNum,
   getdashboardLead,
   getLeadConversionStats,
   getLeadStats,
@@ -47,7 +48,7 @@ router.delete("/delete/lead/:id", deleteLead);
 router.get("/dashboard/lead", getdashboardLead);
 
 
-
+router.get("/available-tickets", getAvailableTicketsNum);
 
 
 

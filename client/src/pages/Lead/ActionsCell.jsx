@@ -13,7 +13,7 @@ import { FiPlusSquare } from "react-icons/fi";
  
 import { FiMoreHorizontal } from "react-icons/fi"; // modern icon
 
-export const ActionsCell = ({ row, setClientCompanyName, setClientEmail, setShowNewTicketModal, handleCopyLead, handleLeadStatus, handleDeleteLeadConfirmation,  selectedTab, setClientName, setCompanyName  }) => {
+export const ActionsCell = ({ row, setClientCompanyName, setClientEmail, setShowNewTicketModal, handleCopyLead, handleLeadStatus, handleDeleteLeadConfirmation,  selectedTab, setClientName, setCompanyName, ticketMap  }) => {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -21,6 +21,16 @@ export const ActionsCell = ({ row, setClientCompanyName, setClientEmail, setShow
 
   const handleClick = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
+
+
+  const clientName = row?.original?.clientName;
+const email = row?.original?.email;
+
+const ticketCount =
+  ticketMap?.[clientName] || ticketMap?.[email] || 0;
+
+const hasTickets = ticketCount > 0;
+
 
   return (
     <div className="flex items-center justify-center gap-4 w-full h-full">
@@ -44,14 +54,30 @@ export const ActionsCell = ({ row, setClientCompanyName, setClientEmail, setShow
         </span>
       </div>
       <div>
-        <span
-          title="Ticket"
-          onClick={handleClick}
-          id={id}
-          className="text-2xl text-orange-500 cursor-pointer"
-        >
-          <IoTicketOutline />
-        </span>
+        
+
+        {/* TICKET ICON WITH COUNT BADGE */}
+<div className="relative">
+  <span
+    title={`Tickets (${ticketCount})`}
+    onClick={handleClick}
+    id={id}
+    className={`text-2xl text-orange-500 cursor-pointer`}
+  >
+    <IoTicketOutline />
+  </span>
+
+  {/* BADGE COUNT */}
+  {ticketCount > 0 && (
+    <span
+      className="absolute -top-2 -right-2 bg-sky-600 text-white text-[10px]
+                 font-bold px-[6px] py-[1px] rounded-full shadow-md"
+    >
+      {ticketCount}
+    </span>
+  )}
+</div>
+
 
         <Popover
           id={id}

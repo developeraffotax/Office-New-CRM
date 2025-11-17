@@ -35,7 +35,8 @@ export const getLeadColumns = (ctx) => {
     setClientName,
     setCompanyName,
 
-    setEmailPopup
+    setEmailPopup,
+    ticketMap
   } = ctx;
 
   return [
@@ -212,6 +213,9 @@ export const getLeadColumns = (ctx) => {
       },
       Cell: ({ row }) => {
         const clientName = row.original.clientName;
+        const hasTickets = ticketMap[clientName] > 0; 
+        
+        
         const [show, setShow] = useState(false);
         const [localClientName, setLocalClientName] = useState(clientName);
 
@@ -228,6 +232,8 @@ export const getLeadColumns = (ctx) => {
           setShow(false);
         };
 
+
+      
         return (
           <div className="w-full px-1">
             {show ? (
@@ -292,7 +298,7 @@ export const getLeadColumns = (ctx) => {
                         }}
                       >
                 
-                  <IoTicket className="w-4 h-4 text-gray-600 hover:text-orange-500"/>
+                  <IoTicket className={`w-4 h-4 hover:text-orange-500 ${hasTickets ? 'text-sky-500' : 'text-gray-600'}`}/>
                 </span>
                   )
                 }
@@ -1881,6 +1887,8 @@ export const getLeadColumns = (ctx) => {
           selectedTab={selectedTab}
           setClientName={setClientName}
           setCompanyName={setCompanyName}
+
+          ticketMap={ticketMap}
         />
       ),
       size: 240,

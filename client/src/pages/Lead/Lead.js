@@ -297,7 +297,24 @@ const applyFilter = (e) => {
 
 
 
+const [ticketMap, setTicketMap] = useState({});
 
+useEffect(() => {
+  const fetchTicketCounts = async () => {
+    try {
+      const {data} = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/leads/available-tickets?status=${selectedTab}`);
+      if(data) {
+        //setTicketMap(data.ticketMap || {});
+
+      }
+
+    } catch (err) {
+      console.error("Error fetching ticket counts", err);
+    }
+  };
+
+  fetchTicketCounts();
+}, [selectedTab]);
 
 
 
@@ -556,6 +573,20 @@ const applyFilter = (e) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
  
   //   Create New Lead
   const handleCreateLead = async () => {
@@ -819,7 +850,8 @@ const allColumns = getLeadColumns({
   setClientName,
   setCompanyName,
 
-  setEmailPopup
+  setEmailPopup,
+  ticketMap
 });
 
  

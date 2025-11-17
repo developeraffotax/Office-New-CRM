@@ -4,6 +4,7 @@ import proposalModel from "../models/proposalModel.js";
 import moment from "moment";
 import goalModel from "../models/goalModel.js";
 import userModel from "../models/userModel.js";
+import ticketModel from "../models/ticketModel.js";
 
 // Create Lead
 export const createLead = async (req, res) => {
@@ -302,6 +303,213 @@ export const getdashboardLead = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Get Available Tickets Number (name + email aware)
+
+// export const getAvailableTicketsNum = async (req, res) => {
+//   const status = req.query.status || "progress";
+
+//   try {
+//     // 1. Fetch leads with clientName + email
+//     const leads = await leadModel
+//       .find({ status })
+//       .select("clientName email -_id");
+
+//     // Extract unique names and emails
+//     const clientNames = [...new Set(leads.map(l => l.clientName?.trim()).filter(Boolean))];
+//     const clientEmails = [...new Set(leads.map(l => l.email?.trim()).filter(Boolean))];
+
+//     console.log("CLIENT Names", clientNames)
+//     console.log("clientEmails clientEmails", clientEmails)
+
+//     // 2. Get ticket counts grouped by BOTH clientName and email
+//     const ticketsAgg = await ticketModel.aggregate([
+//       {
+//         $match: {
+//           state: { $ne: "complete" },
+//           $or: [
+//             { clientName: { $in: clientNames } },
+//             { email: { $in: clientEmails } }
+//           ]
+//         }
+//       },
+//       {
+//         $group: {
+//           _id: {
+//             clientName: "$clientName",
+//             email: "$email"
+//           },
+//           count: { $sum: 1 }
+//         }
+//       }
+//     ]);
+
+//     // 3. Build a combined map (clientName → ticket count)
+//     const ticketMap = {};
+
+//     leads.forEach(lead => {
+//       const name = lead.clientName;
+//       const email = lead.email;
+
+//       const match = ticketsAgg.find(
+//         t =>
+//           (t._id.clientName === name && name) ||
+//           (t._id.email === email && email)
+//       );
+
+//       ticketMap[name] = match ? match.count : 0;
+//     });
+
+//     return res.status(200).send({
+//       success: true,
+//       message: "Client ticket counts (name + email aware)",
+//       ticketMap
+//     });
+
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).send({
+//       success: false,
+//       message: "Error while getting client ticket counts!",
+//       error
+//     });
+//   }
+// };
+
+
+
+
+// Get Available Tickets Number (name aware)
+ 
+export const getAvailableTicketsNum = async (req, res) => {
+  const status = req.query.status || "progress";
+
+  try {
+    // 1. Get unique client names from leads
+    const leads = await leadModel
+      .find({ status })
+      .select("clientName -_id");
+
+    const clientNames = [...new Set(leads
+      .map(l => l.clientName)
+      .filter(Boolean)
+    )];
+
+    // 2. Group tickets by clientName in one fast query
+    const ticketCounts = await ticketModel.aggregate([
+      {
+        $match: {
+          clientName: { $in: clientNames },
+          state: { $ne: "complete" },
+        }
+      },
+      {
+        $group: {
+          _id: "$clientName",
+          count: { $sum: 1 },
+        }
+      }
+    ]);
+
+    // 3. Convert aggregation to a lookup map
+    const ticketMap = {};
+    clientNames.forEach(name => {
+      const found = ticketCounts.find(tc => tc._id === name);
+      ticketMap[name] = found ? found.count : 0;
+    });
+
+    return res.status(200).send({
+      success: true,
+      message: "Client ticket counts",
+      ticketMap,
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({
+      success: false,
+      message: "Error while fetching ticket counts",
+      error,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

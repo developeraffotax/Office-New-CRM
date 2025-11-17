@@ -21,6 +21,8 @@ module.exports = {
       },
       animation: {
         shake: "shake 0.5s ease-in-out infinite",
+        pop: "pop 0.25s ease-out",
+       
       },
       keyframes: {
         shake: {
@@ -30,8 +32,16 @@ module.exports = {
           "75%": { transform: "translateX(-10px)" },
           "100%": { transform: "translateX(0)" },
         },
+        
+        pop: {
+          "0%": { transform: "scale(0.95)", opacity: 0 },
+          "100%": { transform: "scale(1)", opacity: 1 }
+        },
+       
       },
     },
   },
+
+
   plugins: [require("@tailwindcss/typography")],
 };

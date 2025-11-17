@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { addScreenshotJob } from "../jobs/queues/screenshotQueue.js";
 import screenshotModel from "../models/screenshotModel.js";
 import timerModel from "../models/timerModel.js";
@@ -118,6 +119,99 @@ export const getAllScreenshots = async (req, res) => {
 
 
 
+ 
+export const getUserDailyActivity = async (req, res) => {
+  const userId = req.user?.user?._id;
+
+  try {
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const targetDate = req.query.date ? new Date(req.query.date) : new Date(); 
+
+    const todayStart = new Date(targetDate.setHours(0, 0, 0, 0));
+    const todayEnd = new Date(targetDate.setHours(23, 59, 59, 999));
+
+    const yesterdayStart = new Date(todayStart);
+    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+
+    const yesterdayEnd = new Date(todayEnd);
+    yesterdayEnd.setDate(yesterdayEnd.getDate() - 1);
+
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+
+    const result = await screenshotModel.aggregate([
+      {
+        $facet: {
+          today: [
+            {
+              $match: {
+                userId: userObjectId,
+                timestamp: { $gte: todayStart, $lte: todayEnd },
+                activity: { $exists: true }
+              }
+            },
+            {
+              $group: {
+                _id: null,
+                
+                avgKeyboardPercent: { $avg: "$activity.keyboardActivityPercent" },
+                avgMousePercent: { $avg: "$activity.mouseActivityPercent" },
+                avgOverallPercent: { $avg: "$activity.overallActivityPercent" },
+              }
+            }
+          ],
+
+          yesterday: [
+            {
+              $match: {
+                userId: userObjectId,
+                timestamp: { $gte: yesterdayStart, $lte: yesterdayEnd },
+                activity: { $exists: true }
+              }
+            },
+            {
+              $group: {
+                _id: null,
+                
+                avgKeyboardPercent: { $avg: "$activity.keyboardActivityPercent" },
+                avgMousePercent: { $avg: "$activity.mouseActivityPercent" },
+                avgOverallPercent: { $avg: "$activity.overallActivityPercent" },
+              }
+            }
+          ]
+        }
+      }
+    ]);
+
+    const todayData = result[0].today[0] || {};
+    const yesterdayData = result[0].yesterday[0] || {};
+
+    res.json({
+      today: {
+        date: todayStart.toISOString().split("T")[0],
+        totalKeyboard: todayData.totalKeyboard || 0,
+        totalMouse: todayData.totalMouse || 0,
+        keyboardActivityPercent: Math.round(todayData.avgKeyboardPercent || 0),
+        mouseActivityPercent: Math.round(todayData.avgMousePercent || 0),
+        overallActivityPercent: Math.round(todayData.avgOverallPercent || 0),
+      },
+      yesterday: {
+        date: yesterdayStart.toISOString().split("T")[0],
+        totalKeyboard: yesterdayData.totalKeyboard || 0,
+        totalMouse: yesterdayData.totalMouse || 0,
+        keyboardActivityPercent: Math.round(yesterdayData.avgKeyboardPercent || 0),
+        mouseActivityPercent: Math.round(yesterdayData.avgMousePercent || 0),
+        overallActivityPercent: Math.round(yesterdayData.avgOverallPercent || 0),
+      }
+    });
+
+  } catch (err) {
+    console.error("❌ Failed to calculate user activity:", err);
+    res.status(500).json({ error: "Failed to calculate user activity" });
+  }
+};
 
 
 

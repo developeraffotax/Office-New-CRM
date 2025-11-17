@@ -1,7 +1,7 @@
 import express from "express";
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
 
-import { getPresignedUrl, getUserScreenshots, getUserTimers, takeScreenshot } from "../controllers/agentController.js";
+import { getPresignedUrl, getUserDailyActivity, getUserScreenshots, getUserTimers, takeScreenshot } from "../controllers/agentController.js";
 
 
 const router = express.Router();
@@ -13,9 +13,16 @@ router.post("/screenshot", requiredSignIn, takeScreenshot);
  
 router.get("/presigned-url", requiredSignIn, getPresignedUrl);
 
+router.get("/activity", requiredSignIn, getUserDailyActivity);
 
+
+
+// for admin to get user data
 router.get("/screenshot/:userId", requiredSignIn, getUserScreenshots);
 router.get("/timers/:userId", requiredSignIn, getUserTimers);
+
+
+
 
 
 

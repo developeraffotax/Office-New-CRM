@@ -169,9 +169,9 @@ const ScreenshotGallery = ({ screenshots, loading }) => {
                             style={{
                               width: `${activityPercent}%`,
                               backgroundColor:
-                                activityPercent > 70
+                                activityPercent > 50
                                   ? "#16a34a"
-                                  : activityPercent > 40
+                                  : activityPercent > 20
                                   ? "#facc15"
                                   : "#ef4444",
                             }}

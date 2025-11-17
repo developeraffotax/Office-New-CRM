@@ -867,7 +867,7 @@ export default function Sidebar({ hide, setHide }) {
 
 
           {/*  */}
-          {isSettingsOpen && hasAccess("Roles") && (
+          {isSettingsOpen && (auth?.user?.role?.name === "Admin") && (
             <>
               <div
                 className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${

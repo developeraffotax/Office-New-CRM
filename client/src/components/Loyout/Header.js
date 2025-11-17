@@ -29,6 +29,7 @@ import { getNotifications, updateAllNotification, updateNotification } from "../
 import OnlineUsers from "../../utlis/OnlineUsers";
  
 import Overview from "./overview/Overview";
+import UserActivity from "./UserActivity";
  
 
 const formatElapsedTime = (createdAt) => {
@@ -78,8 +79,26 @@ export default function Header({
 const  notificationData  = useSelector((state) => state.notifications.notificationData);
   const [showReminderNotificationPanel, setShowReminderNotificationPanel] = useState(false);
 
- 
+  const [userActivity, setUserActivity] = useState(null);
 
+
+  useEffect(() => {
+
+      const getUserActivity = async () => {
+    try {
+      const { data } = await axios.get(
+         `${process.env.REACT_APP_API_URL}/api/v1/agent/activity`,
+      );
+      setUserActivity(data?.user);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
+    getUserActivity();
+
+  },  []);
 
   const handleSearch = async () => {
     try {
@@ -496,11 +515,12 @@ useEffect(() => {
 
 
                {
-                    auth?.user?.role?.name === "Admin" && <OnlineUsers />
+                    auth?.user?.role?.name === "Admin" ? <OnlineUsers /> : <UserActivity />
                     
                     
-              }
+                  }
 
+                  
 
 
 

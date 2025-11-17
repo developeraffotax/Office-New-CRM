@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import React from "react";
 import Chart from "react-apexcharts";
 
-const Activity = ({ screenshots }) => {
+const Activity = ({ screenshots, loading }) => {
   if (!screenshots.length) return null;
 
   // -----------------------------
@@ -120,17 +120,44 @@ const Activity = ({ screenshots }) => {
     // { name: "Mouse", data: mouse },
   ];
 
-  return (
-    <div className="w-[70%] bg-white p-4 rounded-xl shadow border max-w-6xl">
-      <h3 className="font-semibold mb-2">Activity (30-Minute Windows)</h3>
+return (
+  <div className="w-[70%] bg-white p-4 rounded-xl shadow border max-w-6xl min-h-[400px]">
+
+    <h3 className="font-semibold mb-2">Activity (30-Minute Windows)</h3>
+
+    {loading ? (
+      // -----------------------
+      // PREMIUM SKELETON LOADER
+      // -----------------------
+      <div className="animate-pulse mt-6">
+
+        {/* Chart area placeholder */}
+        <div className="w-full h-64 bg-gray-200 rounded-lg"></div>
+
+        {/* Fake X-axis labels */}
+        <div className="flex justify-between mt-4">
+          <div className="w-10 h-3 bg-gray-200 rounded"></div>
+          <div className="w-10 h-3 bg-gray-200 rounded"></div>
+          <div className="w-10 h-3 bg-gray-200 rounded"></div>
+          <div className="w-10 h-3 bg-gray-200 rounded"></div>
+        </div>
+
+      </div>
+    ) : (
+      // -----------------------
+      // REAL CHART
+      // -----------------------
       <Chart
         options={chartOptions}
         series={chartSeries}
         type="area"
         height={320}
       />
-    </div>
-  );
+    )}
+
+  </div>
+);
+
 };
 
 export default Activity;

@@ -88,20 +88,16 @@ export default function ScreenshotDashboard() {
         setSelectedDate={setSelectedDate}
       />
 
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <p>Loading screenshots...</p>
-        </div>
-      ) : (
-        <>
+ 
+         
           {screenshots.length > 0 && (
             <>
               <div className="w-full flex gap-8  justify-center items-stretch mb-2  py-4 ">
-                <Summary screenshots={screenshots} timers={timers} />
-                <Activity screenshots={screenshots} />
+                <Summary screenshots={screenshots} timers={timers} loading={loading} />
+                <Activity screenshots={screenshots}  loading={loading}/>
               </div>
               {/* <Timeline screenshots={screenshots} /> */}
-              <ScreenshotGallery screenshots={screenshots} />
+              <ScreenshotGallery screenshots={screenshots}  loading={loading}/>
             </>
           )}
 
@@ -110,8 +106,8 @@ export default function ScreenshotDashboard() {
               <p>No screenshots found</p>
             </div>
           )}
-        </>
-      )}
+         
+     
     </div>
   );
 }

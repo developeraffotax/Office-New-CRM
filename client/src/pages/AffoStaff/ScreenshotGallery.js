@@ -2,8 +2,9 @@ import dayjs from "dayjs";
 import React, { useMemo, useState } from "react";
 import { FaRegImages } from "react-icons/fa";
 import { ImageModal } from "./ImageModal";
+import { ScreenshotThumbnail } from "./ScreenshotThumbnail";
 
-const ScreenshotGallery = ({ screenshots }) => {
+const ScreenshotGallery = ({ screenshots, loading }) => {
   const [modalIndex, setModalIndex] = useState(null);
 
   // --- Sort screenshots by time ---
@@ -57,15 +58,68 @@ const ScreenshotGallery = ({ screenshots }) => {
     );
   };
 
+  
   return (
-    <div className="bg-white p-8 rounded-none shadow border">
-      {/* Header */}
-      <h3 className="text-[17px] font-semibold mb-6 flex items-center gap-2 text-gray-800">
-        <FaRegImages className="text-blue-500 text-[18px]" />
-        <span className="tracking-tight">Screenshot Gallery</span>
-      </h3>
+  <div className="bg-white p-8 rounded-none shadow border">
 
-      {/* Timeline + Screenshots */}
+    {/* Header */}
+    <h3 className="text-[17px] font-semibold mb-6 flex items-center gap-2 text-gray-800">
+      <FaRegImages className="text-blue-500 text-[18px]" />
+      <span className="tracking-tight">Screenshot Gallery</span>
+    </h3>
+
+    {loading ? (
+      // -----------------------
+      // PREMIUM LOADING SKELETON
+      // -----------------------
+      <div className="space-y-10 animate-pulse">
+
+        {[...Array(3)].map((_, hourIdx) => (
+          <div key={hourIdx} className="flex items-start gap-6">
+
+            {/* Timeline Label Placeholder */}
+            <div className="w-36 text-right pr-4 border-r border-gray-200">
+              <div className="h-4 bg-gray-200 rounded w-20 mx-auto"></div>
+            </div>
+
+            {/* Screenshots Grid Placeholder */}
+            <div className="grid flex-1 grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+              {[...Array(5)].map((_, shotIdx) => (
+                <div
+                  key={shotIdx}
+                  className="pb-4 rounded-lg border border-gray-300 shadow-sm overflow-hidden"
+                >
+                  {/* Thumbnail Placeholder */}
+                  <div className="h-36 bg-gray-200 rounded-lg"></div>
+
+                  {/* Activity Bar Placeholder */}
+                  <div className="mt-2 px-4 space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="h-2 bg-gray-300 rounded w-1/3"></div>
+                      <div className="h-2 bg-gray-300 rounded w-1/6"></div>
+                    </div>
+                    <div className="h-2 bg-gray-300 rounded w-full"></div>
+                  </div>
+
+                  {/* Window Title & Times Placeholder */}
+                  <div className="mt-2 px-4 space-y-1">
+                    <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                    <div className="flex justify-between">
+                      <div className="h-2 bg-gray-200 rounded w-1/3"></div>
+                      <div className="h-2 bg-gray-200 rounded w-1/4"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+
+      </div>
+    ) : (
+      // -----------------------
+      // REAL GALLERY
+      // -----------------------
       <div className="space-y-10">
         {groupedScreenshots.map(({ label, screenshots: hourShots }) => (
           <div key={label} className="flex items-start gap-6">
@@ -74,7 +128,7 @@ const ScreenshotGallery = ({ screenshots }) => {
               <p className="text-sm font-medium text-gray-700">{label}</p>
             </div>
 
-            {/* Screenshots for this hour */}
+            {/* Screenshots */}
             <div className="grid flex-1 grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
               {hourShots.length > 0 ? (
                 hourShots.map((shot, idx) => {
@@ -94,25 +148,21 @@ const ScreenshotGallery = ({ screenshots }) => {
                   return (
                     <div
                       key={shot._id}
-                      className="pb-4 rounded-lg border hover:shadow-md shadow-black/50 border-gray-300 transition overflow-hidden "
+                      className="pb-4 rounded-lg border hover:shadow-md shadow-black/50 border-gray-300 transition overflow-hidden"
                     >
-                      {/* Thumbnail wrapper */}
-                      <div className="relative h-36   bg-gray-50">
-                        <img
+                      <div className="relative h-36 bg-gray-50">
+                        <ScreenshotThumbnail
                           src={shot.signedUrl}
-                          alt="Screenshot"
-                          className="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                          alt={shot.activeWindow?.title || "Screenshot"}
                           onClick={() => handleOpen(overallIndex)}
                         />
                       </div>
 
-                      {/* Activity Bar */}
                       <div className="mt-2 relative group px-4">
                         <div className="flex items-center justify-between text-xs mb-1">
                           <span>Activity</span>
                           <span>{activityPercent}%</span>
                         </div>
-
                         <div className="h-2 rounded-full bg-gray-200 relative">
                           <div
                             className="h-2 rounded-full transition-all"
@@ -134,7 +184,6 @@ const ScreenshotGallery = ({ screenshots }) => {
                         </div>
                       </div>
 
-                      {/* Window Title & Times */}
                       <div className="mt-2 px-4">
                         <p className="text-xs text-gray-600 truncate">
                           {shot.activeWindow?.title || "No title"}
@@ -160,24 +209,24 @@ const ScreenshotGallery = ({ screenshots }) => {
           </div>
         ))}
       </div>
+    )}
 
-      {/* Modal (Portal) */}
-      {modalIndex !== null && (
-        <ImageModal
-          src={sortedScreenshots[modalIndex].signedUrl}
-          alt={
-            sortedScreenshots[modalIndex].activeWindow?.title || "Screenshot"
-          }
-          takenAt={dayjs(sortedScreenshots[modalIndex].timestamp).format(
-            "MMMM D, YYYY h:mm A"
-          )}
-          onClose={handleClose}
-          onNext={handleNext}
-          onPrev={handlePrev}
-        />
-      )}
-    </div>
-  );
+    {/* Modal */}
+    {modalIndex !== null && (
+      <ImageModal
+        src={sortedScreenshots[modalIndex].signedUrl}
+        alt={sortedScreenshots[modalIndex].activeWindow?.title || "Screenshot"}
+        takenAt={dayjs(sortedScreenshots[modalIndex].timestamp).format(
+          "MMMM D, YYYY h:mm A"
+        )}
+        onClose={handleClose}
+        onNext={handleNext}
+        onPrev={handlePrev}
+      />
+    )}
+  </div>
+);
+
 };
 
 export default ScreenshotGallery;

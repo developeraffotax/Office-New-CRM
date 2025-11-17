@@ -3,7 +3,7 @@ import React from "react";
 import { FiActivity } from "react-icons/fi";
 import { FiCalendar } from "react-icons/fi";
 
-const Summary = ({ screenshots, timers }) => {
+const Summary = ({ screenshots, timers, loading }) => {
   // --- Summary stats ---
   const avgActivity = Math.round(
     screenshots.reduce(
@@ -39,7 +39,11 @@ const Summary = ({ screenshots, timers }) => {
           <div className="flex-1">
             <p className="text-md text-gray-500">Worked Time</p>
             <p className="text-4xl font-bold text-gray-900 mt-1">
-              {hours}h {minutes}m
+              {loading ? (
+                <span className="inline-block w-24 h-3 bg-gray-300 rounded animate-pulse"></span>
+              ) : (
+                `${hours}h ${minutes}m`
+              )}
             </p>
           </div>
 
@@ -50,7 +54,11 @@ const Summary = ({ screenshots, timers }) => {
           <div className="flex-1">
             <p className="text-md text-gray-500">Average Activity</p>
             <p className="text-4xl font-bold text-gray-900 mt-1">
-              {avgActivity}%
+              {loading ? (
+                <span className="inline-block w-24 h-3 bg-gray-300 rounded animate-pulse"></span>
+              ) : (
+                `${avgActivity}%`
+              )}
             </p>
           </div>
         </div>
@@ -71,7 +79,11 @@ const Summary = ({ screenshots, timers }) => {
           <div className="flex-1">
             <p className="text-md text-gray-500">Total Screenshots</p>
             <p className="text-2xl font-bold text-gray-900 mt-1">
-              {totalScreenshots}
+              {loading ? (
+                <span className="inline-block w-24 h-3 bg-gray-300 rounded animate-pulse"></span>
+              ) : (
+                totalScreenshots
+              )}
             </p>
           </div>
 
@@ -82,7 +94,11 @@ const Summary = ({ screenshots, timers }) => {
           <div className="flex-1">
             <p className="text-md text-gray-500">Tracking Date</p>
             <p className="text-xl font-semibold text-gray-900 mt-1">
-              {firstDate}
+              {loading ? (
+                <span className="inline-block w-24 h-3 bg-gray-300 rounded animate-pulse"></span>
+              ) : (
+                firstDate
+              )}
             </p>
           </div>
         </div>

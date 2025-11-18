@@ -89,7 +89,7 @@ export const jobDateColumn = ({handleUpdateDates}) => {
             return (
               <div className="w-full ">
                 {!showCurrentDate ? (
-                  <p onDoubleClick={() => setShowCurrentDate(true)}>
+                  <p onDoubleClick={() => setShowCurrentDate(true)} className="">
                     {format(new Date(date), "dd-MMM-yyyy")}
                   </p>
                 ) : (
@@ -98,7 +98,7 @@ export const jobDateColumn = ({handleUpdateDates}) => {
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     onBlur={(e) => handleDateChange(e.target.value)}
-                    className={`h-[2rem] w-full  cursor-pointer text-center rounded-md border border-gray-200 outline-none `}
+                    className={`h-[2rem] text-[11px] w-full  cursor-pointer text-center rounded-md border border-gray-200 outline-none `}
                   />
                 )}
               </div>
@@ -166,7 +166,7 @@ export const jobDateColumn = ({handleUpdateDates}) => {
             "Custom date",
           ],
           filterVariant: "select",
-          size: 115,
+          size: 100,
           minSize: 80,
           maxSize: 140,
           grow: false,

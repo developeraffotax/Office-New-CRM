@@ -15,7 +15,7 @@ export const sourceColumn = (ctx) => {
                     "No Source",
                   ];
                   return (
-                    <div className=" flex flex-col gap-[2px] w-[80px] items-center justify-center  ">
+                    <div className=" flex flex-col gap-[2px] w-[70px] items-center justify-center  ">
                       <span
                         className="ml-1 w-full text-center cursor-pointer pr-6"
                         title="Clear Filter"
@@ -61,6 +61,7 @@ export const sourceColumn = (ctx) => {
 
                   return source === filterValue;
                 },
-                size: 90,
+                size: 80,
+                
               }
 }

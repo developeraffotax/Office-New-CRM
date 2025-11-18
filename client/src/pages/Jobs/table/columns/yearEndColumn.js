@@ -88,7 +88,7 @@ export const yearEndColumn = ({handleUpdateDates}) => {
             return (
               <div className="w-full ">
                 {!showYearend ? (
-                  <p onDoubleClick={() => setShowYearend(true)}>
+                  <p onDoubleClick={() => setShowYearend(true)} className="  ">
                     {format(new Date(date), "dd-MMM-yyyy")}
                   </p>
                 ) : (
@@ -97,7 +97,7 @@ export const yearEndColumn = ({handleUpdateDates}) => {
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     onBlur={(e) => handleDateChange(e.target.value)}
-                    className={`h-[2rem]  cursor-pointer w-full text-center rounded-md border border-gray-200 outline-none `}
+                    className={`h-[2rem] text-[11px]  cursor-pointer w-full text-center rounded-md border border-gray-200 outline-none `}
                   />
                 )}
               </div>
@@ -173,7 +173,7 @@ export const yearEndColumn = ({handleUpdateDates}) => {
             "Custom date",
           ],
           filterVariant: "custom",
-          size: 115,
+          size: 100,
           minSize: 80,
           maxSize: 140,
           grow: false,

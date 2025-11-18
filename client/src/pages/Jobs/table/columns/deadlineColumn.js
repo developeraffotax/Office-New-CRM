@@ -93,7 +93,7 @@ export const deadlineColumn = ({handleUpdateDates}) => {
             return (
               <div className="w-full ">
                 {!showDeadline ? (
-                  <p onDoubleClick={() => setShowDeadline(true)}>
+                  <p onDoubleClick={() => setShowDeadline(true)} className="">
                     {format(new Date(date), "dd-MMM-yyyy")}
                   </p>
                 ) : (
@@ -102,7 +102,7 @@ export const deadlineColumn = ({handleUpdateDates}) => {
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     onBlur={(e) => handleDateChange(e.target.value)}
-                    className={`h-[2rem] cursor-pointer w-full text-center rounded-md border border-gray-200 outline-none ${
+                    className={`h-[2rem] text-[11px] cursor-pointer w-full text-center rounded-md border border-gray-200 outline-none ${
                       isExpired ? "text-red-500" : ""
                     }`}
                   />
@@ -179,7 +179,7 @@ export const deadlineColumn = ({handleUpdateDates}) => {
             "Custom date",
           ],
           filterVariant: "custom",
-          size: 115,
+          size: 100,
           minSize: 80,
           maxSize: 140,
           grow: false,

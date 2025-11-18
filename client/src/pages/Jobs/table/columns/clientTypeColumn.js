@@ -13,7 +13,7 @@ export const clientTypeColumn = (ctx) => {
                     "No CT",
                   ];
                   return (
-                    <div className=" flex flex-col gap-[2px] w-[5.5rem] items-center justify-center  ">
+                    <div className=" flex flex-col gap-[2px] w-[80px] items-center justify-center  ">
                       <span
                         className="ml-1 w-full text-center cursor-pointer pr-6"
                         title="Clear Filter"

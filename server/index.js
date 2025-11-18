@@ -88,3 +88,11 @@ const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on PORT ${PORT}`.bgMagenta.white);
 });
+
+
+
+// Log online users/agents every 1 minute
+setInterval(() => {
+  console.log("🟢 Online Users:", onlineUsers);
+  console.log("🟣 Online Agents:", onlineAgents);
+}, 60 * 1000); // 60,000 ms = 1 minute

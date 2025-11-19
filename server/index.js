@@ -15,9 +15,31 @@ import { gmailWebhookHandler } from "./utils/pubSubPush.js";
 import { errorHandler } from "./middlewares/errorMiddleware.js";
 
 import agenda from "./utils/agenda.js";
+import { startSubscriber } from "./utils/redisPubSub/subscriber.js";
  
 
 dotenv.config();
+
+
+
+
+
+export const onlineUsers = new Map();
+export const onlineAgents = new Map();
+
+// start subscriber after Maps are initialized
+startSubscriber({ onlineUsers, onlineAgents });
+
+
+
+
+
+
+
+
+
+
+
 
 // Validate secret key
 if (!process.env.SERVER_SECRET_KEY || process.env.SERVER_SECRET_KEY !== Skey) {
@@ -36,12 +58,10 @@ app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 
 
-export const onlineUsers = new Map();
-console.log("OnlineUsers 💚",onlineUsers)
 
 
 
-export const onlineAgents = new Map();
+
 
 // Create server and socket
 const server = http.createServer(app);

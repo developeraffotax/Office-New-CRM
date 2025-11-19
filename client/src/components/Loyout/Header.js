@@ -181,26 +181,26 @@ useEffect(() => {
 
 
 
-useEffect(() => {
-  if (!auth?.user?.id) return;
+// useEffect(() => {
+//   if (!auth?.user?.id) return;
 
-  const handleTabFocus = () => {
-    // When user returns to the tab (document becomes visible)
-    if (document.visibilityState === "visible") {
-      dispatch(getNotifications(auth.user.id));
-      dispatch(getRemindersCount());
-      getTimerStatus();
-    }
-  };
+//   const handleTabFocus = () => {
+//     // When user returns to the tab (document becomes visible)
+//     if (document.visibilityState === "visible") {
+//       dispatch(getNotifications(auth.user.id));
+//       dispatch(getRemindersCount());
+//       getTimerStatus();
+//     }
+//   };
 
-  document.addEventListener("visibilitychange", handleTabFocus);
+//   document.addEventListener("visibilitychange", handleTabFocus);
  
 
-  return () => {
-    document.removeEventListener("visibilitychange", handleTabFocus);
+//   return () => {
+//     document.removeEventListener("visibilitychange", handleTabFocus);
     
-  };
-}, [auth?.user?.id, dispatch]);
+//   };
+// }, [auth?.user?.id, dispatch]);
 
 
 

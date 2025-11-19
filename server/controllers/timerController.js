@@ -1,27 +1,26 @@
-import { io, onlineAgents } from "../index.js";
+import { io } from "../index.js";
 import jobsModel from "../models/jobsModel.js";
 import taskModel from "../models/taskModel.js";
 import timerModel from "../models/timerModel.js";
 import timerStatusModel from "../models/timerStatusModel.js";
 
-// Start Timer
+import { connection as redis } from "../utils/ioredis.js";
+
+
+// -----------------------------
+// START TIMER
+// -----------------------------
 export const startTimer = async (req, res) => {
   try {
     const {
-      clientId,
-      jobId,
-      type,
-      department,
-      clientName,
-      projectName,
-      task,
-      companyName,
-      holiday,
-      activity
+      clientId, jobId, type, department, clientName,
+      projectName, task, companyName, holiday, activity,
     } = req.body;
-    const startTime = new Date().toISOString();
 
+    const startTime = new Date().toISOString();
     const user = req.user.user.name;
+
+    // Prevent multiple running timers
     const isTimerRunning = await timerModel.findOne({
       clientId: req.user.user._id,
       isRunning: true,
@@ -34,7 +33,8 @@ export const startTimer = async (req, res) => {
       });
     }
 
-    const newTimer = new timerModel({
+    // Create new timer
+    const newTimer = await new timerModel({
       clientId,
       jobId,
       startTime,
@@ -48,36 +48,52 @@ export const startTimer = async (req, res) => {
       isRunning: true,
       holiday,
       activity: activity || "Chargeable",
-    });
-    await newTimer.save();
+    }).save();
 
-    const updatedJob = await jobsModel.findByIdAndUpdate(
+    // Update job timestamp
+    await jobsModel.findByIdAndUpdate(
       jobId,
       { createdAt: new Date() },
       { new: true }
     );
 
+    // Notify all dashboards to refresh UI
     io.emit("runningTimersUpdate");
 
-    const onlineAgent = onlineAgents.get(clientId);
+    // ------------------------------------
+    // NOTIFY ONLINE AGENT VIA REDIS PRESENCE
+    // ------------------------------------
 
-    if (onlineAgent) {
-      const timer = {
-        _id: newTimer?._id.toString(),
-        isRunning: newTimer?.isRunning,
-        startTime: newTimer?.startTime.toString(),
-        department: newTimer?.department.toString(),
-        clientName: newTimer?.clientName.toString(),
-        task: newTimer?.task.toString(),
-      }
-      io.to(onlineAgent.socketId).emit("timer:state", timer);
+    // All sockets registered to this agent
+    const agentSockets = await redis.smembers(`sockets:agent:${clientId}`);
+
+    if (agentSockets && agentSockets.length > 0) {
+      const timerPayload = {
+        _id: newTimer._id.toString(),
+        isRunning: newTimer.isRunning,
+        startTime: newTimer.startTime.toString(),
+        department: newTimer.department,
+        clientName: newTimer.clientName,
+        task: newTimer.task,
+      };
+
+      // Emit to all sockets (multi-device support)
+      agentSockets.forEach(socketId => {
+        io.to(socketId).emit("timer:state", timerPayload);
+      });
+
+      console.log(`⏱ Sent timer update to agent:${clientId}`, agentSockets);
+    } else {
+      console.log(`⚪ Agent ${clientId} is offline. No sockets found.`);
     }
 
+    // Response
     res.status(200).send({
       success: true,
-      message: "Timer Start",
+      message: "Timer Started",
       timer: newTimer,
     });
+
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -88,62 +104,93 @@ export const startTimer = async (req, res) => {
   }
 };
 
-// Stop Timer
+
+
+
+
+
+ 
+
+// -----------------------------
+// STOP TIMER
+// -----------------------------
 export const stopTimer = async (req, res) => {
   try {
     const timerId = req.params.id;
     const { note, activity } = req.body;
     const endTime = new Date().toISOString();
 
-    const isExisting = await timerModel.findById({ _id: timerId });
-    if (!isExisting) {
-      res.status(400).send({
+    // Find existing timer
+    const existingTimer = await timerModel.findById(timerId);
+    if (!existingTimer) {
+      return res.status(400).send({
         success: false,
         message: "Timer not found!",
       });
     }
 
-    const updateTimer = await timerModel
+    // Update timer
+    const updatedTimer = await timerModel
       .findByIdAndUpdate(
-        { _id: isExisting._id },
-        { endTime: endTime, note: note, activity: activity, isRunning: false },
+        existingTimer._id,
+        { endTime, note, activity, isRunning: false },
         { new: true }
       )
       .lean();
 
-    removeStatus(updateTimer._id);
+    // Optional: Remove timer status (your helper)
+    removeStatus(updatedTimer._id);
 
+    // Notify dashboards
     io.emit("runningTimersUpdate");
 
-    const onlineAgent = onlineAgents.get(updateTimer?.clientId?.toString());
-    console.log(onlineAgent, "ONLINE AGENT IS");
-    console.log("clientId", updateTimer?.clientId);
-    if (onlineAgent) {
-      io.to(onlineAgent.socketId).emit("timer:state", {
-        _id: updateTimer?._id.toString(),
+    // -------------------------------
+    // Notify agent via Redis presence
+    // -------------------------------
+    const agentSockets = await redis.smembers(
+      `sockets:agent:${updatedTimer.clientId}`
+    );
 
-        isRunning: updateTimer?.isRunning,
-        // startTime: updateTimer?.startTime.toString(),
-        // department: updateTimer?.department.toString(),
-        // clientName: updateTimer?.clientName.toString(),
-        // task: updateTimer?.task.toString(),
+    if (agentSockets && agentSockets.length > 0) {
+      const payload = {
+        _id: updatedTimer._id.toString(),
+        isRunning: updatedTimer.isRunning,
+        endTime: updatedTimer.endTime,
+        note: updatedTimer.note,
+        activity: updatedTimer.activity,
+      };
+
+      agentSockets.forEach(socketId => {
+        io.to(socketId).emit("timer:state", payload);
       });
+
+      console.log(`⏱ Sent timer stop to agent:${updatedTimer.clientId}`, agentSockets);
+    } else {
+      console.log(`⚪ Agent ${updatedTimer.clientId} is offline. No sockets found.`);
     }
 
+    // Response
     res.status(200).send({
       success: true,
-      message: "Timer stoped!",
-      timer: updateTimer,
+      message: "Timer stopped!",
+      timer: updatedTimer,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send({
       success: false,
-      message: "Error in stop timer!",
+      message: "Error stopping timer!",
       error,
     });
   }
 };
+
+
+
+
+
+
+
 
 // Get Timer Status
 export const timerStatus = async (req, res) => {

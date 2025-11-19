@@ -1,120 +1,132 @@
 // socketServer.js
 import { Server as SocketIOServer } from "socket.io";
-import { connection as redis } from "./utils/ioredis.js"; 
-import { onlineAgents, onlineUsers } from "./index.js";
-import { CHANNELS } from "./utils/redisPubSub/constants.js";
+import { createRedisClient, connection as redis } from "./utils/ioredis.js";
+import { createAdapter } from "@socket.io/redis-adapter";
 
+// ---------------------------
+// INITIALIZE SOCKET SERVER
+// ---------------------------
 export const initSocketServer = (server) => {
-  const io = new SocketIOServer(server);
+  const io = new SocketIOServer(server, { cors: { origin: "*" } });
 
+  // ---------------------------
+  // REDIS ADAPTER FOR MULTI-INSTANCE
+  // ---------------------------
+  const pubClient = createRedisClient();
+  const subClient = createRedisClient();
+
+  // Wait for both clients to be ready before attaching adapter
+  const checkAdapterReady = async () => {
+    await Promise.all([
+      new Promise((res) => pubClient.once("ready", res)),
+      new Promise((res) => subClient.once("ready", res)),
+    ]);
+    io.adapter(createAdapter(pubClient, subClient));
+    console.log("🔗 Socket.IO Redis Adapter Enabled");
+  };
+  checkAdapterReady();
+
+  // ---------------------------
+  // SOCKET CONNECTION HANDLER
+  // ---------------------------
   io.on("connection", (socket) => {
-    console.log("✅ Socket connected:", socket.id);
+    console.log("⚡ Socket connected:", socket.id);
 
-    // ---- Users ----
+    // -----------------------
+    // USER CONNECTED
+    // -----------------------
     socket.on("userConnected", async (userId) => {
-      // Update local Map
-      if (!onlineUsers.has(userId)) onlineUsers.set(userId, new Set());
-      onlineUsers.get(userId).add(socket.id);
+      if (!userId) return;
+      socket.join(`user:${userId}`);
 
-      // Publish to Redis safely
       try {
-        await redis.publish(
-          CHANNELS.ONLINE_USERS,
-          JSON.stringify({ userId, socketId: socket.id, action: "add" })
-        );
-      } catch (err) {
-        console.error("❌ Failed to publish user connection to Redis:", err.message);
-      }
+        // Add socket ID to user set
+        await redis.sadd(`sockets:user:${userId}`, socket.id);
 
-      console.log(`🟢 User connected: ${userId} (${socket.id})`);
+        // Add user to onlineUsers if not already present
+        const isOnline = await redis.sismember("onlineUsers", userId);
+        if (!isOnline) {
+          await redis.sadd("onlineUsers", userId);
+        }
+
+        console.log(`🟢 User online → ${userId}`);
+      } catch (err) {
+        console.error("❌ Failed to mark user online in Redis:", err.message);
+      }
     });
 
-    // ---- Agents ----
+    // -----------------------
+    // AGENT CONNECTED
+    // -----------------------
     socket.on("agent:subscribe", async ({ id }) => {
       if (!id) return;
+      socket.join(`agent:${id}`);
 
-      // Update local Map
-      onlineAgents.set(id, { socketId: socket.id });
-
-      // Publish to Redis safely
       try {
-        await redis.publish(
-          CHANNELS.ONLINE_AGENTS,
-          JSON.stringify({ userId: id, socketId: socket.id, action: "add" })
-        );
-      } catch (err) {
-        console.error("❌ Failed to publish agent connection to Redis:", err.message);
-      }
+        // Add socket ID to agent set
+        await redis.sadd(`sockets:agent:${id}`, socket.id);
 
-      console.log(`💻 Agent connected: ${id}`);
+        // Add agent to onlineAgents if not already present
+        const isOnline = await redis.sismember("onlineAgents", id);
+        if (!isOnline) {
+          await redis.sadd("onlineAgents", id);
+        }
+
+        console.log(`💻 Agent online → ${id}`);
+      } catch (err) {
+        console.error("❌ Failed to mark agent online in Redis:", err.message);
+      }
     });
 
-    // ---- Existing Events ----
-    socket.on("notification", (data) => io.emit("newNotification", data));
-    socket.on("timer", (data) => io.emit("newTimer", data));
-    socket.on("addTask", (data) => io.emit("newtask", data));
-    socket.on("addTaskComment", (data) => io.emit("addnewTaskComment", data));
-    socket.on("addproject", (data) => io.emit("newProject", data));
-    socket.on("addJob", (data) => io.emit("newJob", data));
-
-    // ---- Disconnect ----
+    // -----------------------
+    // DISCONNECT
+    // -----------------------
     socket.on("disconnect", async () => {
-      // Users
-      for (const [userId, socketSet] of onlineUsers.entries()) {
-        if (socketSet.delete(socket.id)) {
-          try {
-            await redis.publish(
-              CHANNELS.ONLINE_USERS,
-              JSON.stringify({ userId, socketId: socket.id, action: "remove" })
-            );
-          } catch (err) {
-            console.error("❌ Failed to publish user disconnect to Redis:", err.message);
-          }
-          if (socketSet.size === 0) onlineUsers.delete(userId);
-        }
-      }
+      console.log(`🔴 Socket disconnected: ${socket.id}`);
 
-      // Agents
-      for (const [id, agent] of onlineAgents.entries()) {
-        if (agent.socketId === socket.id) {
-          onlineAgents.delete(id);
-          try {
-            await redis.publish(
-              CHANNELS.ONLINE_AGENTS,
-              JSON.stringify({ userId: id, socketId: socket.id, action: "remove" })
-            );
-          } catch (err) {
-            console.error("❌ Failed to publish agent disconnect to Redis:", err.message);
+      try {
+        // Remove socket from user sets
+        const userKeys = await redis.keys("sockets:user:*");
+        for (const key of userKeys) {
+          const removed = await redis.srem(key, socket.id);
+          if (removed) {
+            const userId = key.split(":")[2];
+            const remainingSockets = await redis.scard(key);
+            if (remainingSockets === 0) {
+              await redis.srem("onlineUsers", userId);
+              console.log(`⚪ User offline → ${userId}`);
+            }
           }
         }
-      }
 
-      console.log(`⚡ Socket disconnected: ${socket.id}`);
+        // Remove socket from agent sets
+        const agentKeys = await redis.keys("sockets:agent:*");
+        for (const key of agentKeys) {
+          const removed = await redis.srem(key, socket.id);
+          if (removed) {
+            const id = key.split(":")[2];
+            const remainingSockets = await redis.scard(key);
+            if (remainingSockets === 0) {
+              await redis.srem("onlineAgents", id);
+              console.log(`⚪ Agent offline → ${id}`);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("❌ Error updating Redis on disconnect:", err.message);
+      }
     });
   });
 
   return io;
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-// Optional helper to emit timer state
+// ---------------------------
+// SAFE CLUSTER COMPATIBLE EMIT
+// ---------------------------
 export const emitTimerState = (io, email, running) => {
-  const agent = onlineAgents.get(email);
-  if (agent) {
-    io.to(agent.socketId).emit("timer:state", { running });
-    console.log(`⏱ Emitted timer state externally to ${email}`);
-  }
+  io.to(`agent:${email}`).emit("timer:state", { running });
+  console.log(`⏱ Emitted timer state to agent:${email}`);
 };
 
 export const Skey = "salman@affotax";

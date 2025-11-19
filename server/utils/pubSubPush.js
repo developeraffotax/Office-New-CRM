@@ -7,19 +7,15 @@ import ticketModel from "../models/ticketModel.js";
 import userModel from "../models/userModel.js";
 import notificationModel from "../models/notificationModel.js";
 import gmailModel from "../models/gmailModel.js";
-import { io, onlineUsers } from "../index.js";
+import { io } from "../index.js";
+import { connection as redis } from "../utils/ioredis.js";
 
 // Get __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Path for Credentials
-const CREDENTIALS_PATH = path.join(
-  __dirname,
-  "..",
-  "creds",
-  "service-pubsub.json"
-);
+const CREDENTIALS_PATH = path.join(__dirname, "..", "creds", "service-pubsub.json");
 
 // Scopes you need
 const SCOPES = [
@@ -28,6 +24,7 @@ const SCOPES = [
   "https://www.googleapis.com/auth/gmail.metadata",
   "https://www.googleapis.com/auth/pubsub",
 ];
+
 // Create a JWT client using the Service Account key
 const jwtClient = new JWT({
   keyFile: CREDENTIALS_PATH,
@@ -37,7 +34,6 @@ const jwtClient = new JWT({
 
 export async function gmailWebhookHandler(req, res) {
   const { message } = req.body;
-
   console.log("MESSAGE", message);
 
   try {
@@ -48,10 +44,10 @@ export async function gmailWebhookHandler(req, res) {
     const gmail = google.gmail({ version: "v1", auth: jwtClient });
 
     const lastDoc = await gmailModel.findOne({}).sort({ _id: -1 });
-    // 1. Get History
+
     const historyResponse = await gmail.users.history.list({
       userId: "me",
-      startHistoryId: lastDoc.last_history_id,
+      startHistoryId: lastDoc?.last_history_id,
       historyTypes: ["messageAdded"],
     });
 
@@ -66,32 +62,23 @@ export async function gmailWebhookHandler(req, res) {
         if (item.messagesAdded && item.messagesAdded.length > 0) {
           for (const message of item.messagesAdded) {
             const messageId = message.message.id;
-
             const threadId = message.message.threadId;
 
             const emailResponse = await gmail.users.messages.get({
               userId: "me",
               id: messageId,
-              format: "metadata", // Request only metadata for efficiency
-              metadataHeaders: ["From"], // Specify the headers you need
+              format: "metadata",
+              metadataHeaders: ["From"],
             });
 
             const headers = emailResponse.data.payload.headers;
             const fromHeader = headers.find((header) => header.name === "From");
-
-            console.log("fromHeader", fromHeader);
-
             const text = fromHeader ? fromHeader.value : null;
-
-            // Regular expression to extract email address inside angle brackets
             const pattern = /<([^>]+)>/;
-
-            // Search for the email
             const senderEmail = text.match(pattern)[1];
 
             console.log("SenderEmail>>>>>", senderEmail);
 
-            // Replace 'your_email@example.com' with the actual email address
             const yourEmail = "info@affotax.com";
 
             if (senderEmail && senderEmail !== yourEmail) {
@@ -118,92 +105,57 @@ export async function gmailWebhookHandler(req, res) {
   }
 }
 
-
-
 const findTicketByThreadId = async (threadId) => {
   const ticket = await ticketModel.findOne({ mailThreadId: threadId });
   return ticket;
 };
-
-
 
 const findUsersToNotify = async (ticket) => {
   const lastMessageSentBy = await userModel.findOne({
     name: ticket.lastMessageSentBy,
   });
   const jobHolder = await userModel.findOne({ name: ticket.jobHolder });
-
   return { lastMessageSentBy, jobHolder };
 };
 
+// --- REDIS-BASED SOCKET EMITTER ---
+const sendSocketNotification = async (notification, userId) => {
+  if (!userId) return;
 
+  // Fetch all socket IDs for this user from Redis
+  const sockets = await redis.smembers(`sockets:user:${userId.toString()}`);
 
-
-
-
-
-
-
-
-
-const sendSocketNotification = (notification, userId) => {
-  const toSocketIds = onlineUsers.get(userId?.toString());
-
-  if (toSocketIds && toSocketIds.size > 0) {
-    for (const socketId of toSocketIds) {
-      io.to(socketId).emit("newNotification", {
-        notification,
-      });
+  if (sockets && sockets.length > 0) {
+    for (const socketId of sockets) {
+      io.to(socketId).emit("newNotification", { notification });
     }
   }
-}
-
-
-
+};
 
 const createNotification = async (ticket) => {
   const { lastMessageSentBy, jobHolder } = await findUsersToNotify(ticket);
 
-  
-
+  // Notification to jobHolder
   const notification1 = await notificationModel.create({
     title: "Reply to a ticket received",
     redirectLink: `/ticket/detail/${ticket._id}`,
     description: `You've received a response to a ticket with the subject "${ticket.subject}" from the company "${ticket.companyName}" and the client's name "${ticket.clientName}".`,
     taskId: ticket._id,
     userId: jobHolder?._id,
-    type: "ticket_received"
+    type: "ticket_received",
   });
+  await sendSocketNotification(notification1, jobHolder?._id);
 
-  sendSocketNotification(notification1, jobHolder?._id);
-
-
-
-
-  
-
-  if(jobHolder?._id?.toString() !== lastMessageSentBy?._id?.toString()) {
+  // Notification to lastMessageSentBy if different
+  if (jobHolder?._id?.toString() !== lastMessageSentBy?._id?.toString()) {
     const notification2 = await notificationModel.create({
       title: "Reply to a ticket received",
       redirectLink: `/ticket/detail/${ticket._id}`,
       description: `You've received a response to a ticket with the subject "${ticket.subject}" from the company "${ticket.companyName}" and the client's name "${ticket.clientName}".`,
       taskId: ticket._id,
       userId: lastMessageSentBy?._id,
-      type: "ticket_received"
+      type: "ticket_received",
     });
-
-    sendSocketNotification(notification2, lastMessageSentBy?._id);
+    await sendSocketNotification(notification2, lastMessageSentBy?._id);
   }
-
-
-  
-
-
-
 };
-
-
-
-
-
-

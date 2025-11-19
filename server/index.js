@@ -10,72 +10,50 @@ import { connectDB } from "./config/db.js";
 import { initSocketServer, Skey } from "./socketServer.js";
 import { registerRoutes } from "./routes/index.js";
 import { setupCronJobs } from "./cron/index.js";
- 
 import { gmailWebhookHandler } from "./utils/pubSubPush.js";
 import { errorHandler } from "./middlewares/errorMiddleware.js";
-
+import {   connection as redis } from "./utils/ioredis.js";
 import agenda from "./utils/agenda.js";
-import { startSubscriber } from "./utils/redisPubSub/subscriber.js";
- 
 
 dotenv.config();
 
-
-
-
-
-export const onlineUsers = new Map();
-export const onlineAgents = new Map();
-
-// start subscriber after Maps are initialized
-startSubscriber({ onlineUsers, onlineAgents });
-
-
-
-
-
-
-
-
-
-
-
-
-// Validate secret key
+// --------------------------------------------
+// VALIDATE SECRET KEY
+// --------------------------------------------
 if (!process.env.SERVER_SECRET_KEY || process.env.SERVER_SECRET_KEY !== Skey) {
   console.error("❌ Invalid or missing SERVER_SECRET_KEY");
   process.exit(1);
 }
 
-// Connect to DB
+// --------------------------------------------
+// CONNECT DATABASE
+// --------------------------------------------
 connectDB();
 
-// Setup express
+// --------------------------------------------
+// EXPRESS SETUP
+// --------------------------------------------
 const app = express();
 app.use(express.json({ limit: "20mb" }));
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 
-
-
-
-
-
-
-// Create server and socket
+// --------------------------------------------
+// CREATE HTTP & SOCKET SERVER
+// --------------------------------------------
 const server = http.createServer(app);
 export const io = initSocketServer(server);
 
-agenda.io = io;  
+// Attach Socket.io to Agenda
+agenda.io = io;
 
-
-// Register routes
+// --------------------------------------------
+// REGISTER ROUTES
+// --------------------------------------------
 registerRoutes(app);
 
-
-
-// Gmail webhook route
+// Gmail Webhook
 app.post("/gmail-webhook", gmailWebhookHandler);
 
 // Root route
@@ -83,36 +61,45 @@ app.get("/", (req, res) => {
   res.send(`<h1 style="color:green;">Server is running...</h1>`);
 });
 
-// Error handling middleware
+// --------------------------------------------
+// GLOBAL ERROR HANDLER
+// --------------------------------------------
 app.use(errorHandler);
 
-
-
-
-
-// const isDev = process.env.NODE_ENV === "development";
+// --------------------------------------------
+// RUN CRON ONLY ON PRIMARY INSTANCE
+// --------------------------------------------
 const isClusterPrimary = process.env.pm_id === "0";
 
-// console.log(`🚀 Server running in ${isDev ? "development" : "production"} mode`.bgGreen.white);
-// Cron jobs
 if (isClusterPrimary) {
   console.log("🕒 Starting scheduled tasks...");
   setupCronJobs();
-
-  
-  
 }
 
-// Start server
+// --------------------------------------------
+// START SERVER
+// --------------------------------------------
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on PORT ${PORT}`.bgMagenta.white);
 });
 
+// --------------------------------------------
+// REMOVE OLD LOGGING (NO MAPS ANYMORE)
+// --------------------------------------------
+// You now check presence via Redis, NOT in-memory maps.
+// Example:
 
 
-// Log online users/agents every 1 minute
-setInterval(() => {
-  console.log("🟢 Online Users:", onlineUsers);
-  console.log("🟣 Online Agents:", onlineAgents);
-}, 60 * 1000); // 60,000 ms = 1 minute
+setInterval(async() => {
+
+    const users = await redis.smembers("onlineUsers");
+   const userKeys = await redis.keys("sockets:user:*");
+console.log("Users💜💜💜",users);
+console.log("UsersSO💜💜💜",userKeys);
+
+
+// const agents = await redis.smembers("onlineAgents");
+// console.log("Agents💛💛💛",agents);
+
+}, 10000);

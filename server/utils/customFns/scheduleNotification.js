@@ -1,21 +1,37 @@
-import { io, onlineUsers } from "../../index.js";
+import { io } from "../../index.js";
+import { connection as redis } from "../../utils/ioredis.js";
 import notificationModel from "../../models/notificationModel.js";
 
-const sendSocketNotification = (notification, userId) => {
-  const toSocketIds = onlineUsers.get(userId?.toString());
+// -----------------------------
+// Send real-time notification to all user's sockets
+// -----------------------------
+const sendSocketNotification = async (notification, userId) => {
+  if (!userId) return;
 
-  if (toSocketIds && toSocketIds.size > 0) {
+  // Get all socket IDs for this user from Redis
+  const toSocketIds = await redis.smembers(`sockets:user:${userId}`);
+
+  if (toSocketIds && toSocketIds.length > 0) {
     for (const socketId of toSocketIds) {
-      io.to(socketId).emit("newNotification", {
-        notification,
-      });
+      io.to(socketId).emit("newNotification", { notification });
     }
+    console.log(`🔔 Notification sent to user:${userId}`, toSocketIds);
+  } else {
+    console.log(`⚪ User ${userId} is offline. Notification not delivered in real-time.`);
   }
-}
+};
 
-
-
-  const createAndSendNotification = async ({ title, description, redirectLink, taskId, userId, type }) => {
+// -----------------------------
+// Create & send notification
+// -----------------------------
+const createAndSendNotification = async ({
+  title,
+  description,
+  redirectLink,
+  taskId,
+  userId,
+  type
+}) => {
   if (!userId) return;
 
   const notification = await notificationModel.create({
@@ -27,13 +43,15 @@ const sendSocketNotification = (notification, userId) => {
     type: type || "default",
   });
 
-  // Real-time push
-  sendSocketNotification(notification, userId);
+  // Real-time push via Redis-based sockets
+  await sendSocketNotification(notification, userId);
+
+  return notification;
 };
 
-
-
-
+// -----------------------------
+// Schedule notification
+// -----------------------------
 export function scheduleNotification(condition, payload) {
   if (!condition) return;
 
@@ -41,7 +59,7 @@ export function scheduleNotification(condition, payload) {
     try {
       await createAndSendNotification(payload);
     } catch (err) {
-      console.error("Failed to send notification:", err);
+      console.error("❌ Failed to send notification:", err);
     }
   });
 }

@@ -225,11 +225,12 @@ export const getSingleLead = async (req, res) => {
   }
 };
 
-// Delete Lead
+// Delete Lead and related tickets
 export const deleteLead = async (req, res) => {
   try {
     const leadId = req.params.id;
 
+    // Find the lead
     const lead = await leadModel.findById(leadId);
 
     if (!lead) {
@@ -239,18 +240,22 @@ export const deleteLead = async (req, res) => {
       });
     }
 
-    await leadModel.findByIdAndDelete({ _id: lead._id });
+    // Delete related tickets
+    await ticketModel.deleteMany({ clientName: lead.clientName, state: { $ne: "complete" } });
+
+    // Delete the lead
+    await leadModel.findByIdAndDelete(leadId);
 
     res.status(200).send({
       success: true,
-      message: "Lead delete successfully!",
+      message: "Lead and related tickets deleted successfully!",
     });
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error while delete lead!",
-      error: error,
+      message: "Error while deleting lead!",
+      error: error.message,
     });
   }
 };

@@ -12,7 +12,7 @@ import { registerRoutes } from "./routes/index.js";
 import { setupCronJobs } from "./cron/index.js";
 import { gmailWebhookHandler } from "./utils/pubSubPush.js";
 import { errorHandler } from "./middlewares/errorMiddleware.js";
-import {   connection as redis } from "./utils/ioredis.js";
+import { connection as redis } from "./utils/ioredis.js";
 import agenda from "./utils/agenda.js";
 
 dotenv.config();
@@ -90,16 +90,20 @@ server.listen(PORT, () => {
 // You now check presence via Redis, NOT in-memory maps.
 // Example:
 
+setInterval(async () => {
+  try {
+    if (redis && redis.status === "ready") {
+      const users = await redis.smembers("onlineUsers");
+      const agents = await redis.smembers("onlineAgents");
+      console.log("Users💜💜💜", users);
+      console.log("Agents💛💛💛", agents);
+    }
+  } catch (redisError) {
+    console.error(
+      "⚠ Failed to get onlineUsers/onlineAgents via Redis:",
+      redisError.message
+    );
 
-setInterval(async() => {
-
-    const users = await redis.smembers("onlineUsers");
-   const userKeys = await redis.keys("sockets:user:*");
-console.log("Users💜💜💜",users);
-console.log("UsersSO💜💜💜",userKeys);
-
-
-// const agents = await redis.smembers("onlineAgents");
-// console.log("Agents💛💛💛",agents);
-
-}, 10000);
+    // Optionally: log to monitoring service
+  }
+}, 60000);

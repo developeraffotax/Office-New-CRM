@@ -1,5 +1,7 @@
 import { io } from "../../index.js";
-import { connection as redis } from "../../utils/ioredis.js";
+ 
+import { safeRedisSmembers } from "../safeRedisSmembers.js";
+
 
 // -----------------------------
 // Send task hours update to user's sockets
@@ -7,10 +9,10 @@ import { connection as redis } from "../../utils/ioredis.js";
 export const sendSocketEvent = async ({ hours, userId }) => {
   if (!userId) return;
 
-  // Get all socket IDs for this user from Redis
-  const toSocketIds = await redis.smembers(`sockets:user:${userId}`);
+  // Get all socket IDs for this user from Redis safely
+  const toSocketIds = await safeRedisSmembers(`sockets:user:${userId}`);
 
-  if (toSocketIds && toSocketIds.length > 0) {
+  if (toSocketIds.length > 0) {
     for (const socketId of toSocketIds) {
       io.to(socketId).emit("update_task_timer", {
         newAllocatedTimeInHours: hours,
@@ -18,7 +20,7 @@ export const sendSocketEvent = async ({ hours, userId }) => {
     }
     console.log(`⏱ Task hours update sent to user:${userId}`, toSocketIds);
   } else {
-    console.log(`⚪ User ${userId} is offline. Task hours update not delivered.`);
+    console.log(`⚪ User ${userId} is offline or Redis unavailable. Task hours update not delivered.`);
   }
 };
 

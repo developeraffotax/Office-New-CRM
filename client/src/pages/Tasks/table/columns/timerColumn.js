@@ -68,6 +68,7 @@ export const timerColumn = (ctx) => {
                 allocatedTime={row.original.hours}
                 setTaskIdForNote={ctx.setTaskIdForNote}
                 taskIdForNote={ctx.taskIdForNote}
+                setIsSubmitting={ctx.setIsSubmitting}
               />
             </span>
           </div>

@@ -1,6 +1,6 @@
 import { io } from "../../index.js";
-import { connection as redis } from "../../utils/ioredis.js";
 import notificationModel from "../../models/notificationModel.js";
+import { safeRedisSmembers } from "../safeRedisSmembers.js";
 
 // -----------------------------
 // Send real-time notification to all user's sockets
@@ -8,16 +8,16 @@ import notificationModel from "../../models/notificationModel.js";
 const sendSocketNotification = async (notification, userId) => {
   if (!userId) return;
 
-  // Get all socket IDs for this user from Redis
-  const toSocketIds = await redis.smembers(`sockets:user:${userId}`);
+  // Get all socket IDs safely
+  const toSocketIds = await safeRedisSmembers(`sockets:user:${userId}`);
 
-  if (toSocketIds && toSocketIds.length > 0) {
+  if (toSocketIds.length > 0) {
     for (const socketId of toSocketIds) {
       io.to(socketId).emit("newNotification", { notification });
     }
     console.log(`🔔 Notification sent to user:${userId}`, toSocketIds);
   } else {
-    console.log(`⚪ User ${userId} is offline. Notification not delivered in real-time.`);
+    console.log(`⚪ User ${userId} is offline or Redis unavailable. Notification not delivered in real-time.`);
   }
 };
 
@@ -34,6 +34,7 @@ const createAndSendNotification = async ({
 }) => {
   if (!userId) return;
 
+  // Save notification to DB
   const notification = await notificationModel.create({
     title,
     redirectLink,
@@ -43,8 +44,12 @@ const createAndSendNotification = async ({
     type: type || "default",
   });
 
-  // Real-time push via Redis-based sockets
-  await sendSocketNotification(notification, userId);
+  // Real-time push via Redis-based sockets (safe)
+  try {
+    await sendSocketNotification(notification, userId);
+  } catch (err) {
+    console.error("⚠ Failed to push notification in real-time:", err);
+  }
 
   return notification;
 };

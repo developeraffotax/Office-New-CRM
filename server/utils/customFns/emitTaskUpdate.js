@@ -1,6 +1,6 @@
 import { io } from "../../index.js";
-import { connection as redis } from "../../utils/ioredis.js";
-
+ 
+import { safeRedisSmembers } from "../safeRedisSmembers.js";
 // -----------------------------
 // Send task update to user's sockets
 // -----------------------------
@@ -9,10 +9,10 @@ export const sendSocketEvent = async ({ updated_task, userId }) => {
 
   console.log("sendSocketEvent");
 
-  // Get all socket IDs for this user from Redis
-  const toSocketIds = await redis.smembers(`sockets:user:${userId}`);
+  // Get all socket IDs for this user safely
+  const toSocketIds = await safeRedisSmembers(`sockets:user:${userId}`);
 
-  if (toSocketIds && toSocketIds.length > 0) {
+  if (toSocketIds.length > 0) {
     for (const socketId of toSocketIds) {
       io.to(socketId).emit("task_updated", {
         updated_task: updated_task || null,
@@ -20,7 +20,7 @@ export const sendSocketEvent = async ({ updated_task, userId }) => {
     }
     console.log(`✅ Task update sent to user:${userId}`, toSocketIds);
   } else {
-    console.log(`⚪ User ${userId} is offline. Task update not delivered in real-time.`);
+    console.log(`⚪ User ${userId} is offline or Redis unavailable. Task update not delivered in real-time.`);
   }
 };
 

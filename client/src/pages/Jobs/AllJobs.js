@@ -115,6 +115,10 @@ export default function AllJobs() {
   const [jobId, setJobId] = useState("");
   const [isShow, setIsShow] = useState(false);
   const [note, setNote] = useState("");
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+
   const [active1, setActive1] = useState("");
   const timerRef = useRef();
   const [showStatus, setShowStatus] = useState(false);
@@ -1466,7 +1470,8 @@ const timerCtx = useMemo(() => {
     activity,     
     setActivity, 
 
-    setIsNonChargeable
+    setIsNonChargeable,
+    setIsSubmitting
   }
 }, [timerRef, timerId, jid, play, note, currentPath, activity])
 
@@ -2811,8 +2816,20 @@ useEffect(() => {
                   className="w-full h-[6rem] rounded-md resize-none py-1 px-2 border-2 border-gray-700"
                 />
                 <div className="flex items-center justify-end mt-4">
-                  <button className={`${style.btn}`} onClick={handleStopTimer}>
-                    Submit
+                  <button
+                    className={`${style.btn} flex items-center justify-center space-x-1`}
+                    onClick={handleStopTimer}
+                    disabled={isSubmitting} // Optional: disable button while submitting
+                  >
+                    {isSubmitting ? (
+                      <span className="flex space-x-1">
+                        <span className="w-2 h-2 bg-white rounded-full animate-bounce"></span>
+                        <span className="w-2 h-2 bg-white rounded-full animate-bounce animation-delay-150"></span>
+                        <span className="w-2 h-2 bg-white rounded-full animate-bounce animation-delay-300"></span>
+                      </span>
+                    ) : (
+                      "Submit"
+                    )}
                   </button>
                 </div>
               </div>

@@ -181,6 +181,8 @@ const AllTasks = ({ justShowTable = false }) => {
   const [isUpload, setIsUpdate] = useState(false);
   const [reload, setReload] = useState(false);
 
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // console.log("tasksData:", tasksData);
 
   const [taskIdForNote, setTaskIdForNote] = useState("");
@@ -1037,6 +1039,7 @@ const AllTasks = ({ justShowTable = false }) => {
       setNote,
       setActivity,
       setTaskIdForNote,
+      setIsSubmitting
     }),
     [
       anyTimerRunning,
@@ -2213,11 +2216,20 @@ const AllTasks = ({ justShowTable = false }) => {
                     />
                     <div className="flex items-center justify-end mt-4">
                       <button
-                        className={`${style.btn}`}
-                        onClick={handleStopTimer}
-                      >
-                        Submit
-                      </button>
+                          className={`${style.btn} flex items-center justify-center space-x-1`}
+                          onClick={handleStopTimer}
+                          disabled={isSubmitting} // Optional: disable button while submitting
+                        >
+                          {isSubmitting ? (
+                            <span className="flex space-x-1">
+                              <span className="w-2 h-2 bg-white rounded-full animate-bounce"></span>
+                              <span className="w-2 h-2 bg-white rounded-full animate-bounce animation-delay-150"></span>
+                              <span className="w-2 h-2 bg-white rounded-full animate-bounce animation-delay-300"></span>
+                            </span>
+                          ) : (
+                            "Submit"
+                          )}
+                        </button>
                     </div>
                   </div>
                 </div>

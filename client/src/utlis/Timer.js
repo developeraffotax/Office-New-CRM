@@ -41,7 +41,8 @@ export const Timer = forwardRef(
       allocatedTime,
       setTaskIdForNote,
       
-      setIsNonChargeable 
+      setIsNonChargeable,
+      setIsSubmitting
     },
     ref
   ) => {
@@ -216,6 +217,8 @@ export const Timer = forwardRef(
       if (!timerId) {
         return;
       }
+
+      setIsSubmitting(true);
       try {
         const { data } = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/v1/timer/stop/timer/${timerId}`,
@@ -257,6 +260,8 @@ export const Timer = forwardRef(
       } catch (error) {
         console.error("Error stopping timer:", error);
         toast.success(error.response?.data?.message);
+      } finally {
+        setIsSubmitting(false);
       }
     };
 

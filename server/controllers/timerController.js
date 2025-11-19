@@ -60,31 +60,39 @@ export const startTimer = async (req, res) => {
     // Notify all dashboards to refresh UI
     io.emit("runningTimersUpdate");
 
-    // ------------------------------------
+  
+     // ------------------------------------
     // NOTIFY ONLINE AGENT VIA REDIS PRESENCE
     // ------------------------------------
+    try {
+      if (redis && redis.status === "ready") {
+        const agentSockets = await redis.smembers(`sockets:agent:${clientId}`);
 
-    // All sockets registered to this agent
-    const agentSockets = await redis.smembers(`sockets:agent:${clientId}`);
+        if (agentSockets && agentSockets.length > 0) {
+          const timerPayload = {
+            _id: newTimer._id.toString(),
+            isRunning: newTimer.isRunning,
+            startTime: newTimer.startTime.toString(),
+            department: newTimer.department,
+            clientName: newTimer.clientName,
+            task: newTimer.task,
+          };
 
-    if (agentSockets && agentSockets.length > 0) {
-      const timerPayload = {
-        _id: newTimer._id.toString(),
-        isRunning: newTimer.isRunning,
-        startTime: newTimer.startTime.toString(),
-        department: newTimer.department,
-        clientName: newTimer.clientName,
-        task: newTimer.task,
-      };
+          // Emit to all sockets (multi-device support)
+          agentSockets.forEach(socketId => {
+            io.to(socketId).emit("timer:state", timerPayload);
+          });
 
-      // Emit to all sockets (multi-device support)
-      agentSockets.forEach(socketId => {
-        io.to(socketId).emit("timer:state", timerPayload);
-      });
-
-      console.log(`⏱ Sent timer update to agent:${clientId}`, agentSockets);
-    } else {
-      console.log(`⚪ Agent ${clientId} is offline. No sockets found.`);
+          console.log(`⏱ Sent timer update to agent:${clientId}`, agentSockets);
+        } else {
+          console.log(`⚪ Agent ${clientId} is offline. No sockets found.`);
+        }
+      } else {
+        console.log("⚠ Redis is not connected. Skipping online agent notification.");
+      }
+    } catch (redisError) {
+      console.log("⚠ Failed to notify online agent via Redis:", redisError.message);
+      // Optionally, you could log this to a monitoring service
     }
 
     // Response
@@ -147,26 +155,35 @@ export const stopTimer = async (req, res) => {
     // -------------------------------
     // Notify agent via Redis presence
     // -------------------------------
-    const agentSockets = await redis.smembers(
-      `sockets:agent:${updatedTimer.clientId}`
-    );
+    try {
+      if (redis && redis.status === "ready") {
+        const agentSockets = await redis.smembers(
+          `sockets:agent:${updatedTimer.clientId}`
+        );
 
-    if (agentSockets && agentSockets.length > 0) {
-      const payload = {
-        _id: updatedTimer._id.toString(),
-        isRunning: updatedTimer.isRunning,
-        endTime: updatedTimer.endTime,
-        note: updatedTimer.note,
-        activity: updatedTimer.activity,
-      };
+        if (agentSockets && agentSockets.length > 0) {
+          const payload = {
+            _id: updatedTimer._id.toString(),
+            isRunning: updatedTimer.isRunning,
+            endTime: updatedTimer.endTime,
+            note: updatedTimer.note,
+            activity: updatedTimer.activity,
+          };
 
-      agentSockets.forEach(socketId => {
-        io.to(socketId).emit("timer:state", payload);
-      });
+          agentSockets.forEach(socketId => {
+            io.to(socketId).emit("timer:state", payload);
+          });
 
-      console.log(`⏱ Sent timer stop to agent:${updatedTimer.clientId}`, agentSockets);
-    } else {
-      console.log(`⚪ Agent ${updatedTimer.clientId} is offline. No sockets found.`);
+          console.log(`⏱ Sent timer stop to agent:${updatedTimer.clientId}`, agentSockets);
+        } else {
+          console.log(`⚪ Agent ${updatedTimer.clientId} is offline. No sockets found.`);
+        }
+      } else {
+        console.log("⚠ Redis is not connected. Skipping agent notification.");
+      }
+    } catch (redisError) {
+      console.log("⚠ Failed to notify agent via Redis:", redisError.message);
+      // Optionally: log to monitoring service
     }
 
     // Response

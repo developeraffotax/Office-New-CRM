@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Timer } from "../../../../utlis/Timer";
 
-export const timerColumn = ({auth, timerRef, timerId ,jid, play, setPlay, setIsShow, note, currentPath, setNote, activity, setActivity, setIsNonChargeable}) => {
+export const timerColumn = ({auth, timerRef, timerId ,jid, play, setPlay, setIsShow, note, currentPath, setNote, activity, setActivity, setIsNonChargeable, setIsSubmitting}) => {
 
 
     return         {
@@ -66,6 +66,8 @@ export const timerColumn = ({auth, timerRef, timerId ,jid, play, setPlay, setIsS
                     setActivity={setActivity}
 
                     setIsNonChargeable={setIsNonChargeable}
+                    setIsSubmitting={setIsSubmitting}
+                      
                    
                   />
                 </span>

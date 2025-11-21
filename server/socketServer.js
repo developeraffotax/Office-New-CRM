@@ -2,6 +2,11 @@
 import { Server as SocketIOServer } from "socket.io";
 import { createRedisClient, connection as redis } from "./utils/ioredis.js";
 import { createAdapter } from "@socket.io/redis-adapter";
+import { cleanupOnline } from "./utils/cleanupRedis.js";
+
+
+const isClusterPrimary = process.env.pm_id === "0";
+
 
 // ---------------------------
 // INITIALIZE SOCKET SERVER
@@ -15,12 +20,24 @@ export const initSocketServer = (server) => {
   const pubClient = createRedisClient();
   const subClient = createRedisClient();
 
-  // Wait for both clients to be ready before attaching adapter
   const checkAdapterReady = async () => {
     await Promise.all([
       new Promise((res) => pubClient.once("ready", res)),
       new Promise((res) => subClient.once("ready", res)),
     ]);
+
+
+
+    if (isClusterPrimary) {
+      // Cleanup any stale online users/agents
+      await cleanupOnline(io);
+
+
+    }
+
+
+
+
     io.adapter(createAdapter(pubClient, subClient));
     console.log("🔗 Socket.IO Redis Adapter Enabled");
   };
@@ -37,17 +54,14 @@ export const initSocketServer = (server) => {
     // -----------------------
     socket.on("userConnected", async (userId) => {
       if (!userId) return;
+
+      socket.data.userId = userId; // store on socket
       socket.join(`user:${userId}`);
 
       try {
-        // Add socket ID to user set
         await redis.sadd(`sockets:user:${userId}`, socket.id);
-
-        // Add user to onlineUsers if not already present
         const isOnline = await redis.sismember("onlineUsers", userId);
-        if (!isOnline) {
-          await redis.sadd("onlineUsers", userId);
-        }
+        if (!isOnline) await redis.sadd("onlineUsers", userId);
 
         console.log(`🟢 User online → ${userId}`);
       } catch (err) {
@@ -60,17 +74,14 @@ export const initSocketServer = (server) => {
     // -----------------------
     socket.on("agent:subscribe", async ({ id }) => {
       if (!id) return;
+
+      socket.data.agentId = id; // store on socket
       socket.join(`agent:${id}`);
 
       try {
-        // Add socket ID to agent set
         await redis.sadd(`sockets:agent:${id}`, socket.id);
-
-        // Add agent to onlineAgents if not already present
         const isOnline = await redis.sismember("onlineAgents", id);
-        if (!isOnline) {
-          await redis.sadd("onlineAgents", id);
-        }
+        if (!isOnline) await redis.sadd("onlineAgents", id);
 
         console.log(`💻 Agent online → ${id}`);
       } catch (err) {
@@ -85,31 +96,29 @@ export const initSocketServer = (server) => {
       console.log(`🔴 Socket disconnected: ${socket.id}`);
 
       try {
-        // Remove socket from user sets
-        const userKeys = await redis.keys("sockets:user:*");
-        for (const key of userKeys) {
-          const removed = await redis.srem(key, socket.id);
-          if (removed) {
-            const userId = key.split(":")[2];
-            const remainingSockets = await redis.scard(key);
-            if (remainingSockets === 0) {
-              await redis.srem("onlineUsers", userId);
-              console.log(`⚪ User offline → ${userId}`);
-            }
+        // -------------------
+        // Handle user disconnect
+        // -------------------
+        if (socket?.data?.userId) {
+          const userKey = `sockets:user:${socket.data.userId}`;
+          await redis.srem(userKey, socket.id);
+          const remainingSockets = await redis.scard(userKey);
+          if (remainingSockets === 0) {
+            await redis.srem("onlineUsers", socket.data.userId);
+            console.log(`⚪ User offline → ${socket.data.userId}`);
           }
         }
 
-        // Remove socket from agent sets
-        const agentKeys = await redis.keys("sockets:agent:*");
-        for (const key of agentKeys) {
-          const removed = await redis.srem(key, socket.id);
-          if (removed) {
-            const id = key.split(":")[2];
-            const remainingSockets = await redis.scard(key);
-            if (remainingSockets === 0) {
-              await redis.srem("onlineAgents", id);
-              console.log(`⚪ Agent offline → ${id}`);
-            }
+        // -------------------
+        // Handle agent disconnect
+        // -------------------
+        if (socket?.data?.agentId) {
+          const agentKey = `sockets:agent:${socket.data.agentId}`;
+          await redis.srem(agentKey, socket.id);
+          const remainingSockets = await redis.scard(agentKey);
+          if (remainingSockets === 0) {
+            await redis.srem("onlineAgents", socket.data.agentId);
+            console.log(`⚪ Agent offline → ${socket.data.agentId}`);
           }
         }
       } catch (err) {

@@ -106,4 +106,4 @@ setInterval(async () => {
 
     // Optionally: log to monitoring service
   }
-}, 6000);
+}, 60000);

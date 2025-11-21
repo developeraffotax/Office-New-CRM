@@ -2,13 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { MaterialReactTable, useMaterialReactTable, } from "material-react-table";
 import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
- 
+
 import { style } from "../../utlis/CommonStyle";
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import toast from "react-hot-toast";
 import axios from "axios";
- 
+
 import { MdCheckCircle, MdInsertComment, MdOutlineModeEdit, MdRemoveRedEye, } from "react-icons/md";
 import { AiOutlineEdit, AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
@@ -30,19 +30,43 @@ import { getTicketsColumns } from "./table/columns";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { isAdmin } from "../../utlis/isAdmin";
 import DetailComments from "../Tasks/TaskDetailComments"
+import { renderColumnControls } from "../../utlis/renderColumnControls";
+import { useClickOutside } from "../../utlis/useClickOutside";
+import { GoEye, GoEyeClosed } from "react-icons/go";
 
 
 const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "", };
-const jobStatusOptions = [ "Quote", "Data", "Progress", "Queries", "Approval", "Submission", "Billing", "Feedback", ];
+const jobStatusOptions = ["Quote", "Data", "Progress", "Queries", "Approval", "Submission", "Billing", "Feedback",];
 const companyData = ["Affotax", "Outsource"];
 const status = ["Read", "Unread", "Send"];
+const colVisibility = {
+  companyName: true,
+  clientName: true,
+  company: true,
 
+  jobHolder: true,
+  jobStatus: true,
+
+  subject: true,
+  received: true,
+  sent: true,
+
+  status: true,
+  createdAt: true,
+
+  jobDate: true,
+  lastMessageSentTime: true,
+
+  actions: true
+
+
+};
 
 export default function Tickets() {
 
 
   const auth = useSelector((state) => state.auth.auth);
- 
+
 
 
   const navigate = useNavigate();
@@ -83,12 +107,12 @@ export default function Tickets() {
 
   const anchorRef = useRef(null);
 
-const [filterInfo, setFilterInfo] = useState({
-  col: null,
-  value: "",
-  type: "eq",
-});
-const [appliedFilters, setAppliedFilters] = useState({});
+  const [filterInfo, setFilterInfo] = useState({
+    col: null,
+    value: "",
+    type: "eq",
+  });
+  const [appliedFilters, setAppliedFilters] = useState({});
 
 
 
@@ -101,6 +125,26 @@ const [appliedFilters, setAppliedFilters] = useState({});
 
 
 
+  const [showcolumn, setShowColumn] = useState(false);
+  const [columnVisibility, setColumnVisibility] = useState({
+    _id: false,
+    ...colVisibility,
+  });
+
+  const showColumnRef = useRef(false);
+
+  useClickOutside(showColumnRef, () => setShowColumn(false));
+
+  useEffect(() => {
+    // Load saved column visibility from localStorage
+    const savedVisibility = JSON.parse(
+      localStorage.getItem("visibileTicketsColumn")
+    );
+
+    if (savedVisibility) {
+      setColumnVisibility(savedVisibility);
+    }
+  }, []);
 
 
 
@@ -114,7 +158,7 @@ const [appliedFilters, setAppliedFilters] = useState({});
   const [open, setOpen] = useState(false);
 
   const toggleDrawer = (newOpen) => {
-     
+
     setOpen(newOpen);
   };
 
@@ -130,12 +174,12 @@ const [appliedFilters, setAppliedFilters] = useState({});
       // Escape key shortcut
       if (e.key === "Escape") {
 
-        if(!isReplyModalOpen) {
-            toggleDrawer(false);
-            setTicketId("");
-            setTicketSubject("");
+        if (!isReplyModalOpen) {
+          toggleDrawer(false);
+          setTicketId("");
+          setTicketSubject("");
         }
-        
+
       }
     };
 
@@ -176,34 +220,34 @@ const [appliedFilters, setAppliedFilters] = useState({});
 
 
 
-const handleFilterClick = (e, colKey) => {
-  e.stopPropagation();
-  anchorRef.current = e.currentTarget;
-  setFilterInfo({
-    col: colKey,
-    value: "",
-    type: "eq",
-  });
-};
+  const handleFilterClick = (e, colKey) => {
+    e.stopPropagation();
+    anchorRef.current = e.currentTarget;
+    setFilterInfo({
+      col: colKey,
+      value: "",
+      type: "eq",
+    });
+  };
 
 
-const handleCloseFilter = () => {
-  setFilterInfo({ col: null, value: "", type: "eq" });
-  anchorRef.current = null;
-};
+  const handleCloseFilter = () => {
+    setFilterInfo({ col: null, value: "", type: "eq" });
+    anchorRef.current = null;
+  };
 
-const applyFilter = (e) => {
-  e.stopPropagation()
-  const { col, value, type } = filterInfo;
-  if (col && value) {
-    table.getColumn(col)?.setFilterValue({ type, value: parseFloat(value) });
-  }
-  handleCloseFilter();
-};
+  const applyFilter = (e) => {
+    e.stopPropagation()
+    const { col, value, type } = filterInfo;
+    if (col && value) {
+      table.getColumn(col)?.setFilterValue({ type, value: parseFloat(value) });
+    }
+    handleCloseFilter();
+  };
 
 
 
- 
+
   // ===== Utility functions =====
 
 
@@ -219,7 +263,7 @@ const applyFilter = (e) => {
 
   const mergeWithSavedOrder = (fetchedUsernames, savedOrder) => {
     const savedSet = new Set(savedOrder);
-    const ordered = savedOrder.filter((name) => fetchedUsernames.includes(name) );
+    const ordered = savedOrder.filter((name) => fetchedUsernames.includes(name));
     const newOnes = fetchedUsernames.filter((name) => !savedSet.has(name));
     return [...ordered, ...newOnes];
   };
@@ -251,7 +295,7 @@ const applyFilter = (e) => {
 
 
   const handleUserOnDragEnd = (result) => {
-    const items = reorder( userName, result.source.index, result.destination.index );
+    const items = reorder(userName, result.source.index, result.destination.index);
     localStorage.setItem("tickets_usernamesOrder", JSON.stringify(items));
     setUserName(items);
   };
@@ -285,7 +329,7 @@ const applyFilter = (e) => {
     const selectedIds = Object.keys(rowSelection).filter((id) => rowSelection[id]);
 
     try {
-      const { data } = await axios.put( `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/bulk/tickets`, { rowSelection: selectedIds, updates } );
+      const { data } = await axios.put(`${process.env.REACT_APP_API_URL}/api/v1/tickets/update/bulk/tickets`, { rowSelection: selectedIds, updates });
       if (data) {
         setUpdates(updates_object_init);
         toast.success("Bulk Tickets Updated💚");
@@ -299,8 +343,8 @@ const applyFilter = (e) => {
     }
   };
 
-  
-  
+
+
   const getAllEmails = async () => {
     setIsLoading(true);
     try {
@@ -318,7 +362,7 @@ const applyFilter = (e) => {
   };
 
 
-  
+
   const getEmails = async () => {
     try {
       const { data } = await axios.get(
@@ -333,15 +377,15 @@ const applyFilter = (e) => {
   };
 
 
-  
+
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers( data?.users?.filter((user) => user.role?.access?.some((item) => item?.permission?.includes("Tickets") ) ) || [] );
+      setUsers(data?.users?.filter((user) => user.role?.access?.some((item) => item?.permission?.includes("Tickets"))) || []);
 
-      const userNameArr = data?.users?.filter((user) => user.role?.access.some((item) => item?.permission?.includes("Tickets") ) ).map((user) => user.name);
+      const userNameArr = data?.users?.filter((user) => user.role?.access.some((item) => item?.permission?.includes("Tickets"))).map((user) => user.name);
       setUserName(userNameArr);
 
       const savedOrder = JSON.parse(localStorage.getItem("tickets_usernamesOrder") || "null");
@@ -353,7 +397,7 @@ const applyFilter = (e) => {
   };
 
 
-  
+
 
 
 
@@ -363,12 +407,12 @@ const applyFilter = (e) => {
 
   const handleDeleteTicketConfirmation = (ticketId) => {
     Swal.fire({ title: "Are you sure?", text: "You won't be able to revert this!", icon: "warning", showCancelButton: true, confirmButtonColor: "#3085d6", cancelButtonColor: "#d33", confirmButtonText: "Yes, delete it!", })
-    .then((result) => {
-      if (result.isConfirmed) {
-        handleDeleteTicket(ticketId);
-        Swal.fire("Deleted!", "Your ticket has been deleted.", "success");
-      }
-    });
+      .then((result) => {
+        if (result.isConfirmed) {
+          handleDeleteTicket(ticketId);
+          Swal.fire("Deleted!", "Your ticket has been deleted.", "success");
+        }
+      });
   };
 
   const handleDeleteTicket = async (id) => {
@@ -395,7 +439,7 @@ const applyFilter = (e) => {
   };
 
 
-  
+
 
 
 
@@ -433,7 +477,7 @@ const applyFilter = (e) => {
           }
         });
 
-      
+
       }
     } catch (error) {
       console.log(error);
@@ -442,7 +486,7 @@ const applyFilter = (e) => {
   };
 
 
-  
+
 
 
 
@@ -534,7 +578,7 @@ const applyFilter = (e) => {
   };
 
 
-  
+
 
 
 
@@ -545,16 +589,16 @@ const applyFilter = (e) => {
 
   const handleUpdateTicketStatusConfirmation = (ticketId) => {
     Swal.fire({ title: "Are you sure?", text: "You won't be able to revert this!", icon: "warning", showCancelButton: true, confirmButtonColor: "#3085d6", cancelButtonColor: "#d33", confirmButtonText: "Yes, Complete it!", })
-    .then((result) => {
-      if (result.isConfirmed) {
-        handleStatusComplete(ticketId);
-        Swal.fire(
-          "Complete!",
-          "Your ticket completed successfully!",
-          "success"
-        );
-      }
-    });
+      .then((result) => {
+        if (result.isConfirmed) {
+          handleStatusComplete(ticketId);
+          Swal.fire(
+            "Complete!",
+            "Your ticket completed successfully!",
+            "success"
+          );
+        }
+      });
   };
 
 
@@ -602,9 +646,9 @@ const applyFilter = (e) => {
       if (data) {
         const updatedTicket = data?.ticket;
 
-        setEmailData((prevData) => prevData.map((item) => item._id === updatedTicket._id ? updatedTicket : item ) );
+        setEmailData((prevData) => prevData.map((item) => item._id === updatedTicket._id ? updatedTicket : item));
 
-        if (filteredData) setFilteredData((prevData) => prevData.map((item) => item._id === updatedTicket._id ? updatedTicket : item ) );
+        if (filteredData) setFilteredData((prevData) => prevData.map((item) => item._id === updatedTicket._id ? updatedTicket : item));
 
         toast.success("Ticket updated successfully!");
       }
@@ -615,7 +659,6 @@ const applyFilter = (e) => {
   };
 
 
- 
 
 
 
@@ -629,85 +672,83 @@ const applyFilter = (e) => {
 
 
 
-  
-    // ----------------------------
-    // 🔑 Authentication & User Data
-    // ----------------------------
-    const authCtx = useMemo(
-      () => ({
-        auth,
-        users,
-         
-      }),
-      [auth, users, ]
-    );
-  
-    // ----------------------------
-    // 📂 Projects
-    // ----------------------------
-    const companyCtx = useMemo(
-      () => ({
-        companyData,
-         
-      }),
-      [companyData]
-    );
-  
-    // ----------------------------
-    // 📊 Tasks / Filtering
-    // ----------------------------
-    const ticketCtx = useMemo(
-      () => ({
-         
-        anchorRef,
-        status,
-        jobStatusOptions,
-        navigate,
-        handleFilterClick,
-        updateJobStatus,
-        updateTicketSingleField,
-        updateJobHolder,
-        updateJobDate,
-        toggleDrawer,
-        setTicketId,
 
-         setIsActivityDrawerOpen,
-         setActivityDrawerTicketId,
-         setCommentTicketId,
-         setIsComment,
-         handleUpdateTicketStatusConfirmation,
-         handleDeleteTicketConfirmation
-      }),
-      [status, jobStatusOptions,  ]
-    );
-  
-    // ----------------------------
- 
- 
-  
-    
-  
-    // ----------------------------
-    // 📦 Merge into one ctx if needed
-    // ----------------------------
-    const ctx = useMemo(
-      () => ({
-        ...authCtx,
-        ...ticketCtx,
-        ...companyCtx,
-         
-        
-      }),
-      [authCtx, ticketCtx, companyCtx  ]
-    );
-  
-    // ----------------------------
-    // 📑 Columns
-    // ----------------------------
-    const columns = useMemo(() => getTicketsColumns(ctx), [ctx]);
+
+  // ----------------------------
+  // 🔑 Authentication & User Data
+  // ----------------------------
+  const authCtx = useMemo(
+    () => ({
+      auth,
+      users,
+
+    }),
+    [auth, users,]
+  );
+
+  // ----------------------------
+  // 📂 Projects
+  // ----------------------------
+  const companyCtx = useMemo(
+    () => ({
+      companyData,
+
+    }),
+    [companyData]
+  );
+
+  // ----------------------------
+  // 📊 Tasks / Filtering
+  // ----------------------------
+  const ticketCtx = useMemo(
+    () => ({
+
+      anchorRef,
+      status,
+      jobStatusOptions,
+      navigate,
+      handleFilterClick,
+      updateJobStatus,
+      updateTicketSingleField,
+      updateJobHolder,
+      updateJobDate,
+      toggleDrawer,
+      setTicketId,
+
+      setIsActivityDrawerOpen,
+      setActivityDrawerTicketId,
+      setCommentTicketId,
+      setIsComment,
+      handleUpdateTicketStatusConfirmation,
+      handleDeleteTicketConfirmation
+    }),
+    [status, jobStatusOptions,]
+  );
+
+  // ----------------------------
 
 
 
+
+
+  // ----------------------------
+  // 📦 Merge into one ctx if needed
+  // ----------------------------
+  const ctx = useMemo(
+    () => ({
+      ...authCtx,
+      ...ticketCtx,
+      ...companyCtx,
+
+
+    }),
+    [authCtx, ticketCtx, companyCtx]
+  );
+
+  // ----------------------------
+  // 📑 Columns
+  // ----------------------------
+  const columns = useMemo(() => getTicketsColumns(ctx), [ctx]);
 
 
 
@@ -715,7 +756,10 @@ const applyFilter = (e) => {
 
 
 
- 
+
+
+
+
 
   const table = useMaterialReactTable({
     columns,
@@ -753,7 +797,14 @@ const applyFilter = (e) => {
       pagination, // ✅ Controlled pagination
       density: "compact",
       rowSelection,
+      columnVisibility: columnVisibility,
     },
+
+
+    onColumnVisibilityChange: setColumnVisibility,
+
+
+
     onPaginationChange: setPagination, // ✅ Hook for page changes
 
     autoResetPageIndex: false,
@@ -790,24 +841,24 @@ const applyFilter = (e) => {
   // ===== Side-effects =====
 
   // Close Comment Box to click anywhere
-//   useEffect(() => {
-//      const handleClickOutside = (event) => {
+  //   useEffect(() => {
+  //      const handleClickOutside = (event) => {
 
-         
-//   const clickInside =
-//     commentStatusRef.current?.contains(event.target) ||
-//     document.querySelector(".MuiPopover-root")?.contains(event.target) || // for MUI Menu
-//     document.querySelector(".EmojiPickerReact")?.contains(event.target) || // for emoji picker
-//     document.querySelector(".MuiDialog-root")?.contains(event.target); // ✅ For Dialog
 
-//   if (!clickInside) {
-//     setIsComment(false);
-//   }
-// };
+  //   const clickInside =
+  //     commentStatusRef.current?.contains(event.target) ||
+  //     document.querySelector(".MuiPopover-root")?.contains(event.target) || // for MUI Menu
+  //     document.querySelector(".EmojiPickerReact")?.contains(event.target) || // for emoji picker
+  //     document.querySelector(".MuiDialog-root")?.contains(event.target); // ✅ For Dialog
 
-//     document.addEventListener("mousedown", handleClickOutside);
-//     return () => document.removeEventListener("mousedown", handleClickOutside);
-//   }, []);
+  //   if (!clickInside) {
+  //     setIsComment(false);
+  //   }
+  // };
+
+  //     document.addEventListener("mousedown", handleClickOutside);
+  //     return () => document.removeEventListener("mousedown", handleClickOutside);
+  //   }, []);
 
 
   useEffect(() => {
@@ -839,7 +890,7 @@ const applyFilter = (e) => {
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
 
 
-        
+
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -862,7 +913,7 @@ const applyFilter = (e) => {
 
 
             <QuickAccess />
-              {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
+            {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
           </div>
 
           {/* ---------Template Buttons */}
@@ -881,21 +932,19 @@ const applyFilter = (e) => {
           <div className="w-full flex flex-row justify-start items-center gap-2 mt-5">
             <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden  transition-all duration-300 w-fit">
               <button
-                className={`py-1 px-2 outline-none w-[6rem] transition-all duration-300   ${
-                  selectedTab === "progress"
-                    ? "bg-orange-500 text-white border-r-2 border-orange-500"
-                    : "text-black bg-gray-100"
-                }`}
+                className={`py-1 px-2 outline-none w-[6rem] transition-all duration-300   ${selectedTab === "progress"
+                  ? "bg-orange-500 text-white border-r-2 border-orange-500"
+                  : "text-black bg-gray-100"
+                  }`}
                 onClick={() => setSelectedTab("progress")}
               >
                 Progress
               </button>
               <button
-                className={`py-1 px-2 outline-none transition-all duration-300 w-[6rem]  ${
-                  selectedTab === "complete"
-                    ? "bg-orange-500 text-white"
-                    : "text-black bg-gray-100 hover:bg-slate-200"
-                }`}
+                className={`py-1 px-2 outline-none transition-all duration-300 w-[6rem]  ${selectedTab === "complete"
+                  ? "bg-orange-500 text-white"
+                  : "text-black bg-gray-100 hover:bg-slate-200"
+                  }`}
                 onClick={() => {
                   setSelectedTab("complete");
                   navigate("/tickets/complete");
@@ -905,27 +954,25 @@ const applyFilter = (e) => {
               </button>
               {(auth?.user?.role?.name === "Admin" ||
                 access.includes("Inbox")) && (
-                <button
-                  className={`py-1 px-2 outline-none transition-all border-l-2  border-orange-500 duration-300 w-[6rem]  ${
-                    selectedTab === "inbox"
+                  <button
+                    className={`py-1 px-2 outline-none transition-all border-l-2  border-orange-500 duration-300 w-[6rem]  ${selectedTab === "inbox"
                       ? "bg-orange-500 text-white"
                       : "text-black bg-gray-100 hover:bg-slate-200"
-                  }`}
-                  onClick={() => {
-                    navigate("/tickets/inbox");
-                  }}
-                >
-                  Inbox
-                </button>
-              )}
+                      }`}
+                    onClick={() => {
+                      navigate("/tickets/inbox");
+                    }}
+                  >
+                    Inbox
+                  </button>
+                )}
             </div>
 
             {auth?.user?.role?.name === "Admin" && (
               <div className="flex justify-center items-center  gap-2">
                 <span
-                  className={` p-1 rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
-                    showJobHolder && "bg-orange-500 text-white"
-                  }`}
+                  className={` p-1 rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${showJobHolder && "bg-orange-500 text-white"
+                    }`}
                   onClick={() => {
                     setShowJobHolder((prev) => !prev);
                   }}
@@ -935,9 +982,8 @@ const applyFilter = (e) => {
                 </span>
 
                 <span
-                  className={` p-1 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${
-                    showEdit && "bg-orange-500 text-white"
-                  }`}
+                  className={` p-1 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${showEdit && "bg-orange-500 text-white"
+                    }`}
                   onClick={() => {
                     setShowEdit(!showEdit);
                   }}
@@ -947,7 +993,48 @@ const applyFilter = (e) => {
                 </span>
 
 
-                <RefreshTicketsButton getAllEmails={getAllEmails}/>
+                <RefreshTicketsButton getAllEmails={getAllEmails} />
+
+
+
+
+
+
+
+                <div className="relative">
+                  <div
+                    className={`  p-[6px] rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${showcolumn && "bg-orange-500 text-white"
+                      }`}
+                    onClick={() => setShowColumn(!showcolumn)}
+                  >
+                    {" "}
+                    {showcolumn ? (
+                      <GoEyeClosed className="h-5 w-5" />
+                    ) : (
+                      <GoEye className="h-5 w-5" />
+                    )}{" "}
+                  </div>
+                  {showcolumn && (
+                    <div
+                      ref={showColumnRef}
+                      className="absolute top-8 left-[50%] z-[9999]    w-[14rem] "
+                    >
+                      {renderColumnControls(colVisibility, columnVisibility, setColumnVisibility, "Tickets")}
+                    </div>
+                  )}
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+
 
 
               </div>
@@ -969,10 +1056,9 @@ const applyFilter = (e) => {
                           className="flex items-center gap-3 overflow-x-auto hidden1"
                         >
                           <div
-                            className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                              active1 === "All" &&
+                            className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${active1 === "All" &&
                               "  border-b-2 text-orange-600 border-orange-600"
-                            }`}
+                              }`}
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
@@ -993,10 +1079,9 @@ const applyFilter = (e) => {
                               >
                                 {(provided) => (
                                   <div
-                                    className={`py-1   px-2 !cursor-pointer font-[500] text-[14px]   ${
-                                      active1 === user &&
+                                    className={`py-1   px-2 !cursor-pointer font-[500] text-[14px]   ${active1 === user &&
                                       "  border-b-2 text-orange-600 border-orange-600"
-                                    }`}
+                                      }`}
                                     ref={provided.innerRef}
                                     {...provided.draggableProps}
                                     {...provided.dragHandleProps}
@@ -1194,70 +1279,64 @@ const applyFilter = (e) => {
 
 
 
-            {
-              open && <div className="fixed inset-0 z-[499] flex items-center justify-center bg-black/30 backdrop-blur-sm  h-full     ">
-                          <div className="h-[95%] bg-gray-100 rounded-xl shadow-lg w-[95%] sm:w-[80%] md:w-[75%] lg:w-[70%] xl:w-[70%] 3xl:w-[60%]    py-4 px-5   ">
-                            <div className="h-full w-full flex flex-col justify-start items-center relative">
-            
-                              <div className="flex items-center justify-between border-b pb-2 mb-3 self-start w-full">
-                              <h3 className="text-lg font-semibold">Ticket: {(ticketSubject) ? ticketSubject : "Loading..."}</h3>
-                              <button
-                                className="p-1 rounded-2xl bg-gray-50 border hover:shadow-md hover:bg-gray-100"
-                                onClick={() => {toggleDrawer(false); setTicketId(""); setTicketSubject("")}}
-                              >
-                                <IoClose className="h-5 w-5" />
-                              </button>
-                              </div>
-            
- 
+        {
+          open && <div className="fixed inset-0 z-[499] flex items-center justify-center bg-black/30 backdrop-blur-sm  h-full     ">
+            <div className="h-[95%] bg-gray-100 rounded-xl shadow-lg w-[95%] sm:w-[80%] md:w-[75%] lg:w-[70%] xl:w-[70%] 3xl:w-[60%]    py-4 px-5   ">
+              <div className="h-full w-full flex flex-col justify-start items-center relative">
 
-
-
-                              
-      <div className=" w-full h-full flex justify-center items-center gap-8 px-8 py-4 overflow-hidden " >
-
- 
-                        
-                        <EmailDetailDrawer id={ticketId} setTicketSubject={setTicketSubject} isReplyModalOpenCb={isReplyModalOpenCb}/>
-
-                        <div className="w-full h-full flex flex-col justify-start items-start gap-5 ">
-
-                           
-
-                              
-
-                               <div className="max-w-lg w-full h-[50%] px-3">
-
-                               <ActivityLogDrawer isOpen={isActivityDrawerOpen} onClose={() => setIsActivityDrawerOpen(false)} ticketId={ticketId} />
-                            </div>
-
-                            <div className="max-w-lg w-full  h-[50%]">
-                                
-                                <DetailComments type={"ticket"} jobId={ticketId} getTasks1={getEmails} />
-
-                              </div>
+                <div className="flex items-center justify-between border-b pb-2 mb-3 self-start w-full">
+                  <h3 className="text-lg font-semibold">Ticket: {(ticketSubject) ? ticketSubject : "Loading..."}</h3>
+                  <button
+                    className="p-1 rounded-2xl bg-gray-50 border hover:shadow-md hover:bg-gray-100"
+                    onClick={() => { toggleDrawer(false); setTicketId(""); setTicketSubject("") }}
+                  >
+                    <IoClose className="h-5 w-5" />
+                  </button>
+                </div>
 
 
 
 
-                        </div>
+
+
+                <div className=" w-full h-full flex justify-center items-center gap-8 px-8 py-4 overflow-hidden " >
+
+
+
+                  <EmailDetailDrawer id={ticketId} setTicketSubject={setTicketSubject} isReplyModalOpenCb={isReplyModalOpenCb} />
+
+                  <div className="w-full h-full flex flex-col justify-start items-start gap-5 ">
+
+
+
+
+
+                    <div className="max-w-lg w-full h-[50%] px-3">
+
+                      <ActivityLogDrawer isOpen={isActivityDrawerOpen} onClose={() => setIsActivityDrawerOpen(false)} ticketId={ticketId} />
+                    </div>
+
+                    <div className="max-w-lg w-full  h-[50%]">
+
+                      <DetailComments type={"ticket"} jobId={ticketId} getTasks1={getEmails} />
+
+                    </div>
+
+
 
 
                   </div>
-  
 
 
-                            </div>
-                          </div>
-                        </div>
-
-            }
+                </div>
 
 
 
+              </div>
+            </div>
+          </div>
 
-
-
+        }
 
 
 
@@ -1286,17 +1365,23 @@ const applyFilter = (e) => {
 
 
 
-{filterInfo.col && anchorRef.current && (
-  <NumberFilterPortal
-    anchorRef={anchorRef}
-    value={filterInfo.value}
-    filterType={filterInfo.type}
-    onApply={applyFilter}
-    onClose={handleCloseFilter}
-    setValue={(val) => setFilterInfo((f) => ({ ...f, value: val }))}
-    setFilterType={(type) => setFilterInfo((f) => ({ ...f, type }))}
-  />
-)}
+
+
+
+
+
+
+        {filterInfo.col && anchorRef.current && (
+          <NumberFilterPortal
+            anchorRef={anchorRef}
+            value={filterInfo.value}
+            filterType={filterInfo.type}
+            onApply={applyFilter}
+            onClose={handleCloseFilter}
+            setValue={(val) => setFilterInfo((f) => ({ ...f, value: val }))}
+            setFilterType={(type) => setFilterInfo((f) => ({ ...f, type }))}
+          />
+        )}
       </div>
     </>
   );

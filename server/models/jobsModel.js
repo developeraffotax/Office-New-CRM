@@ -195,6 +195,11 @@ const clientSchema = new mongoose.Schema(
     utr: {
       type: String,
     },
+
+    personalCode: {
+      type: String,
+    },
+    
     isActive: {
       type: Boolean,
       default: true,

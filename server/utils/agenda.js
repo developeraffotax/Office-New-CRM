@@ -1,7 +1,8 @@
 import Agenda from "agenda";
 import { io } from "../index.js";
-import { connection as redis } from "../utils/ioredis.js";
+// import { connection as redis } from "../utils/ioredis.js";
 import Reminder from "../models/reminderModel.js";
+import { safeRedisSmembers } from "./safeRedisSmembers.js";
 
 // import { sendFirebaseNotification } from "./utils/firebase.js";
 
@@ -16,7 +17,8 @@ agenda.define("send reminder", async (job) => {
   const userId = reminder.userId._id.toString();
 
   // Fetch all socket IDs for this user from Redis
-  const sockets = await redis.smembers(`sockets:user:${userId}`);
+ // const sockets = await redis.smembers(`sockets:user:${userId}`);
+  const sockets = await safeRedisSmembers(`sockets:user:${userId}`);
 
   const payload = {
     _id: reminder._id.toString(),

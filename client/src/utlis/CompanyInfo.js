@@ -234,6 +234,7 @@ useEffect(() => {
                 copyValue={clientDetail?.authCode}
               />
               <InfoRow label="UTR" value={clientDetail?.utr} />
+              <InfoRow label="Personal Code" value={clientDetail?.personalCode} />
             </div>
           </section>
         </div>

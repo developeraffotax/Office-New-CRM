@@ -125,6 +125,21 @@ export const LoginInfoTab = ({ clientDetail }) => {
           )}
         </span>
       </div>
+
+      <div className="grid grid-cols-2">
+        <span className="border border-gray-300 text-black font-medium py-2 px-2 rounded-bl-md ">
+          Personal Code
+        </span>
+        <span className="border border-gray-300 text-gray-600 py-2 px-2 rounded-br-md ">
+          {clientDetail?.personalCode ? (
+            clientDetail?.personalCode
+          ) : (
+            <span className="text-red-500">N/A</span>
+          )}
+        </span>
+      </div>
+
+
     </div>
   );
 };

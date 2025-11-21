@@ -39,6 +39,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
   const [trPassword, setTrPassowrd] = useState("");
   const [vatPassword, setVatPassowrd] = useState("");
   const [utr, setUtr] = useState("");
+  const [personalCode, setPersonalCode] = useState("");
 
   const [clientPaidFee, setClientPaidFee] = useState("");
 
@@ -264,6 +265,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
       setVatLogin(clientDetail.vatLogin);
       setAuthCode(clientDetail.authCode);
       setUtr(clientDetail.utr);
+      setPersonalCode(clientDetail?.personalCode);
       setCtPassowrd(clientDetail.ctPassword);
       setPyePassowrd(clientDetail.pyePassword);
       setTrPassowrd(clientDetail.trPassword);
@@ -573,6 +575,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
           trPassword,
           vatPassword,
           utr,
+          personalCode,
           clientPaidFee,
           jobs,
         }
@@ -897,6 +900,14 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 className={`${style.input}`}
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
+              />
+
+              <input
+                type="text"
+                placeholder="Personal Code"
+                className={`${style.input}`}
+                value={personalCode}
+                onChange={(e) => setPersonalCode(e.target.value)}
               />
             </div>
           </div>

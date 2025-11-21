@@ -37,6 +37,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
   const [vatPassword, setVatPassowrd] = useState("");
   const [authCode, setAuthCode] = useState("");
   const [utr, setUtr] = useState("");
+  const [personalCode, setPersonalCode] = useState("");
 
   const [clientPaidFee, setClientPaidFee] = useState("");
 
@@ -272,6 +273,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
           vatPassword,
           authCode,
           utr,
+          personalCode,
           clientPaidFee,
           jobs,
         }
@@ -564,6 +566,14 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 className={`${style.input}`}
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
+              />
+
+              <input
+                type="text"
+                placeholder="Personal Code"
+                className={`${style.input}`}
+                value={personalCode}
+                onChange={(e) => setPersonalCode(e.target.value)}
               />
             </div>
           </div>

@@ -96,6 +96,23 @@ export const updateLead = async (req, res) => {
         message: "Lead not found!",
       });
     }
+ 
+    // Only update tickets if lead status is being changed to 'won' or 'lost'
+    if (updates.status && (updates.status === 'won' || updates.status === 'lost')) {
+      await ticketModel.updateMany(
+        { clientName: lead.clientName, state: { $ne: "complete" } },
+        { $set: { state: "complete" } }
+      );
+    }
+
+    if (updates.status && (updates.status === 'progress')) {
+      await ticketModel.updateMany(
+        { clientName: lead.clientName, state: { $eq: "complete" } },
+        { $set: { state: "progress" } }
+      );
+    }
+
+
 
     const updataLead = await leadModel.findByIdAndUpdate(
       { _id: leadId },
@@ -225,7 +242,7 @@ export const getSingleLead = async (req, res) => {
   }
 };
 
-// Delete Lead and related tickets
+// Delete Lead and update related tickets
 export const deleteLead = async (req, res) => {
   try {
     const leadId = req.params.id;
@@ -240,15 +257,18 @@ export const deleteLead = async (req, res) => {
       });
     }
 
-    // Delete related tickets
-    await ticketModel.deleteMany({ clientName: lead.clientName, state: { $ne: "complete" } });
+    // Update related tickets to 'complete'
+    await ticketModel.updateMany(
+      { clientName: lead.clientName, state: { $ne: "complete" } },
+      { $set: { state: "complete" } }
+    );
 
     // Delete the lead
     await leadModel.findByIdAndDelete(leadId);
 
     res.status(200).send({
       success: true,
-      message: "Lead and related tickets deleted successfully!",
+      message: "Lead deleted and related tickets marked as complete!",
     });
   } catch (error) {
     console.log(error);
@@ -259,6 +279,7 @@ export const deleteLead = async (req, res) => {
     });
   }
 };
+
 
 // <------------Dashboard---------->
 export const getdashboardLead = async (req, res) => {

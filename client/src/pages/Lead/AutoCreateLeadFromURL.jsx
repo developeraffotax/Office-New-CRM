@@ -21,7 +21,7 @@ const AutoCreateLeadFromURL = () => {
       try {
         const { data } = await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/leads/create/lead`,
-          { clientName: name, email } // only send name + email
+          { clientName: name, email, lead_Source: "Google", brand: "Affotax", source: "Website",    } // only send name + email
         );
 
         if (data?.lead) {

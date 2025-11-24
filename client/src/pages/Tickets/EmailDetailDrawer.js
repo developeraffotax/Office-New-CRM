@@ -93,6 +93,7 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
           markAsRead(lastMsg.id);
         }
       }
+      
     } catch (error) {
       console.log("getEmailDetail error", error);
     } finally {
@@ -107,6 +108,7 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/email/detail/${ticketDetail.mailThreadId}/${ticketDetail.company}/${id}`
       );
       if (data?.emailDetails) setEmailDetail(data.emailDetails);
+      console.log("emailData called💛", data);
     } catch (error) {
       console.log("emailData error", error);
     }
@@ -159,6 +161,7 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
           responseType: "json",
         }
       );
+
 
       if (data) {
         const encodedData = data.data;
@@ -394,8 +397,8 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
                   </div>
 
                   <div
-                    className="ml-10 text-[15px]"
-                    style={{ lineHeight: "1.4rem" }}
+                    className="ml-10 text-[13px]"
+                    style={{ lineHeight: "1.2rem" }}
                     dangerouslySetInnerHTML={{
                       __html: message?.payload?.body?.data
                         ? getNewMessageContent(
@@ -405,15 +408,15 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
                     }}
                   ></div>
 
-                  {(message?.payload?.body?.messageAttachments || []).length > 0 && (
+                  {(message?.payload?.body?.messageAttachments.filter(a => !a.isInline) || []).length > 0 && (
                     <>
                       <hr />
                       <h3 className="text-[18px] font-medium flex items-center gap-2">
                         <ImAttachment className="h-6 w-6 text-black" />
-                        Attachments ({(message?.payload?.body?.messageAttachments || []).length})
+                        Attachments ({(message?.payload?.body?.messageAttachments.filter(a => !a.isInline) || []).length})
                       </h3>
                       <div className="flex items-center flex-wrap gap-4 py-3">
-                        {message?.payload?.body?.messageAttachments?.map((item) => (
+                        {message?.payload?.body?.messageAttachments?.filter(a => !a.isInline).map((item) => (
                           <div
                             className=" flex items-center gap-4 border bg-gray-50 hover:bg-gray-100 cursor-pointer px-3 py-2 transition-all duration-300 rounded-md hover:shadow-md font-medium text-[13px] "
                             key={item.attachmentId || item.attachmentMessageId}
@@ -479,8 +482,8 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
                   </div>
 
                   <div
-                    className=" ml-10 text-[15px]"
-                    style={{ lineHeight: "1.4rem" }}
+                    className=" ml-10 text-[13px]"
+                    style={{ lineHeight: "1.2rem" }}
                     dangerouslySetInnerHTML={{
                       __html: message?.payload?.body?.data
                         ? cleanEmailBody(String(message.payload.body.data).replace(/<\/p>\s*<p>/g, "</p><br><p>"))

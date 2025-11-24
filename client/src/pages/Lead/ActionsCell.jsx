@@ -68,14 +68,14 @@ const hasTickets = ticketCount > 0;
   </span>
 
   {/* BADGE COUNT */}
-  {ticketCount > 0 && (
+  {/* {ticketCount > 0 && (
     <span
       className="absolute -top-2 -right-2 bg-sky-600 text-white text-[10px]
                  font-bold px-[6px] py-[1px] rounded-full shadow-md"
     >
       {ticketCount}
     </span>
-  )}
+  )} */}
 </div>
 
 

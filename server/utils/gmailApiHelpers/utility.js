@@ -10,8 +10,7 @@ const base64UrlToBase64 = (b64url) => {
   return b64;
 };
 
-const decodeBase64 = (b64) =>
-  Buffer.from(b64, "base64").toString("utf-8");
+const decodeBase64 = (b64) => Buffer.from(b64, "base64").toString("utf-8");
 
 // ---------------------------
 // Gmail Message Helpers
@@ -86,18 +85,85 @@ const cleanMessageHtml = (html) => {
   // Split paragraphs by blank line
   const paragraphs = html
     .split(/\n{2}/)
-    .map(p => p.trim())
-    .filter(p => p.length);
+    .map((p) => p.trim())
+    .filter((p) => p.length);
 
   // Convert single newlines inside a paragraph → <br>
   const finalHtml = paragraphs
-    .map(p => {
+    .map((p) => {
       const withBr = p.replace(/\n/g, "<br>");
       return `<p style="margin:0 0 10px; line-height:1.5;">${withBr}</p>`;
     })
     .join("");
 
   return finalHtml;
+};
+
+const normalizeMessageHtml = (html) => {
+  if (!html) return "";
+
+  let clean = html;
+
+  // Remove meta and style tags
+  clean = clean.replace(/<meta[\s\S]*?>/gi, "");
+  clean = clean.replace(/<style[\s\S]*?<\/style>/gi, "");
+
+  // Remove empty <p> or <div> (with only <br> or whitespace)
+  clean = clean.replace(/<(p|div)>(\s|&nbsp;|<br>)*<\/\1>/gi, "");
+
+  // Collapse multiple <br> into one
+  clean = clean.replace(/(<br\s*\/?>\s*){2,}/gi, "<br>");
+
+  // Remove excessive margin/padding in p tags
+  clean = clean.replace(/<p[^>]*>/gi, "<p style='margin:0; padding:0;'>");
+
+  // Trim leading/trailing whitespace
+  clean = clean.trim();
+
+  return clean;
+};
+
+// ---------------------------
+// Convert message HTML into cleaner format
+// Aggressively removes quoted text, empty tags, multiple <br>, meta/style tags, and collapses spacing
+// ---------------------------
+const cleanMessageHtmlAggressive = (html) => {
+  if (!html) return "";
+
+  let clean = html;
+
+  // 1️⃣ Remove Gmail/Outlook quoted text
+  clean = stripQuotedText(clean);
+
+  // 2️⃣ Remove meta and style tags
+  clean = clean.replace(/<meta[\s\S]*?>/gi, "");
+  clean = clean.replace(/<style[\s\S]*?<\/style>/gi, "");
+
+  // 3️⃣ Normalize line endings
+  clean = clean.replace(/\r\n|\r/g, "\n");
+
+  // 4️⃣ Remove empty <p> or <div> (with only <br> or whitespace)
+  clean = clean.replace(/<(p|div)>(\s|&nbsp;|<br>)*<\/\1>/gi, "");
+
+  // 5️⃣ Collapse multiple <br> into one
+  clean = clean.replace(/(<br\s*\/?>\s*){2,}/gi, "<br>");
+
+  // 6️⃣ Remove excessive margin/padding in <p> tags
+  clean = clean.replace(/<p[^>]*>/gi, "<p style='margin:0; padding:0;'>");
+
+  // 7️⃣ Trim leading/trailing whitespace
+  clean = clean.trim();
+
+  // 8️⃣ Optional: wrap remaining text into <p> tags for spacing consistency
+  const paragraphs = clean
+    .split(/<br>\s*<br>/i)
+    .map((p) => p.trim())
+    .filter((p) => p.length);
+  clean = paragraphs
+    .map((p) => `<p style="margin:0 0 10px; line-height:1.5;">${p}</p>`)
+    .join("");
+
+  return clean;
 };
 
 // ---------------------------
@@ -149,8 +215,7 @@ const inlineImages = async (decodedMessage, parts, messageId, accessToken) => {
     )?.value;
 
     const isInline =
-      (dispHeader &&
-        dispHeader.toLowerCase().includes("inline")) ||
+      (dispHeader && dispHeader.toLowerCase().includes("inline")) ||
       !!cidHeader;
 
     if (part.mimeType?.startsWith("image/") && part.body) {
@@ -209,10 +274,7 @@ const inlineImages = async (decodedMessage, parts, messageId, accessToken) => {
   }
 
   // 3️⃣ OUTLOOK SIGNATURE ID FIX (_x0000_i1025 etc)
-  decodedMessage = decodedMessage.replace(
-    /id="_x0000_i\d+"/g,
-    ""
-  );
+  decodedMessage = decodedMessage.replace(/id="_x0000_i\d+"/g, "");
 
   return decodedMessage;
 };
@@ -221,9 +283,9 @@ export {
   decodeBase64,
   base64UrlToBase64,
   flattenParts,
-  cleanMessageHtml,
   extractAttachments,
   inlineImages,
   stripQuotedText,
+  cleanMessageHtmlAggressive,
   fetchAttachmentData,
 };

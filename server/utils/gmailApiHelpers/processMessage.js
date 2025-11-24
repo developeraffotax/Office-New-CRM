@@ -1,6 +1,6 @@
 import {
   base64UrlToBase64,
-  cleanMessageHtml,
+  cleanMessageHtmlAggressive,
   decodeBase64,
   extractAttachments,
   flattenParts,
@@ -8,7 +8,9 @@ import {
 } from "./utility.js";
 
 export const processMessage = async (message, accessToken) => {
-  const parts = message.payload.parts?.length ? flattenParts(message.payload.parts) : [];
+  const parts = message.payload.parts?.length
+    ? flattenParts(message.payload.parts)
+    : [];
 
   // ---------------------------
   // Decode HTML body
@@ -16,7 +18,9 @@ export const processMessage = async (message, accessToken) => {
   let decodedMessage = "";
 
   if (message.payload.body?.data) {
-    decodedMessage = decodeBase64(base64UrlToBase64(message.payload.body.data || ""));
+    decodedMessage = decodeBase64(
+      base64UrlToBase64(message.payload.body.data || "")
+    );
   } else if (parts.length) {
     for (const part of parts) {
       if (part.mimeType === "text/html" && part.body?.data) {
@@ -28,13 +32,17 @@ export const processMessage = async (message, accessToken) => {
   // ---------------------------
   // Replace inline images (cid: or inline base64)
   // ---------------------------
-  decodedMessage = await inlineImages(decodedMessage, parts, message.id, accessToken);
+  decodedMessage = await inlineImages(
+    decodedMessage,
+    parts,
+    message.id,
+    accessToken
+  );
 
   // ---------------------------
   // Clean message HTML
   // ---------------------------
-  decodedMessage = cleanMessageHtml(decodedMessage);
-
+  decodedMessage = cleanMessageHtmlAggressive(decodedMessage);
   // ---------------------------
   // Extract attachments (non-inline)
   // ---------------------------
@@ -43,7 +51,9 @@ export const processMessage = async (message, accessToken) => {
   // ---------------------------
   // Detect if message is sent by me
   // ---------------------------
-  const fromHeader = message.payload.headers?.find(h => h.name.toLowerCase() === "from")?.value || "";
+  const fromHeader =
+    message.payload.headers?.find((h) => h.name.toLowerCase() === "from")
+      ?.value || "";
   const sentByMe = [
     "info@affotax.com",
     "Affotax Team <info@affotax.com>",

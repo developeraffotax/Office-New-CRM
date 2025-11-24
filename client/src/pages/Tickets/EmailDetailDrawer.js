@@ -185,28 +185,13 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
     }
   };
 
-  // Clean Email: safer — do not strip blockquotes, only remove gmail_quote wrapper and MSO cruft
-  const cleanEmailBody = (emailHtml = "") => {
-    if (!emailHtml) return "";
-    // remove gmail quoted wrapper but keep its inner content (if any) by replacing the wrapper with its inner HTML
-    emailHtml = emailHtml.replace(/<div class="gmail_quote">([\s\S]*?)<\/div>/gi, "$1");
-    // remove MSO cruft (keep structure)
-    emailHtml = emailHtml.replace(
-      /<p class=MsoNormal><o:p>&nbsp;<\/o:p><\/p><div style='border:none;border-top:solid [\s\S]*?<\/div><p class=MsoNormal>[\s\S]*?<o:p><\/o:p><\/p><\/div>/gi,
-      ""
-    );
-    // ensure images are responsive (if server-side not added)
-    emailHtml = emailHtml.replace(/<img([^>]*?)>/gi, (tag, attrs) => {
-      if (/style\s*=/.test(attrs)) {
-        if (!/max-width:/.test(attrs)) {
-          return tag.replace(/style\s*=\s*(['"])(.*?)\1/, (m, q, style) => `style=${q}${style} max-width:100%;height:auto;${q}`);
-        }
-        return tag;
-      }
-      return `<img ${attrs} style="max-width:100%;height:auto;" />`;
-    });
+  // Clean Email
+  const cleanEmailBody = (emailHtml) => {
+    const cleanedHtml = emailHtml
+      .replace(/<div class="gmail_quote">([\s\S]*?)<\/div>/g, "")
+      .replace(/<blockquote([\s\S]*?)<\/blockquote>/g, "");
 
-    return emailHtml;
+    return cleanedHtml;
   };
 
 
@@ -401,7 +386,7 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
                     style={{ lineHeight: "1.2rem" }}
                     dangerouslySetInnerHTML={{
                       __html: message?.payload?.body?.data
-                        ? getNewMessageContent(
+                        ? cleanEmailBody(
                             String(message.payload.body.data).replace(/<\/p>\s*<p>/g, "</p><br><p>")
                           )
                         : message?.snippet || "",

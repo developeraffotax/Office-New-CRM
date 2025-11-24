@@ -3,7 +3,8 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
-const AutoCreateLeadFromURL = () => {
+const AutoCreateLeadFromURL = ({user}) => {
+ 
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,7 +22,7 @@ const AutoCreateLeadFromURL = () => {
       try {
         const { data } = await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/leads/create/lead`,
-          { clientName: name, email, lead_Source: "Google", brand: "Affotax", source: "Website",    } // only send name + email
+          { clientName: name, email, lead_Source: "Google", brand: "Affotax", source: "Website", department: "Accounts", stage: "Interest", jobHolder: user?.name || "", followUpDate: new Date()   } // only send name + email
         );
 
         if (data?.lead) {

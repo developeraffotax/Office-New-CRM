@@ -153,7 +153,7 @@ function App() {
             <Route path="/editor/templates" element={<TemplateEditor />} />
             <Route path="/pdf/editor" element={<PDFEditor />} />
             <Route path="/activity" element={<ScreenshotDashboard />} />
-            <Route path="/leads/create" element={<AutoCreateLeadFromURL />} />
+            <Route path="/leads/create" element={<AutoCreateLeadFromURL user={user}/>} />
           </Route>
         ) : (
           // If no token, redirect any private route access to login

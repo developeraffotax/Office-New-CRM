@@ -239,10 +239,42 @@ const getDetailedThreads = async (threadId, accessToken) => {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
 
+
+
   const latestMessage = threadData.messages[threadData.messages.length - 1];
   const date = new Date(parseInt(latestMessage.internalDate));
 
   const decryptedMessages = await Promise.all(threadData.messages.map(msg => processMessage(msg, accessToken)));
+
+
+  
+    const recipientHeaders = threadData.messages[0]?.payload.headers.filter(
+      (header) => ["to", "cc", "bcc"].includes(header.name.toLowerCase())
+    );
+    let recipients =
+      recipientHeaders?.map((header) => header.value) || "No Recipient Found";
+
+
+    // Logic to get the right recepient email if the first message is send by client
+
+    if(recipients[0] === 'info@affotax.com' || recipients[0] === 'Affotax <info@affotax.com>') {
+
+      const recipientHeaders = threadData.messages[0]?.payload.headers.filter(
+        (header) => ["from"].includes(header.name.toLowerCase())
+      );
+
+      recipients = recipientHeaders?.map((header) => header.value) || "No Recipient Found";
+
+
+      const input = recipients[0];
+      const match = input.match(/<(.+?)>/);
+      const email = match ? match[1] : input;
+
+
+      recipients[0] = email;
+
+    }
+
 
   return {
     decryptedMessages,
@@ -250,7 +282,7 @@ const getDetailedThreads = async (threadId, accessToken) => {
     threadId,
     subject: threadData.messages[0]?.payload.headers.find(h => h.name.toLowerCase() === "subject")?.value || "No Subject Found",
     readStatus: latestMessage.labelIds?.includes("UNREAD") ? "Unread" : "Read",
-    recipients: ["recipient@example.com"], // Simplified, you can reuse your logic
+    recipients: recipients, // Simplified, you can reuse your logic
     formattedDate: date.toLocaleDateString(),
     formattedTime: date.toLocaleTimeString(),
   };

@@ -160,52 +160,80 @@ export const sendEmailWithAttachments = async (emailData) => {
   }
 };
 
-// Get All Emails
+
+
+
+
+
+
+
+ 
+
+const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
 export const getAllEmails = async (ticketsList) => {
   try {
     const accessToken = await getAccessToken();
-    const outSourcingAccessToken = await getOutsourceAccessToken();
+    const outsourcingToken = await getOutsourceAccessToken();
 
-    if (!accessToken || !outSourcingAccessToken) {
-      console.log("No access token found");
-      return;
-      getAllEmails(ticketsList);
-    } else {
-      let detailedThreads = await Promise.all(
-        ticketsList.map(async (thread) => {
-          const response = await getDetailedThreads(
-            thread.threadId,
-            thread.companyName === "Affotax"
-              ? accessToken
-              : thread.companyName === "Outsource"
-              ? outSourcingAccessToken
-              : ""
-          );
-          return response;
-        })
-      );
-
-      // Filter out null values (skipped thread IDs)
-      detailedThreads = detailedThreads?.filter((thread) => thread !== null);
-
-      const unreadCount = detailedThreads?.reduce((count, thread) => {
-        if (thread?.readStatus === "Unread") {
-          return count + 1;
-        }
-        return count;
-      }, 0);
-
-      return {
-        detailedThreads: detailedThreads,
-        unreadCount: unreadCount,
-      };
+    if (!accessToken && !outsourcingToken) {
+      console.log("⚠️ Both access tokens missing — skipping Gmail sync!");
+      return { detailedThreads: [], unreadCount: 0 };
     }
+
+    const detailedThreads = [];
+
+    for (const ticket of ticketsList) {
+      const { mailThreadId, company } = ticket;
+
+      // Pick token based on company
+      const token = company === "Affotax" ? accessToken : company === "Outsource" ? outsourcingToken : null;
+
+      if (!token) {
+        console.log(
+          `⚠️ No token for ticket ${mailThreadId} with company ${company}`
+        );
+        continue;
+      }
+
+      try {
+        // Fetch thread details with retry support
+        const thread = await getDetailedThreads(mailThreadId, token);
+        detailedThreads.push(thread);
+      } catch (err) {
+        console.log(
+          `❌ Failed to fetch thread ${mailThreadId} with company ${company}`,
+          err?.response?.data || err.message
+        );
+      }
+
+      // ⭐ CRITICAL: slow down requests to avoid 429
+      await sleep(200); // 100–200ms recommended by Google
+    }
+
+    // Count unread
+    const unreadCount = detailedThreads.filter(
+      (t) => t.readStatus === "Unread"
+    ).length;
+
+    return { detailedThreads, unreadCount };
   } catch (error) {
-    console.log("Error while get all email's to Gmail", error);
+    console.log(
+      "❌ Error while getting all emails from Gmail:",
+      error?.response?.data || error.message
+    );
     throw error;
   }
 };
+
+
+
+
+
+
+
+
+
 
 
 

@@ -284,6 +284,89 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </div>
           )}
+
+
+
+          {/* ---------Lead-------- */}
+          {hasAccess("Leads") && (
+            <div
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "leads"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+              }   filter   overflow-hidden`}
+              onClick={() => {
+                router("/leads");
+                dispatch(setActive("leads"));
+              }}
+            >
+              <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                {hide ? (
+                  <BiLayer
+                    className="h-6 w-6 cursor-pointer ml-2"
+                    style={{ color: active === "leads" && "#fff" }}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <BiLayer
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "leads" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400] "
+                      style={{ color: active === "leads" && "#fff" }}
+                    >
+                      Leads
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+
+
+
+          
+          {/* --------Template------ */}
+          {hasAccess("Templates") && (
+            <div
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "templates"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+              }   filter   overflow-hidden`}
+              onClick={() => {
+                router("/templates");
+                dispatch(setActive("templates"));
+              }}
+            >
+              <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                {hide ? (
+                  <GoRepoTemplate
+                    className="h-6 w-6 cursor-pointer ml-2"
+                    style={{ color: active === "templates" && "#fff" }}
+                  />
+                ) : (
+                  <div className=" relative flex items-center gap-2">
+                    <GoRepoTemplate
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "templates" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400] "
+                      style={{ color: active === "templates" && "#fff" }}
+                    >
+                      Templates
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+
+
           {/* ------Ticket------ */}
           {hasAccess("Tickets") && (
             <div
@@ -357,78 +440,10 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </div>
           )}
-          {/* --------Template------ */}
-          {hasAccess("Templates") && (
-            <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                active === "templates"
-                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
-                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-              }   filter   overflow-hidden`}
-              onClick={() => {
-                router("/templates");
-                dispatch(setActive("templates"));
-              }}
-            >
-              <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-                {hide ? (
-                  <GoRepoTemplate
-                    className="h-6 w-6 cursor-pointer ml-2"
-                    style={{ color: active === "templates" && "#fff" }}
-                  />
-                ) : (
-                  <div className=" relative flex items-center gap-2">
-                    <GoRepoTemplate
-                      className="h-5 w-5 cursor-pointer ml-2"
-                      style={{ color: active === "templates" && "#fff" }}
-                    />
-                    <span
-                      className="text-[14px] font-[400] "
-                      style={{ color: active === "templates" && "#fff" }}
-                    >
-                      Templates
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          {/* ---------Lead-------- */}
-          {hasAccess("Leads") && (
-            <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                active === "leads"
-                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
-                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-              }   filter   overflow-hidden`}
-              onClick={() => {
-                router("/leads");
-                dispatch(setActive("leads"));
-              }}
-            >
-              <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-                {hide ? (
-                  <BiLayer
-                    className="h-6 w-6 cursor-pointer ml-2"
-                    style={{ color: active === "leads" && "#fff" }}
-                  />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <BiLayer
-                      className="h-5 w-5 cursor-pointer ml-2"
-                      style={{ color: active === "leads" && "#fff" }}
-                    />
-                    <span
-                      className="text-[14px] font-[400] "
-                      style={{ color: active === "leads" && "#fff" }}
-                    >
-                      Leads
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+
+
+          
+          
           {/* ---------Proposal----- */}
           {hasAccess("Proposals") && (
             <div

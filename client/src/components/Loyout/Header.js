@@ -222,7 +222,7 @@ useEffect(() => {
   // }, []);
 
 
-
+const notificationSound = new Audio("/noti.mp3");
 
 useEffect(() => {
    
@@ -233,11 +233,14 @@ useEffect(() => {
  
 
   const handleNewTimer = () => getTimerStatus();
-  const handleNewNotification = () => dispatch(getNotifications(auth.user.id));
-  // const handleTicketNotification = (data) => {
-  //   console.log("📥 New Ticket Notification:", data);
-  //   getNotifications();
-  // };
+  // const handleNewNotification = () => dispatch(getNotifications(auth.user.id));
+  const handleNewNotification = () => {
+    dispatch(getNotifications(auth.user.id));
+
+    // Play sound
+    notificationSound.currentTime = 0; // rewind to start
+    notificationSound.play().catch((err) => console.log("🔊 Notification sound error:", err));
+  };
 
   // Add listeners
   socket.on("newTimer", handleNewTimer);

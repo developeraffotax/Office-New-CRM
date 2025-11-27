@@ -112,6 +112,7 @@ const hasTickets = ticketCount > 0;
               clientName={row?.original?.clientName}
               email={row?.original?.email}
               handleClose={handleClose}
+              selectedTab={selectedTab}
             />
           </div>
         </Popover>

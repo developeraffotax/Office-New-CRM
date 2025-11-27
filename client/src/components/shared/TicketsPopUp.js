@@ -15,7 +15,7 @@ import DetailComments from "../../pages/Tasks/TaskDetailComments";
  
 
 // /api/v1/tickets/all/ticketsByClientName/:clientName
-const TicketsPopUp = ({ clientName, email, handleClose }) => {
+const TicketsPopUp = ({ clientName, email, handleClose, selectedTab }) => {
   const [tickets, setTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -67,7 +67,12 @@ const [ticketSubject, setTicketSubject] = useState("")
   const fetchTicketsByName = async () => {
     setIsLoading(true);
 
-    const url = email ? `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/ticketsByClientName?email=${email}` : `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/ticketsByClientName?clientName=${clientName}`
+
+    let state = "progress"
+    if(selectedTab) {
+      state = selectedTab;
+    }
+    const url = email ? `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/ticketsByClientName?email=${email}&state=${state}` : `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/ticketsByClientName?clientName=${clientName}&state=${state}`
 
     try {
       const { data } = await axios.get(

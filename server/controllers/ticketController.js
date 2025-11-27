@@ -345,7 +345,7 @@ export const getTicketsByClientName = async (req, res, next) => {
 
     let filter = { };
 
-    if (state) {
+    if (state === "progress") {
       filter.state = { $eq: state};
     }
 

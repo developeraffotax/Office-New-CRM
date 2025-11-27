@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import cors from "cors";
 import morgan from "morgan";
 import http from "http";
-import cron from "node-cron";
 import colors from "colors";
 
 import { connectDB } from "./config/db.js";
@@ -26,84 +25,79 @@ if (!process.env.SERVER_SECRET_KEY || process.env.SERVER_SECRET_KEY !== Skey) {
 }
 
 // --------------------------------------------
-// CONNECT DATABASE
+// TOP-LEVEL EXPORTS
 // --------------------------------------------
-connectDB();
+export let io; // Socket.io instance
+export const getIO = () => io; // getter for other modules
 
 // --------------------------------------------
-// EXPRESS SETUP
+// ASYNC SERVER START
 // --------------------------------------------
-const app = express();
-app.use(express.json({ limit: "20mb" }));
-app.use(cors());
-app.use(morgan("dev"));
-app.use(express.urlencoded({ extended: true, limit: "20mb" }));
+const startServer = async () => {
+  try {
+    // 1️⃣ Connect to MongoDB
+    await connectDB();
+    console.log("✅ MongoDB connected");
 
-// --------------------------------------------
-// CREATE HTTP & SOCKET SERVER
-// --------------------------------------------
-const server = http.createServer(app);
-export const io = initSocketServer(server);
+    // 2️⃣ Express setup
+    const app = express();
+    app.use(express.json({ limit: "20mb" }));
+    app.use(cors());
+    app.use(morgan("dev"));
+    app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 
-// Attach Socket.io to Agenda
-agenda.io = io;
+    // 3️⃣ HTTP & Socket server
+    const server = http.createServer(app);
+    io = initSocketServer(server); // initialize io
+    agenda.io = io; // attach to agenda
 
-// --------------------------------------------
-// REGISTER ROUTES
-// --------------------------------------------
-registerRoutes(app);
+    // 4️⃣ Register routes
+    registerRoutes(app);
+    app.post("/gmail-webhook", gmailWebhookHandler);
+    app.get("/", (req, res) => {
+      res.send(`<h1 style="color:green;">Server is running...</h1>`);
+    });
 
-// Gmail Webhook
-app.post("/gmail-webhook", gmailWebhookHandler);
+    // 5️⃣ Global error handler
+    app.use(errorHandler);
 
-// Root route
-app.get("/", (req, res) => {
-  res.send(`<h1 style="color:green;">Server is running...</h1>`);
-});
+    // 6️⃣ Run cron jobs only on primary instance
+    const isClusterPrimary = process.env.pm_id === "0";
+    if (isClusterPrimary) {
+      console.log("🕒 Starting scheduled tasks...");
+      setupCronJobs();
+    }
 
-// --------------------------------------------
-// GLOBAL ERROR HANDLER
-// --------------------------------------------
-app.use(errorHandler);
+    // 7️⃣ Start server
+    const PORT = process.env.PORT || 8080;
+    server.listen(PORT, () => {
+      console.log(`🚀 Server running on PORT ${PORT}`.bgMagenta.white);
+    });
 
-// --------------------------------------------
-// RUN CRON ONLY ON PRIMARY INSTANCE
-// --------------------------------------------
-const isClusterPrimary = process.env.pm_id === "0";
+    // 8️⃣ Redis interval logging
+    setInterval(async () => {
+      try {
+        if (redis && redis.status === "ready") {
+          const users = await redis.smembers("onlineUsers");
+          const agents = await redis.smembers("onlineAgents");
+          console.log("Users💜💜💜", users);
+          console.log("Agents💛💛💛", agents);
+        }
+      } catch (redisError) {
+        console.error(
+          "⚠ Failed to get onlineUsers/onlineAgents via Redis:",
+          redisError.message
+        );
+      }
+    }, 60000);
 
-if (isClusterPrimary) {
-  console.log("🕒 Starting scheduled tasks...");
-  setupCronJobs();
-}
+  } catch (error) {
+    console.error("❌ Server failed to start:", error.message || error);
+    process.exit(1); // exit on DB failure
+  }
+};
 
 // --------------------------------------------
 // START SERVER
 // --------------------------------------------
-const PORT = process.env.PORT || 8080;
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on PORT ${PORT}`.bgMagenta.white);
-});
-
-// --------------------------------------------
-// REMOVE OLD LOGGING (NO MAPS ANYMORE)
-// --------------------------------------------
-// You now check presence via Redis, NOT in-memory maps.
-// Example:
-
-setInterval(async () => {
-  try {
-    if (redis && redis.status === "ready") {
-      const users = await redis.smembers("onlineUsers");
-      const agents = await redis.smembers("onlineAgents");
-      console.log("Users💜💜💜", users);
-      console.log("Agents💛💛💛", agents);
-    }
-  } catch (redisError) {
-    console.error(
-      "⚠ Failed to get onlineUsers/onlineAgents via Redis:",
-      redisError.message
-    );
-
-    // Optionally: log to monitoring service
-  }
-}, 60000);
+startServer();

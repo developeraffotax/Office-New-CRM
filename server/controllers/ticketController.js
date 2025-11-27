@@ -83,6 +83,7 @@ export const sendEmail = async (req, res) => {
       subject: subject,
       mailThreadId: threadId,
       lastMessageSentBy: userName,
+  
 
       email: email,
       isManual: clientId ? false : true
@@ -948,13 +949,19 @@ export const getSingleEmailDetail = async (req, res) => {
       });
     }
 
-    // console.log("threadDetails:", threadDetails);
+    // if(threadDetails.readStatus === "Unread") {
+    //   // Mark the thread as read
+    // await markThreadAsRead(threadDetails.latestMessageId, company);
+    // }
+    
 
-    await ticketModel.findByIdAndUpdate(
-      { _id: ticketId },
-      { status: threadDetails.readStatus },
-      { new: true }
-    );
+    // const status = threadDetails.readStatus === "Unread" ? "Read" : threadDetails.readStatus ;
+
+    // await ticketModel.findByIdAndUpdate(
+    //   { _id: ticketId },
+    //   { status: status  },
+    //   { new: true }
+    // );
 
     res.status(200).json({
       success: true,
@@ -1332,14 +1339,30 @@ export const sendTicketReply = async (req, res) => {
 
     await emailReply(emailData);
 
+
+        let updatedTicket = null;
+
+
     if (ticketId && mongoose.Types.ObjectId.isValid(ticketId)) {
-      await ticketModel.findByIdAndUpdate(
+       updatedTicket = await ticketModel.findByIdAndUpdate(
         ticketId,
-        { lastMessageSentBy: userName, lastMessageSentTime: new Date() },
+        { lastMessageSentBy: userName, lastMessageSentTime: new Date(), status: "Sent" },
         { new: true }
       );
+
+      if (!updatedTicket) {
+        return res.status(404).send({
+          success: false,
+          message: "Ticket not found. Email was sent, but ticket update failed.",
+        });
+      }
+      
     } else {
       console.log("Invalid ticketId");
+      return res.status(400).send({
+        success: false,
+        message: "Invalid ticketId. Email was sent, but ticket update did not occur.",
+      });
     }
 
 
@@ -1357,6 +1380,7 @@ export const sendTicketReply = async (req, res) => {
     res.status(200).send({
       success: true,
       message: "Email reply successfully!",
+      updatedTicket: updatedTicket
     });
   } catch (error) {
     console.log(error);
@@ -1378,11 +1402,27 @@ export const markAsRead = async (req, res) => {
       return;
     }
 
-    // console.log("Thread Detail:", messageId, companyName);
+ 
 
     await markThreadAsRead(messageId, companyName);
 
-    await ticketModel.findByIdAndUpdate(
+    const ticket = await ticketModel.findById(ticketId);
+    if (!ticket) {
+      return res.status(400).send({
+        success: false,
+        message: "Ticket not found!",
+      });
+    }
+
+    //const newStatus = ticket.status === "Unread" ? "Read" : ticket.status ;
+     if (ticket?.status === "Sent" || ticket?.status === "Read") {
+      return res.status(400).send({
+        success: false,
+        message: "No need to update ticket status!",
+      });
+    }
+
+    const updatedTicket = await ticketModel.findByIdAndUpdate(
       { _id: ticketId },
       { status: "Read" },
       { new: true }
@@ -1391,6 +1431,7 @@ export const markAsRead = async (req, res) => {
     res.status(200).send({
       success: true,
       message: "Email Read",
+      updatedTicket: updatedTicket
     });
   } catch (error) {
     console.log(error);

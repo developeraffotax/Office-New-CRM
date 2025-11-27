@@ -51,10 +51,10 @@ const syncGmail = async () => {
       if (!messages.length) continue;
 
       // Latest message in the thread
-      const latestMsg = messages[messages.length - 1];
+      // const latestMsg = messages[messages.length - 1];
        
       // Determine status
-      const lastMessageStatus = getLatestMessageStatus(latestMsg, ourEmails);
+      const lastMessageStatus =  thread.readStatus ;
 
       // 4. Find most recent message SENT BY US
       const latestSentMsg = getLatestSentMessageByUs(messages, ourEmails);

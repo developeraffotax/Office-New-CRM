@@ -45,7 +45,7 @@ const ticketSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["Read", "Unread", "Sent"],
-      default: "Read",
+      default: "Sent",
     },
     state: {
       type: String,
@@ -99,12 +99,13 @@ const ticketSchema = new mongoose.Schema(
       default: false
     },
 
+    unreadCount: {
+      type: Number,
+      default: 0
+    }
 
-    lastMessageStatus: {
-      type: String,
-      enum: ["Read", "Unread", "Sent"],
-      default: "Read",
-},
+
+    
   },
   { timestamps: true }
 );

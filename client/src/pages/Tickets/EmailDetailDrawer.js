@@ -17,7 +17,7 @@ import { IoMdCheckboxOutline } from "react-icons/io";
 import Swal from "sweetalert2";
 import SendEmailReply from "../../components/Tickets/SendEmailReply";
 
-export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOpenCb }) {
+export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOpenCb, setEmailData }) {
   const navigate = useNavigate();
   const params = useParams();
   const [ticketDetail, setTicketDetail] = useState(null);
@@ -66,6 +66,12 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
         setTicketSubject(data.ticket.subject || "No Subject");
         setIsCompleted(data.ticket.state === "complete");
         getEmailDetail(data.ticket.mailThreadId, data.ticket.company);
+
+
+        // setEmailData((prevData) => prevData.map((item) => item._id === data.ticket._id ? data.ticket : item));
+
+
+        
       }
     } catch (error) {
       console.log("getSingleTicket error", error);
@@ -89,8 +95,9 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
         setEmailDetail(data.emailDetails);
         // mark last message read
         const lastMsg = data.emailDetails.threadData?.messages?.slice(-1)[0];
+        console.log("Last message:💙💚💚💚💛💛🧡", lastMsg);  
         if (lastMsg?.id) {
-          markAsRead(lastMsg.id);
+          markAsRead(lastMsg.id, company);
         }
       }
       
@@ -235,13 +242,42 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
   };
 
   // Mark as Read
-  const markAsRead = async (messageId) => {
-    if (!ticketDetail) return;
+  const markAsRead = async (messageId, company) => {
+
+    if(!messageId) {
+      console.log("markAsRead: messageId is required");
+      return;
+    }
     try {
-      await axios.put(`${process.env.REACT_APP_API_URL}/api/v1/tickets/markAsRead/${id}`, {
+      const { data: {success, updatedTicket, message}  } = await axios.put(`${process.env.REACT_APP_API_URL}/api/v1/tickets/markAsRead/${id}`, {
         messageId,
-        companyName: ticketDetail.company || "Affotax",
+        companyName: company || "Affotax",
       });
+
+      if( success && setEmailData ) {
+        setEmailData(prev => {
+
+          
+          return [...prev].map(ticket => {
+            
+            if (ticket._id === updatedTicket._id) {
+              
+              return { ...ticket, ...updatedTicket };
+            }
+            return ticket;
+          })
+           
+          
+
+
+          
+        });
+
+        toast.success("Email marked as read successfully!");
+      }
+
+
+
     } catch (error) {
       console.log("markAsRead error", error);
     }
@@ -533,6 +569,7 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
             ticketId={ticketDetail?._id}
             emailSendTo={emailDetail?.recipients?.[0]}
             getEmailDetail={emailData}
+            setEmailData={setEmailData}
           />
         </div>
       )}

@@ -17,6 +17,8 @@ export default function SendEmailReply({
   ticketId,
   emailSendTo,
   getEmailDetail,
+
+  setEmailData
 }) {
   const [clientId, setClientId] = useState("");
   const [message, setMessage] = useState("");
@@ -133,6 +135,10 @@ const [inputValue, setInputValue] = useState("");
         setMessage("");
         setClientId("");
         setTemplates("");
+
+        if(setEmailData && data.success) {
+          setEmailData(prev => prev.map((t) => t._id === data.updatedTicket._id ? {...t, ...data.updatedTicket} : t));
+        }
       }
     } catch (error) {
       console.log(error);

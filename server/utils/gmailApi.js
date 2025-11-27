@@ -2,6 +2,7 @@ import qs from "qs";
 import axios from "axios";
 import dotenv from "dotenv";
 import { processMessage } from "./gmailApiHelpers/processMessage.js";
+import { getLatestMessageStatus } from "./gmailWorkerUtlity.js";
 
 // Dotenv Config
 dotenv.config();
@@ -271,8 +272,12 @@ const getDetailedThreads = async (threadId, accessToken) => {
 
   const latestMessage = threadData.messages[threadData.messages.length - 1];
   const date = new Date(parseInt(latestMessage.internalDate));
-
+  console.log("Latest Message latestMessagelatestMessagelatestMessagelatestMessagelatestMessage:", latestMessage);
   const decryptedMessages = await Promise.all(threadData.messages.map(msg => processMessage(msg, accessToken)));
+
+  // Determine status
+  const ourEmails = ["info@affotax.com", "admin@outsourceaccountings.co.uk"];
+    const lastMessageStatus = getLatestMessageStatus(latestMessage, ourEmails)
 
 
   
@@ -309,10 +314,11 @@ const getDetailedThreads = async (threadId, accessToken) => {
     threadData,
     threadId,
     subject: threadData.messages[0]?.payload.headers.find(h => h.name.toLowerCase() === "subject")?.value || "No Subject Found",
-    readStatus: latestMessage.labelIds?.includes("UNREAD") ? "Unread" : "Read",
+    readStatus: lastMessageStatus,
     recipients: recipients, // Simplified, you can reuse your logic
     formattedDate: date.toLocaleDateString(),
     formattedTime: date.toLocaleTimeString(),
+    latestMessageId: latestMessage?.id || "",
   };
 };
 

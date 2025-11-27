@@ -106,9 +106,20 @@ export async function gmailWebhookHandler(req, res) {
 }
 
 const findTicketByThreadId = async (threadId) => {
-  const ticket = await ticketModel.findOne({ mailThreadId: threadId });
+  const filter = { mailThreadId: threadId };
+
+  const update = { 
+    $set: { status: "Unread" }, 
+    $inc: { unreadCount: 1 }   // <-- increment by 1
+  };
+
+  const options = { new: true };
+
+  const ticket = await ticketModel.findOneAndUpdate(filter, update, options);
   return ticket;
 };
+
+
 
 const findUsersToNotify = async (ticket) => {
   const lastMessageSentBy = await userModel.findOne({
@@ -117,6 +128,10 @@ const findUsersToNotify = async (ticket) => {
   const jobHolder = await userModel.findOne({ name: ticket.jobHolder });
   return { lastMessageSentBy, jobHolder };
 };
+
+
+
+
 
 // --- REDIS-BASED SOCKET EMITTER ---
 const sendSocketNotification = async (notification, userId) => {
@@ -128,9 +143,22 @@ const sendSocketNotification = async (notification, userId) => {
   if (sockets && sockets.length > 0) {
     for (const socketId of sockets) {
       io.to(socketId).emit("newNotification", { notification });
+
+
+      io.to(socketId).emit("ticket-updated", );
+
+
     }
   }
 };
+
+
+
+
+
+
+
+
 
 const createNotification = async (ticket) => {
   const { lastMessageSentBy, jobHolder } = await findUsersToNotify(ticket);
@@ -159,3 +187,39 @@ const createNotification = async (ticket) => {
     await sendSocketNotification(notification2, lastMessageSentBy?._id);
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+// --- SEND SOCKET UPDATE FOR TICKET ---
+// const sendTicketUpdate = async (ticket) => {
+//   const users = await findUsersToNotify(ticket);
+//   const userIds = [];
+
+//   if (users.jobHolder?._id) userIds.push(users.jobHolder._id.toString());
+//   if (users.lastMessageSentBy?._id) userIds.push(users.lastMessageSentBy._id.toString());
+
+//   const uniqueIds = [...new Set(userIds)];
+
+//   for (const userId of uniqueIds) {
+//     const sockets = await redis.smembers(`sockets:user:${userId}`);
+
+//     for (const socketId of sockets) {
+//       io.to(socketId).emit("ticket-updated", {
+//         ticketId: ticket._id,
+//         status: ticket.status,
+//         unreadCount: ticket.unreadCount,
+         
+//       });
+//     }
+//   }
+// };

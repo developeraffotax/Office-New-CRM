@@ -33,6 +33,7 @@ import DetailComments from "../Tasks/TaskDetailComments"
 import { renderColumnControls } from "../../utlis/renderColumnControls";
 import { useClickOutside } from "../../utlis/useClickOutside";
 import { GoEye, GoEyeClosed } from "react-icons/go";
+import { useSocket } from "../../context/socketProvider";
 
 
 const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "", };
@@ -121,7 +122,18 @@ export default function Tickets() {
 
 
 
+    const socket = useSocket();
 
+    
+    useEffect(() => {
+      if (!socket) return;
+
+      socket.on("ticket-updated", getAllEmails);
+
+      return () => {
+        socket.off("ticket-updated", getAllEmails);
+      };
+    }, [socket]);
 
 
 
@@ -1303,7 +1315,7 @@ export default function Tickets() {
 
 
 
-                  <EmailDetailDrawer id={ticketId} setTicketSubject={setTicketSubject} isReplyModalOpenCb={isReplyModalOpenCb} />
+                  <EmailDetailDrawer id={ticketId} setTicketSubject={setTicketSubject} isReplyModalOpenCb={isReplyModalOpenCb} setEmailData={setEmailData} />
 
                   <div className="w-full h-full flex flex-col justify-start items-start gap-5 ">
 

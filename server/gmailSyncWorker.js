@@ -6,7 +6,7 @@ import cron from "node-cron";
 import ticketModel from "./models/ticketModel.js";
 import { getAllEmails } from "./utils/gmailApi.js";
 import {
-  getLatestMessageStatus,
+  
   getLatestSentMessageByUs,
   
 } from "./utils/gmailWorkerUtlity.js";
@@ -106,6 +106,6 @@ const syncGmail = async () => {
 syncGmail();
 
 // Run every 3 hours
-cron.schedule("0 */3 * * *", async () => {
-  syncGmail();
+cron.schedule("0 2 * * *", async () => {
+  await syncGmail();
 });

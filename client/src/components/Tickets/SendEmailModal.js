@@ -175,6 +175,10 @@ const [inputValue, setInputValue] = useState("");
       emailData.append("subject", subject);
       emailData.append("message", message);
       emailData.append("email", email);
+      if(jobHolder) {
+        emailData.append("jobHolder", jobHolder);
+
+      }
       files.forEach((file) => {
         emailData.append("files", file);
       });

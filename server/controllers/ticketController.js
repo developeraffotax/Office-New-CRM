@@ -83,6 +83,7 @@ export const sendEmail = async (req, res) => {
       subject: subject,
       mailThreadId: threadId,
       lastMessageSentBy: userName,
+      lastMessageSentTime: new Date(), 
   
 
       email: email,
@@ -1316,6 +1317,7 @@ export const sendTicketReply = async (req, res) => {
       message,
       subject,
       emailSendTo,
+      jobHolder
     } = req.body;
 
     console.log(
@@ -1326,8 +1328,13 @@ export const sendTicketReply = async (req, res) => {
       messageId,
       message,
       subject,
-      emailSendTo
+      emailSendTo,
+      jobHolder
     );
+
+
+      
+
 
     const attachments = req.files.map((file) => ({
       filename: file.originalname,
@@ -1349,11 +1356,19 @@ export const sendTicketReply = async (req, res) => {
 
         let updatedTicket = null;
 
+        const update =  { lastMessageSentBy: userName, lastMessageSentTime: new Date(), status: "Sent" };
+
+        if(jobHolder) {
+          update.jobHolder = jobHolder;
+        }
+
+
+        console.log("THE UPDATE Object", update)
 
     if (ticketId && mongoose.Types.ObjectId.isValid(ticketId)) {
        updatedTicket = await ticketModel.findByIdAndUpdate(
         ticketId,
-        { lastMessageSentBy: userName, lastMessageSentTime: new Date(), status: "Sent" },
+        update,
         { new: true }
       );
 
@@ -1378,10 +1393,12 @@ export const sendTicketReply = async (req, res) => {
       ticketId: ticketId,
       userId: req.user.user._id,
       action: "replied",
-      details: `"${req.user.user.name}" replied to this ticket.
+      details: `
+      "${req.user.user.name}" replied to this ticket.
+      ${jobHolder ? `And updated the job holder to ${jobHolder}` : ""}
       -- Company: ${company}
       -- Email: ${emailSendTo}
-      `,
+    `,
     });
 
     res.status(200).send({

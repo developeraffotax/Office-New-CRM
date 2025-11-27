@@ -436,13 +436,26 @@ export const getAvailableTicketsNum = async (req, res) => {
       .filter(Boolean)
     )];
 
+
+
+    
     // 2. Group tickets by clientName in one fast query
+ 
+       
+
+    const match = {
+      clientName: { $in: clientNames },
+    }
+
+    if(status === "progress") {
+      match.state =  { $eq: "progress" }
+    }
+
+
+
     const ticketCounts = await ticketModel.aggregate([
       {
-        $match: {
-          clientName: { $in: clientNames },
-          state: { $ne: "complete" },
-        }
+        $match: match
       },
       {
         $group: {
@@ -452,6 +465,7 @@ export const getAvailableTicketsNum = async (req, res) => {
       }
     ]);
 
+    
     // 3. Convert aggregation to a lookup map
     const ticketMap = {};
     clientNames.forEach(name => {

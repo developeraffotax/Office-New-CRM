@@ -330,17 +330,24 @@ export const getTicketsByClientName = async (req, res, next) => {
   const clientName = req.query.clientName?.trim();
   const clientEmail = req.query.email?.trim();
 
+  // complete progress all
+  const state = req.query.state?.trim();
+
   console.log("Client Name:", clientName);
   console.log("Client Email:", clientEmail);
 
 
   try {
 
+    console.log("THE STATE IS ", state)
 
+    // const state = state
 
+    let filter = { };
 
-
-    let filter = { state: { $ne: "complete" } };
+    if (state) {
+      filter.state = { $eq: state};
+    }
 
     if (clientName) {
       filter.clientName = clientName;

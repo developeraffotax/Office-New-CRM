@@ -37,6 +37,7 @@ import NewTicketModal from "../../utlis/NewTicketModal";
 import { useNavigate } from "react-router-dom";
 import { BsGraphUpArrow } from "react-icons/bs";
 import UserLeadChart from "../../pages/Lead/userLeadChart/UserLeadChart";
+import EmailDetailDrawerNewWrapper from "../shared/EmailDetailDrawerNewWrapper";
 
 
 
@@ -161,6 +162,18 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
   });
   
   
+
+
+
+   const [emailPopup, setEmailPopup] = useState({
+      open: false,
+      email: '',
+      clientName: ''
+  
+    })
+
+
+
     // Filter Total Value
     useEffect(() => {
       const totalvalue = filteredData.reduce(
@@ -686,6 +699,25 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
  
 
 
+
+const [ticketMap, setTicketMap] = useState({});
+
+useEffect(() => {
+  const fetchTicketCounts = async () => {
+    try {
+      const {data} = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/leads/available-tickets?status=${selectedTab}`);
+      if(data) {
+        setTicketMap(data.ticketMap || {});
+
+      }
+
+    } catch (err) {
+      console.error("Error fetching ticket counts", err);
+    }
+  };
+
+  fetchTicketCounts();
+}, [selectedTab]);
   
   
   
@@ -721,6 +753,9 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
     handleLeadStatus,
     handleDeleteLeadConfirmation,
     stages,
+
+    setEmailPopup,
+  ticketMap
   });
   
    
@@ -1294,6 +1329,13 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
                           setFilterType={(type) => setFilterInfo((f) => ({ ...f, type }))}
                         />
                       )}
+
+
+                       {
+                                    emailPopup.open && <EmailDetailDrawerNewWrapper {...emailPopup} setEmailPopup={setEmailPopup}/>
+                      
+                                  }
+                      
 
         </div>
       </div>

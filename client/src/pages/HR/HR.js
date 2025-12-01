@@ -1,13 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
- 
+
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import axios from "axios";
- 
+
 import HandleHRModal from "../../components/hr/HandleHRModal";
 import HandleDepartmentModal from "../../components/hr/HandleDepartmentModal";
 import { AiTwotoneDelete } from "react-icons/ai";
-import { MdOutlineEdit, MdOutlineModeEdit, MdOutlineSaveAlt } from "react-icons/md";
+import {
+  MdOutlineEdit,
+  MdOutlineModeEdit,
+  MdOutlineSaveAlt,
+} from "react-icons/md";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
@@ -21,14 +25,13 @@ import { GoEye, GoEyeClosed } from "react-icons/go";
 import { GrCopy } from "react-icons/gr";
 import { TbLoader, TbLoader2 } from "react-icons/tb";
 import { LuLink } from "react-icons/lu";
- 
+
 import HandleHrRoleModal from "../../components/hr/HandleHrRoleModal";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import QuickAccess from "../../utlis/QuickAccess"
+import QuickAccess from "../../utlis/QuickAccess";
 import { useSelector } from "react-redux";
 import { isAdmin } from "../../utlis/isAdmin";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
- 
 
 const months = [
   "January",
@@ -54,7 +57,7 @@ const updates_object_init = {
 
 export default function HR() {
   const auth = useSelector((state) => state.auth.auth);
-  
+
   const [showAddTask, setShowAddTask] = useState(false);
   const [taskId, setTaskId] = useState("");
   const [users, setUsers] = useState([]);
@@ -74,39 +77,29 @@ export default function HR() {
   const [copyDescription, setCopyDescription] = useState("");
   const [showDescription, setShowDescription] = useState(false);
 
-  
   const [showcolumn, setShowColumn] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [copyLoad, setCopyLoad] = useState(false);
   const currentMonthIndex = new Date().getMonth();
   const [month, setMonth] = useState(currentMonthIndex);
 
-
   // const [activeBtn, setActiveBtn] = useState("");
   const [showJobHolder, setShowJobHolder] = useState(true);
   const [active1, setActive1] = useState("");
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setShowDescription(false);
+      }
+    };
 
+    document.addEventListener("keydown", handleKeyDown);
 
-  console.log("copyDescription:", copyDescription);
-  console.log("USERS>>>>>>>>>>>:", users);
-
-useEffect(() => {
-  const handleKeyDown = (event) => {
-    if (event.key === "Escape") {
-      
-      setShowDescription(false)
-    }
-  };
-
-  document.addEventListener("keydown", handleKeyDown);
-
-  return () => {
-    document.removeEventListener("keydown", handleKeyDown);
-  };
-}, []);
-
-
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   useEffect(() => {
     if (userName && userName.length > 0) {
@@ -144,26 +137,20 @@ useEffect(() => {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/hr/all/tasks`
       );
-       
-      const rawTasks = data?.tasks
+
+      const rawTasks = data?.tasks;
 
       if (auth?.user?.role?.name === "Admin") {
         setTaskData(rawTasks);
       } else {
-
         const filteredTasks = rawTasks?.filter((task) => {
-          return task.department.users.some(user => user.user.name === auth.user.name)
-        })
+          return task.department.users.some(
+            (user) => user.user.name === auth.user.name
+          );
+        });
 
         setTaskData(filteredTasks);
       }
-      
-     
-      // console.log("AUTHENTICATION 🧡🧡 DATA:>>>", auth.user.role.name)
-
-      // console.log("TASK DATA:>>>", data?.tasks)
-
-
     } catch (error) {
       console.log(error);
     } finally {
@@ -186,8 +173,6 @@ useEffect(() => {
         `${process.env.REACT_APP_API_URL}/api/v1/department/all`
       );
       setDepartmentData(data.departments);
-
-      console.log("fetchAllDepartments DATA:>>>", data?.departments)
     } catch (error) {
       console.log(error);
     }
@@ -198,48 +183,35 @@ useEffect(() => {
     // eslint-disable-next-line
   }, []);
 
-
-
-
-
-
-
-
-
-    // ----------Fetch All Roles-------->
-    const fetchAllHrRoles = async () => {
-      try {
-        const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/hrRole/all`
-        );
-        setHrRoleData(data.hrRoles);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-  
-    useEffect(() => {
-      fetchAllHrRoles();
-       
-    }, []);
-
-
-
-
-
-    function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
-      const savedSet = new Set(savedOrder);
-      console.log("savedSET>>>>", savedSet)
-      // Preserve the order from savedOrder, but only if the username still exists in the fetched data
-      const ordered = savedOrder.filter(name => fetchedUsernames.includes(name));
-      
-      // Add any new usernames that aren't in the saved order
-      const newOnes = fetchedUsernames.filter(name => !savedSet.has(name));
-      
-      return [...ordered, ...newOnes];
+  // ----------Fetch All Roles-------->
+  const fetchAllHrRoles = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/hrRole/all`
+      );
+      setHrRoleData(data.hrRoles);
+    } catch (error) {
+      console.log(error);
     }
-  
+  };
 
+  useEffect(() => {
+    fetchAllHrRoles();
+  }, []);
+
+  function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
+    const savedSet = new Set(savedOrder);
+
+    // Preserve the order from savedOrder, but only if the username still exists in the fetched data
+    const ordered = savedOrder.filter((name) =>
+      fetchedUsernames.includes(name)
+    );
+
+    // Add any new usernames that aren't in the saved order
+    const newOnes = fetchedUsernames.filter((name) => !savedSet.has(name));
+
+    return [...ordered, ...newOnes];
+  }
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
@@ -248,7 +220,6 @@ useEffect(() => {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
 
-      console.log("THE DAT IS >>>>>>>>>>>>>>>>>>>", data);
       setUsers(
         data?.users?.filter((user) =>
           user.role?.access.some((item) => item?.permission?.includes("HR"))
@@ -256,24 +227,19 @@ useEffect(() => {
       );
 
       const userNameArr = data?.users
-      ?.filter((user) =>
-        user.role?.access.some((item) => item?.permission?.includes("HR"))
-      )
-      .map((user) => user.name)
+        ?.filter((user) =>
+          user.role?.access.some((item) => item?.permission?.includes("HR"))
+        )
+        .map((user) => user.name);
 
-      setUserName( userNameArr );
-
-
+      setUserName(userNameArr);
 
       const savedOrder = JSON.parse(localStorage.getItem("hr_usernamesOrder"));
-        if(savedOrder) {
-          const savedUserNames = mergeWithSavedOrder(userNameArr, savedOrder);
-          
-            setUserName(savedUserNames)
-        }
+      if (savedOrder) {
+        const savedUserNames = mergeWithSavedOrder(userNameArr, savedOrder);
 
-
-
+        setUserName(savedUserNames);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -349,11 +315,6 @@ useEffect(() => {
     }
   };
 
-
-
-
-
-
   // ---------Delete Role-------->
   const handleDeleteRoleConfirmation = (id) => {
     Swal.fire({
@@ -384,12 +345,6 @@ useEffect(() => {
       toast.error(error?.response?.data?.message);
     }
   };
-
-
-
-
-
-
 
   // ---------Delete Task-------->
   const handleDeleteTaskConfirmation = (tid) => {
@@ -458,13 +413,9 @@ useEffect(() => {
 
   // -------Update Bulk ROWS------------->
 
-  console.log(rowSelection, "ROW SLEECTION SSSSSS000");
-
   const updateBulkRows = async (e) => {
     e.preventDefault();
     setIsUpdating(true);
-
-    console.log("Row Selection", rowSelection);
 
     try {
       const { data } = await axios.put(
@@ -490,10 +441,28 @@ useEffect(() => {
     }
   };
 
+  const [isFetching, setIsFetching] = useState(false);
+  const getSingleTask = async (id) => {
+    setIsFetching(true);
+    try {
+      const { data, status } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/hr/task/detail/${id}`
+      );
+
+      if (data) {
+        setCopyDescription(data.task?.description || "");
+      }
+    } catch (error) {
+      console.log(error?.response?.data?.message);
+      toast.error("Something went wrong!");
+    } finally {
+      setIsFetching(false);
+    }
+  };
+
   // ---------------Table Detail------------->
   const columns = useMemo(
     () => [
-
       {
         accessorKey: "hrRole.roleName",
         minSize: 100,
@@ -517,10 +486,7 @@ useEffect(() => {
               >
                 <option value="">Select</option>
                 {hrRoleData?.map((role) => (
-                  <option
-                    key={role?._id}
-                    value={role?.roleName || ""}
-                  >
+                  <option key={role?._id} value={role?.roleName || ""}>
                     {role?.roleName}
                   </option>
                 ))}
@@ -541,18 +507,13 @@ useEffect(() => {
           if (!filterValue) return true;
           if (!cellValue) return false;
 
-          console.log("cellValue:", cellValue);
-          console.log("filterValue:", filterValue);
           return (
             cellValue.toString().toLowerCase() === filterValue.toLowerCase()
           );
         },
-        filterSelectOptions: hrRoleData?.map(
-          (role) => role?.roleName || ""
-        ),
+        filterSelectOptions: hrRoleData?.map((role) => role?.roleName || ""),
         filterVariant: "select",
       },
-
 
       {
         accessorKey: "department.departmentName",
@@ -729,6 +690,7 @@ useEffect(() => {
         },
         Cell: ({ cell, row }) => {
           const title = row.original.title || "";
+          const hrTaskId = row.original?._id || "";
 
           return (
             <div className="w-full h-full ">
@@ -736,7 +698,8 @@ useEffect(() => {
                 <div
                   onClick={() => {
                     setShowDescription(true);
-                    setCopyDescription(row.original?.description);
+                    //setCopyDescription(row.original?.description);
+                    getSingleTask(hrTaskId);
                   }}
                   className="px-1 w-full text-[14px] text-blue-600 cursor-pointer"
                 >
@@ -757,123 +720,116 @@ useEffect(() => {
         grow: false,
       },
       // User List
-      ...userName
-        .map((name) => ({
-          accessorKey: `${name}`,
-          // Header: `${name}`,
-          Header: ({ column }) => {
-            return (
-              <div className=" flex flex-col gap-[2px]">
-                <span
-                  className="ml-1 cursor-pointer"
-                  title="Clear Filter"
-                  onClick={() => {
-                    column.setFilterValue("");
-                  }}
+      ...userName.map((name) => ({
+        accessorKey: `${name}`,
+        // Header: `${name}`,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                {name}
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] w-[5.5rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ row }) => {
+          const matchedUser = row.original.users?.find(
+            (u) => u?.user?.name === name
+          );
+
+          const [isShow, setIsShow] = useState(false);
+          const [status, setStatus] = useState(matchedUser?.status || "");
+
+          const handleStatus = (value, statusId) => {
+            setStatus(value);
+            updateUserStatus(row.original._id, statusId, value);
+            setIsShow(false);
+          };
+          return (
+            <div className="w-full h-full">
+              {!isShow ? (
+                <div
+                  className={`text-center w-full h-full cursor-pointer ${
+                    matchedUser?.status === "Yes"
+                      ? "text-green-500"
+                      : matchedUser?.status === "No"
+                      ? "text-red-500"
+                      : "text-white"
+                  }`}
+                  onDoubleClick={() => setIsShow(true)}
                 >
-                  {name}
-                </span>
+                  {matchedUser?.status || ""}
+                </div>
+              ) : (
                 <select
-                  value={column.getFilterValue() || ""}
-                  onChange={(e) => column.setFilterValue(e.target.value)}
-                  className="font-normal h-[1.8rem] w-[5.5rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+                  value={status}
+                  onChange={(e) =>
+                    handleStatus(e.target.value, matchedUser?._id)
+                  }
+                  onBlur={() => setIsShow(false)}
+                  className="font-normal w-full h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
                 >
-                  <option value="">Select</option>
+                  <option value="."></option>
                   <option value="Yes">Yes</option>
                   <option value="No">No</option>
                 </select>
-              </div>
-            );
-          },
-          Cell: ({ row }) => {
-            const matchedUser = row.original.users?.find(
-              (u) => u?.user?.name === name
-            );
+              )}
+            </div>
+          );
+        },
+        size: 100,
+        minSize: 80,
+        maxSize: 160,
+        grow: false,
+        filterFn: (row, columnId, filterValue) => {
+          const status = row.original.users?.find(
+            (u) => u?.user?.name === name
+          )?.status;
 
-            console.log("matchedUser:", matchedUser);
-
-            const [isShow, setIsShow] = useState(false);
-            const [status, setStatus] = useState(matchedUser?.status || "");
-
-            const handleStatus = (value, statusId) => {
-              setStatus(value);
-              updateUserStatus(row.original._id, statusId, value);
-              setIsShow(false);
-            };
-            return (
-              <div className="w-full h-full">
-                {!isShow ? (
-                  <div
-                    className={`text-center w-full h-full cursor-pointer ${
-                      matchedUser?.status === "Yes"
-                        ? "text-green-500"
-                        : matchedUser?.status === "No"
-                        ? "text-red-500"
-                        : "text-white"
-                    }`}
-                    onDoubleClick={() => setIsShow(true)}
-                  >
-                    {matchedUser?.status || ""}
-                  </div>
-                ) : (
-                  <select
-                    value={status}
-                    onChange={(e) =>
-                      handleStatus(e.target.value, matchedUser?._id)
-                    }
-                    onBlur={() => setIsShow(false)}
-                    className="font-normal w-full h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-                  >
-                    <option value="."></option>
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                  </select>
-                )}
-              </div>
-            );
-          },
-          size: 100,
-          minSize: 80,
-          maxSize: 160,
-          grow: false,
-          filterFn: (row, columnId, filterValue) => {
-            const status = row.original.users?.find(
-              (u) => u?.user?.name === name
-            )?.status;
-
-            return status === filterValue || filterValue === "";
-          },
-          filterSelectOptions: ["Yes", "No"],
-          filterVariant: "select",
-        })),
+          return status === filterValue || filterValue === "";
+        },
+        filterSelectOptions: ["Yes", "No"],
+        filterVariant: "select",
+      })),
 
       // <-----Action------>
       {
         accessorKey: "actions",
         header: "Actions",
         Cell: ({ cell, row }) => {
-
           const copyToClipboard = async (id) => {
             const origin = window.location.origin;
 
             await navigator.clipboard.writeText(`${origin}/temp/${id}`);
-            toast.success("Copied Successfully!")
-          }
+            toast.success("Copied Successfully!");
+          };
 
           return (
             <div className="flex items-center justify-center gap-2 w-full h-full">
-              
-
               <span
                 className=""
                 title="Copy URL"
                 onClick={() => {
-                  copyToClipboard(row.original._id)
+                  copyToClipboard(row.original._id);
                 }}
               >
                 <LuLink className="h-6 w-6 cursor-pointer text-amber-500 hover:text-amber-600" />
               </span>
-
 
               <span
                 className=""
@@ -926,7 +882,7 @@ useEffect(() => {
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     state: { rowSelection, columnVisibility },
-    onColumnVisibilityChange:setColumnVisibility,
+    onColumnVisibilityChange: setColumnVisibility,
     enableBatchRowSelection: true,
 
     getRowId: (row) => row._id,
@@ -995,8 +951,6 @@ useEffect(() => {
     </div>
   );
 
-
-
   // -----------Handle Close Outsite
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -1014,141 +968,83 @@ useEffect(() => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const [fLoading, setFLoading] = useState(false);
 
+  // Import CSV File
+  // --------------Import Job data------------>
+  const importJobData = async (file) => {
+    setFLoading(true);
+    if (!file) {
+      toast.error("File is required!");
+      setFLoading(false);
+      return;
+    }
 
+    const formData = new FormData();
+    formData.append("file", file);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-       const [fLoading, setFLoading] = useState(false);
-
-
-    // Import CSV File
-    // --------------Import Job data------------>
-    const importJobData = async (file) => {
-      setFLoading(true);
-      if (!file) {
-        toast.error("File is required!");
-        setFLoading(false);
-        return;
-      }
-  
-      const formData = new FormData();
-      formData.append("file", file);
-  
-      try {
-        const { data } = await axios.post(
-          `${process.env.REACT_APP_API_URL}/api/v1/hr/import`,
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-
-        console.log(data)
-        if (data) {
-          getAllTasks();
-          toast.success(data?.message);
+    try {
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/hr/import`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         }
-      } catch (error) {
-        console.error("Error importing data:", error);
-        toast.error(
-          error?.response?.data?.message || "Failed to import data"
-        );
-      } finally {
-        setFLoading(false);
+      );
+
+      if (data) {
+        getAllTasks();
+        toast.success(data?.message);
       }
-    };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    } catch (error) {
+      console.error("Error importing data:", error);
+      toast.error(error?.response?.data?.message || "Failed to import data");
+    } finally {
+      setFLoading(false);
+    }
+  };
 
   // a little function to help us with reordering the result
   const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
-  
+
     return result;
   };
 
-
-    //  -----------Handle drag end---------
+  //  -----------Handle drag end---------
   const handleUserOnDragEnd = (result) => {
- 
-    const items = reorder( userName, result.source.index, result.destination.index );
+    const items = reorder(
+      userName,
+      result.source.index,
+      result.destination.index
+    );
     localStorage.setItem("hr_usernamesOrder", JSON.stringify(items));
-    setUserName(items)
-
+    setUserName(items);
   };
- 
 
+  // --------------Job_Holder Length---------->
 
-    // --------------Job_Holder Length---------->
-
-    const getJobHolderCount = (name) => {
-
-      let yesCount = 0;
-      taskData.forEach(task => {
-        task.users.forEach(u => {
-          if (u.user.name === name && u.status === 'Yes') {
-            yesCount++
-          }
-        })
+  const getJobHolderCount = (name) => {
+    let yesCount = 0;
+    taskData.forEach((task) => {
+      task.users.forEach((u) => {
+        if (u.user.name === name && u.status === "Yes") {
+          yesCount++;
+        }
       });
+    });
 
-      return yesCount;
- 
-    };
+    return yesCount;
+  };
 
-
-    
-
-    const setColumnFromOutsideTable = (colKey, filterVal) => {
-
-      const col = table.getColumn(colKey);
-      return col.setFilterValue(filterVal);
-    }
-
- 
- 
-
+  const setColumnFromOutsideTable = (colKey, filterVal) => {
+    const col = table.getColumn(colKey);
+    return col.setFilterValue(filterVal);
+  };
 
   return (
     <>
@@ -1168,14 +1064,20 @@ useEffect(() => {
             >
               <IoClose className="h-4 sm:h-6 w-4 sm:w-6 text-white" />
             </span>
-            <span className="mt-3"><QuickAccess /></span>
-              {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
+            <span className="mt-3">
+              <QuickAccess />
+            </span>
+            {isAdmin(auth) && (
+              <span className=" ">
+                {" "}
+                <OverviewForPages />{" "}
+              </span>
+            )}
 
             <div className="flex justify-center items-center  gap-2 ">
               <span
                 className={` p-1 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${
-                  showEdit &&
-                  "bg-orange-500 text-white"
+                  showEdit && "bg-orange-500 text-white"
                 }`}
                 onClick={() => {
                   setShowEdit(!showEdit);
@@ -1185,32 +1087,19 @@ useEffect(() => {
                 <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
               </span>
 
-
               <span
                 className={` p-1 rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
                   showJobHolder && "bg-orange-500 text-white"
                 }`}
                 onClick={() => {
-                   
-                  setShowJobHolder(prev => !prev);
+                  setShowJobHolder((prev) => !prev);
                 }}
                 title="Filter by Job Holder"
               >
                 <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
               </span>
-
-
             </div>
           </div>
-
-
-
-
-
-
-
-
-
 
           {/* ---------Template Buttons */}
           <div className="flex items-center gap-4 sm:w-fit w-full justify-end sm:justify-normal">
@@ -1347,47 +1236,6 @@ useEffect(() => {
               Add Department
             </button>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             {/* ----------All ROLES--------- */}
             <div
               className="ml-5 hidden sm:flex items-center justify-between relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2  gap-1"
@@ -1425,7 +1273,7 @@ useEffect(() => {
                           <span
                             onClick={() => {
                               setHrRole(role);
-                               
+
                               setIsHandleHrRole(true);
                             }}
                             title="Edit Role"
@@ -1448,9 +1296,6 @@ useEffect(() => {
             </div>
             {/* --------- */}
 
-
-
-
             <button
               className={`${style.button1} text-[15px] `}
               onClick={() => setIsHandleHrRole(true)}
@@ -1458,8 +1303,6 @@ useEffect(() => {
             >
               Add Role
             </button>
-
-
 
             <button
               className={`${style.button1} text-[15px] `}
@@ -1477,112 +1320,78 @@ useEffect(() => {
           </div>
         )}
 
+        {/* ----------Job_Holder Summery Filters---------- */}
+        {showJobHolder && (
+          <>
+            <div className="w-full  py-2 ">
+              <div className="flex items-center flex-wrap gap-4">
+                <DragDropContext onDragEnd={handleUserOnDragEnd}>
+                  <Droppable droppableId="users0" direction="horizontal">
+                    {(provided) => (
+                      <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        className="flex items-center gap-3 overflow-x-auto hidden1"
+                      >
+                        <div
+                          className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                            active1 === "All" &&
+                            "  border-b-2 text-orange-600 border-orange-600"
+                          }`}
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          onClick={() => {
+                            setActive1("All");
+                            userName.forEach((u) =>
+                              setColumnFromOutsideTable(u, "")
+                            );
+                          }}
+                        >
+                          All
+                        </div>
 
+                        {userName.map((user, index) => {
+                          return (
+                            <Draggable
+                              key={user}
+                              draggableId={user}
+                              index={index}
+                            >
+                              {(provided) => (
+                                <div
+                                  className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 !cursor-pointer font-[500] text-[14px] ${
+                                    active1 === user &&
+                                    "  border-b-2 text-orange-600 border-orange-600"
+                                  }`}
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  onClick={() => {
+                                    setActive1(user);
+                                    userName.forEach((u) =>
+                                      setColumnFromOutsideTable(u, "")
+                                    );
 
-
-
-
-
-
-
-
-
-        
-                      {/* ----------Job_Holder Summery Filters---------- */}
-                      {showJobHolder &&  (
-              <>
-                <div className="w-full  py-2 ">
-                  <div className="flex items-center flex-wrap gap-4">
-                    <DragDropContext onDragEnd={handleUserOnDragEnd}>
-                      <Droppable droppableId="users0" direction="horizontal">
-                        {(provided) => (
-                          <div
-                            {...provided.droppableProps}
-                            ref={provided.innerRef}
-                            className="flex items-center gap-3 overflow-x-auto hidden1"
-                          >
-                            
-
-                            <div
-                                      className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                                        active1 === "All" &&
-                                        "  border-b-2 text-orange-600 border-orange-600"
-                                      }`}
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                      onClick={() => {
-                                        setActive1("All")
-                                        userName.forEach(u => setColumnFromOutsideTable(u, ""))
-                                         
-                                         
-                                        
-                                      }}
-                                    >
-                                     All
-
-                                    </div>
-
-
-                            {userName.map((user, index) => {
-
-                                console.log("THE USER IS", user)
-
-                                return (
-                                  <Draggable
-                                  key={user}
-                                  draggableId={user}
-                                  index={index}
-                                  
+                                    setColumnFromOutsideTable(user, "Yes");
+                                  }}
                                 >
-                                  {(provided) => (
-                                    <div
-                                      className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 !cursor-pointer font-[500] text-[14px] ${
-                                        active1 === user &&
-                                        "  border-b-2 text-orange-600 border-orange-600"
-                                      }`}
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                      onClick={() => {
-                                        setActive1(user)
-                                        userName.forEach(u => setColumnFromOutsideTable(u, ""))
-                                         
-                                        setColumnFromOutsideTable(user, "Yes");
-                                        
-                                      }}
-                                    >
-                                      {user} ({getJobHolderCount(user)})
-
-                                    </div>
-                                  )}
-                                  
-                                  
-                                </Draggable>
-
-                                
-                                
-                              )
-
-                            }
-                                
+                                  {user} ({getJobHolderCount(user)})
+                                </div>
                               )}
-                            {/* {provided.placeholder} */}
-                          </div>
-                        )}
-                      </Droppable>
-                    </DragDropContext>
-                  </div>
-                </div>
-                <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
-              </>
-            )}
-
-
-
-
-
-
+                            </Draggable>
+                          );
+                        })}
+                        {/* {provided.placeholder} */}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
+              </div>
+            </div>
+            <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
+          </>
+        )}
 
         {/* Update Bulk Jobs */}
         {showEdit && (
@@ -1590,8 +1399,8 @@ useEffect(() => {
             <form
               onSubmit={updateBulkRows}
               className="w-full grid grid-cols-12 gap-4 max-2xl:grid-cols-8  "
-            > 
-            <div className="">
+            >
+              <div className="">
                 <select
                   name="hrRole"
                   value={updates.hrRole}
@@ -1606,7 +1415,6 @@ useEffect(() => {
                   ))}
                 </select>
               </div>
-
 
               <div className="">
                 <select
@@ -1661,8 +1469,6 @@ useEffect(() => {
               {users
                 ?.filter((el) => columnVisibility[el.name])
                 .map(({ name, _id }) => {
-                  console.log("name is >>>>>", users);
-                  console.log("updated xxx", updates);
                   return (
                     <div className="row-start-2 ">
                       {/* <span>{name}</span> */}
@@ -1691,7 +1497,10 @@ useEffect(() => {
                   {isUpdating ? (
                     <TbLoader2 className="h-5 w-5 animate-spin text-white" />
                   ) : (
-                    <span className=" flex gap-1 items-center   "> <MdOutlineSaveAlt  className="mb-1"   /> Save</span>
+                    <span className=" flex gap-1 items-center   ">
+                      {" "}
+                      <MdOutlineSaveAlt className="mb-1" /> Save
+                    </span>
                   )}
                 </button>
               </div>
@@ -1732,7 +1541,6 @@ useEffect(() => {
           </div>
         )}
 
-
         {/* -----------------Handle HR Roles--------------- */}
         {isHandleHrRole && (
           <div className="fixed top-0 left-0 z-[999] w-full h-full py-4 px-4 bg-gray-300/70 flex items-center justify-center">
@@ -1742,14 +1550,11 @@ useEffect(() => {
                 fetchAllHrRoles={fetchAllHrRoles}
                 hrRole={hrRole}
                 setHrRole={setHrRole}
-                
                 getAllTasks={getAllTasks}
               />
             </div>
           </div>
         )}
-
-
 
         {/* -----------------Handle Departments--------------- */}
         {ishandleDepartment && (
@@ -1785,12 +1590,19 @@ useEffect(() => {
                 </span>
               </div>
               <hr className="h-[1px] w-full bg-gray-400 " />
-              <div className="px-4 w-full">
-                <div
-                  className=" py-4  px-4 w-full max-h-[80vh] text-[14px] overflow-y-auto cursor-pointer"
-                  dangerouslySetInnerHTML={{ __html: copyDescription }}
-                ></div>
-              </div>
+              {isFetching ? (
+                <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+                  <div className="w-10 h-10 border-4 border-gray-300 border-t-orange-600 rounded-full animate-spin"></div>
+                  <p className="text-sm text-gray-600">Loading...</p>
+                </div>
+              ) : (
+                <div className="px-4 w-full">
+                  <div
+                    className="py-4 px-4 w-full max-h-[80vh] text-[14px] overflow-y-auto cursor-pointer"
+                    dangerouslySetInnerHTML={{ __html: copyDescription }}
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}

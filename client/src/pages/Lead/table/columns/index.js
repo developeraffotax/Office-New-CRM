@@ -72,7 +72,7 @@ export const getLeadColumns = (ctx) => {
         );
       },
       Cell: ({ row }) => {
-        const companyName = row.original.companyName;
+        const companyName = row.original?.companyName;
         const [show, setShow] = useState(false);
         const [localCompanyName, setLocalCompanyName] = useState(companyName);
 
@@ -217,8 +217,9 @@ export const getLeadColumns = (ctx) => {
         );
       },
       Cell: ({ row }) => {
-        const clientName = row.original.clientName;
-        const hasTickets = ticketMap[clientName] > 0; 
+        const clientName = row.original?.clientName || "";
+        const count = ticketMap?.[clientName] ?? 0;
+        const hasTickets = count > 0;
         
         
         const [show, setShow] = useState(false);

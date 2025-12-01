@@ -114,7 +114,7 @@ export const updateHrTask = async (req, res) => {
 export const allHrTask = async (req, res) => {
   try {
     const tasks = await hrModel
-      .find({})
+      .find({}).select("-description")
       .populate("hrRole")
       .populate({
         path: "users.user",
@@ -127,7 +127,8 @@ export const allHrTask = async (req, res) => {
           path: "users.user",
           select: "name email",
         },
-      });
+      }).lean()
+      ;
 
     res.status(200).send({
       success: true,

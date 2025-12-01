@@ -173,6 +173,10 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
     })
 
 
+    const [ticketMap, setTicketMap] = useState({});
+
+
+    
 
     // Filter Total Value
     useEffect(() => {
@@ -700,7 +704,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
 
 
 
-const [ticketMap, setTicketMap] = useState({});
+
 
 useEffect(() => {
   const fetchTicketCounts = async () => {
@@ -1343,4 +1347,4 @@ useEffect(() => {
   );
 });
 
-export default Leads;
+export default Leads; 

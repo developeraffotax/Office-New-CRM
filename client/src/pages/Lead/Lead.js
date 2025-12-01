@@ -43,6 +43,7 @@ import { BsGraphUpArrow } from "react-icons/bs";
 import { isAdmin } from "../../utlis/isAdmin";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import EmailDetailDrawerNewWrapper from "../../components/shared/EmailDetailDrawerNewWrapper";
+import FollowupDateFilter from "./ui/FollowupDateFilter";
 
 const updates_object_init = {
       companyName: '',
@@ -1295,6 +1296,14 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                 </div>
               )
             }
+
+            <div className="border-l h-8 mt-[1.2rem]"></div>
+
+
+            <div className="mt-[1.2rem] ">
+
+            <FollowupDateFilter setColumnFromOutsideTable={setColumnFromOutsideTable} />
+            </div>
 
 
 

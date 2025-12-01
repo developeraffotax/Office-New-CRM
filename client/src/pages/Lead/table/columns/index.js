@@ -1171,73 +1171,85 @@ export const getLeadColumns = (ctx) => {
 
     {
       accessorKey: "followUpDate",
-      Header: ({ column }) => {
-        const [filterValue, setFilterValue] = useState("");
-        const [dateRange, setDateRange] = useState({ from: "", to: "" });
-        const [showPopover, setShowPopover] = useState(false);
-        const selectRef = useRef(null);
+     Header: ({ column }) => {
+  const filterVal = column.getFilterValue();
 
-        useEffect(() => {
-          if (filterValue === "Custom Range") {
-            column.setFilterValue(dateRange);
-          } else {
-            column.setFilterValue(filterValue);
-          }
-        }, [dateRange, filterValue]);
+  const selectRef = useRef(null);
+  const [showPopover, setShowPopover] = useState(false);
+  const [dateRange, setDateRange] = useState({ from: "", to: "" });
 
-        const handleFilterChange = (e) => {
-          const val = e.target.value;
-          setFilterValue(val);
-          if (val === "Custom Range") {
-            setShowPopover(true);
-          } else {
-            setShowPopover(false);
-          }
-        };
+  // Keep local UI synced if filter set from outside
+  useEffect(() => {
+    if (typeof filterVal === "object") {
+      setDateRange(filterVal || { from: "", to: "" });
+      setShowPopover(true); // show popover again if custom range re-applied
+    }
+  }, [filterVal]);
 
-        const handleRangeChange = (key, value) => {
-          setDateRange((prev) => ({ ...prev, [key]: value }));
-        };
+  const handleSelectChange = (e) => {
+    const val = e.target.value;
 
-        return (
-          <div className="flex flex-col gap-[2px] relative">
-            <span
-              className="ml-1 cursor-pointer"
-              title="Clear Filter"
-              onClick={() => {
-                setFilterValue("");
-                setDateRange({ from: "", to: "" });
-                column.setFilterValue("");
-              }}
-            >
-              Follow-Up Date
-            </span>
+    if (val === "Custom Range") {
+      setShowPopover(true);
 
-            <select
-              ref={selectRef}
-              value={filterValue}
-              onChange={handleFilterChange}
-              className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
-            >
-              <option value="">Select</option>
-              {column.columnDef.filterSelectOptions.map((option, idx) => (
-                <option key={idx} value={option}>
-                  {option}
-                </option>
-              ))}
-              <option value="Custom Range">Custom Date</option>
-            </select>
+      // Keep previous range if exists
+      column.setFilterValue(dateRange);
+    } else {
+      setShowPopover(false);
+      column.setFilterValue(val);
+    }
+  };
 
-            {showPopover && (
-              <DateRangePopover
-                anchorRef={selectRef}
-                onChange={handleRangeChange}
-                onClose={() => setShowPopover(false)}
-              />
-            )}
-          </div>
-        );
-      },
+  // Trigger filtering immediately when user types
+  const handleRangeChange = (key, value) => {
+    const updated = { ...dateRange, [key]: value };
+    setDateRange(updated);
+    column.setFilterValue(updated);
+  };
+
+  return (
+    <div className="flex flex-col gap-[2px] relative">
+      <span
+        className="ml-1 cursor-pointer"
+        title="Clear Filter"
+        onClick={() => {
+          column.setFilterValue("");
+          setDateRange({ from: "", to: "" });
+          setShowPopover(false);
+        }}
+      >
+        Follow-Up Date
+      </span>
+
+      <select
+        ref={selectRef}
+        className="h-[1.8rem] w-full rounded-md border border-gray-200 font-normal"
+        value={
+          typeof filterVal === "object" ? "Custom Range" : filterVal || ""
+        }
+        onChange={handleSelectChange}
+      >
+        <option value="">Select</option>
+        {column.columnDef.filterSelectOptions.map((opt, i) => (
+          <option key={i} value={opt}>
+            {opt}
+          </option>
+        ))}
+        <option value="Custom Range">Custom Date</option>
+      </select>
+
+      {showPopover && (
+        <DateRangePopover
+          anchorRef={selectRef}
+          onChange={handleRangeChange}
+          onClose={() => setShowPopover(false)}
+          value={dateRange}
+        />
+      )}
+    </div>
+  );
+},
+
       Cell: ({ cell, row }) => {
         const followUpDate = row.original.followUpDate;
         const [date, setDate] = useState(() => {
@@ -1283,22 +1295,40 @@ export const getLeadColumns = (ctx) => {
         );
       },
       filterFn: (row, columnId, filterValue) => {
-        const cellValue = row.getValue(columnId);
-        if (!cellValue) return false;
+         
+      
 
-        const cellDate = new Date(cellValue);
-        const today = new Date();
-        const startOfToday = new Date(
+         
+
+         const cellValue = row.getValue(columnId);
+  if (!cellValue) return false;
+
+  const cellDate = new Date(cellValue);
+  const today = new Date();
+    const startOfToday = new Date(
           today.getFullYear(),
           today.getMonth(),
           today.getDate()
         );
 
-        if (typeof filterValue === "object" && filterValue.from && filterValue.to) {
-          const fromDate = new Date(filterValue.from);
-          const toDate = new Date(filterValue.to);
-          return cellDate >= fromDate && cellDate <= toDate;
-        }
+  // Handle custom range
+  if (typeof filterValue === "object") {
+    const { from, to } = filterValue;
+
+    if (from && !to) {
+      return cellDate >= new Date(from);
+    }
+    if (!from && to) {
+      return cellDate <= new Date(to);
+    }
+    if (from && to) {
+      return (
+        cellDate >= new Date(from) && cellDate <= new Date(to)
+      );
+    }
+
+    return true; // no range selected yet → show all
+  }
 
         switch (filterValue) {
           case "Expired":

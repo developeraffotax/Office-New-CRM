@@ -798,6 +798,10 @@ export default function Tickets() {
       columnVisibility: {
         _id: false,
       },
+      columnFilters: [
+    { id: "jobHolder", value: auth.user?.name },
+  ],
+      
     },
 
     enableRowSelection: true,

@@ -9,9 +9,9 @@ export const jobHolderColumn = (ctx) => {
             Header: ({ column }) => {
               const user = ctx.auth?.user?.name;
     
-              useEffect(() => {
-                column.setFilterValue(user);
-              }, []);
+              // useEffect(() => {
+              //   column.setFilterValue(user);
+              // }, []);
     
               return (
                 <div className=" flex flex-col gap-[2px]">

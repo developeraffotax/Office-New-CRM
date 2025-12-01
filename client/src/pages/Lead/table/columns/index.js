@@ -89,6 +89,11 @@ export const getLeadColumns = (ctx) => {
           setShow(false);
         };
 
+         useEffect(() => {
+    // when table refreshes, update local state
+    setLocalCompanyName(companyName);
+  }, [companyName]);
+
         return (
           <div className="w-full px-1">
             {show ? (
@@ -233,6 +238,10 @@ export const getLeadColumns = (ctx) => {
         };
 
 
+        useEffect(() => {
+    // when table refreshes, update local state
+    setLocalClientName(clientName);
+  }, [clientName]);
       
         return (
           <div className="w-full px-1">

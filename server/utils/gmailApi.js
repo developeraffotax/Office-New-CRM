@@ -272,7 +272,7 @@ const getDetailedThreads = async (threadId, accessToken) => {
 
   const latestMessage = threadData.messages[threadData.messages.length - 1];
   const date = new Date(parseInt(latestMessage.internalDate));
-  console.log("Latest Message latestMessagelatestMessagelatestMessagelatestMessagelatestMessage:", latestMessage);
+  // console.log("Latest Message latestMessagelatestMessagelatestMessagelatestMessagelatestMessage:", latestMessage);
   const decryptedMessages = await Promise.all(threadData.messages.map(msg => processMessage(msg, accessToken)));
 
   // Determine status

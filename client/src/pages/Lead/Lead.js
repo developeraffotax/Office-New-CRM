@@ -1291,7 +1291,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
             { auth?.user?.role?.name === "Admin" &&
               (
                <div className=" mt-[1.2rem] ">
-                <RefreshLeadsButton getAllLeads={getAllLeads}/>
+                <RefreshLeadsButton   getAllLeads={getAllLeads}/>
                 </div>
               )
             }

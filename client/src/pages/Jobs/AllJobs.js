@@ -2523,6 +2523,15 @@ useEffect(() => {
 
                                     setColumnFromOutsideTable("Job_Status", "Progress");
                                     setColumnFromOutsideTable("Assign", user?.name);
+
+
+                                    if(auth.user?.role?.name === "Admin" && (user?.name === auth.user?.name) ) {
+                                      setColumnFromOutsideTable("Job_Date", "Today");
+                                    } else {
+                                       setColumnFromOutsideTable("Job_Date", "");
+                                    }
+
+
                                   }}
                                 >
                                   {user?.name} (

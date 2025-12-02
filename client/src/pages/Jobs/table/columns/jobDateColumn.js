@@ -10,9 +10,7 @@ export const jobDateColumn = ({ handleUpdateDates, auth }) => {
     accessorKey: "job.workDeadline",
 
     Header: ({ column }) => {
-      const [filterValue, setFilterValue] = useState(() =>
-        auth?.user?.role?.name === "Admin" ? "Today" : ""
-      );
+      const [filterValue, setFilterValue] = useState("");
       const [dateRange, setDateRange] = useState({ from: "", to: "" });
       const [showPopover, setShowPopover] = useState(false);
       const selectRef = useRef(null);
@@ -26,14 +24,25 @@ export const jobDateColumn = ({ handleUpdateDates, auth }) => {
       //   }
       // }, []);
 
-      useEffect(() => {
-        if (filterValue === "Custom Range") {
-          column.setFilterValue(dateRange);
-        } else {
-          column.setFilterValue(filterValue);
-        }
-      }, [dateRange, filterValue]);
+    useEffect(() => {
+  const handleExternalFilterChange = () => {
+    const currentFilter = column.getFilterValue() || "";
+    if (typeof currentFilter === "object") {
+      setFilterValue("Custom Range");
+      setDateRange(currentFilter);
+      setShowPopover(true);
+    } else {
+      setFilterValue(currentFilter);
+      setDateRange({ from: "", to: "" });
+      setShowPopover(false);
+    }
+  };
 
+  // Call once on mount
+  handleExternalFilterChange();
+
+   
+}, [column]);
       // 🔄 Reset local state when external filter is cleared
       useEffect(() => {
         const currentFilter = column.getFilterValue();

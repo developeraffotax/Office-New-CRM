@@ -284,7 +284,8 @@ export default function InboxDetail({
             {emailDetail?.decryptedMessages &&
               emailDetail?.decryptedMessages?.map((message, i) => (
                 <div className="flex flex-col gap-4" key={i}>
-                  {message?.payload?.body?.sentByMe ? (
+                  {message?.payload?.body?.sentByMe ||
+                  message?.labelIds?.includes("SENT") ? (
                     <div className="flex flex-col gap-2 bg-orange-50 px-2 py-2 rounded-md">
                       {/* Header */}
                       <div className="flex items-center justify-between">
@@ -297,10 +298,22 @@ export default function InboxDetail({
                             />
                           </div>
                           <div className="flex flex-col gap-0">
-                            {separate(message?.payload?.headers[1]?.value)}
+                            
+
+                             {separate(
+                              message?.payload?.headers.find(
+                                (h) => h.name === "From"
+                              )?.value
+                            )}
+
+                            
                             <span className="text-[12px] text-gray-600 flex items-center gap-2 ">
                               to{" "}
-                              {message?.payload?.headers[2]?.value.slice(0, 12)}{" "}
+                              {
+                                message?.payload?.headers.find(
+                                  (h) => h.name === "To"
+                                )?.value
+                              }
                               <span>
                                 <FaCaretDown className="h-4 w-4 cursor-pointer" />
                               </span>

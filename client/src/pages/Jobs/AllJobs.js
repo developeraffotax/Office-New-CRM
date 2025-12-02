@@ -60,6 +60,7 @@ import { getJobsColumns } from "./table/columns";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { isAdmin } from "../../utlis/isAdmin";
 import { SubtaskListManager } from "./SubtaskListManager";
+import OutsideFilter from "./utils/OutsideFilter";
  
  
  
@@ -2545,8 +2546,24 @@ useEffect(() => {
                     )}
                   </Droppable>
                 </DragDropContext>
+
+
+                <div className=" border-l px-5 ">
+
+                  <OutsideFilter setColumnFromOutsideTable={setColumnFromOutsideTable} title={"Job_Date"} />
+                </div>
+
+
+
               </div>
+
+                      
+
             </div>
+
+            
+
+
             <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
           </>
         )}

@@ -3,7 +3,7 @@ import React from "react";
 import { FiActivity } from "react-icons/fi";
 import { FiCalendar } from "react-icons/fi";
 
-const Summary = ({ screenshots, timers, loading }) => {
+const Summary = ({ screenshots, timers, loading, totalWorkedTimeInMins }) => {
   // --- Summary stats ---
   const avgActivity = Math.round(
     screenshots.reduce(
@@ -14,13 +14,21 @@ const Summary = ({ screenshots, timers, loading }) => {
   const totalScreenshots = screenshots.length;
   const firstDate = dayjs(screenshots[0]?.timestamp).format("MMM D");
 
-  const totalMinutes = timers.reduce((acc, t) => {
-    if (!t.startTime || !t.endTime) return acc;
-    return acc + (new Date(t.endTime) - new Date(t.startTime)) / 60000;
-  }, 0);
+  // const totalMinutes = timers.reduce((acc, t) => {
+  //   if (!t.startTime || !t.endTime) return acc;
+  //   return acc + (new Date(t.endTime) - new Date(t.startTime)) / 60000;
+  // }, 0);
 
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = Math.floor(totalMinutes % 60);
+
+  console.log(totalWorkedTimeInMins , "totalWorkedTimeInMins")
+
+  //   const totalMinutes = timers.reduce((acc, t) => {
+  //   if (!t.startTime ) return acc;
+  //   return acc + (new Date(t.endTime || Date.now()) - new Date(t.startTime)) / 60000;
+  // }, 0);
+
+  const hours = Math.floor(totalWorkedTimeInMins / 60);
+  const minutes = Math.floor(totalWorkedTimeInMins % 60);
 
   return (
     <div className="w-[30%]   flex flex-col   gap-4">

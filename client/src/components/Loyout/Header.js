@@ -30,6 +30,7 @@ import OnlineUsers from "../../utlis/OnlineUsers";
  
 import Overview from "./overview/Overview";
 import UserActivity from "./UserActivity";
+import UserWorkedTime from "./UserWorkedTime";
  
 
 const formatElapsedTime = (createdAt) => {
@@ -516,6 +517,11 @@ useEffect(() => {
             <div className="flex items-center gap-2">
               {/* --------Timer Status------ */}
 
+               
+                     <UserWorkedTime />
+                    
+                  
+
 
                {
                     auth?.user?.role?.name === "Admin" ? <OnlineUsers /> : <UserActivity />
@@ -524,6 +530,7 @@ useEffect(() => {
                   }
 
                   
+                
 
 
 

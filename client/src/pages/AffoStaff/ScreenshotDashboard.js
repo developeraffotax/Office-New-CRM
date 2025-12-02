@@ -10,6 +10,8 @@ import Filters from "./Filters";
 export default function ScreenshotDashboard() {
   const [timers, setTimers] = useState([]);
 
+  const [totalWorkedTimeInMins, setTotalWorkedTimeInMins] = useState(0);
+
   const [screenshots, setScreenshots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
@@ -37,12 +39,17 @@ export default function ScreenshotDashboard() {
     try {
       const isoDate = selectedDate.format("YYYY-MM-DD");
 
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/agent/timers/${selectedUser}`,
+      const { data : {totalWorkedTimeInMins, success, avgActivity} } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/agent/timers/${selectedUser}?includeRunning=true`,
         { params: { date: isoDate } }
       );
 
-      setTimers(data);
+      // setTimers(data.timers);
+      if(success) {
+        console.log("THE AVG ACITIVITY>>>", avgActivity)
+        setTotalWorkedTimeInMins(parseInt(totalWorkedTimeInMins))
+      }
+       
     } catch (err) {
       console.error("❌ Failed to load timers:", err);
     }
@@ -95,6 +102,7 @@ export default function ScreenshotDashboard() {
               screenshots={screenshots}
               timers={timers}
               loading={loading}
+              totalWorkedTimeInMins={totalWorkedTimeInMins}
             />
             <Activity screenshots={screenshots} loading={loading} />
           </div>

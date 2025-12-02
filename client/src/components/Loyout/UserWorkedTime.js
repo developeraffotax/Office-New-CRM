@@ -93,17 +93,17 @@ const UserWorkedTime = () => {
       {/* Main badge */}
       <div
         onClick={() => setOpen(!open)}
-        className="cursor-pointer px-4 py-[2px] bg-gray-100 text-black rounded-xl font-semibold shadow-sm hover:shadow-md transition flex justify-center items-center gap-2 w-fit"
+        className="cursor-pointer px-4 py-[2px] bg-gray-100 text-black rounded-xl font-semibold shadow-sm hover:shadow-md transition flex justify-center items-center gap-2 w-fit "
       >
         <FiClock size={20} className="text-orange-500" />
-        <p className="text-lg font-bold">
+        <p className="text-lg font-bold text-gray-600">
           {hours}h {minutes}m
         </p>
       </div>
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute mt-2 w-[320px] max-h-[360px] overflow-y-auto bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl border border-gray-100 p-4 z-50">
+        <div className="absolute mt-2 w-[320px] max-h-[460px] overflow-y-auto bg-white/95 backdrop-blur-sm shadow-2xl rounded-xl border border-gray-100 p-4 z-50">
           {/* Header */}
           <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2 tracking-wide text-sm">
             <FiClock className="text-orange-500" /> Completed Tasks — Today

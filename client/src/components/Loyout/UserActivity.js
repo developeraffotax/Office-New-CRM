@@ -38,6 +38,9 @@ const UserActivity = () => {
     };
 
     fetchActivity();
+
+    const interval = setInterval(fetchActivity, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   // Close dropdown on outside click

@@ -28,6 +28,15 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
   const [showReplay, setShowReply] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [users, setUsers] = useState([]);
+    // Multiple replies open state
+  const [openReplies, setOpenReplies] = useState({});
+
+  const toggleReply = (i) => {
+    setOpenReplies((prev) => ({
+      ...prev,
+      [i]: !prev[i],
+    }));
+  };
 
   
 
@@ -288,67 +297,69 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
 
 
 
+function splitMessage(html = "") {
+  if (!html) return { main: "", reply: "" };
 
+  let mainHtml = html;
+  let replyHtml = "";
 
-  function extractRealOutlookMessage(html = "") {
-  const match = html.match(/<div[^>]*class="WordSection[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
-  if (!match) return html;
+// 1️⃣ Use extractMessage logic: Stop at DIV, BLOCKQUOTE, or HR
+const parser = new DOMParser();
+const doc = parser.parseFromString(mainHtml, "text/html");
+const wordDiv = doc.querySelector("div[class*='WordSection'], div[class*='wordSection']");
+if (wordDiv) {
+  const children = Array.from(wordDiv.childNodes);
+  const mainParts = [];
+  const replyParts = [];
+  let isReply = false;
 
-  let section = match[1];
+  for (const node of children) {
+    if (!isReply && (node.nodeName === "DIV" || node.nodeName === "BLOCKQUOTE" || node.nodeName === "HR")) {
+      // Start collecting reply from this node onward
+      isReply = true;
+    }
 
-  // Cut at next div
-  const nested = section.search(/<div/i);
-  if (nested !== -1) section = section.slice(0, nested);
+    if (!isReply && node.nodeName === "P") {
+      mainParts.push(node.outerHTML);
+    } else if (isReply) {
+      replyParts.push(node.outerHTML || node.textContent || "");
+    }
+  }
 
-  // Return cleaned but keep formatting
-  return section
-    .replace(/<o:p[^>]*>/gi, "")
-    .replace(/<\/o:p>/gi, "")
-    .trim();
+  mainHtml = mainParts.join("\n").trim();
+  replyHtml = replyParts.join("\n").trim();
 }
 
-  function extractMainOutlookMessage(html = "") {
-  if (!html) return "";
+  // 2️⃣ Use stripReplies logic: Detect Outlook / generic reply markers
+  const replyMarkers = [
+    // /On .* wrote:([\s\S]*)$/i,
+    /From:\s.*$/i,
+    /-----Original Message-----[\s\S]*$/i,
+    /<hr[^>]*>[\s\S]*$/i,
+    /<div[^>]*class="OutlookMessageHeader"[^>]*>[\s\S]*$/i,
+    /<div[^>]*id="divRplyFwdMsg"[^>]*>[\s\S]*$/i,
+    /<div[^>]*id="appendonsend"[^>]*>[\s\S]*$/i,
+    /<p[^>]*>\s*(From:|Sent:|To:|Subject:)[\s\S]*$/i
+  ];
 
-  // 1. get only the first Word section block
-  const match = html.match(/<div[^>]*class="wordSection[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
-  if (!match) return html;
+  for (const marker of replyMarkers) {
+    if (marker.test(mainHtml)) {
+      const match = mainHtml.match(marker);
+      mainHtml = mainHtml.replace(marker, "").trim();
+      if (!replyHtml && match) replyHtml = match[0].trim();
+      break;
+    }
+  }
 
-  const section = match[1]; // content of first wordSection
+  // 3️⃣ Use cleanMessageHtmlAggressive logic to remove Gmail / Outlook wrappers
+  const gmailQuoteRegex = /<div class="?gmail_quote"?.*?<\/div>/gis;
+  mainHtml = mainHtml.replace(gmailQuoteRegex, "").trim();
+  if (replyHtml) replyHtml = replyHtml.replace(gmailQuoteRegex, "").trim();
 
-  // 2. stop when another div begins (reply/quoted)
-  const cutoff = section.search(/<div[^>]*>/i);
-  const safeContent = cutoff !== -1 ? section.slice(0, cutoff) : section;
-
-  // 3. return only <p> tags (real message)
-  const pTags = safeContent.match(/<p[\s\S]*?<\/p>/gi);
-  return pTags ? pTags.join("\n").trim() : safeContent.trim();
+  return { main: mainHtml, reply: replyHtml };
 }
 
- const getNewMessageContent = (emailHtml) => {
-  if (!emailHtml) return "";
-
-  let cleaned = emailHtml;
-
-  // 1️⃣ Remove Gmail quote divs recursively
-  cleaned = cleaned.replace(/<div class="?gmail_quote"?[\s\S]*?<\/div>/gi, "");
-
-  // 2️⃣ Remove all blockquotes (nested)
-  cleaned = cleaned.replace(/<blockquote[\s\S]*?<\/blockquote>/gi, "");
-
-  // 3️⃣ Remove lines like "On Thu, 23 May 2025, ... wrote:"
-  cleaned = cleaned.replace(
-    /^On\s.+?wrote:/gim,
-    ""
-  );
-
-  // 4️⃣ Remove invisible chars, extra spaces, empty lines
-  cleaned = cleaned.replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
-  cleaned = cleaned.replace(/(\r?\n){2,}/g, "\n"); // collapse multiple line breaks
-
-  return cleaned;
-};
-
+ 
 
   // File Icon
   const FileIcon = (fileName = "") => {
@@ -538,7 +549,7 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
                     </div>
                   </div>
 
-                  <div
+                  {/* <div
                     className="ml-10 text-[13px]"
                     style={{ lineHeight: "1.2rem" }}
                     dangerouslySetInnerHTML={{
@@ -548,7 +559,49 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
                           )
                         : message?.snippet || "",
                     }}
-                  ></div>
+                  ></div> */}
+
+
+
+                  <div className="ml-10 text-[13px]" style={{ lineHeight: "1.2rem" }}>
+                      {(() => {
+                        const { main, reply } = splitMessage(message?.payload?.body?.data || "");
+                        const hasReply = Boolean(reply);
+                        const isOpen = openReplies[i]; // from your openReplies state
+
+                        return (
+                          <>
+                            {/* MAIN MESSAGE */}
+                            <div dangerouslySetInnerHTML={{ __html: main }} />
+
+                            {/* COLLAPSIBLE REPLY */}
+                            {hasReply && (
+                              <div className="mt-2">
+                                <button
+                                  className="flex items-center gap-1 text-[13px] text-blue-600 hover:text-blue-800"
+                                  onClick={() => toggleReply(i)}
+                                >
+                                  <FaCaretDown
+                                    className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                                  />
+                                  {isOpen ? "Show less" : "Show more"}
+                                </button>
+
+                                {isOpen && (
+                                  <div
+                                    className="mt-2 border border-gray-200 bg-gray-50 p-2 rounded-md text-[12px]"
+                                    dangerouslySetInnerHTML={{ __html: reply }}
+                                  />
+                                )}
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+
+
+
 
                   {(message?.payload?.body?.messageAttachments.filter(a => !a.isInline) || []).length > 0 && (
                     <>
@@ -623,15 +676,57 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
                     </div>
                   </div>
 
-                  <div
+                  {/* <div
                     className=" ml-10 text-[13px]"
                     style={{ lineHeight: "1.2rem" }}
                     dangerouslySetInnerHTML={{
                       __html: message?.payload?.body?.data
-                        ? cleanMessageHtmlAggressive(stripReplies(extractRealOutlookMessage(message.payload.body.data)))
+                        ? cleanMessageHtmlAggressive(stripReplies(extractMessage(message.payload.body.data)))
                         : message?.snippet || "",
                     }}
-                  ></div>
+                  ></div> */}
+
+
+                    <div className="ml-10 text-[13px]" style={{ lineHeight: "1.2rem" }}>
+                      {(() => {
+                        const { main, reply } = splitMessage(message?.payload?.body?.data || "");
+                        const hasReply = Boolean(reply);
+                        const isOpen = openReplies[i]; // from your openReplies state
+
+                        return (
+                          <>
+                            {/* MAIN MESSAGE */}
+                            <div dangerouslySetInnerHTML={{ __html: main }} />
+
+                            {/* COLLAPSIBLE REPLY */}
+                            {hasReply && (
+                              <div className="mt-2">
+                                <button
+                                  className="flex items-center gap-1 text-[13px] text-blue-600 hover:text-blue-800"
+                                  onClick={() => toggleReply(i)}
+                                >
+                                  <FaCaretDown
+                                    className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                                  />
+                                  {isOpen ? "Show less" : "Show more"}
+                                </button>
+
+                                {isOpen && (
+                                  <div
+                                    className="mt-2 border border-gray-200 bg-gray-50 p-2 rounded-md text-[12px]"
+                                    dangerouslySetInnerHTML={{ __html: reply }}
+                                  />
+                                )}
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+
+
+
+
 
                   {(message?.payload?.body?.messageAttachments || []).length > 0 && (
                     <>

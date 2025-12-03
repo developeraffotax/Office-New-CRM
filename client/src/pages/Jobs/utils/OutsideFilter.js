@@ -46,6 +46,15 @@ export default function OutsideFilter({ setColumnFromOutsideTable, title }) {
       >
         TM
       </button>
+
+
+      <button
+        className={`${btnBase} ${active === "Upcoming" ? btnActive : btnInactive}`}
+        onClick={() => handleClick("Upcoming")}
+        title="Upcoming"
+      >
+        UP
+      </button>
     </div>
   );
 }

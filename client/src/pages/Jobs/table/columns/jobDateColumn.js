@@ -9,105 +9,97 @@ export const jobDateColumn = ({ handleUpdateDates, auth }) => {
     id: "Job_Date",
     accessorKey: "job.workDeadline",
 
-    Header: ({ column }) => {
-      const [filterValue, setFilterValue] = useState("");
-      const [dateRange, setDateRange] = useState({ from: "", to: "" });
-      const [showPopover, setShowPopover] = useState(false);
-      const selectRef = useRef(null);
+Header: ({ column }) => {
+  const [filterValue, setFilterValue] = useState("");
+  const [dateRange, setDateRange] = useState({ from: "", to: "" });
+  const [showPopover, setShowPopover] = useState(false);
+  const selectRef = useRef(null);
 
-      //  useEffect(() => {
-      //   if (auth.user?.role?.name === "Admin") {
-
-      //     console.log("INSIDE USEEFFECT OF THE JOB DATE", column.getFilterValue())
-      //     column.setFilterValue("Today");
-      //     setFilterValue("Today")
-      //   }
-      // }, []);
-
-    useEffect(() => {
-  const handleExternalFilterChange = () => {
-    const currentFilter = column.getFilterValue() || "";
-    if (typeof currentFilter === "object") {
+  // Sync local state with external filter changes
+  useEffect(() => {
+    const currentFilter = column.getFilterValue();
+    if (typeof currentFilter === "object" && currentFilter !== null) {
       setFilterValue("Custom Range");
       setDateRange(currentFilter);
       setShowPopover(true);
     } else {
-      setFilterValue(currentFilter);
+      setFilterValue(currentFilter || "");
       setDateRange({ from: "", to: "" });
       setShowPopover(false);
     }
+  }, [column]);
+
+  // Reset local state when external filter is cleared
+  useEffect(() => {
+    const currentFilter = column.getFilterValue();
+    if (!currentFilter) {
+      setFilterValue("");
+      setDateRange({ from: "", to: "" });
+      setShowPopover(false);
+    }
+  }, [column.getFilterValue()]);
+
+  const handleFilterChange = (e) => {
+    const val = e.target.value;
+    setFilterValue(val);
+
+    if (val === "Custom Range") {
+      setShowPopover(true);
+      // Don't set filter yet, wait for user to select range
+    } else {
+      setShowPopover(false);
+      setDateRange({ from: "", to: "" });
+      column.setFilterValue(val); // <-- Apply the filter here
+    }
   };
 
-  // Call once on mount
-  handleExternalFilterChange();
+  const handleRangeChange = (key, value) => {
+    const newRange = { ...dateRange, [key]: value };
+    setDateRange(newRange);
+    column.setFilterValue(newRange); // <-- Apply filter when custom range changes
+  };
 
-   
-}, [column]);
-      // 🔄 Reset local state when external filter is cleared
-      useEffect(() => {
-        const currentFilter = column.getFilterValue();
-        if (!currentFilter) {
+  return (
+    <div className="flex flex-col gap-[2px] relative">
+      <span
+        className="ml-1 cursor-pointer"
+        title="Clear Filter"
+        onClick={() => {
           setFilterValue("");
           setDateRange({ from: "", to: "" });
           setShowPopover(false);
-        }
-      }, [column.getFilterValue()]);
+          column.setFilterValue("");
+        }}
+      >
+        Job Date
+      </span>
 
-      const handleFilterChange = (e) => {
-        const val = e.target.value;
-        setFilterValue(val);
+      <select
+        ref={selectRef}
+        value={filterValue}
+        onChange={handleFilterChange}
+        className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
+      >
+        <option value="">Select</option>
+        {column.columnDef.filterSelectOptions.map((option, idx) => (
+          <option key={idx} value={option}>
+            {option}
+          </option>
+        ))}
+        <option value="Custom Range">Custom Date</option>
+      </select>
 
-        if (val === "Custom Range") {
-          setShowPopover(true);
-        } else {
-          setShowPopover(false);
-        }
-      };
-
-      const handleRangeChange = (key, value) => {
-        setDateRange((prev) => ({ ...prev, [key]: value }));
-      };
-
-      return (
-        <div className="flex flex-col gap-[2px] relative">
-          <span
-            className="ml-1 cursor-pointer"
-            title="Clear Filter"
-            onClick={() => {
-              setFilterValue("");
-              setDateRange({ from: "", to: "" });
-              column.setFilterValue("");
-            }}
-          >
-            Job Date
-          </span>
-
-          <select
-            ref={selectRef}
-            value={filterValue}
-            onChange={handleFilterChange}
-            className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
-          >
-            <option value="">Select</option>
-            {column.columnDef.filterSelectOptions.map((option, idx) => (
-              <option key={idx} value={option}>
-                {option}
-              </option>
-            ))}
-            <option value="Custom Range">Custom Date</option>
-          </select>
-
-          {showPopover && (
-            <DateRangePopover
-              anchorRef={selectRef}
-              value={dateRange}
-              onChange={handleRangeChange}
-              onClose={() => setShowPopover(false)}
-            />
-          )}
-        </div>
-      );
-    },
+      {showPopover && (
+        <DateRangePopover
+          anchorRef={selectRef}
+          value={dateRange}
+          onChange={handleRangeChange}
+          onClose={() => setShowPopover(false)}
+        />
+      )}
+    </div>
+  );
+},
 
     Cell: ({ cell, row }) => {
       const [date, setDate] = useState(() => {
@@ -157,6 +149,7 @@ export const jobDateColumn = ({ handleUpdateDates, auth }) => {
       "In 15 days",
       "30 Days",
       "60 Days",
+      "Upcoming"
 
       // "Custom date",
     ],
@@ -174,6 +167,9 @@ const JobDateFilterFn = (row, columnId, filterValue) => {
 
   const cellDate = new Date(cellValue);
   const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
   const startOfToday = new Date(
     today.getFullYear(),
     today.getMonth(),
@@ -187,13 +183,16 @@ const JobDateFilterFn = (row, columnId, filterValue) => {
   }
 
   switch (filterValue) {
+    
+
     case "Expired":
       return cellDate < startOfToday;
+      case "Upcoming":
+      return cellDate > tomorrow;
     case "Today":
       return cellDate.toDateString() === today.toDateString();
     case "Tomorrow":
-      const tomorrow = new Date(today);
-      tomorrow.setDate(today.getDate() + 1);
+      
       return cellDate.toDateString() === tomorrow.toDateString();
     case "In 7 days":
       const in7Days = new Date(today);

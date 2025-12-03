@@ -1306,6 +1306,10 @@ export const getLeadColumns = (ctx) => {
 
   const cellDate = new Date(cellValue);
   const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+
     const startOfToday = new Date(
           today.getFullYear(),
           today.getMonth(),
@@ -1334,6 +1338,8 @@ export const getLeadColumns = (ctx) => {
         switch (filterValue) {
           case "Expired":
             return cellDate < startOfToday;
+          case "Upcoming":
+            return cellDate > tomorrow;
           case "Today":
             return cellDate.toDateString() === today.toDateString();
           case "Tomorrow": {
@@ -1378,6 +1384,7 @@ export const getLeadColumns = (ctx) => {
         "In 15 days",
         "30 Days",
         "60 Days",
+        "Upcoming"
       ],
       filterVariant: "custom",
       size: 120,

@@ -91,11 +91,15 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/email/detail/${mailThreadId}/${company}/${id}`
       );
+
+
+      console.log("THE RECEIVED EMAIL💛💛💚💛💛",data);
+      //  return;
       if (data?.emailDetails) {
         setEmailDetail(data.emailDetails);
         // mark last message read
         const lastMsg = data.emailDetails.threadData?.messages?.slice(-1)[0];
-        console.log("Last message:💙💚💚💚💛💛🧡", lastMsg);  
+         
         if (lastMsg?.id) {
           markAsRead(lastMsg.id, company);
         }
@@ -193,16 +197,133 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
   };
 
   // Clean Email
-  const cleanEmailBody = (emailHtml) => {
-    const cleanedHtml = emailHtml
-      .replace(/<div class="gmail_quote">([\s\S]*?)<\/div>/g, "")
-      .replace(/<blockquote([\s\S]*?)<\/blockquote>/g, "");
+  // const cleanMessageHtmlAggressive = (emailHtml) => {
+  //   const cleanedHtml = emailHtml
+  //     .replace(/<div class="gmail_quote">([\s\S]*?)<\/div>/g, "")
+  //     .replace(/<blockquote([\s\S]*?)<\/blockquote>/g, "");
 
-    return cleanedHtml;
-  };
+  //   return cleanedHtml;
+  // };
+
+ const cleanMessageHtmlAggressive = (html = "") => {
+  if (!html) return "";
+
+  let cleaned = html;
+
+  // Stage 1 — remove gmail quoted blocks
+  cleaned = cleaned.replace(/<div class="?gmail_quote"?.*?<\/div>/gis, "");
+
+  // Stage 2 — remove blockquotes (previous replies)
+  cleaned = cleaned.replace(/<blockquote[\s\S]*?<\/blockquote>/gi, "");
+
+  // Stage 3 — cut from "On ... wrote:"
+  cleaned = cleaned.replace(/On\s.*?wrote:/gis, "");
+
+  // Stage 4 — Outlook pattern
+  cleaned = cleaned.replace(/-----Original Message-----[\s\S]*/gi, "");
+
+  // Stage 5 — Trim whitespace + invisible chars
+  cleaned = cleaned.replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
+
+  return cleaned;
+};
 
 
 
+
+  function stripReplies(html) {
+  let clean = html || "";
+
+  // Generic reply markers
+  clean = clean.replace(/On .* wrote:([\s\S]*)$/i, "");
+  clean = clean.replace(/From:\s.*$/i, "");
+
+  // Outlook original message
+  clean = clean.replace(/-----Original Message-----[\s\S]*$/i, "");
+  clean = clean.replace(/<hr[^>]*>[\s\S]*$/i, "");
+
+  // Outlook specific divs
+  clean = clean.replace(/<div[^>]*class="OutlookMessageHeader"[^>]*>[\s\S]*$/i, "");
+  clean = clean.replace(/<div[^>]*id="divRplyFwdMsg"[^>]*>[\s\S]*$/i, "");
+  clean = clean.replace(/<div[^>]*id="appendonsend"[^>]*>[\s\S]*$/i, "");
+
+  // Microsoft column-style quoted reply
+  clean = clean.replace(/<p[^>]*>\s*(From:|Sent:|To:|Subject:)[\s\S]*$/i, "");
+
+  return clean.trim();
+}
+
+
+
+ function extractMessage(html) {
+  if (!html) return "";
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
+
+  // Find any WordSection div (first occurrence)
+  const wordDiv = doc.querySelector("div[class*='WordSection'], div[class*='wordSection']");
+  if (!wordDiv) return html;
+
+  // Convert children to array
+  const children = Array.from(wordDiv.childNodes);
+  const clean = [];
+
+  for (const node of children) {
+    // ❗ Stop when reply starts (div, hr, blockquote = start of previous email)
+    if (
+      node.nodeName === "DIV" ||
+      node.nodeName === "BLOCKQUOTE" ||
+      node.nodeName === "HR"
+    ) break;
+
+    // Keep only paragraphs
+    if (node.nodeName === "P") {
+      clean.push(node.outerHTML);
+    }
+  }
+
+  return clean.join("\n");
+}
+
+
+
+
+
+  function extractRealOutlookMessage(html = "") {
+  const match = html.match(/<div[^>]*class="WordSection[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
+  if (!match) return html;
+
+  let section = match[1];
+
+  // Cut at next div
+  const nested = section.search(/<div/i);
+  if (nested !== -1) section = section.slice(0, nested);
+
+  // Return cleaned but keep formatting
+  return section
+    .replace(/<o:p[^>]*>/gi, "")
+    .replace(/<\/o:p>/gi, "")
+    .trim();
+}
+
+  function extractMainOutlookMessage(html = "") {
+  if (!html) return "";
+
+  // 1. get only the first Word section block
+  const match = html.match(/<div[^>]*class="wordSection[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
+  if (!match) return html;
+
+  const section = match[1]; // content of first wordSection
+
+  // 2. stop when another div begins (reply/quoted)
+  const cutoff = section.search(/<div[^>]*>/i);
+  const safeContent = cutoff !== -1 ? section.slice(0, cutoff) : section;
+
+  // 3. return only <p> tags (real message)
+  const pTags = safeContent.match(/<p[\s\S]*?<\/p>/gi);
+  return pTags ? pTags.join("\n").trim() : safeContent.trim();
+}
 
  const getNewMessageContent = (emailHtml) => {
   if (!emailHtml) return "";
@@ -422,8 +543,8 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
                     style={{ lineHeight: "1.2rem" }}
                     dangerouslySetInnerHTML={{
                       __html: message?.payload?.body?.data
-                        ? cleanEmailBody(
-                            String(message.payload.body.data).replace(/<\/p>\s*<p>/g, "</p><br><p>")
+                        ? cleanMessageHtmlAggressive(
+                            stripReplies(extractMessage(message.payload.body.data))
                           )
                         : message?.snippet || "",
                     }}
@@ -507,7 +628,7 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
                     style={{ lineHeight: "1.2rem" }}
                     dangerouslySetInnerHTML={{
                       __html: message?.payload?.body?.data
-                        ? cleanEmailBody(String(message.payload.body.data).replace(/<\/p>\s*<p>/g, "</p><br><p>"))
+                        ? cleanMessageHtmlAggressive(stripReplies(extractRealOutlookMessage(message.payload.body.data)))
                         : message?.snippet || "",
                     }}
                   ></div>

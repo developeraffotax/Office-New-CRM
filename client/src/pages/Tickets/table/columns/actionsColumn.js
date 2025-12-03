@@ -22,8 +22,7 @@ export const actionsColumn = (ctx) => {
                 // eslint-disable-next-line
               }, [comments]);
     
-              console.log("REaD COMMENTS", comments);
-    
+              
               return (
                 <div className="flex items-center justify-center gap-4 w-full h-full">
     

@@ -46,6 +46,7 @@ import { getTaskColumns } from "./table/columns";
 import { TasksTable } from "./table/TasksTable";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { isAdmin } from "../../utlis/isAdmin";
+import OutsideFilter from "../Jobs/utils/OutsideFilter";
 
 const colVisibility = {
   departmentName: true,
@@ -1860,11 +1861,18 @@ const AllTasks = ({ justShowTable = false }) => {
                           : ""
                       }
                     />
+                   <div className=" border-l px-5 "> <OutsideFilter setColumnFromOutsideTable={setColumnFromOutsideTable} title={"taskDate"} /> </div>
                   </div>
+
+
+                   
                 </div>
                 <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
               </>
             )}
+
+              
+
 
             {/* ----------Date Status Summery Filters---------- */}
             {showDue && activeBtn === "due" && (

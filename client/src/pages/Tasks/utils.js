@@ -124,6 +124,9 @@ export const TaskDateFilterFn = (row, columnId, filterValue) => {
         case "Expired":
           return cellDate < startOfToday;
 
+           case "Upcoming":
+          return cellDate > tomorrow;
+
         case "Yesterday":
           const Yesterday = new Date(today);
           Yesterday.setDate(today.getDate() - 1);

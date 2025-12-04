@@ -293,7 +293,7 @@ const formatDateForInput = (dateString) => {
           <div className="w-full h-[9rem]">
             <ReactQuill
               className={`w-full h-[10rem] rounded-lg `}
-              placeholder="Description"
+              placeholder="Meeting Points"
               style={{ height: "8rem" }}
               value={description}
               onChange={(value) => setDescription(value)}
@@ -304,7 +304,7 @@ const formatDateForInput = (dateString) => {
           <div className=" w-full h-[9rem] mt-[2rem] mb-[2rem]">
             <ReactQuill
               className={`w-full h-[10rem] rounded-lg  `}
-              placeholder="Results"
+              placeholder="Minutes"
               style={{ height: "8rem" }}
               value={results}
               onChange={(value) => setResults(value)}

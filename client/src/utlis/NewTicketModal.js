@@ -7,10 +7,15 @@ import Select from "react-select";
 
 import { TbLoader2 } from "react-icons/tb";
 import { RiUploadCloud2Fill } from "react-icons/ri";
- import { style } from "./CommonStyle";
+import { style } from "./CommonStyle";
 import CustomEditor from "./CustomEditor";
 import { useSelector } from "react-redux";
-import { filterOption, HighlightedOption, sortOptions } from "../components/Tickets/HighlightedOption";
+import {
+  filterOption,
+  HighlightedOption,
+  sortOptions,
+} from "../components/Tickets/HighlightedOption";
+import { hasPermission, hasSubrole, isAdmin } from "./checkPermission";
 
 export default function NewTicketModal({
   setShowSendModal,
@@ -20,10 +25,9 @@ export default function NewTicketModal({
   clientEmail,
 
   clientName,
-  companyName
-  
+  companyName,
 }) {
-      const auth = useSelector((state => state.auth.auth));
+  const auth = useSelector((state) => state.auth.auth);
   const [company, setCompany] = useState("Affotax");
   const [clientId, setClientId] = useState(clientIdFromProps || "");
   const [subject, setSubject] = useState("");
@@ -38,59 +42,52 @@ export default function NewTicketModal({
   const [users, setUsers] = useState([]);
   const [jobHolder, setJobHolder] = useState("");
 
-
   const [access, setAccess] = useState([]);
   const [isFetching, setIsFetching] = useState(false);
 
   const [inputValue, setInputValue] = useState("");
 
- const [trustPilotBcc, setTrustPilotBcc] = useState(false);
+  const [trustPilotBcc, setTrustPilotBcc] = useState(false);
 
   useEffect(() => {
-
-    if(clientEmail) {
-      setType('manual');
-      setEmail(clientEmail)
+    if (clientEmail) {
+      setType("manual");
+      setEmail(clientEmail);
     }
+  }, []);
 
+  console.error("AUTH IS💕❣❣❣❣❣❣💔💔🤍💓", auth);
 
-  }, [])
+  const getAllUsers = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+      );
+      setUsers(
+        data?.users?.filter((user) =>
+          user.role?.access?.some((item) =>
+            item?.permission?.includes("Tickets")
+          )
+        ) || []
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-
-
-          
-          const getAllUsers = async () => {
-            try {
-              const { data } = await axios.get(
-                `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
-              );
-              setUsers( data?.users?.filter((user) => user.role?.access?.some((item) => item?.permission?.includes("Tickets") ) ) || [] );
-        
-          
-        
-              
-        
-            } catch (error) {
-              console.log(error);
-            }
-          };
-    
-    
-          useEffect(() => {
-            getAllUsers();
-            //eslint-disable-next-line
-          }, []);
-
-
-
-          
+  useEffect(() => {
+    getAllUsers();
+    //eslint-disable-next-line
+  }, []);
 
   useEffect(() => {
     const getClientId = async (companyName) => {
       try {
         setIsFetching(true);
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/client/search?companyName=${encodeURIComponent(companyName)}`
+          `${
+            process.env.REACT_APP_API_URL
+          }/api/v1/client/search?companyName=${encodeURIComponent(companyName)}`
         );
 
         if (data) {
@@ -104,7 +101,6 @@ export default function NewTicketModal({
       } finally {
         setIsFetching(false);
       }
-
     };
 
     if (clientCompanyName) {
@@ -173,16 +169,16 @@ export default function NewTicketModal({
       ...provided,
       padding: 0,
     }),
-     option: (provided, state) => ({
-        ...provided,
-        backgroundColor: state.isSelected
-          ? "#f0f0f0" // selected
-          : state.isFocused
-          ? "#e6f0ff" // hover/focus
-          : "white",
-        color: "black",
-        cursor: "pointer",
-      }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected
+        ? "#f0f0f0" // selected
+        : state.isFocused
+        ? "#e6f0ff" // hover/focus
+        : "white",
+      color: "black",
+      cursor: "pointer",
+    }),
   };
   // --------------Get All Templates---------->
   const getAllTemplates = async () => {
@@ -236,7 +232,7 @@ export default function NewTicketModal({
       toast.error("Company is required!");
       return;
     }
-     setLoading(true);
+    setLoading(true);
     try {
       const emailData = new FormData();
       emailData.append("company", company);
@@ -251,17 +247,15 @@ export default function NewTicketModal({
         emailData.append("companyName", companyName);
       }
 
-    if(company === "Affotax" && trustPilotBcc) {
-      emailData.append("trustPilotBcc", "true");
-    }
+      if (company === "Affotax" && trustPilotBcc) {
+        emailData.append("trustPilotBcc", "true");
+      }
 
       files.forEach((file) => {
         emailData.append("files", file);
       });
 
-       
       // return console.log("Email Data:", emailData.getAll("trustPilotBcc"))
-
 
       const { data } = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/send/email`,
@@ -289,29 +283,31 @@ export default function NewTicketModal({
   };
 
   return (
-    
     <div className="w-full h-[100%] flex items-center justify-center py-3 px-4 overflow-y-auto rounded-md bg-black/30 backdrop-blur-sm ">
-  
-
       <div className="w-[55rem] rounded-md  border flex flex-col gap-4 bg-white mt-[5rem] 3xl:mt-0 relative">
-            
         <div className="flex items-center justify-between px-4 pt-2">
           <h1 className="text-[20px] font-semibold text-black">
             Create New Ticket
           </h1>
 
           <div className="flex items-center gap-6">
-            {
-            isFetching && ( <div className="flex flex-row items-center gap-2  animate-pulse"> <TbLoader2 className="h-6 w-6 text-orange-500 animate-spin" /> <span className="text-gray-800 text-base font-medium">Loading client info...</span> </div> )
-          }
-          <span
-            className=" cursor-pointer"
-            onClick={() => {
-              setShowSendModal(false);
-            }}
-          >
-            <IoClose className="h-6 w-6 " />
-          </span>
+            {isFetching && (
+              <div className="flex flex-row items-center gap-2  animate-pulse">
+                {" "}
+                <TbLoader2 className="h-6 w-6 text-orange-500 animate-spin" />{" "}
+                <span className="text-gray-800 text-base font-medium">
+                  Loading client info...
+                </span>{" "}
+              </div>
+            )}
+            <span
+              className=" cursor-pointer"
+              onClick={() => {
+                setShowSendModal(false);
+              }}
+            >
+              <IoClose className="h-6 w-6 " />
+            </span>
           </div>
         </div>
         <hr className="h-[1px] w-full bg-gray-400 " />
@@ -443,90 +439,71 @@ export default function NewTicketModal({
                   </div>
                 ))}
             </div>
-
-
-
-
-
-
           </div>
 
+            
+          {
+            (isAdmin(auth.user) || hasSubrole(auth.user, "Tickets", "TrustPilot")) &&
 
-
-
-<div
-  className={` 
-  `}
->
-  <label
-    title="Include Trustpilot BCC (option available only for Affotax)"
-    htmlFor="trustPilotBcc"
-    className={`text-sm font-medium  flex  items-center justify-start gap-2 mt-2 p-2 rounded-md border max-w-[200px] 
+            <div>
+            <label
+              title="Include Trustpilot BCC (option available only for Affotax)"
+              htmlFor="trustPilotBcc"
+              className={`text-sm font-medium  flex  items-center justify-start gap-2 mt-2 p-2 rounded-md border max-w-[200px] 
     
-    transition-colors duration-200
-      ${company === "Affotax" ? "text-gray-800 cursor-pointer border-orange-300 hover:border-orange-500" : "text-gray-400 cursor-not-allowed opacity-50 border-gray-300"}
-      `}
-  >
-    
-
-    <input
-    type="checkbox"
-    id="trustPilotBcc"
-    checked={trustPilotBcc}
-    disabled={company !== "Affotax"}
-    onChange={(e) => setTrustPilotBcc(e.target.checked)}
-    className={`appearance-none h-4 w-4 border border-gray-400 rounded
-         checked:bg-orange-600 checked:border-orange-600
-         checked:before:content-['✓']
-         checked:before:text-white checked:before:block
-         checked:before:text-center checked:before:leading-4
-        accent-orange-500 
-      
-    `}
-  />
-  Include Trustpilot BCC
-
-  </label>
-
-  
-</div>
-
-
+                transition-colors duration-200
+                  ${
+                    company === "Affotax"
+                      ? "text-gray-800 cursor-pointer border-orange-300 hover:border-orange-500"
+                      : "text-gray-400 cursor-not-allowed opacity-50 border-gray-300"
+                  }
+                  `}
+                        >
+                          <input
+                            type="checkbox"
+                            id="trustPilotBcc"
+                            checked={trustPilotBcc}
+                            disabled={company !== "Affotax"}
+                            onChange={(e) => setTrustPilotBcc(e.target.checked)}
+                            className={`appearance-none h-4 w-4 border border-gray-400 rounded
+                    checked:bg-orange-600 checked:border-orange-600
+                    checked:before:content-['✓']
+                    checked:before:text-white checked:before:block
+                    checked:before:text-center checked:before:leading-4
+                    accent-orange-500 
+                  
+                `}
+              />
+              Include Trustpilot BCC
+            </label>
+          </div>
+          }
 
 
 
-
-
-
-
-          <div className={`w-full flex items-center ${ auth?.user?.role?.name === "Admin" ? "justify-between" : "justify-end"} gap-8`}>
-
-                            {
-                  auth?.user?.role?.name === "Admin" && (
-                     
-
-                  <select
-                  value={jobHolder}
-                  className="w-[160px] h-[2rem] rounded-md border border-gray-400 outline-none text-[15px] px-2 py-1 bg-gray-50"
-                  onChange={(e) => {
-                    setJobHolder(e.target.value);
-                    
-                  }}
-                >
-                  <option value="">Select Jobholder</option>
-                  {users?.map((jobHold, i) => (
-                    <option value={jobHold?.name} key={i}>
-                      {jobHold.name}
-                    </option>
-                  ))}
-                </select>
-
-
-              )
-
-
-                }
-
+          <div
+            className={`w-full flex items-center ${
+              auth?.user?.role?.name === "Admin"
+                ? "justify-between"
+                : "justify-end"
+            } gap-8`}
+          >
+            {auth?.user?.role?.name === "Admin" && (
+              <select
+                value={jobHolder}
+                className="w-[160px] h-[2rem] rounded-md border border-gray-400 outline-none text-[15px] px-2 py-1 bg-gray-50"
+                onChange={(e) => {
+                  setJobHolder(e.target.value);
+                }}
+              >
+                <option value="">Select Jobholder</option>
+                {users?.map((jobHold, i) => (
+                  <option value={jobHold?.name} key={i}>
+                    {jobHold.name}
+                  </option>
+                ))}
+              </select>
+            )}
 
             <button
               disabled={loading}

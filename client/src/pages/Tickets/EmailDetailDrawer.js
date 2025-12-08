@@ -304,31 +304,40 @@ function splitMessage(html = "") {
   let replyHtml = "";
 
 // 1️⃣ Use extractMessage logic: Stop at DIV, BLOCKQUOTE, or HR
-const parser = new DOMParser();
-const doc = parser.parseFromString(mainHtml, "text/html");
-const wordDiv = doc.querySelector("div[class*='WordSection'], div[class*='wordSection']");
-if (wordDiv) {
-  const children = Array.from(wordDiv.childNodes);
-  const mainParts = [];
-  const replyParts = [];
-  let isReply = false;
+//  const parser = new DOMParser();
+//   const doc = parser.parseFromString(mainHtml, "text/html");
+//   const wordDiv = doc.querySelector("div[class*='WordSection'], div[class*='wordSection']");
 
-  for (const node of children) {
-    if (!isReply && (node.nodeName === "DIV" || node.nodeName === "BLOCKQUOTE" || node.nodeName === "HR")) {
-      // Start collecting reply from this node onward
-      isReply = true;
-    }
+//   if (wordDiv) {
+//     const children = Array.from(wordDiv.childNodes);
+//     const mainParts = [];
+//     const replyParts = [];
+//     let isReply = false;
 
-    if (!isReply && node.nodeName === "P") {
-      mainParts.push(node.outerHTML);
-    } else if (isReply) {
-      replyParts.push(node.outerHTML || node.textContent || "");
-    }
-  }
+//     // 👇 allow more tags in main body
+//     const MAIN_TAGS = new Set(["P", "OL", "UL", "LI", "SPAN", "B", "I", "U", "#text"]);
 
-  mainHtml = mainParts.join("\n").trim();
-  replyHtml = replyParts.join("\n").trim();
-}
+//     for (const node of children) {
+
+//       // detect start of reply
+//       if (
+//         !isReply &&
+//         (node.nodeName === "DIV" || node.nodeName === "BLOCKQUOTE" || node.nodeName === "HR")
+//       ) {
+//         isReply = true;
+//       }
+
+//       if (!isReply && MAIN_TAGS.has(node.nodeName)) {
+//         // treat as main content
+//         mainParts.push(node.outerHTML || node.textContent);
+//       } else if (isReply) {
+//         replyParts.push(node.outerHTML || node.textContent || "");
+//       }
+//     }
+
+//     mainHtml = mainParts.join("\n").trim();
+//     replyHtml = replyParts.join("\n").trim();
+//   }
 
   // 2️⃣ Use stripReplies logic: Detect Outlook / generic reply markers
   const replyMarkers = [
@@ -339,7 +348,9 @@ if (wordDiv) {
     /<div[^>]*class="OutlookMessageHeader"[^>]*>[\s\S]*$/i,
     /<div[^>]*id="divRplyFwdMsg"[^>]*>[\s\S]*$/i,
     /<div[^>]*id="appendonsend"[^>]*>[\s\S]*$/i,
-    /<p[^>]*>\s*(From:|Sent:|To:|Subject:)[\s\S]*$/i
+    // /<p[^>]*>\s*(From:|Sent:|To:|Subject:)[\s\S]*$/i,
+     // Match any tag wrapping From:, Sent:, To:, Subject:
+    /<[^>]+>\s*(From:|Sent:|To:|Subject:)[\s\S]*$/i
   ];
 
   for (const marker of replyMarkers) {
@@ -358,6 +369,9 @@ if (wordDiv) {
 
   return { main: mainHtml, reply: replyHtml };
 }
+
+
+
 
  
 

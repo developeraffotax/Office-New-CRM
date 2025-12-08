@@ -27,7 +27,8 @@ import { scheduleNotification } from "../utils/customFns/scheduleNotification.js
 // Create Ticket \
 export const sendEmail = async (req, res) => {
   try {
-    const { clientId, company, subject, message, email, jobHolder, clientName, companyName } = req.body;
+    const { clientId, company, subject, message, email, jobHolder, clientName, companyName, trustPilotBcc } = req.body;
+    
 
     console.log("Subject💙💚💛", subject)
     
@@ -40,7 +41,7 @@ export const sendEmail = async (req, res) => {
       client = await jobsModel.findById(clientId);
     }
 
-    if ((clientId && !client?.email) || (email && !email)) {
+    if ((clientId && !client?.email) || (!clientId && !email)) {
       return res.status(400).send({
         success: false,
         message: "Client email not found!",
@@ -62,13 +63,20 @@ export const sendEmail = async (req, res) => {
     }));
 
     const emailData = {
-      email: clientId ? client.email : email,
+      email: email || client?.email,
       subject: subject,
       message: message,
       attachments: attachments,
       company: company,
       company_email: company_email,
     };
+
+
+    if(trustPilotBcc) {
+      emailData.bcc = process.env.TRUSTPILOT_AFS_BCC
+    }
+
+    // return console.log("EMAIL DATA:", emailData)
 
     const resp = await sendEmailWithAttachments(emailData);
 

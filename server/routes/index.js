@@ -32,6 +32,9 @@ import subtaskListRoutes from "./subtaskListRoutes.js";
 import onedriveRoutes from "./onedriveRoutes.js";
 import agentRoutes from "./agentRoutes.js";
 
+ 
+ 
+
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import { sendDatatoGoogleSheet } from "../utils/googleSheet.js";
 
@@ -70,6 +73,8 @@ export const registerRoutes = (app) => {
 
   app.use("/api/v1/googleSheet", sendDatatoGoogleSheet);
   app.use("/api/templates", requiredSignIn, quickReplyTemplateRoutes);
+
+ 
 
   app.use("/api/v1", requiredSignIn, onedriveRoutes);
   app.use("/api/v1/agent", agentRoutes);

@@ -102,6 +102,12 @@ export const sendEmailWithAttachments = async (emailData) => {
     emailMessageParts.push("From: " + fromEmail);
     emailMessageParts.push("To: " + emailData.email);
 
+          
+      // ⭐ ADD THIS
+      if (emailData?.bcc) {
+        emailMessageParts.push("Bcc: " + emailData.bcc);
+      }
+
     const subjectEncoded = Buffer.from(emailData.subject, 'utf-8').toString('base64');
     emailMessageParts.push("Subject: =?UTF-8?B?" + subjectEncoded + "?=");
 

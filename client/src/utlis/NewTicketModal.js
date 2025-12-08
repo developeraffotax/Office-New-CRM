@@ -44,7 +44,7 @@ export default function NewTicketModal({
 
   const [inputValue, setInputValue] = useState("");
 
- 
+ const [trustPilotBcc, setTrustPilotBcc] = useState(false);
 
   useEffect(() => {
 
@@ -236,7 +236,7 @@ export default function NewTicketModal({
       toast.error("Company is required!");
       return;
     }
-    setLoading(true);
+     setLoading(true);
     try {
       const emailData = new FormData();
       emailData.append("company", company);
@@ -251,11 +251,18 @@ export default function NewTicketModal({
         emailData.append("companyName", companyName);
       }
 
-
+    if(company === "Affotax" && trustPilotBcc) {
+      emailData.append("trustPilotBcc", "true");
+    }
 
       files.forEach((file) => {
         emailData.append("files", file);
       });
+
+       
+      // return console.log("Email Data:", emailData.getAll("trustPilotBcc"))
+
+
       const { data } = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/send/email`,
         emailData
@@ -436,8 +443,53 @@ export default function NewTicketModal({
                   </div>
                 ))}
             </div>
+
+
+
+
+
+
           </div>
 
+
+
+
+<div
+  className={` 
+  `}
+>
+  <label
+    title="Include Trustpilot BCC (option available only for Affotax)"
+    htmlFor="trustPilotBcc"
+    className={`text-sm font-medium  flex  items-center justify-start gap-2 mt-2 p-2 rounded-md border max-w-[200px] 
+    
+    transition-colors duration-200
+      ${company === "Affotax" ? "text-gray-800 cursor-pointer border-orange-300 hover:border-orange-500" : "text-gray-400 cursor-not-allowed opacity-50 border-gray-300"}
+      `}
+  >
+    
+
+    <input
+    type="checkbox"
+    id="trustPilotBcc"
+    checked={trustPilotBcc}
+    disabled={company !== "Affotax"}
+    onChange={(e) => setTrustPilotBcc(e.target.checked)}
+    className={`appearance-none h-4 w-4 border border-gray-400 rounded
+         checked:bg-orange-600 checked:border-orange-600
+         checked:before:content-['✓']
+         checked:before:text-white checked:before:block
+         checked:before:text-center checked:before:leading-4
+        accent-orange-500 
+      
+    `}
+  />
+  Include Trustpilot BCC
+
+  </label>
+
+  
+</div>
 
 
 

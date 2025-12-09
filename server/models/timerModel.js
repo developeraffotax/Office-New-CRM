@@ -64,4 +64,13 @@ const timerSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+
+timerSchema.index(
+  { clientId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { isRunning: true }
+  }
+);
+
 export default mongoose.model("timer", timerSchema);

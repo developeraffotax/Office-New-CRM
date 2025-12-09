@@ -188,6 +188,7 @@ export default function AllJobs() {
   const [showQuickList, setShowQuickList] = useState(false);
   const [qualityData, setQualityData] = useState([]);
   const columnData = [
+    "jobRef",
     "companyName",
     "clientName",
     "Assign",
@@ -666,7 +667,7 @@ export default function AllJobs() {
     getDatalable();
   }, []);
 
-
+  console.log("THE TABLE DATA IS>>>>>>>🧡🧡🧡🧡🧡🧡🧡🧡🧡❤", tableData)
 
   // ---------Stop Timer ----------->
   const handleStopTimer = () => {
@@ -1522,6 +1523,8 @@ const ctx = useMemo(() => {
         ? tableData
         : filterData,
     getRowId: (row) => row._id,
+
+     
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",

@@ -243,7 +243,7 @@ const CompletedTasks = ({
 
 
 
-
+    console.log("tasksData 🤎🤎🖤💜💜💙💙💚💚💛💛🧡🧡❤ DATA:", tasksData, );
 
   // -------Get All Tasks----->
   const getAllTasks = async () => {

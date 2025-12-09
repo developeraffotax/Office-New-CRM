@@ -334,6 +334,7 @@ useEffect(() => {
   const [showcolumn, setShowColumn] = useState(false);
       const boxRef = useRef(null);
   const columnData = [
+    "leadRef",
     "companyName",
     "clientName",
     "jobHolder",

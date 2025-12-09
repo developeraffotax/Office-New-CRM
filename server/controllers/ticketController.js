@@ -796,7 +796,7 @@ export const getAllSendTickets = async (req, res, next) => {
 
     
     
-    const emails = await ticketModel.find(filter).select( "sent received jobStatus clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy lastMessageSentTime createdAt" );
+    const emails = await ticketModel.find(filter).select( "ticketRef sent received jobStatus clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy lastMessageSentTime createdAt" );
     res.status(200).send({ success: true, message: "All email list!", emails: emails, });
     
 
@@ -1512,10 +1512,10 @@ export const getCompleteTickets = async (req, res) => {
   try {
 
     if(role === 'Admin') {
-      const emails = await ticketModel .find({ state: { $ne: "progress" } }) .select( "clientId jobStatus companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt received sent" );
+      const emails = await ticketModel .find({ state: { $ne: "progress" } }) .select( "ticketRef clientId jobStatus companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt received sent" );
       res.status(200).send({ success: true, message: "All complete email list!", emails: emails, });
     } else {
-      const emails = await ticketModel .find({ state: { $ne: "progress" }, jobHolder: userName }) .select( "clientId jobStatus companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt received sent" );
+      const emails = await ticketModel .find({ state: { $ne: "progress" }, jobHolder: userName }) .select( "ticketRef clientId jobStatus companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy createdAt received sent" );
       res.status(200).send({ success: true, message: "All complete email list!", emails: emails, });
     }
    

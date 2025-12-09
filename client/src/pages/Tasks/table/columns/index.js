@@ -16,6 +16,7 @@ import { taskColumn } from "./taskColumn";
 import { timerColumn } from "./timerColumn";
 import { recurringColumn } from "./recurringColumn";
 import { taskDateColumn, taskDateColumnCompleted } from "./taskDateColumn";
+import { refColumn } from "./refColumn";
 
  
 
@@ -24,6 +25,7 @@ import { taskDateColumn, taskDateColumnCompleted } from "./taskDateColumn";
 
 export const getTaskColumns = (ctx) => [
   idColumn(),
+  refColumn(),
   departmentColumn(ctx),
   projectColumn(ctx),
   jobHolderColumn(ctx),
@@ -53,6 +55,7 @@ export const getTaskColumns = (ctx) => [
 
 export const getCompletedTaskColumns = (ctx) => [
   idColumn(),
+  refColumn(),
   departmentColumn(ctx),
   projectColumn(ctx),
   jobHolderColumn(ctx),

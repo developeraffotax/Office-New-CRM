@@ -344,6 +344,36 @@ const applyFilter = (e) => {
 
   const columns = useMemo(
     () => [
+
+       {
+    id: "ticketRef",
+    accessorFn: (row) => row.ticketRef || "-", // safely handle missing jobRef
+    header: "Ref",
+    size: 90,
+    // enableColumnFilter: true,
+    // enableSorting: true,
+    // sortingFn: "alphanumeric",
+    Cell: ({ cell }) => {
+      const handleCopy = () => {
+        navigator.clipboard.writeText(cell.getValue());
+        toast.success(`Copied ${cell.getValue()}`);
+      };
+
+
+      return (
+        <span
+        className="px-2 py-1 rounded bg-gray-100 text-gray-700 font-semibold text-sm cursor-pointer "
+        onClick={handleCopy}
+        title="Click to copy"
+      >
+        {cell.getValue()}
+      </span>
+      )
+    },
+    
+  },
+
+
       {
         accessorKey: "companyName",
         minSize: 100,

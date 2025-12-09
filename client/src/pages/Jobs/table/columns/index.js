@@ -20,6 +20,7 @@ import { ownerColumn } from "./ownerColumn"
 import { paidFeeColumn } from "./paidFeeColumn"
 import { partnerColumn } from "./partnerColumn"
 import { pocColumn } from "./pocColumn"
+import { refColumn } from "./refColumn"
 import { signupDateColumn } from "./signupDateColumn"
 import { sourceColumn } from "./sourceColumn"
 import { statusColumn } from "./statusColumn"
@@ -39,6 +40,7 @@ export const getJobsColumns = (ctx) => {
   // Always visible columns
   const baseColumns = [
     idColumn(),
+    refColumn(),
     companyNameColumn(ctx),
     clientNameColumn(ctx),
     assignColumn(ctx),
@@ -117,6 +119,7 @@ export const getJobsColumnsCompleted = (ctx) => {
   // Always visible columns
   const baseColumns = [
     idColumn(),
+    refColumn(),
     companyNameColumn(ctx),
     clientNameColumn(ctx),
     assignColumn(ctx),
@@ -201,6 +204,7 @@ export const getJobsColumnsInactive = (ctx) => {
   // Always visible columns
   const baseColumns = [
     idColumn(),
+    refColumn(),
     companyNameColumn(ctx),
     clientNameColumn(ctx),
     assignColumn(ctx),

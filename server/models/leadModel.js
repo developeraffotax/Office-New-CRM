@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { generateRef } from "../utils/generateRef.js";
 
 const leadSchema = new mongoose.Schema(
   {
@@ -77,9 +78,16 @@ const leadSchema = new mongoose.Schema(
       default: 0,
     },
 
-    
+    leadRef: { type: String, unique: true },
   },
   { timestamps: true }
 );
+
+
+leadSchema.pre("save", async function (next) {
+  if (this.leadRef) return next();
+  this.leadRef = await generateRef("L", "lead");
+  next();
+});
 
 export default mongoose.model("Lead", leadSchema);

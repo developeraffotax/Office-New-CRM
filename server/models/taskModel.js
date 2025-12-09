@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { generateRef } from "../utils/generateRef.js";
 
 // Comment Schema
 const commentsSchema = new mongoose.Schema(
@@ -125,10 +126,25 @@ const taskSchema = new mongoose.Schema(
     deleteCompletedRecurringSubtasks: {
       type: Boolean,
       default: false,
-    }
+    },
+
+
+    taskRef: { type: String, unique: true },
+
+
+
   },
 
   { timestamps: true }
 );
+
+
+
+
+taskSchema.pre("save", async function (next) {
+  if (this.taskRef) return next();
+  this.taskRef = await generateRef("T", "task");
+  next();
+});
 
 export default mongoose.model("Tasks", taskSchema);

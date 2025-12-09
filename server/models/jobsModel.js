@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { generateRef } from "../utils/generateRef.js";
 
 // Job Schema
 const jobSchema = new mongoose.Schema(
@@ -244,9 +245,27 @@ const clientSchema = new mongoose.Schema(
       
     },
     activities: [activitySchema],
+
+     jobRef: { type: String, unique: true },
+
+
   },
   { timestamps: true }
 );
+
+
+clientSchema.pre("save", async function (next) {
+  if (this.jobRef) return next();
+  
+
+  try {
+    this.jobRef = await generateRef("J", "job");
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
 
 export default mongoose.model("Client", clientSchema);
 

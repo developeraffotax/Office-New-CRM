@@ -49,6 +49,7 @@ import { isAdmin } from "../../utlis/isAdmin";
 import OutsideFilter from "../Jobs/utils/OutsideFilter";
 
 const colVisibility = {
+  taskRef: true,
   departmentName: true,
   projectName: true,
   jobHolder: true,

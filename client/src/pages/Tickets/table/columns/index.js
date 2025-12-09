@@ -12,12 +12,14 @@ import { dateColumn } from "./dateColumn";
 import { jobDateColumn } from "./jobDateColumn";
 import { lastRepliedColumn } from "./lastRepliedColumn";
 import { actionsColumn } from "./actionsColumn";
+import { refColumn } from "./refColumn";
 
  
 
 
 export const getTicketsColumns = (ctx) => [
   idColumn(),
+  refColumn(),
   companyNameColumn(ctx),
   clientNameColumn(ctx),
   companyColumn(ctx),

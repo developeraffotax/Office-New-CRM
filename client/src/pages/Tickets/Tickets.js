@@ -41,6 +41,7 @@ const jobStatusOptions = ["Quote", "Data", "Progress", "Queries", "Approval", "S
 const companyData = ["Affotax", "Outsource"];
 const status = ["Read", "Unread", "Send"];
 const colVisibility = {
+  ticketRef: true,
   companyName: true,
   clientName: true,
   company: true,

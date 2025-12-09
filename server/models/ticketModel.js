@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { generateRef } from "../utils/generateRef.js";
 
 // Comment Schema
 const commentsSchema = new mongoose.Schema(
@@ -102,12 +103,21 @@ const ticketSchema = new mongoose.Schema(
     unreadCount: {
       type: Number,
       default: 0
-    }
+    },
 
-
+    ticketRef: { type: String, unique: true },
     
   },
   { timestamps: true }
 );
+
+
+ticketSchema.pre("save", async function (next) {
+  if (this.ticketRef) return next();
+  this.ticketRef = await generateRef("TK", "ticket");
+  next();
+});
+
+
 
 export default mongoose.model("tickets", ticketSchema);

@@ -129,7 +129,7 @@ const taskSchema = new mongoose.Schema(
     },
 
 
-    taskRef: { type: String, unique: true },
+    taskRef: { type: Number, unique: true },
 
 
 
@@ -143,7 +143,7 @@ const taskSchema = new mongoose.Schema(
 
 taskSchema.pre("save", async function (next) {
   if (this.taskRef) return next();
-  this.taskRef = await generateRef("T", "task");
+  this.taskRef = await generateRef("task");
   next();
 });
 

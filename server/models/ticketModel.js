@@ -105,7 +105,7 @@ const ticketSchema = new mongoose.Schema(
       default: 0
     },
 
-    ticketRef: { type: String, unique: true },
+    ticketRef: { type: Number, unique: true },
     
   },
   { timestamps: true }
@@ -114,7 +114,7 @@ const ticketSchema = new mongoose.Schema(
 
 ticketSchema.pre("save", async function (next) {
   if (this.ticketRef) return next();
-  this.ticketRef = await generateRef("TK", "ticket");
+  this.ticketRef = await generateRef("ticket");
   next();
 });
 

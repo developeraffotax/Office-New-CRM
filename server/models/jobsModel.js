@@ -246,7 +246,7 @@ const clientSchema = new mongoose.Schema(
     },
     activities: [activitySchema],
 
-     jobRef: { type: String, unique: true },
+     jobRef: { type: Number, unique: true },
 
 
   },
@@ -259,7 +259,7 @@ clientSchema.pre("save", async function (next) {
   
 
   try {
-    this.jobRef = await generateRef("J", "job");
+    this.jobRef = await generateRef("job");
     next();
   } catch (err) {
     next(err);

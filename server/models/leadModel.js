@@ -78,7 +78,7 @@ const leadSchema = new mongoose.Schema(
       default: 0,
     },
 
-    leadRef: { type: String, unique: true },
+    leadRef: { type: Number, unique: true },
   },
   { timestamps: true }
 );
@@ -86,7 +86,7 @@ const leadSchema = new mongoose.Schema(
 
 leadSchema.pre("save", async function (next) {
   if (this.leadRef) return next();
-  this.leadRef = await generateRef("L", "lead");
+  this.leadRef = await generateRef("lead");
   next();
 });
 

@@ -2,13 +2,13 @@ import Counter from "../models/counterModel.js";
 
  
 
-export async function generateRef(prefix = "X", counterId) {
+export async function generateRef(counterId) {
   const counter = await Counter.findByIdAndUpdate(
     { _id: counterId },
     { $inc: { seq: 1 } },
     { new: true, upsert: true }
   );
 
-  const number = counter.seq.toString().padStart(2, "0");
-  return `${prefix}-${number}`;
+  // return the raw number (e.g. 1, 2, 3)
+  return counter.seq;
 }

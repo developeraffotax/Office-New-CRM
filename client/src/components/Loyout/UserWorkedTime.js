@@ -140,7 +140,7 @@ const UserWorkedTime = () => {
                 className="mb-2 p-3 rounded-xl border border-gray-200 bg-gray-50 hover:bg-white hover:shadow-sm transition"
               >
                 <p className="font-semibold text-sm text-gray-800 flex items-center gap-2">
-                  {timer.task || "Untitled task"}
+                  {timer?.task || timer?.clientName || "Untitled task"}
 
                   {timer?.isRunning && (
                     <span className="relative flex h-2 w-2">

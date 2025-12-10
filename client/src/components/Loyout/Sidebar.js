@@ -21,7 +21,7 @@ import { FaTasks } from "react-icons/fa";
 import { LiaNetworkWiredSolid } from "react-icons/lia";
 import { BiMessageError } from "react-icons/bi";
 import { LuClock2 } from "react-icons/lu";
-
+import { VscSettings } from "react-icons/vsc";
 
 import axios from "axios";
 import { MdCalendarMonth } from "react-icons/md";
@@ -913,6 +913,44 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </>
           )}
+
+
+
+
+
+           {/*  */}
+          {isSettingsOpen && (auth?.user?.role?.name === "Admin") && (
+            <>
+              <div
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                  active === "settings"
+                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+                }   filter   overflow-hidden`}
+                onClick={() => {
+                  router("/settings");
+                  dispatch(setActive("settings"));
+                }}
+              >
+                <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                  <div className="flex items-center gap-2">
+                     
+                      <VscSettings
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "settings" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{ color: active === "settings" && "#fff" }}
+                      >
+                        Personalized
+                      </span>
+                    </div>
+                </div>
+              </div>
+            </>
+          )}
+
 
 
 

@@ -11,7 +11,7 @@ export default function SettingsPage() {
 
   const [localSettings, setLocalSettings] = useState({
     theme: "light",
-    sidebarCollapsed: false,
+    showSidebar: true,
     showNotifications: true,
   });
 
@@ -26,7 +26,7 @@ export default function SettingsPage() {
   }, [settings]);
 
   const handleSave = () => {
-    dispatch(updateUserSettings({ userId, updates: localSettings }))
+    dispatch(updateUserSettings(localSettings))
       .unwrap()
       .then(() => toast.success("Settings saved"))
       .catch(() => toast.error("Failed to save settings"));
@@ -54,7 +54,7 @@ export default function SettingsPage() {
               onChange={(e) =>
                 setLocalSettings((prev) => ({ ...prev, theme: e.target.value }))
               }
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
             >
               <option value="light">Light</option>
               <option value="dark">Dark</option>
@@ -63,9 +63,9 @@ export default function SettingsPage() {
           </div>
 
           <ToggleRow
-            label="Collapse Sidebar"
-            enabled={localSettings.sidebarCollapsed}
-            onChange={() => toggle("sidebarCollapsed")}
+            label="Show Sidebar"
+            enabled={localSettings.showSidebar}
+            onChange={() => toggle("showSidebar")}
           />
 
           <ToggleRow
@@ -76,7 +76,7 @@ export default function SettingsPage() {
 
            <button
             onClick={handleSave}
-            className="  w-full mt-8  bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition max-w-[200px]"
+            className="  w-full mt-8  bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 rounded-lg transition max-w-[200px]"
           >
             Save Settings
           </button>
@@ -102,7 +102,7 @@ function ToggleRow({ label, enabled, onChange }) {
         aria-checked={enabled}
         onClick={onChange}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200
-          ${enabled ? "bg-blue-600" : "bg-gray-300"}`}
+          ${enabled ? "bg-orange-600" : "bg-gray-300"}`}
       >
         <span
           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200

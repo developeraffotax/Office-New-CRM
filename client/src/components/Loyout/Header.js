@@ -64,6 +64,7 @@ export default function Header({
   const dispatch = useDispatch();
 
   const auth = useSelector((state) => state.auth.auth);
+  const {settings} = useSelector((state) => state.settings);
   const searchValue = useSelector((state) => state.auth.searchValue);
   const unread_reminders_count = useSelector(
     (state) => state.reminder.unread_reminders_count
@@ -165,7 +166,7 @@ const  notificationData  = useSelector((state) => state.notifications.notificati
 
 
 useEffect(() => {
-  if (auth?.user?.id) {
+  if (auth?.user?.id && settings?.showNotifications) {
     dispatch(getNotifications(auth.user.id));
 
     dispatch(getRemindersCount());
@@ -174,7 +175,7 @@ useEffect(() => {
 
 
   }
-}, [auth.user, dispatch]);
+}, [auth.user, dispatch, settings]);
 
 
  
@@ -236,11 +237,15 @@ useEffect(() => {
   const handleNewTimer = () => getTimerStatus();
   // const handleNewNotification = () => dispatch(getNotifications(auth.user.id));
   const handleNewNotification = () => {
-    dispatch(getNotifications(auth.user.id));
+ 
+    
+    if(settings?.showNotifications){
+      dispatch(getNotifications(auth.user.id));
 
     // Play sound
     notificationSound.currentTime = 0; // rewind to start
     notificationSound.play().catch((err) => console.log("🔊 Notification sound error:", err));
+    }
   };
 
   // Add listeners
@@ -254,7 +259,7 @@ useEffect(() => {
     socket.off("newNotification", handleNewNotification);
     // socket.off("newTicketNotification", handleNewNotification);
   };
-}, [socket]);
+}, [socket, settings]);
 
 
 
@@ -402,6 +407,7 @@ useEffect(() => {
               <img src="/logo.png" alt="Logo" className="h-[3.3rem] w-[8rem]" />
             </Link>
             {/* ------------Notification-----> */}
+             
             <div className="relative mt-1">
               <div
                 className="relative cursor-pointer m-2"
@@ -411,7 +417,7 @@ useEffect(() => {
                 }}
               >
                 <IoNotifications className="text-2xl container text-black " />
-                {notificationData.length > 0 && (
+                {(notificationData.length > 0) && (
                   <span className="absolute -top-2 -right-2 bg-orange-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
                     {notificationData && notificationData.length}
                   </span>
@@ -695,6 +701,7 @@ useEffect(() => {
             {/* ----------Profile Image-------- */}
             <div className="relative">
               <div
+                title={`${settings?.showNotifications ? "Active" : "Away"}`}
                 className="w-[2.6rem] h-[2.6rem] cursor-pointer relative rounded-full bg-sky-600 overflow-hidden flex items-center justify-center text-white border-2 border-orange-600"
                 onClick={() => setShow(!show)}
               >
@@ -709,6 +716,7 @@ useEffect(() => {
                   </h3>
                 )}
               </div>
+               <span className={`w-2 h-2 shadow inline-block ${settings?.showNotifications ? "bg-green-600" : "bg-gray-600"} rounded-full animate-pulse absolute right-[2px] bottom-[2px]`}> </span>
               {/* Model */}
               {show && (
                 <div className="absolute w-[14rem] top-[2.6rem] right-[1.3rem] z-[999] py-2 px-1 rounded-md rounded-tr-none shadow-sm bg-white border">

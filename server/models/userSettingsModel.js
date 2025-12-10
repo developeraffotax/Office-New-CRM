@@ -16,10 +16,7 @@ const userSettingsSchema = new Schema(
       default: "light",
     },
 
-    sidebarCollapsed: {
-      type: Boolean,
-      default: false,
-    },
+    showSidebar: { type: Boolean, default: true },
 
     showNotifications: { type: Boolean, default: true },
   },

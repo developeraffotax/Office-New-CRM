@@ -183,8 +183,7 @@ const extractAttachments = async (parts, messageId, accessToken) => {
 
     const isInline =
       (dispositionHeader &&
-        dispositionHeader.toLowerCase().includes("inline")) ||
-      !!contentIdHeader;
+        dispositionHeader.toLowerCase().includes("inline"))
 
     if (part.filename && part.body?.attachmentId && !isInline) {
       attachments.push({

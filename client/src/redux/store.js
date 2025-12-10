@@ -4,6 +4,7 @@ import authReducer from "./slices/authSlice";
 import timerReducer from "./slices/timerSlice";
 import reminderReducer from "./slices/reminderSlice";
 import notificationReducer from "./slices/notificationSlice";
+import settingsReducer from "./slices/settingsSlice";
 
 
 export const store = configureStore({
@@ -12,6 +13,7 @@ export const store = configureStore({
     timer: timerReducer,
     reminder: reminderReducer,
     notifications: notificationReducer,
+    settings: settingsReducer,
    
   },
 });

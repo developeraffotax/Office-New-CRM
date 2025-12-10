@@ -51,18 +51,26 @@ import { initNotificationListener } from "./redux/slices/notificationSlice";
 import { initReminderListener } from "./redux/slices/reminderSlice";
 import ScreenshotDashboard from "./pages/AffoStaff/ScreenshotDashboard";
 import AutoCreateLeadFromURL from "./pages/Lead/AutoCreateLeadFromURL";
+import { getUserSettings } from "./redux/slices/settingsSlice";
+import SettingsPage from "./pages/Settings/Settings";
 
 function App() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const { auth, isLoading, isInitializing } = useSelector((state) => state.auth);
+  const settings = useSelector((state) => state.settings);
   const { user, token } = auth || {};
+
+
+  console.log("THE SETTINGS ARE >>>>>>>>>>>>> 1️⃣2️⃣3️⃣4️⃣5️⃣", settings)
 
   // Load auth from storage & check token expiry
   useEffect(() => {
     dispatch(loadAuthFromLocalStorage());
     dispatch(checkTokenExpiry());
+
+    dispatch(getUserSettings());
   }, [dispatch]);
 
   // Clear caches on load (safe wrapped)
@@ -154,6 +162,7 @@ function App() {
             <Route path="/pdf/editor" element={<PDFEditor />} />
             <Route path="/activity" element={<ScreenshotDashboard />} />
             <Route path="/leads/create" element={<AutoCreateLeadFromURL user={user}/>} />
+            <Route path="/settings" element={<SettingsPage  />} />
           </Route>
         ) : (
           // If no token, redirect any private route access to login

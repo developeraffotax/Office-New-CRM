@@ -185,6 +185,27 @@ const extractAttachments = async (parts, messageId, accessToken) => {
       (dispositionHeader &&
         dispositionHeader.toLowerCase().includes("inline"))
 
+
+    // const filename = part.filename;
+    // const mimeType = part.mimeType;
+
+    // let isInline = false;
+
+    // if (dispositionHeader) {
+    //   const disp = dispositionHeader.toLowerCase();
+    //   if (disp.includes("inline")) isInline = true;
+    //   if (disp.includes("attachment")) isInline = false;
+    // } else {
+    //   // Fallback rules when Content-Disposition is missing
+    //   if (!filename && mimeType?.startsWith("image/")) {
+    //     // Image with no filename = signature / inline CID image
+    //     isInline = true;
+    //   } else {
+    //     // If filename exists -> probably real attachment
+    //     isInline = false;
+    //   }
+    // }
+
     if (part.filename && part.body?.attachmentId && !isInline) {
       attachments.push({
         attachmentId: part.body.attachmentId,

@@ -32,6 +32,8 @@ import subtaskListRoutes from "./subtaskListRoutes.js";
 import onedriveRoutes from "./onedriveRoutes.js";
 import agentRoutes from "./agentRoutes.js";
 
+import userSettingsRoutes from "./userSettingsRoutes.js";
+
  
  
 
@@ -78,4 +80,7 @@ export const registerRoutes = (app) => {
 
   app.use("/api/v1", requiredSignIn, onedriveRoutes);
   app.use("/api/v1/agent", agentRoutes);
+
+
+  app.use("/api/v1/settings", userSettingsRoutes);
 };

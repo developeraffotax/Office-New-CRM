@@ -58,6 +58,7 @@ export const processMessage = async (message, accessToken) => {
     "info@affotax.com",
     "Affotax Team <info@affotax.com>",
     "Affotax <info@affotax.com>",
+    "Affotax Accountants <info@affotax.com>",
     "Outsource Accountings <admin@outsourceaccountings.co.uk>",
     "admin@outsourceaccountings.co.uk",
   ].includes(fromHeader);

@@ -299,6 +299,25 @@ const inlineImages = async (decodedMessage, parts, messageId, accessToken) => {
   return decodedMessage;
 };
 
+
+
+
+  function extractEmail(str = "") {
+  if (!str) return "";
+  if (str.includes("<") && str.includes(">")) {
+    return str.substring(str.indexOf("<") + 1, str.indexOf(">")).trim();
+  }
+  return str.trim();
+}
+
+
+
+
+
+
+
+
+
 export {
   decodeBase64,
   base64UrlToBase64,
@@ -308,4 +327,6 @@ export {
   stripQuotedText,
   cleanMessageHtmlAggressive,
   fetchAttachmentData,
+
+  extractEmail
 };

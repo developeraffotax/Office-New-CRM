@@ -3,6 +3,7 @@ import axios from "axios";
 import dotenv from "dotenv";
 import { processMessage } from "./gmailApiHelpers/processMessage.js";
 import { getLatestMessageStatus } from "./gmailWorkerUtlity.js";
+import { extractEmail } from "./gmailApiHelpers/utility.js";
 
 // Dotenv Config
 dotenv.config();
@@ -295,8 +296,10 @@ const getDetailedThreads = async (threadId, accessToken) => {
 
 
     // Logic to get the right recepient email if the first message is send by client
+    const firstMsgEmail = extractEmail(recipients[0]);
 
-    if(recipients[0] === 'info@affotax.com' || recipients[0] === 'Affotax <info@affotax.com>') {
+
+    if(firstMsgEmail === 'info@affotax.com') {
 
       const recipientHeaders = threadData.messages[0]?.payload.headers.filter(
         (header) => ["from"].includes(header.name.toLowerCase())
@@ -313,6 +316,8 @@ const getDetailedThreads = async (threadId, accessToken) => {
       recipients[0] = email;
 
     }
+
+    console.log("Recipients Recipients Recipients Recipients Recipients Recipients:💚", recipients);
 
 
   return {

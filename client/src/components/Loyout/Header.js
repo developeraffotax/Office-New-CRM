@@ -168,13 +168,13 @@ const  notificationData  = useSelector((state) => state.notifications.notificati
 useEffect(() => {
   if (auth?.user?.id && settings?.showNotifications) {
     dispatch(getNotifications(auth.user.id));
+  }
 
     dispatch(getRemindersCount());
     
     getTimerStatus();
 
 
-  }
 }, [auth.user, dispatch, settings]);
 
 
@@ -417,7 +417,7 @@ useEffect(() => {
                 }}
               >
                 <IoNotifications className="text-2xl container text-black " />
-                {(notificationData.length > 0) && (
+                {(notificationData.length > 0 ) && (
                   <span className="absolute -top-2 -right-2 bg-orange-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
                     {notificationData && notificationData.length}
                   </span>

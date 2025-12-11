@@ -3,6 +3,8 @@ import axios from "axios";
 
 const API_URL = `${process.env.REACT_APP_API_URL}/api/v1/settings`;
 
+const settingsChannel = new BroadcastChannel("settings_channel");
+
 export const getUserSettings = createAsyncThunk(
   "settings/getUserSettings",
   async (_, { rejectWithValue }) => {
@@ -33,7 +35,11 @@ const settingsSlice = createSlice({
     settings: null,
     isLoading: false,
   },
-  reducers: {},
+  reducers: {
+    syncSettingsAcrossTabs: (state, action) => {
+    state.settings = action.payload;
+  },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getUserSettings.pending, (state) => {
@@ -45,8 +51,33 @@ const settingsSlice = createSlice({
       })
       .addCase(updateUserSettings.fulfilled, (state, action) => {
         state.settings = action.payload;
+
+        // Broadcast to other tabs
+        settingsChannel.postMessage({
+          type: "SETTINGS_UPDATED",
+          payload: action.payload,
+        });
       });
   },
 });
+
+
+
+// Init function (call this after login or app start)
+export const initSettingsListener = () => (dispatch) => {
+  settingsChannel.onmessage = (msg) => {
+
+    console.log("Received settings message in other tab:🤎💙💛", msg.data);
+
+  if (msg.data.type === "SETTINGS_UPDATED") {
+    dispatch({
+      type: "settings/syncSettingsAcrossTabs",
+      payload: msg.data.payload,
+    });
+  }
+};
+};
+
+
 
 export default settingsSlice.reducer;

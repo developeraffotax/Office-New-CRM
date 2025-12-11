@@ -51,7 +51,7 @@ import { initNotificationListener } from "./redux/slices/notificationSlice";
 import { initReminderListener } from "./redux/slices/reminderSlice";
 import ScreenshotDashboard from "./pages/AffoStaff/ScreenshotDashboard";
 import AutoCreateLeadFromURL from "./pages/Lead/AutoCreateLeadFromURL";
-import { getUserSettings } from "./redux/slices/settingsSlice";
+import { getUserSettings, initSettingsListener } from "./redux/slices/settingsSlice";
 import SettingsPage from "./pages/Settings/Settings";
 
 function App() {
@@ -88,6 +88,7 @@ function App() {
   useEffect(() => {
     dispatch(initTimerListener());
     dispatch(initNotificationListener());
+    dispatch(initSettingsListener());
     dispatch(initReminderListener());
   }, [dispatch]);
 

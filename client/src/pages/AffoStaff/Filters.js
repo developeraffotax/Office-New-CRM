@@ -15,68 +15,141 @@ export default function Filters({
   users,
   selectedUser,
   setSelectedUser,
+  filterType,
+  setFilterType,
   selectedDate,
   setSelectedDate,
+  startDate,
+  setStartDate,
+  endDate,
+  setEndDate,
 }) {
-  const handlePrevDay = () => setSelectedDate(selectedDate.subtract(1, "day"));
-  const handleNextDay = () => setSelectedDate(selectedDate.add(1, "day"));
+  const handlePrevDay = () =>
+    setSelectedDate(selectedDate.subtract(1, "day"));
+  const handleNextDay = () =>
+    setSelectedDate(selectedDate.add(1, "day"));
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      {/* Outer Tailwind Container */}
-      <div className="flex justify-between items-center p-8   bg-gradient-to-r from-gray-50 to-slate-200 rounded-none shadow   ">
-        {/* Left Controls: keep MUI Box as is */}
+      <div className="flex justify-between items-center p-8 bg-gradient-to-r from-gray-50 to-slate-200 shadow">
+
+        {/* LEFT SECTION */}
         <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-          {/* Prev Day */}
-          <Button
-            onClick={handlePrevDay}
-            sx={{
-              minWidth: 40,
-              minHeight: 40,
-              borderRadius: 2,
-              backgroundColor: "#fff",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-              "&:hover": { backgroundColor: "#f0f0f0" },
-            }}
-          >
-            <MdArrowBack size={20} />
-          </Button>
+          
+          {/* Filter Mode Dropdown */}
+          <FormControl size="small" sx={{ minWidth: 140 }}>
+            <InputLabel>Filter</InputLabel>
+            <Select
+              value={filterType}
+              label="Filter"
+              onChange={(e) => setFilterType(e.target.value)}
+              sx={{
+                borderRadius: 2,
+                backgroundColor: "#fff",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+              }}
+            >
+              <MenuItem value="day">Single Day</MenuItem>
+              <MenuItem value="range">Date Range</MenuItem>
+            </Select>
+          </FormControl>
 
-          {/* Next Day */}
-          <Button
-            onClick={handleNextDay}
-            sx={{
-              minWidth: 40,
-              minHeight: 40,
-              borderRadius: 2,
-              backgroundColor: "#fff",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-              "&:hover": { backgroundColor: "#f0f0f0" },
-            }}
-          >
-            <MdArrowForward size={20} />
-          </Button>
+          {/* Day Navigation Buttons Only for Single-Day */}
+          {filterType === "day" && (
+            <>
+              <Button
+                onClick={handlePrevDay}
+                sx={{
+                  minWidth: 40,
+                  minHeight: 40,
+                  borderRadius: 2,
+                  backgroundColor: "#fff",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                }}
+              >
+                <MdArrowBack size={20} />
+              </Button>
 
-          {/* Date Picker */}
-          <DatePicker
-            value={selectedDate}
-            onChange={(newValue) => setSelectedDate(newValue)}
-            slotProps={{
-              textField: {
-                size: "small",
-                sx: {
-                  minWidth: 130,
-                  "& .MuiInputBase-root": {
-                    borderRadius: 2,
-                    backgroundColor: "#fff",
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+              <Button
+                onClick={handleNextDay}
+                sx={{
+                  minWidth: 40,
+                  minHeight: 40,
+                  borderRadius: 2,
+                  backgroundColor: "#fff",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                }}
+              >
+                <MdArrowForward size={20} />
+              </Button>
+            </>
+          )}
+
+          {/* SINGLE DATE PICKER */}
+          {filterType === "day" && (
+            <DatePicker
+              value={selectedDate}
+              onChange={(newValue) => setSelectedDate(newValue)}
+              slotProps={{
+                textField: {
+                  size: "small",
+                  sx: {
+                    minWidth: 130,
+                    "& .MuiInputBase-root": {
+                      borderRadius: 2,
+                      backgroundColor: "#fff",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                    },
                   },
                 },
-              },
-            }}
-          />
+              }}
+            />
+          )}
 
-          {/* User Select */}
+          {/* RANGE PICKERS */}
+          {filterType === "range" && (
+            <>
+              <DatePicker
+                label="Start Date"
+                value={startDate}
+                onChange={(v) => setStartDate(v)}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                    sx: {
+                      minWidth: 140,
+                      "& .MuiInputBase-root": {
+                        borderRadius: 2,
+                        backgroundColor: "#fff",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                      },
+                    },
+                  },
+                }}
+              />
+
+              <DatePicker
+                label="End Date"
+                value={endDate}
+                onChange={(v) => setEndDate(v)}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                    sx: {
+                      minWidth: 140,
+                      "& .MuiInputBase-root": {
+                        borderRadius: 2,
+                        backgroundColor: "#fff",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                      },
+                    },
+                  },
+                }}
+              />
+            </>
+          )}
+
+          {/* USER SELECT */}
           <FormControl size="small" sx={{ minWidth: 150 }}>
             <InputLabel>User</InputLabel>
             <Select
@@ -87,7 +160,6 @@ export default function Filters({
                 borderRadius: 2,
                 backgroundColor: "#fff",
                 boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
-                "&:hover": { backgroundColor: "#f9f9f9" },
               }}
             >
               {users.map((user) => (
@@ -99,7 +171,7 @@ export default function Filters({
           </FormControl>
         </Box>
 
-        {/* Heading on the right using Tailwind */}
+        {/* RIGHT SIDE */}
         <h1 className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-xl shadow font-semibold text-gray-900">
           <img src="affostaff.png" alt="AffoStaff" className="w-6 h-6" />
           AffoStaff <span className="text-gray-600 font-medium">| Activity Monitoring</span>

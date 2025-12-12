@@ -242,75 +242,84 @@ export const getUserDailyActivity = async (req, res) => {
 
 
 
-// GET /timers/:userId?date=YYYY-MM-DD
+// GET /timers/:userId?date=YYYY-MM-DD OR ?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
 export const getUserTimers = async (req, res) => {
   const userId = req.params.userId;
-  const { date, includeRunning } = req.query; // includeRunning optional
+  const { date, startDate, endDate, includeRunning } = req.query;
 
   try {
     if (!userId) {
       return res.status(400).json({ error: "User ID is required" });
     }
 
-    // Build query
     const query = { clientId: userId };
 
-    // If includeRunning is not true, only get finished timers
+    // ---------------------------
+    // 📌 DATE / RANGE FILTER
+    // ---------------------------
+
+    let start, end;
+
+    if (startDate && endDate) {
+      // Range filter
+      start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+
+      end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+    } else {
+      // Single day
+      const target = date ? new Date(date) : new Date();
+
+      start = new Date(target);
+      start.setHours(0, 0, 0, 0);
+
+      end = new Date(target);
+      end.setHours(23, 59, 59, 999);
+    }
+
+    // Only non-running timers unless includeRunning=true
     if (includeRunning !== "true") {
       query.endTime = { $ne: null };
     }
 
-    // Date filter
-    const targetDate = date ? new Date(date) : new Date();
-    const startOfDay = new Date(targetDate);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(targetDate);
-    endOfDay.setHours(23, 59, 59, 999);
+    // Filter by date range
+    query.date = { $gte: start, $lte: end };
 
-    query.date = { $gte: startOfDay, $lte: endOfDay };
-
-    // Fetch timers
+    // ---------------------------
+    // Fetch Timers
+    // ---------------------------
     const timers = await timerModel.find(query).sort({ date: 1, startTime: 1 });
 
-    // Calculate total worked time in minutes
+    // ---------------------------
+    // Calculate Total Minutes
+    // ---------------------------
     let totalMinutes = 0;
+
     timers.forEach((timer) => {
-      if (timer.startTime) {
-        const start = new Date(timer.startTime).getTime();
-        let end;
+      const startTime = timer?.startTime ? new Date(timer.startTime).getTime() : null;
+      let endTime = timer?.endTime ? new Date(timer.endTime).getTime() : null;
 
-        if (timer.isRunning) {
-          // Timer is still running, use current time
-          end = Date.now();
-        } else if (timer.endTime) {
-          end = new Date(timer.endTime).getTime();
-        } else {
-          return; // skip if no endTime
-        }
+      if (!startTime) return;
 
-        totalMinutes += (end - start) / 60000;
-      }
+      if (timer.isRunning) endTime = Date.now();
+      if (!endTime) return;
+
+      totalMinutes += (endTime - startTime) / 60000;
     });
-
-    // Convert to hours and minutes
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = Math.floor(totalMinutes % 60);
-
-
-
-
-    
 
     return res.json({
       success: true,
       timers,
-      totalWorkedTimeInMins: totalMinutes,
+      totalWorkedTimeInMins: Math.floor(totalMinutes)
     });
+
   } catch (err) {
     console.error("❌ Failed to fetch timers:", err);
-    return res.status(500).json({ error: "Failed to fetch timers" });
+    res.status(500).json({ error: "Failed to fetch timers" });
   }
 };
+
 
 
 
@@ -335,24 +344,45 @@ export const getUserTimers = async (req, res) => {
 
 export const getUserScreenshots = async (req, res) => {
   const userId = req.params.userId;
-  const { date } = req.query; // single date from frontend
+  const { date, startDate, endDate } = req.query;
 
   try {
     if (!userId) {
       return res.status(400).json({ error: "User ID is required" });
     }
 
-    const query = {
-      userId
-    };
+    const query = { userId };
 
-    // Default to today if no date provided
-    const targetDate = date ? new Date(date) : new Date();
-    const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
+    // ---------------------------
+    // DATE / RANGE FILTER LOGIC
+    // ---------------------------
 
-    query.timestamp = { $gte: startOfDay, $lte: endOfDay };
+    let start, end;
 
+    if (startDate && endDate) {
+      // Range filter
+      start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+
+      end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+
+    } else {
+      // Single day
+      const base = date ? new Date(date) : new Date();
+
+      start = new Date(base);
+      start.setHours(0, 0, 0, 0);
+
+      end = new Date(base);
+      end.setHours(23, 59, 59, 999);
+    }
+
+    query.timestamp = { $gte: start, $lte: end };
+
+    // ---------------------------
+    // Fetch Screenshots
+    // ---------------------------
     const screenshots = await screenshotModel
       .find(query)
       .sort({ timestamp: -1 });
@@ -364,14 +394,14 @@ export const getUserScreenshots = async (req, res) => {
       }))
     );
 
-    console.log("✅ Fetched screenshots:", results.length);
-
     res.json(results);
+
   } catch (err) {
     console.error("❌ Failed to fetch screenshots:", err);
     res.status(500).json({ error: "Failed to fetch screenshots" });
   }
 };
+
 
 
 

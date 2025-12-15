@@ -36,14 +36,17 @@ export const getNotifications = createAsyncThunk(
 // Update a single notification
 export const updateNotification = createAsyncThunk(
   "notifications/updateNotification",
-  async ({ id, userId }, { dispatch, rejectWithValue }) => {
+  async ({ id, userId, status }, { dispatch, rejectWithValue }) => {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/notification/update/notification/${id}`
       );
       if (data) {
         dispatch(getNotifications(userId));
-        toast.success("Notification updated!");
+        if(status === "unread"){
+          
+          toast.success("Notification updated!");
+        }
          
 
                 // 🔄 Broadcast to other tabs

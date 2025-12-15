@@ -16,6 +16,7 @@ import { TbLoader2 } from "react-icons/tb";
 import { IoMdCheckboxOutline } from "react-icons/io";
 import Swal from "sweetalert2";
 import SendEmailReply from "../../components/Tickets/SendEmailReply";
+import { useScrollToBottom } from "../../utlis/useScrollToBottom";
 
 export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOpenCb, setEmailData }) {
   const navigate = useNavigate();
@@ -489,6 +490,9 @@ function splitMessage(html = "") {
     }
   };
 
+
+  const containerRef = useScrollToBottom([emailDetail]);
+
   return (
     <div
       id="emailDetailDrawer"
@@ -536,7 +540,7 @@ function splitMessage(html = "") {
           <Loader />
         </div>
       ) : (
-        <div className="flex flex-col gap-4 py-2 pb-4 px-4 w-full h-[100%] overflow-y-auto bg-white">
+        <div className="flex flex-col gap-4 py-2 pb-4 px-4 w-full h-[100%] overflow-y-auto bg-white" ref={containerRef}>
           {emailDetail?.decryptedMessages?.map((message, i) => (
             <div className="flex flex-col gap-4" key={message?.id || i}>
               {/* Sent by me */}

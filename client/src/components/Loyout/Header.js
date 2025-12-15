@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { IoSearch } from "react-icons/io5";
+import { IoArrowBackOutline, IoSearch } from "react-icons/io5";
 import { IoNotifications } from "react-icons/io5";
 import { format } from "timeago.js";
 
@@ -35,6 +35,7 @@ import OnlineUsers from "../../utlis/OnlineUsers";
 import Overview from "./overview/Overview";
 import UserActivity from "./UserActivity";
 import UserWorkedTime from "./UserWorkedTime";
+import EmailDetailDrawer from "../../pages/Tickets/EmailDetailDrawer";
 
 const formatElapsedTime = (createdAt) => {
   const now = new Date();
@@ -60,10 +61,13 @@ export default function Header({
 
   const navigate = useNavigate();
 
+
+  
+  
   const notificationRef = useRef(null);
   const reminderNotificationRef = useRef(null);
   const timerStatusRef = useRef(null);
-
+  
   const dispatch = useDispatch();
 
   const auth = useSelector((state) => state.auth.auth);
@@ -72,7 +76,7 @@ export default function Header({
   const unread_reminders_count = useSelector(
     (state) => state.reminder.unread_reminders_count
   );
-
+  
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
   const [userInfo, setUserInfo] = useState([]);
@@ -80,6 +84,34 @@ export default function Header({
   const [showTimerStatus, setShowTimerStatus] = useState(false);
   const [loading, setLoading] = useState(false);
   // const [notificationData, setNotificationData] = useState([]);
+    const ticketRef = useRef(null);
+  const [openTicketId, setOpenTicketId] = useState(null);
+
+const handleNotificationClick = (item) => {
+  // mark as read
+  dispatch(
+    updateNotification({
+      id: item._id,
+      userId: auth.user.id,
+      status: item.status
+    })
+  );
+
+  // 🎫 Ticket received → open drawer
+  if (item.type === "ticket_received") {
+    setOpenTicketId(item.taskId); // whichever you use
+    
+    return;
+  }
+
+  // 🔗 default navigation
+  navigate(`${item.redirectLink}?comment_taskId=${item.taskId}`);
+  dispatch(setFilterId(item.taskId));
+
+
+
+};
+
 
   const notificationData = useSelector(
     (state) => state.notifications.notificationData
@@ -253,6 +285,16 @@ export default function Header({
       ) {
         setOpen(false);
         // dispatch(setShowReminder(false));
+        setOpenTicketId(null);
+      }
+
+      if (
+        ticketRef.current &&
+        !ticketRef.current.contains(event.target)
+      ) {
+        
+        // dispatch(setShowReminder(false));
+        setOpenTicketId(null);
       }
 
       // Close Timer Status
@@ -275,6 +317,8 @@ export default function Header({
     const handleEscape = (event) => {
       if (event.key === "Escape") {
         setOpen(false); // Close Notification
+        setOpenTicketId(null);
+
         setShowTimerStatus(false);
         setShowReminderNotificationPanel(false);
       }
@@ -323,7 +367,7 @@ export default function Header({
                 )}
               </div>
               {open && (
-                <div className="shadow-xl  bg-gray-100 absolute z-[999] top-[2rem] left-[1.6rem] rounded-md overflow-hidden">
+                <div className="shadow-xl  bg-gray-100 absolute z-[999] top-[2rem] left-[1.6rem] rounded-md  ">
                   <h5 className="text-[20px] text-center font-medium text-white bg-orange-400  p-3 font-Poppins">
                     Notifications
                   </h5>
@@ -368,19 +412,14 @@ export default function Header({
                             </div>
 
                             {/* Content */}
-                            <Link
-                              to={`${item.redirectLink}?comment_taskId=${item.taskId}`}
-                              onClick={() => {
-                                dispatch(setFilterId(item.taskId));
-                                dispatch(
-                                  updateNotification({
-                                    id: item._id,
-                                    userId: auth.user.id,
-                                  })
-                                );
-                              }}
-                              className="block px-4 pb-4 pt-2"
+                           <div
+                              
+                              className="block px-4 pb-4 pt-2 "
                             >
+
+                              <div onClick={() => handleNotificationClick(item)}  className="cursor-pointer">
+
+
                               <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
                                 {item.description}
                               </p>
@@ -394,10 +433,30 @@ export default function Header({
                                 </p>
                               )}
 
-                              <p className="mt-2 text-xs text-gray-400">
+
+                              </div>
+                              
+
+                             <div className="w-full flex justify-between items-center gap-4 mt-2">
+                              
+                               <p className="text-xs text-gray-400">
                                 {format(item.createdAt)}
                               </p>
-                            </Link>
+
+
+                              <Link 
+                               to={`${item?.redirectLink}?comment_taskId=${item?.taskId}`}
+                            key={item?._id}
+                            onClick={() => {
+                              dispatch(setFilterId(item?.taskId));
+                              dispatch(updateNotification({ id: item._id, userId: auth.user.id, status: item.status }))
+                            }}
+                            className="cursor-pointer text-xs text-blue-500 "
+                            >
+                              View</Link>
+                              
+                               </div>
+                            </div>
                           </div>
                         );
                       })
@@ -426,8 +485,46 @@ export default function Header({
                       Mark all as read
                     </button>
                   </div>
+
+
+
+
+
+                   {/* 🎫 Email preview popup */}
+  {openTicketId && (
+    <div
+      ref={ticketRef}
+      className="
+        absolute
+        left-full
+        top-0
+        ml-3
+        w-[520px]
+        h-full
+        bg-white
+        shadow-2xl
+        rounded-2xl
+        overflow-hidden
+        border
+        z-[999999]
+      "
+    >
+      <EmailDetailDrawer
+        id={openTicketId}
+        setTicketSubject={() => {}}
+        isReplyModalOpenCb={() => {}}
+        setEmailData={() => {}}
+      />
+    </div>
+  )}
+
+
+
                 </div>
               )}
+
+
+
             </div>
 
             <div className=" hidden sm:flex ml-[1rem]">
@@ -638,6 +735,16 @@ export default function Header({
           </div>
         </div>
       </div>
+
+
+
+
+
+    
+
+
+
+
     </>
   );
 }

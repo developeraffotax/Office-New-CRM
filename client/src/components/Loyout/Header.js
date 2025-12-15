@@ -25,13 +25,16 @@ import {
   setShowReminder,
 } from "../../redux/slices/reminderSlice";
 import { useSocket } from "../../context/socketProvider";
-import { getNotifications, updateAllNotification, updateNotification } from "../../redux/slices/notificationSlice";
+import {
+  getNotifications,
+  updateAllNotification,
+  updateNotification,
+} from "../../redux/slices/notificationSlice";
 import OnlineUsers from "../../utlis/OnlineUsers";
- 
+
 import Overview from "./overview/Overview";
 import UserActivity from "./UserActivity";
 import UserWorkedTime from "./UserWorkedTime";
- 
 
 const formatElapsedTime = (createdAt) => {
   const now = new Date();
@@ -64,7 +67,7 @@ export default function Header({
   const dispatch = useDispatch();
 
   const auth = useSelector((state) => state.auth.auth);
-  const {settings} = useSelector((state) => state.settings);
+  const { settings } = useSelector((state) => state.settings);
   const searchValue = useSelector((state) => state.auth.searchValue);
   const unread_reminders_count = useSelector(
     (state) => state.reminder.unread_reminders_count
@@ -77,30 +80,29 @@ export default function Header({
   const [showTimerStatus, setShowTimerStatus] = useState(false);
   const [loading, setLoading] = useState(false);
   // const [notificationData, setNotificationData] = useState([]);
- 
-const  notificationData  = useSelector((state) => state.notifications.notificationData);
-  const [showReminderNotificationPanel, setShowReminderNotificationPanel] = useState(false);
+
+  const notificationData = useSelector(
+    (state) => state.notifications.notificationData
+  );
+  const [showReminderNotificationPanel, setShowReminderNotificationPanel] =
+    useState(false);
 
   const [userActivity, setUserActivity] = useState(null);
 
-
   useEffect(() => {
-
-      const getUserActivity = async () => {
-    try {
-      const { data } = await axios.get(
-         `${process.env.REACT_APP_API_URL}/api/v1/agent/activity`,
-      );
-      setUserActivity(data?.user);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+    const getUserActivity = async () => {
+      try {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/agent/activity`
+        );
+        setUserActivity(data?.user);
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
     getUserActivity();
-
-  },  []);
+  }, []);
 
   const handleSearch = async () => {
     try {
@@ -139,10 +141,6 @@ const  notificationData  = useSelector((state) => state.notifications.notificati
     navigate("/");
   };
 
-
-
-
-
   // -----------Get Timer_Task_Status------
   const getTimerStatus = async () => {
     setLoading(true);
@@ -158,158 +156,72 @@ const  notificationData  = useSelector((state) => state.notifications.notificati
     }
   };
 
-
-
-
-
-
-
-
-useEffect(() => {
-  if (auth?.user?.id && settings?.showNotifications) {
-    dispatch(getNotifications(auth.user.id));
-  }
+  useEffect(() => {
+    if (auth?.user?.id && settings?.showNotifications) {
+      dispatch(getNotifications(auth.user.id));
+    }
 
     dispatch(getRemindersCount());
-    
+
     getTimerStatus();
+  }, [auth.user, dispatch, settings]);
 
+  // useEffect(() => {
+  //   if (!auth?.user?.id) return;
 
-}, [auth.user, dispatch, settings]);
+  //   const handleTabFocus = () => {
+  //     // When user returns to the tab (document becomes visible)
+  //     if (document.visibilityState === "visible") {
+  //       dispatch(getNotifications(auth.user.id));
+  //       dispatch(getRemindersCount());
+  //       getTimerStatus();
+  //     }
+  //   };
 
+  //   document.addEventListener("visibilitychange", handleTabFocus);
 
- 
+  //   return () => {
+  //     document.removeEventListener("visibilitychange", handleTabFocus);
 
-
-
-
-// useEffect(() => {
-//   if (!auth?.user?.id) return;
-
-//   const handleTabFocus = () => {
-//     // When user returns to the tab (document becomes visible)
-//     if (document.visibilityState === "visible") {
-//       dispatch(getNotifications(auth.user.id));
-//       dispatch(getRemindersCount());
-//       getTimerStatus();
-//     }
-//   };
-
-//   document.addEventListener("visibilitychange", handleTabFocus);
- 
-
-//   return () => {
-//     document.removeEventListener("visibilitychange", handleTabFocus);
-    
-//   };
-// }, [auth?.user?.id, dispatch]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  //   };
+  // }, [auth?.user?.id, dispatch]);
 
   //   useEffect(() => {
-    
+
   //   getNotifications();
   // }, []);
 
+  const notificationSound = new Audio("/noti.mp3");
 
-const notificationSound = new Audio("/noti.mp3");
+  useEffect(() => {
+    if (!socket) return;
 
-useEffect(() => {
-   
-   
+    const handleNewTimer = () => getTimerStatus();
+    // const handleNewNotification = () => dispatch(getNotifications(auth.user.id));
+    const handleNewNotification = () => {
+      if (settings?.showNotifications) {
+        dispatch(getNotifications(auth.user.id));
 
-  if (!socket) return;
+        // Play sound
+        notificationSound.currentTime = 0; // rewind to start
+        notificationSound
+          .play()
+          .catch((err) => console.log("🔊 Notification sound error:", err));
+      }
+    };
 
- 
+    // Add listeners
+    socket.on("newTimer", handleNewTimer);
+    socket.on("newNotification", handleNewNotification);
+    // socket.on("newTicketNotification", handleNewNotification);
 
-  const handleNewTimer = () => getTimerStatus();
-  // const handleNewNotification = () => dispatch(getNotifications(auth.user.id));
-  const handleNewNotification = () => {
- 
-    
-    if(settings?.showNotifications){
-      dispatch(getNotifications(auth.user.id));
-
-    // Play sound
-    notificationSound.currentTime = 0; // rewind to start
-    notificationSound.play().catch((err) => console.log("🔊 Notification sound error:", err));
-    }
-  };
-
-  // Add listeners
-  socket.on("newTimer", handleNewTimer);
-  socket.on("newNotification", handleNewNotification);
-  // socket.on("newTicketNotification", handleNewNotification);
- 
-  // Cleanup
-  return () => {
-    socket.off("newTimer", handleNewTimer);
-    socket.off("newNotification", handleNewNotification);
-    // socket.off("newTicketNotification", handleNewNotification);
-  };
-}, [socket, settings]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    // Cleanup
+    return () => {
+      socket.off("newTimer", handleNewTimer);
+      socket.off("newNotification", handleNewNotification);
+      // socket.off("newTicketNotification", handleNewNotification);
+    };
+  }, [socket, settings]);
 
   // useEffect(() => {
   //   const handleStorageEvent = (event) => {
@@ -326,76 +238,63 @@ useEffect(() => {
   //   };
   // }, [getNotifications]);
 
+  const showReminder = useSelector((state) => state.reminder.showReminder);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (event.target.closest("#myModal")) {
+        return; // Clicked inside modal
+      }
 
-  const showReminder = useSelector(state => state.reminder.showReminder)
+      // Close Notification
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
+        setOpen(false);
+        // dispatch(setShowReminder(false));
+      }
 
+      // Close Timer Status
+      if (
+        timerStatusRef.current &&
+        !timerStatusRef.current.contains(event.target)
+      ) {
+        setShowTimerStatus(false);
+      }
 
+      // Close Reminder Notification Panel
+      if (
+        reminderNotificationRef.current &&
+        !reminderNotificationRef.current.contains(event.target)
+      ) {
+        setShowReminderNotificationPanel(false);
+      }
+    };
 
- 
- 
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setOpen(false); // Close Notification
+        setShowTimerStatus(false);
+        setShowReminderNotificationPanel(false);
+      }
+    };
 
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
 
-useEffect(() => {
-  const handleClickOutside = (event) => {
-    if (event.target.closest("#myModal")) {
-      return; // Clicked inside modal
-    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [dispatch]);
 
-    // Close Notification
-    if (
-      notificationRef.current &&
-      !notificationRef.current.contains(event.target)
-    ) {
-      setOpen(false);
-      // dispatch(setShowReminder(false));
-    }
-
-    // Close Timer Status
-    if (
-      timerStatusRef.current &&
-      !timerStatusRef.current.contains(event.target)
-    ) {
-      setShowTimerStatus(false);
-    }
-
-    // Close Reminder Notification Panel
-    if (
-      reminderNotificationRef.current &&
-      !reminderNotificationRef.current.contains(event.target)
-    ) {
-      setShowReminderNotificationPanel(false);
-    }
-  };
-
-  const handleEscape = (event) => {
-    if (event.key === "Escape") {
-      setOpen(false); // Close Notification
-      setShowTimerStatus(false);
-      setShowReminderNotificationPanel(false);
-    }
-  };
-
-  document.addEventListener("mousedown", handleClickOutside);
-  document.addEventListener("keydown", handleEscape);
-
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-    document.removeEventListener("keydown", handleEscape);
-  };
-}, [dispatch]);
-
-
-
-
-
-
-
-
-
-
-
-
+  const unread_notifications_count = useSelector(
+    (state) =>
+      state.notifications.notificationData.filter(
+        (notification) => notification.status === "unread"
+      ).length
+  );
 
   return (
     <>
@@ -407,7 +306,7 @@ useEffect(() => {
               <img src="/logo.png" alt="Logo" className="h-[3.3rem] w-[8rem]" />
             </Link>
             {/* ------------Notification-----> */}
-             
+
             <div className="relative mt-1">
               <div
                 className="relative cursor-pointer m-2"
@@ -417,75 +316,106 @@ useEffect(() => {
                 }}
               >
                 <IoNotifications className="text-2xl container text-black " />
-                {(notificationData.length > 0 ) && (
+                {unread_notifications_count > 0 && (
                   <span className="absolute -top-2 -right-2 bg-orange-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
-                    {notificationData && notificationData.length}
+                    {unread_notifications_count}
                   </span>
                 )}
               </div>
               {open && (
                 <div className="shadow-xl  bg-gray-100 absolute z-[999] top-[2rem] left-[1.6rem] rounded-md overflow-hidden">
-                  <h5 className="text-[20px] text-center font-medium text-black bg-orange-400  p-3 font-Poppins">
+                  <h5 className="text-[20px] text-center font-medium text-white bg-orange-400  p-3 font-Poppins">
                     Notifications
                   </h5>
-                  <div className="w-[350px] min-h-[40vh] max-h-[60vh]  overflow-y-scroll   ">
-                    {notificationData &&
-                      notificationData?.map((item, index) => (
-                        <div
-                          key={index}
-                          className="dark:bg-[#2d3a4ea1] bg-[#00000013] hover:bg-gray-300 transition-all duration-200 font-Poppins border-b dark:border-b-[#ffffff47] border-b-[#fff]"
-                        >
-                          <div className="w-full flex items-center justify-between p-2">
-                            <p className="text-black ">{item?.title}</p>
-                            <p
-                              className="text-sky-500 hover:text-sky-600 text-[14px] transition-all duration-200  cursor-pointer"
-                              onClick={() => dispatch(updateNotification({ id: item._id, userId: auth.user.id }))}
-                            >
-                              Mark as read
-                            </p>
-                          </div>
-                          <Link
-                            to={`${item?.redirectLink}?comment_taskId=${item?.taskId}`}
-                            key={item?._id}
-                            onClick={() => {
-                              dispatch(setFilterId(item?.taskId));
-                              dispatch(updateNotification({ id: item._id, userId: auth.user.id }))
-                            }}
-                            className="cursor-pointer"
+                  <div className="w-[380px] max-h-[60vh] overflow-y-auto bg-white  shadow-lg border border-gray-200">
+                    {notificationData?.length > 0 ? (
+                      notificationData.map((item) => {
+                        const isRead = item.status === "read";
+
+                        return (
+                          <div
+                            key={item._id}
+                            className={`group border-b last:border-b-0 transition-all
+                                  ${isRead ? "bg-gray-50" : "bg-sky-50 hover:bg-sky-100"}
+                                `}
                           >
-                            <p className="p-2 text-gray-700  text-[14px] whitespace-pre-line">
-                              {item?.description}
-                            </p>
+                            {/* Header */}
+                            <div className="flex items-start justify-between px-4 pt-3">
+                              <div className="flex items-center gap-2">
+                                {!isRead && (
+                                  <span className="h-2 w-2 rounded-full bg-sky-500  " />
+                                )}
+                                <p className="text-sm font-semibold text-gray-800">
+                                  {item.title}
+                                </p>
+                              </div>
 
-                            {/* {item?.companyName && ( <p className="px-2 text-gray-800 text-[13px]"> <span className="font-medium">Company Name:</span> {item.companyName} </p> )} */}
+                              {!isRead && (
+                                <button
+                                  onClick={() =>
+                                    dispatch(
+                                      updateNotification({
+                                        id: item._id,
+                                        userId: auth.user.id,
+                                      })
+                                    )
+                                  }
+                                  className="text-xs text-sky-600 hover:text-sky-700 font-medium"
+                                >
+                                  Mark as read
+                                </button>
+                              )}
+                            </div>
 
-                            {item?.clientName && (
-                              <p className="px-2 text-gray-800 text-[13px]">
-                                {" "}
-                                <span className="font-medium">
-                                  Client Name:
-                                </span>{" "}
-                                {item.clientName}{" "}
+                            {/* Content */}
+                            <Link
+                              to={`${item.redirectLink}?comment_taskId=${item.taskId}`}
+                              onClick={() => {
+                                dispatch(setFilterId(item.taskId));
+                                dispatch(
+                                  updateNotification({
+                                    id: item._id,
+                                    userId: auth.user.id,
+                                  })
+                                );
+                              }}
+                              className="block px-4 pb-4 pt-2"
+                            >
+                              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                                {item.description}
                               </p>
-                            )}
 
-                            <p className="p-2 text-black  text-[14px] ">
-                              {format(item?.createdAt)}
-                            </p>
-                          </Link>
-                        </div>
-                      ))}
+                              {item.clientName && (
+                                <p className="mt-2 text-xs text-gray-500">
+                                  <span className="font-medium text-gray-700">
+                                    Client:
+                                  </span>{" "}
+                                  {item.clientName}
+                                </p>
+                              )}
 
-                    {notificationData.length === 0 && (
-                      <div className="w-full h-[30vh] text-black  flex items-center justify-center flex-col gap-2">
-                        <span className="text-[19px]">🤯</span>
-                        Notifications not available!.
+                              <p className="mt-2 text-xs text-gray-400">
+                                {format(item.createdAt)}
+                              </p>
+                            </Link>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="h-[30vh] flex flex-col items-center justify-center text-gray-500 gap-2">
+                        <span className="text-2xl">🔔</span>
+                        <p className="text-sm font-medium">
+                          No notifications for today
+                        </p>
                       </div>
                     )}
                   </div>
+
                   <div
                     className="w-full  cursor-pointer bg-gray-200    px-2 flex  items-center justify-end"
-                    onClick={() => dispatch(updateAllNotification(auth.user.id))}
+                    onClick={() =>
+                      dispatch(updateAllNotification(auth.user.id))
+                    }
                   >
                     <button
                       disabled={notificationData.length === 0}
@@ -523,26 +453,13 @@ useEffect(() => {
             <div className="flex items-center gap-2">
               {/* --------Timer Status------ */}
 
-               
-                     <UserWorkedTime />
-                    
-                  
+              <UserWorkedTime />
 
-
-               {
-                    auth?.user?.role?.name === "Admin" ? <OnlineUsers /> : <UserActivity />
-                    
-                    
-                  }
-
-                  
-                
-
-
-
-
-
-
+              {auth?.user?.role?.name === "Admin" ? (
+                <OnlineUsers />
+              ) : (
+                <UserActivity />
+              )}
 
               <div className="relative" ref={timerStatusRef}>
                 <div className="flex items-center">
@@ -578,14 +495,6 @@ useEffect(() => {
                     </span>
                   )}
                 </div>
-
-
-
-                   
-
-
-
-
 
                 {showTimerStatus && (
                   <div className="w-[370px] min-h-[20vh] max-h-[60vh]  overflow-y-auto border border-gray-300  pb-2 shadow-xl  bg-gray-100 absolute z-[999] top-[2rem] right-[1.6rem] rounded">
@@ -672,31 +581,8 @@ useEffect(() => {
                 )}
               </div>
 
-
-
-
               <Overview />
-
-
-
-              
             </div>
-
-
-
-
-
-                
-
-
-
-
-
-
-
-
-
-
 
             {/* ----------Profile Image-------- */}
             <div className="relative">
@@ -716,7 +602,13 @@ useEffect(() => {
                   </h3>
                 )}
               </div>
-               <span className={`w-2 h-2 shadow inline-block ${settings?.showNotifications ? "bg-green-600" : "bg-gray-600"} rounded-full animate-pulse absolute right-[2px] bottom-[2px]`}> </span>
+              <span
+                className={`w-2 h-2 shadow inline-block ${
+                  settings?.showNotifications ? "bg-green-600" : "bg-gray-600"
+                } rounded-full animate-pulse absolute right-[2px] bottom-[2px]`}
+              >
+                {" "}
+              </span>
               {/* Model */}
               {show && (
                 <div className="absolute w-[14rem] top-[2.6rem] right-[1.3rem] z-[999] py-2 px-1 rounded-md rounded-tr-none shadow-sm bg-white border">

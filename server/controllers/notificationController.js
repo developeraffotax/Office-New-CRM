@@ -1,28 +1,41 @@
 import notificationModel from "../models/notificationModel.js";
 
-// Get All Notification
+import moment from "moment";
+
+// Get Today's Notifications
 export const getNotification = async (req, res) => {
   try {
     const userId = req.params.id;
 
+    const startOfDay = moment().startOf("day").toDate();
+    const endOfDay = moment().endOf("day").toDate();
+
     const notifications = await notificationModel
-      .find({ userId: userId, status: "unread" })
+      .find({
+        userId,
+        
+        createdAt: {
+          $gte: startOfDay,
+          $lte: endOfDay,
+        },
+      })
       .sort({ createdAt: -1 });
 
     res.status(200).send({
       success: true,
-      message: "All user notifications.",
-      notifications: notifications,
+      message: "Today's user notifications.",
+      notifications,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send({
       success: false,
       message: "Error in get notifications",
-      error: error,
+      error,
     });
   }
 };
+
 
 // Update Notification
 export const updateNotification = async (req, res) => {

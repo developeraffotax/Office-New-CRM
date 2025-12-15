@@ -128,7 +128,7 @@ export const selectTaskAssignedCount = createSelector(
   (state) => state.notifications.notificationData,
   (notifications) =>
     notifications.filter(
-      (n) => n.type === "task_assigned"
+      (n) => n.type === "task_assigned" && n.status === "unread"
     ).length
 );
 
@@ -138,7 +138,7 @@ export const selectJobAssignedCount = createSelector(
   (state) => state.notifications.notificationData,
   (notifications) =>
     notifications.filter(
-      (n) => n.type === "job_assigned"
+      (n) => n.type === "job_assigned" && n.status === "unread"
     ).length
 );
 
@@ -149,7 +149,7 @@ export const selectTicketAssignedCount = createSelector(
   (state) => state.notifications.notificationData,
   (notifications) =>
     notifications.filter(
-      (n) => n.type === "ticket_assigned"
+      (n) => n.type === "ticket_assigned" && n.status === "unread"
     ).length
 );
 
@@ -158,7 +158,7 @@ export const selectTicketReceivedCount = createSelector(
   (state) => state.notifications.notificationData,
   (notifications) =>
     notifications.filter(
-      (n) => n.type === "ticket_received"
+      (n) => n.type === "ticket_received" && n.status === "unread"
     ).length
 );
 

@@ -586,7 +586,7 @@ function splitMessage(html = "") {
                         return (
                           <>
                             {/* MAIN MESSAGE */}
-                            <div dangerouslySetInnerHTML={{ __html: main }} />
+                            <div dangerouslySetInnerHTML={{ __html: main || message?.snippet }} />
 
                             {/* COLLAPSIBLE REPLY */}
                             {hasReply && (
@@ -710,7 +710,7 @@ function splitMessage(html = "") {
                         return (
                           <>
                             {/* MAIN MESSAGE */}
-                            <div dangerouslySetInnerHTML={{ __html: main }} />
+                            <div dangerouslySetInnerHTML={{ __html: main || message?.snippet }} />
 
                             {/* COLLAPSIBLE REPLY */}
                             {hasReply && (

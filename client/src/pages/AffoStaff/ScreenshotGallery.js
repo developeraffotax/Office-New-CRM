@@ -144,7 +144,7 @@ export default function ScreenshotGallery({ screenshots, loading }) {
                           <span>Activity</span>
                           <span>{activityPercent}%</span>
                         </div>
-                        <div className="h-2 rounded-full bg-gray-200 relative">
+                        <div className="h-2 rounded-full bg-gray-200 relative group">
                           <div
                             className="h-2 rounded-full transition-all"
                             style={{
@@ -157,7 +157,15 @@ export default function ScreenshotGallery({ screenshots, loading }) {
                                   : "#ef4444",
                             }}
                           />
+
+                          <div className="absolute left-1/2 transform -translate-x-1/2 -top-8 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                            Keyboard:{" "}
+                            {shot.activity?.keyboardActivityPercent || 0}% | Mouse:{" "}
+                            {shot.activity?.mouseActivityPercent || 0}%
+                          </div>
                         </div>
+
+                        
                       </div>
 
                       {/* Window title */}

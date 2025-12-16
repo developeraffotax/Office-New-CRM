@@ -371,7 +371,7 @@ const handleNotificationClick = (item) => {
                   <h5 className="text-[20px] text-center font-medium text-white bg-orange-400  p-3 font-Poppins">
                     Notifications
                   </h5>
-                  <div className="w-[380px] max-h-[60vh] overflow-y-auto bg-white  shadow-lg border border-gray-200">
+                  <div className="w-[380px]  h-[50vh] overflow-y-auto bg-white  shadow-lg border border-gray-200">
                     {notificationData?.length > 0 ? (
                       notificationData.map((item) => {
                         const isRead = item.status === "read";
@@ -461,7 +461,7 @@ const handleNotificationClick = (item) => {
                         );
                       })
                     ) : (
-                      <div className="h-[30vh] flex flex-col items-center justify-center text-gray-500 gap-2">
+                      <div className=" h-full  flex flex-col items-center justify-center text-gray-500 gap-2">
                         <span className="text-2xl">🔔</span>
                         <p className="text-sm font-medium">
                           No notifications for today

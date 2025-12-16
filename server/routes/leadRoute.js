@@ -24,7 +24,7 @@ import { getSentReceivedCountsPerThread } from "../controllers/ticketController.
 const router = express.Router();
 
 // Create Lead
-router.post("/create/lead", createLead);
+router.post("/create/lead",  requiredSignIn,  createLead);
 
 // Update Lead
 router.put("/update/lead/:id", requiredSignIn, updateLead);

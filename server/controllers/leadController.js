@@ -5,9 +5,22 @@ import moment from "moment";
 import goalModel from "../models/goalModel.js";
 import userModel from "../models/userModel.js";
 import ticketModel from "../models/ticketModel.js";
+import getJobHolderNames from "../utils/getJobHolderNames.js";
+import { buildLeadFilter } from "../utils/buildFilter.js";
+import { getAuthUser } from "../utils/getAuthUser.js";
 
 // Create Lead
 export const createLead = async (req, res) => {
+
+ const user = getAuthUser(req);
+
+ if(!user) {
+  return res.status(401).send({
+      success: false,
+      message: "Invalid User!",
+  })
+ }
+
   try {
     const {
       companyName,
@@ -30,10 +43,12 @@ export const createLead = async (req, res) => {
       jobDeadline
     } = req.body;
 
+
+
     const lead = await leadModel.create({
       companyName,
       clientName,
-      jobHolder,
+      jobHolder: user.name,
       department,
       source,
       brand,
@@ -137,16 +152,12 @@ export const updateLead = async (req, res) => {
 
 // Get All Progress Leads
 export const getAllProgressLead = async (req, res) => {
-  const role = req.user?.user?.role?.name;
-  const userName =  req.user?.user?.name;
+
   try {
 
-    let filter = { status: { $eq: "progress" } };
+    const filter = await buildLeadFilter(req, "progress");
 
-    if (role !== "Admin") {
-      filter.jobHolder = userName;
-    }
-
+    console.log("THE FILTER IS ", filter)
     const leads = await leadModel.find(filter);
 
     res.status(200).send({
@@ -166,14 +177,11 @@ export const getAllProgressLead = async (req, res) => {
 
 // Get All Won Leads
 export const getAllWonLead = async (req, res) => {
-  const role = req.user?.user?.role?.name;
-  const userName =  req.user?.user?.name;
+   
   try {
-    let filter = { status: { $eq: "won" } };
+        const filter = await buildLeadFilter(req, "won");
 
-    if (role !== "Admin") {
-      filter.jobHolder = userName;
-    }
+
 
     const leads = await leadModel.find(filter);
     
@@ -197,12 +205,9 @@ export const getAlllostLead = async (req, res) => {
   const role = req.user?.user?.role?.name;
   const userName =  req.user?.user?.name;
   try {
-    let filter = { status: { $eq: "lost" } };
+    const filter = await buildLeadFilter(req, "lost");
 
-    if (role !== "Admin") {
-      filter.jobHolder = userName;
-    }
-
+    
     const leads = await leadModel.find(filter);
 
     res.status(200).send({

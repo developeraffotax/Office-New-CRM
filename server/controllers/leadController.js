@@ -113,19 +113,19 @@ export const updateLead = async (req, res) => {
     }
  
     // Only update tickets if lead status is being changed to 'won' or 'lost'
-    if (updates.status && (updates.status === 'won' || updates.status === 'lost')) {
-      await ticketModel.updateMany(
-        { clientName: lead.clientName, state: { $ne: "complete" } },
-        { $set: { state: "complete" } }
-      );
-    }
+    // if (updates.status && (updates.status === 'won' || updates.status === 'lost')) {
+    //   await ticketModel.updateMany(
+    //     { clientName: lead.clientName, state: { $ne: "complete" } },
+    //     { $set: { state: "complete" } }
+    //   );
+    // }
 
-    if (updates.status && (updates.status === 'progress')) {
-      await ticketModel.updateMany(
-        { clientName: lead.clientName, state: { $eq: "complete" } },
-        { $set: { state: "progress" } }
-      );
-    }
+    // if (updates.status && (updates.status === 'progress')) {
+    //   await ticketModel.updateMany(
+    //     { clientName: lead.clientName, state: { $eq: "complete" } },
+    //     { $set: { state: "progress" } }
+    //   );
+    // }
 
 
 

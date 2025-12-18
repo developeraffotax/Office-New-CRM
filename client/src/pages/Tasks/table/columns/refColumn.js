@@ -6,7 +6,7 @@ export const refColumn = () => {
     id: "taskRef",
     accessorFn: (row) => row.taskRef || "", // safely handle missing jobRef
     // header: "Ref",
-    size: 80,
+    size: 70,
 
     
             Header: ({ column }) => {
@@ -17,8 +17,8 @@ export const refColumn = () => {
               {/* 🔍 Header Search Input */}
               <input
                 type="text"
-                placeholder="Search..."
-                className="border rounded px-2 py-1 text-sm"
+                
+                className="border font-normal rounded px-2 py-1 text-sm outline-none"
                 value={column.getFilterValue() ?? ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
               />
@@ -48,7 +48,7 @@ export const refColumn = () => {
 
       return (
         <span
-        className="px-2 py-1 rounded bg-gray-100 text-gray-700 font-semibold text-sm cursor-pointer "
+        className=" text-gray-700 font-semibold text-sm cursor-pointer "
         onClick={handleCopy}
         title="Click to copy"
       >

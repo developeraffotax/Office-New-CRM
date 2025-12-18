@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { MaterialReactTable, useMaterialReactTable, } from "material-react-table";
+import {
+  MaterialReactTable,
+  useMaterialReactTable,
+} from "material-react-table";
 import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
 
@@ -9,17 +12,25 @@ import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import toast from "react-hot-toast";
 import axios from "axios";
 
-import { MdCheckCircle, MdInsertComment, MdOutlineModeEdit, MdRemoveRedEye, } from "react-icons/md";
+import {
+  MdCheckCircle,
+  MdInsertComment,
+  MdOutlineModeEdit,
+  MdRemoveRedEye,
+} from "react-icons/md";
 import { AiOutlineEdit, AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import QuickAccess from "../../utlis/QuickAccess";
 import { TbLoader2, TbLogs } from "react-icons/tb";
 import { filterByRowId } from "../../utlis/filterByRowId";
 import ActivityLogDrawer from "../../components/Modals/ActivityLogDrawer";
-import { NumberFilterPortal, NumderFilterFn } from "../../utlis/NumberFilterPortal";
+import {
+  NumberFilterPortal,
+  NumderFilterFn,
+} from "../../utlis/NumberFilterPortal";
 import { TiFilter } from "react-icons/ti";
 import { Drawer } from "@mui/material";
 import EmailDetailDrawer from "./EmailDetailDrawer";
@@ -29,15 +40,23 @@ import RefreshTicketsButton from "./ui/RefreshTicketsButton";
 import { getTicketsColumns } from "./table/columns";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { isAdmin } from "../../utlis/isAdmin";
-import DetailComments from "../Tasks/TaskDetailComments"
+import DetailComments from "../Tasks/TaskDetailComments";
 import { renderColumnControls } from "../../utlis/renderColumnControls";
 import { useClickOutside } from "../../utlis/useClickOutside";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { useSocket } from "../../context/socketProvider";
 
-
-const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "", };
-const jobStatusOptions = ["Quote", "Data", "Progress", "Queries", "Approval", "Submission", "Billing", "Feedback",];
+const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "" };
+const jobStatusOptions = [
+  "Quote",
+  "Data",
+  "Progress",
+  "Queries",
+  "Approval",
+  "Submission",
+  "Billing",
+  "Feedback",
+];
 const companyData = ["Affotax", "Outsource"];
 const status = ["Read", "Unread", "Send"];
 const colVisibility = {
@@ -59,18 +78,13 @@ const colVisibility = {
   jobDate: true,
   lastMessageSentTime: true,
 
-  actions: true
-
-
+  actions: true,
 };
 
 export default function Tickets() {
-
-
   const auth = useSelector((state) => state.auth.auth);
 
-
-
+  const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const comment_taskId = searchParams.get("comment_taskId");
@@ -101,11 +115,8 @@ export default function Tickets() {
   const [showEdit, setShowEdit] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
-
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
   const [activityDrawerTicketId, setActivityDrawerTicketId] = useState("");
-
-
 
   const anchorRef = useRef(null);
 
@@ -116,27 +127,19 @@ export default function Tickets() {
   });
   const [appliedFilters, setAppliedFilters] = useState({});
 
+  const [ticketSubject, setTicketSubject] = useState("");
 
+  const socket = useSocket();
 
-  const [ticketSubject, setTicketSubject] = useState("")
+  useEffect(() => {
+    if (!socket) return;
 
+    socket.on("ticket-updated", getAllEmails);
 
-
-
-    const socket = useSocket();
-
-    
-    useEffect(() => {
-      if (!socket) return;
-
-      socket.on("ticket-updated", getAllEmails);
-
-      return () => {
-        socket.off("ticket-updated", getAllEmails);
-      };
-    }, [socket]);
-
-
+    return () => {
+      socket.off("ticket-updated", getAllEmails);
+    };
+  }, [socket]);
 
   const [showcolumn, setShowColumn] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState({
@@ -159,40 +162,30 @@ export default function Tickets() {
     }
   }, []);
 
-
-
-
-
-
-
-
-  const [ticketId, setTicketId] = useState("")
+  const [ticketId, setTicketId] = useState("");
 
   const [open, setOpen] = useState(false);
 
   const toggleDrawer = (newOpen) => {
-
     setOpen(newOpen);
   };
 
-
-  const [isReplyModalOpen, setIsReplyModalOpen] = useState(false)
+  const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
 
   const isReplyModalOpenCb = (isOpen) => {
-    setIsReplyModalOpen(isOpen)
-  }
+    setIsReplyModalOpen(isOpen);
+  };
 
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Escape key shortcut
       if (e.key === "Escape") {
-
         if (!isReplyModalOpen) {
           toggleDrawer(false);
           setTicketId("");
           setTicketSubject("");
+          navigate(location.pathname, { replace: true });
         }
-
       }
     };
 
@@ -202,7 +195,6 @@ export default function Tickets() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isReplyModalOpen]);
-
 
   // useEffect(() => {
   //   const handleKeyDown = (e) => {
@@ -221,18 +213,6 @@ export default function Tickets() {
   //   };
   // }, []);
 
-
-
-
-
-
-
-
-
-
-
-
-
   const handleFilterClick = (e, colKey) => {
     e.stopPropagation();
     anchorRef.current = e.currentTarget;
@@ -243,14 +223,13 @@ export default function Tickets() {
     });
   };
 
-
   const handleCloseFilter = () => {
     setFilterInfo({ col: null, value: "", type: "eq" });
     anchorRef.current = null;
   };
 
   const applyFilter = (e) => {
-    e.stopPropagation()
+    e.stopPropagation();
     const { col, value, type } = filterInfo;
     if (col && value) {
       table.getColumn(col)?.setFilterValue({ type, value: parseFloat(value) });
@@ -258,11 +237,7 @@ export default function Tickets() {
     handleCloseFilter();
   };
 
-
-
-
   // ===== Utility functions =====
-
 
   const handle_on_change_update = (e) => {
     setUpdates((prev) => {
@@ -273,14 +248,14 @@ export default function Tickets() {
     });
   };
 
-
   const mergeWithSavedOrder = (fetchedUsernames, savedOrder) => {
     const savedSet = new Set(savedOrder);
-    const ordered = savedOrder.filter((name) => fetchedUsernames.includes(name));
+    const ordered = savedOrder.filter((name) =>
+      fetchedUsernames.includes(name)
+    );
     const newOnes = fetchedUsernames.filter((name) => !savedSet.has(name));
     return [...ordered, ...newOnes];
   };
-
 
   const getCurrentMonthYear = () => {
     const today = new Date();
@@ -289,14 +264,10 @@ export default function Tickets() {
     return `${year}-${month}`;
   };
 
-
-
   const handleClearFilters = () => {
     table.setColumnFilters([]);
     table.setGlobalFilter("");
   };
-
-
 
   const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -305,15 +276,15 @@ export default function Tickets() {
     return result;
   };
 
-
-
   const handleUserOnDragEnd = (result) => {
-    const items = reorder(userName, result.source.index, result.destination.index);
+    const items = reorder(
+      userName,
+      result.source.index,
+      result.destination.index
+    );
     localStorage.setItem("tickets_usernamesOrder", JSON.stringify(items));
     setUserName(items);
   };
-
-
 
   const getJobHolderCount = (user, status) => {
     if (user === "All") {
@@ -322,27 +293,25 @@ export default function Tickets() {
     return emailData.filter((ticket) => ticket?.jobHolder === user)?.length;
   };
 
-
-
   const setColumnFromOutsideTable = (colKey, filterVal) => {
     const col = table.getColumn(colKey);
     return col.setFilterValue(filterVal);
   };
-
-
-
-
-
 
   // ===== Functions with api calls =====
 
   const updateBulkLeads = async (e) => {
     e.preventDefault();
     setIsUpdating(true);
-    const selectedIds = Object.keys(rowSelection).filter((id) => rowSelection[id]);
+    const selectedIds = Object.keys(rowSelection).filter(
+      (id) => rowSelection[id]
+    );
 
     try {
-      const { data } = await axios.put(`${process.env.REACT_APP_API_URL}/api/v1/tickets/update/bulk/tickets`, { rowSelection: selectedIds, updates });
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/bulk/tickets`,
+        { rowSelection: selectedIds, updates }
+      );
       if (data) {
         setUpdates(updates_object_init);
         toast.success("Bulk Tickets Updated💚");
@@ -355,8 +324,6 @@ export default function Tickets() {
       setIsUpdating(false);
     }
   };
-
-
 
   const getAllEmails = async () => {
     setIsLoading(true);
@@ -374,8 +341,6 @@ export default function Tickets() {
     }
   };
 
-
-
   const getEmails = async () => {
     try {
       const { data } = await axios.get(
@@ -389,43 +354,52 @@ export default function Tickets() {
     }
   };
 
-
-
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
-      setUsers(data?.users?.filter((user) => user.role?.access?.some((item) => item?.permission?.includes("Tickets"))) || []);
+      setUsers(
+        data?.users?.filter((user) =>
+          user.role?.access?.some((item) =>
+            item?.permission?.includes("Tickets")
+          )
+        ) || []
+      );
 
-      const userNameArr = data?.users?.filter((user) => user.role?.access.some((item) => item?.permission?.includes("Tickets"))).map((user) => user.name);
+      const userNameArr = data?.users
+        ?.filter((user) =>
+          user.role?.access.some((item) =>
+            item?.permission?.includes("Tickets")
+          )
+        )
+        .map((user) => user.name);
       setUserName(userNameArr);
 
-      const savedOrder = JSON.parse(localStorage.getItem("tickets_usernamesOrder") || "null");
+      const savedOrder = JSON.parse(
+        localStorage.getItem("tickets_usernamesOrder") || "null"
+      );
       if (savedOrder) setUserName(mergeWithSavedOrder(userNameArr, savedOrder));
-
     } catch (error) {
       console.log(error);
     }
   };
 
-
-
-
-
-
-
-
-
-
   const handleDeleteTicketConfirmation = (ticketId) => {
-    Swal.fire({ title: "Are you sure?", text: "You won't be able to revert this!", icon: "warning", showCancelButton: true, confirmButtonColor: "#3085d6", cancelButtonColor: "#d33", confirmButtonText: "Yes, delete it!", })
-      .then((result) => {
-        if (result.isConfirmed) {
-          handleDeleteTicket(ticketId);
-          Swal.fire("Deleted!", "Your ticket has been deleted.", "success");
-        }
-      });
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleDeleteTicket(ticketId);
+        Swal.fire("Deleted!", "Your ticket has been deleted.", "success");
+      }
+    });
   };
 
   const handleDeleteTicket = async (id) => {
@@ -450,13 +424,6 @@ export default function Tickets() {
       toast.error(error?.response?.data?.message);
     }
   };
-
-
-
-
-
-
-
 
   const updateJobStatus = async (ticketId, status) => {
     try {
@@ -489,19 +456,12 @@ export default function Tickets() {
             return [updateTicket];
           }
         });
-
-
       }
     } catch (error) {
       console.log(error);
       toast.error(error.response?.data?.message || "An error occurred");
     }
   };
-
-
-
-
-
 
   const updateJobHolder = async (ticketId, jobHolder) => {
     try {
@@ -542,15 +502,6 @@ export default function Tickets() {
     }
   };
 
-
-
-
-
-
-
-
-
-
   const updateJobDate = async (ticketId, jobDate) => {
     try {
       const { data } = await axios.put(
@@ -590,30 +541,26 @@ export default function Tickets() {
     }
   };
 
-
-
-
-
-
-
-
-
-
-
   const handleUpdateTicketStatusConfirmation = (ticketId) => {
-    Swal.fire({ title: "Are you sure?", text: "You won't be able to revert this!", icon: "warning", showCancelButton: true, confirmButtonColor: "#3085d6", cancelButtonColor: "#d33", confirmButtonText: "Yes, Complete it!", })
-      .then((result) => {
-        if (result.isConfirmed) {
-          handleStatusComplete(ticketId);
-          Swal.fire(
-            "Complete!",
-            "Your ticket completed successfully!",
-            "success"
-          );
-        }
-      });
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, Complete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleStatusComplete(ticketId);
+        Swal.fire(
+          "Complete!",
+          "Your ticket completed successfully!",
+          "success"
+        );
+      }
+    });
   };
-
 
   const handleStatusComplete = async (ticketId) => {
     if (!ticketId) {
@@ -639,16 +586,6 @@ export default function Tickets() {
     }
   };
 
-
-
-
-
-
-
-
-
-
-
   const updateTicketSingleField = async (ticketId, update) => {
     try {
       const { data } = await axios.put(
@@ -659,9 +596,18 @@ export default function Tickets() {
       if (data) {
         const updatedTicket = data?.ticket;
 
-        setEmailData((prevData) => prevData.map((item) => item._id === updatedTicket._id ? updatedTicket : item));
+        setEmailData((prevData) =>
+          prevData.map((item) =>
+            item._id === updatedTicket._id ? updatedTicket : item
+          )
+        );
 
-        if (filteredData) setFilteredData((prevData) => prevData.map((item) => item._id === updatedTicket._id ? updatedTicket : item));
+        if (filteredData)
+          setFilteredData((prevData) =>
+            prevData.map((item) =>
+              item._id === updatedTicket._id ? updatedTicket : item
+            )
+          );
 
         toast.success("Ticket updated successfully!");
       }
@@ -671,22 +617,6 @@ export default function Tickets() {
     }
   };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // ----------------------------
   // 🔑 Authentication & User Data
   // ----------------------------
@@ -694,9 +624,8 @@ export default function Tickets() {
     () => ({
       auth,
       users,
-
     }),
-    [auth, users,]
+    [auth, users]
   );
 
   // ----------------------------
@@ -705,7 +634,6 @@ export default function Tickets() {
   const companyCtx = useMemo(
     () => ({
       companyData,
-
     }),
     [companyData]
   );
@@ -715,7 +643,6 @@ export default function Tickets() {
   // ----------------------------
   const ticketCtx = useMemo(
     () => ({
-
       anchorRef,
       status,
       jobStatusOptions,
@@ -733,16 +660,12 @@ export default function Tickets() {
       setCommentTicketId,
       setIsComment,
       handleUpdateTicketStatusConfirmation,
-      handleDeleteTicketConfirmation
+      handleDeleteTicketConfirmation,
     }),
-    [status, jobStatusOptions,]
+    [status, jobStatusOptions]
   );
 
   // ----------------------------
-
-
-
-
 
   // ----------------------------
   // 📦 Merge into one ctx if needed
@@ -752,8 +675,6 @@ export default function Tickets() {
       ...authCtx,
       ...ticketCtx,
       ...companyCtx,
-
-
     }),
     [authCtx, ticketCtx, companyCtx]
   );
@@ -762,17 +683,6 @@ export default function Tickets() {
   // 📑 Columns
   // ----------------------------
   const columns = useMemo(() => getTicketsColumns(ctx), [ctx]);
-
-
-
-
-
-
-
-
-
-
-
 
   const table = useMaterialReactTable({
     columns,
@@ -799,10 +709,7 @@ export default function Tickets() {
       columnVisibility: {
         _id: false,
       },
-      columnFilters: [
-    { id: "jobHolder", value: auth.user?.name },
-  ],
-      
+      columnFilters: [{ id: "jobHolder", value: auth.user?.name }],
     },
 
     enableRowSelection: true,
@@ -817,10 +724,7 @@ export default function Tickets() {
       columnVisibility: columnVisibility,
     },
 
-
     onColumnVisibilityChange: setColumnVisibility,
-
-
 
     onPaginationChange: setPagination, // ✅ Hook for page changes
 
@@ -861,7 +765,6 @@ export default function Tickets() {
   //   useEffect(() => {
   //      const handleClickOutside = (event) => {
 
-
   //   const clickInside =
   //     commentStatusRef.current?.contains(event.target) ||
   //     document.querySelector(".MuiPopover-root")?.contains(event.target) || // for MUI Menu
@@ -876,7 +779,6 @@ export default function Tickets() {
   //     document.addEventListener("mousedown", handleClickOutside);
   //     return () => document.removeEventListener("mousedown", handleClickOutside);
   //   }, []);
-
 
   useEffect(() => {
     getAllUsers();
@@ -896,19 +798,27 @@ export default function Tickets() {
     }
   }, [auth]);
 
+  // useEffect(() => {
+  //   if (comment_taskId) {
+  //     filterByRowId(table, comment_taskId, setCommentTicketId, setIsComment);
+  //   }
+  // }, [comment_taskId, searchParams, navigate, table]);
+
   useEffect(() => {
     if (comment_taskId) {
-      filterByRowId(table, comment_taskId, setCommentTicketId, setIsComment);
+      // filterByRowId(table, comment_taskId, setCommentTaskId, setIsComment);
+      toggleDrawer(true);
+      setTicketId(comment_taskId);
+      setTicketSubject("");
+
+      // searchParams.delete("comment_taskId");
+      // navigate({ search: searchParams.toString() }, { replace: true });
     }
   }, [comment_taskId, searchParams, navigate, table]);
 
   return (
     <>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
-
-
-
-
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
@@ -927,10 +837,13 @@ export default function Tickets() {
               </span>
             }
 
-
-
             <QuickAccess />
-            {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
+            {isAdmin(auth) && (
+              <span className=" ">
+                {" "}
+                <OverviewForPages />{" "}
+              </span>
+            )}
           </div>
 
           {/* ---------Template Buttons */}
@@ -949,19 +862,21 @@ export default function Tickets() {
           <div className="w-full flex flex-row justify-start items-center gap-2 mt-5">
             <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden  transition-all duration-300 w-fit">
               <button
-                className={`py-1 px-2 outline-none w-[6rem] transition-all duration-300   ${selectedTab === "progress"
-                  ? "bg-orange-500 text-white border-r-2 border-orange-500"
-                  : "text-black bg-gray-100"
-                  }`}
+                className={`py-1 px-2 outline-none w-[6rem] transition-all duration-300   ${
+                  selectedTab === "progress"
+                    ? "bg-orange-500 text-white border-r-2 border-orange-500"
+                    : "text-black bg-gray-100"
+                }`}
                 onClick={() => setSelectedTab("progress")}
               >
                 Progress
               </button>
               <button
-                className={`py-1 px-2 outline-none transition-all duration-300 w-[6rem]  ${selectedTab === "complete"
-                  ? "bg-orange-500 text-white"
-                  : "text-black bg-gray-100 hover:bg-slate-200"
-                  }`}
+                className={`py-1 px-2 outline-none transition-all duration-300 w-[6rem]  ${
+                  selectedTab === "complete"
+                    ? "bg-orange-500 text-white"
+                    : "text-black bg-gray-100 hover:bg-slate-200"
+                }`}
                 onClick={() => {
                   setSelectedTab("complete");
                   navigate("/tickets/complete");
@@ -971,25 +886,27 @@ export default function Tickets() {
               </button>
               {(auth?.user?.role?.name === "Admin" ||
                 access.includes("Inbox")) && (
-                  <button
-                    className={`py-1 px-2 outline-none transition-all border-l-2  border-orange-500 duration-300 w-[6rem]  ${selectedTab === "inbox"
+                <button
+                  className={`py-1 px-2 outline-none transition-all border-l-2  border-orange-500 duration-300 w-[6rem]  ${
+                    selectedTab === "inbox"
                       ? "bg-orange-500 text-white"
                       : "text-black bg-gray-100 hover:bg-slate-200"
-                      }`}
-                    onClick={() => {
-                      navigate("/tickets/inbox");
-                    }}
-                  >
-                    Inbox
-                  </button>
-                )}
+                  }`}
+                  onClick={() => {
+                    navigate("/tickets/inbox");
+                  }}
+                >
+                  Inbox
+                </button>
+              )}
             </div>
 
             {auth?.user?.role?.name === "Admin" && (
               <div className="flex justify-center items-center  gap-2">
                 <span
-                  className={` p-1 rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${showJobHolder && "bg-orange-500 text-white"
-                    }`}
+                  className={` p-1 rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
+                    showJobHolder && "bg-orange-500 text-white"
+                  }`}
                   onClick={() => {
                     setShowJobHolder((prev) => !prev);
                   }}
@@ -999,8 +916,9 @@ export default function Tickets() {
                 </span>
 
                 <span
-                  className={` p-1 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${showEdit && "bg-orange-500 text-white"
-                    }`}
+                  className={` p-1 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${
+                    showEdit && "bg-orange-500 text-white"
+                  }`}
                   onClick={() => {
                     setShowEdit(!showEdit);
                   }}
@@ -1009,19 +927,13 @@ export default function Tickets() {
                   <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
                 </span>
 
-
                 <RefreshTicketsButton getAllEmails={getAllEmails} />
-
-
-
-
-
-
 
                 <div className="relative">
                   <div
-                    className={`  p-[6px] rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${showcolumn && "bg-orange-500 text-white"
-                      }`}
+                    className={`  p-[6px] rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${
+                      showcolumn && "bg-orange-500 text-white"
+                    }`}
                     onClick={() => setShowColumn(!showcolumn)}
                   >
                     {" "}
@@ -1036,24 +948,15 @@ export default function Tickets() {
                       ref={showColumnRef}
                       className="absolute top-8 left-[50%] z-[9999]    w-[14rem] "
                     >
-                      {renderColumnControls(colVisibility, columnVisibility, setColumnVisibility, "Tickets")}
+                      {renderColumnControls(
+                        colVisibility,
+                        columnVisibility,
+                        setColumnVisibility,
+                        "Tickets"
+                      )}
                     </div>
                   )}
                 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
               </div>
             )}
           </div>
@@ -1073,9 +976,10 @@ export default function Tickets() {
                           className="flex items-center gap-3 overflow-x-auto hidden1"
                         >
                           <div
-                            className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${active1 === "All" &&
+                            className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                              active1 === "All" &&
                               "  border-b-2 text-orange-600 border-orange-600"
-                              }`}
+                            }`}
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
@@ -1096,9 +1000,10 @@ export default function Tickets() {
                               >
                                 {(provided) => (
                                   <div
-                                    className={`py-1   px-2 !cursor-pointer font-[500] text-[14px]   ${active1 === user &&
+                                    className={`py-1   px-2 !cursor-pointer font-[500] text-[14px]   ${
+                                      active1 === user &&
                                       "  border-b-2 text-orange-600 border-orange-600"
-                                      }`}
+                                    }`}
                                     ref={provided.innerRef}
                                     {...provided.draggableProps}
                                     {...provided.dragHandleProps}
@@ -1245,8 +1150,6 @@ export default function Tickets() {
           </div>
         )}
 
-
-
         {/* ---------------------Activity Log Drawer------------------ */}
         {/* {isActivityDrawerOpen && (
           <ActivityLogDrawer isOpen={isActivityDrawerOpen} onClose={() => setIsActivityDrawerOpen(false)} ticketId={activityDrawerTicketId} />
@@ -1267,126 +1170,57 @@ export default function Tickets() {
   
               </Drawer> */}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        {
-          open && <div className="fixed inset-0 z-[499] flex items-center justify-center bg-black/30 backdrop-blur-sm  h-full     ">
+        {open && (
+          <div className="fixed inset-0 z-[499] flex items-center justify-center bg-black/30 backdrop-blur-sm  h-full     ">
             <div className="h-[95%] bg-gray-100 rounded-xl shadow-lg w-[95%] sm:w-[80%] md:w-[75%] lg:w-[70%] xl:w-[70%] 3xl:w-[60%]    py-4 px-5   ">
               <div className="h-full w-full flex flex-col justify-start items-center relative">
-
                 <div className="flex items-center justify-between border-b pb-2 mb-3 self-start w-full">
-                  <h3 className="text-lg font-semibold">Ticket: {(ticketSubject) ? ticketSubject : "Loading..."}</h3>
+                  <h3 className="text-lg font-semibold">
+                    Ticket: {ticketSubject ? ticketSubject : "Loading..."}
+                  </h3>
                   <button
                     className="p-1 rounded-2xl bg-gray-50 border hover:shadow-md hover:bg-gray-100"
-                    onClick={() => { toggleDrawer(false); setTicketId(""); setTicketSubject("") }}
+                    onClick={() => {
+                      toggleDrawer(false);
+                      setTicketId("");
+                      setTicketSubject("");
+                      navigate(location.pathname, { replace: true });
+                    }}
                   >
                     <IoClose className="h-5 w-5" />
                   </button>
                 </div>
 
-
-
-
-
-
-                <div className=" w-full h-full flex justify-center items-center gap-8 px-8 py-4 overflow-hidden " >
-
-
-
-                  <EmailDetailDrawer id={ticketId} setTicketSubject={setTicketSubject} isReplyModalOpenCb={isReplyModalOpenCb} setEmailData={setEmailData} />
+                <div className=" w-full h-full flex justify-center items-center gap-8 px-8 py-4 overflow-hidden ">
+                  <EmailDetailDrawer
+                    id={ticketId}
+                    setTicketSubject={setTicketSubject}
+                    isReplyModalOpenCb={isReplyModalOpenCb}
+                    setEmailData={setEmailData}
+                  />
 
                   <div className="w-full h-full flex flex-col justify-start items-start gap-5 ">
-
-
-
-
-
                     <div className="max-w-lg w-full h-[50%] px-3">
-
-                      <ActivityLogDrawer isOpen={isActivityDrawerOpen} onClose={() => setIsActivityDrawerOpen(false)} ticketId={ticketId} />
+                      <ActivityLogDrawer
+                        isOpen={isActivityDrawerOpen}
+                        onClose={() => setIsActivityDrawerOpen(false)}
+                        ticketId={ticketId}
+                      />
                     </div>
 
                     <div className="max-w-lg w-full  h-[50%]">
-
-                      <DetailComments type={"ticket"} jobId={ticketId} getTasks1={getEmails} />
-
+                      <DetailComments
+                        type={"ticket"}
+                        jobId={ticketId}
+                        getTasks1={getEmails}
+                      />
                     </div>
-
-
-
-
                   </div>
-
-
                 </div>
-
-
-
               </div>
             </div>
           </div>
-
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        )}
 
         {filterInfo.col && anchorRef.current && (
           <NumberFilterPortal

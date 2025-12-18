@@ -39,6 +39,7 @@ import UserActivity from "./UserActivity";
 import UserWorkedTime from "./UserWorkedTime";
 import EmailDetailDrawer from "../../pages/Tickets/EmailDetailDrawer";
 import { LuEye } from "react-icons/lu";
+import { generateUrl } from "../../utlis/generateUrl";
 
 const formatElapsedTime = (createdAt) => {
   const now = new Date();
@@ -110,6 +111,7 @@ const handleNotificationClick = (item) => {
   // 🔗 default navigation
   navigate(`${item.redirectLink}?comment_taskId=${item.taskId}`);
   dispatch(setFilterId(item.taskId));
+  setOpen(false);
 
 
 
@@ -480,11 +482,16 @@ const handleDismissNotification = (item) => {
 
                               <Link 
                               title="View Details"
-                               to={`${item?.redirectLink}?comment_taskId=${item?.taskId}`}
+
+
+                               to={generateUrl(item)}
+
+                               
                             key={item?._id}
                             onClick={() => {
                               dispatch(setFilterId(item?.taskId));
-                              dispatch(updateNotification({ id: item._id, userId: auth.user.id, status: item.status }))
+                              dispatch(updateNotification({ id: item._id, userId: auth.user.id, status: item.status }));
+                              setOpen(false);
                             }}
                             className="cursor-pointer text-xl text-sky-500 hover:text-sky-600 "
                             >

@@ -63,6 +63,76 @@ export const updateNotification = createAsyncThunk(
   }
 );
 
+
+
+
+// Update a single notification
+export const dismissNotification = createAsyncThunk(
+  "notifications/dismissNotification",
+  async ({ id, userId }, { dispatch, rejectWithValue }) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/notification/dismiss/notification/${id}`
+      );
+
+
+      console.log("Dismiss data:", data);
+      if (data) {
+        dispatch(getNotifications(userId));
+        if(data.notification?.status === "dismissed"){
+
+          toast.success("Notification deleted!");
+        }
+         
+
+                // 🔄 Broadcast to other tabs
+        notificationChannel.postMessage({
+          type: "REFRESH_NOTIFICATIONS",
+          userId
+        });
+      }
+      return id;
+    } catch (error) {
+      console.error(error);
+      return rejectWithValue(error.response?.data || "Error updating notification");
+    }
+  }
+);
+
+
+
+
+// Mark all as dismissed
+export const dismissAllNotification = createAsyncThunk(
+  "notifications/dismissAllNotification",
+  async (userId, { dispatch, rejectWithValue }) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/notification/dismiss/all/${userId}`
+      );
+      if (data) {
+        dispatch(getNotifications(userId));
+        toast.success("All notifications are deleted!");
+
+
+        // 🔄 Broadcast to other tabs
+        notificationChannel.postMessage({
+          type: "REFRESH_NOTIFICATIONS",
+          userId
+        });
+      }
+      return true;
+    } catch (error) {
+      console.error(error);
+      return rejectWithValue(error.response?.data || "Error marking all notifications");
+    }
+  }
+);
+
+
+
+
+
 // Mark all as read
 export const updateAllNotification = createAsyncThunk(
   "notifications/updateAllNotification",

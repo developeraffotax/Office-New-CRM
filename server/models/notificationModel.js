@@ -21,12 +21,11 @@ const notificationSchema = new mongoose.Schema(
 
     type: {
       type: String,
-       
     },
 
     status: {
       type: String,
-      required: true,
+      enum: ["unread", "read", "dismissed"],
       default: "unread",
     },
     userId: {
@@ -34,14 +33,11 @@ const notificationSchema = new mongoose.Schema(
       ref: "Users",
     },
 
-
     companyName: {
       type: String,
-       
     },
     clientName: {
       type: String,
-       
     },
   },
   { timestamps: true }

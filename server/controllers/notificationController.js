@@ -13,7 +13,7 @@ export const getNotification = async (req, res) => {
     const notifications = await notificationModel
       .find({
         userId,
-        
+        status: { $in: ["unread", "read"] },
         createdAt: {
           $gte: startOfDay,
           $lte: endOfDay,
@@ -63,6 +63,37 @@ export const updateNotification = async (req, res) => {
   }
 };
 
+
+
+
+
+
+// Update Notification
+export const dismissNotification = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const notification = await notificationModel.findByIdAndUpdate(
+      { _id: id },
+      { status: "dismissed" },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "notification dismissed!",
+      notification: notification,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in get notifications",
+      error: error,
+    });
+  }
+};
+
 // Update All Notifications
 
 export const updateAllNotification = async (req, res) => {
@@ -70,7 +101,7 @@ export const updateAllNotification = async (req, res) => {
     const userId = req.params.id;
 
     const notifications = await notificationModel.updateMany(
-      { userId: userId },
+      { userId: userId, status: { $in: ["unread", "read"] }, },
       { $set: { status: "read" } }
     );
 
@@ -88,6 +119,40 @@ export const updateAllNotification = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+// Dismiss All Notifications
+
+export const dismissAllNotification = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const notifications = await notificationModel.updateMany(
+      { userId: userId },
+      { $set: { status: "dismissed" } }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Notifications dismissed successfully!",
+      notifications: notifications,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in dismissing notifications",
+      error: error,
+    });
+  }
+};
+
+
+
 
 // Get Ticket Notification
 export const ticketNotification = async (req, res) => {

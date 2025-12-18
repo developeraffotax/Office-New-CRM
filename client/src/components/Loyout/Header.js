@@ -7,7 +7,7 @@ import { format } from "timeago.js";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { IoIosTimer } from "react-icons/io";
-import { MdOutlineTimerOff } from "react-icons/md";
+import { MdDeleteOutline, MdOutlineTimerOff } from "react-icons/md";
 import { TbBellRinging } from "react-icons/tb";
 import { CgList } from "react-icons/cg";
 import { FaStopwatch } from "react-icons/fa6";
@@ -26,6 +26,8 @@ import {
 } from "../../redux/slices/reminderSlice";
 import { useSocket } from "../../context/socketProvider";
 import {
+  dismissAllNotification,
+  dismissNotification,
   getNotifications,
   updateAllNotification,
   updateNotification,
@@ -36,6 +38,7 @@ import Overview from "./overview/Overview";
 import UserActivity from "./UserActivity";
 import UserWorkedTime from "./UserWorkedTime";
 import EmailDetailDrawer from "../../pages/Tickets/EmailDetailDrawer";
+import { LuEye } from "react-icons/lu";
 
 const formatElapsedTime = (createdAt) => {
   const now = new Date();
@@ -113,6 +116,23 @@ const handleNotificationClick = (item) => {
 };
 
 
+const handleDismissNotification = (item) => { 
+
+  // mark as read
+  dispatch(
+    dismissNotification({
+      id: item._id,
+      userId: auth.user.id,
+       
+    })
+  );
+
+
+
+}
+
+
+
   const notificationData = useSelector(
     (state) => state.notifications.notificationData
   );
@@ -143,6 +163,11 @@ const handleNotificationClick = (item) => {
       toast.error("Error in search!");
     }
   };
+
+
+
+ 
+
 
   //    Get User Info
   const getUserInfo = async () => {
@@ -444,16 +469,34 @@ const handleNotificationClick = (item) => {
                               </p>
 
 
+                               <div className="flex items-center gap-2">
+
+
+                                   <span title="Dismiss Notification" onClick={() => handleDismissNotification(item)} className="cursor-pointer text-xl text-red-500 hover:text-red-600 ">
+
+                                    <MdDeleteOutline />
+                                  
+                                </span>
+
                               <Link 
+                              title="View Details"
                                to={`${item?.redirectLink}?comment_taskId=${item?.taskId}`}
                             key={item?._id}
                             onClick={() => {
                               dispatch(setFilterId(item?.taskId));
                               dispatch(updateNotification({ id: item._id, userId: auth.user.id, status: item.status }))
                             }}
-                            className="cursor-pointer text-xs text-blue-500 "
+                            className="cursor-pointer text-xl text-sky-500 hover:text-sky-600 "
                             >
-                              View</Link>
+                              
+                              
+                              <LuEye />
+
+                              
+                              </Link>
+
+
+                                </div>
                               
                                </div>
                             </div>
@@ -471,12 +514,29 @@ const handleNotificationClick = (item) => {
                   </div>
 
                   <div
-                    className="w-full  cursor-pointer bg-gray-200    px-2 flex  items-center justify-end"
+                    className="w-full   bg-gray-100    px-4 flex  items-center justify-between"
+                    
+                  >
+
+                    <button
+
+                    onClick={() =>
+                      dispatch(dismissAllNotification(auth.user.id))
+                    }
+                      disabled={notificationData.length === 0}
+                      className={`text-[14px] py-2 cursor-pointer text-red-500 hover:text-red-600 disabled:cursor-not-allowed  ${
+                        notificationData.length === 0 && "cursor-not-allowed"
+                      }`}
+                    >
+                      Clear All
+                    </button>
+
+
+                    <button
+
                     onClick={() =>
                       dispatch(updateAllNotification(auth.user.id))
                     }
-                  >
-                    <button
                       disabled={notificationData.length === 0}
                       className={`text-[14px] py-2 cursor-pointer text-sky-500 hover:text-sky-600 disabled:cursor-not-allowed  ${
                         notificationData.length === 0 && "cursor-not-allowed"

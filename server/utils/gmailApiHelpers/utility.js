@@ -304,10 +304,11 @@ const inlineImages = async (decodedMessage, parts, messageId, accessToken) => {
 
   function extractEmail(str = "") {
   if (!str) return "";
+
   if (str.includes("<") && str.includes(">")) {
     return str.substring(str.indexOf("<") + 1, str.indexOf(">")).trim();
   }
-  return str.trim();
+  return str.trim().toLowerCase();
 }
 
 

@@ -696,7 +696,7 @@ export default function JobCommentModal({
                           <span className="text-[12px] font-light text-gray-500">
                             {format(
                               new Date(comment?.createdAt),
-                              "MMM dd 'at' p"
+                              "dd MMM yyyy, h:mm a"
                             )}
                           </span>
                         </div>

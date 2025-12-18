@@ -589,7 +589,7 @@ export default function DetailComments({
                     </span>
                   </div>
                   <span className="text-[11px] text-gray-400">
-                    {format(new Date(comment?.createdAt), "MMM dd, h:mm a")}
+                    {format(new Date(comment?.createdAt), "dd MMM yyyy, h:mm a")}
                   </span>
                 </div>
 

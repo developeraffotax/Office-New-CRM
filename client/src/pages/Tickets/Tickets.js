@@ -45,6 +45,8 @@ import { renderColumnControls } from "../../utlis/renderColumnControls";
 import { useClickOutside } from "../../utlis/useClickOutside";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { useSocket } from "../../context/socketProvider";
+import UserTicketChart from "./userTicketChart/UserTicketChart";
+import { BsGraphUpArrow } from "react-icons/bs";
 
 const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "" };
 const jobStatusOptions = [
@@ -101,6 +103,10 @@ export default function Tickets() {
   const [isComment, setIsComment] = useState(false);
   const commentStatusRef = useRef(null);
   const [commentTicketId, setCommentTicketId] = useState("");
+
+
+    const [showUserTicketChart, setShowUserTicketChart] = useState(false);
+
 
   const [showJobHolder, setShowJobHolder] = useState(true);
   const [active1, setActive1] = useState("");
@@ -901,6 +907,24 @@ export default function Tickets() {
               )}
             </div>
 
+
+                 <div className="flex justify-center items-center     ">
+                                  <span
+                                      className={` p-1 rounded-md hover:shadow-md  bg-gray-50 cursor-pointer border ${
+                                          showUserTicketChart && "bg-orange-500 text-white"
+                                            }`}
+                                      onClick={() => {
+                                        setShowUserTicketChart(prev => !prev);
+                                      }}
+                                      title="Show User Ticket Chart"
+                                  > 
+                                  
+                                    <BsGraphUpArrow className="h-6 w-6  cursor-pointer" />
+                                  </span>
+                              </div>
+
+
+
             {auth?.user?.role?.name === "Admin" && (
               <div className="flex justify-center items-center  gap-2">
                 <span
@@ -1114,7 +1138,12 @@ export default function Tickets() {
           ) : (
             <div className="w-full min-h-[10vh] relative ">
               <div className="h-full hidden1 overflow-y-auto relative">
-                <MaterialReactTable table={table} />
+                {/* <MaterialReactTable table={table} /> */}
+
+                     {showUserTicketChart &&<UserTicketChart auth={auth}/> }
+                                { !showUserTicketChart && <MaterialReactTable table={table} /> }
+
+
               </div>
             </div>
           )}
@@ -1234,6 +1263,9 @@ export default function Tickets() {
           />
         )}
       </div>
+
+
+      
     </>
   );
 }

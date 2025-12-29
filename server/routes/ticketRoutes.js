@@ -12,6 +12,8 @@ import {
   getInboxDetail,
   getSentReceivedCountsPerThread,
   getSingleEmailDetail,
+  getTicketActivity,
+  getTicketActivityStats,
   getTicketAttachments,
   getTicketsByClientName,
   markAsRead,
@@ -150,5 +152,30 @@ router.get("/update-tickets", requiredSignIn, async (req, res) => {
     res.status(500).json({ message: "Internal server error." });
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+router.get("/userchart/ticketActivity",    getTicketActivity);
+router.get("/userchart/ticketActivity/stats",    getTicketActivityStats);
+
+
+
+
+
+
 
 export default router;

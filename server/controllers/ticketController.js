@@ -23,6 +23,7 @@ import { JWT } from "google-auth-library";
 import getJobHolderNames from "../utils/getJobHolderNames.js";
 import TicketActivity from "../models/ticketActivityModel.js";
 import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
+import goalModel from "../models/goalModel.js";
 
 // Create Ticket \
 export const sendEmail = async (req, res) => {
@@ -1851,5 +1852,244 @@ export const updateBulkTickets = async (req, res) => {
       message: "Error in update bulk tickets!",
       error: error,
     });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+export const getTicketActivity = async (req, res) => {
+  try {
+    const { user, startDate, endDate } = req.query;
+
+    const activityMatch = {};
+    let fetchedUser = null;
+
+    // --- User filter ---
+    if (user) {
+      fetchedUser = await userModel.findOne({ name: user }).lean();
+      if (fetchedUser) {
+        activityMatch.userId = fetchedUser._id;
+      }
+    }
+
+    // --- Date filter ---
+    if (startDate && endDate) {
+      activityMatch.createdAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+    // --- Aggregate ticket activities ---
+    const activities = await TicketActivity.aggregate([
+      {
+        $match: {
+          ...activityMatch,
+          action: { $in: ["created", "replied"] },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            month: { $month: "$createdAt" },
+            action: "$action",
+          },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // --- Initialize 12-month arrays ---
+    const ticketsGenerated = Array(12).fill(0);
+    const ticketsReplied = Array(12).fill(0);
+    const ticketsGeneratedTarget = Array(12).fill(0);
+    const ticketsRepliedTarget = Array(12).fill(0);
+
+    // --- Fill actual activity data ---
+    activities.forEach((item) => {
+      const monthIndex = item._id.month - 1;
+
+      if (item._id.action === "created") {
+        ticketsGenerated[monthIndex] = item.count;
+      }
+
+      if (item._id.action === "replied") {
+        ticketsReplied[monthIndex] = item.count;
+      }
+    });
+
+    // --- Build goal match stage ---
+    const goalMatch = {
+      goalType: {
+        $in: [
+          "Target Ticket Generated",
+          "Target Ticket Replied",
+        ],
+      },
+    };
+
+    if (fetchedUser) {
+      goalMatch.jobHolder = fetchedUser._id;
+    }
+
+    if (startDate && endDate) {
+      goalMatch.startDate = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+    // --- Aggregate goals ---
+    const goals = await goalModel.aggregate([
+      { $match: goalMatch },
+      {
+        $group: {
+          _id: {
+            month: { $month: "$startDate" },
+            type: "$goalType",
+          },
+          total: { $sum: { $ifNull: ["$achievement", 0] } },
+        },
+      },
+    ]);
+
+    // --- Fill target arrays ---
+    goals.forEach((goal) => {
+      const monthIndex = goal._id.month - 1;
+
+      if (goal._id.type === "Target Ticket Generated") {
+        ticketsGeneratedTarget[monthIndex] = goal.total;
+      }
+
+      if (goal._id.type === "Target Ticket Replied") {
+        ticketsRepliedTarget[monthIndex] = goal.total;
+      }
+    });
+
+    return res.json({
+      ticketsGenerated,
+      ticketsGeneratedTarget,
+      ticketsReplied,
+      ticketsRepliedTarget,
+    });
+  } catch (error) {
+    console.error("Ticket Activity Stats Error:", error);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+
+
+
+
+
+
+
+ 
+export const getTicketActivityStats = async (req, res) => {
+  try {
+    const { user, startDate, endDate } = req.query;
+
+    const activityFilters = {};
+    let fetchedUser = null;
+
+    // --- Find user (for goals mapping) ---
+    if (user) {
+      fetchedUser = await userModel.findOne({ name: user }).lean();
+      if (fetchedUser) {
+        activityFilters.userId = fetchedUser._id;
+      }
+    }
+
+    // --- Date filter ---
+    if (startDate && endDate) {
+      activityFilters.createdAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+    // --- Aggregate ticket activities ---
+    const activityAgg = await TicketActivity.aggregate([
+      {
+        $match: {
+          ...activityFilters,
+          action: { $in: ["created", "replied"] },
+        },
+      },
+      {
+        $group: {
+          _id: "$action",
+          total: { $sum: 1 },
+        },
+      },
+    ]);
+
+    let ticketsGenerated = 0;
+    let ticketsReplied = 0;
+
+    activityAgg.forEach((item) => {
+      if (item._id === "created") ticketsGenerated = item.total;
+      if (item._id === "replied") ticketsReplied = item.total;
+    });
+
+    // --- Goal filters ---
+    const goalFilters = {};
+    if (fetchedUser) {
+      goalFilters.jobHolder = fetchedUser._id;
+    }
+
+    if (startDate && endDate) {
+      goalFilters.startDate = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+
+    // --- Fetch goals ---
+    const goals = await goalModel.find(goalFilters).lean();
+
+    const ticketsGeneratedTarget = goals
+      .filter((g) => g.goalType === "Target Ticket Generated")
+      .reduce((acc, g) => acc + (g.achievement || 0), 0);
+
+    const ticketsRepliedTarget = goals
+      .filter((g) => g.goalType === "Target Ticket Replied")
+      .reduce((acc, g) => acc + (g.achievement || 0), 0);
+
+    return res.json({
+      ticketsGenerated,
+      ticketsGeneratedTarget,
+      ticketsReplied,
+      ticketsRepliedTarget,
+    });
+  } catch (error) {
+    console.error("Ticket Stats Error:", error);
+    res.status(500).json({ error: "Server Error" });
   }
 };

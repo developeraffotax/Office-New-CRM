@@ -76,6 +76,8 @@ const auth = useSelector((state) => state.auth.auth);
     "Target Lead Value",
     "Target Proposal Count",
     "Target Proposal Value",
+    "Target Ticket Generated",
+          "Target Ticket Replied",
     "Increase Client",
     "Increase Fee",
     "Total Proposal",

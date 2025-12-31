@@ -1298,13 +1298,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
               )
             }
 
-            <div className="border-l h-8 mt-[1.2rem]"></div>
-
-
-            <div className="mt-[1.2rem] ">
-
-            <FollowupDateFilter setColumnFromOutsideTable={setColumnFromOutsideTable} />
-            </div>
+            
 
 
 
@@ -1405,7 +1399,22 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                         )}
                       </Droppable>
                     </DragDropContext>
+
+
+                     <div className=" px-5 border-l ">
+
+            <FollowupDateFilter setColumnFromOutsideTable={setColumnFromOutsideTable} />
+            </div>
+
+
+
                   </div>
+
+                   
+
+
+           
+            
                 </div>
                 <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
               </>

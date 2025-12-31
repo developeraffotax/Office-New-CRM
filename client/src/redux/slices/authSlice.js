@@ -105,6 +105,7 @@ const authSlice = createSlice({
           if (parts.length !== 3) throw new Error("Invalid token");
 
           const decoded = JSON.parse(atob(parts[1]));
+          console.log("DECODED TOKEN IS 💚💚💚💚💚💚💚💚💚💚💚💚💚", decoded)
           if (decoded.exp * 1000 < Date.now()) {
             localStorage.removeItem("auth");
             state.auth = { user: null, token: "" };

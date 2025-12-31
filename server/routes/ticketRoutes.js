@@ -127,7 +127,7 @@ router.get("/dashboard/tickets", getDashboardTickets);
 router.get("/activity/:ticketId", requiredSignIn, getTicketActivities);
 
 // router.get("/activity/:gmailMessageId",requiredSignIn, getMessageSender)
-router.get("/activity/:threadId",requiredSignIn, getThreadSenders)
+router.get("/activity/map/:ticketId",requiredSignIn, getThreadSenders)
 // Update Bulk Tickets
 router.put("/update/bulk/tickets", requiredSignIn, isAdmin, updateBulkTickets);
 

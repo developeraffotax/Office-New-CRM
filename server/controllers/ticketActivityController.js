@@ -61,10 +61,10 @@ export const getMessageSender = async (req, res) => {
 
 export const getThreadSenders = async (req, res) => {
   try {
-    const { threadId } = req.params;
+    const { ticketId } = req.params;
 
     const activities = await TicketActivity.find({
-      gmailThreadId: threadId,
+      ticketId: ticketId,
       gmailMessageId: { $exists: true },
     })
       .select("gmailMessageId userId action")
@@ -78,7 +78,10 @@ export const getThreadSenders = async (req, res) => {
           action: a.action,
         },
       ])
-    );
+    );  
+
+
+    console.log("THE MAP IS , ", map)
 
     res.json(map);
   } catch (error) {

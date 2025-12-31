@@ -41,6 +41,31 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
 
   
 
+
+const [activityMap, setActivityMap] = useState({});
+
+const getActivityMap = async () => {
+  try {
+    const { data } = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/v1/tickets/activity/map/${id}`
+    );
+
+    console.log("Activity data received:", data);
+    setActivityMap(data); // { messageId: { user, action } }
+  } catch (err) {
+    console.log("Failed to get activity map:", err);
+  }
+};
+
+
+  console.log("ACTIVTY IS 🤎💜💜💜💜💜💜", activityMap)
+
+useEffect(() => {
+  if (id) getActivityMap();
+}, [id]);
+
+
+
   useEffect(() => {
     isReplyModalOpenCb(Boolean(showReplay));
   }, [showReplay, isReplyModalOpenCb]);
@@ -541,8 +566,18 @@ function splitMessage(html = "") {
         </div>
       ) : (
         <div className="flex flex-col gap-4 py-2 pb-4 px-4 w-full h-[100%] overflow-y-auto bg-white" ref={containerRef}>
-          {emailDetail?.decryptedMessages?.map((message, i) => (
-            <div className="flex flex-col gap-4" key={message?.id || i}>
+          {emailDetail?.decryptedMessages?.map((message, i) => {
+
+
+  // Get CRM user info if exists
+  const senderInfo = activityMap[message?.id];
+
+  const senderName = senderInfo?.user?.name || 
+                     "";
+
+
+return (
+  <div className="flex flex-col gap-4" key={message?.id || i}>
               {/* Sent by me */}
               {message?.payload?.body?.sentByMe || message?.labelIds?.includes("SENT") ? (
                 <div className="flex flex-col gap-2 bg-orange-50 px-2 py-2 rounded-md">
@@ -564,6 +599,7 @@ function splitMessage(html = "") {
                     </div>
                     <div>
                       <EmailTimeDisplay internalDate={message?.internalDate} />
+                      {senderName && <h3 className=" text-[12px] text-gray-700">Sent by {senderName}</h3>}
                     </div>
                   </div>
 
@@ -788,7 +824,8 @@ function splitMessage(html = "") {
                 </div>
               )}
             </div>
-          ))}
+)
+          })}
         </div>
       )}
 

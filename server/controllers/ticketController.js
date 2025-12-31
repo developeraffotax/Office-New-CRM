@@ -105,7 +105,7 @@ export const sendEmail = async (req, res) => {
       ticketId: sendEmail._id,
       userId: req.user.user._id,
       action: "created",
-      messageId: resp?.data?.id || "",
+      gmailMessageId: resp?.data?.id || "",
       details: `"${req.user.user.name}" created the ticket with subject "${subject}"
       -- Company: ${company}
       -- Client: ${clientId ? client.clientName :  clientName ? clientName : "N/A"}
@@ -1406,7 +1406,7 @@ export const sendTicketReply = async (req, res) => {
       ticketId: ticketId,
       userId: req.user.user._id,
       action: "replied",
-      messageId: response?.data?.id || "",
+      gmailMessageId: response?.data?.id || "",
       details: `
       "${req.user.user.name}" replied to this ticket.
       ${jobHolder ? `And updated the job holder to ${jobHolder}` : ""}

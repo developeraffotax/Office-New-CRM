@@ -116,7 +116,7 @@ input::-webkit-inner-spin-button {
   display: none;
 }
 ::-webkit-scrollbar {
-  width: 0.2rem;
+  width: 0.4rem;
   height: 0.4rem;
 }
 ::-webkit-scrollbar-track {
@@ -129,7 +129,7 @@ input::-webkit-inner-spin-button {
 }
 
 .allMessages::-webkit-scrollbar {
-  width: 0.2rem;
+  width: 0.4rem;
 }
 .message::-webkit-scrollbar {
   display: none;

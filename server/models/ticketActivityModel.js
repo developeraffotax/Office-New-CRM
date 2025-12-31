@@ -12,11 +12,23 @@ const ticketActivitySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Users", // who performed the action
     },
-   action: {
-        type: String,
-        required: true,
-        enum: ["created", "replied", "updated", "deleted", "completed", "assigned", "commented"],
-        },
+    action: {
+      type: String,
+      required: true,
+      enum: [
+        "created",
+        "replied",
+        "updated",
+        "deleted",
+        "completed",
+        "assigned",
+        "commented",
+      ],
+    },
+    gmailMessageId: {
+      type: String,
+    },
+
     details: {
       type: String, // Optional additional info
     },

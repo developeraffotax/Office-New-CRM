@@ -83,6 +83,8 @@ export const sendEmail = async (req, res) => {
 
     const threadId = resp.data.threadId;
 
+    console.log("MESSAGE IS IS 💚", resp)
+
     const sendEmail = await ticketModel.create({
       clientId: clientId || "",
       companyName: (clientId && client?.companyName) || companyName || "",
@@ -103,6 +105,7 @@ export const sendEmail = async (req, res) => {
       ticketId: sendEmail._id,
       userId: req.user.user._id,
       action: "created",
+      messageId: resp?.data?.id || "",
       details: `"${req.user.user.name}" created the ticket with subject "${subject}"
       -- Company: ${company}
       -- Client: ${clientId ? client.clientName :  clientName ? clientName : "N/A"}
@@ -1360,8 +1363,9 @@ export const sendTicketReply = async (req, res) => {
       attachments: attachments,
     };
 
-    await emailReply(emailData);
+    const response = await emailReply(emailData);
 
+    console.log("THE RESPONSE AFTER REPLY IS💛", response.data)
 
         let updatedTicket = null;
 
@@ -1402,6 +1406,7 @@ export const sendTicketReply = async (req, res) => {
       ticketId: ticketId,
       userId: req.user.user._id,
       action: "replied",
+      messageId: response?.data?.id || "",
       details: `
       "${req.user.user.name}" replied to this ticket.
       ${jobHolder ? `And updated the job holder to ${jobHolder}` : ""}

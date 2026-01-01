@@ -76,6 +76,18 @@ export default function Header({
 
   const auth = useSelector((state) => state.auth.auth);
   const { settings } = useSelector((state) => state.settings);
+
+  const {
+  showCrmNotifications = true,
+  showEmailNotifications = true,
+} = settings || {};
+
+const isNotificationAllowed = (notificationType) => {
+  if (notificationType === "ticket_received") {
+    return showEmailNotifications;
+  }
+  return showCrmNotifications;
+};
   const searchValue = useSelector((state) => state.auth.searchValue);
   const unread_reminders_count = useSelector(
     (state) => state.reminder.unread_reminders_count
@@ -216,7 +228,7 @@ const handleDismissNotification = (item) => {
   };
 
   useEffect(() => {
-    if (auth?.user?.id && settings?.showNotifications) {
+    if (auth?.user?.id) {
       dispatch(getNotifications(auth.user.id));
     }
 
@@ -257,17 +269,36 @@ const handleDismissNotification = (item) => {
 
     const handleNewTimer = () => getTimerStatus();
     // const handleNewNotification = () => dispatch(getNotifications(auth.user.id));
-    const handleNewNotification = () => {
-      if (settings?.showNotifications) {
-        dispatch(getNotifications(auth.user.id));
+    // const handleNewNotification = () => {
+    //   if (settings?.showNotifications) {
+    //     dispatch(getNotifications(auth.user.id));
 
-        // Play sound
-        notificationSound.currentTime = 0; // rewind to start
-        notificationSound
-          .play()
-          .catch((err) => console.log("🔊 Notification sound error:", err));
-      }
-    };
+    //     // Play sound
+    //     notificationSound.currentTime = 0; // rewind to start
+    //     notificationSound
+    //       .play()
+    //       .catch((err) => console.log("🔊 Notification sound error:", err));
+    //   }
+    // };
+
+
+
+    const handleNewNotification = (payload) => {
+
+      
+  const type = payload?.notification?.type;
+
+ 
+
+  if (!isNotificationAllowed(type)) return;
+
+  dispatch(getNotifications(auth.user.id));
+
+  notificationSound.currentTime = 0;
+  notificationSound
+    .play()
+    .catch(() => {});
+};
 
     // Add listeners
     socket.on("newTimer", handleNewTimer);
@@ -360,12 +391,22 @@ const handleDismissNotification = (item) => {
     };
   }, [dispatch]);
 
-  const unread_notifications_count = useSelector(
-    (state) =>
-      state.notifications.notificationData.filter(
-        (notification) => notification.status === "unread"
-      ).length
-  );
+const unread_notifications_count = useSelector((state) =>
+  state.notifications.notificationData.filter(
+    (n) => n.status === "unread" && isNotificationAllowed(n.type)
+  ).length
+);
+
+
+
+
+
+  const visibleNotifications = notificationData.filter((item) =>
+  isNotificationAllowed(item.type)
+);
+
+
+
 
   return (
     <>
@@ -399,8 +440,8 @@ const handleDismissNotification = (item) => {
                     Notifications
                   </h5>
                   <div className="w-[380px]  h-[50vh] overflow-y-auto bg-white  shadow-lg border border-gray-200">
-                    {notificationData?.length > 0 ? (
-                      notificationData.map((item) => {
+                    {visibleNotifications?.length > 0 ? (
+                      visibleNotifications.map((item) => {
                         const isRead = item.status === "read";
 
                         return (

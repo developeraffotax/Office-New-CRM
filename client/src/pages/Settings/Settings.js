@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import { getUserSettings, updateUserSettings } from "../../redux/slices/settingsSlice";
 
+ 
 export default function SettingsPage() {
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.auth.auth.user?.id);
@@ -12,7 +13,8 @@ export default function SettingsPage() {
   const [localSettings, setLocalSettings] = useState({
     theme: "light",
     showSidebar: true,
-    showNotifications: true,
+    showCrmNotifications: true,
+    showEmailNotifications: true,
   });
 
   // Load settings
@@ -22,8 +24,22 @@ export default function SettingsPage() {
 
   // Sync after load
   useEffect(() => {
-    if (settings) setLocalSettings(settings);
+    if (settings) {
+      setLocalSettings({
+        theme: settings.theme ?? "light",
+        showSidebar: settings.showSidebar ?? true,
+        showCrmNotifications: settings.showCrmNotifications ?? true,
+        showEmailNotifications: settings.showEmailNotifications ?? true,
+      });
+    }
   }, [settings]);
+
+  const toggle = (key) => {
+    setLocalSettings((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
 
   const handleSave = () => {
     dispatch(updateUserSettings(localSettings))
@@ -32,62 +48,78 @@ export default function SettingsPage() {
       .catch(() => toast.error("Failed to save settings"));
   };
 
-  const toggle = (key) => {
-    setLocalSettings((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
   return (
-    <div className="w-full ">
-        <div className="w-full max-w-2xl bg-white p-8 ">
-      <h1 className="text-2xl font-semibold mb-6 text-gray-800">User Settings</h1>
+    <div className="w-full">
+      <div className="w-full max-w-2xl bg-white p-8">
+        <h1 className="text-2xl font-semibold mb-6 text-gray-800">
+          User Settings
+        </h1>
 
-      {isLoading ? (
-        <p className="text-gray-500">Loading settings...</p>
-      ) : (
-        <>
-          {/* Theme */}
-          <div className="mb-6">
-            <label className="block text-gray-700 font-medium mb-2">Theme</label>
+        {isLoading ? (
+          <p className="text-gray-500">Loading settings...</p>
+        ) : (
+          <>
+            {/* Theme */}
+            <div className="mb-8">
+              <label className="block text-gray-700 font-medium mb-2">
+                Theme
+              </label>
 
-            <select
-              value={localSettings.theme}
-              onChange={(e) =>
-                setLocalSettings((prev) => ({ ...prev, theme: e.target.value }))
-              }
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+              <select
+                value={localSettings.theme}
+                onChange={(e) =>
+                  setLocalSettings((prev) => ({
+                    ...prev,
+                    theme: e.target.value,
+                  }))
+                }
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+              >
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="system">System</option>
+              </select>
+            </div>
+
+            {/* Layout */}
+            <ToggleRow
+              label="Show Sidebar"
+              enabled={localSettings.showSidebar}
+              onChange={() => toggle("showSidebar")}
+            />
+
+            {/* Notifications */}
+            <div className="mt-8">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                Notifications
+              </h2>
+
+              <ToggleRow
+                label="CRM Notifications"
+                enabled={localSettings.showCrmNotifications}
+                onChange={() => toggle("showCrmNotifications")}
+              />
+
+              <ToggleRow
+                label="Email Notifications"
+                enabled={localSettings.showEmailNotifications}
+                onChange={() => toggle("showEmailNotifications")}
+              />
+            </div>
+
+            <button
+              onClick={handleSave}
+              className="w-full mt-10 bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 rounded-lg transition max-w-[200px]"
             >
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-              <option value="system">System</option>
-            </select>
-          </div>
-
-          <ToggleRow
-            label="Show Sidebar"
-            enabled={localSettings.showSidebar}
-            onChange={() => toggle("showSidebar")}
-          />
-
-          <ToggleRow
-            label="Enable Notifications"
-            enabled={localSettings.showNotifications}
-            onChange={() => toggle("showNotifications")}
-          />
-
-           <button
-            onClick={handleSave}
-            className="  w-full mt-8  bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 rounded-lg transition max-w-[200px]"
-          >
-            Save Settings
-          </button>
-        </>
-      )}
-    </div>
-     
-
+              Save Settings
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
+
 
 // ----------------------------------------------------
 // Tailwind Toggle Component (NO HEADLESS UI)

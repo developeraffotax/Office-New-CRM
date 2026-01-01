@@ -18,7 +18,16 @@ const userSettingsSchema = new Schema(
 
     showSidebar: { type: Boolean, default: true },
 
-    showNotifications: { type: Boolean, default: true },
+     // 🔔 Notification settings
+    showCrmNotifications: {
+      type: Boolean,
+      default: true,
+    },
+
+    showEmailNotifications: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true }
 );

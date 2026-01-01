@@ -36,18 +36,52 @@ import {
   selectTicketReceivedCount,
 } from "../../redux/slices/notificationSlice";
 
+
 export default function Sidebar({ hide, setHide }) {
   const router = useNavigate();
 
   const auth = useSelector((state) => state.auth.auth);
   const dispatch = useDispatch();
   const active = useSelector((state) => state.auth.active);
+   const { settings } = useSelector((state) => state.settings);
+  
+    const {
+    showCrmNotifications = true,
+    showEmailNotifications = true,
+  } = settings || {};
+  
+  
+const isNotificationAllowed = (notificationType) => {
+  if (notificationType === "ticket_received") {
+    return showEmailNotifications;
+  }
+  return showCrmNotifications;
+};
 
-  const taskCount = useSelector(selectTaskAssignedCount);
-  const jobCount = useSelector(selectJobAssignedCount);
 
-  const ticketAssignedCount = useSelector(selectTicketAssignedCount);
-  const ticketReceivedCount = useSelector(selectTicketReceivedCount);
+
+  const taskCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "task_assigned" && n.status === "unread" && isNotificationAllowed(n.type)).length)
+  const jobCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "job_assigned" && n.status === "unread" && isNotificationAllowed(n.type)).length)
+  const ticketAssignedCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "ticket_assigned" && n.status === "unread" && isNotificationAllowed(n.type)).length)
+  const ticketReceivedCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "ticket_received" && n.status === "unread" && isNotificationAllowed(n.type)).length)
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+  // const taskCount = useSelector(selectTaskAssignedCount);
+  // const jobCount = useSelector(selectJobAssignedCount);
+
+  // const ticketAssignedCount = useSelector(selectTicketAssignedCount);
+  // const ticketReceivedCount = useSelector(selectTicketReceivedCount);
 
   const [isProfile, setIsProfile] = useState(false);
   const [isActive, setIsActive] = useState(false);

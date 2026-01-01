@@ -792,7 +792,7 @@ const unread_notifications_count = useSelector((state) =>
             {/* ----------Profile Image-------- */}
             <div className="relative">
               <div
-                title={`${settings?.showNotifications ? "Active" : "Away"}`}
+                // title={`${settings?.showNotifications ? "Active" : "Away"}`}
                 className="w-[2.6rem] h-[2.6rem] cursor-pointer relative rounded-full bg-sky-600 overflow-hidden flex items-center justify-center text-white border-2 border-orange-600"
                 onClick={() => setShow(!show)}
               >
@@ -807,13 +807,13 @@ const unread_notifications_count = useSelector((state) =>
                   </h3>
                 )}
               </div>
-              <span
+              {/* <span
                 className={`w-2 h-2 shadow inline-block ${
                   settings?.showNotifications ? "bg-green-600" : "bg-gray-600"
                 } rounded-full animate-pulse absolute right-[2px] bottom-[2px]`}
               >
                 {" "}
-              </span>
+              </span> */}
               {/* Model */}
               {show && (
                 <div className="absolute w-[14rem] top-[2.6rem] right-[1.3rem] z-[999] py-2 px-1 rounded-md rounded-tr-none shadow-sm bg-white border">

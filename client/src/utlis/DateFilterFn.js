@@ -1,3 +1,10 @@
+
+const endOfDay = (date) => {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d;
+};
+
 export const DateFilterFn = (row, columnId, filterValue) => {
   const cellValue = row.getValue(columnId);
   if (!cellValue) return false;
@@ -55,28 +62,31 @@ export const DateFilterFn = (row, columnId, filterValue) => {
     }
 
     case "This Month": {
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      return cellDate >= startOfMonth && cellDate <= endOfMonth;
-    }
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const endOfMonth = endOfDay(
+    new Date(today.getFullYear(), today.getMonth() + 1, 0)
+  );
+  return cellDate >= startOfMonth && cellDate <= endOfMonth;
+}
 
     case "Last Month": {
-      const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-      return cellDate >= startOfLastMonth && cellDate <= endOfLastMonth;
-    }
-
+  const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  const endOfLastMonth = endOfDay(
+    new Date(today.getFullYear(), today.getMonth(), 0)
+  );
+  return cellDate >= startOfLastMonth && cellDate <= endOfLastMonth;
+}
     case "This Year": {
-      const startOfYear = new Date(today.getFullYear(), 0, 1);
-      const endOfYear = new Date(today.getFullYear(), 11, 31);
-      return cellDate >= startOfYear && cellDate <= endOfYear;
-    }
+  const startOfYear = new Date(today.getFullYear(), 0, 1);
+  const endOfYear = endOfDay(new Date(today.getFullYear(), 11, 31));
+  return cellDate >= startOfYear && cellDate <= endOfYear;
+}
 
-    case "Last Year": {
-      const startOfLastYear = new Date(today.getFullYear() - 1, 0, 1);
-      const endOfLastYear = new Date(today.getFullYear() - 1, 11, 31);
-      return cellDate >= startOfLastYear && cellDate <= endOfLastYear;
-    }
+   case "Last Year": {
+  const startOfLastYear = new Date(today.getFullYear() - 1, 0, 1);
+  const endOfLastYear = endOfDay(new Date(today.getFullYear() - 1, 11, 31));
+  return cellDate >= startOfLastYear && cellDate <= endOfLastYear;
+}
 
     // 🔹 New filters
     case "This Quarter": {

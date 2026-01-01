@@ -2,10 +2,68 @@ import notificationModel from "../models/notificationModel.js";
 
 import moment from "moment";
 
+
+
+
+
+
+// Get Notifications (Unread from any day + Today's read/unread)
+// export const getNotification = async (req, res) => {
+//   try {
+//     const userId = req.params.id;
+
+//     const startOfDay = moment().startOf("day").toDate();
+//     const endOfDay = moment().endOf("day").toDate();
+
+//     const notifications = await notificationModel
+//       .find({
+//         userId,
+//         status: { $in: ["unread", "read"] },
+//         $or: [
+//           // 🔹 All unread notifications (any date)
+//           { status: "unread" },
+
+//           // 🔹 Today's notifications (read + unread)
+//           {
+//             createdAt: {
+//               $gte: startOfDay,
+//               $lte: endOfDay,
+//             },
+//           },
+//         ],
+//       })
+//       .sort({ createdAt: -1 });
+
+//     res.status(200).send({
+//       success: true,
+//       message: "User notifications (unread + today's activity).",
+//       notifications,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send({
+//       success: false,
+//       message: "Error in get notifications",
+//       error,
+//     });
+//   }
+// };
+
+
+
+
+
+
 // Get Today's Notifications
 export const getNotification = async (req, res) => {
   try {
     const userId = req.params.id;
+
+     const startOf7Days = moment()
+      .subtract(6, "days") // includes today → total 7 days
+      .startOf("day")
+      .toDate();
+
 
     const startOfDay = moment().startOf("day").toDate();
     const endOfDay = moment().endOf("day").toDate();
@@ -15,7 +73,7 @@ export const getNotification = async (req, res) => {
         userId,
         status: { $in: ["unread", "read"] },
         createdAt: {
-          $gte: startOfDay,
+          $gte: startOf7Days,
           $lte: endOfDay,
         },
       })

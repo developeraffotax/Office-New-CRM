@@ -10,6 +10,7 @@ import {
   getRunningTimer,
   getTimerStatus,
   getTimerStatusForAffoStaff,
+  getTimerStatusForCrm,
   removeTimerStatus,
   runningTimers,
   singleTimer,
@@ -77,7 +78,8 @@ router.get("/fetch/timers/:startDate/:endDate", fetchTimersbydate);
 
 
 
-
+// Get timer Status
+router.get("/crm/timer-status", requiredSignIn, getTimerStatusForCrm);
 
 
 

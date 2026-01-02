@@ -5,6 +5,7 @@ import timerReducer from "./slices/timerSlice";
 import reminderReducer from "./slices/reminderSlice";
 import notificationReducer from "./slices/notificationSlice";
 import settingsReducer from "./slices/settingsSlice";
+import globalTimerReducer from "./slices/globalTimerSlice";
 
 
 export const store = configureStore({
@@ -14,6 +15,6 @@ export const store = configureStore({
     reminder: reminderReducer,
     notifications: notificationReducer,
     settings: settingsReducer,
-   
+    globalTimer: globalTimerReducer,
   },
 });

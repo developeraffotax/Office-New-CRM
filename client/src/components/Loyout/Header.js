@@ -40,6 +40,7 @@ import UserWorkedTime from "./UserWorkedTime";
 import EmailDetailDrawer from "../../pages/Tickets/EmailDetailDrawer";
 import { LuEye } from "react-icons/lu";
 import { generateUrl } from "../../utlis/generateUrl";
+import GlobalTimer from "../GlobalTimer";
 
 const formatElapsedTime = (createdAt) => {
   const now = new Date();
@@ -419,6 +420,40 @@ const unread_notifications_count = useSelector((state) =>
             </Link>
             {/* ------------Notification-----> */}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+             
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             <div className="relative mt-1">
               <div
                 className="relative cursor-pointer m-2"
@@ -649,9 +684,47 @@ const unread_notifications_count = useSelector((state) =>
                 />
               </form>
             </div>
+
+
+
+           <GlobalTimer />
+
           </div>
 
           {/* Search */}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
           {/* end */}
           <div className="flex items-center gap-4">

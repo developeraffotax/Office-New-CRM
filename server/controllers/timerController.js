@@ -244,6 +244,42 @@ export const timerStatus = async (req, res) => {
   }
 };
 
+
+export const getTimerStatusForCrm = async (req, res) => {
+  try {
+    const userId = req.user.user._id;
+
+    const timer = await timerModel.findOne({
+      clientId: userId,
+
+      isRunning: true,
+      // $or: [
+      //   { endTime: { $exists: false } },
+      //   { endTime: null },
+      //   { endTime: "" },
+      // ],
+    }).select("isRunning startTime endTime task clientName").lean();
+
+    if (!timer) {
+      return res.status(200).json({ message: "Timer not running!" });
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Timer Status",
+      timer: timer,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: true,
+      message: "error in timer status controller",
+      error,
+    });
+  }
+};
+
+
 // Get Timer Status
 export const getTimerStatusForAffoStaff = async (req, res) => {
   try {

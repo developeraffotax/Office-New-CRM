@@ -53,6 +53,7 @@ import ScreenshotDashboard from "./pages/AffoStaff/ScreenshotDashboard";
 import AutoCreateLeadFromURL from "./pages/Lead/AutoCreateLeadFromURL";
 import { getUserSettings, initSettingsListener } from "./redux/slices/settingsSlice";
 import SettingsPage from "./pages/Settings/Settings";
+import { initGlobalTimerListener } from "./redux/slices/globalTimerSlice";
 
 function App() {
   const navigate = useNavigate();
@@ -90,6 +91,7 @@ function App() {
     dispatch(initNotificationListener());
     dispatch(initSettingsListener());
     dispatch(initReminderListener());
+    dispatch(initGlobalTimerListener());
   }, [dispatch]);
 
   // Define access-controlled routes

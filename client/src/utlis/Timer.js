@@ -14,6 +14,7 @@ import { IoStopCircle } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { setAnyTimerRunning, setJid } from "../redux/slices/authSlice";
 import { startCountdown, stopCountdown } from "../redux/slices/timerSlice";
+import { fetchGlobalTimer } from "../redux/slices/globalTimerSlice";
 
  
 
@@ -206,6 +207,9 @@ export const Timer = forwardRef(
         //   jobId: jobId,
         //   note: "Started work on job",
         // });
+
+         dispatch(fetchGlobalTimer());
+
       } catch (error) {
         console.error(error?.response?.data?.message);
         toast.error(error?.response?.data?.message || "Some thing went wrong!");
@@ -256,6 +260,8 @@ export const Timer = forwardRef(
           setActivity("Chargeable");
           localStorage.removeItem("jobId");
           toast.success("Timer stoped successfully!");
+
+          dispatch(fetchGlobalTimer());
         }
       } catch (error) {
         console.error("Error stopping timer:", error);

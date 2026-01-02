@@ -710,8 +710,13 @@ export const copyGoal = async (req, res) => {
     const newStartDate = new Date(existingGoal.startDate);
     newStartDate.setMonth(newStartDate.getMonth() + 1);
 
-    const newEndDate = new Date(existingGoal.endDate);
-    newEndDate.setMonth(newEndDate.getMonth() + 1);
+        // New end date = last day of next month
+    const existingEnd = new Date(existingGoal.endDate);
+    const newEndDate = new Date(
+      existingEnd.getFullYear(),
+      existingEnd.getMonth() + 2, // move to month after next
+      0 // 0th day = last day of previous month
+    );
 
     const goalData = { ...existingGoal.toObject() };
     delete goalData._id;

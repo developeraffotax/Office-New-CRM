@@ -34,6 +34,8 @@ import agentRoutes from "./agentRoutes.js";
 
 import userSettingsRoutes from "./userSettingsRoutes.js";
 
+// import aiRoutes from "../aiModule/routes/ai.routes.js";
+
  
  
 
@@ -83,4 +85,7 @@ export const registerRoutes = (app) => {
 
 
   app.use("/api/v1/settings", userSettingsRoutes);
+
+
+  // app.use("/api/v1/ai", aiRoutes);
 };

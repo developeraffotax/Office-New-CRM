@@ -137,6 +137,12 @@ const [inputValue, setInputValue] = useState("");
 
   const sendEmailReply = async (e) => {
     e.preventDefault();
+
+    if(!message) {
+      toast.error("Message is required");
+      return;
+    } 
+
     setLoading(true);
     try {
       const emailData = new FormData();

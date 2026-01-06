@@ -810,7 +810,7 @@ export const getLeadColumns = (ctx) => {
             onClick={() => column.setFilterValue("")}
             className="cursor-pointer "
           >
-            Received
+            Recv.
           </span>
           <button ref={anchorRef} onClick={(e) => handleFilterClick(e, "received")}>
             <TiFilter size={20} className="ml-1 text-gray-500 hover:text-black" />

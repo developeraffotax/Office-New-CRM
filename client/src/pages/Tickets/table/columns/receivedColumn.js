@@ -9,7 +9,7 @@ export const receivedColumn = (ctx) => {
       accessorKey: "received",
       Header: ({column}) => (
         <div className="flex flex-col items-center justify-between">
-          <span title="Click to remove filter" onClick={() => column.setFilterValue("")} className="cursor-pointer ">Received</span>
+          <span title="Click to remove filter" onClick={() => column.setFilterValue("")} className="cursor-pointer ">Recv.</span>
           <button ref={ctx.anchorRef} onClick={(e) => ctx.handleFilterClick(e, "received")}>
             <TiFilter size={20} className="ml-1 text-gray-500 hover:text-black" />
           </button>

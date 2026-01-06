@@ -43,7 +43,7 @@ export default function HandleHRModal({
       setCategory(data?.task?.category);
       setDescription(data?.task?.description);
       setTitle(data?.task?.title);
-      
+
       setProductLink(data?.task?.productLink || "");
       setShowProductLink(!!data?.task?.productLink);
       setIsLoading(false);
@@ -66,7 +66,15 @@ export default function HandleHRModal({
       if (taskId) {
         const { data } = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/v1/hr/edit/task/${taskId}`,
-          { software, department, description, category, title, productLink, hrRole }
+          {
+            software,
+            department,
+            description,
+            category,
+            title,
+            productLink,
+            hrRole,
+          }
         );
         if (data?.success) {
           setLoading(false);
@@ -85,7 +93,7 @@ export default function HandleHRModal({
       } else {
         const { data } = await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/hr/create/task`,
-          { software, department, description, category, title, hrRole }
+          { software, department, description, category, title, hrRole, productLink }
         );
         if (data) {
           getAllTasks();
@@ -209,11 +217,7 @@ export default function HandleHRModal({
               />
             </div>
 
-
-
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-               
               <select
                 value={hrRole}
                 className={`${style.input}`}
@@ -233,10 +237,6 @@ export default function HandleHRModal({
               </select>
             </div>
 
-
-
-
-
             {/*------------ Desciption----------- */}
             <ReactQuill
               theme="snow"
@@ -247,67 +247,42 @@ export default function HandleHRModal({
               onChange={setDescription}
             />
 
-
-
-
-
-
- 
-
-
-
-
-
-
-
-
-
             {/*  */}
             <div className="flex items-center justify-between mt-[3rem] gap-24 ">
+              <div className="flex items-center gap-2 w-full ">
+                {!showProductLink && (
+                  <button
+                    type="button"
+                    onClick={() => setShowProductLink(true)}
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    + Add product link
+                  </button>
+                )}
 
+                {showProductLink && (
+                  <input
+                    type="text"
+                    placeholder="Product Link"
+                    className={`${style.input} w-full`}
+                    value={productLink}
+                    onChange={(e) => setProductLink(e.target.value)}
+                  />
+                )}
 
-
-                  <div className="flex items-center gap-2 w-full ">
-  {!showProductLink && (
-    <button
-      type="button"
-      onClick={() => setShowProductLink(true)}
-      className="text-sm text-blue-600 hover:underline"
-    >
-      + Add product link
-    </button>
-  )}
-
- 
-
-             {showProductLink && (
-   
-    <input
-      type="text"
-      placeholder="Product Link"
-      className={`${style.input} w-full`}
-      value={productLink}
-      onChange={(e) => setProductLink(e.target.value)}
-    />
-
-    
-   
-)}
-
-
- {showProductLink && (
-  <button
-    type="button"
-    onClick={() => {
-      setShowProductLink(false);
-      setProductLink("");
-    }}
-    className="text-xs text-red-500 mt-1"
-  >
-    Remove
-  </button>
-)}
-</div>
+                {showProductLink && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowProductLink(false);
+                      setProductLink("");
+                    }}
+                    className="text-xs text-red-500 mt-1"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
               <button
                 disabled={loading}
                 className={`${style.button1} text-[15px] `}
@@ -321,12 +296,6 @@ export default function HandleHRModal({
                 )}
               </button>
             </div>
-
-
-
-
-
-
           </form>
         )}
       </div>

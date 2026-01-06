@@ -624,7 +624,7 @@ export default function HR() {
         accessorKey: "software",
         Header: ({ column }) => {
           return (
-            <div className=" w-[130px] flex flex-col gap-[2px]">
+            <div className=" w-[140px] flex flex-col gap-[2px]">
               <span
                 className="ml-1 cursor-pointer"
                 title="Clear Filter"
@@ -632,7 +632,7 @@ export default function HR() {
                   column.setFilterValue("");
                 }}
               >
-                Software
+                Software / Product
               </span>
               <input
                 type="search"
@@ -711,7 +711,7 @@ export default function HR() {
                 </div>
 
                 {productLink && (
-                  <Link to={productLink} target="_blank" rel="noopener noreferrer">
+                  <Link to={productLink} target="_blank" >
                     <FiExternalLink className="w-5 h-5 text-gray-700 transition-all duration-200 hover:text-blue-600" />
                   </Link>
                 )}
@@ -1361,7 +1361,7 @@ export default function HR() {
                           All
                         </div>
 
-                        {userName.map((user, index) => {
+                        {userName.filter((user) => getJobHolderCount(user) !== 0).map((user, index) => {
                           return (
                             <Draggable
                               key={user}

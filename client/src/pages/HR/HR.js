@@ -32,6 +32,8 @@ import QuickAccess from "../../utlis/QuickAccess";
 import { useSelector } from "react-redux";
 import { isAdmin } from "../../utlis/isAdmin";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
+import { Link } from "react-router-dom";
+import { FiExternalLink } from "react-icons/fi";
 
 const months = [
   "January",
@@ -692,19 +694,27 @@ export default function HR() {
           const title = row.original.title || "";
           const hrTaskId = row.original?._id || "";
 
+          const productLink = row.original?.productLink || "";
+
           return (
             <div className="w-full h-full ">
-              <div className="w-full h-full flex items-center justify-start ">
+              <div className="w-full h-full flex items-center justify-between ">
                 <div
                   onClick={() => {
                     setShowDescription(true);
                     //setCopyDescription(row.original?.description);
                     getSingleTask(hrTaskId);
                   }}
-                  className="px-1 w-full text-[14px] text-blue-600 cursor-pointer"
+                  className="px-1   text-[14px] text-blue-600 cursor-pointer"
                 >
                   {title.length > 65 ? `${title.slice(0, 65)}...` : title}
                 </div>
+
+                {productLink && (
+                  <Link to={productLink} target="_blank" rel="noopener noreferrer">
+                    <FiExternalLink className="w-5 h-5 text-gray-700 transition-all duration-200 hover:text-blue-600" />
+                  </Link>
+                )}
               </div>
             </div>
           );

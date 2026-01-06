@@ -26,6 +26,9 @@ export default function HandleHRModal({
   const [isLoading, setIsLoading] = useState(false);
   const [title, setTitle] = useState("");
 
+  const [showProductLink, setShowProductLink] = useState(false);
+  const [productLink, setProductLink] = useState("");
+
   //---------- Get Single Project-----------
   const getSingleTask = async () => {
     setIsLoading(true);
@@ -40,6 +43,9 @@ export default function HandleHRModal({
       setCategory(data?.task?.category);
       setDescription(data?.task?.description);
       setTitle(data?.task?.title);
+      
+      setProductLink(data?.task?.productLink || "");
+      setShowProductLink(!!data?.task?.productLink);
       setIsLoading(false);
     } catch (error) {
       console.log(error);
@@ -60,7 +66,7 @@ export default function HandleHRModal({
       if (taskId) {
         const { data } = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/v1/hr/edit/task/${taskId}`,
-          { software, department, description, category, title, hrRole }
+          { software, department, description, category, title, productLink, hrRole }
         );
         if (data?.success) {
           setLoading(false);
@@ -72,6 +78,7 @@ export default function HandleHRModal({
           setDescription("");
           setCategory("");
           setTitle("");
+          setProductLink("");
           setShowAddTask(false);
           toast.success("HR tasks updated!");
         }
@@ -91,6 +98,7 @@ export default function HandleHRModal({
           setDescription("");
           setCategory("");
           setTitle("");
+          setProductLink("");
         }
       }
     } catch (error) {
@@ -238,8 +246,68 @@ export default function HandleHRModal({
               value={description}
               onChange={setDescription}
             />
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
             {/*  */}
-            <div className="flex items-center justify-end mt-[2.5rem]">
+            <div className="flex items-center justify-between mt-[3rem] gap-24 ">
+
+
+
+                  <div className="flex items-center gap-2 w-full ">
+  {!showProductLink && (
+    <button
+      type="button"
+      onClick={() => setShowProductLink(true)}
+      className="text-sm text-blue-600 hover:underline"
+    >
+      + Add product link
+    </button>
+  )}
+
+ 
+
+             {showProductLink && (
+   
+    <input
+      type="text"
+      placeholder="Product Link"
+      className={`${style.input} w-full`}
+      value={productLink}
+      onChange={(e) => setProductLink(e.target.value)}
+    />
+
+    
+   
+)}
+
+
+ {showProductLink && (
+  <button
+    type="button"
+    onClick={() => {
+      setShowProductLink(false);
+      setProductLink("");
+    }}
+    className="text-xs text-red-500 mt-1"
+  >
+    Remove
+  </button>
+)}
+</div>
               <button
                 disabled={loading}
                 className={`${style.button1} text-[15px] `}
@@ -253,6 +321,12 @@ export default function HandleHRModal({
                 )}
               </button>
             </div>
+
+
+
+
+
+
           </form>
         )}
       </div>

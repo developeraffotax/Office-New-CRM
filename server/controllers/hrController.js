@@ -6,7 +6,7 @@ import XLSX from "xlsx";
 // Create
 export const createHrTask = async (req, res) => {
   try {
-    const { title, department, category, software, description, hrRole, } = req.body;
+    const { title, department, category, software, description, productLink, hrRole, } = req.body;
 
     const departmentDetail = await departmentModel.findById(department);
     if (!departmentDetail) {
@@ -26,6 +26,7 @@ export const createHrTask = async (req, res) => {
       category,
       software,
       description,
+      productLink,
       users: departmentDetail.users,
     });
 
@@ -48,7 +49,7 @@ export const createHrTask = async (req, res) => {
 export const updateHrTask = async (req, res) => {
   try {
     const taskId = req.params.id;
-    const { title, department, category, software, description, hrRole, } = req.body;
+    const { title, department, category, software, description, productLink, hrRole, } = req.body;
 
     const existingTask = await hrModel.findById(taskId);
 
@@ -90,6 +91,7 @@ export const updateHrTask = async (req, res) => {
         category,
         software,
         description,
+        productLink,
         users: updatedUsers,
       },
       { new: true }
@@ -236,6 +238,7 @@ export const copyHrTask = async (req, res) => {
     delete taskData._id;
     delete taskData.createdAt;
     delete taskData.updatedAt;
+    delete taskData.productLink;
 
     const copyTask = await hrModel.create(taskData);
 

@@ -26,6 +26,11 @@ const hrSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    productLink: {   // used to store the notion link
+      type: String,
+      trim: true,
+    },
+
     users: [
       {
         user: {

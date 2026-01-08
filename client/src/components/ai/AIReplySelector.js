@@ -1,64 +1,117 @@
-// import { useState } from "react";
-// import axios from "axios";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
-// const API_URL = `${process.env.REACT_APP_API_URL}/api/v1/ai/generate-email-replies`;
- 
+const API_URL = `${process.env.REACT_APP_API_URL}/api/v1/ai/generate-email-replies`;
 
-// export default function AIReplySelector({ threadMessages, onSelect }) {
-//   const [loading, setLoading] = useState(false);
-//   const [replies, setReplies] = useState([]);
-//   const [selectedIndex, setSelectedIndex] = useState(null);
+export default function AIReplySelector({ threadMessages, onSelect }) {
+  const [loading, setLoading] = useState(false);
+  const [replies, setReplies] = useState([]);
+  const [selectedIndex, setSelectedIndex] = useState(null);
 
-//   const generateReplies = async () => {
-//     setLoading(true);
-//     setSelectedIndex(null);
-//     setReplies([]);
+  const generateReplies = async () => {
+    try {
+      setLoading(true);
+      setSelectedIndex(null);
+      setReplies([]);
 
-//     const { data } = await axios.post(API_URL, {
-//       messages: threadMessages,
-//     });
+      const { data } = await axios.post(API_URL, {
+        messages: threadMessages,
+      });
 
-//     setReplies(data.replies);
-//     setLoading(false);
-//   };
+      setReplies(data.replies || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-//   const selectReply = (index) => {
-//     setSelectedIndex(index);
-//     onSelect(replies[index].content); // 🔥 send to parent
-//   };
+  useEffect(() => {
+    generateReplies();
+  }, []);
 
-//   return (
-//     <div className="border rounded-lg p-4 bg-white dark:bg-zinc-900">
-//       <div className="flex justify-between items-center mb-3">
-//         <h3 className="font-semibold">AI Reply Suggestions</h3>
-//         <button
-//           onClick={generateReplies}
-//           className="px-3 py-1 text-sm bg-blue-600 text-white rounded"
-//         >
-//           {loading ? "Generating..." : "Generate Replies"}
-//         </button>
-//       </div>
+  const selectReply = (index) => {
+    setSelectedIndex(index);
+    onSelect(replies[index].content);
+  };
 
-//       <div className="space-y-3">
-//         {replies.map((r, i) => (
-//           <div
-//             key={i}
-//             onClick={() => selectReply(i)}
-//             className={`p-3 border rounded cursor-pointer transition ${
-//               selectedIndex === i
-//                 ? "border-blue-500 bg-blue-50"
-//                 : "hover:bg-gray-50"
-//             }`}
-//           >
-//             <div className="text-xs font-medium text-gray-500 mb-1">
-//               {r.tone}
-//             </div>
-//             <div className="text-sm line-clamp-4 whitespace-pre-line">
-//               {r.content}
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
+  return (
+    <div className="absolute top-0 left-full ml-5 w-[30rem] h-full">
+      {/* Card */}
+      <div className="bg-white border rounded-xl shadow-lg h-full flex flex-col overflow-hidden">
+        {/* Header (fixed height) */}
+        <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-800">
+              Reply Suggestions
+            </h3>
+            <p className="text-xs text-gray-500">
+              Select one to insert into reply
+            </p>
+          </div>
+
+          {loading && (
+            <span className="text-xs text-blue-600 font-medium animate-pulse">
+              Generating…
+            </span>
+          )}
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {/* Skeleton Loading */}
+          {loading &&
+            Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="p-3 border rounded-lg space-y-2 animate-pulse"
+              >
+                <div className="h-3 w-28 bg-gray-200 rounded" />
+                <div className="h-3 w-full bg-gray-200 rounded" />
+                <div className="h-3 w-5/6 bg-gray-200 rounded" />
+                <div className="h-3 w-4/6 bg-gray-200 rounded" />
+              </div>
+            ))}
+
+          {/* Replies */}
+          {!loading &&
+            replies.map((r, i) => (
+              <div
+                key={i}
+                onClick={() => selectReply(i)}
+                className={`group p-4 border rounded-lg cursor-pointer transition-all
+                  ${
+                    selectedIndex === i
+                      ? "border-blue-500 bg-blue-50 ring-1 ring-blue-200"
+                      : "hover:border-gray-300 hover:bg-gray-50"
+                  }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    {r.tone}
+                  </span>
+
+                  {selectedIndex === i && (
+                    <span className="text-xs text-blue-600 font-medium">
+                      Selected
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-sm text-gray-700 whitespace-pre-line line-clamp-4">
+                  {r.content}
+                </p>
+              </div>
+            ))}
+
+          {/* Empty State */}
+          {!loading && replies.length === 0 && (
+            <div className="text-center text-sm text-gray-500 py-10">
+              No suggestions available
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

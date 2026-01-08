@@ -17,6 +17,7 @@ import { IoMdCheckboxOutline } from "react-icons/io";
 import Swal from "sweetalert2";
 import SendEmailReply from "../../components/Tickets/SendEmailReply";
 import { useScrollToBottom } from "../../utlis/useScrollToBottom";
+ 
 
 export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOpenCb, setEmailData }) {
   const navigate = useNavigate();
@@ -796,9 +797,14 @@ return (
             emailSendTo={emailDetail?.recipients?.[0]}
             getEmailDetail={emailData}
             setEmailData={setEmailData}
+
+            emailDetail={emailDetail}
           />
         </div>
       )}
+
+
+      
     </div>
   );
 }

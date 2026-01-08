@@ -9,6 +9,7 @@ import { TbLoader2 } from "react-icons/tb";
 import { RiUploadCloud2Fill } from "react-icons/ri";
 import { filterOption, HighlightedOption, sortOptions } from "./HighlightedOption";
 import { useSelector } from "react-redux";
+import AIReplySelector from "../ai/AIReplySelector";
 
 export default function SendEmailReply({
   setShowReply,
@@ -19,7 +20,10 @@ export default function SendEmailReply({
   emailSendTo,
   getEmailDetail,
 
-  setEmailData
+  setEmailData,
+
+  
+  emailDetail
 }) {
   const [clientId, setClientId] = useState("");
   const [message, setMessage] = useState("");
@@ -215,7 +219,12 @@ const [inputValue, setInputValue] = useState("");
 
   return (
     <div className="w-full h-[100%] flex items-center justify-center py-3 px-4 overflow-y-auto rounded-md ">
-      <div className="w-[55rem] rounded-md  border flex flex-col gap-4 bg-white mt-[5rem] 3xl:mt-0">
+
+
+
+
+      <div className="w-[55rem] rounded-md  border flex flex-col gap-4 bg-white mt-[5rem] 3xl:mt-0 relative">
+      {/* <AIReplySelector threadMessages={emailDetail?.decryptedMessages || []} onSelect={(suggestedReply) => setMessage(suggestedReply)} /> */}
         <div className="flex items-center justify-between px-4 pt-2">
           <h1 className="text-[20px] font-semibold text-black">Reply</h1>
           <span

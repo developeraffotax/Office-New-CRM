@@ -7,7 +7,7 @@ import { format } from "timeago.js";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { IoIosTimer } from "react-icons/io";
-import { MdDeleteOutline, MdOutlineTimerOff } from "react-icons/md";
+import { MdDelete, MdDeleteOutline, MdOutlineTimerOff } from "react-icons/md";
 import { TbBellRinging } from "react-icons/tb";
 import { CgList } from "react-icons/cg";
 import { FaStopwatch } from "react-icons/fa6";
@@ -66,34 +66,29 @@ export default function Header({
 
   const navigate = useNavigate();
 
-
-  
-  
   const notificationRef = useRef(null);
   const reminderNotificationRef = useRef(null);
   const timerStatusRef = useRef(null);
-  
+
   const dispatch = useDispatch();
 
   const auth = useSelector((state) => state.auth.auth);
   const { settings } = useSelector((state) => state.settings);
 
-  const {
-  showCrmNotifications = true,
-  showEmailNotifications = true,
-} = settings || {};
+  const { showCrmNotifications = true, showEmailNotifications = true } =
+    settings || {};
 
-const isNotificationAllowed = (notificationType) => {
-  if (notificationType === "ticket_received") {
-    return showEmailNotifications;
-  }
-  return showCrmNotifications;
-};
+  const isNotificationAllowed = (notificationType) => {
+    if (notificationType === "ticket_received") {
+      return showEmailNotifications;
+    }
+    return showCrmNotifications;
+  };
   const searchValue = useSelector((state) => state.auth.searchValue);
   const unread_reminders_count = useSelector(
     (state) => state.reminder.unread_reminders_count
   );
-  
+
   const [open, setOpen] = useState(false);
   const [show, setShow] = useState(false);
   const [userInfo, setUserInfo] = useState([]);
@@ -101,52 +96,41 @@ const isNotificationAllowed = (notificationType) => {
   const [showTimerStatus, setShowTimerStatus] = useState(false);
   const [loading, setLoading] = useState(false);
   // const [notificationData, setNotificationData] = useState([]);
-    const ticketRef = useRef(null);
+  const ticketRef = useRef(null);
   const [openTicketId, setOpenTicketId] = useState(null);
 
-const handleNotificationClick = (item) => {
-  // mark as read
-  dispatch(
-    updateNotification({
-      id: item._id,
-      userId: auth.user.id,
-      status: item.status
-    })
-  );
+  const handleNotificationClick = (item) => {
+    // mark as read
+    dispatch(
+      updateNotification({
+        id: item._id,
+        userId: auth.user.id,
+        status: item.status,
+      })
+    );
 
-  // 🎫 Ticket received → open drawer
-  if (item.type === "ticket_received") {
-    setOpenTicketId(item.taskId); // whichever you use
-    
-    return;
-  }
+    // 🎫 Ticket received → open drawer
+    if (item.type === "ticket_received") {
+      setOpenTicketId(item.taskId); // whichever you use
 
-  // 🔗 default navigation
-  navigate(`${item.redirectLink}?comment_taskId=${item.taskId}`);
-  dispatch(setFilterId(item.taskId));
-  setOpen(false);
+      return;
+    }
 
+    // 🔗 default navigation
+    navigate(`${item.redirectLink}?comment_taskId=${item.taskId}`);
+    dispatch(setFilterId(item.taskId));
+    setOpen(false);
+  };
 
-
-};
-
-
-const handleDismissNotification = (item) => { 
-
-  // mark as read
-  dispatch(
-    dismissNotification({
-      id: item._id,
-      userId: auth.user.id,
-       
-    })
-  );
-
-
-
-}
-
-
+  const handleDismissNotification = (item) => {
+    // mark as read
+    dispatch(
+      dismissNotification({
+        id: item._id,
+        userId: auth.user.id,
+      })
+    );
+  };
 
   const notificationData = useSelector(
     (state) => state.notifications.notificationData
@@ -178,11 +162,6 @@ const handleDismissNotification = (item) => {
       toast.error("Error in search!");
     }
   };
-
-
-
- 
-
 
   //    Get User Info
   const getUserInfo = async () => {
@@ -282,24 +261,16 @@ const handleDismissNotification = (item) => {
     //   }
     // };
 
-
-
     const handleNewNotification = (payload) => {
+      const type = payload?.notification?.type;
 
-      
-  const type = payload?.notification?.type;
+      if (!isNotificationAllowed(type)) return;
 
- 
+      dispatch(getNotifications(auth.user.id));
 
-  if (!isNotificationAllowed(type)) return;
-
-  dispatch(getNotifications(auth.user.id));
-
-  notificationSound.currentTime = 0;
-  notificationSound
-    .play()
-    .catch(() => {});
-};
+      notificationSound.currentTime = 0;
+      notificationSound.play().catch(() => {});
+    };
 
     // Add listeners
     socket.on("newTimer", handleNewTimer);
@@ -347,11 +318,7 @@ const handleDismissNotification = (item) => {
         setOpenTicketId(null);
       }
 
-      if (
-        ticketRef.current &&
-        !ticketRef.current.contains(event.target)
-      ) {
-        
+      if (ticketRef.current && !ticketRef.current.contains(event.target)) {
         // dispatch(setShowReminder(false));
         setOpenTicketId(null);
       }
@@ -392,22 +359,16 @@ const handleDismissNotification = (item) => {
     };
   }, [dispatch]);
 
-const unread_notifications_count = useSelector((state) =>
-  state.notifications.notificationData.filter(
-    (n) => n.status === "unread" && isNotificationAllowed(n.type)
-  ).length
-);
-
-
-
-
+  const unread_notifications_count = useSelector(
+    (state) =>
+      state.notifications.notificationData.filter(
+        (n) => n.status === "unread" && isNotificationAllowed(n.type)
+      ).length
+  );
 
   const visibleNotifications = notificationData.filter((item) =>
-  isNotificationAllowed(item.type)
-);
-
-
-
+    isNotificationAllowed(item.type)
+  );
 
   return (
     <>
@@ -420,41 +381,7 @@ const unread_notifications_count = useSelector((state) =>
             </Link>
             {/* ------------Notification-----> */}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-             
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            <div className="relative mt-1">
+            <div className="relative mt-1 ">
               <div
                 className="relative cursor-pointer m-2"
                 onClick={() => {
@@ -470,11 +397,36 @@ const unread_notifications_count = useSelector((state) =>
                 )}
               </div>
               {open && (
-                <div className="shadow-xl  bg-gray-100 absolute z-[999] top-[2rem] left-[1.6rem] rounded-md  ">
-                  <h5 className="text-[20px] text-center font-medium text-white bg-orange-400  p-3 font-Poppins">
-                    Notifications
-                  </h5>
-                  <div className="w-[380px]  h-[50vh] overflow-y-auto bg-white  shadow-lg border border-gray-200">
+                <div className="shadow-xl bg-gray-100 absolute z-[999] top-[2rem] left-[1.6rem] rounded-lg overflow-clip  ">
+                  <div className="border-b border-orange-500 px-8 py-3 flex items-center justify-between
+                bg-gradient-to-r from-orange-600 to-orange-400 shadow-md">
+  <button
+    title="Clear all"
+    onClick={() => dispatch(dismissAllNotification(auth.user.id))}
+    disabled={notificationData.length === 0}
+    className="flex items-center justify-center w-9 h-9 rounded-lg 
+               bg-white/20 hover:bg-white/30 transition disabled:opacity-60 disabled:cursor-not-allowed"
+  >
+    <MdDeleteOutline className="text-white w-5 h-5" />
+  </button>
+
+  <h5 className="text-[20px]   text-white ">
+    Notifications
+  </h5>
+
+  <button
+   title="Mark all as read"
+    onClick={() => dispatch(updateAllNotification(auth.user.id))}
+    disabled={notificationData.length === 0}
+    className="flex items-center justify-center w-9 h-9 rounded-lg 
+               bg-white/20 hover:bg-white/30 transition disabled:opacity-60 disabled:cursor-not-allowed "
+  >
+    <LuEye className="text-white w-5 h-5" />
+  </button>
+</div>
+
+
+                  <div className="w-[380px]  h-[50vh] overflow-y-auto bg-white  shadow-lg border border-gray-200 ">
                     {visibleNotifications?.length > 0 ? (
                       visibleNotifications.map((item) => {
                         const isRead = item.status === "read";
@@ -483,7 +435,11 @@ const unread_notifications_count = useSelector((state) =>
                           <div
                             key={item._id}
                             className={`group border-b last:border-b-0 transition-all
-                                  ${isRead ? "bg-gray-50" : "bg-sky-50 hover:bg-sky-100"}
+                                  ${
+                                    isRead
+                                      ? "bg-gray-50"
+                                      : "bg-sky-50 hover:bg-sky-100"
+                                  }
                                 `}
                           >
                             {/* Header */}
@@ -515,73 +471,62 @@ const unread_notifications_count = useSelector((state) =>
                             </div>
 
                             {/* Content */}
-                           <div
-                              
-                              className="block px-4 pb-4 pt-2 "
-                            >
-
-                              <div onClick={() => handleNotificationClick(item)}  className="cursor-pointer">
-
-
-                              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                                {item.description}
-                              </p>
-
-                              {item.clientName && (
-                                <p className="mt-2 text-xs text-gray-500">
-                                  <span className="font-medium text-gray-700">
-                                    Client:
-                                  </span>{" "}
-                                  {item.clientName}
+                            <div className="block px-4 pb-4 pt-2 ">
+                              <div
+                                onClick={() => handleNotificationClick(item)}
+                                className="cursor-pointer"
+                              >
+                                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                                  {item.description}
                                 </p>
-                              )}
 
-
+                                {item.clientName && (
+                                  <p className="mt-2 text-xs text-gray-500">
+                                    <span className="font-medium text-gray-700">
+                                      Client:
+                                    </span>{" "}
+                                    {item.clientName}
+                                  </p>
+                                )}
                               </div>
-                              
 
-                             <div className="w-full flex justify-between items-center gap-4 mt-2">
-                              
-                               <p className="text-xs text-gray-400">
-                                {format(item.createdAt)}
-                              </p>
+                              <div className="w-full flex justify-between items-center gap-4 mt-2">
+                                <p className="text-xs text-gray-400">
+                                  {format(item.createdAt)}
+                                </p>
 
-
-                               <div className="flex items-center gap-2">
-
-
-                                   <span title="Dismiss Notification" onClick={() => handleDismissNotification(item)} className="cursor-pointer text-xl text-red-500 hover:text-red-600 ">
-
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    title="Dismiss Notification"
+                                    onClick={() =>
+                                      handleDismissNotification(item)
+                                    }
+                                    className="cursor-pointer text-xl text-red-500 hover:text-red-600 "
+                                  >
                                     <MdDeleteOutline />
-                                  
-                                </span>
+                                  </span>
 
-                              <Link 
-                              title="View Details"
-
-
-                               to={generateUrl(item)}
-
-                               
-                            key={item?._id}
-                            onClick={() => {
-                              dispatch(setFilterId(item?.taskId));
-                              dispatch(updateNotification({ id: item._id, userId: auth.user.id, status: item.status }));
-                              setOpen(false);
-                            }}
-                            className="cursor-pointer text-xl text-sky-500 hover:text-sky-600 "
-                            >
-                              
-                              
-                              <LuEye />
-
-                              
-                              </Link>
-
-
+                                  <Link
+                                    title="View Details"
+                                    to={generateUrl(item)}
+                                    key={item?._id}
+                                    onClick={() => {
+                                      dispatch(setFilterId(item?.taskId));
+                                      dispatch(
+                                        updateNotification({
+                                          id: item._id,
+                                          userId: auth.user.id,
+                                          status: item.status,
+                                        })
+                                      );
+                                      setOpen(false);
+                                    }}
+                                    className="cursor-pointer text-xl text-sky-500 hover:text-sky-600 "
+                                  >
+                                    <LuEye />
+                                  </Link>
                                 </div>
-                              
-                               </div>
+                              </div>
                             </div>
                           </div>
                         );
@@ -590,12 +535,12 @@ const unread_notifications_count = useSelector((state) =>
                       <div className=" h-full  flex flex-col items-center justify-center text-gray-500 gap-2">
                         <span className="text-2xl">🔔</span>
                         <p className="text-sm font-medium">
-                          No notifications for today
+                          You're all caught up 🎉
                         </p>
                       </div>
                     )}
                   </div>
-
+                  {/* 
                   <div
                     className="w-full   bg-gray-100    px-4 flex  items-center justify-between"
                     
@@ -627,17 +572,13 @@ const unread_notifications_count = useSelector((state) =>
                     >
                       Mark all as read
                     </button>
-                  </div>
+                  </div> */}
 
-
-
-
-
-                   {/* 🎫 Email preview popup */}
-  {openTicketId && (
-    <div
-      ref={ticketRef}
-      className="
+                  {/* 🎫 Email preview popup */}
+                  {openTicketId && (
+                    <div
+                      ref={ticketRef}
+                      className="
         absolute
         left-full
         top-0
@@ -651,23 +592,17 @@ const unread_notifications_count = useSelector((state) =>
         border
         z-[999999]
       "
-    >
-      <EmailDetailDrawer
-        id={openTicketId}
-        setTicketSubject={() => {}}
-        isReplyModalOpenCb={() => {}}
-        setEmailData={() => {}}
-      />
-    </div>
-  )}
-
-
-
+                    >
+                      <EmailDetailDrawer
+                        id={openTicketId}
+                        setTicketSubject={() => {}}
+                        isReplyModalOpenCb={() => {}}
+                        setEmailData={() => {}}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
-
-
-
             </div>
 
             <div className=" hidden sm:flex ml-[1rem]">
@@ -685,46 +620,10 @@ const unread_notifications_count = useSelector((state) =>
               </form>
             </div>
 
-
-
-           <GlobalTimer />
-
+            <GlobalTimer />
           </div>
 
           {/* Search */}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           {/* end */}
           <div className="flex items-center gap-4">
@@ -916,16 +815,6 @@ const unread_notifications_count = useSelector((state) =>
           </div>
         </div>
       </div>
-
-
-
-
-
-    
-
-
-
-
     </>
   );
 }

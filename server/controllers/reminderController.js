@@ -105,25 +105,56 @@ export const createReminder = async (req, res) => {
 //   }
 // };
 
+// export const getDueReminders = async (req, res) => {
+//   try {
+//     const userId = req.user.user._id;
+//     const now = new Date();
+
+//     const reminders = await reminderModel.find({
+//       userId: userId,
+//       isCompleted: false,
+      
+//       scheduledAt: { $lte: now }, // Only due or past
+//     }).sort({_id: -1})
+
+//     res.status(200).send({
+//       success: true,
+//       message: "Due reminders fetched!",
+//       reminders,
+//     });
+//   } catch (error) {
+//     console.error("Reminder fetch error:", error);
+//     res.status(500).send({
+//       success: false,
+//       message: "Error occurred while fetching reminders!",
+//       error: error.message,
+//     });
+//   }
+// };
+
+
 export const getDueReminders = async (req, res) => {
   try {
     const userId = req.user.user._id;
     const now = new Date();
 
-    const reminders = await reminderModel.find({
-      userId: userId,
-      isCompleted: false,
-      
-      scheduledAt: { $lte: now }, // Only due or past
-    }).sort({_id: -1})
+    const reminders = await reminderModel
+      .find({
+        userId,
+        isCompleted: false,
+      })
+      .sort({ scheduledAt: -1 });
+
+    const formatted = reminders.map((r) => ({
+      ...r.toObject(),
+      status: r.scheduledAt <= now ? "due" : "upcoming",
+    }));
 
     res.status(200).send({
       success: true,
-      message: "Due reminders fetched!",
-      reminders,
+      reminders: formatted,
     });
   } catch (error) {
-    console.error("Reminder fetch error:", error);
     res.status(500).send({
       success: false,
       message: "Error occurred while fetching reminders!",
@@ -135,22 +166,66 @@ export const getDueReminders = async (req, res) => {
 
 
 
+
+
+
+
+// export const getDueRemindersCount = async (req, res) => {
+//   try {
+//     const userId = req.user.user._id;
+//     const now = new Date();
+
+//     const remindersCount = await reminderModel.countDocuments({
+//       userId: userId,
+//       isCompleted: false,
+//       isRead: false,
+//       scheduledAt: { $lte: now }, // Only due or past
+//     });
+
+//     res.status(200).send({
+//       success: true,
+//       message: "Due reminders count fetched!",
+//       remindersCount,
+//     });
+//   } catch (error) {
+//     console.error("Reminder fetch error:", error);
+//     res.status(500).send({
+//       success: false,
+//       message: "Error occurred while fetching reminders count!",
+//       error: error.message,
+//     });
+//   }
+// };
+
+
+
+
+
 export const getDueRemindersCount = async (req, res) => {
   try {
     const userId = req.user.user._id;
     const now = new Date();
 
-    const remindersCount = await reminderModel.countDocuments({
-      userId: userId,
+    // Count all reminders that are unread and not completed
+    const unreadRemindersCount = await reminderModel.countDocuments({
+      userId,
       isCompleted: false,
       isRead: false,
-      scheduledAt: { $lte: now }, // Only due or past
     });
+
+    // Optionally, count only "due" reminders (past or now)
+    // const dueRemindersCount = await reminderModel.countDocuments({
+    //   userId,
+    //   isCompleted: false,
+    //   isRead: false,
+    //   scheduledAt: { $lte: now },
+    // });
 
     res.status(200).send({
       success: true,
-      message: "Due reminders count fetched!",
-      remindersCount,
+      message: "Reminders count fetched successfully!",
+      remindersCount:unreadRemindersCount, // for badge
+      // dueRemindersCount,    
     });
   } catch (error) {
     console.error("Reminder fetch error:", error);
@@ -161,6 +236,9 @@ export const getDueRemindersCount = async (req, res) => {
     });
   }
 };
+
+
+
 
 
 // Delete  Reminder

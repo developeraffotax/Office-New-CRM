@@ -1,120 +1,246 @@
 import { useEffect, useState } from "react";
- 
 import moment from "moment";
- import { Link } from "react-router-dom";
-
 import { MdOutlineMarkChatRead } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchReminders, markAsReadReminder, setReminderData, setShowReminder } from "../../redux/slices/reminderSlice";
+import {
+  fetchReminders,
+  markAsReadReminder,
+  setReminderData,
+  setShowReminder,
+} from "../../redux/slices/reminderSlice";
 
-const ReminderNotifications = ({setShowReminderNotificationPanel}) => {
-  //take it one above
-  // const [reminders, setReminders] = useState([]);
+/* -------------------- DATE HELPERS -------------------- */
+const startOfDay = (date) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+const endOfDay = (date) => {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d;
+};
+const isToday = (date) => {
+  const now = new Date();
+  return date >= startOfDay(now) && date <= endOfDay(now);
+};
+const isTomorrow = (date) => {
+  const t = new Date();
+  t.setDate(t.getDate() + 1);
+  return date >= startOfDay(t) && date <= endOfDay(t);
+};
+const isLater = (date) => {
+  const t = new Date();
+  t.setDate(t.getDate() + 1);
+  return date > endOfDay(t);
+};
+const isOverdue = (date) => date < startOfDay(new Date());
+const getCountdownLabel = (scheduledAt, now) => {
+  const date = new Date(scheduledAt);
+  const diffMs = date - now;
 
-  // const { showReminder, setShowReminder, reminderData, setReminderData, snoozeReminder, markAsReadReminder, completeReminder, reminders, setReminders, set_unread_reminders_count, getRemindersCount, fetchReminders, loadingReminders } = useReminder();
+  if (diffMs <= 0) return "Overdue";
 
-  const dispatch = useDispatch()
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 60) return `in ${mins} min`;
 
-  const reminders = useSelector(state => state.reminder.reminders)
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `in ${hrs}h`;
 
+  const days = Math.floor(hrs / 24);
+  return `in ${days}d`;
+};
+
+/* -------------------- COMPONENT -------------------- */
+const ReminderNotifications = ({ setShowReminderNotificationPanel }) => {
+  const dispatch = useDispatch();
+  const reminders = useSelector((state) => state.reminder.reminders);
+  const [filter, setFilter] = useState("today");
+  const [now, setNow] = useState(new Date());
 
   useEffect(() => {
-    
+    dispatch(fetchReminders());
+  }, [dispatch]);
 
-    dispatch(fetchReminders())
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(interval);
   }, []);
 
+  const filteredReminders = reminders.filter((reminder) => {
+    const date = new Date(reminder.scheduledAt);
+    switch (filter) {
+      case "overdue":
+        return reminder.status === "due" && isOverdue(date);
+      case "today":
+        return isToday(date);
+      case "tomorrow":
+        return reminder.status === "upcoming" && isTomorrow(date);
+      case "later":
+        return reminder.status === "upcoming" && isLater(date);
+      default:
+        return true;
+    }
+  });
+
+  const groupedReminders = filteredReminders.reduce((acc, reminder) => {
+    const date = new Date(reminder.scheduledAt);
+    let group = "Later";
+    if (isOverdue(date)) group = "Overdue";
+    else if (isToday(date)) group = "Today";
+    else if (isTomorrow(date)) group = "Tomorrow";
+
+    if (!acc[group]) acc[group] = [];
+    acc[group].push(reminder);
+    return acc;
+  }, {});
+
+  const GROUP_ORDER = ["Overdue", "Today", "Tomorrow", "Later"];
+
   return (
-    <div className="absolute z-[999] top-[2.5rem] right-[2rem] w-[380px] rounded-xl border border-gray-200 bg-white shadow-lg transition-all duration-300">
+    <div className="absolute z-[999] top-[3rem] right-[2rem] w-[400px] rounded-lg overflow-clip   bg-white shadow-lg ">
       {/* Header */}
-      <div className="relative bg-orange-600 text-white text-lg font-semibold text-center rounded-t-xl py-3 px-4 shadow-sm">
+      <div className="relative bg-gradient-to-r from-orange-600 to-orange-400  text-white text-lg font-bold text-center   py-3 shadow-md">
         Reminders
-        <div className="absolute -top-5 right-3 animate-shake z-10">
-          <img
-            src="/reminder.png"
-            alt="reminder"
-            className="h-[3.2rem] w-[3.2rem]"
-          />
-        </div>
+ 
+
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2 px-4 py-2 border-b bg-gray-50">
+        {[
+          { key: "overdue", label: "Overdue" },
+          { key: "today", label: "Today" },
+          { key: "tomorrow", label: "Tomorrow" },
+          { key: "later", label: "Later" },
+        ].map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setFilter(key)}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-full transition
+              ${
+                filter === key
+                  ? "bg-orange-500 text-white shadow"
+                  : "bg-white text-gray-600 border hover:bg-gray-100"
+              }`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* Reminder List */}
-      <div className="p-4 space-y-3 max-h-[60vh] min-h-[30vh] overflow-y-auto custom-scrollbar">
-        {reminders.length === 0 ? (
-          <p className="text-center text-gray-800 text-sm font-medium">
-            No due reminders
+      <div className="p-4 space-y-4 h-[600px] overflow-y-auto custom-scrollbar">
+        {Object.keys(groupedReminders).length === 0 ? (
+          <p className="text-center text-gray-500 text-sm">
+            No {filter} reminders
           </p>
         ) : (
-          reminders.map((reminder) => (
-            <div
-              key={reminder?._id}
-              className={`rounded-lg border border-gray-200  ${
-                reminder?.isRead ? "bg-gray-300" : "bg-gray-100"
-              }   p-3 space-y-2 transition-all hover:shadow-sm`}
-            >
-              <div className="flex justify-between items-center gap-2  text-[16px] font-semibold text-gray-800 leading-snug">
-                <Link
-                  // onClick={() => setShowReminder(false)}
-                  to={reminder?.redirectLink || "#"}
-                  className="block text-sm text-gray-800 "
-                >
-                  {reminder?.title}
-                </Link>
+          GROUP_ORDER.map(
+            (group) =>
+              groupedReminders[group] && (
+                <div key={group} className="space-y-3">
+                  <div className="text-xs font-semibold text-gray-400 uppercase px-1">
+                    {group}
+                  </div>
 
-                 
-                  <button
-                    className="text-orange-500 hover:underline font-medium text-lg"
-                    onClick={() => {
-                      dispatch(setReminderData(reminder))
-                      dispatch(setShowReminder(true))
+                  {groupedReminders[group].map((reminder) => {
+                    const date = new Date(reminder.scheduledAt);
+                    const isUpcoming =
+                      reminder.status === "upcoming" &&
+                      (isToday(date) || isTomorrow(date) || isLater(date));
+                    const showActions = reminder.status === "due";
+                    const countdown = getCountdownLabel(
+                      reminder.scheduledAt,
+                      now
+                    );
 
-                      setShowReminderNotificationPanel(false)
+                    return (
+                      <div
+                        key={reminder._id}
+                        className={`flex flex-col rounded-xl p-3 space-y-1 transition-all
+                          ${
+                            reminder.isRead
+                              ? "bg-gray-50 border border-gray-200 shadow-sm" // Read reminders
+                              : isUpcoming
+                              ? "bg-white border border-l-4 border-blue-400 shadow hover:shadow-md" // Upcoming reminders
+                              : reminder.status === "due"
+                              ? "bg-white border border-l-4 border-orange-400 shadow hover:shadow-md" // Due reminders
+                              : "bg-gray-50 border border-gray-200 shadow-sm" // Default/fallback
+                          }`}
+                      >
+                        {/* Title & Actions */}
+                        <div className="w-full flex justify-between items-start gap-2">
+                           <div className="text-sm font-semibold text-gray-800 min-w-0 break-words">
+    {reminder.title}
+  </div>
 
-                      if(!reminder?.isRead) {
-                        dispatch(markAsReadReminder(reminder?._id))
-                      }
-                    }}
-                  >
-                    Open
-                  </button>
-                 
-              </div>
+                          <div className="flex justify-end  items-center gap-2">
+                            {showActions && !reminder.isRead && (
+                              <button
+                                className="text-orange-500 text-lg hover:text-orange-600 transition"
+                                onClick={() =>
+                                  dispatch(markAsReadReminder(reminder._id))
+                                }
+                              >
+                                <MdOutlineMarkChatRead />
+                              </button>
+                            )}
+                            {showActions && (
+                              <button
+                                className="text-orange-500 text-xs font-semibold hover:underline"
+                                onClick={() => {
+                                  dispatch(setReminderData(reminder));
+                                  dispatch(setShowReminder(true));
+                                  setShowReminderNotificationPanel(false);
+                                  if (!reminder.isRead) {
+                                    dispatch(markAsReadReminder(reminder._id));
+                                  }
+                                }}
+                              >
+                                Open
+                              </button>
+                            )}{" "}
+                          </div>
+                        </div>
 
-              <div className="block text-sm text-gray-800 " dangerouslySetInnerHTML={{__html: reminder?.description}}>
-                {/* <span className="font-medium text-gray-800 ">
-                  Description:{" "}
-                </span> */}
-                {/* {reminder?.description} */}
-              </div>
+                        {/* Description */}
+                        {reminder.description && (
+                          <div
+                            className="text-sm text-gray-600 leading-snug"
+                            dangerouslySetInnerHTML={{
+                              __html: reminder.description,
+                            }}
+                          />
+                        )}
 
-              <div className="flex items-center justify-between text-xs text-gray-600  pt-1">
-                <span>
-                  Due: {moment(reminder?.scheduledAt).format("MMM D, h:mm A")}
-                </span>
+                        {/* Footer */}
+                        <div className="flex justify-between items-center text-xs mt-1">
+                          <span className="text-gray-500">
+                            {moment(reminder.scheduledAt).format(
+                              "MMM D, h:mm A"
+                            )}
+                          </span>
 
-                <div className="flex justify-end items-center gap-2 ">
-                  {!reminder?.isRead && (
-                    <button
-                      className="text-blue-500 hover:underline font-medium text-lg"
-                      title="Mark as Read"
-                      onClick={() => {
-                        dispatch(markAsReadReminder(reminder?._id))
-                        
-                      }}
-                    >
-                      <MdOutlineMarkChatRead />
-                    </button>
-                  )}
-
-                  <span
-                    className={`h-2.5 w-2.5 rounded-full inline-block ${
-                      reminder?.isRead ? "bg-gray-400" : "bg-orange-500"
-                    }`}
-                  />
+                          <span
+                            className={`px-2 py-0.5 rounded-full font-semibold text-xs
+                              ${
+                                isUpcoming
+                                  ? "bg-blue-50 text-blue-600"
+                                  : countdown === "Overdue"
+                                  ? "bg-red-100 text-red-600"
+                                  : "bg-orange-100 text-orange-600"
+                              }`}
+                          >
+                            {countdown}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
-            </div>
-          ))
+              )
+          )
         )}
       </div>
     </div>

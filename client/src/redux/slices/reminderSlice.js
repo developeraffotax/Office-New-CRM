@@ -9,6 +9,75 @@ const channel = new BroadcastChannel("reminder-sync");
 
 // ------------------- Async Actions -------------------
 
+
+export const updateReminder = createAsyncThunk(
+  "reminders/updateReminder",
+  async ({ reminderId, scheduledAt }, { dispatch,  rejectWithValue }) => {
+    try {
+      const { data, status } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/reminders/update/reminder/${reminderId}`,
+        { scheduledAt }
+      );
+
+      if (status === 200) {
+        toast.success(`Reminder updated successfully`);
+        // dispatch(setShowReminder(false));
+        dispatch(getRemindersCount());
+        dispatch(fetchReminders());
+
+
+        // 🔄 Broadcast snooze event to other tabs
+        channel.postMessage({
+          type: "UPDATE_REMINDER",
+           
+          
+        });
+
+
+      }
+      return data.reminder;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+
+
+
+
+
+export const deleteReminder = createAsyncThunk(
+  "reminders/deleteReminder",
+  async (reminderId, {dispatch, rejectWithValue }) => {
+    try {
+      const { data, status } =  await axios.delete(`${process.env.REACT_APP_API_URL}/api/v1/reminders/delete/reminder/${reminderId}`);
+        
+      if (status === 200) {
+        toast.success(`Reminder deleted successfully`);
+        // dispatch(setShowReminder(false));
+        dispatch(getRemindersCount());
+        dispatch(fetchReminders());
+
+
+        // 🔄 Broadcast snooze event to other tabs
+        channel.postMessage({
+          type: "DELETE_REMINDER",
+           
+          
+        });
+
+
+      }
+
+      return reminderId;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+
+
+
 export const fetchReminders = createAsyncThunk(
   "reminders/fetchReminders",
   async (_, { rejectWithValue }) => {
@@ -177,6 +246,7 @@ const reminderSlice = createSlice({
       .addCase(getRemindersCount.fulfilled, (state, action) => {
         state.unread_reminders_count = action.payload;
       });
+      
   },
 });
 
@@ -212,6 +282,19 @@ export const initReminderListener = () => (dispatch) => {
 
     if (type === "COMPLETE_REMINDER" ) {
       dispatch(setShowReminder(false));
+        dispatch(getRemindersCount());
+        dispatch(fetchReminders());
+    }
+
+     if (type === "UPDATE_REMINDER" ) {
+        
+        dispatch(getRemindersCount());
+        dispatch(fetchReminders());
+    }
+
+
+     if (type === "DELETE_REMINDER" ) {
+        
         dispatch(getRemindersCount());
         dispatch(fetchReminders());
     }

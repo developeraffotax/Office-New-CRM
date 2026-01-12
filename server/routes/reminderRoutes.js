@@ -11,6 +11,7 @@ import {
   markAsReadReminder,
  
   snoozeReminder,
+  updateReminder,
 } from "../controllers/reminderController.js";
  
 
@@ -19,13 +20,16 @@ const router = express.Router();
 // Create Reminder
 router.post("/create/reminder", requiredSignIn, createReminder);
 
+// Update Reminder
+router.put("/update/reminder/:reminderId", requiredSignIn, updateReminder);
+
 // Get Reminder
 router.get("/fetch/reminder", requiredSignIn, getDueReminders);
 
 router.get("/fetch/remindersCount", requiredSignIn, getDueRemindersCount);
 
 // Delete Reminder
-router.delete("/delete/reminder/:id", requiredSignIn, deleteReminder);
+router.delete("/delete/reminder/:reminderId", requiredSignIn, deleteReminder);
 
 // PUT - Snooze reminder (update scheduledAt)
 router.put("/:id", snoozeReminder);

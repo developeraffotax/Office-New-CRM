@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import moment from "moment";
-import { MdOutlineMarkChatRead } from "react-icons/md";
+import { Link} from "react-router-dom";
+import { MdDelete, MdEdit, MdOutlineMarkChatRead } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchReminders,
@@ -8,6 +9,8 @@ import {
   setReminderData,
   setShowReminder,
 } from "../../redux/slices/reminderSlice";
+import UpdateUpcomingReminderModal from "./ReminderCmps/UpdateUpcomingReminderModal";
+import DeleteUpcomingReminderModal from "./ReminderCmps/DeleteUpcomingReminderModal";
 
 /* -------------------- DATE HELPERS -------------------- */
 const startOfDay = (date) => {
@@ -58,6 +61,11 @@ const ReminderNotifications = ({ setShowReminderNotificationPanel }) => {
   const [filter, setFilter] = useState("today");
   const [now, setNow] = useState(new Date());
 
+  console.log("THE REMINDER ARE>>>", reminders);
+  const [editReminder, setEditReminder] = useState(null);
+
+  const [deleteReminderData, setDeleteReminderData] = useState(null);
+
   useEffect(() => {
     dispatch(fetchReminders());
   }, [dispatch]);
@@ -102,8 +110,6 @@ const ReminderNotifications = ({ setShowReminderNotificationPanel }) => {
       {/* Header */}
       <div className="relative bg-gradient-to-r from-orange-600 to-orange-400  text-white text-lg font-bold text-center   py-3 shadow-md">
         Reminders
- 
-
       </div>
 
       {/* Filters */}
@@ -171,10 +177,11 @@ const ReminderNotifications = ({ setShowReminderNotificationPanel }) => {
                       >
                         {/* Title & Actions */}
                         <div className="w-full flex justify-between items-start gap-2">
-                           <div className="text-sm font-semibold text-gray-800 min-w-0 break-words">
-    {reminder.title}
-  </div>
+                          <Link to={reminder.redirectLink} className="text-sm font-semibold text-gray-800 min-w-0 break-words">
+                            {reminder.title}
+                          </Link>
 
+                         
                           <div className="flex justify-end  items-center gap-2">
                             {showActions && !reminder.isRead && (
                               <button
@@ -201,6 +208,24 @@ const ReminderNotifications = ({ setShowReminderNotificationPanel }) => {
                                 Open
                               </button>
                             )}{" "}
+                            {isUpcoming && (
+                              <button
+                                onClick={() => setEditReminder(reminder)}
+                                className="p-1 hover:bg-gray-100 rounded-full transition"
+                                title="Edit Reminder"
+                              >
+                                <MdEdit className="h-4 w-4 text-blue-500" />
+                              </button>
+                            )}
+                            {isUpcoming && (
+                              <button
+                                onClick={() => setDeleteReminderData(reminder)}
+                                className="p-1 hover:bg-gray-100 rounded-full transition"
+                                title="Delete Reminder"
+                              >
+                                <MdDelete className="h-4 w-4 text-red-500" />
+                              </button>
+                            )}
                           </div>
                         </div>
 
@@ -243,6 +268,20 @@ const ReminderNotifications = ({ setShowReminderNotificationPanel }) => {
           )
         )}
       </div>
+
+      {editReminder && (
+        <UpdateUpcomingReminderModal
+          reminder={editReminder}
+          onClose={() => setEditReminder(null)}
+        />
+      )}
+
+      {deleteReminderData && (
+        <DeleteUpcomingReminderModal
+          reminder={deleteReminderData}
+          onClose={() => setDeleteReminderData(null)}
+        />
+      )}
     </div>
   );
 };

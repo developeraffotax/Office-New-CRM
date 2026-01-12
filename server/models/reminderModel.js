@@ -30,6 +30,16 @@ const reminderSchema = new mongoose.Schema(
       default: false,
     
     },
+
+
+    // 🔥 NEW
+  groupId: {
+    type: mongoose.Schema.Types.ObjectId,
+    index: true
+  },
+
+
+  
   },
   { timestamps: true }
 );

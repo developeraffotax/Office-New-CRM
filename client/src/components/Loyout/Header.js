@@ -397,36 +397,39 @@ export default function Header({
                 )}
               </div>
               {open && (
-                <div className="shadow-xl bg-gray-100 absolute z-[999] top-[2rem] left-[1.6rem] rounded-lg overflow-clip  ">
-                  <div className="border-b border-orange-500 px-8 py-3 flex items-center justify-between
-                bg-gradient-to-r from-orange-600 to-orange-400 shadow-md">
-  <button
-    title="Clear all"
-    onClick={() => dispatch(dismissAllNotification(auth.user.id))}
-    disabled={notificationData.length === 0}
-    className="flex items-center justify-center w-9 h-9 rounded-lg 
+                <div className="shadow-xl bg-gray-100 absolute z-[999] top-[2rem] left-[1.6rem] rounded-lg    ">
+                  <div
+                    className="border-b border-orange-500 px-8 py-3 flex items-center justify-between rounded-t-lg 
+                bg-gradient-to-r from-orange-600 to-orange-400 shadow-md"
+                  >
+                    <button
+                      title="Clear all"
+                      onClick={() =>
+                        dispatch(dismissAllNotification(auth.user.id))
+                      }
+                      disabled={notificationData.length === 0}
+                      className="flex items-center justify-center w-9 h-9 rounded-lg 
                bg-white/20 hover:bg-white/30 transition disabled:opacity-60 disabled:cursor-not-allowed"
-  >
-    <MdDeleteOutline className="text-white w-5 h-5" />
-  </button>
+                    >
+                      <MdDeleteOutline className="text-white w-5 h-5" />
+                    </button>
 
-  <h5 className="text-[20px]   text-white ">
-    Notifications
-  </h5>
+                    <h5 className="text-[20px]   text-white ">Notifications</h5>
 
-  <button
-   title="Mark all as read"
-    onClick={() => dispatch(updateAllNotification(auth.user.id))}
-    disabled={notificationData.length === 0}
-    className="flex items-center justify-center w-9 h-9 rounded-lg 
+                    <button
+                      title="Mark all as read"
+                      onClick={() =>
+                        dispatch(updateAllNotification(auth.user.id))
+                      }
+                      disabled={notificationData.length === 0}
+                      className="flex items-center justify-center w-9 h-9 rounded-lg 
                bg-white/20 hover:bg-white/30 transition disabled:opacity-60 disabled:cursor-not-allowed "
-  >
-    <LuEye className="text-white w-5 h-5" />
-  </button>
-</div>
+                    >
+                      <LuEye className="text-white w-5 h-5" />
+                    </button>
+                  </div>
 
-
-                  <div className="w-[380px]  h-[50vh] overflow-y-auto bg-white  shadow-lg border border-gray-200 ">
+                  <div className="w-[380px]  h-[50vh] overflow-y-auto bg-white  shadow-lg border border-gray-200 rounded-b-lg">
                     {visibleNotifications?.length > 0 ? (
                       visibleNotifications.map((item) => {
                         const isRead = item.status === "read";

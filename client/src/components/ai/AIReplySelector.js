@@ -3,7 +3,7 @@ import axios from "axios";
 
 const API_URL = `${process.env.REACT_APP_API_URL}/api/v1/ai/generate-email-replies`;
 
-export default function AIReplySelector({ threadMessages, onSelect }) {
+export default function AIReplySelector({ threadId, onSelect }) {
   const [loading, setLoading] = useState(false);
   const [replies, setReplies] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -15,7 +15,7 @@ export default function AIReplySelector({ threadMessages, onSelect }) {
       setReplies([]);
 
       const { data } = await axios.post(API_URL, {
-        messages: threadMessages,
+        threadId: threadId,
       });
 
       setReplies(data.replies || []);
@@ -55,6 +55,12 @@ export default function AIReplySelector({ threadMessages, onSelect }) {
               Generating…
             </span>
           )}
+
+          {!loading && (
+           <button disabled={loading} className="px-4 py-2 bg-gray-100 text-gray-800 font-medium rounded-md hover:bg-gray-200 transition-colors duration-200">
+  Generate
+</button>
+          )}
         </div>
 
         {/* Scrollable Content */}
@@ -88,7 +94,8 @@ export default function AIReplySelector({ threadMessages, onSelect }) {
               >
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    {r.tone}
+                    {/* {r.option} */}
+                    Reply {i + 1}
                   </span>
 
                   {selectedIndex === i && (
@@ -98,9 +105,9 @@ export default function AIReplySelector({ threadMessages, onSelect }) {
                   )}
                 </div>
 
-                <p className="text-sm text-gray-700 whitespace-pre-line line-clamp-4">
-                  {r.content}
-                </p>
+                <div className="text-sm text-gray-700 whitespace-pre-line line-clamp-4" dangerouslySetInnerHTML={{__html: r.content}}>
+                   
+                </div>
               </div>
             ))}
 

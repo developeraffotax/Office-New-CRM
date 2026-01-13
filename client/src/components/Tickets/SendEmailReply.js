@@ -224,7 +224,7 @@ const [inputValue, setInputValue] = useState("");
 
 
       <div className="w-[55rem] rounded-md  border flex flex-col gap-4 bg-white mt-[5rem] 3xl:mt-0 relative">
-      {/* <AIReplySelector threadMessages={emailDetail?.decryptedMessages || []} onSelect={(suggestedReply) => setMessage(suggestedReply)} /> */}
+      <AIReplySelector threadId={threadId} onSelect={(suggestedReply) => setMessage(suggestedReply)} />
         <div className="flex items-center justify-between px-4 pt-2">
           <h1 className="text-[20px] font-semibold text-black">Reply</h1>
           <span

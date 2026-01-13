@@ -1,96 +1,106 @@
+import { performance } from "perf_hooks";
 import OpenAI from "openai";
-import { buildEmailContext } from "../utils/emailContextBuilder.js";
+import { buildEmailContext, fetchThreadMessages,   getActionType } from "../utils/utils.js";
+import { createSystemPrompt } from "./prompts/systemPrompt/createSystemPrompt.js";
+import { createUserPrompt } from "./prompts/userPrompt/createUserPrompt.js";
+ 
+ 
 
-// const openai = new OpenAI({
-//   apiKey: process.env.OPENAI_API_KEY,
-// });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-
-
-const mock = {
-  "replies": [
-    {
-      "tone": "Professional & concise",
-      "content": "Hi Dan,\n\nThank you for letting me know. That’s absolutely fine — once Xero is sorted, just drop me a message and we’ll pick things up from there.\n\nKind regards,\nRashid"
-    },
-    {
-      "tone": "Friendly & reassuring",
-      "content": "Hi Dan,\n\nThanks for the update — no problem at all. Take your time getting Xero sorted and feel free to reach out when you’re ready. I’ll be happy to help and make the rest straightforward.\n\nBest regards,\nRashid"
-    },
-    {
-      "tone": "Detailed & explanatory",
-      "content": "Hi Dan,\n\nThank you for the update. That’s no problem at all.\n\nOnce you’ve finished sorting Xero, just let me know and I’ll review everything with you. If you need any guidance while setting things up or have questions in the meantime, feel free to reach out — I’m happy to assist.\n\nWe can then ensure the accounts are completed smoothly ahead of the deadline.\n\nKind regards,\nRashid"
-    },
-    {
-      "tone": "Very short confirmation",
-      "content": "Hi Dan,\n\nThanks for the update — no problem at all. Speak soon.\n\nRashid"
-    }
-  ]
-}
 export const generateEmailReplies = async (req, res) => {
+  const t0 = performance.now(); // total request start
+
   try {
-     const { messages } = req.body;
+    const { threadId } = req.body;
+    if (!threadId) {
+      return res.status(400).json({ success: false, message: "Missing threadId" });
+    }
 
-     console.log(" THE EMAIL MESSAGES ARE💜💜💜", messages)
+    /* ---------------- Gmail API timing ---------------- */
+    const tGmailStart = performance.now();
+    const messages = await fetchThreadMessages(threadId);
+    const tGmailEnd = performance.now();
 
-//       const contextMessages = buildEmailContext(messages);
 
-//     const systemPrompt = `
-// You are a professional accountant at Affotax.
-// Generate multiple alternative email replies.
-// Rules:
-// - Do NOT repeat quoted email history
-// - No subject line
-// - End with "Kind regards, Affotax"
-// - Each reply must be different in tone
-// `;
+    // return console.log("MESSAGES ARE 💚", messages)
 
-//     const userPrompt = `
-// Email conversation:
-// ${contextMessages.map((m, i) => `
-// Message ${i + 1}:
-// From: ${m.from}
-// ${m.body}
-// `).join("\n")}
+    if (!messages.length) {
+      return res.status(404).json({ success: false, message: "No messages found" });
+    }
 
-// Generate exactly 4 different reply options.
-// Return the result strictly in JSON like this:
+    /* ---------------- Prompt build timing ---------------- */
+    const tPromptStart = performance.now();
+    const contextMessages = buildEmailContext(messages);
 
-// {
-//   "replies": [
-//     { "tone": "Professional & concise", "content": "..." },
-//     { "tone": "Friendly & reassuring", "content": "..." },
-//     { "tone": "Detailed & explanatory", "content": "..." },
-//     { "tone": "Very short confirmation", "content": "..." }
-//   ]
-// }
-// `;
+    const actionType = getActionType(messages)
 
-//     const completion = await openai.chat.completions.create({
-//       model: "gpt-5-mini",
-//       messages: [
-//         { role: "system", content: systemPrompt },
-//         { role: "user", content: userPrompt },
-//       ],
-//       temperature: 0.6,
-//     });
+    const systemPrompt = createSystemPrompt(actionType);
+    const userPrompt = createUserPrompt(contextMessages, actionType);
+    const tPromptEnd = performance.now();
 
-//     const aiResponse = completion.choices[0].message.content;
+    /* ---------------- OpenAI timing ---------------- */
+    const tOpenAIStart = performance.now();
 
-//     // Safe parse
-//     const parsed = JSON.parse(aiResponse);
+    const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0.6,
+        max_tokens: 700,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+      });
+
+
+    // const completion = await openai.chat.completions.create({
+    //   model: "gpt-5-mini",
+    //   messages: [
+    //     { role: "system", content: systemPrompt },
+    //     { role: "user", content: userPrompt },
+    //   ],
+    // });
+    const tOpenAIEnd = performance.now();
+
+    /* ---------------- Parse timing ---------------- */
+    const tParseStart = performance.now();
+    const aiResponse = completion.choices[0].message.content;
+
+    let parsed;
+    try {
+      parsed = JSON.parse(aiResponse);
+    } catch (err) {
+      console.error("AI raw response:", aiResponse);
+      return res.status(500).json({
+        success: false,
+        message: "AI response parse failed",
+      });
+    }
+    const tParseEnd = performance.now();
+
+    const tTotalEnd = performance.now();
+
+    /* ---------------- Timing summary ---------------- */
+    const timings = {
+      gmailFetchMs: +(tGmailEnd - tGmailStart).toFixed(2),
+      promptBuildMs: +(tPromptEnd - tPromptStart).toFixed(2),
+      openAIMs: +(tOpenAIEnd - tOpenAIStart).toFixed(2),
+      parseMs: +(tParseEnd - tParseStart).toFixed(2),
+      totalMs: +(tTotalEnd - t0).toFixed(2),
+      messageCount: messages.length,
+      promptChars: userPrompt.length,
+    };
+
+    console.table(timings);
+    console.log(parsed)
 
     res.json({
       success: true,
-      replies: mock.replies,
-    //   replies: parsed.replies,
+      replies: parsed.messages,
+      
     });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to generate AI replies",
-    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Failed to generate AI replies" });
   }
 };

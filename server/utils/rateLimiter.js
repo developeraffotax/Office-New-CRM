@@ -3,7 +3,7 @@
 // ---- Per-minute limiter ----
 export const aiPerMinuteLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 1, // max 5 requests per IP per minute
+  max: 10, // max 10 requests per IP per minute
   message: {
     status: 429,
     error: "Too many requests! Please wait a minute before trying again.",

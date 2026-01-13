@@ -41,6 +41,7 @@ import aiRoutes from "../aiModule/routes/ai.routes.js";
 
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import { sendDatatoGoogleSheet } from "../utils/googleSheet.js";
+import { aiPerMinuteLimiter } from "../utils/rateLimiter.js";
 
 export const registerRoutes = (app) => {
   app.use("/api/v1/user", userRoute);
@@ -87,5 +88,5 @@ export const registerRoutes = (app) => {
   app.use("/api/v1/settings", userSettingsRoutes);
 
 
-  app.use("/api/v1/ai", aiRoutes);
+  app.use("/api/v1/ai",aiPerMinuteLimiter, aiRoutes);
 };

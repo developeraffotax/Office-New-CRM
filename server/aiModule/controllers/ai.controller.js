@@ -36,6 +36,8 @@ export const generateEmailReplies = async (req, res) => {
     const actionType = getActionType(messages)
 
     const systemPrompt = createSystemPrompt(actionType);
+
+ 
     const userPrompt = createUserPrompt(contextMessages, actionType);
     const tPromptEnd = performance.now();
 

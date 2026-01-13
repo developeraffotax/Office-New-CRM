@@ -152,8 +152,11 @@ export const fetchThreadMessages = async (threadId) => {
 };
 
 // Build AI prompt context
-export const buildEmailContext = (messages) => {
-  return messages
+export const buildEmailContext = (messages = [] ) => {
+
+  const slicedArr = messages?.length > 6 ? messages.slice(-6) : messages;
+
+  return slicedArr
     .map(
       (m, i) =>
         `Message ${i + 1}:\nFrom: ${m.from}\n${m.body}\n${

@@ -1,8 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { HiSparkles, HiArrowPath, HiOutlineDocumentDuplicate, HiCheckCircle } from "react-icons/hi2";
+import {  HiArrowPath, HiOutlineDocumentDuplicate, HiCheckCircle } from "react-icons/hi2";
 import { RiRobot2Line } from "react-icons/ri";
+import { FaReplyAll } from "react-icons/fa";
+ import { BsFillReplyAllFill } from "react-icons/bs";
 
 const API_URL = `${process.env.REACT_APP_API_URL}/api/v1/ai/generate-email-replies`;
 
@@ -33,11 +35,27 @@ export default function AIReplySelector({ threadId, onSelect }) {
     generateReplies();
   }, [generateReplies]);
 
-  const copyToClipboard = (e, text) => {
-    e.stopPropagation();
-    navigator.clipboard.writeText(text.replace(/<[^>]*>/g, ""));
-    toast.success("Copied to clipboard", { id: "copy-toast" });
-  };
+ const copyToClipboard = (e, text) => {
+  e.stopPropagation();
+
+  const formattedText = text
+    // Paragraphs → double line break
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<p[^>]*>/gi, "")
+
+    // Line breaks
+    .replace(/<br\s*\/?>/gi, "\n")
+
+    // Remove remaining HTML tags
+    .replace(/<[^>]+>/g, "")
+
+    // Cleanup extra spacing
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+
+  navigator.clipboard.writeText(formattedText);
+  toast.success("Copied to clipboard", { id: "copy-toast" });
+};
 
   return (
     <div className="absolute top-0 left-full ml-4 w-[450px] h-full   animate-fade-in duration-200 rounded-lg shadow-2xl overflow-hidden">
@@ -45,12 +63,15 @@ export default function AIReplySelector({ threadId, onSelect }) {
 
         {/* Header */}
         <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <HiSparkles className="w-5 h-5 text-orange-500" />
-            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-              Reply Suggestions
-            </h3>
-          </div>
+     <div className="flex items-center gap-2">
+  <span className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-orange-500 to-red-500">
+    <BsFillReplyAllFill className="w-4 h-4 text-white" />
+  </span>
+  <h3 className="text-sm font-semibold text-slate-800">
+    Reply Suggestions
+  </h3>
+</div>
+
           <button
             onClick={generateReplies}
             disabled={loading}

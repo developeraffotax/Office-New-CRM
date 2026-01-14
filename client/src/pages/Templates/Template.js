@@ -26,6 +26,7 @@ import { useSelector } from "react-redux";
 import createTemplateColumns from "./table/columns";
 import { isAdmin } from "../../utlis/isAdmin";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
+import { useEscapeKey } from "../../utlis/useEscapeKey";
 
 export default function Template() {
 
@@ -54,6 +55,15 @@ export default function Template() {
   const [showJobHolderFilter, setShowJobHolderFilter] = useState(true);
 
   // console.log("templateData:", templateData);
+
+    useEscapeKey(() => {
+    setAddTemplate(false);
+  }, addTemplate);
+
+      useEscapeKey(() => {
+    setShowTemplate(false);
+  }, showTemplate);
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {

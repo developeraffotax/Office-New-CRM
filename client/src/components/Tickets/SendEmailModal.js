@@ -9,6 +9,7 @@ import { TbLoader2 } from "react-icons/tb";
 import { RiUploadCloud2Fill } from "react-icons/ri";
 import { useSelector } from "react-redux";
 import { filterOption, HighlightedOption, sortOptions } from "./HighlightedOption";
+import { useEscapeKey } from "../../utlis/useEscapeKey";
 
 export default function SendEmailModal({
   setShowSendModal,
@@ -32,6 +33,28 @@ const [inputValue, setInputValue] = useState("");
   const [users, setUsers] = useState([]);
   const [jobHolder, setJobHolder] = useState("");
 
+
+  useEscapeKey(() => {
+    setShowSendModal(false);
+  });
+
+
+
+  // useEffect(() => {
+       
+  
+  //     const handleKeyDown = (e) => {
+  //       if (e.key === "Escape") {
+  //         setShowSendModal(false);
+  //       }
+  //     };
+  
+  //     window.addEventListener("keydown", handleKeyDown);
+  
+  //     return () => {
+  //       window.removeEventListener("keydown", handleKeyDown);
+  //     };
+  //   }, []);
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(

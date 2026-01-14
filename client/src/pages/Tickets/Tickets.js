@@ -94,6 +94,7 @@ export default function Tickets() {
   const comment_taskId = searchParams.get("comment_taskId");
 
   const [showSendModal, setShowSendModal] = useState(false);
+  
   const [emailData, setEmailData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);

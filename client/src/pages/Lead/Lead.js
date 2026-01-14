@@ -44,6 +44,8 @@ import { isAdmin } from "../../utlis/isAdmin";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import EmailDetailDrawerNewWrapper from "../../components/shared/EmailDetailDrawerNewWrapper";
 import FollowupDateFilter from "./ui/FollowupDateFilter";
+import SelectedUsers from "../../components/SelectedUsers";
+import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 
 const updates_object_init = {
       companyName: '',
@@ -61,6 +63,9 @@ const updates_object_init = {
       value: '',
       number: ''
 }
+
+
+ 
 
 export default function Lead() {
 
@@ -100,6 +105,10 @@ export default function Lead() {
   const [showJobHolder, setShowJobHolder] = useState(true);
   const [active1, setActive1] = useState("");
 
+
+
+ 
+const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsers("leads:selected_users", userName);
 
   const [emailPopup, setEmailPopup] = useState({
     open: false,
@@ -387,27 +396,103 @@ useEffect(() => {
 
 
 
-  
-  const renderColumnControls = () => (
-    <div className="flex flex-col gap-2 bg-white rounded-md   border p-4">
-      {Object.keys(columnVisibility)?.map((column) => (
-        <div key={column} className="flex w-full gap-1 flex-col ">
-          <div className="flex items-center">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={columnVisibility[column]}
-                onChange={() => toggleColumnVisibility(column)}
-                className="mr-2 accent-orange-600 h-4 w-4"
-              />
-              {column}
-            </label>
-          </div>
-          <hr className=" bg-gray-300 w-full h-[1px]" />
+ 
+const renderColumnControls = () => (
+  <section className="w-[520px] rounded-lg bg-white border border-slate-200 shadow-sm">
+    {/* Header */}
+    <header className="px-5 py-3 border-b">
+      <h3 className="text-sm font-semibold text-slate-800">
+        View settings
+      </h3>
+    </header>
+
+    {/* Content */}
+    <div className="grid grid-cols-2 divide-x">
+      {/* LEFT — Columns */}
+      <section className="px-5 py-4">
+        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+          Columns
+        </h4>
+
+        <ul className="space-y-1 list-decimal">
+          {Object.keys(columnVisibility)?.map((column) => (
+            <li key={column}>
+              <label
+                className="flex items-center justify-between rounded-md px-2 py-1.5
+                           text-sm text-slate-700 cursor-pointer
+                           hover:bg-slate-50 transition"
+              >
+                <span className="capitalize">{column}</span>
+                <input
+                  type="checkbox"
+                  checked={columnVisibility[column]}
+                  onChange={() => toggleColumnVisibility(column)}
+                  className="h-4 w-4 accent-orange-600"
+                />
+              </label>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* RIGHT — Users */}
+      <section className="px-5 py-4">
+        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+          Users
+        </h4>
+
+        <div className="max-h-60 overflow-y-auto space-y-1 pr-1">
+          <SelectedUsers
+            selectedUsers={selectedUsers}
+            setSelectedUsers={setSelectedUsers}
+            userNameArr={userName}
+          />
         </div>
-      ))}
+      </section>
     </div>
+  </section>
+);
+
+
+const SelectedUsers = ({ userNameArr, selectedUsers, setSelectedUsers }) => {
+  return (
+    <>
+      {userNameArr.map((user) => {
+        const isSelected = selectedUsers.includes(user);
+        return (
+          <div
+            key={user}
+            onClick={() => {
+              setSelectedUsers((prev) =>
+                prev.includes(user) ? prev.filter((u) => u !== user) : [...prev, user]
+              );
+            }}
+            className={`group flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 border ${
+              isSelected
+                ? 'bg-orange-50/50 border-orange-100 text-orange-900'
+                : 'bg-transparent border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+            }`}
+          >
+            {/* Classy Mini-Checkbox */}
+            <div className={`w-3.5 h-3.5 rounded-md border flex items-center justify-center transition-all ${
+              isSelected ? 'bg-orange-500 border-orange-500' : 'border-slate-300 group-hover:border-slate-400'
+            }`}>
+              {isSelected && (
+                <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <span className="text-xs font-semibold truncate">{user}</span>
+          </div>
+        );
+      })}
+    </>
   );
+};
+
+
+
 
 
 
@@ -1034,9 +1119,9 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
       //  -----------Handle drag end---------
     const handleUserOnDragEnd = (result) => {
    
-      const items = reorder( userName, result.source.index, result.destination.index );
+      const items = reorder( selectedUsers, result.source.index, result.destination.index );
       localStorage.setItem("leads_usernamesOrder", JSON.stringify(items));
-      setUserName(items)
+      setSelectedUsers(items)
   
     };
  
@@ -1316,7 +1401,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
 
 
 
-
+          
 
                     {/* ----------Job_Holder Summery Filters---------- */}
                     {auth?.user?.role?.name === "Admin" && showJobHolder &&  (
@@ -1352,7 +1437,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                                     </div>
 
 
-                            {userName.map((user, index) => {
+                            {selectedUsers.map((user, index) => {
 
                                 console.log("THE USER IS", user)
 

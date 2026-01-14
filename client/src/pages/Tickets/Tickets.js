@@ -47,6 +47,7 @@ import { GoEye, GoEyeClosed } from "react-icons/go";
 import { useSocket } from "../../context/socketProvider";
 import UserTicketChart from "./userTicketChart/UserTicketChart";
 import { BsGraphUpArrow } from "react-icons/bs";
+import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 
 const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "" };
 const jobStatusOptions = [
@@ -134,6 +135,10 @@ export default function Tickets() {
   const [appliedFilters, setAppliedFilters] = useState({});
 
   const [ticketSubject, setTicketSubject] = useState("");
+
+
+        const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsers("tickets:selected_users", userName);
+
 
   const socket = useSocket();
 
@@ -284,12 +289,12 @@ export default function Tickets() {
 
   const handleUserOnDragEnd = (result) => {
     const items = reorder(
-      userName,
+      selectedUsers,
       result.source.index,
       result.destination.index
     );
     localStorage.setItem("tickets_usernamesOrder", JSON.stringify(items));
-    setUserName(items);
+    setSelectedUsers(items);
   };
 
   const getJobHolderCount = (user, status) => {
@@ -976,8 +981,13 @@ export default function Tickets() {
                         colVisibility,
                         columnVisibility,
                         setColumnVisibility,
-                        "Tickets"
+                        "Tickets",
+
+                        selectedUsers,
+                        setSelectedUsers,
+                        userName
                       )}
+                      
                     </div>
                   )}
                 </div>
@@ -1015,7 +1025,7 @@ export default function Tickets() {
                             All ({getJobHolderCount("All")})
                           </div>
 
-                          {userName.map((user, index) => {
+                          {selectedUsers.filter(uName => getJobHolderCount(uName) > 0).map((user, index) => {
                             return (
                               <Draggable
                                 key={user}

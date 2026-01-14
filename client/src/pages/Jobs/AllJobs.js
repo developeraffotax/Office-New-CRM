@@ -61,6 +61,8 @@ import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { isAdmin } from "../../utlis/isAdmin";
 import { SubtaskListManager } from "./SubtaskListManager";
 import OutsideFilter from "./utils/OutsideFilter";
+import { usePersistedUsers } from "../../hooks/usePersistedUsers";
+import SelectedUsers from "../../components/SelectedUsers";
  
  
  
@@ -249,6 +251,7 @@ export default function AllJobs() {
 
 
 
+      const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsers("jobs:selected_users", users);
 
 
 
@@ -1747,56 +1750,84 @@ const ctx = useMemo(() => {
     }
   };
 
-  const renderColumnControls = () => (
-    <div className="flex flex-col gap-2 bg-white rounded-md   border p-4">
-      {Object.keys(columnVisibility)?.map((column) => (
-        <div key={column} className="flex w-full gap-1 flex-col ">
-          <div className="flex items-center">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={columnVisibility[column]}
-                onChange={() => toggleColumnVisibility(column)}
-                className="mr-2 accent-orange-600 h-4 w-4"
-              />
-              {column}
-            </label>
-          </div>
-          <hr className=" bg-gray-300 w-full h-[1px]" />
+const renderColumnControls = () => (
+  <section className="w-[520px] rounded-lg bg-white border border-slate-200 shadow-sm">
+    {/* Header */}
+    <header className="px-5 py-3 border-b">
+      <h3 className="text-sm font-semibold text-slate-800">
+        View settings
+      </h3>
+    </header>
+
+    {/* Content */}
+    <div className="grid grid-cols-2 divide-x">
+      {/* LEFT — Columns */}
+      <section className="px-5 py-4">
+        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+          Columns
+        </h4>
+
+        <ul className="space-y-1 list-decimal">
+          {Object.keys(columnVisibility)?.map((column) => (
+            <li key={column}>
+              <label
+                className="flex items-center justify-between rounded-md px-2 py-1.5
+                           text-sm text-slate-700 cursor-pointer
+                           hover:bg-slate-50 transition"
+              >
+                <span className="capitalize">{column}</span>
+                <input
+                  type="checkbox"
+                  checked={columnVisibility[column]}
+                  onChange={() => toggleColumnVisibility(column)}
+                  className="h-4 w-4 accent-orange-600"
+                />
+              </label>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* RIGHT — Users */}
+      <section className="px-5 py-4">
+        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+          Users
+        </h4>
+
+        <div className="h-full overflow-y-auto space-y-1 pr-1">
+          <SelectedUsers
+            selectedUsers={selectedUsers}
+            setSelectedUsers={setSelectedUsers}
+            userNameArr={users}
+          />
         </div>
-      ))}
+      </section>
     </div>
-  );
+  </section>
+);
 
-  //  -----------Handle drag end---------
-  const handleUserOnDragEnd = (result) => {
-    const { destination, source } = result;
 
-    if (!destination || destination.index === source.index) return;
 
-    const newTodos = Array.from(usersData);
-    const [movedTodo] = newTodos.splice(source.index, 1);
-    newTodos.splice(destination.index, 0, movedTodo);
+    // a little function to help us with reordering the result
+    const reorder = (list, startIndex, endIndex) => {
+      const result = Array.from(list);
+      const [removed] = result.splice(startIndex, 1);
+      result.splice(endIndex, 0, removed);
+    
+      return result;
+    };
+  
+  
+      //  -----------Handle drag end---------
+    const handleUserOnDragEnd = (result) => {
+   
+      const items = reorder( selectedUsers, result.source.index, result.destination.index );
+      localStorage.setItem("jobs_usernamesOrder", JSON.stringify(items));
 
-    setUsersData(newTodos);
-
-    handleReorderingUsers(newTodos);
-  };
-  // Handle Reordering
-  const handleReorderingUsers = async (newTodos) => {
-    try {
-      const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/reordering`,
-        { usersData: newTodos }
-      );
-      if (data) {
-        toast.success("Reordering successfully!");
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error(error.response.data.message);
-    }
-  };
+      console.log("ONHANDLEUSERDRAG END💙💜💙💙💙💙💙💙💙💙💙💙💙💚💙💜💜💙",items )
+      setSelectedUsers(items)
+  
+    };
 
   // Get All Quality Check
   const getQuickList = async () => {
@@ -2502,34 +2533,34 @@ useEffect(() => {
                         ref={provided.innerRef}
                         className="flex items-center gap-2 overflow-x-auto hidden1"
                       >
-                        {usersData
+                        {selectedUsers
                           ?.filter(
-                            (user) => getJobHolderCount(user.name, active) > 0
+                            (user) => getJobHolderCount(user, active) > 0
                           )
                           ?.map((user, index) => (
                             <Draggable
-                              key={user._id}
-                              draggableId={user._id}
+                              key={user}
+                              draggableId={user}
                               index={index}
                             >
                               {(provided) => (
                                 <div
                                   className={`py-1 rounded-tl-md rounded-tr-md w-[5.8rem] sm:w-fit px-1 !cursor-pointer font-[500] text-[14px] ${
-                                    active1 === user?.name &&
+                                    active1 === user &&
                                     "  border-b-2 text-orange-600 border-orange-600"
                                   }`}
                                   ref={provided.innerRef}
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
                                   onClick={() => {
-                                    setActive1(user?.name);
-                                    filterByDepStat(user?.name, active);
+                                    setActive1(user);
+                                    filterByDepStat(user, active);
 
                                     setColumnFromOutsideTable("Job_Status", "Progress");
-                                    setColumnFromOutsideTable("Assign", user?.name);
+                                    setColumnFromOutsideTable("Assign", user);
 
 
-                                    if(auth.user?.role?.name === "Admin" && (user?.name === auth.user?.name) ) {
+                                    if(auth.user?.role === "Admin" && (user === auth.user?.name) ) {
                                       setColumnFromOutsideTable("Job_Date", "Today");
                                     } else {
                                        setColumnFromOutsideTable("Job_Date", "");
@@ -2538,8 +2569,8 @@ useEffect(() => {
 
                                   }}
                                 >
-                                  {user?.name} (
-                                  {getJobHolderCount(user?.name, active)})
+                                  {user} (
+                                  {getJobHolderCount(user, active)})
                                 </div>
                               )}
                             </Draggable>

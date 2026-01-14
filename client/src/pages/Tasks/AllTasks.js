@@ -47,6 +47,8 @@ import { TasksTable } from "./table/TasksTable";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { isAdmin } from "../../utlis/isAdmin";
 import OutsideFilter from "../Jobs/utils/OutsideFilter";
+import SelectedUsers from "../../components/SelectedUsers";
+import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 
 const colVisibility = {
   taskRef: true,
@@ -195,6 +197,11 @@ const AllTasks = ({ justShowTable = false }) => {
   const comment_taskId = searchParams.get("comment_taskId");
   const show_completed = searchParams.get("completed");
   const navigate = useNavigate();
+
+
+
+
+        const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsers("tasks:selected_users", userName);
 
 
 
@@ -1323,23 +1330,61 @@ const AllTasks = ({ justShowTable = false }) => {
 
   
 
-  const renderColumnControls = () => (
-    <div className="flex flex-col gap-3 bg-white rounded-md border p-4">
-      {Object.keys(colVisibility)?.map((column) => (
-        <div key={column} className="flex items-center">
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={columnVisibility[column]}
-              onChange={() => toggleColumnVisibility(column)}
-              className="mr-2 accent-orange-600 h-4 w-4"
-            />
-            {column}
-          </label>
+const renderColumnControls = () => (
+  <section className="w-[520px] rounded-lg bg-white border border-slate-200 shadow-sm">
+    {/* Header */}
+    <header className="px-5 py-3 border-b">
+      <h3 className="text-sm font-semibold text-slate-800">
+        View settings
+      </h3>
+    </header>
+
+    {/* Content */}
+    <div className="grid grid-cols-2 divide-x">
+      {/* LEFT — Columns */}
+      <section className="px-5 py-4">
+        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+          Columns
+        </h4>
+
+        <ul className="space-y-1 list-decimal">
+          {Object.keys(columnVisibility)?.map((column) => (
+            <li key={column}>
+              <label
+                className="flex items-center justify-between rounded-md px-2 py-1.5
+                           text-sm text-slate-700 cursor-pointer
+                           hover:bg-slate-50 transition"
+              >
+                <span className="capitalize">{column}</span>
+                <input
+                  type="checkbox"
+                  checked={columnVisibility[column]}
+                  onChange={() => toggleColumnVisibility(column)}
+                  className="h-4 w-4 accent-orange-600"
+                />
+              </label>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* RIGHT — Users */}
+      <section className="px-5 py-4">
+        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+          Users
+        </h4>
+
+        <div className="h-full overflow-y-auto space-y-1 pr-1">
+          <SelectedUsers
+            selectedUsers={selectedUsers}
+            setSelectedUsers={setSelectedUsers}
+            userNameArr={userName}
+          />
         </div>
-      ))}
+      </section>
     </div>
-  );
+  </section>
+);
 
   // const columnFilters = table.getState().columnFilters;
 
@@ -1831,7 +1876,7 @@ const AllTasks = ({ justShowTable = false }) => {
                     <DraggableFilterTabs
                       droppableId={"users"}
                       // items={filter2 ? projectUsers.filter(user => getJobHolderCount(user?.name, active) > 0) : users.filter(user => getJobHolderCount(user?.name, active) > 0)}
-                      items={users.filter(
+                      items={selectedUsers.map(uName => ({_id: uName, name: uName})).filter(
                         (user) => getJobHolderCount(user?.name, active) > 0
                       )}
                       filterValue={filter3}

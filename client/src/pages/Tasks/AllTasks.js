@@ -1360,7 +1360,7 @@ const renderColumnControls = () => (
         </h4>
 
         <ul className="space-y-1 list-decimal">
-          {Object.keys(columnVisibility)?.map((column) => (
+          {Object.keys(colVisibility)?.map((column) => (
             <li key={column}>
               <label
                 className="flex items-center justify-between rounded-md px-2 py-1.5

@@ -1328,10 +1328,22 @@ const AllTasks = ({ justShowTable = false }) => {
     }
   }, [show_completed])
 
-  
+
+
+
+
+  const user_tasks_count_map = useMemo(() => {
+    return Object.fromEntries(
+      userName.map((user) => [user, getJobHolderCount(user, active)])
+    );
+  }, [userName, active, getJobHolderCount]);
+
+
+
+
 
 const renderColumnControls = () => (
-  <section className="w-[520px] rounded-lg bg-white border border-slate-200 shadow-sm">
+  <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
     {/* Header */}
     <header className="px-5 py-3 border-b">
       <h3 className="text-sm font-semibold text-slate-800">
@@ -1376,10 +1388,12 @@ const renderColumnControls = () => (
 
         <div className="h-full overflow-y-auto space-y-1 pr-1">
           <SelectedUsers
-            selectedUsers={selectedUsers}
-            setSelectedUsers={setSelectedUsers}
-            userNameArr={userName}
-          />
+          selectedUsers={selectedUsers}
+          setSelectedUsers={setSelectedUsers}
+          userNameArr={userName}
+          countMap={user_tasks_count_map}
+          label={"task"}
+        />
         </div>
       </section>
     </div>

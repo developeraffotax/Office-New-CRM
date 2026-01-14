@@ -299,7 +299,20 @@ const applyFilter = (e) => {
 
 
 
+  // --------------Job_Holder Length---------->
 
+  const getJobHolderCount = (user, status) => {
+    console.log("L:LEADS DATA", leadData)
+    if(user === "All") {
+      return leadData.filter((lead) =>
+        lead?.status === status
+      )?.length;
+    }
+    return leadData.filter((lead) =>
+      lead?.jobHolder === user && lead?.status === status
+    )?.length;
+  };
+    
 
 
 
@@ -395,10 +408,14 @@ useEffect(() => {
   };
 
 
-
+    const user_leads_count_map = useMemo(() => {
+    return Object.fromEntries(
+      userName.map((user) => [user, getJobHolderCount(user, selectedTab)])
+    );
+  }, [userName, selectedTab, getJobHolderCount]);
  
 const renderColumnControls = () => (
-  <section className="w-[520px] rounded-lg bg-white border border-slate-200 shadow-sm">
+  <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
     {/* Header */}
     <header className="px-5 py-3 border-b">
       <h3 className="text-sm font-semibold text-slate-800">
@@ -441,11 +458,13 @@ const renderColumnControls = () => (
           Users
         </h4>
 
-        <div className="max-h-60 overflow-y-auto space-y-1 pr-1">
+        <div className="h-full overflow-y-auto space-y-1 pr-1">
           <SelectedUsers
             selectedUsers={selectedUsers}
             setSelectedUsers={setSelectedUsers}
             userNameArr={userName}
+            countMap={user_leads_count_map}
+            label={"lead"}
           />
         </div>
       </section>
@@ -1091,20 +1110,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
     };
  
     
-  // --------------Job_Holder Length---------->
 
-  const getJobHolderCount = (user, status) => {
-    console.log("L:LEADS DATA", leadData)
-    if(user === "All") {
-      return leadData.filter((lead) =>
-        lead?.status === status
-      )?.length;
-    }
-    return leadData.filter((lead) =>
-      lead?.jobHolder === user && lead?.status === status
-    )?.length;
-  };
-    
     
         
     
@@ -1402,7 +1408,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                                     </div>
 
 
-                            {selectedUsers.map((user, index) => {
+                            {selectedUsers.filter(uName => getJobHolderCount(uName, selectedTab) > 0).map((user, index) => {
 
                                 console.log("THE USER IS", user)
 

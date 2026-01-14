@@ -41,13 +41,14 @@ import { getTicketsColumns } from "./table/columns";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { isAdmin } from "../../utlis/isAdmin";
 import DetailComments from "../Tasks/TaskDetailComments";
-import { renderColumnControls } from "../../utlis/renderColumnControls";
+ 
 import { useClickOutside } from "../../utlis/useClickOutside";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { useSocket } from "../../context/socketProvider";
 import UserTicketChart from "./userTicketChart/UserTicketChart";
 import { BsGraphUpArrow } from "react-icons/bs";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
+import SelectedUsers from "../../components/SelectedUsers";
 
 const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "" };
 const jobStatusOptions = [
@@ -827,6 +828,110 @@ export default function Tickets() {
     }
   }, [comment_taskId, searchParams, navigate, table]);
 
+
+
+
+
+
+const toggleColumnVisibility = (column) => {
+          const updatedVisibility = {
+              ...columnVisibility,
+              [column]: !columnVisibility[column],
+          };
+          setColumnVisibility(updatedVisibility);
+          localStorage.setItem(
+              `visibileTicketsColumn`,
+              JSON.stringify(updatedVisibility)
+          );
+      };
+
+
+
+
+    const user_tickets_count_map = useMemo(() => {
+    return Object.fromEntries(
+      userName.map((user) => [user, getJobHolderCount(user)])
+    );
+  }, [userName, getJobHolderCount]);
+
+
+
+
+
+
+
+
+
+  const renderColumnControls = () => {
+  
+  
+  
+   
+  
+  
+      
+  
+  
+      return (
+           <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
+      {/* Header */}
+      <header className="px-5 py-3 border-b">
+        <h3 className="text-sm font-semibold text-slate-800">
+          View settings
+        </h3>
+      </header>
+  
+      {/* Content */}
+      <div className="grid grid-cols-2 divide-x">
+        {/* LEFT — Columns */}
+        <section className="px-5 py-4">
+          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+            Columns
+          </h4>
+  
+          <ul className="space-y-1 list-decimal">
+            {Object.keys(colVisibility)?.map((column) => (
+              <li key={column}>
+                <label
+                  className="flex items-center justify-between rounded-md px-2 py-1.5
+                             text-sm text-slate-700 cursor-pointer
+                             hover:bg-slate-50 transition"
+                >
+                  <span className="capitalize">{column}</span>
+                  <input
+                    type="checkbox"
+                    checked={columnVisibility[column]}
+                    onChange={() => toggleColumnVisibility(column)}
+                    className="h-4 w-4 accent-orange-600"
+                  />
+                </label>
+              </li>
+            ))}
+          </ul>
+        </section>
+  
+        {/* RIGHT — Users */}
+        <section className="px-5 py-4">
+          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+            Users
+          </h4>
+  
+          <div className="h-full overflow-y-auto space-y-1 pr-1">
+            <SelectedUsers
+              selectedUsers={selectedUsers}
+              setSelectedUsers={setSelectedUsers}
+              userNameArr={userName}
+              countMap={user_tickets_count_map}
+              label= {"ticket"}
+            />
+          </div>
+        </section>
+      </div>
+    </section>
+      )
+
+    }
+
   return (
     <>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
@@ -977,16 +1082,7 @@ export default function Tickets() {
                       ref={showColumnRef}
                       className="absolute top-8 left-[50%] z-[9999]    w-[14rem] "
                     >
-                      {renderColumnControls(
-                        colVisibility,
-                        columnVisibility,
-                        setColumnVisibility,
-                        "Tickets",
-
-                        selectedUsers,
-                        setSelectedUsers,
-                        userName
-                      )}
+                      {renderColumnControls()}
                       
                     </div>
                   )}

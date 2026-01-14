@@ -1750,8 +1750,17 @@ const ctx = useMemo(() => {
     }
   };
 
+
+    const user_jobs_count_map = useMemo(() => {
+    return Object.fromEntries(
+      users.map((user) => [user, getJobHolderCount(user, active)])
+    );
+  }, [users, active, getJobHolderCount]);
+
+
+
 const renderColumnControls = () => (
-  <section className="w-[520px] rounded-lg bg-white border border-slate-200 shadow-sm">
+  <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
     {/* Header */}
     <header className="px-5 py-3 border-b">
       <h3 className="text-sm font-semibold text-slate-800">
@@ -1799,6 +1808,8 @@ const renderColumnControls = () => (
             selectedUsers={selectedUsers}
             setSelectedUsers={setSelectedUsers}
             userNameArr={users}
+            countMap={user_jobs_count_map}
+            label={"job"}
           />
         </div>
       </section>

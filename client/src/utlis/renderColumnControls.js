@@ -15,7 +15,7 @@ export const renderColumnControls = (allCols, columnVisibility, setColumnVisibil
         };
         setColumnVisibility(updatedVisibility);
         localStorage.setItem(
-            `visibile${name}Column`,
+            `visibileTicketsColumn`,
             JSON.stringify(updatedVisibility)
         );
     };
@@ -70,6 +70,7 @@ export const renderColumnControls = (allCols, columnVisibility, setColumnVisibil
             selectedUsers={selectedUsers}
             setSelectedUsers={setSelectedUsers}
             userNameArr={users}
+            coun
           />
         </div>
       </section>

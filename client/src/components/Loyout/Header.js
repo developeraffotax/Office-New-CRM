@@ -41,6 +41,8 @@ import EmailDetailDrawer from "../../pages/Tickets/EmailDetailDrawer";
 import { LuEye } from "react-icons/lu";
 import { generateUrl } from "../../utlis/generateUrl";
 import GlobalTimer from "../GlobalTimer";
+ 
+import { openTicketModal } from "../../redux/slices/ticketModalSlice";
 
 const formatElapsedTime = (createdAt) => {
   const now = new Date();
@@ -509,25 +511,15 @@ export default function Header({
                                     <MdDeleteOutline />
                                   </span>
 
-                                  <Link
-                                    title="View Details"
-                                    to={generateUrl(item)}
-                                    key={item?._id}
-                                    onClick={() => {
-                                      dispatch(setFilterId(item?.taskId));
-                                      dispatch(
-                                        updateNotification({
-                                          id: item._id,
-                                          userId: auth.user.id,
-                                          status: item.status,
-                                        })
-                                      );
-                                      setOpen(false);
-                                    }}
-                                    className="cursor-pointer text-xl text-sky-500 hover:text-sky-600 "
-                                  >
-                                    <LuEye />
-                                  </Link>
+                                  {
+                                    item.type === "ticket_received" ? 
+                                    <button  className="cursor-pointer text-xl text-sky-500 hover:text-sky-600 "  onClick={() => {dispatch(openTicketModal(item?.taskId)); setOpen(false)}}> <LuEye /></button>
+                                    :
+                                    <Link title="View Details" to={`${item?.redirectLink}?comment_taskId=${item?.taskId}`} key={item?._id} onClick={() => { dispatch(setFilterId(item?.taskId)); dispatch( updateNotification({ id: item._id, userId: auth.user.id, status: item.status, }) ); setOpen(false); }} className="cursor-pointer text-xl text-sky-500 hover:text-sky-600 " > <LuEye /> </Link>
+
+                                  }
+
+
                                 </div>
                               </div>
                             </div>

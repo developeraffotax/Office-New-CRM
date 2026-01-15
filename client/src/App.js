@@ -54,10 +54,12 @@ import AutoCreateLeadFromURL from "./pages/Lead/AutoCreateLeadFromURL";
 import { getUserSettings, initSettingsListener } from "./redux/slices/settingsSlice";
 import SettingsPage from "./pages/Settings/Settings";
 import { initGlobalTimerListener } from "./redux/slices/globalTimerSlice";
+import RegisterGlobalComponents from "./components/global/RegisterGlobalComponents";
 
 function App() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
 
   const { auth, isLoading, isInitializing } = useSelector((state) => state.auth);
   const settings = useSelector((state) => state.settings);
@@ -177,6 +179,10 @@ function App() {
       </Routes>
 
       <Toaster />
+
+      <RegisterGlobalComponents />
+
+      
     </main>
   );
 }

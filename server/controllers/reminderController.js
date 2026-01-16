@@ -64,10 +64,10 @@ export const createReminder = async (req, res) => {
       
 
        // 🔥 SOCKET: tell frontend to refresh reminders
-      // await emitToUser(user._id, "reminder:refresh", {
-      //   type: "created",
-      //   reminderId: reminder._id,
-      // });
+      await emitToUser(user._id, "reminder:refresh", {
+        type: "created",
+        reminderId: reminder._id,
+      });
 
 
     }

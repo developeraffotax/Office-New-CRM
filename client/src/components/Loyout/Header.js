@@ -245,23 +245,13 @@ export default function Header({
   // }, []);
 
   const notificationSound = new Audio("/noti.mp3");
+  const reminderSound = new Audio("/reminder.wav");
 
   useEffect(() => {
     if (!socket) return;
 
     const handleNewTimer = () => getTimerStatus();
-    // const handleNewNotification = () => dispatch(getNotifications(auth.user.id));
-    // const handleNewNotification = () => {
-    //   if (settings?.showNotifications) {
-    //     dispatch(getNotifications(auth.user.id));
-
-    //     // Play sound
-    //     notificationSound.currentTime = 0; // rewind to start
-    //     notificationSound
-    //       .play()
-    //       .catch((err) => console.log("🔊 Notification sound error:", err));
-    //   }
-    // };
+ 
 
     const handleNewNotification = (payload) => {
       const type = payload?.notification?.type;
@@ -274,15 +264,30 @@ export default function Header({
       notificationSound.play().catch(() => {});
     };
 
+    const handleNewReminder = (payload) => {
+      // const type = payload?.notification?.type;
+
+      // if (!isNotificationAllowed(type)) return;
+     
+      dispatch(getRemindersCount());
+
+      reminderSound.currentTime = 0;
+      reminderSound.play().catch(() => {});
+    };
+
     // Add listeners
+    
     socket.on("newTimer", handleNewTimer);
     socket.on("newNotification", handleNewNotification);
+
+    socket.on("reminder:refresh", handleNewReminder);
     // socket.on("newTicketNotification", handleNewNotification);
 
     // Cleanup
     return () => {
       socket.off("newTimer", handleNewTimer);
       socket.off("newNotification", handleNewNotification);
+      socket.off("reminder:refresh", handleNewReminder);
       // socket.off("newTicketNotification", handleNewNotification);
     };
   }, [socket, settings]);

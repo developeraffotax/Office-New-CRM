@@ -94,44 +94,8 @@ export const actionsColumn = ({
 
       return (
         <div className="flex items-center justify-center gap-3 w-full h-full ">
-          <div>
-            <span
-              title="Open OneDrive Folder"
-              onClick={() => {
-                openFolder(row?.original?.clientName);
-              }}
-              className="text-xl text-orange-500 cursor-pointer"
-            > 
 
-            {
-              isLoading ? <PiSpinnerGap className="animate-spin h-5 w-5 text-orange-600 "  /> :  <MdOutlineFolder className="h-5 w-5 text-orange-600 " />
-            }
-            
-              
-            </span>
-          </div>
-
-          <div
-            title="Comments"
-            className="flex items-center justify-center gap-1 w-full h-full"
-            onClick={() => {
-              setJobId(row.original._id);
-              setIsComment(true);
-            }}
-          >
-            <div className="relative">
-              <span className="text-[1rem] cursor-pointer relative">
-                <MdInsertComment className="h-5 w-5 text-orange-600 " />
-              </span>
-              {/* {readComments?.length > 0 && (
-                  <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
-                    {readComments?.length}
-                  </span>
-                )} */}
-            </div>
-          </div>
-
-          <div>
+           <div>
             <span
               title="Create New Ticket"
               onClick={() => {
@@ -145,7 +109,9 @@ export const actionsColumn = ({
             </span>
           </div>
 
-          <div>
+
+
+                        <div>
             <span
               title="Ticket"
               onClick={handleClick}
@@ -188,6 +154,56 @@ export const actionsColumn = ({
             </Popover>
           </div>
 
+
+
+
+
+
+
+
+
+
+          <div
+            title="Comments"
+            className="flex items-center justify-center gap-1 w-full h-full"
+            onClick={() => {
+              setJobId(row.original._id);
+              setIsComment(true);
+            }}
+          >
+            <div className="relative">
+              <span className="text-[1rem] cursor-pointer relative">
+                <MdInsertComment className="h-5 w-5 text-orange-600 " />
+              </span>
+              {/* {readComments?.length > 0 && (
+                  <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
+                    {readComments?.length}
+                  </span>
+                )} */}
+            </div>
+          </div>
+
+         
+
+                
+
+          <div>
+            <span
+              title="Open OneDrive Folder"
+              onClick={() => {
+                openFolder(row?.original?.clientName);
+              }}
+              className="text-xl text-orange-500 cursor-pointer"
+            > 
+
+            {
+              isLoading ? <PiSpinnerGap className="animate-spin h-5 w-5 text-orange-600 "  /> :  <MdOutlineFolder className="h-5 w-5 text-orange-600 " />
+            }
+            
+              
+            </span>
+          </div>
+
           <div
             className="relative"
             title="Move to Lead"
@@ -199,6 +215,9 @@ export const actionsColumn = ({
               <MdDriveFileMoveOutline className="h-6 w-6 text-orange-600 " />
             </span>
           </div>
+
+
+          
         </div>
       );
     },

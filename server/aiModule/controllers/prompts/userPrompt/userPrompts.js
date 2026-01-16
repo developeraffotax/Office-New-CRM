@@ -1,85 +1,60 @@
 import { FOLLOW_UP, REPLY } from "../../../constants.js";
 
 export const userPromptForReply = `
-Instructions:
+INSTRUCTIONS:
 
 - Generate EXACTLY 4 reply options.
-- All replies must be professional, clear, and concise.
-- Each option must respond appropriately to the LAST message.
+- Each option MUST respond directly and appropriately to the LAST email only.
+- Replies must be professional, clear, and accurate.
 
 LENGTH REQUIREMENTS:
 
 - Option 1: Very short (brief acknowledgement or direct answer)
 - Option 2: Moderately detailed (standard professional reply)
-- Option 3: Detailed & explanatory (adds helpful clarification)
-- Option 4: Very detailed & comprehensive (full clarity, still professional)
+- Option 3: Detailed & explanatory (helpful clarification or reassurance)
+- Option 4: Very detailed & comprehensive (full clarity, next steps if appropriate)
 
 OUTPUT FORMAT (STRICT JSON ONLY):
 
 {
-  "actionType": ${REPLY},
+  "actionType": "REPLY",
   "messages": [
-    {
-      "option": "Option 1",
-      "content": "<p>...</p>"
-    },
-    {
-      "option": "Option 2",
-      "content": "<p>...</p>"
-    },
-    {
-      "option": "Option 3",
-      "content": "<p>...</p>"
-    },
-    {
-      "option": "Option 4",
-      "content": "<p>...</p>"
-    }
+    { "option": "Option 1", "content": "<p>...</p>" },
+    { "option": "Option 2", "content": "<p>...</p>" },
+    { "option": "Option 3", "content": "<p>...</p>" },
+    { "option": "Option 4", "content": "<p>...</p>" }
   ]
 }
 `;
 
 
-
-
 export const userPromptForFollowUp = `
-Instructions:
+INSTRUCTIONS:
 
-- Generate EXACTLY 4 follow-up message options.
-- All follow-ups must be professional, polite, and engaging.
-- Each option should encourage a response or next step naturally.
+- Generate EXACTLY 4 follow-up email options.
+- Follow-ups must be polite, professional, and non-pushy.
+- The goal is to re-engage and encourage a response or next step.
 
 LENGTH REQUIREMENTS:
 
 - Option 1: Very short (gentle nudge)
 - Option 2: Moderately detailed (friendly professional reminder)
 - Option 3: Detailed & explanatory (adds context or value)
-- Option 4: Very detailed & comprehensive (clear next steps, reassurance)
+- Option 4: Very detailed & comprehensive (clear next steps and reassurance)
 
 OUTPUT FORMAT (STRICT JSON ONLY):
 
 {
-  "actionType": ${FOLLOW_UP},
+  "actionType": "FOLLOW_UP",
   "messages": [
-    {
-      "option": "Option 1",
-      "content": "<p>...</p>"
-    },
-    {
-      "option": "Option 2",
-      "content": "<p>...</p>"
-    },
-    {
-      "option": "Option 3",
-      "content": "<p>...</p>"
-    },
-    {
-      "option": "Option 4",
-      "content": "<p>...</p>"
-    }
+    { "option": "Option 1", "content": "<p>...</p>" },
+    { "option": "Option 2", "content": "<p>...</p>" },
+    { "option": "Option 3", "content": "<p>...</p>" },
+    { "option": "Option 4", "content": "<p>...</p>" }
   ]
 }
 `;
+
 
 
 

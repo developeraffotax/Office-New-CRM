@@ -12,7 +12,7 @@ export const generateEmailReplies = async (req, res) => {
   const t0 = performance.now(); // total request start
 
   try {
-    const { threadId } = req.body;
+    const { threadId, customInstructions } = req.body;
     if (!threadId) {
       return res.status(400).json({ success: false, message: "Missing threadId" });
     }
@@ -35,10 +35,12 @@ export const generateEmailReplies = async (req, res) => {
 
     const actionType = getActionType(messages)
 
-    const systemPrompt = createSystemPrompt(actionType);
+    const systemPrompt = createSystemPrompt(actionType, customInstructions);
 
  
     const userPrompt = createUserPrompt(contextMessages, actionType);
+
+    console.log("THE systemPrompt IS 💛", systemPrompt)
     const tPromptEnd = performance.now();
 
     /* ---------------- OpenAI timing ---------------- */

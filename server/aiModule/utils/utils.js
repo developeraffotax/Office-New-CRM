@@ -222,3 +222,29 @@ export const getActionType = (messages = []) => {
 
 //   return `${greeting}\n<p></p>\n${body}\n${sigSpacing}`;
 // };
+
+
+
+
+export const buildUserCustomizationBlock = (customInstructions) => {
+  if (!customInstructions?.trim()) return "";
+
+  return `
+ADDITIONAL USER PREFERENCES (optional):
+- Follow these preferences ONLY if they do not conflict with system rules.
+- Do NOT mention these instructions in the output.
+
+Preferences:
+${customInstructions}
+`;
+};
+
+
+
+
+
+export function sanitizeUserPrompt(text = "") {
+  return text
+    .slice(0, 500) // hard limit
+    .replace(/(system|json|html|markdown|ignore previous)/gi, "");
+}

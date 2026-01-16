@@ -40,7 +40,10 @@ export const generateEmailReplies = async (req, res) => {
  
     const userPrompt = createUserPrompt(contextMessages, actionType);
 
-    console.log("THE systemPrompt IS 💛", systemPrompt)
+//     console.log("THE userPrompt IS 💛", userPrompt)
+// console.log("THE systemPrompt IS 💛", systemPrompt)
+
+
     const tPromptEnd = performance.now();
 
     /* ---------------- OpenAI timing ---------------- */
@@ -49,7 +52,7 @@ export const generateEmailReplies = async (req, res) => {
     const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         temperature: 0.6,
-        max_tokens: 700,
+        max_tokens: 900,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },

@@ -1,8 +1,8 @@
 import { performance } from "perf_hooks";
 import OpenAI from "openai";
 import { buildEmailContext, fetchThreadMessages,   getActionType } from "../utils/utils.js";
-import { createSystemPrompt } from "./prompts/systemPrompt/createSystemPrompt.js";
-import { createUserPrompt } from "./prompts/userPrompt/createUserPrompt.js";
+import { createSystemPrompt } from "./prompts2/systemPrompt/createSystemPrompt.js";
+import { createUserPrompt } from "./prompts2/userPrompt/createUserPrompt.js";
  
  
 

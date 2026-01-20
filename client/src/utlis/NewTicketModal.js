@@ -16,6 +16,7 @@ import {
   sortOptions,
 } from "../components/Tickets/HighlightedOption";
 import { hasPermission, hasSubrole, isAdmin } from "./checkPermission";
+import { useEscapeKey } from "./useEscapeKey";
 
 export default function NewTicketModal({
   setShowSendModal,
@@ -48,6 +49,8 @@ export default function NewTicketModal({
   const [inputValue, setInputValue] = useState("");
 
   const [trustPilotBcc, setTrustPilotBcc] = useState(false);
+
+  useEscapeKey(() => setShowSendModal(false));
 
   useEffect(() => {
     if (clientEmail) {
@@ -281,6 +284,11 @@ export default function NewTicketModal({
       toast.error(error?.response?.data?.message || "Error while send email!");
     }
   };
+
+
+
+
+
 
   return (
     <div className="w-full h-[100%] flex items-center justify-center py-3 px-4 overflow-y-auto rounded-md bg-black/30 backdrop-blur-sm ">

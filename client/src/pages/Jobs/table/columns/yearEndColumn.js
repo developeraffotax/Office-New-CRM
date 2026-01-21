@@ -1,181 +1,192 @@
-import { useEffect, useState } from "react";
-import { getCurrentMonthYear } from "../../utils/utils";
+import { format } from "date-fns";
+
+import DateRangePopover from "../../../../utlis/DateRangePopover";
+
+import { useEffect, useMemo, useRef, useState, memo } from "react";
 import toast from "react-hot-toast";
-import {format} from 'date-fns'
 
-export const yearEndColumn = ({handleUpdateDates}) => {
+export const DEFAULT_DATE_FILTERS = [
+  "Expired",
+  "Today",
+  "Tomorrow",
+  "In 7 days",
+  "In 15 days",
+  "30 Days",
+  "60 Days",
+  "Upcoming",
+];
 
+const normalizeDate = (d) =>
+  new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
-    return         {
-          id: "Year_End",
-          accessorKey: "job.yearEnd",
-          Header: ({ column }) => {
-            const [filterValue, setFilterValue] = useState("");
-            const [customDate, setCustomDate] = useState(getCurrentMonthYear());
+export const yearEndColumn = ({ handleUpdateDates }) => ({
+  id: "Year_End",
+  accessorKey: "job.yearEnd",
 
-            useEffect(() => {
-              if (filterValue === "Custom date") {
-                column.setFilterValue(customDate);
-              }
-              //eslint-disable-next-line
-            }, [customDate, filterValue]);
+  Header: ({ column }) => <DateHeader column={column} />,
 
-            const handleFilterChange = (e) => {
-              setFilterValue(e.target.value);
-              column.setFilterValue(e.target.value);
-            };
+  Cell: (props) => (
+    <DateCell {...props} handleUpdateDates={handleUpdateDates} />
+  ),
 
-            const handleCustomDateChange = (e) => {
-              setCustomDate(e.target.value);
-              column.setFilterValue(e.target.value);
-            };
-            return (
-              <div className=" flex flex-col gap-[2px]">
-                <span
-                  className="ml-1 cursor-pointer"
-                  title="Clear Filter"
-                  onClick={() => {
-                    setFilterValue("");
-                    column.setFilterValue("");
-                  }}
-                >
-                  Year End
-                </span>
-                {filterValue === "Custom date" ? (
-                  <input
-                    type="month"
-                    value={customDate}
-                    onChange={handleCustomDateChange}
-                    className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
-                  />
-                ) : (
-                  <select
-                    value={filterValue}
-                    onChange={handleFilterChange}
-                    className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
-                  >
-                    <option value="">Select</option>
-                    {column.columnDef.filterSelectOptions.map((option, idx) => (
-                      <option key={idx} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-            );
-          },
-          Cell: ({ cell, row }) => {
-            const [date, setDate] = useState(() => {
-              const cellDate = new Date(cell.getValue());
-              return cellDate.toISOString().split("T")[0];
-            });
+  filterFn: DateFilterFn,
+  filterVariant: "select",
+  filterSelectOptions: DEFAULT_DATE_FILTERS,
 
-            const [showYearend, setShowYearend] = useState(false);
+  size: 100,
+  minSize: 80,
+  maxSize: 140,
+  grow: false,
+});
 
-            const handleDateChange = (newDate) => {
-              const date = new Date(newDate);
-              // Check if the date is valid
-              if (isNaN(date.getTime())) {
-                toast.error("Please enter a valid date.");
-                return;
-              }
-              setDate(newDate);
-              handleUpdateDates(row?.original?._id, newDate, "yearEnd");
-              setShowYearend(false);
-            };
+const DateHeader = memo(({ column }) => {
+  const [filterValue, setFilterValue] = useState("");
+  const [dateRange, setDateRange] = useState({ from: "", to: "" });
+  const [showPopover, setShowPopover] = useState(false);
+  const selectRef = useRef(null);
 
-            return (
-              <div className="w-full ">
-                {!showYearend ? (
-                  <p onDoubleClick={() => setShowYearend(true)} className="  ">
-                    {format(new Date(date), "dd-MMM-yyyy")}
-                  </p>
-                ) : (
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    onBlur={(e) => handleDateChange(e.target.value)}
-                    className={`h-[2rem] text-[11px]  cursor-pointer w-full text-center rounded-md border border-gray-200 outline-none `}
-                  />
-                )}
-              </div>
-            );
-          },
-          filterFn: (row, columnId, filterValue) => {
-            const cellValue = row.getValue(columnId);
-            if (!cellValue) return false;
+  // Sync MRT filter
+  useEffect(() => {
+    column.setFilterValue(
+      filterValue === "Custom Range" ? dateRange : filterValue || undefined,
+    );
+  }, [filterValue, dateRange, column]);
 
-            const cellDate = new Date(cellValue);
+  // Reset when external clear happens
+  useEffect(() => {
+    if (!column.getFilterValue()) {
+      setFilterValue("");
+      setDateRange({ from: "", to: "" });
+      setShowPopover(false);
+    }
+  }, [column.getFilterValue()]);
 
-            if (filterValue.includes("-")) {
-              const [year, month] = filterValue.split("-");
-              const cellYear = cellDate.getFullYear().toString();
-              const cellMonth = (cellDate.getMonth() + 1)
-                .toString()
-                .padStart(2, "0");
+  const handleChange = (e) => {
+    const val = e.target.value;
+    setFilterValue(val);
+    setShowPopover(val === "Custom Range");
+  };
 
-              return year === cellYear && month === cellMonth;
-            }
+  return (
+    <div className="flex flex-col gap-[2px] relative">
+      <span
+        className="ml-1 cursor-pointer"
+        title="Clear Filter"
+        onClick={() => {
+          setFilterValue("");
+          setDateRange({ from: "", to: "" });
+          column.setFilterValue(undefined);
+        }}
+      >
+        Year End
+      </span>
 
-            // Other filter cases
-            const today = new Date();
-            const startOfToday = new Date(
-              today.getFullYear(),
-              today.getMonth(),
-              today.getDate()
-            );
+      <select
+        ref={selectRef}
+        value={filterValue}
+        onChange={handleChange}
+        className="h-[1.8rem] w-full rounded-md border border-gray-200 text-sm font-normal"
+      >
+        <option value="">Select</option>
+        {DEFAULT_DATE_FILTERS.map((opt) => (
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
+        ))}
+        <option value="Custom Range">Custom Date</option>
+      </select>
 
-            switch (filterValue) {
-              case "Expired":
-                return cellDate < startOfToday;
-              case "Today":
-                return cellDate.toDateString() === today.toDateString();
-              case "Tomorrow":
-                const tomorrow = new Date(today);
-                tomorrow.setDate(today.getDate() + 1);
-                return cellDate.toDateString() === tomorrow.toDateString();
-              case "In 7 days":
-                const in7Days = new Date(today);
-                in7Days.setDate(today.getDate() + 7);
-                return cellDate <= in7Days && cellDate > today;
-              case "In 15 days":
-                const in15Days = new Date(today);
-                in15Days.setDate(today.getDate() + 15);
-                return cellDate <= in15Days && cellDate > today;
-              case "30 Days":
-                const in30Days = new Date(today);
-                in30Days.setDate(today.getDate() + 30);
-                return cellDate <= in30Days && cellDate > today;
-              case "60 Days":
-                const in60Days = new Date(today);
-                in60Days.setDate(today.getDate() + 60);
-                return cellDate <= in60Days && cellDate > today;
-              case "Last 12 months":
-                const lastYear = new Date(today);
-                lastYear.setFullYear(today.getFullYear() - 1);
-                return cellDate >= lastYear && cellDate <= today;
-              default:
-                return false;
-            }
-          },
-          filterSelectOptions: [
-            "Select",
-            "Expired",
-            "Today",
-            "Tomorrow",
-            "In 7 days",
-            "In 15 days",
-            "30 Days",
-            "60 Days",
-            // "Last 12 months",
-            "Custom date",
-          ],
-          filterVariant: "custom",
-          size: 100,
-          minSize: 80,
-          maxSize: 140,
-          grow: false,
-        }
-}
+      {showPopover && (
+        <DateRangePopover
+          anchorRef={selectRef}
+          value={dateRange}
+          onChange={(key, val) => setDateRange((p) => ({ ...p, [key]: val }))}
+          onClose={() => setShowPopover(false)}
+        />
+      )}
+    </div>
+  );
+});
+
+const DateCell = memo(({ cell, row, handleUpdateDates }) => {
+  const initialDate = useMemo(() => {
+    const d = new Date(cell.getValue());
+    return isNaN(d) ? "" : d.toISOString().split("T")[0];
+  }, [cell]);
+
+  const [date, setDate] = useState(initialDate);
+  const [editing, setEditing] = useState(false);
+
+  const commitChange = (value) => {
+    const parsed = new Date(value);
+    if (isNaN(parsed)) {
+      toast.error("Please enter a valid date");
+      return;
+    }
+    setDate(value);
+    handleUpdateDates(row.original._id, value, "yearEnd");
+    setEditing(false);
+  };
+
+  return (
+    <div className="w-full">
+      {!editing ? (
+        <p className="cursor-pointer" onDoubleClick={() => setEditing(true)}>
+          {date ? format(new Date(date), "dd-MMM-yyyy") : "-"}
+        </p>
+      ) : (
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          onBlur={(e) => commitChange(e.target.value)}
+          className="h-[2rem] w-full text-xs text-center rounded-md border"
+        />
+      )}
+    </div>
+  );
+});
+
+export const DateFilterFn = (row, columnId, filterValue) => {
+  const raw = row.getValue(columnId);
+  if (!raw) return false;
+
+  const cellDate = normalizeDate(new Date(raw));
+  const today = normalizeDate(new Date());
+
+  if (typeof filterValue === "object") {
+    const from = new Date(filterValue.from);
+    const to = new Date(filterValue.to);
+    return cellDate >= from && cellDate <= to;
+  }
+
+  const rangeCheck = (days) => {
+    const future = new Date(today);
+    future.setDate(today.getDate() + days);
+    return cellDate > today && cellDate <= future;
+  };
+
+  switch (filterValue) {
+    case "Expired":
+      return cellDate < today;
+    case "Today":
+      return cellDate.getTime() === today.getTime();
+    case "Tomorrow": {
+      const t = new Date(today);
+      t.setDate(today.getDate() + 1);
+      return cellDate.getTime() === t.getTime();
+    }
+    case "Upcoming":
+      return cellDate > today;
+    case "In 7 days":
+      return rangeCheck(7);
+    case "In 15 days":
+      return rangeCheck(15);
+    case "30 Days":
+      return rangeCheck(30);
+    case "60 Days":
+      return rangeCheck(60);
+    default:
+      return false;
+  }
+};

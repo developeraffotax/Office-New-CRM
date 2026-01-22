@@ -1,3 +1,4 @@
+console.log("SERVER>>>>>>>>>>>>>>>>>>");
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -15,6 +16,10 @@ import { connection as redis } from "./utils/ioredis.js";
 import agenda from "./utils/agenda.js";
 
 dotenv.config();
+
+
+
+
 
 // --------------------------------------------
 // VALIDATE SECRET KEY
@@ -36,6 +41,8 @@ export const getIO = () => io; // getter for other modules
 const startServer = async () => {
   try {
     // 1️⃣ Connect to MongoDB
+
+    console.log("MONGO STARTING>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
     await connectDB();
     console.log("✅ MongoDB connected");
 

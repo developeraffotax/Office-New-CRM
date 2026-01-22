@@ -123,6 +123,7 @@ export default function AllJobs() {
 
 
   const [active1, setActive1] = useState("");
+  const [active2, setActive2] = useState("");
   const timerRef = useRef();
   const [showStatus, setShowStatus] = useState(false);
   const location = useLocation();
@@ -336,7 +337,18 @@ export default function AllJobs() {
     
   ];
 
-
+    const statusInit = [
+    "Quote",
+    "Data",
+    "Progress",
+    "Queries",
+    "Approval",
+    "Submission",
+    "Billing",
+    "Feedback",
+    
+    
+  ];
  
  
   const [isMoving, setIsMoving] = useState(false)
@@ -2599,6 +2611,28 @@ useEffect(() => {
                 </div>
 
 
+
+
+
+                                  <div className="flex items-center gap-4 border-l px-4">
+                {statusInit?.map((stat, i) => (
+                  <div
+                    className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                      active2 === stat &&
+                      "  border-b-2 text-orange-600 border-orange-600"
+                    }`}
+                    key={i}
+                    onClick={() => {
+                      setActive2(stat);
+                      // filterByDepStat(stat, active);
+
+                       setColumnFromOutsideTable("Job_Status", stat);
+                    }}
+                  >
+                    {stat} ({getStatusCount(stat, active)})
+                  </div>
+                ))}
+              </div>
 
               </div>
 

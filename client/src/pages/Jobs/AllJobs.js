@@ -2614,7 +2614,7 @@ useEffect(() => {
 
 
 
-                                  <div className="flex items-center gap-4 border-l px-4">
+              {/* <div className="flex items-center gap-4 border-l px-4">
                 {statusInit?.map((stat, i) => (
                   <div
                     className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
@@ -2632,7 +2632,7 @@ useEffect(() => {
                     {stat} ({getStatusCount(stat, active)})
                   </div>
                 ))}
-              </div>
+              </div> */}
 
               </div>
 

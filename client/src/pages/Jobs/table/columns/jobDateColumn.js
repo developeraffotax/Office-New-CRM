@@ -45,6 +45,22 @@ export const jobDateColumn = ({ handleUpdateDates }) => ({
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const DateHeader = memo(({ column }) => {
   const [filterValue, setFilterValue] = useState("");
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
@@ -56,7 +72,9 @@ const DateHeader = memo(({ column }) => {
     column.setFilterValue(
       filterValue === "Custom Range" ? dateRange : filterValue || undefined,
     );
-  }, [filterValue, dateRange, column]);
+
+ 
+  }, [filterValue, dateRange, ]);
 
   // Reset when external clear happens
   useEffect(() => {
@@ -65,6 +83,7 @@ const DateHeader = memo(({ column }) => {
       setDateRange({ from: "", to: "" });
       setShowPopover(false);
     }
+ 
   }, [column.getFilterValue()]);
 
   const handleChange = (e) => {
@@ -114,6 +133,24 @@ const DateHeader = memo(({ column }) => {
   );
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const DateCell = memo(({ cell, row, handleUpdateDates }) => {
   const initialDate = useMemo(() => {
     const d = new Date(cell.getValue());
@@ -152,6 +189,39 @@ const DateCell = memo(({ cell, row, handleUpdateDates }) => {
     </div>
   );
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export const DateFilterFn = (row, columnId, filterValue) => {
   const raw = row.getValue(columnId);

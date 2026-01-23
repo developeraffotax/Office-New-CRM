@@ -62,7 +62,7 @@ export const Timer = forwardRef(
     const isInitialMount = useRef(true);
     const [runningId, setRunningId] = useState("");
 
-    console.log("Timer Component Rendered", allocatedTime);
+   
  
 
     useEffect(() => {

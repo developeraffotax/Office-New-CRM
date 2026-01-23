@@ -272,9 +272,9 @@ export default function AllJobs() {
       
       
               if (!socket) return;
-              console.log("Socket reg ⛔🆘🆘🅾🅾🅾🆑🆑🆎🆎🆎🅱🅱🅰🅰🅰🅰🈲🈵🈵🈴🈴㊗㊗㊗㊙㊙🉐🉐🉐💮💮🉑")
+               
               socket.on('job_updated', () => {
-                console.log("Job UPDATED ⛔🆘🆘🅾🅾🅾🆑🆑🆎🆎🆎🅱🅱🅰🅰🅰🅰🈲🈵🈵🈴🈴㊗㊗㊗㊙㊙🉐🉐🉐💮💮🉑")
+               
       
                 allClientData()
               })
@@ -554,8 +554,7 @@ export default function AllJobs() {
 
       const uniqueClients = Array.from(uniqueClientsMap.values());
 
-      console.log("UNIQUE CLIENTS:",uniqueClients);
-
+ 
 
       // setTableData(uniqueClients);
       return uniqueClients;
@@ -595,7 +594,7 @@ export default function AllJobs() {
       })
       
     } else {
-      console.log("THE FIRST USEEFFECT MOUNT💛💛💛🧡🧡")
+     
       allClientJobData();
     }
 
@@ -682,8 +681,7 @@ export default function AllJobs() {
     getDatalable();
   }, []);
 
-  console.log("THE TABLE DATA IS>>>>>>>🧡🧡🧡🧡🧡🧡🧡🧡🧡❤", tableData)
-
+ 
   // ---------Stop Timer ----------->
   const handleStopTimer = () => {
     if (timerRef.current) {
@@ -990,8 +988,7 @@ export default function AllJobs() {
   // ---------------Handle Update Fee ---------->
   const handleUpdateFee = async (rowId, fee) => {
 
-    console.log("ROW ID IS", rowId, "& THE FEE IS", fee)
-    if (!rowId) {
+     if (!rowId) {
       return toast.error("Job id is required!");
     }
     try {
@@ -1002,8 +999,7 @@ export default function AllJobs() {
         }
       );
 
-      console.log("THE DATE RECEIVED AFTER THE UPDATE",data)
-      if (data) {
+       if (data) {
         if (filterId || active || active1) {
           setFilterData((prevData) => {
              
@@ -1847,8 +1843,7 @@ const renderColumnControls = () => (
       const items = reorder( selectedUsers, result.source.index, result.destination.index );
       localStorage.setItem("jobs_usernamesOrder", JSON.stringify(items));
 
-      console.log("ONHANDLEUSERDRAG END💙💜💙💙💙💙💙💙💙💙💙💙💙💚💙💜💜💙",items )
-      setSelectedUsers(items)
+       setSelectedUsers(items)
   
     };
 
@@ -1942,7 +1937,7 @@ useEffect(() => {
 
     if(auth.user?.role?.name === "Admin") {
 
-      // console.log("Admin Role Detected, setting showJobHolder to true💛💛🧡🧡");
+   
       setShowJobHolder(true);
       setActiveBtn("jobHolder");
 
@@ -2614,7 +2609,7 @@ useEffect(() => {
 
 
 
-              {/* <div className="flex items-center gap-4 border-l px-4">
+              <div className="flex items-center gap-4 border-l px-4">
                 {statusInit?.map((stat, i) => (
                   <div
                     className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
@@ -2632,7 +2627,7 @@ useEffect(() => {
                     {stat} ({getStatusCount(stat, active)})
                   </div>
                 ))}
-              </div> */}
+              </div>
 
               </div>
 
@@ -2990,7 +2985,7 @@ useEffect(() => {
       {showSubtaskList && (
         <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
           <SubtaskListManager
-            onApplyList={(subtasks) => console.log(subtasks)}
+            onApplyList={(subtasks) => {}}
              onClose={() => setShowSubtaskList(false)}
             />
         </div>

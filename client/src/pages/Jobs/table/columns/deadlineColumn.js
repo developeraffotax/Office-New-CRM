@@ -62,7 +62,7 @@ const DateHeader = memo(({ column }) => {
     column.setFilterValue(
       filterValue === "Custom Range" ? dateRange : filterValue || undefined,
     );
-  }, [filterValue, dateRange, column]);
+  }, [filterValue, dateRange, ]);
 
   // Reset when external clear happens
   useEffect(() => {

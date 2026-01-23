@@ -695,6 +695,8 @@ const fetchEmails = async (accessToken, pageNo, type) => {
     };
 
     const response = await axios(config);
+
+    console.log("THE INBOX RESPONSE", response.data)
     const emailIds = response.data.messages.map((message) => message.id);
 
     // Fetch detailed email data for each email ID in parallel

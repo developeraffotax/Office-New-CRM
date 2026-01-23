@@ -96,7 +96,7 @@ export default function JobDetail({
         `${process.env.REACT_APP_API_URL}/api/v1/client/single/client/${clientId}`
       );
       if (data) {
-        console.log("Client Data💚💛💛🧡🧡🧡❤💛💚💛💛💛🧡🧡", data.clientJob);
+ 
         setLoading(false);
         setClientDetail(data.clientJob);
         setSubTaskData(
@@ -337,14 +337,14 @@ export default function JobDetail({
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/quicklist/get/all`
       );
-      console.log("Qdata", data.qualityChecks);
+ 
       if (data) {
         const list = data.qualityChecks.filter((item) =>
           Array.isArray(clientDetail?.job.jobName)
             ? clientDetail?.job.jobName.includes(item.type)
             : item.type === clientDetail?.job.jobName
         );
-        console.log("Qdata", list);
+ 
         setQualities(list);
       }
     } catch (error) {

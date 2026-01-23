@@ -30,7 +30,7 @@ export default function QuickAccess() {
   };
 
 
-  console.log("auth", auth.user.role.access);
+ 
 
   return (
     <>

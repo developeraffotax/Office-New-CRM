@@ -43,7 +43,7 @@ export const pocColumn = ({dataLable, addDatalabel1}) => {
                   const { name, color, _id } = jobLabel;
 
 
-                  console.log("ROW ORIGINIAL DATA FORM POC💔🧡💛💛", row.original.data)
+                  
 
                   const handleLabelChange = (labelName) => {
                     const selectedLabel = dataLable.find(

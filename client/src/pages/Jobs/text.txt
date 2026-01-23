@@ -165,7 +165,7 @@ export default function AllJobs() {
     localStorage.setItem("columnVisibility", JSON.stringify(updatedVisibility));
   };
 
-  console.log("usersData:", usersData);
+ 
 
   // Extract the current path
   const currentPath = location.pathname;
@@ -423,7 +423,7 @@ export default function AllJobs() {
           item?.companyName.toLowerCase().includes(searchValue.toLowerCase())
       );
       setFilterData(filteredData);
-      console.log("SearchData:", filteredData);
+ 
     } else {
       setFilterData(tableData);
     }
@@ -849,7 +849,7 @@ export default function AllJobs() {
 
   // Add Data
   const addDatalabel1 = async (id, labelId) => {
-    console.log("Data:", id, labelId);
+ 
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/client/add/job/data/${id}`,
@@ -2023,7 +2023,7 @@ export default function AllJobs() {
           },
           filterFn: (row, columnId, filterValue) => {
             const cellValue = row.original._id;
-            console.log("T_ID:", filterValue, cellValue);
+            
             return cellValue === filterValue;
           },
           filterVariant: "select",
@@ -2316,7 +2316,7 @@ export default function AllJobs() {
                     const selectedLabel = dataLable.find(
                       (label) => label._id === labelName
                     );
-                    console.log("selectedLabel:", selectedLabel);
+                    
                     if (selectedLabel) {
                       addDatalabel1(
                         row.original._id,

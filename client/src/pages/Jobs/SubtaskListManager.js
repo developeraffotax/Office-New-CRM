@@ -23,7 +23,7 @@ export const SubtaskListManager = ({ onApplyList, onClose }) => {
         const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/subtask-lists`);
          
         if(data && data.success) {
-           console.log("Fetched subtask lists:", data);
+           
            setLists(data.data);
         }
 

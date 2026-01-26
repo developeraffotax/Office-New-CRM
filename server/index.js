@@ -15,11 +15,16 @@ import { errorHandler } from "./middlewares/errorMiddleware.js";
 import { connection as redis } from "./utils/ioredis.js";
 import agenda from "./utils/agenda.js";
 
+// Bull Board imports
+import { createBullBoard } from "@bull-board/api";
+import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
+import { ExpressAdapter } from "@bull-board/express";
+
+// Import your queue
+import { gmailSyncQueue } from "./emailModule/jobs/queues/gmailSyncQueue.js";
+import { initGmailSync } from "./emailModule/jobs/init/initGmailSync.js";
+
 dotenv.config();
-
-
-
-
 
 // --------------------------------------------
 // VALIDATE SECRET KEY
@@ -36,59 +41,78 @@ export let io; // Socket.io instance
 export const getIO = () => io; // getter for other modules
 
 // --------------------------------------------
+// CREATE BULL BOARD
+// --------------------------------------------
+const serverAdapter = new ExpressAdapter();
+serverAdapter.setBasePath("/admin/queues");
+
+createBullBoard({
+  queues: [new BullMQAdapter(gmailSyncQueue)],
+  serverAdapter,
+});
+
+// --------------------------------------------
 // ASYNC SERVER START
 // --------------------------------------------
 const startServer = async () => {
   try {
     // 1️⃣ Connect to MongoDB
-
-    console.log("MONGO STARTING>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    console.log("MONGO STARTING>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
     await connectDB();
     console.log("✅ MongoDB connected");
 
     // 2️⃣ Express setup
     const app = express();
+
+    // 3️⃣ Middleware
     app.use(express.json({ limit: "20mb" }));
     app.use(cors());
     app.use(morgan("dev"));
     app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 
-    // 3️⃣ HTTP & Socket server
+    // Gmail sync init route
+    app.use("/admin/gmail", initGmailSync);
+
+    // Bull Board route
+    app.use("/admin/queues", serverAdapter.getRouter());
+
+    // 4️⃣ HTTP & Socket server
     const server = http.createServer(app);
     io = initSocketServer(server); // initialize io
     agenda.io = io; // attach to agenda
 
-    // 4️⃣ Register routes
+    // 5️⃣ Register app routes
     registerRoutes(app);
     app.post("/gmail-webhook", gmailWebhookHandler);
     app.get("/", (req, res) => {
       res.send(`<h1 style="color:green;">Server is running...</h1>`);
     });
 
-    // 5️⃣ Global error handler
+    // 6️⃣ Global error handler
     app.use(errorHandler);
 
-    // 6️⃣ Run cron jobs only on primary instance
+    // 7️⃣ Run cron jobs only on primary instance
     const isClusterPrimary = process.env.pm_id === "0";
     if (isClusterPrimary) {
       console.log("🕒 Starting scheduled tasks...");
       setupCronJobs();
     }
 
-    // 7️⃣ Start server
+    // 8️⃣ Start server
     const PORT = process.env.PORT || 8080;
     server.listen(PORT, () => {
       console.log(`🚀 Server running on PORT ${PORT}`.bgMagenta.white);
+      console.log(`🎛 Bull Board: http://localhost:${PORT}/admin/queues`.bgBlue.white);
     });
 
-    // 8️⃣ Redis interval logging
+    // 9️⃣ Redis interval logging
     setInterval(async () => {
       try {
         if (redis && redis.status === "ready") {
           const users = await redis.smembers("onlineUsers");
           const agents = await redis.smembers("onlineAgents");
-          console.log("Users💜💜💜", users);
-          console.log("Agents💛💛💛", agents);
+          console.log("Users💜", users);
+          console.log("Agents💛", agents);
         }
       } catch (redisError) {
         console.error(

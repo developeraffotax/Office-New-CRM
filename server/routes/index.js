@@ -90,5 +90,5 @@ export const registerRoutes = (app) => {
 
 
   app.use("/api/v1/ai", aiPerMinuteLimiter, aiRoutes);
-  app.use("/api/v1/gmail", aiPerMinuteLimiter, emailRoutes);
+  app.use("/api/v1/gmail",   emailRoutes);
 };

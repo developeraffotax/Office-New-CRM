@@ -39,6 +39,10 @@ export const getInbox = async (req, res) => {
       hasInboxMessage: true,
     };
 
+    if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+      query.userId = new mongoose.Types.ObjectId(userId);
+    }
+
     if (companyName) {
       query.companyName = companyName;
     }
@@ -74,7 +78,7 @@ export const getInbox = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: threads,
+      threads: threads,
       pagination: {
         page: pageNumber,
         limit: pageSize,
@@ -96,6 +100,93 @@ export const getInbox = async (req, res) => {
 
 
  
+
+
+
+
+
+ 
+export const getSentItems = async (req, res) => {
+  try {
+    const {
+      userId,
+      companyName,
+      category,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 20,
+    } = req.query;
+
+    /* -------------------- Build Mongo Query -------------------- */
+    const query = {
+      hasSentMessage: true,
+    };
+
+    if (companyName) query.companyName = companyName;
+    if (category) query.category = category;
+    if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+      query.userId = new mongoose.Types.ObjectId(userId);
+    }
+      
+
+    if (startDate || endDate) {
+      query.lastMessageAt = {};
+      if (startDate) query.lastMessageAt.$gte = new Date(startDate);
+      if (endDate) query.lastMessageAt.$lte = new Date(endDate);
+    }
+
+    /* -------------------- Pagination -------------------- */
+    const pageNumber = Math.max(parseInt(page), 1);
+    const pageSize = Math.min(parseInt(limit), 100);
+    const skip = (pageNumber - 1) * pageSize;
+
+    /* -------------------- Query Execution -------------------- */
+    const [threads, total] = await Promise.all([
+      EmailThread.find(query)
+        .sort({ lastMessageAt: -1 }) // most recent first
+        .skip(skip)
+        .limit(pageSize)
+        .lean(),
+      EmailThread.countDocuments(query),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      threads: threads,
+      pagination: {
+        page: pageNumber,
+        limit: pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    });
+  } catch (error) {
+    console.error("❌ Sent items fetch error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch sent emails",
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export const updateThreadMetadata = async (req, res) => {
   try {
     const { id } = req.params; // MongoDB _id
@@ -142,3 +233,7 @@ export const updateThreadMetadata = async (req, res) => {
     });
   }
 };
+
+
+
+

@@ -22,8 +22,7 @@ import { ExpressAdapter } from "@bull-board/express";
 
 // Import your queue
 import { gmailSyncQueue } from "./emailModule/jobs/queues/gmailSyncQueue.js";
-import { initGmailSync } from "./emailModule/jobs/init/initGmailSync.js";
-
+ 
 dotenv.config();
 
 // --------------------------------------------
@@ -70,8 +69,7 @@ const startServer = async () => {
     app.use(morgan("dev"));
     app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 
-    // Gmail sync init route
-    app.use("/admin/gmail", initGmailSync);
+ 
 
     // Bull Board route
     app.use("/admin/queues", serverAdapter.getRouter());

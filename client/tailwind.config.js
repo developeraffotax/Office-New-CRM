@@ -33,6 +33,7 @@ module.exports = {
       },
 
       keyframes: {
+        shimmer: { '100%': { transform: 'translateX(100%)' } },
         shake: {
           "0%": { transform: "translateX(0)" },
           "25%": { transform: "translateX(-10px)" },

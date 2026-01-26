@@ -2,15 +2,15 @@ import { google } from "googleapis";
 
 export const getGmailClient = async (companyName) => {
   const COMPANY_CONFIG = {
-    AFFOTAX: {
-      name: "AFFOTAX",
+    affotax: {
+      name: "affotax",
       clientId: process.env.CLIENT_ID,
       clientSecret: process.env.CLIENT_SECRET,
       redirectUri: process.env.REDIRECT_URI,
       refreshToken: process.env.REFRESH_TOKEN,
     },
-    Outsource: {
-      name: "Outsource",
+    outsource: {
+      name: "outsource",
       clientId: process.env.OUTSOURCE_CLIENT_ID,
       clientSecret: process.env.OUTSOURCE_CLIENT_SECRET,
       redirectUri: process.env.OUTSOURCE_REDIRECT_URI,

@@ -1,43 +1,59 @@
-import { gmailSyncQueue } from "../queues/gmailSyncQueue.js";
-import { AFFOTAX } from "../../utils/constants.js";
+// services/initialGmailSync.js
+import dotenv from "dotenv";
+dotenv.config();
+
+
+import { getGmailClient } from "../../services/gmail.service.js";
+import { persistThread } from "../../services/persistThread.js";
  
-import { connection } from "../../../utils/ioredis.js";
- 
-// Helper to safely add a job
-export const initGmailSync = async (data) => {
+
+/**
+ * Directly sync Gmail threads for a company
+ * @param {string} companyName
+ */
+export const syncGmailThreads = async (companyName) => {
   try {
-    if (!connection.status || connection.status !== "ready") {
-      console.warn("⚠️ Redis not ready — job will not be queued right now.");
-      return null;
-    }
+    console.log(`👷‍♂️ Starting Gmail sync for company: ${companyName}`);
 
-    const job = await gmailSyncQueue.add("initial-sync", data, {
-      attempts: 3,
-      backoff: { type: "exponential", delay: 5000 },
-      removeOnComplete: 10,
-      removeOnFail: 10,
-    });
+    const gmail = await getGmailClient(companyName);
 
-    console.log(`✅ Job added to gmailSyncQueue: ${job.id}`);
-    return job;
-  } catch (error) {
-    console.error("❌ Failed to add job to gmailSyncQueue:", error.message);
+    let pageToken;
+    let threadCount = 0;
 
-    // Optional retry if Redis is temporarily unavailable
-    if (error.message.includes("ECONNREFUSED") || error.message.includes("ETIMEDOUT")) {
-      console.warn("🔁 Retrying job addition in 5s due to Redis connection issue...");
-      setTimeout(() => addScreenshotJob(data), 5000);
-    }
+    do {
+      const res = await gmail.users.threads.list({
+          userId: "me",
+          q: "after:2025/01/01 (in:inbox OR in:sent)",
+          maxResults: 50, // adjust as needed
+          pageToken,
+        });
+
+      const threads = res.data.threads || [];
+      console.log(`⏳ Fetched ${threads.length} threads from Gmail`);
+
+      for (const { id: threadId } of threads) {
+        try {
+          await persistThread({ threadId, companyName });
+          threadCount++;
+          console.log(`✅ Thread persisted: ${threadId}`);
+        } catch (err) {
+          console.error(`❌ Failed to persist thread ${threadId}:`, err.message);
+        }
+      }
+
+      pageToken = res.data.nextPageToken;
+    } while (pageToken);
+
+    console.log(`✅ Gmail sync completed for ${companyName}. Total threads processed: ${threadCount}`);
+    return threadCount;
+  } catch (err) {
+    console.error("❌ Gmail sync failed:", err.message);
+    throw err; // propagate if needed
   }
 };
 
-
-const waitForRedisReady = () =>
-  new Promise((resolve) => {
-    if (connection.status === "ready") return resolve();
-    connection.once("ready", resolve);
-  });
-
-await waitForRedisReady();
-await initGmailSync({ companyName: AFFOTAX.name });
-//initGmailSync({companyName: AFFOTAX.name});
+// Example usage
+(async () => {
+  await syncGmailThreads("affotax");
+  // await syncGmailThreads("outsource");
+})();

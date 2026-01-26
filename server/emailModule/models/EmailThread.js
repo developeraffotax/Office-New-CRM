@@ -8,7 +8,7 @@ const EmailThreadSchema = new mongoose.Schema({
   category: {
     type: String,
     // enum: ["support", "lead", "client", "other"],
-    default: "other",
+    default: "",
     index: true
   },
 
@@ -23,7 +23,9 @@ const EmailThreadSchema = new mongoose.Schema({
   unreadCount: { type: Number, default: 0 },
   messageCount: { type: Number, default: 0 },
   attachments: [{ filename: String, mimeType: String, size: Number }],
+
   hasInboxMessage: Boolean,
+  hasSentMessage: Boolean,
 
   
 }, { timestamps: true });

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index.js",
-    "worker": "node worker.js"
+    "worker": "node worker.js",
+    "syncGmailThread": "node emailModule/jobs/init/initGmailSync.js"
   },
   "keywords": [],
   "author": "",

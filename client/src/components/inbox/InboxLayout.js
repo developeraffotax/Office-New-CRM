@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
- 
+
 import InboxSidebar from "./InboxSidebar";
 import InboxToolbar from "./InboxToolbar";
 import InboxFilters from "./InboxFilters";
 import InboxList from "./InboxList";
 import InboxPagination from "./InboxPagination";
+import InboxDetail from "../../pages/Tickets/InboxDetailNew";
+import InboxDetailNew from "../../pages/Tickets/InboxDetailNew";
 
 export default function InboxLayout() {
 
 
+  const [showEmailDetail, setShowEmailDetail] = useState(false)
+  const [showEmailDetailThreadId, setShowEmailDetailThreadId] = useState("")
 
 
   const [users, setUsers] = useState([]);
@@ -17,7 +21,7 @@ export default function InboxLayout() {
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({});
   const [filters, setFilters] = useState({
-    userId: "USER_ID_HERE",
+    userId: "",
     category: "",
     startDate: "",
     endDate: "",
@@ -29,14 +33,23 @@ export default function InboxLayout() {
 
 
 
-  const fetchInbox = async (params) => {
+  const fetchInbox = async () => {
+    setLoading(true);
 
     try {
-        const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/gmail/get-inbox`, { params });
-        return data;
+      const { data: { threads, pagination }, status } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/gmail/get-inbox`, { params: filters });
+
+      if (status === 200) {
+
+        setThreads(threads);
+        setPagination(pagination);
+
+      }
 
     } catch (error) {
-        console.log("ERROR OCCURED", error)
+      console.log("ERROR OCCURED", error)
+    } finally {
+      setLoading(false);
     }
 
   }
@@ -44,19 +57,9 @@ export default function InboxLayout() {
 
 
 
-  const loadInbox = async () => {
-    setLoading(true);
-    const res = await fetchInbox(filters);
-    setThreads(res.data);
-    setPagination(res.pagination);
-    setLoading(false);
-  };
 
 
-
-
-
-    const getAllUsers = async () => {
+  const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
@@ -69,7 +72,7 @@ export default function InboxLayout() {
         ) || []
       );
 
-       
+
     } catch (error) {
       console.log(error);
     }
@@ -82,33 +85,31 @@ export default function InboxLayout() {
 
 
 
-      // ---------------- SINGLE UPDATE FUNCTION ----------------
-    const handleUpdateThread = async (threadId, updateData) => {
-      try {
-        // setUpdating(true);
-        const { data } = await axios.put(
-          `${process.env.REACT_APP_API_URL}/api/v1/gmail/update-thread/${threadId}`,
-          {...updateData}
+  // ---------------- SINGLE UPDATE FUNCTION ----------------
+  const handleUpdateThread = async (threadId, updateData) => {
+    try {
+      // setUpdating(true);
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/gmail/update-thread/${threadId}`,
+        { ...updateData }
+      );
+
+      if (data?.success) {
+        const updatedThread = data.thread;
+
+        setThreads((prevThreads) =>
+          prevThreads.map((t) => (t._id === updatedThread._id ? updatedThread : t))
         );
-  
-        if (data?.success) {
-          const updatedThread = data.thread; // Assume API returns updated thread
-          // Update parent threads array in-place
-          setThreads((prevThreads) =>
-            prevThreads.map((t) => (t._id === updatedThread._id ? updatedThread : t))
-          );
-  
-          // Update local state for immediate UI feedback
-          // if (updateData.userId !== undefined) setUserId(updateData.userId);
-          // if (updateData.category !== undefined) setCategory(updateData.category);
-          // setAssignOpen(false);
-        }
-      } catch (err) {
-        console.error("Failed to update thread:", err);
-      } finally {
-        // setUpdating(false);
+
+        // fetchInbox()
+
       }
-    };
+    } catch (err) {
+      console.error("Failed to update thread:", err);
+    } finally {
+      // setUpdating(false);
+    }
+  };
 
 
 
@@ -118,26 +119,30 @@ export default function InboxLayout() {
 
 
 
-      useEffect(() => {
+  useEffect(() => {
     getAllUsers();
   }, []);
-    useEffect(() => {
-    loadInbox();
+  useEffect(() => {
+    fetchInbox();
   }, [filters]);
   return (
     <div className="flex h-screen bg-white overflow-hidden">
       <InboxSidebar />
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <InboxToolbar />
-        <InboxFilters filters={filters} setFilters={setFilters} />
-        <InboxList loading={loading} threads={threads} users={users} handleUpdateThread={handleUpdateThread}/>
+        {/* <InboxToolbar /> */}
+        <InboxFilters filters={filters} setFilters={setFilters} users={users} />
+        <InboxList loading={loading} threads={threads} users={users} handleUpdateThread={handleUpdateThread} />
         <InboxPagination pagination={pagination} setFilters={setFilters} />
       </div>
+
+
+      {
+        showEmailDetail && <InboxDetailNew company={"Affotax"} threadId={showEmailDetailThreadId} setShowEmailDetail={setShowEmailDetail} />
+      }
     </div>
   );
 }
 
 
 
- 

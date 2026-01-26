@@ -6,6 +6,8 @@ import AttachmentChip from "./attachments/AttachmentChip";
 export default function InboxRow({ thread, users, handleUpdateThread }) {
   const [assignOpen, setAssignOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
+const [menuOpen, setMenuOpen] = useState(false);
+
 
   const attachments = thread.attachments || [];
   const visibleAttachments = attachments.slice(0, 2);
@@ -99,6 +101,7 @@ export default function InboxRow({ thread, users, handleUpdateThread }) {
                 updateCategory(e.target.value);
               }}
             >
+              <option value="">Select</option>
               <option value="support">Support</option>
               <option value="lead">Lead</option>
               <option value="client">Client</option>
@@ -124,43 +127,73 @@ export default function InboxRow({ thread, users, handleUpdateThread }) {
 
             {assignOpen && (
               <div
-                className="absolute right-0 top-full mt-2 w-56 max-h-64 overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-xl z-50 py-1"
+                className="absolute right-0 top-full mt-2 w-56 max-h-96 overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-xl z-50 py-1"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Assign to...</div>
-                {users.map((user) => (
+                {users.map((user, i) => (
                   <button
                     key={user._id}
                     className={clsx(
-                      "w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors",
+                      "w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors border-b",
                       thread.userId === user._id ? "text-blue-600 font-semibold bg-blue-50/50" : "text-gray-700"
                     )}
                     disabled={updating}
                     onClick={() => updateUser(user._id)}
                   >
-                    {user.name}
-                    <div className="text-xs text-gray-400 font-normal">{user.email}</div>
+                    {i+1}. {user.name}
+                    {/* <div className="text-xs text-gray-400 font-normal">{user.email}</div> */}
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          <button
-            className="p-1.5 rounded-md hover:bg-gray-200 text-gray-500"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <FiMoreVertical className="size-4" />
-          </button>
+          <div className="relative">
+  <button
+    className="p-1.5 rounded-md hover:bg-gray-200 text-gray-500"
+    onClick={(e) => {
+      e.stopPropagation();
+      setMenuOpen((prev) => !prev);
+    }}
+  >
+    <FiMoreVertical className="size-4" />
+  </button>
+
+  {menuOpen && (
+    <div
+      className="absolute right-0 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-lg z-50"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        disabled={updating || !thread.userId}
+        onClick={async () => {
+          setMenuOpen(false);
+          await updateUser(null); // 👈 remove assigned user
+        }}
+        className={clsx(
+          "w-full px-3 py-2 text-left text-sm transition-colors rounded-lg",
+          thread.userId
+            ? "text-red-600 hover:bg-red-50"
+            : "text-gray-300 cursor-not-allowed"
+        )}
+      >
+        Remove user
+      </button>
+    </div>
+  )}
+</div>
+
         </div>
 
         {/* Date/Time */}
-        <div className="text-[11px] text-right text-gray-400 font-medium tabular-nums">
+        <div className="text-[11px] text-right text-gray-500 font-medium tabular-nums">
           {new Date(thread.lastMessageAt).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
+            year: "numeric",
           })}
-          <div className="text-[10px] opacity-70">
+          <div className="text-[10px] opacity-90 ">
             {new Date(thread.lastMessageAt).toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",

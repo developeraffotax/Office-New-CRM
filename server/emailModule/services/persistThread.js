@@ -37,6 +37,7 @@ export async function persistThread({ threadId, companyName }) {
     let lastMessageSnippet = "";
     let unreadCount = 0;
     let hasInboxMessage = false;
+    let hasSentMessage = false;
     let attachments = [];
 
     for (const msg of messages) {
@@ -48,6 +49,8 @@ export async function persistThread({ threadId, companyName }) {
       const date = new Date(Number(msg.internalDate));
       const isUnread = msg.labelIds.includes("UNREAD");
       const isInbox = msg.labelIds.includes("INBOX");
+      const isSent = msg.labelIds.includes("SENT");
+      
 
       // Add participants to map (avoids duplicates automatically)
       if (from.email) participantsMap.set(from.email, from);
@@ -67,9 +70,13 @@ export async function persistThread({ threadId, companyName }) {
         if (isUnread) unreadCount++;
       }
 
-      console.log("MSG", msg.payload.parts[0])
-      console.log("MSG", msg.payload.parts[1])
-      console.log("MSG", msg.payload.parts[2])
+            // Track inbox/unread
+      if (isSent) {
+        hasSentMessage = true;
+        
+      }
+
+      
 
       // Extract attachments
       const msgAttachments = extractAttachments(msg.payload);
@@ -95,6 +102,7 @@ export async function persistThread({ threadId, companyName }) {
         messageCount: messages.length,
         unreadCount,
         hasInboxMessage,
+        hasSentMessage,
         attachments
       },
       { upsert: true }

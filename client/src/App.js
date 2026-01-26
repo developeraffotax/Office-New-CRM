@@ -55,6 +55,7 @@ import { getUserSettings, initSettingsListener } from "./redux/slices/settingsSl
 import SettingsPage from "./pages/Settings/Settings";
 import { initGlobalTimerListener } from "./redux/slices/globalTimerSlice";
 import RegisterGlobalComponents from "./components/global/RegisterGlobalComponents";
+import InboxLayout from "./components/inbox/InboxLayout";
 
 function App() {
   const navigate = useNavigate();
@@ -118,7 +119,7 @@ function App() {
           <Route path="/tickets" element={<Tickets />} />
           <Route path="/tickets/complete" element={<CompleteTickets />} />
           <Route path="/ticket/detail/:id" element={<EmailDetail />} />
-          <Route path="/tickets/inbox" element={<Inbox />} />
+          <Route path="/tickets/inbox" element={<InboxLayout />} />
         </>
       ),
       Templates: <Route path="/templates" element={<Template />} />,
@@ -154,6 +155,7 @@ function App() {
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/temp/:hrTaskId" element={<Temp />} />
+        <Route path="/in" element={<InboxLayout />} />
 
         {token ? (
           // Private routes (only for logged-in users)

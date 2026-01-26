@@ -7,7 +7,7 @@ const EmailThreadSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, index: true },
   category: {
     type: String,
-    enum: ["support", "lead", "client", "other"],
+    // enum: ["support", "lead", "client", "other"],
     default: "other",
     index: true
   },

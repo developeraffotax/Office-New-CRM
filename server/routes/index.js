@@ -35,6 +35,7 @@ import agentRoutes from "./agentRoutes.js";
 import userSettingsRoutes from "./userSettingsRoutes.js";
 
 import aiRoutes from "../aiModule/routes/ai.routes.js";
+import emailRoutes from "../emailModule/routes/email.routes.js";
 
  
  
@@ -89,4 +90,5 @@ export const registerRoutes = (app) => {
 
 
   app.use("/api/v1/ai", aiPerMinuteLimiter, aiRoutes);
+  app.use("/api/v1/gmail", aiPerMinuteLimiter, emailRoutes);
 };

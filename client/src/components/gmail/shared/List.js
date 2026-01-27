@@ -1,4 +1,4 @@
-import InboxRow from "./InboxRow";
+import Row from "./Row";
 
 // A internal component for the loading state
 const ShimmerSkeleton = () => (
@@ -24,7 +24,7 @@ const ShimmerSkeleton = () => (
   </div>
 );
 
-export default function InboxList({ threads, loading, users, handleUpdateThread, setEmailDetail, }) {
+export default function  List({ threads, loading, users, handleUpdateThread, setEmailDetail, categories }) {
   if (loading) {
     return (
       <div className="flex-1 overflow-hidden">
@@ -43,11 +43,12 @@ export default function InboxList({ threads, loading, users, handleUpdateThread,
   return (
     <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden">
       {threads.map((thread) => (
-        <InboxRow 
+        <Row 
           key={thread._id} 
           thread={thread} 
           users={users} 
           handleUpdateThread={handleUpdateThread} 
+          categories={categories}
 
           setEmailDetail={setEmailDetail}
            

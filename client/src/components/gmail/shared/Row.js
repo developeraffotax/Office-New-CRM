@@ -3,7 +3,7 @@ import { FiPaperclip, FiMoreVertical, FiUserPlus, FiChevronDown } from "react-ic
 import clsx from "clsx";
 import AttachmentChip from "./attachments/AttachmentChip";
 
-export default function InboxRow({ thread, users, handleUpdateThread, setEmailDetail,  }) {
+export default function  Row({ thread, users, handleUpdateThread, setEmailDetail, categories  }) {
   const [assignOpen, setAssignOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
 const [menuOpen, setMenuOpen] = useState(false);
@@ -102,10 +102,16 @@ const [menuOpen, setMenuOpen] = useState(false);
               }}
             >
               <option value="">Select</option>
-              <option value="support">Support</option>
-              <option value="lead">Lead</option>
-              <option value="client">Client</option>
-              <option value="other">Other</option>
+
+              {
+                categories.map((category) => {
+                  return (
+                  <option value={category.name}>{category.name[0].toUpperCase() + category.name.slice(1)}</option>
+                  )
+                })
+              }
+             
+              
             </select>
             <FiChevronDown className="absolute right-1.5 pointer-events-none text-gray-400 size-3" />
           </div>

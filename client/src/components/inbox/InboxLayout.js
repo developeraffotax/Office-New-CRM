@@ -12,8 +12,10 @@ import InboxDetailNew from "../../pages/Tickets/InboxDetailNew";
 export default function InboxLayout() {
 
 
-  const [showEmailDetail, setShowEmailDetail] = useState(false)
-  const [showEmailDetailThreadId, setShowEmailDetailThreadId] = useState("")
+  const [emailDetail, setEmailDetail] = useState({
+    threadId: "",
+    show: false
+  })
 
 
   const [users, setUsers] = useState([]);
@@ -132,13 +134,13 @@ export default function InboxLayout() {
       <div className="flex-1 min-w-0 flex flex-col">
         {/* <InboxToolbar /> */}
         <InboxFilters filters={filters} setFilters={setFilters} users={users} />
-        <InboxList loading={loading} threads={threads} users={users} handleUpdateThread={handleUpdateThread} />
+        <InboxList loading={loading} threads={threads} users={users} handleUpdateThread={handleUpdateThread}         setEmailDetail={setEmailDetail}  />
         <InboxPagination pagination={pagination} setFilters={setFilters} />
       </div>
 
 
       {
-        showEmailDetail && <InboxDetailNew company={"Affotax"} threadId={showEmailDetailThreadId} setShowEmailDetail={setShowEmailDetail} />
+        emailDetail.show && <InboxDetailNew company={"Affotax"} threadId={emailDetail.threadId} setShowEmailDetail={() => setEmailDetail({threadId: "", show: false})} />
       }
     </div>
   );

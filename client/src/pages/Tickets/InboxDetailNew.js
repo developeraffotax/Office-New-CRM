@@ -39,17 +39,17 @@ export default function InboxDetailNew({
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/inbox/detail/${threadId}/${company}`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/inbox/detail/${threadId}/${"Affotax"}`
       );
       if (data) {
         setLoading(false);
         setEmailDetail(data.emailDetails);
         //
-        markAsRead(
-          data.emailDetails.threadData.messages[
-            data.emailDetails.threadData.messages.length - 1
-          ].id
-        );
+        // markAsRead(
+        //   data.emailDetails.threadData.messages[
+        //     data.emailDetails.threadData.messages.length - 1
+        //   ].id
+        // );
       }
     } catch (error) {
       setLoading(false);
@@ -63,21 +63,21 @@ export default function InboxDetailNew({
   }, [threadId, company]);
  
 
-  useEffect(() => {
-    const fromHeader =
-      singleEmail.emailData.payload.headers.find(
-        (header) => header.name === "From"
-      )?.value || "No Sender";
+  // useEffect(() => {
+  //   const fromHeader =
+  //     singleEmail.emailData.payload.headers.find(
+  //       (header) => header.name === "From"
+  //     )?.value || "No Sender";
 
-    // Check if 'fromHeader' contains an email
-    const [name, emailAddress] = fromHeader.includes("<")
-      ? fromHeader.split(/<|>/)
-      : [fromHeader, ""];
+  //   // Check if 'fromHeader' contains an email
+  //   const [name, emailAddress] = fromHeader.includes("<")
+  //     ? fromHeader.split(/<|>/)
+  //     : [fromHeader, ""];
 
-    // Clean the email address
-    const cleanedEmail = emailAddress ? emailAddress.trim() : "";
-    setSendToEmail(cleanedEmail);
-  }, [singleEmail]);
+  //   // Clean the email address
+  //   const cleanedEmail = emailAddress ? emailAddress.trim() : "";
+  //   setSendToEmail(cleanedEmail);
+  // }, [singleEmail]);
 
   // Regex to extract the name and email address
   const separate = (email) => {
@@ -229,7 +229,8 @@ export default function InboxDetailNew({
               <IoArrowBackOutline className="h-5 w-5 cursor-pointer" />
             </span>
             <h2 className="text-[2xl] font-semibold  text-black">
-              {singleEmail?.subject}
+              {/* {singleEmail?.subject} */}
+              Subject
             </h2>
           </div>
           <button
@@ -468,7 +469,7 @@ export default function InboxDetailNew({
         )}
 
         {/* ----------------Email Reply-------------- */}
-        {showReplay && (
+        {/* {showReplay && (
           <div className="fixed top-0 left-0 z-[999] w-full h-full py-1 bg-gray-700/70 flex items-center justify-center">
             <SendEmailReply
               setShowReply={setShowReply}
@@ -477,10 +478,10 @@ export default function InboxDetailNew({
               company={company}
               ticketId={ticketDetail._id}
               emailSendTo={sendToEmail}
-              getEmailDetail={getEmail}
+              getEmailDetail={getEmailDetail}
             />
           </div>
-        )}
+        )} */}
       </div>
      
   );

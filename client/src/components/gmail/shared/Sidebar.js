@@ -25,7 +25,7 @@ const Item = ({ icon, label, to }) => {
   );
 };
 
-export default function InboxSidebar() {
+export default function Sidebar() {
   return (
     <div className="min-w-48 border-r bg-gray-50 pt-4 space-y-1">
       <Item

@@ -114,6 +114,7 @@ export const getSentItems = async (req, res) => {
       category,
       startDate,
       endDate,
+      unreadOnly,
       page = 1,
       limit = 20,
     } = req.query;
@@ -127,6 +128,10 @@ export const getSentItems = async (req, res) => {
     if (category) query.category = category;
     if (userId && mongoose.Types.ObjectId.isValid(userId)) {
       query.userId = new mongoose.Types.ObjectId(userId);
+    }
+
+    if (unreadOnly === "true") {
+      query.unreadCount = { $gt: 0 };
     }
       
 

@@ -28,7 +28,7 @@ import TimeSheet from "./pages/TimerSheet/TimeSheet";
 import Tickets from "./pages/Tickets/Tickets";
 import CompleteTickets from "./pages/Tickets/CompleteTickets";
 import EmailDetail from "./pages/Tickets/EmailDetail";
-import Inbox from "./pages/Tickets/Inbox";
+// import Inbox from "./pages/Tickets/Inbox";
 import Template from "./pages/Templates/Template";
 import TemplateEditor from "./pages/Tickets/TemplateEditor";
 import PDFEditor from "./pages/Editor/PDFEditor";
@@ -55,7 +55,8 @@ import { getUserSettings, initSettingsListener } from "./redux/slices/settingsSl
 import SettingsPage from "./pages/Settings/Settings";
 import { initGlobalTimerListener } from "./redux/slices/globalTimerSlice";
 import RegisterGlobalComponents from "./components/global/RegisterGlobalComponents";
-import InboxLayout from "./components/inbox/InboxLayout";
+import Inbox from "./components/gmail/pages/Inbox";
+import Sent from "./components/gmail/pages/Sent";
 
 function App() {
   const navigate = useNavigate();
@@ -119,7 +120,8 @@ function App() {
           <Route path="/tickets" element={<Tickets />} />
           <Route path="/tickets/complete" element={<CompleteTickets />} />
           <Route path="/ticket/detail/:id" element={<EmailDetail />} />
-          <Route path="/tickets/inbox" element={<InboxLayout />} />
+          <Route path="/tickets/inbox" element={<Inbox />} />
+          <Route path="/tickets/sent" element={<Sent />} />
         </>
       ),
       Templates: <Route path="/templates" element={<Template />} />,
@@ -155,7 +157,7 @@ function App() {
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/temp/:hrTaskId" element={<Temp />} />
-        <Route path="/in" element={<InboxLayout />} />
+         
 
         {token ? (
           // Private routes (only for logged-in users)

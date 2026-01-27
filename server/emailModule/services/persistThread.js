@@ -73,6 +73,7 @@ export async function persistThread({ threadId, companyName }) {
             // Track inbox/unread
       if (isSent) {
         hasSentMessage = true;
+        if (isUnread) unreadCount++;  
         
       }
 

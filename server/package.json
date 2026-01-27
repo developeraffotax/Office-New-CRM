@@ -7,7 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index.js",
     "worker": "node worker.js",
-    "syncGmailThread": "node emailModule/jobs/init/initGmailSync.js"
+    "syncGmailThread": "node emailModule/jobs/init/initGmailSync.js",
+
+    "gmailWorker": "node emailModule/jobs/workers/historySync.worker.js",
+    "notificationWorker": "node jobs/workers/notificationWorker.js"
   },
   "keywords": [],
   "author": "",

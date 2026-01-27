@@ -14,10 +14,10 @@ import { getGmailClient } from "./gmail.service.js";
 
 
 
+
 export async function persistThread({ threadId, companyName }) {
   try {
 
-     await connectDB()
     // Use provided Gmail client or create a new one
     const gmail = (await getGmailClient(companyName));
 
@@ -108,7 +108,7 @@ export async function persistThread({ threadId, companyName }) {
       },
       { upsert: true }
     );
-
+      // can create notificaiotn here using the job
     console.log("EMAIL THREAD CREATED❤✔")
 
   } catch (error) {

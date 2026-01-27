@@ -1,225 +1,134 @@
-import { PubSub } from "@google-cloud/pubsub";
-import { JWT } from "google-auth-library";
-import { google } from "googleapis";
-import path from "path";
-import { fileURLToPath } from "url";
 import ticketModel from "../models/ticketModel.js";
-import userModel from "../models/userModel.js";
-import notificationModel from "../models/notificationModel.js";
 import gmailModel from "../models/gmailModel.js";
-import { io } from "../index.js";
-import { connection as redis } from "../utils/ioredis.js";
 
-// Get __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { addNotificationJob } from "../jobs/queues/notificationQueue.js";
+import { getGmailClient } from "../emailModule/services/gmail.service.js";
+import { gmailSyncQueue } from "../emailModule/jobs/queues/gmailSyncQueue.js";
 
-// Path for Credentials
-const CREDENTIALS_PATH = path.join(__dirname, "..", "creds", "service-pubsub.json");
+/**
+ * Get sender email from Gmail message metadata
+ */
+async function getSenderEmail(gmail, messageId) {
+  const emailResponse = await gmail.users.messages.get({
+    userId: "me",
+    id: messageId,
+    format: "metadata",
+    metadataHeaders: ["From"],
+  });
 
-// Scopes you need
-const SCOPES = [
-  "https://www.googleapis.com/auth/gmail.readonly",
-  "https://www.googleapis.com/auth/gmail.modify",
-  "https://www.googleapis.com/auth/gmail.metadata",
-  "https://www.googleapis.com/auth/pubsub",
-];
+  const fromHeader = emailResponse.data.payload.headers.find(h => h.name === "From");
+  return fromHeader?.value?.match(/<([^>]+)>/)?.[1];
+}
 
-// Create a JWT client using the Service Account key
-const jwtClient = new JWT({
-  keyFile: CREDENTIALS_PATH,
-  scopes: SCOPES,
-  subject: "info@affotax.com",
-});
+/**
+ * Process a single messageAdded event: update ticket and add notification if needed
+ */
+async function processMessageAdded(gmail, msg, yourEmail) {
+  const { id: messageId, threadId } = msg;
+  const senderEmail = await getSenderEmail(gmail, messageId);
 
+  if (!senderEmail || senderEmail === yourEmail) return threadId;
+
+  const ticket = await ticketModel.findOneAndUpdate(
+    { mailThreadId: threadId },
+    { $set: { status: "Unread" }, $inc: { unreadCount: 1 } },
+    { new: true }
+  );
+
+  if (ticket) {
+    await addNotificationJob({ ticket });
+  }
+
+  return threadId;
+}
+
+/**
+ * Collect all threadIds for syncing (messageAdded, messageDeleted, label changes)
+ */
+function collectThreadIds(item) {
+  const threadIds = new Set();
+
+  (item.messagesAdded || []).forEach(({ message }) => threadIds.add(message.threadId));
+  (item.messagesDeleted || []).forEach(({ message }) => threadIds.add(message.threadId));
+  const labelsChanged = (item.labelAdded || []).concat(item.labelRemoved || []);
+  labelsChanged.forEach(({ message }) => threadIds.add(message.threadId));
+
+  return threadIds;
+}
+
+/**
+ * Add Gmail sync job for all threadIds
+ */
+async function addGmailSyncJob(threadIds) {
+  if (threadIds.size === 0) return;
+  await gmailSyncQueue.add("addGmailThread", {
+    companyName: "affotax",
+    threadIds: Array.from(threadIds),
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Main webhook handler
+ */
 export async function gmailWebhookHandler(req, res) {
-  const { message } = req.body;
-  console.log("MESSAGE", message);
-
   try {
-    const data = Buffer.from(message.data, "base64").toString();
-    const { historyId } = JSON.parse(data);
-    console.log("DATA:>>>", data);
-    await jwtClient.authorize();
-    const gmail = google.gmail({ version: "v1", auth: jwtClient });
+    const { message } = req.body;
+    const decodedData = Buffer.from(message.data, "base64").toString();
+    const { historyId } = JSON.parse(decodedData);
 
+    const gmail = await getGmailClient("affotax");
     const lastDoc = await gmailModel.findOne({}).sort({ _id: -1 });
 
     const historyResponse = await gmail.users.history.list({
       userId: "me",
       startHistoryId: lastDoc?.last_history_id,
-      historyTypes: ["messageAdded"],
+      historyTypes: ["messageAdded", "messageDeleted", "labelAdded", "labelRemoved"],
     });
 
-    await gmailModel.create({
-      last_history_id: historyResponse.data.historyId,
-    });
+    await gmailModel.create({ last_history_id: historyResponse.data.historyId });
 
-    const history = historyResponse.data.history;
+    const history = historyResponse.data.history || [];
+    const yourEmail = "info@affotax.com";
 
-    if (history && history.length > 0) {
-      for (const item of history) {
-        if (item.messagesAdded && item.messagesAdded.length > 0) {
-          for (const message of item.messagesAdded) {
-            const messageId = message.message.id;
-            const threadId = message.message.threadId;
+    const allThreadIds = new Set();
+    const notificationPromises = [];
 
-            const emailResponse = await gmail.users.messages.get({
-              userId: "me",
-              id: messageId,
-              format: "metadata",
-              metadataHeaders: ["From"],
-            });
+    for (const item of history) {
+      if (!item.messagesAdded && !item.messagesDeleted && !item.labelAdded && !item.labelRemoved) continue;
 
-            const headers = emailResponse.data.payload.headers;
-            const fromHeader = headers.find((header) => header.name === "From");
-            const text = fromHeader ? fromHeader.value : null;
-            const pattern = /<([^>]+)>/;
-            const senderEmail = text.match(pattern)[1];
-
-            console.log("SenderEmail>>>>>", senderEmail);
-
-            const yourEmail = "info@affotax.com";
-
-            if (senderEmail && senderEmail !== yourEmail) {
-              const ticket = await findTicketByThreadId(threadId);
-              console.log("TICKET", ticket);
-
-              if (ticket) {
-                await createNotification(ticket);
-              } else {
-                console.log("TICKET NOT FOUND");
-              }
-            }
-          }
-        }
+      // Process new messages
+      if (item.messagesAdded) {
+        item.messagesAdded.forEach(({ message: msg }) => {
+          notificationPromises.push(processMessageAdded(gmail, msg, yourEmail).then(threadId => {
+            if (threadId) allThreadIds.add(threadId);
+          }));
+        });
       }
-    } else {
-      console.log("No new messages related to historyId:", historyId);
+
+      // Collect threadIds for other events
+      const threadIds = collectThreadIds(item);
+      threadIds.forEach(id => allThreadIds.add(id));
     }
 
-    res.status(200).send("Notification received");
-  } catch (error) {
-    console.error("Error processing message:", error);
-    res.status(500).send("Error processing message");
+    // Wait for all notifications to finish
+    await Promise.all(notificationPromises);
+
+    // Add Gmail sync job
+    await addGmailSyncJob(allThreadIds);
+
+    res.status(200).send("Webhook processed");
+  } catch (err) {
+    console.error("Gmail webhook error:", err);
+    res.status(500).send("Error processing webhook");
   }
 }
-
-const findTicketByThreadId = async (threadId) => {
-  const filter = { mailThreadId: threadId };
-
-  const update = { 
-    $set: { status: "Unread" }, 
-    $inc: { unreadCount: 1 }   // <-- increment by 1
-  };
-
-  const options = { new: true };
-
-  const ticket = await ticketModel.findOneAndUpdate(filter, update, options);
-  return ticket;
-};
-
-
-
-const findUsersToNotify = async (ticket) => {
-  const lastMessageSentBy = await userModel.findOne({
-    name: ticket.lastMessageSentBy,
-  });
-  const jobHolder = await userModel.findOne({ name: ticket.jobHolder });
-  return { lastMessageSentBy, jobHolder };
-};
-
-
-
-
-
-// --- REDIS-BASED SOCKET EMITTER ---
-const sendSocketNotification = async (notification, userId) => {
-  if (!userId) return;
-
-  // Fetch all socket IDs for this user from Redis
-  const sockets = await redis.smembers(`sockets:user:${userId.toString()}`);
-
-  if (sockets && sockets.length > 0) {
-    for (const socketId of sockets) {
-      io.to(socketId).emit("newNotification", { notification });
-
-
-      io.to(socketId).emit("ticket-updated", );
-
-
-    }
-  }
-};
-
-
-
-
-
-
-
-
-
-const createNotification = async (ticket) => {
-  const { lastMessageSentBy, jobHolder } = await findUsersToNotify(ticket);
-
-  // Notification to jobHolder
-  const notification1 = await notificationModel.create({
-    title: "Reply to a ticket received",
-    redirectLink: `/ticket/detail/${ticket._id}`,
-    description: `You've received a response to a ticket with the subject "${ticket.subject}" from the company "${ticket.companyName}" and the client's name "${ticket.clientName}".`,
-    taskId: ticket._id,
-    userId: jobHolder?._id,
-    type: "ticket_received",
-  });
-  await sendSocketNotification(notification1, jobHolder?._id);
-
-  // Notification to lastMessageSentBy if different
-  if (jobHolder?._id?.toString() !== lastMessageSentBy?._id?.toString()) {
-    const notification2 = await notificationModel.create({
-      title: "Reply to a ticket received",
-      redirectLink: `/ticket/detail/${ticket._id}`,
-      description: `You've received a response to a ticket with the subject "${ticket.subject}" from the company "${ticket.companyName}" and the client's name "${ticket.clientName}".`,
-      taskId: ticket._id,
-      userId: lastMessageSentBy?._id,
-      type: "ticket_received",
-    });
-    await sendSocketNotification(notification2, lastMessageSentBy?._id);
-  }
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-// --- SEND SOCKET UPDATE FOR TICKET ---
-// const sendTicketUpdate = async (ticket) => {
-//   const users = await findUsersToNotify(ticket);
-//   const userIds = [];
-
-//   if (users.jobHolder?._id) userIds.push(users.jobHolder._id.toString());
-//   if (users.lastMessageSentBy?._id) userIds.push(users.lastMessageSentBy._id.toString());
-
-//   const uniqueIds = [...new Set(userIds)];
-
-//   for (const userId of uniqueIds) {
-//     const sockets = await redis.smembers(`sockets:user:${userId}`);
-
-//     for (const socketId of sockets) {
-//       io.to(socketId).emit("ticket-updated", {
-//         ticketId: ticket._id,
-//         status: ticket.status,
-//         unreadCount: ticket.unreadCount,
-         
-//       });
-//     }
-//   }
-// };

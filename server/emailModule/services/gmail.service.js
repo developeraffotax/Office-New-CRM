@@ -21,10 +21,10 @@ export const getGmailClient = async (companyName) => {
 
 
   const config = COMPANY_CONFIG[companyName];
-  console.log(config)
+
   if (!config) throw new Error("Invalid company name");
 
-  console.log("CONFIG:", config); // Now values are defined
+
 
   const oauth = new google.auth.OAuth2(
     config.clientId,

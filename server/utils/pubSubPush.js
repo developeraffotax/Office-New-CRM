@@ -50,7 +50,7 @@ function collectThreadIds(item) {
 
   (item.messagesAdded || []).forEach(({ message }) => threadIds.add(message.threadId));
   (item.messagesDeleted || []).forEach(({ message }) => threadIds.add(message.threadId));
-  const labelsChanged = (item.labelAdded || []).concat(item.labelRemoved || []);
+  const labelsChanged = (item.labelsAdded || []).concat(item.labelsRemoved || []);
   labelsChanged.forEach(({ message }) => threadIds.add(message.threadId));
 
   return threadIds;
@@ -104,7 +104,8 @@ export async function gmailWebhookHandler(req, res) {
     const notificationPromises = [];
 
     for (const item of history) {
-      if (!item.messagesAdded && !item.messagesDeleted && !item.labelAdded && !item.labelRemoved) continue;
+      console.log("THE ITEM IS ", item)
+      if (!item.messagesAdded && !item.messagesDeleted && !item.labelsAdded && !item.labelsRemoved) continue;
 
       // Process new messages
       if (item.messagesAdded) {
@@ -115,9 +116,13 @@ export async function gmailWebhookHandler(req, res) {
         });
       }
 
+      
       // Collect threadIds for other events
       const threadIds = collectThreadIds(item);
       threadIds.forEach(id => allThreadIds.add(id));
+
+
+      console.log("THE THREAD IDS ARE>>>", threadIds)
     }
 
     // Wait for all notifications to finish

@@ -19,7 +19,9 @@ const [menuOpen, setMenuOpen] = useState(false);
     "Unknown";
 
   const assignedUser = users.find((u) => u._id === thread.userId);
-  const displayCategory = thread.category.charAt(0).toUpperCase() + thread.category.slice(1);
+
+  const threadCategory = categories.find((cat) => cat.name === thread?.category)
+  const displayCategory = threadCategory?.name.charAt(0).toUpperCase() + threadCategory?.name.slice(1);
 
   // ---------------- LOCAL UPDATE HANDLERS ----------------
   const updateCategory = async (newCategory) => {
@@ -68,8 +70,11 @@ const [menuOpen, setMenuOpen] = useState(false);
               </span>
             )}
             {thread.category && (
-              <span className="text-[10px] font-semibold uppercase tracking-wider bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded">
-                {displayCategory}
+              <span
+                className="text-[10px] font-semibold uppercase tracking-wider text-white px-1.5 py-0.5 rounded"
+                style={{ backgroundColor: threadCategory?.color }}
+              >
+                {threadCategory?.name}
               </span>
             )}
           </div>

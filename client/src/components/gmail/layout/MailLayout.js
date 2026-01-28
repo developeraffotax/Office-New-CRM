@@ -22,6 +22,10 @@ export default function MailLayout({
     show: false,
   });
 
+  
+
+
+
   return (
     <div className="flex h-screen bg-white overflow-hidden">
       <Sidebar />

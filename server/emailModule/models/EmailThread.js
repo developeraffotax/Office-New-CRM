@@ -1,175 +1,97 @@
-
-// models/EmailThread.js
 import mongoose from "mongoose";
 
 const EmailThreadSchema = new mongoose.Schema(
   {
-    companyName: {
-      type: String,
-      required: true,
-    },
-
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      default: null,
-    },
-
-    category: {
-      type: String,
-      default: "",
-    },
-
-    threadId: {
-      type: String,
-      required: true,
-    },
-
+    companyName: { type: String, required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, default: null },
+    category: { type: String, default: "" },
+    threadId: { type: String, required: true },
     subject: String,
+    participants: [{ name: String, email: String }],
 
-    participants: [
-      {
-        name: String,
-        email: String,
-      },
-    ],
-
+    // ---------------- Per-folder timestamps ----------------
+    lastMessageAtInbox: Date,     // latest message from others in Inbox
+    lastMessageAtSent: Date,      // latest message from self in Sent
+    
     lastMessageAt: Date,
     lastMessageSnippet: String,
+   
 
-    unreadCount: {
-      type: Number,
-      default: 0,
-    },
+    unreadCount: { type: Number, default: 0 }, // only counts INBOX messages
+    messageCount: { type: Number, default: 0 },
+    attachments: [{ filename: String, mimeType: String, size: Number }],
 
-    messageCount: {
-      type: Number,
-      default: 0,
-    },
+    // store all Gmail labels on the thread
+    labels: [{ type: String }],
 
-    attachments: [
-      {
-        filename: String,
-        mimeType: String,
-        size: Number,
-      },
-    ],
-
-    hasInboxMessage: Boolean,
-    hasSentMessage: Boolean,
+    // Convenience booleans for filtering/indexing
+    hasInboxMessage: { type: Boolean, default: false },
+    hasSentMessage: { type: Boolean, default: false },
+    
   },
   { timestamps: true }
 );
 
-// Unique per company
+// Unique index per company + thread
+EmailThreadSchema.index({ companyName: 1, threadId: 1 }, { unique: true });
+
 EmailThreadSchema.index(
-  { companyName: 1, threadId: 1 },
-  { unique: true }
+  { companyName: 1, userId: 1, lastMessageAtInbox: -1 },
+  { partialFilterExpression: { hasInboxMessage: true } }
 );
 
-// Inbox
 EmailThreadSchema.index(
-  {
-    companyName: 1,
-    userId: 1,
-    category: 1,
-    lastMessageAt: -1
-  },
-  {
-    partialFilterExpression: { hasInboxMessage: true }
-  }
+  { companyName: 1, userId: 1, lastMessageAtSent: -1 },
+  { partialFilterExpression: { hasSentMessage: true } }
 );
 
-// Sent
-EmailThreadSchema.index(
-  {
-    companyName: 1,
-    userId: 1,
-    category: 1,
-    lastMessageAt: -1
-  },
-  {
-    partialFilterExpression: { hasSentMessage: true }
-  }
-);
 
-// Optional: unread inbox
-// EmailThreadSchema.index(
+export default mongoose.model("EmailThread", EmailThreadSchema);
+
+ 
+
+// // models/EmailThread.js
+// import mongoose from "mongoose";
+
+// const EmailThreadSchema = new mongoose.Schema(
 //   {
-//     companyName: 1,
-//     userId: 1,
-//     lastMessageAt: -1
+//     companyName: { type: String, required: true },
+//     userId: { type: mongoose.Schema.Types.ObjectId, default: null },
+//     category: { type: String, default: "" },
+//     threadId: { type: String, required: true },
+//     subject: String,
+//     participants: [{ name: String, email: String }],
+//     lastMessageAt: Date,
+//     lastMessageSnippet: String,
+//     unreadCount: { type: Number, default: 0 },
+//     messageCount: { type: Number, default: 0 },
+//     attachments: [{ filename: String, mimeType: String, size: Number }],
+//     hasInboxMessage: { type: Boolean, default: false },
+//     hasSentMessage: { type: Boolean, default: false },
 //   },
+//   { timestamps: true }
+// );
+
+// // Unique per company
+// EmailThreadSchema.index({ companyName: 1, threadId: 1 }, { unique: true });
+
+// //for inbox & sent
+// EmailThreadSchema.index(
+//   { companyName: 1, userId: 1, category: 1, lastMessageAt: -1 },
 //   {
 //     partialFilterExpression: {
-//       hasInboxMessage: true,
-//       unreadCount: { $gt: 0 }
+//       $or: [{ hasInboxMessage: true }, { hasSentMessage: true }]
 //     }
 //   }
 // );
 
  
 
-export default mongoose.model("EmailThread", EmailThreadSchema);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // models/EmailThread.js
-// import mongoose from "mongoose";
-
-// const EmailThreadSchema = new mongoose.Schema({
-
-//   companyName: { type: String, index: true },
-//   userId: { type: mongoose.Schema.Types.ObjectId, index: true },
-//   category: {
-//     type: String,
-//     // enum: ["support", "lead", "client", "other"],
-//     default: "",
-//     index: true
-//   },
-
-
-//   threadId: { type: String, index: true }, 
-//   subject: String,
-//   participants: [{ name: String, email: String }],
-
-
-//   lastMessageAt: Date,
-//   lastMessageSnippet: String,
-//   unreadCount: { type: Number, default: 0 },
-//   messageCount: { type: Number, default: 0 },
-//   attachments: [{ filename: String, mimeType: String, size: Number }],
-
-//   hasInboxMessage: Boolean,
-//   hasSentMessage: Boolean,
-
-  
-// }, { timestamps: true });
-
-// // Compound index to ensure threadId is unique per company
-// EmailThreadSchema.index({ companyName: 1, threadId: 1 }, { unique: true });
-
 // export default mongoose.model("EmailThread", EmailThreadSchema);
+
+
+
+
+
+
+ 

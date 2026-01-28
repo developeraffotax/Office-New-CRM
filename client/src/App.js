@@ -55,8 +55,8 @@ import { getUserSettings, initSettingsListener } from "./redux/slices/settingsSl
 import SettingsPage from "./pages/Settings/Settings";
 import { initGlobalTimerListener } from "./redux/slices/globalTimerSlice";
 import RegisterGlobalComponents from "./components/global/RegisterGlobalComponents";
-import Inbox from "./components/gmail/pages/Inbox";
-import Sent from "./components/gmail/pages/Sent";
+ 
+import Mailbox from "./components/gmail/pages/Mailbox";
 
 function App() {
   const navigate = useNavigate();
@@ -120,8 +120,8 @@ function App() {
           <Route path="/tickets" element={<Tickets />} />
           <Route path="/tickets/complete" element={<CompleteTickets />} />
           <Route path="/ticket/detail/:id" element={<EmailDetail />} />
-          <Route path="/tickets/inbox" element={<Inbox />} />
-          <Route path="/tickets/sent" element={<Sent />} />
+          <Route path="/tickets/mail" element={<Mailbox />} />
+          {/* <Route path="/tickets/sent" element={<Sent />} /> */}
         </>
       ),
       Templates: <Route path="/templates" element={<Template />} />,

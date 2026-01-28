@@ -10,6 +10,7 @@ import { Server as SocketIOServer } from "socket.io";
 import userModel from "../../models/userModel.js";
 import notificationModel from "../../models/notificationModel.js";
 import { connectDB } from "../../config/db.js";
+import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
 
  
 
@@ -22,16 +23,18 @@ console.log("✅ MongoDB connected for worker");
 // ---------------------------
 // INIT SOCKET.IO WITH REDIS ADAPTER
 // ---------------------------
-const pubClient = createRedisClient();
-const subClient = createRedisClient();
+// const pubClient = createRedisClient();
+// const subClient = createRedisClient();
 
-await Promise.all([
-  new Promise((res) => pubClient.once("ready", res)),
-  new Promise((res) => subClient.once("ready", res)),
-]);
+// await Promise.all([
+//   new Promise((res) => pubClient.once("ready", res)),
+//   new Promise((res) => subClient.once("ready", res)),
+// ]);
 
-const io = new SocketIOServer(); // no HTTP server
-io.adapter(createAdapter(pubClient, subClient));
+// const io = new SocketIOServer(); // no HTTP server
+// io.adapter(createAdapter(pubClient, subClient));
+
+ const io = await getSocketEmitter();
 console.log("🔗 Worker Socket.IO Redis Adapter initialized");
 
 // ---------------------------

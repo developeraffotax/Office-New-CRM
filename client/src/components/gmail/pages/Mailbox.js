@@ -4,16 +4,16 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { fetchCategories } from "../categories/categoryApi";
 
-export default function Inbox() {
+export default function Mailbox() {
   const [users, setUsers] = useState([]);
   const [categories, setCategories] = useState([]);
 
 
   const mail = useMailThreads({
-    endpoint: `${process.env.REACT_APP_API_URL}/api/v1/gmail/get-inbox`,
+    endpoint: `${process.env.REACT_APP_API_URL}/api/v1/gmail/get-mailbox`,
   });
 
-
+  
   
   const getAllUsers = async () => {
     try {

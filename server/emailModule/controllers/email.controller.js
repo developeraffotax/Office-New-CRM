@@ -13,12 +13,16 @@ import mongoose from "mongoose";
  *  - page (default: 1)
  *  - limit (default: 20)
  */
-export const getInbox = async (req, res) => {
+ 
+// ------------------ Inbox ------------------
+// GET /api/v1/gmail/threads
+export const getMailbox = async (req, res) => {
   try {
     const {
       userId,
       companyName,
       category,
+      folder = "inbox", // inbox | sent
       startDate,
       endDate,
       unreadOnly,
@@ -26,59 +30,55 @@ export const getInbox = async (req, res) => {
       limit = 20,
     } = req.query;
 
-    // if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "Valid userId is required",
-    //   });
-    // }
+    const query = {};
 
-    /* -------------------- Build Mongo Query -------------------- */
-    const query = {
-      // userId: new mongoose.Types.ObjectId(userId),
-      hasInboxMessage: true,
-    };
+    // ---------------- Folder logic ----------------
+    if (folder === "inbox") {
+      query.hasInboxMessage = true;
+    }
 
+    if (folder === "sent") {
+      query.hasSentMessage = true;
+    }
+
+    // ---------------- Filters ----------------
     if (userId && mongoose.Types.ObjectId.isValid(userId)) {
       query.userId = new mongoose.Types.ObjectId(userId);
     }
 
-    if (companyName) {
-      query.companyName = companyName;
-    }
-
-    if (category) {
-      query.category = category;
-    }
+    if (companyName) query.companyName = companyName;
+    if (category) query.category = category;
 
     if (unreadOnly === "true") {
       query.unreadCount = { $gt: 0 };
     }
 
+    // ---------------- Date filter (per folder) ----------------
+    const dateField =
+      folder === "sent" ? "lastMessageAtSent" : "lastMessageAtInbox";
+
     if (startDate || endDate) {
-      query.lastMessageAt = {};
-      if (startDate) query.lastMessageAt.$gte = new Date(startDate);
-      if (endDate) query.lastMessageAt.$lte = new Date(endDate);
+      query[dateField] = {};
+      if (startDate) query[dateField].$gte = new Date(startDate);
+      if (endDate) query[dateField].$lte = new Date(endDate);
     }
 
-    /* -------------------- Pagination -------------------- */
     const pageNumber = Math.max(parseInt(page), 1);
     const pageSize = Math.min(parseInt(limit), 100);
     const skip = (pageNumber - 1) * pageSize;
 
-    /* -------------------- Query Execution -------------------- */
     const [threads, total] = await Promise.all([
       EmailThread.find(query)
-        .sort({ lastMessageAt: -1 }) // inbox-style ordering
+        .sort({ [dateField]: -1 })
         .skip(skip)
         .limit(pageSize)
         .lean(),
       EmailThread.countDocuments(query),
     ]);
 
-    return res.status(200).json({
+    res.json({
       success: true,
-      threads: threads,
+      threads,
       pagination: {
         page: pageNumber,
         limit: pageSize,
@@ -87,25 +87,16 @@ export const getInbox = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("❌ Inbox fetch error:", error);
-    return res.status(500).json({
+    console.error("❌ Thread fetch error:", error);
+    res.status(500).json({
       success: false,
-      message: "Failed to fetch inbox",
+      message: "Failed to fetch threads",
     });
   }
 };
 
 
-
-
-
- 
-
-
-
-
-
- 
+// ------------------ Sent ------------------
 export const getSentItems = async (req, res) => {
   try {
     const {
@@ -114,42 +105,32 @@ export const getSentItems = async (req, res) => {
       category,
       startDate,
       endDate,
-      unreadOnly,
       page = 1,
       limit = 20,
     } = req.query;
 
-    /* -------------------- Build Mongo Query -------------------- */
-    const query = {
-      hasSentMessage: true,
-    };
+    const query = { hasSentMessage: true };
 
-    if (companyName) query.companyName = companyName;
-    if (category) query.category = category;
     if (userId && mongoose.Types.ObjectId.isValid(userId)) {
       query.userId = new mongoose.Types.ObjectId(userId);
     }
 
-    if (unreadOnly === "true") {
-      query.unreadCount = { $gt: 0 };
-    }
-      
+    if (companyName) query.companyName = companyName;
+    if (category) query.category = category;
 
     if (startDate || endDate) {
-      query.lastMessageAt = {};
-      if (startDate) query.lastMessageAt.$gte = new Date(startDate);
-      if (endDate) query.lastMessageAt.$lte = new Date(endDate);
+      query.lastMessageAtSent = {};
+      if (startDate) query.lastMessageAtSent.$gte = new Date(startDate);
+      if (endDate) query.lastMessageAtSent.$lte = new Date(endDate);
     }
 
-    /* -------------------- Pagination -------------------- */
     const pageNumber = Math.max(parseInt(page), 1);
     const pageSize = Math.min(parseInt(limit), 100);
     const skip = (pageNumber - 1) * pageSize;
 
-    /* -------------------- Query Execution -------------------- */
     const [threads, total] = await Promise.all([
       EmailThread.find(query)
-        .sort({ lastMessageAt: -1 }) // most recent first
+        .sort({ lastMessageAtSent: -1 }) // Gmail Sent order
         .skip(skip)
         .limit(pageSize)
         .lean(),
@@ -158,7 +139,7 @@ export const getSentItems = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      threads: threads,
+      threads,
       pagination: {
         page: pageNumber,
         limit: pageSize,
@@ -174,6 +155,7 @@ export const getSentItems = async (req, res) => {
     });
   }
 };
+
 
 
 

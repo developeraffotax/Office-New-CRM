@@ -1010,7 +1010,7 @@ const toggleColumnVisibility = (column) => {
                       : "text-black bg-gray-100 hover:bg-slate-200"
                   }`}
                   onClick={() => {
-                    navigate("/tickets/inbox");
+                    navigate("/tickets/mail?folder=inbox&companyName=affotax");
                   }}
                 >
                   Inbox

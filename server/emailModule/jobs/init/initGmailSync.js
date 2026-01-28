@@ -5,6 +5,7 @@ dotenv.config();
 
 import { getGmailClient } from "../../services/gmail.service.js";
 import { persistThread } from "../../services/persistThread.js";
+import { connectDB } from "../../../config/db.js";
  
 
 /**
@@ -14,6 +15,16 @@ import { persistThread } from "../../services/persistThread.js";
 export const syncGmailThreads = async (companyName) => {
   try {
     console.log(`👷‍♂️ Starting Gmail sync for company: ${companyName}`);
+
+     try {
+        // 1️⃣ Connect to MongoDB
+        await connectDB();
+        console.log("✅ MongoDB connected for Gmail History Sync Worker");
+      } catch (err) {
+        console.error("❌ Failed to connect MongoDB:", err);
+        process.exit(1);
+      }
+
 
     const gmail = await getGmailClient(companyName);
 

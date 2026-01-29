@@ -361,7 +361,7 @@ export const getSingleEmail = async (ticketDetail) => {
     const outSourcingAccessToken = await getOutsourceAccessToken();
     let response;
 
-    if (ticketDetail.companyName === "Affotax") {
+    if (ticketDetail.companyName === "Affotax" || ticketDetail.companyName === "affotax") {
       response = await getDetailedThreads(ticketDetail.threadId, accessToken);
     } else {
       response = await getDetailedThreads(
@@ -384,7 +384,7 @@ export const getAttachments = async (attachmentId, messageId, companyName) => {
     console.log("Send Attachment data:", attachmentId, messageId, companyName);
     let accessToken = "";
 
-    if (companyName === "Affotax") {
+    if (companyName === "Affotax" || companyName === "affotax") {
       accessToken = await getAccessToken();
     } else {
       accessToken = await getOutsourceAccessToken();
@@ -420,10 +420,10 @@ export const emailReply = async (emailData) => {
     let accessToken = "";
     let fromEmail = "";
 
-    if (emailData.company === "Affotax") {
+    if (emailData.company === "Affotax" || emailData.company === "affotax") {
       accessToken = await getAccessToken();
       fromEmail = "Affotax <info@affotax.com>";
-    } else if (emailData.company === "Outsource") {
+    } else if (emailData.company === "Outsource" || emailData.company === "outsource") {
       accessToken = await getOutsourceAccessToken();
       fromEmail = "Outsource Accountings <admin@outsourceaccountings.co.uk>";
     }
@@ -512,9 +512,9 @@ export const emailReply = async (emailData) => {
 export const markThreadAsRead = async (messageId, companyName) => {
   try {
     let accessToken = "";
-    if (companyName === "Affotax") {
+    if (companyName === "Affotax" || companyName === "affotax") {
       accessToken = await getAccessToken();
-    } else if (companyName === "Outsource") {
+    } else if (companyName === "Outsource" || companyName === "outsource") {
       accessToken = await getOutsourceAccessToken();
     }
 

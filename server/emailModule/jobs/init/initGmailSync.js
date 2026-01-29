@@ -65,6 +65,6 @@ export const syncGmailThreads = async (companyName) => {
 
 // Example usage
 (async () => {
-  await syncGmailThreads("affotax");
-  // await syncGmailThreads("outsource");
+  //await syncGmailThreads("affotax");
+   await syncGmailThreads("outsource");
 })();

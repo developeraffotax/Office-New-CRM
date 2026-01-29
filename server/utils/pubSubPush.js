@@ -59,10 +59,10 @@ function collectThreadIds(item) {
 /**
  * Add Gmail sync job for all threadIds
  */
-async function addGmailSyncJob(threadIds) {
+async function addGmailSyncJob(threadIds, companyName) {
   if (threadIds.size === 0) return;
   await gmailSyncQueue.add("addGmailThread", {
-    companyName: "affotax",
+    companyName: companyName,
     threadIds: Array.from(threadIds),
   });
 }
@@ -80,13 +80,14 @@ async function addGmailSyncJob(threadIds) {
 /**
  * Main webhook handler
  */
-export async function gmailWebhookHandler(req, res) {
+export async function gmailWebhookHandlerForAffotax(req, res) {
+  const companyName = "affotax";
   try {
     const { message } = req.body;
     const decodedData = Buffer.from(message.data, "base64").toString();
     const { historyId } = JSON.parse(decodedData);
 
-    const gmail = await getGmailClient("affotax");
+    const gmail = await getGmailClient(companyName);
     const lastDoc = await gmailModel.findOne({}).sort({ _id: -1 });
 
     const historyResponse = await gmail.users.history.list({
@@ -129,7 +130,71 @@ export async function gmailWebhookHandler(req, res) {
     await Promise.all(notificationPromises);
 
     // Add Gmail sync job
-    await addGmailSyncJob(allThreadIds);
+    await addGmailSyncJob(allThreadIds, companyName);
+
+    res.status(200).send("Webhook processed");
+  } catch (err) {
+    console.error("Gmail webhook error:", err);
+    res.status(500).send("Error processing webhook");
+  }
+}
+
+
+
+
+
+
+export async function gmailWebhookHandlerForOutsource(req, res) {
+  const companyName = "outsource";
+  try {
+    const { message } = req.body;
+    const decodedData = Buffer.from(message.data, "base64").toString();
+    const { historyId } = JSON.parse(decodedData);
+
+    const gmail = await getGmailClient(companyName);
+    const lastDoc = await gmailModel.findOne({}).sort({ _id: -1 });
+
+    const historyResponse = await gmail.users.history.list({
+      userId: "me",
+      startHistoryId: lastDoc?.last_history_id,
+      historyTypes: ["messageAdded", "messageDeleted", "labelAdded", "labelRemoved"],
+    });
+
+    await gmailModel.create({ last_history_id: historyResponse.data.historyId });
+
+    const history = historyResponse.data.history || [];
+    const yourEmail = "admin@outsourceaccountings.co.uk";
+
+    const allThreadIds = new Set();
+    const notificationPromises = [];
+
+    for (const item of history) {
+      console.log("THE ITEM IS ", item)
+      if (!item.messagesAdded && !item.messagesDeleted && !item.labelsAdded && !item.labelsRemoved) continue;
+
+      // Process new messages
+      if (item.messagesAdded) {
+        item.messagesAdded.forEach(({ message: msg }) => {
+          notificationPromises.push(processMessageAdded(gmail, msg, yourEmail).then(threadId => {
+            if (threadId) allThreadIds.add(threadId);
+          }));
+        });
+      }
+
+      
+      // Collect threadIds for other events
+      const threadIds = collectThreadIds(item);
+      threadIds.forEach(id => allThreadIds.add(id));
+
+
+      console.log("THE THREAD IDS ARE>>>", threadIds)
+    }
+
+    // Wait for all notifications to finish
+    await Promise.all(notificationPromises);
+
+    // Add Gmail sync job
+    await addGmailSyncJob(allThreadIds, companyName);
 
     res.status(200).send("Webhook processed");
   } catch (err) {

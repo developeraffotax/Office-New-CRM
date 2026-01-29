@@ -11,10 +11,10 @@ export const getGmailClient = async (companyName) => {
     },
     outsource: {
       name: "outsource",
-      clientId: process.env.OUTSOURCE_CLIENT_ID,
-      clientSecret: process.env.OUTSOURCE_CLIENT_SECRET,
-      redirectUri: process.env.OUTSOURCE_REDIRECT_URI,
-      refreshToken: process.env.OUTSOURCE_REFRESH_TOKEN,
+      clientId: process.env.OUTSOURCING_CLIENT_ID,
+      clientSecret: process.env.OUTSOURCING_CLIENT_SECRET,
+      redirectUri: process.env.OUTSOURCING_REDIRECT_URI,
+      refreshToken: process.env.OUTSOURCING_REFRESH_TOKEN,
     },
   };
 

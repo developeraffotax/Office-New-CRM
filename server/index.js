@@ -10,7 +10,7 @@ import { connectDB } from "./config/db.js";
 import { initSocketServer, Skey } from "./socketServer.js";
 import { registerRoutes } from "./routes/index.js";
 import { setupCronJobs } from "./cron/index.js";
-import { gmailWebhookHandler } from "./utils/pubSubPush.js";
+import { gmailWebhookHandlerForAffotax, gmailWebhookHandlerForOutsource } from "./utils/pubSubPush.js";
 import { errorHandler } from "./middlewares/errorMiddleware.js";
 import { connection as redis } from "./utils/ioredis.js";
 import agenda from "./utils/agenda.js";
@@ -81,7 +81,8 @@ const startServer = async () => {
 
     // 5️⃣ Register app routes
     registerRoutes(app);
-    app.post("/gmail-webhook", gmailWebhookHandler);
+    app.post("/gmail-webhook", gmailWebhookHandlerForAffotax);
+    app.post("/gmail-webhook-outsource", gmailWebhookHandlerForOutsource);
     app.get("/", (req, res) => {
       res.send(`<h1 style="color:green;">Server is running...</h1>`);
     });

@@ -1,5 +1,6 @@
 import EmailThread from "../models/EmailThread.js";
 import mongoose from "mongoose";
+import { getGmailClient } from "../services/gmail.service.js";
 
 /**
  * GET /api/email/inbox
@@ -224,3 +225,79 @@ export const updateThreadMetadata = async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+ 
+/**
+ * PATCH /api/v1/gmail/mark-as-read/:id 
+ * Marks the thread as read (unreadCount = 0)
+ * Updates both Gmail and local DB
+ */
+export const markThreadAsRead = async (req, res) => {
+  try {
+    const { threadId } = req.params; // MongoDB _id
+    const { companyName } = req.body;  
+
+    // Find the thread
+    const thread = await EmailThread.findOne({threadId: threadId, companyName:companyName});
+    if (!thread) {
+      return res.status(404).json({
+        success: false,
+        message: "Thread not found",
+      });
+    }
+ 
+
+  // 👇 already read → no-op
+  if (thread.unreadCount === 0) {
+    return res.json({
+      success: true,
+      thread,
+      alreadyRead: true,
+    });
+  }
+
+
+    // ----------- 1. Update Gmail (if applicable) -----------
+    // Assume you have a function to get Gmail OAuth client per company
+
+
+    // const gmailClient = getGmailClient(companyName); 
+    // if (gmailClient && thread.threadId) {
+    //   await gmailClient.users.threads.modify({
+    //     userId: "me",
+    //     id: thread.threadId,
+    //     requestBody: {
+    //       removeLabelIds: ["UNREAD"],
+    //     },
+    //   });
+    // }
+
+    // ----------- 2. Update local DB -----------
+    thread.unreadCount = 0;
+    await thread.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Thread marked as read",
+      thread,
+      alreadyRead: false,
+    });
+  } catch (error) {
+    console.error("Error marking thread as read:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to mark thread as read",
+      error: error.message,
+    });
+  }
+};
+
+ 
+
+ 

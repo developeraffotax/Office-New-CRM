@@ -8,7 +8,7 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
   const [updating, setUpdating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  console.log("THREAD", thread);
+  // console.log("THREAD", thread);
   
 
   const attachments = thread.attachments || [];
@@ -16,8 +16,10 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
   const extraCount = attachments.length - visibleAttachments.length;
 
   // ----------------------- Sender / Participants -----------------------
-  const myCompanyName = thread.myCompanyName; // your company
-  const myEmail = "info@affotax.com"; // your email
+  const myCompanyName = thread.companyName; // your company
+  const myEmail = myCompanyName === "affotax" ? "info@affotax.com" : "admin@outsourceaccountings.co.uk"; // your email
+
+ 
 
   let sender = thread.participants.slice(0, 2).map(p => {
     if (p.name === myCompanyName || p.email === myEmail) {
@@ -98,7 +100,7 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
         {/* Subject + Snippet */}
         <div
           className="min-w-0 flex flex-col"
-          onClick={() => setEmailDetail({ threadId: thread.threadId, show: true })}
+          onClick={() => setEmailDetail({ threadId: thread.threadId, show: true, subject: thread?.subject || "No Subject", participants: thread.participants })}
         >
           <span
             className={clsx(

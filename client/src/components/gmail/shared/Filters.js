@@ -26,10 +26,10 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { FiCalendar, FiFilter, FiX, FiUser, FiChevronDown, FiLayers, FiRefreshCcw } from "react-icons/fi";
 import MarkEmailUnreadIcon from '@mui/icons-material/MarkEmailUnread';
 import ManageCategoriesModal from "../categories/ManageCategoriesModal";
-       import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
- 
+import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
+import { alpha } from '@mui/material/styles';
 
-export default function  Filters({ filters, setFilters, users = [], categories=[] }) {
+export default function Filters({ filters, setFilters, users = [], categories = [] }) {
 
   const [isCategoryModal, setIsCategoryModal] = React.useState(false);
 
@@ -38,20 +38,38 @@ export default function  Filters({ filters, setFilters, users = [], categories=[
   const hasActiveFilters =
     filters.category || filters.userId || filters.unreadOnly || filters.startDate;
 
-  const applyPreset = (days) => {
-    const end = dayjs();
-    const start = days === 0 ? end.startOf("day") : end.subtract(days, "day");
-    setFilters({
-      ...filters,
-      startDate: start.toISOString(),
-      endDate: end.toISOString(),
-      page: 1,
-    });
-    setAnchorEl(null);
-  };
+const applyPreset = (days) => {
+  const now = dayjs();
+  let start;
+  let end;
+
+  if (days === 0) {
+    // Today
+    start = now.startOf("day");
+    end = now;
+  } else if (days === -1) {
+    // Yesterday
+    start = now.subtract(1, "day").startOf("day");
+    end = now.subtract(1, "day").endOf("day");
+  } else {
+    // Last N days
+    start = now.subtract(days, "day").startOf("day");
+    end = now;
+  }
+
+  setFilters({
+    ...filters,
+    startDate: start.toISOString(),
+    endDate: end.toISOString(),
+    page: 1,
+  });
+
+  setAnchorEl(null);
+};
 
   const clearFilters = () => {
     setFilters({
+      // label: "",
       category: "",
       userId: "",
       unreadOnly: false,
@@ -108,22 +126,22 @@ export default function  Filters({ filters, setFilters, users = [], categories=[
 
 
 
-<Tooltip title="Manage Categories">
-  <IconButton
-    onClick={() => setIsCategoryModal(true)}
-    size="small"
-    sx={{
-      borderRadius: "8px",
-      bgcolor: isCategoryModal ? "primary.50" : "transparent",
-      color: isCategoryModal ? "primary.main" : "grey.600",
-      "&:hover": {
-        bgcolor: "primary.100",
-      },
-    }}
-  >
-    <LabelOutlinedIcon fontSize="small" />
-  </IconButton>
-</Tooltip>
+          <Tooltip title="Manage Categories">
+            <IconButton
+              onClick={() => setIsCategoryModal(true)}
+              size="small"
+              sx={{
+                borderRadius: "8px",
+                bgcolor: isCategoryModal ? "primary.50" : "transparent",
+                color: isCategoryModal ? "primary.main" : "grey.600",
+                "&:hover": {
+                  bgcolor: "primary.100",
+                },
+              }}
+            >
+              <LabelOutlinedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
 
 
           {/* 1. Category Select */}
@@ -156,14 +174,14 @@ export default function  Filters({ filters, setFilters, users = [], categories=[
               </MenuItem>
 
               {
-                categories.map(({name}) => {
+                categories.map(({ name }) => {
                   return (
                     <MenuItem value={name}>{name.charAt(0).toUpperCase() + name.slice(1)}</MenuItem>
-                  ) 
+                  )
                 })
               }
-              
-              
+
+
             </Select>
           </FormControl>
 
@@ -309,54 +327,136 @@ export default function  Filters({ filters, setFilters, users = [], categories=[
         )}
 
         {/* Date Selection Menu */}
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={() => setAnchorEl(null)}
-          TransitionComponent={Grow}
-          PaperProps={{
-            sx: { borderRadius: 3, mt: 1, boxShadow: '0px 10px 25px rgba(0,0,0,0.1)' }
+ 
+<Menu
+  anchorEl={anchorEl}
+  open={Boolean(anchorEl)}
+  onClose={() => setAnchorEl(null)}
+  TransitionComponent={Grow}
+  // Remove standard background to allow for BackdropFilter
+  PaperProps={{
+    sx: {
+      borderRadius: 4, // More rounded for a modern feel
+      mt: 1.5,
+      boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
+      border: '1px solid',
+      borderColor: 'divider',
+      backgroundImage: 'none', // Removes MUI default elevation overlay
+      overflow: 'visible',
+      '&:before': { // Optional: Speech bubble arrow
+        content: '""',
+        display: 'block',
+        position: 'absolute',
+        top: 0,
+        left: 24,
+        width: 10,
+        height: 10,
+        bgcolor: 'background.paper',
+        transform: 'translateY(-50%) rotate(45deg)',
+        zIndex: 0,
+        borderLeft: '1px solid',
+        borderTop: '1px solid',
+        borderColor: 'divider',
+      },
+    }
+  }}
+>
+  <Box sx={{ p: 2.5, width: 300 }}>
+    <Typography 
+      variant="caption" 
+      sx={{ 
+        display: 'block',
+        color: 'text.secondary', 
+        fontWeight: 700, 
+        textTransform: 'uppercase', 
+        letterSpacing: '0.1em',
+        mb: 1.5,
+        ml: 0.5
+      }}
+    >
+      Quick Ranges
+    </Typography>
+    
+    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1 }}>
+      {[{ l: 'Yesterday', v: -1 }, { l: 'Today', v: 0 }, { l: '7D', v: 7 }, { l: '30D', v: 30 }].map((range) => (
+        <Button
+          key={range.l}
+          fullWidth
+          size="small"
+          onClick={() => applyPreset(range.v)}
+          sx={{ 
+            borderRadius: 2, 
+            py: 0.8,
+            fontSize: '0.8125rem',
+            textTransform: 'none',
+            fontWeight: 600,
+            color: 'primary.main',
+            bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
+            border: '1px solid transparent',
+            '&:hover': {
+              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.15),
+              borderColor: (theme) => alpha(theme.palette.primary.main, 0.2),
+            }
           }}
         >
-          <Box sx={{ p: 2, width: 280 }}>
-            <Typography variant="overline" color="text.secondary" fontWeight={700}>Quick Ranges</Typography>
-            <Stack direction="row" spacing={1} mt={1} flexWrap="wrap">
-              {[{ l: 'Today', v: 0 }, { l: '7D', v: 7 }, { l: '30D', v: 30 }].map((range) => (
-                <Button
-                  key={range.l}
-                  variant="outlined"
-                  size="small"
-                  onClick={() => applyPreset(range.v)}
-                  sx={{ borderRadius: 1.5, mb: 1 }}
-                >
-                  {range.l}
-                </Button>
-              ))}
-            </Stack>
+          {range.l}
+        </Button>
+      ))}
+    </Box>
 
-            <Divider sx={{ my: 2 }} />
+    <Divider sx={{ my: 2.5, opacity: 0.6 }} />
 
-            <Typography variant="overline" color="text.secondary" fontWeight={700}>Custom Range</Typography>
-            <Stack spacing={2} mt={1}>
-              <DatePicker
-                label="Start Date"
-                value={filters.startDate ? dayjs(filters.startDate) : null}
-                onChange={(val) => handleUpdate({ startDate: val ? val.toISOString() : "" })}
-                slotProps={{ textField: { size: "small", fullWidth: true } }}
-              />
-              <DatePicker
-                label="End Date"
-                value={filters.endDate ? dayjs(filters.endDate) : null}
-                onChange={(val) => handleUpdate({ endDate: val ? val.toISOString() : "" })}
-                slotProps={{ textField: { size: "small", fullWidth: true } }}
-              />
-            </Stack>
-          </Box>
-        </Menu>
+    <Typography 
+      variant="caption" 
+      sx={{ 
+        display: 'block',
+        color: 'text.secondary', 
+        fontWeight: 700, 
+        textTransform: 'uppercase', 
+        letterSpacing: '0.1em',
+        mb: 1.5,
+        ml: 0.5
+      }}
+    >
+      Custom Range
+    </Typography>
+    
+    <Stack spacing={2}>
+      <DatePicker
+        label="Start Date"
+        value={filters.startDate ? dayjs(filters.startDate) : null}
+        onChange={(val) => handleUpdate({ startDate: val ? val.toISOString() : "" })}
+        slotProps={{ 
+          textField: { 
+            size: "small", 
+            fullWidth: true,
+            sx: { 
+              '& .MuiOutlinedInput-root': { borderRadius: 2 } 
+            }
+          } 
+        }}
+      />
+      <DatePicker
+        label="End Date"
+        value={filters.endDate ? dayjs(filters.endDate) : null}
+        onChange={(val) => handleUpdate({ endDate: val ? val.toISOString() : "" })}
+        slotProps={{ 
+          textField: { 
+            size: "small", 
+            fullWidth: true,
+            sx: { 
+              '& .MuiOutlinedInput-root': { borderRadius: 2 } 
+            }
+          } 
+        }}
+      />
+    </Stack>
+  </Box>
+</Menu>
       </Paper>
 
 
-      {  <ManageCategoriesModal open={isCategoryModal} onClose={() => setIsCategoryModal(false)}/>}
+      {<ManageCategoriesModal open={isCategoryModal} onClose={() => setIsCategoryModal(false)} />}
     </LocalizationProvider>
   );
 }

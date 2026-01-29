@@ -2,7 +2,7 @@
 
 import express from "express";
 import { requiredSignIn } from "../../middlewares/authMiddleware.js";
-import {   getMailbox, getSentItems, updateThreadMetadata } from "../controllers/email.controller.js";
+import {   getMailbox, getSentItems, markThreadAsRead, updateThreadMetadata } from "../controllers/email.controller.js";
 import { reply } from "../controllers/reply.controller.js";
  
  
@@ -25,6 +25,9 @@ router.put("/update-thread/:id", requiredSignIn,  updateThreadMetadata);
 
 
 router.post("/reply", requiredSignIn,  reply);
+
+
+router.patch("/mark-as-read/:threadId", requiredSignIn,  markThreadAsRead);
 
 
 

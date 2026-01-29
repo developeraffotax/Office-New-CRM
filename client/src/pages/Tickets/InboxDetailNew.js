@@ -14,12 +14,16 @@ import { FaRegFileLines } from "react-icons/fa6";
 import { LuDownload } from "react-icons/lu";
 import { ImAttachment } from "react-icons/im";
 import { TbLoader2 } from "react-icons/tb";
+
+
 import SendEmailReply from "../../components/Tickets/SendEmailReply";
+ 
  
 
 export default function InboxDetailNew({
   threadId,
   company,
+  subject,
   setShowEmailDetail,
 }) {
  
@@ -39,11 +43,12 @@ export default function InboxDetailNew({
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/inbox/detail/${threadId}/${"Affotax"}`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/inbox/detail/${threadId}/${company}`
       );
       if (data) {
         setLoading(false);
         setEmailDetail(data.emailDetails);
+        console.log("THE EMAIL DETAILS ARE<<<<<<<", data.emailDetails)
         //
         // markAsRead(
         //   data.emailDetails.threadData.messages[
@@ -229,8 +234,7 @@ export default function InboxDetailNew({
               <IoArrowBackOutline className="h-5 w-5 cursor-pointer" />
             </span>
             <h2 className="text-[2xl] font-semibold  text-black">
-              {/* {singleEmail?.subject} */}
-              Subject
+              {subject}
             </h2>
           </div>
           <button
@@ -469,19 +473,19 @@ export default function InboxDetailNew({
         )}
 
         {/* ----------------Email Reply-------------- */}
-        {/* {showReplay && (
+        {showReplay && (
           <div className="fixed top-0 left-0 z-[999] w-full h-full py-1 bg-gray-700/70 flex items-center justify-center">
             <SendEmailReply
               setShowReply={setShowReply}
               subject={emailDetail.subject}
               threadId={emailDetail.threadId}
               company={company}
-              ticketId={ticketDetail._id}
+              // ticketId={ticketDetail._id}
               emailSendTo={sendToEmail}
               getEmailDetail={getEmailDetail}
             />
           </div>
-        )} */}
+        )}
       </div>
      
   );

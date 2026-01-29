@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { useSocket } from "../../../context/socketProvider";
 import { useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
 
 // ----------------- Filter matcher -----------------
 function matchesFilters(thread, filters) {
@@ -67,17 +68,20 @@ export function useMailThreads({ endpoint }) {
       setThreads(data.threads);
       setPagination(data.pagination);
     } catch (err) {
+      toast.error(`Failed to load ${folder}`)
       console.error("Failed to fetch threads:", err);
+      setThreads([]);
+      setPagination({});
     } finally {
       setLoading(false);
     }
   }, [endpoint, filters, folder, companyName]);
 
   // ---------------- Update single thread via API ----------------
-  const handleUpdateThread = async (threadId, updateData) => {
+  const handleUpdateThread = async (_id, updateData) => {
     try {
       const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/gmail/update-thread/${threadId}`,
+        `${process.env.REACT_APP_API_URL}/api/v1/gmail/update-thread/${_id}`,
         updateData
       );
 
@@ -88,9 +92,46 @@ export function useMailThreads({ endpoint }) {
         );
       }
     } catch (err) {
+      toast.error("Failed to update thread!")
       console.error("Failed to update thread:", err);
     }
   };
+
+
+
+
+
+
+
+    const markAsRead = async (threadId, companyName) => {
+  if (!threadId) return;
+
+  try {
+    const {data} = await axios.patch(
+      `${process.env.REACT_APP_API_URL}/api/v1/gmail/mark-as-read/${threadId}`,
+      { companyName: companyName } // pass companyName for Gmail auth
+    );
+
+  
+
+    if (data?.success && !data?.alreadyRead) {
+        const updatedThread = data.thread;
+        setThreads(prev =>
+          prev.map(t => (t._id === updatedThread._id ? updatedThread : t))
+        );
+
+        toast.success("Marked as read!")
+      }
+    // Optionally, update local state to reflect unreadCount = 0 if you track it
+    // e.g., emailDetail.unreadCount = 0;
+  } catch (error) {
+    console.error("Failed to mark thread as read:", error);
+  }
+};
+
+
+
+
 
   // ---------------- Initial fetch & filter change ----------------
   useEffect(() => {
@@ -145,6 +186,7 @@ export function useMailThreads({ endpoint }) {
     setFilters,
     handleUpdateThread,
     fetchThreads,
+    markAsRead,
     folder, // optional but useful
     companyName
   };

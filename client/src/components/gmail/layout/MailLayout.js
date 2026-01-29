@@ -4,8 +4,9 @@ import Sidebar from "../shared/Sidebar";
 import Filters from "../shared/Filters";
 import List from "../shared/List";
 import Pagination from "../shared/Pagination";
+import Thread from "../thread/Thread";
  
-import InboxDetailNew from "../../../pages/Tickets/InboxDetailNew";
+ 
 
 export default function MailLayout({
   users,
@@ -16,18 +17,22 @@ export default function MailLayout({
   filters,
   setFilters,
   handleUpdateThread,
+  markAsRead,
+  companyName,
+  folder
 }) {
   const [emailDetail, setEmailDetail] = useState({
     threadId: "",
     show: false,
+    subject: "",
+    participants: []
   });
 
-  
-
-
+ 
+ 
 
   return (
-    <div className="flex h-screen bg-white overflow-hidden">
+    <div className="flex h-[105vh] bg-white overflow-hidden">
       <Sidebar />
 
       <div className="flex-1 min-w-0 flex flex-col">
@@ -44,6 +49,8 @@ export default function MailLayout({
           users={users}
           categories={categories}
           handleUpdateThread={handleUpdateThread}
+
+
           setEmailDetail={setEmailDetail}
         />
 
@@ -51,12 +58,16 @@ export default function MailLayout({
       </div>
 
       {emailDetail.show && (
-        <InboxDetailNew
-          company="Affotax"
+        <Thread
+          
+          company={companyName}
           threadId={emailDetail.threadId}
+          subject={emailDetail.subject}
           setShowEmailDetail={() =>
-            setEmailDetail({ threadId: "", show: false })
+            setEmailDetail({ threadId: "", show: false, subject: "" })
           }
+
+          markAsRead={markAsRead}
         />
       )}
     </div>

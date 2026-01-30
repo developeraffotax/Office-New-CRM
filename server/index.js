@@ -96,7 +96,7 @@ const startServer = async () => {
       console.log("🕒 Starting scheduled tasks...");
       setupCronJobs();
     }
-
+    
     // 8️⃣ Start server
     const PORT = process.env.PORT || 8080;
     server.listen(PORT, () => {

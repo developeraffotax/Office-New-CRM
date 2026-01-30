@@ -267,16 +267,16 @@ export const markThreadAsRead = async (req, res) => {
     // Assume you have a function to get Gmail OAuth client per company
 
 
-    // const gmailClient = getGmailClient(companyName); 
-    // if (gmailClient && thread.threadId) {
-    //   await gmailClient.users.threads.modify({
-    //     userId: "me",
-    //     id: thread.threadId,
-    //     requestBody: {
-    //       removeLabelIds: ["UNREAD"],
-    //     },
-    //   });
-    // }
+    const gmailClient =  await getGmailClient(companyName); 
+    if (gmailClient && thread.threadId) {
+      await gmailClient.users.threads.modify({
+        userId: "me",
+        id: thread.threadId,
+        requestBody: {
+          removeLabelIds: ["UNREAD"],
+        },
+      });
+    }
 
     // ----------- 2. Update local DB -----------
     thread.unreadCount = 0;

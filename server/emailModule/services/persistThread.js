@@ -107,7 +107,7 @@ export async function persistThread({ threadId, companyName, }) {
 
     // ---------------- Emit socket update ----------------
     const io = await getSocketEmitter();
-    io.emit("gmail:thread-delta", {
+    io.emit(`gmail:thread-delta-${companyName}`, {
       action: "updated",
       thread: threadDoc.toObject()
     });

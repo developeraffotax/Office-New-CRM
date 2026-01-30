@@ -174,9 +174,9 @@ export function useMailThreads({ endpoint }) {
       });
     };
 
-    socket.on("gmail:thread-delta", handler);
-    return () => socket.off("gmail:thread-delta", handler);
-  }, [socket, filters]);
+    socket.on(`gmail:thread-delta-${companyName}`, handler);
+    return () => socket.off(`gmail:thread-delta-${companyName}`, handler);
+  }, [socket, filters, companyName]);
 
   return {
     threads,

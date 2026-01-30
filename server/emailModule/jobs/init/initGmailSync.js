@@ -34,8 +34,8 @@ export const syncGmailThreads = async (companyName) => {
     do {
       const res = await gmail.users.threads.list({
           userId: "me",
-          q: "after:2025/01/01 (in:inbox OR in:sent)",
-          maxResults: 50, // adjust as needed
+          q: "(in:inbox OR in:sent)",
+          maxResults: 100, // adjust as needed
           pageToken,
         });
 

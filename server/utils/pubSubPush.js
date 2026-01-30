@@ -1,9 +1,10 @@
 import ticketModel from "../models/ticketModel.js";
-import gmailModel from "../models/gmailModel.js";
+ 
 
 import { addNotificationJob } from "../jobs/queues/notificationQueue.js";
 import { getGmailClient } from "../emailModule/services/gmail.service.js";
 import { gmailSyncQueue } from "../emailModule/jobs/queues/gmailSyncQueue.js";
+import gmailHistoryModel from "../models/gmailHistoryModel.js";
 
 /**
  * Get sender email from Gmail message metadata
@@ -88,7 +89,8 @@ export async function gmailWebhookHandlerForAffotax(req, res) {
     const { historyId } = JSON.parse(decodedData);
 
     const gmail = await getGmailClient(companyName);
-    const lastDoc = await gmailModel.findOne({}).sort({ _id: -1 });
+    // const lastDoc = await gmailModel.findOne({}).sort({ _id: -1 });
+    const lastDoc = await gmailHistoryModel.findOne({ companyName });
 
     const historyResponse = await gmail.users.history.list({
       userId: "me",
@@ -96,7 +98,19 @@ export async function gmailWebhookHandlerForAffotax(req, res) {
       historyTypes: ["messageAdded", "messageDeleted", "labelAdded", "labelRemoved"],
     });
 
-    await gmailModel.create({ last_history_id: historyResponse.data.historyId });
+    // await gmailModel.create({ last_history_id: historyResponse.data.historyId });
+
+    await gmailHistoryModel.findOneAndUpdate(
+      { companyName },
+      {
+        last_history_id: historyResponse.data.historyId,
+         
+      },
+      {
+        upsert: true,   // 👈 create only if missing
+        new: true,
+      }
+    );
 
     const history = historyResponse.data.history || [];
     const yourEmail = "info@affotax.com";
@@ -151,8 +165,8 @@ export async function gmailWebhookHandlerForOutsource(req, res) {
     const decodedData = Buffer.from(message.data, "base64").toString();
     const { historyId } = JSON.parse(decodedData);
 
-    const gmail = await getGmailClient(companyName);
-    const lastDoc = await gmailModel.findOne({}).sort({ _id: -1 });
+      const gmail = await getGmailClient(companyName);
+     const lastDoc = await gmailHistoryModel.findOne({ companyName });
 
     const historyResponse = await gmail.users.history.list({
       userId: "me",
@@ -160,7 +174,17 @@ export async function gmailWebhookHandlerForOutsource(req, res) {
       historyTypes: ["messageAdded", "messageDeleted", "labelAdded", "labelRemoved"],
     });
 
-    await gmailModel.create({ last_history_id: historyResponse.data.historyId });
+    await gmailHistoryModel.findOneAndUpdate(
+      { companyName },
+      {
+        last_history_id: historyResponse.data.historyId,
+         
+      },
+      {
+        upsert: true,   // 👈 create only if missing
+        new: true,
+      }
+    );
 
     const history = historyResponse.data.history || [];
     const yourEmail = "admin@outsourceaccountings.co.uk";

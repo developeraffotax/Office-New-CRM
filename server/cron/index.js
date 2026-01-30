@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { setWatch } from "../utils/setWatch.js";
+import {  setWatchForAffotax, setWatchForOutsource } from "../utils/setWatch.js";
 import { getSentReceivedCountsPerThread } from "../controllers/ticketController.js";
 import { sendDatatoGoogleSheet } from "../utils/googleSheet.js";
 import { updateSendReceivedLeads } from "../utils/updateSendReceivedLeads.js";
@@ -8,7 +8,8 @@ export const setupCronJobs = () => {
   // Every 6 days at midnight
   cron.schedule("0 0 */6 * *", () => {
     console.log("🕒 Running setWatch every 6 days...");
-    setWatch();
+    setWatchForAffotax();
+    setWatchForOutsource();
   });
 
   // Daily at 11:00 PM
@@ -38,7 +39,8 @@ export const setupCronJobs = () => {
 
   // Run immediately once at startup
   sendDatatoGoogleSheet();
-  setWatch();
+  setWatchForAffotax();
+  setWatchForOutsource();
 
 
   //comment it out later

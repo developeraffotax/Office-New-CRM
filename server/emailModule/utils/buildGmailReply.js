@@ -1,5 +1,13 @@
 import crypto from "crypto";
 
+
+function buildReplySubject(subject = "") {
+  const s = subject.trim();
+  if (/^re(\[\d+\])?:/i.test(s)) return s;
+  return `Re: ${s}`;
+}
+
+
 export function buildGmailReply({
   to = [],
   cc = [],
@@ -17,8 +25,8 @@ export function buildGmailReply({
     `To: ${to.join(", ")}`,
     cc.length ? `Cc: ${cc.join(", ")}` : "",
     bcc.length ? `Bcc: ${bcc.join(", ")}` : "",
-    replyTo ? `Reply-To: ${replyTo}` : "",
-    `Subject: Re: ${subject || ""}`,
+    // replyTo ? `Reply-To: ${replyTo}` : "",
+    `Subject: ${subject ? buildReplySubject(subject) : ""}`,
     `In-Reply-To: ${headers["Message-Id"]}`,
     `References: ${[
       headers.References,
@@ -37,7 +45,7 @@ export function buildGmailReply({
 Content-Type: text/html; charset="UTF-8"
 
 ${html}
-${quotedHtml}
+
 `;
 
   for (const file of attachments) {
@@ -63,3 +71,56 @@ ${file.base64}
 
   return raw;
 }
+
+
+
+
+
+
+
+
+
+//${quotedHtml}
+// function buildGmailAttribution({ fromName, fromEmail, date }) {
+//   const formattedDate = new Date(date).toLocaleString("en-US", {
+//     weekday: "short",
+//     year: "numeric",
+//     month: "short",
+//     day: "numeric",
+//     hour: "numeric",
+//     minute: "2-digit"
+//   });
+
+//   return `
+// <div class="gmail_attr">
+//   On ${formattedDate} ${fromName || fromEmail} &lt;${fromEmail}&gt; wrote:
+// </div>
+// `;
+// }
+
+
+
+
+
+
+
+// function buildGmailQuotedHtml({
+//   previousHtml,
+//   fromName,
+//   fromEmail,
+//   date
+// }) {
+//   if (!previousHtml) return "";
+
+//   return `
+// <br />
+// ${buildGmailAttribution({ fromName, fromEmail, date })}
+// <div class="gmail_quote">
+//   <blockquote
+//     class="gmail_quote"
+//     style="margin:0 0 0 .8ex;border-left:1px solid #ccc;padding-left:1ex">
+//     ${previousHtml}
+//   </blockquote>
+// </div>
+// `;
+// }

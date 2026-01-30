@@ -72,7 +72,7 @@ const startServer = async () => {
  
 
     // Bull Board route
-    app.use("/admin/queues", serverAdapter.getRouter());
+    // app.use("/admin/queues", serverAdapter.getRouter());
 
     // 4️⃣ HTTP & Socket server
     const server = http.createServer(app);

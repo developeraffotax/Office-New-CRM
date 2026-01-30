@@ -28,6 +28,8 @@ async function processMessageAdded(gmail, msg, yourEmail) {
   const { id: messageId, threadId } = msg;
   const senderEmail = await getSenderEmail(gmail, messageId);
 
+  console.log("SENDER EMAIL❤❤❤", senderEmail, yourEmail)
+
   if (!senderEmail || senderEmail === yourEmail) return threadId;
 
   const ticket = await ticketModel.findOneAndUpdate(

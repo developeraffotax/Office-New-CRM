@@ -378,7 +378,7 @@ const applyPreset = (days) => {
     </Typography>
     
     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1 }}>
-      {[{ l: 'Yesterday', v: -1 }, { l: 'Today', v: 0 }, { l: '7D', v: 7 }, { l: '30D', v: 30 }].map((range) => (
+      {[{ l: 'Today', v: 0 }, { l: 'Yesterday', v: -1 },  { l: '3D', v: 3 },  { l: '7D', v: 7 }].map((range) => (
         <Button
           key={range.l}
           fullWidth

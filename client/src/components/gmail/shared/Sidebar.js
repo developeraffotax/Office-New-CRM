@@ -18,7 +18,7 @@ const Item = ({ icon, label, folder }) => {
 
   return (
     <NavLink
-      to={`/tickets/mail?${params.toString()}`}
+      to={`/mail?${params.toString()}`}
       className={`
         group flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg text-sm transition-all duration-200
         ${isActive 

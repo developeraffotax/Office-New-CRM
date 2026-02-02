@@ -35,6 +35,7 @@ import {
   selectTicketAssignedCount,
   selectTicketReceivedCount,
 } from "../../redux/slices/notificationSlice";
+import { IoMailUnreadOutline } from "react-icons/io5";
 
 
 export default function Sidebar({ hide, setHide }) {
@@ -43,20 +44,20 @@ export default function Sidebar({ hide, setHide }) {
   const auth = useSelector((state) => state.auth.auth);
   const dispatch = useDispatch();
   const active = useSelector((state) => state.auth.active);
-   const { settings } = useSelector((state) => state.settings);
-  
-    const {
+  const { settings } = useSelector((state) => state.settings);
+
+  const {
     showCrmNotifications = true,
     showEmailNotifications = true,
   } = settings || {};
-  
-  
-const isNotificationAllowed = (notificationType) => {
-  if (notificationType === "ticket_received") {
-    return showEmailNotifications;
-  }
-  return showCrmNotifications;
-};
+
+
+  const isNotificationAllowed = (notificationType) => {
+    if (notificationType === "ticket_received") {
+      return showEmailNotifications;
+    }
+    return showCrmNotifications;
+  };
 
 
 
@@ -65,7 +66,7 @@ const isNotificationAllowed = (notificationType) => {
   const ticketAssignedCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "ticket_assigned" && n.status === "unread" && isNotificationAllowed(n.type)).length)
   const ticketReceivedCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "ticket_received" && n.status === "unread" && isNotificationAllowed(n.type)).length)
 
- 
+
 
 
 
@@ -145,11 +146,10 @@ const isNotificationAllowed = (notificationType) => {
           {/* 1 */}
           {hasAccess("Dashboard") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                active === "dashboard"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "dashboard"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black  hover:bg-orange-200 transition-all duration-300"
-              }   filter   overflow-hidden `}
+                }   filter   overflow-hidden `}
               onClick={() => {
                 router("/dashboard");
                 dispatch(setActive("dashboard"));
@@ -181,11 +181,10 @@ const isNotificationAllowed = (notificationType) => {
           {/* 2 */}
           {hasAccess("MyList") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                active === "all"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "all"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-              }   filter   overflow-hidden`}
+                }   filter   overflow-hidden`}
               onClick={() => {
                 router("/all/lists");
                 dispatch(setActive("all"));
@@ -218,10 +217,9 @@ const isNotificationAllowed = (notificationType) => {
           {hasAccess("Tasks") && (
             <div
               className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  
-                ${
-                  active === "tasks"
-                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
-                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+                ${active === "tasks"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
                 } filter overflow-hidden`}
               onClick={() => {
                 router("/tasks");
@@ -255,11 +253,10 @@ const isNotificationAllowed = (notificationType) => {
                   <span
                     title="New Assigned Tasks"
                     className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${
-                      active === "tasks"
+                    ${active === "tasks"
                         ? "bg-white text-orange-600"
                         : "bg-orange-600 text-white"
-                    }`}
+                      }`}
                   >
                     {taskCount || 0}
                   </span>
@@ -270,11 +267,10 @@ const isNotificationAllowed = (notificationType) => {
           {/* 4 */}
           {hasAccess("Jobs") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                active === "job-planning"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "job-planning"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-              }   filter   overflow-hidden`}
+                }   filter   overflow-hidden`}
               onClick={() => {
                 router("/job-planning");
                 dispatch(setActive("job-planning"));
@@ -306,11 +302,10 @@ const isNotificationAllowed = (notificationType) => {
                   <span
                     title="New Assigned Jobs"
                     className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${
-                      active === "job-planning"
+                    ${active === "job-planning"
                         ? "bg-white text-orange-600"
                         : "bg-orange-600 text-white"
-                    }`}
+                      }`}
                   >
                     {jobCount || 0}
                   </span>
@@ -324,11 +319,10 @@ const isNotificationAllowed = (notificationType) => {
           {/* ---------Lead-------- */}
           {hasAccess("Leads") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                active === "leads"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "leads"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-              }   filter   overflow-hidden`}
+                }   filter   overflow-hidden`}
               onClick={() => {
                 router("/leads");
                 dispatch(setActive("leads"));
@@ -361,15 +355,14 @@ const isNotificationAllowed = (notificationType) => {
 
 
 
-          
+
           {/* --------Template------ */}
           {hasAccess("Templates") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                active === "templates"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "templates"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-              }   filter   overflow-hidden`}
+                }   filter   overflow-hidden`}
               onClick={() => {
                 router("/templates");
                 dispatch(setActive("templates"));
@@ -404,11 +397,10 @@ const isNotificationAllowed = (notificationType) => {
           {/* ------Ticket------ */}
           {hasAccess("Tickets") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                active === "tickets"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "tickets"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-              }   filter   overflow-hidden`}
+                }   filter   overflow-hidden`}
               onClick={() => {
                 router("/tickets");
                 dispatch(setActive("tickets"));
@@ -432,11 +424,7 @@ const isNotificationAllowed = (notificationType) => {
                     >
                       Tickets
                     </span>
-                    {/* {ticketNitification.length > 0 && (
-                      <span className=" bg-orange-600 rounded-full w-[24px] h-[24px] text-[13px] text-white flex items-center justify-center ">
-                        {ticketNitification && ticketNitification.length}
-                      </span>
-                    )} */}
+
                   </div>
                 )}
 
@@ -447,11 +435,10 @@ const isNotificationAllowed = (notificationType) => {
                     <span
                       title="New Received Tickets"
                       className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${
-                      active === "tickets"
-                        ? "bg-white text-blue-500"
-                        : "bg-blue-500 text-white"
-                    }`}
+                    ${active === "tickets"
+                          ? "bg-white text-blue-500"
+                          : "bg-blue-500 text-white"
+                        }`}
                     >
                       {ticketReceivedCount || 0}
                     </span>
@@ -461,11 +448,10 @@ const isNotificationAllowed = (notificationType) => {
                     <span
                       title="New Assigned Tickets"
                       className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${
-                      active === "tickets"
-                        ? "bg-white text-orange-600"
-                        : "bg-orange-600 text-white"
-                    }`}
+                    ${active === "tickets"
+                          ? "bg-white text-orange-600"
+                          : "bg-orange-600 text-white"
+                        }`}
                     >
                       {ticketAssignedCount || 0}
                     </span>
@@ -476,16 +462,77 @@ const isNotificationAllowed = (notificationType) => {
           )}
 
 
-          
-          
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+ 
+          {(hasAccess("Tickets") || (user?.role?.name === "Admin" )) && (
+            <div
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "mail"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+                }   filter   overflow-hidden`}
+              onClick={() => {
+                router("/mail?folder=inbox&companyName=affotax");
+                dispatch(setActive("mail"));
+              }}
+            >
+              <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                {hide ? (
+                  <IoMailUnreadOutline
+                    className="h-5 w-5 cursor-pointer ml-2"
+                    style={{ color: active === "mail" && "#fff" }}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <IoMailUnreadOutline
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "mail" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400] "
+                      style={{ color: active === "mail" && "#fff" }}
+                    >
+                      Inbox
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
           {/* ---------Proposal----- */}
           {hasAccess("Proposals") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                active === "proposals"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "proposals"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-              }   filter   overflow-hidden`}
+                }   filter   overflow-hidden`}
               onClick={() => {
                 router("/proposals");
                 dispatch(setActive("proposals"));
@@ -517,11 +564,10 @@ const isNotificationAllowed = (notificationType) => {
           {/* ---------Goals----- */}
           {hasAccess("Goals") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                active === "goals"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "goals"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-              }   filter   overflow-hidden`}
+                }   filter   overflow-hidden`}
               onClick={() => {
                 router("/goals");
                 dispatch(setActive("goals"));
@@ -553,11 +599,10 @@ const isNotificationAllowed = (notificationType) => {
           {/* Timer Sheet */}
           {hasAccess("Timesheet") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                active === "timesheet"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "timesheet"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-              }   filter   overflow-hidden`}
+                }   filter   overflow-hidden`}
               onClick={() => {
                 router("/timesheet");
                 dispatch(setActive("timesheet"));
@@ -589,11 +634,10 @@ const isNotificationAllowed = (notificationType) => {
           {/* Subscription */}
           {hasAccess("Subscription") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                active === "subscriptions"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "subscriptions"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-              }   filter   overflow-hidden`}
+                }   filter   overflow-hidden`}
               onClick={() => {
                 router("/subscriptions");
                 dispatch(setActive("subscriptions"));
@@ -627,11 +671,10 @@ const isNotificationAllowed = (notificationType) => {
           {hasAccess("HR") && (
             <>
               <div
-                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                  active === "hr"
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "hr"
                     ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                     : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+                  }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/hr/tasks");
                   dispatch(setActive("hr"));
@@ -671,51 +714,48 @@ const isNotificationAllowed = (notificationType) => {
               {(hasAccess("Workflow") ||
                 hasAccess("Roles") ||
                 hasAccess("Users")) && (
-                <h4 className="text-[16] font-semibold px-2 flex items-center gap-1">
-                  {" "}
-                  <span>
-                    <RiSettings4Fill className="h-7 w-7 text-gray-900" />
-                  </span>
-                </h4>
-              )}
+                  <h4 className="text-[16] font-semibold px-2 flex items-center gap-1">
+                    {" "}
+                    <span>
+                      <RiSettings4Fill className="h-7 w-7 text-gray-900" />
+                    </span>
+                  </h4>
+                )}
             </>
           ) : (
             <>
               {(hasAccess("Workflow") ||
                 hasAccess("Roles") ||
                 hasAccess("Users")) && (
-                <h4
-                  className={`text-[16px] font-semibold px-4 py-2 flex items-center justify-between transition-all cursor-pointer rounded-e-3xl ${
-                    isSettingsOpen
-                      ? "bg-orange-200"
-                      : "bg-gray-100 hover:bg-orange-200 text-gray-800"
-                  }`}
-                  onClick={() => setIsSettingsOpen((prev) => !prev)}
-                >
-                  <div className="flex items-center gap-2">
-                    <RiSettings4Fill className="h-6 w-6 text-gray-900" />
-                    <span>Settings</span>
-                  </div>
+                  <h4
+                    className={`text-[16px] font-semibold px-4 py-2 flex items-center justify-between transition-all cursor-pointer rounded-e-3xl ${isSettingsOpen
+                        ? "bg-orange-200"
+                        : "bg-gray-100 hover:bg-orange-200 text-gray-800"
+                      }`}
+                    onClick={() => setIsSettingsOpen((prev) => !prev)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <RiSettings4Fill className="h-6 w-6 text-gray-900" />
+                      <span>Settings</span>
+                    </div>
 
-                  {/* Rotating Arrow */}
-                  <IoIosArrowDown
-                    className={`h-4 w-4 text-gray-700 transform transition-transform duration-300 ${
-                      isSettingsOpen ? "rotate-180" : "rotate-0"
-                    }`}
-                  />
-                </h4>
-              )}
+                    {/* Rotating Arrow */}
+                    <IoIosArrowDown
+                      className={`h-4 w-4 text-gray-700 transform transition-transform duration-300 ${isSettingsOpen ? "rotate-180" : "rotate-0"
+                        }`}
+                    />
+                  </h4>
+                )}
             </>
           )}
 
           {/* Meeting */}
           {isSettingsOpen && hasAccess("Meeting") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                active === "meetings"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "meetings"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-              }   filter   overflow-hidden `}
+                }   filter   overflow-hidden `}
               onClick={() => {
                 router("/meetings");
                 dispatch(setActive("meetings"));
@@ -747,11 +787,10 @@ const isNotificationAllowed = (notificationType) => {
           {/* Workflow */}
           {isSettingsOpen && hasAccess("Workflow") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                active === "workflow"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "workflow"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-              }   filter   overflow-hidden`}
+                }   filter   overflow-hidden`}
               onClick={() => {
                 router("/workflow");
                 dispatch(setActive("workflow"));
@@ -783,11 +822,10 @@ const isNotificationAllowed = (notificationType) => {
           {/* Complaints */}
           {isSettingsOpen && hasAccess("Complaints") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                active === "complaints"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "complaints"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-              }   filter   overflow-hidden`}
+                }   filter   overflow-hidden`}
               onClick={() => {
                 router("/complaints");
                 dispatch(setActive("complaints"));
@@ -820,11 +858,10 @@ const isNotificationAllowed = (notificationType) => {
           {isSettingsOpen && hasAccess("Roles") && (
             <>
               <div
-                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                  active === "roles"
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "roles"
                     ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                     : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+                  }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/roles");
                   dispatch(setActive("roles"));
@@ -859,11 +896,10 @@ const isNotificationAllowed = (notificationType) => {
           {isSettingsOpen && hasAccess("Users") && (
             <>
               <div
-                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                  active === "users"
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "users"
                     ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                     : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+                  }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/users");
                   dispatch(setActive("users"));
@@ -919,11 +955,10 @@ const isNotificationAllowed = (notificationType) => {
           {isSettingsOpen && (auth?.user?.role?.name === "Admin") && (
             <>
               <div
-                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                  active === "activity"
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "activity"
                     ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                     : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+                  }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/activity");
                   dispatch(setActive("activity"));
@@ -931,18 +966,18 @@ const isNotificationAllowed = (notificationType) => {
               >
                 <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                   <div className="flex items-center gap-2">
-                     
-                      <LuClock2
-                        className="h-5 w-5 cursor-pointer ml-2"
-                        style={{ color: active === "activity" && "#fff" }}
-                      />
-                      <span
-                        className="text-[14px] font-[400] "
-                        style={{ color: active === "activity" && "#fff" }}
-                      >
-                        Activity
-                      </span>
-                    </div>
+
+                    <LuClock2
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "activity" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400] "
+                      style={{ color: active === "activity" && "#fff" }}
+                    >
+                      Activity
+                    </span>
+                  </div>
                 </div>
               </div>
             </>
@@ -952,15 +987,14 @@ const isNotificationAllowed = (notificationType) => {
 
 
 
-           {/*  */}
+          {/*  */}
           {isSettingsOpen && (auth?.user?.role?.name === "Admin") && (
             <>
               <div
-                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                  active === "settings"
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "settings"
                     ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                     : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+                  }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/settings");
                   dispatch(setActive("settings"));
@@ -968,18 +1002,18 @@ const isNotificationAllowed = (notificationType) => {
               >
                 <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                   <div className="flex items-center gap-2">
-                     
-                      <VscSettings
-                        className="h-5 w-5 cursor-pointer ml-2"
-                        style={{ color: active === "settings" && "#fff" }}
-                      />
-                      <span
-                        className="text-[14px] font-[400] "
-                        style={{ color: active === "settings" && "#fff" }}
-                      >
-                        Personalized
-                      </span>
-                    </div>
+
+                    <VscSettings
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "settings" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400] "
+                      style={{ color: active === "settings" && "#fff" }}
+                    >
+                      Personalized
+                    </span>
+                  </div>
                 </div>
               </div>
             </>

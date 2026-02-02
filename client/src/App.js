@@ -120,7 +120,7 @@ function App() {
           <Route path="/tickets" element={<Tickets />} />
           <Route path="/tickets/complete" element={<CompleteTickets />} />
           <Route path="/ticket/detail/:id" element={<EmailDetail />} />
-          <Route path="/tickets/mail" element={<Mailbox />} />
+          <Route path="/mail" element={<Mailbox />} />
           {/* <Route path="/tickets/sent" element={<Sent />} /> */}
         </>
       ),

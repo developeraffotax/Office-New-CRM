@@ -354,22 +354,22 @@ export const Timer = forwardRef(
 
     //----------------- Display time in Favicon right side--------------
 
-    useEffect(() => {
-      if (isRunning) {
-        const hours = Math.floor(elapsedTime / 3600)
-          .toString()
-          .padStart(2, "0");
-        const minutes = Math.floor((elapsedTime % 3600) / 60)
-          .toString()
-          .padStart(2, "0");
-        const seconds = (elapsedTime % 60).toString().padStart(2, "0");
-        // setTime(`${hours}:${minutes}:${seconds}`);
-        document.title = `${hours}:${minutes}:${seconds} ⏱`;
-      } else {
-        document.title = "Affotax-CRM";
-      }
-      // eslint-disable-next-line
-    }, [isRunning, elapsedTime]);
+    // useEffect(() => {
+    //   if (isRunning) {
+    //     const hours = Math.floor(elapsedTime / 3600)
+    //       .toString()
+    //       .padStart(2, "0");
+    //     const minutes = Math.floor((elapsedTime % 3600) / 60)
+    //       .toString()
+    //       .padStart(2, "0");
+    //     const seconds = (elapsedTime % 60).toString().padStart(2, "0");
+    //     // setTime(`${hours}:${minutes}:${seconds}`);
+    //     document.title = `${hours}:${minutes}:${seconds} ⏱`;
+    //   } else {
+    //     document.title = "Affotax-CRM";
+    //   }
+    //   // eslint-disable-next-line
+    // }, [isRunning, elapsedTime]);
 
 
 

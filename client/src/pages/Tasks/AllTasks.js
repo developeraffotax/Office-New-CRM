@@ -1283,18 +1283,18 @@ const AllTasks = ({ justShowTable = false }) => {
   };
 
   // To see the document.title timer even if the filter is applied to the Jobholder | coz it will unmount the grid timer
-  useEffect(() => {
-    const col = table.getColumn("jobHolder");
+  // useEffect(() => {
+  //   const col = table.getColumn("jobHolder");
 
-    const filteredValue = col.getFilterValue();
+  //   const filteredValue = col.getFilterValue();
 
-    if (filteredValue === auth?.user?.name) {
-      setShowActiveTimer(false);
-    } else {
-      console.log("set show timer trueeeee");
-      setShowActiveTimer(true);
-    }
-  }, [table.getColumn("jobHolder").getFilterValue]);
+  //   if (filteredValue === auth?.user?.name) {
+  //     setShowActiveTimer(false);
+  //   } else {
+  //     console.log("set show timer trueeeee");
+  //     setShowActiveTimer(true);
+  //   }
+  // }, [table.getColumn("jobHolder").getFilterValue]);
 
   useEffect(() => {
     if (auth.user?.role?.name === "Admin") {
@@ -2363,7 +2363,7 @@ const renderColumnControls = () => (
         </div>
       )}
 
-      {showActiveTimer && <ActiveTimer />}
+      {/* {showActiveTimer && <ActiveTimer />} */}
     </>
   );
 };

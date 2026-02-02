@@ -78,7 +78,7 @@ export default function CreateTicketModal({ createTicketModal, setCreateTicketMo
     try {
       await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/tickets/create-ticket`, {
         ...form,
-        company: myCompany,
+        company: myCompany?.charAt(0).toUpperCase() + myCompany?.slice(1) || "",
         comments: initialComment
           ? [
             {

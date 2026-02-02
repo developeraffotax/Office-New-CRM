@@ -32,7 +32,7 @@ import goalModel from "../models/goalModel.js";
 
 
 export const createTicket = async (req, res) => {
-   const { clientId, company, subject,  email, jobHolder, clientName, companyName,  mailThreadId} = req.body;
+   const { clientId, company, subject,  email, jobHolder, clientName, companyName,  mailThreadId, comments} = req.body;
     
    let client;
 
@@ -62,8 +62,8 @@ export const createTicket = async (req, res) => {
       jobHolder: jobHolder,
       subject: subject,
       mailThreadId: mailThreadId,
-      
-  
+      status: "Read",
+        comments: comments || [],
 
       email: email,
       isManual: clientId ? false : true

@@ -63,7 +63,8 @@ export const createLead = async (req, res) => {
       email,
 
       yearEnd,
-      jobDeadline
+      jobDeadline,
+      
     });
 
     res.status(200).send({

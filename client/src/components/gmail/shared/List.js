@@ -24,7 +24,7 @@ const ShimmerSkeleton = () => (
   </div>
 );
 
-export default function  List({ threads, loading, users, handleUpdateThread, setEmailDetail, categories, setCreateTicketModal }) {
+export default function  List({ threads, loading, users, handleUpdateThread, setEmailDetail, categories, setCreateTicketModal, setCreateLeadModal }) {
   if (loading) {
     return (
       <div className="flex-1 overflow-hidden">
@@ -52,6 +52,7 @@ export default function  List({ threads, loading, users, handleUpdateThread, set
 
           setEmailDetail={setEmailDetail}
           setCreateTicketModal={setCreateTicketModal}
+          setCreateLeadModal={setCreateLeadModal}
            
         />
       ))}

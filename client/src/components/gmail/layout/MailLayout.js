@@ -6,6 +6,7 @@ import List from "../shared/List";
 import Pagination from "../shared/Pagination";
 import Thread from "../thread/Thread";
 import CreateTicketModal from "../shared/CreateTicketModal";
+import CreateLeadModal from "../shared/CreateLeadModal";
  
  
 
@@ -35,6 +36,12 @@ export default function MailLayout({
     form: {}
    });
 
+
+   const [createLeadModal, setCreateLeadModal] = useState({
+    isOpen: false,
+    form: {}
+   });
+
   return (
     <div className="flex h-[105vh] bg-white overflow-hidden">
       <Sidebar />
@@ -57,6 +64,7 @@ export default function MailLayout({
 
           setEmailDetail={setEmailDetail}
           setCreateTicketModal={setCreateTicketModal}
+          setCreateLeadModal={setCreateLeadModal}
         />
 
         <Pagination pagination={pagination} setFilters={setFilters} />
@@ -84,6 +92,18 @@ export default function MailLayout({
         <CreateTicketModal
           createTicketModal={createTicketModal}
           setCreateTicketModal={setCreateTicketModal}
+          users={users}
+          myCompany={companyName}
+        />
+      )}
+
+
+
+        {/* Lead Modal */}
+      {createLeadModal.isOpen && (
+        <CreateLeadModal
+          createLeadModal={createLeadModal}
+          setCreateLeadModal={setCreateLeadModal}
           users={users}
           myCompany={companyName}
         />

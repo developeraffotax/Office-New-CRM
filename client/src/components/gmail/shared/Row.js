@@ -15,7 +15,7 @@ function parseEmail(str) {
 
 
 
-export default function Row({ thread, users, handleUpdateThread, setEmailDetail, categories, setCreateTicketModal }) {
+export default function Row({ thread, users, handleUpdateThread, setEmailDetail, categories, setCreateTicketModal, setCreateLeadModal }) {
   const [assignOpen, setAssignOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -215,6 +215,27 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
               }}
             >
               Create Ticket
+            </button>
+
+             <button
+              className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition"
+              onClick={(e) => {
+                e.stopPropagation(); // prevent opening email
+                setCreateLeadModal({
+                  isOpen: true,
+                  form: {
+                    // subject: thread.subject || "",
+
+
+                    clientName: thread.participants.find(p => p.email !== parseEmail(myEmail))?.name || "",
+
+                    email: thread.participants.find(p => p.email !== parseEmail(myEmail))?.email || "", // pick first participant's email
+                    // mailThreadId: thread.threadId
+                  }
+                });
+              }}
+            >
+              Create Lead
             </button>
           </div>
 

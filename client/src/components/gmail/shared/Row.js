@@ -3,13 +3,25 @@ import { FiPaperclip, FiMoreVertical, FiUserPlus, FiChevronDown } from "react-ic
 import clsx from "clsx";
 import AttachmentChip from "./attachments/AttachmentChip";
 
-export default function Row({ thread, users, handleUpdateThread, setEmailDetail, categories }) {
+
+function parseEmail(str) {
+  if (!str) return "";
+
+  // Match anything that looks like an email
+  const emailMatch = str.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+
+  return emailMatch ? emailMatch[0] : "";
+}
+
+
+
+export default function Row({ thread, users, handleUpdateThread, setEmailDetail, categories, setCreateTicketModal }) {
   const [assignOpen, setAssignOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   // console.log("THREAD", thread);
-  
+
 
   const attachments = thread.attachments || [];
   const visibleAttachments = attachments.slice(0, 2);
@@ -19,7 +31,7 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
   const myCompanyName = thread.companyName; // your company
   const myEmail = myCompanyName === "affotax" ? "info@affotax.com" : "admin@outsourceaccountings.co.uk"; // your email
 
- 
+
 
   let sender = thread.participants.slice(0, 2).map(p => {
     if (p.name === myCompanyName || p.email === myEmail) {
@@ -29,7 +41,7 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
     }
   }).join(", ");
 
- 
+
 
   const assignedUser = users.find((u) => u._id === thread.userId);
   const threadCategory = categories.find((cat) => cat.name === thread?.category);
@@ -50,6 +62,10 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
     await handleUpdateThread(thread._id, { userId: newUserId });
     setUpdating(false);
   };
+
+
+
+
 
   return (
     <div
@@ -176,6 +192,30 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
                 ))}
               </div>
             )}
+
+
+
+            {/* Create Ticket Button */}
+            <button
+              className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition"
+              onClick={(e) => {
+                e.stopPropagation(); // prevent opening email
+                setCreateTicketModal({
+                  isOpen: true,
+                  form: {
+                    subject: thread.subject || "",
+
+
+                    clientName: thread.participants.find(p => p.email !== parseEmail(myEmail))?.name || "",
+
+                    email: thread.participants.find(p => p.email !== parseEmail(myEmail))?.email || "", // pick first participant's email
+                    mailThreadId: thread.threadId
+                  }
+                });
+              }}
+            >
+              Create Ticket
+            </button>
           </div>
 
           {/* More Options */}

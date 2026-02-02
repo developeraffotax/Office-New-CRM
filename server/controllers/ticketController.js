@@ -25,6 +25,99 @@ import TicketActivity from "../models/ticketActivityModel.js";
 import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
 import goalModel from "../models/goalModel.js";
 
+
+
+
+
+
+
+export const createTicket = async (req, res) => {
+   const { clientId, company, subject,  email, jobHolder, clientName, companyName,  mailThreadId} = req.body;
+    
+   let client;
+
+   
+    // Basic validation
+    if (!subject) {
+      return res.status(400).json({ message: " subject are required" });
+    }
+    
+
+
+    try {
+    if (clientId) {
+      client = await jobsModel.findById(clientId);
+    }
+
+
+    
+
+
+    // Create ticket object
+       const ticket = await ticketModel.create({
+      clientId: clientId || "",
+      companyName: (clientId && client?.companyName) || companyName || "",
+      clientName: (clientId && client?.clientName) || clientName || "",
+      company: company,
+      jobHolder: jobHolder,
+      subject: subject,
+      mailThreadId: mailThreadId,
+      
+  
+
+      email: email,
+      isManual: clientId ? false : true
+    });
+
+    const ticketActivity = await TicketActivity.create({
+      ticketId: ticket._id,
+      userId: req.user.user._id,
+      action: "created",
+      gmailMessageId:  "",
+      details: `"${req.user.user.name}" created the ticket with subject "${subject}"
+      -- Company: ${company}
+      -- Client: ${clientId ? client.clientName :  clientName ? clientName : "N/A"}
+      -- Email: ${email}
+      `,
+    });
+
+    res.status(200).send({
+      success: true,
+      message: "Email send successfully!",
+      email: sendEmail,
+    });
+
+ 
+  } catch (error) {
+    console.error("Error creating ticket:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Create Ticket \
 export const sendEmail = async (req, res) => {
   try {

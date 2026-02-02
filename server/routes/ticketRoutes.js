@@ -2,6 +2,7 @@ import express from "express";
 import { isAdmin, requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
   assignEmail,
+  createTicket,
   deleteinboxEmail,
   deleteMultipleEmail,
   deleteTicket,
@@ -36,6 +37,7 @@ const router = express.Router();
 
 // Send Email
 router.post("/send/email", requiredSignIn, upload.array("files"), sendEmail);
+router.post("/create-ticket", requiredSignIn, createTicket);
 
 // Get Single Email Detail
 router.get(

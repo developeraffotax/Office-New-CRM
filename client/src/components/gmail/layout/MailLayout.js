@@ -5,6 +5,7 @@ import Filters from "../shared/Filters";
 import List from "../shared/List";
 import Pagination from "../shared/Pagination";
 import Thread from "../thread/Thread";
+import CreateTicketModal from "../shared/CreateTicketModal";
  
  
 
@@ -29,7 +30,10 @@ export default function MailLayout({
   });
 
  
- 
+   const [createTicketModal, setCreateTicketModal] = useState({
+    isOpen: false,
+    form: {}
+   });
 
   return (
     <div className="flex h-[105vh] bg-white overflow-hidden">
@@ -52,6 +56,7 @@ export default function MailLayout({
 
 
           setEmailDetail={setEmailDetail}
+          setCreateTicketModal={setCreateTicketModal}
         />
 
         <Pagination pagination={pagination} setFilters={setFilters} />
@@ -68,6 +73,19 @@ export default function MailLayout({
           }
 
           markAsRead={markAsRead}
+        />
+      )}
+
+
+
+
+      {/* Ticket Modal */}
+      {createTicketModal.isOpen && (
+        <CreateTicketModal
+          createTicketModal={createTicketModal}
+          setCreateTicketModal={setCreateTicketModal}
+          users={users}
+          myCompany={companyName}
         />
       )}
     </div>

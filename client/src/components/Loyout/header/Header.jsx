@@ -119,7 +119,7 @@ export default function Header({
             >
               <IoNotifications className="text-2xl container text-black" />
               {unread_notifications_count > 0 && (
-                <span className="absolute -top-2 -right-2 bg-teal-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 bg-orange-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center">
                   {unread_notifications_count}
                 </span>
               )}

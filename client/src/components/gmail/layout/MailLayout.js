@@ -32,12 +32,14 @@ export default function MailLayout({
 
  
    const [createTicketModal, setCreateTicketModal] = useState({
+    _id: "",
     isOpen: false,
     form: {}
    });
 
 
    const [createLeadModal, setCreateLeadModal] = useState({
+    _id: "",
     isOpen: false,
     form: {}
    });
@@ -92,6 +94,8 @@ export default function MailLayout({
         <CreateTicketModal
           createTicketModal={createTicketModal}
           setCreateTicketModal={setCreateTicketModal}
+          
+          handleUpdateThread={handleUpdateThread}
           users={users}
           myCompany={companyName}
         />
@@ -104,6 +108,8 @@ export default function MailLayout({
         <CreateLeadModal
           createLeadModal={createLeadModal}
           setCreateLeadModal={setCreateLeadModal}
+          handleUpdateThread={handleUpdateThread}
+           
           users={users}
           myCompany={companyName}
         />

@@ -8,7 +8,9 @@ import { useSelector } from "react-redux";
 import { IoTicketOutline } from "react-icons/io5";
 import { useEscapeKey } from "../../../utlis/useEscapeKey";
 
-export default function CreateTicketModal({ createTicketModal, setCreateTicketModal, users, myCompany }) {
+
+
+export default function CreateTicketModal({ createTicketModal, setCreateTicketModal, users, myCompany, handleUpdateThread, categories }) {
   const [form, setForm] = useState({
     clientId: "",
     companyName: "",
@@ -26,6 +28,7 @@ export default function CreateTicketModal({ createTicketModal, setCreateTicketMo
 
   useEscapeKey(() => {
     setCreateTicketModal({
+      _id: "",
       isOpen: false,
       form: {}
     })
@@ -44,6 +47,7 @@ export default function CreateTicketModal({ createTicketModal, setCreateTicketMo
   useEffect(() => {
     allClientJobData();
     if (createTicketModal?.form) setForm(createTicketModal.form);
+    
   }, [createTicketModal]);
 
   const clientOptions = jobData.map(item => ({
@@ -91,7 +95,16 @@ export default function CreateTicketModal({ createTicketModal, setCreateTicketMo
             },
           ]
           : [],
-      });
+        }); 
+
+        
+
+        const userId = users.find(user => form.jobHolder === user.name )?._id;
+
+        
+        await handleUpdateThread(createTicketModal._id, { category: "ticket", userId: userId });
+
+
       toast.success("Ticket created successfully!");
       setForm({ clientId: "", companyName: "", clientName: "", jobHolder: "", subject: "", email: "", mailThreadId: "" });
       setCreateTicketModal(prev => ({ ...prev, isOpen: false }));
@@ -102,6 +115,9 @@ export default function CreateTicketModal({ createTicketModal, setCreateTicketMo
     }
   };
 
+
+ 
+  
   const inputStyle = "w-full border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all outline-none bg-gray-50/50 text-gray-700 placeholder-gray-400";
   const labelStyle = "text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 ml-1 flex items-center gap-1";
 

@@ -155,88 +155,95 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
           </div>
 
           {/* Assign User Dropdown */}
-          <div className="relative">
-            <button
-              className={clsx(
-                "p-1.5 rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-600",
-                assignOpen && "ring-2 ring-blue-500/20 border-blue-500"
-              )}
-              onClick={(e) => {
-                e.stopPropagation();
-                setAssignOpen(!assignOpen);
-              }}
-            >
-              <FiUserPlus className="size-4" />
-            </button>
+          {/* Actions (hover only) */}
+          <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
 
-            {assignOpen && (
-              <div
-                className="absolute right-0 top-full mt-2 w-56 max-h-96 overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-xl z-50 py-1"
-                onClick={(e) => e.stopPropagation()}
+
+
+            {/* Assign User Button */}
+            <div className="relative">
+              <button
+                title="Assign User"
+                className={clsx(
+                  "p-1.5 rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 transition-colors shadow-sm",
+                  assignOpen && "ring-2 ring-blue-500/20 border-blue-500"
+                )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAssignOpen(!assignOpen);
+                }}
               >
-                <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                  Assign to...
+                <FiUserPlus className="size-4" />
+              </button>
+
+              {assignOpen && (
+                <div
+                  className="absolute right-0 top-full mt-2 w-56 max-h-96 overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-xl z-50 py-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    Assign to...
+                  </div>
+                  {users.map((user, i) => (
+                    <button
+                      key={user._id}
+                      className={clsx(
+                        "w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors border-b last:border-0",
+                        thread.userId === user._id ? "text-blue-600 font-semibold bg-blue-50/50" : "text-gray-700"
+                      )}
+                      disabled={updating}
+                      onClick={() => updateUser(user._id)}
+                    >
+                      {user.name}
+                    </button>
+                  ))}
                 </div>
-                {users.map((user, i) => (
-                  <button
-                    key={user._id}
-                    className={clsx(
-                      "w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors border-b",
-                      thread.userId === user._id ? "text-blue-600 font-semibold bg-blue-50/50" : "text-gray-700"
-                    )}
-                    disabled={updating}
-                    onClick={() => updateUser(user._id)}
-                  >
-                    {i + 1}. {user.name}
-                  </button>
-                ))}
-              </div>
-            )}
-
-
+              )}
+            </div>
 
             {/* Create Ticket Button */}
             <button
-              className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition"
+              title="Create Ticket"
+              className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold bg-white border border-gray-200 text-blue-700 rounded-md hover:bg-blue-50 hover:border-blue-200 transition-all shadow-sm"
               onClick={(e) => {
-                e.stopPropagation(); // prevent opening email
+                e.stopPropagation();
                 setCreateTicketModal({
+                  _id: thread._id,
                   isOpen: true,
                   form: {
                     subject: thread.subject || "",
-
-
                     clientName: thread.participants.find(p => p.email !== parseEmail(myEmail))?.name || "",
-
-                    email: thread.participants.find(p => p.email !== parseEmail(myEmail))?.email || "", // pick first participant's email
+                    email: thread.participants.find(p => p.email !== parseEmail(myEmail))?.email || "",
                     mailThreadId: thread.threadId
                   }
                 });
               }}
             >
-              Create Ticket
+              <span className="size-1.5 rounded-full bg-blue-500" />
+              Ticket
             </button>
 
-             <button
-              className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition"
+            {/* Create Lead Button */}
+            <button
+              title="Create Lead"
+              className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold bg-white border border-gray-200 text-green-700 rounded-md hover:bg-green-50 hover:border-green-200 transition-all shadow-sm"
               onClick={(e) => {
-                e.stopPropagation(); // prevent opening email
+                e.stopPropagation();
                 setCreateLeadModal({
+                   _id: thread._id,
                   isOpen: true,
                   form: {
-                    // subject: thread.subject || "",
-
-
                     clientName: thread.participants.find(p => p.email !== parseEmail(myEmail))?.name || "",
-
-                    email: thread.participants.find(p => p.email !== parseEmail(myEmail))?.email || "", // pick first participant's email
-                    // mailThreadId: thread.threadId
+                    email: thread.participants.find(p => p.email !== parseEmail(myEmail))?.email || "",
                   }
                 });
               }}
             >
-              Create Lead
+              <span className="size-1.5 rounded-full bg-green-500" />
+              Lead
             </button>
+
+
           </div>
 
           {/* More Options */}

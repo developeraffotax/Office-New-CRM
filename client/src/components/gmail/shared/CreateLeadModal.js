@@ -43,6 +43,7 @@ export default function CreateLeadModal({
   setCreateLeadModal,
   users,
   myCompany,
+  handleUpdateThread
 }) {
   const [form, setForm] = useState({
      
@@ -104,6 +105,11 @@ export default function CreateLeadModal({
            
         }
       );
+
+      const userId = users.find(user => form.jobHolder === user.name )?._id;
+
+        
+        await handleUpdateThread(createLeadModal._id, { category: "lead", userId: userId });
 
       toast.success("Lead created successfully");
       setCreateLeadModal({ isOpen: false, form: {} });
@@ -276,6 +282,7 @@ export default function CreateLeadModal({
               value={form.jobHolder}
               onChange={handleChange}
               className={inputStyle}
+              required
             >
               <option value="">Job Holder</option>
               {users.map(u => (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { HiReply } from "react-icons/hi";
 import { Buffer } from "buffer";
@@ -12,6 +12,8 @@ import toast from "react-hot-toast";
 import Reply from "../reply/Reply.js";
 import Loader from "../../../utlis/Loader.js";
 import Forward from "../forward/Forward.js";
+import { useEscapeKey } from "../../../utlis/useEscapeKey.js";
+import { useClickOutside } from "../../../utlis/useClickOutside.js";
 
 export default function Thread({
   company,
@@ -30,6 +32,8 @@ export default function Thread({
   const [showForward, setShowForward] = useState(false);
   const [forwardMessageId, setForwardMessageId] = useState("");
 
+  const threadRef = useRef(null); // <-- ref for detecting outside clicks
+  
   const getEmailDetail = async () => {
     setLoading(true);
     try {
@@ -45,6 +49,15 @@ export default function Thread({
       setLoading(false);
     }
   };
+
+
+  useClickOutside(threadRef, () => {
+    setShowEmailDetail();
+  });
+
+  useEscapeKey(() => {
+    setShowEmailDetail();
+  });
 
   useEffect(() => {
     getEmailDetail();
@@ -138,7 +151,10 @@ export default function Thread({
   };
 
   return (
-    <div className="relative w-full h-full flex flex-col bg-slate-50">
+    <div
+      className="relative w-full h-full flex flex-col bg-slate-50 "
+      ref={threadRef}
+    >
       {/* Header */}
       <header className="   sticky top-0 z-10 w-full flex items-center justify-between bg-white/80 backdrop-blur-md px-6 py-4 border-b border-gray-200">
         <div className="flex items-center gap-4">
@@ -212,23 +228,20 @@ export default function Thread({
                       </div>
                     </div>
 
-                    
-
-                 <div className="flex justify-end gap-3 items-center">
-                             <EmailTimeDisplay internalDate={message?.internalDate} />
-                          <span className="border-l w-1 h-5 border-gray-400    "></span>
-                    <button
-                      onClick={() => {
-                        setShowForward(true);
-                        setForwardMessageId(message.id);
-                      }}
-                      title="Forward Message"
-                      className="flex items-center     font-medium text-gray-400 hover:text-gray-600 transition"
-                    >
-                      <TbArrowForwardUp className="w-5 h-5" />
-                      
-                    </button>
-                  </div>
+                    <div className="flex justify-end gap-3 items-center">
+                      <EmailTimeDisplay internalDate={message?.internalDate} />
+                      <span className="border-l w-1 h-5 border-gray-400    "></span>
+                      <button
+                        onClick={() => {
+                          setShowForward(true);
+                          setForwardMessageId(message.id);
+                        }}
+                        title="Forward Message"
+                        className="flex items-center     font-medium text-gray-400 hover:text-gray-600 transition"
+                      >
+                        <TbArrowForwardUp className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Body Content */}

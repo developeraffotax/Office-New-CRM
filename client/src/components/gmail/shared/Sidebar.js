@@ -49,7 +49,7 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-56 h-full border-r border-slate-200 bg-white flex flex-col py-6 space-y-6">
+    <div className="w-56 min-w-56 h-full border-r border-slate-200 bg-white flex flex-col py-6 space-y-6">
       {/* Company Selector Section */}
       <div className="px-4">
         <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1 mb-2 block">

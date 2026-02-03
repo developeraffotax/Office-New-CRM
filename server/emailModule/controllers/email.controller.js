@@ -29,6 +29,7 @@ export const getMailbox = async (req, res) => {
       unreadOnly,
       page = 1,
       limit = 20,
+      search,         
     } = req.query;
 
     const query = {};
@@ -62,6 +63,18 @@ export const getMailbox = async (req, res) => {
       query[dateField] = {};
       if (startDate) query[dateField].$gte = new Date(startDate);
       if (endDate) query[dateField].$lte = new Date(endDate);
+    }
+
+
+    // ---------------- Search ----------------
+    if (search && search.trim()) {
+      const searchRegex = new RegExp(search.trim(), "i");
+
+      query.$or = [
+        { subject: searchRegex },
+        { "participants.email": searchRegex },
+        { "participants.name": searchRegex },
+      ];
     }
 
     const pageNumber = Math.max(parseInt(page), 1);

@@ -16,7 +16,21 @@ function parseEmail(str) {
 
 
 
-export default function Row({ thread, users, handleUpdateThread, setEmailDetail, categories, setCreateTicketModal, setCreateLeadModal, deleteThread }) {
+
+ function highlightText(text = "", search = "") {
+  if (!search) return text;
+
+  const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${escaped})`, "gi");
+
+  return text.replace(
+    regex,
+    `<span class="bg-orange-100 text-orange-600 font-medium rounded px-0.5">$1</span>`
+  );
+}
+
+
+export default function Row({ thread, users, handleUpdateThread, setEmailDetail, categories, setCreateTicketModal, setCreateLeadModal, deleteThread, filters }) {
   const [assignOpen, setAssignOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -90,8 +104,14 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
                 "truncate text-sm",
                 thread.unreadCount > 0 ? "font-bold text-gray-900" : "font-medium text-gray-700"
               )}
+
+              dangerouslySetInnerHTML={{
+              __html: highlightText(sender, filters.search),
+            }}
             >
-              {sender}
+             
+              
+              
             </span>
             {attachments.length > 0 && <FiPaperclip className="text-gray-400 size-3 shrink-0" />}
           </div>
@@ -124,8 +144,12 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
               "truncate text-sm",
               thread.unreadCount > 0 ? "text-gray-900 font-semibold" : "text-gray-700 font-medium"
             )}
+
+            dangerouslySetInnerHTML={{
+              __html: highlightText(thread.subject, filters.search),
+            }}
           >
-            {thread.subject}
+             
           </span>
           <span className="text-sm text-gray-400 truncate font-normal">{thread.lastMessageSnippet}</span>
         </div>

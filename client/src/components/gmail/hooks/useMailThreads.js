@@ -42,6 +42,7 @@ export function useMailThreads({ endpoint }) {
     unreadOnly: false,
     page: 1,
     limit: 20,
+    search: ""
   });
 
   // 🔁 Keep label in sync with folder

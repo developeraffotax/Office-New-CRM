@@ -64,7 +64,7 @@ export default function MailLayout({
           categories={categories}
           handleUpdateThread={handleUpdateThread}
           deleteThread={deleteThread}
-
+          filters={filters}
 
           setEmailDetail={setEmailDetail}
           setCreateTicketModal={setCreateTicketModal}

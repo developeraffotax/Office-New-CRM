@@ -4,6 +4,7 @@ import express from "express";
 import { requiredSignIn } from "../../middlewares/authMiddleware.js";
 import {   getMailbox, getSentItems, markThreadAsRead, updateThreadMetadata } from "../controllers/email.controller.js";
 import { reply } from "../controllers/reply.controller.js";
+import { forward } from "../controllers/forward.controller.js";
  
  
 
@@ -25,6 +26,8 @@ router.put("/update-thread/:id", requiredSignIn,  updateThreadMetadata);
 
 
 router.post("/reply", requiredSignIn,  reply);
+
+router.post("/forward", requiredSignIn,  forward);
 
 
 router.patch("/mark-as-read/:threadId", requiredSignIn,  markThreadAsRead);

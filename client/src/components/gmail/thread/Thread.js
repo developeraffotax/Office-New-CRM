@@ -11,13 +11,18 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import Reply from "../reply/Reply.js";
 import Loader from "../../../utlis/Loader.js";
+import Forward from "../forward/Forward.js";
 
 export default function Thread({ company, threadId, subject, setShowEmailDetail, markAsRead }) {
   const [emailDetail, setEmailDetail] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isloading, setIsLoading] = useState(false);
   const [attachmentId, setAttachmentId] = useState("");
+
   const [showReplay, setShowReply] = useState(false);
+
+  const [showForward, setShowForward] = useState(false);
+  const [forwardMessageId, setForwardMessageId] = useState("")
 
 
 
@@ -150,6 +155,7 @@ export default function Thread({ company, threadId, subject, setShowEmailDetail,
             const fromHeader = message?.payload?.headers?.find(h => h.name === "From")?.value || "";
             const toHeader = message?.payload?.headers?.find(h => h.name === "To")?.value || "";
 
+            console.log("THE MESSAGE ID IS", message)
             return (
               <div key={i} className={`flex flex-col ${isSentByMe ? 'items-end' : 'items-start'}`}>
                 <div className={`max-w-[95%] md:max-w-[85%] w-full rounded-2xl border p-5 shadow-sm transition-all ${
@@ -170,6 +176,9 @@ export default function Thread({ company, threadId, subject, setShowEmailDetail,
                         </span>
                       </div>
                     </div>
+                    {
+                      <button onClick={() => {setShowForward(true); setForwardMessageId(message.id)}}>Forward</button>
+                    }
                     <EmailTimeDisplay internalDate={message?.internalDate} />
                   </div>
 
@@ -230,6 +239,32 @@ export default function Thread({ company, threadId, subject, setShowEmailDetail,
               company={company}
               emailDetail={emailDetail}
               getEmailDetail={getEmailDetail}
+            />
+          </div>
+        </div>
+      )}
+
+
+
+
+
+
+
+
+
+
+
+
+      {/* Reply Modal */}
+      {showForward && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <Forward
+              setShowForward={setShowForward}
+              company={company}
+              emailDetail={emailDetail}
+              getEmailDetail={getEmailDetail}
+              forwardMessageId={forwardMessageId}
             />
           </div>
         </div>

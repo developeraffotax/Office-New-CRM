@@ -477,7 +477,7 @@ export default function Sidebar({ hide, setHide }) {
 
 
  
-          {(hasAccess("Tickets") || (user?.role?.name === "Admin" )) && (
+          { (user?.role?.name === "Admin" ) && (
             <div
               className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "mail"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"

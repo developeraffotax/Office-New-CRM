@@ -2611,7 +2611,7 @@ const getProgress = (timeStr, total) => {
 
 {selectedTab === "Single" && (
 
-    <div className="w-full hidden absolute bottom-8 left-0 px-4 z-[20] sm:grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-9 gap-4 2xl:gap-5">
+    <div className="w-full hidden absolute bottom-[10%] left-0 px-4 z-[20] sm:grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-9 gap-4 2xl:gap-5">
       {[...daysData, ...totalCards].map(({ label, value, color, icon, required }, idx) => {
         const Icon = icon || dayIcons[idx] || FiCalendar;
         const progress = getProgress(value, required );

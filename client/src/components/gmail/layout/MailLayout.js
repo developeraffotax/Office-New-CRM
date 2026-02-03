@@ -20,6 +20,7 @@ export default function MailLayout({
   setFilters,
   handleUpdateThread,
   markAsRead,
+  deleteThread,
   companyName,
   folder
 }) {
@@ -62,6 +63,7 @@ export default function MailLayout({
           users={users}
           categories={categories}
           handleUpdateThread={handleUpdateThread}
+          deleteThread={deleteThread}
 
 
           setEmailDetail={setEmailDetail}

@@ -3,7 +3,7 @@ import axios from "axios";
 import { useSocket } from "../../../context/socketProvider";
 import { useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
-
+import Swal from "sweetalert2"
 // ----------------- Filter matcher -----------------
 function matchesFilters(thread, filters) {
   if (!thread || !filters) return false;
@@ -132,6 +132,51 @@ export function useMailThreads({ endpoint }) {
 
 
 
+ 
+
+
+
+const deleteThread = async (threadId, companyName) => {
+ if (!threadId) return;
+  const {isConfirmed} = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    console.log(threadId, companyName)
+    if(!isConfirmed) return;
+
+ 
+ 
+
+  try {
+    const { data } = await axios.delete(
+      `${process.env.REACT_APP_API_URL}/api/v1/gmail/delete/${threadId}`,
+      {
+        data: { companyName }, // DELETE request body must be inside `data`
+      }
+    );
+
+    if (data?.success) {
+      // Remove the deleted thread from local state
+      setThreads(prev => prev.filter(t => t.threadId !== threadId));
+
+      toast.success("Thread deleted successfully!");
+    }
+  } catch (error) {
+    console.error("Failed to delete thread:", error);
+    toast.error("Failed to delete thread!");
+  }
+};
+
+
+
+
 
   // ---------------- Initial fetch & filter change ----------------
   useEffect(() => {
@@ -187,6 +232,7 @@ export function useMailThreads({ endpoint }) {
     handleUpdateThread,
     fetchThreads,
     markAsRead,
+    deleteThread,
     folder, // optional but useful
     companyName
   };

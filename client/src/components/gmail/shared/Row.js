@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FiPaperclip, FiMoreVertical, FiUserPlus, FiChevronDown } from "react-icons/fi";
 import clsx from "clsx";
 import AttachmentChip from "./attachments/AttachmentChip";
+import { MdDeleteOutline } from "react-icons/md";
 
 
 function parseEmail(str) {
@@ -15,7 +16,7 @@ function parseEmail(str) {
 
 
 
-export default function Row({ thread, users, handleUpdateThread, setEmailDetail, categories, setCreateTicketModal, setCreateLeadModal }) {
+export default function Row({ thread, users, handleUpdateThread, setEmailDetail, categories, setCreateTicketModal, setCreateLeadModal, deleteThread }) {
   const [assignOpen, setAssignOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -249,13 +250,26 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
           {/* More Options */}
           <div className="relative">
             <button
-              className="p-1.5 rounded-md hover:bg-gray-200 text-gray-500"
+              className="p-1 rounded-md hover:bg-gray-200 text-gray-500"
               onClick={(e) => {
                 e.stopPropagation();
                 setMenuOpen((prev) => !prev);
               }}
             >
               <FiMoreVertical className="size-4" />
+            </button>
+
+
+
+
+            <button
+              className="p-1 rounded-md hover:bg-gray-200 text-gray-500  hover:text-red-500"
+              title="Delete Thread"
+              onClick={(e) => {
+                deleteThread(thread?.threadId, thread?.companyName)
+              }}
+            >
+              <MdDeleteOutline className="size-5   " /> 
             </button>
 
             {menuOpen && (

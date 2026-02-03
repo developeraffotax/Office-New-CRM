@@ -301,3 +301,60 @@ export const markThreadAsRead = async (req, res) => {
  
 
  
+
+
+
+
+
+
+
+
+
+/**
+ * DELETE /api/v1/gmail/delete-thread/:id
+ * Deletes the thread from Gmail (if applicable) and local DB
+ */
+export const deleteThread = async (req, res) => {
+  try {
+    const { threadId } = req.params; // MongoDB _id
+    const { companyName } = req.body;
+
+    // Find the thread in local DB
+    const thread = await EmailThread.findOne({ threadId, companyName });
+    if (!thread) {
+      return res.status(404).json({
+        success: false,
+        message: "Thread not found",
+      });
+    }
+
+    // ----------- 1. Delete from Gmail (if Gmail client available) -----------
+    const gmailClient = await getGmailClient(companyName);
+    if (gmailClient && thread.threadId) {
+ 
+
+      await gmailClient.users.threads.trash({
+        userId: "me",
+        id: thread.threadId,
+      });
+
+
+       
+    }
+
+    // ----------- 2. Delete from local DB -----------
+    await EmailThread.deleteOne({ threadId, companyName });
+
+    res.status(200).json({
+      success: true,
+      message: "Thread deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting thread:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete thread",
+      error: error.message,
+    });
+  }
+};

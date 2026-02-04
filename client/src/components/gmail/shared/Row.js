@@ -80,29 +80,29 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
 
 
 
-
+//  hover:shadow-[inset_4px_0_0_0_#3b82f6]
 
   return (
     <div
       className={clsx(
-        "group relative border-b border-gray-100 cursor-pointer transition-all duration-150",
-        "hover:bg-slate-50/80 hover:shadow-[inset_4px_0_0_0_#3b82f6]",
-        thread.unreadCount > 0 ? "bg-blue-50/40" : "bg-white"
-      )}
+  "group relative border-b border-gray-100 cursor-pointer transition-all duration-150",
+  "hover:shadow-[0_1px_2px_rgba(60,60,67,0.18),0_2px_4px_rgba(60,60,67,0.22),0_3px_6px_rgba(60,60,67,0.45)]",
+  thread.unreadCount > 0 ? "bg-white" : "bg-blue-50/60"
+)}
     >
       {/* Indicator for Unread */}
-      {thread.unreadCount > 0 && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />}
+      {/* {thread.unreadCount > 0 && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />} */}
 
       {/* ================= MAIN ROW ================= */}
-      <div className="grid items-center px-4 py-3 grid-cols-[14rem_1fr_auto_auto_7rem] gap-4">
+      <div className="grid items-center px-4 py-3 grid-cols-[15rem_1fr_auto_auto_7rem] gap-8 ">
         {/* Sender Info */}
         <div className="flex flex-col min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center    gap-2">
             <span
               title={sender}
               className={clsx(
-                "truncate text-sm",
-                thread.unreadCount > 0 ? "font-bold text-gray-900" : "font-medium text-gray-700"
+                "truncate text-base  font-google ",
+                thread.unreadCount > 0 ? "font-medium text-gray-900" : "  text-gray-700"
               )}
 
               dangerouslySetInnerHTML={{
@@ -113,7 +113,8 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
               
               
             </span>
-            {attachments.length > 0 && <FiPaperclip className="text-gray-400 size-3 shrink-0" />}
+            {/* {attachments.length > 0 && <FiPaperclip className="text-gray-400 size-3 shrink-0" />} */}
+            {thread?.messageCount > 1 && <span className="text-gray-500 text-[12px] shrink-0 font-google" >{thread?.messageCount}</span>}
           </div>
 
           {/* Sub-labels: Assigned & Category */}
@@ -136,13 +137,13 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
 
         {/* Subject + Snippet */}
         <div
-          className="min-w-0 flex flex-col"
+          className="min-w-0 flex flex-col "
           onClick={() => setEmailDetail({ threadId: thread.threadId, show: true, subject: thread?.subject || "No Subject", participants: thread.participants })}
         >
           <span
             className={clsx(
-              "truncate text-sm",
-              thread.unreadCount > 0 ? "text-gray-900 font-semibold" : "text-gray-700 font-medium"
+              "truncate text-base  font-google ",
+              thread.unreadCount > 0 ? "text-gray-900 font-medium" : "text-gray-700   "
             )}
 
             dangerouslySetInnerHTML={{
@@ -151,7 +152,7 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
           >
              
           </span>
-          <span className="text-sm text-gray-400 truncate font-normal">{thread.lastMessageSnippet}</span>
+          <span className="text-sm text-gray-500 truncate font-normal  font-google ">{thread.lastMessageSnippet}</span>
         </div>
 
         {/* Attachment count/icon spacer (Optional) */}
@@ -338,7 +339,7 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
 
       {/* ================= ATTACHMENTS ROW ================= */}
       {attachments.length > 0 && (
-        <div className="flex items-center gap-2 pb-3 pl-[15rem] pr-4">
+        <div className="flex items-center gap-2 pb-2 pl-[18rem] pr-4">
           <div className="flex gap-2 items-center">
             {visibleAttachments.map((att, idx) => (
               <AttachmentChip key={idx} attachment={att} className="scale-90 origin-left" />

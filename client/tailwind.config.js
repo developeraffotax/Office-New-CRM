@@ -11,6 +11,9 @@ module.exports = {
         },
       ],
       serif: ['"Playfair Display"', "serif"],
+      roboto: ["Roboto", "sans-serif"],
+      inter: ["Inter","sans-serif"],
+      google: ["Google Sans", "sans-serif"]
     },
     extend: {
       screens: {

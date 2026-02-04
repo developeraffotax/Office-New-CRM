@@ -372,7 +372,7 @@ React.useEffect(() => {
 </FormControl>
 
           {/* Spacer */}
-          <Box sx={{ flexGrow: 1 }} />
+          {/* <Box sx={{ flexGrow: 1 }} /> */}
 
           {/* Reset Action */}
           {hasActiveFilters && (
@@ -383,9 +383,10 @@ React.useEffect(() => {
                 onClick={clearFilters}
                 startIcon={<FiRefreshCcw size={14} />}
                 sx={{
-                  opacity: 0.7,
+                  opacity: 0.8,
                   "&:hover": { opacity: 1 },
                   textTransform: "none",
+                    color: "#1151D1",
                   px: 2,
                 }}
               >

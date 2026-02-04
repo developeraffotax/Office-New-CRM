@@ -223,6 +223,10 @@ React.useEffect(() => {
                   All
                 </Typography>
               </MenuItem>
+              {/* <MenuItem sx={{
+                borderBottom: 1,
+                borderColor: "#ddd"
+              }} value={"unassigned"}> Unassigned </MenuItem> */}
 
               {categories.map(({ name }) => {
                 return (
@@ -231,6 +235,7 @@ React.useEffect(() => {
                   </MenuItem>
                 );
               })}
+              
             </Select>
           </FormControl>
 
@@ -243,6 +248,7 @@ React.useEffect(() => {
               IconComponent={FiChevronDown}
               renderValue={(selected) => {
                 const user = users.find((u) => u._id === selected);
+                console.log("SELECTED", selected)
                 if (!selected) {
                   return (
                     <Box
@@ -255,6 +261,21 @@ React.useEffect(() => {
                     >
                       <FiUser size={14} />
                       <Typography variant="body2">All</Typography>
+                    </Box>
+                  );
+                }
+                if (selected === "unassigned") {
+                  return (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        opacity: 0.7,
+                      }}
+                    >
+                      <FiUser size={14} />
+                      <Typography variant="body2">Unassigned</Typography>
                     </Box>
                   );
                 }
@@ -274,6 +295,10 @@ React.useEffect(() => {
                   All
                 </Typography>
               </MenuItem>
+              {/* <MenuItem sx={{
+                borderBottom: 1,
+                borderColor: "#ddd"
+              }} value={"unassigned"}> Unassigned </MenuItem> */}
               {users.map((u) => (
                 <MenuItem key={u._id} value={u._id}>
                   <Typography variant="body2">{u.name || u.email}</Typography>
@@ -428,16 +453,18 @@ React.useEffect(() => {
                 />
               )}
 
-              {filters.userId && (
-                <Chip
-                  size="small"
-                  label={`User: ${
-                    users.find((u) => u._id === filters.userId)?.name || "User"
-                  }`}
-                  onDelete={() => handleUpdate({ userId: "" })}
-                  sx={{ bgcolor: "action.selected", fontWeight: 500 }}
-                />
-              )}
+             {filters.userId && (
+              <Chip
+                size="small"
+                label={`User: ${
+                  filters.userId === "unassigned"
+                    ? "unassigned"
+                    : users.find((u) => u._id === filters.userId)?.name || "User"
+                }`}
+                onDelete={() => handleUpdate({ userId: "" })}
+                sx={{ bgcolor: "action.selected", fontWeight: 500 }}
+              />
+            )}
 
               {filters.startDate && (
                 <Chip

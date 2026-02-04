@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export const getHeader = (headers, name) =>
   headers.find(h => h.name === name)?.value || "";
 
@@ -82,16 +84,93 @@ export function parseEmailList(headerValue) {
 
 
 
+// export const buildUnassignedFilter = (field) => {
+//   if (field === "userId") {
+//     return [
+//       { userId: { $exists: false } },
+//       { userId: null },
+//     ];
+//   }
+
+//   if (field === "category") {
+//     return [
+//       { category: { $exists: false } },
+//       { category: null },
+//       { category: "" },
+//     ];
+//   }
+
+//   return [];
+// };
 
 
 
 
 
+// filters.js
+export const buildFilterQuery = (filters) => {
+  const andFilters = [];
 
 
+  // Company filter
+  if (filters.companyName) {
+    andFilters.push({ companyName: filters.companyName });
+  }
 
 
+  // User filter
+  if (filters.userId) {
+    if (filters.userId === "unassigned") {
+      andFilters.push({ $or: [{ userId: { $exists: false } }, { userId: null }] });
+    } else if (mongoose.Types.ObjectId.isValid(filters.userId)) {
+      andFilters.push({ userId: new mongoose.Types.ObjectId(filters.userId) });
+    }
+  }
 
+  // Category filter
+  if (filters.category) {
+    if (filters.category === "unassigned") {
+      andFilters.push({ $or: [{ category: { $exists: false } }, { category: null }, { category: "" }] });
+    } else {
+      andFilters.push({ category: filters.category });
+    }
+  }
+  
 
+  // Folder filter
+  if (filters.folder === "inbox") andFilters.push({ hasInboxMessage: true });
+  if (filters.folder === "sent") andFilters.push({ hasSentMessage: true });
+
+  // Unread
+  if (filters.unreadOnly === "true") andFilters.push({ unreadCount: { $gt: 0 } });
+
+  // Date filter
+  const dateField = filters.folder === "sent" ? "lastMessageAtSent" : "lastMessageAtInbox";
+  if (filters.startDate || filters.endDate) {
+    const dateQuery = {};
+    if (filters.startDate) dateQuery.$gte = new Date(filters.startDate);
+    if (filters.endDate) dateQuery.$lte = new Date(filters.endDate);
+    andFilters.push({ [dateField]: dateQuery });
+  }
+
+  // Search
+  if (filters.search?.trim()) {
+    const searchRegex = new RegExp(filters.search.trim(), "i");
+    andFilters.push({
+      $or: [
+        { subject: searchRegex },
+        { "participants.email": searchRegex },
+        { "participants.name": searchRegex },
+      ],
+    });
+  }
+
+ 
+
+  // If no $and, return {} to match everything
+  if (andFilters.length === 0) return {};
+  if (andFilters.length === 1) return andFilters[0];
+  return { $and: andFilters };
+};
 
 

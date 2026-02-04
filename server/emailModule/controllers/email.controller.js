@@ -1,6 +1,7 @@
 import EmailThread from "../models/EmailThread.js";
 import mongoose from "mongoose";
 import { getGmailClient } from "../services/gmail.service.js";
+import { buildFilterQuery, } from "../utils/utils.js";
 
 /**
  * GET /api/email/inbox
@@ -15,99 +16,161 @@ import { getGmailClient } from "../services/gmail.service.js";
  *  - limit (default: 20)
  */
  
-// ------------------ Inbox ------------------
-// GET /api/v1/gmail/threads
+
+
+
+
+
+
+
+
 export const getMailbox = async (req, res) => {
   try {
-    const {
-      userId,
-      companyName,
-      category,
-      folder = "inbox", // inbox | sent
-      startDate,
-      endDate,
-      unreadOnly,
-      page = 1,
-      limit = 20,
-      search,         
-    } = req.query;
+    const query = buildFilterQuery(req.query);
+    console.log("Mongo Query:", JSON.stringify(query, null, 2));
 
-    const query = {};
-
-    // ---------------- Folder logic ----------------
-    if (folder === "inbox") {
-      query.hasInboxMessage = true;
-    }
-
-    if (folder === "sent") {
-      query.hasSentMessage = true;
-    }
-
-    // ---------------- Filters ----------------
-    if (userId && mongoose.Types.ObjectId.isValid(userId)) {
-      query.userId = new mongoose.Types.ObjectId(userId);
-    }
-
-    if (companyName) query.companyName = companyName;
-    if (category) query.category = category;
-
-    if (unreadOnly === "true") {
-      query.unreadCount = { $gt: 0 };
-    }
-
-    // ---------------- Date filter (per folder) ----------------
-    const dateField =
-      folder === "sent" ? "lastMessageAtSent" : "lastMessageAtInbox";
-
-    if (startDate || endDate) {
-      query[dateField] = {};
-      if (startDate) query[dateField].$gte = new Date(startDate);
-      if (endDate) query[dateField].$lte = new Date(endDate);
-    }
-
-
-    // ---------------- Search ----------------
-    if (search && search.trim()) {
-      const searchRegex = new RegExp(search.trim(), "i");
-
-      query.$or = [
-        { subject: searchRegex },
-        { "participants.email": searchRegex },
-        { "participants.name": searchRegex },
-      ];
-    }
-
-    const pageNumber = Math.max(parseInt(page), 1);
-    const pageSize = Math.min(parseInt(limit), 100);
+    const pageNumber = Math.max(parseInt(req.query.page) || 1, 1);
+    const pageSize = Math.min(parseInt(req.query.limit) || 20, 100);
     const skip = (pageNumber - 1) * pageSize;
 
+    const dateField = req.query.folder === "sent" ? "lastMessageAtSent" : "lastMessageAtInbox";
+
     const [threads, total] = await Promise.all([
-      EmailThread.find(query)
-        .sort({ [dateField]: -1 })
-        .skip(skip)
-        .limit(pageSize)
-        .lean(),
+      EmailThread.find(query).sort({ [dateField]: -1 }).skip(skip).limit(pageSize).lean(),
       EmailThread.countDocuments(query),
     ]);
 
     res.json({
       success: true,
       threads,
-      pagination: {
-        page: pageNumber,
-        limit: pageSize,
-        total,
-        totalPages: Math.ceil(total / pageSize),
-      },
+      pagination: { page: pageNumber, limit: pageSize, total, totalPages: Math.ceil(total / pageSize) },
     });
-  } catch (error) {
-    console.error("❌ Thread fetch error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch threads",
-    });
+  } catch (err) {
+    console.error("❌ Thread fetch error:", err);
+    res.status(500).json({ success: false, message: "Failed to fetch threads" });
   }
 };
+
+
+
+
+
+
+
+// ------------------ Inbox ------------------
+// GET /api/v1/gmail/threads
+// export const getMailbox = async (req, res) => {
+//   try {
+//     const {
+//       userId,
+//       companyName,
+//       category,
+//       folder = "inbox", // inbox | sent
+//       startDate,
+//       endDate,
+//       unreadOnly,
+//       page = 1,
+//       limit = 20,
+//       search,         
+//     } = req.query;
+
+//     const query = {};
+//     const andFilters = [];
+
+//     // ---------------- Folder logic ----------------
+//     if (folder === "inbox") {
+//       query.hasInboxMessage = true;
+//     }
+
+//     if (folder === "sent") {
+//       query.hasSentMessage = true;
+//     }
+ 
+    
+//     // ---- User filter ----
+//     if (userId) {
+//   if (userId === "unassigned") {
+//     andFilters.push({ $or: buildUnassignedFilter("userId") });
+//   } else if (mongoose.Types.ObjectId.isValid(userId)) {
+//     andFilters.push({ userId: new mongoose.Types.ObjectId(userId) });
+//   }
+// }
+
+//     if (companyName) query.companyName = companyName;
+    
+
+//     // ---- Category filter ----
+// if (category) {
+//   if (category === "unassigned") {
+//     andFilters.push({ $or: buildUnassignedFilter("category") });
+//   } else {
+//     andFilters.push({ category });
+//   }
+// }
+//     console.log("THE QUERY IS 👍😁", query)
+//     if (unreadOnly === "true") {
+//       query.unreadCount = { $gt: 0 };
+//     }
+
+//     // ---------------- Date filter (per folder) ----------------
+//     const dateField =
+//       folder === "sent" ? "lastMessageAtSent" : "lastMessageAtInbox";
+
+//     if (startDate || endDate) {
+//       query[dateField] = {};
+//       if (startDate) query[dateField].$gte = new Date(startDate);
+//       if (endDate) query[dateField].$lte = new Date(endDate);
+//     }
+
+
+//     // ---------------- Search ----------------
+//     if (search && search.trim()) {
+//       const searchRegex = new RegExp(search.trim(), "i");
+
+//       query.$or = [
+//         { subject: searchRegex },
+//         { "participants.email": searchRegex },
+//         { "participants.name": searchRegex },
+//       ];
+//     }
+
+
+//     if (andFilters.length) {
+//       query.$and = andFilters;
+//     }
+
+
+//     const pageNumber = Math.max(parseInt(page), 1);
+//     const pageSize = Math.min(parseInt(limit), 100);
+//     const skip = (pageNumber - 1) * pageSize;
+
+//     const [threads, total] = await Promise.all([
+//       EmailThread.find(query)
+//         .sort({ [dateField]: -1 })
+//         .skip(skip)
+//         .limit(pageSize)
+//         .lean(),
+//       EmailThread.countDocuments(query),
+//     ]);
+
+//     res.json({
+//       success: true,
+//       threads,
+//       pagination: {
+//         page: pageNumber,
+//         limit: pageSize,
+//         total,
+//         totalPages: Math.ceil(total / pageSize),
+//       },
+//     });
+//   } catch (error) {
+//     console.error("❌ Thread fetch error:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to fetch threads",
+//     });
+//   }
+// };
 
 
 // ------------------ Sent ------------------

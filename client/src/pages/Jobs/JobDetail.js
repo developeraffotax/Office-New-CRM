@@ -27,15 +27,14 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
 import { useSelector } from "react-redux";
- 
+
 import { TopTabs } from "./TopTabs";
-import {SubtasksTab} from "./detailComponents/SubtasksTab"
-import {JobDetailTab} from "./detailComponents/JobDetailTab"
+import { SubtasksTab } from "./detailComponents/SubtasksTab";
+import { JobDetailTab } from "./detailComponents/JobDetailTab";
 import { SalesTab } from "./detailComponents/SalesTab";
 import { LoginInfoTab } from "./detailComponents/LoginInfoTab";
 import { DepartmentTab } from "./detailComponents/DepartmentTab";
 import DetailComments from "../Tasks/TaskDetailComments";
- 
 
 export default function JobDetail({
   clientId,
@@ -44,6 +43,7 @@ export default function JobDetail({
   handleDeleteJob,
   users,
   allClientData,
+  setCompanyName,
 }) {
   const [clientDetail, setClientDetail] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -93,20 +93,23 @@ export default function JobDetail({
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/single/client/${clientId}`
+        `${process.env.REACT_APP_API_URL}/api/v1/client/single/client/${clientId}`,
       );
       if (data) {
- 
+        if (typeof setCompanyName === "function") {
+          setCompanyName(data?.clientJob?.companyName);
+        }
+
         setLoading(false);
         setClientDetail(data.clientJob);
         setSubTaskData(
           data?.clientJob?.subtasks?.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          )
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+          ),
         );
         // setQualityData(data?.clientJob?.quality_Check);
         const sortedData = [...data.clientJob.quality_Check].sort(
-          (a, b) => a.order - b.order
+          (a, b) => a.order - b.order,
         );
         setQualityData(sortedData);
       }
@@ -129,24 +132,24 @@ export default function JobDetail({
   }, []);
 
   // ---------------Handle Status Change---------->
-  const handleStatusChange = async (rowId, newStatus) => {
-    if (!rowId) {
-      return toast.error("Job id is required!");
-    }
-    try {
-      const { data } = await axios.patch(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/update/status/${rowId}`,
-        {
-          status: newStatus,
-        }
-      );
-      if (data) {
-        getClient();
-      }
-    } catch (error) {
-      console.error("Error updating status", error);
-    }
-  };
+  // const handleStatusChange = async (rowId, newStatus) => {
+  //   if (!rowId) {
+  //     return toast.error("Job id is required!");
+  //   }
+  //   try {
+  //     const { data } = await axios.patch(
+  //       `${process.env.REACT_APP_API_URL}/api/v1/client/update/status/${rowId}`,
+  //       {
+  //         status: newStatus,
+  //       }
+  //     );
+  //     if (data) {
+  //       getClient();
+  //     }
+  //   } catch (error) {
+  //     console.error("Error updating status", error);
+  //   }
+  // };
 
   // ------------Delete Conformation-------->
   const handleDeleteConfirmation = (jobId) => {
@@ -188,7 +191,7 @@ export default function JobDetail({
     try {
       const { data } = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/client/dublicate/job/complete`,
-        { ...clientDetail }
+        { ...clientDetail },
       );
       if (data) {
         allClientJobData();
@@ -207,14 +210,14 @@ export default function JobDetail({
     try {
       const { data } = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/client/create/subTask/${clientId}`,
-        { subTask }
+        { subTask },
       );
       if (data) {
         setClientDetail(data?.job);
         setSubTaskData(
           data?.job?.subtasks?.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          )
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+          ),
         );
         setSubtask("");
         toast.success("Subtask added successfully!");
@@ -227,24 +230,20 @@ export default function JobDetail({
     }
   };
 
-
-
-
-    // ----------Crate Subtask---------->
+  // ----------Crate Subtask---------->
   const handleCreateSubtaskFromTemplate = async (subTask) => {
-     
     setSubTaskLoading(true);
     try {
       const { data } = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/client/create/subTask/${clientId}`,
-        { subTask }
+        { subTask },
       );
       if (data) {
         setClientDetail(data?.job);
         setSubTaskData(
           data?.job?.subtasks?.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          )
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+          ),
         );
         setSubtask("");
         toast.success("Subtask added successfully!");
@@ -275,14 +274,14 @@ export default function JobDetail({
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/subtask/status/${clientId}`,
-        { subTaskId }
+        { subTaskId },
       );
       if (data) {
         setClientDetail(data?.job);
         setSubTaskData(
           data?.job?.subtasks?.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          )
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+          ),
         );
       }
     } catch (error) {
@@ -294,14 +293,14 @@ export default function JobDetail({
   const handleDeleteSubTask = async (subTaskId) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/delete/subtask/${clientId}/${subTaskId}`
+        `${process.env.REACT_APP_API_URL}/api/v1/client/delete/subtask/${clientId}/${subTaskId}`,
       );
       if (data.success) {
         setClientDetail(data?.job);
         setSubTaskData(
           data?.job?.subtasks?.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          )
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+          ),
         );
       }
     } catch (error) {
@@ -317,7 +316,7 @@ export default function JobDetail({
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/workplain/${clientId}`,
-        { workPlan }
+        { workPlan },
       );
       if (data) {
         setClientDetail(data.clientJob);
@@ -335,16 +334,16 @@ export default function JobDetail({
   const getQuickList = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/quicklist/get/all`
+        `${process.env.REACT_APP_API_URL}/api/v1/quicklist/get/all`,
       );
- 
+
       if (data) {
         const list = data.qualityChecks.filter((item) =>
           Array.isArray(clientDetail?.job.jobName)
             ? clientDetail?.job.jobName.includes(item.type)
-            : item.type === clientDetail?.job.jobName
+            : item.type === clientDetail?.job.jobName,
         );
- 
+
         setQualities(list);
       }
     } catch (error) {
@@ -365,11 +364,11 @@ export default function JobDetail({
     try {
       const { data } = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/client/create/quality/${clientId}`,
-        { quality }
+        { quality },
       );
       if (data) {
         const sortedData = [...data?.job?.quality_Check].sort(
-          (a, b) => a.order - b.order
+          (a, b) => a.order - b.order,
         );
         setQualityData(sortedData);
         setQuality("");
@@ -388,12 +387,12 @@ export default function JobDetail({
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/client/create/quality/${clientId}`,
-        { quality }
+        { quality },
       );
 
       if (response?.data) {
         const sortedData = response.data.job.quality_Check.sort(
-          (a, b) => a.order - b.order
+          (a, b) => a.order - b.order,
         );
 
         setQualityData(sortedData);
@@ -403,7 +402,7 @@ export default function JobDetail({
     } catch (error) {
       console.error("Error creating quality check:", error);
       toast.error(
-        error.response?.data?.message || "An unexpected error occurred"
+        error.response?.data?.message || "An unexpected error occurred",
       );
     }
   };
@@ -413,11 +412,11 @@ export default function JobDetail({
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/quality/status/${clientId}`,
-        { qualityId }
+        { qualityId },
       );
       if (data) {
         const sortedData = [...data?.job?.quality_Check].sort(
-          (a, b) => a.order - b.order
+          (a, b) => a.order - b.order,
         );
         setQualityData(sortedData);
       }
@@ -431,11 +430,11 @@ export default function JobDetail({
   const handleDeleteQuality = async (qualityId) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/delete/quality/${clientId}/${qualityId}`
+        `${process.env.REACT_APP_API_URL}/api/v1/client/delete/quality/${clientId}/${qualityId}`,
       );
       if (data.success) {
         const sortedData = [...data?.job?.quality_Check].sort(
-          (a, b) => a.order - b.order
+          (a, b) => a.order - b.order,
         );
         setQualityData(sortedData);
       }
@@ -465,7 +464,7 @@ export default function JobDetail({
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/client/reordering/${clientId}`,
-        { qualities: newTodos }
+        { qualities: newTodos },
       );
       if (data) {
         toast.success("Reordering successfully!");
@@ -483,38 +482,27 @@ export default function JobDetail({
           id="mainnnnnnn"
           className="w-full flex flex-row justify-start gap-5 items-start h-[50%]"
         >
-
-
           <div className="flex flex-col w-full px-2 h-full ">
-                <TopTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+            <TopTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-          
-
- {
-            activeTab === "subtasks" && <SubtasksTab
-            
+            {activeTab === "subtasks" && (
+              <SubtasksTab
                 subTaskData={subTaskData}
                 subTask={subTask}
                 setSubtask={setSubtask}
                 handleCreateSubtask={handleCreateSubtask}
-                handleCreateSubtaskFromTemplate={handleCreateSubtaskFromTemplate}
+                handleCreateSubtaskFromTemplate={
+                  handleCreateSubtaskFromTemplate
+                }
                 subTaskLoading={subTaskLoading}
                 handleOnDragEnd={handleOnDragEnd}
                 updateSubtaskStatus={updateSubtaskStatus}
                 handleDeleteSubTask={handleDeleteSubTask}
-            
-            
-            
-            
-            
-            
-            />
-          }
+              />
+            )}
 
-
-          {
-            activeTab === "jobDetail" &&  <JobDetailTab 
-            
+            {activeTab === "jobDetail" && (
+              <JobDetailTab
                 clientDetail={clientDetail}
                 auth={auth}
                 showEdit={showEdit}
@@ -523,24 +511,18 @@ export default function JobDetail({
                 setWorkPlan={setWorkPlan}
                 handleWorkPlan={handleWorkPlan}
                 load={load}
-            
-          
-            />
-          }
+              />
+            )}
 
-
-          
-          { activeTab === "salesDetail" &&  <SalesTab clientDetail={clientDetail} /> }
-          { activeTab === "loginInfo" &&  <LoginInfoTab clientDetail={clientDetail} /> }
-          { activeTab === "departmentInfo" &&  <DepartmentTab clientDetail={clientDetail} /> }
-
-
-          
-        
-
-         
-
-
+            {activeTab === "salesDetail" && (
+              <SalesTab clientDetail={clientDetail} />
+            )}
+            {activeTab === "loginInfo" && (
+              <LoginInfoTab clientDetail={clientDetail} />
+            )}
+            {activeTab === "departmentInfo" && (
+              <DepartmentTab clientDetail={clientDetail} />
+            )}
           </div>
 
           <div className="w-full flex flex-col gap-3">
@@ -551,7 +533,7 @@ export default function JobDetail({
               <select
                 value={clientDetail?.job?.jobStatus}
                 onChange={(e) => {
-                  handleStatusChange(clientDetail._id, e.target.value);
+                  // handleStatusChange(clientDetail._id, e.target.value);
                   handleStatus(clientDetail._id, e.target.value);
                 }}
                 className="w-[8rem] h-[2rem] rounded-md border border-sky-500 outline-none"
@@ -585,9 +567,9 @@ export default function JobDetail({
                 {format(
                   new Date(
                     clientDetail?.job?.jobDeadline ||
-                      "2024-07-26T00:00:00.000+00:00"
+                      "2024-07-26T00:00:00.000+00:00",
                   ),
-                  "dd-MMM-yyyy"
+                  "dd-MMM-yyyy",
                 )}
               </span>
             </div>
@@ -641,144 +623,130 @@ export default function JobDetail({
           <DetailComments jobId={clientId} type="Jobs" getTasks1={() => null} />
 
           <div className="flex flex-col w-full h-full bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-  {/* Header */}
-  <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 border-b bg-gray-50">
-    <h3 className="text-base font-semibold text-gray-800">Activity</h3>
-  </div>
+            {/* Header */}
+            <div className="flex-shrink-0 flex items-center justify-between px-4 py-2 border-b bg-gray-50">
+              <h3 className="text-base font-semibold text-gray-800">
+                Activity
+              </h3>
+            </div>
 
-  {/* Content */}
-  <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-gray-50">
-    {clientDetail?.activities?.length ? (
-      clientDetail.activities
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .map((activity) => (
-          <div
-            key={activity?._id}
-            className="group flex items-start gap-3 bg-white border border-gray-200 rounded-md p-3 hover:bg-orange-50 hover:border-orange-300 transition-all duration-200"
-          >
-            {/* Avatar */}
-            <div className="flex-shrink-0">
-              {activity?.user?.avatar ? (
-                <img
-                  src={activity?.user?.avatar}
-                  alt="Avatar"
-                  className="w-8 h-8 rounded-full object-cover border border-orange-400"
-                />
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-gray-50">
+              {clientDetail?.activities?.length ? (
+                clientDetail.activities
+                  .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                  .map((activity) => (
+                    <div
+                      key={activity?._id}
+                      className="group flex items-start gap-3 bg-white border border-gray-200 rounded-md p-3 hover:bg-orange-50 hover:border-orange-300 transition-all duration-200"
+                    >
+                      {/* Avatar */}
+                      <div className="flex-shrink-0">
+                        {activity?.user?.avatar ? (
+                          <img
+                            src={activity?.user?.avatar}
+                            alt="Avatar"
+                            className="w-8 h-8 rounded-full object-cover border border-orange-400"
+                          />
+                        ) : (
+                          <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center font-semibold text-white"
+                            style={{
+                              backgroundColor: `#${Math.floor(
+                                Math.random() * 16777215,
+                              ).toString(16)}`,
+                            }}
+                          >
+                            {activity?.user?.name?.slice(0, 1)?.toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Details */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-900">
+                            {activity?.user?.name}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(activity?.createdAt).toLocaleString()}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700 mt-0.5">
+                          <span className="font-semibold text-gray-800">
+                            Action:
+                          </span>{" "}
+                          {activity?.activity}
+                        </p>
+                      </div>
+                    </div>
+                  ))
               ) : (
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center font-semibold text-white"
-                  style={{
-                    backgroundColor: `#${Math.floor(
-                      Math.random() * 16777215
-                    ).toString(16)}`,
-                  }}
-                >
-                  {activity?.user?.name?.slice(0, 1)?.toUpperCase()}
+                <div className="flex flex-col items-center justify-center w-full min-h-[40vh] py-6 text-center">
+                  <img
+                    src="/rb_695.png"
+                    alt="notfound"
+                    className="h-28 w-28 opacity-80 animate-pulse mb-2"
+                  />
+                  <span className="text-sm text-gray-600">
+                    No activity found
+                  </span>
                 </div>
               )}
             </div>
-
-            {/* Details */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-900">
-                  {activity?.user?.name}
-                </span>
-                <span className="text-xs text-gray-500">
-                  {new Date(activity?.createdAt).toLocaleString()}
-                </span>
-              </div>
-              <p className="text-sm text-gray-700 mt-0.5">
-                <span className="font-semibold text-gray-800">Action:</span>{" "}
-                {activity?.activity}
-              </p>
-            </div>
           </div>
-        ))
-    ) : (
-      <div className="flex flex-col items-center justify-center w-full min-h-[40vh] py-6 text-center">
-        <img
-          src="/rb_695.png"
-          alt="notfound"
-          className="h-28 w-28 opacity-80 animate-pulse mb-2"
-        />
-        <span className="text-sm text-gray-600">No activity found</span>
-      </div>
-    )}
-  </div>
-</div>
-
         </div>
 
-
-
-             <div className="absolute w-full flex justify-end  items-center gap-4 bottom-2 right-2 ">
-                        <span
-                          className=""
-                          title="Edit Job"
-                          onClick={() => {
-                            setJobId(clientDetail._id);
-                            setIsOpen(true);
-                          }}
-                        >
-                          <FaEdit className="h-5 w-5 cursor-pointer text-gray-800 hover:text-gray-950" />
-                        </span>
-                        <span
-                          className="  hidden  sm:block"
-                          title="Copy Job"
-                          onClick={() => {
-                            setJobId(clientDetail._id);
-                            setOpenCopy(true);
-                          }}
-                        >
-                          <FaRegCopy className="h-5 w-5 cursor-pointer text-sky-500 hover:text-sky-600" />
-                        </span>
-                        <span
-                          className=""
-                          title="Complete Job"
-                          onClick={() => {
-                            handleUpdateStatus();
-                          }}
-                        >
-                          <MdCheckCircle className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
-                        </span>
-                        <button
-                          disabled={anyTimerRunning && timerId === clientDetail?._id}
-                          className={` hidden  sm:block ${
-                            anyTimerRunning && timerId === clientDetail?._id
-                              ? "cursor-not-allowed"
-                              : "cursor-pointer"
-                          }`}
-                          type="button"
-                          title="Delete Job"
-                          onClick={() => handleDeleteConfirmation(clientDetail?._id)}
-                        >
-                          <AiFillDelete
-                            className={`h-5 w-5 text-red-500 hover:text-red-600 ${
-                              anyTimerRunning && timerId === clientDetail?._id
-                                ? "cursor-not-allowed"
-                                : "cursor-pointer"
-                            }`}
-                          />
-                        </button>
-                      </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        <div className="absolute w-full flex justify-end  items-center gap-4 bottom-2 right-2 ">
+          <span
+            className=""
+            title="Edit Job"
+            onClick={() => {
+              setJobId(clientDetail._id);
+              setIsOpen(true);
+            }}
+          >
+            <FaEdit className="h-5 w-5 cursor-pointer text-gray-800 hover:text-gray-950" />
+          </span>
+          <span
+            className="  hidden  sm:block"
+            title="Copy Job"
+            onClick={() => {
+              setJobId(clientDetail._id);
+              setOpenCopy(true);
+            }}
+          >
+            <FaRegCopy className="h-5 w-5 cursor-pointer text-sky-500 hover:text-sky-600" />
+          </span>
+          <span
+            className=""
+            title="Complete Job"
+            onClick={() => {
+              handleUpdateStatus();
+            }}
+          >
+            <MdCheckCircle className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
+          </span>
+          <button
+            disabled={anyTimerRunning && timerId === clientDetail?._id}
+            className={` hidden  sm:block ${
+              anyTimerRunning && timerId === clientDetail?._id
+                ? "cursor-not-allowed"
+                : "cursor-pointer"
+            }`}
+            type="button"
+            title="Delete Job"
+            onClick={() => handleDeleteConfirmation(clientDetail?._id)}
+          >
+            <AiFillDelete
+              className={`h-5 w-5 text-red-500 hover:text-red-600 ${
+                anyTimerRunning && timerId === clientDetail?._id
+                  ? "cursor-not-allowed"
+                  : "cursor-pointer"
+              }`}
+            />
+          </button>
+        </div>
 
         {/* Edit Modal */}
         {isOpen && (

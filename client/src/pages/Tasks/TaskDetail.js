@@ -41,6 +41,8 @@ export default function TaskDetail({
   tasksData,
   assignedPerson,
   setTaskIdForNote,
+
+  setTaskName
 }) {
   const auth = useSelector((state) => state.auth.auth);
   const anyTimerRunning = useSelector((state) => state.auth.anyTimerRunning);
@@ -124,7 +126,9 @@ export default function TaskDetail({
       if (data) {
         setLoading(false);
         setTaskDetal(data?.task);
+         
         setSubTaskData(data?.task?.subtasks);
+        setTaskName?.(data?.task?.task);
       }
     } catch (error) {
       console.log(error);

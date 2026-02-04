@@ -104,6 +104,7 @@ export const createComment = async (req, res) => {
         description: `${req?.user?.user?.name} added a new comment on job "${job?.job?.jobName}".\n\n— Company Name: ${job?.companyName}\n— Client Name: ${job?.clientName}`,
         taskId: jobId,
         userId: user?._id, 
+        entityType: "job",
       }
       
         scheduleNotification(req.user?.user?.name !== user.name, payload);
@@ -158,6 +159,7 @@ export const createComment = async (req, res) => {
         description: `${req.user.user.name} add a new comment in task "${task.task}". ${comment}`,
         taskId: jobId,
         userId: user._id,
+        entityType: "task",
       }
       
         scheduleNotification(req.user?.user?.name !== user.name, payload);
@@ -218,6 +220,7 @@ export const createComment = async (req, res) => {
         description: `${req.user.user.name} add a new comment in goals "${goal.subject}". ${comment}`,
         taskId: jobId,
         userId: user._id,
+        entityType: "goal",
       }
       
         scheduleNotification(req.user?.user?.name !== user.name, payload);
@@ -267,6 +270,7 @@ export const createComment = async (req, res) => {
         description: `${req.user.user.name} add a new comment in ticket "${ticket.subject}". ${comment}`,
         taskId: jobId,
         userId: user._id,
+        entityType: "ticket",
       }
       
         scheduleNotification(req.user?.user?.name !== user.name, payload);
@@ -342,6 +346,7 @@ export const commentReply = async (req, res) => {
         description: `${req.user.user.name} add a new comment reply in "${job.job.jobName}". ${commentReply}`,
         taskId: jobId,
         userId: comment.senderId,
+        entityType: "job",
       }
       
          scheduleNotification(req.user?.user?.name !== comment.user.name, payload);
@@ -401,6 +406,7 @@ export const commentReply = async (req, res) => {
         description: `${req.user.user.name} add a new comment reply of task "${task.task}". ${commentReply}`,
         taskId: jobId,
         userId: comment.senderId,
+        entityType: "task",
       }
 
         scheduleNotification(req.user?.user?.name !== comment.user.name, payload);
@@ -457,6 +463,7 @@ export const commentReply = async (req, res) => {
         description: `${req.user.user.name} add a new comment reply of goals "${goal.subject}". ${commentReply}`,
         taskId: jobId,
         userId: comment.senderId,
+        entityType: "goal",
       }
 
         scheduleNotification(req.user?.user?.name !== comment.user.name, payload);
@@ -514,6 +521,7 @@ export const commentReply = async (req, res) => {
         description: `${req.user.user.name} add a new comment reply of ticket "${ticket.subject}". ${commentReply}`,
         taskId: jobId,
         userId: comment.senderId,
+        entityType: "ticket",
       }
         scheduleNotification(req.user?.user?.name !== comment.user.name, payload);
 

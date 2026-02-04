@@ -15,7 +15,7 @@ const NotificationPanel = ({
   handleDismissNotification,
   handleDismissAll,
   handleMarkAllAsRead,
-  handleTicketView,
+ 
   openTicketId,
   setOpen,
   ticketRef,
@@ -121,10 +121,17 @@ const NotificationPanel = ({
                         <MdDeleteOutline />
                       </span>
 
-                      {item.type === "ticket_received" ? (
+                      {/* {item.type === "ticket_received" ? (
                         <button
                           className="cursor-pointer text-xl text-sky-500 hover:text-sky-600"
                           onClick={() => handleTicketView(item?.taskId)}
+                        >
+                          <LuEye />
+                        </button>
+                      ) : item.redirectLink === "/job-planning" ? (
+                        <button
+                          className="cursor-pointer text-xl text-sky-500 hover:text-sky-600"
+                          onClick={() => handleJobView(item?.taskId)}
                         >
                           <LuEye />
                         </button>
@@ -147,7 +154,7 @@ const NotificationPanel = ({
                         >
                           <LuEye />
                         </Link>
-                      )}
+                      )} */}
                     </div>
                   </div>
                 </div>

@@ -74,6 +74,7 @@ const processNotificationJob = async (job) => {
       taskId: ticket._id,
       userId: jobHolder._id,
       type: "ticket_received",
+      entityType: "ticket",
     });
     await sendSocketNotification(notification1, ticket, jobHolder._id);
   }
@@ -87,6 +88,7 @@ const processNotificationJob = async (job) => {
       taskId: ticket._id,
       userId: lastMessageSentBy._id,
       type: "ticket_received",
+      entityType: "ticket",
     });
     await sendSocketNotification(notification2, ticket, lastMessageSentBy._id);
   }

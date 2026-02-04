@@ -167,6 +167,7 @@ export const createTask = async (req, res) => {
         taskId: `${tasks?._id}`,
         userId: notiUser?._id || null,
         type: "task_assigned",
+        entityType: "task",
       };
 
       scheduleNotification(req.user?.user?.name !== jobHolder, payload);
@@ -526,6 +527,7 @@ export const updateJobHolderLS = async (req, res) => {
             taskId: `${updateTask._id}`,
             userId: notiUser._id,
             type: "task_assigned",
+            entityType: "task",
           };
 
           scheduleNotification(true, payload);
@@ -1380,6 +1382,7 @@ export const updateTaskHours = async (req, res) => {
         taskId: `${updateTask?._id}`,
         userId: notiUser?._id || null,
         type: "task_allocated_time_update",
+        entityType: "task",
       };
         scheduleNotification((req.user?.user?.name !== updateTask?.jobHolder), payload)
 

@@ -1,13 +1,28 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import TicketModalGlobal from "./TicketModalGlobal";
+import {TicketModalGlobal} from "./TicketModalGlobal";
+import { JobModalGlobal } from "./JobModalGlobal";
+import { TaskModalGlobal } from "./TaskModalGlobal";
+ 
 
 const RegisterGlobalComponents = () => {
-  const { isModalOpen } = useSelector((s) => s.ticketModal);
+  const { activeModal, modalData } = useSelector(
+    (s) => s.globalModal
+  );
 
   return (
     <>
-      {isModalOpen && <TicketModalGlobal />}
+      {activeModal === "ticket" && (
+        <TicketModalGlobal ticketId={modalData?.ticketId} />
+      )}
+
+      {activeModal === "job" && (
+        <JobModalGlobal clientId={modalData?.clientId} />
+      )}
+
+      {activeModal === "task" && (
+        <TaskModalGlobal taskId={modalData?.taskId} />
+      )}
     </>
   );
 };

@@ -30,7 +30,8 @@ const createAndSendNotification = async ({
   redirectLink,
   taskId,
   userId,
-  type
+  type,
+  entityType
 }) => {
   if (!userId) return;
 
@@ -42,6 +43,7 @@ const createAndSendNotification = async ({
     taskId,
     userId,
     type: type || "default",
+    entityType
   });
 
   // Real-time push via Redis-based sockets (safe)

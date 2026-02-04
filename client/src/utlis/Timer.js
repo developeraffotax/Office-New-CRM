@@ -95,8 +95,8 @@ export const Timer = forwardRef(
             dispatch(setJid(response.data.timer.jobId));
 
             if(pageName === "Jobs") {
-               setActivity(fetchedActivity);
-            setIsNonChargeable(fetchedActivity === "Non-Chargeable")
+               setActivity?.(fetchedActivity);
+            setIsNonChargeable?.(fetchedActivity === "Non-Chargeable")
             }
            
           }
@@ -150,7 +150,7 @@ export const Timer = forwardRef(
         const isNonChargeable = clientName === "Affotax" || clientName === "Training";
         if (isNonChargeable) {
           chargeableActivity = "Non-Chargeable";
-          setActivity("Non-Chargeable");
+          setActivity?.("Non-Chargeable");
            
         }  
 
@@ -189,8 +189,8 @@ export const Timer = forwardRef(
 
          if (pageName === "Jobs") {
           const fetchedActivity = response.data.timer?.activity;
-         setActivity(fetchedActivity);
-          setIsNonChargeable(fetchedActivity === "Non-Chargeable")
+         setActivity?.(fetchedActivity);
+          setIsNonChargeable?.(fetchedActivity === "Non-Chargeable")
          }
          
 
@@ -211,7 +211,8 @@ export const Timer = forwardRef(
          dispatch(fetchGlobalTimer());
 
       } catch (error) {
-        console.error(error?.response?.data?.message);
+
+        console.error(error);
         toast.error(error?.response?.data?.message || "Some thing went wrong!");
       }
     };
@@ -222,7 +223,7 @@ export const Timer = forwardRef(
         return;
       }
 
-      setIsSubmitting(true);
+      setIsSubmitting?.(true);
       try {
         const { data } = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/v1/timer/stop/timer/${timerId}`,
@@ -257,7 +258,7 @@ export const Timer = forwardRef(
           //   note: note,
           // });
           setNote("");
-          setActivity("Chargeable");
+          setActivity?.("Chargeable");
           localStorage.removeItem("jobId");
           toast.success("Timer stoped successfully!");
 
@@ -267,7 +268,7 @@ export const Timer = forwardRef(
         console.error("Error stopping timer:", error);
         toast.success(error.response?.data?.message);
       } finally {
-        setIsSubmitting(false);
+        setIsSubmitting?.(false);
       }
     };
 
@@ -378,7 +379,7 @@ export const Timer = forwardRef(
     const stopTimerPopUpHandler = () => {
       if(task){
 
-            setTaskIdForNote(jobId);
+            setTaskIdForNote?.(jobId);
           }
       setIsShow(true);
        

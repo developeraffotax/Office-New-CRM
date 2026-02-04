@@ -7,7 +7,7 @@ import notificationReducer from "./slices/notificationSlice";
 import settingsReducer from "./slices/settingsSlice";
 import globalTimerReducer from "./slices/globalTimerSlice";
 
-import ticketModalReducer from "./slices/ticketModalSlice";
+import globalModalReducer from "./slices/globalModalSlice";
 
 
 export const store = configureStore({
@@ -19,6 +19,6 @@ export const store = configureStore({
     settings: settingsReducer,
     globalTimer: globalTimerReducer,
 
-    ticketModal: ticketModalReducer,
+    globalModal: globalModalReducer,
   },
 });

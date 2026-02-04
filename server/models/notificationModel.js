@@ -39,6 +39,12 @@ const notificationSchema = new mongoose.Schema(
     clientName: {
       type: String,
     },
+
+    entityType: {
+      type: String,
+      enum: ["task", "job", "ticket", "goal", "general"],
+      default: "general",
+    }
   },
   { timestamps: true }
 );

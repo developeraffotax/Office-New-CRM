@@ -54,8 +54,9 @@ export default function Header({
     handleDismissNotification,
     handleDismissAll,
     handleMarkAllAsRead,
-    handleTicketView,
+ 
     isNotificationAllowed,
+ 
   } = useNotifications();
 
   const {
@@ -132,7 +133,7 @@ export default function Header({
                 handleDismissNotification={handleDismissNotification}
                 handleDismissAll={handleDismissAll}
                 handleMarkAllAsRead={handleMarkAllAsRead}
-                handleTicketView={handleTicketView}
+               
                 openTicketId={openTicketId}
                 setOpen={setOpen}
                 ticketRef={ticketRef}

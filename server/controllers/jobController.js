@@ -170,6 +170,7 @@ export const createJob = async (req, res) => {
             taskId: `${job._id}`,
             userId: jobHolderUser._id,
             type: "job_assigned",
+            entityType: "job",
           };
 
           scheduleNotification(true, payload);
@@ -783,6 +784,7 @@ export const updateJobHolder = async (req, res) => {
                 taskId: `${clientJob._id}`,
                 userId: notiUser._id,
                 type: "job_assigned",
+                entityType: "job",
               }
 
               scheduleNotification(true, payload)

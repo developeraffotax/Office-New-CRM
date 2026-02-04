@@ -81,6 +81,27 @@ export const createTicket = async (req, res) => {
       `,
     });
 
+
+
+     // Create Notification
+   if(req.user?.user?.name !== ticket?.jobHolder) {  
+    const user = await userModel.findOne({ name: ticket.jobHolder });
+    
+        const payload = {
+      title: "New Ticket Assigned",
+      redirectLink: "/tickets",
+      description: `${req.user.user.name} assigned a new ticket of "${ticket.subject}"`,
+      taskId: `${ticket._id}`,
+      userId: user._id,
+      type: "ticket_assigned",
+      entityType: "ticket",
+    }
+
+
+    scheduleNotification(true, payload)
+  }
+
+
     res.status(200).send({
       success: true,
       message: "Email send successfully!",
@@ -1136,6 +1157,7 @@ export const updateTickets = async (req, res) => {
       taskId: `${ticket._id}`,
       userId: user._id,
       type: "ticket_assigned",
+      entityType: "ticket",
     }
 
 

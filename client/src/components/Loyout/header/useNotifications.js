@@ -9,7 +9,7 @@ import {
   updateAllNotification,
 } from "../../../redux/slices/notificationSlice";
 import { setFilterId } from "../../../redux/slices/authSlice";
-import { openTicketModal } from "../../../redux/slices/ticketModalSlice";
+import { openJobModal, openModal, openTicketModal } from "../../../redux/slices/globalModalSlice";
 
 export const useNotifications = () => {
   const dispatch = useDispatch();
@@ -50,11 +50,47 @@ export const useNotifications = () => {
       })
     );
 
-    if (item.type === "ticket_received") {
-      setOpenTicketId(item.taskId);
+
+
+ // Open ticket modal if entityType is ticket
+    if (item.entityType === "ticket") {
+      dispatch(
+        openModal({
+          modal: "ticket",
+          data: { ticketId: item.taskId   }, // adjust field if needed
+        })
+      );
+      setOpen(false);
       return;
     }
 
+    // Open job modal if entityType is job (optional)
+    if (item.entityType === "job") {
+      dispatch(
+        openModal({
+          modal: "job",
+          data: { clientId: item.taskId },
+        })
+      );
+      setOpen(false);
+      return;
+    }
+
+
+     if (item.entityType === "task") {
+      dispatch(
+        openModal({
+          modal: "task",
+          data: { taskId: item.taskId },
+        })
+      );
+      setOpen(false);
+      return;
+    }
+
+
+
+ 
     navigate(`${item.redirectLink}?comment_taskId=${item.taskId}`);
     dispatch(setFilterId(item.taskId));
     setOpen(false);
@@ -77,11 +113,7 @@ export const useNotifications = () => {
     dispatch(updateAllNotification(auth.user.id));
   };
 
-  const handleTicketView = (taskId) => {
-    dispatch(openTicketModal(taskId));
-    setOpen(false);
-  };
-
+ 
   useEffect(() => {
     if (auth?.user?.id) {
       dispatch(getNotifications(auth.user.id));
@@ -99,7 +131,7 @@ export const useNotifications = () => {
     handleDismissNotification,
     handleDismissAll,
     handleMarkAllAsRead,
-    handleTicketView,
+ 
     isNotificationAllowed,
   };
 };

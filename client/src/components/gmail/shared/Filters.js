@@ -153,7 +153,7 @@ React.useEffect(() => {
         elevation={0}
         sx={{
           p: 2,
-          mb: 3,
+           
           borderRadius: 0,
           border: "1px solid",
           borderColor: "divider",

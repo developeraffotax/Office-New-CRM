@@ -30,7 +30,7 @@ function parseEmail(str) {
 }
 
 
-export default function Row({ thread, users, handleUpdateThread, setEmailDetail, categories, setCreateTicketModal, setCreateLeadModal, deleteThread, filters }) {
+export default function Row({ thread, users, handleUpdateThread, setEmailDetail, categories, setCreateTicketModal, setCreateLeadModal, deleteThread, filters, selected, toggleSelect, index }) {
   const [assignOpen, setAssignOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -87,14 +87,33 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
       className={clsx(
   "group relative border-b border-gray-100 cursor-pointer transition-all duration-150",
   "hover:shadow-[0_1px_2px_rgba(60,60,67,0.18),0_2px_4px_rgba(60,60,67,0.22),0_3px_6px_rgba(60,60,67,0.45)]",
-  thread.unreadCount > 0 ? "bg-white" : "bg-blue-50/60"
+  selected ? "bg-blue-200" : thread.unreadCount > 0 ? "bg-white" : "bg-blue-50/60 "
 )}
     >
       {/* Indicator for Unread */}
       {/* {thread.unreadCount > 0 && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />} */}
 
       {/* ================= MAIN ROW ================= */}
-      <div className="grid items-center px-4 py-3 grid-cols-[15rem_1fr_auto_auto_7rem] gap-8 ">
+      <div className="grid items-center px-4 py-3 grid-cols-[1rem_15rem_1fr_auto_auto_7rem] gap-5 ">
+
+          {/* Select checkbox */}
+        <input
+  type="checkbox"
+  checked={selected}
+  onClick={(e) => {
+    e.stopPropagation();
+    toggleSelect(thread._id, index, e);
+  }}
+  readOnly
+  className={clsx(
+    "h-4 w-4 rounded-sm border border-gray-300 accent-blue-500 ",
+    
+ 
+    
+  )}
+/>
+
+
         {/* Sender Info */}
         <div className="flex flex-col min-w-0">
           <div className="flex items-center    gap-2">
@@ -339,7 +358,7 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
 
       {/* ================= ATTACHMENTS ROW ================= */}
       {attachments.length > 0 && (
-        <div className="flex items-center gap-2 pb-2 pl-[18rem] pr-4">
+        <div className="flex items-center gap-2 pb-2 pl-[20rem] pr-4">
           <div className="flex gap-2 items-center">
             {visibleAttachments.map((att, idx) => (
               <AttachmentChip key={idx} attachment={att} className="scale-90 origin-left" />

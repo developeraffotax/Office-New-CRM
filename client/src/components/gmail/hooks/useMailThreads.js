@@ -136,10 +136,16 @@ export function useMailThreads({ endpoint }) {
  
 
 
+const deleteThread = async (
+  threadId,
+  companyName,
+  includeConfirmation = true
+) => {
+  if (!threadId) return;
 
-const deleteThread = async (threadId, companyName) => {
- if (!threadId) return;
-  const {isConfirmed} = await Swal.fire({
+  // ✅ Only show Swal if confirmation is required
+  if (includeConfirmation) {
+    const { isConfirmed } = await Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
       icon: "warning",
@@ -149,22 +155,18 @@ const deleteThread = async (threadId, companyName) => {
       confirmButtonText: "Yes, delete it!",
     });
 
-    console.log(threadId, companyName)
-    if(!isConfirmed) return;
-
- 
- 
+    if (!isConfirmed) return;
+  }
 
   try {
     const { data } = await axios.delete(
       `${process.env.REACT_APP_API_URL}/api/v1/gmail/delete/${threadId}`,
       {
-        data: { companyName }, // DELETE request body must be inside `data`
+        data: { companyName },
       }
     );
 
     if (data?.success) {
-      // Remove the deleted thread from local state
       setThreads(prev => prev.filter(t => t.threadId !== threadId));
 
       toast.success("Thread deleted successfully!");

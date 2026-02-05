@@ -1,5 +1,5 @@
  
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Sidebar from "../shared/Sidebar";
 import Filters from "../shared/Filters";
 import List from "../shared/List";
@@ -7,7 +7,9 @@ import Pagination from "../shared/Pagination";
 import Thread from "../thread/Thread";
 import CreateTicketModal from "../shared/CreateTicketModal";
 import CreateLeadModal from "../shared/CreateLeadModal";
- 
+import { HiOutlineMailOpen, HiOutlineTrash } from "react-icons/hi";
+ import { IoMdClose } from "react-icons/io";
+import { SelectionHeader } from "../shared/FloatingSelectionToolbar";
  
 
 export default function MailLayout({
@@ -45,6 +47,37 @@ export default function MailLayout({
     form: {}
    });
 
+
+
+   const [selectedThreads, setSelectedThreads] = useState(new Set());
+const lastSelectedIndexRef = useRef(null);
+
+const toggleThread = (threadId, index, event) => {
+  setSelectedThreads((prev) => {
+    const next = new Set(prev);
+
+    // SHIFT + CLICK → range select
+    if (event.shiftKey && lastSelectedIndexRef.current !== null) {
+      const start = Math.min(lastSelectedIndexRef.current, index);
+      const end = Math.max(lastSelectedIndexRef.current, index);
+
+      threads.slice(start, end + 1).forEach((t) => {
+        next.add(t._id);
+      });
+    } else {
+      // Normal toggle
+      next.has(threadId) ? next.delete(threadId) : next.add(threadId);
+      lastSelectedIndexRef.current = index; // ✅ sync + reliable
+    }
+
+    return next;
+  });
+};
+
+
+
+const clearSelection = () => setSelectedThreads(new Set());
+
   return (
     <div className="flex h-[105vh] bg-white overflow-hidden">
       <Sidebar />
@@ -56,6 +89,17 @@ export default function MailLayout({
           users={users}
           categories={categories}
         />
+
+
+        {/* The Selection Component fits here */}
+  <SelectionHeader 
+    selectedThreads={selectedThreads}
+    threads={threads}
+    markAsRead={markAsRead}
+    deleteThread={deleteThread}
+    clearSelection={clearSelection}
+  />
+
 
         <List
           loading={loading}
@@ -69,6 +113,9 @@ export default function MailLayout({
           setEmailDetail={setEmailDetail}
           setCreateTicketModal={setCreateTicketModal}
           setCreateLeadModal={setCreateLeadModal}
+
+          selectedThreads={selectedThreads}
+          toggleThread={toggleThread}
         />
 
         <Pagination pagination={pagination} setFilters={setFilters} />

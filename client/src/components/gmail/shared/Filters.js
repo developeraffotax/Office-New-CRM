@@ -223,10 +223,10 @@ React.useEffect(() => {
                   All
                 </Typography>
               </MenuItem>
-              {/* <MenuItem sx={{
+              <MenuItem sx={{
                 borderBottom: 1,
                 borderColor: "#ddd"
-              }} value={"unassigned"}> Unassigned </MenuItem> */}
+              }} value={"unassigned"}> Unassigned </MenuItem>
 
               {categories.map(({ name }) => {
                 return (
@@ -295,10 +295,10 @@ React.useEffect(() => {
                   All
                 </Typography>
               </MenuItem>
-              {/* <MenuItem sx={{
+              <MenuItem sx={{
                 borderBottom: 1,
                 borderColor: "#ddd"
-              }} value={"unassigned"}> Unassigned </MenuItem> */}
+              }} value={"unassigned"}> Unassigned </MenuItem>
               {users.map((u) => (
                 <MenuItem key={u._id} value={u._id}>
                   <Typography variant="body2">{u.name || u.email}</Typography>

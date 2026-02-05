@@ -42,7 +42,7 @@ export const processMessage = async (message, accessToken) => {
   // ---------------------------
   // Clean message HTML
   // ---------------------------
-  decodedMessage = cleanMessageHtmlAggressive(decodedMessage);
+  // decodedMessage = cleanMessageHtmlAggressive(decodedMessage);
   // ---------------------------
   // Extract attachments (non-inline)
   // ---------------------------

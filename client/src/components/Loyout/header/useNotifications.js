@@ -65,7 +65,7 @@ export const useNotifications = () => {
     }
 
     // Open job modal if entityType is job (optional)
-    if (item.entityType === "job") {
+    if (item.entityType === "job" && item.type !== "job_assigned") {
       dispatch(
         openModal({
           modal: "job",

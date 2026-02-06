@@ -1396,20 +1396,29 @@ export default function CompletedJobs({
       density: "compact",
     },
 
+
+
     muiTableHeadCellProps: {
-      style: {
-        fontWeight: "600",
-        fontSize: "14px",
-        backgroundColor: "rgb(193, 183, 173, 0.8)",
-        color: "#000",
-        padding: ".7rem 0.3rem",
-      },
-    },
-    muiTableBodyCellProps: {
-      sx: {
-        border: "1px solid rgba(203, 201, 201, 0.5)",
-      },
-    },
+          style: {
+            fontWeight: "600",
+            fontSize: "14px",
+            backgroundColor: "#E5E7EB",
+            color: "#000",
+            padding: ".7rem 0.3rem",
+          },
+        },
+        muiTableBodyCellProps: {
+          sx: {
+            border: "1px solid rgba(203, 201, 201, 0.5)",
+          },
+        },
+
+
+
+
+
+
+    
     muiTableProps: {
       sx: {
         "& .MuiTableHead-root": {

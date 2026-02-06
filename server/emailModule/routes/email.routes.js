@@ -18,7 +18,7 @@ router.get("/get-sent", requiredSignIn,   getSentItems);
 
 
  
-router.put("/update-thread/:id", requiredSignIn,   updateThreadMetadata);
+router.put("/update-thread/:id", requiredSignIn,  isAdmin,   updateThreadMetadata);
 
 
 

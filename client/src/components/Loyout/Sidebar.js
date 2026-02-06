@@ -72,7 +72,7 @@ export default function Sidebar({ hide, setHide }) {
 
 
 
-
+ 
 
 
 
@@ -88,7 +88,7 @@ export default function Sidebar({ hide, setHide }) {
   const [isActive, setIsActive] = useState(false);
   const user = auth?.user;
   const [ticketNitification, setTicketNotification] = useState([]);
-
+  console.log(user)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const location = useLocation();
@@ -104,6 +104,13 @@ export default function Sidebar({ hide, setHide }) {
   const hasAccess = (section) => {
     return user?.role?.access?.some((item) => item.permission === section);
   };
+
+
+  const hasSubAccess = (user, permission, subRole ) => {
+    const accessObject = user?.role?.access?.find(role =>  role?.permission === permission);
+    return accessObject?.subRoles?.includes(subRole) || false;
+
+  }
 
   const fetchTicketNotification = async () => {
     if (!auth) {
@@ -477,7 +484,7 @@ export default function Sidebar({ hide, setHide }) {
 
 
  
-          { (user?.role?.name === "Admin" ) && (
+          { (user?.role?.name === "Admin" || hasSubAccess(user, "Tickets", "Inbox") ) && (
             <div
               className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "mail"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"

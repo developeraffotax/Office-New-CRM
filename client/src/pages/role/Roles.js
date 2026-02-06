@@ -54,7 +54,7 @@ export default function Roles() {
 
   const subRolesMapping = {
     Tasks: ["Projects"],
-    Jobs: ["Fee", "Source", "Data"],
+    Jobs: ["Fee", "Source", "Data", "Edit", "Delete"],
     Tickets: ["Inbox", "Affotax", "OutSource", "TrustPilot"],
     Templates: ["Template", "FAQ"],
     Timesheet: ["Job-holder", "Edit", "Delete", "Tracker"],

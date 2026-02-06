@@ -131,6 +131,14 @@ export default function JobDetail({
     setTimerId(JSON.parse(timeId));
   }, []);
 
+  const hasSubAccess = (user, permission, subRole) => {
+    const accessObject = user?.role?.access?.find(
+      (role) => role?.permission === permission,
+    );
+    return accessObject?.subRoles?.includes(subRole) || false;
+  };
+
+  console.log("AUTH", auth);
   // ---------------Handle Status Change---------->
   // const handleStatusChange = async (rowId, newStatus) => {
   //   if (!rowId) {
@@ -698,16 +706,19 @@ export default function JobDetail({
         </div>
 
         <div className="absolute w-full flex justify-end  items-center gap-4 bottom-2 right-2 ">
-          <span
-            className=""
-            title="Edit Job"
-            onClick={() => {
-              setJobId(clientDetail._id);
-              setIsOpen(true);
-            }}
-          >
-            <FaEdit className="h-5 w-5 cursor-pointer text-gray-800 hover:text-gray-950" />
-          </span>
+          {hasSubAccess(auth?.user, "Jobs", "Edit") && (
+            <span
+              className=""
+              title="Edit Job"
+              onClick={() => {
+                setJobId(clientDetail._id);
+                setIsOpen(true);
+              }}
+            >
+              <FaEdit className="h-5 w-5 cursor-pointer text-gray-800 hover:text-gray-950" />
+            </span>
+          )}
+
           <span
             className="  hidden  sm:block"
             title="Copy Job"
@@ -727,25 +738,28 @@ export default function JobDetail({
           >
             <MdCheckCircle className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
           </span>
-          <button
-            disabled={anyTimerRunning && timerId === clientDetail?._id}
-            className={` hidden  sm:block ${
-              anyTimerRunning && timerId === clientDetail?._id
-                ? "cursor-not-allowed"
-                : "cursor-pointer"
-            }`}
-            type="button"
-            title="Delete Job"
-            onClick={() => handleDeleteConfirmation(clientDetail?._id)}
-          >
-            <AiFillDelete
-              className={`h-5 w-5 text-red-500 hover:text-red-600 ${
+
+          {hasSubAccess(auth?.user, "Jobs", "Delete") && (
+            <button
+              disabled={anyTimerRunning && timerId === clientDetail?._id}
+              className={` hidden  sm:block ${
                 anyTimerRunning && timerId === clientDetail?._id
                   ? "cursor-not-allowed"
                   : "cursor-pointer"
               }`}
-            />
-          </button>
+              type="button"
+              title="Delete Job"
+              onClick={() => handleDeleteConfirmation(clientDetail?._id)}
+            >
+              <AiFillDelete
+                className={`h-5 w-5 text-red-500 hover:text-red-600 ${
+                  anyTimerRunning && timerId === clientDetail?._id
+                    ? "cursor-not-allowed"
+                    : "cursor-pointer"
+                }`}
+              />
+            </button>
+          )}
         </div>
 
         {/* Edit Modal */}

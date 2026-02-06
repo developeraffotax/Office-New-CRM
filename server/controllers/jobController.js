@@ -1039,7 +1039,7 @@ export const updateClientJob = async (req, res) => {
 
     for (const jobData of jobs) {
       if (jobData.clientId) {
-        await jobsModel.findByIdAndUpdate(
+       const clientJob = await jobsModel.findByIdAndUpdate(
           jobData.clientId,
           {
             clientName,
@@ -1071,6 +1071,15 @@ export const updateClientJob = async (req, res) => {
           },
           { new: true }
         );
+
+
+            // Push activity to activities array
+        // clientJob.activities.push({
+        //   user: req.user.user._id,
+        //   activity: `${req.user.user.name} has updated job owner from "${oldLead ? oldLead : "empty"}" to "${lead}"  .`,
+        // });
+
+
       } else {
         await jobsModel.create({
           clientName,

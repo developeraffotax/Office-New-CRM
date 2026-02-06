@@ -108,7 +108,13 @@ export function parseEmailList(headerValue) {
 
 
 // filters.js
-export const buildFilterQuery = (filters) => {
+export const buildFilterQuery = (req) => {
+
+  const user = req?.user?.user;
+
+  const isAdmin = user?.role?.name === "Admin";
+
+  const filters = req.query;
   const andFilters = [];
 
 
@@ -119,12 +125,16 @@ export const buildFilterQuery = (filters) => {
 
 
   // User filter
-  if (filters.userId) {
+  if (isAdmin && filters.userId ) {
     if (filters.userId === "unassigned") {
       andFilters.push({ $or: [{ userId: { $exists: false } }, { userId: null }] });
     } else if (mongoose.Types.ObjectId.isValid(filters.userId)) {
       andFilters.push({ userId: new mongoose.Types.ObjectId(filters.userId) });
     }
+  }
+
+  if(!isAdmin) {
+    andFilters.push({ userId: new mongoose.Types.ObjectId(user?._id) });
   }
 
   // Category filter
@@ -174,3 +184,46 @@ export const buildFilterQuery = (filters) => {
 };
 
 
+export const normalizeEmail = (raw = "") => {
+  if (!raw) return "";
+
+  // Match email inside < > OR plain email
+  const match = raw.match(
+    /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/
+  );
+
+  return match ? match[1].toLowerCase().trim() : "";
+};
+
+
+
+
+export const getOtherParticipantEmail = (
+  participants = [],
+  myEmail = "info@affotax.com"
+) => {
+  if (!Array.isArray(participants)) return null;
+
+  const normalizedMyEmail = normalizeEmail(myEmail);
+
+  for (const p of participants) {
+    const email = normalizeEmail(p?.email);
+
+    if (email && email !== normalizedMyEmail) {
+      return email;
+    }
+  }
+
+  return null;
+};
+
+
+
+
+ 
+export const isSelfAssignment = (user, newUserId) => {
+  if (!user?._id) return false;
+  if (!newUserId) return false;
+
+  return user._id.toString() === newUserId.toString();
+};

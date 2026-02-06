@@ -1,7 +1,10 @@
 import EmailThread from "../models/EmailThread.js";
 import mongoose from "mongoose";
 import { getGmailClient } from "../services/gmail.service.js";
-import { buildFilterQuery, } from "../utils/utils.js";
+import { buildFilterQuery, getOtherParticipantEmail, isSelfAssignment, } from "../utils/utils.js";
+import { scheduleNotification } from "../../utils/customFns/scheduleNotification.js";
+import { createNotification } from "../utils/createNotification.js";
+import { emitToAll, emitToUser } from "../../utils/socketEmitter.js";
 
 /**
  * GET /api/email/inbox
@@ -26,7 +29,9 @@ import { buildFilterQuery, } from "../utils/utils.js";
 
 export const getMailbox = async (req, res) => {
   try {
-    const query = buildFilterQuery(req.query);
+
+  
+    const query = buildFilterQuery(req);
     console.log("Mongo Query:", JSON.stringify(query, null, 2));
 
     const pageNumber = Math.max(parseInt(req.query.page) || 1, 1);
@@ -249,19 +254,21 @@ export const getSentItems = async (req, res) => {
 
 
 
-
-
 export const updateThreadMetadata = async (req, res) => {
   try {
-    const { id } = req.params; // MongoDB _id
+    const { id } = req.params;
     const updates = req.body;
 
-    // Whitelist of allowed fields
+    /**
+     * 1️⃣ Whitelist validation
+     */
     const allowedUpdates = ["category", "userId"];
     const updateKeys = Object.keys(updates);
 
-    // Validate updates
-    const isValidUpdate = updateKeys.every((key) => allowedUpdates.includes(key));
+    const isValidUpdate = updateKeys.every((key) =>
+      allowedUpdates.includes(key)
+    );
+
     if (!isValidUpdate) {
       return res.status(400).json({
         success: false,
@@ -269,24 +276,70 @@ export const updateThreadMetadata = async (req, res) => {
       });
     }
 
-    // Update the document
-    const updatedThread = await EmailThread.findByIdAndUpdate(
-      id,
-      updates,
-      { new: true, runValidators: true } // runValidators ensures category/userId are valid
-    );
-
-    if (!updatedThread) {
+    /**
+     * 2️⃣ Fetch old thread
+     */
+    const oldThread = await EmailThread.findById(id);
+    if (!oldThread) {
       return res.status(404).json({
         success: false,
         message: "Conversation not found!",
       });
     }
 
+    /**
+     * 3️⃣ Update thread
+     */
+    const updatedThread = await EmailThread.findByIdAndUpdate(
+      id,
+      updates,
+      { new: true, runValidators: true }
+    );
+
+    /**
+     * 4️⃣ Assignment diff
+     */
+    const oldUserId = oldThread.userId?.toString() || null;
+    const newUserId = updatedThread.userId?.toString() || null;
+
+ 
+    const selfAssign = isSelfAssignment(req?.user?.user, newUserId);
+
+    /**
+     * 5️⃣ Notifications (skip self-assign)
+     */
+    if (
+      updateKeys.includes("userId") &&
+      !selfAssign
+    ) {
+      await createNotification(req, updatedThread);
+    }
+
+    /**
+     * 6️⃣ Socket emits (skip self-assign)
+     */
+ 
+      const eventName = `metadata:updated-${updatedThread.companyName}`;
+
+      // Assigned → Unassigned OR Reassigned
+      if (oldUserId && !isSelfAssignment(req?.user?.user, oldUserId)) {
+        emitToUser(oldUserId, eventName, {});
+      }
+
+      // Unassigned → Assigned OR Reassigned
+      if (newUserId && (newUserId !== oldUserId)  && !isSelfAssignment(req?.user?.user, newUserId)) {
+        emitToUser(newUserId, eventName, {});
+      }
+ 
+
+    /**
+     * 7️⃣ Response
+     */
     res.status(200).json({
       success: true,
       message: "Thread updated successfully!",
       thread: updatedThread,
+       
     });
   } catch (error) {
     console.error("Error updating thread:", error);
@@ -297,8 +350,6 @@ export const updateThreadMetadata = async (req, res) => {
     });
   }
 };
-
-
 
 
 
@@ -357,6 +408,22 @@ export const markThreadAsRead = async (req, res) => {
     // ----------- 2. Update local DB -----------
     thread.unreadCount = 0;
     await thread.save();
+
+
+
+
+
+      // const eventName = `metadata:updated-${thread.companyName}`;
+      // const assignedUserId = thread.userId?.toString() || null;
+       
+      // if (assignedUserId && !isSelfAssignment(req?.user?.user, assignedUserId)) {
+      //   emitToUser(assignedUserId, eventName, {});
+      // }
+
+ 
+
+
+
 
     res.status(200).json({
       success: true,
@@ -419,7 +486,18 @@ export const deleteThread = async (req, res) => {
     }
 
     // ----------- 2. Delete from local DB -----------
-    await EmailThread.deleteOne({ threadId, companyName });
+    // await EmailThread.deleteOne({ threadId, companyName });
+
+
+    
+      // const eventName = `metadata:updated-${thread.companyName}`;
+      // const assignedUserId = thread.userId?.toString() || null;
+       
+      // if (assignedUserId && !isSelfAssignment(req?.user?.user, assignedUserId)) {
+      //   emitToUser(assignedUserId, eventName, {});
+      // }
+
+
 
     res.status(200).json({
       success: true,

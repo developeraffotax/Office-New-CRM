@@ -12,3 +12,12 @@ export const emitToUser = async (userId, event, payload) => {
     io.to(socketId).emit(event, payload);
   });
 };
+
+
+
+
+
+
+export const emitToAll = (event, payload) => {
+  io.emit(event, payload);
+};

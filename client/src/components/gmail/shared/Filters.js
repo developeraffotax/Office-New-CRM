@@ -36,6 +36,7 @@ import MarkEmailUnreadIcon from "@mui/icons-material/MarkEmailUnread";
 import ManageCategoriesModal from "../categories/ManageCategoriesModal";
 import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
 import { alpha } from "@mui/material/styles";
+import { useSelector } from "react-redux";
 
 export default function Filters({
   filters,
@@ -44,6 +45,14 @@ export default function Filters({
   categories = [],
 }) {
   const [isCategoryModal, setIsCategoryModal] = React.useState(false);
+
+  const {
+    auth: { user },
+  } = useSelector((state) => state.auth);
+
+  const isAdmin = user?.role?.name === "Admin";
+
+
 
   const [searchInput, setSearchInput] = React.useState("");
 
@@ -240,7 +249,9 @@ React.useEffect(() => {
           </FormControl>
 
           {/* 2. User Select */}
-          <FormControl size="small" sx={{ minWidth: 160 }}>
+         {
+          isAdmin && (
+             <FormControl size="small" sx={{ minWidth: 160 }}>
             <Select
               value={filters.userId || ""}
               displayEmpty
@@ -306,6 +317,8 @@ React.useEffect(() => {
               ))}
             </Select>
           </FormControl>
+          )
+         }
 
           {/* Date Picker Trigger */}
           <Button

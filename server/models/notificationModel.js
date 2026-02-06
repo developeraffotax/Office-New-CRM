@@ -42,7 +42,7 @@ const notificationSchema = new mongoose.Schema(
 
     entityType: {
       type: String,
-      enum: ["task", "job", "ticket", "goal", "general"],
+      enum: ["task", "job", "ticket", "goal", "mailbox", "general"],
       default: "general",
     }
   },

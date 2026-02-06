@@ -2029,6 +2029,7 @@ useEffect(() => {
                 // setShowJobHolder(false);
                 // setShowDue(false);
                 setActive1("");
+                setActive2("");
                 dispatch(setFilterId(""));
                 handleClearFilters();
                 dispatch(setSearchValue(""));

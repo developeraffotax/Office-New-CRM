@@ -90,6 +90,19 @@ export const useNotifications = () => {
 
 
 
+
+    if (item.entityType === "mailbox"  ) {
+        setOpen(false);
+      return navigate(`${item.redirectLink}`);
+    }
+
+
+
+
+ 
+
+
+
  
     navigate(`${item.redirectLink}?comment_taskId=${item.taskId}`);
     dispatch(setFilterId(item.taskId));

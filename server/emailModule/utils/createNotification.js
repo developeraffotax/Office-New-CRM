@@ -17,7 +17,7 @@ export const createNotification = async (req, updatedThread) => {
     taskId: `${updatedThread._id}`,
     userId: updatedThread.userId,
     type: "thread_assigned",
-    entityType: "mailbox",
+    entityType: `mailbox`,
   };
 
 

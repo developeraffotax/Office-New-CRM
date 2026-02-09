@@ -1,6 +1,11 @@
-import { io } from "../../index.js";
+// import { io } from "../../index.js";
 import notificationModel from "../../models/notificationModel.js";
+import { getSocketEmitter } from "../getSocketEmitter.js";
 import { safeRedisSmembers } from "../safeRedisSmembers.js";
+
+
+ const io = await getSocketEmitter();
+
 
 // -----------------------------
 // Send real-time notification to all user's sockets

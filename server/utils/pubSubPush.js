@@ -22,16 +22,15 @@ async function getSenderEmail(gmail, messageId) {
 }
 
 /**
- * Process a single messageAdded event: update ticket and add notification if needed
+ * Process a single messageAdded event: update ticket and enqueue notification
  */
 async function processMessageAdded(gmail, msg, yourEmail) {
   const { id: messageId, threadId } = msg;
   const senderEmail = await getSenderEmail(gmail, messageId);
 
-  console.log("SENDER EMAIL❤❤❤", senderEmail, yourEmail)
-
   if (!senderEmail || senderEmail === yourEmail) return threadId;
 
+  // --- Update ticket if exists ---
   const ticket = await ticketModel.findOneAndUpdate(
     { mailThreadId: threadId },
     { $set: { status: "Unread" }, $inc: { unreadCount: 1 } },
@@ -39,8 +38,36 @@ async function processMessageAdded(gmail, msg, yourEmail) {
   );
 
   if (ticket) {
-    await addNotificationJob({ ticket });
+    // Enqueue a generic notification job for ticket
+    await addNotificationJob({
+      type: "ticket",
+      payload: { ticket }
+    });
+    return threadId;
   }
+
+  // --- Otherwise, enqueue inbox/email notification ---
+  // const gmailMessage = await gmail.users.messages.get({
+  //   userId: "me",
+  //   id: messageId,
+  //   format: "full",
+  // });
+
+  // const headers = gmailMessage.data.payload.headers;
+  // const subject = headers.find(h => h.name === "Subject")?.value || "(No subject)";
+ 
+  // const snippet = gmailMessage.data.snippet || "";
+  
+  await addNotificationJob({
+    type: "inbox",
+    payload: {
+      // subject,
+      // snippet,
+      threadId,
+      senderEmail
+      
+    }
+  });
 
   return threadId;
 }

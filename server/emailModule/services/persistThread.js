@@ -1,24 +1,18 @@
 // services/persistThread.js
 import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
 import EmailThread from "../models/EmailThread.js";
-import { createNotificationForInboxReceive } from "../utils/createNotification.js";
-import {
-  getHeader,
-  parseEmail,
-  parseEmailList,
-  extractAttachments,
-} from "../utils/utils.js";
+import { getHeader, parseEmail, parseEmailList, extractAttachments } from "../utils/utils.js";
 import { getGmailClient } from "./gmail.service.js";
 import { decode } from "entities";
 
-export async function persistThread({ threadId, companyName }) {
+export async function persistThread({ threadId, companyName, }) {
   try {
     const gmail = await getGmailClient(companyName);
     const res = await gmail.users.threads.get({
       userId: "me",
       id: threadId,
       format: "full",
-      metadataHeaders: ["From", "To", "Subject", "Date"],
+      metadataHeaders: ["From", "To", "Subject", "Date"]
     });
 
     const messages = res.data.messages || [];
@@ -26,17 +20,16 @@ export async function persistThread({ threadId, companyName }) {
 
     const participantsMap = new Map();
     let inboxLastMessageAt = null;
-
+ 
     let sentLastMessageAt = null;
+ 
 
     let lastMessageAt = null;
-    let lastMessageSnippet = "";
+   let lastMessageSnippet = "";
 
     let unreadCount = 0;
     let attachments = [];
     const labels = new Set();
-
-    let latestInboxMessage = null;
 
     for (const msg of messages) {
       const headers = msg.payload.headers;
@@ -48,38 +41,36 @@ export async function persistThread({ threadId, companyName }) {
       const isSent = msg.labelIds.includes("SENT");
 
       // Track all labels
-      msg.labelIds.forEach((l) => labels.add(l));
+      msg.labelIds.forEach(l => labels.add(l));
 
       // Participants
       if (from.email) participantsMap.set(from.email, from);
-      toList.forEach((t) => t.email && participantsMap.set(t.email, t));
+      toList.forEach(t => t.email && participantsMap.set(t.email, t));
 
-      if (!lastMessageAt || date > lastMessageAt) {
+
+            if (!lastMessageAt || date > lastMessageAt) {
         lastMessageAt = date;
         lastMessageSnippet = msg.snippet ? decode(msg.snippet) : "";
+          
+          
       }
+
 
       // ---------------- Folder-based last message logic ----------------
       if (isInbox) {
         // Only consider messages from others for Inbox
         if (!inboxLastMessageAt || date > inboxLastMessageAt) {
           inboxLastMessageAt = date;
+          
         }
         if (isUnread) unreadCount++;
-
-        if (!latestInboxMessage || date > latestInboxMessage.date) {
-          latestInboxMessage = {
-            messageId: msg.id,
-            date,
-            isUnread,
-          };
-        }
       }
 
       if (isSent) {
         // Only consider messages from self for Sent
         if (!sentLastMessageAt || date > sentLastMessageAt) {
           sentLastMessageAt = date;
+          
         }
       }
 
@@ -90,11 +81,6 @@ export async function persistThread({ threadId, companyName }) {
     const participants = Array.from(participantsMap.values());
     const subject = getHeader(messages[0].payload.headers, "Subject");
     const labelArray = Array.from(labels);
-
-    const prevThread = await EmailThread.findOne({
-      companyName,
-      threadId,
-    }).lean();
 
     // ---------------- Upsert thread ----------------
     const threadDoc = await EmailThread.findOneAndUpdate(
@@ -114,53 +100,22 @@ export async function persistThread({ threadId, companyName }) {
         lastMessageAtSent: sentLastMessageAt,
 
         lastMessageAt: lastMessageAt,
-        lastMessageSnippet: lastMessageSnippet,
+        lastMessageSnippet: lastMessageSnippet
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
     // ---------------- Emit socket update ----------------
     const io = await getSocketEmitter();
     io.emit(`gmail:thread-delta-${companyName}`, {
       action: "updated",
-      thread: threadDoc.toObject(),
+      thread: threadDoc.toObject()
     });
 
-    const hasNewMessage =
-      !prevThread || messages.length > prevThread.messageCount;
-
-    const shouldNotify =
-      hasNewMessage &&
-      latestInboxMessage &&
-      latestInboxMessage.isUnread &&
-      (threadDoc?.userId || prevThread?.userId);
-
-    console.log("SHOULD NOTIFY ✔️✔️✔️✔️", shouldNotify);
-
-    if (shouldNotify) {
-      await createNotificationForInboxReceive(threadDoc);
-    }
   } catch (error) {
-    console.error(
-      `Failed to persist thread ${threadId} for ${companyName}:`,
-      error,
-    );
+    console.error(`Failed to persist thread ${threadId} for ${companyName}:`, error);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -181,7 +136,7 @@ export async function persistThread({ threadId, companyName }) {
 // import { connectDB } from "../../config/db.js";
 // import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
 // import EmailThread from "../models/EmailThread.js";
-
+ 
 // import {
 //   getHeader,
 //   parseEmail,
@@ -190,6 +145,9 @@ export async function persistThread({ threadId, companyName }) {
 // } from "../utils/utils.js";
 // import { getGmailClient } from "./gmail.service.js";
 // import { decode } from "entities";
+
+
+
 
 // export async function persistThread({ threadId, companyName }) {
 //   try {
@@ -226,6 +184,7 @@ export async function persistThread({ threadId, companyName }) {
 //       const isUnread = msg.labelIds.includes("UNREAD");
 //       const isInbox = msg.labelIds.includes("INBOX");
 //       const isSent = msg.labelIds.includes("SENT");
+      
 
 //       // Add participants to map (avoids duplicates automatically)
 //       if (from.email) participantsMap.set(from.email, from);
@@ -237,7 +196,8 @@ export async function persistThread({ threadId, companyName }) {
 //       if (!lastMessageAt || date > lastMessageAt) {
 //         lastMessageAt = date;
 //         lastMessageSnippet = msg.snippet ? decode(msg.snippet) : "";
-
+          
+          
 //       }
 
 //       // Track inbox/unread
@@ -249,9 +209,11 @@ export async function persistThread({ threadId, companyName }) {
 //             // Track inbox/unread
 //       if (isSent) {
 //         hasSentMessage = true;
-//         // if (isUnread) unreadCount++;
-
+//         // if (isUnread) unreadCount++;  
+        
 //       }
+
+      
 
 //       // Extract attachments
 //       const msgAttachments = extractAttachments(msg.payload);
@@ -291,10 +253,11 @@ export async function persistThread({ threadId, companyName }) {
 //     });
 
 //     // gpt emit or boradcast socket event here so i can update all the users realtime
-
+       
 //     console.log("EMAIL THREAD CREATED❤✔")
 
 //   } catch (error) {
 //     console.error(`Failed to persist thread ${threadId} for ${companyName}:`, error);
 //   }
 // }
+

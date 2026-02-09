@@ -32,23 +32,23 @@ export const createNotification = async (req, updatedThread) => {
 
 
 
-export const createNotificationForInboxReceive = async ( updatedThread) => {
-  const payload = {
-    title: "New Email Received",
-    redirectLink: `/mail?folder=inbox&companyName=${updatedThread?.companyName}`,
-    description: `New Email Received | ${updatedThread?.companyName}
-          ✔ Subject: ${updatedThread?.subject}
-          ✔ From: ${getOtherParticipantEmail(updatedThread?.participants, updatedThread?.companyName === "affotax" ? "info@affotax.com" : "Admin@outsourceaccountings.co.uk")}
-          `,
-    taskId: `${updatedThread._id}`,
-    userId: updatedThread.userId,
-    type: "inbox_receive",
-    entityType: `mailbox`,
-  };
+// export const createNotificationForInboxReceive = async ( updatedThread) => {
+//   const payload = {
+//     title: "New Email Received",
+//     redirectLink: `/mail?folder=inbox&companyName=${updatedThread?.companyName}`,
+//     description: `New Email Received | ${updatedThread?.companyName}
+//           ✔ Subject: ${updatedThread?.subject}
+//           ✔ From: ${getOtherParticipantEmail(updatedThread?.participants, updatedThread?.companyName === "affotax" ? "info@affotax.com" : "Admin@outsourceaccountings.co.uk")}
+//           `,
+//     taskId: `${updatedThread._id}`,
+//     userId: updatedThread.userId,
+//     type: "inbox_receive",
+//     entityType: `mailbox`,
+//   };
 
  
-  scheduleNotification(true, payload);
-};
+//   scheduleNotification(true, payload);
+// };
 
 
 

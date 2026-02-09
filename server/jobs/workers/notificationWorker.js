@@ -2,17 +2,14 @@ import dotenv from "dotenv";
 import path from "path";
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
- 
 import { Worker } from "bullmq";
-import { createRedisClient, connection as redis } from "../../utils/ioredis.js";
-import { createAdapter } from "@socket.io/redis-adapter";
-import { Server as SocketIOServer } from "socket.io";
+import { connection as redis } from "../../utils/ioredis.js";
+ 
 import userModel from "../../models/userModel.js";
 import notificationModel from "../../models/notificationModel.js";
 import { connectDB } from "../../config/db.js";
 import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
-
- 
+import EmailThread from "../../emailModule/models/EmailThread.js";
 
 // ---------------------------
 // CONNECT MONGO
@@ -21,26 +18,15 @@ await connectDB();
 console.log("✅ MongoDB connected for worker");
 
 // ---------------------------
-// INIT SOCKET.IO WITH REDIS ADAPTER
+// INIT SOCKET.IO
 // ---------------------------
-// const pubClient = createRedisClient();
-// const subClient = createRedisClient();
-
-// await Promise.all([
-//   new Promise((res) => pubClient.once("ready", res)),
-//   new Promise((res) => subClient.once("ready", res)),
-// ]);
-
-// const io = new SocketIOServer(); // no HTTP server
-// io.adapter(createAdapter(pubClient, subClient));
-
- const io = await getSocketEmitter();
+const io = await getSocketEmitter();
 console.log("🔗 Worker Socket.IO Redis Adapter initialized");
 
 // ---------------------------
-// HELPER: SEND SOCKET NOTIFICATION
+// GENERIC SOCKET NOTIFICATION
 // ---------------------------
-const sendSocketNotification = async (notification, ticket, userId) => {
+const sendSocketNotification = async (notification, payload, userId, type = "ticket") => {
   if (!userId) return;
 
   const sockets = await redis.smembers(`sockets:user:${userId.toString()}`);
@@ -48,49 +34,89 @@ const sendSocketNotification = async (notification, ticket, userId) => {
 
   for (const socketId of sockets) {
     io.to(socketId).emit("newNotification", { notification });
-    io.to(socketId).emit("ticket-updated", {
-      ticketId: ticket._id,
-      status: ticket.status,
-      unreadCount: ticket.unreadCount,
-    });
+
+    // For tickets, emit additional ticket info
+    if (type === "ticket" && payload?._id) {
+      io.to(socketId).emit("ticket-updated", {
+        ticketId: payload._id,
+        status: payload.status,
+        unreadCount: payload.unreadCount,
+      });
+    }
   }
 };
 
 // ---------------------------
-// PROCESS NOTIFICATION JOB
+// PROCESS NOTIFICATION JOB (GENERIC)
 // ---------------------------
 const processNotificationJob = async (job) => {
-  const { ticket } = job.data;
+  const { type, payload } = job.data;
 
-  const lastMessageSentBy = await userModel.findOne({ name: ticket.lastMessageSentBy });
-  const jobHolder = await userModel.findOne({ name: ticket.jobHolder });
+  if (!type || !payload) return true;
 
-  // Notification to jobHolder
-  if (jobHolder) {
-    const notification1 = await notificationModel.create({
-      title: "Reply to a ticket received",
-      redirectLink: `/ticket/detail/${ticket._id}`,
-      description: `You've received a response to a ticket with the subject "${ticket.subject}" from "${ticket.companyName}" and client "${ticket.clientName}".`,
-      taskId: ticket._id,
-      userId: jobHolder._id,
-      type: "ticket_received",
-      entityType: "ticket",
-    });
-    await sendSocketNotification(notification1, ticket, jobHolder._id);
-  }
+  switch (type) {
+    case "ticket": {
+      // Ticket notification
+      const { ticket } = payload;
+      if (!ticket) return true;
 
-  // Notification to lastMessageSentBy if different
-  if (lastMessageSentBy && lastMessageSentBy._id.toString() !== jobHolder?._id?.toString()) {
-    const notification2 = await notificationModel.create({
-      title: "Reply to a ticket received",
-      redirectLink: `/ticket/detail/${ticket._id}`,
-      description: `You've received a response to a ticket with the subject "${ticket.subject}" from "${ticket.companyName}" and client "${ticket.clientName}".`,
-      taskId: ticket._id,
-      userId: lastMessageSentBy._id,
-      type: "ticket_received",
-      entityType: "ticket",
-    });
-    await sendSocketNotification(notification2, ticket, lastMessageSentBy._id);
+      const jobHolder = await userModel.findOne({ name: ticket.jobHolder });
+      const lastMessageSentBy = await userModel.findOne({ name: ticket.lastMessageSentBy });
+
+      const recipients = [];
+      if (jobHolder) recipients.push({ user: jobHolder, title: "Reply to a ticket received" });
+      if (lastMessageSentBy && lastMessageSentBy._id.toString() !== jobHolder?._id?.toString()) {
+        recipients.push({ user: lastMessageSentBy, title: "Reply to a ticket received" });
+      }
+
+      for (const { user, title } of recipients) {
+        const notification = await notificationModel.create({
+          title,
+          redirectLink: `/ticket/detail/${ticket._id}`,
+          description: `You've received a response to a ticket with the subject "${ticket.subject}" from "${ticket.companyName}" and client "${ticket.clientName}".`,
+          taskId: ticket._id,
+          userId: user._id,
+          type: "ticket_received",
+          entityType: "ticket",
+        });
+
+        await sendSocketNotification(notification, ticket, user._id, "ticket");
+      }
+      break;
+    }
+
+    case "inbox": {
+      // Inbox / email notification
+      const { threadId, senderEmail,  } = payload;
+
+
+      const thread = await EmailThread.findOne({threadId: threadId}).lean();
+
+      if(!thread) return true;
+
+
+
+      const notification = await notificationModel.create({
+        title: `New email received: ${thread?.subject}`,
+        redirectLink: `/mail?folder=inbox&companyName=${thread?.companyName}`,
+ 
+         description: `${thread?.snippet || "You have received a new email"}
+          ✔ Subject: ${updatedThread?.subject}
+          ✔ From: ${senderEmail}
+          `,
+        taskId: threadId,
+        userId: thread.userId,
+        type: "email_received",
+        entityType: "mailbox",
+        // meta: { receivedAt },
+      });
+
+      await sendSocketNotification(notification, thread, thread?.userId, "inbox");
+      break;
+    }
+
+    default:
+      console.warn(`⚠️ Unknown notification type: ${type}`);
   }
 
   return true;

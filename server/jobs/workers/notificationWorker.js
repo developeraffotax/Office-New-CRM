@@ -101,7 +101,7 @@ const processNotificationJob = async (job) => {
         redirectLink: `/mail?folder=inbox&companyName=${thread?.companyName}`,
  
          description: `${thread?.snippet || "You have received a new email"}
-          ✔ Subject: ${updatedThread?.subject}
+          ✔ Subject: ${thread?.subject}
           ✔ From: ${senderEmail}
           `,
         taskId: threadId,

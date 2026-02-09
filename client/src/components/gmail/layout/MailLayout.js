@@ -10,6 +10,8 @@ import CreateLeadModal from "../shared/CreateLeadModal";
 import { HiOutlineMailOpen, HiOutlineTrash } from "react-icons/hi";
  import { IoMdClose } from "react-icons/io";
 import { SelectionHeader } from "../shared/FloatingSelectionToolbar";
+import CommentList from "../comments/CommentList";
+import { useSelector } from "react-redux";
  
 
 export default function MailLayout({
@@ -33,6 +35,12 @@ export default function MailLayout({
     participants: []
   });
 
+
+
+    const {
+    auth: { user },
+  } = useSelector((state) => state.auth);
+  
  
    const [createTicketModal, setCreateTicketModal] = useState({
     _id: "",
@@ -46,6 +54,14 @@ export default function MailLayout({
     isOpen: false,
     form: {}
    });
+
+
+
+   // Inside your Threads List component
+const [comment , setComment] = useState({
+  show: false,
+  threadId: null
+});
 
 
 
@@ -77,6 +93,10 @@ const toggleThread = (threadId, index, event) => {
 
 
 const clearSelection = () => setSelectedThreads(new Set());
+
+
+
+
 
   return (
     <div className="flex h-[105vh] bg-white overflow-hidden">
@@ -116,6 +136,8 @@ const clearSelection = () => setSelectedThreads(new Set());
 
           selectedThreads={selectedThreads}
           toggleThread={toggleThread}
+
+          setComment={setComment}
         />
 
         <Pagination pagination={pagination} setFilters={setFilters} />
@@ -132,6 +154,7 @@ const clearSelection = () => setSelectedThreads(new Set());
           }
 
           markAsRead={markAsRead}
+          
         />
       )}
 
@@ -163,6 +186,20 @@ const clearSelection = () => setSelectedThreads(new Set());
           myCompany={companyName}
         />
       )}
+
+
+
+
+      {/* Comments */}
+      <CommentList threadId={comment.threadId} users={users} currentUserId={user.id} onClose={() => setComment({
+        show: false,
+        threadId: null
+      })}/>
     </div>
   );
 }
+
+
+// 19c423082427fd80
+
+// 66cc64ce0d25583e212500d1

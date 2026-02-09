@@ -5,6 +5,7 @@ import { buildFilterQuery, getOtherParticipantEmail, isSelfAssignment, } from ".
 import { scheduleNotification } from "../../utils/customFns/scheduleNotification.js";
 import { createNotification } from "../utils/createNotification.js";
 import { emitToAll, emitToUser } from "../../utils/socketEmitter.js";
+import Comment from "../models/Comment.js";
 
 /**
  * GET /api/email/inbox
@@ -45,9 +46,41 @@ export const getMailbox = async (req, res) => {
       EmailThread.countDocuments(query),
     ]);
 
+
+
+      const threadIds = threads.map(t => t._id);
+    const userId = req.user.user._id;
+
+    // 2️⃣ Aggregate unread comment counts per thread for this user
+    const unreadCounts = await Comment.aggregate([
+      {
+        $match: {
+          entityId: { $in: threadIds },
+          "readBy.userId": { $ne: new mongoose.Types.ObjectId(userId) }, // only unread for this user
+        },
+      },
+      {
+        $group: {
+          _id: "$entityId",
+          unreadCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const unreadMap = {};
+    unreadCounts.forEach(u => {
+      unreadMap[u._id.toString()] = u.unreadCount;
+    });
+
+    // 3️⃣ Map unread count into threads
+    const enhancedThreads = threads.map(thread => ({
+      ...thread,
+      unreadComments: unreadMap[thread._id.toString()] || 0, // default 0 if no unread comments
+    }));
+
     res.json({
       success: true,
-      threads,
+      threads: enhancedThreads,
       pagination: { page: pageNumber, limit: pageSize, total, totalPages: Math.ceil(total / pageSize) },
     });
   } catch (err) {

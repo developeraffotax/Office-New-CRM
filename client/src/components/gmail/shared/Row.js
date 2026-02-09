@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FiPaperclip, FiMoreVertical, FiUserPlus, FiChevronDown } from "react-icons/fi";
+import { FiPaperclip, FiMoreVertical, FiUserPlus, FiChevronDown, FiMessageSquare } from "react-icons/fi";
 import clsx from "clsx";
 import AttachmentChip from "./attachments/AttachmentChip";
 import { MdDeleteOutline } from "react-icons/md";
@@ -30,7 +30,7 @@ function parseEmail(str) {
 }
 
 
-export default function Row({ thread, users, handleUpdateThread, setEmailDetail, categories, setCreateTicketModal, setCreateLeadModal, deleteThread, filters, selected, toggleSelect, index }) {
+export default function Row({ thread, users, handleUpdateThread, setEmailDetail, categories, setCreateTicketModal, setCreateLeadModal, deleteThread, filters, selected, toggleSelect, index, setComment }) {
   const [assignOpen, setAssignOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -79,7 +79,7 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
   };
 
 
-
+console.log("THREAD IS 🌹🌹🌹🌹🌹🌹🌹", thread)
 //  hover:shadow-[inset_4px_0_0_0_#3b82f6]
 
   return (
@@ -94,7 +94,7 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
       {/* {thread.unreadCount > 0 && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />} */}
 
       {/* ================= MAIN ROW ================= */}
-      <div className="grid items-center px-4 py-3 grid-cols-[1rem_15rem_1fr_auto_auto_7rem] gap-5 ">
+      <div className="grid items-center px-4 py-3 grid-cols-[1rem_15rem_1fr_auto_auto_auto_7rem] gap-5 ">
 
           {/* Select checkbox */}
         <input
@@ -288,7 +288,7 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
               Lead
             </button>
 
-
+  
           </div>
 
           {/* More Options */}
@@ -339,7 +339,33 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
           </div>
         </div>
 
+
+
+            <div>
+                 <button
+  onClick={() => {
+    setComment({
+      show: true,
+      threadId: thread._id,
+    });
+  }}
+  className="relative p-2.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 group active:scale-95"
+  title="View Comments"
+>
+  {/* The Icon */}
+  <FiMessageSquare size={20} className="group-hover:fill-blue-50/10" />
+
+  {/* The Unread Badge */}
+  {thread?.unreadComments > 0 && (
+    <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white ring-2 ring-white animate-in zoom-in">
+      {thread.unreadComments > 99 ? '99+' : thread.unreadComments}
+    </span>
+  )}
+</button>
+            </div>
+
         {/* Date/Time */}
+
         <div className="text-[11px] text-right text-gray-500 font-medium tabular-nums">
           {new Date(thread.lastMessageAtInbox).toLocaleDateString("en-US", {
             month: "short",

@@ -95,6 +95,11 @@ const processNotificationJob = async (job) => {
       if(!thread) return true;
 
 
+      const myEmail = thread.companyName === "affotax" ? "info@affotax.com" : "Admin@outsourceaccountings.co.uk"
+
+        // ONLY notify if sender is not the current user
+      if (senderEmail.toLowerCase() === myEmail.toLowerCase()) return true;
+       
 
       const notification = await notificationModel.create({
         title: `New email received: ${thread?.subject}`,

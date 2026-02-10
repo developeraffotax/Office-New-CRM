@@ -514,6 +514,19 @@ export const deleteThread = async (req, res) => {
       });
 
 
+
+
+ 
+
+
+
+
+      // await gmailClient.users.threads.modify({
+      //   userId: "me",
+      //   id: thread.threadId,
+      //   removeLabelIds: ["INBOX", "SENT"],
+      //   addLabelIds: ["TRASH"],
+      // });
        
     }
 

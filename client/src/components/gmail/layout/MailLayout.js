@@ -60,7 +60,8 @@ export default function MailLayout({
    // Inside your Threads List component
 const [comment , setComment] = useState({
   show: false,
-  threadId: null
+  threadId: null,
+  threadSubject: ""
 });
 
 
@@ -191,7 +192,7 @@ const clearSelection = () => setSelectedThreads(new Set());
 
 
       {/* Comments */}
-      <CommentList threadId={comment.threadId} users={users} currentUserId={user.id} onClose={() => setComment({
+      <CommentList threadSubject={comment.threadSubject} threadId={comment.threadId} users={users} currentUserId={user.id} onClose={() => setComment({
         show: false,
         threadId: null
       })}/>

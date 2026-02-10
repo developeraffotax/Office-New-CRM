@@ -127,38 +127,64 @@ export const getComments = async (req, res) => {
     };
 
     const comments = await Comment.find(query)
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(Number(limit))
-      .populate("author", "name email")
+      .sort({ createdAt: 1 })
+      .populate("author", "name email avatar")
       .populate("mentions", "name email")
+       .populate("readBy.userId", "name email avatar")
       .lean();
 
     // 🔔 Mark unread comments as read
     const unreadIds = comments
       .filter(
-        c => !c.readBy?.some(r => r.user?.toString() === userId.toString())
+        c => !c.readBy?.some(r => r.userId?._id?.toString() === userId.toString())
       )
       .map(c => c._id);
 
+
+  //       const unreadIds = comments
+  // .filter(c =>
+  //   c.author?._id.toString() !== userId?.toString() &&
+  //   !c.readBy?.some(r => r?.userId?._id.toString() === userId.toString())
+  // )
+  // .map(c => c._id);
+
+  
+    // if (unreadIds.length > 0) {
+    //   await Comment.updateMany(
+    //     { _id: { $in: unreadIds } },
+    //     {
+    //       $addToSet: {
+    //         readBy: {
+    //           userId: new mongoose.Types.ObjectId(userId),
+    //           readAt: new Date(),
+    //         },
+    //       },
+    //     }
+    //   );
+    // }
+
+
     if (unreadIds.length > 0) {
-      await Comment.updateMany(
-        { _id: { $in: unreadIds } },
-        {
-          $addToSet: {
-            readBy: {
-              userId: new mongoose.Types.ObjectId(userId),
-              readAt: new Date(),
-            },
-          },
-        }
-      );
+  await Comment.updateMany(
+    {
+      _id: { $in: unreadIds },
+      "readBy.userId": { $ne: new mongoose.Types.ObjectId(userId) },
+    },
+    {
+      $push: {
+        readBy: {
+          userId: new mongoose.Types.ObjectId(userId),
+          readAt: new Date(),
+        },
+      },
     }
+  );
+}
 
     res.json({
       data: comments,
-      page: Number(page),
-      limit: Number(limit),
+      // page: Number(page),
+      // limit: Number(limit),
     });
   } catch (err) {
     console.error("GET COMMENTS ERROR:", err);

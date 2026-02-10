@@ -82,7 +82,7 @@ const commentSchema = new Schema(
     readBy: [
       {
         userId: { type: Types.ObjectId, ref: "Users" },
-        readAt: { type: Date, default: Date.now },
+        readAt: Date,
       },
     ],
 

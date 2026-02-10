@@ -347,6 +347,7 @@ console.log("THREAD IS 🌹🌹🌹🌹🌹🌹🌹", thread)
     setComment({
       show: true,
       threadId: thread._id,
+      threadSubject: thread?.subject
     });
   }}
   className="relative p-2.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 group active:scale-95"

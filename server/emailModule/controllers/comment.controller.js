@@ -1,28 +1,31 @@
- 
-
 import mongoose from "mongoose";
 import Comment from "../models/Comment.js";
 import EmailThread from "../models/EmailThread.js";
 import { createNotification } from "../utils/createNotification.js";
 import { scheduleNotification } from "../../utils/customFns/scheduleNotification.js";
-import { emitToUser } from "../../utils/socketEmitter.js";
+import { emitToAll, emitToUser } from "../../utils/socketEmitter.js";
 import { getOtherParticipantEmail } from "../utils/utils.js";
 
 export const addComment = async (req, res) => {
   try {
-    const { threadId, content, isInternal = false, mentions = [], parentComment = null } = req.body;
+    const {
+      threadId,
+      content,
+      isInternal = false,
+      mentions = [],
+      parentComment = null,
+    } = req.body;
     const userId = req.user.user._id;
+ 
 
-    console.log("USERS❤️❤️❤️❤️❤️❤️", mentions)
-
-    // 🔍 Validate thread 
+    // 🔍 Validate thread
     const thread = await EmailThread.findById(threadId);
     if (!thread) {
       return res.status(404).json({ message: "Thread not found" });
     }
 
     // Normalize mentions (schema expects ObjectId[])
-    const mentionIds = mentions.map(id => new mongoose.Types.ObjectId(id));
+    const mentionIds = mentions.map((id) => new mongoose.Types.ObjectId(id));
 
     const comment = await Comment.create({
       entity: "EmailThread",
@@ -31,7 +34,9 @@ export const addComment = async (req, res) => {
       content,
       isInternal,
       mentions: mentionIds,
-      parentComment: parentComment ? new mongoose.Types.ObjectId(parentComment) : null,
+      parentComment: parentComment
+        ? new mongoose.Types.ObjectId(parentComment)
+        : null,
       readBy: [
         {
           userId: new mongoose.Types.ObjectId(userId),
@@ -40,58 +45,36 @@ export const addComment = async (req, res) => {
       ],
     });
 
-
-
-    const notificationRecepients = new Set([...mentions, thread?.userId?.toString()])
-
+    const notificationRecepients = new Set([
+      ...mentions,
+      thread?.userId?.toString(),
+    ]);
 
     for (const recepient_id of notificationRecepients) {
+      if (recepient_id !== userId) {
+ 
 
-      if(recepient_id !== userId) {
-         
-    console.log(recepient_id, userId)
-
-
-const payload = {
-    title: "New Comment 💬",
-    redirectLink: `/mail?folder=inbox&companyName=${thread?.companyName}`,
-    description: `${req.user.user.name} added a new comment!
+        const payload = {
+          title: "New Comment 💬",
+          redirectLink: `/mail?folder=inbox&companyName=${thread?.companyName}`,
+          description: `${req.user.user.name} added a new comment!
           ✔ Subject: ${thread?.subject}
           ✔ From: ${getOtherParticipantEmail(thread?.participants, thread?.companyName === "affotax" ? "info@affotax.com" : "Admin@outsourceaccountings.co.uk")}
           `,
-    taskId: `${thread._id}`,
-    userId: recepient_id,
-    type: "comment_received",
-    entityType: `mailbox`,
-  };
+          taskId: `${thread._id}`,
+          userId: recepient_id,
+          type: "comment_received",
+          entityType: `mailbox`,
+        };
 
-   scheduleNotification(true, payload);
+        scheduleNotification(true, payload);
 
-
-
-
-       
-          const eventName = `metadata:updated-${thread.companyName}`;
-    
-          emitToUser(recepient_id, eventName, {});
-
-
-  }
-
+      }
     }
 
-
-
-   
- 
-        /**
-         * 6️⃣ Socket emits (skip self-assign)
-         */
-
-    
-         
-
-
+    const eventName = `comments:updated-${thread.companyName}`;
+    console.log("eventName", eventName)
+    emitToAll(eventName, { threadIds: [threadId] });
 
     res.status(201).json({
       success: true,
@@ -115,11 +98,74 @@ const payload = {
 
 
 
+
+export const getUnreadCounts = async (req, res) => {
+  try {
+    const { threadIds } = req.body;
+    const userId = req.user.user._id;
+
+    if (!Array.isArray(threadIds) || threadIds.length === 0) {
+      return res.json({ success: true, unreadCounts: {} });
+    }
+
+    const unreadCounts = await Comment.aggregate([
+      {
+        $match: {
+          entityId: {
+            $in: threadIds.map((id) => new mongoose.Types.ObjectId(id)),
+          },
+          "readBy.userId": { $ne: new mongoose.Types.ObjectId(userId) }, // only unread for this user
+        },
+      },
+      {
+        $group: {
+          _id: "$entityId",
+          unreadCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const unreadMap = {};
+    unreadCounts.forEach((u) => {
+      unreadMap[u._id.toString()] = u.unreadCount;
+    });
+
+    res.json({ success: true, unreadCounts: unreadMap });
+  } catch (err) {
+    console.error("❌ Unread count error:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch unread counts" });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export const getComments = async (req, res) => {
   try {
     const { threadId } = req.params;
     const { page = 1, limit = 20 } = req.query;
     const userId = req.user.user._id;
+
+
+     const thread = await EmailThread.findById(threadId);
+    if (!thread) {
+      return res.status(404).json({ message: "Thread not found" });
+    }
+
 
     const query = {
       entity: "EmailThread",
@@ -130,56 +176,42 @@ export const getComments = async (req, res) => {
       .sort({ createdAt: 1 })
       .populate("author", "name email avatar")
       .populate("mentions", "name email")
-       .populate("readBy.userId", "name email avatar")
+      .populate("readBy.userId", "name email avatar")
       .lean();
 
     // 🔔 Mark unread comments as read
     const unreadIds = comments
       .filter(
-        c => !c.readBy?.some(r => r.userId?._id?.toString() === userId.toString())
+        (c) =>
+          !c.readBy?.some(
+            (r) => r.userId?._id?.toString() === userId.toString(),
+          ),
       )
-      .map(c => c._id);
-
-
-  //       const unreadIds = comments
-  // .filter(c =>
-  //   c.author?._id.toString() !== userId?.toString() &&
-  //   !c.readBy?.some(r => r?.userId?._id.toString() === userId.toString())
-  // )
-  // .map(c => c._id);
-
-  
-    // if (unreadIds.length > 0) {
-    //   await Comment.updateMany(
-    //     { _id: { $in: unreadIds } },
-    //     {
-    //       $addToSet: {
-    //         readBy: {
-    //           userId: new mongoose.Types.ObjectId(userId),
-    //           readAt: new Date(),
-    //         },
-    //       },
-    //     }
-    //   );
-    // }
-
+      .map((c) => c._id);
+ 
 
     if (unreadIds.length > 0) {
-  await Comment.updateMany(
-    {
-      _id: { $in: unreadIds },
-      "readBy.userId": { $ne: new mongoose.Types.ObjectId(userId) },
-    },
-    {
-      $push: {
-        readBy: {
-          userId: new mongoose.Types.ObjectId(userId),
-          readAt: new Date(),
+      await Comment.updateMany(
+        {
+          _id: { $in: unreadIds },
+          "readBy.userId": { $ne: new mongoose.Types.ObjectId(userId) },
         },
-      },
+        {
+          $push: {
+            readBy: {
+              userId: new mongoose.Types.ObjectId(userId),
+              readAt: new Date(),
+            },
+          },
+        },
+      );
     }
-  );
-}
+
+
+
+    const eventName = `comments:updated-${thread?.companyName}`;
+
+    emitToUser(userId ,eventName, { threadIds: [threadId] });
 
     res.json({
       data: comments,
@@ -191,6 +223,11 @@ export const getComments = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+
+
+
 
 
 
@@ -254,52 +291,6 @@ export const deleteComment = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
 // export const addComment = async (req, res) => {
 //   try {
 //     const { threadId, content, attachments, isInternal, mentions = [] } = req.body;
@@ -328,14 +319,12 @@ export const deleteComment = async (req, res) => {
 //       ],
 //     })
 
-
 //           const eventName = `metadata:updated-${"outsource"}`;
-    
+
 //           // Assigned → Unassigned OR Reassigned
 //           // if (mentionsArr.length > 0) {
 //           //   emitToUser(oldUserId, eventName, {});
 //           // }
-
 
 //     res.status(201).json({
 //       success: true
@@ -345,7 +334,6 @@ export const deleteComment = async (req, res) => {
 //     res.status(500).json({ message: "Server error" });
 //   }
 // };
-
 
 // /**
 //  * Get all comments for a thread (with pagination)
@@ -363,7 +351,6 @@ export const deleteComment = async (req, res) => {
 //       .populate("userId", "name email")
 //       .populate("mentions.userId", "name email");
 
-
 //       console.log("COMMENTS", comments)
 //     // Mark fetched comments as read for the user
 //     const unreadCommentIds = comments
@@ -376,7 +363,6 @@ export const deleteComment = async (req, res) => {
 //         { $push: { readBy: { userId, readAt: new Date() } } }
 //       );
 
-     
 //     }
 
 //     res.json(comments);
@@ -407,50 +393,3 @@ export const deleteComment = async (req, res) => {
 //     res.status(500).json({ message: "Server error" });
 //   }
 // };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 

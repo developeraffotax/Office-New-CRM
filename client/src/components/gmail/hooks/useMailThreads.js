@@ -251,6 +251,71 @@ export function useMailThreads({ endpoint }) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  // ---------------- Fetch unread counts separately ----------------
+const fetchUnreadCounts = useCallback(async (threadIds) => {
+  if (!threadIds || threadIds.length === 0) return;
+
+  try {
+    const { data } = await axios.post(
+      `${process.env.REACT_APP_API_URL}/api/v1/gmail/comments/unread`,
+      { threadIds }
+    );
+
+    setThreads(prev =>
+      prev.map(t =>
+        threadIds.includes(t._id)
+          ? { ...t, unreadComments: data.unreadCounts[t._id] || 0 }
+          : t
+      )
+    );
+  } catch (err) {
+    console.error("Failed to fetch unread counts:", err);
+  }
+}, []);
+
+  // ---------------- Fetch unread counts when threads are loaded ----------------
+  useEffect(() => {
+    if (threads.length > 0) {
+      const threadIds = threads.map((t) => t._id);
+      fetchUnreadCounts(threadIds);
+    }
+  }, [threads.map((t) => t._id).join(","), fetchUnreadCounts]); // stable dependency
+
+
+
+
+
+      // ---------------- Socket listener for meta updates ----------------
+useEffect(() => {
+  if (!socket) return;
+
+  const handleCommentsUpdated = ({ threadIds }) => {
+
+    console.log("THE THREADS IDS", threadIds)
+    if (!threadIds || threadIds.length === 0) return;
+    fetchUnreadCounts(threadIds);
+  };
+
+  socket.on(`comments:updated-${companyName}`, handleCommentsUpdated);
+  return () => socket.off(`comments:updated-${companyName}`, handleCommentsUpdated);
+}, [socket, companyName, fetchUnreadCounts]);
+
+
   return {
     threads,
     loading,

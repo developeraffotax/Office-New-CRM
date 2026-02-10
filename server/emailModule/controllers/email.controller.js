@@ -33,7 +33,7 @@ export const getMailbox = async (req, res) => {
 
   
     const query = buildFilterQuery(req);
-    console.log("Mongo Query:", JSON.stringify(query, null, 2));
+    // console.log("Mongo Query:", JSON.stringify(query, null, 2));
 
     const pageNumber = Math.max(parseInt(req.query.page) || 1, 1);
     const pageSize = Math.min(parseInt(req.query.limit) || 20, 100);
@@ -145,8 +145,7 @@ export const getMailbox = async (req, res) => {
 //     andFilters.push({ category });
 //   }
 // }
-//     console.log("THE QUERY IS 👍😁", query)
-//     if (unreadOnly === "true") {
+ //     if (unreadOnly === "true") {
 //       query.unreadCount = { $gt: 0 };
 //     }
 

@@ -574,7 +574,7 @@ export default function Thread({
     }));
   };
 
-  console.log("DECRYPTED MESSAGES❤✔❤✔❤✔❤", emailDetail?.decryptedMessages)
+ 
 
   return (
     <div

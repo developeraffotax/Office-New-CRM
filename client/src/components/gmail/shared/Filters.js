@@ -259,7 +259,7 @@ React.useEffect(() => {
               IconComponent={FiChevronDown}
               renderValue={(selected) => {
                 const user = users.find((u) => u._id === selected);
-                console.log("SELECTED", selected)
+              
                 if (!selected) {
                   return (
                     <Box

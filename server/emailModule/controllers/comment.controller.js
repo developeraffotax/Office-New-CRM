@@ -73,7 +73,7 @@ export const addComment = async (req, res) => {
     }
 
     const eventName = `comments:updated-${thread.companyName}`;
-    console.log("eventName", eventName)
+ 
     emitToAll(eventName, { threadIds: [threadId] });
 
     res.status(201).json({
@@ -351,7 +351,7 @@ export const deleteComment = async (req, res) => {
 //       .populate("userId", "name email")
 //       .populate("mentions.userId", "name email");
 
-//       console.log("COMMENTS", comments)
+ 
 //     // Mark fetched comments as read for the user
 //     const unreadCommentIds = comments
 //       .filter(c => !c.readBy.some(r => r.userId.toString() === userId.toString()))

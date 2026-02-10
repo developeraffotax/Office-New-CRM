@@ -35,7 +35,7 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
   const [updating, setUpdating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // console.log("THREAD", thread);
+ 
 
 
   const attachments = thread.attachments || [];

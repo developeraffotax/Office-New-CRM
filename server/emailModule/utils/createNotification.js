@@ -20,12 +20,7 @@ export const createNotification = async (req, updatedThread) => {
     entityType: `mailbox`,
   };
 
-
-  console.log({
-    res: req.user?.user?._id !== updatedThread.userId,
-    reqId: req.user?.user?._id,
-    up: updatedThread.userId
-  })
+ 
   scheduleNotification(true, payload);
 };
 

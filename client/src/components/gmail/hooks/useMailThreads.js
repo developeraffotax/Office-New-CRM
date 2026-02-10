@@ -205,9 +205,7 @@ export function useMailThreads({ endpoint }) {
 
     const handler = ({ action, thread }) => {
 
-
-      console.log("ACTION", action)
-      console.log("thread", thread)
+ 
       setThreads((prev) => {
         let newThreads;
 
@@ -306,7 +304,7 @@ useEffect(() => {
 
   const handleCommentsUpdated = ({ threadIds }) => {
 
-    console.log("THE THREADS IDS", threadIds)
+    
     if (!threadIds || threadIds.length === 0) return;
     fetchUnreadCounts(threadIds);
   };

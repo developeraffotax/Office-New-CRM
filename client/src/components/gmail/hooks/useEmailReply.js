@@ -44,12 +44,7 @@ const normalizeEmails = (list, self, type) => {
     }
   });
 
-  console.log({
-    type,
-    list,
-    self,
-    result: [...set],
-  });
+ 
 
   return [...set];
 };
@@ -103,7 +98,7 @@ export function useEmailReply({
 
   /* ---------- auto population ---------- */
 
-  console.log("EMAIL DETAILS", emailDetail)
+ 
 
   
 useEffect(() => {
@@ -129,8 +124,7 @@ useEffect(() => {
   const normalizedTo = normalizeEmails(toList, myEmail, "TO");
   const normalizedCc = normalizeEmails(ccList, myEmail, "CC");
 
-  console.log("FROM", from)
-  console.log("NORM FROM", normalizedFrom)
+ 
 
   // ----- reply mode logic -----
   if (mode === "reply") {

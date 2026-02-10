@@ -37,7 +37,7 @@ export default function CreateTicketModal({ createTicketModal, setCreateTicketMo
   const allClientJobData = async () => {
     try {
       const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/client/tickets/clients`);
-      console.log("DATA", data)
+      
       if (data) setJobData(data?.clients || []);
     } catch (error) {
       toast.error(error?.response?.data?.message || "Error fetching clients");

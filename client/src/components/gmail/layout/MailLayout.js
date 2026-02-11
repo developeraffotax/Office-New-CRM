@@ -145,7 +145,9 @@ const clearSelection = () => setSelectedThreads(new Set());
       </div>
 
       {emailDetail.show && (
-        <Thread
+         
+
+          <Thread
           
           company={companyName}
           threadId={emailDetail.threadId}
@@ -157,6 +159,8 @@ const clearSelection = () => setSelectedThreads(new Set());
           markAsRead={markAsRead}
           
         />
+
+        
       )}
 
 

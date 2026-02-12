@@ -5,29 +5,58 @@ import { TbLoader2 } from "react-icons/tb";
 import Select from "react-select";
 import axios from "axios";
 import CustomEditorNew from "../../../utlis/CustomEditorNew";
-import { sortOptions, HighlightedOption, } from "../../Tickets/HighlightedOption";
+import {
+  sortOptions,
+  HighlightedOption,
+} from "../../Tickets/HighlightedOption";
 import { useEmailReply } from "../hooks/useEmailReply";
 import EmailChipInput from "./EmailChipInput";
+import toast from "react-hot-toast";
+import AIReplySelectorNew from "../../ai/AIReplySelectorNew";
+ 
 
-export default function Reply({ company, emailDetail, getEmailDetail, setShowReplyEditor, }) {
-
-  const { to, setTo, cc, setCc, bcc, setBcc, message, setMessage, files, addFiles, removeFile, send, loading, } = useEmailReply({ companyName: company, emailDetail });
+export default function Reply({
+  company,
+  emailDetail,
+  getEmailDetail,
+  setShowReplyEditor,
+}) {
+  const {
+    to,
+    setTo,
+    cc,
+    setCc,
+    bcc,
+    setBcc,
+    message,
+    setMessage,
+    files,
+    addFiles,
+    removeFile,
+    send,
+    loading,
+  } = useEmailReply({ companyName: company, emailDetail });
 
   const [templates, setTemplates] = useState([]);
   const [templateId, setTemplateId] = useState("");
   const [inputValue, setInputValue] = useState("");
-  const [toInput, setToInput] = useState("");
-  const [ccInput, setCcInput] = useState("");
-  const [bccInput, setBccInput] = useState("");
+
   // States to control visibility of CC and BCC fields
   const [showCcField, setShowCcField] = useState(false);
   const [showBccField, setShowBccField] = useState(false);
 
-  useEffect(() => {
-    axios
-      .get(`${process.env.REACT_APP_API_URL}/api/v1/templates/get/all/template`)
-      .then((res) => setTemplates(res.data?.templates || []));
-  }, []);
+
+
+
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if(message?.trim()?.length === 0) {
+      return toast.error("Message can't be empty!")
+    }
+    await send();
+    getEmailDetail();
+  };
 
   const templateOptions = useMemo(
     () =>
@@ -38,11 +67,17 @@ export default function Reply({ company, emailDetail, getEmailDetail, setShowRep
       })),
     [templates],
   );
- 
+    useEffect(() => {
+    axios
+      .get(`${process.env.REACT_APP_API_URL}/api/v1/templates/get/all/template`)
+      .then((res) => setTemplates(res.data?.templates || []));
+  }, []);
   return (
-    <div className="w-full bg-white border border-gray-200 rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="w-full h-[600px] flex justify-start items-start gap-4">
+
+     <div className="  w-[70%]  bg-white border   border-gray-200 rounded-xl shadow-2xl flex flex-col overflow-hidden animate-pop  ">
       {/* Header Area */}
-      <div className="px-4 pt-3 pb-1 space-y-1 bg-white">
+      <div className="px-4 pt-3 pb-1 space-y-1 bg-white w-full ">
         {/* To Field */}
         <div className="w-full flex items-center text-sm   group py-1">
           <EmailChipInput label="To" values={to} setValues={setTo} />
@@ -134,7 +169,7 @@ export default function Reply({ company, emailDetail, getEmailDetail, setShowRep
       </div>
 
       {/* Editor Body */}
-      <div className="px-4 py-2 min-h-[300px]">
+      <div className="px-4 py-2 w-full  ">
         <CustomEditorNew template={message} setTemplate={setMessage} />
       </div>
 
@@ -160,13 +195,9 @@ export default function Reply({ company, emailDetail, getEmailDetail, setShowRep
       <div className="px-4 py-4 flex items-center justify-between border-t border-gray-100">
         <div className="flex items-center gap-4">
           <button
-            onClick={async (e) => {
-              e.preventDefault();
-              await send();
-              getEmailDetail();
-            }}
+            onClick={handleSend}
             disabled={loading}
-            className="bg-[#0b57d0] hover:bg-[#0842a0] text-white px-12 py-2.5 rounded-full font-medium text-sm transition-all shadow-sm hover:shadow-md flex items-center gap-2"
+            className="bg-orange-500 hover:bg-orange-600 text-white px-12 py-2.5 rounded-full font-medium text-sm transition-all shadow-sm hover:shadow-md flex items-center gap-2"
           >
             {loading ? <TbLoader2 className="animate-spin text-lg" /> : "Send"}
           </button>
@@ -196,7 +227,18 @@ export default function Reply({ company, emailDetail, getEmailDetail, setShowRep
             <IoTrashOutline size={20} />
           </button>
         </div>
+
+
+
       </div>
+
+      
     </div>
+
+ 
+      <div className="w-[30%] h-full  ">
+        <AIReplySelectorNew threadId={emailDetail?.threadId} onSelect={setMessage} />
+      </div>
+   </div>
   );
 }

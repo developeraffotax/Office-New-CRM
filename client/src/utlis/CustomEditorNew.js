@@ -76,7 +76,7 @@ const EditorStyles = () => (
 
     .editor-container {
       font-family: 'Instrument Sans', sans-serif;
-      max-width: 100%;
+      width: 100%;
       margin: 0 auto;
     }
 
@@ -159,7 +159,7 @@ const EditorStyles = () => (
     }
 
     .ql-editor {
-      min-height: 400px;
+      min-height: 300px;
       line-height: 1.2;
       padding: 24px !important;
       color: var(--editor-text-main);

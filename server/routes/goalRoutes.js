@@ -9,6 +9,7 @@ import {
   fetchAllGoal,
   fetchSingleGoal,
   singleGoalComments,
+ 
   updateBulkGoals,
   updateGoal,
   updateGoalStatus,
@@ -43,5 +44,9 @@ router.get("/get/comment/:id", singleGoalComments);
 router.put("/bulk/goals", updateBulkGoals);
 // Copy Goal
 router.post("/copy/goal/:id", copyGoal);
+
+
+
+ 
 
 export default router;

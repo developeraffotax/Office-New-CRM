@@ -4,7 +4,64 @@ import jobsModel from "../models/jobsModel.js";
 import leadModel from "../models/leadModel.js";
 import proposalModel from "../models/proposalModel.js";
 import timerModel from "../models/timerModel.js";
+import userModel from "../models/userModel.js";
 import { fetchSearchAnalytics } from "../utils/websiteImpression.js";
+
+
+
+
+
+const get_lead_count_and_value = async (goal) => {
+  try {
+    const jobHolder = await userModel.findById(goal.jobHolder).select("name");
+
+    if (!jobHolder) return;
+
+    const filters = {
+      status: "won",
+      jobHolder: jobHolder.name,
+      leadCreatedAt: {
+        $gte: new Date(goal.startDate),
+        $lte: new Date(goal.endDate),
+      },
+    };
+
+    const result = await leadModel.aggregate([
+      {
+        $match: filters,
+      },
+      {
+        $group: {
+          _id: {
+            jobHolder: "$jobHolder",
+          },
+          count: { $sum: 1 },
+          totalValue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [{ $ne: ["$value", ""] }, { $ne: ["$value", null] }],
+                },
+                { $toDouble: "$value" },
+                0,
+              ],
+            },
+          },
+        },
+      },
+    ]);
+
+      console.log("RESULT IS 🧡🧡🧡🧡🧡", result)
+    return {
+      count: result[0]?.count || 0,
+      totalValue: result[0]?.totalValue || 0,
+    };
+  } catch (error) {
+    console.error("get_lead_count_and_value Error:", error);
+  }
+};
+
+
 
 // Create Goal
 export const createGoal = async (req, res) => {
@@ -90,7 +147,7 @@ export const updateGoal = async (req, res) => {
         note: note || isGoal.note,
         usersList: usersList || isGoal.usersList,
       },
-      { new: true }
+      { new: true },
     );
 
     res.status(200).send({
@@ -180,7 +237,7 @@ export const updateGoalStatus = async (req, res) => {
     const goal = await goalModel.findByIdAndUpdate(
       { _id: goalId },
       { status: status },
-      { new: true }
+      { new: true },
     );
 
     return res.status(200).send({
@@ -296,7 +353,7 @@ export const fetchAchievedDataByGoalType = async (req, res) => {
               jobHolder: goal.jobHolder._id,
             },
             { achievement },
-            { new: true }
+            { new: true },
           );
           // console.log("goalUpdate:", goalUpdate);
 
@@ -406,6 +463,16 @@ export const fetchAchievedDataByGoalType = async (req, res) => {
             ? (chargeableCount / total) * 100
             : 0;
           achievedCount = chargeablePercentage.toFixed(1);
+        } else if (goal.goalType === "Target Lead Count") {
+
+          const lead_count_and_value = await get_lead_count_and_value(goal);
+          achievedCount = lead_count_and_value.count;
+
+
+        } else if (goal.goalType === "Target Lead Value") {
+          const lead_count_and_value = await get_lead_count_and_value(goal);
+          achievedCount = lead_count_and_value.totalValue;
+          
         }
 
         // Update achievedCount in the goal object
@@ -413,7 +480,7 @@ export const fetchAchievedDataByGoalType = async (req, res) => {
           ...goal._doc,
           achievedCount,
         };
-      })
+      }),
     );
 
     res.status(200).send({
@@ -595,7 +662,7 @@ export const fetchAchievedDataByGoalComplete = async (req, res) => {
           ...goal._doc,
           achievedCount,
         };
-      })
+      }),
     );
 
     res.status(200).send({
@@ -669,7 +736,7 @@ export const updateBulkGoals = async (req, res) => {
     // Update multiple goals
     const updatedGoals = await goalModel.updateMany(
       { _id: { $in: rowSelection } },
-      { $set: updateData }
+      { $set: updateData },
     );
 
     if (updatedGoals.modifiedCount === 0) {
@@ -710,12 +777,12 @@ export const copyGoal = async (req, res) => {
     const newStartDate = new Date(existingGoal.startDate);
     newStartDate.setMonth(newStartDate.getMonth() + 1);
 
-        // New end date = last day of next month
+    // New end date = last day of next month
     const existingEnd = new Date(existingGoal.endDate);
     const newEndDate = new Date(
       existingEnd.getFullYear(),
       existingEnd.getMonth() + 2, // move to month after next
-      0 // 0th day = last day of previous month
+      0, // 0th day = last day of previous month
     );
 
     const goalData = { ...existingGoal.toObject() };
@@ -742,22 +809,7 @@ export const copyGoal = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // cron.schedule('0 0 1 * *', async () => { }
-
 
 // Create Recurring Goal for each user
 
@@ -787,3 +839,9 @@ export const copyGoal = async (req, res) => {
 //     console.error('Failed to create monthly goals:', error);
 //   }
 // }
+
+
+
+
+
+

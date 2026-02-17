@@ -1328,14 +1328,20 @@ const toggleColumnVisibility = (column) => {
                 </div>
 
                 <div className=" w-full h-full flex justify-center items-center gap-8 px-8 py-4 overflow-hidden ">
-                  <EmailDetailDrawer
+                  <div className="w-1/2  h-full">
+
+                    <EmailDetailDrawer
                     id={ticketId}
                     setTicketSubject={setTicketSubject}
                     isReplyModalOpenCb={isReplyModalOpenCb}
                     setEmailData={setEmailData}
                   />
 
-                  <div className="w-full h-full flex flex-col justify-start items-start gap-5 ">
+
+
+                    </div>
+                  
+                  <div className="w-1/2 h-full flex flex-col justify-start items-start gap-5 ">
                     <div className="max-w-lg w-full h-[50%] px-3">
                       <ActivityLogDrawer
                         isOpen={isActivityDrawerOpen}

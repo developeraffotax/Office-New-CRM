@@ -25,7 +25,7 @@ const ShimmerSkeleton = () => (
 );
 
 export default function  List({ threads, loading, users, handleUpdateThread, setEmailDetail, categories, setCreateTicketModal, setCreateLeadModal, deleteThread, filters, selectedThreads, toggleThread, setComment }) {
-  if (loading) {
+  if (loading.fetching) {
     return (
       <div className="flex-1 overflow-hidden">
         {/* Render 6 skeleton rows to fill the screen */}

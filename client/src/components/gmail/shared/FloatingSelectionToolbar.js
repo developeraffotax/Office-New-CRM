@@ -7,12 +7,12 @@
 //   return (
 //     <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 duration-300">
 //       <div className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-full shadow-2xl border border-slate-700/50 backdrop-blur-sm">
-        
+
 //         {/* Count Indicator */}
 //         <div className="flex items-center justify-center bg-blue-500 text-white min-w-[24px] h-6 px-1.5 rounded-full text-xs font-bold">
 //           {selectedThreads.size}
 //         </div>
-        
+
 //         <span className="text-sm font-medium pr-2 border-r border-slate-700 ml-1">
 //           Selected
 //         </span>
@@ -74,14 +74,43 @@
 
 
 
-
-
-
-
 import { IoMdClose } from "react-icons/io";
 import { HiOutlineMailOpen, HiOutlineTrash } from "react-icons/hi";
+import { useEffect } from "react";
 
-export const SelectionHeader = ({ selectedThreads, threads, markAsRead, deleteThread, clearSelection }) => {
+export const SelectionHeader = ({
+  selectedThreads,
+  threads,
+  markAsRead,
+  deleteThread,
+  clearSelection,
+}) => {
+
+
+
+  const handleDeleteSelected = () => {
+    [...selectedThreads].forEach((id) => {
+      const t = threads.find((t) => t._id === id);
+      deleteThread(t.threadId, t.companyName, false);
+    });
+    clearSelection();
+  };
+
+  useEffect(() => {
+    if (selectedThreads.size === 0) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Delete" && selectedThreads.size > 0) {
+        e.preventDefault();
+        handleDeleteSelected();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedThreads]);
+
+  
+
   if (selectedThreads.size === 0) return null;
 
   return (
@@ -92,9 +121,7 @@ export const SelectionHeader = ({ selectedThreads, threads, markAsRead, deleteTh
           <span className="flex items-center justify-center bg-blue-600 text-white text-[10px] font-bold w-5 h-5 rounded-full">
             {selectedThreads.size}
           </span>
-          <span className="text-sm font-semibold text-blue-900">
-            Selected
-          </span>
+          <span className="text-sm font-semibold text-blue-900">Selected</span>
         </div>
 
         {/* Action Group */}
@@ -102,7 +129,7 @@ export const SelectionHeader = ({ selectedThreads, threads, markAsRead, deleteTh
           <button
             onClick={() => {
               [...selectedThreads].forEach((id) => {
-                const t = threads.find(t => t._id === id);
+                const t = threads.find((t) => t._id === id);
                 markAsRead(t.threadId, t.companyName);
               });
               clearSelection();
@@ -110,24 +137,24 @@ export const SelectionHeader = ({ selectedThreads, threads, markAsRead, deleteTh
             className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-white hover:text-blue-600 rounded-md transition-all group"
             title="Mark as Read"
           >
-            <HiOutlineMailOpen className="text-slate-500 group-hover:text-blue-600" size={18} />
+            <HiOutlineMailOpen
+              className="text-slate-500 group-hover:text-blue-600"
+              size={18}
+            />
             <span className="hidden sm:inline">Mark as Read</span>
           </button>
 
           <div className="w-[1px] h-4 bg-blue-200 mx-1" />
 
           <button
-            onClick={() => {
-              [...selectedThreads].forEach((id) => {
-                const t = threads.find(t => t._id === id);
-                deleteThread(t.threadId, t.companyName, false);
-              });
-              clearSelection();
-            }}
+            onClick={handleDeleteSelected}
             className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-white hover:text-red-600 rounded-md transition-all group"
             title="Delete Selected"
           >
-            <HiOutlineTrash className="text-slate-500 group-hover:text-red-600" size={18} />
+            <HiOutlineTrash
+              className="text-slate-500 group-hover:text-red-600"
+              size={18}
+            />
             <span className="hidden sm:inline">Delete</span>
           </button>
         </div>

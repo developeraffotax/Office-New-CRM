@@ -66,8 +66,15 @@ const companyName = searchParams.get("companyName") || "affotax";
  
 
   const [threads, setThreads] = useState([]);
-  const [loading, setLoading] = useState(false);
+const [loading, setLoading] = useState({
+  deleting: false,
+  fetching: false,
+  updating: false,
+  
+});
   const [pagination, setPagination] = useState({});
+
+ 
   // const [filters, setFilters] = useState({
   //   userId: isAdmin ? "unassigned" : "",
   //   category: isAdmin ? "unassigned" : "",
@@ -150,7 +157,7 @@ const filters = useMemo(() => {
 
   // ---------------- Fetch threads from API ----------------
   const fetchThreads = useCallback(async () => {
-    setLoading(true);
+     setLoading((prev) => ({ ...prev, fetching: true }));
     try {
       const { data } = await axios.get(endpoint, {
         params: {
@@ -168,7 +175,7 @@ const filters = useMemo(() => {
       setThreads([]);
       setPagination({});
     } finally {
-      setLoading(false);
+       setLoading((prev) => ({ ...prev, fetching: false }));
     }
   }, [endpoint, filters, folder, companyName]);
 
@@ -239,6 +246,8 @@ const filters = useMemo(() => {
     }
 
     try {
+      // ✅ set only deleting true
+    setLoading((prev) => ({ ...prev, deleting: true }));
       const { data } = await axios.delete(
         `${process.env.REACT_APP_API_URL}/api/v1/gmail/delete/${threadId}`,
         {
@@ -254,6 +263,8 @@ const filters = useMemo(() => {
     } catch (error) {
       console.error("Failed to delete thread:", error);
       toast.error("Failed to delete thread!");
+    } finally {
+      setLoading((prev) => ({ ...prev, deleting: false }));
     }
   };
 

@@ -138,15 +138,15 @@ const filters = useMemo(() => {
 };
 
 
-  useEffect(() => {
-    if(isAdmin) {
-      updateFilters({
-        category: "unassigned",
-        userId: "unassigned"
-      })
-    }
+  // useEffect(() => {
+  //   if(isAdmin) {
+  //     updateFilters({
+  //       category: "unassigned",
+  //       userId: "unassigned"
+  //     })
+  //   }
 
-  }, [])
+  // }, []);
 
   // ---------------- Fetch threads from API ----------------
   const fetchThreads = useCallback(async () => {

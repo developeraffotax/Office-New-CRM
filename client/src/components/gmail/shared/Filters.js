@@ -68,11 +68,11 @@ React.useEffect(() => {
     // ⛔ No change → no setFilters
     if (trimmed === prevSearchRef.current) return;
 
-    setFilters((prev) => ({
-      ...prev,
+    setFilters({
+ 
       search: trimmed,
       page: 1,
-    }));
+    });
 
     prevSearchRef.current = trimmed;
   }, 500);
@@ -131,7 +131,7 @@ React.useEffect(() => {
   };
 
   const handleUpdate = (updates) => {
-    setFilters((prev) => ({ ...prev, ...updates, page: 1 }));
+    setFilters({  ...updates, page: 1 });
   };
 
   // Common styles for a compact, modern look

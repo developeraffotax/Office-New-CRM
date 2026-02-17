@@ -6,7 +6,7 @@ export default function  Pagination({ pagination, setFilters }) {
   const { page, totalPages, totalDocs } = pagination;
 
   const handlePageChange = (newPage) => {
-    setFilters((f) => ({ ...f, page: newPage }));
+    setFilters({  page: newPage });
   };
 
   return (

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import { useSocket } from "../../../context/socketProvider";
 import { useSearchParams } from "react-router-dom";
@@ -51,11 +51,12 @@ function matchesFilters(thread, filters, user) {
 // ----------------- Hook -----------------
 export function useMailThreads({ endpoint }) {
   const socket = useSocket();
-  const [searchParams] = useSearchParams();
+ const [searchParams, setSearchParams] = useSearchParams();
 
-  // ✅ folder comes ONLY from query params
-  const folder = searchParams.get("folder") || "inbox";
-  const companyName = searchParams.get("companyName") || "affotax";
+const folder = searchParams.get("folder") || "inbox";
+const companyName = searchParams.get("companyName") || "affotax";
+
+
 
   const {
     auth: { user },
@@ -67,26 +68,85 @@ export function useMailThreads({ endpoint }) {
   const [threads, setThreads] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({});
-  const [filters, setFilters] = useState({
-    userId: isAdmin ? "unassigned" : "",
-    category: isAdmin ? "unassigned" : "",
-    label: "INBOX", // default
-    startDate: "",
-    endDate: "",
-    unreadOnly: false,
-    page: 1,
-    limit: 20,
-    search: "",
-  });
+  // const [filters, setFilters] = useState({
+  //   userId: isAdmin ? "unassigned" : "",
+  //   category: isAdmin ? "unassigned" : "",
+  //   label: "INBOX", // default
+  //   startDate: "",
+  //   endDate: "",
+  //   unreadOnly: false,
+  //   page: 1,
+  //   limit: 20,
+  //   search: "",
+  // });
 
   // 🔁 Keep label in sync with folder
+  // useEffect(() => {
+  //   setFilters((prev) => ({
+  //     ...prev,
+  //     label: folder === "sent" ? "SENT" : "INBOX",
+  //     page: 1, // reset pagination on folder switch
+  //   }));
+  // }, [folder]);
+
+
+  
+const filters = useMemo(() => {
+  return {
+    userId: searchParams.get("userId") || "",
+    category: searchParams.get("category") || "",
+    // userId: searchParams.get("userId") ?? (isAdmin ? "unassigned" : ""),
+    // category: searchParams.get("category") ?? (isAdmin ? "unassigned" : ""),
+    // label:
+    //   folder === "sent"
+    //     ? "SENT"
+    //     : searchParams.get("label") || "INBOX",
+    startDate: searchParams.get("startDate") || "",
+    endDate: searchParams.get("endDate") || "",
+    unreadOnly: searchParams.get("unreadOnly") === "true",
+    page: Number(searchParams.get("page") || 1),
+    limit: Number(searchParams.get("limit") || 20),
+    search: searchParams.get("search") || "",
+  };
+}, [searchParams, folder, isAdmin]);
+
+
+
+
+  const updateFilters = (newFilters) => {
+  const params = new URLSearchParams(searchParams);
+
+  Object.entries(newFilters).forEach(([key, value]) => {
+    if (
+      value === "" ||
+      value === null ||
+      value === undefined ||
+      value === false
+    ) {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+  });
+
+  // Reset page when filters change
+  if (!newFilters.page) {
+    params.set("page", 1);
+  }
+
+  setSearchParams(params);
+};
+
+
   useEffect(() => {
-    setFilters((prev) => ({
-      ...prev,
-      label: folder === "sent" ? "SENT" : "INBOX",
-      page: 1, // reset pagination on folder switch
-    }));
-  }, [folder]);
+    if(isAdmin) {
+      updateFilters({
+        category: "unassigned",
+        userId: "unassigned"
+      })
+    }
+
+  }, [])
 
   // ---------------- Fetch threads from API ----------------
   const fetchThreads = useCallback(async () => {
@@ -336,7 +396,7 @@ useEffect(() => {
     loading,
     pagination,
     filters,
-    setFilters,
+    setFilters: updateFilters, // 👈 use this
     handleUpdateThread,
     fetchThreads,
     markAsRead,

@@ -79,7 +79,7 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
   };
 
 
-console.log("THREAD IS 🌹🌹🌹🌹🌹🌹🌹", thread)
+ 
 //  hover:shadow-[inset_4px_0_0_0_#3b82f6]
 
   return (

@@ -9,9 +9,9 @@ import { useSelector } from "react-redux";
 function matchesFilters(thread, filters, user) {
   if (!thread || !filters) return false;
 
-  const { label, unreadOnly, startDate, endDate, category } = filters;
+  const { label, unreadOnly, startDate, endDate, category, userId } = filters;
 
-  
+    console.log("THE FILTERS", filters)
 
   if (label && !thread.labels?.includes(label)) return false;
   if (unreadOnly && thread.unreadCount <= 0) return false;
@@ -21,7 +21,23 @@ function matchesFilters(thread, filters, user) {
   if (endDate && new Date(thread.lastMessageAt) > new Date(endDate))
     return false;
 
-  if (category && thread.category !== category) return false;
+   // ✅ Category filter
+  if (category) {
+    if (category === "unassigned") {
+      if (thread.category) return false; // has category → reject
+    } else {
+      if (thread.category !== category) return false;
+    }
+  }
+
+  // ✅ User filter
+  if (userId) {
+    if (userId === "unassigned") {
+      if (thread.userId) return false; // has user → reject
+    } else {
+      if (thread.userId !== userId) return false;
+    }
+  }
 
 
     // User filter – only apply if not admin
@@ -52,8 +68,8 @@ export function useMailThreads({ endpoint }) {
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({});
   const [filters, setFilters] = useState({
-    userId: "",
-    category: "",
+    userId: isAdmin ? "unassigned" : "",
+    category: isAdmin ? "unassigned" : "",
     label: "INBOX", // default
     startDate: "",
     endDate: "",
@@ -205,6 +221,7 @@ export function useMailThreads({ endpoint }) {
 
     const handler = ({ action, thread }) => {
 
+        console.log("SOCKET CALLED ❤️❤️❤️❤️🌹🌹🌹", action, thread)
  
       setThreads((prev) => {
         let newThreads;

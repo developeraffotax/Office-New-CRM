@@ -243,7 +243,7 @@ export const getAllClients = async (req, res) => {
         // "job.jobStatus": { $in: ["Quote", "Data", "Progress", "Queries", "Approval", "Submission", "Billing", "Feedback", "", "empty"] },
       })
       .select(
-        "clientName companyName regNumber email fee currentDate totalHours totalTime jobRef job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data activeClient clientType partner clientPaidFee"
+        "clientName companyName regNumber email phone fee currentDate totalHours totalTime jobRef job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data activeClient clientType partner clientPaidFee"
       )
       .populate("data").lean();
 

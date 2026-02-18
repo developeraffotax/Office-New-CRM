@@ -39,7 +39,7 @@ export const statusColumn = (ctx) => {
               row.original.job.jobDeadline,
               row.original.job.yearEnd
             );
-
+ 
             return (
               <div className="w-full ">
                 <span

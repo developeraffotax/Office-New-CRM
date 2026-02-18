@@ -10,6 +10,7 @@ import { completedJobPreparedColumn } from "./completedJobPreparedColumn"
 import { completedJobReviewColumn } from "./completedJobReviewColumn"
 import { deadlineColumn } from "./deadlineColumn"
 import { departmentsColumn } from "./departmentsColumn"
+import { emailColumn } from "./emailColumn"
 import { feeColumn } from "./feeColumn"
 import { hrsColumn } from "./hrsColumn"
 import { idColumn } from "./idColumn"
@@ -19,6 +20,7 @@ import {   labelsColumn } from "./labelsColumn"
 import { ownerColumn } from "./ownerColumn"
 import { paidFeeColumn } from "./paidFeeColumn"
 import { partnerColumn } from "./partnerColumn"
+import { phoneColumn } from "./phoneColumn"
 import { pocColumn } from "./pocColumn"
 import { refColumn } from "./refColumn"
 import { signupDateColumn } from "./signupDateColumn"
@@ -55,6 +57,8 @@ export const getJobsColumns = (ctx) => {
     budgetColumn(ctx),
     timerColumn(ctx),
     actionsColumn(ctx),
+    emailColumn(ctx),
+    phoneColumn(ctx),
      
   ];
 

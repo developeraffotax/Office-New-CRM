@@ -214,7 +214,9 @@ export default function AllJobs() {
     "AC",
     "SignUp_Date",
     "Actions",
-    "Partner"
+    "Partner",
+    "email",
+    "phone",
   ];
   const [columnVisibility, setColumnVisibility] = useState(() => {
     const savedVisibility = JSON.parse(

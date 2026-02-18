@@ -129,20 +129,27 @@ export const getUnreadCounts = async (req, res) => {
     const isAdmin = user?.role?.name === "Admin";
 
 
-
+    const query = {
+      unreadCount: {$gte : 1},
+      hasInboxMessage: true,
+    } 
  
- 
+    if (!isAdmin) {
+        query.userId = userId;
+      } else {
+        // Admins: threads where userId is missing or null
+        query.$or = [{ userId: { $exists: false } }, { userId: null }];
+      }
 
     const affotax = await EmailThread.countDocuments({
       companyName: "affotax",
-      labels: "UNREAD",
-      hasInboxMessage: true,
+      ...query
+      
     });
 
     const outsource = await EmailThread.countDocuments({
       companyName: "outsource",
-      labels: "UNREAD",
-      hasInboxMessage: true,
+      ...query
     });
 
 
@@ -157,7 +164,7 @@ export const getUnreadCounts = async (req, res) => {
 
   } catch (err) {
     console.error("❌ Thread count error:", err);
-    res.status(500).json({ success: false, message: "Failed to fetch unread counts fro inbox" });
+    res.status(500).json({ success: false, message: "Failed to fetch unread counts for inbox" });
   }
 };
 

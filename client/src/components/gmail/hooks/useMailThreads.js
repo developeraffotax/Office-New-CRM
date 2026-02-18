@@ -4,7 +4,8 @@ import { useSocket } from "../../../context/socketProvider";
 import { useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchInboxUnreadCounts } from "../../../redux/slices/inboxUnreadSlice";
 // ----------------- Filter matcher -----------------
 function matchesFilters(thread, filters, user) {
   if (!thread || !filters) return false;
@@ -50,6 +51,9 @@ function matchesFilters(thread, filters, user) {
 
 // ----------------- Hook -----------------
 export function useMailThreads({ endpoint }) {
+
+  const dispatch = useDispatch()
+
   const socket = useSocket();
  const [searchParams, setSearchParams] = useSearchParams();
 
@@ -271,6 +275,7 @@ const filters = useMemo(() => {
   // ---------------- Initial fetch & filter change ----------------
   useEffect(() => {
     fetchThreads();
+    dispatch(fetchInboxUnreadCounts());
   }, [fetchThreads]);
 
 
@@ -293,7 +298,7 @@ const filters = useMemo(() => {
     const handler = ({ action, thread }) => {
 
         console.log("SOCKET CALLED ❤️❤️❤️❤️🌹🌹🌹", action, thread)
- 
+          dispatch(fetchInboxUnreadCounts());
       setThreads((prev) => {
         let newThreads;
 

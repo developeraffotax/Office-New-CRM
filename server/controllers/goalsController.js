@@ -51,7 +51,7 @@ const get_lead_count_and_value = async (goal) => {
       },
     ]);
 
-      console.log("RESULT IS 🧡🧡🧡🧡🧡", result)
+       
     return {
       count: result[0]?.count || 0,
       totalValue: result[0]?.totalValue || 0,
@@ -60,6 +60,79 @@ const get_lead_count_and_value = async (goal) => {
     console.error("get_lead_count_and_value Error:", error);
   }
 };
+
+
+
+
+
+
+
+
+const get_lead_count_and_value_for_team = async (goal) => {
+  try {
+    const jobHolder = await userModel
+      .findById(goal.jobHolder)
+      .select("name juniors");
+
+    if (!jobHolder) return;
+
+    // 1️⃣ Get juniors
+    const juniors = await userModel
+      .find({ _id: { $in: jobHolder.juniors } })
+      .select("name");
+
+    // 2️⃣ Extract junior names
+    const juniorNames = juniors.map((j) => j.name);
+
+    if (!juniorNames.length) {
+      return { count: 0, totalValue: 0 };
+    }
+
+    console.log("JUNIORS", juniorNames)
+    const filters = {
+      status: "won",
+      jobHolder: { $in: juniorNames }, // ✅ key change
+      leadCreatedAt: {
+        $gte: new Date(goal.startDate),
+        $lte: new Date(goal.endDate),
+      },
+    };
+
+    const result = await leadModel.aggregate([
+      { $match: filters },
+      {
+        $group: {
+          _id: null,
+          count: { $sum: 1 },
+          totalValue: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ["$value", ""] },
+                    { $ne: ["$value", null] },
+                  ],
+                },
+                { $toDouble: "$value" },
+                0,
+              ],
+            },
+          },
+        },
+      },
+    ]);
+
+    console.log("THE RESULT", result)
+
+    return {
+      count: result[0]?.count || 0,
+      totalValue: result[0]?.totalValue || 0,
+    };
+  } catch (error) {
+    console.error("get_lead_count_and_value_for_team Error:", error);
+  }
+};
+
 
 
 
@@ -472,6 +545,16 @@ export const fetchAchievedDataByGoalType = async (req, res) => {
         } else if (goal.goalType === "Target Lead Value") {
           const lead_count_and_value = await get_lead_count_and_value(goal);
           achievedCount = lead_count_and_value.totalValue;
+          
+        } else if (goal.goalType === "Target Lead Count (Team Lead)") {
+
+          const  lead_count_and_value_for_team = await get_lead_count_and_value_for_team(goal);
+          achievedCount = lead_count_and_value_for_team.count;
+
+
+        } else if (goal.goalType === "Target Lead Value (Team Lead)") {
+          const lead_count_and_value_for_team = await get_lead_count_and_value_for_team(goal);
+          achievedCount = lead_count_and_value_for_team.totalValue;
           
         }
 

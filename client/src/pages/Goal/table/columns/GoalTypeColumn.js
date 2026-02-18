@@ -85,9 +85,9 @@ export const createGoalTypeColumn = ({ goalTypes, setFormData, handleUpdateData,
   filterFn: "equals",
   filterSelectOptions: goalTypes.map((goal) => goal),
   filterVariant: "select",
-  size: 150,
-  minSize: 80,
-  maxSize: 170,
+ 
+  minSize: 100,
+  maxSize: 220,
   grow: false,
 });
 

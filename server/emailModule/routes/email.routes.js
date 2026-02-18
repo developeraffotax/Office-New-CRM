@@ -2,7 +2,7 @@
 
 import express from "express";
 import { isAdmin, requiredSignIn } from "../../middlewares/authMiddleware.js";
-import {   deleteThread, getMailbox, getSentItems, markThreadAsRead, updateThreadMetadata } from "../controllers/email.controller.js";
+import {   deleteThread, getMailbox, getSentItems, getUnreadCounts, markThreadAsRead, updateThreadMetadata } from "../controllers/email.controller.js";
 import { reply } from "../controllers/reply.controller.js";
 import { forward } from "../controllers/forward.controller.js";
  
@@ -36,7 +36,7 @@ router.delete("/delete/:threadId", requiredSignIn,  isAdmin,   deleteThread);
 
 
 
-
+router.get("/unread-counts", requiredSignIn,   getUnreadCounts);
 
 
 

@@ -57,6 +57,7 @@ import { initGlobalTimerListener } from "./redux/slices/globalTimerSlice";
 import RegisterGlobalComponents from "./components/global/RegisterGlobalComponents";
  
 import Mailbox from "./components/gmail/pages/Mailbox";
+import { fetchInboxUnreadCounts } from "./redux/slices/inboxUnreadSlice";
 
 function App() {
   const navigate = useNavigate();
@@ -75,6 +76,7 @@ function App() {
     dispatch(loadAuthFromLocalStorage());
     dispatch(checkTokenExpiry());
 
+     dispatch(fetchInboxUnreadCounts());
     dispatch(getUserSettings());
   }, [dispatch]);
 

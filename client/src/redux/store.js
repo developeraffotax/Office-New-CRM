@@ -8,6 +8,7 @@ import settingsReducer from "./slices/settingsSlice";
 import globalTimerReducer from "./slices/globalTimerSlice";
 
 import globalModalReducer from "./slices/globalModalSlice";
+import inboxUnreadReducer from "./slices/inboxUnreadSlice";
 
 
 export const store = configureStore({
@@ -20,5 +21,6 @@ export const store = configureStore({
     globalTimer: globalTimerReducer,
 
     globalModal: globalModalReducer,
+    inboxUnread: inboxUnreadReducer,
   },
 });

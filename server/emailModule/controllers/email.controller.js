@@ -95,6 +95,78 @@ export const getMailbox = async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getUnreadCounts = async (req, res) => {
+  try {
+
+    
+   const user = req?.user?.user;
+      const userId = user?._id;
+    const isAdmin = user?.role?.name === "Admin";
+
+
+
+ 
+ 
+
+    const affotax = await EmailThread.countDocuments({
+      companyName: "affotax",
+      labels: "UNREAD",
+      hasInboxMessage: true,
+    });
+
+    const outsource = await EmailThread.countDocuments({
+      companyName: "outsource",
+      labels: "UNREAD",
+      hasInboxMessage: true,
+    });
+
+
+    res.status(200).json({
+      success: true,
+      counts: {
+        affotax,
+        outsource
+      }
+    });
+
+
+  } catch (err) {
+    console.error("❌ Thread count error:", err);
+    res.status(500).json({ success: false, message: "Failed to fetch unread counts fro inbox" });
+  }
+};
+
+
+
+
+
+
+
 // ------------------ Inbox ------------------
 // GET /api/v1/gmail/threads
 // export const getMailbox = async (req, res) => {

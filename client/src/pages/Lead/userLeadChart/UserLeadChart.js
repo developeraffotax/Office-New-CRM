@@ -81,6 +81,10 @@ export default function UserLeadChart({ auth, active1 }) {
   const [dateRange, setDateRange] = useState(getDateRange("thisYear"));
   const [tableData, setTableData] = useState([]);
 
+  const [view, setView] = useState("monthly");
+const [categories, setCategories] = useState([]);
+
+
   const [series, setSeries] = useState([
     { name: "Target Count", data: [] },
     { name: "Count", data: [] },
@@ -91,6 +95,7 @@ export default function UserLeadChart({ auth, active1 }) {
 
   const clearFilter = () => {
     setDateFilter("thisYear");
+    setView("monthly");
     setDateRange(getDateRange("thisYear"));
     setUser((prev) => (isAdmin(auth) ? "All" : auth?.user?.name));
   };
@@ -125,9 +130,12 @@ export default function UserLeadChart({ auth, active1 }) {
             user: user !== "All" ? user : null,
             startDate: start ? start.toISOString() : null,
             endDate: end ? end.toISOString() : null,
+            view, // 👈 important
           },
         }
       );
+
+      setCategories(data.labels); // 👈 dynamic labels from backend
 
       setSeries([
         { name: "Target Count", data: data.targetCounts, hidden: true },
@@ -138,7 +146,7 @@ export default function UserLeadChart({ auth, active1 }) {
     } catch (err) {
       console.error(err);
     }
-  }, [user, dateRange]);
+  }, [user, dateRange, view]);
 
   useEffect(() => {
     getAllUsers();
@@ -164,7 +172,7 @@ export default function UserLeadChart({ auth, active1 }) {
         curve: "smooth",
       },
       xaxis: {
-        categories: MONTHS,
+        categories: categories,
       },
       yaxis: [
         {
@@ -257,7 +265,7 @@ export default function UserLeadChart({ auth, active1 }) {
         },
       },
     };
-  }, [chartType]);
+  }, [chartType, categories]);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -269,7 +277,14 @@ export default function UserLeadChart({ auth, active1 }) {
            
          
 
-
+          <select
+  value={view}
+  onChange={(e) => setView(e.target.value)}
+  className="border rounded px-3 py-1 text-sm"
+>
+  <option value="monthly">Monthly</option>
+  <option value="weekly">Weekly</option>
+</select>
             
            
 

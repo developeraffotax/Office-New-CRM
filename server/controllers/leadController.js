@@ -1447,16 +1447,17 @@ export const getLeadConversionStats = async (req, res) => {
 
 
 
+ 
 
-
-
-
-
-
+const getWeekRangeLabel = (year, week) => {
+  const monday = moment().isoWeekYear(year).isoWeek(week).startOf("isoWeek");
+  const sunday = moment(monday).endOf("isoWeek");
+  return `${monday.format("MMM D")} – ${sunday.format("MMM D")}`;
+};
 
 export const getWonLeadData = async (req, res) => {
   try {
-    const { user, startDate, endDate } = req.query;
+    const { user, startDate, endDate, view = "monthly" } = req.query;
 
     const filters = { status: "won" };
 
@@ -1464,7 +1465,7 @@ export const getWonLeadData = async (req, res) => {
       ? await userModel.findOne({ name: user }).lean()
       : null;
 
-    if (user) {
+    if (user && user !== "All") {
       filters.jobHolder = user;
     }
 
@@ -1475,22 +1476,33 @@ export const getWonLeadData = async (req, res) => {
       };
     }
 
-    // --- Get leads data ---
+    // -------------------------
+    // Determine grouping
+    // -------------------------
+    let groupId;
+    let sortStage;
+
+    if (view === "weekly") {
+      groupId = { year: { $isoWeekYear: "$leadCreatedAt" }, week: { $isoWeek: "$leadCreatedAt" } };
+      sortStage = { "_id.year": 1, "_id.week": 1 };
+    } else {
+      groupId = { year: { $year: "$leadCreatedAt" }, month: { $month: "$leadCreatedAt" } };
+      sortStage = { "_id.year": 1, "_id.month": 1 };
+    }
+
+    // -------------------------
+    // Aggregate Leads
+    // -------------------------
     const leads = await leadModel.aggregate([
       { $match: filters },
       {
         $group: {
-          _id: { $month: "$leadCreatedAt" },
+          _id: groupId,
           count: { $sum: 1 },
           totalValue: {
             $sum: {
               $cond: [
-                {
-                  $and: [
-                    { $ne: ["$value", ""] },
-                    { $ne: ["$value", null] },
-                  ],
-                },
+                { $and: [{ $ne: ["$value", ""] }, { $ne: ["$value", null] }] },
                 { $toDouble: "$value" },
                 0,
               ],
@@ -1498,71 +1510,130 @@ export const getWonLeadData = async (req, res) => {
           },
         },
       },
-      { $sort: { "_id": 1 } },
+      { $sort: sortStage },
     ]);
 
-    // --- Initialize arrays for 12 months ---
-    const counts = Array(12).fill(0);
-    const values = Array(12).fill(0);
-    const targetValues = Array(12).fill(0);
-    const targetCounts = Array(12).fill(0);
+    // -------------------------
+    // Initialize Labels & Arrays
+    // -------------------------
+    const labels = [];
+    const counts = [];
+    const values = [];
+    const targetCounts = [];
+    const targetValues = [];
 
-    leads.forEach((item) => {
-      counts[item._id - 1] = item.count;
-      values[item._id - 1] = item.totalValue;
-    });
+    if (view === "weekly") {
+      // Generate all weeks in range
+      const start = startDate ? moment(startDate) : moment().startOf("month");
+      const end = endDate ? moment(endDate) : moment().endOf("month");
+      const weekMap = {};
+      let weekIndex = 0;
 
-    // --- Fetch goals using aggregate ---
-    
-      const matchStage = {
-        $match: {
-          
-          goalType: { $in: ["Target Lead Value", "Target Lead Count"] },
-        },
-      };
+      let current = start.clone().startOf("isoWeek");
+      while (current.isSameOrBefore(end)) {
+        const weekYear = current.isoWeekYear();
+        const weekNum = current.isoWeek();
+        const key = `${weekYear}-W${weekNum}`;
 
-
-      if (fetchedUser) {
-        matchStage.$match.jobHolder = fetchedUser._id;
-
+        if (!weekMap[key]) {
+          weekMap[key] = weekIndex++;
+          labels.push(getWeekRangeLabel(weekYear, weekNum));
+          counts.push(0);
+          values.push(0);
+          targetCounts.push(0);
+          targetValues.push(0);
+        }
+        current.add(1, "week");
       }
 
-      if (startDate && endDate) {
-        matchStage.$match.startDate = {
-          $gte: new Date(startDate),
-          $lte: new Date(endDate),
-        };
-      }
-
-      const goals = await goalModel.aggregate([
-        matchStage,
-        {
-          $group: {
-            _id: {
-              month: { $month: "$startDate" },
-              type: "$goalType",
-            },
-            total: { $sum: { $ifNull: ["$achievement", 0] } },
-          },
-        },
-      ]);
-
-      goals.forEach((goal) => {
-        const monthIndex = goal._id.month - 1;
-        if (goal._id.type === "Target Lead Value") {
-          targetValues[monthIndex] = goal.total;
-        } else if (goal._id.type === "Target Lead Count") {
-          targetCounts[monthIndex] = goal.total;
+      // Map lead data to week array
+      leads.forEach((item) => {
+        const key = `${item._id.year}-W${item._id.week}`;
+        if (weekMap[key] !== undefined) {
+          counts[weekMap[key]] = item.count;
+          values[weekMap[key]] = item.totalValue;
         }
       });
- 
-    console.log({ counts, values, targetValues, targetCounts })
-    res.json({ counts, values, targetValues, targetCounts });
+    } else {
+      // Monthly view: 12 months between start and end
+      const monthMap = {};
+      let monthIndex = 0;
+      const start = startDate ? moment(startDate).startOf("month") : moment().startOf("year");
+      const end = endDate ? moment(endDate).endOf("month") : moment().endOf("year");
+      let current = start.clone();
+      while (current.isSameOrBefore(end)) {
+        const key = `${current.year()}-${current.month() + 1}`; // month 0-indexed
+        if (!monthMap[key]) {
+          monthMap[key] = monthIndex++;
+          labels.push(current.format("MMM YYYY"));
+          counts.push(0);
+          values.push(0);
+          targetCounts.push(0);
+          targetValues.push(0);
+        }
+        current.add(1, "month");
+      }
+
+      // Map lead data to month array
+      leads.forEach((item) => {
+        const key = `${item._id.year}-${item._id.month}`;
+        if (monthMap[key] !== undefined) {
+          counts[monthMap[key]] = item.count;
+          values[monthMap[key]] = item.totalValue;
+        }
+      });
+    }
+
+    // -------------------------
+    // Fetch Goals
+    // -------------------------
+    const goalMatch = { goalType: { $in: ["Target Lead Value", "Target Lead Count"] } };
+    if (fetchedUser) goalMatch.jobHolder = fetchedUser._id;
+    if (startDate && endDate) goalMatch.startDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
+
+    let goalGroupId;
+    if (view === "weekly") {
+      goalGroupId = { year: { $isoWeekYear: "$startDate" }, week: { $isoWeek: "$startDate" }, type: "$goalType" };
+    } else {
+      goalGroupId = { year: { $year: "$startDate" }, month: { $month: "$startDate" }, type: "$goalType" };
+    }
+
+    const goals = await goalModel.aggregate([
+      { $match: goalMatch },
+      { $group: { _id: goalGroupId, total: { $sum: { $ifNull: ["$achievement", 0] } } } },
+    ]);
+
+    // Map goals to label index
+    goals.forEach((goal) => {
+      let labelKey;
+      if (view === "weekly") {
+        labelKey = `${goal._id.year}-W${goal._id.week}`;
+      } else {
+        labelKey = `${goal._id.year}-${goal._id.month}`;
+      }
+
+      const index = labels.findIndex((_, idx) => {
+        if (view === "weekly") return labels[idx] === getWeekRangeLabel(goal._id.year, goal._id.week);
+        else return labels[idx] === moment(`${goal._id.year}-${goal._id.month}-01`).format("MMM YYYY");
+      });
+
+      if (index !== -1) {
+        if (goal._id.type === "Target Lead Value") targetValues[index] = goal.total;
+        else targetCounts[index] = goal.total;
+      }
+    });
+
+    return res.json({ labels, counts, values, targetCounts, targetValues });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server Error" });
   }
 };
+
+ 
+
+
+
 
 
 

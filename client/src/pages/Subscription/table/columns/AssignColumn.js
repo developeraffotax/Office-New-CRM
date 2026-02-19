@@ -39,7 +39,7 @@ export const createAssignColumn = ({ userName, handleUpdateSubscription }) => ({
             handleUpdateSubscription(
               row.original._id,
               e.target.value,
-              "jobholder"
+              "jobHolder"
             );
           }}
           className="w-full h-[2rem] rounded-md border-none outline-none"

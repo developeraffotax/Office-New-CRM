@@ -164,8 +164,28 @@ const [categories, setCategories] = useState([]);
 
   const options = useMemo(() => {
     const width = chartType === "bar" ? 0 : 3; // bar width or line width
+   // Determine width based on data density
+  const dataCount = categories.length;
+  let dynamicWidth = "50%"; // Default
+
+  if (dataCount === 1) {
+    dynamicWidth = "10%"; // Very thin for 1 item
+  } else if (dataCount === 2) {
+    dynamicWidth = "25%"; // Thin for 2 items
+  }
     return {
       chart: { toolbar: { show: true }, type: chartType, },
+
+
+      // --- FIX FOR WIDE BARS ---
+     plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: dynamicWidth, // <--- This acts as your "max width"
+        borderRadius: 0,
+      },
+    },
+
       stroke: {
         width: [width, width, width, width],
         dashArray: [0, 0, 0, 0],
@@ -277,14 +297,14 @@ const [categories, setCategories] = useState([]);
            
          
 
-          <select
-  value={view}
-  onChange={(e) => setView(e.target.value)}
-  className="border rounded px-3 py-1 text-sm"
->
-  <option value="monthly">Monthly</option>
-  <option value="weekly">Weekly</option>
-</select>
+          {/* <select
+            value={view}
+            onChange={(e) => setView(e.target.value)}
+            className="border rounded px-3 py-1 text-sm"
+          >
+            <option value="monthly">Monthly</option>
+            <option value="weekly">Weekly</option>
+          </select> */}
             
            
 

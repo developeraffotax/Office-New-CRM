@@ -297,14 +297,14 @@ const [categories, setCategories] = useState([]);
            
          
 
-          {/* <select
+          <select
             value={view}
             onChange={(e) => setView(e.target.value)}
             className="border rounded px-3 py-1 text-sm"
           >
             <option value="monthly">Monthly</option>
             <option value="weekly">Weekly</option>
-          </select> */}
+          </select>
             
            
 

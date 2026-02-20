@@ -91,7 +91,7 @@ const get_lead_count_and_value_for_team = async (goal) => {
     console.log("JUNIORS", juniorNames)
     const filters = {
       status: "won",
-      jobHolder: { $in: juniorNames }, // ✅ key change
+      jobHolder: { $in: [jobHolder?.name, ...juniorNames] }, // ✅ key change
       leadCreatedAt: {
         $gte: new Date(goal.startDate),
         $lte: new Date(goal.endDate),

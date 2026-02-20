@@ -1433,9 +1433,13 @@ export const createDublicateJob = async (req, res) => {
       // Add 12 months (1 year)
       yearEnd.setMonth(yearEnd.getMonth() + 12);
 
+
+
+       
       // Specific adjustments for different job names
       if (isExisting.job.jobName.trim() === "Personal Tax") {
         jobDeadline.setDate(jobDeadline.getDate() + 301); // Add 301 days
+        // jobDeadline.setFullYear(jobDeadline.getFullYear() + 1);
       } else if (isExisting.job.jobName.trim() === "Accounts") {
         jobDeadline.setMonth(jobDeadline.getMonth() + 12); // Add 12 months
       } else if (isExisting.job.jobName.trim() === "Company Sec") {

@@ -17,13 +17,13 @@ export const createRedisClient = () => {
       retryCount = times;
       if (times > MAX_RETRY_ATTEMPTS) {
         console.error(
-          `❌ Redis failed to connect after ${MAX_RETRY_ATTEMPTS} attempts. Giving up.`
+          `❌ Redis failed to connect after ${MAX_RETRY_ATTEMPTS} attempts. Giving up.`,
         );
         return null; // stop retrying
       }
       const delay = times * 2000;
       console.warn(
-        `🔁 Redis reconnect attempt #${times}, retrying in ${delay / 1000}s...`
+        `🔁 Redis reconnect attempt #${times}, retrying in ${delay / 1000}s...`,
       );
       return delay;
     },
@@ -36,19 +36,16 @@ export const createRedisClient = () => {
   });
   connection.on("ready", () => console.log("✅ Redis connection is ready."));
   connection.on("error", (err) =>
-    console.error("❌ Redis connection error:", err.message)
+    console.error("❌ Redis connection error:", err.message),
   );
   connection.on("close", () => console.warn("🔴 Redis connection closed."));
   connection.on("end", () =>
     console.warn(
-      "⚠️ Redis connection ended. No more retries will be attempted."
-    )
+      "⚠️ Redis connection ended. No more retries will be attempted.",
+    ),
   );
 
   return connection;
 };
-
-
-
 
 export const connection = createRedisClient();

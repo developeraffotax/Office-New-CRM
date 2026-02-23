@@ -10,7 +10,10 @@ import { connectDB } from "./config/db.js";
 import { initSocketServer, Skey } from "./socketServer.js";
 import { registerRoutes } from "./routes/index.js";
 import { setupCronJobs } from "./cron/index.js";
-import { gmailWebhookHandlerForAffotax, gmailWebhookHandlerForOutsource } from "./utils/pubSubPush.js";
+import {
+  gmailWebhookHandlerForAffotax,
+  gmailWebhookHandlerForOutsource,
+} from "./utils/pubSubPush.js";
 import { errorHandler } from "./middlewares/errorMiddleware.js";
 import { connection as redis } from "./utils/ioredis.js";
 import agenda from "./utils/agenda.js";
@@ -22,7 +25,7 @@ import { ExpressAdapter } from "@bull-board/express";
 
 // Import your queue
 import { gmailSyncQueue } from "./emailModule/jobs/queues/gmailSyncQueue.js";
- 
+
 dotenv.config();
 
 // --------------------------------------------
@@ -69,8 +72,6 @@ const startServer = async () => {
     app.use(morgan("dev"));
     app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 
- 
-
     // Bull Board route
     // app.use("/admin/queues", serverAdapter.getRouter());
 
@@ -96,12 +97,14 @@ const startServer = async () => {
       console.log("🕒 Starting scheduled tasks...");
       setupCronJobs();
     }
-    
+
     // 8️⃣ Start server
     const PORT = process.env.PORT || 8080;
     server.listen(PORT, () => {
       console.log(`🚀 Server running on PORT ${PORT}`.bgMagenta.white);
-      console.log(`🎛 Bull Board: http://localhost:${PORT}/admin/queues`.bgBlue.white);
+      console.log(
+        `🎛 Bull Board: http://localhost:${PORT}/admin/queues`.bgBlue.white,
+      );
     });
 
     // 9️⃣ Redis interval logging
@@ -116,11 +119,10 @@ const startServer = async () => {
       } catch (redisError) {
         console.error(
           "⚠ Failed to get onlineUsers/onlineAgents via Redis:",
-          redisError.message
+          redisError.message,
         );
       }
     }, 60000);
-
   } catch (error) {
     console.error("❌ Server failed to start:", error.message || error);
     process.exit(1); // exit on DB failure

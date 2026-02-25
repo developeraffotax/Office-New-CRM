@@ -24,6 +24,7 @@ import getJobHolderNames from "../utils/getJobHolderNames.js";
 import TicketActivity from "../models/ticketActivityModel.js";
 import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
 import goalModel from "../models/goalModel.js";
+import { normalizeDashes } from "../utils/normalizeDashes.js";
 
 
 
@@ -146,6 +147,7 @@ export const sendEmail = async (req, res) => {
     
 
     console.log("Subject💙💚💛", subject)
+    const normalizedSubject = normalizeDashes(subject)
     
     const userName = req.user.user.name;
 
@@ -179,7 +181,7 @@ export const sendEmail = async (req, res) => {
 
     const emailData = {
       email: email || client?.email,
-      subject: subject,
+      subject: normalizedSubject,
       message: message,
       attachments: attachments,
       company: company,
@@ -205,7 +207,7 @@ export const sendEmail = async (req, res) => {
       clientName: (clientId && client?.clientName) || clientName || "",
       company: company,
       jobHolder: jobHolderToAssign,
-      subject: subject,
+      subject: normalizedSubject,
       mailThreadId: threadId,
       lastMessageSentBy: userName,
       lastMessageSentTime: new Date(), 
@@ -220,7 +222,7 @@ export const sendEmail = async (req, res) => {
       userId: req.user.user._id,
       action: "created",
       gmailMessageId: resp?.data?.id || "",
-      details: `"${req.user.user.name}" created the ticket with subject "${subject}"
+      details: `"${req.user.user.name}" created the ticket with subject "${normalizedSubject}"
       -- Company: ${company}
       -- Client: ${clientId ? client.clientName :  clientName ? clientName : "N/A"}
       -- Email: ${email}

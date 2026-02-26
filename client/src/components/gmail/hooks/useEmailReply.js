@@ -2,14 +2,10 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-
-
 const myEmailMap = {
   affotax: "info@affotax.com",
   outsource: "admin@outsourceaccountings.co.uk",
-}
-
-
+};
 
 /* ---------- utils ---------- */
 
@@ -19,11 +15,7 @@ const parseList = (v = "") =>
     .map((e) => e.trim())
     .filter(Boolean);
 
-const isValidEmail = (email) =>
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-
-
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const extractEmail = (str = "") => {
   // extract the email inside <>
@@ -36,31 +28,23 @@ const normalizeEmails = (list, self, type) => {
 
   list.forEach((e) => {
     const email = extractEmail(e);
-    if (
-      isValidEmail(email) &&
-      (!self || email !== self.toLowerCase())
-    ) {
+    if (isValidEmail(email) && (!self || email !== self.toLowerCase())) {
       set.add(email);
     }
   });
 
- 
-
   return [...set];
 };
 
-  /* ---------- header helpers ---------- */
+/* ---------- header helpers ---------- */
 
-  const extractHeaders = (msg) => {
-    const map = {};
-    msg?.payload?.headers?.forEach((h) => {
-      map[h.name] = h.value;
-    });
-    return map;
-  };
-
-
-
+const extractHeaders = (msg) => {
+  const map = {};
+  msg?.payload?.headers?.forEach((h) => {
+    map[h.name] = h.value;
+  });
+  return map;
+};
 
 const getSenderEmail = (from = "") => {
   const match = from.match(/<(.+?)>/);
@@ -71,9 +55,6 @@ const isFromMe = (msg, myEmail) => {
   const from = extractHeaders(msg)?.From || "";
   return getSenderEmail(from).includes(myEmail.toLowerCase());
 };
-
-
-
 
 export const getLastRelevantMessage = (messages = [], myEmail) => {
   if (!Array.isArray(messages) || messages.length === 0) {
@@ -94,28 +75,20 @@ export const getLastRelevantMessage = (messages = [], myEmail) => {
   return messages[messages.length - 1] || null;
 };
 
-
-
-
-
-
 const buildRecipients = ({
-  messages,      // pass full thread here
+  messages, // pass full thread here
   myEmail,
-  mode
+  mode,
 }) => {
-
   if (!messages?.length) {
     return { to: [], cc: [], replyTo: "" };
   }
 
   // Find last message that actually contains recipient info
-  const lastWithRecipients = [...messages]
-    .reverse()
-    .find((msg) => {
-      const headers = extractHeaders(msg);
-      return headers?.From || headers?.To || headers?.Cc;
-    });
+  const lastWithRecipients = [...messages].reverse().find((msg) => {
+    const headers = extractHeaders(msg);
+    return headers?.From || headers?.To || headers?.Cc;
+  });
 
   const headers = extractHeaders(lastWithRecipients || messages.at(-1));
 
@@ -139,31 +112,23 @@ const buildRecipients = ({
   if (mode === "replyAll") {
     const combined = [...normalizedTo, ...normalizedCc];
 
-    nextCc = [...new Set(combined)].filter(
-      (email) => !nextTo.includes(email)
-    );
+    nextCc = [...new Set(combined)].filter((email) => !nextTo.includes(email));
   }
 
   return {
     to: nextTo,
     cc: nextCc,
-    replyTo: fromList[0] || ""
+    replyTo: fromList[0] || "",
   };
 };
-
-
 
 /* ---------- hook ---------- */
 
 export function useEmailReply({
-
-    
- 
   companyName,
   emailDetail,
 
- 
-  jobHolder
+  jobHolder,
 }) {
   const [mode, setMode] = useState("reply");
   const [to, setTo] = useState([]);
@@ -174,37 +139,29 @@ export function useEmailReply({
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
 
-
   /* ---------- auto population ---------- */
 
- 
-  console.log("THE EMAIL DETAIL IS", emailDetail)
-  
-useEffect(() => {
-  if (!emailDetail?.decryptedMessages?.length) return;
+  console.log("THE EMAIL DETAIL IS", emailDetail);
 
-  const myEmail = myEmailMap[companyName];
+  useEffect(() => {
+    if (!emailDetail?.decryptedMessages?.length) return;
 
- 
- const {to, cc, replyTo} = buildRecipients({
-  messages: emailDetail.decryptedMessages,
-  myEmail,
-  mode
-});
+    const myEmail = myEmailMap[companyName];
 
+    const { to, cc, replyTo } = buildRecipients({
+      messages: emailDetail.decryptedMessages,
+      myEmail,
+      mode,
+    });
 
-setTo(to)
-setCc(cc)
-// setReplyTo(replyTo)
- 
-}, [mode, emailDetail, companyName]);
-
-
+    setTo(to);
+    setCc(cc);
+    // setReplyTo(replyTo)
+  }, [mode, emailDetail, companyName]);
 
   /* ---------- attachments ---------- */
 
-  const addFiles = (list) =>
-    setFiles((p) => [...p, ...Array.from(list)]);
+  const addFiles = (list) => setFiles((p) => [...p, ...Array.from(list)]);
 
   const removeFile = (name) =>
     setFiles((p) => p.filter((f) => f.name !== name));
@@ -216,7 +173,7 @@ setCc(cc)
         resolve({
           filename: file.name,
           mimeType: file.type,
-          base64: r.result.split(",")[1]
+          base64: r.result.split(",")[1],
         });
       r.onerror = reject;
       r.readAsDataURL(file);
@@ -251,32 +208,25 @@ setCc(cc)
       </div>
     `;
 
-    
-
     setLoading(true);
 
     try {
-      const attachments = await Promise.all(
-        files.map(fileToBase64)
-      );
+      const attachments = await Promise.all(files.map(fileToBase64));
 
-      await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/v1/gmail/reply`,
-        {
-          threadId: emailDetail.threadId,
-          companyName,
-          mode,
-          to,
-          cc,
-          bcc,
-          replyTo,
-          html: message,
-          quotedHtml,
-          headers,
-          attachments,
-          jobHolder
-        }
-      );
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/gmail/reply`, {
+        threadId: emailDetail.threadId,
+        companyName,
+        mode,
+        to,
+        cc,
+        bcc,
+        replyTo,
+        html: message,
+        quotedHtml,
+        headers,
+        attachments,
+        jobHolder,
+      });
 
       toast.success("Reply sent");
       setMessage("");
@@ -306,6 +256,6 @@ setCc(cc)
     addFiles,
     removeFile,
     send,
-    loading
+    loading,
   };
 }

@@ -16,6 +16,7 @@ import Forward from "../forward/Forward.js";
 import { useEscapeKey } from "../../../utlis/useEscapeKey.js";
 import { useClickOutside } from "../../../utlis/useClickOutside.js";
 import { gmailParser } from "../utils/gmailParser.js";
+import EmailHeaderDetails from "./EmailHeaderDetails.js";
 
 export default function Thread({
   company,
@@ -251,6 +252,24 @@ useLayoutEffect(() => {
             const isExpanded = expandedMessages[message.id];
             const showToggle = parsedEmail.hasThread;
             const isLast = i === emailDetail.decryptedMessages.length - 1;
+
+
+
+
+            // Inside your map loop where you find fromHeader and toHeader:
+            const headersArr = message?.payload?.headers || [];
+           const headerDetails = {
+  from: message?.payload?.headers?.find((h) => h.name === "From")?.value || "",
+  to: message?.payload?.headers?.find((h) => h.name === "To")?.value || "",
+  cc: message?.payload?.headers?.find((h) => h.name === "Cc")?.value || "",
+  subject: subject, // from props
+  date: message.internalDate,
+  // Check if current user is the recipient
+  toShort: isSentByMe ? "" : "me" 
+};
+
+
+
             return (
               <div
                 key={message?.id}
@@ -278,10 +297,12 @@ useLayoutEffect(() => {
                       </div>
                       <div className="flex flex-col">
                         {separate(fromHeader)}
-                        <span className="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
+                        {/* <span className="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
                           to {isSentByMe ? toHeader : "me"}{" "}
                           <FaCaretDown className="cursor-pointer" />
-                        </span>
+                        </span> */}
+
+                        <EmailHeaderDetails details={headerDetails} />
                       </div>
                     </div>
 

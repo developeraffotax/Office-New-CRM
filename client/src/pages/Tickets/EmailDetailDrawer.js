@@ -17,6 +17,8 @@ import { IoMdCheckboxOutline } from "react-icons/io";
 import Swal from "sweetalert2";
 import SendEmailReply from "../../components/Tickets/SendEmailReply";
 import { useScrollToBottom } from "../../utlis/useScrollToBottom";
+import Reply from "../../components/Tickets/reply/Reply";
+ 
  
 
 export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOpenCb, setEmailData }) {
@@ -787,8 +789,8 @@ return (
 
       {/* Email Reply */}
       {showReplay && (
-        <div className="fixed top-0 left-0 z-[999] w-full h-full py-1 bg-gray-700/70 flex items-center justify-center">
-          <SendEmailReply
+        <div className="fixed top-0 left-0 z-[999]  w-full h-full py-1 bg-gray-700/70 flex items-center justify-center">
+          {/* <SendEmailReply
             setShowReply={setShowReply}
             subject={emailDetail?.subject}
             threadId={emailDetail?.threadId}
@@ -799,6 +801,16 @@ return (
             setEmailData={setEmailData}
 
             emailDetail={emailDetail}
+          /> */}
+
+
+          <Reply 
+             company={ticketDetail?.company.toLowerCase()}
+             emailDetail={emailDetail}
+             getEmailDetail={emailData}
+             setShowReplyEditor={() => setShowReply(false)}
+          
+          
           />
         </div>
       )}

@@ -74,85 +74,6 @@ const isFromMe = (msg, myEmail) => {
 
 
 
-
-export const getLastRelevantMessage = (messages = [], myEmail) => {
-  if (!Array.isArray(messages) || messages.length === 0) {
-    return null;
-  }
-
-  // Find last message NOT from me
-  const lastExternal = [...messages]
-    .reverse()
-    .find((msg) => !isFromMe(msg, myEmail));
-
-  // If found → return it
-  if (lastExternal) {
-    return lastExternal;
-  }
-
-  // Fallback → return very last message in thread
-  return messages[messages.length - 1] || null;
-};
-
-
-
-
-
-
-const buildRecipients = ({
-  messages,      // pass full thread here
-  myEmail,
-  mode
-}) => {
-
-  if (!messages?.length) {
-    return { to: [], cc: [], replyTo: "" };
-  }
-
-  // Find last message that actually contains recipient info
-  const lastWithRecipients = [...messages]
-    .reverse()
-    .find((msg) => {
-      const headers = extractHeaders(msg);
-      return headers?.From || headers?.To || headers?.Cc;
-    });
-
-  const headers = extractHeaders(lastWithRecipients || messages.at(-1));
-
-  const fromList = parseList(headers?.From);
-  const toList = parseList(headers?.To);
-  const ccList = parseList(headers?.Cc);
-
-  const normalizedFrom = normalizeEmails(fromList, myEmail);
-  const normalizedTo = normalizeEmails(toList, myEmail);
-  const normalizedCc = normalizeEmails(ccList, myEmail);
-
-  // Default reply target
-  const nextTo = normalizedFrom.length
-    ? normalizedFrom
-    : normalizedTo.length
-    ? normalizedTo
-    : [];
-
-  let nextCc = [];
-
-  if (mode === "replyAll") {
-    const combined = [...normalizedTo, ...normalizedCc];
-
-    nextCc = [...new Set(combined)].filter(
-      (email) => !nextTo.includes(email)
-    );
-  }
-
-  return {
-    to: nextTo,
-    cc: nextCc,
-    replyTo: fromList[0] || ""
-  };
-};
-
-
-
 /* ---------- hook ---------- */
 
 export function useEmailReply({
@@ -185,18 +106,42 @@ useEffect(() => {
 
   const myEmail = myEmailMap[companyName];
 
- 
- const {to, cc, replyTo} = buildRecipients({
-  messages: emailDetail.decryptedMessages,
-  myEmail,
-  mode
-});
+  // pick the last message NOT from me
+  const lastExternal = [...emailDetail.decryptedMessages]
+    .reverse()
+    .find((m) => !isFromMe(m, myEmail));
 
+  if (!lastExternal) return;
 
-setTo(to)
-setCc(cc)
-// setReplyTo(replyTo)
+  const h = extractHeaders(lastExternal);
+
+  const from = parseList(h.From);  // array of sender(s)
+  const toList = parseList(h.To);   // array of original To recipients
+  const ccList = parseList(h.Cc);   // array of original CC recipients
+
+  // normalize: remove myEmail and duplicates
+  const normalizedFrom = normalizeEmails(from, myEmail, "FROM");
+  const normalizedTo = normalizeEmails(toList, myEmail, "TO");
+  const normalizedCc = normalizeEmails(ccList, myEmail, "CC");
+
  
+
+  // ----- reply mode logic -----
+  if (mode === "reply") {
+    setTo(normalizedFrom.length ? normalizedFrom : []); // always reply to sender
+    setCc([]);
+  }
+
+  if (mode === "replyAll") {
+    // reply to sender + everyone else in To/Cc except me
+    setTo(normalizedFrom.length ? normalizedFrom : []);
+    setCc([...normalizedTo, ...normalizedCc]);
+  }
+
+  // set Reply-To header for sending
+  if (!replyTo && from.length) {
+    setReplyTo(from[0]);
+  }
 }, [mode, emailDetail, companyName]);
 
 

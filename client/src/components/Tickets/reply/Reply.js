@@ -22,7 +22,7 @@ export default function Reply({
   setShowReplyEditor,
 }) {
   const {
-         mode,
+     mode,
   setMode,
     to,
     setTo,
@@ -73,57 +73,13 @@ export default function Reply({
     axios
       .get(`${process.env.REACT_APP_API_URL}/api/v1/templates/get/all/template`)
       .then((res) => setTemplates(res.data?.templates || []));
-
-
-
   }, []);
-
-
-
-
-
-  useEffect(() => {
-  if (mode === "replyAll") {
-    setShowCcField(true);
-  }
-}, [mode, cc]);
-
-
   return (
       <div className="w-full h-[600px] flex justify-start items-start gap-4">
 
      <div className="  w-[70%]  bg-white border   border-gray-200 rounded-xl shadow-2xl flex flex-col overflow-hidden animate-pop  ">
       {/* Header Area */}
       <div className="px-4 pt-3 pb-1 space-y-1 bg-white w-full ">
-
-        {/* Reply Mode Toggle */}
-<div className="flex items-center gap-3 px-4 pt-3 text-xs font-medium">
-  <button
-    type="button"
-    onClick={() => setMode("reply")}
-    className={`px-3 py-1 rounded-full transition ${
-      mode === "reply"
-        ? "bg-orange-500 text-white"
-        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-    }`}
-  >
-    Reply
-  </button>
-
-  <button
-    type="button"
-    onClick={() => setMode("replyAll")}
-    className={`px-3 py-1 rounded-full transition ${
-      mode === "replyAll"
-        ? "bg-orange-500 text-white"
-        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-    }`}
-  >
-    Reply All
-  </button>
-</div>
-
-
         {/* To Field */}
         <div className="w-full flex items-center text-sm   group py-1">
           <EmailChipInput label="To" values={to} setValues={setTo} />

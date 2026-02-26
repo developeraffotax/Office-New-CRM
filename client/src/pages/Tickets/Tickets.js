@@ -49,6 +49,7 @@ import UserTicketChart from "./userTicketChart/UserTicketChart";
 import { BsGraphUpArrow } from "react-icons/bs";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import SelectedUsers from "../../components/SelectedUsers";
+import Thread from "../../components/gmail/thread/Thread";
 
 const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "" };
 const jobStatusOptions = [
@@ -1336,6 +1337,8 @@ const toggleColumnVisibility = (column) => {
                     isReplyModalOpenCb={isReplyModalOpenCb}
                     setEmailData={setEmailData}
                   />
+
+                 
 
 
 

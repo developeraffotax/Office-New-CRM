@@ -51,6 +51,11 @@ body {
   zoom: 0.6;
 }
 
+
+.swal2-container {
+  z-index: 99999 !important;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;

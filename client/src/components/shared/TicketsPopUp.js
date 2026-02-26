@@ -11,6 +11,8 @@ import EmailDetailDrawer from "../../pages/Tickets/EmailDetailDrawer";
 import ActivityLogDrawer from "../Modals/ActivityLogDrawer";
 import DetailComments from "../../pages/Tasks/TaskDetailComments";
 import toast from "react-hot-toast";
+import Swal from "sweetalert2";
+import { FaCheckCircle } from "react-icons/fa";
 
 const API_URL = `${process.env.REACT_APP_API_URL}`;
 
@@ -130,6 +132,52 @@ const TicketsPopUp = ({ clientName, email, handleClose, selectedTab }) => {
       setIsLoading(false);
     }
   };
+
+
+    const handleStatusComplete = async (ticketId) => {
+    if (!ticketId) {
+      toast.error("Ticket id is required!");
+      return;
+    }
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
+        { state: "complete" }
+      );
+      if (data?.success) {
+        fetchTicketsByName();
+        toast.success("Status completed successfully!");
+ 
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    }
+  };
+
+    const handleUpdateTicketStatusConfirmation = (ticketId) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, Complete it!",
+      
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleStatusComplete(ticketId);
+        Swal.fire(
+          "Complete!",
+          "Your ticket completed successfully!",
+          "success"
+        );
+      }
+    });
+  };
+
+
 
   const columns = useMemo(() => {
     const arr = [
@@ -279,6 +327,37 @@ const TicketsPopUp = ({ clientName, email, handleClose, selectedTab }) => {
           );
         },
       },
+
+
+
+
+
+      {
+        accessorKey: "actions",
+        header: "Actions",
+        size: 140,
+
+        Cell: ({ row }) => {
+          const ticketId = row.original._id;
+           
+           
+          return (
+            
+            <button
+          onClick={() => handleUpdateTicketStatusConfirmation(ticketId)} // Replace with your completion function
+          className={`flex items-center justify-center  `}
+          title="Mark as Complete"
+        >
+          <FaCheckCircle   className="text-green-500 w-5 h-5 "/>
+        </button>
+
+
+          );
+        },
+      },
+
+
+
 
 
 

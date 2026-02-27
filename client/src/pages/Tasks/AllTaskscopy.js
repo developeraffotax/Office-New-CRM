@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { style } from "../../utlis/CommonStyle";
 import axios from "axios";
+import AddProjectModal from "../../components/Tasks/AddProjectModal";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { MdAutoGraph, MdOutlineModeEdit } from "react-icons/md";
@@ -11,6 +12,7 @@ import toast from "react-hot-toast";
 
 import { TbLoader, TbLoader2 } from "react-icons/tb";
 import CompletedTasks from "./CompletedTasks";
+import AddTaskModal from "../../components/Tasks/AddTaskModal";
 import { useMaterialReactTable } from "material-react-table";
 import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
@@ -18,16 +20,23 @@ import { format } from "date-fns";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { mkConfig, generateCsv, download } from "export-to-csv";
+import JobCommentModal from "../Jobs/JobCommentModal";
+import AddLabel from "../../components/Modals/AddLabel";
+import TaskDetail from "./TaskDetail";
 import { GrUpdate } from "react-icons/gr";
 import { LuImport } from "react-icons/lu";
 
+import { ActiveTimer } from "../../utlis/ActiveTimer";
+
 import QuickAccess from "../../utlis/QuickAccess";
+import SubtasksForNote from "./SubtasksForNote";
 import { filterByRowId } from "../../utlis/filterByRowId";
 
 import { useDispatch, useSelector } from "react-redux";
 import { setFilterId, setSearchValue } from "../../redux/slices/authSlice";
 
 import { useSocket } from "../../context/socketProvider";
+import AddTaskDepartmentModal from "../../components/Tasks/AddTaskDepartmentModal";
 import ProjectDropdown from "./components/ProjectsDropdown/ProjectDropdown";
 import DepartmentDropdown from "./components/DepartmentsDropdown/DepartmentDropdown";
 import DraggableFilterTabs from "./DraggableFilterTabs";
@@ -47,128 +56,74 @@ import csvConfig from "./Constants/csvConfig";
 
 // Components
 import useColumnFilterSync from "./components/Responsiblities/ColumnFilter";
-import TaskModals from "./components/TaskModals";
-
-// hooks
-import useTaskUI from "./hooks/useTaskUI";
-import useTaskData from "./hooks/useTaskData";
-import useTaskModals from "./hooks/useTaskModals";
 
 const AllTasks = ({ justShowTable = false }) => {
   const { auth, filterId, anyTimerRunning, searchValue, jid } = useSelector(
     (state) => state.auth,
   );
 
-  const {
-    ui,
-    setUI,
-    showDepartment,
-    showCompleted,
-    showJobHolder,
-    showDue,
-    showStatus,
-    showProject,
-    showlabel,
-    showDetail,
-    showEdit,
-    show_completed,
-    setShowDepartment,
-    setShowCompleted,
-    setShowJobHolder,
-    setShowDue,
-    setShowStatus,
-    setShowProject,
-    setShowlabel,
-    setShowDetail,
-    setShowEdit,
-  } = useTaskUI();
-
-  const {
-    tasksData,
-    setTasksData,
-    loading,
-    isLoad,
-    projects,
-    allProjects,
-    departments,
-    users,
-    userName,
-    setUserName,
-    labelData,
-    getAllTasks,
-    getTasks1,
-    getAllProjects,
-    getAllDepartments,
-    getlabel,
-  } = useTaskData();
-
-  const [showColumn, setShowColumn] = useState(false);
-
   const dispatch = useDispatch();
 
-  // All modal state consolidated in one hook
-  const modals = useTaskModals();
-  const {
-    timerRef,
-    setIsOpen,
-    setOpenAddDepartment,
-    setDepartmentId,
-    setOpenAddProject,
-    setProjectId,
-    setIsComment,
-    setCommentTaskId,
-    note,
-    setIsShow,
-    activity,
-    setNote,
-    setActivity,
-    taskIdForNote,
-    setTaskIdForNote,
-    setIsSubmitting,
-    taskID,
-    setTaskID,
-    setProjectName,
-  } = modals;
+  const [isOpen, setIsOpen] = useState(false);
+  const [users, setUsers] = useState([]);
 
-  // --- Location ---
+  const [openAddDepartment, setOpenAddDepartment] = useState(false);
+  const [departments, setDepartments] = useState([]);
+  const [departmentId, setDepartmentId] = useState("");
+  const [showDepartment, setShowDepartment] = useState(false);
+
+  const [openAddProject, setOpenAddProject] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [projectId, setProjectId] = useState("");
+  const [showProject, setShowProject] = useState(false);
+  const [active, setActive] = useState("All");
+  const [activeBtn, setActiveBtn] = useState("");
+  const [showCompleted, setShowCompleted] = useState(false);
+  const [taskId, setTaskId] = useState("");
+  const [tasksData, setTasksData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [note, setNote] = useState("");
+  // Timer
+  const [play, setPlay] = useState(false);
+  const timerRef = useRef();
+  const [isShow, setIsShow] = useState(false);
+
   const location = useLocation();
   const currentPath = location.pathname;
 
-  // --- Active Filter Tabs ---
-  const [active, setActive] = useState("All");   // top-level department tab
-  const [activeBtn, setActiveBtn] = useState(""); // which icon filter is active (jobHolder / status / due)
-  const [active1, setActive1] = useState("");     // sub-filter value (status name, user name, etc.)
+  const [filter1, setFilter1] = useState("");
+  const [filter2, setFilter2] = useState("");
+  const [filter3, setFilter3] = useState("");
 
-  // --- Column Filters (synced to table columns) ---
-  const [filter1, setFilter1] = useState(""); // department
-  const [filter2, setFilter2] = useState(""); // project
-  const [filter3, setFilter3] = useState(""); // jobHolder
-
-  // --- Filtered Data & Stats ---
+  const [fLoading, setFLoading] = useState(false);
+  // Filters
+  const [showJobHolder, setShowJobHolder] = useState(false);
+  const [showDue, setShowDue] = useState(false);
+  const [showStatus, setShowStatus] = useState(false);
+  const [active1, setActive1] = useState("");
   const [filterData, setFilterData] = useState([]);
+  const [isComment, setIsComment] = useState(false);
+  const [commentTaskId, setCommentTaskId] = useState("");
+  const [userName, setUserName] = useState([]);
+  const [showDetail, setShowDetail] = useState(false);
+  const [taskID, setTaskID] = useState("");
+  const [projectName, setProjectName] = useState("");
   const [totalHours, setTotalHours] = useState(0);
-  const [state, setState] = useState("");
-  const [stateData, setStateData] = useState([]);
-
-  // --- Timer ---
-  const [play, setPlay] = useState(false);
-  const [timerId, setTimerId] = useState("");
-  const [reload, setReload] = useState(false);
-
-  // --- Refs ---
+  const [allProjects, setAllProjects] = useState([]);
+  const [labelData, setLabelData] = useState([]);
   const commentStatusRef = useRef(null);
-
-  // --- Status Constants ---
+  const [showlabel, setShowlabel] = useState(false);
+  const [timerId, setTimerId] = useState("");
   const dateStatus = ["Due", "Overdue"];
   const status = ["To do", "Progress", "Review", "Onhold"];
 
-  // --- Access Control ---
+  const [state, setState] = useState("");
+  const [stateData, setStateData] = useState([]);
+  const [activity, setActivity] = useState("Chargeable");
   const [access, setAccess] = useState([]);
-
-  // --- Import Loading ---
-  const [fLoading, setFLoading] = useState(false);
-
-  // --- Bulk Action ---
+  const [isLoad, setIsLoad] = useState(false);
+  // Bulk Action
+  const [showEdit, setShowEdit] = useState(false);
   const [rowSelection, setRowSelection] = useState({});
   const [project, setProject] = useState("");
   const [jobHolder, setJobHolder] = useState("");
@@ -179,14 +134,24 @@ const AllTasks = ({ justShowTable = false }) => {
   const [taskDate, setTaskDate] = useState("");
   const [tstatus, setTStatus] = useState("");
   const [isUpload, setIsUpdate] = useState(false);
+  const [reload, setReload] = useState(false);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // console.log("tasksData:", tasksData);
+
+  const [taskIdForNote, setTaskIdForNote] = useState("");
+
+  const [showActiveTimer, setShowActiveTimer] = useState(false);
 
   const [searchParams] = useSearchParams();
   const comment_taskId = searchParams.get("comment_taskId");
+  const show_completed = searchParams.get("completed");
   const navigate = useNavigate();
 
   const { selectedUsers, setSelectedUsers, toggleUser, resetUsers } =
     usePersistedUsers("tasks:selected_users", userName);
 
+  const [showcolumn, setShowColumn] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState({
     _id: false,
     ...colVisibility,
@@ -238,8 +203,7 @@ const AllTasks = ({ justShowTable = false }) => {
     const handleKeyDown = (e) => {
       // Escape key shortcut
       if (e.key === "Escape") {
-        // setShowDetail(false);
-        setUI((prev) => ({ ...prev, showDetail: false }));
+        setShowDetail(false);
       }
     };
 
@@ -265,6 +229,188 @@ const AllTasks = ({ justShowTable = false }) => {
       setAccess(filterAccess);
     }
   }, [auth]);
+
+  //---------- Get All Projects-----------
+  const getAllProjects = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/projects/get_all/project`,
+      );
+      setAllProjects(data?.projects);
+      if (auth.user.role.name === "Admin") {
+        setProjects(data?.projects);
+      } else {
+        const filteredProjects = data.projects.filter((project) =>
+          project.users_list.some((user) => user._id === auth?.user?.id),
+        );
+
+        setProjects(filteredProjects);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllProjects();
+  }, [auth]);
+
+  //---------- Get All Projects-----------
+  const getAllDepartments = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/department`,
+      );
+      if (data?.success) {
+        if (auth?.user?.role?.name === "Admin") {
+          // Admin: show all
+          setDepartments(data?.departments || []);
+        } else {
+          // Non-admin: only include departments linked to projects user is in
+          const userProjects = allProjects.filter((project) =>
+            project.users_list.some((user) => user._id === auth?.user?.id),
+          );
+
+          // Collect all department IDs from user's projects
+          const projectDepartmentIds = userProjects
+            .flatMap((proj) => proj.departments?.map((d) => d._id)) // many-to-many
+            .filter(Boolean);
+
+          // Deduplicate IDs (in case user has multiple projects in the same department)
+          const uniqueDeptIds = [...new Set(projectDepartmentIds)];
+
+          // Filter the full department list based on user's accessible departments
+          const filteredDepartments = data.departments.filter((dep) =>
+            uniqueDeptIds.includes(dep._id),
+          );
+
+          setDepartments(filteredDepartments || []);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    if (auth) {
+      getAllDepartments();
+    }
+  }, [auth, allProjects]);
+
+  // -------Get All Tasks----->
+  const getAllTasks = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/all`,
+      );
+
+      setTasksData(data.tasks);
+
+      // console.log("data.tasks:", data?.tasks);
+      if (auth.user.role.name === "Admin") {
+        setTasksData(data?.tasks);
+      } else {
+        const filteredTasks = data?.tasks?.filter((item) => {
+          // item?.jobHolder === auth?.user?.name ||
+          return item?.project?.users_list?.some(
+            (user) => user?.name === auth?.user?.name,
+          );
+        });
+
+        setTasksData(filteredTasks || []);
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getAllTasks();
+  }, []);
+
+  //   Get All Labels
+  const getlabel = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels/task`,
+      );
+      if (data.success) {
+        setLabelData(data.labels);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getlabel();
+  }, []);
+
+  //---------- Get All Users-----------
+  const getAllUsers = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
+      );
+      setUsers(
+        data?.users?.filter((user) =>
+          user?.role?.access?.some((item) =>
+            item?.permission?.includes("Tasks"),
+          ),
+        ) || [],
+      );
+
+      setUserName(
+        data?.users
+          ?.filter((user) =>
+            user?.role?.access?.map((item) =>
+              item.permission.includes("Tasks"),
+            ),
+          )
+          ?.map((user) => user.name),
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllUsers();
+    // eslint-disable-next-line
+  }, []);
+
+  // ---------------Get Task on WithoutLoad-----
+  const getTasks1 = async () => {
+    setIsLoad(true);
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/all`,
+      );
+
+      setTasksData(data.tasks);
+
+      if (auth.user.role.name === "Admin") {
+        setTasksData(data?.tasks);
+      } else {
+        const filteredTasks = data?.tasks?.filter((item) => {
+          return item?.project?.users_list?.some(
+            (user) => user?.name === auth?.user?.name,
+          );
+        });
+
+        setTasksData(filteredTasks || []);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoad(false);
+    }
+  };
 
   useEffect(() => {
     const calculateTotalHours = (data) => {
@@ -612,6 +758,13 @@ const AllTasks = ({ justShowTable = false }) => {
     }
   };
 
+  // ---------Stop Timer ----------->
+  const handleStopTimer = () => {
+    if (timerRef.current) {
+      timerRef.current.stopTimer();
+    }
+  };
+
   // -----------Download in CSV------>
   const flattenData = (data) => {
     return data?.map((row) => ({
@@ -664,8 +817,7 @@ const AllTasks = ({ justShowTable = false }) => {
       );
       if (data) {
         // getAllTasks();
-        // setShowDetail(false);
-        setUI((prev) => ({ ...prev, showDetail: false }));
+        setShowDetail(false);
         toast.success("Task deleted successfully!");
 
         // Send Socket Timer
@@ -727,8 +879,7 @@ const AllTasks = ({ justShowTable = false }) => {
       );
       if (data?.success) {
         const updateTask = data?.task;
-        // setShowDetail(false);
-        setUI((prev) => ({ ...prev, showDetail: false }));
+        setShowDetail(false);
         toast.success("Status completed successfully!");
 
         setTasksData((prevData = []) => {
@@ -804,7 +955,7 @@ const AllTasks = ({ justShowTable = false }) => {
       setTasksData,
       setTaskID,
       setProjectName,
-      ShowDetail: ui.ShowDetail,
+      setShowDetail,
       copyTask,
       handleCompleteStatus,
       handleDeleteTaskConfirmation,
@@ -1268,6 +1419,10 @@ const AllTasks = ({ justShowTable = false }) => {
                   setActive("All");
                   setFilterData("");
                   setActive1("");
+                  // setActiveBtn("");
+                  // setShowStatus(false);
+                  // setShowJobHolder(false);
+                  // setShowDue(false);
                   dispatch(setFilterId(""));
                   handleClearFilters();
                   filterByState(state);
@@ -1295,17 +1450,13 @@ const AllTasks = ({ justShowTable = false }) => {
               {auth?.user?.role?.name === "Admin" && (
                 <div
                   className=" relative w-[8rem]    border-2 border-gray-200 rounded-md py-1 px-2 hidden sm:flex items-center justify-between gap-1"
-                  onClick={() =>
-                    setUI((prev) => ({ ...prev, showDepartment: true }))
-                  }
+                  onClick={() => setShowDepartment(!showDepartment)}
                 >
                   <span className="text-[15px] text-gray-900 cursor-pointer">
                     Departments
                   </span>
                   <span
-                    onClick={() =>
-                      setUI((prev) => ({ ...prev, showDepartment: true }))
-                    }
+                    onClick={() => setShowDepartment(!showDepartment)}
                     className="cursor-pointer"
                   >
                     {!showDepartment ? (
@@ -1317,9 +1468,10 @@ const AllTasks = ({ justShowTable = false }) => {
 
                   {/* -----------Departments------- */}
                   <DepartmentDropdown
-                    showDepartment={ui.showDepartment}
+                    showDepartment={showDepartment}
                     departments={departments}
                     getAllDepartments={getAllDepartments}
+                    setShowDepartment={setShowDepartment}
                     setDepartmentId={setDepartmentId}
                     setOpenAddDepartment={setOpenAddDepartment}
                   />
@@ -1462,6 +1614,19 @@ const AllTasks = ({ justShowTable = false }) => {
                   ).length
                 }
                 getLabelFn={(department) => department?.departmentName}
+                // onClick={
+                //   (department) => setFilter1((prev) => {
+                //     const isSameUser = prev === department?.departmentName;
+                //     const newValue = isSameUser ? "" : department?.departmentName;
+
+                //       setColumnFromOutsideTable("departmentName", newValue);
+
+                //        setColumnFromOutsideTable("projectName", "");
+                //        setColumnFromOutsideTable("jobHolder", "");
+                //     return newValue;
+                //   })
+                // }
+
                 onClick={(dep) => {
                   const newValue =
                     filter1 === dep.departmentName ? "" : dep.departmentName;
@@ -1538,18 +1703,18 @@ const AllTasks = ({ justShowTable = false }) => {
               <div className="relative">
                 <div
                   className={`  p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
-                    showColumn && "bg-orange-500 text-white"
+                    showcolumn && "bg-orange-500 text-white"
                   }`}
-                  onClick={() => setShowColumn(!showColumn)}
+                  onClick={() => setShowColumn(!showcolumn)}
                 >
                   {" "}
-                  {showColumn ? (
+                  {showcolumn ? (
                     <GoEyeClosed className="h-5 w-5" />
                   ) : (
                     <GoEye className="h-5 w-5" />
                   )}{" "}
                 </div>
-                {showColumn && (
+                {showcolumn && (
                   <div
                     ref={showColumnRef}
                     className="fixed top-32 left-[50%] z-[9999]    w-[12rem]"
@@ -1564,6 +1729,12 @@ const AllTasks = ({ justShowTable = false }) => {
                 onClick={() => {
                   getTasks1();
                   getAllProjects();
+                  // setActive("All");
+                  // setActiveBtn("");
+                  // setActive1("");
+                  //setFilterId("");
+                  // setShowStatus(false);
+                  // setShowJobHolder(false);
                 }}
                 title="Refresh Data"
               >
@@ -1585,6 +1756,7 @@ const AllTasks = ({ justShowTable = false }) => {
                   <div className="flex items-center flex-wrap gap-4">
                     <DraggableFilterTabs
                       droppableId={"users"}
+                      // items={filter2 ? projectUsers.filter(user => getJobHolderCount(user?.name, active) > 0) : users.filter(user => getJobHolderCount(user?.name, active) > 0)}
                       items={selectedUsers
                         .map((uName) => ({ _id: uName, name: uName }))
                         .filter(
@@ -1824,7 +1996,21 @@ const AllTasks = ({ justShowTable = false }) => {
                     />
                     <span>Hours</span>
                   </div>
-
+                  {/* <div className="">
+                <select
+                  value={label}
+                  onChange={(e) => setLabel(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "9rem" }}
+                >
+                  <option value="empty">Select Label</option>
+                  {labelData?.map((label, i) => (
+                    <option value={label._id} key={i}>
+                      {label?.name}
+                    </option>
+                  ))}
+                </select>
+              </div> */}
                   <div className="flex items-center justify-end pl-4">
                     <button
                       className={`${style.button1} text-[15px] `}
@@ -1853,36 +2039,175 @@ const AllTasks = ({ justShowTable = false }) => {
             )}
           </div>
 
-          <TaskModals
-            modals={modals}
-            // Shared data
-            users={users}
-            departments={departments}
-            projects={projects}
-            tasksData={tasksData}
-            userName={userName}
-            // Fetchers
-            getAllTasks={getAllTasks}
-            getTasks1={getTasks1}
-            getAllDepartments={getAllDepartments}
-            getAllProjects={getAllProjects}
-            getlabel={getlabel}
-            // Actions
-            handleDeleteTask={handleDeleteTask}
-            setTasksData={setTasksData}
-            setFilterData={setFilterData}
-            // UI from parent hooks
-            showDetail={ui.showDetail}
-            onCloseDetail={setShowDetail}
-            showlabel={showlabel}
-            setShowlabel={setShowlabel}
-            assignedPerson={
-              ui.showDetail && taskID
-                ? table.getRow(taskID)?.original?.jobHolder
-                : undefined
-            }
-            commentStatusRef={commentStatusRef}
-          />
+          {/* ----------------Add Task Department-------- */}
+          {openAddDepartment && (
+            <div className="fixed top-0 left-0 w-full h-screen z-[999] bg-gray-100/70 flex items-center justify-center py-6  px-4">
+              <AddTaskDepartmentModal
+                users={users}
+                setOpenAddDepartment={setOpenAddDepartment}
+                getAllDepartments={getAllDepartments}
+                departmentId={departmentId}
+                setDepartmentId={setDepartmentId}
+                getTasks1={getTasks1}
+              />
+            </div>
+          )}
+
+          {/* ----------------Add Project-------- */}
+          {openAddProject && (
+            <div className="fixed top-0 left-0 w-full h-screen z-[999] bg-gray-100/70 flex items-center justify-center py-6  px-4">
+              <AddProjectModal
+                users={users}
+                setOpenAddProject={setOpenAddProject}
+                getAllProjects={getAllProjects}
+                projectId={projectId}
+                setProjectId={setProjectId}
+                getTasks1={getTasks1}
+                departments={departments}
+              />
+            </div>
+          )}
+
+          {/* -----------Add Task-------------- */}
+          {isOpen && (
+            <div className="fixed top-0 left-0 w-full h-screen z-[999] bg-gray-100/70 flex items-center justify-center py-6  px-4">
+              <AddTaskModal
+                users={users}
+                setIsOpen={setIsOpen}
+                projects={projects}
+                taskId={""}
+                setTaskId={setTaskId}
+                getAllTasks={getAllTasks}
+                taskDetal={null}
+              />
+            </div>
+          )}
+
+          {/* ------------Comment Modal---------*/}
+
+          {isComment && (
+            <div
+              ref={commentStatusRef}
+              className="fixed bottom-4 right-4 w-[30rem] max-h-screen z-[999]  flex items-center justify-center"
+            >
+              <JobCommentModal
+                setIsComment={setIsComment}
+                jobId={commentTaskId}
+                setJobId={setCommentTaskId}
+                users={userName}
+                type={"Task"}
+                getTasks1={getTasks1}
+                page={"task"}
+              />
+            </div>
+          )}
+
+          {/* -------------Stop Timer Btn-----------*/}
+          {isShow && (
+            <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/80 flex items-center justify-center">
+              <div className="w-[32rem] rounded-md bg-white shadow-md">
+                <div className="flex  flex-col gap-3 ">
+                  <div className=" w-full flex items-center justify-between py-2 mt-1 px-4">
+                    <h3 className="text-[19px] font-semibold text-gray-800">
+                      Enter End Note
+                    </h3>
+                    <span
+                      onClick={() => {
+                        setIsShow(false);
+                      }}
+                    >
+                      <IoClose className="text-black cursor-pointer h-6 w-6 " />
+                    </span>
+                  </div>
+                  <hr className="w-full  h-[1px] bg-gray-500 " />
+                  <div className="flex  justify-start items-center gap-4   px-4 py-2 ">
+                    {activity === "Chargeable" ? (
+                      <button
+                        className={`px-4 h-[2.6rem] min-w-[5rem] flex items-center justify-center  rounded-md cursor-pointer shadow-md  text-white border-none outline-none bg-green-500 hover:bg-green-600`}
+                        onClick={() => setActivity("Non-Chargeable")}
+                        style={{ width: "8rem", fontSize: "14px" }}
+                      >
+                        Chargeable
+                      </button>
+                    ) : (
+                      <button
+                        className={`px-4 h-[2.6rem] min-w-[5rem] flex items-center justify-center  rounded-md cursor-pointer shadow-md  text-white border-none outline-none bg-red-500 hover:bg-red-600`}
+                        onClick={() => setActivity("Chargeable")}
+                        style={{ width: "9rem", fontSize: "14px" }}
+                      >
+                        Non-Chargeable
+                      </button>
+                    )}
+
+                    <SubtasksForNote
+                      taskId={taskIdForNote}
+                      onSelect={(option) => setNote(option)}
+                    />
+                  </div>
+                  <div className=" w-full px-4 py-2 flex-col gap-4">
+                    <textarea
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      placeholder="Add note here..."
+                      className="w-full h-[6rem] rounded-md resize-none py-1 px-2 shadow border-2 border-gray-700"
+                    />
+                    <div className="flex items-center justify-end mt-4">
+                      <button
+                        className={`${style.btn} flex items-center justify-center space-x-1`}
+                        onClick={handleStopTimer}
+                        disabled={isSubmitting} // Optional: disable button while submitting
+                      >
+                        {isSubmitting ? (
+                          <span className="flex space-x-1">
+                            <span className="w-2 h-2 bg-white rounded-full animate-bounce"></span>
+                            <span className="w-2 h-2 bg-white rounded-full animate-bounce animation-delay-150"></span>
+                            <span className="w-2 h-2 bg-white rounded-full animate-bounce animation-delay-300"></span>
+                          </span>
+                        ) : (
+                          "Submit"
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/*---------------Task Details---------------*/}
+          {showDetail && (
+            <div className="fixed inset-0 z-[499] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+              <div className="bg-gray-100 rounded-xl shadow-lg w-[95%] sm:w-[80%] md:w-[75%] lg:w-[70%] xl:w-[70%] 3xl:w-[60%]    py-4 px-5   ">
+                <div className="h-full w-full flex flex-col justify-start items-center relative">
+                  <div className="flex items-center justify-between border-b pb-2 mb-3 self-start w-full">
+                    <h3 className="text-lg font-semibold">
+                      Project: {projectName}
+                    </h3>
+                    <button
+                      className="p-1 rounded-2xl bg-gray-50 border hover:shadow-md hover:bg-gray-100"
+                      onClick={() => setShowDetail(false)}
+                    >
+                      <IoClose className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <TaskDetail
+                    taskId={taskID}
+                    getAllTasks={getAllTasks}
+                    handleDeleteTask={handleDeleteTask}
+                    setTasksData={setTasksData}
+                    setShowDetail={setShowDetail}
+                    users={users}
+                    projects={projects}
+                    setFilterData={setFilterData}
+                    tasksData={tasksData}
+                    assignedPerson={table.getRow(taskID).original.jobHolder}
+                    setTaskIdForNote={setTaskIdForNote}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ---- */}
         </div>
@@ -1894,6 +2219,19 @@ const AllTasks = ({ justShowTable = false }) => {
           getAllProj1={getAllProjects}
         />
       )}
+
+      {/* ---------------Add label------------- */}
+      {showlabel && (
+        <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
+          <AddLabel
+            setShowlabel={setShowlabel}
+            type={"task"}
+            getLabels={getlabel}
+          />
+        </div>
+      )}
+
+      {/* {showActiveTimer && <ActiveTimer />} */}
     </>
   );
 };

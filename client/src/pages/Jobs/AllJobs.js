@@ -3,8 +3,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { style } from "../../utlis/CommonStyle";
 import NewJobModal from "../../components/Modals/NewJobModal";
  
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
 import axios from "axios";
 import {
   MaterialReactTable,

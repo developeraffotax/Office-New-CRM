@@ -64,8 +64,9 @@ export default function Reply({
     () =>
       templates.map((t) => ({
         value: t._id,
-        label: t.name,
+        label: `${t.name} - ${t.description} `,
         description: t.template,
+        
       })),
     [templates],
   );
@@ -78,6 +79,9 @@ export default function Reply({
 
   }, []);
 
+
+
+  console.log("TEMPLATE OPTIONS 🧡🧡🧡🧡🧡🧡🧡🧡🧡", templateOptions)
 
 
 

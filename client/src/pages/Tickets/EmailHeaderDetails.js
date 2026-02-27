@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { FaCaretDown } from "react-icons/fa";
-import { useClickOutside } from "../../../utlis/useClickOutside.js";
+import { useClickOutside } from "../../utlis/useClickOutside";
+ 
 
 const formatDate = (internalDate) => {
   if (!internalDate) return "";

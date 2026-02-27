@@ -259,14 +259,15 @@ useLayoutEffect(() => {
             // Inside your map loop where you find fromHeader and toHeader:
             const headersArr = message?.payload?.headers || [];
            const headerDetails = {
-  from: message?.payload?.headers?.find((h) => h.name === "From")?.value || "",
-  to: message?.payload?.headers?.find((h) => h.name === "To")?.value || "",
-  cc: message?.payload?.headers?.find((h) => h.name === "Cc")?.value || "",
-  subject: subject, // from props
-  date: message.internalDate,
-  // Check if current user is the recipient
-  toShort: isSentByMe ? "" : "me" 
-};
+              from: message?.payload?.headers?.find((h) => h.name === "From")?.value || "",
+              to: message?.payload?.headers?.find((h) => h.name === "To")?.value || "",
+              cc: message?.payload?.headers?.find((h) => h.name === "Cc")?.value || "",
+              bcc: message?.payload?.headers?.find((h) => h.name === "Bcc")?.value || "",
+              subject: subject, // from props
+              date: message.internalDate,
+              // Check if current user is the recipient
+              toShort: isSentByMe ? "" : "me" 
+            };
 
 
 

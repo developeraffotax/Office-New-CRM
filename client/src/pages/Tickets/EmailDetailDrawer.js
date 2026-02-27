@@ -18,6 +18,7 @@ import Swal from "sweetalert2";
 import SendEmailReply from "../../components/Tickets/SendEmailReply";
 import { useScrollToBottom } from "../../utlis/useScrollToBottom";
 import Reply from "../../components/Tickets/reply/Reply";
+import EmailHeaderDetails from "./EmailHeaderDetails";
  
  
 
@@ -544,6 +545,24 @@ function splitMessage(html = "") {
   const senderName = senderInfo?.user?.name || 
                      "";
 
+                     const isSentByMe =
+              message?.payload?.body?.sentByMe ||
+              message?.labelIds?.includes("SENT");
+
+
+                     const headerDetails = {
+              from: message?.payload?.headers?.find((h) => h.name === "From")?.value || "",
+              to: message?.payload?.headers?.find((h) => h.name === "To")?.value || "",
+              cc: message?.payload?.headers?.find((h) => h.name === "Cc")?.value || "",
+              bcc: message?.payload?.headers?.find((h) => h.name === "Bcc")?.value || "",
+              subject: emailDetail?.subject || "",  
+              date: message.internalDate,
+              // Check if current user is the recipient
+              toShort: isSentByMe ? "" : "me" 
+            };
+
+
+
 
 return (
   <div className="flex flex-col gap-4" key={message?.id || i}>
@@ -557,13 +576,17 @@ return (
                       </div>
                       <div className="flex flex-col gap-0">
                         {separate(message?.payload?.headers?.find((h) => h.name === "From")?.value)}
-                        <span className="text-[12px] text-gray-600 flex items-center gap-2 ">
+                        {/* <span className="text-[12px] text-gray-600 flex items-center gap-2 ">
                           to{" "}
                           {message?.payload?.headers?.find((h) => h.name === "To")?.value}
                           <span>
                             <FaCaretDown className="h-4 w-4 cursor-pointer" />
                           </span>
-                        </span>
+                        </span> */}
+
+                        <EmailHeaderDetails details={headerDetails} />
+
+
                       </div>
                     </div>
                     <div>
@@ -675,12 +698,14 @@ return (
                             );
                           })()}
                         </h3>
-                        <span className="text-[12px] text-gray-600 flex items-center gap-2 ">
+                        {/* <span className="text-[12px] text-gray-600 flex items-center gap-2 ">
                           to me
                           <span>
                             <FaCaretDown className="h-4 w-4 cursor-pointer" />
                           </span>
-                        </span>
+                        </span> */}
+
+                         <EmailHeaderDetails details={headerDetails} />
                       </div>
                     </div>
                     <div>
@@ -810,7 +835,7 @@ return (
              getEmailDetail={emailData}
              setShowReplyEditor={() => setShowReply(false)}
           
-          
+            ticketId={ticketDetail?._id}
           />
         </div>
       )}

@@ -1,4 +1,6 @@
 import crypto from "crypto";
+import ticketModel from "../../models/ticketModel.js";
+import mongoose from "mongoose";
 
 
 function buildReplySubject(subject = "") {
@@ -6,6 +8,34 @@ function buildReplySubject(subject = "") {
   if (/^re(\[\d+\])?:/i.test(s)) return s;
   return `Re: ${s}`;
 }
+
+
+function formatReplyHtml(message = "") {
+  if (!message) return "";
+
+  // 1️⃣ Remove completely empty <p> tags like <p></p> or <p>   </p>
+  let cleaned = message.replace(/<p>\s*<\/p>/gi, "");
+
+ 
+
+  // 3️⃣ Collapse multiple empty paragraphs into one
+  cleaned = cleaned.replace(/(<p>\s*<\/p>)+/gi, "");
+
+  // 4️⃣ Apply enterprise-style inline reset
+  cleaned = cleaned.replace(
+    /<p>/gi,
+    '<p style="margin:0; padding:0; line-height:1.5;">'
+  );
+
+  // 5️⃣ Optional: normalize <div> too (some editors use div instead of p)
+  // cleaned = cleaned.replace(
+  //   /<div>/gi,
+  //   '<div style="margin:0; padding:0; line-height:1.5;">'
+  // );
+
+  return cleaned.trim();
+}
+
 
 
 export function buildGmailReply({
@@ -20,6 +50,8 @@ export function buildGmailReply({
   attachments = []
 }) {
   const boundary = crypto.randomBytes(16).toString("hex");
+
+  
 
   const mimeHeaders = [
     `To: ${to.join(", ")}`,
@@ -40,26 +72,21 @@ export function buildGmailReply({
     .filter(Boolean)
     .join("\r\n");
 
-  let body = `
---${boundary}
-Content-Type: text/html; charset="UTF-8"
+let body =
+  `--${boundary}\r\n` +
+  `Content-Type: text/html; charset="UTF-8"\r\n\r\n` +
+  `${formatReplyHtml(html)}\r\n`;
 
-${html}
+for (const file of attachments) {
+  body +=
+    `--${boundary}\r\n` +
+    `Content-Type: ${file.mimeType}; name="${file.filename}"\r\n` +
+    `Content-Disposition: attachment; filename="${file.filename}"\r\n` +
+    `Content-Transfer-Encoding: base64\r\n\r\n` +
+    `${file.base64}\r\n`;
+}
 
-`;
-
-  for (const file of attachments) {
-    body += `
---${boundary}
-Content-Type: ${file.mimeType}; name="${file.filename}"
-Content-Disposition: attachment; filename="${file.filename}"
-Content-Transfer-Encoding: base64
-
-${file.base64}
-`;
-  }
-
-  body += `\r\n--${boundary}--`;
+body += `--${boundary}--`;
 
   const raw = Buffer.from(
     `${mimeHeaders}\r\n\r\n${body}`
@@ -124,3 +151,51 @@ ${file.base64}
 // </div>
 // `;
 // }
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+export const updateTicketAfterEmail = async (ticketId, update) => {
+  if (!ticketId || !mongoose.Types.ObjectId.isValid(ticketId)) {
+    return {
+      success: false,
+      status: 400,
+      message:
+        "Invalid ticketId. Email was sent, but ticket update did not occur.",
+    };
+  }
+
+
+
+
+  const updatedTicket = await ticketModel.findByIdAndUpdate(
+    ticketId,
+    update,
+    { new: true }
+  );
+
+  if (!updatedTicket) {
+    return {
+      success: false,
+      status: 404,
+      message:
+        "Ticket not found. Email was sent, but ticket update failed.",
+    };
+  }
+
+  return {
+    success: true,
+    status: 200,
+    data: updatedTicket,
+  };
+};

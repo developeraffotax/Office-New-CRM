@@ -24,6 +24,9 @@ import getJobHolderNames from "../utils/getJobHolderNames.js";
 import TicketActivity from "../models/ticketActivityModel.js";
 import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
 import goalModel from "../models/goalModel.js";
+import { normalizeDashes } from "../utils/normalizeDashes.js";
+import { getGmailClient } from "../emailModule/services/gmail.service.js";
+import { buildGmailReply } from "../emailModule/utils/buildGmailReply.js";
 
 
 
@@ -146,6 +149,7 @@ export const sendEmail = async (req, res) => {
     
 
     console.log("Subject💙💚💛", subject)
+    const normalizedSubject = normalizeDashes(subject)
     
     const userName = req.user.user.name;
 
@@ -179,7 +183,7 @@ export const sendEmail = async (req, res) => {
 
     const emailData = {
       email: email || client?.email,
-      subject: subject,
+      subject: normalizedSubject,
       message: message,
       attachments: attachments,
       company: company,
@@ -205,7 +209,7 @@ export const sendEmail = async (req, res) => {
       clientName: (clientId && client?.clientName) || clientName || "",
       company: company,
       jobHolder: jobHolderToAssign,
-      subject: subject,
+      subject: normalizedSubject,
       mailThreadId: threadId,
       lastMessageSentBy: userName,
       lastMessageSentTime: new Date(), 
@@ -220,7 +224,7 @@ export const sendEmail = async (req, res) => {
       userId: req.user.user._id,
       action: "created",
       gmailMessageId: resp?.data?.id || "",
-      details: `"${req.user.user.name}" created the ticket with subject "${subject}"
+      details: `"${req.user.user.name}" created the ticket with subject "${normalizedSubject}"
       -- Company: ${company}
       -- Client: ${clientId ? client.clientName :  clientName ? clientName : "N/A"}
       -- Email: ${email}
@@ -1432,6 +1436,270 @@ export const getTicketAttachments = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // Ticket Reply
+// export const sendTicketReply = async (req, res) => {
+//   try {
+//     const userName = req.user.user.name;
+//     const {
+//       ticketId,
+//       company,
+//       threadId,
+//       messageId,
+//       message,
+//       subject,
+//       emailSendTo,
+//       jobHolder,
+//     } = req.body;
+
+//     console.log(
+//       "Reply Detail:",
+//       ticketId,
+//       company,
+//       threadId,
+//       messageId,
+//       message,
+//       subject,
+//       emailSendTo,
+//       jobHolder
+//     );
+
+
+
+
+//     const gmail = await getGmailClient(company.toLowerCase());
+    
+//       const raw = buildGmailReply({
+//         to,
+//         cc,
+//         bcc,
+//         replyTo,
+//         subject: subject,
+//         html,
+//         quotedHtml,
+//         headers,
+//         attachments
+//       });
+    
+//       await gmail.users.messages.send({
+//         userId: "me",
+//         requestBody: {
+//           raw,
+//           threadId
+//         }
+//       });
+
+
+
+
+
+      
+ 
+
+//     const response = await emailReply(emailData);
+
+ 
+//         let updatedTicket = null;
+
+//         const update =  { lastMessageSentBy: userName, lastMessageSentTime: new Date(), status: "Sent" };
+
+//         if(jobHolder) {
+//           update.jobHolder = jobHolder;
+//         }
+
+
+//         console.log("THE UPDATE Object", update)
+
+//     if (ticketId && mongoose.Types.ObjectId.isValid(ticketId)) {
+//        updatedTicket = await ticketModel.findByIdAndUpdate(
+//         ticketId,
+//         update,
+//         { new: true }
+//       );
+
+//       if (!updatedTicket) {
+//         return res.status(404).send({
+//           success: false,
+//           message: "Ticket not found. Email was sent, but ticket update failed.",
+//         });
+//       }
+      
+//     } else {
+//       console.log("Invalid ticketId");
+//       return res.status(400).send({
+//         success: false,
+//         message: "Invalid ticketId. Email was sent, but ticket update did not occur.",
+//       });
+//     }
+
+
+
+//     const ticketActivity = await TicketActivity.create({
+//       ticketId: ticketId,
+//       userId: req.user.user._id,
+//       action: "replied",
+//       gmailMessageId: response?.data?.id || "",
+//       details: `
+//       "${req.user.user.name}" replied to this ticket.
+//       ${jobHolder ? `And updated the job holder to ${jobHolder}` : ""}
+//       -- Company: ${company}
+//       -- Email: ${emailSendTo}
+//     `,
+//     });
+
+//     res.status(200).send({
+//       success: true,
+//       message: "Email reply successfully!",
+//       updatedTicket: updatedTicket
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).send({
+//       success: false,
+//       messaeg: "Error while send ticket reply!",
+//       error: error,
+//     });
+//   }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Ticket Reply
 export const sendTicketReply = async (req, res) => {
   try {
@@ -1545,6 +1813,41 @@ export const sendTicketReply = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Mark As Read
 export const markAsRead = async (req, res) => {
   try {
@@ -1625,6 +1928,65 @@ export const singleTicketComments = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Get Complete Tickets
 export const getCompleteTickets = async (req, res) => {

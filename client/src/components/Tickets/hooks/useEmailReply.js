@@ -129,6 +129,7 @@ export function useEmailReply({
   emailDetail,
 
   jobHolder,
+  ticketId
 }) {
   const [mode, setMode] = useState("reply");
   const [to, setTo] = useState([]);
@@ -141,8 +142,8 @@ export function useEmailReply({
 
   /* ---------- auto population ---------- */
 
-  console.log("THE EMAIL DETAIL IS", emailDetail);
-
+  console.log("THE EMAIL DETAIL IS ❤️❤️", emailDetail);
+  console.log("THE TICKET ID IS ✔️✔️✔️✔️", ticketId)
   useEffect(() => {
     if (!emailDetail?.decryptedMessages?.length) return;
 
@@ -226,6 +227,7 @@ export function useEmailReply({
         headers,
         attachments,
         jobHolder,
+        ticketId
       });
 
       toast.success("Reply sent");

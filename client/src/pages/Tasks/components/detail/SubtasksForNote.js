@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { LoadingDots } from "../../utlis/CustomLoaders";
+import { LoadingDots } from "../../../../utlis/CustomLoaders";
 
 const SubtasksForNote = ({ taskId, onSelect }) => {
   const [isOpen, setIsOpen] = useState(false);

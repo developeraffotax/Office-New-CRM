@@ -34,7 +34,7 @@ import { JobDetailTab } from "./detailComponents/JobDetailTab";
 import { SalesTab } from "./detailComponents/SalesTab";
 import { LoginInfoTab } from "./detailComponents/LoginInfoTab";
 import { DepartmentTab } from "./detailComponents/DepartmentTab";
-import DetailComments from "../Tasks/TaskDetailComments";
+import DetailComments from "../Tasks/components/detail/TaskDetailComments";
 
 export default function JobDetail({
   clientId,

@@ -122,13 +122,17 @@ const useTaskData = () => {
       );
       setUsers(
         data?.users?.filter((user) =>
-          user?.role?.access?.some((item) => item?.permission?.includes("Tasks")),
+          user?.role?.access?.some((item) =>
+            item?.permission?.includes("Tasks"),
+          ),
         ) || [],
       );
       setUserName(
         data?.users
           ?.filter((user) =>
-            user?.role?.access?.map((item) => item.permission.includes("Tasks")),
+            user?.role?.access?.map((item) =>
+              item.permission.includes("Tasks"),
+            ),
           )
           ?.map((user) => user.name),
       );
@@ -155,23 +159,19 @@ const useTaskData = () => {
     getAllTasks();
     getAllUsers();
     getlabel();
-    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
     getAllProjects();
-    // eslint-disable-next-line
   }, [auth]);
 
   useEffect(() => {
     if (auth) {
       getAllDepartments();
     }
-    // eslint-disable-next-line
   }, [auth, allProjects]);
 
   return {
-    // state
     tasksData,
     setTasksData,
     loading,
@@ -183,7 +183,6 @@ const useTaskData = () => {
     userName,
     setUserName,
     labelData,
-    // fetchers
     getAllTasks,
     getTasks1,
     getAllProjects,

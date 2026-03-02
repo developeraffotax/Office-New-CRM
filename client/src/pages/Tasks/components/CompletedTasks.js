@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { style } from "../../utlis/CommonStyle";
+import { style } from "../../../utlis/CommonStyle";
 import axios from "axios";
-import AddProjectModal from "../../components/Tasks/AddProjectModal";
+import AddProjectModal from "../../../components/Tasks/AddProjectModal";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import {
@@ -15,25 +15,25 @@ import Swal from "sweetalert2";
 import toast from "react-hot-toast";
  
 import { TbCalendarDue } from "react-icons/tb";
-import AddTaskModal from "../../components/Tasks/AddTaskModal";
+import AddTaskModal from "../../../components/Tasks/AddTaskModal";
 import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
-import Loader from "../../utlis/Loader";
+import Loader from "../../../utlis/Loader";
 import { format } from "date-fns";
 import { useLocation } from "react-router-dom";
 import { mkConfig, generateCsv, download } from "export-to-csv";
-import JobCommentModal from "../Jobs/JobCommentModal";
-import TaskDetail from "./TaskDetail";
+import JobCommentModal from "../../Jobs/JobCommentModal";
+import TaskDetail from "./detail/TaskDetail";
 import { MdBackspace } from "react-icons/md";
-import TimeEditor from "../../utlis/TimeSelector";
-import Subtasks from "./Subtasks";
+import TimeEditor from "../../../utlis/TimeSelector";
+import Subtasks from "./detail/Subtasks";
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import { useDispatch, useSelector } from "react-redux";
-import { setFilterId } from "../../redux/slices/authSlice";
-import { getCompletedTaskColumns } from "./table/columns";
-import DraggableFilterTabs from "./DraggableFilterTabs";
+import { setFilterId } from "../../../redux/slices/authSlice";
+import { getCompletedTaskColumns } from "../table/columns";
+import DraggableFilterTabs from "./filters/DraggableFilterTabs";
 
 
 

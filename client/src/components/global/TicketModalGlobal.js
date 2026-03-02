@@ -3,7 +3,7 @@ import { IoClose } from "react-icons/io5";
 import { useDispatch } from "react-redux";
 
 import ActivityLogDrawer from "../Modals/ActivityLogDrawer";
-import DetailComments from "../../pages/Tasks/TaskDetailComments";
+import DetailComments from "../../pages/Tasks/components/detail/TaskDetailComments";
 import EmailDetailDrawer from "../../pages/Tickets/EmailDetailDrawer";
 import { closeModal } from "../../redux/slices/globalModalSlice";
 

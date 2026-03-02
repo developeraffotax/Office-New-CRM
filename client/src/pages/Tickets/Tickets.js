@@ -40,7 +40,7 @@ import RefreshTicketsButton from "./ui/RefreshTicketsButton";
 import { getTicketsColumns } from "./table/columns";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { isAdmin } from "../../utlis/isAdmin";
-import DetailComments from "../Tasks/TaskDetailComments";
+import DetailComments from "../Tasks/components/detail/TaskDetailComments";
  
 import { useClickOutside } from "../../utlis/useClickOutside";
 import { GoEye, GoEyeClosed } from "react-icons/go";

@@ -6,17 +6,6 @@ export const getCurrentMonthYear = () => {
   return `${year}-${month}`;
 };
 
-
-
-
-
-
-
-
-
-
-
-
 export const DateFilterFn = (row, columnId, filterValue) => {
   const cellValue = row.getValue(columnId);
   if (!cellValue) return false;
@@ -27,7 +16,7 @@ export const DateFilterFn = (row, columnId, filterValue) => {
   const startOfToday = new Date(
     today.getFullYear(),
     today.getMonth(),
-    today.getDate()
+    today.getDate(),
   );
 
   if (typeof filterValue === "object" && filterValue.from && filterValue.to) {
@@ -70,34 +59,6 @@ export const DateFilterFn = (row, columnId, filterValue) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const TaskDateFilterFn = (row, columnId, filterValue) => {
   const cellValue = row.getValue(columnId);
   if (!cellValue) return false;
@@ -108,7 +69,7 @@ export const TaskDateFilterFn = (row, columnId, filterValue) => {
   const startOfToday = new Date(
     today.getFullYear(),
     today.getMonth(),
-    today.getDate()
+    today.getDate(),
   );
 
   const tomorrow = new Date(today);
@@ -121,40 +82,59 @@ export const TaskDateFilterFn = (row, columnId, filterValue) => {
   }
 
   switch (filterValue) {
-        case "Expired":
-          return cellDate < startOfToday;
+    case "Expired":
+      return cellDate < startOfToday;
 
-           case "Upcoming":
-          return cellDate > tomorrow;
+    case "Upcoming":
+      return cellDate > tomorrow;
 
-        case "Yesterday":
-          const Yesterday = new Date(today);
-          Yesterday.setDate(today.getDate() - 1);
-          return cellDate.toDateString() === Yesterday.toDateString();
+    case "Yesterday":
+      const Yesterday = new Date(today);
+      Yesterday.setDate(today.getDate() - 1);
+      return cellDate.toDateString() === Yesterday.toDateString();
 
-        case "Today":
-          return cellDate.toDateString() === today.toDateString();
-        case "Tomorrow":
-          return cellDate.toDateString() === tomorrow.toDateString();
-        case "In 7 days":
-          const in7Days = new Date(today);
-          in7Days.setDate(today.getDate() + 7);
+    case "Today":
+      return cellDate.toDateString() === today.toDateString();
+    case "Tomorrow":
+      return cellDate.toDateString() === tomorrow.toDateString();
+    case "In 7 days":
+      const in7Days = new Date(today);
+      in7Days.setDate(today.getDate() + 7);
 
-          return cellDate <= in7Days && cellDate > tomorrow;
-        case "In 15 days":
-          const in15Days = new Date(today);
-          in15Days.setDate(today.getDate() + 15);
-          return cellDate <= in15Days && cellDate > tomorrow;
-        case "In 30 Days":
-          const in30Days = new Date(today);
-          in30Days.setDate(today.getDate() + 30);
-          return cellDate <= in30Days && cellDate > tomorrow;
-        case "In 60 Days":
-          const in60Days = new Date(today);
-          in60Days.setDate(today.getDate() + 60);
-          return cellDate <= in60Days && cellDate > tomorrow;
+      return cellDate <= in7Days && cellDate > tomorrow;
+    case "In 15 days":
+      const in15Days = new Date(today);
+      in15Days.setDate(today.getDate() + 15);
+      return cellDate <= in15Days && cellDate > tomorrow;
+    case "In 30 Days":
+      const in30Days = new Date(today);
+      in30Days.setDate(today.getDate() + 30);
+      return cellDate <= in30Days && cellDate > tomorrow;
+    case "In 60 Days":
+      const in60Days = new Date(today);
+      in60Days.setDate(today.getDate() + 60);
+      return cellDate <= in60Days && cellDate > tomorrow;
 
-        default:
-          return false;
-      }
+    default:
+      return false;
+  }
+};
+
+export const getStatus = (startDateOfTask, deadlineOfTask) => {
+  const startDate = new Date(startDateOfTask);
+  const deadline = new Date(deadlineOfTask);
+  const today = new Date();
+
+  // Remove time parts for accurate date comparison
+  startDate.setHours(0, 0, 0, 0);
+  deadline.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  if (deadline < today) {
+    return "Overdue";
+  } else if (startDate <= today && !(deadline < today)) {
+    return "Due";
+  } else {
+    return "Upcoming";
+  }
 };

@@ -3,7 +3,7 @@ import {
   useMaterialReactTable,
 } from "material-react-table";
 import React, { useEffect, useMemo, useState } from "react";
-import TaskDetail from "../../pages/Tasks/TaskDetail";
+import TaskDetail from "../../pages/Tasks/components/detail/TaskDetail";
 import { IoClose } from "react-icons/io5";
 import axios from "axios";
 import toast from "react-hot-toast";

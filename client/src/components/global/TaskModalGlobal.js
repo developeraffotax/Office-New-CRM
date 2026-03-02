@@ -7,7 +7,7 @@ import axios from "axios";
 import { closeModal } from "../../redux/slices/globalModalSlice";
 import JobDetail from "../../pages/Jobs/JobDetail";
 import { useEscapeKey } from "../../utlis/useEscapeKey";
-import TaskDetail from "../../pages/Tasks/TaskDetail";
+import TaskDetail from "../../pages/Tasks/components/detail/TaskDetail";
 import Swal from "sweetalert2";
 
 export const TaskModalGlobal = ({ taskId }) => {

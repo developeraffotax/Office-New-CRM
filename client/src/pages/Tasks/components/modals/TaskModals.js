@@ -1,14 +1,14 @@
 import React from "react";
 import { IoClose } from "react-icons/io5";
 
-import { style } from "../../../utlis/CommonStyle";
-import AddProjectModal from "../../../components/Tasks/AddProjectModal";
-import AddTaskModal from "../../../components/Tasks/AddTaskModal";
-import AddTaskDepartmentModal from "../../../components/Tasks/AddTaskDepartmentModal";
-import JobCommentModal from "../../Jobs/JobCommentModal";
-import AddLabel from "../../../components/Modals/AddLabel";
-import TaskDetail from "../TaskDetail";
-import SubtasksForNote from "../SubtasksForNote";
+import { style } from "../../../../utlis/CommonStyle";
+import AddProjectModal from "../../../../components/Tasks/AddProjectModal";
+import AddTaskModal from "../../../../components/Tasks/AddTaskModal";
+import AddTaskDepartmentModal from "../../../../components/Tasks/AddTaskDepartmentModal";
+import JobCommentModal from "../../../Jobs/JobCommentModal";
+import AddLabel from "../../../../components/Modals/AddLabel";
+import TaskDetail from "../detail/TaskDetail";
+import SubtasksForNote from "../detail/SubtasksForNote";
 
 const TaskModals = ({
   modals,

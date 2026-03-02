@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import AssignmentIcon from '@mui/icons-material/Assignment';
 
-import Subtasks from "../../Subtasks";
+import Subtasks from "../../components/detail/Subtasks";
 
 export const taskColumn = (ctx) => {
 

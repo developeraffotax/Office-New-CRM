@@ -9,7 +9,7 @@ import { IoClose } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import EmailDetailDrawer from "../../pages/Tickets/EmailDetailDrawer";
 import ActivityLogDrawer from "../Modals/ActivityLogDrawer";
-import DetailComments from "../../pages/Tasks/TaskDetailComments";
+import DetailComments from "../../pages/Tasks/components/detail/TaskDetailComments";
 import toast from "react-hot-toast";
 
 const API_URL = `${process.env.REACT_APP_API_URL}`;

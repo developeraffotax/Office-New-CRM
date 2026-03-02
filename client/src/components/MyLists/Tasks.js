@@ -25,13 +25,13 @@ import { GrCopy } from "react-icons/gr";
  
  
 import { Timer } from "../../utlis/Timer";
-import CompletedTasks from "../../pages/Tasks/CompletedTasks";
+import CompletedTasks from "../../pages/Tasks/components/CompletedTasks";
 import AddLabel from "../Modals/AddLabel";
 import AddProjectModal from "../Tasks/AddProjectModal";
 import AddTaskModal from "../Tasks/AddTaskModal";
 import JobCommentModal from "../../pages/Jobs/JobCommentModal";
 import Loader from "../../utlis/Loader";
-import TaskDetail from "../../pages/Tasks/TaskDetail";
+import TaskDetail from "../../pages/Tasks/components/detail/TaskDetail";
 import TimeEditor from "../../utlis/TimeSelector";
  
 import { useDispatch, useSelector } from "react-redux";

@@ -5,21 +5,19 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import EntityDropdown from "./EntityDropdown";
 
-const API_URL = `${process.env.REACT_APP_API_URL}/api/v1/projects`
-
+const API_URL = `${process.env.REACT_APP_API_URL}/api/v1/projects`;
 
 const ProjectDropdown = ({
   showProject,
-   
+
   projects,
   getAllProjects,
   getAllTasks,
   setShowProject,
   setProjectId,
   setOpenAddProject,
-   
 }) => {
-    const dropdownRef = useRef(null); 
+  const dropdownRef = useRef(null);
   // --------- Delete Project ---------
   const handleDeleteConfirmation = (projectId) => {
     Swal.fire({
@@ -40,12 +38,9 @@ const ProjectDropdown = ({
 
   const deleteProject = async (id) => {
     try {
-      const { data } = await axios.delete(
-        `${API_URL}/delete/project/${id}`
-      );
+      const { data } = await axios.delete(`${API_URL}/delete/project/${id}`);
       if (data) {
         getAllProjects();
-        
       }
     } catch (error) {
       console.log(error);
@@ -69,7 +64,7 @@ const ProjectDropdown = ({
         Swal.fire(
           "Project Completed!",
           "Your project has been updated.",
-          "success"
+          "success",
         );
       }
     });
@@ -77,14 +72,11 @@ const ProjectDropdown = ({
 
   const updateProjectStatus = async (id) => {
     try {
-      const { data } = await axios.put(
-        `${API_URL}/update/status/${id}`
-      );
+      const { data } = await axios.put(`${API_URL}/update/status/${id}`);
       if (data) {
         getAllProjects();
         getAllTasks();
         setShowProject(false);
-        
       }
     } catch (error) {
       console.log(error);
@@ -92,17 +84,10 @@ const ProjectDropdown = ({
     }
   };
 
-
-
-
-
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowProject(false); // close when clicked outside
       }
     };
@@ -110,8 +95,6 @@ const ProjectDropdown = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-
 
   return (
     <EntityDropdown

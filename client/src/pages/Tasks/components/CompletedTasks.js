@@ -13,7 +13,7 @@ import {
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
- 
+
 import { TbCalendarDue } from "react-icons/tb";
 import AddTaskModal from "../../../components/Tasks/AddTaskModal";
 import {
@@ -29,17 +29,11 @@ import TaskDetail from "./detail/TaskDetail";
 import { MdBackspace } from "react-icons/md";
 import TimeEditor from "../../../utlis/TimeSelector";
 import Subtasks from "./detail/Subtasks";
-import AssignmentIcon from '@mui/icons-material/Assignment';
+import AssignmentIcon from "@mui/icons-material/Assignment";
 import { useDispatch, useSelector } from "react-redux";
 import { setFilterId } from "../../../redux/slices/authSlice";
 import { getCompletedTaskColumns } from "../table/columns";
 import DraggableFilterTabs from "./filters/DraggableFilterTabs";
-
-
-
-
-
-
 
 function useColumnFilterSync(table, columnId, value, setValue) {
   useEffect(() => {
@@ -59,12 +53,6 @@ function useColumnFilterSync(table, columnId, value, setValue) {
 
   return updateFilter;
 }
-
-
-
-
-
-
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -86,12 +74,9 @@ const CompletedTasks = ({
   getTasks,
   getAllProj1,
 }) => {
- 
-
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth.auth);
   const filterId = useSelector((state) => state.auth.filterId);
-
 
   const [departments, setDepartments] = useState([]);
   const [allProjects, setAllProjects] = useState([]);
@@ -129,37 +114,21 @@ const CompletedTasks = ({
   const [labelData, setLabelData] = useState([]);
   const [totalHours, setTotalHours] = useState("0");
 
-
-
-
-
   const [filter1, setFilter1] = useState("");
   const [filter2, setFilter2] = useState("");
   const [filter3, setFilter3] = useState("");
-
-
-
-
-
-
-
-
-
-
-
-
 
   const dateStatus = ["Due", "Overdue"];
 
   const status = ["Todo", "Progress", "Review", "Onhold"];
 
   console.log("projects:", projects);
- 
+
   //---------- Get All Departments-----------
   const getAllDepartments = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tasks/department`
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/department`,
       );
       if (data?.success) {
         if (auth?.user?.role?.name === "Admin") {
@@ -168,7 +137,7 @@ const CompletedTasks = ({
         } else {
           // Non-admin: only include departments linked to projects user is in
           const userProjects = allProjects.filter((project) =>
-            project.users_list.some((user) => user._id === auth?.user?.id)
+            project.users_list.some((user) => user._id === auth?.user?.id),
           );
 
           // Collect all department IDs from user's projects
@@ -181,7 +150,7 @@ const CompletedTasks = ({
 
           // Filter the full department list based on user's accessible departments
           const filteredDepartments = data.departments.filter((dep) =>
-            uniqueDeptIds.includes(dep._id)
+            uniqueDeptIds.includes(dep._id),
           );
 
           setDepartments(filteredDepartments || []);
@@ -198,59 +167,49 @@ const CompletedTasks = ({
     }
   }, [auth, allProjects]);
 
-
-
-
-
-
-
-
-    // Add label in Task
-    const addlabelTask = async (id, name, color) => {
-      try {
-        const { data } = await axios.put(
-          `${process.env.REACT_APP_API_URL}/api/v1/tasks/add/label/${id}`,
-          { name, color }
-        );
-        if (data) {
-          if (filterId || active !== "All" || filterData || active1) {
-            setFilterData((prevData = []) =>
-              prevData?.map((item) =>
-                item._id === id ? { ...item, label: { name, color } } : item
-              )
-            );
-          }
-          setTasksData((prevData = []) =>
+  // Add label in Task
+  const addlabelTask = async (id, name, color) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/add/label/${id}`,
+        { name, color },
+      );
+      if (data) {
+        if (filterId || active !== "All" || filterData || active1) {
+          setFilterData((prevData = []) =>
             prevData?.map((item) =>
-              item._id === id ? { ...item, label: { name, color } } : item
-            )
+              item._id === id ? { ...item, label: { name, color } } : item,
+            ),
           );
-  
-          if (name) {
-            toast.success("label added!");
-          } else {
-            toast.success("label Updated!");
-          }
-  
-          getAllTasks();
         }
-      } catch (error) {
-        console.log(error);
-        toast.error("Error while add label");
+        setTasksData((prevData = []) =>
+          prevData?.map((item) =>
+            item._id === id ? { ...item, label: { name, color } } : item,
+          ),
+        );
+
+        if (name) {
+          toast.success("label added!");
+        } else {
+          toast.success("label Updated!");
+        }
+
+        getAllTasks();
       }
-    };
+    } catch (error) {
+      console.log(error);
+      toast.error("Error while add label");
+    }
+  };
 
-
-
-
-    console.log("tasksData 🤎🤎🖤💜💜💙💙💚💚💛💛🧡🧡❤ DATA:", tasksData, );
+  console.log("tasksData 🤎🤎🖤💜💜💙💙💚💚💛💛🧡🧡❤ DATA:", tasksData);
 
   // -------Get All Tasks----->
   const getAllTasks = async () => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/completed`
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/completed`,
       );
       setTasksData(data?.tasks);
       setLoading(false);
@@ -269,7 +228,7 @@ const CompletedTasks = ({
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
       );
 
       // setUsers(data?.users);
@@ -277,9 +236,9 @@ const CompletedTasks = ({
       setUsers(
         data?.users?.filter((user) =>
           user?.role?.access?.some((item) =>
-            item?.permission?.includes("Tasks")
-          )
-        ) || []
+            item?.permission?.includes("Tasks"),
+          ),
+        ) || [],
       );
     } catch (error) {
       console.log(error);
@@ -295,7 +254,7 @@ const CompletedTasks = ({
   const getAllProjects = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/projects/get_all/project`
+        `${process.env.REACT_APP_API_URL}/api/v1/projects/get_all/project`,
       );
 
       setAllProjects(data?.projects);
@@ -314,7 +273,7 @@ const CompletedTasks = ({
   const getlabel = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels/task`
+        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels/task`,
       );
       if (data.success) {
         setLabelData(data.labels);
@@ -348,7 +307,7 @@ const CompletedTasks = ({
   const deleteProject = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/projects/delete/project/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/projects/delete/project/${id}`,
       );
       if (data) {
         getAllProjects();
@@ -363,14 +322,14 @@ const CompletedTasks = ({
   useEffect(() => {
     const totalHours = tasksData.reduce(
       (sum, client) => sum + Number(client.hours),
-      0
+      0,
     );
     setTotalHours(totalHours.toFixed(0));
     if (active === "All" && !active1) {
       if (filterData) {
         const totalHours = tasksData.reduce(
           (sum, client) => sum + Number(client.hours),
-          0
+          0,
         );
         setTotalHours(totalHours.toFixed(0));
       }
@@ -378,7 +337,7 @@ const CompletedTasks = ({
       if (filterData) {
         const totalHours = filterData.reduce(
           (sum, client) => sum + Number(client.hours),
-          0
+          0,
         );
         setTotalHours(totalHours.toFixed(0));
       }
@@ -400,7 +359,7 @@ const CompletedTasks = ({
         Swal.fire(
           "Project Completed!",
           "Your project has been updated.",
-          "success"
+          "success",
         );
       }
     });
@@ -409,7 +368,7 @@ const CompletedTasks = ({
   const updateProjectStatus = async (id) => {
     try {
       const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/projects/update/status/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/projects/update/status/${id}`,
       );
       if (data) {
         getAllProjects();
@@ -422,8 +381,8 @@ const CompletedTasks = ({
       toast.error(error?.response?.data?.message);
     }
   };
-  // ------------------------------Tasks----------------->
 
+  // ------------------------------Tasks----------------->
   // ------------Filter By Projects---------->
   const getProjectsCount = (project) => {
     if (project === "All") {
@@ -434,26 +393,25 @@ const CompletedTasks = ({
   };
 
   // --------------Job_Holder Length---------->
-
   const getJobHolderCount = (user, project) => {
     return tasksData.filter((item) =>
       project === "All"
         ? item?.jobHolder === user
-        : item?.jobHolder === user && item?.project?.projectName === project
+        : item?.jobHolder === user && item?.project?.projectName === project,
     )?.length;
   };
 
   // -------Due & Overdue count------->
   const getDueAndOverdueCountByDepartment = (project) => {
     const filteredData = tasksData.filter(
-      (item) => item.project?.projectName === project || project === "All"
+      (item) => item.project?.projectName === project || project === "All",
     );
 
     const dueCount = filteredData.filter(
-      (item) => getStatus(item.deadline, item.startDate) === "Due"
+      (item) => getStatus(item.deadline, item.startDate) === "Due",
     ).length;
     const overdueCount = filteredData.filter(
-      (item) => getStatus(item.deadline, item.startDate) === "Overdue"
+      (item) => getStatus(item.deadline, item.startDate) === "Overdue",
     ).length;
 
     return { due: dueCount, overdue: overdueCount };
@@ -464,7 +422,7 @@ const CompletedTasks = ({
     return tasksData.filter((item) =>
       projectName === "All"
         ? item?.status === status
-        : item?.status === status && item?.project?.projectName === projectName
+        : item?.status === status && item?.project?.projectName === projectName,
     )?.length;
   };
 
@@ -476,7 +434,7 @@ const CompletedTasks = ({
         item.project?.projectName === value ||
         item.status === value ||
         item.jobHolder === value ||
-        item._id === value
+        item._id === value,
     );
 
     console.log("FilterData", filteredData);
@@ -502,7 +460,7 @@ const CompletedTasks = ({
           item.status === value ||
           item.jobHolder === value ||
           getStatus(item.deadline, item.startDate) === value ||
-          getStatus(item.deadline, item.startDate) === value
+          getStatus(item.deadline, item.startDate) === value,
       );
     } else {
       filteredData = tasksData.filter((item) => {
@@ -531,15 +489,15 @@ const CompletedTasks = ({
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/project/${taskId}`,
-        { projectId: projectId }
+        { projectId: projectId },
       );
       if (data?.success) {
         const updateTask = data?.task;
         toast.success("Project updated!");
         setTasksData((prevData) =>
           prevData.map((item) =>
-            item._id === updateTask._id ? updateTask : item
-          )
+            item._id === updateTask._id ? updateTask : item,
+          ),
         );
       }
     } catch (error) {
@@ -557,7 +515,7 @@ const CompletedTasks = ({
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/task/JLS/${taskId}`,
-        { jobHolder, lead, status }
+        { jobHolder, lead, status },
       );
       if (data?.success) {
         const updateTask = data?.task;
@@ -565,15 +523,15 @@ const CompletedTasks = ({
         if (filterId || active || active1) {
           setFilterData((prevData) =>
             prevData.map((item) =>
-              item._id === updateTask._id ? updateTask : item
-            )
+              item._id === updateTask._id ? updateTask : item,
+            ),
           );
         }
 
         setTasksData((prevData) =>
           prevData.map((item) =>
-            item._id === updateTask._id ? updateTask : item
-          )
+            item._id === updateTask._id ? updateTask : item,
+          ),
         );
 
         getTasks();
@@ -589,7 +547,7 @@ const CompletedTasks = ({
     taskId,
     allocateTask,
     startDate,
-    deadline
+    deadline,
   ) => {
     if (!taskId) {
       toast.error("Project/Task id is required!");
@@ -598,15 +556,15 @@ const CompletedTasks = ({
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/allocate/task/${taskId}`,
-        { allocateTask, startDate, deadline }
+        { allocateTask, startDate, deadline },
       );
       if (data?.success) {
         const updateTask = data?.task;
         // toast.success("Task updated successfully!");
         setTasksData((prevData) =>
           prevData.map((item) =>
-            item._id === updateTask._id ? updateTask : item
-          )
+            item._id === updateTask._id ? updateTask : item,
+          ),
         );
       }
     } catch (error) {
@@ -667,7 +625,7 @@ const CompletedTasks = ({
         deadline: taskCopy.deadline,
         lead: taskCopy.lead,
         label: taskCopy.label,
-      }
+      },
     );
     if (data) {
       console.log("Copied Task:", data.task);
@@ -710,7 +668,7 @@ const CompletedTasks = ({
     setTasksData(filterData);
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/tasks/delete/task/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/delete/task/${id}`,
       );
       if (data) {
         setShowDetail(false);
@@ -725,98 +683,92 @@ const CompletedTasks = ({
   // ----------------------Table Data--------->
 
   console.log("TAKS DATA:", tasksData);
- 
-   // ----------------------------
-   // 🔑 Authentication & User Data
-   // ----------------------------
-   const authCtx = useMemo(
-     () => ({
-       auth,
-       users,
-       departments,
-     }),
-     [auth, users, departments]
-   );
- 
-   // ----------------------------
-   // 📂 Projects
-   // ----------------------------
-   const projectCtx = useMemo(
-     () => ({
-       allProjects,
-       updateTaskProject,
-       updateTaskJLS,
-       updateAlocateTask,
-     }),
-     [allProjects]
-   );
- 
-   // ----------------------------
-   // 📊 Tasks / Filtering
-   // ----------------------------
-   const taskCtx = useMemo(
-     () => ({
-       totalHours,
-       filterId,
-       active,
-       active1,
-       setFilterData,
-       setTasksData,
-       setTaskID,
-       setProjectName,
-       setShowDetail,
-       copyTask,
-        
-        
-     }),
-     [totalHours, filterId, active, active1]
-   );
- 
-   // ----------------------------
-   // 💬 Comments
-   // ----------------------------
-   const commentCtx = useMemo(
-     () => ({
-        
-       setCommentTaskId,
-       setIsComment,
-     }),
-     []
-   );
- 
- 
- 
-   // ----------------------------
-   // 🏷️ Labels
-   // ----------------------------
-   const labelCtx = useMemo(
-     () => ({
-       labelData,
-       addlabelTask,
-     }),
-     [labelData]
-   );
- 
-   // ----------------------------
-   // 📦 Merge into one ctx if needed
-   // ----------------------------
-   const ctx = useMemo(
-     () => ({
-       ...authCtx,
-       ...projectCtx,
-       ...taskCtx,
-       ...commentCtx,
-       
-       ...labelCtx,
-     }),
-     [authCtx, projectCtx, taskCtx, commentCtx,  labelCtx]
-   );
- 
-   // ----------------------------
-   // 📑 Columns
-   // ----------------------------
-   const columns = useMemo(() => getCompletedTaskColumns(ctx), [ctx]);
- 
+
+  // ----------------------------
+  // 🔑 Authentication & User Data
+  // ----------------------------
+  const authCtx = useMemo(
+    () => ({
+      auth,
+      users,
+      departments,
+    }),
+    [auth, users, departments],
+  );
+
+  // ----------------------------
+  // 📂 Projects
+  // ----------------------------
+  const projectCtx = useMemo(
+    () => ({
+      allProjects,
+      updateTaskProject,
+      updateTaskJLS,
+      updateAlocateTask,
+    }),
+    [allProjects],
+  );
+
+  // ----------------------------
+  // 📊 Tasks / Filtering
+  // ----------------------------
+  const taskCtx = useMemo(
+    () => ({
+      totalHours,
+      filterId,
+      active,
+      active1,
+      setFilterData,
+      setTasksData,
+      setTaskID,
+      setProjectName,
+      setShowDetail,
+      copyTask,
+    }),
+    [totalHours, filterId, active, active1],
+  );
+
+  // ----------------------------
+  // 💬 Comments
+  // ----------------------------
+  const commentCtx = useMemo(
+    () => ({
+      setCommentTaskId,
+      setIsComment,
+    }),
+    [],
+  );
+
+  // ----------------------------
+  // 🏷️ Labels
+  // ----------------------------
+  const labelCtx = useMemo(
+    () => ({
+      labelData,
+      addlabelTask,
+    }),
+    [labelData],
+  );
+
+  // ----------------------------
+  // 📦 Merge into one ctx if needed
+  // ----------------------------
+  const ctx = useMemo(
+    () => ({
+      ...authCtx,
+      ...projectCtx,
+      ...taskCtx,
+      ...commentCtx,
+
+      ...labelCtx,
+    }),
+    [authCtx, projectCtx, taskCtx, commentCtx, labelCtx],
+  );
+
+  // ----------------------------
+  // 📑 Columns
+  // ----------------------------
+  const columns = useMemo(() => getCompletedTaskColumns(ctx), [ctx]);
 
   const table = useMaterialReactTable({
     columns,
@@ -875,27 +827,24 @@ const CompletedTasks = ({
     },
   });
 
-
-
-  
   // Hook returns an updater for each column
   const updateDepartment = useColumnFilterSync(
     table,
     "departmentName",
     filter1,
-    setFilter1
+    setFilter1,
   );
   const updateProject = useColumnFilterSync(
     table,
     "projectName",
     filter2,
-    setFilter2
+    setFilter2,
   );
   const updateJobHolder = useColumnFilterSync(
     table,
     "jobHolder",
     filter3,
-    setFilter3
+    setFilter3,
   );
 
   // helper to check if "all departments" are selected
@@ -903,7 +852,6 @@ const CompletedTasks = ({
     filter1 === "" ||
     filter1 === "All" ||
     (Array.isArray(filter1) && filter1.length === departments.length);
-
 
   return (
     <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
@@ -1016,54 +964,50 @@ const CompletedTasks = ({
       <div className="flex flex-col gap-2">
         {/* -----------Filters By Projects--------- */}
         <div className="flex items-center flex-wrap gap-2 mt-3">
-           <div
-                className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                  allDepartmentsSelected &&
-                  " border-2 border-b-0 text-orange-600 border-gray-300"
-                }`}
-                onClick={() => {
-                  // setShowCompleted(false);
+          <div
+            className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+              allDepartmentsSelected &&
+              " border-2 border-b-0 text-orange-600 border-gray-300"
+            }`}
+            onClick={() => {
+              // setShowCompleted(false);
 
-                  // clear all filters when clicking "All"
-                  updateDepartment("");
-                  updateProject("");
-                  updateJobHolder("");
+              // clear all filters when clicking "All"
+              updateDepartment("");
+              updateProject("");
+              updateJobHolder("");
 
-                  setFilter1("All");
-                }}
-              >
-                All
-              </div>
+              setFilter1("All");
+            }}
+          >
+            All
+          </div>
 
-              <DraggableFilterTabs
-                droppableId={"departments"}
-                items={departments}
-                filterValue={filter1}
-                tasks={tasksData}
-                getCountFn={(department, tasks) =>
-                  tasks.filter((t) =>
-                    t.project?.departments?.some(
-                      (d) => d._id === department?._id
-                    )
-                  ).length
-                }
-                getLabelFn={(department) => department?.departmentName}
-                 
-
-                onClick={(dep) => {
-                  const newValue =
-                    filter1 === dep.departmentName ? "" : dep.departmentName;
-                  updateDepartment(newValue);
-                  updateProject(""); // reset project filter when department changes
-                  updateJobHolder(""); // reset jobHolder filter when department changes
-                }}
-                onDragEnd={() => {}}
-                activeClassName={
-                  filter1
-                    ? "border-2 border-b-0 text-orange-600 border-gray-300"
-                    : ""
-                }
-              />
+          <DraggableFilterTabs
+            droppableId={"departments"}
+            items={departments}
+            filterValue={filter1}
+            tasks={tasksData}
+            getCountFn={(department, tasks) =>
+              tasks.filter((t) =>
+                t.project?.departments?.some((d) => d._id === department?._id),
+              ).length
+            }
+            getLabelFn={(department) => department?.departmentName}
+            onClick={(dep) => {
+              const newValue =
+                filter1 === dep.departmentName ? "" : dep.departmentName;
+              updateDepartment(newValue);
+              updateProject(""); // reset project filter when department changes
+              updateJobHolder(""); // reset jobHolder filter when department changes
+            }}
+            onDragEnd={() => {}}
+            activeClassName={
+              filter1
+                ? "border-2 border-b-0 text-orange-600 border-gray-300"
+                : ""
+            }
+          />
 
           {/*  */}
           {/* -------------Filter Open Buttons-------- */}
@@ -1112,7 +1056,7 @@ const CompletedTasks = ({
               setShowJobHolder(false);
               setShowDue(false);
               setActive1("");
-               dispatch(setFilterId(""));
+              dispatch(setFilterId(""));
             }}
             title="Clear filters"
           >
@@ -1131,39 +1075,38 @@ const CompletedTasks = ({
               </h3>
               <div className="flex items-center flex-wrap gap-4">
                 <DraggableFilterTabs
-                                      droppableId={"users"}
-                                      // items={filter2 ? projectUsers.filter(user => getJobHolderCount(user?.name, active) > 0) : users.filter(user => getJobHolderCount(user?.name, active) > 0)}
-                                      items={users.filter(
-                                        (user) => getJobHolderCount(user?.name, active) > 0
-                                      )}
-                                      filterValue={filter3}
-                                      tasks={tasksData}
-                                      getCountFn={(user, tasks) =>
-                                        tasks.filter((t) => t.jobHolder === user.name).length
-                                      }
-                                      getLabelFn={(user) => user.name}
-                                      onClick={(user) => {
-                                        const newValue =
-                                          filter3 === user?.name ? "" : user?.name;
-                
-                                        updateJobHolder(newValue); // reset jobHolder filter when department changes
-                
-                                        // setColumnFromOutsideTable("status", "Progress");
-                
-                                        // setColumnFromOutsideTable("taskDate", "");
-                                        // if (
-                                        //   auth.user?.role?.name === "Admin" &&
-                                        //   user?.name === auth?.user?.name
-                                        // ) {
-                                        //   setColumnFromOutsideTable("taskDate", "Today");
-                                        // }
-                                      }}
-                                      activeClassName={
-                                        filter3
-                                          ? "border-b-2 text-orange-600 border-orange-600"
-                                          : ""
-                                      }
-                                    />
+                  droppableId={"users"}
+                  // items={filter2 ? projectUsers.filter(user => getJobHolderCount(user?.name, active) > 0) : users.filter(user => getJobHolderCount(user?.name, active) > 0)}
+                  items={users.filter(
+                    (user) => getJobHolderCount(user?.name, active) > 0,
+                  )}
+                  filterValue={filter3}
+                  tasks={tasksData}
+                  getCountFn={(user, tasks) =>
+                    tasks.filter((t) => t.jobHolder === user.name).length
+                  }
+                  getLabelFn={(user) => user.name}
+                  onClick={(user) => {
+                    const newValue = filter3 === user?.name ? "" : user?.name;
+
+                    updateJobHolder(newValue); // reset jobHolder filter when department changes
+
+                    // setColumnFromOutsideTable("status", "Progress");
+
+                    // setColumnFromOutsideTable("taskDate", "");
+                    // if (
+                    //   auth.user?.role?.name === "Admin" &&
+                    //   user?.name === auth?.user?.name
+                    // ) {
+                    //   setColumnFromOutsideTable("taskDate", "Today");
+                    // }
+                  }}
+                  activeClassName={
+                    filter3
+                      ? "border-b-2 text-orange-600 border-orange-600"
+                      : ""
+                  }
+                />
               </div>
             </div>
             <hr className="mb-1 bg-gray-300 w-full h-[1px]" />

@@ -25,7 +25,6 @@ import TaskFilterPanels from "./components/filters/TaskFilterPanels";
 import TaskFilterBar from "./components/filters/TaskFilterBar";
 import TaskPageHeader from "./components/header/TaskPageHeader";
 
-
 // hooks
 import useTaskUI from "./hooks/useTaskUI";
 import useTaskData from "./hooks/useTaskData";
@@ -286,7 +285,6 @@ const AllTasks = ({ justShowTable = false }) => {
     getTasks1,
   });
 
-  // ----------------------------
   // 🔑 Authentication & User Data
   // ----------------------------
   const authCtx = useMemo(
@@ -298,7 +296,6 @@ const AllTasks = ({ justShowTable = false }) => {
     [auth, users, departments],
   );
 
-  // ----------------------------
   // 📂 Projects
   // ----------------------------
   const projectCtx = useMemo(
@@ -311,7 +308,6 @@ const AllTasks = ({ justShowTable = false }) => {
     [allProjects],
   );
 
-  // ----------------------------
   // 📊 Tasks / Filtering
   // ----------------------------
   const taskCtx = useMemo(
@@ -332,7 +328,6 @@ const AllTasks = ({ justShowTable = false }) => {
     [totalHours, filterId, active, active1],
   );
 
-  // ----------------------------
   // 💬 Comments
   // ----------------------------
   const commentCtx = useMemo(
@@ -344,7 +339,6 @@ const AllTasks = ({ justShowTable = false }) => {
     [comment_taskId],
   );
 
-  // ----------------------------
   // ⏱️ Timer / Tracking
   // ----------------------------
   const timerCtx = useMemo(
@@ -381,7 +375,6 @@ const AllTasks = ({ justShowTable = false }) => {
     ],
   );
 
-  // ----------------------------
   // 🏷️ Labels
   // ----------------------------
   const labelCtx = useMemo(
@@ -392,7 +385,6 @@ const AllTasks = ({ justShowTable = false }) => {
     [labelData],
   );
 
-  // ----------------------------
   // 📦 Merge into one ctx if needed
   // ----------------------------
   const ctx = useMemo(
@@ -407,7 +399,6 @@ const AllTasks = ({ justShowTable = false }) => {
     [authCtx, projectCtx, taskCtx, commentCtx, timerCtx, labelCtx],
   );
 
-  // ----------------------------
   // 📑 Columns
   // ----------------------------
   const columns = useMemo(() => getTaskColumns(ctx), [ctx]);
@@ -417,7 +408,6 @@ const AllTasks = ({ justShowTable = false }) => {
     table.setColumnFilters([]);
 
     table.setGlobalFilter("");
-    // table.resetColumnFilters();
   };
 
   const table = useMaterialReactTable({
@@ -682,7 +672,6 @@ const AllTasks = ({ justShowTable = false }) => {
                 onSubmit={updateBulkJob}
               />
             )}
-            {/* <hr className="mb-1 bg-gray-300 w-full h-[1px]" /> */}
             {loading ? (
               <div className="flex items-center justify-center w-full h-screen px-4 py-4">
                 <Loader />
@@ -722,8 +711,6 @@ const AllTasks = ({ justShowTable = false }) => {
             }
             commentStatusRef={commentStatusRef}
           />
-
-          {/* ---- */}
         </div>
       ) : (
         <CompletedTasks

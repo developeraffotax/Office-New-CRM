@@ -1,4 +1,3 @@
-import React from "react";
 import { IoClose } from "react-icons/io5";
 
 import { style } from "../../../../utlis/CommonStyle";
@@ -38,18 +37,38 @@ const TaskModals = ({
 }) => {
   const {
     // Department
-    openAddDepartment, setOpenAddDepartment, departmentId, setDepartmentId,
+    openAddDepartment,
+    setOpenAddDepartment,
+    departmentId,
+    setDepartmentId,
     // Project
-    openAddProject, setOpenAddProject, projectId, setProjectId,
+    openAddProject,
+    setOpenAddProject,
+    projectId,
+    setProjectId,
     // Add Task
-    isOpen, setIsOpen, taskId, setTaskId,
+    isOpen,
+    setIsOpen,
+    taskId,
+    setTaskId,
     // Comment
-    isComment, setIsComment, commentTaskId, setCommentTaskId,
+    isComment,
+    setIsComment,
+    commentTaskId,
+    setCommentTaskId,
     // Stop Timer
-    isShow, setIsShow, activity, setActivity, taskIdForNote,
-    note, setNote, handleStopTimer, isSubmitting,
+    isShow,
+    setIsShow,
+    activity,
+    setActivity,
+    taskIdForNote,
+    note,
+    setNote,
+    handleStopTimer,
+    isSubmitting,
     // Task Detail
-    taskID, projectName,
+    taskID,
+    projectName,
   } = modals;
 
   return (

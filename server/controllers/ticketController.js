@@ -918,8 +918,41 @@ export const getAllSendTickets = async (req, res, next) => {
 
     
     
-    const emails = await ticketModel.find(filter).select( "ticketRef sent received jobStatus clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy lastMessageSentTime createdAt" );
-    res.status(200).send({ success: true, message: "All email list!", emails: emails, });
+    const tickets = await ticketModel.find(filter).lean().select( "ticketRef sent received jobStatus email clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy lastMessageSentTime createdAt" );
+
+
+
+
+    const clientIds = [
+      ...new Set(
+        tickets
+          .filter(t => t.clientId)
+          .map(t => t.clientId)
+      )
+    ];
+
+      const clients = await jobsModel.find({
+  _id: { $in: clientIds }
+}).select("_id email").lean();
+
+
+
+
+const clientEmailMap = {};
+
+clients.forEach(client => {
+  clientEmailMap[client._id.toString()] = client.email;
+});
+
+
+const ticketsWithEmail = tickets.map(ticket => ({
+  ...ticket,
+  displayEmail:
+    ticket.email || clientEmailMap[ticket.clientId] || null
+}));
+
+
+    res.status(200).send({ success: true, message: "All email list!", emails: ticketsWithEmail, });
     
 
      

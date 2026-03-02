@@ -82,12 +82,6 @@ const AllTasks = ({ justShowTable = false }) => {
     getlabel,
   } = useTaskData();
 
-  const [showColumn, setShowColumn] = useState(false);
-
-  const dispatch = useDispatch();
-
-  // All modal state consolidated in one hook
-  const modals = useTaskModals();
   const {
     timerRef,
     setIsOpen,
@@ -109,6 +103,13 @@ const AllTasks = ({ justShowTable = false }) => {
     setTaskID,
     setProjectName,
   } = modals;
+
+  const [showColumn, setShowColumn] = useState(false);
+
+  const dispatch = useDispatch();
+
+  // All modal state consolidated in one hook
+  const modals = useTaskModals();
 
   // --- Location ---
   const location = useLocation();

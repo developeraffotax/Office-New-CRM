@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { getStatus } from "../utils";
+import { getStatus } from "../utils/getStatus";
 
 const useTaskFilters = ({
   tasksData,

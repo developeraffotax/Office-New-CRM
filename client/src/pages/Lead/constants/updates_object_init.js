@@ -1,0 +1,16 @@
+export const updates_object_init = {
+  companyName: "",
+  clientName: "",
+  jobHolder: "",
+  department: "",
+  source: "",
+  brand: "",
+  lead_Source: "",
+  followUpDate: "",
+  JobDate: "",
+  Note: "",
+  stage: "",
+  status: "",
+  value: "",
+  number: "",
+};

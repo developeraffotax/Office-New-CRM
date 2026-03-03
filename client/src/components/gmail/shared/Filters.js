@@ -31,12 +31,24 @@ import {
   FiChevronDown,
   FiLayers,
   FiRefreshCcw,
+  FiColumns,
 } from "react-icons/fi";
 import MarkEmailUnreadIcon from "@mui/icons-material/MarkEmailUnread";
 import ManageCategoriesModal from "../categories/ManageCategoriesModal";
 import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
 import { alpha } from "@mui/material/styles";
 import { useSelector } from "react-redux";
+ 
+
+import InboxUserTabs from "./ui/InboxUserTabs";
+import UserTabToggleButton from "./ui/UserTabToggleButton";
+import axios from "axios";
+import { useSearchParams } from "react-router-dom";
+
+
+ 
+
+
 
 export default function Filters({
   filters,
@@ -45,6 +57,16 @@ export default function Filters({
   categories = [],
 }) {
   const [isCategoryModal, setIsCategoryModal] = React.useState(false);
+
+  const [isInboxUserTabs, setIsInboxUserTabs] = React.useState(false);
+  const [inboxStats, setInboxStats] = React.useState(null);
+
+
+     const [searchParams] = useSearchParams();
+  
+  const folder = searchParams.get("folder") || "inbox";
+  const companyName = searchParams.get("companyName") || "affotax";
+  
 
   const {
     auth: { user },
@@ -105,7 +127,7 @@ React.useEffect(() => {
     } else {
       // Last N days
       start = now.subtract(days, "day").startOf("day");
-      end = now;
+      end = now.endOf("day");
     }
 
     setFilters({
@@ -155,6 +177,50 @@ React.useEffect(() => {
       alignItems: "center",
     },
   };
+
+
+  
+React.useEffect(() => {
+  if (!isAdmin || !isInboxUserTabs) return;
+
+ 
+
+  const fetchUserCounts = async () => {
+
+    console.log("FILTERS", filters)
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/gmail/mailbox-user-counts`, {
+        params: {
+          companyName: companyName,
+          folder: folder,
+           
+          ...filters
+        },
+        
+      });
+
+      if (res.data?.success) {
+        console.log("THE RESPONSE", res.data)
+        setInboxStats(res.data);
+      }
+    } catch (err) {
+     
+
+      console.error("Failed to fetch user counts", err);
+    }
+  };
+
+  fetchUserCounts();
+
+  
+}, [
+ filters,
+ folder,
+ companyName,
+  isAdmin,
+  isInboxUserTabs
+]);
+
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -409,8 +475,14 @@ React.useEffect(() => {
   </Box>
 </FormControl>
 
+
+
           {/* Spacer */}
           {/* <Box sx={{ flexGrow: 1 }} /> */}
+
+ 
+
+<UserTabToggleButton active={isInboxUserTabs} onClick={() => setIsInboxUserTabs(prev => !prev)}/>
 
           {/* Reset Action */}
           {hasActiveFilters && (
@@ -432,7 +504,52 @@ React.useEffect(() => {
               </Button>
             </Tooltip>
           )}
+
+
+
         </Stack>
+
+        {isInboxUserTabs && isAdmin && (
+          <div className="w-full animate-pop mt-3   ">
+           
+           <InboxUserTabs
+              droppableId="inbox_users"
+              users={users}
+              activeValue={filters.userId || ""}
+              showAll={true}
+              onChange={(userId) =>
+                setFilters({
+                  ...filters,
+                  userId,
+                  page: 1,
+                })
+              }
+              getLabelFn={(user) =>
+                user.name 
+              }
+              getCountFn={(user) => {
+              if (!inboxStats) return 0;
+
+              // ALL TAB
+              if (user === "all") {
+                return inboxStats.allCount || 0;
+              }
+
+              // UNASSIGNED
+              if (user._id === "unassigned") {
+                return inboxStats.unassignedCount || 0;
+              }
+
+              const found = inboxStats.userCounts?.find(
+                (u) => u.userId === user._id
+              );
+
+              return found?.count || 0;
+            }}
+            />
+           
+          </div>
+        )}
 
         {/* Applied Filter Chips Row */}
         {hasActiveFilters && (

@@ -55,15 +55,15 @@ export default function InboxUserTabs({
               <div
                 onClick={() => onChange("")}
                 className={`
-                  relative px-4 py-2.5 text-sm font-semibold transition-all cursor-pointer whitespace-nowrap
+                  relative px-4 py-2 text-sm transition-all cursor-pointer whitespace-nowrap
                   ${activeValue === "" 
-                    ? "text-orange-600 border-b-2 border-orange-600" 
+                    ? "text-blue-600 border-b-2 border-blue-600" 
                     : "text-gray-500 hover:text-gray-800 hover:bg-gray-50 border-b-2 border-transparent"}
                 `}
               >
                 All 
-                <span className="ml-1.5 text-xs font-normal opacity-70">
-                  {getCountFn ? getCountFn("all") : 0}
+                <span className="ml-1.5 text-xs font-normal  ">
+                 ( {getCountFn ? getCountFn("all") : 0})
                 </span>
               </div>
             )}
@@ -84,16 +84,16 @@ export default function InboxUserTabs({
                       {...provided.dragHandleProps}
                       onClick={() => onChange(isActive ? "" : id)}
                       className={`
-                        group relative px-4 py-2.5 text-sm font-semibold transition-all whitespace-nowrap select-none
+                        group relative px-4 py-2 text-sm transition-all whitespace-nowrap select-none
                         !cursor-pointer active:cursor-grabbing
                         ${isActive 
-                          ? "text-orange-600 border-b-2 border-orange-600 bg-orange-50/20" 
+                          ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50/20" 
                           : "text-gray-500 border-b-2 border-transparent hover:text-gray-800 hover:bg-gray-50"}
                         ${snapshot.isDragging ? "bg-white shadow-xl ring-1 ring-gray-200 opacity-100 z-50" : ""}
                       `}
                     >
                       {label}
-                      <span className={`ml-1.5 text-xs font-normal ${isActive ? "text-orange-500" : "text-gray-400"}`}>
+                      <span className={`ml-1.5 text-xs font-normal ${isActive ? "text-blue-600" : "text-gray-600"}`}>
                         ({count})
                       </span>
                     </div>

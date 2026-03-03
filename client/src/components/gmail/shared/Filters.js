@@ -97,7 +97,7 @@ React.useEffect(() => {
     if (days === 0) {
       // Today
       start = now.startOf("day");
-      end = now;
+      end = now.endOf("day");
     } else if (days === -1) {
       // Yesterday
       start = now.subtract(1, "day").startOf("day");

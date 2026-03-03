@@ -14,7 +14,7 @@ function matchesFilters(thread, filters, user) {
 
     console.log("THE FILTERS", filters)
 
-  if (label && !thread.labels?.includes(label)) return false;
+  if (label && (!thread.labels?.includes(label) || thread.labels?.includes("TRASH"))) return false;
   if (unreadOnly && thread.unreadCount <= 0) return false;
 
   if (startDate && new Date(thread.lastMessageAt) < new Date(startDate))
@@ -108,10 +108,10 @@ const filters = useMemo(() => {
     category: searchParams.get("category") || "",
     // userId: searchParams.get("userId") ?? (isAdmin ? "unassigned" : ""),
     // category: searchParams.get("category") ?? (isAdmin ? "unassigned" : ""),
-    // label:
-    //   folder === "sent"
-    //     ? "SENT"
-    //     : searchParams.get("label") || "INBOX",
+    label:
+      folder === "sent"
+        ? "SENT"
+        : "INBOX",
     startDate: searchParams.get("startDate") || "",
     endDate: searchParams.get("endDate") || "",
     unreadOnly: searchParams.get("unreadOnly") === "true",

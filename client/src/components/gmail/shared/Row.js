@@ -81,7 +81,7 @@ const folder = searchParams.get("folder") || "inbox";
 
 
 
-    console.log("THE FILTERS ARE", filters)
+ 
 
   const assignedUser = users.find((u) => u._id === thread.userId);
   const threadCategory = categories.find(

@@ -64,7 +64,9 @@ export default function Sidebar({ hide, setHide }) {
   const taskCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "task_assigned" && n.status === "unread" && isNotificationAllowed(n.type)).length)
   const jobCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "job_assigned" && n.status === "unread" && isNotificationAllowed(n.type)).length)
   const ticketAssignedCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "ticket_assigned" && n.status === "unread" && isNotificationAllowed(n.type)).length)
-  const ticketReceivedCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "ticket_received" && n.status === "unread" && isNotificationAllowed(n.type)).length)
+  const ticketReceivedCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "ticket_received" && n.status === "unread" && isNotificationAllowed(n.type)).length);
+
+  const threadAssignedCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "thread_assigned" && n.status === "unread" && isNotificationAllowed(n.type)).length);
 
 
 
@@ -495,7 +497,7 @@ export default function Sidebar({ hide, setHide }) {
                 dispatch(setActive("mail"));
               }}
             >
-              <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+              <div className="relative w-full h-full flex items-center justify-between px-3 z-30 bg-transparent">
                 {hide ? (
                   <IoMailUnreadOutline
                     className="h-5 w-5 cursor-pointer ml-2"
@@ -515,6 +517,38 @@ export default function Sidebar({ hide, setHide }) {
                     </span>
                   </div>
                 )}
+
+
+                <div className="flex items-center gap-1 ">
+                  {/* {threadAssignedCount > 0 && (
+                    <span
+                      title="New Received Tickets"
+                      className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
+                    ${active === "tickets"
+                          ? "bg-white text-blue-500"
+                          : "bg-blue-500 text-white"
+                        }`}
+                    >
+                      {threadAssignedCount || 0}
+                    </span>
+                  )} */}
+
+                  {threadAssignedCount > 0 && (
+                    <span
+                      title="New Assigned Tickets"
+                      className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
+                    ${active === "mail"
+                          ? "bg-white text-orange-600"
+                          : "bg-orange-600 text-white"
+                        }`}
+                    >
+                      {threadAssignedCount || 0}
+                    </span>
+                  )}
+                </div>
+
+
+
               </div>
             </div>
           )}

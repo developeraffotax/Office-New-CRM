@@ -621,7 +621,9 @@ React.useEffect(() => {
                 label="Start Date"
                 value={filters.startDate ? dayjs(filters.startDate) : null}
                 onChange={(val) =>
-                  handleUpdate({ startDate: val ? val.toISOString() : "" })
+                  handleUpdate({
+                    startDate: val ? dayjs(val).startOf("day").toISOString() : "",
+                  })
                 }
                 slotProps={{
                   textField: {
@@ -637,8 +639,10 @@ React.useEffect(() => {
                 label="End Date"
                 value={filters.endDate ? dayjs(filters.endDate) : null}
                 onChange={(val) =>
-                  handleUpdate({ endDate: val ? val.toISOString() : "" })
-                }
+                    handleUpdate({
+                      endDate: val ? dayjs(val).endOf("day").toISOString() : "",
+                    })
+                  }
                 slotProps={{
                   textField: {
                     size: "small",

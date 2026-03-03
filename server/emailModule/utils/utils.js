@@ -149,7 +149,7 @@ export const buildFilterQuery = (req) => {
 
   // Folder filter
   if (filters.folder === "inbox") andFilters.push({ hasInboxMessage: true });
-  if (filters.folder === "sent") andFilters.push({ hasSentMessage: true });
+  if (filters.folder === "sent") andFilters.push({ hasSentMessage: true, labels: { $nin: ["TRASH"] } });
 
   // Unread
   if (filters.unreadOnly === "true") andFilters.push({ unreadCount: { $gt: 0 } });

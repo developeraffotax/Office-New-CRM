@@ -84,6 +84,7 @@ const colVisibility = {
   lastMessageSentTime: true,
 
   actions: true,
+  displayEmail: true
 };
 
 export default function Tickets() {

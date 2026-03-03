@@ -13,6 +13,7 @@ import { jobDateColumn } from "./jobDateColumn";
 import { lastRepliedColumn } from "./lastRepliedColumn";
 import { actionsColumn } from "./actionsColumn";
 import { refColumn } from "./refColumn";
+import { emailColumn } from "./emailColumn";
 
  
 
@@ -32,6 +33,7 @@ export const getTicketsColumns = (ctx) => [
   dateColumn(ctx),
   jobDateColumn(ctx),
   lastRepliedColumn(ctx),
+  emailColumn(ctx),
   actionsColumn(ctx),
    
 ];

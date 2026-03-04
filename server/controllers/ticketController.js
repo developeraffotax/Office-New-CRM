@@ -1224,8 +1224,8 @@ export const updateTickets = async (req, res) => {
         threadId: ticket?.mailThreadId
       }, {
         $set: {
-          userId: user._id,
-          category: "ticket",
+          userId: user?._id,
+          // category: "ticket",
         }
       })
 

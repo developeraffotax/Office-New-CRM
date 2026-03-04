@@ -12,7 +12,7 @@ function matchesFilters(thread, filters, user) {
 
   const { label, unreadOnly, startDate, endDate, category, userId } = filters;
 
-    console.log("THE FILTERS", filters)
+ 
 
   if (label && (!thread.labels?.includes(label) || thread.labels?.includes("TRASH"))) return false;
   if (unreadOnly && thread.unreadCount <= 0) return false;
@@ -297,7 +297,7 @@ const filters = useMemo(() => {
 
     const handler = ({ action, thread }) => {
 
-        console.log("SOCKET CALLED ❤️❤️❤️❤️🌹🌹🌹", action, thread)
+         
           dispatch(fetchInboxUnreadCounts());
       setThreads((prev) => {
         let newThreads;

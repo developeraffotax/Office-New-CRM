@@ -493,7 +493,8 @@ export default function Sidebar({ hide, setHide }) {
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
                 }   filter   overflow-hidden`}
               onClick={() => {
-                router(user?.role?.name === "Admin" ? "/mail?folder=inbox&companyName=affotax&category=unassigned&userId=unassigned" : "/mail?folder=inbox&companyName=affotax");
+                router(user?.role?.name === "Admin" ? "/mail?folder=inbox&companyName=affotax&userId=unassigned" : "/mail?folder=inbox&companyName=affotax");
+                // router(user?.role?.name === "Admin" ? "/mail?folder=inbox&companyName=affotax&category=unassigned&userId=unassigned" : "/mail?folder=inbox&companyName=affotax");
                 dispatch(setActive("mail"));
               }}
             >

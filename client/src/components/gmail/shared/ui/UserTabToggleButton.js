@@ -16,28 +16,8 @@ const FilterIcon = ({ active }) => (
 
 const UserTabToggleButton = ({ active, onClick }) => {
   return (
-    <Tooltip title={active ? "Hide User List" : "Show User List"} arrow>
-      <Badge
-        overlap="circular"
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        variant="dot"
-        invisible={!active}
-        sx={{
-          '& .MuiBadge-badge': {
-            backgroundColor: '#3b82f6',
-            color: '#3b82f6',
-            boxShadow: '0 0 0 2px #fff',
-            top: 4,
-            right: 4,
-            // Simple pop animation
-            animation: active ? 'pop 0.2s cubic-bezier(0.34,1.56,0.64,1) both' : 'none',
-            '@keyframes pop': {
-              '0%': { transform: 'scale(0)', opacity: 0 },
-              '100%': { transform: 'scale(1)', opacity: 1 },
-            },
-          },
-        }}
-      >
+     
+ 
         <Button
           onClick={onClick}
           sx={{
@@ -83,8 +63,8 @@ const UserTabToggleButton = ({ active, onClick }) => {
         >
           <FilterIcon active={active} />
         </Button>
-      </Badge>
-    </Tooltip>
+ 
+    
   );
 };
 

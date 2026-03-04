@@ -68,6 +68,22 @@ export default function InboxUserTabs({
               </div>
             )}
 
+
+            <div
+                onClick={() => onChange("unassigned")}
+                className={`
+                  relative px-4 py-2 text-sm transition-all cursor-pointer whitespace-nowrap
+                  ${activeValue === "unassigned" 
+                    ? "text-blue-600 border-b-2 border-blue-600" 
+                    : "text-gray-500 hover:text-gray-800 hover:bg-gray-50 border-b-2 border-transparent"}
+                `}
+              >
+                Unassigned 
+                <span className="ml-1.5 text-xs font-normal  ">
+                 ( {getCountFn ? getCountFn("unassigned") : 0})
+                </span>
+              </div>
+
             {/* ---------------- USER TABS ---------------- */}
             {orderedUsers.map((user, index) => {
               const id = user._id || user;

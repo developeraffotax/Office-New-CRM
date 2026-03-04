@@ -58,10 +58,10 @@ export default function Filters({
 }) {
   const [isCategoryModal, setIsCategoryModal] = React.useState(false);
 
-  const [isInboxUserTabs, setIsInboxUserTabs] = React.useState(false);
+  const [isInboxUserTabs, setIsInboxUserTabs] = React.useState(true);
   const [inboxStats, setInboxStats] = React.useState(null);
 
-
+  console.log("UNASSIGENED", inboxStats)
      const [searchParams] = useSearchParams();
   
   const folder = searchParams.get("folder") || "inbox";
@@ -482,7 +482,7 @@ React.useEffect(() => {
 
  
 
-<UserTabToggleButton active={isInboxUserTabs} onClick={() => setIsInboxUserTabs(prev => !prev)}/>
+{isAdmin && <UserTabToggleButton active={isInboxUserTabs} onClick={() => setIsInboxUserTabs(prev => !prev)}/>}
 
           {/* Reset Action */}
           {hasActiveFilters && (
@@ -519,7 +519,6 @@ React.useEffect(() => {
               showAll={true}
               onChange={(userId) =>
                 setFilters({
-                  ...filters,
                   userId,
                   page: 1,
                 })
@@ -536,7 +535,7 @@ React.useEffect(() => {
               }
 
               // UNASSIGNED
-              if (user._id === "unassigned") {
+              if (user === "unassigned") {
                 return inboxStats.unassignedCount || 0;
               }
 

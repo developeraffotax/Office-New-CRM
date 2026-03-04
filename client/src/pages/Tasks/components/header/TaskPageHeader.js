@@ -8,29 +8,32 @@ import OverviewForPages from "../../../../utlis/overview/OverviewForPages";
 import { isAdmin } from "../../../../utlis/isAdmin";
 import DepartmentDropdown from "../DepartmentsDropdown/DepartmentDropdown";
 import ProjectDropdown from "../ProjectsDropdown/ProjectDropdown";
+import { useTaskCtx } from "../../contextApi/UserContext";
 
-const TaskPageHeader = ({
-  auth,
-  onClearFilters,
-  showDepartment,
-  setUI,
-  departments,
-  getAllDepartments,
-  setDepartmentId,
-  setOpenAddDepartment,
-  showProject,
-  setShowProject,
-  projects,
-  getAllProjects,
-  getAllTasks,
-  setProjectId,
-  setOpenAddProject,
-  fLoading,
-  importJobData,
-  handleExportData,
-  setShowlabel,
-  setIsOpen,
-}) => (
+const TaskPageHeader = ({ onClearFilters }) => {
+  const {
+    auth,
+    departments,
+    projects,
+    getAllTasks,
+    getAllDepartments,
+    getAllProjects,
+    showDepartment,
+    setUI,
+    showProject,
+    setShowProject,
+    fLoading,
+    importJobData,
+    handleExportData,
+    setShowlabel,
+    setDepartmentId,
+    setOpenAddDepartment,
+    setProjectId,
+    setOpenAddProject,
+    setIsOpen,
+  } = useTaskCtx();
+
+  return (
   <div className="flex text-start sm:items-center sm:justify-between gap-4 flex-col sm:flex-row">
     <div className="flex items-center gap-3 ">
       <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
@@ -184,6 +187,7 @@ const TaskPageHeader = ({
       </button>
     </div>
   </div>
-);
+  );
+};
 
 export default TaskPageHeader;

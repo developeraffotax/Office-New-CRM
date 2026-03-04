@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 const useTaskData = () => {
   const { auth } = useSelector((state) => state.auth);
@@ -15,6 +16,7 @@ const useTaskData = () => {
   const [users, setUsers] = useState([]);
   const [userName, setUserName] = useState([]);
   const [labelData, setLabelData] = useState([]);
+  const [completedTasksData, setCompletedTasksData] = useState([]);
 
   // -------Get All Tasks------->
   const getAllTasks = async () => {
@@ -155,6 +157,18 @@ const useTaskData = () => {
     }
   };
 
+  // ---------- Get Completed Tasks-----------
+  const getCompletedTasks = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/completed`,
+      );
+      if (data?.success) setCompletedTasksData(data.tasks);
+    } catch (error) {
+      toast.error("Failed to load completed tasks");
+    }
+  };
+
   useEffect(() => {
     getAllTasks();
     getAllUsers();
@@ -183,12 +197,14 @@ const useTaskData = () => {
     userName,
     setUserName,
     labelData,
+    completedTasksData,
     getAllTasks,
     getTasks1,
     getAllProjects,
     getAllDepartments,
     getAllUsers,
     getlabel,
+    getCompletedTasks,
   };
 };
 

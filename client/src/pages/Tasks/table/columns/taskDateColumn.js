@@ -4,13 +4,15 @@ import toast from "react-hot-toast";
 import { format } from "date-fns";
 import DateRangePopover from "../../../../utlis/DateRangePopover";
 import { useRef } from "react";
+import { useTaskCtx } from "../../contextApi/UserContext";
 
-export const taskDateColumn = (ctx) => {
+export const taskDateColumn = () => {
   return {
     id: "taskDate",
     accessorKey: "taskDate",
 
     Header: ({ column }) => {
+      const ctx = useTaskCtx();
       const [filterValue, setFilterValue] = useState(() => {
         return ctx.auth.user?.role?.name === "Admin" ? "Today" : "";
       });
@@ -96,6 +98,7 @@ export const taskDateColumn = (ctx) => {
     },
 
     Cell: ({ cell, row }) => {
+      const ctx = useTaskCtx();
       const initialValue = cell.getValue();
       const isValidDate =
         initialValue && !isNaN(new Date(initialValue).getTime());
@@ -147,7 +150,7 @@ export const taskDateColumn = (ctx) => {
   };
 };
 
-export const taskDateColumnCompleted = (ctx) => {
+export const taskDateColumnCompleted = () => {
   return {
     id: "taskDate",
     accessorKey: "taskDate",
@@ -175,16 +178,6 @@ export const taskDateColumnCompleted = (ctx) => {
           column.setFilterValue(filterValue);
         }
       }, [dateRange, filterValue]);
-
-      // 🔄 Reset local state when external filter is cleared
-      // useEffect(() => {
-      //   const currentFilter = column.getFilterValue();
-      //   if (!currentFilter) {
-      //      setFilterValue("");
-      //     setDateRange({ from: "", to: "" });
-      //     setShowPopover(false);
-      //   }
-      // }, [column.getFilterValue()]);
 
       const handleFilterChange = (e) => {
         const val = e.target.value;
@@ -243,6 +236,7 @@ export const taskDateColumnCompleted = (ctx) => {
     },
 
     Cell: ({ cell, row }) => {
+      const ctx = useTaskCtx();
       const initialValue = cell.getValue();
       const isValidDate =
         initialValue && !isNaN(new Date(initialValue).getTime());
@@ -261,7 +255,6 @@ export const taskDateColumnCompleted = (ctx) => {
           return;
         }
         setDate(newDate);
-        // handleUpdateDates(row.original._id, newDate, "taskDate");
         ctx.updateAlocateTask(row.original._id, "", "", "", newDate);
         setShowInput(false);
       };

@@ -8,68 +8,41 @@ import JobCommentModal from "../../../Jobs/JobCommentModal";
 import AddLabel from "../../../../components/Modals/AddLabel";
 import TaskDetail from "../detail/TaskDetail";
 import SubtasksForNote from "../detail/SubtasksForNote";
+import { useTaskCtx } from "../../contextApi/UserContext";
 
-const TaskModals = ({
-  modals,
-  // Shared data
-  users,
-  departments,
-  projects,
-  tasksData,
-  userName,
-  // Fetchers
-  getAllTasks,
-  getTasks1,
-  getAllDepartments,
-  getAllProjects,
-  getlabel,
-  // Actions
-  handleDeleteTask,
-  setTasksData,
-  setFilterData,
-  // UI state from parent hooks
-  showDetail,
-  onCloseDetail,
-  showlabel,
-  setShowlabel,
-  assignedPerson,
-  commentStatusRef,
-}) => {
+const TaskModals = ({ modals, commentStatusRef }) => {
   const {
-    // Department
-    openAddDepartment,
-    setOpenAddDepartment,
-    departmentId,
-    setDepartmentId,
-    // Project
-    openAddProject,
-    setOpenAddProject,
-    projectId,
-    setProjectId,
-    // Add Task
-    isOpen,
-    setIsOpen,
-    taskId,
-    setTaskId,
-    // Comment
-    isComment,
-    setIsComment,
-    commentTaskId,
-    setCommentTaskId,
-    // Stop Timer
-    isShow,
-    setIsShow,
-    activity,
-    setActivity,
-    taskIdForNote,
-    note,
-    setNote,
-    handleStopTimer,
-    isSubmitting,
-    // Task Detail
-    taskID,
-    projectName,
+    users,
+    departments,
+    projects,
+    tasksData,
+    userName,
+    getAllTasks,
+    getTasks1,
+    getAllDepartments,
+    getAllProjects,
+    getlabel,
+    handleDeleteTask,
+    setTasksData,
+    setFilterData,
+    showDetail,
+    setShowDetail,
+    showlabel,
+    setShowlabel,
+  } = useTaskCtx();
+
+  const {
+    timerRef,
+    isOpen, setIsOpen, setTaskId,
+    openAddDepartment, setOpenAddDepartment, departmentId, setDepartmentId,
+    openAddProject, setOpenAddProject, projectId, setProjectId,
+    isComment, setIsComment, commentTaskId, setCommentTaskId,
+    isShow, setIsShow, note, setNote, activity, setActivity, isSubmitting, handleStopTimer,
+    taskIdForNote, setTaskIdForNote,
+    taskID, projectName,
   } = modals;
+
+  const assignedPerson = tasksData?.find((t) => t._id === taskID)?.jobHolder;
 
   return (
     <>
@@ -213,7 +186,7 @@ const TaskModals = ({
                 </h3>
                 <button
                   className="p-1 rounded-2xl bg-gray-50 border hover:shadow-md hover:bg-gray-100"
-                  onClick={onCloseDetail}
+                  onClick={() => setShowDetail(false)}
                 >
                   <IoClose className="h-5 w-5" />
                 </button>
@@ -223,7 +196,7 @@ const TaskModals = ({
                 getAllTasks={getAllTasks}
                 handleDeleteTask={handleDeleteTask}
                 setTasksData={setTasksData}
-                setShowDetail={onCloseDetail}
+                setShowDetail={() => setShowDetail(false)}
                 users={users}
                 projects={projects}
                 setFilterData={setFilterData}

@@ -10,14 +10,12 @@ import { filterByRowId } from "../../utlis/filterByRowId";
 import { useDispatch, useSelector } from "react-redux";
 import { setFilterId, setSearchValue } from "../../redux/slices/authSlice";
 
-import { useSocket } from "../../context/socketProvider";
 import { useClickOutside } from "../../utlis/useClickOutside";
-import { getTaskColumns } from "./table/columns";
+import { getTaskColumns, getCompletedTaskColumns } from "./table/columns";
 import { TasksTable } from "./table/TasksTable";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 
 // Components
-import CompletedTasks from "./components/CompletedTasks";
 import useColumnFilterSync from "./components/Responsiblities/ColumnFilter";
 import TaskModals from "./components/modals/TaskModals";
 import BulkEditForm from "./components/modals/BulkEditForm";
@@ -33,6 +31,11 @@ import useColumnVisibility from "./hooks/useColumnVisibility";
 import useTaskFilters from "./hooks/useTaskFilters";
 import useTaskMutations from "./hooks/useTaskMutations";
 import useBulkAction from "./hooks/useBulkAction";
+import { useSocketSync } from "./hooks/useSocketSync";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+
+//api context
+import { TaskProvider } from "./contextApi/UserContext";
 
 const AllTasks = ({ justShowTable = false }) => {
   const { auth, filterId, anyTimerRunning, searchValue, jid } = useSelector(
@@ -75,12 +78,40 @@ const AllTasks = ({ justShowTable = false }) => {
     userName,
     setUserName,
     labelData,
+    completedTasksData,
     getAllTasks,
     getTasks1,
     getAllProjects,
     getAllDepartments,
     getlabel,
+    getCompletedTasks,
   } = useTaskData();
+
+  const completedColumns = useMemo(() => getCompletedTaskColumns(), []);
+  const completedTable = useMaterialReactTable({
+    columns: completedColumns,
+    data: completedTasksData,
+    enableStickyHeader: true,
+    enableStickyFooter: true,
+    muiTableContainerProps: { sx: { maxHeight: "860px" } },
+    enableColumnActions: false,
+    enableColumnFilters: false,
+    enableSorting: false,
+    enableRowNumbers: true,
+    enableColumnResizing: true,
+    enablePagination: true,
+    state: { density: "compact" },
+    muiTableHeadCellProps: {
+      style: {
+        fontWeight: "600",
+        fontSize: "14px",
+        backgroundColor: "#E5E7EB",
+      },
+    },
+    muiTableBodyCellProps: {
+      sx: { border: "1px solid rgba(203, 201, 201, 0.5)" },
+    },
+  });
 
   // All modal state consolidated in one hook
   const modals = useTaskModals();
@@ -195,30 +226,15 @@ const AllTasks = ({ justShowTable = false }) => {
     pageSize: 30, // ✅ default page size
   });
 
-  const socket = useSocket();
+  useSocketSync(getAllTasks);
+
+  useKeyboardShortcuts({
+    onEscape: () => setUI((prev) => ({ ...prev, showDetail: false })),
+  });
 
   useEffect(() => {
-    if (!socket) return;
-
-    socket.on("task_updated", () => {
-      getAllTasks();
-    });
-  }, [socket]);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Escape key shortcut
-      if (e.key === "Escape") {
-        setUI((prev) => ({ ...prev, showDetail: false }));
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
+    if (showCompleted) getCompletedTasks();
+  }, [showCompleted]);
 
   useEffect(() => {
     const timeId = localStorage.getItem("jobId");
@@ -321,12 +337,13 @@ const AllTasks = ({ justShowTable = false }) => {
       setTasksData,
       setTaskID,
       setProjectName,
-      ShowDetail: ui.ShowDetail,
+      showDetail,
+      setShowDetail,
       copyTask,
       handleCompleteStatus,
       handleDeleteTaskConfirmation,
     }),
-    [totalHours, filterId, active, active1],
+    [totalHours, filterId, active, active1, showDetail],
   );
 
   // 💬 Comments
@@ -386,6 +403,45 @@ const AllTasks = ({ justShowTable = false }) => {
     [labelData],
   );
 
+  // 🖥️ Page-level UI + data fetchers (for TaskPageHeader & TaskModals)
+  // ----------------------------
+  const uiCtx = useMemo(
+    () => ({
+      tasksData,
+      userName,
+      projects,
+      getAllTasks,
+      getTasks1,
+      getAllDepartments,
+      getAllProjects,
+      getlabel,
+      handleDeleteTask,
+      handleExportData,
+      fLoading,
+      importJobData,
+      showDepartment,
+      setUI,
+      showProject,
+      setShowProject,
+      showlabel,
+      setShowlabel,
+      setDepartmentId,
+      setOpenAddDepartment,
+      setProjectId,
+      setOpenAddProject,
+      setIsOpen,
+    }),
+    [
+      tasksData,
+      userName,
+      projects,
+      showDepartment,
+      showProject,
+      showlabel,
+      fLoading,
+    ],
+  );
+
   // 📦 Merge into one ctx if needed
   // ----------------------------
   const ctx = useMemo(
@@ -396,13 +452,14 @@ const AllTasks = ({ justShowTable = false }) => {
       ...commentCtx,
       ...timerCtx,
       ...labelCtx,
+      ...uiCtx,
     }),
-    [authCtx, projectCtx, taskCtx, commentCtx, timerCtx, labelCtx],
+    [authCtx, projectCtx, taskCtx, commentCtx, timerCtx, labelCtx, uiCtx],
   );
 
   // 📑 Columns
   // ----------------------------
-  const columns = useMemo(() => getTaskColumns(ctx), [ctx]);
+  const columns = useMemo(() => getTaskColumns(), []);
 
   // Clear table Filter
   const handleClearFilters = () => {
@@ -554,11 +611,10 @@ const AllTasks = ({ justShowTable = false }) => {
     (Array.isArray(filter1) && filter1.length === departments.length);
 
   return (
-    <>
+    <TaskProvider value={ctx}>
       {!showCompleted ? (
         <div className=" relative w-full h-full overflow-auto py-4 px-2 sm:px-4">
           <TaskPageHeader
-            auth={auth}
             onClearFilters={() => {
               setActive("All");
               setFilterData("");
@@ -568,24 +624,6 @@ const AllTasks = ({ justShowTable = false }) => {
               filterByState(state);
               dispatch(setSearchValue(""));
             }}
-            showDepartment={showDepartment}
-            setUI={setUI}
-            departments={departments}
-            getAllDepartments={getAllDepartments}
-            setDepartmentId={setDepartmentId}
-            setOpenAddDepartment={setOpenAddDepartment}
-            showProject={showProject}
-            setShowProject={setShowProject}
-            projects={projects}
-            getAllProjects={getAllProjects}
-            getAllTasks={getAllTasks}
-            setProjectId={setProjectId}
-            setOpenAddProject={setOpenAddProject}
-            fLoading={fLoading}
-            importJobData={importJobData}
-            handleExportData={handleExportData}
-            setShowlabel={setShowlabel}
-            setIsOpen={setIsOpen}
           />
           <div className="flex flex-col gap-2 mt-3">
             <TaskFilterBar
@@ -682,46 +720,17 @@ const AllTasks = ({ justShowTable = false }) => {
             )}
           </div>
 
-          <TaskModals
-            modals={modals}
-            // Shared data
-            users={users}
-            departments={departments}
-            projects={projects}
-            tasksData={tasksData}
-            userName={userName}
-            // Fetchers
-            getAllTasks={getAllTasks}
-            getTasks1={getTasks1}
-            getAllDepartments={getAllDepartments}
-            getAllProjects={getAllProjects}
-            getlabel={getlabel}
-            // Actions
-            handleDeleteTask={handleDeleteTask}
-            setTasksData={setTasksData}
-            setFilterData={setFilterData}
-            // UI from parent hooks
-            showDetail={ui.showDetail}
-            onCloseDetail={setShowDetail}
-            showlabel={showlabel}
-            setShowlabel={setShowlabel}
-            assignedPerson={
-              ui.showDetail && taskID
-                ? table.getRow(taskID)?.original?.jobHolder
-                : undefined
-            }
-            commentStatusRef={commentStatusRef}
-          />
+          <TaskModals modals={modals} commentStatusRef={commentStatusRef} />
         </div>
       ) : (
-        <CompletedTasks
-          setShowCompleted={setShowCompleted}
-          setActive2={setActive}
-          getTasks={getAllTasks}
-          getAllProj1={getAllProjects}
-        />
+        <div className="relative w-full h-full overflow-auto py-4 px-2 sm:px-4">
+          <button onClick={() => setShowCompleted(false)} className="py-6">
+            ← Back to Active Tasks
+          </button>
+          <TasksTable table={completedTable} />
+        </div>
       )}
-    </>
+    </TaskProvider>
   );
 };
 

@@ -3,8 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { TaskDateFilterFn } from "../../utils/TaskDateFilterFn";
 import DateRangePopover from "../../../../utlis/DateRangePopover";
+import { useTaskCtx } from "../../contextApi/UserContext";
 
-export const startDateColumn = (ctx) => {
+export const startDateColumn = () => {
   return {
     accessorKey: "startDate",
 
@@ -100,6 +101,7 @@ export const startDateColumn = (ctx) => {
       );
     },
     Cell: ({ cell, row }) => {
+      const ctx = useTaskCtx();
       const initialValue = cell.getValue();
       const isValidDate =
         initialValue && !isNaN(new Date(initialValue).getTime());

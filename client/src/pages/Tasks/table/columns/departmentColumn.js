@@ -1,6 +1,7 @@
 import React from "react";
+import { useTaskCtx } from "../../contextApi/UserContext";
 
-export const departmentColumn = (ctx) => ({
+export const departmentColumn = () => ({
   accessorFn: (row) =>
     row.project?.departments?.map((d) => d.departmentName) || [],
   id: "departmentName",
@@ -9,29 +10,32 @@ export const departmentColumn = (ctx) => ({
   size: 160,
   grow: false,
 
-  Header: ({ column }) => (
-    <div className="flex flex-col gap-[2px]">
-      <span
-        className="ml-1 cursor-pointer"
-        title="Clear Filter"
-        onClick={() => column.setFilterValue("")}
-      >
-        Department(s)
-      </span>
-      <select
-        value={column.getFilterValue() || ""}
-        onChange={(e) => column.setFilterValue(e.target.value)}
-        className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-      >
-        <option value="">Select</option>
-        {ctx.departments?.map((dpt) => (
-          <option key={dpt._id} value={dpt.departmentName}>
-            {dpt.departmentName}
-          </option>
-        ))}
-      </select>
-    </div>
-  ),
+  Header: ({ column }) => {
+    const ctx = useTaskCtx();
+    return (
+      <div className="flex flex-col gap-[2px]">
+        <span
+          className="ml-1 cursor-pointer"
+          title="Clear Filter"
+          onClick={() => column.setFilterValue("")}
+        >
+          Department(s)
+        </span>
+        <select
+          value={column.getFilterValue() || ""}
+          onChange={(e) => column.setFilterValue(e.target.value)}
+          className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+        >
+          <option value="">Select</option>
+          {ctx.departments?.map((dpt) => (
+            <option key={dpt._id} value={dpt.departmentName}>
+              {dpt.departmentName}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
+  },
 
   Cell: ({ cell }) => {
     const values = cell.getValue();

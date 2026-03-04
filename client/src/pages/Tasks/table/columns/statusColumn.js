@@ -1,11 +1,13 @@
 import { useEffect } from "react";
+import { useTaskCtx } from "../../contextApi/UserContext";
 
-export const statusColumn = (ctx) => {
+export const statusColumn = () => {
   return {
     accessorKey: "status",
     header: "Task Status",
 
     Header: ({ column }) => {
+      const ctx = useTaskCtx();
       const statusData = ["To do", "Progress", "Review", "Awaiting", "On hold"];
 
       useEffect(() => {
@@ -42,6 +44,7 @@ export const statusColumn = (ctx) => {
       );
     },
     Cell: ({ cell, row }) => {
+      const ctx = useTaskCtx();
       const statusValue = cell.getValue();
 
       return (
@@ -84,11 +87,7 @@ export const statusColumn = (ctx) => {
   };
 };
 
-
-
-
-
-export const statusColumnCompleted = (ctx) => {
+export const statusColumnCompleted = () => {
   return {
     accessorKey: "status",
     header: "Task Status",
@@ -129,6 +128,7 @@ export const statusColumnCompleted = (ctx) => {
       );
     },
     Cell: ({ cell, row }) => {
+      const ctx = useTaskCtx();
       const statusValue = cell.getValue();
 
       return (

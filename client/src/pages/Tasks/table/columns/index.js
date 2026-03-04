@@ -1,5 +1,5 @@
 import { actionsColumn } from "./actionsColumn";
- 
+
 import { dateStatusColumn } from "./dateStatusColumn";
 import { deadlineColumn } from "./deadlineColumn";
 import { departmentColumn } from "./departmentColumn";
@@ -18,59 +18,44 @@ import { recurringColumn } from "./recurringColumn";
 import { taskDateColumn, taskDateColumnCompleted } from "./taskDateColumn";
 import { refColumn } from "./refColumn";
 
- 
-
-
-
-
-export const getTaskColumns = (ctx) => [
+export const getTaskColumns = () => [
   idColumn(),
   refColumn(),
-  departmentColumn(ctx),
-  projectColumn(ctx),
-  jobHolderColumn(ctx),
-  taskColumn(ctx),
-  hoursColumn(ctx),
-  startDateColumn(ctx),
-  deadlineColumn(ctx),
-  taskDateColumn(ctx),
-  dateStatusColumn(ctx),
-  statusColumn(ctx),
-  leadColumn(ctx),
-  budgetColumn(ctx),
-  timerColumn(ctx),
-   
-  actionsColumn(ctx),
-  labelColumn(ctx),
-  recurringColumn(ctx)
+  departmentColumn(),
+  projectColumn(),
+  jobHolderColumn(),
+  taskColumn(),
+  hoursColumn(),
+  startDateColumn(),
+  deadlineColumn(),
+  taskDateColumn(),
+  dateStatusColumn(),
+  statusColumn(),
+  leadColumn(),
+  budgetColumn(),
+  timerColumn(),
+
+  actionsColumn(),
+  labelColumn(),
+  recurringColumn(),
 ];
 
-
-
-
-
-
-
-
-
-export const getCompletedTaskColumns = (ctx) => [
+export const getCompletedTaskColumns = () => [
   idColumn(),
   refColumn(),
-  departmentColumn(ctx),
-  projectColumn(ctx),
-  jobHolderColumn(ctx),
-  taskColumn(ctx),
-  hoursColumn(ctx),
-  startDateColumn(ctx),
-  deadlineColumn(ctx),
-  taskDateColumnCompleted(ctx),
-  dateStatusColumn(ctx),
-  statusColumnCompleted(ctx),
-  leadColumn(ctx),
-  budgetColumn(ctx),
- 
-   
- 
-  labelColumn(ctx),
-  recurringColumn(ctx)
+  departmentColumn(),
+  projectColumn(),
+  jobHolderColumn(),
+  taskColumn(),
+  hoursColumn(),
+  startDateColumn(),
+  deadlineColumn(),
+  taskDateColumnCompleted(),
+  dateStatusColumn(),
+  statusColumnCompleted(),
+  leadColumn(),
+  budgetColumn(),
+
+  labelColumn(),
+  recurringColumn(),
 ];

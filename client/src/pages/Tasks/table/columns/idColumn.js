@@ -1,14 +1,12 @@
-export const idColumn = (ctx) => {
-
-
+export const idColumn = () => {
   return {
-  accessorKey: "_id",
-  header: "ID",
-  size: 0,
-  maxSize: 0,
-  minSize: 0,
-  enableColumnFilter: false,
-  enableSorting: false,
-  Cell: () => null, // hidden
+    accessorKey: "_id",
+    header: "ID",
+    size: 0,
+    maxSize: 0,
+    minSize: 0,
+    enableColumnFilter: false,
+    enableSorting: false,
+    Cell: () => null, // hidden
+  };
 };
-} 

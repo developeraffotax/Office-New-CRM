@@ -3,8 +3,9 @@ import { TaskDateFilterFn } from "../../utils/TaskDateFilterFn";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import DateRangePopover from "../../../../utlis/DateRangePopover";
+import { useTaskCtx } from "../../contextApi/UserContext";
 
-export const deadlineColumn = (ctx) => {
+export const deadlineColumn = () => {
   return {
     accessorKey: "deadline",
     header: "Deadline",
@@ -102,6 +103,7 @@ export const deadlineColumn = (ctx) => {
     },
 
     Cell: ({ cell, row }) => {
+      const ctx = useTaskCtx();
       const [date, setDate] = useState(() => {
         const cellDate = new Date(cell.getValue());
         return cellDate.toISOString().split("T")[0];

@@ -228,7 +228,7 @@ export const sendEmail = async (req, res) => {
       companyName: company?.trim().toLowerCase(),
       threadId: threadId,
       userId: user._id,
-      category: "ticket"
+      // category: "ticket"
     })
 
 

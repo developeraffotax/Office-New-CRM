@@ -27,6 +27,8 @@ import goalModel from "../models/goalModel.js";
 import { normalizeDashes } from "../utils/normalizeDashes.js";
 import { getGmailClient } from "../emailModule/services/gmail.service.js";
 import { buildGmailReply } from "../emailModule/utils/buildGmailReply.js";
+import EmailThread from "../emailModule/models/EmailThread.js";
+import ThreadCategory from "../emailModule/models/ThreadCategory.js";
 
 
 
@@ -218,6 +220,18 @@ export const sendEmail = async (req, res) => {
       email: email,
       isManual: clientId ? false : true
     });
+
+
+    const user = await userModel.findOne({ name: jobHolderToAssign }).lean().select("_id");
+    
+    const thread = await EmailThread.create({
+      companyName: company?.trim().toLowerCase(),
+      threadId: threadId,
+      userId: user._id,
+      category: "ticket"
+    })
+
+
 
     const ticketActivity = await TicketActivity.create({
       ticketId: sendEmail._id,
@@ -1184,9 +1198,11 @@ export const updateTickets = async (req, res) => {
 
 
    // Create Notification
-   if(updateKeys.includes('jobHolder') && (req.user?.user?.name !== ticket?.jobHolder)) {  
-    const user = await userModel.findOne({ name: ticket.jobHolder });
+   if(updateKeys.includes('jobHolder')  ) {  
+    const user = await userModel.findOne({ name: ticket.jobHolder }).lean().select("_id");;
     
+    if(req.user?.user?.name !== ticket?.jobHolder) {
+      
         const payload = {
       title: "New Ticket Assigned",
       redirectLink: "/tickets",
@@ -1199,6 +1215,24 @@ export const updateTickets = async (req, res) => {
 
 
     scheduleNotification(true, payload)
+    }
+
+
+    
+      // const threadId = new mongoose.Types.ObjectId();
+      const thread = await EmailThread.findOneAndUpdate({
+        threadId: ticket?.mailThreadId
+      }, {
+        $set: {
+          userId: user._id,
+          category: "ticket",
+        }
+      })
+
+
+
+
+
   }
 
 

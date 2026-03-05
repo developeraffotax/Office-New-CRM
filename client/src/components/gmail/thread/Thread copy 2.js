@@ -25,12 +25,6 @@ export default function Thread({
   setShowEmailDetail,
   markAsRead,
 }) {
-
-  const [page, setPage] = useState(1);
-const [hasMore, setHasMore] = useState(false);
-const [loadingMore, setLoadingMore] = useState(false);
-
-
   const [emailDetail, setEmailDetail] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isloading, setIsLoading] = useState(false);
@@ -50,28 +44,24 @@ const [loadingMore, setLoadingMore] = useState(false);
 
   const lastMessageRef = useRef(null);
   const replySectionRef = useRef(null);
- 
-const scrollAnchorRef = useRef(null); // { previousHeight }
 
-
-  useLayoutEffect(() => {
-  if (!loadingMore && scrollAnchorRef.current) {
-    const container = scrollContainerRef.current;
-    if (container) {
-      const newHeight = container.scrollHeight;
-      container.scrollTop = newHeight - scrollAnchorRef.current.previousHeight;
-    }
-    scrollAnchorRef.current = null; // reset
-  }
-}, [loadingMore]); // fires when loadingMore flips false
-
-
+  // FIX: Scroll to LAST MESSAGE (not bottom of page) on mount
+  // useEffect(() => {
+  //   if (!loading && emailDetail?.decryptedMessages?.length > 0) {
+  //     setTimeout(() => {
+  //       lastMessageRef.current?.scrollIntoView({
+  //         behavior: "smooth",
+  //         block: "start",
+  //       });
+  //     }, 500);
+  //   }
+  // }, [loading, emailDetail]);
 useLayoutEffect(() => {
   const el = scrollContainerRef.current;
   if (el && !loading) {
     el.scrollTop = el.scrollHeight;
   }
-}, [loading]);
+}, [loading, emailDetail]);
 
   // Sticky logic
   useEffect(() => {
@@ -96,50 +86,21 @@ useLayoutEffect(() => {
     );
   }, [emailDetail?.decryptedMessages]);
 
-const getEmailDetail = async (pageNumber = 1, isLoadMore = false) => {
-  if (isLoadMore) {
-    setLoadingMore(true);
-  } else {
+  const getEmailDetail = async () => {
     setLoading(true);
-  }
-
-  try {
-    const { data } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/inbox/detail/pagination/${threadId}/${company}?page=${pageNumber}&limit=10`
-    );
-
-    if (data?.emailDetails) {
-      const pagination = data.emailDetails.pagination;
-
-      /**
-       * ✅ HAS MORE FROM BACKEND PAGINATION
-       */
-      setHasMore(
-        pagination?.totalPages
-          ? pageNumber < pagination.totalPages
-          : false
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/inbox/detail/${threadId}/${company}`,
       );
-
-      if (isLoadMore) {
-        // PREPEND older messages
-        setEmailDetail((prev) => ({
-          ...data.emailDetails,
-          decryptedMessages: [
-            ...data.emailDetails.decryptedMessages,
-            ...(prev?.decryptedMessages || []),
-          ],
-        }));
-      } else {
+      if (data) {
         setEmailDetail(data.emailDetails);
       }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.log(error);
-  } finally {
-    setLoading(false);
-    setLoadingMore(false);
-  }
-};
+  };
 
   useClickOutside(threadRef, () => {
     setShowEmailDetail();
@@ -149,27 +110,10 @@ const getEmailDetail = async (pageNumber = 1, isLoadMore = false) => {
     setShowEmailDetail();
   });
 
-useEffect(() => {
-  setPage(1);
-  getEmailDetail(1, false);
-  markAsRead(threadId, company);
-}, [threadId, company]);
-
-
-
-const handleLoadMore = async () => {
-  if (!hasMore || loadingMore) return;
-
-  const container = scrollContainerRef.current;
-  // Capture BEFORE any state changes
-  scrollAnchorRef.current = { previousHeight: container.scrollHeight };
-
-  const nextPage = page + 1;
-  setPage(nextPage);
-  await getEmailDetail(nextPage, true);
-};
-
-
+  useEffect(() => {
+    getEmailDetail();
+    markAsRead(threadId, company);
+  }, [threadId, company]);
 
   const separate = (email) => {
     const emailRegex = /(.*)<(.*)>/;
@@ -287,22 +231,7 @@ const handleLoadMore = async () => {
         <div
          ref={scrollContainerRef}
         className="flex-1   overflow-y-auto p-4 md:p-6 flex flex-col  gap-8"
-        > 
-        {hasMore && (
-            <div className="w-full flex justify-center mb-4">
-              <button
-                onClick={handleLoadMore}
-                disabled={loadingMore}
-                className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition flex items-center gap-2"
-              >
-                {loadingMore && (
-                  <TbLoader2 className="w-4 h-4 animate-spin" />
-                )}
-                {loadingMore ? "Loading..." : "Load older messages"}
-              </button>
-            </div>
-          )}
-
+        >
           {emailDetail?.decryptedMessages?.map((message, i) => {
             const isSentByMe =
               message?.payload?.body?.sentByMe ||

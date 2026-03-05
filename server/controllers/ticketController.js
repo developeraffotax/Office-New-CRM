@@ -9,6 +9,7 @@ import {
   getAllEmails,
   getAttachments,
   getSingleEmail,
+  getSingleEmailWithPagination,
   markThreadAsRead,
   sendEmailWithAttachments,
 } from "../utils/gmailApi.js";
@@ -2182,6 +2183,7 @@ export const deleteMultipleEmail = async (req, res) => {
 export const getInboxDetail = async (req, res) => {
   try {
     const { mailThreadId, company } = req.params;
+    const { page = 1, limit = 10 } = req.query;
 
     if (!mailThreadId || !company) {
       return res.status(400).json({
@@ -2193,6 +2195,8 @@ export const getInboxDetail = async (req, res) => {
     const ticketDetail = {
       threadId: mailThreadId,
       companyName: company,
+      page: Number(page),
+      limit: Number(limit),
     };
 
     // Fetch the email thread details based on the mailThreadId
@@ -2217,7 +2221,60 @@ export const getInboxDetail = async (req, res) => {
       error: error,
     });
   }
+
 };
+
+
+
+// Get Inbox Detail
+export const getInboxDetailWithPagination = async (req, res) => {
+  try {
+    const { mailThreadId, company } = req.params;
+    const { page = 1, limit = 10 } = req.query;
+
+    if (!mailThreadId || !company) {
+      return res.status(400).json({
+        success: false,
+        message: "mailThreadId and company are required",
+      });
+    }
+
+    const ticketDetail = {
+      threadId: mailThreadId,
+      companyName: company,
+      page: Number(page),
+      limit: Number(limit),
+    };
+
+    // Fetch the email thread details based on the mailThreadId
+    const threadDetails = await getSingleEmailWithPagination(ticketDetail);
+
+    if (!threadDetails || threadDetails.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No email found for this mailThreadId",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      emailDetails: threadDetails,
+    });
+  } catch (error) {
+    console.log("Error while getting single email details:", error);
+    res.status(500).send({
+      success: false,
+      message: "Error while getting email details!",
+      error: error,
+    });
+  }
+};
+
+
+
+
+
+
 
 // Inbox Mark As Read
 export const markAsReadInboxEmail = async (req, res) => {

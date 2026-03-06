@@ -61,7 +61,9 @@ export default function Filters({
   const [isInboxUserTabs, setIsInboxUserTabs] = React.useState(true);
   const [inboxStats, setInboxStats] = React.useState(null);
 
-  console.log("UNASSIGENED", inboxStats)
+  console.log("inboxStats ❤️❤️❤️", inboxStats)
+
+  
      const [searchParams] = useSearchParams();
   
   const folder = searchParams.get("folder") || "inbox";
@@ -187,7 +189,7 @@ React.useEffect(() => {
 
   const fetchUserCounts = async () => {
 
-    console.log("FILTERS", filters)
+ 
     try {
       const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/gmail/mailbox-user-counts`, {
         params: {
@@ -200,7 +202,7 @@ React.useEffect(() => {
       });
 
       if (res.data?.success) {
-        console.log("THE RESPONSE", res.data)
+    
         setInboxStats(res.data);
       }
     } catch (err) {

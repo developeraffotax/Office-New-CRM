@@ -544,7 +544,8 @@ export const getMailboxUserCounts = async (req, res) => {
     const query = buildFilterQuery(req);
 
     // 🔥 Deep clone to avoid mutation
-    const countQuery = JSON.parse(JSON.stringify(query));
+    const countQuery = structuredClone(query);
+ 
 
     // --------------------------------------------------
     // Remove userId filter from $and
@@ -568,7 +569,7 @@ export const getMailboxUserCounts = async (req, res) => {
       }
     }
 
-    console.log("COUNT QUERY", countQuery);
+     
 
     // --------------------------------------------------
     // Aggregate User Counts

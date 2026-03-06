@@ -72,8 +72,7 @@ export default function Reply({
       .then((res) => setTemplates(res.data?.templates || []));
   }, []);
 
-  console.log("TEMPLATE OPTIONS 🧡🧡🧡🧡🧡🧡🧡🧡🧡", templateOptions);
-
+ 
   useEffect(() => {
     if (mode === "replyAll") {
       setShowCcField(true);

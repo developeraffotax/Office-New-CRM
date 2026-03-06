@@ -141,8 +141,7 @@ export function useEmailReply({
 
   /* ---------- auto population ---------- */
 
-  console.log("THE EMAIL DETAIL IS", emailDetail);
-
+ 
   useEffect(() => {
     if (!emailDetail?.decryptedMessages?.length) return;
 

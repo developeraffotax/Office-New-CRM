@@ -1,4 +1,6 @@
+import { useState } from "react";
 import Row from "./Row";
+import { ReplyPopup } from "../reply/ReplyPopup";
 
 // A internal component for the loading state
 const ShimmerSkeleton = () => (
@@ -6,7 +8,7 @@ const ShimmerSkeleton = () => (
     <div className="flex items-center">
       {/* Avatar Circle */}
       {/* <div className="w-12 h-12 bg-gray-200 rounded-full mr-4" /> */}
-      
+
       <div className="flex-1 space-y-3">
         {/* Name & Time */}
         <div className="flex justify-between">
@@ -18,13 +20,29 @@ const ShimmerSkeleton = () => (
         <div className="h-3 bg-gray-50 rounded w-2/3" />
       </div>
     </div>
-    
+
     {/* The Shimmer Effect Layer */}
     <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/60 to-transparent" />
   </div>
 );
 
-export default function  List({ threads, loading, users, handleUpdateThread, setEmailDetail, categories, setCreateTicketModal, setCreateLeadModal, deleteThread, filters, selectedThreads, toggleThread, setComment }) {
+export default function List({
+  threads,
+  loading,
+  users,
+  handleUpdateThread,
+  setEmailDetail,
+  categories,
+  setCreateTicketModal,
+  setCreateLeadModal,
+  deleteThread,
+  filters,
+  selectedThreads,
+  toggleThread,
+  setComment,
+}) {
+  const [replyThread, setReplyThread] = useState(null);
+
   if (loading.fetching) {
     return (
       <div className="flex-1 overflow-hidden">
@@ -37,38 +55,41 @@ export default function  List({ threads, loading, users, handleUpdateThread, set
   }
 
   if (threads.length === 0) {
-    return <div className="p-8 text-center text-gray-500">No messages found.</div>;
+    return (
+      <div className="p-8 text-center text-gray-500">No messages found.</div>
+    );
   }
 
   return (
     <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden">
-      
       {threads.map((thread, index) => (
-        <Row 
-          key={thread._id} 
-          thread={thread} 
-          users={users} 
-          handleUpdateThread={handleUpdateThread} 
+        <Row
+          key={thread._id}
+          thread={thread}
+          users={users}
+          handleUpdateThread={handleUpdateThread}
           deleteThread={deleteThread}
           categories={categories}
           filters={filters}
-
           setEmailDetail={setEmailDetail}
           setCreateTicketModal={setCreateTicketModal}
           setCreateLeadModal={setCreateLeadModal}
-
           index={index}
           selected={selectedThreads.has(thread._id)}
           toggleSelect={toggleThread}
-
           setComment={setComment}
-           
+          setReplyThread={setReplyThread}
+          replyThread={replyThread}
         />
       ))}
 
-      
+      {/* {replyThread && (
+        <ReplyPopup
+          threadId={replyThread.threadId}
+          companyName={replyThread.companyName}
+          onClose={() => setReplyThread(null)}
+        />
+      )} */}
     </div>
   );
 }
-
-

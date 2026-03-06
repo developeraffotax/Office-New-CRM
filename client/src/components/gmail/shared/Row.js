@@ -10,7 +10,8 @@ import clsx from "clsx";
 import AttachmentChip from "./attachments/AttachmentChip";
 import { MdDeleteOutline } from "react-icons/md";
 import { useSearchParams } from "react-router-dom";
-
+import { ReplyPopup } from "../reply/ReplyPopup";
+ 
 function parseEmail(str) {
   if (!str) return "";
 
@@ -48,10 +49,18 @@ export default function Row({
   toggleSelect,
   index,
   setComment,
+  setReplyThread,
+  replyThread
 }) {
   const [assignOpen, setAssignOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const isRowActive =
+  replyThread?.threadId === thread.threadId ||
+  assignOpen ||
+  menuOpen;
+
 
   const attachments = thread.attachments || [];
   const visibleAttachments = attachments.slice(0, 2);
@@ -60,6 +69,8 @@ export default function Row({
    const [searchParams] = useSearchParams();
 
 const folder = searchParams.get("folder") || "inbox";
+
+
 
   // ----------------------- Sender / Participants -----------------------
   const myCompanyName = thread.companyName; // your company
@@ -211,16 +222,68 @@ const folder = searchParams.get("folder") || "inbox";
         <div className="w-4" />
 
         {/* Actions (hover only) */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+       <div
+  className={clsx(
+    "flex items-center gap-1 transition-opacity",
+    isRowActive
+      ? "opacity-100"
+      : "opacity-0 group-hover:opacity-100"
+  )}
+>
+
+          {/* <button
+            onClick={(e) => {
+              e.stopPropagation();
+
+              setReplyThread({
+                threadId: thread.threadId,
+                companyName: thread.companyName,
+              });
+            }}
+            className="px-3 py-1 text-xs bg-orange-500 text-white rounded-md"
+          >
+            Reply
+          </button> */}
+
+
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+
+                setReplyThread({
+                  threadId: thread.threadId,
+                  companyName: thread.companyName,
+                });
+              }}
+              className="px-3 py-1 text-xs bg-orange-500 text-white rounded-md"
+            >
+              Reply
+            </button>
+
+            {replyThread?.threadId === thread.threadId && (
+              <ReplyPopup
+                threadId={replyThread.threadId}
+                companyName={replyThread.companyName}
+                onClose={() => setReplyThread(null)}
+              />
+            )}
+          </div>
+
+
+
           {/* Quick Category Selector */}
           <div className="relative flex items-center bg-white border border-gray-200 rounded-md shadow-sm overflow-hidden hover:border-gray-300">
             <select
               className="appearance-none text-xs pl-2 pr-6 py-1 bg-transparent cursor-pointer outline-none"
               value={thread.category}
+              onClick={(e) => e.stopPropagation()}
+             
               onChange={(e) => {
                 e.stopPropagation();
                 updateCategory(e.target.value);
               }}
+
             >
               <option value="">Select</option>
               {categories.map((category) => (
@@ -234,7 +297,7 @@ const folder = searchParams.get("folder") || "inbox";
 
           {/* Assign User Dropdown */}
           {/* Actions (hover only) */}
-          <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1.5   transition-opacity">
             {/* Assign User Button */}
             <div className="relative">
               <button
@@ -305,6 +368,10 @@ const folder = searchParams.get("folder") || "inbox";
               <span className="size-1.5 rounded-full bg-blue-500" />
               Ticket
             </button>
+
+
+
+
 
             {/* Create Lead Button */}
             <button

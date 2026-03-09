@@ -179,34 +179,6 @@ export default function Lead() {
     );
   };
 
-  // Filter Total Value
-  useEffect(() => {
-    const totalvalue = filteredData.reduce(
-      (acc, item) => acc + Number(item.value || 0),
-      0,
-    );
-    console.log("totalvalue:", totalvalue);
-    setValueTotal(totalvalue);
-  }, [filteredData]);
-
-  // Total Source Count
-  const getSourceCount = (source) => {
-    if (filteredData.length > 0 || selectFilter) {
-      return filteredData.filter((item) => item.source === source).length;
-    } else {
-      return leadData.filter((item) => item.source === source).length;
-    }
-  };
-
-  const sourcePercentage = (source) => {
-    const totalLead =
-      filteredData.length > 0 || selectFilter
-        ? filteredData.length
-        : leadData.length;
-    const sourceCount = getSourceCount(source);
-    return totalLead > 0 ? ((sourceCount / totalLead) * 100).toFixed(0) : 0;
-  };
-
   useEffect(() => {
     getAllUsers();
     // eslint-disable-next-line
@@ -353,6 +325,33 @@ export default function Lead() {
     // eslint-disable-next-line
     [table.getFilteredRowModel().rows],
   );
+
+  // Filter Total Value
+  useEffect(() => {
+    const totalvalue = filteredData.reduce(
+      (acc, item) => acc + Number(item.value || 0),
+      0,
+    );
+    setValueTotal(totalvalue);
+  }, [filteredData]);
+
+  // Total Source Count
+  const getSourceCount = (source) => {
+    if (filteredData.length > 0 || selectFilter) {
+      return filteredData.filter((item) => item.source === source).length;
+    } else {
+      return leadData.filter((item) => item.source === source).length;
+    }
+  };
+
+  const sourcePercentage = (source) => {
+    const totalLead =
+      filteredData.length > 0 || selectFilter
+        ? filteredData.length
+        : leadData.length;
+    const sourceCount = getSourceCount(source);
+    return totalLead > 0 ? ((sourceCount / totalLead) * 100).toFixed(0) : 0;
+  };
 
   const applyFilter = (e) => {
     e.stopPropagation();

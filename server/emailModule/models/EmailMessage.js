@@ -15,6 +15,6 @@ const EmailMessageSchema = new mongoose.Schema(
 );
 
 
-EmailMessageSchema.index({ companyName: 1, threadgmailThreadIdId: 1 }, { unique: true });
+EmailMessageSchema.index({ companyName: 1, threadgmailThreadIdId: 1 });
 
 export default mongoose.model("EmailMessage", EmailMessageSchema);

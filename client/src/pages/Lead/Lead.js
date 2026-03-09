@@ -6,7 +6,6 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
-import axios from "axios";
 
 import SendEmailModal from "../../components/Tickets/SendEmailModal";
 
@@ -21,7 +20,6 @@ import { useSelector } from "react-redux";
 import { getLeadColumns } from "./table/columns";
 import WonLeadsStats from "./userLeadChart/UserLeadChart";
 import EmailDetailDrawerNewWrapper from "../../components/shared/EmailDetailDrawerNewWrapper";
-import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import { LeadProvider } from "./contextApi/LeadContext";
 
 // components
@@ -43,6 +41,9 @@ import { STORAGE_KEYS } from "./constants/storageKeys";
 // hooks
 import useBulkLeadEdit from "./hooks/useBulkLeadEdit";
 import useLeadData from "./hooks/useLeadData";
+import useLeadModals from "./hooks/useLeadModals";
+import useLeadUsers from "./hooks/useLeadUsers";
+import useLeadFilters from "./hooks/useLeadFilters";
 
 export default function Lead() {
   const navigate = useNavigate();
@@ -51,92 +52,15 @@ export default function Lead() {
 
   const [selectedTab, setSelectedTab] = useState(Lead_Status.PROGRESS);
 
-  const [showNewTicketModal, setShowNewTicketModal] = useState(false);
-  const [clientCompanyName, setClientCompanyName] = useState("");
-  const [clientEmail, setClientEmail] = useState("");
-
-  const [clientName, setClientName] = useState(""); // for creating the new ticket
-  const [companyName, setCompanyName] = useState("");
-
-  const [showSendModal, setShowSendModal] = useState(false);
-  const [access, setAccess] = useState([]);
-
   const [showUserLeadChart, setShowUserLeadChart] = useState(false);
 
   const [showJobHolder, setShowJobHolder] = useState(true);
   const [active1, setActive1] = useState("");
 
-  const { selectedUsers, setSelectedUsers } = usePersistedUsers(
-    "leads:selected_users",
-    userName,
-  );
-
-  const [emailPopup, setEmailPopup] = useState({
-    open: false,
-    email: "",
-    clientName: "",
-  });
-
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 30, // ✅ default page size
   });
-
-  const anchorRef = useRef(null);
-
-  const [filterInfo, setFilterInfo] = useState({
-    col: null,
-    value: "",
-    type: "eq",
-  });
-
-  const handleFilterClick = (e, colKey) => {
-    e.stopPropagation();
-    anchorRef.current = e.currentTarget;
-    setFilterInfo({
-      col: colKey,
-      value: "",
-      type: "eq",
-    });
-  };
-
-  const handleCloseFilter = () => {
-    setFilterInfo({ col: null, value: "", type: "eq" });
-    anchorRef.current = null;
-  };
-
-  const applyFilter = (e) => {
-    e.stopPropagation();
-    const { col, value, type } = filterInfo;
-    if (col && value) {
-      table.getColumn(col)?.setFilterValue({ type, value: parseFloat(value) });
-    }
-    handleCloseFilter();
-  };
-
-  // With Loading
-  const getEmails = async () => {
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets`,
-      );
-      if (data) {
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  // Get Auth Access
-  useEffect(() => {
-    if (auth.user) {
-      const filterAccess = auth.user.role.access
-        .filter((role) => role.permission === "Tickets")
-        .flatMap((jobRole) => jobRole.subRoles);
-
-      setAccess(filterAccess);
-    }
-  }, [auth]);
 
   const [formData, setFormData] = useState({
     companyName: "",
@@ -156,8 +80,6 @@ export default function Lead() {
     yearEnd: "",
     email: "",
   });
-  const [active, setActive] = useState(false);
-  const [selectFilter, setSelectFilter] = useState("");
 
   // BULK EDITING
   const [rowSelection, setRowSelection] = useState({});
@@ -181,43 +103,52 @@ export default function Lead() {
     handleCopyLead,
   } = useLeadData(selectedTab);
 
-  const userName = useMemo(() => users.map((u) => u.name), [users]);
+  const {
+    showNewTicketModal,
+    setShowNewTicketModal,
+    clientCompanyName,
+    setClientCompanyName,
+    clientEmail,
+    setClientEmail,
+    clientName,
+    setClientName,
+    companyName,
+    setCompanyName,
+    showSendModal,
+    setShowSendModal,
+    access,
+    emailPopup,
+    setEmailPopup,
+    getEmails,
+  } = useLeadModals(auth);
+
+  const {
+    userName,
+    selectedUsers,
+    setSelectedUsers,
+    ticketMap,
+    getJobHolderCount,
+    user_leads_count_map,
+    handleUserOnDragEnd,
+  } = useLeadUsers({ users, leadData, selectedTab });
+
+  const {
+    selectFilter,
+    setSelectFilter,
+    active,
+    setActive,
+    anchorRef,
+    filterInfo,
+    setFilterInfo,
+    handleFilterClick,
+    handleCloseFilter,
+  } = useLeadFilters();
 
   const { updates, isUpdating, handleOnChangeUpdate, updateBulkLeads } =
     useBulkLeadEdit({
       rowSelection,
       onSuccess: () => getAllLeads(),
     });
-
-  // --------------Job_Holder Length---------->
-  const getJobHolderCount = (user, status) => {
-    console.log("L:LEADS DATA", leadData);
-    if (user === "All") {
-      return leadData.filter((lead) => lead?.status === status)?.length;
-    }
-    return leadData.filter(
-      (lead) => lead?.jobHolder === user && lead?.status === status,
-    )?.length;
-  };
-
-  const [ticketMap, setTicketMap] = useState({});
-
-  useEffect(() => {
-    const fetchTicketCounts = async () => {
-      try {
-        const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/leads/available-tickets?status=${selectedTab}`,
-        );
-        if (data) {
-          setTicketMap(data.ticketMap || {});
-        }
-      } catch (err) {
-        console.error("Error fetching ticket counts", err);
-      }
-    };
-
-    fetchTicketCounts();
-  }, [selectedTab]);
 
   const [showcolumn, setShowColumn] = useState(false);
   const boxRef = useRef(null);
@@ -247,18 +178,6 @@ export default function Lead() {
       JSON.stringify(updatedVisibility),
     );
   };
-
-  const user_leads_count_map = useMemo(() => {
-    return Object.fromEntries(
-      userName.map((user) => [user, getJobHolderCount(user, selectedTab)]),
-    );
-  }, [userName, selectedTab, getJobHolderCount]);
-
-  console.log("filteredData:", filteredData);
-
-  useEffect(() => {
-    getAllLeads();
-  }, [selectedTab]);
 
   // Filter Total Value
   useEffect(() => {
@@ -435,24 +354,13 @@ export default function Lead() {
     [table.getFilteredRowModel().rows],
   );
 
-  // a little function to help us with reordering the result
-  const reorder = (list, startIndex, endIndex) => {
-    const result = Array.from(list);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-
-    return result;
-  };
-
-  //  -----------Handle drag end---------
-  const handleUserOnDragEnd = (result) => {
-    const items = reorder(
-      selectedUsers,
-      result.source.index,
-      result.destination.index,
-    );
-    localStorage.setItem(STORAGE_KEYS.USER_ORDER, JSON.stringify(items));
-    setSelectedUsers(items);
+  const applyFilter = (e) => {
+    e.stopPropagation();
+    const { col, value, type } = filterInfo;
+    if (col && value) {
+      table.getColumn(col)?.setFilterValue({ type, value: parseFloat(value) });
+    }
+    handleCloseFilter();
   };
 
   const setColumnFromOutsideTable = (colKey, filterVal) => {
@@ -554,7 +462,6 @@ export default function Lead() {
         </div>
       </div>
 
-      {/* ===== Section: Modal Mount Section ===== */}
       {/* ---------------------Send Email Modal------------------ */}
       {showSendModal && (
         <div className="fixed top-0 left-0 z-[999] w-full h-full py-1 bg-gray-700/70 flex items-center justify-center">

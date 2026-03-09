@@ -62,7 +62,7 @@ export default function List({
   }
 
   return (
-    <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden">
+<div className="flex-1 min-w-0 overflow-y-auto overflow-x-visible">
       {threads.map((thread, index) => (
         <Row
           key={thread._id}

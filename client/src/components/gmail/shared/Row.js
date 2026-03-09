@@ -269,29 +269,96 @@ const folder = searchParams.get("folder") || "inbox";
           </button> */}
 
 
-          <div className="relative">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
+          {/* Reply Button Container */}
+ 
+ 
 
-                setReplyThread({
-                  threadId: thread.threadId,
-                  companyName: thread.companyName,
-                });
-              }}
-              className="px-3 py-1 text-xs bg-orange-500 text-white rounded-md"
-            >
-              Reply
-            </button>
 
-            {replyThread?.threadId === thread.threadId && (
-              <ReplyPopup
-                threadId={replyThread.threadId}
-                companyName={replyThread.companyName}
-                onClose={() => setReplyThread(null)}
-              />
-            )}
-          </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div className="relative group/reply flex items-center justify-end">
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      setReplyThread({
+        threadId: thread.threadId,
+        companyName: thread.companyName,
+      });
+    }}
+    className="px-3 py-1 text-xs bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors shadow-sm"
+  >
+    Reply
+  </button>
+
+{/* --- SMART TOOLTIP --- */}
+        <div 
+          className={clsx(
+            "invisible group-hover/reply:visible opacity-0 group-hover/reply:opacity-100 transition-all duration-200",
+            "absolute left-0 w-72 z-[9999]", 
+            // FIX 2: If it's the first row (index 0), flip it to show BELOW the button
+            index === 0 ? "top-full mt-2.5" : "bottom-full mb-2.5",
+            "bg-white p-4 rounded-xl shadow-2xl border border-gray-100 pointer-events-none"
+          )}
+        >
+          <p 
+            className="text-gray-700 text-sm leading-relaxed line-clamp-4 font-normal font-google"
+            dangerouslySetInnerHTML={{ __html: thread.lastMessageSnippet || "No snippet available" }}
+          />
+          
+          {/* FIX 3: Flip the arrow based on position */}
+          <div className={clsx(
+            "absolute left-5 size-3 rotate-45 bg-white border-gray-100",
+            index === 0 
+              ? "bottom-full -mb-1.5 border-t border-l" // Arrow pointing up
+              : "top-full -mt-1.5 border-b border-r"    // Arrow pointing down
+          )}></div>
+        </div>
+
+  {/* Existing ReplyPopup logic */}
+  {replyThread?.threadId === thread.threadId && (
+    <ReplyPopup
+      threadId={replyThread.threadId}
+      companyName={replyThread.companyName}
+      onClose={() => setReplyThread(null)}
+    />
+  )}
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

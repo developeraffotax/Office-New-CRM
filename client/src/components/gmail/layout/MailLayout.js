@@ -130,7 +130,7 @@ const clearSelection = () => setSelectedThreads(new Set());
           categories={categories}
           handleUpdateThread={handleUpdateThread}
           deleteThread={deleteThread}
-          completeThread={completeThread}
+           
           filters={filters}
 
           setEmailDetail={setEmailDetail}
@@ -213,11 +213,11 @@ const clearSelection = () => setSelectedThreads(new Set());
 )}
 
 
-{loading.completing && (
+{loading.updating && (
   <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
     <div className="flex items-center gap-3 px-4 py-2 bg-black text-white text-sm font-medium rounded-lg shadow-lg animate-pulse">
       <div className="w-3 h-3 bg-emerald-400 rounded-full animate-bounce" />
-      Completing thread...
+      Updating thread...
     </div>
   </div>
 )}

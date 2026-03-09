@@ -10,9 +10,10 @@ import { fetchInboxUnreadCounts } from "../../../redux/slices/inboxUnreadSlice";
 function matchesFilters(thread, filters, user) {
   if (!thread || !filters) return false;
 
-  const { label, unreadOnly, startDate, endDate, category, userId } = filters;
+  const { label, unreadOnly, startDate, endDate, category, userId, status } = filters;
 
- 
+    // ✅ Status filter (progress or completed)
+    if (status && thread.status !== status) return false;
 
   if (label && (!thread.labels?.includes(label) || thread.labels?.includes("TRASH"))) return false;
   if (unreadOnly && thread.unreadCount <= 0) return false;
@@ -74,7 +75,7 @@ const [loading, setLoading] = useState({
   deleting: false,
   fetching: false,
   updating: false,
-  completing: false,
+   
   
 });
   const [pagination, setPagination] = useState({});
@@ -119,6 +120,7 @@ const filters = useMemo(() => {
     page: Number(searchParams.get("page") || 1),
     limit: Number(searchParams.get("limit") || 20),
     search: searchParams.get("search") || "",
+    status: searchParams.get("status") || "",
   };
 }, [searchParams, folder, isAdmin]);
 
@@ -184,25 +186,96 @@ const filters = useMemo(() => {
     }
   }, [endpoint, filters, folder, companyName]);
 
-  // ---------------- Update single thread via API ----------------
-  const handleUpdateThread = async (_id, updateData) => {
-    try {
-      const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/gmail/update-thread/${_id}`,
-        updateData,
-      );
 
-      if (data?.success) {
-        const updatedThread = data.thread;
-        setThreads((prev) =>
-          prev.map((t) => (t._id === updatedThread._id ? updatedThread : t)),
-        );
-      }
-    } catch (err) {
-      toast.error("Failed to update thread!");
-      console.error("Failed to update thread:", err);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ---------------- Update single thread via API ----------------
+const handleUpdateThread = async (_id, updateData, type = "default") => {
+  try {
+    setLoading(prev => ({...prev, updating: true}))
+    const { data } = await axios.put(
+      `${process.env.REACT_APP_API_URL}/api/v1/gmail/update-thread/${_id}`,
+      updateData
+    );
+
+    if (!data?.success || !data?.thread) {
+      toast.error("Thread update failed!");
+      return;
     }
-  };
+
+    const updatedThread = data.thread;
+
+    setThreads((prevThreads) => {
+      // If the update affects status, remove the thread from the list
+      if (type === "status") {
+        return prevThreads.filter((t) => t.threadId !== updatedThread.threadId);
+      }
+
+      // Otherwise, update the specific thread
+      return prevThreads.map((t) => (t._id === updatedThread._id ? updatedThread : t));
+    });
+
+  } catch (err) {
+    toast.error("Failed to update thread!");
+    console.error("Failed to update thread:", err);
+  } finally {
+    setLoading(prev => ({...prev, updating: false}))
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   const markAsRead = async (threadId, companyName) => {
     if (!threadId) return;
@@ -276,50 +349,7 @@ const filters = useMemo(() => {
 
 
 
-
-
-  const completeThread = async (
-    threadId,
-    companyName,
-    includeConfirmation = true,
-  ) => {
-    if (!threadId) return;
-
-    // ✅ Only show Swal if confirmation is required
-    if (includeConfirmation) {
-      const { isConfirmed } = await Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "success",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, complete it!",
-      });
-
-      if (!isConfirmed) return;
-    }
-
-    try {
-      // ✅ set only deleting true
-    setLoading((prev) => ({ ...prev, completing: true }));
-      const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/gmail/complete/${companyName}/${threadId}`,
-      );
-
-      if (data?.success) {
-         setThreads((prev) => prev.filter((t) => t.threadId !== threadId));
-
-        toast.success("Thread completed successfully!");
-      }
-    } catch (error) {
-      console.error("Failed to complete thread:", error);
-      toast.error("Failed to complete thread!");
-    } finally {
-      setLoading((prev) => ({ ...prev, completing: false }));
-    }
-  };
-
+ 
 
 
 
@@ -492,7 +522,7 @@ useEffect(() => {
     fetchThreads,
     markAsRead,
     deleteThread,
-    completeThread,
+ 
     folder, // optional but useful
     companyName,
   };

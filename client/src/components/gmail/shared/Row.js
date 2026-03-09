@@ -12,6 +12,7 @@ import { MdDeleteOutline } from "react-icons/md";
 import { useSearchParams } from "react-router-dom";
 import { ReplyPopup } from "../reply/ReplyPopup";
 import { FaCheckCircle } from "react-icons/fa";
+import Swal from "sweetalert2";
  
 function parseEmail(str) {
   if (!str) return "";
@@ -45,7 +46,7 @@ export default function Row({
   setCreateTicketModal,
   setCreateLeadModal,
   deleteThread,
-  completeThread,
+ 
   filters,
   selected,
   toggleSelect,
@@ -118,7 +119,26 @@ const folder = searchParams.get("folder") || "inbox";
     setUpdating(false);
   };
 
+
+  const updateStatus = async (status) => {
+  // ✅ Only show Swal if confirmation is required
  
+      const { isConfirmed } = await Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "success",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, complete it!",
+      });
+
+      if (!isConfirmed) return;
+ 
+    setUpdating(true);
+    await handleUpdateThread(thread._id, { status: status }, "status");
+    setUpdating(false);
+  };
   //  hover:shadow-[inset_4px_0_0_0_#3b82f6]
 
   return (
@@ -431,7 +451,7 @@ const folder = searchParams.get("folder") || "inbox";
               className="p-1 rounded-md   text-gray-500  hover:text-green-500"
               title="Complete Thread"
               onClick={(e) => {
-                completeThread(thread?.threadId, thread?.companyName);
+                updateStatus("completed");
               }}
             > 
               <FaCheckCircle className="size-4   " />

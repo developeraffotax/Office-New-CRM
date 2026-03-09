@@ -2,7 +2,7 @@
 
 import express from "express";
 import { isAdmin, requiredSignIn } from "../../middlewares/authMiddleware.js";
-import {  completeThread, deleteThread, getMailbox, getMailboxUserCounts, getSentItems, getThreadMessageUsers, getUnreadCounts, markThreadAsRead, updateThreadMetadata } from "../controllers/email.controller.js";
+import {    deleteThread, getMailbox, getMailboxUserCounts, getSentItems, getThreadMessageUsers, getUnreadCounts, markThreadAsRead, updateThreadMetadata } from "../controllers/email.controller.js";
 import { reply } from "../controllers/reply.controller.js";
 import { forward } from "../controllers/forward.controller.js";
  
@@ -33,7 +33,7 @@ router.post("/forward", requiredSignIn,  forward);
 
 router.patch("/mark-as-read/:threadId", requiredSignIn,  markThreadAsRead);
 router.delete("/delete/:threadId", requiredSignIn,  isAdmin,   deleteThread);
-router.put("/complete/:companyName/:threadId", requiredSignIn,  isAdmin,   completeThread);
+ 
 
 
 

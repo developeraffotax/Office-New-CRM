@@ -317,7 +317,7 @@ export const updateThreadMetadata = async (req, res) => {
     /**
      * 1️⃣ Whitelist validation
      */
-    const allowedUpdates = ["category", "userId", ];
+    const allowedUpdates = ["category", "userId", "status" ];
     const updateKeys = Object.keys(updates);
 
     const isValidUpdate = updateKeys.every((key) =>
@@ -541,49 +541,7 @@ export const deleteThread = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
  
-export const completeThread = async (req, res) => {
-  try {
-    const { threadId, companyName } = req.params;
-
-
-    // Find the thread in local DB
-    const thread = await EmailThread.findOneAndUpdate({ threadId, companyName }, {
-      isCompleted: true
-    }, { 
- 
-      new: true
-    });
-    
-
-
-    res.status(200).json({
-      success: true,
-      message: "Thread completed successfully",
-    });
-  } catch (error) {
-    console.error("Error deleting thread:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to delete thread",
-      error: error.message,
-    });
-  }
-};
-
-
 
 
 

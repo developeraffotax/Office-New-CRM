@@ -19,6 +19,7 @@ import {
   IconButton,
   Tooltip,
   ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -44,7 +45,8 @@ import InboxUserTabs from "./ui/InboxUserTabs";
 import UserTabToggleButton from "./ui/UserTabToggleButton";
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
-
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'; // For Completed
+import PendingActionsIcon from '@mui/icons-material/PendingActions'; // For Pro
 
  
 
@@ -432,6 +434,9 @@ React.useEffect(() => {
             </ToggleButton>
           </Tooltip>
 
+
+          
+
 <FormControl size="small" sx={{ minWidth: 300 }}>
   <Box sx={{ position: "relative" }}>
     <input
@@ -476,6 +481,38 @@ React.useEffect(() => {
     )}
   </Box>
 </FormControl>
+
+
+
+    <ToggleButtonGroup
+  value={filters.status} // Assumes status is 'completed' | 'progress' | 'all'
+  exclusive
+  onChange={(event, newStatus) => {
+    // If user clicks the same button again (newStatus is null), you might want to reset to 'all'
+    handleUpdate({ status: newStatus });
+  }}
+  size="small"
+  sx={{ 
+    gap: 0.5,
+    '& .MuiToggleButton-root': {
+      border: "none",
+      borderRadius: "8px !important", // Ensures all buttons stay rounded
+      mx: 0.5
+    }
+  }}
+>
+  <Tooltip title="In Progress">
+    <ToggleButton value="progress" color="warning">
+      <PendingActionsIcon fontSize="small" />
+    </ToggleButton>
+  </Tooltip>
+
+  <Tooltip title="Completed">
+    <ToggleButton value="completed" color="success">
+      <CheckCircleIcon fontSize="small" />
+    </ToggleButton>
+  </Tooltip>
+</ToggleButtonGroup>
 
 
 
@@ -575,6 +612,17 @@ React.useEffect(() => {
                 Active Filters:
               </Typography>
 
+
+                {/* {filters.category && (
+                <Chip
+                  size="small"
+                  label={`Category: ${filters.category}`}
+                  onDelete={() => handleUpdate({ category: "" })}
+                  sx={{ bgcolor: "action.selected", fontWeight: 500 }}
+                />
+              )} */}
+
+              
               {filters.category && (
                 <Chip
                   size="small"

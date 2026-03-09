@@ -6,11 +6,11 @@ import {
 import Loader from "../../utlis/Loader";
 import { format } from "date-fns";
 import { IoBriefcaseOutline, IoRemoveCircle } from "react-icons/io5";
- 
+
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
 import axios from "axios";
- 
+
 import { MdInsertComment, MdRemoveRedEye } from "react-icons/md";
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
@@ -23,15 +23,22 @@ import { Drawer } from "@mui/material";
 import ActivityLogDrawer from "../../components/Modals/ActivityLogDrawer";
 import { TbLogs } from "react-icons/tb";
 import { TiFilter } from "react-icons/ti";
-import { NumberFilterPortal, NumderFilterFn } from "../../utlis/NumberFilterPortal";
+import {
+  NumberFilterPortal,
+  NumberFilterFn,
+} from "../../utlis/NumberFilterPortal";
 
-
-const jobStatusOptions = [ "Quote", "Data", "Progress", "Queries", "Approval", "Submission", "Billing", "Feedback", ];
+const jobStatusOptions = [
+  "Quote",
+  "Data",
+  "Progress",
+  "Queries",
+  "Approval",
+  "Submission",
+  "Billing",
+  "Feedback",
+];
 export default function CompleteTickets() {
-
-
-  
-
   const auth = useSelector((state) => state.auth.auth);
 
   const [emailData, setEmailData] = useState([]);
@@ -51,53 +58,47 @@ export default function CompleteTickets() {
   const [showJobHolder, setShowJobHolder] = useState(false);
   const [active1, setActive1] = useState("");
 
-
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
   const [activityDrawerTicketId, setActivityDrawerTicketId] = useState("");
 
-  const [ticketId, setTicketId] = useState("")
+  const [ticketId, setTicketId] = useState("");
 
   const [open, setOpen] = useState(false);
 
   const toggleDrawer = (newOpen) => {
-     
     setOpen(newOpen);
   };
 
-
-
-
-
   const anchorRef = useRef(null);
 
-const [filterInfo, setFilterInfo] = useState({
-  col: null,
-  value: "",
-  type: "eq",
-});
-  const handleFilterClick = (e, colKey) => {
-  e.stopPropagation();
-  anchorRef.current = e.currentTarget;
-  setFilterInfo({
-    col: colKey,
+  const [filterInfo, setFilterInfo] = useState({
+    col: null,
     value: "",
     type: "eq",
   });
-};
+  const handleFilterClick = (e, colKey) => {
+    e.stopPropagation();
+    anchorRef.current = e.currentTarget;
+    setFilterInfo({
+      col: colKey,
+      value: "",
+      type: "eq",
+    });
+  };
 
-const handleCloseFilter = () => {
-  setFilterInfo({ col: null, value: "", type: "eq" });
-  anchorRef.current = null;
-};
+  const handleCloseFilter = () => {
+    setFilterInfo({ col: null, value: "", type: "eq" });
+    anchorRef.current = null;
+  };
 
-const applyFilter = (e) => {
-  e.stopPropagation()
-  const { col, value, type } = filterInfo;
-  if (col && value) {
-    table.getColumn(col)?.setFilterValue({ type, value: parseFloat(value) });
-  }
-  handleCloseFilter();
-};
+  const applyFilter = (e) => {
+    e.stopPropagation();
+    const { col, value, type } = filterInfo;
+    if (col && value) {
+      table.getColumn(col)?.setFilterValue({ type, value: parseFloat(value) });
+    }
+    handleCloseFilter();
+  };
 
   // console.log("Users:", users, userName);
 
@@ -117,10 +118,9 @@ const applyFilter = (e) => {
     setIsLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/complete/tickets`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/complete/tickets`,
       );
       if (data) {
-         
         setEmailData(data.emails);
         setIsLoading(false);
       }
@@ -138,7 +138,7 @@ const applyFilter = (e) => {
   const getEmails = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets`,
       );
       if (data) {
         setEmailData(data.emails);
@@ -148,55 +148,51 @@ const applyFilter = (e) => {
     }
   };
 
-
-
-  
   function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
     const savedSet = new Set(savedOrder);
-    console.log("savedSET>>>>", savedSet)
+    console.log("savedSET>>>>", savedSet);
     // Preserve the order from savedOrder, but only if the username still exists in the fetched data
-    const ordered = savedOrder.filter(name => fetchedUsernames.includes(name));
-    
+    const ordered = savedOrder.filter((name) =>
+      fetchedUsernames.includes(name),
+    );
+
     // Add any new usernames that aren't in the saved order
-    const newOnes = fetchedUsernames.filter(name => !savedSet.has(name));
-    
+    const newOnes = fetchedUsernames.filter((name) => !savedSet.has(name));
+
     return [...ordered, ...newOnes];
   }
   //---------- Get All Users-----------
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
       );
       setUsers(
         data?.users?.filter((user) =>
           user.role?.access?.some((item) =>
-            item?.permission?.includes("Tickets")
-          )
-        ) || []
+            item?.permission?.includes("Tickets"),
+          ),
+        ) || [],
       );
-
 
       const userNameArr = data?.users
-      ?.filter((user) =>
-        user.role?.access.some((item) =>
-          item?.permission?.includes("Tickets")
+        ?.filter((user) =>
+          user.role?.access.some((item) =>
+            item?.permission?.includes("Tickets"),
+          ),
         )
-      )
-      .map((user) => user.name)
+        .map((user) => user.name);
 
-      setUserName(
-        userNameArr
+      setUserName(userNameArr);
+
+      const savedOrder = JSON.parse(
+        localStorage.getItem("tickets_complete_usernamesOrder"),
       );
+      if (savedOrder) {
+        const savedUserNames = mergeWithSavedOrder(userNameArr, savedOrder);
 
-
-
-      const savedOrder = JSON.parse(localStorage.getItem("tickets_complete_usernamesOrder"));
-        if(savedOrder) {
-          const savedUserNames = mergeWithSavedOrder(userNameArr, savedOrder);
-          
-            setUserName(savedUserNames)
-        }
+        setUserName(savedUserNames);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -229,7 +225,7 @@ const applyFilter = (e) => {
   const handleDeleteTicket = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/delete/ticket/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/delete/ticket/${id}`,
       );
       if (data) {
         const filteredData = emailData?.filter((item) => item._id !== id);
@@ -258,7 +254,7 @@ const applyFilter = (e) => {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
-        { jobDate }
+        { jobDate },
       );
       if (data) {
         getEmails();
@@ -268,7 +264,7 @@ const applyFilter = (e) => {
           setFilteredData((prevData) => {
             if (Array.isArray(prevData)) {
               return prevData.map((item) =>
-                item._id === updateTicket._id ? updateTicket : item
+                item._id === updateTicket._id ? updateTicket : item,
               );
             } else {
               return [updateTicket];
@@ -279,7 +275,7 @@ const applyFilter = (e) => {
         setEmailData((prevData) => {
           if (Array.isArray(prevData)) {
             return prevData.map((item) =>
-              item._id === updateTicket._id ? updateTicket : item
+              item._id === updateTicket._id ? updateTicket : item,
             );
           } else {
             return [updateTicket];
@@ -318,14 +314,14 @@ const applyFilter = (e) => {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
-        { state: "progress" }
+        { state: "progress" },
       );
       if (data?.success) {
         const updateTicket = data?.ticket;
         toast.success("Status update successfully!");
 
         setEmailData((prevData) =>
-          prevData.filter((item) => item._id !== updateTicket._id)
+          prevData.filter((item) => item._id !== updateTicket._id),
         );
       }
     } catch (error) {
@@ -344,35 +340,31 @@ const applyFilter = (e) => {
 
   const columns = useMemo(
     () => [
+      {
+        id: "ticketRef",
+        accessorFn: (row) => row.ticketRef || "-", // safely handle missing jobRef
+        header: "Ref",
+        size: 90,
+        // enableColumnFilter: true,
+        // enableSorting: true,
+        // sortingFn: "alphanumeric",
+        Cell: ({ cell }) => {
+          const handleCopy = () => {
+            navigator.clipboard.writeText(cell.getValue());
+            toast.success(`Copied ${cell.getValue()}`);
+          };
 
-       {
-    id: "ticketRef",
-    accessorFn: (row) => row.ticketRef || "-", // safely handle missing jobRef
-    header: "Ref",
-    size: 90,
-    // enableColumnFilter: true,
-    // enableSorting: true,
-    // sortingFn: "alphanumeric",
-    Cell: ({ cell }) => {
-      const handleCopy = () => {
-        navigator.clipboard.writeText(cell.getValue());
-        toast.success(`Copied ${cell.getValue()}`);
-      };
-
-
-      return (
-        <span
-        className="px-2 py-1 rounded bg-gray-100 text-gray-700 font-semibold text-sm cursor-pointer "
-        onClick={handleCopy}
-        title="Click to copy"
-      >
-        {cell.getValue()}
-      </span>
-      )
-    },
-    
-  },
-
+          return (
+            <span
+              className="px-2 py-1 rounded bg-gray-100 text-gray-700 font-semibold text-sm cursor-pointer "
+              onClick={handleCopy}
+              title="Click to copy"
+            >
+              {cell.getValue()}
+            </span>
+          );
+        },
+      },
 
       {
         accessorKey: "companyName",
@@ -558,77 +550,70 @@ const applyFilter = (e) => {
         grow: false,
       },
 
-      
-            {
-              accessorKey: "jobStatus",
-              header: "Job Status",
-              Header: ({ column }) => {
-                return (
-                  <div className=" flex flex-col gap-[2px]">
-                    <span
-                      className="ml-1 cursor-pointer"
-                      title="Clear Filter"
-                      onClick={() => {
-                        column.setFilterValue("");
-                      }}
-                    >
-                      Job Status
-                    </span>
-      
-                    <select
-                      value={column.getFilterValue() || ""}
-                      onChange={(e) => column.setFilterValue(e.target.value)}
-                      className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-                    >
-                      <option value="">Select</option>
-                      {jobStatusOptions?.map((status, i) => (
-                        <option key={i} value={status}>
-                          {status}
-                        </option>
-                      ))}
-      
-                      <option value="empty">Empty</option>
-                    </select>
-                  </div>
-                );
-              },
-              Cell: ({ cell, row, table }) => {
-                const jobStatus = cell.getValue();
-      
-               
-      
-                return (
-                  <div className="w-full">
-                    <span
-                         
-                        className="w-full h-full cursor-pointer"
-                      >
-                        {jobStatus && jobStatus !== "empty" ? (
-                          jobStatus
-                        ) : (
-                          <div className="text-white w-full h-full  ">.</div>
-                        )}
-                      </span>
-                  </div>
-                );
-              },
-      
-              filterFn: (row, columnId, filterValue) => {
-                const cellValue = row.getValue(columnId);
-      
-                if (filterValue === "empty") {
-                  return !cellValue || cellValue === "empty";
-                }
-      
-                return String(cellValue ?? "") === String(filterValue);
-              },
-      
-              size: 120,
-              minSize: 80,
-              maxSize: 130,
-              grow: false,
-            },
+      {
+        accessorKey: "jobStatus",
+        header: "Job Status",
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Job Status
+              </span>
 
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {jobStatusOptions?.map((status, i) => (
+                  <option key={i} value={status}>
+                    {status}
+                  </option>
+                ))}
+
+                <option value="empty">Empty</option>
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row, table }) => {
+          const jobStatus = cell.getValue();
+
+          return (
+            <div className="w-full">
+              <span className="w-full h-full cursor-pointer">
+                {jobStatus && jobStatus !== "empty" ? (
+                  jobStatus
+                ) : (
+                  <div className="text-white w-full h-full  ">.</div>
+                )}
+              </span>
+            </div>
+          );
+        },
+
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+
+          if (filterValue === "empty") {
+            return !cellValue || cellValue === "empty";
+          }
+
+          return String(cellValue ?? "") === String(filterValue);
+        },
+
+        size: 120,
+        minSize: 80,
+        maxSize: 130,
+        grow: false,
+      },
 
       {
         accessorKey: "subject",
@@ -685,39 +670,60 @@ const applyFilter = (e) => {
         filterVariant: "select",
       },
 
-
-
-
       {
-  accessorKey: "received",
-  Header: ({column}) => (
-    <div className="flex flex-col items-center justify-between">
-      <span title="Click to remove filter" onClick={() => column.setFilterValue("")} className="cursor-pointer ">Received</span>
-      <button ref={anchorRef} onClick={(e) => handleFilterClick(e, "received")}>
-        <TiFilter size={20} className="ml-1 text-gray-500 hover:text-black" />
-      </button>
-    </div>
-  ),
-  filterFn: NumderFilterFn,
-  Cell: ({ row }) => (
-    <span className="w-full flex justify-center text-lg bg-sky-600 text-white rounded-md">
-      {row.original.received}
-    </span>
-  ),
-  size: 60,
-},
+        accessorKey: "received",
+        Header: ({ column }) => (
+          <div className="flex flex-col items-center justify-between">
+            <span
+              title="Click to remove filter"
+              onClick={() => column.setFilterValue("")}
+              className="cursor-pointer "
+            >
+              Received
+            </span>
+            <button
+              ref={anchorRef}
+              onClick={(e) => handleFilterClick(e, "received")}
+            >
+              <TiFilter
+                size={20}
+                className="ml-1 text-gray-500 hover:text-black"
+              />
+            </button>
+          </div>
+        ),
+        filterFn: NumberFilterFn,
+        Cell: ({ row }) => (
+          <span className="w-full flex justify-center text-lg bg-sky-600 text-white rounded-md">
+            {row.original.received}
+          </span>
+        ),
+        size: 60,
+      },
 
       {
         accessorKey: "sent",
-        
-         Header: ({column}) => (
-    <div className="flex flex-col items-center justify-between">
-       <span title="Click to remove filter" onClick={() => column.setFilterValue("")} className="cursor-pointer ">Sent</span>
-      <button ref={anchorRef} onClick={(e) => handleFilterClick(e, "sent")}>
-        <TiFilter size={20} className="ml-1 text-gray-500 hover:text-black" />
-      </button>
-    </div>
-  ),
+
+        Header: ({ column }) => (
+          <div className="flex flex-col items-center justify-between">
+            <span
+              title="Click to remove filter"
+              onClick={() => column.setFilterValue("")}
+              className="cursor-pointer "
+            >
+              Sent
+            </span>
+            <button
+              ref={anchorRef}
+              onClick={(e) => handleFilterClick(e, "sent")}
+            >
+              <TiFilter
+                size={20}
+                className="ml-1 text-gray-500 hover:text-black"
+              />
+            </button>
+          </div>
+        ),
         Cell: ({ row }) => {
           const sent = row.original.sent;
           return (
@@ -728,12 +734,8 @@ const applyFilter = (e) => {
         },
 
         size: 60,
-          filterFn: NumderFilterFn,
+        filterFn: NumberFilterFn,
       },
-
-
-
-
 
       {
         accessorKey: "status",
@@ -775,8 +777,8 @@ const applyFilter = (e) => {
                   stat === "Read"
                     ? "bg-gray-500"
                     : stat === "Unread"
-                    ? "bg-sky-400"
-                    : "bg-green-400"
+                      ? "bg-sky-400"
+                      : "bg-green-400"
                 } `}
               >
                 {stat}
@@ -871,7 +873,7 @@ const applyFilter = (e) => {
           const startOfToday = new Date(
             today.getFullYear(),
             today.getMonth(),
-            today.getDate()
+            today.getDate(),
           );
 
           // Handle "Custom date" filter
@@ -993,7 +995,7 @@ const applyFilter = (e) => {
           const jobDate = row.original.jobDate;
           const [date, setDate] = useState(() => {
             const cellDate = new Date(
-              cell.getValue() || "2024-09-20T12:43:36.002+00:00"
+              cell.getValue() || "2024-09-20T12:43:36.002+00:00",
             );
             return cellDate.toISOString().split("T")[0];
           });
@@ -1041,7 +1043,7 @@ const applyFilter = (e) => {
           const startOfToday = new Date(
             today.getFullYear(),
             today.getMonth(),
-            today.getDate()
+            today.getDate(),
           );
 
           // Handle "Custom date" filter
@@ -1109,7 +1111,7 @@ const applyFilter = (e) => {
 
           useEffect(() => {
             const filterComments = comments.filter(
-              (item) => item.status === "unread"
+              (item) => item.status === "unread",
             );
             setReadComments(filterComments);
             // eslint-disable-next-line
@@ -1146,34 +1148,27 @@ const applyFilter = (e) => {
         Cell: ({ cell, row }) => {
           return (
             <div className="flex items-center justify-center gap-4 w-full h-full">
+              <span
+                className=""
+                title="View Ticket"
+                onClick={() => {
+                  toggleDrawer(true);
+                  setTicketId(row.original._id);
+                }}
+              >
+                <MdRemoveRedEye className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-600" />
+              </span>
 
-                               <span
-                              className=""
-                              title="View Ticket"
-                              onClick={() => {
-                                toggleDrawer(true);
-                                setTicketId(row.original._id)
-                                
-                              }}
-                            >
-                              
-                              <MdRemoveRedEye className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-600" />
-                            </span>
-              
-                            
-              
-              
-                               <span
-                              className=""
-                              title="View Logs"
-                              onClick={() => {
-                                setIsActivityDrawerOpen(true);
-                                setActivityDrawerTicketId(row.original._id);
-                              }}
-                            >
-                              <TbLogs className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-600" />
-                            </span>
-
+              <span
+                className=""
+                title="View Logs"
+                onClick={() => {
+                  setIsActivityDrawerOpen(true);
+                  setActivityDrawerTicketId(row.original._id);
+                }}
+              >
+                <TbLogs className="h-6 w-6 cursor-pointer text-gray-500 hover:text-gray-600" />
+              </span>
 
               <span
                 className=""
@@ -1198,7 +1193,7 @@ const applyFilter = (e) => {
       },
     ],
     // eslint-disable-next-line
-    [users, auth, emailData, filteredData]
+    [users, auth, emailData, filteredData],
   );
 
   // Clear table Filter
@@ -1274,61 +1269,43 @@ const applyFilter = (e) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // a little function to help us with reordering the result
+  const reorder = (list, startIndex, endIndex) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
 
+    return result;
+  };
 
-  
+  //  -----------Handle drag end---------
+  const handleUserOnDragEnd = (result) => {
+    const items = reorder(
+      userName,
+      result.source.index,
+      result.destination.index,
+    );
+    localStorage.setItem(
+      "tickets_complete_usernamesOrder",
+      JSON.stringify(items),
+    );
+    setUserName(items);
+  };
 
-
-
-
-
-
-
-
-
-    // a little function to help us with reordering the result
-    const reorder = (list, startIndex, endIndex) => {
-      const result = Array.from(list);
-      const [removed] = result.splice(startIndex, 1);
-      result.splice(endIndex, 0, removed);
-    
-      return result;
-    };
-  
-  
-      //  -----------Handle drag end---------
-    const handleUserOnDragEnd = (result) => {
-   
-      const items = reorder( userName, result.source.index, result.destination.index );
-      localStorage.setItem("tickets_complete_usernamesOrder", JSON.stringify(items));
-      setUserName(items)
-  
-    };
- 
-    
   // --------------Job_Holder Length---------->
 
   const getJobHolderCount = (user, status) => {
-    console.log("Tickets DATA", emailData)
-    if(user === "All") {
+    console.log("Tickets DATA", emailData);
+    if (user === "All") {
       return emailData.length;
     }
-    return emailData.filter((ticket) =>
-      ticket?.jobHolder === user
-    )?.length;
+    return emailData.filter((ticket) => ticket?.jobHolder === user)?.length;
   };
-    
-    
-    
-        
-    
-        const setColumnFromOutsideTable = (colKey, filterVal) => {
-    
-          const col = table.getColumn(colKey);
-          return col.setFilterValue(filterVal);
-        }
-    
 
+  const setColumnFromOutsideTable = (colKey, filterVal) => {
+    const col = table.getColumn(colKey);
+    return col.setFilterValue(filterVal);
+  };
 
   return (
     <>
@@ -1353,172 +1330,137 @@ const applyFilter = (e) => {
 
         <>
           <div className="w-full flex flex-row justify-start items-center gap-2  mt-5">
-
-          <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden transition-all duration-300 w-fit">
-            <button
-              className={`py-1 px-2 outline-none transition-all duration-300  w-[6rem] ${
-                selectedTab === "progress"
-                  ? "bg-orange-500 text-white border-r-2 border-orange-500"
-                  : "text-black bg-gray-100"
-              }`}
-              onClick={() => {
-                setSelectedTab("progress");
-                navigate("/tickets");
-              }}
-            >
-              Progress
-            </button>
-            <button
-              className={`py-1 px-2 outline-none transition-all duration-300 w-[6rem]  ${
-                selectedTab === "complete"
-                  ? "bg-orange-500 text-white"
-                  : "text-black bg-gray-100 hover:bg-slate-200"
-              }`}
-              onClick={() => setSelectedTab("complete")}
-            >
-              Completed
-            </button>
-            {(auth?.user?.role?.name === "Admin" ||
-              access.includes("Inbox")) && (
+            <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden transition-all duration-300 w-fit">
               <button
-                className={`py-1 px-2 outline-none transition-all border-l-2  border-orange-500 duration-300 w-[6rem]  ${
-                  selectedTab === "inbox"
+                className={`py-1 px-2 outline-none transition-all duration-300  w-[6rem] ${
+                  selectedTab === "progress"
+                    ? "bg-orange-500 text-white border-r-2 border-orange-500"
+                    : "text-black bg-gray-100"
+                }`}
+                onClick={() => {
+                  setSelectedTab("progress");
+                  navigate("/tickets");
+                }}
+              >
+                Progress
+              </button>
+              <button
+                className={`py-1 px-2 outline-none transition-all duration-300 w-[6rem]  ${
+                  selectedTab === "complete"
                     ? "bg-orange-500 text-white"
                     : "text-black bg-gray-100 hover:bg-slate-200"
                 }`}
-                onClick={() => {
-                  // setSelectedTab("inbox");
-                  navigate("/tickets/inbox");
-                }}
+                onClick={() => setSelectedTab("complete")}
               >
-                Inbox
+                Completed
               </button>
-            )}
-          </div>
+              {(auth?.user?.role?.name === "Admin" ||
+                access.includes("Inbox")) && (
+                <button
+                  className={`py-1 px-2 outline-none transition-all border-l-2  border-orange-500 duration-300 w-[6rem]  ${
+                    selectedTab === "inbox"
+                      ? "bg-orange-500 text-white"
+                      : "text-black bg-gray-100 hover:bg-slate-200"
+                  }`}
+                  onClick={() => {
+                    // setSelectedTab("inbox");
+                    navigate("/tickets/inbox");
+                  }}
+                >
+                  Inbox
+                </button>
+              )}
+            </div>
 
-
-          { auth?.user?.role?.name === "Admin" &&
-              (
-                <span
+            {auth?.user?.role?.name === "Admin" && (
+              <span
                 className={` p-1 rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
                   showJobHolder && "bg-orange-500 text-white"
                 }`}
                 onClick={() => {
-                   
-                  setShowJobHolder(prev => !prev);
+                  setShowJobHolder((prev) => !prev);
                 }}
                 title="Filter by Job Holder"
               >
                 <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
               </span>
-              )
-            }
+            )}
           </div>
-
 
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
         </>
 
+        {/* ----------Job_Holder Summery Filters---------- */}
+        {showJobHolder && (
+          <>
+            <div className="w-full  py-2 ">
+              <div className="flex items-center flex-wrap gap-4">
+                <DragDropContext onDragEnd={handleUserOnDragEnd}>
+                  <Droppable droppableId="users0" direction="horizontal">
+                    {(provided) => (
+                      <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        className="flex items-center gap-3 overflow-x-auto hidden1"
+                      >
+                        <div
+                          className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                            active1 === "All" &&
+                            "  border-b-2 text-orange-600 border-orange-600"
+                          }`}
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          onClick={() => {
+                            setActive1("All");
+                            setColumnFromOutsideTable("jobHolder", "");
+                          }}
+                        >
+                          All ({getJobHolderCount("All")})
+                        </div>
 
+                        {userName.map((user, index) => {
+                          console.log("THE USER IS", user);
 
-
-
-
-
-
-
-
-                {/* ----------Job_Holder Summery Filters---------- */}
-                {showJobHolder &&  (
-              <>
-                <div className="w-full  py-2 ">
-                  <div className="flex items-center flex-wrap gap-4">
-                    <DragDropContext onDragEnd={handleUserOnDragEnd}>
-                      <Droppable droppableId="users0" direction="horizontal">
-                        {(provided) => (
-                          <div
-                            {...provided.droppableProps}
-                            ref={provided.innerRef}
-                            className="flex items-center gap-3 overflow-x-auto hidden1"
-                          >
-                            
-
-                            <div
-                                      className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                                        active1 === "All" &&
-                                        "  border-b-2 text-orange-600 border-orange-600"
-                                      }`}
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                      onClick={() => {
-                                        setActive1("All");
-                                        setColumnFromOutsideTable('jobHolder', "");
-                                       
-                                      }}
-                                    >
-                                     All ({getJobHolderCount("All")})
-
-                                    </div>
-
-
-                            {userName.map((user, index) => {
-
-                                console.log("THE USER IS", user)
-
-                                return (
-                                  <Draggable
-                                  key={user}
-                                  draggableId={user}
-                                  index={index}
+                          return (
+                            <Draggable
+                              key={user}
+                              draggableId={user}
+                              index={index}
+                            >
+                              {(provided) => (
+                                <div
+                                  className={`py-1   px-2 cursor-pointer font-[500] text-[14px]   ${
+                                    active1 === user &&
+                                    "  border-b-2 text-orange-600 border-orange-600"
+                                  }`}
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  onClick={() => {
+                                    setActive1(user);
+                                    setColumnFromOutsideTable(
+                                      "jobHolder",
+                                      user,
+                                    );
+                                  }}
                                 >
-                                  {(provided) => (
-                                    <div
-                                      className={`py-1   px-2 cursor-pointer font-[500] text-[14px]   ${
-                                        active1 === user &&
-                                        "  border-b-2 text-orange-600 border-orange-600"
-                                      }`}
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                      onClick={() => {
-                                        setActive1(user)
-                                        setColumnFromOutsideTable('jobHolder', user);
-                                         
-                                        
-                                      }}
-                                    >
-                                      
-                                      {user} ({getJobHolderCount(user)})
-
-                                    </div>
-                                  )}
-                                  
-                                  
-                                </Draggable>
-
-                                
-                                
-                              )
-
-                            }
-                                
+                                  {user} ({getJobHolderCount(user)})
+                                </div>
                               )}
-                            {provided.placeholder}
-                          </div>
-                        )}
-                      </Droppable>
-                    </DragDropContext>
-                  </div>
-                </div>
-                <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
-              </>
-            )}
-
-
-
-
-        
+                            </Draggable>
+                          );
+                        })}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
+              </div>
+            </div>
+            <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
+          </>
+        )}
 
         {/* ---------Table Detail---------- */}
         <div className="w-full h-full">
@@ -1554,42 +1496,44 @@ const applyFilter = (e) => {
           </div>
         )}
 
-
-        
-                {/* ---------------------Activity Log Drawer------------------ */}
-                {isActivityDrawerOpen && (
-                  <ActivityLogDrawer isOpen={isActivityDrawerOpen} onClose={() => setIsActivityDrawerOpen(false)} ticketId={activityDrawerTicketId} />
+        {/* ---------------------Activity Log Drawer------------------ */}
+        {isActivityDrawerOpen && (
+          <ActivityLogDrawer
+            isOpen={isActivityDrawerOpen}
+            onClose={() => setIsActivityDrawerOpen(false)}
+            ticketId={activityDrawerTicketId}
+          />
         )}
-        
-        
-        
-        
-           <Drawer open={open} onClose={() => {toggleDrawer(false); } } anchor="right"   sx={{zIndex: 1400, '& .MuiDrawer-paper': {
-                width: 600, // Set your custom width here (px, %, etc.)
-              },}}  >
-                        
-                          <div className="  " >
-          
-                            <EmailDetailDrawer id={ticketId} toggleDrawer={toggleDrawer} />
-                          </div>
-          
-                      </Drawer>
 
+        <Drawer
+          open={open}
+          onClose={() => {
+            toggleDrawer(false);
+          }}
+          anchor="right"
+          sx={{
+            zIndex: 1400,
+            "& .MuiDrawer-paper": {
+              width: 600, // Set your custom width here (px, %, etc.)
+            },
+          }}
+        >
+          <div className="  ">
+            <EmailDetailDrawer id={ticketId} toggleDrawer={toggleDrawer} />
+          </div>
+        </Drawer>
 
-
-
-
-              {filterInfo.col && anchorRef.current && (
-                <NumberFilterPortal
-                  anchorRef={anchorRef}
-                  value={filterInfo.value}
-                  filterType={filterInfo.type}
-                  onApply={applyFilter}
-                  onClose={handleCloseFilter}
-                  setValue={(val) => setFilterInfo((f) => ({ ...f, value: val }))}
-                  setFilterType={(type) => setFilterInfo((f) => ({ ...f, type }))}
-                />
-              )}
+        {filterInfo.col && anchorRef.current && (
+          <NumberFilterPortal
+            anchorRef={anchorRef}
+            value={filterInfo.value}
+            filterType={filterInfo.type}
+            onApply={applyFilter}
+            onClose={handleCloseFilter}
+            setValue={(val) => setFilterInfo((f) => ({ ...f, value: val }))}
+            setFilterType={(type) => setFilterInfo((f) => ({ ...f, type }))}
+          />
+        )}
       </div>
     </>
   );

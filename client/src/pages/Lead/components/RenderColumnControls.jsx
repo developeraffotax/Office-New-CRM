@@ -1,6 +1,5 @@
 import SelectedUsers from "../../../components/SelectedUsers";
-import { useLeadColumns } from "../contextApi/ColumnContext";
-import { useLeadUser } from "../contextApi/UserContext";
+import { useLeadColumns, useLeadUser } from "../contextApi/LeadContext";
 
 const RenderColumnControls = () => {
   const { columnVisibility, toggleColumnVisibility } = useLeadColumns();

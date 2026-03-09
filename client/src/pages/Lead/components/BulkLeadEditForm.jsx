@@ -1,6 +1,14 @@
 import React from "react";
 import { TbLoader2 } from "react-icons/tb";
 import { style } from "../../../utlis/CommonStyle";
+//CONSTANTS
+import {
+  DEPARTMENTS,
+  SOURCES,
+  BRANDS,
+  LEAD_SOURCES,
+  LEAD_STAGES,
+} from "../constants/dropdownOptions";
 
 const BulkLeadEditForm = ({
   updates,
@@ -8,11 +16,6 @@ const BulkLeadEditForm = ({
   onChange,
   onSubmit,
   users = [],
-  departments = [],
-  sources = [],
-  brands = [],
-  leadSource = [],
-  stages = [],
   statuses = [],
 }) => {
   return (
@@ -68,7 +71,7 @@ const BulkLeadEditForm = ({
             className={`${style.input} w-full`}
           >
             <option value="empty">Department</option>
-            {departments.map((department, i) => (
+            {DEPARTMENTS.map((department, i) => (
               <option value={department} key={i}>
                 {department}
               </option>
@@ -84,7 +87,7 @@ const BulkLeadEditForm = ({
             className={`${style.input} w-full`}
           >
             <option value="empty">Source</option>
-            {sources.map((source, i) => (
+            {SOURCES.map((source, i) => (
               <option value={source} key={i}>
                 {source}
               </option>
@@ -100,7 +103,7 @@ const BulkLeadEditForm = ({
             className={`${style.input} w-full`}
           >
             <option value="empty">Brand</option>
-            {brands.map((brand, i) => (
+            {BRANDS.map((brand, i) => (
               <option value={brand} key={i}>
                 {brand}
               </option>
@@ -138,7 +141,7 @@ const BulkLeadEditForm = ({
             className={`${style.input} w-full`}
           >
             <option value="empty">Lead Source</option>
-            {leadSource.map((el, i) => (
+            {LEAD_SOURCES.map((el, i) => (
               <option value={el} key={i}>
                 {el}
               </option>
@@ -176,7 +179,7 @@ const BulkLeadEditForm = ({
             className={`${style.input} w-full`}
           >
             <option value="empty">Stage</option>
-            {stages.map((el, i) => (
+            {LEAD_STAGES.map((el, i) => (
               <option value={el} key={i}>
                 {el}
               </option>

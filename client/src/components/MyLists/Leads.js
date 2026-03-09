@@ -13,14 +13,18 @@ import {
 } from "material-react-table";
 import axios from "axios";
 import { AiTwotoneDelete } from "react-icons/ai";
- 
+
 import { format } from "date-fns";
 import { GrCopy } from "react-icons/gr";
 import { FaTrophy } from "react-icons/fa6";
 import { GiBrokenHeart } from "react-icons/gi";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
-import { MdOutlineAnalytics, MdOutlineModeEdit, MdOutlineQueryStats } from "react-icons/md";
+import {
+  MdOutlineAnalytics,
+  MdOutlineModeEdit,
+  MdOutlineQueryStats,
+} from "react-icons/md";
 import { RiProgress3Line } from "react-icons/ri";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { TbLoader2 } from "react-icons/tb";
@@ -30,7 +34,17 @@ import { Popover, Typography } from "@mui/material";
 import { IoTicketOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import getLeadColumns from "../../pages/Lead/table/columns";
-import { NumberFilterPortal, NumderFilterFn } from "../../utlis/NumberFilterPortal";
+import {
+  NumberFilterPortal,
+  NumberFilterFn,
+} from "../../utlis/NumberFilterPortal";
+import {
+  LEAD_STAGES,
+  BRANDS,
+  SOURCES,
+  LEAD_SOURCES,
+  DEPARTMENTS,
+} from "../../pages/Lead/constants/dropdownOptions";
 import DateRangePopover from "../../utlis/DateRangePopover";
 import { ActionsCell } from "../../pages/Lead/ActionsCell";
 import NewTicketModal from "../../utlis/NewTicketModal";
@@ -38,33 +52,11 @@ import { useNavigate } from "react-router-dom";
 import { BsGraphUpArrow } from "react-icons/bs";
 import UserLeadChart from "../../pages/Lead/userLeadChart/UserLeadChart";
 import EmailDetailDrawerNewWrapper from "../shared/EmailDetailDrawerNewWrapper";
-
-
-
-
-
-const updates_object_init = {
-  companyName: '',
-  clientName: '',
-  jobHolder: '',
-  department: '',
-  source: '',
-  brand: '',
-  lead_Source: '',
-  followUpDate: '',
-  JobDate: '',
-  Note: '',
-  stage: '',
-  status: '',
-  value: '',
-  number: ''
-}
-
-
+import { updates_object_init } from "../../pages/Lead/constants/updates_object_init";
 
 const Leads = forwardRef(({ childRef, setIsload }, ref) => {
- const navigate = useNavigate();
-   const auth = useSelector((state => state.auth.auth));
+  const navigate = useNavigate();
+  const auth = useSelector((state) => state.auth.auth);
   const [selectedTab, setSelectedTab] = useState("progress");
   const [isLoading, setIsLoading] = useState(false);
   const [leadData, setLeadData] = useState([]);
@@ -72,32 +64,6 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
   const [users, setUsers] = useState([]);
   const [userName, setUserName] = useState([]);
   const [load, setLoad] = useState(false);
-  const leadSource = [
-    "Upwork",
-    "Fiverr",
-    "PPH",
-    "Referral",
-    "Partner",
-    "Google",
-    "Facebook",
-    "LinkedIn",
-    "CRM",
-    "Existing",
-    "Other",
-  ];
-  const stages = ["Interest", "Decision", "Action"];
-  const brands = ["Affotax", "Outsource", "OTL"];
-  const sources = ["Invitation", "Proposal", "Website"];
-  const departments = [
-    "Bookkeeping",
-    "Payroll",
-    "VAT Return",
-    "Accounts",
-    "Personal Tax",
-    "Company Sec",
-    "Address",
-    "Billing",
-  ];
   const [formData, setFormData] = useState({
     companyName: "",
     clientName: "",
@@ -113,81 +79,63 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
     value: "",
     number: "",
     jobDeadline: "",
-    yearEnd: ""
+    yearEnd: "",
   });
   const [active, setActive] = useState(false);
   const [selectFilter, setSelectFilter] = useState("");
 
-
-
-      const boxRef = useRef(null);
+  const boxRef = useRef(null);
   const [showUserLeadChart, setShowUserLeadChart] = useState(false);
 
-  
   // BULK EDITING
   const [rowSelection, setRowSelection] = useState({});
-  
+
   const [showEdit, setShowEdit] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const [updates, setUpdates] = useState(updates_object_init)
-
+  const [updates, setUpdates] = useState(updates_object_init);
 
   const handle_on_change_update = (e) => {
-    setUpdates(prev => {
+    setUpdates((prev) => {
       return {
         ...prev,
-        [e.target.name]: e.target.value
-      }
-    })
-  }
+        [e.target.name]: e.target.value,
+      };
+    });
+  };
 
-
-
-
-    const [showNewTicketModal, setShowNewTicketModal] = useState(false);
-    const [clientCompanyName, setClientCompanyName] = useState("");
-    const [clientEmail, setClientEmail] = useState("");
-
-
+  const [showNewTicketModal, setShowNewTicketModal] = useState(false);
+  const [clientCompanyName, setClientCompanyName] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
 
   const [valueTotal, setValueTotal] = useState(0);
-    
-    const anchorRef = useRef(null);
-  
+
+  const anchorRef = useRef(null);
+
   const [filterInfo, setFilterInfo] = useState({
     col: null,
     value: "",
     type: "eq",
   });
-  
-  
 
+  const [emailPopup, setEmailPopup] = useState({
+    open: false,
+    email: "",
+    clientName: "",
+  });
 
+  const [ticketMap, setTicketMap] = useState({});
 
-   const [emailPopup, setEmailPopup] = useState({
-      open: false,
-      email: '',
-      clientName: ''
-  
-    })
+  // Filter Total Value
+  useEffect(() => {
+    const totalvalue = filteredData.reduce(
+      (acc, item) => acc + Number(item.value || 0),
+      0,
+    );
+    console.log("totalvalue:", totalvalue);
+    setValueTotal(totalvalue);
+  }, [filteredData]);
 
-
-    const [ticketMap, setTicketMap] = useState({});
-
-
-    
-
-    // Filter Total Value
-    useEffect(() => {
-      const totalvalue = filteredData.reduce(
-        (acc, item) => acc + Number(item.value || 0),
-        0
-      );
-      console.log("totalvalue:", totalvalue);
-      setValueTotal(totalvalue);
-    }, [filteredData]);
-  
   const handleFilterClick = (e, colKey) => {
     e.stopPropagation();
     anchorRef.current = e.currentTarget;
@@ -197,117 +145,53 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
       type: "eq",
     });
   };
-  
-  
+
   const handleCloseFilter = () => {
     setFilterInfo({ col: null, value: "", type: "eq" });
     anchorRef.current = null;
   };
-  
+
   const applyFilter = (e) => {
-    e.stopPropagation()
+    e.stopPropagation();
     const { col, value, type } = filterInfo;
     if (col && value) {
       table.getColumn(col)?.setFilterValue({ type, value: parseFloat(value) });
     }
     handleCloseFilter();
   };
-  
 
-
-  
   // -------Update Bulk Leads------------->
 
   const updateBulkLeads = async (e) => {
     e.preventDefault();
     setIsUpdating(true);
 
-    console.log("Row Selection",rowSelection);
-    console.log("Updates",updates)
+    console.log("Row Selection", rowSelection);
+    console.log("Updates", updates);
 
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/leads/update/bulk/leads`,
         {
           rowSelection: Object.keys(rowSelection).filter(
-            (id) => rowSelection[id] === true
+            (id) => rowSelection[id] === true,
           ),
-          updates
-        }
+          updates,
+        },
       );
 
       if (data) {
         setUpdates(updates_object_init);
         toast.success("Leads Updated💚💚");
-        getAllLeads()
+        getAllLeads();
       }
     } catch (error) {
-       
       console.log(error?.response?.data?.message);
       toast.error("Something went wrong!");
     } finally {
       setIsUpdating(false);
     }
   };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   const [showcolumn, setShowColumn] = useState(false);
   const columnData = [
@@ -327,7 +211,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
     "actions",
     "Note",
     "jobDeadline",
-    "yearEnd"
+    "yearEnd",
     // "Fee",
     // "Source",
     // "ClientType",
@@ -338,7 +222,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
 
   const [columnVisibility, setColumnVisibility] = useState(() => {
     const savedVisibility = JSON.parse(
-      localStorage.getItem("columnVisibilityLead_mylist")
+      localStorage.getItem("columnVisibilityLead_mylist"),
     );
     return (
       savedVisibility ||
@@ -355,10 +239,11 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
       [column]: !columnVisibility[column],
     };
     setColumnVisibility(updatedVisibility);
-    localStorage.setItem("columnVisibilityLead_mylist", JSON.stringify(updatedVisibility));
+    localStorage.setItem(
+      "columnVisibilityLead_mylist",
+      JSON.stringify(updatedVisibility),
+    );
   };
-
-
 
   const renderColumnControls = () => (
     <div className="flex flex-col gap-2 bg-white rounded-md   border p-4">
@@ -381,31 +266,13 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
     </div>
   );
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // -------Get All Leads-------
   const getAllLeads = async () => {
-     setIsLoading(true);
+    setIsLoading(true);
     try {
       if (selectedTab === "progress") {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/progress/lead`
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/progress/lead`,
         );
         if (data) {
           setLeadData(data.leads);
@@ -413,7 +280,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
         }
       } else if (selectedTab === "won") {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/won/lead`
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/won/lead`,
         );
         if (data) {
           setLeadData(data.leads);
@@ -421,7 +288,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
         }
       } else {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/lost/lead`
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/lost/lead`,
         );
         if (data) {
           setLeadData(data.leads);
@@ -444,7 +311,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
     try {
       if (selectedTab === "progress") {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/progress/lead`
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/progress/lead`,
         );
         if (data) {
           setLeadData(data.leads);
@@ -452,7 +319,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
         }
       } else if (selectedTab === "won") {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/won/lead`
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/won/lead`,
         );
         if (data) {
           setLeadData(data.leads);
@@ -460,7 +327,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
         }
       } else {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/lost/lead`
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/fetch/lost/lead`,
         );
         if (data) {
           setLeadData(data.leads);
@@ -502,20 +369,22 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
       );
       setUsers(
         data?.users?.filter((user) =>
-          user.role?.access?.some((item) => item?.permission.includes("Leads"))
-        ) || []
+          user.role?.access?.some((item) => item?.permission.includes("Leads")),
+        ) || [],
       );
 
       setUserName(
         data?.users
           ?.filter((user) =>
-            user.role?.access.some((item) => item?.permission.includes("Leads"))
+            user.role?.access.some((item) =>
+              item?.permission.includes("Leads"),
+            ),
           )
-          .map((user) => user.name)
+          .map((user) => user.name),
       );
     } catch (error) {
       console.log(error);
@@ -543,7 +412,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
         Swal.fire(
           "Updated!",
           `Your lead ${status || "Update"} successfully!.`,
-          "success"
+          "success",
         );
       }
     });
@@ -556,17 +425,17 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/leads/update/lead/${leadId}`,
-        { status: status }
+        { status: status },
       );
       if (data?.success) {
         const updateLead = data?.lead;
 
         setLeadData((prevData) =>
-          prevData.filter((item) => item._id !== updateLead._id)
+          prevData.filter((item) => item._id !== updateLead._id),
         );
         if (filteredData) {
           setFilteredData((prevData) =>
-            prevData.filter((item) => item._id !== updateLead._id)
+            prevData.filter((item) => item._id !== updateLead._id),
           );
         }
         getLeads();
@@ -598,7 +467,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
   const handleDeleteLead = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/leads/delete/lead/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/leads/delete/lead/${id}`,
       );
       if (data) {
         getLeads();
@@ -621,17 +490,17 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/leads/update/lead/${leadId}`,
-        { ...updateData }
+        { ...updateData },
       );
       if (data?.success) {
         const updateLead = data?.lead;
 
         setLeadData((prevData) =>
-          prevData.filter((item) => item._id !== updateLead._id)
+          prevData.filter((item) => item._id !== updateLead._id),
         );
         if (filteredData) {
           setFilteredData((prevData) =>
-            prevData.filter((item) => item._id !== updateLead._id)
+            prevData.filter((item) => item._id !== updateLead._id),
           );
         }
         setFormData({
@@ -689,7 +558,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
           followUpDate,
           JobDate,
           stage,
-        }
+        },
       );
       if (data) {
         getLeads();
@@ -700,84 +569,78 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
     }
   };
 
- 
-
-
-
-
-
-useEffect(() => {
-  const fetchTicketCounts = async () => {
-    try {
-      const {data} = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/leads/available-tickets?status=${selectedTab}`);
-      if(data) {
-        setTicketMap(data.ticketMap || {});
-
+  useEffect(() => {
+    const fetchTicketCounts = async () => {
+      try {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/leads/available-tickets?status=${selectedTab}`,
+        );
+        if (data) {
+          setTicketMap(data.ticketMap || {});
+        }
+      } catch (err) {
+        console.error("Error fetching ticket counts", err);
       }
+    };
 
-    } catch (err) {
-      console.error("Error fetching ticket counts", err);
-    }
-  };
+    fetchTicketCounts();
+  }, [selectedTab]);
 
-  fetchTicketCounts();
-}, [selectedTab]);
-  
-  
-  
-    const columns = useMemo(
-      () => {
-  
-  
-  
-  const allColumns = getLeadColumns({
-    setSelectFilter,
-    setFormData,
-    handleUpdateData,
-    users,
-    departments,
-    sources,
-    brands,
-    leadSource,
-    auth,
-     
-    anchorRef,
-    handleFilterClick,
-     
-    NumderFilterFn,
-     
-    DateRangePopover,
-    valueTotal,
-    ActionsCell,
-    selectedTab,
-    setClientCompanyName,
-    setClientEmail,
-    setShowNewTicketModal,
-    handleCopyLead,
-    handleLeadStatus,
-    handleDeleteLeadConfirmation,
-    stages,
+  const columns = useMemo(
+    () => {
+      const allColumns = getLeadColumns({
+        setSelectFilter,
+        setFormData,
+        handleUpdateData,
+        users,
+        DEPARTMENTS,
+        SOURCES,
+        BRANDS,
+        LEAD_SOURCES,
+        auth,
 
-    setEmailPopup,
-  ticketMap
-  });
-  
-   
+        anchorRef,
+        handleFilterClick,
 
-  
-  return allColumns.filter((col) => columnVisibility[col.accessorKey]);
-  
-  
-  
+        NumberFilterFn,
 
-  
-      },
-  
-      // eslint-disable-next-line
-      [users, auth, leadData,departments,sources,brands, leadSource,selectedTab,
-        stages,
-          load, valueTotal, filteredData, showcolumn, columnVisibility]
-    );
+        DateRangePopover,
+        valueTotal,
+        ActionsCell,
+        selectedTab,
+        setClientCompanyName,
+        setClientEmail,
+        setShowNewTicketModal,
+        handleCopyLead,
+        handleLeadStatus,
+        handleDeleteLeadConfirmation,
+        LEAD_STAGES,
+
+        setEmailPopup,
+        ticketMap,
+      });
+
+      return allColumns.filter((col) => columnVisibility[col.accessorKey]);
+    },
+
+    // eslint-disable-next-line
+    [
+      users,
+      auth,
+      leadData,
+      DEPARTMENTS,
+      SOURCES,
+      BRANDS,
+      LEAD_SOURCES,
+      selectedTab,
+      LEAD_STAGES,
+      load,
+      valueTotal,
+      filteredData,
+      showcolumn,
+      columnVisibility,
+    ],
+  );
 
   // Clear table Filter
   const handleClearFilters = () => {
@@ -793,7 +656,6 @@ useEffect(() => {
   const table = useMaterialReactTable({
     columns,
     data: leadData || [],
-
 
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
@@ -857,26 +719,21 @@ useEffect(() => {
     setFilteredData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (boxRef.current && !boxRef.current.contains(event.target)) {
+        setShowColumn(false);
+      }
+    };
 
+    if (showcolumn) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
 
-   useEffect(() => {
-              const handleClickOutside = (event) => {
-                if (boxRef.current && !boxRef.current.contains(event.target)) {
-                  setShowColumn(false);
-                }
-              };
-          
-              if (showcolumn) {
-                document.addEventListener("mousedown", handleClickOutside);
-              }
-          
-              return () => {
-                document.removeEventListener("mousedown", handleClickOutside);
-              };
-            }, [showcolumn]);
-  
-
-
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showcolumn]);
 
   return (
     <>
@@ -920,72 +777,69 @@ useEffect(() => {
                 Lost
               </button>
             </div>
-{/* Toggle Analytics Button */}
-<button
-  onClick={() => setActive(!active)}
-  title="Toggle Analytics"
-  className={`flex items-center justify-center p-2 mt-2 bg-gray-50 border rounded-md hover:shadow-md transition
+            {/* Toggle Analytics Button */}
+            <button
+              onClick={() => setActive(!active)}
+              title="Toggle Analytics"
+              className={`flex items-center justify-center p-2 mt-2 bg-gray-50 border rounded-md hover:shadow-md transition
     ${active ? "bg-orange-600 text-white border-orange-500" : "border-gray-300"}`}
->
-  <MdOutlineAnalytics className="h-6 w-6" />
-</button>
+            >
+              <MdOutlineAnalytics className="h-6 w-6" />
+            </button>
 
-{/* Edit Multiple Job Button */}
-<button
-  onClick={() => setShowEdit(!showEdit)}
-  title="Edit Multiple Jobs"
-  className={`flex items-center justify-center p-2 mt-2 bg-gray-50 border rounded-md hover:shadow-md transition
+            {/* Edit Multiple Job Button */}
+            <button
+              onClick={() => setShowEdit(!showEdit)}
+              title="Edit Multiple Jobs"
+              className={`flex items-center justify-center p-2 mt-2 bg-gray-50 border rounded-md hover:shadow-md transition
     ${showEdit ? "bg-orange-500 text-white" : ""}`}
->
-  <MdOutlineModeEdit className="h-6 w-6" />
-</button>
+            >
+              <MdOutlineModeEdit className="h-6 w-6" />
+            </button>
 
-{/* Leads Analytics Button */}
-<button
-  title="Go to Leads Analytics"
-  onClick={() => navigate("/leads/stats")}
-  className="flex items-center justify-center p-2 mt-2 bg-gray-50 border rounded-md hover:shadow-md transition"
->
-  <MdOutlineQueryStats className="h-6 w-6" />
-</button>
+            {/* Leads Analytics Button */}
+            <button
+              title="Go to Leads Analytics"
+              onClick={() => navigate("/leads/stats")}
+              className="flex items-center justify-center p-2 mt-2 bg-gray-50 border rounded-md hover:shadow-md transition"
+            >
+              <MdOutlineQueryStats className="h-6 w-6" />
+            </button>
 
-{/* User Lead Chart Button */}
-<button
-  onClick={() => setShowUserLeadChart((prev) => !prev)}
-  title="Show User Lead Chart"
-  className={`flex items-center justify-center p-2 mt-2 bg-gray-50 border rounded-md hover:shadow-md transition
+            {/* User Lead Chart Button */}
+            <button
+              onClick={() => setShowUserLeadChart((prev) => !prev)}
+              title="Show User Lead Chart"
+              className={`flex items-center justify-center p-2 mt-2 bg-gray-50 border rounded-md hover:shadow-md transition
     ${showUserLeadChart ? "bg-orange-500 text-white" : ""}`}
->
-  <BsGraphUpArrow className="h-6 w-6" />
-</button>
+            >
+              <BsGraphUpArrow className="h-6 w-6" />
+            </button>
 
-{/* Hide & Show Column Button */}
-<div className="flex justify-center items-center mt-2">
-  <button
-    onClick={() => setShowColumn(!showcolumn)}
-    title="Toggle Columns"
-    className={`flex items-center justify-center p-2 bg-gray-50 border rounded-md hover:shadow-md transition
+            {/* Hide & Show Column Button */}
+            <div className="flex justify-center items-center mt-2">
+              <button
+                onClick={() => setShowColumn(!showcolumn)}
+                title="Toggle Columns"
+                className={`flex items-center justify-center p-2 bg-gray-50 border rounded-md hover:shadow-md transition
       ${showcolumn ? "bg-orange-500 text-white" : ""}`}
-  >
-    {showcolumn ? (
-      <GoEyeClosed className="h-6 w-6" />
-    ) : (
-      <GoEye className="h-6 w-6" />
-    )}
-  </button>
+              >
+                {showcolumn ? (
+                  <GoEyeClosed className="h-6 w-6" />
+                ) : (
+                  <GoEye className="h-6 w-6" />
+                )}
+              </button>
 
-  {showcolumn && (
-    <div
-      ref={boxRef}
-      className="fixed top-[11rem] right-[20%] z-[99] max-h-[80vh] overflow-y-auto"
-    >
-      {renderColumnControls()}
-    </div>
-  )}
-</div>
-
-
-
+              {showcolumn && (
+                <div
+                  ref={boxRef}
+                  className="fixed top-[11rem] right-[20%] z-[99] max-h-[80vh] overflow-y-auto"
+                >
+                  {renderColumnControls()}
+                </div>
+              )}
+            </div>
           </div>
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
           {active && (
@@ -993,14 +847,14 @@ useEffect(() => {
               <div className="flex flex-col gap-2  py-1 px-4">
                 <h3 className="font-semibold text-lg">Lead Source </h3>
                 <div className="flex items-center gap-5">
-                  {sources.map((source, i) => (
+                  {SOURCES.map((source, i) => (
                     <div
                       className={`flex items-center gap-[2px] py-1 px-3 rounded-[2rem] text-white ${
                         source === "Invitation"
                           ? "bg-green-600"
                           : source === "Proposal"
-                          ? "bg-pink-600"
-                          : "bg-purple-600"
+                            ? "bg-pink-600"
+                            : "bg-purple-600"
                       } `}
                       key={i}
                     >
@@ -1014,24 +868,14 @@ useEffect(() => {
             </>
           )}
 
-
-
-
-
-
-
-
-
-          
-                  {/* Update Bulk Jobs */}
-        {showEdit && (
-          <div className="w-full  p-4 ">
-            <form
-              onSubmit={updateBulkLeads}
-              className="w-full grid grid-cols-12 gap-4 max-2xl:grid-cols-8  "
-            >
-
-                <div className="inputBox w-full" >
+          {/* Update Bulk Jobs */}
+          {showEdit && (
+            <div className="w-full  p-4 ">
+              <form
+                onSubmit={updateBulkLeads}
+                className="w-full grid grid-cols-12 gap-4 max-2xl:grid-cols-8  "
+              >
+                <div className="inputBox w-full">
                   <input
                     name="companyName"
                     type="text"
@@ -1043,7 +887,7 @@ useEffect(() => {
                   <span>Company Name</span>
                 </div>
 
-                <div className="inputBox w-full" >
+                <div className="inputBox w-full">
                   <input
                     name="clientName"
                     type="text"
@@ -1054,80 +898,71 @@ useEffect(() => {
                   <span>Client Name</span>
                 </div>
 
-              <div className="w-full">
-                <select
-                  name="jobHolder"
-                  value={updates.jobHolder}
-                  
-                  onChange={handle_on_change_update}
-                  className={`${style.input} w-full`}
-                   
-                >
-                  <option value="empty">Job Holder</option>
-                  {users.map((jobHold, i) => (
-                    <option value={jobHold.name} key={i}>
-                      {jobHold.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="w-full">
+                  <select
+                    name="jobHolder"
+                    value={updates.jobHolder}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full`}
+                  >
+                    <option value="empty">Job Holder</option>
+                    {users.map((jobHold, i) => (
+                      <option value={jobHold.name} key={i}>
+                        {jobHold.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="w-full">
-                <select
-                  name="department"
-                  value={updates.department}
-                  
-                  onChange={handle_on_change_update}
-                  className={`${style.input} w-full`}
-                   
-                >
-                  <option value="empty">Department</option>
-                  {departments.map((department, i) => (
-                    <option value={department} key={i}>
-                      {department}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="w-full">
+                  <select
+                    name="department"
+                    value={updates.department}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full`}
+                  >
+                    <option value="empty">Department</option>
+                    {DEPARTMENTS.map((department, i) => (
+                      <option value={department} key={i}>
+                        {department}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="w-full">
-                <select
-                  name="source"
-                  value={updates.source}
-                  
-                  onChange={handle_on_change_update}
-                  className={`${style.input} w-full`}
-                  
-                >
-                  <option value="empty">Source</option>
-                  {sources.map((source, i) => (
-                    <option value={source} key={i}>
-                      {source}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="w-full">
+                  <select
+                    name="source"
+                    value={updates.source}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full`}
+                  >
+                    <option value="empty">Source</option>
+                    {SOURCES.map((source, i) => (
+                      <option value={source} key={i}>
+                        {source}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="w-full">
-                <select
-                  name="brand"
-                  value={updates.brand}
-                  
-                  onChange={handle_on_change_update}
-                  className={`${style.input} w-full`}
-                   
-                >
-                  <option value="empty">Brand</option>
-                  {brands.map((brand, i) => (
-                    <option value={brand} key={i}>
-                      {brand}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className="w-full">
+                  <select
+                    name="brand"
+                    value={updates.brand}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full`}
+                  >
+                    <option value="empty">Brand</option>
+                    {BRANDS.map((brand, i) => (
+                      <option value={brand} key={i}>
+                        {brand}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-
-              <div className="inputBox w-full" >
+                <div className="inputBox w-full">
                   <input
                     name="value"
                     type="text"
@@ -1138,7 +973,7 @@ useEffect(() => {
                   <span>Value</span>
                 </div>
 
-                <div className="inputBox w-full" >
+                <div className="inputBox w-full">
                   <input
                     name="number"
                     type="text"
@@ -1149,100 +984,77 @@ useEffect(() => {
                   <span>Number</span>
                 </div>
 
-         
-
-
-         
                 <div className="w-full">
-                    <select
-                      name="lead_Source"
-                      value={updates.lead_Source}
-                      
-                      onChange={handle_on_change_update}
-                      className={`${style.input} w-full`}
-                       
-                    >
-                      <option value="empty">Lead Source</option>
-                      {leadSource.map((el, i) => (
-                        <option value={el} key={i}>
-                          {el}
-                        </option>
-                      ))}
-                    </select>
-              </div>
+                  <select
+                    name="lead_Source"
+                    value={updates.lead_Source}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full`}
+                  >
+                    <option value="empty">Lead Source</option>
+                    {LEAD_SOURCES.map((el, i) => (
+                      <option value={el} key={i}>
+                        {el}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-                  
-                      
+                <div className="inputBox">
+                  <input
+                    type="date"
+                    name="followUpDate"
+                    value={updates.followUpDate}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full `}
+                  />
+                  <span>Follow-Up Deadline</span>
+                </div>
 
-              <div className="inputBox" >
-                <input
-                  type="date"
-                  name="followUpDate"
-                  value={updates.followUpDate}
-                  onChange={handle_on_change_update}
-                  className={`${style.input} w-full `}
-                />
-                <span>Follow-Up Deadline</span>
-              </div>
+                <div className="inputBox">
+                  <input
+                    type="date"
+                    name="JobDate"
+                    value={updates.JobDate}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full `}
+                  />
+                  <span>Job Date</span>
+                </div>
 
+                <div className="">
+                  <select
+                    name="stage"
+                    value={updates.stage}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full`}
+                  >
+                    <option value="empty">Stage</option>
+                    {LEAD_STAGES.map((el, i) => (
+                      <option value={el} key={i}>
+                        {el}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="inputBox" >
-                <input
-                  type="date"
-                  name="JobDate"
-                  value={updates.JobDate}
-                  onChange={handle_on_change_update}
-                  className={`${style.input} w-full `}
-                />
-                <span>Job Date</span>
-              </div>
-             
+                <div className="">
+                  <select
+                    name="status"
+                    value={updates.status}
+                    onChange={handle_on_change_update}
+                    className={`${style.input} w-full`}
+                  >
+                    <option value="empty">Status</option>
+                    {["progress", "won", "lost"].map((el, i) => (
+                      <option value={el} key={i}>
+                        {el}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-
-              
-              
-              <div className="">
-                    <select
-                      name="stage"
-                      value={updates.stage}
-                      
-                      onChange={handle_on_change_update}
-                      className={`${style.input} w-full`}
-                       
-                    >
-                      <option value="empty">Stage</option>
-                      {stages.map((el, i) => (
-                        <option value={el} key={i}>
-                          {el}
-                        </option>
-                      ))}
-                    </select>
-              </div>
-
-
-
-
-              <div className="">
-                    <select
-                      name="status"
-                      value={updates.status}
-                      
-                      onChange={handle_on_change_update}
-                      className={`${style.input} w-full`}
-                       
-                    >
-                      <option value="empty">Status</option>
-                      {['progress', 'won', 'lost'].map((el, i) => (
-                        <option value={el} key={i}>
-                          {el}
-                        </option>
-                      ))}
-                    </select>
-              </div>
-
-                
-
-              <div className="inputBox w-full col-span-2" >
+                <div className="inputBox w-full col-span-2">
                   <input
                     name="Note"
                     type="text"
@@ -1253,26 +1065,24 @@ useEffect(() => {
                   <span>Note</span>
                 </div>
 
-             
-
-              <div className="w-full flex items-center justify-end  ">
-                <button
-                  className={`${style.button1} text-[15px] w-full `}
-                  type="submit"
-                  disabled={isUpdating}
-                  style={{ padding: ".5rem  " }}
-                >
-                  {isUpdating ? (
-                    <TbLoader2 className="h-5 w-5 animate-spin text-white" />
-                  ) : (
-                    <span>Save</span>
-                  )}
-                </button>
-              </div>
-            </form>
-            <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
-          </div>
-        )}
+                <div className="w-full flex items-center justify-end  ">
+                  <button
+                    className={`${style.button1} text-[15px] w-full `}
+                    type="submit"
+                    disabled={isUpdating}
+                    style={{ padding: ".5rem  " }}
+                  >
+                    {isUpdating ? (
+                      <TbLoader2 className="h-5 w-5 animate-spin text-white" />
+                    ) : (
+                      <span>Save</span>
+                    )}
+                  </button>
+                </div>
+              </form>
+              <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
+            </div>
+          )}
         </>
 
         {/* ---------Table Detail---------- */}
@@ -1284,67 +1094,47 @@ useEffect(() => {
           ) : (
             <div className="w-full min-h-[10vh] relative ">
               <div className="h-full hidden1 overflow-y-scroll relative">
-               {showUserLeadChart && <UserLeadChart   auth={auth}/> }
-                               { !showUserLeadChart && <MaterialReactTable table={table} /> }
+                {showUserLeadChart && <UserLeadChart auth={auth} />}
+                {!showUserLeadChart && <MaterialReactTable table={table} />}
               </div>
             </div>
           )}
 
+          {/* ---------------New Ticket Modal------------- */}
+          {showNewTicketModal && (
+            <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
+              <NewTicketModal
+                setShowSendModal={setShowNewTicketModal}
+                clientCompanyName={clientCompanyName}
+                clientEmail={clientEmail}
+              />
+            </div>
+          )}
 
+          {/* ---------------Sent/Received PopOver Filter------------- */}
 
+          {filterInfo.col && anchorRef.current && (
+            <NumberFilterPortal
+              anchorRef={anchorRef}
+              value={filterInfo.value}
+              filterType={filterInfo.type}
+              onApply={applyFilter}
+              onClose={handleCloseFilter}
+              setValue={(val) => setFilterInfo((f) => ({ ...f, value: val }))}
+              setFilterType={(type) => setFilterInfo((f) => ({ ...f, type }))}
+            />
+          )}
 
-
-
-
-
-
-
-
-           {/* ---------------New Ticket Modal------------- */}
-                      {showNewTicketModal && (
-                        <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
-                          <NewTicketModal
-                            setShowSendModal={setShowNewTicketModal}
-                            
-                            clientCompanyName={clientCompanyName}
-          
-                            clientEmail= {clientEmail}
-                          />
-                        </div>
-                      )}
-          
-          
-          
-          
-          
-          
-          
-          
-                 {/* ---------------Sent/Received PopOver Filter------------- */}
-          
-                      {filterInfo.col && anchorRef.current && (
-                        <NumberFilterPortal
-                          anchorRef={anchorRef}
-                          value={filterInfo.value}
-                          filterType={filterInfo.type}
-                          onApply={applyFilter}
-                          onClose={handleCloseFilter}
-                          setValue={(val) => setFilterInfo((f) => ({ ...f, value: val }))}
-                          setFilterType={(type) => setFilterInfo((f) => ({ ...f, type }))}
-                        />
-                      )}
-
-
-                       {
-                                    emailPopup.open && <EmailDetailDrawerNewWrapper {...emailPopup} setEmailPopup={setEmailPopup}/>
-                      
-                                  }
-                      
-
+          {emailPopup.open && (
+            <EmailDetailDrawerNewWrapper
+              {...emailPopup}
+              setEmailPopup={setEmailPopup}
+            />
+          )}
         </div>
       </div>
     </>
   );
 });
 
-export default Leads; 
+export default Leads;

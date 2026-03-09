@@ -1,6 +1,6 @@
 import "./App.css";
 import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, lazy, Suspense } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Toaster } from "react-hot-toast";
 
@@ -33,7 +33,6 @@ import Template from "./pages/Templates/Template";
 import TemplateEditor from "./pages/Tickets/TemplateEditor";
 import PDFEditor from "./pages/Editor/PDFEditor";
 import Lead from "./pages/Lead/Lead";
-import LeadsStats from "./pages/Lead/leadStats/LeadStats";
 import Proposal from "./pages/Proposal/Proposal";
 import Roles from "./pages/role/Roles";
 import Subscription from "./pages/Subscription/Subscription";
@@ -58,6 +57,8 @@ import RegisterGlobalComponents from "./components/global/RegisterGlobalComponen
  
 import Mailbox from "./components/gmail/pages/Mailbox";
 import { fetchInboxUnreadCounts } from "./redux/slices/inboxUnreadSlice";
+
+const LeadsStats = lazy(() => import("./pages/Lead/leadStats/LeadStats"));
 
 function App() {
   const navigate = useNavigate();
@@ -166,7 +167,7 @@ function App() {
           <Route element={<Layout />}>
             {userAccessRoutes}
             <Route path="/" element={<Navigate to="/employee/dashboard" replace />} />
-            <Route path="/leads/stats" element={<LeadsStats />} />
+            <Route path="/leads/stats" element={<Suspense fallback={null}><LeadsStats /></Suspense>} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/employee/dashboard" element={<UDashboard />} />
             <Route path="/editor/templates" element={<TemplateEditor />} />

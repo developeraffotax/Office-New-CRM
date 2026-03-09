@@ -1,19 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
- 
+
 import { style } from "../../utlis/CommonStyle";
 import NewJobModal from "../../components/Modals/NewJobModal";
- 
+
 import axios from "axios";
 import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
-import {  format, formatISO } from "date-fns";
-import {  MdInsertComment } from "react-icons/md";
+import { format, formatISO } from "date-fns";
+import { MdInsertComment } from "react-icons/md";
 import toast from "react-hot-toast";
- 
+
 import Loader from "../../utlis/Loader";
-import {   TbLoader2 } from "react-icons/tb";
+import { TbLoader2 } from "react-icons/tb";
 import { IoClose, IoTicketOutline } from "react-icons/io5";
 import JobDetail from "./JobDetail";
 import { IoBriefcaseOutline } from "react-icons/io5";
@@ -21,18 +21,29 @@ import { MdDriveFileMoveOutline } from "react-icons/md";
 import { Timer } from "../../utlis/Timer";
 import JobCommentModal from "./JobCommentModal";
 import { MdAutoGraph } from "react-icons/md";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import { TbLoader } from "react-icons/tb";
-import { Box, Button, LinearProgress,   Popover, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  LinearProgress,
+  Popover,
+  Typography,
+} from "@mui/material";
 import { MdOutlineModeEdit } from "react-icons/md";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import { IoIosCheckmarkCircleOutline, IoMdDownload } from "react-icons/io";
 import { GoCheckCircleFill, GoEye } from "react-icons/go";
 import { GoEyeClosed } from "react-icons/go";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
- 
+
 import CompletedJobs from "./CompletedJobs";
- 
+
 import { GrUpdate } from "react-icons/gr";
 import AddLabel from "../../components/Modals/AddLabel";
 import { LuImport } from "react-icons/lu";
@@ -41,7 +52,7 @@ import InactiveClients from "./InactiveClients";
 import Swal from "sweetalert2";
 import HandleQualityModal from "../../components/Modals/HandleQualityModal";
 import TicketsPopUp from "../../components/shared/TicketsPopUp";
- 
+
 import { BsPersonCheckFill } from "react-icons/bs";
 import QuickAccess from "../../utlis/QuickAccess";
 import { filterByRowId } from "../../utlis/filterByRowId";
@@ -51,7 +62,7 @@ import NewTicketModal from "../../utlis/NewTicketModal";
 import DateRangePopover from "../../utlis/DateRangePopover";
 import { DateFilterFn } from "../../utlis/DateFilterFn";
 import { useDispatch, useSelector } from "react-redux";
- 
+
 import { setFilterId, setSearchValue } from "../../redux/slices/authSlice";
 import { useSocket } from "../../context/socketProvider";
 import { getJobsColumns } from "./table/columns";
@@ -61,13 +72,6 @@ import { SubtaskListManager } from "./SubtaskListManager";
 import OutsideFilter from "./utils/OutsideFilter";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import SelectedUsers from "../../components/SelectedUsers";
- 
- 
- 
-
-
-
- 
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -84,7 +88,6 @@ const csvConfig = mkConfig({
 });
 
 export default function AllJobs() {
- 
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth.auth);
   const filterId = useSelector((state) => state.auth.filterId);
@@ -92,12 +95,7 @@ export default function AllJobs() {
   const jid = useSelector((state) => state.auth.jid);
   const anyTimerRunning = useSelector((state) => state.auth.anyTimerRunning);
 
-   
   const [isOpen, setIsOpen] = useState(false);
-
-
- 
-
 
   const [active, setActive] = useState("All");
   const [loading, setLoading] = useState(false);
@@ -117,8 +115,7 @@ export default function AllJobs() {
   const [isShow, setIsShow] = useState(false);
   const [note, setNote] = useState("");
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [active1, setActive1] = useState("");
   const [active2, setActive2] = useState("");
@@ -164,28 +161,12 @@ export default function AllJobs() {
   const [showUniqueClients, setShowUniqueClients] = useState(false);
   const [isLoad, setIsLoad] = useState(false);
 
-
-
-
-
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
 
-   const [clientCompanyName, setClientCompanyName] = useState("");
- 
- 
-
-
-
-
-
-
-
-
-
-
+  const [clientCompanyName, setClientCompanyName] = useState("");
 
   const [showcolumn, setShowColumn] = useState(false);
-    const boxRef = useRef(null);
+  const boxRef = useRef(null);
   const [showQuickList, setShowQuickList] = useState(false);
   const [qualityData, setQualityData] = useState([]);
   const columnData = [
@@ -218,7 +199,7 @@ export default function AllJobs() {
   ];
   const [columnVisibility, setColumnVisibility] = useState(() => {
     const savedVisibility = JSON.parse(
-      localStorage.getItem("columnVisibility")
+      localStorage.getItem("columnVisibility"),
     );
     return (
       savedVisibility ||
@@ -238,75 +219,47 @@ export default function AllJobs() {
     localStorage.setItem("columnVisibility", JSON.stringify(updatedVisibility));
   };
 
- 
-      const [pagination, setPagination] = useState({
-        pageIndex: 0,
-        pageSize: 30, // ✅ default page size
-      });
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 30, // ✅ default page size
+  });
 
+  const [searchParams] = useSearchParams();
+  const comment_taskId = searchParams.get("comment_taskId");
+  const show_completed = searchParams.get("completed");
+  const navigate = useNavigate();
 
-    const [searchParams] = useSearchParams();
-    const comment_taskId = searchParams.get('comment_taskId');
-      const show_completed = searchParams.get("completed");
-      const navigate = useNavigate();
+  const { selectedUsers, setSelectedUsers, toggleUser, resetUsers } =
+    usePersistedUsers("jobs:selected_users", users);
 
+  const socket = useSocket();
 
+  useEffect(() => {
+    if (!socket) return;
 
-      const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsers("jobs:selected_users", users);
+    socket.on("job_updated", () => {
+      allClientData();
+    });
+  }, [socket]);
 
+  // useEffect(() => {
+  //   if (comment_taskId) {
+  //     setJobId(comment_taskId);
+  //     setIsComment(true);
 
+  //     setRowSelection(prev => {
+  //     return {
+  //       ...prev,
+  //       [comment_taskId]:true
+  //     }
+  //   })
 
+  // searchParams.delete("comment_taskId");
+  // navigate({ search: searchParams.toString() }, { replace: true });
 
+  //   }
 
-
-
-
-
-
-
-      
-          const socket  = useSocket();
-      
-      
-            useEffect(() => {
-      
-      
-              if (!socket) return;
-               
-              socket.on('job_updated', () => {
-               
-      
-                allClientData()
-              })
-            }, [socket])
-
-
-
-
-  
-    // useEffect(() => {
-    //   if (comment_taskId) {
-    //     setJobId(comment_taskId);
-    //     setIsComment(true);
-
-    //     setRowSelection(prev => {
-    //     return {
-    //       ...prev,
-    //       [comment_taskId]:true
-    //     }
-    //   })
-
-      
-    // searchParams.delete("comment_taskId");
-    // navigate({ search: searchParams.toString() }, { replace: true });
-
-    //   }
-  
-    // }, [comment_taskId, searchParams, navigate]);
-
-
-
-
+  // }, [comment_taskId, searchParams, navigate]);
 
   // Extract the current path
   const currentPath = location.pathname;
@@ -334,10 +287,9 @@ export default function AllJobs() {
     "Billing",
     "Feedback",
     "Inactive",
-    
   ];
 
-    const statusInit = [
+  const statusInit = [
     "Quote",
     "Data",
     "Progress",
@@ -346,17 +298,12 @@ export default function AllJobs() {
     "Submission",
     "Billing",
     "Feedback",
-    
-    
   ];
- 
- 
-  const [isMoving, setIsMoving] = useState(false)
+
+  const [isMoving, setIsMoving] = useState(false);
 
   // Move to Job Handler
   const moveJobToLead = async (client) => {
-    
-
     // Get today's date
     const today = new Date();
 
@@ -367,10 +314,10 @@ export default function AllJobs() {
     const followUpDate = formatISO(today);
 
     try {
-      setIsMoving(true)
+      setIsMoving(true);
       const { data } = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/leads/create/lead`,
-        { 
+        {
           companyName: client.companyName,
           clientName: client.clientName,
           jobHolder: client.job?.jobHolder,
@@ -379,115 +326,79 @@ export default function AllJobs() {
           brand: "Affotax",
           lead_Source: "CRM",
           followUpDate: followUpDate,
-          JobDate: client.job.workDeadline,   // it is actually a job date 
-          Note: '',
+          JobDate: client.job.workDeadline, // it is actually a job date
+          Note: "",
           stage: "",
           value: "",
           number: "",
 
           yearEnd: client.job.yearEnd,
-          jobDeadline: client.job.jobDeadline
-
-
-        }
+          jobDeadline: client.job.jobDeadline,
+        },
       );
 
-
       if (data) {
-        
         toast.success("Job Moved to Lead Successfully!💚");
 
-        const result = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/client/jobActivity/${client._id}`, { activityText : "moved this job to Leads!", });
-
+        const result = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/v1/client/jobActivity/${client._id}`,
+          { activityText: "moved this job to Leads!" },
+        );
 
         // Options for formatting
-        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true, };
+        const options = {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        };
         const date = new Date();
-        const formattedDate = date.toLocaleString('en-US', options);
+        const formattedDate = date.toLocaleString("en-US", options);
 
-        const result2 = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/activies/create`, {
-
-          activityText : "moved this job to Leads!",
-          entity: "Jobs",
-          details: `Job Details:
+        const result2 = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/v1/activies/create`,
+          {
+            activityText: "moved this job to Leads!",
+            entity: "Jobs",
+            details: `Job Details:
           - Company Name: ${client.companyName}
           - Job Client: ${client.clientName || "No client provided"}
-          - Created At: ${formattedDate}`
+          - Created At: ${formattedDate}`,
+          },
+        );
 
-        });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-          // const res = await axios.delete(
-          //   `${process.env.REACT_APP_API_URL}/api/v1/client/delete/job/${client._id}`
-          // );
-          // if (res.data) {
-          //   const filterData = tableData.filter((item) => item._id !== client._id);
-          //   setTableData(filterData);
-          // }
-        
- 
-
-
+        // const res = await axios.delete(
+        //   `${process.env.REACT_APP_API_URL}/api/v1/client/delete/job/${client._id}`
+        // );
+        // if (res.data) {
+        //   const filterData = tableData.filter((item) => item._id !== client._id);
+        //   setTableData(filterData);
+        // }
       }
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message);
     } finally {
-      setIsMoving(false)
+      setIsMoving(false);
     }
-
-
-
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-  
+  };
 
   useEffect(() => {
-  const handleKeyDown = (e) => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setShowDetail(false);
+      }
+    };
 
-    if (e.key === "Escape") {
-      
-      setShowDetail(false)
-      
-    }
-  };
+    window.addEventListener("keydown", handleKeyDown);
 
-  window.addEventListener("keydown", handleKeyDown);
-
-  return () => {
-    window.removeEventListener("keydown", handleKeyDown);
-  };
-}, []);
-
-
-
-
-
-
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   // Get Auth Access
   useEffect(() => {
@@ -503,7 +414,7 @@ export default function AllJobs() {
   // Get Timer ID
   useEffect(() => {
     const timeId = localStorage.getItem("jobId");
-    setTimerId(JSON.parse(timeId)); 
+    setTimerId(JSON.parse(timeId));
   }, [anyTimerRunning]);
 
   // -----------Total Hours-------->
@@ -534,43 +445,29 @@ export default function AllJobs() {
   //   }
   // }, [tableData, filterData, active, active1]);
 
-
-
-
   const getUniqueClients = (clients) => {
+    const uniqueClientsMap = new Map();
 
-    
-      const uniqueClientsMap = new Map();
+    clients.forEach((client) => {
+      // Use   companyName as a unique identifier
+      const key = `${client.companyName.trim().toLowerCase()}`;
+      if (!uniqueClientsMap.has(key)) {
+        uniqueClientsMap.set(key, client);
+      }
+    });
 
-      clients.forEach(client => {
-        // Use   companyName as a unique identifier
-        const key = `${client.companyName.trim().toLowerCase()}`;
-        if (!uniqueClientsMap.has(key)) {
+    const uniqueClients = Array.from(uniqueClientsMap.values());
 
-
-          uniqueClientsMap.set(key, client);
-        }
-      });
-
-      const uniqueClients = Array.from(uniqueClientsMap.values());
-
- 
-
-      // setTableData(uniqueClients);
-      return uniqueClients;
-
-
-
-  }
-
-
+    // setTableData(uniqueClients);
+    return uniqueClients;
+  };
 
   // ---------------All Client_Job Data----------->
   const allClientJobData = async () => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/job`
+        `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/job`,
       );
       if (data) {
         setTableData(data?.clients);
@@ -583,25 +480,15 @@ export default function AllJobs() {
     }
   };
 
-
-  
-
   useEffect(() => {
-
-    if(showUniqueClients) {
-      setTableData(prev => {
-        return getUniqueClients(prev)
-      })
-      
+    if (showUniqueClients) {
+      setTableData((prev) => {
+        return getUniqueClients(prev);
+      });
     } else {
-     
       allClientJobData();
     }
-
-
-  }, [showUniqueClients])
-
-
+  }, [showUniqueClients]);
 
   // useEffect(() => {
   //   allClientJobData();
@@ -613,7 +500,7 @@ export default function AllJobs() {
     setIsLoad(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/job`
+        `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/job`,
       );
       if (data) {
         if (active !== "All") {
@@ -642,14 +529,14 @@ export default function AllJobs() {
   //   return () => {
   //     socketId.off("newJob", allClientData);
   //   };
-     
+
   // }, [socketId]);
 
   //   Get All Labels
   const getlabel = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels`
+        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels`,
       );
       if (data.success) {
         setLabelData(data.labels);
@@ -667,7 +554,7 @@ export default function AllJobs() {
   const getDatalable = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/label/data/labels`
+        `${process.env.REACT_APP_API_URL}/api/v1/label/data/labels`,
       );
       if (data.success) {
         setDataLabel(data.labels);
@@ -681,7 +568,6 @@ export default function AllJobs() {
     getDatalable();
   }, []);
 
- 
   // ---------Stop Timer ----------->
   const handleStopTimer = () => {
     if (timerRef.current) {
@@ -701,17 +587,18 @@ export default function AllJobs() {
   // -------Due & Overdue count------->
   const getDueAndOverdueCountByDepartment = (department) => {
     const filteredData = tableData.filter(
-      (item) => item.job.jobName === department || department === "All"
+      (item) => item.job.jobName === department || department === "All",
     );
 
     const dueCount = filteredData.filter(
-      (item) => getStatus(item.job.jobDeadline, item.job.yearEnd) === "Due"
+      (item) => getStatus(item.job.jobDeadline, item.job.yearEnd) === "Due",
     ).length;
     const overdueCount = filteredData.filter(
-      (item) => getStatus(item.job.jobDeadline, item.job.yearEnd) === "Overdue"
+      (item) => getStatus(item.job.jobDeadline, item.job.yearEnd) === "Overdue",
     ).length;
     const upcomingCount = filteredData.filter(
-      (item) => getStatus(item.job.jobDeadline, item.job.yearEnd) === "Upcoming"
+      (item) =>
+        getStatus(item.job.jobDeadline, item.job.yearEnd) === "Upcoming",
     ).length;
 
     return { due: dueCount, overdue: overdueCount, upcoming: upcomingCount };
@@ -721,7 +608,7 @@ export default function AllJobs() {
     return tableData.filter((item) =>
       department === "All"
         ? item?.job?.jobStatus === status
-        : item?.job?.jobStatus === status && item?.job?.jobName === department
+        : item?.job?.jobStatus === status && item?.job?.jobName === department,
     )?.length;
   };
   // --------------Job_Holder Length---------->
@@ -730,7 +617,7 @@ export default function AllJobs() {
     return tableData.filter((item) =>
       department === "All"
         ? item?.job?.jobHolder === user
-        : item?.job?.jobHolder === user && item?.job?.jobName === department
+        : item?.job?.jobHolder === user && item?.job?.jobName === department,
     )?.length;
   };
 
@@ -742,7 +629,7 @@ export default function AllJobs() {
         item.job.jobName === value ||
         item.job?.jobStatus === value ||
         item.job.jobHolder === value ||
-        item._id === value
+        item._id === value,
     );
 
     // console.log("FilterData", filteredData);
@@ -763,7 +650,7 @@ export default function AllJobs() {
       const filteredData = tableData.filter(
         (item) =>
           item?.clientName.toLowerCase().includes(searchValue.toLowerCase()) ||
-          item?.companyName.toLowerCase().includes(searchValue.toLowerCase())
+          item?.companyName.toLowerCase().includes(searchValue.toLowerCase()),
       );
       setFilterData(filteredData);
       // console.log("SearchData:", filteredData);
@@ -783,7 +670,7 @@ export default function AllJobs() {
           item.job?.jobStatus === value ||
           item.job.jobHolder === value ||
           getStatus(item.job.jobDeadline, item.job.yearEnd) === value ||
-          getStatus(item.job.jobDeadline, item.job.yearEnd) === value
+          getStatus(item.job.jobDeadline, item.job.yearEnd) === value,
       );
     } else {
       filteredData = tableData.filter((item) => {
@@ -816,22 +703,24 @@ export default function AllJobs() {
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
       );
 
       setUsers(
         data?.users
           ?.filter((user) =>
             user?.role?.access?.some((item) =>
-              item?.permission?.includes("Jobs")
-            )
+              item?.permission?.includes("Jobs"),
+            ),
           )
-          .map((user) => user.name) || []
+          .map((user) => user.name) || [],
       );
       setUsersData(
         data?.users?.filter((user) =>
-          user?.role?.access?.some((item) => item?.permission?.includes("Jobs"))
-        ) || []
+          user?.role?.access?.some((item) =>
+            item?.permission?.includes("Jobs"),
+          ),
+        ) || [],
       );
     } catch (error) {
       console.log(error);
@@ -861,7 +750,7 @@ export default function AllJobs() {
           Swal.fire(
             "Inactive!",
             "Client status set to inactive successfully!",
-            "success"
+            "success",
           );
         }
       });
@@ -881,7 +770,7 @@ export default function AllJobs() {
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/status/${rowId}`,
         {
           status: newStatus,
-        }
+        },
       );
       if (data) {
         if (filterId || active || active1) {
@@ -889,16 +778,16 @@ export default function AllJobs() {
             prevData?.map((item) =>
               item._id === rowId
                 ? { ...item, job: { ...item.job, jobStatus: newStatus } }
-                : item
-            )
+                : item,
+            ),
           );
         }
         setTableData((prevData) =>
           prevData?.map((item) =>
             item._id === rowId
               ? { ...item, job: { ...item.job, jobStatus: newStatus } }
-              : item
-          )
+              : item,
+          ),
         );
         toast.success("Job status updated!");
         // Socket
@@ -911,31 +800,8 @@ export default function AllJobs() {
     }
   };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
   // ---------------Handle Update Fee ---------->
   const updateActiveClient = async (rowId, newValue) => {
-
-
     if (!rowId) {
       return toast.error("Job id is required!");
     }
@@ -944,51 +810,32 @@ export default function AllJobs() {
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/activeClient/${rowId}`,
         {
           activeClient: newValue,
-        }
+        },
       );
 
-       
       if (data) {
         if (filterId || active || active1) {
           setFilterData((prevData) => {
-             
-
-            return  prevData?.map((item) =>
-              item._id === rowId
-                ? { ...item, activeClient: newValue }
-                : item
-            )
-          }
-            
-           
-          );
+            return prevData?.map((item) =>
+              item._id === rowId ? { ...item, activeClient: newValue } : item,
+            );
+          });
         }
         setTableData((prevData) => {
-
-           
           return prevData?.map((item) =>
-            item._id === rowId
-              ? { ...item, activeClient: newValue }
-              : item
-          )
-        }
-          
-        );
+            item._id === rowId ? { ...item, activeClient: newValue } : item,
+          );
+        });
         toast.success(`Client updated to ${newValue}`);
-        
       }
     } catch (error) {
       console.error("Error updating status", error);
     }
   };
 
-
-
-
   // ---------------Handle Update Fee ---------->
   const handleUpdateFee = async (rowId, fee) => {
-
-     if (!rowId) {
+    if (!rowId) {
       return toast.error("Job id is required!");
     }
     try {
@@ -996,68 +843,28 @@ export default function AllJobs() {
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/fee/${rowId}`,
         {
           fee: fee,
-        }
+        },
       );
 
-       if (data) {
+      if (data) {
         if (filterId || active || active1) {
           setFilterData((prevData) => {
-             
-
-            return  prevData?.map((item) =>
-              item._id === rowId
-                ? { ...item, fee: fee }
-                : item
-            )
-          }
-            
-           
-          );
+            return prevData?.map((item) =>
+              item._id === rowId ? { ...item, fee: fee } : item,
+            );
+          });
         }
         setTableData((prevData) => {
-
-           
           return prevData?.map((item) =>
-            item._id === rowId
-              ? { ...item, fee: fee }
-              : item
-          )
-        }
-          
-        );
+            item._id === rowId ? { ...item, fee: fee } : item,
+          );
+        });
         toast.success("Job Fee updated!");
-        
       }
     } catch (error) {
       console.error("Error updating status", error);
     }
   };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   // ---------------Handle Update Lead ---------->
   const handleUpdateLead = async (rowId, lead) => {
@@ -1069,7 +876,7 @@ export default function AllJobs() {
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/lead/${rowId}`,
         {
           lead: lead,
-        }
+        },
       );
       if (data) {
         if (filterId || active || active1) {
@@ -1077,16 +884,16 @@ export default function AllJobs() {
             prevData?.map((item) =>
               item._id === rowId
                 ? { ...item, job: { ...item.job, lead: lead } }
-                : item
-            )
+                : item,
+            ),
           );
         }
         setTableData((prevData) =>
           prevData?.map((item) =>
             item._id === rowId
               ? { ...item, job: { ...item.job, lead: lead } }
-              : item
-          )
+              : item,
+          ),
         );
         toast.success("Job lead updated!");
         // Socket
@@ -1109,7 +916,7 @@ export default function AllJobs() {
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/jobholder/${rowId}`,
         {
           jobHolder: jobHolder,
-        }
+        },
       );
       if (data) {
         if (filterId || active || active1) {
@@ -1117,16 +924,16 @@ export default function AllJobs() {
             prevData?.map((item) =>
               item._id === rowId
                 ? { ...item, job: { ...item.job, jobHolder: jobHolder } }
-                : item
-            )
+                : item,
+            ),
           );
         }
         setTableData((prevData) =>
           prevData?.map((item) =>
             item._id === rowId
               ? { ...item, job: { ...item.job, jobHolder: jobHolder } }
-              : item
-          )
+              : item,
+          ),
         );
 
         toast.success("Job holder updated!");
@@ -1184,7 +991,7 @@ export default function AllJobs() {
 
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/delete/job/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/client/delete/job/${id}`,
       );
       if (data) {
         setShowDetail(false);
@@ -1208,10 +1015,10 @@ export default function AllJobs() {
         type === "yearEnd"
           ? { yearEnd: date }
           : type === "jobDeadline"
-          ? { jobDeadline: date }
-          : type === "currentDate"
-          ? { currentDate: date }
-          : { workDeadline: date }
+            ? { jobDeadline: date }
+            : type === "currentDate"
+              ? { currentDate: date }
+              : { workDeadline: date },
       );
       if (data) {
         const clientJob = data.clientJob;
@@ -1222,20 +1029,17 @@ export default function AllJobs() {
         if (filterId || active || active1) {
           setFilterData((prevData) =>
             prevData?.map((item) =>
-              item._id === jobId ? { ...item, ...clientJob } : item
-            )
+              item._id === jobId ? { ...item, ...clientJob } : item,
+            ),
           );
         }
         setTableData((prevData) =>
           prevData?.map((item) =>
-            item._id === jobId ? { ...item, ...clientJob } : item
-          )
+            item._id === jobId ? { ...item, ...clientJob } : item,
+          ),
         );
         toast.success("Date updated successfully!");
       }
-
-
-      
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message);
@@ -1262,7 +1066,7 @@ export default function AllJobs() {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       if (data) {
         allClientJobData();
@@ -1271,7 +1075,7 @@ export default function AllJobs() {
     } catch (error) {
       console.error("Error importing data:", error);
       toast.error(
-        error?.response?.data?.message || "Failed to import job data"
+        error?.response?.data?.message || "Failed to import job data",
       );
     } finally {
       setFLoading(false);
@@ -1305,53 +1109,44 @@ export default function AllJobs() {
   };
 
   // Close Comment Box to click anywhere
-//   useEffect(() => {
-//      const handleClickOutside = (event) => {
+  //   useEffect(() => {
+  //      const handleClickOutside = (event) => {
 
-         
-//   const clickInside =
-//     commentStatusRef.current?.contains(event.target) ||
-//     document.querySelector(".MuiPopover-root")?.contains(event.target) || // for MUI Menu
-//     document.querySelector(".EmojiPickerReact")?.contains(event.target) || // for emoji picker
-//     document.querySelector(".MuiDialog-root")?.contains(event.target); // ✅ For Dialog
+  //   const clickInside =
+  //     commentStatusRef.current?.contains(event.target) ||
+  //     document.querySelector(".MuiPopover-root")?.contains(event.target) || // for MUI Menu
+  //     document.querySelector(".EmojiPickerReact")?.contains(event.target) || // for emoji picker
+  //     document.querySelector(".MuiDialog-root")?.contains(event.target); // ✅ For Dialog
 
-//   if (!clickInside) {
-//     setIsComment(false);
-//   }
-// };
+  //   if (!clickInside) {
+  //     setIsComment(false);
+  //   }
+  // };
 
-//     document.addEventListener("mousedown", handleClickOutside);
-//     return () => document.removeEventListener("mousedown", handleClickOutside);
-//   }, []);
-
-
-
-
-
-
-
-
+  //     document.addEventListener("mousedown", handleClickOutside);
+  //     return () => document.removeEventListener("mousedown", handleClickOutside);
+  //   }, []);
 
   // Add label in Jobs
   const addJoblabel = async (id, name, color) => {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/client/add/job/labe/${id}`,
-        { name, color }
+        { name, color },
       );
       if (data) {
         const clientJob = data.job;
         if (filterId || active || active1) {
           setFilterData((prevData) =>
             prevData?.map((item) =>
-              item._id === id ? { ...item, ...clientJob } : item
-            )
+              item._id === id ? { ...item, ...clientJob } : item,
+            ),
           );
         }
         setTableData((prevData) =>
           prevData?.map((item) =>
-            item._id === id ? { ...item, ...clientJob } : item
-          )
+            item._id === id ? { ...item, ...clientJob } : item,
+          ),
         );
 
         if (name) {
@@ -1376,7 +1171,7 @@ export default function AllJobs() {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/client/add/job/data/${id}`,
-        { labelId }
+        { labelId },
       );
       if (data) {
         const clientJob = data.job;
@@ -1385,15 +1180,15 @@ export default function AllJobs() {
         if (filterId || active || active1) {
           setFilterData((prevData) =>
             prevData?.map((item) =>
-              item._id === clientJob._id ? { ...item, ...clientJob } : item
-            )
+              item._id === clientJob._id ? { ...item, ...clientJob } : item,
+            ),
           );
         }
 
         setTableData((prevData) =>
           prevData?.map((item) =>
-            item._id === clientJob._id ? { ...item, ...clientJob } : item
-          )
+            item._id === clientJob._id ? { ...item, ...clientJob } : item,
+          ),
         );
 
         toast.success("Data label Updated!");
@@ -1409,117 +1204,105 @@ export default function AllJobs() {
     }
   };
 
- 
+  // ----------------------------
+  // 🔑 Authentication Context
+  // ----------------------------
+  const authCtx = useMemo(() => {
+    return {
+      auth,
+      users,
+      access,
+    };
+  }, [auth, users, access]);
 
+  // ----------------------------
+  // 💬 Comment Context
+  // ----------------------------
+  const commentCtx = useMemo(() => {
+    return {
+      jobId,
+      isComment,
+      comment_taskId,
+      setJobId,
+      setIsComment,
+    };
+  }, [jobId, isComment, comment_taskId]);
 
-// ----------------------------
-// 🔑 Authentication Context
-// ----------------------------
-const authCtx = useMemo(() => {
-  return {
-    auth,    
-    users,
-    access
-  }
-}, [auth, users, access])
-
-
-// ----------------------------
-// 💬 Comment Context
-// ----------------------------
-const commentCtx = useMemo(() => {
-  return {
-    jobId,           
-    isComment,        
-    comment_taskId,   
-    setJobId,         
-    setIsComment,     
-  }
-}, [jobId, isComment, comment_taskId])
-
-
-// ----------------------------
-// 📂 Job Context
-// ----------------------------
-const jobCtx = useMemo(() => {
-  return {
-    totalFee,           
-    totalHours,         
-    dataLable,         
+  // ----------------------------
+  // 📂 Job Context
+  // ----------------------------
+  const jobCtx = useMemo(() => {
+    return {
+      totalFee,
+      totalHours,
+      dataLable,
+      labelData,
+      totalClientPaidFee,
+      showUniqueClients,
+      addJoblabel,
+      setCompanyName,
+      addDatalabel1,
+      getSingleJobDetail,
+      handleUpdateFee,
+      updateActiveClient,
+      handleUpdateDates,
+      setClientCompanyName,
+      setShowNewTicketModal,
+      moveJobToLead,
+      handleUpdateLead,
+      handleUpdateTicketStatusConfirmation,
+      handleUpdateJobHolder,
+    };
+  }, [
+    totalFee,
+    totalHours,
+    dataLable,
     labelData,
-    totalClientPaidFee, 
-    showUniqueClients,         
-    addJoblabel,        
-    setCompanyName,     
-    addDatalabel1,     
-    getSingleJobDetail, 
-    handleUpdateFee,   
-    updateActiveClient, 
-    handleUpdateDates,  
-    setClientCompanyName, 
-    setShowNewTicketModal, 
-    moveJobToLead,      
-    handleUpdateLead,  
-    handleUpdateTicketStatusConfirmation, 
-    handleUpdateJobHolder  
-  }
-}, [totalFee, totalHours, dataLable, labelData, totalClientPaidFee, showUniqueClients])
+    totalClientPaidFee,
+    showUniqueClients,
+  ]);
 
+  // ----------------------------
+  // ⏱️ Timer Context
+  // ----------------------------
+  const timerCtx = useMemo(() => {
+    return {
+      timerRef,
+      timerId,
+      jid,
+      play,
+      setPlay,
+      setIsShow,
+      note,
+      currentPath,
+      setNote,
+      activity,
+      setActivity,
 
-// ----------------------------
-// ⏱️ Timer Context
-// ----------------------------
-const timerCtx = useMemo(() => {
-  return {
-    timerRef,    
-    timerId,      
-    jid,          
-    play,         
-    setPlay,      
-    setIsShow,   
-    note,        
-    currentPath, 
-    setNote,     
-    activity,     
-    setActivity, 
+      setIsNonChargeable,
+      setIsSubmitting,
+    };
+  }, [timerRef, timerId, jid, play, note, currentPath, activity]);
 
-    setIsNonChargeable,
-    setIsSubmitting
-  }
-}, [timerRef, timerId, jid, play, note, currentPath, activity])
-
-
-// ----------------------------
-// 🌐 Global Context (Merged)
-// ----------------------------
-const ctx = useMemo(() => {
-  return {
-    ...authCtx,     
-    ...commentCtx, 
-    ...jobCtx,     
-    ...timerCtx,    
-  }
-}, [authCtx, commentCtx, jobCtx, timerCtx])
-
-
- 
-
+  // ----------------------------
+  // 🌐 Global Context (Merged)
+  // ----------------------------
+  const ctx = useMemo(() => {
+    return {
+      ...authCtx,
+      ...commentCtx,
+      ...jobCtx,
+      ...timerCtx,
+    };
+  }, [authCtx, commentCtx, jobCtx, timerCtx]);
 
   const columns = useMemo(() => {
-
-
-
     const allColumns = getJobsColumns(ctx);
 
-    return  allColumns.filter((col) => columnVisibility[col.id] || col.accessorKey === "_id");
-
-
-
-
+    return allColumns.filter(
+      (col) => columnVisibility[col.id] || col.accessorKey === "_id",
+    );
   }, [ctx, columnVisibility]);
-
- 
-
 
   // Clear table Filter
   const handleClearFilters = () => {
@@ -1535,7 +1318,6 @@ const ctx = useMemo(() => {
         : filterData,
     getRowId: (row) => row._id,
 
-     
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
@@ -1550,26 +1332,24 @@ const ctx = useMemo(() => {
     enableBottomToolbar: true,
     enableRowSelection: true,
     // enableColumnPinning: true,
-     
+
     // enableRowVirtualization: true,
     // enableColumnVirtualization: true,
     onRowSelectionChange: setRowSelection,
 
     initialState: {
       columnVisibility: {
-        _id: false
-      }
+        _id: false,
+      },
     },
 
-    renderTopToolbar:() => (
-      
-      <div style={{ width: '100%' }}>
+    renderTopToolbar: () => (
+      <div style={{ width: "100%" }}>
         {isMoving && (
           <LinearProgress
             sx={{
-              width: '100%',
-              marginBottom: '16px', // Space between the progress bar and table
-               
+              width: "100%",
+              marginBottom: "16px", // Space between the progress bar and table
             }}
           />
         )}
@@ -1607,11 +1387,8 @@ const ctx = useMemo(() => {
     //   </MenuItem>,
     // ],
 
-
-     
-
     // state: { rowSelection,  columnPinning: { right: ['mrt-row-actions'],}  },
-    state: { rowSelection,  pagination, density: "compact"  },
+    state: { rowSelection, pagination, density: "compact" },
     // enableEditing: true,
     // state: { isLoading: loading },
 
@@ -1621,7 +1398,7 @@ const ctx = useMemo(() => {
     //   pageSize: 20,
     //   density: "compact",
     //   // columnPinning: {
-        
+
     //   //   right: ['mrt-row-actions'],
     //   // },
     // },
@@ -1699,7 +1476,7 @@ const ctx = useMemo(() => {
     setIsUpdate(true);
 
     const filteredTasks = qualityData.filter(
-      (item) => item.type === qualities.label
+      (item) => item.type === qualities.label,
     );
 
     // Map to extract labels
@@ -1710,7 +1487,7 @@ const ctx = useMemo(() => {
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/bulk/job`,
         {
           rowSelection: Object.keys(rowSelection).filter(
-            (id) => rowSelection[id] === true
+            (id) => rowSelection[id] === true,
           ),
           jobHolder,
           lead,
@@ -1726,7 +1503,7 @@ const ctx = useMemo(() => {
           totalHours: hours,
           activeClient,
           // qualities: qualityLabels,
-        }
+        },
       );
 
       if (data) {
@@ -1758,100 +1535,94 @@ const ctx = useMemo(() => {
     }
   };
 
-
-    const user_jobs_count_map = useMemo(() => {
+  const user_jobs_count_map = useMemo(() => {
     return Object.fromEntries(
-      users.map((user) => [user, getJobHolderCount(user, active)])
+      users.map((user) => [user, getJobHolderCount(user, active)]),
     );
   }, [users, active, getJobHolderCount]);
 
+  const renderColumnControls = () => (
+    <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
+      {/* Header */}
+      <header className="px-5 py-3 border-b">
+        <h3 className="text-sm font-semibold text-slate-800">View settings</h3>
+      </header>
 
+      {/* Content */}
+      <div className="grid grid-cols-2 divide-x">
+        {/* LEFT — Columns */}
+        <section className="px-5 py-4">
+          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+            Columns
+          </h4>
 
-const renderColumnControls = () => (
-  <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
-    {/* Header */}
-    <header className="px-5 py-3 border-b">
-      <h3 className="text-sm font-semibold text-slate-800">
-        View settings
-      </h3>
-    </header>
-
-    {/* Content */}
-    <div className="grid grid-cols-2 divide-x">
-      {/* LEFT — Columns */}
-      <section className="px-5 py-4">
-        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-          Columns
-        </h4>
-
-        <ul className="space-y-1 list-decimal">
-          {Object.keys(columnVisibility)?.map((column) => (
-            <li key={column}>
-              <label
-                className="flex items-center justify-between rounded-md px-2 py-1.5
+          <ul className="space-y-1 list-decimal">
+            {Object.keys(columnVisibility)?.map((column) => (
+              <li key={column}>
+                <label
+                  className="flex items-center justify-between rounded-md px-2 py-1.5
                            text-sm text-slate-700 cursor-pointer
                            hover:bg-slate-50 transition"
-              >
-                <span className="capitalize">{column}</span>
-                <input
-                  type="checkbox"
-                  checked={columnVisibility[column]}
-                  onChange={() => toggleColumnVisibility(column)}
-                  className="h-4 w-4 accent-orange-600"
-                />
-              </label>
-            </li>
-          ))}
-        </ul>
-      </section>
+                >
+                  <span className="capitalize">{column}</span>
+                  <input
+                    type="checkbox"
+                    checked={columnVisibility[column]}
+                    onChange={() => toggleColumnVisibility(column)}
+                    className="h-4 w-4 accent-orange-600"
+                  />
+                </label>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-      {/* RIGHT — Users */}
-      <section className="px-5 py-4">
-        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-          Users
-        </h4>
+        {/* RIGHT — Users */}
+        <section className="px-5 py-4">
+          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+            Users
+          </h4>
 
-        <div className="h-full overflow-y-auto space-y-1 pr-1">
-          <SelectedUsers
-            selectedUsers={selectedUsers}
-            setSelectedUsers={setSelectedUsers}
-            userNameArr={users}
-            countMap={user_jobs_count_map}
-            label={"job"}
-          />
-        </div>
-      </section>
-    </div>
-  </section>
-);
+          <div className="h-full overflow-y-auto space-y-1 pr-1">
+            <SelectedUsers
+              selectedUsers={selectedUsers}
+              setSelectedUsers={setSelectedUsers}
+              userNameArr={users}
+              countMap={user_jobs_count_map}
+              label={"job"}
+            />
+          </div>
+        </section>
+      </div>
+    </section>
+  );
 
+  // a little function to help us with reordering the result
+  const reorder = (list, startIndex, endIndex) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
 
+    return result;
+  };
 
-    // a little function to help us with reordering the result
-    const reorder = (list, startIndex, endIndex) => {
-      const result = Array.from(list);
-      const [removed] = result.splice(startIndex, 1);
-      result.splice(endIndex, 0, removed);
-    
-      return result;
-    };
-  
-  
-      //  -----------Handle drag end---------
-    const handleUserOnDragEnd = (result) => {
-   
-      const items = reorder( selectedUsers, result.source.index, result.destination.index );
-      localStorage.setItem("jobs_usernamesOrder", JSON.stringify(items));
+  //  -----------Handle drag end---------
+  const handleUserOnDragEnd = (result) => {
+    const items = reorder(
+      selectedUsers,
+      result.source.index,
+      result.destination.index,
+    );
+    localStorage.setItem("jobs_usernamesOrder", JSON.stringify(items));
 
-       setSelectedUsers(items)
-  
-    };
+    setSelectedUsers(items);
+  };
 
   // Get All Quality Check
   const getQuickList = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/quicklist/get/all`
+        `${process.env.REACT_APP_API_URL}/api/v1/quicklist/get/all`,
       );
       if (data) {
         setQualityData(data.qualityChecks);
@@ -1877,85 +1648,48 @@ const renderColumnControls = () => (
     label: type,
   }));
 
-
-
-
-
-
-
-
-
-
-
-
   const tableColumnFilters = table.getState().columnFilters;
-useEffect(() => {
-  const filteredRows = table.getFilteredRowModel().rows;
-  const totalHours = filteredRows.reduce((acc, row) => acc + Number(row.original.totalHours), 0);
-  setTotalHours(totalHours.toFixed(0));
-  
-
-  if(!showUniqueClients) {
+  useEffect(() => {
     const filteredRows = table.getFilteredRowModel().rows;
-   const totalFee = filteredRows.reduce((acc, row) => acc + Number(row.original.fee), 0);
-    setTotalFee(totalFee.toFixed(0));
-  }
+    const totalHours = filteredRows.reduce(
+      (acc, row) => acc + Number(row.original.totalHours),
+      0,
+    );
+    setTotalHours(totalHours.toFixed(0));
 
+    if (!showUniqueClients) {
+      const filteredRows = table.getFilteredRowModel().rows;
+      const totalFee = filteredRows.reduce(
+        (acc, row) => acc + Number(row.original.fee),
+        0,
+      );
+      setTotalFee(totalFee.toFixed(0));
+    }
 
-  if(showUniqueClients) {
-    const filteredRows = table.getFilteredRowModel().rows;
-    const totalClientPaidFee = filteredRows.reduce((acc, row) => acc + Number(row.original.clientPaidFee || '0'), 0);
-    setTotalClientPaidFee(totalClientPaidFee.toFixed(0))
-  }
-
-  
-
-}, [tableColumnFilters, table, showUniqueClients, tableData]);
-
- 
-
-
-
-
- 
-
-
-
+    if (showUniqueClients) {
+      const filteredRows = table.getFilteredRowModel().rows;
+      const totalClientPaidFee = filteredRows.reduce(
+        (acc, row) => acc + Number(row.original.clientPaidFee || "0"),
+        0,
+      );
+      setTotalClientPaidFee(totalClientPaidFee.toFixed(0));
+    }
+  }, [tableColumnFilters, table, showUniqueClients, tableData]);
 
   const setColumnFromOutsideTable = (colKey, filterVal) => {
-
     const col = table.getColumn(colKey);
 
     return col.setFilterValue(filterVal);
-  }
-
-
-
+  };
 
   useEffect(() => {
-
-
-    if(auth.user?.role?.name === "Admin") {
-
-   
+    if (auth.user?.role?.name === "Admin") {
       setShowJobHolder(true);
       setActiveBtn("jobHolder");
-
     }
+  }, []);
 
-
-
-  }, [])
-
-
-
-
-
-
-
-
-
-    useEffect(() => {
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (boxRef.current && !boxRef.current.contains(event.target)) {
         setShowColumn(false);
@@ -1971,41 +1705,22 @@ useEffect(() => {
     };
   }, [showcolumn]);
 
+  useEffect(() => {
+    if (comment_taskId) {
+      filterByRowId(table, comment_taskId, setJobId, setIsComment);
 
+      // searchParams.delete("comment_taskId");
+      // navigate({ search: searchParams.toString() }, { replace: true });
+    }
+  }, [comment_taskId, searchParams, navigate, table]);
 
-  
-
-
-
-
-
-
-
-useEffect(() => {
-  if (comment_taskId) {
-    
-    filterByRowId(table, comment_taskId, setJobId, setIsComment);
-
-    // searchParams.delete("comment_taskId");
-    // navigate({ search: searchParams.toString() }, { replace: true });
-  }
-}, [comment_taskId, searchParams, navigate, table]);
-
-
-
-
-
-
-  
   useEffect(() => {
     if (show_completed) {
-
       setActiveBtn("completed");
-              setShowCompleted(true);
-              setActive("");
+      setShowCompleted(true);
+      setActive("");
     }
   }, [show_completed]);
-
 
   return (
     <>
@@ -2016,8 +1731,8 @@ useEffect(() => {
               {showCompleted && activeBtn === "completed"
                 ? "Completed Job's"
                 : showInactive && activeBtn === "inactive"
-                ? "Inactive Jobs"
-                : "Jobs"}
+                  ? "Inactive Jobs"
+                  : "Jobs"}
             </h1>
 
             <span
@@ -2039,7 +1754,12 @@ useEffect(() => {
               <IoClose className="h-6 w-6 text-white" />
             </span>
             <QuickAccess />
-               {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
+            {isAdmin(auth) && (
+              <span className=" ">
+                {" "}
+                <OverviewForPages />{" "}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
@@ -2085,7 +1805,7 @@ useEffect(() => {
             >
               Quality List
             </button> */}
-             <button
+            <button
               className={`${style.button1} text-[15px] `}
               onClick={() => setShowSubtaskList(true)}
               style={{ padding: ".4rem 1rem" }}
@@ -2137,9 +1857,10 @@ useEffect(() => {
                   dispatch(setFilterId(""));
                   dep === "All" && allClientData();
 
-                  setColumnFromOutsideTable('Departments', (dep === "All" ? "" : dep));
-
-                  
+                  setColumnFromOutsideTable(
+                    "Departments",
+                    dep === "All" ? "" : dep,
+                  );
                 }}
               >
                 {dep} ({getDepartmentCount(dep)})
@@ -2175,19 +1896,17 @@ useEffect(() => {
             Inactive
           </div>
 
-
-          
-
-
           {/*  */}
           {/* -------------Filter Open Buttons-------- */}
           <span
             className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border  ${
-              activeBtn === "jobHolder" && showJobHolder && "bg-orange-500 text-white"
+              activeBtn === "jobHolder" &&
+              showJobHolder &&
+              "bg-orange-500 text-white"
             }`}
             onClick={() => {
               setActiveBtn("jobHolder");
-              setShowJobHolder(prev => !prev);
+              setShowJobHolder((prev) => !prev);
               setShowStatus(false);
             }}
             title="Filter by Job Holder"
@@ -2212,7 +1931,7 @@ useEffect(() => {
             }`}
             onClick={() => {
               setActiveBtn("status");
-              setShowStatus(prev => !prev);
+              setShowStatus((prev) => !prev);
 
               setShowJobHolder(false);
             }}
@@ -2247,7 +1966,10 @@ useEffect(() => {
               )}
             </div>
             {showcolumn && (
-              <div className="fixed top-[11rem] right-[20%] z-[99] max-h-[80vh] overflow-y-auto hidden1  " ref={boxRef}>
+              <div
+                className="fixed top-[11rem] right-[20%] z-[99] max-h-[80vh] overflow-y-auto hidden1  "
+                ref={boxRef}
+              >
                 {renderColumnControls()}
               </div>
             )}
@@ -2274,30 +1996,21 @@ useEffect(() => {
             />
           </span>
 
-
-
           <div
             className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
               showUniqueClients && "bg-orange-500 text-white"
             }`}
             title="Clients"
             onClick={() => {
-
-              
-            
               // setTableData((prev) => {
               //   return getUniqueClients(prev)
               // })
 
-              
-              setShowUniqueClients(prev => !prev);
-               
+              setShowUniqueClients((prev) => !prev);
             }}
           >
             <BsPersonCheckFill className="h-6 w-6  cursor-pointer" />
           </div>
-
-
         </div>
         {/*  */}
         <hr className="mb-1 bg-gray-200 w-full h-[1px] max-lg:hidden" />
@@ -2554,7 +2267,7 @@ useEffect(() => {
                       >
                         {selectedUsers
                           ?.filter(
-                            (user) => getJobHolderCount(user, active) > 0
+                            (user) => getJobHolderCount(user, active) > 0,
                           )
                           ?.map((user, index) => (
                             <Draggable
@@ -2575,21 +2288,26 @@ useEffect(() => {
                                     setActive1(user);
                                     filterByDepStat(user, active);
 
-                                    setColumnFromOutsideTable("Job_Status", "Progress");
+                                    setColumnFromOutsideTable(
+                                      "Job_Status",
+                                      "Progress",
+                                    );
                                     setColumnFromOutsideTable("Assign", user);
 
-
-                                    if(auth.user?.role === "Admin" && (user === auth.user?.name) ) {
-                                      setColumnFromOutsideTable("Job_Date", "Today");
+                                    if (
+                                      auth.user?.role === "Admin" &&
+                                      user === auth.user?.name
+                                    ) {
+                                      setColumnFromOutsideTable(
+                                        "Job_Date",
+                                        "Today",
+                                      );
                                     } else {
-                                       setColumnFromOutsideTable("Job_Date", "");
+                                      setColumnFromOutsideTable("Job_Date", "");
                                     }
-
-
                                   }}
                                 >
-                                  {user} (
-                                  {getJobHolderCount(user, active)})
+                                  {user} ({getJobHolderCount(user, active)})
                                 </div>
                               )}
                             </Draggable>
@@ -2600,44 +2318,34 @@ useEffect(() => {
                   </Droppable>
                 </DragDropContext>
 
-
                 <div className=" border-l px-5 ">
-
-                  <OutsideFilter setColumnFromOutsideTable={setColumnFromOutsideTable} title={"Job_Date"} />
+                  <OutsideFilter
+                    setColumnFromOutsideTable={setColumnFromOutsideTable}
+                    title={"Job_Date"}
+                  />
                 </div>
 
+                <div className="flex items-center gap-4 border-l px-4">
+                  {statusInit?.map((stat, i) => (
+                    <div
+                      className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                        active2 === stat &&
+                        "  border-b-2 text-orange-600 border-orange-600"
+                      }`}
+                      key={i}
+                      onClick={() => {
+                        setActive2(stat);
+                        // filterByDepStat(stat, active);
 
-
-
-
-              <div className="flex items-center gap-4 border-l px-4">
-                {statusInit?.map((stat, i) => (
-                  <div
-                    className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                      active2 === stat &&
-                      "  border-b-2 text-orange-600 border-orange-600"
-                    }`}
-                    key={i}
-                    onClick={() => {
-                      setActive2(stat);
-                      // filterByDepStat(stat, active);
-
-                       setColumnFromOutsideTable("Job_Status", stat);
-                    }}
-                  >
-                    {stat} ({getStatusCount(stat, active)})
-                  </div>
-                ))}
+                        setColumnFromOutsideTable("Job_Status", stat);
+                      }}
+                    >
+                      {stat} ({getStatusCount(stat, active)})
+                    </div>
+                  ))}
+                </div>
               </div>
-
-              </div>
-
-                      
-
             </div>
-
-            
-
 
             <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
           </>
@@ -2771,7 +2479,7 @@ useEffect(() => {
             ) : (
               <div className="w-full min-h-[20vh] relative ">
                 <div className="h-full overflow-y-auto relative">
-                  <MaterialReactTable table={table}  />
+                  <MaterialReactTable table={table} />
                 </div>
               </div>
             )}
@@ -2789,7 +2497,6 @@ useEffect(() => {
             <CgClose className="h-5 w-5 text-black" />
           </span> */}
 
- 
           <NewJobModal
             setIsOpen={setIsOpen}
             allClientJobData={allClientJobData}
@@ -2820,37 +2527,32 @@ useEffect(() => {
         //   />
         // </div>
 
-
-
-            <div className="fixed inset-0 z-[499] flex items-center justify-center bg-black/30 backdrop-blur-sm">
-              <div className="bg-gray-100 rounded-xl shadow-lg w-[95%] sm:w-[80%] md:w-[75%] lg:w-[70%] xl:w-[70%] 3xl:w-[60%]    py-4 px-5   ">
-                <div className="h-full w-full flex flex-col justify-start items-center relative">
-
-                 <div className="flex items-center justify-between border-b px-4 py-2 self-start w-full">
-            <h3 className="text-lg font-semibold">Company: {companyName}</h3>
-            <span
-              className="p-1 rounded-md bg-gray-50 border  hover:shadow-md hover:bg-gray-100"
-              onClick={() => setShowDetail(false)}
-            >
-              <IoClose className="h-5 w-5 cursor-pointer" />
-            </span>
-          </div>
-
-                  <JobDetail
-            clientId={clientId}
-            handleStatus={handleStatusChange}
-            allClientJobData={allClientJobData}
-            handleDeleteJob={handleDeleteJob}
-            users={users}
-            allClientData={allClientData}
-          />
-
-                </div>
+        <div className="fixed inset-0 z-[499] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="bg-gray-100 rounded-xl shadow-lg w-[95%] sm:w-[80%] md:w-[75%] lg:w-[70%] xl:w-[70%] 3xl:w-[60%]    py-4 px-5   ">
+            <div className="h-full w-full flex flex-col justify-start items-center relative">
+              <div className="flex items-center justify-between border-b px-4 py-2 self-start w-full">
+                <h3 className="text-lg font-semibold">
+                  Company: {companyName}
+                </h3>
+                <span
+                  className="p-1 rounded-md bg-gray-50 border  hover:shadow-md hover:bg-gray-100"
+                  onClick={() => setShowDetail(false)}
+                >
+                  <IoClose className="h-5 w-5 cursor-pointer" />
+                </span>
               </div>
+
+              <JobDetail
+                clientId={clientId}
+                handleStatus={handleStatusChange}
+                allClientJobData={allClientJobData}
+                handleDeleteJob={handleDeleteJob}
+                users={users}
+                allClientData={allClientData}
+              />
             </div>
-
-
-
+          </div>
+        </div>
       )}
       {/* ------------Comment Modal---------*/}
 
@@ -2970,29 +2672,25 @@ useEffect(() => {
         </div>
       )}
 
-
       {/* ---------------New Ticket Modal------------- */}
       {showNewTicketModal && (
         <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
           <NewTicketModal
             setShowSendModal={setShowNewTicketModal}
-            
             clientCompanyName={clientCompanyName}
           />
         </div>
       )}
 
-       {/* ---------------New Ticket Modal------------- */}
+      {/* ---------------New Ticket Modal------------- */}
       {showSubtaskList && (
         <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
           <SubtaskListManager
             onApplyList={(subtasks) => {}}
-             onClose={() => setShowSubtaskList(false)}
-            />
+            onClose={() => setShowSubtaskList(false)}
+          />
         </div>
       )}
-
-
     </>
   );
 }

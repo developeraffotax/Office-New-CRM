@@ -7,11 +7,12 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
- 
+
 import Loader from "../../utlis/Loader";
 import Swal from "sweetalert2";
 import { IoRemoveCircle } from "react-icons/io5";
 import { useSelector } from "react-redux";
+//
 
 export default function CompletedJobs({
   getSingleJobDetail,
@@ -26,8 +27,8 @@ export default function CompletedJobs({
 }) {
   const [loading, setLoading] = useState(false);
   const [tableData, setTableData] = useState([]);
- 
-     const auth = useSelector((state => state.auth.auth));
+
+  const auth = useSelector((state) => state.auth.auth);
   const [labelData, setLabelData] = useState([]);
   const isInitialRender = useRef(true);
 
@@ -38,7 +39,7 @@ export default function CompletedJobs({
     }
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/jobs/status/complete`
+        `${process.env.REACT_APP_API_URL}/api/v1/client/jobs/status/complete`,
       );
       if (data) {
         setTableData(data.clients);
@@ -63,7 +64,7 @@ export default function CompletedJobs({
   const getlabel = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels`
+        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels`,
       );
       if (data) {
         setLabelData(data.labels);
@@ -98,12 +99,12 @@ export default function CompletedJobs({
   const updateClientStatus = async (id) => {
     try {
       const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/update/client/status/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/client/update/client/status/${id}`,
       );
       if (data) {
         allClientJobData();
         setTableData((prevTableData) =>
-          prevTableData.filter((item) => item._id !== id)
+          prevTableData.filter((item) => item._id !== id),
         );
         toast.success("Status updated!");
       }
@@ -122,14 +123,14 @@ export default function CompletedJobs({
           prepared,
           review,
           filed,
-        }
+        },
       );
 
       if (data) {
         allClientJobs();
         const updatedJob = data.clientJob;
         setTableData((prevData) =>
-          prevData.map((job) => (job._id === jobId ? updatedJob : job))
+          prevData.map((job) => (job._id === jobId ? updatedJob : job)),
         );
 
         toast.success("Job updated successfully.");
@@ -150,34 +151,31 @@ export default function CompletedJobs({
   //  --------------Table Columns Data--------->
   const columns = useMemo(
     () => [
-       {
-    id: "jobRef",
-    accessorFn: (row) => row.jobRef || "-", // safely handle missing jobRef
-    header: "Ref",
-    size: 80,
-    // enableColumnFilter: true,
-    // enableSorting: true,
-    // sortingFn: "alphanumeric",
-    Cell: ({ cell }) => {
-      const handleCopy = () => {
-        navigator.clipboard.writeText(cell.getValue());
-        toast.success(`Copied ${cell.getValue()}`);
-      };
+      {
+        id: "jobRef",
+        accessorFn: (row) => row.jobRef || "-", // safely handle missing jobRef
+        header: "Ref",
+        size: 80,
+        // enableColumnFilter: true,
+        // enableSorting: true,
+        // sortingFn: "alphanumeric",
+        Cell: ({ cell }) => {
+          const handleCopy = () => {
+            navigator.clipboard.writeText(cell.getValue());
+            toast.success(`Copied ${cell.getValue()}`);
+          };
 
-
-      return (
-        <span
-        className="px-2 py-1 rounded bg-gray-100 text-gray-700 font-semibold text-sm cursor-pointer "
-        onClick={handleCopy}
-        title="Click to copy"
-      >
-        {cell.getValue()}
-      </span>
-      )
-    },
-    
-  },
-
+          return (
+            <span
+              className="px-2 py-1 rounded bg-gray-100 text-gray-700 font-semibold text-sm cursor-pointer "
+              onClick={handleCopy}
+              title="Click to copy"
+            >
+              {cell.getValue()}
+            </span>
+          );
+        },
+      },
 
       {
         accessorKey: "companyName",
@@ -268,11 +266,11 @@ export default function CompletedJobs({
         accessorKey: "job.jobHolder",
         Header: ({ column }) => {
           const user = auth?.user?.name;
-            useEffect(() => {
-              if(user) {
-                  column.setFilterValue(user);
-              }
-                }, []);
+          useEffect(() => {
+            if (user) {
+              column.setFilterValue(user);
+            }
+          }, []);
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -523,7 +521,7 @@ export default function CompletedJobs({
           const startOfToday = new Date(
             today.getFullYear(),
             today.getMonth(),
-            today.getDate()
+            today.getDate(),
           );
 
           // Handle "Custom date" filter (if it includes a specific month-year)
@@ -690,7 +688,7 @@ export default function CompletedJobs({
           const startOfToday = new Date(
             today.getFullYear(),
             today.getMonth(),
-            today.getDate()
+            today.getDate(),
           );
 
           // Handle "Custom date" filter (if it includes a specific month-year)
@@ -850,7 +848,7 @@ export default function CompletedJobs({
           const startOfToday = new Date(
             today.getFullYear(),
             today.getMonth(),
-            today.getDate()
+            today.getDate(),
           );
 
           // Handle "Custom date" filter
@@ -943,7 +941,7 @@ export default function CompletedJobs({
         Cell: ({ row }) => {
           const status = getStatus(
             row.original.job.jobDeadline,
-            row.original.job.yearEnd
+            row.original.job.yearEnd,
           );
 
           return (
@@ -953,8 +951,8 @@ export default function CompletedJobs({
                   status === "Due"
                     ? "bg-green-500  py-[6px] px-4 "
                     : status === "Overdue"
-                    ? "bg-red-500  py-[6px] px-3 "
-                    : "bg-transparent"
+                      ? "bg-red-500  py-[6px] px-3 "
+                      : "bg-transparent"
                 }`}
               >
                 {status}
@@ -965,7 +963,7 @@ export default function CompletedJobs({
         filterFn: (row, id, filterValue) => {
           const status = getStatus(
             row.original.job.jobDeadline,
-            row.original.job.yearEnd
+            row.original.job.yearEnd,
           );
           if (status === undefined || status === null) return false;
           return status?.toString().toLowerCase() === filterValue.toLowerCase();
@@ -1135,7 +1133,7 @@ export default function CompletedJobs({
 
           useEffect(() => {
             const filterComments = comments.filter(
-              (item) => item.status === "unread"
+              (item) => item.status === "unread",
             );
             setReadComments(filterComments);
             // eslint-disable-next-line
@@ -1366,7 +1364,7 @@ export default function CompletedJobs({
       },
     ],
     // eslint-disable-next-line
-    [users, auth, tableData]
+    [users, auth, tableData],
   );
 
   const table = useMaterialReactTable({
@@ -1396,29 +1394,21 @@ export default function CompletedJobs({
       density: "compact",
     },
 
-
-
     muiTableHeadCellProps: {
-          style: {
-            fontWeight: "600",
-            fontSize: "14px",
-            backgroundColor: "#E5E7EB",
-            color: "#000",
-            padding: ".7rem 0.3rem",
-          },
-        },
-        muiTableBodyCellProps: {
-          sx: {
-            border: "1px solid rgba(203, 201, 201, 0.5)",
-          },
-        },
+      style: {
+        fontWeight: "600",
+        fontSize: "14px",
+        backgroundColor: "#E5E7EB",
+        color: "#000",
+        padding: ".7rem 0.3rem",
+      },
+    },
+    muiTableBodyCellProps: {
+      sx: {
+        border: "1px solid rgba(203, 201, 201, 0.5)",
+      },
+    },
 
-
-
-
-
-
-    
     muiTableProps: {
       sx: {
         "& .MuiTableHead-root": {

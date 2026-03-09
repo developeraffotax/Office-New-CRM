@@ -8,6 +8,8 @@ import { GiBrokenHeart } from "react-icons/gi";
 import { AiTwotoneDelete } from "react-icons/ai";
 import { useState } from "react";
 import { FiPlusSquare } from "react-icons/fi";
+import { Lead_Status } from "./constants/leadStatus";
+import { useLeadUser } from "./contextApi/LeadContext";
 
 export const ActionsCell = ({
   row,
@@ -17,11 +19,10 @@ export const ActionsCell = ({
   handleCopyLead,
   handleLeadStatus,
   handleDeleteLeadConfirmation,
-  selectedTab,
   setClientName,
   setCompanyName,
-  ticketMap,
 }) => {
+  const { selectedTab, ticketMap } = useLeadUser();
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
@@ -66,16 +67,6 @@ export const ActionsCell = ({
           >
             <IoTicketOutline />
           </span>
-
-          {/* BADGE COUNT */}
-          {/* {ticketCount > 0 && (
-    <span
-      className="absolute -top-2 -right-2 bg-sky-600 text-white text-[10px]
-                 font-bold px-[6px] py-[1px] rounded-full shadow-md"
-    >
-      {ticketCount}
-    </span>
-  )} */}
         </div>
 
         <Popover
@@ -87,10 +78,6 @@ export const ActionsCell = ({
             vertical: "bottom",
             horizontal: "left",
           }}
-          // transformOrigin={{
-          //   vertical: 'bottom',
-          //   horizontal: 'left',
-          // }}
         >
           <Typography
             sx={{
@@ -135,12 +122,12 @@ export const ActionsCell = ({
       >
         <GrCopy className="h-5 w-5 text-cyan-500 hover:text-cyan-600 " />
       </span>
-      {selectedTab === "won" ? (
+      {selectedTab === Lead_Status.WON ? (
         <span
           className=""
           title="Progress Lead"
           onClick={() => {
-            handleLeadStatus(row.original._id, "progress");
+            handleLeadStatus(row.original._id, Lead_Status.PROGRESS);
           }}
         >
           <RiProgress3Line className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
@@ -150,19 +137,19 @@ export const ActionsCell = ({
           className=""
           title="Won Lead"
           onClick={() => {
-            handleLeadStatus(row.original._id, "won");
+            handleLeadStatus(row.original._id, Lead_Status.WON);
           }}
         >
           <FaTrophy className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
         </span>
       )}
-      {selectedTab === "lost" ? (
+      {selectedTab === Lead_Status.LOST ? (
         <div className="flex items-center gap-2">
           <span
             className=""
             title="Progress Lead"
             onClick={() => {
-              handleLeadStatus(row.original._id, "progress");
+              handleLeadStatus(row.original._id, Lead_Status.PROGRESS);
             }}
           >
             <RiProgress3Line className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
@@ -173,7 +160,7 @@ export const ActionsCell = ({
           className=""
           title="Lost Lead"
           onClick={() => {
-            handleLeadStatus(row.original._id, "lost");
+            handleLeadStatus(row.original._id, Lead_Status.LOST);
           }}
         >
           <GiBrokenHeart className="h-6 w-6 cursor-pointer text-red-500 hover:text-red-600" />

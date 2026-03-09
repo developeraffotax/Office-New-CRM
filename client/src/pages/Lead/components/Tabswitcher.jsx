@@ -11,6 +11,16 @@ import RefreshLeadsButton from "../ui/RefreshLeadsButton";
 import RenderColumnControls from "./RenderColumnControls";
 import FollowupDateFilter from "../ui/FollowupDateFilter";
 import BulkLeadEditForm from "./BulkLeadEditForm";
+//context api's
+import { useLeadUser } from "../contextApi/LeadContext";
+//contants
+import {
+  DEPARTMENTS,
+  SOURCES,
+  BRANDS,
+  LEAD_SOURCES,
+  LEAD_STAGES,
+} from "../constants/dropdownOptions";
 
 const Tabswitcher = ({
   selectedTab,
@@ -35,20 +45,15 @@ const Tabswitcher = ({
   setActive1,
   setColumnFromOutsideTable,
   getJobHolderCount,
-  selectedUsers,
-  sources,
   getSourceCount,
   sourcePercentage,
   updates,
   isUpdating,
   handleOnChangeUpdate,
   updateBulkLeads,
-  users,
-  departments,
-  brands,
-  leadSource,
-  stages,
 }) => {
+  const { users, selectedUsers } = useLeadUser();
+
   return (
     <>
       <div className="flex items-center  gap-5">
@@ -278,7 +283,7 @@ const Tabswitcher = ({
           <div className="flex flex-col gap-2  py-1 px-4">
             <h3 className="font-semibold text-lg">Lead Source </h3>
             <div className="flex items-center gap-5">
-              {sources.map((source, i) => (
+              {SOURCES.map((source, i) => (
                 <div
                   className={`flex items-center gap-[2px] py-1 px-3 rounded-[2rem] text-white ${
                     source === "Invitation"
@@ -308,11 +313,11 @@ const Tabswitcher = ({
           onChange={handleOnChangeUpdate}
           onSubmit={updateBulkLeads}
           users={users}
-          departments={departments}
-          sources={sources}
-          brands={brands}
-          leadSource={leadSource}
-          stages={stages}
+          departments={DEPARTMENTS}
+          SOURCES={SOURCES}
+          brands={BRANDS}
+          leadSource={LEAD_SOURCES}
+          stages={LEAD_STAGES}
         />
       )}
     </>

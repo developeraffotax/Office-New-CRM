@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useLeadUser } from "../../contextApi/LeadContext";
 import { DateFilterFn } from "../../../../utlis/DateFilterFn";
 import { TiFilter } from "react-icons/ti";
 import toast from "react-hot-toast";
@@ -16,15 +17,14 @@ export const getLeadColumns = (ctx) => {
     brands,
     leadSource,
     auth,
-    
+
     anchorRef,
     handleFilterClick,
-     
+
     NumderFilterFn,
     DateRangePopover,
     valueTotal,
     ActionsCell,
-    selectedTab,
     setClientCompanyName,
     setClientEmail,
     setShowNewTicketModal,
@@ -37,70 +37,58 @@ export const getLeadColumns = (ctx) => {
     setCompanyName,
 
     setEmailPopup,
-    ticketMap
   } = ctx;
 
   return [
-
-
     {
-    id: "leadRef",
-    accessorKey: "leadRef",
-    accessorFn: (row) => row.leadRef || "", // safely handle missing jobRef
-    // header: "Ref",
-    size: 70,
+      id: "leadRef",
+      accessorKey: "leadRef",
+      accessorFn: (row) => row.leadRef || "", // safely handle missing jobRef
+      // header: "Ref",
+      size: 70,
 
-        Header: ({ column }) => {
-      return (
-        <div className="flex flex-col gap-1">
-          <span className="font-semibold">Ref</span>
+      Header: ({ column }) => {
+        return (
+          <div className="flex flex-col gap-1">
+            <span className="font-semibold">Ref</span>
 
-          {/* 🔍 Header Search Input */}
-          <input
-            type="text"
-            
-            className="border font-normal rounded px-2 py-1 text-sm outline-none"
-            value={column.getFilterValue() ?? ""}
-            onChange={(e) => column.setFilterValue(e.target.value)}
-          />
-        </div>
-      );
+            {/* 🔍 Header Search Input */}
+            <input
+              type="text"
+              className="border font-normal rounded px-2 py-1 text-sm outline-none"
+              value={column.getFilterValue() ?? ""}
+              onChange={(e) => column.setFilterValue(e.target.value)}
+            />
+          </div>
+        );
+      },
+      filterFn: refFilterFn,
+
+      // enableColumnFilter: true,
+      // enableSorting: true,
+      // sortingFn: "alphanumeric",
+      Cell: ({ cell }) => {
+        const prefix = "L";
+        const number = cell.getValue();
+        const cellValue = formatRef(prefix, number);
+
+        const handleCopy = () => {
+          if (!number) return;
+          navigator.clipboard.writeText(cellValue);
+          toast.success(`Copied ${cellValue}`);
+        };
+
+        return (
+          <span
+            className=" text-gray-700 font-semibold text-sm cursor-pointer "
+            onClick={handleCopy}
+            title="Click to copy"
+          >
+            {cellValue}
+          </span>
+        );
+      },
     },
-    filterFn: refFilterFn,
-
-
-    // enableColumnFilter: true,
-    // enableSorting: true,
-    // sortingFn: "alphanumeric",
-    Cell: ({ cell }) => {
-
-      const prefix = "L"; 
-      const number = cell.getValue();
-      const cellValue = formatRef(prefix, number);
-
-
-      const handleCopy = () => {
-        if(!number) return;
-        navigator.clipboard.writeText(cellValue);
-        toast.success(`Copied ${cellValue}`);
-      };
-
-
-      return (
-        <span
-        className=" text-gray-700 font-semibold text-sm cursor-pointer "
-        onClick={handleCopy}
-        title="Click to copy"
-      >
-        {cellValue}
-      </span>
-      )
-    },
-    
-  },
-
-
-
 
     {
       accessorKey: "companyName",
@@ -151,10 +139,10 @@ export const getLeadColumns = (ctx) => {
           setShow(false);
         };
 
-         useEffect(() => {
-    // when table refreshes, update local state
-    setLocalCompanyName(companyName);
-  }, [companyName]);
+        useEffect(() => {
+          // when table refreshes, update local state
+          setLocalCompanyName(companyName);
+        }, [companyName]);
 
         return (
           <div className="w-full px-1">
@@ -192,8 +180,6 @@ export const getLeadColumns = (ctx) => {
                 ) : (
                   <div className="text-white w-full h-full">.</div>
                 )}
-
-                
               </div>
             )}
           </div>
@@ -206,46 +192,6 @@ export const getLeadColumns = (ctx) => {
       },
       filterVariant: "select",
     },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     {
       accessorKey: "clientName",
@@ -279,11 +225,11 @@ export const getLeadColumns = (ctx) => {
         );
       },
       Cell: ({ row }) => {
+        const { ticketMap } = useLeadUser();
         const clientName = row.original?.clientName || "";
         const count = ticketMap?.[clientName] ?? 0;
         const hasTickets = count > 0;
-        
-        
+
         const [show, setShow] = useState(false);
         const [localClientName, setLocalClientName] = useState(clientName);
 
@@ -300,12 +246,11 @@ export const getLeadColumns = (ctx) => {
           setShow(false);
         };
 
-
         useEffect(() => {
-    // when table refreshes, update local state
-    setLocalClientName(clientName);
-  }, [clientName]);
-      
+          // when table refreshes, update local state
+          setLocalClientName(clientName);
+        }, [clientName]);
+
         return (
           <div className="w-full px-1">
             {show ? (
@@ -327,55 +272,42 @@ export const getLeadColumns = (ctx) => {
                 className="w-full h-[2.2rem] outline-none rounded-md border-2 px-2 border-blue-950"
               />
             ) : (
-              <div
-                
-                className="cursor-pointer w-full flex justify-between items-center gap-2"
-              >
-                
-
-
-                <span 
-                title={clientName}
-                className={`overflow-hidden ${(auth?.user?.role?.name === 'Admin') ? 'w-[90%]' : "w-full"}`}
-                onDoubleClick={() => setShow(true)}
-                onClick={(event) => {
-                  if (event.ctrlKey) {
-                    navigator.clipboard.writeText(clientName);
-                    toast.success(`Copied to clipboard! | ${clientName}`);
-                  }
-                }}>
-                  
+              <div className="cursor-pointer w-full flex justify-between items-center gap-2">
+                <span
+                  title={clientName}
+                  className={`overflow-hidden ${auth?.user?.role?.name === "Admin" ? "w-[90%]" : "w-full"}`}
+                  onDoubleClick={() => setShow(true)}
+                  onClick={(event) => {
+                    if (event.ctrlKey) {
+                      navigator.clipboard.writeText(clientName);
+                      toast.success(`Copied to clipboard! | ${clientName}`);
+                    }
+                  }}
+                >
                   {localClientName ? (
-                  localClientName
-                ) : (
-                  <div className="text-white w-full h-full">.</div>
-                )}</span>
-
-
-                {
-                  auth?.user?.role?.name === 'Admin' && (
-                    <span 
-                      title="Client's latest ticket"
-                      className="w-[10%] "
-                        onClick={() => {
-
-                          setEmailPopup({
-                            open: true,
-                            email: row.original.email,
-                            clientName: row.original.clientName
-
-                          })
-
-
-                        }}
-                      >
-                
-                  <IoTicket className={`w-4 h-4 hover:text-orange-500 ${hasTickets ? 'text-sky-500' : 'text-gray-600'}`}/>
+                    localClientName
+                  ) : (
+                    <div className="text-white w-full h-full">.</div>
+                  )}
                 </span>
-                  )
-                }
 
-                
+                {auth?.user?.role?.name === "Admin" && (
+                  <span
+                    title="Client's latest ticket"
+                    className="w-[10%] "
+                    onClick={() => {
+                      setEmailPopup({
+                        open: true,
+                        email: row.original.email,
+                        clientName: row.original.clientName,
+                      });
+                    }}
+                  >
+                    <IoTicket
+                      className={`w-4 h-4 hover:text-orange-500 ${hasTickets ? "text-sky-500" : "text-gray-600"}`}
+                    />
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -388,51 +320,6 @@ export const getLeadColumns = (ctx) => {
       },
       filterVariant: "select",
     },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     {
       accessorKey: "jobHolder",
@@ -515,7 +402,11 @@ export const getLeadColumns = (ctx) => {
                 className="w-full cursor-pointer"
                 onDoubleClick={() => setShow(true)}
               >
-                {jobholder ? <span>{jobholder}</span> : <span className="text-white">.</span>}
+                {jobholder ? (
+                  <span>{jobholder}</span>
+                ) : (
+                  <span className="text-white">.</span>
+                )}
               </div>
             )}
           </div>
@@ -576,7 +467,9 @@ export const getLeadColumns = (ctx) => {
       Cell: ({ row }) => {
         const department = row.original.department;
         const [show, setShow] = useState(false);
-        const [localDepartment, setLocalDepartment] = useState(department || "");
+        const [localDepartment, setLocalDepartment] = useState(
+          department || "",
+        );
 
         const handleChange = (e) => {
           const selectedValue = e.target.value;
@@ -601,7 +494,11 @@ export const getLeadColumns = (ctx) => {
                 className="w-full cursor-pointer"
                 onDoubleClick={() => setShow(true)}
               >
-                {department ? <span>{department}</span> : <span className="text-white">.</span>}
+                {department ? (
+                  <span>{department}</span>
+                ) : (
+                  <span className="text-white">.</span>
+                )}
               </div>
             ) : (
               <select
@@ -688,7 +585,11 @@ export const getLeadColumns = (ctx) => {
                 className="w-full cursor-pointer"
                 onDoubleClick={() => setShow(true)}
               >
-                {source ? <span>{source}</span> : <span className="text-white">.</span>}
+                {source ? (
+                  <span>{source}</span>
+                ) : (
+                  <span className="text-white">.</span>
+                )}
               </div>
             ) : (
               <select
@@ -776,7 +677,11 @@ export const getLeadColumns = (ctx) => {
                 className="w-full cursor-pointer"
                 onDoubleClick={() => setShow(true)}
               >
-                {brand ? <span>{brand}</span> : <span className="text-white">.</span>}
+                {brand ? (
+                  <span>{brand}</span>
+                ) : (
+                  <span className="text-white">.</span>
+                )}
               </div>
             ) : (
               <select
@@ -812,8 +717,14 @@ export const getLeadColumns = (ctx) => {
           >
             Recv.
           </span>
-          <button ref={anchorRef} onClick={(e) => handleFilterClick(e, "received")}>
-            <TiFilter size={20} className="ml-1 text-gray-500 hover:text-black" />
+          <button
+            ref={anchorRef}
+            onClick={(e) => handleFilterClick(e, "received")}
+          >
+            <TiFilter
+              size={20}
+              className="ml-1 text-gray-500 hover:text-black"
+            />
           </button>
         </div>
       ),
@@ -838,7 +749,10 @@ export const getLeadColumns = (ctx) => {
             Sent
           </span>
           <button ref={anchorRef} onClick={(e) => handleFilterClick(e, "sent")}>
-            <TiFilter size={20} className="ml-1 text-gray-500 hover:text-black" />
+            <TiFilter
+              size={20}
+              className="ml-1 text-gray-500 hover:text-black"
+            />
           </button>
         </div>
       ),
@@ -873,7 +787,9 @@ export const getLeadColumns = (ctx) => {
             >
               Value
             </span>
-            <span className="border rounded px-2 py-1 text-sm ">{valueTotal}</span>
+            <span className="border rounded px-2 py-1 text-sm ">
+              {valueTotal}
+            </span>
           </div>
         );
       },
@@ -902,7 +818,11 @@ export const getLeadColumns = (ctx) => {
                 className="w-full cursor-pointer flex items-center justify-center"
                 onDoubleClick={() => setShow(true)}
               >
-                {value ? <span>{value}</span> : <span className="text-white">.</span>}
+                {value ? (
+                  <span>{value}</span>
+                ) : (
+                  <span className="text-white">.</span>
+                )}
               </div>
             ) : (
               <input
@@ -977,7 +897,11 @@ export const getLeadColumns = (ctx) => {
                 className="w-full cursor-pointer flex items-center justify-center"
                 onDoubleClick={() => setShow(true)}
               >
-                {number ? <span>{number}</span> : <span className="text-white">.</span>}
+                {number ? (
+                  <span>{number}</span>
+                ) : (
+                  <span className="text-white">.</span>
+                )}
               </div>
             ) : (
               <input
@@ -1063,7 +987,11 @@ export const getLeadColumns = (ctx) => {
                 className="w-full cursor-pointer"
                 onDoubleClick={() => setShow(true)}
               >
-                {lead_Source ? <span>{lead_Source}</span> : <span className="text-white">.</span>}
+                {lead_Source ? (
+                  <span>{lead_Source}</span>
+                ) : (
+                  <span className="text-white">.</span>
+                )}
               </div>
             ) : (
               <select
@@ -1234,90 +1162,90 @@ export const getLeadColumns = (ctx) => {
 
     {
       accessorKey: "followUpDate",
-     Header: ({ column }) => {
-  const filterVal = column.getFilterValue();
+      Header: ({ column }) => {
+        const filterVal = column.getFilterValue();
 
-  const selectRef = useRef(null);
-  const [showPopover, setShowPopover] = useState(false);
-  const [dateRange, setDateRange] = useState({ from: "", to: "" });
+        const selectRef = useRef(null);
+        const [showPopover, setShowPopover] = useState(false);
+        const [dateRange, setDateRange] = useState({ from: "", to: "" });
 
-  // Keep local UI synced if filter set from outside
-  useEffect(() => {
-    if (typeof filterVal === "object") {
-      setDateRange(filterVal || { from: "", to: "" });
-      setShowPopover(true); // show popover again if custom range re-applied
-    }
-  }, [filterVal]);
+        // Keep local UI synced if filter set from outside
+        useEffect(() => {
+          if (typeof filterVal === "object") {
+            setDateRange(filterVal || { from: "", to: "" });
+            setShowPopover(true); // show popover again if custom range re-applied
+          }
+        }, [filterVal]);
 
-  const handleSelectChange = (e) => {
-    const val = e.target.value;
+        const handleSelectChange = (e) => {
+          const val = e.target.value;
 
-    if (val === "Custom Range") {
-      setShowPopover(true);
+          if (val === "Custom Range") {
+            setShowPopover(true);
 
-      // Keep previous range if exists
-      column.setFilterValue(dateRange);
-    } else {
-      setShowPopover(false);
-      column.setFilterValue(val);
-    }
-  };
+            // Keep previous range if exists
+            column.setFilterValue(dateRange);
+          } else {
+            setShowPopover(false);
+            column.setFilterValue(val);
+          }
+        };
 
-  // Trigger filtering immediately when user types
-  const handleRangeChange = (key, value) => {
-    const updated = { ...dateRange, [key]: value };
-    setDateRange(updated);
-    column.setFilterValue(updated);
-  };
+        // Trigger filtering immediately when user types
+        const handleRangeChange = (key, value) => {
+          const updated = { ...dateRange, [key]: value };
+          setDateRange(updated);
+          column.setFilterValue(updated);
+        };
 
-  return (
-    <div className="flex flex-col gap-[2px] relative">
-      <span
-        className="ml-1 cursor-pointer"
-        title="Clear Filter"
-        onClick={() => {
-          column.setFilterValue("");
-          setDateRange({ from: "", to: "" });
-          setShowPopover(false);
-        }}
-      >
-        Follow-Up Date
-      </span>
+        return (
+          <div className="flex flex-col gap-[2px] relative">
+            <span
+              className="ml-1 cursor-pointer"
+              title="Clear Filter"
+              onClick={() => {
+                column.setFilterValue("");
+                setDateRange({ from: "", to: "" });
+                setShowPopover(false);
+              }}
+            >
+              Follow-Up Date
+            </span>
 
-      <select
-        ref={selectRef}
-        className="h-[1.8rem] w-full rounded-md border border-gray-200 font-normal"
-        value={
-          typeof filterVal === "object" ? "Custom Range" : filterVal || ""
-        }
-        onChange={handleSelectChange}
-      >
-        <option value="">Select</option>
-        {column.columnDef.filterSelectOptions.map((opt, i) => (
-          <option key={i} value={opt}>
-            {opt}
-          </option>
-        ))}
-        <option value="Custom Range">Custom Date</option>
-      </select>
+            <select
+              ref={selectRef}
+              className="h-[1.8rem] w-full rounded-md border border-gray-200 font-normal"
+              value={
+                typeof filterVal === "object" ? "Custom Range" : filterVal || ""
+              }
+              onChange={handleSelectChange}
+            >
+              <option value="">Select</option>
+              {column.columnDef.filterSelectOptions.map((opt, i) => (
+                <option key={i} value={opt}>
+                  {opt}
+                </option>
+              ))}
+              <option value="Custom Range">Custom Date</option>
+            </select>
 
-      {showPopover && (
-        <DateRangePopover
-          anchorRef={selectRef}
-          onChange={handleRangeChange}
-          onClose={() => setShowPopover(false)}
-          value={dateRange}
-        />
-      )}
-    </div>
-  );
-},
+            {showPopover && (
+              <DateRangePopover
+                anchorRef={selectRef}
+                onChange={handleRangeChange}
+                onClose={() => setShowPopover(false)}
+                value={dateRange}
+              />
+            )}
+          </div>
+        );
+      },
 
       Cell: ({ cell, row }) => {
         const followUpDate = row.original.followUpDate;
         const [date, setDate] = useState(() => {
           const cellDate = new Date(
-            cell.getValue() || "2024-09-20T12:43:36.002+00:00"
+            cell.getValue() || "2024-09-20T12:43:36.002+00:00",
           );
           return cellDate.toISOString().split("T")[0];
         });
@@ -1358,44 +1286,36 @@ export const getLeadColumns = (ctx) => {
         );
       },
       filterFn: (row, columnId, filterValue) => {
-         
-      
+        const cellValue = row.getValue(columnId);
+        if (!cellValue) return false;
 
-         
+        const cellDate = new Date(cellValue);
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
 
-         const cellValue = row.getValue(columnId);
-  if (!cellValue) return false;
-
-  const cellDate = new Date(cellValue);
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
-
-
-    const startOfToday = new Date(
+        const startOfToday = new Date(
           today.getFullYear(),
           today.getMonth(),
-          today.getDate()
+          today.getDate(),
         );
 
-  // Handle custom range
-  if (typeof filterValue === "object") {
-    const { from, to } = filterValue;
+        // Handle custom range
+        if (typeof filterValue === "object") {
+          const { from, to } = filterValue;
 
-    if (from && !to) {
-      return cellDate >= new Date(from);
-    }
-    if (!from && to) {
-      return cellDate <= new Date(to);
-    }
-    if (from && to) {
-      return (
-        cellDate >= new Date(from) && cellDate <= new Date(to)
-      );
-    }
+          if (from && !to) {
+            return cellDate >= new Date(from);
+          }
+          if (!from && to) {
+            return cellDate <= new Date(to);
+          }
+          if (from && to) {
+            return cellDate >= new Date(from) && cellDate <= new Date(to);
+          }
 
-    return true; // no range selected yet → show all
-  }
+          return true; // no range selected yet → show all
+        }
 
         switch (filterValue) {
           case "Expired":
@@ -1446,7 +1366,7 @@ export const getLeadColumns = (ctx) => {
         "In 15 days",
         "30 Days",
         "60 Days",
-        "Upcoming"
+        "Upcoming",
       ],
       filterVariant: "custom",
       size: 120,
@@ -1493,7 +1413,11 @@ export const getLeadColumns = (ctx) => {
         const dayDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
         return (
           <div className="w-full text-center">
-            {dayDifference >= 0 ? `${dayDifference} Days` : <span className="text-red-500">Expired</span>}
+            {dayDifference >= 0 ? (
+              `${dayDifference} Days`
+            ) : (
+              <span className="text-red-500">Expired</span>
+            )}
           </div>
         );
       },
@@ -1578,7 +1502,11 @@ export const getLeadColumns = (ctx) => {
                 className="w-full cursor-pointer"
                 onDoubleClick={() => setShow(true)}
               >
-                {stage ? <span>{stage}</span> : <span className="text-white">.</span>}
+                {stage ? (
+                  <span>{stage}</span>
+                ) : (
+                  <span className="text-white">.</span>
+                )}
               </div>
             ) : (
               <select
@@ -1726,9 +1654,13 @@ export const getLeadColumns = (ctx) => {
         const startOfToday = new Date(
           today.getFullYear(),
           today.getMonth(),
-          today.getDate()
+          today.getDate(),
         );
-        if (typeof filterValue === "object" && filterValue.from && filterValue.to) {
+        if (
+          typeof filterValue === "object" &&
+          filterValue.from &&
+          filterValue.to
+        ) {
           const fromDate = new Date(filterValue.from);
           const toDate = new Date(filterValue.to);
           return cellDate >= fromDate && cellDate <= toDate;
@@ -1919,9 +1851,13 @@ export const getLeadColumns = (ctx) => {
         const startOfToday = new Date(
           today.getFullYear(),
           today.getMonth(),
-          today.getDate()
+          today.getDate(),
         );
-        if (typeof filterValue === "object" && filterValue.from && filterValue.to) {
+        if (
+          typeof filterValue === "object" &&
+          filterValue.from &&
+          filterValue.to
+        ) {
           const fromDate = new Date(filterValue.from);
           const toDate = new Date(filterValue.to);
           return cellDate >= fromDate && cellDate <= toDate;
@@ -1993,11 +1929,8 @@ export const getLeadColumns = (ctx) => {
           handleCopyLead={handleCopyLead}
           handleLeadStatus={handleLeadStatus}
           handleDeleteLeadConfirmation={handleDeleteLeadConfirmation}
-          selectedTab={selectedTab}
           setClientName={setClientName}
           setCompanyName={setCompanyName}
-
-          ticketMap={ticketMap}
         />
       ),
       size: 240,
@@ -2179,9 +2112,16 @@ export const getLeadColumns = (ctx) => {
                 />
               </form>
             ) : (
-              <div onDoubleClick={() => setShow(true)} className="cursor-pointer w-full">
+              <div
+                onDoubleClick={() => setShow(true)}
+                className="cursor-pointer w-full"
+              >
                 {note ? (
-                  note.length > 46 ? <span>{note.slice(0, 46)}...</span> : <span>{note}</span>
+                  note.length > 46 ? (
+                    <span>{note.slice(0, 46)}...</span>
+                  ) : (
+                    <span>{note}</span>
+                  )
                 ) : (
                   <div className="text-white w-full h-full">.</div>
                 )}
@@ -2201,5 +2141,3 @@ export const getLeadColumns = (ctx) => {
 };
 
 export default getLeadColumns;
-
-

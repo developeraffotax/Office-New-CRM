@@ -2,9 +2,10 @@
 
 import express from "express";
 import { isAdmin, requiredSignIn } from "../../middlewares/authMiddleware.js";
-import {   deleteThread, getMailbox, getMailboxUserCounts, getSentItems, getUnreadCounts, markThreadAsRead, updateThreadMetadata } from "../controllers/email.controller.js";
+import {   deleteThread, getMailbox, getMailboxUserCounts, getSentItems, getThreadMessageUsers, getUnreadCounts, markThreadAsRead, updateThreadMetadata } from "../controllers/email.controller.js";
 import { reply } from "../controllers/reply.controller.js";
 import { forward } from "../controllers/forward.controller.js";
+ 
  
  
 
@@ -41,6 +42,10 @@ router.get("/unread-counts", requiredSignIn,   getUnreadCounts);
 router.get("/mailbox-user-counts", requiredSignIn, getMailboxUserCounts);
 
 
+
+
+
+router.get("/thread-message-users", getThreadMessageUsers);
 
 
 export default router;

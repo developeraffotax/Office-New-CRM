@@ -10,6 +10,7 @@ import { scheduleNotification } from "../../utils/customFns/scheduleNotification
 import { createNotification } from "../utils/createNotification.js";
 import { emitToAll, emitToUser } from "../../utils/socketEmitter.js";
 import Comment from "../models/Comment.js";
+import EmailMessage from "../models/EmailMessage.js";
 
 /**
  * GET /api/email/inbox
@@ -607,6 +608,77 @@ export const getMailboxUserCounts = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch mailbox counts",
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getThreadMessageUsers = async (req, res) => {
+  try {
+    const { threadId, companyName } = req.query;
+
+    if (!threadId || !companyName) {
+      return res.status(400).json({
+        success: false,
+        message: "threadId and companyName are required",
+      });
+    }
+
+
+    // get messages
+    const messages = await EmailMessage.find({
+      gmailThreadId: threadId,
+      companyName: companyName
+    })
+
+    // build map
+    const messageUserMap = {};
+
+    messages.forEach((msg) => {
+      messageUserMap[msg.gmailMessageId] = msg.senderName || "";
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: messageUserMap,
+    });
+
+  } catch (error) {
+    console.error("getThreadMessageUsers error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
     });
   }
 };

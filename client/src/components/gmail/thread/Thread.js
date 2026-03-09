@@ -45,6 +45,10 @@ const [loadingMore, setLoadingMore] = useState(false);
   const [showReplyEditor, setShowReplyEditor] = useState(false);
   const [showStickyReply, setShowStickyReply] = useState(false);
 
+
+  const [messageUsers, setMessageUsers] = useState({});
+
+
   const scrollContainerRef = useRef(null);
   const threadRef = useRef(null);
 
@@ -153,6 +157,7 @@ useEffect(() => {
   setPage(1);
   getEmailDetail(1, false);
   markAsRead(threadId, company);
+   getMessageUsers();   // 👈 add this
 }, [threadId, company]);
 
 
@@ -257,6 +262,69 @@ const handleLoadMore = async () => {
     }));
   };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const getMessageUsers = async () => {
+  try {
+    const { data } = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/v1/gmail/thread-message-users`,
+      {
+        params: {
+          threadId,
+          companyName: company,
+        },
+      }
+    );
+
+    if (data?.success) {
+      console.log("DATA RECEIVED", data)
+      setMessageUsers(data.data || {});
+    }
+  } catch (error) {
+    console.error("Failed to fetch message users", error);
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <div
       className="relative w-full h-full flex flex-col bg-slate-50 "
@@ -325,7 +393,7 @@ const handleLoadMore = async () => {
             const isLast = i === emailDetail.decryptedMessages.length - 1;
 
 
-
+            const crmUserName = messageUsers[message.id];
 
             // Inside your map loop where you find fromHeader and toHeader:
             const headersArr = message?.payload?.headers || [];
@@ -369,15 +437,16 @@ const handleLoadMore = async () => {
                       </div>
                       <div className="flex flex-col">
                         {separate(fromHeader)}
-                        {/* <span className="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
-                          to {isSentByMe ? toHeader : "me"}{" "}
-                          <FaCaretDown className="cursor-pointer" />
-                        </span> */}
+                         
+
+
 
                         <EmailHeaderDetails details={headerDetails} />
                       </div>
                     </div>
+                    
 
+                    <div  className="flex flex-col  gap-0 items-start">  
                     <div className="flex justify-end gap-3 items-center">
                       <EmailTimeDisplay internalDate={message?.internalDate} />
                       <span className="border-l w-1 h-5 border-gray-400"></span>
@@ -391,7 +460,16 @@ const handleLoadMore = async () => {
                       >
                         <TbArrowForwardUp className="w-5 h-5" />
                       </button>
+
+
+                         
                     </div>
+
+                       {crmUserName && ( <span className="  text-gray-400 text-xs  ">Sent by {crmUserName} </span> ) }
+
+                    </div>
+
+  
                   </div>
 
                   {/* Body Content - Visible Part */}

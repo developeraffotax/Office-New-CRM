@@ -4,6 +4,7 @@ import {
 } from "../utils/buildGmailReply.js";
 import { getGmailClient } from "../services/gmail.service.js";
 import ticketActivityModel from "../../models/ticketActivityModel.js";
+import { saveEmailMessage } from "../utils/saveEmailMessage.js";
 
 export async function reply(req, res) {
   const {
@@ -23,6 +24,7 @@ export async function reply(req, res) {
   } = req.body;
 
   const userName = req.user.user.name;
+
   const gmail = await getGmailClient(companyName);
 
   const raw = buildGmailReply({
@@ -43,6 +45,13 @@ export async function reply(req, res) {
       raw,
       threadId,
     },
+  });
+
+  await saveEmailMessage({
+    gmailThreadId: threadId,
+    gmailMessageId: response?.data?.id,
+    userName,
+    companyName,
   });
 
   if (ticketId) {
@@ -71,10 +80,6 @@ export async function reply(req, res) {
         `,
     });
   }
-
-
-
-
 
   res.status(200).json({ success: true });
 }

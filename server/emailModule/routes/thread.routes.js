@@ -1,9 +1,13 @@
-import express from "express";
-import { getThreadDetails } from "../controllers/thread.controller.js";
+// import express from "express";
+// import { getThreadDetails, getThreadMessageUsers } from "../controllers/thread.controller.js";
  
 
-const router = express.Router();
+// const router = express.Router();
 
-router.get("/:threadId/:company", getThreadDetails);
+// router.get("/:threadId/:company", getThreadDetails);
 
-export default router;
+
+
+// router.get("/thread-message-users", getThreadMessageUsers);
+
+// export default router;

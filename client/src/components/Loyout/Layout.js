@@ -28,7 +28,7 @@ const formatTimer = (ms = 0) => {
   const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
   const s = String(totalSeconds % 60).padStart(2, "0");
 
-  return `${h}:${m}:${s} ⏱`;
+  return `${h}:${m}:${s}`;
 };
 
 /* ---------------- Layout ---------------- */
@@ -51,6 +51,7 @@ export default function Layout() {
   const { timer, elapsed } = useSelector((state) => state.globalTimer);
   const isRunning = timer?.isRunning;
 
+ 
   /* Settings */
   const { settings } = useSelector((state) => state.settings);
   const { showCrmNotifications = true, showEmailNotifications = true } =
@@ -94,17 +95,20 @@ export default function Layout() {
 
     let mainTitle = isRunning ? formatTimer(elapsed) : "Affotax-CRM";
 
+
+    if (timer) {
+      mainTitle = `${mainTitle} | ${ timer?.task || timer?.clientName}`
+
+    }
+
     if( unread_notifications_count > 0 ) {
-document.title =
-      `${mainTitle} | 🔔 (${unread_notifications_count})`
+      document.title = `(${unread_notifications_count})🔔 ${mainTitle})`
         
     } else {
       document.title = mainTitle;
     }
 
- 
 
-    
   }, [elapsed, isRunning, unread_notifications_count,]);
 
 

@@ -74,6 +74,7 @@ const [loading, setLoading] = useState({
   deleting: false,
   fetching: false,
   updating: false,
+  completing: false,
   
 });
   const [pagination, setPagination] = useState({});
@@ -272,6 +273,80 @@ const filters = useMemo(() => {
     }
   };
 
+
+
+
+
+
+  const completeThread = async (
+    threadId,
+    companyName,
+    includeConfirmation = true,
+  ) => {
+    if (!threadId) return;
+
+    // ✅ Only show Swal if confirmation is required
+    if (includeConfirmation) {
+      const { isConfirmed } = await Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "success",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, complete it!",
+      });
+
+      if (!isConfirmed) return;
+    }
+
+    try {
+      // ✅ set only deleting true
+    setLoading((prev) => ({ ...prev, completing: true }));
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/gmail/complete/${companyName}/${threadId}`,
+      );
+
+      if (data?.success) {
+         setThreads((prev) => prev.filter((t) => t.threadId !== threadId));
+
+        toast.success("Thread completed successfully!");
+      }
+    } catch (error) {
+      console.error("Failed to complete thread:", error);
+      toast.error("Failed to complete thread!");
+    } finally {
+      setLoading((prev) => ({ ...prev, completing: false }));
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // ---------------- Initial fetch & filter change ----------------
   useEffect(() => {
     fetchThreads();
@@ -417,6 +492,7 @@ useEffect(() => {
     fetchThreads,
     markAsRead,
     deleteThread,
+    completeThread,
     folder, // optional but useful
     companyName,
   };

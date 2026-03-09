@@ -36,6 +36,7 @@ export default function List({
   setCreateTicketModal,
   setCreateLeadModal,
   deleteThread,
+  completeThread,
   filters,
   selectedThreads,
   toggleThread,
@@ -69,6 +70,7 @@ export default function List({
           users={users}
           handleUpdateThread={handleUpdateThread}
           deleteThread={deleteThread}
+          completeThread={completeThread}
           categories={categories}
           filters={filters}
           setEmailDetail={setEmailDetail}

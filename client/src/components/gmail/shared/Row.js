@@ -11,6 +11,7 @@ import AttachmentChip from "./attachments/AttachmentChip";
 import { MdDeleteOutline } from "react-icons/md";
 import { useSearchParams } from "react-router-dom";
 import { ReplyPopup } from "../reply/ReplyPopup";
+import { FaCheckCircle } from "react-icons/fa";
  
 function parseEmail(str) {
   if (!str) return "";
@@ -44,6 +45,7 @@ export default function Row({
   setCreateTicketModal,
   setCreateLeadModal,
   deleteThread,
+  completeThread,
   filters,
   selected,
   toggleSelect,
@@ -116,6 +118,7 @@ const folder = searchParams.get("folder") || "inbox";
     setUpdating(false);
   };
 
+ 
   //  hover:shadow-[inset_4px_0_0_0_#3b82f6]
 
   return (
@@ -420,6 +423,18 @@ const folder = searchParams.get("folder") || "inbox";
               }}
             >
               <MdDeleteOutline className="size-5   " />
+            </button>
+
+
+
+             <button
+              className="p-1 rounded-md   text-gray-500  hover:text-green-500"
+              title="Complete Thread"
+              onClick={(e) => {
+                completeThread(thread?.threadId, thread?.companyName);
+              }}
+            > 
+              <FaCheckCircle className="size-4   " />
             </button>
 
             {menuOpen && (

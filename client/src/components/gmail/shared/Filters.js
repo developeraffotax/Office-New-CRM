@@ -321,8 +321,8 @@ React.useEffect(() => {
           
         
           {[
-            { label: "Y", title: "Yesterday", value: -1 },
             { label: "T", title: "Today", value: 0 },
+            { label: "Y", title: "Yesterday", value: -1 },
             { label: "3D", title: "Last 3 Days", value: 3 },
             { label: "7D", title: "Last 7 Days", value: 7 },
           ].map((range) => {

@@ -90,7 +90,7 @@ export default function Sidebar({ hide, setHide }) {
   const [isActive, setIsActive] = useState(false);
   const user = auth?.user;
   const [ticketNitification, setTicketNotification] = useState([]);
-  console.log(user)
+ 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const location = useLocation();

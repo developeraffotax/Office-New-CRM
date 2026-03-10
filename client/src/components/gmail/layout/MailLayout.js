@@ -1,4 +1,3 @@
- 
 import { useRef, useState } from "react";
 import Sidebar from "../shared/Sidebar";
 import Filters from "../shared/Filters";
@@ -8,11 +7,10 @@ import Thread from "../thread/Thread";
 import CreateTicketModal from "../shared/CreateTicketModal";
 import CreateLeadModal from "../shared/CreateLeadModal";
 import { HiOutlineMailOpen, HiOutlineTrash } from "react-icons/hi";
- import { IoMdClose } from "react-icons/io";
+import { IoMdClose } from "react-icons/io";
 import { SelectionHeader } from "../shared/FloatingSelectionToolbar";
 import CommentList from "../comments/CommentList";
 import { useSelector } from "react-redux";
- 
 
 export default function MailLayout({
   users,
@@ -28,78 +26,68 @@ export default function MailLayout({
   deleteThread,
 
   companyName,
-  folder
+  folder,
 }) {
   const [emailDetail, setEmailDetail] = useState({
     threadId: "",
     show: false,
     subject: "",
-    participants: []
+    participants: [],
+
+    mongoThreadId: null,
+    userId: null,
+    category: ""
   });
 
-
-
-    const {
+  const {
     auth: { user },
   } = useSelector((state) => state.auth);
-  
- 
-   const [createTicketModal, setCreateTicketModal] = useState({
+
+  const [createTicketModal, setCreateTicketModal] = useState({
     _id: "",
     isOpen: false,
-    form: {}
-   });
-
-
-   const [createLeadModal, setCreateLeadModal] = useState({
-    _id: "",
-    isOpen: false,
-    form: {}
-   });
-
-
-
-   // Inside your Threads List component
-const [comment , setComment] = useState({
-  show: false,
-  threadId: null,
-  threadSubject: ""
-});
-
-
-
-   const [selectedThreads, setSelectedThreads] = useState(new Set());
-const lastSelectedIndexRef = useRef(null);
-
-const toggleThread = (threadId, index, event) => {
-  setSelectedThreads((prev) => {
-    const next = new Set(prev);
-
-    // SHIFT + CLICK → range select
-    if (event.shiftKey && lastSelectedIndexRef.current !== null) {
-      const start = Math.min(lastSelectedIndexRef.current, index);
-      const end = Math.max(lastSelectedIndexRef.current, index);
-
-      threads.slice(start, end + 1).forEach((t) => {
-        next.add(t._id);
-      });
-    } else {
-      // Normal toggle
-      next.has(threadId) ? next.delete(threadId) : next.add(threadId);
-      lastSelectedIndexRef.current = index; // ✅ sync + reliable
-    }
-
-    return next;
+    form: {},
   });
-};
 
+  const [createLeadModal, setCreateLeadModal] = useState({
+    _id: "",
+    isOpen: false,
+    form: {},
+  });
 
+  // Inside your Threads List component
+  const [comment, setComment] = useState({
+    show: false,
+    threadId: null,
+    threadSubject: "",
+  });
 
-const clearSelection = () => setSelectedThreads(new Set());
+  const [selectedThreads, setSelectedThreads] = useState(new Set());
+  const lastSelectedIndexRef = useRef(null);
 
+  const toggleThread = (threadId, index, event) => {
+    setSelectedThreads((prev) => {
+      const next = new Set(prev);
 
+      // SHIFT + CLICK → range select
+      if (event.shiftKey && lastSelectedIndexRef.current !== null) {
+        const start = Math.min(lastSelectedIndexRef.current, index);
+        const end = Math.max(lastSelectedIndexRef.current, index);
 
+        threads.slice(start, end + 1).forEach((t) => {
+          next.add(t._id);
+        });
+      } else {
+        // Normal toggle
+        next.has(threadId) ? next.delete(threadId) : next.add(threadId);
+        lastSelectedIndexRef.current = index; // ✅ sync + reliable
+      }
 
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedThreads(new Set());
 
   return (
     <div className="flex h-[105vh] bg-white overflow-hidden">
@@ -113,17 +101,15 @@ const clearSelection = () => setSelectedThreads(new Set());
           categories={categories}
         />
 
-
         {/* The Selection Component fits here */}
-  <SelectionHeader 
-    selectedThreads={selectedThreads}
-    threads={threads}
-    markAsRead={markAsRead}
-    markAsUnread={markAsUnread}
-    deleteThread={deleteThread}
-    clearSelection={clearSelection}
-  />
-
+        <SelectionHeader
+          selectedThreads={selectedThreads}
+          threads={threads}
+          markAsRead={markAsRead}
+          markAsUnread={markAsUnread}
+          deleteThread={deleteThread}
+          clearSelection={clearSelection}
+        />
 
         <List
           loading={loading}
@@ -132,16 +118,12 @@ const clearSelection = () => setSelectedThreads(new Set());
           categories={categories}
           handleUpdateThread={handleUpdateThread}
           deleteThread={deleteThread}
-           
           filters={filters}
-
           setEmailDetail={setEmailDetail}
           setCreateTicketModal={setCreateTicketModal}
           setCreateLeadModal={setCreateLeadModal}
-
           selectedThreads={selectedThreads}
           toggleThread={toggleThread}
-
           setComment={setComment}
         />
 
@@ -149,84 +131,81 @@ const clearSelection = () => setSelectedThreads(new Set());
       </div>
 
       {emailDetail.show && (
-         
-
-          <Thread
-          
+        <Thread
           company={companyName}
           threadId={emailDetail.threadId}
           subject={emailDetail.subject}
+
+          mongoThreadId={emailDetail.mongoThreadId}
+          userId={emailDetail.userId}
+          categories={categories}
+          category={emailDetail.category}
+
           setShowEmailDetail={() =>
             setEmailDetail({ threadId: "", show: false, subject: "" })
           }
-
           markAsRead={markAsRead}
-          
+          users={users} // ✅ add
+          handleUpdateThread={handleUpdateThread} // ✅ add
         />
-
-        
       )}
-
-
-
 
       {/* Ticket Modal */}
       {createTicketModal.isOpen && (
         <CreateTicketModal
           createTicketModal={createTicketModal}
           setCreateTicketModal={setCreateTicketModal}
-          
           handleUpdateThread={handleUpdateThread}
           users={users}
           myCompany={companyName}
         />
       )}
 
-
-
-        {/* Lead Modal */}
+      {/* Lead Modal */}
       {createLeadModal.isOpen && (
         <CreateLeadModal
           createLeadModal={createLeadModal}
           setCreateLeadModal={setCreateLeadModal}
           handleUpdateThread={handleUpdateThread}
-           
           users={users}
           myCompany={companyName}
         />
       )}
 
-
-
-
       {/* Comments */}
-      <CommentList threadSubject={comment.threadSubject} threadId={comment.threadId} users={users} currentUserId={user.id} onClose={() => setComment({
-        show: false,
-        threadId: null
-      })}/>
+      <CommentList
+        threadSubject={comment.threadSubject}
+        threadId={comment.threadId}
+        users={users}
+        currentUserId={user.id}
+        onClose={() =>
+          setComment({
+            show: false,
+            threadId: null,
+          })
+        }
+      />
 
-{loading.deleting && (
-  <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-    <div className="flex items-center gap-3 px-4 py-2 bg-black text-white text-sm font-medium rounded-lg shadow-lg animate-pulse">
-      <div className="w-3 h-3 bg-white rounded-full animate-bounce" />
-      Deleting thread...
-    </div>
-  </div>
-)}
+      {loading.deleting && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="flex items-center gap-3 px-4 py-2 bg-black text-white text-sm font-medium rounded-lg shadow-lg animate-pulse">
+            <div className="w-3 h-3 bg-white rounded-full animate-bounce" />
+            Deleting thread...
+          </div>
+        </div>
+      )}
 
-
-{loading.updating && (
-  <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-    <div className="flex items-center gap-3 px-4 py-2 bg-black text-white text-sm font-medium rounded-lg shadow-lg animate-pulse">
-      <div className="w-3 h-3 bg-emerald-400 rounded-full animate-bounce" />
-      Updating thread...
-    </div>
-  </div>
-)}
+      {loading.updating && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="flex items-center gap-3 px-4 py-2 bg-black text-white text-sm font-medium rounded-lg shadow-lg animate-pulse">
+            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-bounce" />
+            Updating thread...
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
 
 // 19c423082427fd80
 

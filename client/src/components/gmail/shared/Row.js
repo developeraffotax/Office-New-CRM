@@ -13,6 +13,8 @@ import { useSearchParams } from "react-router-dom";
 import { ReplyPopup } from "../reply/ReplyPopup";
 import { FaCheckCircle, FaUndoAlt } from "react-icons/fa";
 import Swal from "sweetalert2";
+import AssignUser from "./ui/AssignUser";
+import AssignCategory from "./ui/AssignCategory";
  
 function parseEmail(str) {
   if (!str) return "";
@@ -105,20 +107,7 @@ const folder = searchParams.get("folder") || "inbox";
     ? threadCategory.name.charAt(0).toUpperCase() + threadCategory.name.slice(1)
     : "";
 
-  // ---------------- LOCAL UPDATE HANDLERS ----------------
-  const updateCategory = async (newCategory) => {
-    setUpdating(true);
-    await handleUpdateThread(thread._id, { category: newCategory });
-    setUpdating(false);
-  };
-
-  const updateUser = async (newUserId) => {
-    setAssignOpen(false);
-    setUpdating(true);
-    await handleUpdateThread(thread._id, { userId: newUserId });
-    setUpdating(false);
-  };
-
+ 
 
   const updateStatus = async (status) => {
   // ✅ Only show Swal if confirmation is required
@@ -222,6 +211,10 @@ const folder = searchParams.get("folder") || "inbox";
               show: true,
               subject: thread?.subject || "No Subject",
               participants: thread.participants,
+
+              mongoThreadId: thread?._id,
+              userId: thread?.userId,
+              category: thread?.category
             })
           }
         >
@@ -361,75 +354,31 @@ const folder = searchParams.get("folder") || "inbox";
 
 
 
+ 
+          <AssignCategory
+            categories={categories}
+            mongoThreadId={thread._id}
+            currentCategory={thread?.category}
+            handleUpdateThread={handleUpdateThread}
 
-          {/* Quick Category Selector */}
-          <div className="relative flex items-center bg-white border border-gray-200 rounded-md shadow-sm overflow-hidden hover:border-gray-300">
-            <select
-              className="appearance-none text-xs pl-2 pr-6 py-1 bg-transparent cursor-pointer outline-none"
-              value={thread.category}
-              onClick={(e) => e.stopPropagation()}
-             
-              onChange={(e) => {
-                e.stopPropagation();
-                updateCategory(e.target.value);
-              }}
+             onToggle={(isOpen) => setAssignOpen(isOpen)}
 
-            >
-              <option value="">Select</option>
-              {categories.map((category) => (
-                <option key={category.name} value={category.name}>
-                  {category.name[0].toUpperCase() + category.name.slice(1)}
-                </option>
-              ))}
-            </select>
-            <FiChevronDown className="absolute right-1.5 pointer-events-none text-gray-400 size-3" />
-          </div>
+          />
 
-          {/* Assign User Dropdown */}
+           
+             <AssignUser
+                      users={users}
+                      mongoThreadId={thread?._id}
+                      currentUserId={thread?.userId}
+                      handleUpdateThread={handleUpdateThread}
+                      onToggle={(isOpen) => setAssignOpen(isOpen)}
+                       
+                    />
           {/* Actions (hover only) */}
           <div className="flex items-center gap-1.5   transition-opacity">
-            {/* Assign User Button */}
-            <div className="relative">
-              <button
-                title="Assign User"
-                className={clsx(
-                  "p-1.5 rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 transition-colors shadow-sm",
-                  assignOpen && "ring-2 ring-blue-500/20 border-blue-500",
-                )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setAssignOpen(!assignOpen);
-                }}
-              >
-                <FiUserPlus className="size-4" />
-              </button>
+            
 
-              {assignOpen && (
-                <div
-                  className="absolute right-0 top-full mt-2 w-56 max-h-96 overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-xl z-50 py-1"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    Assign to...
-                  </div>
-                  {users.map((user, i) => (
-                    <button
-                      key={user._id}
-                      className={clsx(
-                        "w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors border-b last:border-0",
-                        thread.userId === user._id
-                          ? "text-blue-600 font-semibold bg-blue-50/50"
-                          : "text-gray-700",
-                      )}
-                      disabled={updating}
-                      onClick={() => updateUser(user._id)}
-                    >
-                      {user.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+
 
             {/* Create Ticket Button */}
             <button
@@ -492,7 +441,7 @@ const folder = searchParams.get("folder") || "inbox";
 
           {/* More Options */}
           <div className="relative">
-            <button
+            {/* <button
               className="p-1 rounded-md hover:bg-gray-200 text-gray-500"
               onClick={(e) => {
                 e.stopPropagation();
@@ -500,7 +449,7 @@ const folder = searchParams.get("folder") || "inbox";
               }}
             >
               <FiMoreVertical className="size-4" />
-            </button>
+            </button> */}
 
             <button
               className="p-1 rounded-md hover:bg-gray-200 text-gray-500  hover:text-red-500"
@@ -542,28 +491,14 @@ const folder = searchParams.get("folder") || "inbox";
 
            
 
-            {menuOpen && (
+            {/* {menuOpen && (
               <div
                 className="absolute right-0 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-lg z-50"
                 onClick={(e) => e.stopPropagation()}
               >
-                <button
-                  disabled={updating || !thread.userId}
-                  onClick={async () => {
-                    setMenuOpen(false);
-                    await updateUser(null); // remove assigned user
-                  }}
-                  className={clsx(
-                    "w-full px-3 py-2 text-left text-sm transition-colors rounded-lg",
-                    thread.userId
-                      ? "text-red-600 hover:bg-red-50"
-                      : "text-gray-300 cursor-not-allowed",
-                  )}
-                >
-                  Remove user
-                </button>
+                
               </div>
-            )}
+            )} */}
           </div>
         </div>
 

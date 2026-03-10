@@ -17,6 +17,8 @@ import { useEscapeKey } from "../../../utlis/useEscapeKey.js";
 import { useClickOutside } from "../../../utlis/useClickOutside.js";
 import { gmailParser } from "../utils/gmailParser.js";
 import EmailHeaderDetails from "./EmailHeaderDetails.js";
+import AssignUser from "../shared/ui/AssignUser.js";
+import AssignCategory from "../shared/ui/AssignCategory.js";
 
 export default function Thread({
   company,
@@ -24,11 +26,20 @@ export default function Thread({
   subject,
   setShowEmailDetail,
   markAsRead,
+  users,
+  handleUpdateThread,
+  mongoThreadId,
+  userId,
+  categories,
+  category
 }) {
 
   const [page, setPage] = useState(1);
 const [hasMore, setHasMore] = useState(false);
 const [loadingMore, setLoadingMore] = useState(false);
+
+ 
+
 
 
   const [emailDetail, setEmailDetail] = useState([]);
@@ -343,7 +354,34 @@ const getMessageUsers = async () => {
             {subject}
           </h2>
         </div>
-         
+
+          <div className=" flex justify-center items-center gap-4 ">
+
+            
+                   
+
+        <AssignUser
+          users={users}
+          mongoThreadId={mongoThreadId}
+          currentUserId={userId}
+          handleUpdateThread={handleUpdateThread}
+          showLabel
+        />
+
+           <AssignCategory
+                    categories={categories}
+                    mongoThreadId={mongoThreadId}
+                    currentCategory={category}
+                    handleUpdateThread={handleUpdateThread}
+        
+                      
+        
+                  />
+        
+
+          </div>
+
+        
       </header>
 
       {/* Thread Content */}

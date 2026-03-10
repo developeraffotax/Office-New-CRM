@@ -241,7 +241,7 @@ React.useEffect(() => {
       >
         <Stack
           direction="row"
-          spacing={2}
+          spacing={1}
           alignItems="center"
           flexWrap="wrap"
           sx={{ mb: hasActiveFilters ? 2 : 0 }}
@@ -318,77 +318,59 @@ React.useEffect(() => {
             </Select>
           </FormControl>
 
-          {/* 2. User Select */}
-         {
-          isAdmin && (
-             <FormControl size="small" sx={{ minWidth: 160 }}>
-            <Select
-              value={filters.userId || ""}
-              displayEmpty
-              onChange={(e) => handleUpdate({ userId: e.target.value })}
-              IconComponent={FiChevronDown}
-              renderValue={(selected) => {
-                const user = users.find((u) => u._id === selected);
-              
-                if (!selected) {
-                  return (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        opacity: 0.7,
-                      }}
-                    >
-                      <FiUser size={14} />
-                      <Typography variant="body2">All</Typography>
-                    </Box>
-                  );
-                }
-                if (selected === "unassigned") {
-                  return (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        opacity: 0.7,
-                      }}
-                    >
-                      <FiUser size={14} />
-                      <Typography variant="body2">Unassigned</Typography>
-                    </Box>
-                  );
-                }
-                return (
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <FiUser size={14} color="#10b981" />
-                    <Typography variant="body2" noWrap>
-                      {user?.name || user?.email || "User"}
-                    </Typography>
-                  </Box>
-                );
-              }}
-              sx={selectStyle}
-            >
-              <MenuItem value="">
-                <Typography variant="body2" fontWeight={600}>
-                  All
-                </Typography>
-              </MenuItem>
-              <MenuItem sx={{
-                borderBottom: 1,
-                borderColor: "#ddd"
-              }} value={"unassigned"}> Unassigned </MenuItem>
-              {users.map((u) => (
-                <MenuItem key={u._id} value={u._id}>
-                  <Typography variant="body2">{u.name || u.email}</Typography>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          )
-         }
+          
+        
+          {[
+            { label: "Y", title: "Yesterday", value: -1 },
+            { label: "T", title: "Today", value: 0 },
+            { label: "3D", title: "Last 3 Days", value: 3 },
+            { label: "7D", title: "Last 7 Days", value: 7 },
+          ].map((range) => {
+            const isActive = (() => {
+              if (!filters.startDate) return false;
+              const now = dayjs();
+              let expectedStart;
+              if (range.value === 0) expectedStart = now.startOf("day");
+              else if (range.value === -1) expectedStart = now.subtract(1, "day").startOf("day");
+              else expectedStart = now.subtract(range.value, "day").startOf("day");
+              return dayjs(filters.startDate).isSame(expectedStart, "minute");
+            })();
+
+            return (
+              <Tooltip key={range.label} title={range.title}>
+                <Button
+                  size="small"
+                  onClick={() => applyPreset(range.value)}
+                  sx={{
+                    minWidth: 36,
+                    width: 36,
+                    height: 36,
+                    p: 0,
+                    borderRadius: "8px",
+                    textTransform: "none",
+                    fontWeight: 700,
+                    fontSize: "0.72rem",
+                    border: "1px solid",
+                    borderColor: isActive ? "primary.main" : "rgba(0,0,0,0.15)",
+                    color: isActive ? "primary.main" : "text.secondary",
+                    bgcolor: isActive
+                      ? (theme) => alpha(theme.palette.primary.main, 0.08)
+                      : "transparent",
+                    "&:hover": {
+                      bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
+                      borderColor: "primary.main",
+                      color: "primary.main",
+                    },
+                  }}
+                >
+                  {range.label}
+                </Button>
+              </Tooltip>
+            );
+          })}
+
+
+          
 
           {/* Date Picker Trigger */}
           <Button
@@ -833,3 +815,14 @@ React.useEffect(() => {
     </LocalizationProvider>
   );
 }
+
+
+
+
+
+
+
+
+
+
+

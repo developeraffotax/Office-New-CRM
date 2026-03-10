@@ -11,7 +11,7 @@ import AttachmentChip from "./attachments/AttachmentChip";
 import { MdDeleteOutline } from "react-icons/md";
 import { useSearchParams } from "react-router-dom";
 import { ReplyPopup } from "../reply/ReplyPopup";
-import { FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle, FaUndoAlt } from "react-icons/fa";
 import Swal from "sweetalert2";
  
 function parseEmail(str) {
@@ -130,7 +130,7 @@ const folder = searchParams.get("folder") || "inbox";
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, complete it!",
+        confirmButtonText: "Yes, do it!",
       });
 
       if (!isConfirmed) return;
@@ -513,8 +513,9 @@ const folder = searchParams.get("folder") || "inbox";
             </button>
 
 
-
-             <button
+              {
+                thread?.status === "progress" ? (
+                  <button
               className="p-1 rounded-md   text-gray-500  hover:text-green-500"
               title="Complete Thread"
               onClick={(e) => {
@@ -523,6 +524,23 @@ const folder = searchParams.get("folder") || "inbox";
             > 
               <FaCheckCircle className="size-4   " />
             </button>
+                ) : (
+                   <button
+              className="p-1 rounded-md   text-gray-500  hover:text-red-500"
+              title="Undo Complete"
+              onClick={(e) => {
+                updateStatus("progress");
+              }}
+            > 
+              <FaUndoAlt className="size-4   " />
+            </button>
+                )
+              }
+             
+
+
+
+           
 
             {menuOpen && (
               <div

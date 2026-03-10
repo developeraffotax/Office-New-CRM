@@ -24,8 +24,9 @@ export default function MailLayout({
   setFilters,
   handleUpdateThread,
   markAsRead,
+  markAsUnread,
   deleteThread,
-  completeThread,
+
   companyName,
   folder
 }) {
@@ -118,6 +119,7 @@ const clearSelection = () => setSelectedThreads(new Set());
     selectedThreads={selectedThreads}
     threads={threads}
     markAsRead={markAsRead}
+    markAsUnread={markAsUnread}
     deleteThread={deleteThread}
     clearSelection={clearSelection}
   />

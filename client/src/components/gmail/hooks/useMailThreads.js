@@ -272,6 +272,41 @@ const handleUpdateThread = async (_id, updateData, type = "default") => {
 
 
 
+  const markAsUnread = async (threadId, companyName) => {
+    if (!threadId) return;
+
+    try {
+      const { data } = await axios.patch(
+        `${process.env.REACT_APP_API_URL}/api/v1/gmail/mark-as-unread/${threadId}`,
+        { companyName: companyName }, // pass companyName for Gmail auth
+      );
+
+      if (data?.success && !data?.alreadyUnread) {
+        const updatedThread = data.thread;
+        setThreads((prev) =>
+          prev.map((t) => (t._id === updatedThread._id ? updatedThread : t)),
+        );
+
+        toast.success("Marked as unread!");
+      }
+      // Optionally, update local state to reflect unreadCount = 0 if you track it
+      // e.g., emailDetail.unreadCount = 0;
+    } catch (error) {
+      console.error("Failed to mark thread as unread:", error);
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -521,6 +556,7 @@ useEffect(() => {
     handleUpdateThread,
     fetchThreads,
     markAsRead,
+    markAsUnread,
     deleteThread,
  
     folder, // optional but useful

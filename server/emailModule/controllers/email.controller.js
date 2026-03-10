@@ -403,6 +403,163 @@ export const updateThreadMetadata = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * PATCH /api/v1/gmail/mark-as-unread/:id
+ * Marks the thread as unread
+ * Updates both Gmail and local DB
+ */
+export const markThreadAsUnread = async (req, res) => {
+  try {
+    const { threadId } = req.params;  
+    const { companyName } = req.body;
+
+    // ----------- Find thread -----------
+    const thread = await EmailThread.findOne({
+      threadId: threadId,
+      companyName: companyName,
+    });
+
+    if (!thread) {
+      return res.status(404).json({
+        success: false,
+        message: "Thread not found",
+      });
+    }
+
+    // 👇 already unread → no-op
+    if (thread.unreadCount > 0) {
+      return res.json({
+        success: true,
+        thread,
+        alreadyUnread: true,
+      });
+    }
+
+    // ----------- 1. Update Gmail -----------
+    const gmailClient = await getGmailClient(companyName);
+
+    if (gmailClient && thread.threadId) {
+      await gmailClient.users.threads.modify({
+        userId: "me",
+        id: thread.threadId,
+        requestBody: {
+          addLabelIds: ["UNREAD"],
+        },
+      });
+    }
+
+    // ----------- 2. Update local DB -----------
+    thread.unreadCount = 1; // mark as unread
+    await thread.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Thread marked as unread",
+      thread,
+      alreadyUnread: false,
+    });
+  } catch (error) {
+    console.error("Error marking thread as unread:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to mark thread as unread",
+      error: error.message,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * PATCH /api/v1/gmail/mark-as-read/:id
  * Marks the thread as read (unreadCount = 0)

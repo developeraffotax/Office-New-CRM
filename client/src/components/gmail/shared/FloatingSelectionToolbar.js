@@ -77,11 +77,13 @@
 import { IoMdClose } from "react-icons/io";
 import { HiOutlineMailOpen, HiOutlineTrash } from "react-icons/hi";
 import { useEffect } from "react";
+import { IoMailUnreadOutline } from "react-icons/io5";
 
 export const SelectionHeader = ({
   selectedThreads,
   threads,
   markAsRead,
+  markAsUnread,
   deleteThread,
   clearSelection,
 }) => {
@@ -126,6 +128,32 @@ export const SelectionHeader = ({
 
         {/* Action Group */}
         <div className="flex items-center bg-white/50 rounded-lg p-0.5 border border-blue-200">
+
+
+        <button
+            onClick={() => {
+              [...selectedThreads].forEach((id) => {
+                const t = threads.find((t) => t._id === id);
+                markAsUnread(t.threadId, t.companyName);
+              });
+              clearSelection();
+            }}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-white hover:text-blue-600 rounded-md transition-all group"
+            title="Mark as Read"
+          >
+            <IoMailUnreadOutline
+              className="text-slate-500 group-hover:text-blue-600"
+              size={18}
+            />
+            <span className="hidden sm:inline">Mark as Unread</span>
+          </button>
+
+
+
+            <div className="w-[1px] h-4 bg-blue-200 mx-1" />
+
+
+
           <button
             onClick={() => {
               [...selectedThreads].forEach((id) => {
@@ -143,6 +171,33 @@ export const SelectionHeader = ({
             />
             <span className="hidden sm:inline">Mark as Read</span>
           </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          
+
+
+
+
+
+
+
+
+
 
           <div className="w-[1px] h-4 bg-blue-200 mx-1" />
 

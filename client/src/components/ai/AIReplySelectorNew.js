@@ -21,11 +21,12 @@ export default function AIReplySelector({ threadId, onSelect, companyName }) {
   const [selectedIndex, setSelectedIndex] = useState(null);
 
   const [projectId, setProjectId] = useState("");
+  const [showProjectsModal, setShowProjectsModal] = useState(false);
+  
 
   const [customInstructions, setCustomInstructions] = useState("");
   const [showPrompt, setShowPrompt] = useState(false);
 
-  const [showProjectsModal, setShowProjectsModal] = useState(false)
 
   const abortControllerRef = useRef(null);
 
@@ -45,7 +46,7 @@ export default function AIReplySelector({ threadId, onSelect, companyName }) {
           threadId,
           customInstructions: customInstructions.trim() || undefined,
           projectId: projectId,
-          companyName
+          companyName: companyName?.toLowerCase()
         },
         { signal: controller.signal }
       );

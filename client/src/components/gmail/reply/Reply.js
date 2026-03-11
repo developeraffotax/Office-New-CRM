@@ -276,7 +276,7 @@ export default function Reply({
       </div>
 
       {!inline && (
-        <div className="w-[30%] h-full  ">
+        <div className="w-[30%] h-full z-[50] ">
           <AIReplySelectorNew
             threadId={emailDetail?.threadId}
             onSelect={setMessage}

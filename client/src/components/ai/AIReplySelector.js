@@ -10,16 +10,21 @@ import { RiRobot2Line } from "react-icons/ri";
 import { FaReplyAll } from "react-icons/fa";
 import { BsFillReplyAllFill } from "react-icons/bs";
 import { CiEdit } from "react-icons/ci";
+import AiProjectManager from "./AiProjects/AiProjectManager";
+import { IoBookmarkOutline } from "react-icons/io5";
 
 const API_URL = `${process.env.REACT_APP_API_URL}/api/v1/ai/generate-email-replies`;
 
-export default function AIReplySelector({ threadId, onSelect }) {
+export default function AIReplySelector({ threadId, onSelect, companyName }) {
   const [loading, setLoading] = useState(false);
   const [replies, setReplies] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(null);
 
   const [customInstructions, setCustomInstructions] = useState("");
   const [showPrompt, setShowPrompt] = useState(false);
+
+  const [projectId, setProjectId] = useState("");
+  const [showProjectsModal, setShowProjectsModal] = useState(false);
 
   const abortControllerRef = useRef(null);
 
@@ -38,8 +43,10 @@ export default function AIReplySelector({ threadId, onSelect }) {
         {
           threadId,
           customInstructions: customInstructions.trim() || undefined,
+          projectId: projectId,
+          companyName: companyName?.toLowerCase(),
         },
-        { signal: controller.signal }
+        { signal: controller.signal },
       );
       setReplies(data.replies || []);
     } catch (err) {
@@ -51,7 +58,7 @@ export default function AIReplySelector({ threadId, onSelect }) {
       toast.error(
         err?.response?.data?.error ||
           err?.response?.data?.message ||
-          "Generation failed. Please try again."
+          "Generation failed. Please try again.",
       );
       console.log(err);
     } finally {
@@ -94,7 +101,7 @@ export default function AIReplySelector({ threadId, onSelect }) {
   };
 
   return (
-    <div className="absolute top-0 left-full ml-4 w-[450px] h-full   animate-fade-in duration-200 rounded-lg shadow-2xl overflow-hidden">
+    <div className="absolute top-0 left-full ml-4 w-[450px] h-full   animate-fade-in duration-200 rounded-lg shadow-2xl overflow-hidden z-[50]">
       <div className="bg-white h-full flex flex-col    ">
         {/* Header */}
         <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
@@ -108,6 +115,13 @@ export default function AIReplySelector({ threadId, onSelect }) {
           </div>
 
           <div className="flex items-center gap-2 justify-end">
+            <button
+              onClick={() => setShowProjectsModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded transition-colors disabled:opacity-50"
+            >
+              <IoBookmarkOutline className={`w-4 h-4 `} />
+            </button>
+
             <button
               onClick={() => setShowPrompt((v) => !v)}
               className="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded transition-colors  "
@@ -231,6 +245,14 @@ export default function AIReplySelector({ threadId, onSelect }) {
           )}
         </div>
       </div>
+
+      {showProjectsModal && (
+        <AiProjectManager
+          onClose={() => setShowProjectsModal(false)}
+          onSelect={(projectId) => setProjectId(projectId)}
+          projectId={projectId}
+        />
+      )}
     </div>
   );
 }

@@ -10,16 +10,22 @@ import { RiRobot2Line } from "react-icons/ri";
 import { FaReplyAll } from "react-icons/fa";
 import { BsFillReplyAllFill } from "react-icons/bs";
 import { CiEdit } from "react-icons/ci";
+import AiProjectManager from "./AiProjects/AiProjectManager";
+import { IoBookmarkOutline } from "react-icons/io5";
 
 const API_URL = `${process.env.REACT_APP_API_URL}/api/v1/ai/generate-email-replies`;
 
-export default function AIReplySelector({ threadId, onSelect }) {
+export default function AIReplySelector({ threadId, onSelect, companyName }) {
   const [loading, setLoading] = useState(false);
   const [replies, setReplies] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(null);
 
+  const [projectId, setProjectId] = useState("");
+
   const [customInstructions, setCustomInstructions] = useState("");
   const [showPrompt, setShowPrompt] = useState(false);
+
+  const [showProjectsModal, setShowProjectsModal] = useState(false)
 
   const abortControllerRef = useRef(null);
 
@@ -38,6 +44,8 @@ export default function AIReplySelector({ threadId, onSelect }) {
         {
           threadId,
           customInstructions: customInstructions.trim() || undefined,
+          projectId: projectId,
+          companyName
         },
         { signal: controller.signal }
       );
@@ -108,6 +116,19 @@ export default function AIReplySelector({ threadId, onSelect }) {
           </div>
 
           <div className="flex items-center gap-2 justify-end">
+
+            <button
+              onClick={() => setShowProjectsModal(true)}
+               
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded transition-colors disabled:opacity-50"
+            >
+              <IoBookmarkOutline
+                className={`w-4 h-4 `}
+              />
+               
+            </button>
+
+
             <button
               onClick={() => setShowPrompt((v) => !v)}
               className="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded transition-colors  "
@@ -128,6 +149,8 @@ export default function AIReplySelector({ threadId, onSelect }) {
               />
               {loading ? "Generating..." : "Regenerate"}
             </button>
+
+
           </div>
         </div>
 
@@ -231,6 +254,10 @@ export default function AIReplySelector({ threadId, onSelect }) {
           )}
         </div>
       </div>
+
+      {
+        showProjectsModal && <AiProjectManager onClose={() => setShowProjectsModal(false)} onSelect={(projectId) => setProjectId(projectId)} projectId={projectId}/>
+      }
     </div>
   );
 }

@@ -94,29 +94,70 @@ export const decodeEmailBody = (msg) => {
 
 
 
-const getGmailClient = () => {
-  // Create OAuth2 client
-  const oauth2Client = new google.auth.OAuth2(
-    process.env.CLIENT_ID,
-    process.env.CLIENT_SECRET,
-    process.env.REDIRECT_URI
+// const getGmailClient = () => {
+//   // Create OAuth2 client
+//   const oauth2Client = new google.auth.OAuth2(
+//     process.env.CLIENT_ID,
+//     process.env.CLIENT_SECRET,
+//     process.env.REDIRECT_URI
+//   );
+
+//   // Set the refresh token for the user
+//   oauth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
+
+//   // gmail client
+//   const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+
+//   return gmail;
+// };
+
+
+export const getGmailClient = (companyName) => {
+  const COMPANY_CONFIG = {
+    affotax: {
+      name: "affotax",
+      clientId: process.env.CLIENT_ID,
+      clientSecret: process.env.CLIENT_SECRET,
+      redirectUri: process.env.REDIRECT_URI,
+      refreshToken: process.env.REFRESH_TOKEN,
+    },
+    outsource: {
+      name: "outsource",
+      clientId: process.env.OUTSOURCING_CLIENT_ID,
+      clientSecret: process.env.OUTSOURCING_CLIENT_SECRET,
+      redirectUri: process.env.OUTSOURCING_REDIRECT_URI,
+      refreshToken: process.env.OUTSOURCING_REFRESH_TOKEN,
+    },
+  };
+
+
+
+  const config = COMPANY_CONFIG[companyName];
+
+  if (!config) throw new Error("Invalid company name");
+
+
+
+  const oauth = new google.auth.OAuth2(
+    config.clientId,
+    config.clientSecret,
+    config.redirectUri
   );
 
-  // Set the refresh token for the user
-  oauth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
+  oauth.setCredentials({ refresh_token: config.refreshToken });
 
-  // gmail client
-  const gmail = google.gmail({ version: "v1", auth: oauth2Client });
-
-  return gmail;
+  return google.gmail({ version: "v1", auth: oauth });
 };
 
 
 
 
+
 // Fetch Gmail thread
-export const fetchThreadMessages = async (threadId) => {
-  const gmail = getGmailClient();
+export const fetchThreadMessages = async (threadId, companyName) => {
+  const gmail = getGmailClient(companyName);
+
+
 
   const thread = await gmail.users.threads.get({
     userId: "me",

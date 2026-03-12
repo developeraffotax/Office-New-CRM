@@ -33,6 +33,8 @@ import {
   FiLayers,
   FiRefreshCcw,
   FiColumns,
+  FiMoreVertical,
+  FiPlus,
 } from "react-icons/fi";
 import MarkEmailUnreadIcon from "@mui/icons-material/MarkEmailUnread";
 import ManageCategoriesModal from "../categories/ManageCategoriesModal";
@@ -48,6 +50,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle"; // For Completed
 import PendingActionsIcon from "@mui/icons-material/PendingActions"; // For Pro
 
 import { IoClose } from "react-icons/io5";
+import ContextMenu from "./ui/ContextMenu";
 
 export default function Filters({
   filters,
@@ -60,7 +63,7 @@ export default function Filters({
   const [isInboxUserTabs, setIsInboxUserTabs] = React.useState(true);
   const [inboxStats, setInboxStats] = React.useState(null);
 
-  console.log("inboxStats ❤️❤️❤️", inboxStats);
+ 
 
   const [searchParams] = useSearchParams();
 
@@ -536,7 +539,7 @@ export default function Filters({
         >
 
 
-         <Tooltip title="Manage Categories">
+         {/* <Tooltip title="Manage Categories">
             <IconButton
               onClick={() => setIsCategoryModal(true)}
               size="small"
@@ -551,7 +554,33 @@ export default function Filters({
             >
               <LabelOutlinedIcon fontSize="small" />
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
+
+
+
+          <ContextMenu
+            trigger={
+              <button className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 transition">
+                <FiMoreVertical className="text-gray-600 text-lg" />
+              </button>
+            }
+            items={[
+              { type: "label", label: "CATEGORIES" },
+
+              {
+                icon: <LabelOutlinedIcon sx={{ fontSize: 18 }} />,
+                label: "Manage Categories",
+                onClick: () => setIsCategoryModal(true),
+              },
+
+            
+              // { type: "divider" },
+
+              
+             
+              
+            ]}
+          />
             
           </Stack>
 
@@ -877,6 +906,11 @@ export default function Filters({
           onClose={() => setIsCategoryModal(false)}
         />
       }
+
+
+      
+
+
     </LocalizationProvider>
   );
 }

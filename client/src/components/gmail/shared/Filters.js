@@ -503,7 +503,7 @@ export default function Filters({
           )}
 
           {/* Reset Action */}
-          {hasActiveFilters && (
+          {/* {hasActiveFilters && (
             <Tooltip title="Reset all filters">
               <Button
                 size="small"
@@ -521,7 +521,7 @@ export default function Filters({
                 Reset
               </Button>
             </Tooltip>
-          )}
+          )} */}
 
           </Stack>
 

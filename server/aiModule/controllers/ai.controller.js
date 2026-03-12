@@ -28,7 +28,6 @@ export const generateEmailReplies = async (req, res) => {
 
     const messages = await fetchThreadMessages(threadId, companyName);
 
-     console.log("Messages Length ✔️✔️✔️", messages.length)
     if (!messages.length) {
       return res
         .status(404)

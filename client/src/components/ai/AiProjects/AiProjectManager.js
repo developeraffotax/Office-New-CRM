@@ -7,10 +7,12 @@ import {
 } from "react-icons/hi2";
 import ProjectFormModal from "./ProjectFormModal"; // We will create this next
 import { MdLibraryAddCheck } from "react-icons/md";
+import { ConfirmDialog, useConfirm } from "../../../utlis/ConfirmDialog/ConfirmDialog";
 
 const API_BASE = `${process.env.REACT_APP_API_URL}/api/v1/ai/project`;
+const STORAGE_KEY = "ai_selected_project";
 
-export default function AiProjectManager({ onClose, onSelect, projectId }) {
+export default function AiProjectManager({ onClose, onSelect, project, companyName }) {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,7 +24,7 @@ export default function AiProjectManager({ onClose, onSelect, projectId }) {
   const fetchProjects = useCallback(async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`${API_BASE}/all`);
+      const { data } = await axios.get(`${API_BASE}/all?companyName=${companyName}`);
       setProjects(data.projects || []);
     } catch (err) {
       toast.error("Failed to fetch projects");
@@ -33,25 +35,67 @@ export default function AiProjectManager({ onClose, onSelect, projectId }) {
 
   useEffect(() => { fetchProjects(); }, [fetchProjects]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this configuration?")) return;
-    try {
-      await axios.delete(`${API_BASE}/${id}`);
-      toast.success("Project removed");
-      fetchProjects();
-    } catch (err) { toast.error("Delete failed"); }
-  };
+     const { confirm, dialogProps } = useConfirm();
+
+
+
+
+
+const handleDelete = async (id, companyName) => {
+   const ok = await confirm({
+       title: "Delete Configuration",
+       message: "This will permanently remove the project. This action cannot be undone.",
+       detail: companyName,
+       confirmLabel: "Delete",
+       cancelLabel: "Cancel",
+       variant: "danger",
+     });
+     if (!ok) return;
+
+  try {
+    await axios.delete(`${API_BASE}/${id}`);
+
+    const saved = JSON.parse(localStorage.getItem(`${STORAGE_KEY}-${companyName}`) || "{}");
+    if (saved._id === id) {
+      localStorage.removeItem(`${STORAGE_KEY}-${companyName}`);
+    }
+    if (id === project?._id) {
+      onSelect({ _id: "", name: "", companyName: "" });
+    }
+
+    toast.success("Project removed");
+    fetchProjects();
+  } catch (err) {
+    toast.error("Delete failed");
+    console.log("ERROR", err)
+  }
+};
 
   const openForm = (project = null) => {
     setSelectedProject(project);
     setIsFormOpen(true);
   };
 
+
+
+  const onProjectSelect = (project) => {
+
+  if(project?.companyName) {
+    localStorage.setItem(`${STORAGE_KEY}-${project.companyName}`, JSON.stringify(project));
+  }
+   onSelect(project)
+    
+
+}
+
+
+
+
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
-
+         <ConfirmDialog {...dialogProps} />
       {/* List Modal Container */}
       <div className="relative bg-white w-full max-w-4xl max-h-[85vh] min-h-[70vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
         
@@ -93,34 +137,41 @@ export default function AiProjectManager({ onClose, onSelect, projectId }) {
         {/* List Content */}
         <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {projects.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map((project) => (
-              <div  key={project._id} className=" group p-5 bg-white border border-slate-200 rounded-2xl hover:border-orange-400 hover:shadow-md transition-all relative">
+            {projects.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map((item) => (
+              <div  key={item._id} className=" group p-5 bg-white border border-slate-200 rounded-2xl hover:border-orange-400 hover:shadow-md transition-all relative">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <h4 className="font-bold text-slate-800 text-lg">{project.name}</h4>
-                    <p className="text-sm text-slate-500 mb-3">{project.companyName}</p>
+                    <h4 className="font-bold text-slate-800 text-lg">{item.name}</h4>
+                    <p className="text-sm text-slate-500 mb-3">{item.companyName}</p>
                     <div className="flex flex-wrap gap-2">
                       <span className="px-2 py-0.5 bg-orange-50 text-orange-700 text-[10px] font-bold rounded-md uppercase border border-orange-100">
-                        {project.aiConfig?.tone || 'Professional'}
+                        {item.aiConfig?.tone || 'Professional'}
                       </span>
                     </div>
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
-                      onClick={() => onSelect(project._id)}
+                      onClick={() => {
+                        const selected = {
+                          _id: item._id,
+                          name: item.name,
+                          companyName: item.companyName
+                        };
+                        onProjectSelect(selected);
+                      }}
                       className="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg"
                     >
                       <MdLibraryAddCheck className="w-5 h-5" />
                     </button>
 
                     <button 
-                      onClick={() => openForm(project)}
+                      onClick={() => openForm(item)}
                       className="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg"
                     >
                       <HiPencilSquare className="w-5 h-5" />
                     </button>
                     <button 
-                      onClick={() => handleDelete(project._id)}
+                      onClick={() => handleDelete(item._id, item.companyName)}
                       className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
                     >
                       <HiTrash className="w-5 h-5" />
@@ -129,7 +180,7 @@ export default function AiProjectManager({ onClose, onSelect, projectId }) {
                 </div>
 
                 {
-                  (project._id === projectId) && <span className="text-xs px-2 py-1 bg-orange-600 text-white rounded-lg absolute bottom-3 right-3 animate-pop"> Selected </span>
+                  (item._id === project?._id) && <span className="text-xs px-2 py-1 bg-orange-600 text-white rounded-lg absolute bottom-3 right-3 animate-pop"> Selected </span>
                 }
               </div>
             ))}

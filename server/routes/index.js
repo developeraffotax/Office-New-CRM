@@ -91,7 +91,7 @@ export const registerRoutes = (app) => {
   app.use("/api/v1/settings", userSettingsRoutes);
 
 
-  app.use("/api/v1/ai", aiPerMinuteLimiter, aiRoutes);
+  app.use("/api/v1/ai",  aiRoutes);
   app.use("/api/v1/gmail",   emailRoutes);
   
   app.use("/api/v1/gmail/category", requiredSignIn , threadCategoryRoutes);

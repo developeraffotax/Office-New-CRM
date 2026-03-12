@@ -5,6 +5,7 @@ import {
   HiArrowPath,
   HiOutlineDocumentDuplicate,
   HiCheckCircle,
+  HiXMark,
 } from "react-icons/hi2";
 import { RiRobot2Line } from "react-icons/ri";
 import { FaReplyAll } from "react-icons/fa";
@@ -14,13 +15,24 @@ import AiProjectManager from "./AiProjects/AiProjectManager";
 import { IoBookmarkOutline } from "react-icons/io5";
 
 const API_URL = `${process.env.REACT_APP_API_URL}/api/v1/ai/generate-email-replies`;
+const STORAGE_KEY = "ai_selected_project";
 
 export default function AIReplySelector({ threadId, onSelect, companyName }) {
   const [loading, setLoading] = useState(false);
   const [replies, setReplies] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(null);
 
-  const [projectId, setProjectId] = useState("");
+const [project, setProject] = useState(() => {
+  try {
+    const saved = localStorage.getItem(`${STORAGE_KEY}-${companyName.toLowerCase()}`);
+    return saved ? JSON.parse(saved) : { _id: "", name: "", companyName: "" };
+  } catch {
+    return { _id: "", name: "", companyName: "" };
+  }
+});
+
+
+
   const [showProjectsModal, setShowProjectsModal] = useState(false);
   
 
@@ -45,7 +57,7 @@ export default function AIReplySelector({ threadId, onSelect, companyName }) {
         {
           threadId,
           customInstructions: customInstructions.trim() || undefined,
-          projectId: projectId,
+          projectId: project?._id,
           companyName: companyName?.toLowerCase()
         },
         { signal: controller.signal }
@@ -78,7 +90,7 @@ export default function AIReplySelector({ threadId, onSelect, companyName }) {
         abortControllerRef.current.abort();
       }
     };
-  }, [threadId]);
+  }, [threadId, project]);
 
   const copyToClipboard = (e, text) => {
     e.stopPropagation();
@@ -102,58 +114,86 @@ export default function AIReplySelector({ threadId, onSelect, companyName }) {
     toast.success("Copied to clipboard", { id: "copy-toast" });
   };
 
+
+
+  // Add this handler inside your component
+const handleUnlinkProject = (e) => {
+  e.stopPropagation(); // Prevents opening the modal
+  setProject({ _id: "", name: "" });
+};
+
+
+
+
+ 
+
+
+
   return (
        <div className="h-full   flex flex-col bg-white rounded-lg shadow-2xl overflow-hidden animate-fade-in ">
       <div className="bg-white h-full flex flex-col    ">
         {/* Header */}
-        <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-orange-500 to-red-500">
-              <BsFillReplyAllFill className="w-4 h-4 text-white" />
-            </span>
-            <h3 className="text-sm font-semibold text-slate-800">
-              Reply Suggestions
-            </h3>
-          </div>
+      <div className="p-3 bg-white border-b border-slate-200 flex items-center justify-between shadow-sm">
+  {/* Left: Condensed Breadcrumb Style */}
+  <div className="flex items-center gap-1.5 min-w-0">
+    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-orange-500 to-red-500">
+      <BsFillReplyAllFill className="w-3 h-3 text-white" />
+    </div>
+    
+    <div className="flex items-center gap-1 text-xs">
+      <span className="font-bold text-slate-700 whitespace-nowrap">Suggestions</span>
+      <span className="text-slate-300">/</span>
+      
+      <div className="flex items-center gap-0.5 group">
+        <button 
+          onClick={() => setShowProjectsModal(true)}
+          className={`flex items-center gap-1 px-1.5 py-0.5 rounded border transition-all max-w-[120px] ${
+            project._id 
+              ? "border-orange-100 bg-orange-50/50 text-orange-700 hover:border-orange-300" 
+              : "border-slate-100 text-slate-500 hover:border-slate-300 hover:bg-slate-50"
+          }`}
+        >
+          <span className="font-medium truncate">{project?.name || "Project"}</span>
+          {!project._id && <IoBookmarkOutline className="w-3 h-3 text-slate-400" />}
+        </button>
 
-          <div className="flex items-center gap-2 justify-end">
+        {/* The Unlink Button - Only shows if project is selected */}
+        {project._id && (
+          <button
+            onClick={handleUnlinkProject}
+            className="p-0.5 hover:bg-red-100 text-slate-400 hover:text-red-600 rounded transition-colors"
+            title="Unlink project"
+          >
+            <HiXMark className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+    </div>
+  </div>
 
-            <button
-              onClick={() => setShowProjectsModal(true)}
-               
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded transition-colors disabled:opacity-50"
-            >
-              <IoBookmarkOutline
-                className={`w-4 h-4 `}
-              />
-               
-            </button>
+  {/* Right Actions */}
+  <div className="flex items-center gap-1 shrink-0">
+    <button
+      onClick={() => setShowPrompt((v) => !v)}
+      className={`p-1.5 rounded-md transition-colors ${showPrompt ? 'text-orange-500 bg-orange-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}
+      title="Edit Instructions"
+    >
+      <CiEdit className="w-4 h-4" />
+    </button>
 
+    <div className="w-[1px] h-4 bg-slate-200 mx-1"></div>
 
-            <button
-              onClick={() => setShowPrompt((v) => !v)}
-              className="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded transition-colors  "
-              title="Customize AI reply"
-            >
-              <CiEdit className="w-4 h-4" />
-            </button>
+<button
+  onClick={generateReplies}
+  disabled={loading}
+  className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 rounded-md transition-colors disabled:opacity-50"
+>
+  <HiArrowPath className={`w-3.5 h-3.5 text-slate-500 ${loading ? "animate-spin" : ""}`} />
+  
+</button>
+  </div>
+</div>
 
-            <span className="border-r py-2"></span>
-
-            <button
-              onClick={generateReplies}
-              disabled={loading}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded transition-colors disabled:opacity-50"
-            >
-              <HiArrowPath
-                className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
-              />
-              {loading ? "Generating..." : "Regenerate"}
-            </button>
-
-
-          </div>
-        </div>
 
         {showPrompt && (
           <div className="px-5 py-3 bg-white border-b border-slate-200">
@@ -257,7 +297,7 @@ export default function AIReplySelector({ threadId, onSelect, companyName }) {
       </div>
 
       {
-        showProjectsModal && <AiProjectManager onClose={() => setShowProjectsModal(false)} onSelect={(projectId) => setProjectId(projectId)} projectId={projectId}/>
+        showProjectsModal && <AiProjectManager companyName={companyName.toLowerCase()} onClose={() => setShowProjectsModal(false)} onSelect={(project) => {setProject(project)}} project={project}/>
       }
     </div>
   );

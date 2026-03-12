@@ -21,10 +21,10 @@ const AiProjectSchema = new mongoose.Schema({
     faq: String
   },
 
-  isDefault: {
-    type: Boolean,
-    default: false,
-  }
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Users"
+  },
 
   
 }, { timestamps: true });

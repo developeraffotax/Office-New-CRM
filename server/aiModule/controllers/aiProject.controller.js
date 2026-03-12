@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import aiProject from "../models/aiProject.js";
 
  
@@ -5,7 +6,10 @@ import aiProject from "../models/aiProject.js";
 // ---------------- CREATE ----------------
 export const createAiProject = async (req, res) => {
   try {
-    const project = await aiProject.create(req.body);
+    const project = await aiProject.create({
+      ...req.body,
+      createdBy: new mongoose.Types.ObjectId(req.user.user._id),
+    });
 
     res.status(201).json({
       success: true,
@@ -26,9 +30,13 @@ export const createAiProject = async (req, res) => {
 export const getAllAiProjects = async (req, res) => {
   try {
     const { companyName } = req.query;
+    
 
-    const filter = {};
-    if (companyName) filter.companyName = companyName;
+    const filter = {
+      companyName,
+      createdBy: req.user.user._id
+    };
+    
 
     const projects = await aiProject.find(filter).sort({ createdAt: -1 });
 

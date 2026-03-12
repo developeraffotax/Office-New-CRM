@@ -84,7 +84,7 @@ export const generateEmailReplies = async (req, res) => {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0.6,
-      max_tokens: 900,
+      max_tokens: 1200,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },

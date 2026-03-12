@@ -39,18 +39,15 @@ import ManageCategoriesModal from "../categories/ManageCategoriesModal";
 import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
 import { alpha } from "@mui/material/styles";
 import { useSelector } from "react-redux";
- 
 
 import InboxUserTabs from "./ui/InboxUserTabs";
 import UserTabToggleButton from "./ui/UserTabToggleButton";
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
-import CheckCircleIcon from '@mui/icons-material/CheckCircle'; // For Completed
-import PendingActionsIcon from '@mui/icons-material/PendingActions'; // For Pro
+import CheckCircleIcon from "@mui/icons-material/CheckCircle"; // For Completed
+import PendingActionsIcon from "@mui/icons-material/PendingActions"; // For Pro
 
- 
-
-
+import { IoClose } from "react-icons/io5";
 
 export default function Filters({
   filters,
@@ -63,14 +60,12 @@ export default function Filters({
   const [isInboxUserTabs, setIsInboxUserTabs] = React.useState(true);
   const [inboxStats, setInboxStats] = React.useState(null);
 
-  console.log("inboxStats ❤️❤️❤️", inboxStats)
+  console.log("inboxStats ❤️❤️❤️", inboxStats);
 
-  
-     const [searchParams] = useSearchParams();
-  
+  const [searchParams] = useSearchParams();
+
   const folder = searchParams.get("folder") || "inbox";
   const companyName = searchParams.get("companyName") || "affotax";
-  
 
   const {
     auth: { user },
@@ -78,34 +73,30 @@ export default function Filters({
 
   const isAdmin = user?.role?.name === "Admin";
 
-
-
   const [searchInput, setSearchInput] = React.useState("");
 
-const prevSearchRef = React.useRef("");
+  const prevSearchRef = React.useRef("");
 
-React.useEffect(() => {
-  const trimmed = searchInput.trim();
+  React.useEffect(() => {
+    const trimmed = searchInput.trim();
 
-  // ⛔ Ignore whitespace-only typing
-  if (!trimmed && !prevSearchRef.current) return;
+    // ⛔ Ignore whitespace-only typing
+    if (!trimmed && !prevSearchRef.current) return;
 
-  const timer = setTimeout(() => {
-    // ⛔ No change → no setFilters
-    if (trimmed === prevSearchRef.current) return;
+    const timer = setTimeout(() => {
+      // ⛔ No change → no setFilters
+      if (trimmed === prevSearchRef.current) return;
 
-    setFilters({
- 
-      search: trimmed,
-      page: 1,
-    });
+      setFilters({
+        search: trimmed,
+        page: 1,
+      });
 
-    prevSearchRef.current = trimmed;
-  }, 500);
+      prevSearchRef.current = trimmed;
+    }, 500);
 
-  return () => clearTimeout(timer);
-}, [searchInput, setFilters]);
-
+    return () => clearTimeout(timer);
+  }, [searchInput, setFilters]);
 
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -157,7 +148,7 @@ React.useEffect(() => {
   };
 
   const handleUpdate = (updates) => {
-    setFilters({  ...updates, page: 1 });
+    setFilters({ ...updates, page: 1 });
   };
 
   // Common styles for a compact, modern look
@@ -182,49 +173,33 @@ React.useEffect(() => {
     },
   };
 
+  React.useEffect(() => {
+    if (!isAdmin || !isInboxUserTabs) return;
 
-  
-React.useEffect(() => {
-  if (!isAdmin || !isInboxUserTabs) return;
+    const fetchUserCounts = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/gmail/mailbox-user-counts`,
+          {
+            params: {
+              companyName: companyName,
+              folder: folder,
 
- 
+              ...filters,
+            },
+          },
+        );
 
-  const fetchUserCounts = async () => {
-
- 
-    try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/gmail/mailbox-user-counts`, {
-        params: {
-          companyName: companyName,
-          folder: folder,
-           
-          ...filters
-        },
-        
-      });
-
-      if (res.data?.success) {
-    
-        setInboxStats(res.data);
+        if (res.data?.success) {
+          setInboxStats(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user counts", err);
       }
-    } catch (err) {
-     
+    };
 
-      console.error("Failed to fetch user counts", err);
-    }
-  };
-
-  fetchUserCounts();
-
-  
-}, [
- filters,
- folder,
- companyName,
-  isAdmin,
-  isInboxUserTabs
-]);
-
+    fetchUserCounts();
+  }, [filters, folder, companyName, isAdmin, isInboxUserTabs]);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -232,7 +207,7 @@ React.useEffect(() => {
         elevation={0}
         sx={{
           p: 2,
-           
+
           borderRadius: 0,
           border: "1px solid",
           borderColor: "divider",
@@ -241,30 +216,50 @@ React.useEffect(() => {
       >
         <Stack
           direction="row"
-          spacing={1}
+          spacing={4}
           alignItems="center"
+          justifyContent="space-between"
           flexWrap="wrap"
           sx={{ mb: hasActiveFilters ? 2 : 0 }}
         >
-          <Tooltip title="Manage Categories">
-            <IconButton
-              onClick={() => setIsCategoryModal(true)}
-              size="small"
-              sx={{
-                borderRadius: "8px",
-                bgcolor: isCategoryModal ? "primary.50" : "transparent",
-                color: isCategoryModal ? "primary.main" : "grey.600",
-                "&:hover": {
-                  bgcolor: "primary.100",
-                },
-              }}
+
+
+
+          <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+ 
+           
+        >
+
+
+
+             <button
+
+            onClick={clearFilters}
+            // disabled={!hasActiveFilters}
+            title="Clear all filters"
+            className={`
+                group flex items-center justify-center
+                w-8 h-8
+                rounded-full 
+                bg-gradient-to-r from-orange-500 to-yellow-600 
+                text-white shadow-md
+                transition-all duration-300 ease-in-out 
+                hover:shadow-lg hover:scale-110 hover:rotate-180 
+                cursor-pointer mb-1
+                outline-none
+                
+              `}
             >
-              <LabelOutlinedIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+            <IoClose className="h-5 w-5" />
+          </button>
+
+         
 
           {/* 1. Category Select */}
-          <FormControl size="small" sx={{ minWidth: 150 }}>
+          <FormControl size="small" sx={{ minWidth: 150, }}>
             <Select
               value={filters.category || ""}
               displayEmpty
@@ -302,10 +297,16 @@ React.useEffect(() => {
                   All
                 </Typography>
               </MenuItem>
-              <MenuItem sx={{
-                borderBottom: 1,
-                borderColor: "#ddd"
-              }} value={"unassigned"}> Unassigned </MenuItem>
+              <MenuItem
+                sx={{
+                  borderBottom: 1,
+                  borderColor: "#ddd",
+                }}
+                value={"unassigned"}
+              >
+                {" "}
+                Unassigned{" "}
+              </MenuItem>
 
               {categories.map(({ name }) => {
                 return (
@@ -314,12 +315,9 @@ React.useEffect(() => {
                   </MenuItem>
                 );
               })}
-              
             </Select>
           </FormControl>
 
-          
-        
           {[
             { label: "T", title: "Today", value: 0 },
             { label: "Y", title: "Yesterday", value: -1 },
@@ -331,8 +329,10 @@ React.useEffect(() => {
               const now = dayjs();
               let expectedStart;
               if (range.value === 0) expectedStart = now.startOf("day");
-              else if (range.value === -1) expectedStart = now.subtract(1, "day").startOf("day");
-              else expectedStart = now.subtract(range.value, "day").startOf("day");
+              else if (range.value === -1)
+                expectedStart = now.subtract(1, "day").startOf("day");
+              else
+                expectedStart = now.subtract(range.value, "day").startOf("day");
               return dayjs(filters.startDate).isSame(expectedStart, "minute");
             })();
 
@@ -357,7 +357,8 @@ React.useEffect(() => {
                       ? (theme) => alpha(theme.palette.primary.main, 0.08)
                       : "transparent",
                     "&:hover": {
-                      bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
+                      bgcolor: (theme) =>
+                        alpha(theme.palette.primary.main, 0.1),
                       borderColor: "primary.main",
                       color: "primary.main",
                     },
@@ -368,9 +369,6 @@ React.useEffect(() => {
               </Tooltip>
             );
           })}
-
-
-          
 
           {/* Date Picker Trigger */}
           <Button
@@ -416,94 +414,90 @@ React.useEffect(() => {
             </ToggleButton>
           </Tooltip>
 
+          <FormControl size="small" sx={{ minWidth: 300 }}>
+            <Box sx={{ position: "relative" }}>
+              <input
+                type="text"
+                placeholder="Search subject, email…"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                style={{
+                  height: 40,
+                  width: "100%",
+                  padding: "0 40px 0 12px", // space for ❌
+                  borderRadius: 12,
+                  border: "1px solid #e5e7eb",
+                  outline: "none",
+                  fontSize: "0.875rem",
+                }}
+              />
 
-          
+              {/* Clear Button */}
+              {searchInput.trim() && (
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    setSearchInput("");
+                    // setFilters((prev) => ({
+                    //   ...prev,
+                    //   search: "",
+                    //   page: 1,
+                    // }));
+                  }}
+                  sx={{
+                    position: "absolute",
+                    right: 6,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "grey.500",
+                    "&:hover": { color: "grey.700" },
+                  }}
+                >
+                  <FiX size={14} />
+                </IconButton>
+              )}
+            </Box>
+          </FormControl>
 
-<FormControl size="small" sx={{ minWidth: 300 }}>
-  <Box sx={{ position: "relative" }}>
-    <input
-      type="text"
-      placeholder="Search subject, email…"
-      value={searchInput}
-      onChange={(e) => setSearchInput(e.target.value)}
-      style={{
-        height: 40,
-        width: "100%",
-        padding: "0 40px 0 12px", // space for ❌
-        borderRadius: 12,
-        border: "1px solid #e5e7eb",
-        outline: "none",
-        fontSize: "0.875rem",
-      }}
-    />
+          <ToggleButtonGroup
+            value={filters.status} // Assumes status is 'completed' | 'progress' | 'all'
+            exclusive
+            onChange={(event, newStatus) => {
+              // If user clicks the same button again (newStatus is null), you might want to reset to 'all'
+              handleUpdate({ status: newStatus });
+            }}
+            size="small"
+            sx={{
+              gap: 0.5,
+              "& .MuiToggleButton-root": {
+                border: "none",
+                borderRadius: "8px !important", // Ensures all buttons stay rounded
+                mx: 0.5,
+              },
+            }}
+          >
+            <Tooltip title="In Progress">
+              <ToggleButton value="progress" color="warning">
+                <PendingActionsIcon fontSize="small" />
+              </ToggleButton>
+            </Tooltip>
 
-    {/* Clear Button */}
-    {searchInput.trim() && (
-      <IconButton
-        size="small"
-        onClick={() => {
-          setSearchInput("");
-          // setFilters((prev) => ({
-          //   ...prev,
-          //   search: "",
-          //   page: 1,
-          // }));
-        }}
-        sx={{
-          position: "absolute",
-          right: 6,
-          top: "50%",
-          transform: "translateY(-50%)",
-          color: "grey.500",
-          "&:hover": { color: "grey.700" },
-        }}
-      >
-        <FiX size={14} />
-      </IconButton>
-    )}
-  </Box>
-</FormControl>
-
-
-
-    <ToggleButtonGroup
-  value={filters.status} // Assumes status is 'completed' | 'progress' | 'all'
-  exclusive
-  onChange={(event, newStatus) => {
-    // If user clicks the same button again (newStatus is null), you might want to reset to 'all'
-    handleUpdate({ status: newStatus });
-  }}
-  size="small"
-  sx={{ 
-    gap: 0.5,
-    '& .MuiToggleButton-root': {
-      border: "none",
-      borderRadius: "8px !important", // Ensures all buttons stay rounded
-      mx: 0.5
-    }
-  }}
->
-  <Tooltip title="In Progress">
-    <ToggleButton value="progress" color="warning">
-      <PendingActionsIcon fontSize="small" />
-    </ToggleButton>
-  </Tooltip>
-
-  <Tooltip title="Completed">
-    <ToggleButton value="completed" color="success">
-      <CheckCircleIcon fontSize="small" />
-    </ToggleButton>
-  </Tooltip>
-</ToggleButtonGroup>
-
-
+            <Tooltip title="Completed">
+              <ToggleButton value="completed" color="success">
+                <CheckCircleIcon fontSize="small" />
+              </ToggleButton>
+            </Tooltip>
+          </ToggleButtonGroup>
 
           {/* Spacer */}
           {/* <Box sx={{ flexGrow: 1 }} /> */}
 
- 
-
-{isAdmin && <UserTabToggleButton active={isInboxUserTabs} onClick={() => setIsInboxUserTabs(prev => !prev)}/>}
+          {isAdmin && (
+            <UserTabToggleButton
+              active={isInboxUserTabs}
+              onClick={() => setIsInboxUserTabs((prev) => !prev)}
+            />
+          )}
 
           {/* Reset Action */}
           {hasActiveFilters && (
@@ -517,7 +511,7 @@ React.useEffect(() => {
                   opacity: 0.8,
                   "&:hover": { opacity: 1 },
                   textTransform: "none",
-                    color: "#1151D1",
+                  color: "#1151D1",
                   px: 2,
                 }}
               >
@@ -526,14 +520,87 @@ React.useEffect(() => {
             </Tooltip>
           )}
 
+          </Stack>
 
 
+
+
+
+          
+          <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+ 
+           
+        >
+
+
+         <Tooltip title="Manage Categories">
+            <IconButton
+              onClick={() => setIsCategoryModal(true)}
+              size="small"
+              sx={{
+                borderRadius: "8px",
+                bgcolor: isCategoryModal ? "primary.50" : "transparent",
+                color: isCategoryModal ? "primary.main" : "grey.600",
+                "&:hover": {
+                  bgcolor: "primary.100",
+                },
+              }}
+            >
+              <LabelOutlinedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+            
+          </Stack>
+
+
+         
         </Stack>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         {isInboxUserTabs && isAdmin && (
           <div className="w-full animate-pop mt-3   ">
-           
-           <InboxUserTabs
+            <InboxUserTabs
               droppableId="inbox_users"
               users={users}
               activeValue={filters.userId || ""}
@@ -544,30 +611,27 @@ React.useEffect(() => {
                   page: 1,
                 })
               }
-              getLabelFn={(user) =>
-                user.name 
-              }
+              getLabelFn={(user) => user.name}
               getCountFn={(user) => {
-              if (!inboxStats) return 0;
+                if (!inboxStats) return 0;
 
-              // ALL TAB
-              if (user === "all") {
-                return inboxStats.allCount || 0;
-              }
+                // ALL TAB
+                if (user === "all") {
+                  return inboxStats.allCount || 0;
+                }
 
-              // UNASSIGNED
-              if (user === "unassigned") {
-                return inboxStats.unassignedCount || 0;
-              }
+                // UNASSIGNED
+                if (user === "unassigned") {
+                  return inboxStats.unassignedCount || 0;
+                }
 
-              const found = inboxStats.userCounts?.find(
-                (u) => u.userId === user._id
-              );
+                const found = inboxStats.userCounts?.find(
+                  (u) => u.userId === user._id,
+                );
 
-              return found?.count || 0;
-            }}
+                return found?.count || 0;
+              }}
             />
-           
           </div>
         )}
 
@@ -594,8 +658,7 @@ React.useEffect(() => {
                 Active Filters:
               </Typography>
 
-
-                {/* {filters.category && (
+              {/* {filters.category && (
                 <Chip
                   size="small"
                   label={`Category: ${filters.category}`}
@@ -604,7 +667,6 @@ React.useEffect(() => {
                 />
               )} */}
 
-              
               {filters.category && (
                 <Chip
                   size="small"
@@ -614,18 +676,19 @@ React.useEffect(() => {
                 />
               )}
 
-             {filters.userId && (
-              <Chip
-                size="small"
-                label={`User: ${
-                  filters.userId === "unassigned"
-                    ? "unassigned"
-                    : users.find((u) => u._id === filters.userId)?.name || "User"
-                }`}
-                onDelete={() => handleUpdate({ userId: "" })}
-                sx={{ bgcolor: "action.selected", fontWeight: 500 }}
-              />
-            )}
+              {filters.userId && (
+                <Chip
+                  size="small"
+                  label={`User: ${
+                    filters.userId === "unassigned"
+                      ? "unassigned"
+                      : users.find((u) => u._id === filters.userId)?.name ||
+                        "User"
+                  }`}
+                  onDelete={() => handleUpdate({ userId: "" })}
+                  sx={{ bgcolor: "action.selected", fontWeight: 500 }}
+                />
+              )}
 
               {filters.startDate && (
                 <Chip
@@ -770,7 +833,9 @@ React.useEffect(() => {
                 value={filters.startDate ? dayjs(filters.startDate) : null}
                 onChange={(val) =>
                   handleUpdate({
-                    startDate: val ? dayjs(val).startOf("day").toISOString() : "",
+                    startDate: val
+                      ? dayjs(val).startOf("day").toISOString()
+                      : "",
                   })
                 }
                 slotProps={{
@@ -787,10 +852,10 @@ React.useEffect(() => {
                 label="End Date"
                 value={filters.endDate ? dayjs(filters.endDate) : null}
                 onChange={(val) =>
-                    handleUpdate({
-                      endDate: val ? dayjs(val).endOf("day").toISOString() : "",
-                    })
-                  }
+                  handleUpdate({
+                    endDate: val ? dayjs(val).endOf("day").toISOString() : "",
+                  })
+                }
                 slotProps={{
                   textField: {
                     size: "small",
@@ -815,14 +880,3 @@ React.useEffect(() => {
     </LocalizationProvider>
   );
 }
-
-
-
-
-
-
-
-
-
-
-

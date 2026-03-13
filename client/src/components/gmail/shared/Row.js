@@ -214,7 +214,7 @@ const folder = searchParams.get("folder") || "inbox";
               mongoThreadId: thread?._id,
               userId: thread?.userId,
               category: thread?.category,
- 
+              status: thread?.status
 
                
             })

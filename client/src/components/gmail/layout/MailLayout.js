@@ -37,6 +37,7 @@ export default function MailLayout({
     mongoThreadId: null,
     userId: null,
     category: "",
+    status: ""
     
 
      
@@ -94,6 +95,9 @@ export default function MailLayout({
 
   const clearSelection = () => setSelectedThreads(new Set());
 
+ 
+
+
   return (
     <div className="flex h-[105vh] bg-white overflow-hidden">
       <Sidebar />
@@ -145,15 +149,14 @@ export default function MailLayout({
           markAsRead={markAsRead}
 
           
-          setShowEmailDetail={() =>
-            setEmailDetail({ threadId: "", show: false, subject: "" })
-          }
+          
           setComment={setComment}
           
           unreadComments={threads?.find(thread => thread?._id === emailDetail?.mongoThreadId)?.unreadComments || 0}
-          status={threads?.find(thread => thread?._id === emailDetail?.mongoThreadId)?.status || ""}
+          
 
           {...emailDetail}
+          setEmailDetail={setEmailDetail}
         />
       )}
 

@@ -29,7 +29,7 @@ export default function Thread({
   company,
   threadId,
   subject,
-  setShowEmailDetail,
+ setEmailDetail,
   markAsRead,
   users,
   handleUpdateThread,
@@ -39,6 +39,7 @@ export default function Thread({
   category,
   status,
   setComment,
+ 
  
   unreadComments,
   show
@@ -55,7 +56,7 @@ const [loadingMore, setLoadingMore] = useState(false);
   const [swalOpen, setSwalOpen] = useState(false);
 
 
-  const [emailDetail, setEmailDetail] = useState([]);
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isloading, setIsLoading] = useState(false);
   const [attachmentId, setAttachmentId] = useState("");
@@ -118,11 +119,11 @@ useLayoutEffect(() => {
   // Parse all messages at once (outside the map loop)
   const parsedMessages = useMemo(() => {
     return (
-      emailDetail?.decryptedMessages?.map((message) => {
+      messages?.decryptedMessages?.map((message) => {
         return gmailParser(message?.payload?.body?.data || "");
       }) || []
     );
-  }, [emailDetail?.decryptedMessages]);
+  }, [messages?.decryptedMessages]);
 
 const getEmailDetail = async (pageNumber = 1, isLoadMore = false) => {
   if (isLoadMore) {
@@ -150,7 +151,7 @@ const getEmailDetail = async (pageNumber = 1, isLoadMore = false) => {
 
       if (isLoadMore) {
         // PREPEND older messages
-        setEmailDetail((prev) => ({
+        setMessages((prev) => ({
           ...data.emailDetails,
           decryptedMessages: [
             ...data.emailDetails.decryptedMessages,
@@ -158,7 +159,7 @@ const getEmailDetail = async (pageNumber = 1, isLoadMore = false) => {
           ],
         }));
       } else {
-        setEmailDetail(data.emailDetails);
+        setMessages(data.emailDetails);
       }
     }
   } catch (error) {
@@ -334,6 +335,7 @@ const updateStatus = async (status) => {
 
   if (!isConfirmed) return;
   await handleUpdateThread(mongoThreadId, { status: status }, "status");
+  setEmailDetail(prev => ({...prev, status: status}))
 };
 
 
@@ -342,12 +344,14 @@ useOverlayStack({
   ref: threadRef,
   onClose: () => {
     if (swalOpen) return; // prevent closing
-    setShowEmailDetail();
+    setEmailDetail(prev => ({ ...prev, threadId: "", show: false, subject: "" }))
   },
   isOpen: show,
 });
 
 
+
+ 
 
   return (
     <div
@@ -358,7 +362,7 @@ useOverlayStack({
       <header className="sticky top-0 z-10 w-full flex items-center justify-between bg-white/80 backdrop-blur-md px-6 py-4 border-b border-gray-200">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => setShowEmailDetail(false)}
+            onClick={() => setEmailDetail(prev => ({...prev, threadId: "", show: false, subject: "" }))}
             className="p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-colors"
           >
             <IoArrowBackOutline className="h-5 w-5" />
@@ -472,7 +476,7 @@ useOverlayStack({
             </div>
           )}
 
-          {emailDetail?.decryptedMessages?.map((message, i) => {
+          {messages?.decryptedMessages?.map((message, i) => {
             const isSentByMe =
               message?.payload?.body?.sentByMe ||
               message?.labelIds?.includes("SENT");
@@ -491,7 +495,7 @@ useOverlayStack({
             };
             const isExpanded = expandedMessages[message.id];
             const showToggle = parsedEmail.hasThread;
-            const isLast = i === emailDetail.decryptedMessages.length - 1;
+            const isLast = i === messages.decryptedMessages.length - 1;
 
 
             const crmUserName = messageUsers[message.id];
@@ -679,7 +683,7 @@ useOverlayStack({
               <div className="w-full py-5 ">
                 <Reply
                 company={company}
-                emailDetail={emailDetail}
+                emailDetail={messages}
                 getEmailDetail={() => {
                   getEmailDetail();
                   setShowReplyEditor(false);
@@ -699,7 +703,7 @@ useOverlayStack({
             <Forward
               setShowForward={setShowForward}
               company={company}
-              emailDetail={emailDetail}
+              emailDetail={messages}
               getEmailDetail={getEmailDetail}
               forwardMessageId={forwardMessageId}
             />

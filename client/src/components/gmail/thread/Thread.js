@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useMemo, useLayoutEffect } from "re
 import { IoArrowBackOutline } from "react-icons/io5";
 import { HiReply } from "react-icons/hi";
 import { Buffer } from "buffer";
-import { FaCaretDown, FaRegFileImage } from "react-icons/fa";
+import { FaCaretDown, FaCheckCircle, FaRegFileImage, FaUndoAlt } from "react-icons/fa";
 import { FaRegFileLines } from "react-icons/fa6";
 import { LuDownload } from "react-icons/lu";
 import { ImAttachment } from "react-icons/im";
@@ -22,6 +22,8 @@ import AssignCategory from "../shared/ui/AssignCategory.js";
 import { FiMessageSquare } from "react-icons/fi";
 import IconButtonWithBadge from "../shared/ui/IconButtonWithBadge.js";
 import { useOverlayStack } from "../hooks/useOverlayStack.js";
+import Swal from "sweetalert2";
+import { confirmAlert } from "../shared/ui/Swal.js";
 
 export default function Thread({
   company,
@@ -35,6 +37,7 @@ export default function Thread({
   userId,
   categories,
   category,
+  status,
   setComment,
  
   unreadComments,
@@ -48,7 +51,8 @@ const [loadingMore, setLoadingMore] = useState(false);
 
  
  
-
+    
+  const [swalOpen, setSwalOpen] = useState(false);
 
 
   const [emailDetail, setEmailDetail] = useState([]);
@@ -167,11 +171,6 @@ const getEmailDetail = async (pageNumber = 1, isLoadMore = false) => {
 
  
 
-useOverlayStack({
-  ref: threadRef,
-  onClose: () => setShowEmailDetail(),
-  isOpen: show,
-});
 
 useEffect(() => {
   setPage(1);
@@ -184,11 +183,11 @@ useEffect(() => {
 
 const handleLoadMore = async () => {
   if (!hasMore || loadingMore) return;
-
+  
   const container = scrollContainerRef.current;
   // Capture BEFORE any state changes
   scrollAnchorRef.current = { previousHeight: container.scrollHeight };
-
+  
   const nextPage = page + 1;
   setPage(nextPage);
   await getEmailDetail(nextPage, true);
@@ -196,14 +195,14 @@ const handleLoadMore = async () => {
 
 
 
-  const separate = (email) => {
-    const emailRegex = /(.*)<(.*)>/;
-    const match = email?.match(emailRegex);
-    const name = match ? match[1]?.trim() : email || "Unknown";
-    const emailAddress = match ? match[2]?.trim() : "";
-
-    return (
-      <div className="flex flex-col">
+const separate = (email) => {
+  const emailRegex = /(.*)<(.*)>/;
+  const match = email?.match(emailRegex);
+  const name = match ? match[1]?.trim() : email || "Unknown";
+  const emailAddress = match ? match[2]?.trim() : "";
+  
+  return (
+    <div className="flex flex-col">
         <span className="font-semibold text-gray-900 text-sm md:text-base">
           {name.slice(0, 30)}
         </span>
@@ -215,56 +214,56 @@ const handleLoadMore = async () => {
       </div>
     );
   };
-
+  
   const EmailTimeDisplay = ({ internalDate }) => {
     const emailDate = new Date(parseInt(internalDate));
     const formattedDate = !isNaN(emailDate.getTime())
-      ? emailDate.toLocaleString([], {
-          dateStyle: "medium",
-          timeStyle: "short",
+    ? emailDate.toLocaleString([], {
+      dateStyle: "medium",
+      timeStyle: "short",
         })
-      : "Invalid Date";
-    return (
-      <span className="text-xs text-gray-400 font-medium">{formattedDate}</span>
-    );
-  };
-
-  const downloadAttachments = async (
-    attachmentId,
-    messageId,
-    companyName,
-    fileName,
-  ) => {
-    if (!attachmentId || !messageId || !companyName) {
-      toast.error("Attachment detail missing!");
-      return;
-    }
-    setIsLoading(true);
-    setAttachmentId(attachmentId);
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`,
-        { responseType: "json" },
-      );
-      if (data) {
-        const decodedData = Buffer.from(data.data, "base64");
-        const blob = new Blob([new Uint8Array(decodedData.buffer)], {
-          type: "application/octet-stream",
-        });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = fileName;
-        link.click();
-        URL.revokeObjectURL(url);
-      }
-    } catch (error) {
-      toast.error("Download failed!");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+        : "Invalid Date";
+        return (
+          <span className="text-xs text-gray-400 font-medium">{formattedDate}</span>
+        );
+      };
+      
+      const downloadAttachments = async (
+        attachmentId,
+        messageId,
+        companyName,
+        fileName,
+      ) => {
+        if (!attachmentId || !messageId || !companyName) {
+          toast.error("Attachment detail missing!");
+          return;
+        }
+        setIsLoading(true);
+        setAttachmentId(attachmentId);
+        try {
+          const { data } = await axios.get(
+            `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`,
+            { responseType: "json" },
+          );
+          if (data) {
+            const decodedData = Buffer.from(data.data, "base64");
+            const blob = new Blob([new Uint8Array(decodedData.buffer)], {
+              type: "application/octet-stream",
+            });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = fileName;
+            link.click();
+            URL.revokeObjectURL(url);
+          }
+        } catch (error) {
+          toast.error("Download failed!");
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
   const FileIcon = (fileName) => {
     const imageExtensions = ["jpg", "jpeg", "png", "gif", "svg"];
     const ext = fileName.split(".").pop().toLowerCase();
@@ -274,7 +273,7 @@ const handleLoadMore = async () => {
       <FaRegFileLines className="text-blue-500" />
     );
   };
-
+  
   const toggleTrimmedContent = (messageId) => {
     setExpandedMessages((prev) => ({
       ...prev,
@@ -282,12 +281,12 @@ const handleLoadMore = async () => {
     }));
   };
 
-
-
-
-
-
-
+  
+  
+  
+  
+  
+  
 
 
 
@@ -328,20 +327,25 @@ const getMessageUsers = async () => {
 
 
 
+const updateStatus = async (status) => {
+  setSwalOpen(true); // block overlay
+  const { isConfirmed } = await confirmAlert({ type: "warning" });
+  setSwalOpen(false);
+
+  if (!isConfirmed) return;
+  await handleUpdateThread(mongoThreadId, { status: status }, "status");
+};
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+useOverlayStack({
+  ref: threadRef,
+  onClose: () => {
+    if (swalOpen) return; // prevent closing
+    setShowEmailDetail();
+  },
+  isOpen: show,
+});
 
 
 
@@ -365,6 +369,35 @@ const getMessageUsers = async () => {
         </div>
 
           <div className=" flex justify-center items-center gap-4 ">
+
+
+
+     {
+                status === "progress" ? (
+                  <button
+              className="p-1 rounded-md   text-gray-500  hover:text-green-500"
+              title="Complete Thread"
+              onClick={(e) => {
+                
+                updateStatus("completed");
+              }}
+            > 
+              <FaCheckCircle className="size-4   " />
+            </button>
+                ) : (
+                   <button
+              className="p-1 rounded-md   text-gray-500  hover:text-red-500"
+              title="Undo Complete"
+              onClick={(e) => {
+                 
+                updateStatus("progress");
+              }}
+            > 
+              <FaUndoAlt className="size-4   " />
+            </button>
+                )
+              }
+
 
 
 

@@ -37,6 +37,7 @@ export default function MailLayout({
     mongoThreadId: null,
     userId: null,
     category: "",
+    
 
      
   });
@@ -150,6 +151,7 @@ export default function MailLayout({
           setComment={setComment}
           
           unreadComments={threads?.find(thread => thread?._id === emailDetail?.mongoThreadId)?.unreadComments || 0}
+          status={threads?.find(thread => thread?._id === emailDetail?.mongoThreadId)?.status || ""}
 
           {...emailDetail}
         />

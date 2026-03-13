@@ -16,6 +16,7 @@ import Swal from "sweetalert2";
 import AssignUser from "./ui/AssignUser";
 import AssignCategory from "./ui/AssignCategory";
 import IconButtonWithBadge from "./ui/IconButtonWithBadge";
+import { confirmAlert } from "./ui/Swal";
  
 function parseEmail(str) {
   if (!str) return "";
@@ -113,15 +114,7 @@ const folder = searchParams.get("folder") || "inbox";
   const updateStatus = async (status) => {
   // ✅ Only show Swal if confirmation is required
  
-      const { isConfirmed } = await Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
-        icon: "success",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, do it!",
-      });
+      const { isConfirmed } = await confirmAlert({ type: "warning" });
 
       if (!isConfirmed) return;
  
@@ -130,6 +123,11 @@ const folder = searchParams.get("folder") || "inbox";
     setUpdating(false);
   };
   //  hover:shadow-[inset_4px_0_0_0_#3b82f6]
+
+
+
+
+
 
   return (
     <div
@@ -216,6 +214,7 @@ const folder = searchParams.get("folder") || "inbox";
               mongoThreadId: thread?._id,
               userId: thread?.userId,
               category: thread?.category,
+ 
 
                
             })

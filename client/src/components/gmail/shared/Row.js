@@ -434,6 +434,10 @@ const folder = searchParams.get("folder") || "inbox";
                         (p) => p.email !== parseEmail(myEmail),
                       )?.email || "",
                   },
+                  ticketBindings: {
+                      subject: thread.subject || "",
+                      mailThreadId: thread.threadId,
+                  }
                 });
               }}
             >

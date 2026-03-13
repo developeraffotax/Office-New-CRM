@@ -55,6 +55,8 @@ export default function MailLayout({
     _id: "",
     isOpen: false,
     form: {},
+    
+    ticketBindings: {}
   });
 
   // Inside your Threads List component

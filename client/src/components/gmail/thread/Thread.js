@@ -19,6 +19,9 @@ import { gmailParser } from "../utils/gmailParser.js";
 import EmailHeaderDetails from "./EmailHeaderDetails.js";
 import AssignUser from "../shared/ui/AssignUser.js";
 import AssignCategory from "../shared/ui/AssignCategory.js";
+import { FiMessageSquare } from "react-icons/fi";
+import IconButtonWithBadge from "../shared/ui/IconButtonWithBadge.js";
+import { useOverlayStack } from "../hooks/useOverlayStack.js";
 
 export default function Thread({
   company,
@@ -31,13 +34,19 @@ export default function Thread({
   mongoThreadId,
   userId,
   categories,
-  category
+  category,
+  setComment,
+ 
+  unreadComments,
+  show
 }) {
 
   const [page, setPage] = useState(1);
 const [hasMore, setHasMore] = useState(false);
 const [loadingMore, setLoadingMore] = useState(false);
 
+
+ 
  
 
 
@@ -156,13 +165,13 @@ const getEmailDetail = async (pageNumber = 1, isLoadMore = false) => {
   }
 };
 
-  useClickOutside(threadRef, () => {
-    setShowEmailDetail();
-  });
+ 
 
-  useEscapeKey(() => {
-    setShowEmailDetail();
-  });
+useOverlayStack({
+  ref: threadRef,
+  onClose: () => setShowEmailDetail(),
+  isOpen: show,
+});
 
 useEffect(() => {
   setPage(1);
@@ -357,7 +366,22 @@ const getMessageUsers = async () => {
 
           <div className=" flex justify-center items-center gap-4 ">
 
-            
+
+
+        <IconButtonWithBadge
+          icon={FiMessageSquare}
+          unreadCount={unreadComments}
+          title="View Comments"
+          onClick={() =>
+            setComment({
+              show: true,
+              threadId: mongoThreadId,
+              threadSubject: subject,
+            })
+          }
+        />
+
+                            
                    
 
         <AssignUser
@@ -377,6 +401,12 @@ const getMessageUsers = async () => {
                       
         
                   />
+
+
+
+
+
+
         
 
           </div>

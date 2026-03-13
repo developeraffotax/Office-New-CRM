@@ -36,7 +36,9 @@ export default function MailLayout({
 
     mongoThreadId: null,
     userId: null,
-    category: ""
+    category: "",
+
+     
   });
 
   const {
@@ -133,20 +135,21 @@ export default function MailLayout({
       {emailDetail.show && (
         <Thread
           company={companyName}
-          threadId={emailDetail.threadId}
-          subject={emailDetail.subject}
-
-          mongoThreadId={emailDetail.mongoThreadId}
-          userId={emailDetail.userId}
           categories={categories}
-          category={emailDetail.category}
+          users={users}  
 
+          handleUpdateThread={handleUpdateThread} 
+          markAsRead={markAsRead}
+
+          
           setShowEmailDetail={() =>
             setEmailDetail({ threadId: "", show: false, subject: "" })
           }
-          markAsRead={markAsRead}
-          users={users} // ✅ add
-          handleUpdateThread={handleUpdateThread} // ✅ add
+          setComment={setComment}
+          
+          unreadComments={threads?.find(thread => thread?._id === emailDetail?.mongoThreadId)?.unreadComments || 0}
+
+          {...emailDetail}
         />
       )}
 
@@ -174,8 +177,6 @@ export default function MailLayout({
 
       {/* Comments */}
       <CommentList
-        threadSubject={comment.threadSubject}
-        threadId={comment.threadId}
         users={users}
         currentUserId={user.id}
         onClose={() =>
@@ -184,6 +185,9 @@ export default function MailLayout({
             threadId: null,
           })
         }
+
+        {...comment}
+
       />
 
       {loading.deleting && (
@@ -207,6 +211,4 @@ export default function MailLayout({
   );
 }
 
-// 19c423082427fd80
-
-// 66cc64ce0d25583e212500d1
+ 

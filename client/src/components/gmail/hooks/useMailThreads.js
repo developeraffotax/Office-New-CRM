@@ -197,7 +197,7 @@ const filters = useMemo(() => {
 
 
 
-
+console.log("THREADS", threads)
 
 
 

@@ -15,6 +15,7 @@ import { FaCheckCircle, FaUndoAlt } from "react-icons/fa";
 import Swal from "sweetalert2";
 import AssignUser from "./ui/AssignUser";
 import AssignCategory from "./ui/AssignCategory";
+import IconButtonWithBadge from "./ui/IconButtonWithBadge";
  
 function parseEmail(str) {
   if (!str) return "";
@@ -214,7 +215,9 @@ const folder = searchParams.get("folder") || "inbox";
 
               mongoThreadId: thread?._id,
               userId: thread?.userId,
-              category: thread?.category
+              category: thread?.category,
+
+               
             })
           }
         >
@@ -503,30 +506,24 @@ const folder = searchParams.get("folder") || "inbox";
         </div>
 
         <div>
-          <button
-            onClick={() => {
-              setComment({
+           
+                  <IconButtonWithBadge
+          icon={FiMessageSquare}
+          unreadCount={thread?.unreadComments || 0}
+          title="View Comments"
+          onClick={() => {
+            setComment({
                 show: true,
                 threadId: thread._id,
                 threadSubject: thread?.subject,
-              });
-            }}
-            className="relative p-2.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 group active:scale-95"
-            title="View Comments"
-          >
-            {/* The Icon */}
-            <FiMessageSquare
-              size={20}
-              className="group-hover:fill-blue-50/10"
-            />
+              })
+          }
+            
+          }
+        />
 
-            {/* The Unread Badge */}
-            {thread?.unreadComments > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white ring-2 ring-white animate-in zoom-in">
-                {thread.unreadComments > 99 ? "99+" : thread.unreadComments}
-              </span>
-            )}
-          </button>
+
+
         </div>
 
         {/* Date/Time */}

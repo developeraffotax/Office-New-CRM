@@ -17,6 +17,19 @@ import { IoBookmarkOutline } from "react-icons/io5";
 const API_URL = `${process.env.REACT_APP_API_URL}/api/v1/ai/generate-email-replies`;
 const STORAGE_KEY = "ai_selected_project";
 
+// Skeleton Component for "Loading Behind" effect
+const SkeletonCard = () => (
+  <div className="p-4 rounded-lg border-2 border-dashed border-slate-300 bg-white/50 animate-pulse">
+    <div className="h-3 w-16 bg-slate-300 rounded mb-3"></div>
+    <div className="space-y-2">
+      <div className="h-3 bg-slate-300 rounded w-full"></div>
+      <div className="h-3 bg-slate-300 rounded w-[90%]"></div>
+      <div className="h-3 bg-slate-300 rounded w-[75%]"></div>
+    </div>
+  </div>
+);
+
+
 
 export default function AIReplySelector({ threadId, onSelect, companyName }) {
   const [loading, setLoading] = useState(false);
@@ -41,45 +54,51 @@ export default function AIReplySelector({ threadId, onSelect, companyName }) {
 
   const abortControllerRef = useRef(null);
 
-  const generateReplies = async () => {
+  const generateReplies = useCallback(async () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
-    try {
-      setLoading(true);
-      setSelectedIndex(null);
-      const { data } = await axios.post(
-        API_URL,
-        {
-          threadId,
-          customInstructions: customInstructions.trim() || undefined,
-          projectId: project?._id,
-          companyName: companyName?.toLowerCase(),
-        },
-        { signal: controller.signal },
-      );
-      setReplies(data.replies || []);
-    } catch (err) {
-      if (axios.isCancel(err)) {
-        console.log("Previous request aborted.");
-        return;
-      }
 
-      toast.error(
-        err?.response?.data?.error ||
-          err?.response?.data?.message ||
-          "Generation failed. Please try again.",
-      );
-      console.log(err);
-    } finally {
-      if (controller === abortControllerRef.current) {
-        setLoading(false);
+    setLoading(true);
+    setSelectedIndex(null);
+    setReplies([]); // We clear to start fresh suggestions
+
+    const options = [1, 2, 3, 4];
+    let completedCount = 0;
+
+    options.forEach(async (option) => {
+      try {
+        const { data } = await axios.post(
+          API_URL,
+          {
+            threadId,
+            customInstructions: customInstructions.trim() || undefined,
+            projectId: project?._id,
+            companyName: companyName?.toLowerCase(),
+            optionNumber: option,
+          },
+          { signal: controller.signal }
+        );
+
+        // Check if this request is still relevant (not aborted/overridden)
+        if (!controller.signal.aborted) {
+          setReplies((prev) => [...prev, data.reply]);
+        }
+      } catch (err) {
+        if (!axios.isCancel(err)) {
+          console.error(`Failed to generate Option ${option}`, err);
+        }
+      } finally {
+        completedCount += 1;
+        if (completedCount === options.length && !controller.signal.aborted) {
+          setLoading(false);
+        }
       }
-    }
-  };
+    });
+  }, [threadId, project?._id, companyName, customInstructions]);
 
   useEffect(() => {
     generateReplies();
@@ -210,83 +229,49 @@ const handleUnlinkProject = (e) => {
         )}
 
         {/* Main Content */}
-        <div className="flex-1 overflow-y-auto bg-slate-50/30 p-3">
-          {loading ? (
-            <div className="space-y-6">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="p-3 border rounded-lg space-y-2 animate-pulse"
-                >
-                  <div className="h-3 w-28 bg-gray-200 rounded" />
-                  <div className="h-3 w-full bg-gray-200 rounded" />
-                  <div className="h-3 w-5/6 bg-gray-200 rounded" />
-                  <div className="h-3 w-4/6 bg-gray-200 rounded" />
-                </div>
-              ))}
-            </div>
-          ) : replies.length > 0 ? (
-            <div className="space-y-3">
-              {replies.map((r, i) => (
-                <div
-                  key={i}
-                  onClick={() => {
-                    setSelectedIndex(i);
-                    onSelect(r.content);
-                  }}
-                  className={`
-                    group relative p-4 rounded-lg cursor-pointer transition-all border-2
-                    ${
-                      selectedIndex === i
-                        ? "bg-gray-50 border-orange-500 shadow-lg "
-                        : "bg-gray-50 border-transparent hover:shadow-md"
-                    }
-                  `}
-                >
-                  {/* Top-left Selected Badge */}
-                  {selectedIndex === i && (
-                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-orange-100 text-orange-600 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full shadow-sm">
-                      <HiCheckCircle className="w-3 h-3" />
-                      Selected
-                    </div>
-                  )}
-
-                  <div className="flex justify-start items-center gap-2 mb-1">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase">
-                      Reply {i + 1}
-                    </span>
-                    <div className="flex gap-2 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={(e) => copyToClipboard(e, r.content)}
-                        className="p-1 hover:text-orange-500 text-slate-400 transition-colors"
-                        title="Copy text"
-                      >
-                        <HiOutlineDocumentDuplicate className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div
-                    className="text-sm text-slate-700 line-clamp-6"
-                    dangerouslySetInnerHTML={{ __html: r.content }}
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center p-6">
-              <RiRobot2Line className="w-14 h-14 text-slate-200 mb-2" />
-              <p className="text-sm font-medium text-slate-500">
-                No suggestions generated
-              </p>
-              <button
-                onClick={generateReplies}
-                className="mt-2 text-sm text-orange-500 font-semibold hover:underline"
+         <div className="flex-1 overflow-y-auto bg-slate-50/30 p-3">
+          <div className="space-y-3">
+            {/* Real Replies */}
+            {replies.map((r, i) => (
+              <div
+                key={i}
+                onClick={() => {
+                  setSelectedIndex(i);
+                  onSelect(r.content);
+                }}
+                className={`group relative p-4 rounded-lg cursor-pointer transition-all border-2 animate-pop shadow-md shadow-black/50${
+                  selectedIndex === i ? "bg-white border-orange-500 shadow-md" : "bg-white   hover:border-slate-200"
+                }`}
               >
-                Click to retry
-              </button>
-            </div>
-          )}
+                {selectedIndex === i && (
+                  <div className="absolute top-2 right-2 flex items-center gap-1 bg-orange-100 text-orange-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    <HiCheckCircle className="w-3 h-3" /> Selected
+                  </div>
+                )}
+                <div className="flex justify-between mb-1">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase">Option {i + 1}</span>
+                  <button onClick={(e) => copyToClipboard(e, r.content)} className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-orange-500">
+                    <HiOutlineDocumentDuplicate className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="text-sm text-slate-700 line-clamp-6" dangerouslySetInnerHTML={{ __html: r.content }} />
+              </div>
+            ))}
+
+            {/* Skeletons: Show while loading and while we have fewer than 4 replies */}
+            {loading && Array.from({ length: 4 - replies.length }).map((_, idx) => (
+              <SkeletonCard key={`skeleton-${idx}`} />
+            ))}
+
+            {/* Empty State */}
+            {!loading && replies.length === 0 && (
+              <div className="h-64 flex flex-col items-center justify-center text-center">
+                <RiRobot2Line className="w-12 h-12 text-slate-200 mb-2" />
+                <p className="text-sm text-slate-500">No suggestions yet</p>
+                <button onClick={generateReplies} className="text-orange-500 text-sm font-semibold mt-2">Generate</button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

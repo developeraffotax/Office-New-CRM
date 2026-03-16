@@ -5,7 +5,7 @@ import { userPromptForFollowUp, userPromptForReply } from "./userPrompts.js";
 export const createUserPrompt = (
   contextMessages,
   actionType,
-  optionNumber
+  optionNumber = "1"
 ) => `
 EMAIL CONVERSATION (READ FOR CONTEXT ONLY):
 ---------------------------------------

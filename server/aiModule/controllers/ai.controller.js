@@ -83,7 +83,7 @@ export const generateEmailReplies = async (req, res) => {
 
     const endTime = performance.now();
     console.log(
-      `OpenAI API for Option ${optionNumber} completed in ${(endTime - startTime).toFixed(0)} ms`.bgMagenta.white
+      `OpenAI API for Option ${optionNumber || 1} completed in ${(endTime - startTime).toFixed(0)} ms`.bgMagenta.white
     );
     // ---------------- PERFORMANCE HOOK END ----------------
 

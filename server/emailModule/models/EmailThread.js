@@ -27,6 +27,12 @@ const EmailThreadSchema = new mongoose.Schema(
     // Convenience booleans for filtering/indexing
     hasInboxMessage: { type: Boolean, default: false },
     hasSentMessage: { type: Boolean, default: false },
+
+    status: { 
+      type: String, 
+      enum: ["progress", "completed"], 
+      default: "progress" 
+    }
     
   },
   { timestamps: true }

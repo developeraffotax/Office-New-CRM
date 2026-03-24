@@ -4,8 +4,9 @@ import CommentItem from "./CommentItem";
 import CommentForm from "./CommentForm";
 import axios from "axios";
 import { useEscapeKey } from "../../../utlis/useEscapeKey";
+import { useOverlayStack } from "../hooks/useOverlayStack";
 
-export default function CommentList({ threadId, threadSubject, currentUserId, onClose, users }) {
+export default function CommentList({ threadId, threadSubject, currentUserId, onClose, users, show }) {
   const [comments, setComments] = useState([]);
 
 
@@ -87,20 +88,29 @@ const handleAddComment = async (data) => {
     shouldAutoScrollRef.current = isAtBottom;
   };
 
-  useEscapeKey(onClose)
+const commentRef = useRef(null);
+
+useOverlayStack({
+  ref: commentRef,
+  onClose: () => onClose(),
+  isOpen: show,
+});
 
   if (!threadId) return null;
 
   return (
-    <div className="fixed inset-0 z-50 pointer-events-none">
+    <div className="fixed inset-0 z-50 pointer-events-none" ref={commentRef}>
       {/* Background */}
       <div
         className="absolute inset-0 bg-slate-900/10 backdrop-blur-[2px] pointer-events-auto"
-        onClick={onClose}
+        onClick={(e) => {
+          e.stopPropagation()
+          onClose()
+        }}
       />
 
       {/* Popup */}
-      <div className="absolute bottom-6 right-6 w-[400px] h-[600px] bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-200 flex flex-col overflow-hidden pointer-events-auto animate-pop">
+      <div  onClick={(e) => e.stopPropagation()} className="absolute bottom-6 right-6 w-[400px] h-[600px] bg-white rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-200 flex flex-col overflow-hidden pointer-events-auto animate-pop">
 
         {/* Header */}
         <div className="px-6 py-3 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">

@@ -60,7 +60,7 @@ export const createLead = async (req, res) => {
     const lead = await leadModel.create({
       companyName,
       clientName,
-      jobHolder: user.name,
+      jobHolder: jobHolder || user.name,
       department,
       source,
       brand,

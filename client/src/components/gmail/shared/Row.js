@@ -1,23 +1,35 @@
 import { useState } from "react";
-import { FiPaperclip, FiMoreVertical, FiUserPlus, FiChevronDown, FiMessageSquare } from "react-icons/fi";
+import {
+  FiPaperclip,
+  FiMoreVertical,
+  FiUserPlus,
+  FiChevronDown,
+  FiMessageSquare,
+} from "react-icons/fi";
 import clsx from "clsx";
 import AttachmentChip from "./attachments/AttachmentChip";
 import { MdDeleteOutline } from "react-icons/md";
-
-
+import { useSearchParams } from "react-router-dom";
+import { ReplyPopup } from "../reply/ReplyPopup";
+import { FaCheckCircle, FaUndoAlt } from "react-icons/fa";
+import Swal from "sweetalert2";
+import AssignUser from "./ui/AssignUser";
+import AssignCategory from "./ui/AssignCategory";
+import IconButtonWithBadge from "./ui/IconButtonWithBadge";
+import { confirmAlert } from "./ui/Swal";
+ 
 function parseEmail(str) {
   if (!str) return "";
 
   // Match anything that looks like an email
-  const emailMatch = str.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  const emailMatch = str.match(
+    /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/,
+  );
 
   return emailMatch ? emailMatch[0] : "";
 }
 
-
-
-
- function highlightText(text = "", search = "") {
+function highlightText(text = "", search = "") {
   if (!search) return text;
 
   const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -25,94 +37,128 @@ function parseEmail(str) {
 
   return text.replace(
     regex,
-    `<span class="bg-orange-100 text-orange-600 font-medium rounded px-0.5">$1</span>`
+    `<span class="bg-orange-100 text-orange-600 font-medium rounded px-0.5">$1</span>`,
   );
 }
 
-
-export default function Row({ thread, users, handleUpdateThread, setEmailDetail, categories, setCreateTicketModal, setCreateLeadModal, deleteThread, filters, selected, toggleSelect, index, setComment }) {
+export default function Row({
+  thread,
+  users,
+  handleUpdateThread,
+  setEmailDetail,
+  categories,
+  setCreateTicketModal,
+  setCreateLeadModal,
+  deleteThread,
+ 
+  filters,
+  selected,
+  toggleSelect,
+  index,
+  setComment,
+  setReplyThread,
+  replyThread
+}) {
   const [assignOpen, setAssignOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
- 
+  const isRowActive =
+  replyThread?.threadId === thread.threadId ||
+  assignOpen ||
+  menuOpen;
 
 
   const attachments = thread.attachments || [];
   const visibleAttachments = attachments.slice(0, 2);
   const extraCount = attachments.length - visibleAttachments.length;
 
+   const [searchParams] = useSearchParams();
+
+const folder = searchParams.get("folder") || "inbox";
+
+
+
   // ----------------------- Sender / Participants -----------------------
   const myCompanyName = thread.companyName; // your company
-  const myEmail = myCompanyName === "affotax" ? "info@affotax.com" : "admin@outsourceaccountings.co.uk"; // your email
+  const myEmail =
+    myCompanyName === "affotax"
+      ? "info@affotax.com"
+      : "admin@outsourceaccountings.co.uk"; // your email
+
+  let sender = thread.participants
+    .slice(0, 2)
+    .map((p) => {
+      if (p.name === myCompanyName || p.email === myEmail) {
+        return "me";
+      } else {
+        return p.name || p.email;
+      }
+    })
+    .join(", ");
 
 
 
-  let sender = thread.participants.slice(0, 2).map(p => {
-    if (p.name === myCompanyName || p.email === myEmail) {
-      return "me"
-    } else {
-      return p.name || p.email
-    }
-  }).join(", ");
-
-
+ 
 
   const assignedUser = users.find((u) => u._id === thread.userId);
-  const threadCategory = categories.find((cat) => cat.name === thread?.category);
+  const threadCategory = categories.find(
+    (cat) => cat.name === thread?.category,
+  );
   const displayCategory = threadCategory?.name
     ? threadCategory.name.charAt(0).toUpperCase() + threadCategory.name.slice(1)
     : "";
 
-  // ---------------- LOCAL UPDATE HANDLERS ----------------
-  const updateCategory = async (newCategory) => {
-    setUpdating(true);
-    await handleUpdateThread(thread._id, { category: newCategory });
-    setUpdating(false);
-  };
-
-  const updateUser = async (newUserId) => {
-    setAssignOpen(false);
-    setUpdating(true);
-    await handleUpdateThread(thread._id, { userId: newUserId });
-    setUpdating(false);
-  };
-
-
  
-//  hover:shadow-[inset_4px_0_0_0_#3b82f6]
+
+  const updateStatus = async (status) => {
+  // ✅ Only show Swal if confirmation is required
+ 
+      const { isConfirmed } = await confirmAlert({ type: "warning" });
+
+      if (!isConfirmed) return;
+ 
+    setUpdating(true);
+    await handleUpdateThread(thread._id, { status: status }, "status");
+    setUpdating(false);
+  };
+  //  hover:shadow-[inset_4px_0_0_0_#3b82f6]
+
+
+
+
+
 
   return (
     <div
       className={clsx(
-  "group relative border-b border-gray-100 cursor-pointer transition-all duration-150",
-  "hover:shadow-[0_1px_2px_rgba(60,60,67,0.18),0_2px_4px_rgba(60,60,67,0.22),0_3px_6px_rgba(60,60,67,0.45)]",
-  selected ? "bg-blue-200" : thread.unreadCount > 0 ? "bg-white" : "bg-blue-50/60 "
-)}
+        "group relative border-b border-gray-100 cursor-pointer transition-all duration-150",
+        "hover:shadow-[0_1px_2px_rgba(60,60,67,0.18),0_2px_4px_rgba(60,60,67,0.22),0_3px_6px_rgba(60,60,67,0.45)]",
+        selected
+          ? "bg-blue-200"
+          : thread.unreadCount > 0
+          ? "bg-white"
+          : "bg-blue-50/60 ",
+      )}
     >
       {/* Indicator for Unread */}
       {/* {thread.unreadCount > 0 && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />} */}
 
       {/* ================= MAIN ROW ================= */}
       <div className="grid items-center px-4 py-3 grid-cols-[1rem_15rem_1fr_auto_auto_auto_7rem] gap-5 ">
-
-          {/* Select checkbox */}
+        {/* Select checkbox */}
         <input
-  type="checkbox"
-  checked={selected}
-  onClick={(e) => {
-    e.stopPropagation();
-    toggleSelect(thread._id, index, e);
-  }}
-  readOnly
-  className={clsx(
-    "h-4 w-4 rounded-sm border border-gray-300 accent-blue-500 ",
-    
- 
-    
-  )}
-/>
-
+          type="checkbox"
+          checked={selected}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleSelect(thread._id, index, e);
+          }}
+          readOnly
+          className={clsx(
+            "h-4 w-4 rounded-sm border border-gray-300 accent-blue-500 ",
+          )}
+        />
 
         {/* Sender Info */}
         <div className="flex flex-col min-w-0">
@@ -121,19 +167,20 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
               title={sender}
               className={clsx(
                 "truncate text-base  font-google ",
-                thread.unreadCount > 0 ? "font-medium text-gray-900" : "  text-gray-700"
+                thread.unreadCount > 0
+                  ? "font-medium text-gray-900"
+                  : "  text-gray-700",
               )}
-
               dangerouslySetInnerHTML={{
-              __html: highlightText(sender, filters.search),
-            }}
-            >
-             
-              
-              
-            </span>
+                __html: highlightText(sender, filters.search),
+              }}
+            ></span>
             {/* {attachments.length > 0 && <FiPaperclip className="text-gray-400 size-3 shrink-0" />} */}
-            {thread?.messageCount > 1 && <span className="text-gray-500 text-[12px] shrink-0 font-google" >{thread?.messageCount}</span>}
+            {thread?.messageCount > 1 && (
+              <span className="text-gray-500 text-[12px] shrink-0 font-google">
+                {thread?.messageCount}
+              </span>
+            )}
           </div>
 
           {/* Sub-labels: Assigned & Category */}
@@ -157,94 +204,183 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
         {/* Subject + Snippet */}
         <div
           className="min-w-0 flex flex-col "
-          onClick={() => setEmailDetail({ threadId: thread.threadId, show: true, subject: thread?.subject || "No Subject", participants: thread.participants })}
+          onClick={() =>
+            setEmailDetail({
+              threadId: thread.threadId,
+              show: true,
+              subject: thread?.subject || "No Subject",
+              participants: thread.participants,
+
+              mongoThreadId: thread?._id,
+              userId: thread?.userId,
+              category: thread?.category,
+              status: thread?.status
+
+               
+            })
+          }
         >
           <span
             className={clsx(
               "truncate text-base  font-google ",
-              thread.unreadCount > 0 ? "text-gray-900 font-medium" : "text-gray-700   "
+              thread.unreadCount > 0
+                ? "text-gray-900 font-medium"
+                : "text-gray-700   ",
             )}
-
             dangerouslySetInnerHTML={{
               __html: highlightText(thread.subject, filters.search),
             }}
-          >
-             
+          ></span>
+          <span className="text-sm text-gray-500 truncate font-normal  font-google ">
+            {thread.lastMessageSnippet}
           </span>
-          <span className="text-sm text-gray-500 truncate font-normal  font-google ">{thread.lastMessageSnippet}</span>
         </div>
 
         {/* Attachment count/icon spacer (Optional) */}
         <div className="w-4" />
 
         {/* Actions (hover only) */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          {/* Quick Category Selector */}
-          <div className="relative flex items-center bg-white border border-gray-200 rounded-md shadow-sm overflow-hidden hover:border-gray-300">
-            <select
-              className="appearance-none text-xs pl-2 pr-6 py-1 bg-transparent cursor-pointer outline-none"
-              value={thread.category}
-              onChange={(e) => {
-                e.stopPropagation();
-                updateCategory(e.target.value);
-              }}
-            >
-              <option value="">Select</option>
-              {categories.map((category) => (
-                <option key={category.name} value={category.name}>
-                  {category.name[0].toUpperCase() + category.name.slice(1)}
-                </option>
-              ))}
-            </select>
-            <FiChevronDown className="absolute right-1.5 pointer-events-none text-gray-400 size-3" />
-          </div>
+       <div
+  className={clsx(
+    "flex items-center gap-1 transition-opacity",
+    isRowActive
+      ? "opacity-100"
+      : "opacity-0 group-hover:opacity-100"
+  )}
+>
 
-          {/* Assign User Dropdown */}
+          {/* <button
+            onClick={(e) => {
+              e.stopPropagation();
+
+              setReplyThread({
+                threadId: thread.threadId,
+                companyName: thread.companyName,
+              });
+            }}
+            className="px-3 py-1 text-xs bg-orange-500 text-white rounded-md"
+          >
+            Reply
+          </button> */}
+
+
+          {/* Reply Button Container */}
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div className="relative group/reply flex items-center justify-end">
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      setReplyThread({
+        threadId: thread.threadId,
+        companyName: thread.companyName,
+      });
+    }}
+    className="px-3 py-1 text-xs bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors shadow-sm"
+  >
+    Reply
+  </button>
+
+{/* --- SMART TOOLTIP --- */}
+        <div 
+          className={clsx(
+            "invisible group-hover/reply:visible opacity-0 group-hover/reply:opacity-100 transition-all duration-200",
+            "absolute left-0 w-72 z-[9999]", 
+            // FIX 2: If it's the first row (index 0), flip it to show BELOW the button
+            index === 0 ? "top-full mt-2.5" : "bottom-full mb-2.5",
+            "bg-white p-4 rounded-xl shadow-2xl border border-gray-100 pointer-events-none"
+          )}
+        >
+          <p 
+            className="text-gray-700 text-sm leading-relaxed line-clamp-4 font-normal font-google"
+            dangerouslySetInnerHTML={{ __html: thread.lastMessageSnippet || "No snippet available" }}
+          />
+          
+          {/* FIX 3: Flip the arrow based on position */}
+          <div className={clsx(
+            "absolute left-5 size-3 rotate-45 bg-white border-gray-100",
+            index === 0 
+              ? "bottom-full -mb-1.5 border-t border-l" // Arrow pointing up
+              : "top-full -mt-1.5 border-b border-r"    // Arrow pointing down
+          )}></div>
+        </div>
+
+  {/* Existing ReplyPopup logic */}
+  {replyThread?.threadId === thread.threadId && (
+    <ReplyPopup
+      threadId={replyThread.threadId}
+      companyName={replyThread.companyName}
+      onClose={() => setReplyThread(null)}
+    />
+  )}
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+          <AssignCategory
+            categories={categories}
+            mongoThreadId={thread._id}
+            currentCategory={thread?.category}
+            handleUpdateThread={handleUpdateThread}
+
+             onToggle={(isOpen) => setAssignOpen(isOpen)}
+
+          />
+
+           
+             <AssignUser
+                      users={users}
+                      mongoThreadId={thread?._id}
+                      currentUserId={thread?.userId}
+                      handleUpdateThread={handleUpdateThread}
+                      onToggle={(isOpen) => setAssignOpen(isOpen)}
+                       
+                    />
           {/* Actions (hover only) */}
-          <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1.5   transition-opacity">
+            
 
 
-
-            {/* Assign User Button */}
-            <div className="relative">
-              <button
-                title="Assign User"
-                className={clsx(
-                  "p-1.5 rounded-md border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 transition-colors shadow-sm",
-                  assignOpen && "ring-2 ring-blue-500/20 border-blue-500"
-                )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setAssignOpen(!assignOpen);
-                }}
-              >
-                <FiUserPlus className="size-4" />
-              </button>
-
-              {assignOpen && (
-                <div
-                  className="absolute right-0 top-full mt-2 w-56 max-h-96 overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-xl z-50 py-1"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    Assign to...
-                  </div>
-                  {users.map((user, i) => (
-                    <button
-                      key={user._id}
-                      className={clsx(
-                        "w-full text-left px-3 py-2 text-sm hover:bg-blue-50 transition-colors border-b last:border-0",
-                        thread.userId === user._id ? "text-blue-600 font-semibold bg-blue-50/50" : "text-gray-700"
-                      )}
-                      disabled={updating}
-                      onClick={() => updateUser(user._id)}
-                    >
-                      {user.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
 
             {/* Create Ticket Button */}
             <button
@@ -257,16 +393,26 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
                   isOpen: true,
                   form: {
                     subject: thread.subject || "",
-                    clientName: thread.participants.find(p => p.email !== parseEmail(myEmail))?.name || "",
-                    email: thread.participants.find(p => p.email !== parseEmail(myEmail))?.email || "",
-                    mailThreadId: thread.threadId
-                  }
+                    clientName:
+                      thread.participants.find(
+                        (p) => p.email !== parseEmail(myEmail),
+                      )?.name || "",
+                    email:
+                      thread.participants.find(
+                        (p) => p.email !== parseEmail(myEmail),
+                      )?.email || "",
+                    mailThreadId: thread.threadId,
+                  },
                 });
               }}
             >
               <span className="size-1.5 rounded-full bg-blue-500" />
               Ticket
             </button>
+
+
+
+
 
             {/* Create Lead Button */}
             <button
@@ -275,11 +421,21 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
               onClick={(e) => {
                 e.stopPropagation();
                 setCreateLeadModal({
-                   _id: thread._id,
+                  _id: thread._id,
                   isOpen: true,
                   form: {
-                    clientName: thread.participants.find(p => p.email !== parseEmail(myEmail))?.name || "",
-                    email: thread.participants.find(p => p.email !== parseEmail(myEmail))?.email || "",
+                    clientName:
+                      thread.participants.find(
+                        (p) => p.email !== parseEmail(myEmail),
+                      )?.name || "",
+                    email:
+                      thread.participants.find(
+                        (p) => p.email !== parseEmail(myEmail),
+                      )?.email || "",
+                  },
+                  ticketBindings: {
+                      subject: thread.subject || "",
+                      mailThreadId: thread.threadId,
                   }
                 });
               }}
@@ -287,13 +443,11 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
               <span className="size-1.5 rounded-full bg-green-500" />
               Lead
             </button>
-
-  
           </div>
 
           {/* More Options */}
           <div className="relative">
-            <button
+            {/* <button
               className="p-1 rounded-md hover:bg-gray-200 text-gray-500"
               onClick={(e) => {
                 e.stopPropagation();
@@ -301,80 +455,90 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
               }}
             >
               <FiMoreVertical className="size-4" />
-            </button>
-
-
-
+            </button> */}
 
             <button
               className="p-1 rounded-md hover:bg-gray-200 text-gray-500  hover:text-red-500"
               title="Delete Thread"
               onClick={(e) => {
-                deleteThread(thread?.threadId, thread?.companyName)
+                deleteThread(thread?.threadId, thread?.companyName);
               }}
             >
-              <MdDeleteOutline className="size-5   " /> 
+              <MdDeleteOutline className="size-5   " />
             </button>
 
-            {menuOpen && (
+
+              {
+                thread?.status === "progress" ? (
+                  <button
+              className="p-1 rounded-md   text-gray-500  hover:text-green-500"
+              title="Complete Thread"
+              onClick={(e) => {
+                updateStatus("completed");
+              }}
+            > 
+              <FaCheckCircle className="size-4   " />
+            </button>
+                ) : (
+                   <button
+              className="p-1 rounded-md   text-gray-500  hover:text-red-500"
+              title="Undo Complete"
+              onClick={(e) => {
+                updateStatus("progress");
+              }}
+            > 
+              <FaUndoAlt className="size-4   " />
+            </button>
+                )
+              }
+             
+
+
+
+           
+
+            {/* {menuOpen && (
               <div
                 className="absolute right-0 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-lg z-50"
                 onClick={(e) => e.stopPropagation()}
               >
-                <button
-                  disabled={updating || !thread.userId}
-                  onClick={async () => {
-                    setMenuOpen(false);
-                    await updateUser(null); // remove assigned user
-                  }}
-                  className={clsx(
-                    "w-full px-3 py-2 text-left text-sm transition-colors rounded-lg",
-                    thread.userId ? "text-red-600 hover:bg-red-50" : "text-gray-300 cursor-not-allowed"
-                  )}
-                >
-                  Remove user
-                </button>
+                
               </div>
-            )}
+            )} */}
           </div>
         </div>
 
+        <div>
+           
+                  <IconButtonWithBadge
+          icon={FiMessageSquare}
+          unreadCount={thread?.unreadComments || 0}
+          title="View Comments"
+          onClick={() => {
+            setComment({
+                show: true,
+                threadId: thread._id,
+                threadSubject: thread?.subject,
+              })
+          }
+            
+          }
+        />
 
 
-            <div>
-                 <button
-  onClick={() => {
-    setComment({
-      show: true,
-      threadId: thread._id,
-      threadSubject: thread?.subject
-    });
-  }}
-  className="relative p-2.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 group active:scale-95"
-  title="View Comments"
->
-  {/* The Icon */}
-  <FiMessageSquare size={20} className="group-hover:fill-blue-50/10" />
 
-  {/* The Unread Badge */}
-  {thread?.unreadComments > 0 && (
-    <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white ring-2 ring-white animate-in zoom-in">
-      {thread.unreadComments > 99 ? '99+' : thread.unreadComments}
-    </span>
-  )}
-</button>
-            </div>
+        </div>
 
         {/* Date/Time */}
 
         <div className="text-[11px] text-right text-gray-500 font-medium tabular-nums">
-          {new Date(thread.lastMessageAtInbox).toLocaleDateString("en-US", {
+          {new Date(folder === "inbox" ? thread.lastMessageAtInbox : thread.lastMessageAtSent).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
             year: "numeric",
           })}
           <div className="text-[10px] opacity-90">
-            {new Date(thread.lastMessageAtInbox).toLocaleTimeString("en-US", {
+            {new Date(folder === "inbox" ? thread.lastMessageAtInbox : thread.lastMessageAtSent).toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
               hour12: true,
@@ -388,7 +552,11 @@ export default function Row({ thread, users, handleUpdateThread, setEmailDetail,
         <div className="flex items-center gap-2 pb-2 pl-[20rem] pr-4">
           <div className="flex gap-2 items-center">
             {visibleAttachments.map((att, idx) => (
-              <AttachmentChip key={idx} attachment={att} className="scale-90 origin-left" />
+              <AttachmentChip
+                key={idx}
+                attachment={att}
+                className="scale-90 origin-left"
+              />
             ))}
             {extraCount > 0 && (
               <span className="text-[11px] font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">

@@ -9,6 +9,7 @@ import {
   getAllEmails,
   getAttachments,
   getSingleEmail,
+  getSingleEmailWithPagination,
   markThreadAsRead,
   sendEmailWithAttachments,
 } from "../utils/gmailApi.js";
@@ -27,6 +28,8 @@ import goalModel from "../models/goalModel.js";
 import { normalizeDashes } from "../utils/normalizeDashes.js";
 import { getGmailClient } from "../emailModule/services/gmail.service.js";
 import { buildGmailReply } from "../emailModule/utils/buildGmailReply.js";
+import EmailThread from "../emailModule/models/EmailThread.js";
+import ThreadCategory from "../emailModule/models/ThreadCategory.js";
 
 
 
@@ -218,6 +221,18 @@ export const sendEmail = async (req, res) => {
       email: email,
       isManual: clientId ? false : true
     });
+
+
+    const user = await userModel.findOne({ name: jobHolderToAssign }).lean().select("_id");
+    
+    const thread = await EmailThread.create({
+      companyName: company?.trim().toLowerCase(),
+      threadId: threadId,
+      userId: user._id,
+      // category: "ticket"
+    })
+
+
 
     const ticketActivity = await TicketActivity.create({
       ticketId: sendEmail._id,
@@ -1184,9 +1199,11 @@ export const updateTickets = async (req, res) => {
 
 
    // Create Notification
-   if(updateKeys.includes('jobHolder') && (req.user?.user?.name !== ticket?.jobHolder)) {  
-    const user = await userModel.findOne({ name: ticket.jobHolder });
+   if(updateKeys.includes('jobHolder')  ) {  
+    const user = await userModel.findOne({ name: ticket.jobHolder }).lean().select("_id");;
     
+    if(req.user?.user?.name !== ticket?.jobHolder) {
+      
         const payload = {
       title: "New Ticket Assigned",
       redirectLink: "/tickets",
@@ -1199,6 +1216,24 @@ export const updateTickets = async (req, res) => {
 
 
     scheduleNotification(true, payload)
+    }
+
+
+    
+      // const threadId = new mongoose.Types.ObjectId();
+      const thread = await EmailThread.findOneAndUpdate({
+        threadId: ticket?.mailThreadId
+      }, {
+        $set: {
+          userId: user?._id,
+          // category: "ticket",
+        }
+      })
+
+
+
+
+
   }
 
 
@@ -2148,6 +2183,7 @@ export const deleteMultipleEmail = async (req, res) => {
 export const getInboxDetail = async (req, res) => {
   try {
     const { mailThreadId, company } = req.params;
+    const { page = 1, limit = 10 } = req.query;
 
     if (!mailThreadId || !company) {
       return res.status(400).json({
@@ -2159,6 +2195,8 @@ export const getInboxDetail = async (req, res) => {
     const ticketDetail = {
       threadId: mailThreadId,
       companyName: company,
+      page: Number(page),
+      limit: Number(limit),
     };
 
     // Fetch the email thread details based on the mailThreadId
@@ -2183,7 +2221,60 @@ export const getInboxDetail = async (req, res) => {
       error: error,
     });
   }
+
 };
+
+
+
+// Get Inbox Detail
+export const getInboxDetailWithPagination = async (req, res) => {
+  try {
+    const { mailThreadId, company } = req.params;
+    const { page = 1, limit = 10 } = req.query;
+
+    if (!mailThreadId || !company) {
+      return res.status(400).json({
+        success: false,
+        message: "mailThreadId and company are required",
+      });
+    }
+
+    const ticketDetail = {
+      threadId: mailThreadId,
+      companyName: company,
+      page: Number(page),
+      limit: Number(limit),
+    };
+
+    // Fetch the email thread details based on the mailThreadId
+    const threadDetails = await getSingleEmailWithPagination(ticketDetail);
+
+    if (!threadDetails || threadDetails.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No email found for this mailThreadId",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      emailDetails: threadDetails,
+    });
+  } catch (error) {
+    console.log("Error while getting single email details:", error);
+    res.status(500).send({
+      success: false,
+      message: "Error while getting email details!",
+      error: error,
+    });
+  }
+};
+
+
+
+
+
+
 
 // Inbox Mark As Read
 export const markAsReadInboxEmail = async (req, res) => {

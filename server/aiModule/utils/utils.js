@@ -4,13 +4,12 @@ import { FOLLOW_UP, REPLY } from "../constants.js";
 // import * as pdfParse from "pdf-parse";
 // import mammoth from "mammoth";
 // import XLSX from "xlsx";
-
+ 
+ 
 // Decode Gmail base64 body
 // Decode base64url safely
 const decodeBase64Url = (data = "") =>
-  Buffer.from(data.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString(
-    "utf-8",
-  );
+  Buffer.from(data.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf-8");
 
 // Recursively extract body parts
 const extractBodyFromParts = (parts = [], result = { text: "", html: "" }) => {
@@ -93,26 +92,72 @@ export const decodeEmailBody = (msg) => {
 //   return text.trim();
 // };
 
-const getGmailClient = () => {
-  // Create OAuth2 client
-  const oauth2Client = new google.auth.OAuth2(
-    process.env.CLIENT_ID,
-    process.env.CLIENT_SECRET,
-    process.env.REDIRECT_URI,
+
+
+// const getGmailClient = () => {
+//   // Create OAuth2 client
+//   const oauth2Client = new google.auth.OAuth2(
+//     process.env.CLIENT_ID,
+//     process.env.CLIENT_SECRET,
+//     process.env.REDIRECT_URI
+//   );
+
+//   // Set the refresh token for the user
+//   oauth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
+
+//   // gmail client
+//   const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+
+//   return gmail;
+// };
+
+
+export const getGmailClient = (companyName) => {
+  const COMPANY_CONFIG = {
+    affotax: {
+      name: "affotax",
+      clientId: process.env.CLIENT_ID,
+      clientSecret: process.env.CLIENT_SECRET,
+      redirectUri: process.env.REDIRECT_URI,
+      refreshToken: process.env.REFRESH_TOKEN,
+    },
+    outsource: {
+      name: "outsource",
+      clientId: process.env.OUTSOURCING_CLIENT_ID,
+      clientSecret: process.env.OUTSOURCING_CLIENT_SECRET,
+      redirectUri: process.env.OUTSOURCING_REDIRECT_URI,
+      refreshToken: process.env.OUTSOURCING_REFRESH_TOKEN,
+    },
+  };
+
+
+
+  const config = COMPANY_CONFIG[companyName];
+
+  if (!config) throw new Error("Invalid company name");
+
+
+
+  const oauth = new google.auth.OAuth2(
+    config.clientId,
+    config.clientSecret,
+    config.redirectUri
   );
 
-  // Set the refresh token for the user
-  oauth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
+  oauth.setCredentials({ refresh_token: config.refreshToken });
 
-  // gmail client
-  const gmail = google.gmail({ version: "v1", auth: oauth2Client });
-
-  return gmail;
+  return google.gmail({ version: "v1", auth: oauth });
 };
 
+
+
+
+
 // Fetch Gmail thread
-export const fetchThreadMessages = async (threadId) => {
-  const gmail = getGmailClient();
+export const fetchThreadMessages = async (threadId, companyName) => {
+  const gmail = getGmailClient(companyName);
+
+
 
   const thread = await gmail.users.threads.get({
     userId: "me",
@@ -130,6 +175,8 @@ export const fetchThreadMessages = async (threadId) => {
     const body = decodeEmailBody(msg);
     // const attachmentText = await extractAttachmentText(msg, gmail);
 
+     
+
     messages.push({
       id: msg.id,
       from: headers["from"] || "",
@@ -146,7 +193,8 @@ export const fetchThreadMessages = async (threadId) => {
 };
 
 // Build AI prompt context
-export const buildEmailContext = (messages = []) => {
+export const buildEmailContext = (messages = [] ) => {
+
   const slicedArr = messages?.length > 6 ? messages.slice(-6) : messages;
 
   return slicedArr
@@ -154,16 +202,45 @@ export const buildEmailContext = (messages = []) => {
       (m, i) =>
         `Message ${i + 1}:\nFrom: ${m.from}\n${m.body}\n${
           m.attachments ? "Attachment content:\n" + m.attachments : ""
-        }\n`,
+        }\n`
     )
     .join("\n");
 };
 
-export const getActionType = (messages = []) => {
-  const isSentByMe = messages[messages.length - 1].labelIds.includes("SENT");
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getActionType = (messages = []) => {
+
+
+
+  const isSentByMe = messages[messages.length - 1].labelIds.includes("SENT");
+  
   return isSentByMe ? FOLLOW_UP : REPLY;
-};
+
+
+}
+
+
+
+
+
+
+
+
+
 
 // export const formatReplyEmail = (html) => {
 //   const signature = `<p>Kind regards,<br/>Affotax</p>`;
@@ -187,6 +264,9 @@ export const getActionType = (messages = []) => {
 //   return `${greeting}\n<p></p>\n${body}\n${sigSpacing}`;
 // };
 
+
+
+
 export const buildUserCustomizationBlock = (customInstructions) => {
   if (!customInstructions?.trim()) return "";
 
@@ -199,6 +279,10 @@ Preferences:
 ${customInstructions}
 `;
 };
+
+
+
+
 
 export function sanitizeUserPrompt(text = "") {
   return text

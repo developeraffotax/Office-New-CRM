@@ -1,11 +1,16 @@
 import EmailThread from "../models/EmailThread.js";
 import mongoose from "mongoose";
 import { getGmailClient } from "../services/gmail.service.js";
-import { buildFilterQuery, getOtherParticipantEmail, isSelfAssignment, } from "../utils/utils.js";
+import {
+  buildFilterQuery,
+  getOtherParticipantEmail,
+  isSelfAssignment,
+} from "../utils/utils.js";
 import { scheduleNotification } from "../../utils/customFns/scheduleNotification.js";
 import { createNotification } from "../utils/createNotification.js";
 import { emitToAll, emitToUser } from "../../utils/socketEmitter.js";
 import Comment from "../models/Comment.js";
+import EmailMessage from "../models/EmailMessage.js";
 
 /**
  * GET /api/email/inbox
@@ -19,19 +24,9 @@ import Comment from "../models/Comment.js";
  *  - page (default: 1)
  *  - limit (default: 20)
  */
- 
-
-
-
-
-
-
-
 
 export const getMailbox = async (req, res) => {
   try {
-
-  
     const query = buildFilterQuery(req);
     // console.log("Mongo Query:", JSON.stringify(query, null, 2));
 
@@ -39,14 +34,17 @@ export const getMailbox = async (req, res) => {
     const pageSize = Math.min(parseInt(req.query.limit) || 20, 100);
     const skip = (pageNumber - 1) * pageSize;
 
-    const dateField = req.query.folder === "sent" ? "lastMessageAtSent" : "lastMessageAtInbox";
+    const dateField =
+      req.query.folder === "sent" ? "lastMessageAtSent" : "lastMessageAtInbox";
 
     const [threads, total] = await Promise.all([
-      EmailThread.find(query).sort({ [dateField]: -1 }).skip(skip).limit(pageSize).lean(),
+      EmailThread.find(query)
+        .sort({ [dateField]: -1 })
+        .skip(skip)
+        .limit(pageSize)
+        .lean(),
       EmailThread.countDocuments(query),
     ]);
-
-
 
     //   const threadIds = threads.map(t => t._id);
     // const userId = req.user.user._id;
@@ -81,98 +79,66 @@ export const getMailbox = async (req, res) => {
     res.json({
       success: true,
       threads: threads,
-      pagination: { page: pageNumber, limit: pageSize, total, totalPages: Math.ceil(total / pageSize) },
+      pagination: {
+        page: pageNumber,
+        limit: pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+      },
     });
   } catch (err) {
     console.error("❌ Thread fetch error:", err);
-    res.status(500).json({ success: false, message: "Failed to fetch threads" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch threads" });
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const getUnreadCounts = async (req, res) => {
   try {
-
-    
-   const user = req?.user?.user;
-      const userId = user?._id;
+    const user = req?.user?.user;
+    const userId = user?._id;
     const isAdmin = user?.role?.name === "Admin";
 
-
     const query = {
-      unreadCount: {$gte : 1},
+      unreadCount: { $gte: 1 },
       hasInboxMessage: true,
-    } 
- 
+    };
+
     if (!isAdmin) {
-        query.userId = userId;
-      } else {
-        // Admins: threads where userId is missing or null
-        query.$or = [{ userId: { $exists: false } }, { userId: null }];
-      }
+      query.userId = userId;
+    } else {
+      // Admins: threads where userId is missing or null
+      query.$or = [{ userId: { $exists: false } }, { userId: null }];
+    }
 
     const affotax = await EmailThread.countDocuments({
       companyName: "affotax",
-      ...query
-      
+      ...query,
     });
 
     const outsource = await EmailThread.countDocuments({
       companyName: "outsource",
-      ...query
+      ...query,
     });
-
 
     res.status(200).json({
       success: true,
       counts: {
         affotax,
-        outsource
-      }
+        outsource,
+      },
     });
-
-
   } catch (err) {
     console.error("❌ Thread count error:", err);
-    res.status(500).json({ success: false, message: "Failed to fetch unread counts for inbox" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Failed to fetch unread counts for inbox",
+      });
   }
 };
-
-
-
-
-
-
 
 // ------------------ Inbox ------------------
 // GET /api/v1/gmail/threads
@@ -188,7 +154,7 @@ export const getUnreadCounts = async (req, res) => {
 //       unreadOnly,
 //       page = 1,
 //       limit = 20,
-//       search,         
+//       search,
 //     } = req.query;
 
 //     const query = {};
@@ -202,8 +168,7 @@ export const getUnreadCounts = async (req, res) => {
 //     if (folder === "sent") {
 //       query.hasSentMessage = true;
 //     }
- 
-    
+
 //     // ---- User filter ----
 //     if (userId) {
 //   if (userId === "unassigned") {
@@ -214,7 +179,6 @@ export const getUnreadCounts = async (req, res) => {
 // }
 
 //     if (companyName) query.companyName = companyName;
-    
 
 //     // ---- Category filter ----
 // if (category) {
@@ -224,7 +188,7 @@ export const getUnreadCounts = async (req, res) => {
 //     andFilters.push({ category });
 //   }
 // }
- //     if (unreadOnly === "true") {
+//     if (unreadOnly === "true") {
 //       query.unreadCount = { $gt: 0 };
 //     }
 
@@ -238,7 +202,6 @@ export const getUnreadCounts = async (req, res) => {
 //       if (endDate) query[dateField].$lte = new Date(endDate);
 //     }
 
-
 //     // ---------------- Search ----------------
 //     if (search && search.trim()) {
 //       const searchRegex = new RegExp(search.trim(), "i");
@@ -250,11 +213,9 @@ export const getUnreadCounts = async (req, res) => {
 //       ];
 //     }
 
-
 //     if (andFilters.length) {
 //       query.$and = andFilters;
 //     }
-
 
 //     const pageNumber = Math.max(parseInt(page), 1);
 //     const pageSize = Math.min(parseInt(limit), 100);
@@ -287,7 +248,6 @@ export const getUnreadCounts = async (req, res) => {
 //     });
 //   }
 // };
-
 
 // ------------------ Sent ------------------
 export const getSentItems = async (req, res) => {
@@ -349,22 +309,6 @@ export const getSentItems = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const updateThreadMetadata = async (req, res) => {
   try {
     const { id } = req.params;
@@ -373,11 +317,11 @@ export const updateThreadMetadata = async (req, res) => {
     /**
      * 1️⃣ Whitelist validation
      */
-    const allowedUpdates = ["category", "userId"];
+    const allowedUpdates = ["category", "userId", "status" ];
     const updateKeys = Object.keys(updates);
 
     const isValidUpdate = updateKeys.every((key) =>
-      allowedUpdates.includes(key)
+      allowedUpdates.includes(key),
     );
 
     if (!isValidUpdate) {
@@ -401,11 +345,10 @@ export const updateThreadMetadata = async (req, res) => {
     /**
      * 3️⃣ Update thread
      */
-    const updatedThread = await EmailThread.findByIdAndUpdate(
-      id,
-      updates,
-      { new: true, runValidators: true }
-    );
+    const updatedThread = await EmailThread.findByIdAndUpdate(id, updates, {
+      new: true,
+      runValidators: true,
+    });
 
     /**
      * 4️⃣ Assignment diff
@@ -413,35 +356,34 @@ export const updateThreadMetadata = async (req, res) => {
     const oldUserId = oldThread.userId?.toString() || null;
     const newUserId = updatedThread.userId?.toString() || null;
 
- 
     const selfAssign = isSelfAssignment(req?.user?.user, newUserId);
 
     /**
      * 5️⃣ Notifications (skip self-assign)
      */
-    if (
-      updateKeys.includes("userId") &&
-      !selfAssign
-    ) {
+    if (updateKeys.includes("userId") && !selfAssign) {
       await createNotification(req, updatedThread);
     }
 
     /**
      * 6️⃣ Socket emits (skip self-assign)
      */
- 
-      const eventName = `metadata:updated-${updatedThread.companyName}`;
 
-      // Assigned → Unassigned OR Reassigned
-      if (oldUserId && !isSelfAssignment(req?.user?.user, oldUserId)) {
-        emitToUser(oldUserId, eventName, {});
-      }
+    const eventName = `metadata:updated-${updatedThread.companyName}`;
 
-      // Unassigned → Assigned OR Reassigned
-      if (newUserId && (newUserId !== oldUserId)  && !isSelfAssignment(req?.user?.user, newUserId)) {
-        emitToUser(newUserId, eventName, {});
-      }
- 
+    // Assigned → Unassigned OR Reassigned
+    if (oldUserId && !isSelfAssignment(req?.user?.user, oldUserId)) {
+      emitToUser(oldUserId, eventName, {});
+    }
+
+    // Unassigned → Assigned OR Reassigned
+    if (
+      newUserId &&
+      newUserId !== oldUserId &&
+      !isSelfAssignment(req?.user?.user, newUserId)
+    ) {
+      emitToUser(newUserId, eventName, {});
+    }
 
     /**
      * 7️⃣ Response
@@ -450,7 +392,6 @@ export const updateThreadMetadata = async (req, res) => {
       success: true,
       message: "Thread updated successfully!",
       thread: updatedThread,
-       
     });
   } catch (error) {
     console.error("Error updating thread:", error);
@@ -470,42 +411,190 @@ export const updateThreadMetadata = async (req, res) => {
 
 
 
- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
- * PATCH /api/v1/gmail/mark-as-read/:id 
- * Marks the thread as read (unreadCount = 0)
+ * PATCH /api/v1/gmail/mark-as-unread/:id
+ * Marks the thread as unread
  * Updates both Gmail and local DB
  */
-export const markThreadAsRead = async (req, res) => {
+export const markThreadAsUnread = async (req, res) => {
   try {
-    const { threadId } = req.params; // MongoDB _id
-    const { companyName } = req.body;  
+    const { threadId } = req.params;  
+    const { companyName } = req.body;
 
-    // Find the thread
-    const thread = await EmailThread.findOne({threadId: threadId, companyName:companyName});
+    // ----------- Find thread -----------
+    const thread = await EmailThread.findOne({
+      threadId: threadId,
+      companyName: companyName,
+    });
+
     if (!thread) {
       return res.status(404).json({
         success: false,
         message: "Thread not found",
       });
     }
- 
 
-  // 👇 already read → no-op
-  if (thread.unreadCount === 0) {
-    return res.json({
+    // 👇 already unread → no-op
+    if (thread.unreadCount > 0) {
+      return res.json({
+        success: true,
+        thread,
+        alreadyUnread: true,
+      });
+    }
+
+    // ----------- 1. Update Gmail -----------
+    const gmailClient = await getGmailClient(companyName);
+
+    if (gmailClient && thread.threadId) {
+      await gmailClient.users.threads.modify({
+        userId: "me",
+        id: thread.threadId,
+        requestBody: {
+          addLabelIds: ["UNREAD"],
+        },
+      });
+    }
+
+    // ----------- 2. Update local DB -----------
+    thread.unreadCount = 1; // mark as unread
+    await thread.save();
+
+    res.status(200).json({
       success: true,
+      message: "Thread marked as unread",
       thread,
-      alreadyRead: true,
+      alreadyUnread: false,
+    });
+  } catch (error) {
+    console.error("Error marking thread as unread:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to mark thread as unread",
+      error: error.message,
     });
   }
+};
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * PATCH /api/v1/gmail/mark-as-read/:id
+ * Marks the thread as read (unreadCount = 0)
+ * Updates both Gmail and local DB
+ */
+export const markThreadAsRead = async (req, res) => {
+  try {
+    const { threadId } = req.params; // MongoDB _id
+    const { companyName } = req.body;
+
+    // Find the thread
+    const thread = await EmailThread.findOne({
+      threadId: threadId,
+      companyName: companyName,
+    });
+    if (!thread) {
+      return res.status(404).json({
+        success: false,
+        message: "Thread not found",
+      });
+    }
+
+    // 👇 already read → no-op
+    if (thread.unreadCount === 0) {
+      return res.json({
+        success: true,
+        thread,
+        alreadyRead: true,
+      });
+    }
 
     // ----------- 1. Update Gmail (if applicable) -----------
     // Assume you have a function to get Gmail OAuth client per company
 
-
-    const gmailClient =  await getGmailClient(companyName); 
+    const gmailClient = await getGmailClient(companyName);
     if (gmailClient && thread.threadId) {
       await gmailClient.users.threads.modify({
         userId: "me",
@@ -520,21 +609,12 @@ export const markThreadAsRead = async (req, res) => {
     thread.unreadCount = 0;
     await thread.save();
 
+    // const eventName = `metadata:updated-${thread.companyName}`;
+    // const assignedUserId = thread.userId?.toString() || null;
 
-
-
-
-      // const eventName = `metadata:updated-${thread.companyName}`;
-      // const assignedUserId = thread.userId?.toString() || null;
-       
-      // if (assignedUserId && !isSelfAssignment(req?.user?.user, assignedUserId)) {
-      //   emitToUser(assignedUserId, eventName, {});
-      // }
-
- 
-
-
-
+    // if (assignedUserId && !isSelfAssignment(req?.user?.user, assignedUserId)) {
+    //   emitToUser(assignedUserId, eventName, {});
+    // }
 
     res.status(200).json({
       success: true,
@@ -551,18 +631,6 @@ export const markThreadAsRead = async (req, res) => {
     });
   }
 };
-
- 
-
- 
-
-
-
-
-
-
-
-
 
 /**
  * DELETE /api/v1/gmail/delete-thread/:id
@@ -585,20 +653,10 @@ export const deleteThread = async (req, res) => {
     // ----------- 1. Delete from Gmail (if Gmail client available) -----------
     const gmailClient = await getGmailClient(companyName);
     if (gmailClient && thread.threadId) {
- 
-
       await gmailClient.users.threads.trash({
         userId: "me",
         id: thread.threadId,
       });
-
-
-
-
- 
-
-
-
 
       // await gmailClient.users.threads.modify({
       //   userId: "me",
@@ -606,22 +664,17 @@ export const deleteThread = async (req, res) => {
       //   removeLabelIds: ["INBOX", "SENT"],
       //   addLabelIds: ["TRASH"],
       // });
-       
     }
 
     // ----------- 2. Delete from local DB -----------
     // await EmailThread.deleteOne({ threadId, companyName });
 
+    // const eventName = `metadata:updated-${thread.companyName}`;
+    // const assignedUserId = thread.userId?.toString() || null;
 
-    
-      // const eventName = `metadata:updated-${thread.companyName}`;
-      // const assignedUserId = thread.userId?.toString() || null;
-       
-      // if (assignedUserId && !isSelfAssignment(req?.user?.user, assignedUserId)) {
-      //   emitToUser(assignedUserId, eventName, {});
-      // }
-
-
+    // if (assignedUserId && !isSelfAssignment(req?.user?.user, assignedUserId)) {
+    //   emitToUser(assignedUserId, eventName, {});
+    // }
 
     res.status(200).json({
       success: true,
@@ -633,6 +686,169 @@ export const deleteThread = async (req, res) => {
       success: false,
       message: "Failed to delete thread",
       error: error.message,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+ 
+
+export const getMailboxUserCounts = async (req, res) => {
+  try {
+    const query = buildFilterQuery(req);
+
+    // 🔥 Deep clone to avoid mutation
+    const countQuery = structuredClone(query);
+ 
+
+    // --------------------------------------------------
+    // Remove userId filter from $and
+    // --------------------------------------------------
+    if (countQuery.$and) {
+      countQuery.$and = countQuery.$and.filter((condition) => {
+        if (condition.userId) return false;
+
+        if (condition.$or) {
+          const containsUserId = condition.$or.some(
+            (c) => c.userId !== undefined
+          );
+          if (containsUserId) return false;
+        }
+
+        return true;
+      });
+
+      if (countQuery.$and.length === 0) {
+        delete countQuery.$and;
+      }
+    }
+
+     
+
+    // --------------------------------------------------
+    // Aggregate User Counts
+    // --------------------------------------------------
+    const userCountsAgg = await EmailThread.aggregate([
+      { $match: countQuery },
+      {
+        $group: {
+          _id: "$userId",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const userCounts = userCountsAgg.map((item) => ({
+      userId: item._id ? item._id.toString() : "unassigned",
+      count: item.count,
+    }));
+
+    const unassignedCount = await EmailThread.countDocuments({
+      ...countQuery,
+      $or: [{ userId: { $exists: false } }, { userId: null }],
+    });
+
+    const total = await EmailThread.countDocuments(countQuery);
+
+    res.json({
+      success: true,
+      userCounts,
+      unassignedCount,
+      allCount: total,
+    });
+  } catch (error) {
+    console.error("❌ User count error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch mailbox counts",
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getThreadMessageUsers = async (req, res) => {
+  try {
+    const { threadId, companyName } = req.query;
+
+    if (!threadId || !companyName) {
+      return res.status(400).json({
+        success: false,
+        message: "threadId and companyName are required",
+      });
+    }
+
+
+    // get messages
+    const messages = await EmailMessage.find({
+      gmailThreadId: threadId,
+      companyName: companyName
+    })
+
+    // build map
+    const messageUserMap = {};
+
+    messages.forEach((msg) => {
+      messageUserMap[msg.gmailMessageId] = msg.senderName || "";
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: messageUserMap,
+    });
+
+  } catch (error) {
+    console.error("getThreadMessageUsers error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
     });
   }
 };

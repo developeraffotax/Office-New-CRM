@@ -270,7 +270,7 @@ export const getAllEmails = async (ticketsList) => {
  * ---------------------------
  */
 
-const getDetailedThreads = async (threadId, accessToken) => {
+const getDetailedThreads = async (threadId, accessToken, ) => {
   const { data: threadData } = await axios.get(`https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}?format=full`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
@@ -355,6 +355,103 @@ const getDetailedThreads = async (threadId, accessToken) => {
 
 // Get Single Email Detail based on It's Thread Id
 
+
+
+const OUR_EMAILS = ["info@affotax.com", "admin@outsourceaccountings.co.uk"]
+const RECIPIENT_HEADERS = ["to", "cc", "bcc"];
+const GMAIL_BASE = "https://gmail.googleapis.com/gmail/v1/users/me";
+
+const getDetailedThreadsWithPagination = async (threadId, accessToken, page = 1, limit = 10) => {
+  // ✅ Step 1: Fetch thread with METADATA only (very fast — no body content)
+  const { data: threadData } = await axios.get(
+    `${GMAIL_BASE}/threads/${threadId}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Cc&metadataHeaders=Bcc&metadataHeaders=Date`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  );
+
+  const totalMessages = threadData.messages || [];
+  const total = totalMessages.length;
+
+  // ✅ Step 2: Paginate BEFORE fetching full content
+  const startIndex = (page - 1) * limit;
+  const paginatedMessages = totalMessages
+    .slice()
+    .reverse()
+    .slice(startIndex, startIndex + limit);
+
+  const latestMessageMeta = paginatedMessages.at(-1) ?? totalMessages.at(-1);
+  const date = new Date(parseInt(latestMessageMeta?.internalDate || Date.now()));
+
+
+  console.log("LATEST MESAGE ❤️❤️❤️❤️", latestMessageMeta)
+
+  // ✅ Step 3: Fetch ONLY the paginated messages in parallel (not all messages)
+  const fullMessages = await Promise.all(
+    paginatedMessages.map((msg) =>
+      axios
+        .get(`${GMAIL_BASE}/messages/${msg.id}?format=full`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        })
+        .then((res) => res.data)
+    )
+  );
+
+  // ✅ Step 4: Process fetched messages
+  const decryptedMessages = await Promise.all(
+    fullMessages.map((msg) => processMessage(msg, accessToken))
+  );
+
+  // ✅ Use metadata from threadData for headers (already available, no extra call)
+  const firstMessage = totalMessages[0];
+  const firstMsgHeaders = firstMessage?.payload?.headers ?? [];
+
+  const rawRecipients = firstMsgHeaders
+    .filter((h) => RECIPIENT_HEADERS.includes(h.name.toLowerCase()))
+    .map((h) => h.value);
+
+  const firstMsgEmail = extractEmail(rawRecipients[0]);
+  let recipients = rawRecipients;
+
+  if (firstMsgEmail === "info@affotax.com") {
+    const fromHeader = firstMsgHeaders.find((h) => h.name.toLowerCase() === "from");
+    if (fromHeader) {
+      const match = fromHeader.value.match(/<(.+?)>/);
+      recipients = [match ? match[1] : fromHeader.value];
+    } else {
+      recipients = rawRecipients.length ? rawRecipients : ["No Recipient Found"];
+    }
+  }
+
+  const subject =
+    firstMsgHeaders.find((h) => h.name.toLowerCase() === "subject")?.value ??
+    "No Subject Found";
+
+  const latestFullMessage = fullMessages.at(-1);
+
+  return {
+    decryptedMessages: decryptedMessages.reverse(),
+    threadData,
+    threadId,
+    subject,
+    readStatus: getLatestMessageStatus(latestFullMessage, OUR_EMAILS),
+    recipients,
+    formattedDate: date.toLocaleDateString(),
+    formattedTime: date.toLocaleTimeString(),
+    latestMessageId: latestFullMessage?.id ?? "",
+    pagination: {
+      page,
+      limit,
+      totalMessages: total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
+
+
+
+
+
+
 export const getSingleEmail = async (ticketDetail) => {
   try {
     const accessToken = await getAccessToken();
@@ -362,11 +459,13 @@ export const getSingleEmail = async (ticketDetail) => {
     let response;
 
     if (ticketDetail.companyName === "Affotax" || ticketDetail.companyName === "affotax") {
-      response = await getDetailedThreads(ticketDetail.threadId, accessToken);
+      response = await getDetailedThreads(ticketDetail.threadId, accessToken, ticketDetail.page, ticketDetail.limit);
     } else {
       response = await getDetailedThreads(
         ticketDetail.threadId,
-        outSourcingAccessToken
+        outSourcingAccessToken,
+         ticketDetail.page,
+          ticketDetail.limit
       );
     }
 
@@ -376,6 +475,35 @@ export const getSingleEmail = async (ticketDetail) => {
     throw new Error("Error while fetching email details");
   }
 };
+
+export const getSingleEmailWithPagination = async (ticketDetail) => {
+  try {
+    const accessToken = await getAccessToken();
+    const outSourcingAccessToken = await getOutsourceAccessToken();
+    let response;
+
+    if (ticketDetail.companyName === "Affotax" || ticketDetail.companyName === "affotax") {
+      response = await getDetailedThreadsWithPagination(ticketDetail.threadId, accessToken, ticketDetail.page, ticketDetail.limit);
+    } else {
+      response = await getDetailedThreadsWithPagination(
+        ticketDetail.threadId,
+        outSourcingAccessToken,
+         ticketDetail.page,
+          ticketDetail.limit
+      );
+    }
+
+    return response;
+  } catch (error) {
+    console.log("Error in getSingleEmail:", error);
+    throw new Error("Error while fetching email details");
+  }
+};
+
+
+
+
+ 
 
 // Get Attachments
 

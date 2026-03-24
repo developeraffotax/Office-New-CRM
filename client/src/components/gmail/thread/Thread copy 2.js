@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useMemo, useLayoutEffect } from "re
 import { IoArrowBackOutline } from "react-icons/io5";
 import { HiReply } from "react-icons/hi";
 import { Buffer } from "buffer";
-import { FaCaretDown, FaCheckCircle, FaRegFileImage, FaUndoAlt } from "react-icons/fa";
+import { FaCaretDown, FaRegFileImage } from "react-icons/fa";
 import { FaRegFileLines } from "react-icons/fa6";
 import { LuDownload } from "react-icons/lu";
 import { ImAttachment } from "react-icons/im";
@@ -17,46 +17,15 @@ import { useEscapeKey } from "../../../utlis/useEscapeKey.js";
 import { useClickOutside } from "../../../utlis/useClickOutside.js";
 import { gmailParser } from "../utils/gmailParser.js";
 import EmailHeaderDetails from "./EmailHeaderDetails.js";
-import AssignUser from "../shared/ui/AssignUser.js";
-import AssignCategory from "../shared/ui/AssignCategory.js";
-import { FiMessageSquare } from "react-icons/fi";
-import IconButtonWithBadge from "../shared/ui/IconButtonWithBadge.js";
-import { useOverlayStack } from "../hooks/useOverlayStack.js";
-import Swal from "sweetalert2";
-import { confirmAlert } from "../shared/ui/Swal.js";
 
 export default function Thread({
   company,
   threadId,
   subject,
- setEmailDetail,
+  setShowEmailDetail,
   markAsRead,
-  users,
-  handleUpdateThread,
-  mongoThreadId,
-  userId,
-  categories,
-  category,
-  status,
-  setComment,
- 
- 
-  unreadComments,
-  show
 }) {
-
-  const [page, setPage] = useState(1);
-const [hasMore, setHasMore] = useState(false);
-const [loadingMore, setLoadingMore] = useState(false);
-
-
- 
- 
-    
-  const [swalOpen, setSwalOpen] = useState(false);
-
-
-  const [messages, setMessages] = useState([]);
+  const [emailDetail, setEmailDetail] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isloading, setIsLoading] = useState(false);
   const [attachmentId, setAttachmentId] = useState("");
@@ -70,37 +39,29 @@ const [loadingMore, setLoadingMore] = useState(false);
   const [showReplyEditor, setShowReplyEditor] = useState(false);
   const [showStickyReply, setShowStickyReply] = useState(false);
 
-
-  const [messageUsers, setMessageUsers] = useState({});
-
-
   const scrollContainerRef = useRef(null);
   const threadRef = useRef(null);
 
   const lastMessageRef = useRef(null);
   const replySectionRef = useRef(null);
- 
-const scrollAnchorRef = useRef(null); // { previousHeight }
 
-
-  useLayoutEffect(() => {
-  if (!loadingMore && scrollAnchorRef.current) {
-    const container = scrollContainerRef.current;
-    if (container) {
-      const newHeight = container.scrollHeight;
-      container.scrollTop = newHeight - scrollAnchorRef.current.previousHeight;
-    }
-    scrollAnchorRef.current = null; // reset
-  }
-}, [loadingMore]); // fires when loadingMore flips false
-
-
+  // FIX: Scroll to LAST MESSAGE (not bottom of page) on mount
+  // useEffect(() => {
+  //   if (!loading && emailDetail?.decryptedMessages?.length > 0) {
+  //     setTimeout(() => {
+  //       lastMessageRef.current?.scrollIntoView({
+  //         behavior: "smooth",
+  //         block: "start",
+  //       });
+  //     }, 500);
+  //   }
+  // }, [loading, emailDetail]);
 useLayoutEffect(() => {
   const el = scrollContainerRef.current;
   if (el && !loading) {
     el.scrollTop = el.scrollHeight;
   }
-}, [loading]);
+}, [loading, emailDetail]);
 
   // Sticky logic
   useEffect(() => {
@@ -119,91 +80,49 @@ useLayoutEffect(() => {
   // Parse all messages at once (outside the map loop)
   const parsedMessages = useMemo(() => {
     return (
-      messages?.decryptedMessages?.map((message) => {
+      emailDetail?.decryptedMessages?.map((message) => {
         return gmailParser(message?.payload?.body?.data || "");
       }) || []
     );
-  }, [messages?.decryptedMessages]);
+  }, [emailDetail?.decryptedMessages]);
 
-const getEmailDetail = async (pageNumber = 1, isLoadMore = false) => {
-  if (isLoadMore) {
-    setLoadingMore(true);
-  } else {
+  const getEmailDetail = async () => {
     setLoading(true);
-  }
-
-  try {
-    const { data } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/inbox/detail/pagination/${threadId}/${company}?page=${pageNumber}&limit=10`
-    );
-
-    if (data?.emailDetails) {
-      const pagination = data.emailDetails.pagination;
-
-      /**
-       * ✅ HAS MORE FROM BACKEND PAGINATION
-       */
-      setHasMore(
-        pagination?.totalPages
-          ? pageNumber < pagination.totalPages
-          : false
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/inbox/detail/${threadId}/${company}`,
       );
-
-      if (isLoadMore) {
-        // PREPEND older messages
-        setMessages((prev) => ({
-          ...data.emailDetails,
-          decryptedMessages: [
-            ...data.emailDetails.decryptedMessages,
-            ...(prev?.decryptedMessages || []),
-          ],
-        }));
-      } else {
-        setMessages(data.emailDetails);
+      if (data) {
+        setEmailDetail(data.emailDetails);
       }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.log(error);
-  } finally {
-    setLoading(false);
-    setLoadingMore(false);
-  }
-};
+  };
 
- 
+  useClickOutside(threadRef, () => {
+    setShowEmailDetail();
+  });
 
+  useEscapeKey(() => {
+    setShowEmailDetail();
+  });
 
-useEffect(() => {
-  setPage(1);
-  getEmailDetail(1, false);
-  markAsRead(threadId, company);
-   getMessageUsers();   // 👈 add this
-}, [threadId, company]);
+  useEffect(() => {
+    getEmailDetail();
+    markAsRead(threadId, company);
+  }, [threadId, company]);
 
+  const separate = (email) => {
+    const emailRegex = /(.*)<(.*)>/;
+    const match = email?.match(emailRegex);
+    const name = match ? match[1]?.trim() : email || "Unknown";
+    const emailAddress = match ? match[2]?.trim() : "";
 
-
-const handleLoadMore = async () => {
-  if (!hasMore || loadingMore) return;
-  
-  const container = scrollContainerRef.current;
-  // Capture BEFORE any state changes
-  scrollAnchorRef.current = { previousHeight: container.scrollHeight };
-  
-  const nextPage = page + 1;
-  setPage(nextPage);
-  await getEmailDetail(nextPage, true);
-};
-
-
-
-const separate = (email) => {
-  const emailRegex = /(.*)<(.*)>/;
-  const match = email?.match(emailRegex);
-  const name = match ? match[1]?.trim() : email || "Unknown";
-  const emailAddress = match ? match[2]?.trim() : "";
-  
-  return (
-    <div className="flex flex-col">
+    return (
+      <div className="flex flex-col">
         <span className="font-semibold text-gray-900 text-sm md:text-base">
           {name.slice(0, 30)}
         </span>
@@ -215,56 +134,56 @@ const separate = (email) => {
       </div>
     );
   };
-  
+
   const EmailTimeDisplay = ({ internalDate }) => {
     const emailDate = new Date(parseInt(internalDate));
     const formattedDate = !isNaN(emailDate.getTime())
-    ? emailDate.toLocaleString([], {
-      dateStyle: "medium",
-      timeStyle: "short",
+      ? emailDate.toLocaleString([], {
+          dateStyle: "medium",
+          timeStyle: "short",
         })
-        : "Invalid Date";
-        return (
-          <span className="text-xs text-gray-400 font-medium">{formattedDate}</span>
-        );
-      };
-      
-      const downloadAttachments = async (
-        attachmentId,
-        messageId,
-        companyName,
-        fileName,
-      ) => {
-        if (!attachmentId || !messageId || !companyName) {
-          toast.error("Attachment detail missing!");
-          return;
-        }
-        setIsLoading(true);
-        setAttachmentId(attachmentId);
-        try {
-          const { data } = await axios.get(
-            `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`,
-            { responseType: "json" },
-          );
-          if (data) {
-            const decodedData = Buffer.from(data.data, "base64");
-            const blob = new Blob([new Uint8Array(decodedData.buffer)], {
-              type: "application/octet-stream",
-            });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = fileName;
-            link.click();
-            URL.revokeObjectURL(url);
-          }
-        } catch (error) {
-          toast.error("Download failed!");
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      
+      : "Invalid Date";
+    return (
+      <span className="text-xs text-gray-400 font-medium">{formattedDate}</span>
+    );
+  };
+
+  const downloadAttachments = async (
+    attachmentId,
+    messageId,
+    companyName,
+    fileName,
+  ) => {
+    if (!attachmentId || !messageId || !companyName) {
+      toast.error("Attachment detail missing!");
+      return;
+    }
+    setIsLoading(true);
+    setAttachmentId(attachmentId);
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`,
+        { responseType: "json" },
+      );
+      if (data) {
+        const decodedData = Buffer.from(data.data, "base64");
+        const blob = new Blob([new Uint8Array(decodedData.buffer)], {
+          type: "application/octet-stream",
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      toast.error("Download failed!");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const FileIcon = (fileName) => {
     const imageExtensions = ["jpg", "jpeg", "png", "gif", "svg"];
     const ext = fileName.split(".").pop().toLowerCase();
@@ -274,84 +193,13 @@ const separate = (email) => {
       <FaRegFileLines className="text-blue-500" />
     );
   };
-  
+
   const toggleTrimmedContent = (messageId) => {
     setExpandedMessages((prev) => ({
       ...prev,
       [messageId]: !prev[messageId],
     }));
   };
-
-  
-  
-  
-  
-  
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-const getMessageUsers = async () => {
-  try {
-    const { data } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/gmail/thread-message-users`,
-      {
-        params: {
-          threadId,
-          companyName: company,
-        },
-      }
-    );
-
-    if (data?.success) {
-      console.log("DATA RECEIVED", data)
-      setMessageUsers(data.data || {});
-    }
-  } catch (error) {
-    console.error("Failed to fetch message users", error);
-  }
-};
-
-
-
-
-
-
-
-const updateStatus = async (status) => {
-  setSwalOpen(true); // block overlay
-  const { isConfirmed } = await confirmAlert({ type: "warning" });
-  setSwalOpen(false);
-
-  if (!isConfirmed) return;
-  await handleUpdateThread(mongoThreadId, { status: status }, "status");
-  setEmailDetail(prev => ({...prev, status: status}))
-};
-
-
-
-useOverlayStack({
-  ref: threadRef,
-  onClose: () => {
-    if (swalOpen) return; // prevent closing
-    setEmailDetail(prev => ({ ...prev, threadId: "", show: false, subject: "" }))
-  },
-  isOpen: show,
-});
-
-
-
- 
 
   return (
     <div
@@ -362,7 +210,7 @@ useOverlayStack({
       <header className="sticky top-0 z-10 w-full flex items-center justify-between bg-white/80 backdrop-blur-md px-6 py-4 border-b border-gray-200">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => setEmailDetail(prev => ({...prev, threadId: "", show: false, subject: "" }))}
+            onClick={() => setShowEmailDetail(false)}
             className="p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-colors"
           >
             <IoArrowBackOutline className="h-5 w-5" />
@@ -371,84 +219,7 @@ useOverlayStack({
             {subject}
           </h2>
         </div>
-
-          <div className=" flex justify-center items-center gap-4 ">
-
-
-
-     {
-                status === "progress" ? (
-                  <button
-              className="p-1 rounded-md   text-gray-500  hover:text-green-500"
-              title="Complete Thread"
-              onClick={(e) => {
-                
-                updateStatus("completed");
-              }}
-            > 
-              <FaCheckCircle className="size-4   " />
-            </button>
-                ) : (
-                   <button
-              className="p-1 rounded-md   text-gray-500  hover:text-red-500"
-              title="Undo Complete"
-              onClick={(e) => {
-                 
-                updateStatus("progress");
-              }}
-            > 
-              <FaUndoAlt className="size-4   " />
-            </button>
-                )
-              }
-
-
-
-
-        <IconButtonWithBadge
-          icon={FiMessageSquare}
-          unreadCount={unreadComments}
-          title="View Comments"
-          onClick={() =>
-            setComment({
-              show: true,
-              threadId: mongoThreadId,
-              threadSubject: subject,
-            })
-          }
-        />
-
-                            
-                   
-
-        <AssignUser
-          users={users}
-          mongoThreadId={mongoThreadId}
-          currentUserId={userId}
-          handleUpdateThread={handleUpdateThread}
-          showLabel
-        />
-
-           <AssignCategory
-                    categories={categories}
-                    mongoThreadId={mongoThreadId}
-                    currentCategory={category}
-                    handleUpdateThread={handleUpdateThread}
-        
-                      
-        
-                  />
-
-
-
-
-
-
-        
-
-          </div>
-
-        
+         
       </header>
 
       {/* Thread Content */}
@@ -460,23 +231,8 @@ useOverlayStack({
         <div
          ref={scrollContainerRef}
         className="flex-1   overflow-y-auto p-4 md:p-6 flex flex-col  gap-8"
-        > 
-        {hasMore && (
-            <div className="w-full flex justify-center mb-4">
-              <button
-                onClick={handleLoadMore}
-                disabled={loadingMore}
-                className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition flex items-center gap-2"
-              >
-                {loadingMore && (
-                  <TbLoader2 className="w-4 h-4 animate-spin" />
-                )}
-                {loadingMore ? "Loading..." : "Load older messages"}
-              </button>
-            </div>
-          )}
-
-          {messages?.decryptedMessages?.map((message, i) => {
+        >
+          {emailDetail?.decryptedMessages?.map((message, i) => {
             const isSentByMe =
               message?.payload?.body?.sentByMe ||
               message?.labelIds?.includes("SENT");
@@ -495,10 +251,10 @@ useOverlayStack({
             };
             const isExpanded = expandedMessages[message.id];
             const showToggle = parsedEmail.hasThread;
-            const isLast = i === messages.decryptedMessages.length - 1;
+            const isLast = i === emailDetail.decryptedMessages.length - 1;
 
 
-            const crmUserName = messageUsers[message.id];
+
 
             // Inside your map loop where you find fromHeader and toHeader:
             const headersArr = message?.payload?.headers || [];
@@ -542,16 +298,15 @@ useOverlayStack({
                       </div>
                       <div className="flex flex-col">
                         {separate(fromHeader)}
-                         
-
-
+                        {/* <span className="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
+                          to {isSentByMe ? toHeader : "me"}{" "}
+                          <FaCaretDown className="cursor-pointer" />
+                        </span> */}
 
                         <EmailHeaderDetails details={headerDetails} />
                       </div>
                     </div>
-                    
 
-                    <div  className="flex flex-col  gap-0 items-start">  
                     <div className="flex justify-end gap-3 items-center">
                       <EmailTimeDisplay internalDate={message?.internalDate} />
                       <span className="border-l w-1 h-5 border-gray-400"></span>
@@ -565,16 +320,7 @@ useOverlayStack({
                       >
                         <TbArrowForwardUp className="w-5 h-5" />
                       </button>
-
-
-                         
                     </div>
-
-                       {crmUserName && ( <span className="  text-gray-400 text-xs  ">Sent by {crmUserName} </span> ) }
-
-                    </div>
-
-  
                   </div>
 
                   {/* Body Content - Visible Part */}
@@ -683,7 +429,7 @@ useOverlayStack({
               <div className="w-full py-5 ">
                 <Reply
                 company={company}
-                emailDetail={messages}
+                emailDetail={emailDetail}
                 getEmailDetail={() => {
                   getEmailDetail();
                   setShowReplyEditor(false);
@@ -703,7 +449,7 @@ useOverlayStack({
             <Forward
               setShowForward={setShowForward}
               company={company}
-              emailDetail={messages}
+              emailDetail={emailDetail}
               getEmailDetail={getEmailDetail}
               forwardMessageId={forwardMessageId}
             />

@@ -11,6 +11,7 @@ import {
   getCompleteTickets,
   getDashboardTickets,
   getInboxDetail,
+  getInboxDetailWithPagination,
   getSentReceivedCountsPerThread,
   getSingleEmailDetail,
   getTicketActivity,
@@ -113,6 +114,7 @@ router.delete(
 
 // Get Single Email Detail
 router.get("/single/inbox/detail/:mailThreadId/:company", getInboxDetail);
+router.get("/single/inbox/detail/pagination/:mailThreadId/:company", getInboxDetailWithPagination);
 
 // Mark as Read Inbox
 router.put("/markAsRead/inbox/email", markAsReadInboxEmail);

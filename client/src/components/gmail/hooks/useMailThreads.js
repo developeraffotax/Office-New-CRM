@@ -10,11 +10,12 @@ import { fetchInboxUnreadCounts } from "../../../redux/slices/inboxUnreadSlice";
 function matchesFilters(thread, filters, user) {
   if (!thread || !filters) return false;
 
-  const { label, unreadOnly, startDate, endDate, category, userId } = filters;
+  const { label, unreadOnly, startDate, endDate, category, userId, status } = filters;
 
-    console.log("THE FILTERS", filters)
+    // ✅ Status filter (progress or completed)
+    if (status && thread.status !== status) return false;
 
-  if (label && !thread.labels?.includes(label)) return false;
+  if (label && (!thread.labels?.includes(label) || thread.labels?.includes("TRASH"))) return false;
   if (unreadOnly && thread.unreadCount <= 0) return false;
 
   if (startDate && new Date(thread.lastMessageAt) < new Date(startDate))
@@ -74,6 +75,7 @@ const [loading, setLoading] = useState({
   deleting: false,
   fetching: false,
   updating: false,
+   
   
 });
   const [pagination, setPagination] = useState({});
@@ -108,16 +110,17 @@ const filters = useMemo(() => {
     category: searchParams.get("category") || "",
     // userId: searchParams.get("userId") ?? (isAdmin ? "unassigned" : ""),
     // category: searchParams.get("category") ?? (isAdmin ? "unassigned" : ""),
-    // label:
-    //   folder === "sent"
-    //     ? "SENT"
-    //     : searchParams.get("label") || "INBOX",
+    label:
+      folder === "sent"
+        ? "SENT"
+        : "INBOX",
     startDate: searchParams.get("startDate") || "",
     endDate: searchParams.get("endDate") || "",
     unreadOnly: searchParams.get("unreadOnly") === "true",
     page: Number(searchParams.get("page") || 1),
     limit: Number(searchParams.get("limit") || 20),
     search: searchParams.get("search") || "",
+    status: searchParams.get("status") || "",
   };
 }, [searchParams, folder, isAdmin]);
 
@@ -183,25 +186,131 @@ const filters = useMemo(() => {
     }
   }, [endpoint, filters, folder, companyName]);
 
-  // ---------------- Update single thread via API ----------------
-  const handleUpdateThread = async (_id, updateData) => {
+
+
+
+
+
+
+
+
+
+
+
+console.log("THREADS", threads)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ---------------- Update single thread via API ----------------
+const handleUpdateThread = async (_id, updateData, type = "default") => {
+  try {
+    setLoading(prev => ({...prev, updating: true}))
+    const { data } = await axios.put(
+      `${process.env.REACT_APP_API_URL}/api/v1/gmail/update-thread/${_id}`,
+      updateData
+    );
+
+    if (!data?.success || !data?.thread) {
+      toast.error("Thread update failed!");
+      return;
+    }
+
+    const updatedThread = data.thread;
+
+    setThreads((prevThreads) => {
+      // If the update affects status, remove the thread from the list
+      if (type === "status") {
+        return prevThreads.filter((t) => t.threadId !== updatedThread.threadId);
+      }
+
+      // Otherwise, update the specific thread
+      return prevThreads.map((t) => (t._id === updatedThread._id ? updatedThread : t));
+    });
+
+  } catch (err) {
+    toast.error("Failed to update thread!");
+    console.error("Failed to update thread:", err);
+  } finally {
+    setLoading(prev => ({...prev, updating: false}))
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const markAsUnread = async (threadId, companyName) => {
+    if (!threadId) return;
+
     try {
-      const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/gmail/update-thread/${_id}`,
-        updateData,
+      const { data } = await axios.patch(
+        `${process.env.REACT_APP_API_URL}/api/v1/gmail/mark-as-unread/${threadId}`,
+        { companyName: companyName }, // pass companyName for Gmail auth
       );
 
-      if (data?.success) {
+      if (data?.success && !data?.alreadyUnread) {
         const updatedThread = data.thread;
         setThreads((prev) =>
           prev.map((t) => (t._id === updatedThread._id ? updatedThread : t)),
         );
+
+        toast.success("Marked as unread!");
       }
-    } catch (err) {
-      toast.error("Failed to update thread!");
-      console.error("Failed to update thread:", err);
+      // Optionally, update local state to reflect unreadCount = 0 if you track it
+      // e.g., emailDetail.unreadCount = 0;
+    } catch (error) {
+      console.error("Failed to mark thread as unread:", error);
     }
   };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   const markAsRead = async (threadId, companyName) => {
     if (!threadId) return;
@@ -272,6 +381,37 @@ const filters = useMemo(() => {
     }
   };
 
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // ---------------- Initial fetch & filter change ----------------
   useEffect(() => {
     fetchThreads();
@@ -297,7 +437,7 @@ const filters = useMemo(() => {
 
     const handler = ({ action, thread }) => {
 
-        console.log("SOCKET CALLED ❤️❤️❤️❤️🌹🌹🌹", action, thread)
+         
           dispatch(fetchInboxUnreadCounts());
       setThreads((prev) => {
         let newThreads;
@@ -416,7 +556,9 @@ useEffect(() => {
     handleUpdateThread,
     fetchThreads,
     markAsRead,
+    markAsUnread,
     deleteThread,
+ 
     folder, // optional but useful
     companyName,
   };

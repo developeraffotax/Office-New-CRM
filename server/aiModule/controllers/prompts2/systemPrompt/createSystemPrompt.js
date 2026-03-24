@@ -1,34 +1,45 @@
 import { REPLY } from "../../../constants.js";
-import { systemPromptForFollowUp, systemPromptForReply } from "./systemPrompts.js";
+import { actionPrompts } from "./actionPrompt.js";
+import { baseSystemPrompt } from "./systemPrompts.js";
 
+function sanitizeInstructions(input = "") {
+  return input
+    .slice(0, 500)
+    .replace(/[<>]/g, "")
+    .replace(/(ignore previous|system prompt|override|developer)/gi, "");
+}
+ 
 
-//  export const createSystemPrompt = (actionType) => {
-//    if (actionType === REPLY) {
-//      return systemPromptForReply;
-//    } else {
-//      return systemPromptForFollowUp;
-//    }
-//  };
+ 
 
+export const createSystemPrompt = (
 
- export const createSystemPrompt = (actionType, customInstructions = "") => {
-  // Sanitize the user input first
-  const safeCustomInstructions = customInstructions
-    .slice(0, 500) // hard limit
-    .replace(/(system|json|html|markdown|ignore previous)/gi, ""); // basic injection filter
+  actionType,
+  projectContext = "",
+  customInstructions = ""
+) => {
 
-  const basePrompt =
+  const safeCustomInstructions = sanitizeInstructions(customInstructions);
+
+  const actionPrompt =
     actionType === REPLY
-      ? systemPromptForReply
-      : systemPromptForFollowUp;
+      ? actionPrompts.reply
+      : actionPrompts.followUp;
 
-  if (!safeCustomInstructions) return basePrompt;
-
-  // Append user instructions as HIGH-PRIORITY guidance
   return `
-${basePrompt}
+${baseSystemPrompt}
 
--MUST FOLLOW
+${projectContext}
+
+${actionPrompt}
+
+ADDITIONAL USER INSTRUCTIONS
+----------------------------
 ${safeCustomInstructions}
-  `;
+
+IMPORTANT
+---------
+Follow the project context and company instructions strictly.
+Return only the requested format.
+`;
 };

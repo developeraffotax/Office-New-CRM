@@ -288,6 +288,7 @@ export default function Reply({
         <AIReplySelectorNew
           threadId={emailDetail?.threadId}
           onSelect={setMessage}
+          companyName={company}
         />
       </div>
     </div>

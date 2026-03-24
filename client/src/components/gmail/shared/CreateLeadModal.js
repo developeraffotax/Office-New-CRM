@@ -5,7 +5,16 @@ import Select from "react-select";
 import { FiX, FiSend, FiUser, FiMail, FiBriefcase, FiInfo, FiTag, FiLayers } from "react-icons/fi";
 import { useSelector } from "react-redux";
 import { useEscapeKey } from "../../../utlis/useEscapeKey";
+import { createTicket } from "../utils/createTicket";
 
+
+const formatDate = (date) => {
+  const d = new Date(date);
+  const month = `${d.getMonth() + 1}`.padStart(2, "0");
+  const day = `${d.getDate()}`.padStart(2, "0");
+  const year = d.getFullYear();
+  return `${year}-${month}-${day}`;
+};
 
 
 
@@ -68,6 +77,8 @@ export default function CreateLeadModal({
 
   });
 
+  const [createTicketEnabled, setCreateTicketEnabled] = useState(false);
+
 
   const [loading, setLoading] = useState(false);
  
@@ -83,7 +94,31 @@ export default function CreateLeadModal({
   useEffect(() => {
     
     if (createLeadModal?.form) {
-      setForm(createLeadModal.form);
+      setForm((prev) => {
+        return ( {
+          ...prev,
+        ...createLeadModal.form,
+
+          department: "Accounts",
+          stage: "Interest",
+          source: "Website",
+          lead_Source: "Google",
+          
+
+          followUpDate:  formatDate(new Date()),
+          jobDeadline:  formatDate(new Date()),
+          yearEnd:   formatDate(new Date()),
+
+
+
+          
+        })
+
+      });
+
+
+
+     
     }
   }, [createLeadModal]);
 
@@ -106,10 +141,25 @@ export default function CreateLeadModal({
         }
       );
 
-      const userId = users.find(user => form.jobHolder === user.name )?._id;
+        const userId = users.find(user => form.jobHolder === user.name )?._id;
+        await handleUpdateThread(createLeadModal._id, { category: "lead", userId: userId });
+
+
+        if (createTicketEnabled) {
+        await createTicket({
+          companyName: form.companyName,
+          clientName: form.clientName,
+          jobHolder: form.jobHolder,
+          email: form.email,
+          myCompany: myCompany?.charAt(0).toUpperCase() + myCompany?.slice(1),
+          subject: createLeadModal?.ticketBindings?.subject || "",
+          mailThreadId: createLeadModal?.ticketBindings?.mailThreadId || "",
+        });
+      }
+
 
         
-        await handleUpdateThread(createLeadModal._id, { category: "lead", userId: userId });
+
 
       toast.success("Lead created successfully");
       setCreateLeadModal({ isOpen: false, form: {} });
@@ -352,7 +402,18 @@ export default function CreateLeadModal({
             </select>
 
 
-
+              <div className="flex items-center gap-2 mt-4">
+              <input
+                type="checkbox"
+                id="createTicket"
+                checked={createTicketEnabled}
+                onChange={() => setCreateTicketEnabled(prev => !prev)}
+                className="w-4 h-4 text-orange-500 rounded border-gray-300 focus:ring-orange-500"
+              />
+              <label htmlFor="createTicket" className="text-gray-600 text-sm">
+                Create Ticket for this Lead
+              </label>
+            </div>
 
             {/* Submit */}
             <button

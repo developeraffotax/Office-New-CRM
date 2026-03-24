@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useEffect } from "react";
 import EmailDetailDrawer from "../../pages/Tickets/EmailDetailDrawer";
 import ActivityLogDrawer from "../Modals/ActivityLogDrawer";
-import DetailComments from "../../pages/Tasks/TaskDetailComments";
+import DetailComments from "../../pages/Tasks/components/detail/TaskDetailComments";
 import { IoClose } from "react-icons/io5";
 import toast from "react-hot-toast";
 

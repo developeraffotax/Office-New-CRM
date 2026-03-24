@@ -8,15 +8,12 @@ import React, {
 import axios from "axios";
 import { FaCirclePlay } from "react-icons/fa6";
 import { IoStopCircle } from "react-icons/io5";
- import toast from "react-hot-toast";
- 
- 
+import toast from "react-hot-toast";
+
 import { useDispatch, useSelector } from "react-redux";
 import { setAnyTimerRunning, setJid } from "../redux/slices/authSlice";
 import { startCountdown, stopCountdown } from "../redux/slices/timerSlice";
 import { fetchGlobalTimer } from "../redux/slices/globalTimerSlice";
-
- 
 
 export const Timer = forwardRef(
   (
@@ -41,18 +38,15 @@ export const Timer = forwardRef(
 
       allocatedTime,
       setTaskIdForNote,
-      
-      setIsNonChargeable,
-      setIsSubmitting
-    },
-    ref
-  ) => {
-    
 
+      setIsNonChargeable,
+      setIsSubmitting,
+    },
+    ref,
+  ) => {
     const dispatch = useDispatch();
     const auth = useSelector((state) => state.auth.auth);
     const anyTimerRunning = useSelector((state) => state.auth.anyTimerRunning);
-
 
     const [timerId, setTimerId] = useState(null);
     const [isRunning, setIsRunning] = useState(false);
@@ -61,9 +55,6 @@ export const Timer = forwardRef(
     const [totalTime, setTotalTime] = useState(null);
     const isInitialMount = useRef(true);
     const [runningId, setRunningId] = useState("");
-
-   
- 
 
     useEffect(() => {
       if (!clientId || !jobId) {
@@ -75,13 +66,16 @@ export const Timer = forwardRef(
             `${process.env.REACT_APP_API_URL}/api/v1/timer/status`,
             {
               params: { clientId, jobId },
-            }
+            },
           );
-          const { _id, startTime, endTime, isRunning, activity: fetchedActivity } = response.data.timer;
+          const {
+            _id,
+            startTime,
+            endTime,
+            isRunning,
+            activity: fetchedActivity,
+          } = response.data.timer;
           // console.log("Timer:", response.data.timer);
-
-          
-
 
           if (startTime && !endTime) {
             setTimerId(_id);
@@ -89,16 +83,15 @@ export const Timer = forwardRef(
             setIsRunning(isRunning);
             dispatch(setAnyTimerRunning(isRunning));
             const timeElapsed = Math.floor(
-              (new Date() - new Date(startTime)) / 1000
+              (new Date() - new Date(startTime)) / 1000,
             );
             setElapsedTime(timeElapsed);
             dispatch(setJid(response.data.timer.jobId));
 
-            if(pageName === "Jobs") {
-               setActivity?.(fetchedActivity);
-            setIsNonChargeable?.(fetchedActivity === "Non-Chargeable")
+            if (pageName === "Jobs") {
+              setActivity?.(fetchedActivity);
+              setIsNonChargeable?.(fetchedActivity === "Non-Chargeable");
             }
-           
           }
         } catch (error) {
           console.error(error);
@@ -127,14 +120,8 @@ export const Timer = forwardRef(
         }, 1000);
       }
 
-      
-
       return () => clearInterval(intervalId);
     }, [isRunning]);
-
-
-
-    
 
     // useEffect(() => {
     //   const timeId = localStorage.getItem("timer_Id");
@@ -147,13 +134,12 @@ export const Timer = forwardRef(
       let chargeableActivity = "Chargeable";
 
       if (pageName === "Jobs") {
-        const isNonChargeable = clientName === "Affotax" || clientName === "Training";
+        const isNonChargeable =
+          clientName === "Affotax" || clientName === "Training";
         if (isNonChargeable) {
           chargeableActivity = "Non-Chargeable";
           setActivity?.("Non-Chargeable");
-           
-        }  
-
+        }
       }
 
       try {
@@ -170,32 +156,31 @@ export const Timer = forwardRef(
             JobHolderName,
             projectName,
             task,
-            activity: chargeableActivity
-          }
+            activity: chargeableActivity,
+          },
         );
         setTimerId(response.data.timer._id);
         localStorage.setItem(
           "timer_Id",
-          JSON.stringify(response.data.timer._id)
+          JSON.stringify(response.data.timer._id),
         );
 
-        localStorage.setItem('timer_in', `${task ? '/tasks' : '/job-planning'}`);
+        localStorage.setItem(
+          "timer_in",
+          `${task ? "/tasks" : "/job-planning"}`,
+        );
 
-         if (pageName === "Tasks") {
+        if (pageName === "Tasks") {
+          dispatch(
+            startCountdown(allocatedTime, jobId, task, response.data.timer._id),
+          );
+        }
 
-           dispatch(startCountdown(allocatedTime, jobId, task, response.data.timer._id))
-         }
-         
-
-         if (pageName === "Jobs") {
+        if (pageName === "Jobs") {
           const fetchedActivity = response.data.timer?.activity;
-         setActivity?.(fetchedActivity);
-          setIsNonChargeable?.(fetchedActivity === "Non-Chargeable")
-         }
-         
-
-      
-
+          setActivity?.(fetchedActivity);
+          setIsNonChargeable?.(fetchedActivity === "Non-Chargeable");
+        }
 
         addTimerTaskStatus(response.data.timer._id);
         setIsRunning(true);
@@ -208,10 +193,8 @@ export const Timer = forwardRef(
         //   note: "Started work on job",
         // });
 
-         dispatch(fetchGlobalTimer());
-
+        dispatch(fetchGlobalTimer());
       } catch (error) {
-
         console.error(error);
         toast.error(error?.response?.data?.message || "Some thing went wrong!");
       }
@@ -233,16 +216,14 @@ export const Timer = forwardRef(
               taskName.trim() === "Training"
                 ? "Non-Chargeable"
                 : activity || "Chargeable",
-          }
+          },
         );
 
         if (data) {
-
-          if(pageName === "Tasks") {
-            dispatch(stopCountdown())
+          if (pageName === "Tasks") {
+            dispatch(stopCountdown());
           }
-          
-          
+
           removeTimerStatus();
           localStorage.removeItem("timer_Id");
           dispatch(setAnyTimerRunning(false));
@@ -272,17 +253,6 @@ export const Timer = forwardRef(
       }
     };
 
-
-
-
-
-
-
- 
-
-
-
-
     // ------Automatically Stop Timer------>
     // useEffect(() => {
     //   const handleVisibilityChange = () => {
@@ -309,7 +279,7 @@ export const Timer = forwardRef(
           `${process.env.REACT_APP_API_URL}/api/v1/timer/total_time/${id}`,
           {
             params: { jobId },
-          }
+          },
         );
         setTotalTime(data.totalTime);
       } catch (error) {
@@ -320,8 +290,6 @@ export const Timer = forwardRef(
     useImperativeHandle(ref, () => ({
       stopTimer,
     }));
-
-     
 
     // -----------Timer Status--------->
     const addTimerTaskStatus = async (tid) => {
@@ -335,7 +303,7 @@ export const Timer = forwardRef(
             taskLink,
             taskId: jobId,
             timerId: tid,
-          }
+          },
         );
       } catch (error) {
         console.log(error);
@@ -346,7 +314,7 @@ export const Timer = forwardRef(
     const removeTimerStatus = async () => {
       try {
         await axios.delete(
-          `${process.env.REACT_APP_API_URL}/api/v1/timer/remove/timer_task/Status/${auth.user.id}`
+          `${process.env.REACT_APP_API_URL}/api/v1/timer/remove/timer_task/Status/${auth.user.id}`,
         );
       } catch (error) {
         console.log(error);
@@ -372,18 +340,12 @@ export const Timer = forwardRef(
     //   // eslint-disable-next-line
     // }, [isRunning, elapsedTime]);
 
-
-
-    
-
     const stopTimerPopUpHandler = () => {
-      if(task){
-
-            setTaskIdForNote?.(jobId);
-          }
+      if (task) {
+        setTaskIdForNote?.(jobId);
+      }
       setIsShow(true);
-       
-    }
+    };
 
     return (
       <>
@@ -426,5 +388,5 @@ export const Timer = forwardRef(
         </div>
       </>
     );
-  }
+  },
 );

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { getCurrentMonthYear, TaskDateFilterFn } from "../../utils";
+import { TaskDateFilterFn } from "../../utils/TaskDateFilterFn";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import DateRangePopover from "../../../../utlis/DateRangePopover";
+import { useTaskCtx } from "../../contextApi/UserContext";
 
-export const deadlineColumn = (ctx) => {
+export const deadlineColumn = () => {
   return {
     accessorKey: "deadline",
     header: "Deadline",
@@ -77,7 +78,6 @@ export const deadlineColumn = (ctx) => {
             ref={selectRef}
             value={filterValue}
             onChange={handleFilterChange}
-            
             className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
           >
             <option value="">Select</option>
@@ -98,15 +98,12 @@ export const deadlineColumn = (ctx) => {
               onClose={() => setShowPopover(false)}
             />
           )}
-
-
-
-
         </div>
       );
     },
 
     Cell: ({ cell, row }) => {
+      const ctx = useTaskCtx();
       const [date, setDate] = useState(() => {
         const cellDate = new Date(cell.getValue());
         return cellDate.toISOString().split("T")[0];
@@ -146,7 +143,6 @@ export const deadlineColumn = (ctx) => {
 
     filterFn: TaskDateFilterFn,
 
- 
     filterVariant: "custom",
     size: 100,
     minSize: 80,

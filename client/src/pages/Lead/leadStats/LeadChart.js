@@ -3,6 +3,7 @@ import Chart from "react-apexcharts";
 import axios from "axios";
 import { FaSpinner } from "react-icons/fa";
 import toast from "react-hot-toast";
+import { Lead_Status } from "../constants/leadStatus";
  
 
 const LeadsChart = ({ start, end,  lead_Source ,
@@ -65,9 +66,9 @@ const LeadsChart = ({ start, end,  lead_Source ,
           className="border rounded px-3 py-1 text-sm"
         >
           <option value="all">All</option>
-          <option value="progress">Progress</option>
-          <option value="won">Won</option>
-          <option value="lost">Lost</option>
+          <option value={Lead_Status.PROGRESS}>Progress</option>
+          <option value={Lead_Status.WON}>Won</option>
+          <option value={Lead_Status.LOST}>Lost</option>
         </select>
 
 

@@ -25,13 +25,14 @@ import { GrCopy } from "react-icons/gr";
  
  
 import { Timer } from "../../utlis/Timer";
-import CompletedTasks from "../../pages/Tasks/CompletedTasks";
+import { TaskProvider } from "../../pages/Tasks/contextApi/UserContext";
+import { getCompletedTaskColumns } from "../../pages/Tasks/table/columns";
 import AddLabel from "../Modals/AddLabel";
 import AddProjectModal from "../Tasks/AddProjectModal";
 import AddTaskModal from "../Tasks/AddTaskModal";
 import JobCommentModal from "../../pages/Jobs/JobCommentModal";
 import Loader from "../../utlis/Loader";
-import TaskDetail from "../../pages/Tasks/TaskDetail";
+import TaskDetail from "../../pages/Tasks/components/detail/TaskDetail";
 import TimeEditor from "../../utlis/TimeSelector";
  
 import { useDispatch, useSelector } from "react-redux";
@@ -1970,7 +1971,47 @@ Cell: ({ cell, row }) => {
     // ----------------------------
     // 📑 Columns
     // ----------------------------
-    const columns2 = useMemo(() => getTaskColumns(ctx), [ctx]);
+    const columns2 = useMemo(() => getTaskColumns(), []);
+
+    // ----------------------------
+    // ✅ Completed Tasks
+    // ----------------------------
+    const [completedTasksData, setCompletedTasksData] = useState([]);
+
+    const getCompletedTasks = async () => {
+      try {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/completed`,
+        );
+        if (data?.success) setCompletedTasksData(data.tasks);
+      } catch (error) {
+        toast.error("Failed to load completed tasks");
+      }
+    };
+
+    useEffect(() => {
+      if (showCompleted) getCompletedTasks();
+      // eslint-disable-next-line
+    }, [showCompleted]);
+
+    const completedColumns = useMemo(() => getCompletedTaskColumns(), []);
+
+    const completedTable = useMaterialReactTable({
+      columns: completedColumns,
+      data: completedTasksData,
+      enableStickyHeader: true,
+      enableStickyFooter: true,
+      muiTableContainerProps: { sx: { maxHeight: "860px" } },
+      enableColumnActions: false,
+      enableColumnFilters: false,
+      enableSorting: false,
+      enableRowNumbers: true,
+      enableColumnResizing: true,
+      enablePagination: true,
+      initialState: { density: "compact" },
+      muiTableHeadCellProps: { style: { fontWeight: "600", fontSize: "14px", backgroundColor: "#E5E7EB" } },
+      muiTableBodyCellProps: { sx: { border: "1px solid rgba(203, 201, 201, 0.5)" } },
+    });
 
 
 
@@ -2063,7 +2104,7 @@ Cell: ({ cell, row }) => {
     }, [table.getFilteredRowModel().rows]);
 
     return (
-      <>
+      <TaskProvider value={ctx}>
         {!showCompleted ? (
           <div className=" relative w-full h-full overflow-auto ">
             {/*  */}
@@ -2212,10 +2253,15 @@ Cell: ({ cell, row }) => {
             {/* ---- */}
           </div>
         ) : (
-          <CompletedTasks
-            setShowCompleted={setShowCompleted}
-            setActive2={setActive}
-          />
+          <div className="relative w-full h-full overflow-auto py-4 px-2 sm:px-4">
+            <button
+              className="mb-3 px-3 py-1 text-sm rounded border border-gray-400 hover:bg-gray-100"
+              onClick={() => { setShowCompleted(false); setActive("All"); }}
+            >
+              ← Back to Active Tasks
+            </button>
+            <MaterialReactTable table={completedTable} />
+          </div>
         )}
 
         {/* ---------------Add label------------- */}
@@ -2228,7 +2274,7 @@ Cell: ({ cell, row }) => {
             />
           </div>
         )}
-      </>
+      </TaskProvider>
     );
   }
 );

@@ -13,7 +13,7 @@ import { SlCalender } from "react-icons/sl";
 import { GoRepoTemplate } from "react-icons/go";
 import { BiLayer } from "react-icons/bi";
 import { FaRegCreditCard } from "react-icons/fa6";
-import { LuClipboardSignature } from "react-icons/lu";
+import { LuClipboardPenLine } from "react-icons/lu";
 import { MdSecurity } from "react-icons/md";
 import { RiSettings4Fill } from "react-icons/ri";
 import { GoGoal } from "react-icons/go";
@@ -582,13 +582,13 @@ export default function Sidebar({ hide, setHide }) {
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
-                  <LuClipboardSignature
+                  <LuClipboardPenLine
                     className="h-6 w-6 cursor-pointer ml-2"
                     style={{ color: active === "proposals" && "#fff" }}
                   />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <LuClipboardSignature
+                    <LuClipboardPenLine
                       className="h-5 w-5 cursor-pointer ml-2"
                       style={{ color: active === "proposals" && "#fff" }}
                     />

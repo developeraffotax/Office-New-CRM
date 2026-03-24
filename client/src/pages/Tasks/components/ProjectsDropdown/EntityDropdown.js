@@ -6,21 +6,14 @@ import { AiTwotoneDelete } from "react-icons/ai";
 
 const EntityDropdown = forwardRef(
   (
-    {
-      show,
-      entities = [],
-      labelKey = "name",
-      onComplete,
-      onEdit,
-      onDelete,
-    },
-    ref // ✅ this will now be the forwarded ref
+    { show, entities = [], labelKey = "name", onComplete, onEdit, onDelete },
+    ref, // ✅ this will now be the forwarded ref
   ) => {
     if (!show) return null;
 
     return (
       <div
-         onClick={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
         ref={ref} // ✅ ref now points to the real DOM element
         className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]"
       >
@@ -54,7 +47,7 @@ const EntityDropdown = forwardRef(
         ))}
       </div>
     );
-  }
+  },
 );
 
 export default EntityDropdown;

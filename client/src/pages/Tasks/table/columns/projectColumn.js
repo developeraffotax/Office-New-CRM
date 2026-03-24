@@ -1,6 +1,7 @@
 import React from "react";
+import { useTaskCtx } from "../../contextApi/UserContext";
 
-export const projectColumn = (ctx) => {
+export const projectColumn = () => {
   return {
     accessorFn: (row) => row.project?.projectName || "",
     id: "projectName",
@@ -8,38 +9,44 @@ export const projectColumn = (ctx) => {
     maxSize: 200,
     size: 160,
     grow: false,
-     
-    Header: ({ column }) => (
-      <div className="flex flex-col gap-[2px]">
-        <span
-          className="ml-1 cursor-pointer"
-          title="Clear Filter"
-          onClick={() => column.setFilterValue("")}
-        >
-          Project
-        </span>
-        <select
-          value={column.getFilterValue() || ""}
-          onChange={(e) => column.setFilterValue(e.target.value)}
-          className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-        >
-          <option value="">Select</option>
-          {ctx.allProjects?.map((proj) => (
-            <option key={proj._id} value={proj.projectName}>
-              {proj.projectName}
-            </option>
-          ))}
-        </select>
-      </div>
-    ),
+
+    Header: ({ column }) => {
+      const ctx = useTaskCtx();
+      return (
+        <div className="flex flex-col gap-[2px]">
+          <span
+            className="ml-1 cursor-pointer"
+            title="Clear Filter"
+            onClick={() => column.setFilterValue("")}
+          >
+            Project
+          </span>
+          <select
+            value={column.getFilterValue() || ""}
+            onChange={(e) => column.setFilterValue(e.target.value)}
+            className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+          >
+            <option value="">Select</option>
+            {ctx.allProjects?.map((proj) => (
+              <option key={proj._id} value={proj.projectName}>
+                {proj.projectName}
+              </option>
+            ))}
+          </select>
+        </div>
+      );
+    },
 
     Cell: ({ row }) => {
+      const ctx = useTaskCtx();
       const currentProjectId = row.original.project?._id || "";
 
       return (
         <select
           value={currentProjectId}
-          onChange={(e) => ctx.updateTaskProject(row.original._id, e.target.value)}
+          onChange={(e) =>
+            ctx.updateTaskProject(row.original._id, e.target.value)
+          }
           className="w-full h-[2rem] rounded-md border-none outline-none"
         >
           <option value="">Select</option>
@@ -52,6 +59,9 @@ export const projectColumn = (ctx) => {
       );
     },
 
-    filterFn: "equals",
+    filterFn: (row, columnId, filterValue) => {
+      const cellValue = row.getValue(columnId);
+      return (cellValue ?? "").toString() === (filterValue ?? "").toString();
+    },
   };
 };

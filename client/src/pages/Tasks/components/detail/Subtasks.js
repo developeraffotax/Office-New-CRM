@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import Loader from "../../utlis/Loader";
+import Loader from "../../../../utlis/Loader";
 import { FaEdit } from "react-icons/fa";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { IoCloseCircleOutline } from "react-icons/io5";

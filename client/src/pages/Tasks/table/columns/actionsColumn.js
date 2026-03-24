@@ -2,18 +2,20 @@ import { useEffect, useState } from "react";
 import { AiTwotoneDelete } from "react-icons/ai";
 import { GrCopy } from "react-icons/gr";
 import { MdCheckCircle, MdInsertComment } from "react-icons/md";
+import { useTaskCtx } from "../../contextApi/UserContext";
 
-export const actionsColumn = (ctx) => {
+export const actionsColumn = () => {
   return {
     accessorKey: "actions",
     header: "Actions",
     Cell: ({ cell, row }) => {
+      const ctx = useTaskCtx();
       const comments = row.original.comments;
       const [unreadComments, setUnreadComments] = useState([]);
 
       useEffect(() => {
         const filterComments = comments.filter(
-          (item) => item.status === "unread"
+          (item) => item.status === "unread",
         );
         setUnreadComments(filterComments);
       }, [comments]);
@@ -44,12 +46,6 @@ export const actionsColumn = (ctx) => {
                 {" "}
                 <MdInsertComment className="h-5 w-5 text-orange-600 " />{" "}
               </span>{" "}
-              {/* {unreadComments?.length > 0 && (
-                <span className="absolute -top-3 -right-3 bg-sky-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
-                  {" "}
-                  {unreadComments?.length}{" "}
-                </span>
-              )}{" "} */}
             </div>{" "}
           </span>
 

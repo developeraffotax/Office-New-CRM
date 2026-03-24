@@ -1,110 +1,107 @@
 import { format } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { getCurrentMonthYear, TaskDateFilterFn } from "../../utils";
+import { TaskDateFilterFn } from "../../utils/TaskDateFilterFn";
 import DateRangePopover from "../../../../utlis/DateRangePopover";
+import { useTaskCtx } from "../../contextApi/UserContext";
 
-export const startDateColumn = (ctx) => {
+export const startDateColumn = () => {
   return {
     accessorKey: "startDate",
 
-              Header: ({ column }) => {
-                const [filterValue, setFilterValue] = useState("");
-                const [dateRange, setDateRange] = useState({ from: "", to: "" });
-                const [showPopover, setShowPopover] = useState(false);
-                const selectRef = useRef(null);
+    Header: ({ column }) => {
+      const [filterValue, setFilterValue] = useState("");
+      const [dateRange, setDateRange] = useState({ from: "", to: "" });
+      const [showPopover, setShowPopover] = useState(false);
+      const selectRef = useRef(null);
 
-                const filterValues = [
-                   "Expired",
-                  "Yesterday",
-                  "Today",
-                  "Tomorrow",
-                  "In 7 days",
-                  "In 15 days",
-                  "In 30 Days",
-                  "In 60 Days",
-                  ];
+      const filterValues = [
+        "Expired",
+        "Yesterday",
+        "Today",
+        "Tomorrow",
+        "In 7 days",
+        "In 15 days",
+        "In 30 Days",
+        "In 60 Days",
+      ];
 
-                useEffect(() => {
-                  if (filterValue === "Custom Range" || filterValue === "Custom Day") {
-                    column.setFilterValue(dateRange);
-                  } else {
-                    column.setFilterValue(filterValue);
-                  }
-                }, [dateRange, filterValue]);
+      useEffect(() => {
+        if (filterValue === "Custom Range" || filterValue === "Custom Day") {
+          column.setFilterValue(dateRange);
+        } else {
+          column.setFilterValue(filterValue);
+        }
+      }, [dateRange, filterValue]);
 
-                
-              // 🔄 Reset local state when external filter is cleared
-              useEffect(() => {
-                const currentFilter = column.getFilterValue();
-                if (!currentFilter) {
-                  setFilterValue("");
-                  setDateRange({ from: "", to: "" });
-                  setShowPopover(false);
-                }
-              }, [column.getFilterValue()]);
+      // 🔄 Reset local state when external filter is cleared
+      useEffect(() => {
+        const currentFilter = column.getFilterValue();
+        if (!currentFilter) {
+          setFilterValue("");
+          setDateRange({ from: "", to: "" });
+          setShowPopover(false);
+        }
+      }, [column.getFilterValue()]);
 
-                const handleFilterChange = (e) => {
-                  const val = e.target.value;
-                  setFilterValue(val);
-                  
-                  if (val === "Custom Range" || val === "Custom Day") {
-                    setShowPopover(true);
-                  } else {
-                    setShowPopover(false);
-                  }
-                };
+      const handleFilterChange = (e) => {
+        const val = e.target.value;
+        setFilterValue(val);
 
+        if (val === "Custom Range" || val === "Custom Day") {
+          setShowPopover(true);
+        } else {
+          setShowPopover(false);
+        }
+      };
 
-                
+      const handleRangeChange = (key, value) => {
+        setDateRange((prev) => ({ ...prev, [key]: value }));
+      };
 
-                const handleRangeChange = (key, value) => {
-                  setDateRange((prev) => ({ ...prev, [key]: value }));
-                };
+      return (
+        <div className="flex flex-col gap-[2px] relative">
+          <span
+            className="ml-1 cursor-pointer"
+            title="Clear Filter"
+            onClick={() => {
+              setFilterValue("");
+              setDateRange({ from: "", to: "" });
+              column.setFilterValue("");
+            }}
+          >
+            Start Date
+          </span>
 
-                return (
-                  <div className="flex flex-col gap-[2px] relative">
-                    <span
-                      className="ml-1 cursor-pointer"
-                      title="Clear Filter"
-                      onClick={() => {
-                        setFilterValue("");
-                        setDateRange({ from: "", to: "" });
-                        column.setFilterValue("");
-                      }}
-                    >
-                      Start Date
-                    </span>
+          <select
+            ref={selectRef}
+            value={filterValue}
+            onChange={handleFilterChange}
+            className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
+          >
+            <option value="">Select</option>
+            {filterValues.map((option, idx) => (
+              <option key={idx} value={option}>
+                {option}
+              </option>
+            ))}
+            <option value="Custom Day">Custom Day</option>
+            <option value="Custom Range">Custom Date</option>
+          </select>
 
-                    <select
-                      ref={selectRef}
-                      value={filterValue}
-                      onChange={handleFilterChange}
-                      
-                      className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
-                    >
-                      <option value="">Select</option>
-                      {filterValues.map((option, idx) => (
-                        <option key={idx} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                      <option value="Custom Day">Custom Day</option>
-                      <option  value="Custom Range">Custom Date</option>
-                    </select>
-
-                    {showPopover && (
-                      <DateRangePopover
-                        anchorRef={selectRef}
-                        type={filterValue === "Custom Day" ? "day" : "range"}
-                        onChange={handleRangeChange}
-                        onClose={() => setShowPopover(false)}
-                      />
-                    )}
-                  </div>
-                );
-              },
+          {showPopover && (
+            <DateRangePopover
+              anchorRef={selectRef}
+              type={filterValue === "Custom Day" ? "day" : "range"}
+              onChange={handleRangeChange}
+              onClose={() => setShowPopover(false)}
+            />
+          )}
+        </div>
+      );
+    },
     Cell: ({ cell, row }) => {
+      const ctx = useTaskCtx();
       const initialValue = cell.getValue();
       const isValidDate =
         initialValue && !isNaN(new Date(initialValue).getTime());

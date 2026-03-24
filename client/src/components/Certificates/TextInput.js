@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { SketchPicker } from "react-color";
 import { style } from "../../utlis/CommonStyle";
 
 const TextInput = ({ onAddText }) => {

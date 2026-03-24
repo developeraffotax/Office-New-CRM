@@ -1,18 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { IoClose } from "react-icons/io5";
 
-import "froala-editor/js/froala_editor.pkgd.min.js";
-import "froala-editor/css/froala_editor.pkgd.min.css";
-import "froala-editor/css/froala_style.min.css";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { style } from "../../utlis/CommonStyle";
+import { style } from "../../../../utlis/CommonStyle";
 import { BiLoaderCircle } from "react-icons/bi";
 import EmojiPicker from "emoji-picker-react";
 import { BsEmojiSmile } from "react-icons/bs";
 import { format } from "date-fns";
 import { AiFillLike, AiOutlineLike } from "react-icons/ai";
-import Loader from "../../utlis/Loader";
+import Loader from "../../../../utlis/Loader";
 import { GoDotFill } from "react-icons/go";
 
 import {

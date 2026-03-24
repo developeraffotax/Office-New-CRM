@@ -1,9 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { IoClose } from "react-icons/io5";
 
-import "froala-editor/js/froala_editor.pkgd.min.js";
-import "froala-editor/css/froala_editor.pkgd.min.css";
-import "froala-editor/css/froala_style.min.css";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { style } from "../../utlis/CommonStyle";

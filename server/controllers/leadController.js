@@ -9,17 +9,31 @@ import getJobHolderNames from "../utils/getJobHolderNames.js";
 import { buildLeadFilter } from "../utils/buildFilter.js";
 import { getAuthUser } from "../utils/getAuthUser.js";
 
+//constant
+const leadSources = [
+  "Upwork",
+  "Fiverr",
+  "PPH",
+  "Referral",
+  "Partner",
+  "Google",
+  "Facebook",
+  "LinkedIn",
+  "CRM",
+  "Existing",
+  "Other",
+];
+
 // Create Lead
 export const createLead = async (req, res) => {
+  const user = getAuthUser(req);
 
- const user = getAuthUser(req);
-
- if(!user) {
-  return res.status(401).send({
+  if (!user) {
+    return res.status(401).send({
       success: false,
       message: "Invalid User!",
-  })
- }
+    });
+  }
 
   try {
     const {
@@ -40,10 +54,8 @@ export const createLead = async (req, res) => {
       email,
 
       yearEnd,
-      jobDeadline
+      jobDeadline,
     } = req.body;
-
-
 
     const lead = await leadModel.create({
       companyName,
@@ -64,7 +76,6 @@ export const createLead = async (req, res) => {
 
       yearEnd,
       jobDeadline,
-      
     });
 
     res.status(200).send({
@@ -90,19 +101,39 @@ export const updateLead = async (req, res) => {
 
     const updates = req.body;
 
-     const allowedUpdates = ['leadCreatedAt', 'companyName', 'clientName', 'jobHolder', 'department', 'source', 'brand', 'lead_Source', 'followUpDate', 'JobDate', 'Note', 'stage', 'status', 'value', 'number', 'yearEnd', 'jobDeadline', 'email']; // Whitelist of allowed fields
+    const allowedUpdates = [
+      "leadCreatedAt",
+      "companyName",
+      "clientName",
+      "jobHolder",
+      "department",
+      "source",
+      "brand",
+      "lead_Source",
+      "followUpDate",
+      "JobDate",
+      "Note",
+      "stage",
+      "status",
+      "value",
+      "number",
+      "yearEnd",
+      "jobDeadline",
+      "email",
+    ]; // Whitelist of allowed fields
     const updateKeys = Object.keys(updates);
 
-      // Optional: Validate fields
-    const isValidUpdate = updateKeys.every(key => allowedUpdates.includes(key));
+    // Optional: Validate fields
+    const isValidUpdate = updateKeys.every((key) =>
+      allowedUpdates.includes(key),
+    );
     if (!isValidUpdate) {
-        return res.status(400).json({ success: false, message: "Invalid fields in update!"});
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid fields in update!" });
     }
-     
 
     console.log("Updates💚💚", updates);
-
-
 
     const lead = await leadModel.findById(leadId);
 
@@ -112,7 +143,7 @@ export const updateLead = async (req, res) => {
         message: "Lead not found!",
       });
     }
- 
+
     // Only update tickets if lead status is being changed to 'won' or 'lost'
     // if (updates.status && (updates.status === 'won' || updates.status === 'lost')) {
     //   await ticketModel.updateMany(
@@ -128,12 +159,10 @@ export const updateLead = async (req, res) => {
     //   );
     // }
 
-
-
     const updataLead = await leadModel.findByIdAndUpdate(
       { _id: leadId },
       updates,
-      { new: true }
+      { new: true },
     );
 
     res.status(200).send({
@@ -153,12 +182,10 @@ export const updateLead = async (req, res) => {
 
 // Get All Progress Leads
 export const getAllProgressLead = async (req, res) => {
-
   try {
-
     const filter = await buildLeadFilter(req, "progress");
 
-    console.log("THE FILTER IS ", filter)
+    console.log("THE FILTER IS ", filter);
     const leads = await leadModel.find(filter);
 
     res.status(200).send({
@@ -178,14 +205,11 @@ export const getAllProgressLead = async (req, res) => {
 
 // Get All Won Leads
 export const getAllWonLead = async (req, res) => {
-   
   try {
-        const filter = await buildLeadFilter(req, "won");
-
-
+    const filter = await buildLeadFilter(req, "won");
 
     const leads = await leadModel.find(filter);
-    
+
     res.status(200).send({
       success: true,
       message: "All won lead list!",
@@ -204,11 +228,10 @@ export const getAllWonLead = async (req, res) => {
 // Get All Lost Leads
 export const getAlllostLead = async (req, res) => {
   const role = req.user?.user?.role?.name;
-  const userName =  req.user?.user?.name;
+  const userName = req.user?.user?.name;
   try {
     const filter = await buildLeadFilter(req, "lost");
 
-    
     const leads = await leadModel.find(filter);
 
     res.status(200).send({
@@ -266,7 +289,7 @@ export const deleteLead = async (req, res) => {
     // Update related tickets to 'complete'
     await ticketModel.updateMany(
       { clientName: lead.clientName, state: { $ne: "complete" } },
-      { $set: { state: "complete" } }
+      { $set: { state: "complete" } },
     );
 
     // Delete the lead
@@ -285,7 +308,6 @@ export const deleteLead = async (req, res) => {
     });
   }
 };
-
 
 // <------------Dashboard---------->
 export const getdashboardLead = async (req, res) => {
@@ -336,146 +358,43 @@ export const getdashboardLead = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Get Available Tickets Number (name + email aware)
-
-// export const getAvailableTicketsNum = async (req, res) => {
-//   const status = req.query.status || "progress";
-
-//   try {
-//     // 1. Fetch leads with clientName + email
-//     const leads = await leadModel
-//       .find({ status })
-//       .select("clientName email -_id");
-
-//     // Extract unique names and emails
-//     const clientNames = [...new Set(leads.map(l => l.clientName?.trim()).filter(Boolean))];
-//     const clientEmails = [...new Set(leads.map(l => l.email?.trim()).filter(Boolean))];
-
-//     console.log("CLIENT Names", clientNames)
-//     console.log("clientEmails clientEmails", clientEmails)
-
-//     // 2. Get ticket counts grouped by BOTH clientName and email
-//     const ticketsAgg = await ticketModel.aggregate([
-//       {
-//         $match: {
-//           state: { $ne: "complete" },
-//           $or: [
-//             { clientName: { $in: clientNames } },
-//             { email: { $in: clientEmails } }
-//           ]
-//         }
-//       },
-//       {
-//         $group: {
-//           _id: {
-//             clientName: "$clientName",
-//             email: "$email"
-//           },
-//           count: { $sum: 1 }
-//         }
-//       }
-//     ]);
-
-//     // 3. Build a combined map (clientName → ticket count)
-//     const ticketMap = {};
-
-//     leads.forEach(lead => {
-//       const name = lead.clientName;
-//       const email = lead.email;
-
-//       const match = ticketsAgg.find(
-//         t =>
-//           (t._id.clientName === name && name) ||
-//           (t._id.email === email && email)
-//       );
-
-//       ticketMap[name] = match ? match.count : 0;
-//     });
-
-//     return res.status(200).send({
-//       success: true,
-//       message: "Client ticket counts (name + email aware)",
-//       ticketMap
-//     });
-
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).send({
-//       success: false,
-//       message: "Error while getting client ticket counts!",
-//       error
-//     });
-//   }
-// };
-
-
-
-
-// Get Available Tickets Number (name aware)
- 
 export const getAvailableTicketsNum = async (req, res) => {
   const status = req.query.status || "progress";
 
   try {
     // 1. Get unique client names from leads
-    const leads = await leadModel
-      .find({ status })
-      .select("clientName -_id");
+    const leads = await leadModel.find({ status }).select("clientName -_id");
 
-    const clientNames = [...new Set(leads
-      .map(l => l.clientName)
-      .filter(Boolean)
-    )];
+    const clientNames = [
+      ...new Set(leads.map((l) => l.clientName).filter(Boolean)),
+    ];
 
-
-
-    
     // 2. Group tickets by clientName in one fast query
- 
-       
 
     const match = {
       clientName: { $in: clientNames },
+    };
+
+    if (status === "progress") {
+      match.state = { $eq: "progress" };
     }
-
-    if(status === "progress") {
-      match.state =  { $eq: "progress" }
-    }
-
-
 
     const ticketCounts = await ticketModel.aggregate([
       {
-        $match: match
+        $match: match,
       },
       {
         $group: {
           _id: "$clientName",
           count: { $sum: 1 },
-        }
-      }
+        },
+      },
     ]);
 
-    
     // 3. Convert aggregation to a lookup map
     const ticketMap = {};
-    clientNames.forEach(name => {
-      const found = ticketCounts.find(tc => tc._id === name);
+    clientNames.forEach((name) => {
+      const found = ticketCounts.find((tc) => tc._id === name);
       ticketMap[name] = found ? found.count : 0;
     });
 
@@ -484,7 +403,6 @@ export const getAvailableTicketsNum = async (req, res) => {
       message: "Client ticket counts",
       ticketMap,
     });
-
   } catch (error) {
     console.error(error);
     return res.status(500).send({
@@ -495,113 +413,15 @@ export const getAvailableTicketsNum = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      // companyName,
-      // clientName,
-      // jobHolder,
-      // department,
-      // source,
-      // brand,
-      // lead_Source,
-      // followUpDate,
-      // JobDate,
-      // Note,
-      // stage,
-      // status,
-      // value,
-      // number,
-
-
-
-// Update Bulk Leads
 export const updateBulkLeads = async (req, res) => {
   try {
     const {
       rowSelection,
-      updates  // object which contains all the updates values 
-      
+      updates, // object which contains all the updates values
     } = req.body;
 
-    console.log("Updates",updates)
-    console.log("rowSelection",rowSelection)
+    console.log("Updates", updates);
+    console.log("rowSelection", rowSelection);
     if (
       !rowSelection ||
       !Array.isArray(rowSelection) ||
@@ -612,9 +432,6 @@ export const updateBulkLeads = async (req, res) => {
         message: "No jobs selected for update.",
       });
     }
-
-
- 
 
     let updateData = {};
 
@@ -629,10 +446,7 @@ export const updateBulkLeads = async (req, res) => {
         _id: { $in: rowSelection },
       },
       { $set: updateData },
-       
     );
-
- 
 
     // Check if any leads were updated
     if (updatedLeads.modifiedCount === 0) {
@@ -647,7 +461,6 @@ export const updateBulkLeads = async (req, res) => {
       message: "Leads updated successfully!",
       updatedLeads,
     });
-
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -657,113 +470,6 @@ export const updateBulkLeads = async (req, res) => {
     });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  const leadSources = [
-    "Upwork",
-    "Fiverr",
-    "PPH",
-    "Referral",
-    "Partner",
-    "Google",
-    "Facebook",
-    "LinkedIn",
-    "CRM",
-    "Existing",
-    "Other",
-  ];
-
-
-
-
- 
 
 export const getLeadStats = async (req, res) => {
   try {
@@ -794,7 +500,9 @@ export const getLeadStats = async (req, res) => {
         // Match leads where lead_Source is missing or not in the predefined list
         matchQuery.$or = [
           { lead_Source: { $exists: false } },
-          { lead_Source: { $nin: leadSources.filter((src) => src !== "Other") } },
+          {
+            lead_Source: { $nin: leadSources.filter((src) => src !== "Other") },
+          },
           { lead_Source: "" },
           { lead_Source: null },
         ];
@@ -803,7 +511,7 @@ export const getLeadStats = async (req, res) => {
       }
     }
 
-    if(department && department !== "all") {
+    if (department && department !== "all") {
       matchQuery.department = department;
     }
 
@@ -812,7 +520,9 @@ export const getLeadStats = async (req, res) => {
       { $match: matchQuery },
       {
         $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$leadCreatedAt" } },
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$leadCreatedAt" },
+          },
           count: { $sum: 1 },
         },
       },
@@ -854,24 +564,9 @@ export const getLeadStats = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
 export const getLeadStatusStats = async (req, res) => {
   try {
-    const { start, end,  lead_Source, department  } = req.query;
+    const { start, end, lead_Source, department } = req.query;
 
     if (!start || !end) {
       return res.status(400).json({
@@ -888,14 +583,15 @@ export const getLeadStatusStats = async (req, res) => {
       leadCreatedAt: { $gte: startDate, $lte: endDate },
     };
 
-   
     // Lead Source filter
     if (lead_Source && lead_Source !== "all") {
       if (lead_Source === "Other") {
         // Match leads where lead_Source is missing or not in the predefined list
         matchQuery.$or = [
           { lead_Source: { $exists: false } },
-          { lead_Source: { $nin: leadSources.filter((src) => src !== "Other") } },
+          {
+            lead_Source: { $nin: leadSources.filter((src) => src !== "Other") },
+          },
           { lead_Source: "" },
           { lead_Source: null },
         ];
@@ -903,10 +599,9 @@ export const getLeadStatusStats = async (req, res) => {
         matchQuery.lead_Source = lead_Source;
       }
     }
-    if(department && department !== "all") {
+    if (department && department !== "all") {
       matchQuery.department = department;
     }
-
 
     // Aggregate by status
     const stats = await leadModel.aggregate([
@@ -941,60 +636,9 @@ export const getLeadStatusStats = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
 export const getLeadStatsWonLost = async (req, res) => {
   try {
-    const { start, end, lead_Source, department  } = req.query;
+    const { start, end, lead_Source, department } = req.query;
 
     if (!start || !end) {
       return res.status(400).json({
@@ -1010,14 +654,15 @@ export const getLeadStatsWonLost = async (req, res) => {
       leadCreatedAt: { $gte: startDate.toDate(), $lte: endDate.toDate() },
     };
 
-
-        // Lead Source filter
+    // Lead Source filter
     if (lead_Source && lead_Source !== "all") {
       if (lead_Source === "Other") {
         // Match leads where lead_Source is missing or not in the predefined list
         matchQuery.$or = [
           { lead_Source: { $exists: false } },
-          { lead_Source: { $nin: leadSources.filter((src) => src !== "Other") } },
+          {
+            lead_Source: { $nin: leadSources.filter((src) => src !== "Other") },
+          },
           { lead_Source: "" },
           { lead_Source: null },
         ];
@@ -1026,10 +671,9 @@ export const getLeadStatsWonLost = async (req, res) => {
       }
     }
 
-    if(department && department !== "all") {
+    if (department && department !== "all") {
       matchQuery.department = department;
     }
-
 
     // Group by date + status
     const stats = await leadModel.aggregate([
@@ -1037,7 +681,9 @@ export const getLeadStatsWonLost = async (req, res) => {
       {
         $group: {
           _id: {
-            date: { $dateToString: { format: "%Y-%m-%d", date: "$leadCreatedAt" } },
+            date: {
+              $dateToString: { format: "%Y-%m-%d", date: "$leadCreatedAt" },
+            },
             status: "$status",
           },
           count: { $sum: 1 },
@@ -1087,33 +733,9 @@ export const getLeadStatsWonLost = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
 export const getLeadConversionStats = async (req, res) => {
   try {
-    const { start, end, lead_Source, department  } = req.query;
+    const { start, end, lead_Source, department } = req.query;
 
     // Optional filters
     const matchQuery = {};
@@ -1130,7 +752,9 @@ export const getLeadConversionStats = async (req, res) => {
         // Match leads where lead_Source is missing or not in the predefined list
         matchQuery.$or = [
           { lead_Source: { $exists: false } },
-          { lead_Source: { $nin: leadSources.filter((src) => src !== "Other") } },
+          {
+            lead_Source: { $nin: leadSources.filter((src) => src !== "Other") },
+          },
           { lead_Source: "" },
           { lead_Source: null },
         ];
@@ -1139,10 +763,9 @@ export const getLeadConversionStats = async (req, res) => {
       }
     }
 
-    if(department && department !== "all") {
+    if (department && department !== "all") {
       matchQuery.department = department;
     }
-
 
     // Count total, won, lost
     const [stats] = await leadModel.aggregate([
@@ -1153,7 +776,9 @@ export const getLeadConversionStats = async (req, res) => {
           total: { $sum: 1 },
           won: { $sum: { $cond: [{ $eq: ["$status", "won"] }, 1, 0] } },
           lost: { $sum: { $cond: [{ $eq: ["$status", "lost"] }, 1, 0] } },
-          progress: { $sum: { $cond: [{ $eq: ["$status", "progress"] }, 1, 0] } },
+          progress: {
+            $sum: { $cond: [{ $eq: ["$status", "progress"] }, 1, 0] },
+          },
         },
       },
     ]);
@@ -1166,7 +791,8 @@ export const getLeadConversionStats = async (req, res) => {
     }
 
     // Conversion = Won / Total * 100
-    const conversionRate = stats.total > 0 ? ((stats.won / stats.total) * 100).toFixed(2) : 0;
+    const conversionRate =
+      stats.total > 0 ? ((stats.won / stats.total) * 100).toFixed(2) : 0;
 
     res.json({
       success: true,
@@ -1184,270 +810,6 @@ export const getLeadConversionStats = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// export const getWonLeadData = async ( req, res) => {
-
-
-
-//     try {
-//     const { user, startDate, endDate } = req.query;
-
-//     const filters = { status: "won" };
-
-//     if (user) {
-//       filters.jobHolder = user;
-//     }
-
-//     if (startDate && endDate) {
-//       filters.leadCreatedAt = {
-//         $gte: new Date(startDate),
-//         $lte: new Date(endDate),
-//       };
-//     }
-
-//       const leads = await leadModel.aggregate([
-//         { $match: filters },
-//         {
-//           $group: {
-//             _id: { $month: "$leadCreatedAt" },
-//             count: { $sum: 1 },
-//             totalValue: {
-//               $sum: {
-//                 $cond: [
-//                   {
-//                     $and: [
-//                       { $ne: ["$value", ""] },        // not empty string
-//                       { $ne: ["$value", null] },      // not null
-//                     ],
-//                   },
-//                   { $toDouble: "$value" }, // convert when valid
-//                   0, // otherwise add 0
-//                 ],
-//               },
-//             },
-//           },
-//         },
-//         { $sort: { "_id": 1 } },
-//       ]);
-
-
-//     // Initialize arrays for 12 months
-//     const counts = Array(12).fill(0);
-//     const values = Array(12).fill(0);
-
-//     leads.forEach((item) => {
-//       counts[item._id - 1] = item.count;
-//       values[item._id - 1] = item.totalValue;
-//     });
-
-//     res.json({counts, values });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Server Error" });
-//   }
-
-
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
-// export const getWonLeadData = async (req, res) => {
-//   try {
-//     const { user, startDate, endDate } = req.query;
-
-//     const filters = { status: "won" };
-
-//     const fetchedUser = await userModel.findOne({ name: user }).lean();
-
-//     if (user) {
-//       filters.jobHolder = user;
-//     }
-
-//     if (startDate && endDate) {
-//       filters.leadCreatedAt = {
-//         $gte: new Date(startDate),
-//         $lte: new Date(endDate),
-//       };
-//     }
-
-//     // --- Get leads data ---
-//     const leads = await leadModel.aggregate([
-//       { $match: filters },
-//       {
-//         $group: {
-//           _id: { $month: "$leadCreatedAt" },
-//           count: { $sum: 1 },
-//           totalValue: {
-//             $sum: {
-//               $cond: [
-//                 {
-//                   $and: [
-//                     { $ne: ["$value", ""] }, // not empty string
-//                     { $ne: ["$value", null] }, // not null
-//                   ],
-//                 },
-//                 { $toDouble: "$value" }, // convert when valid
-//                 0, // otherwise add 0
-//               ],
-//             },
-//           },
-//         },
-//       },
-//       { $sort: { "_id": 1 } },
-//     ]);
-
-//     // --- Initialize arrays for 12 months ---
-//     const counts = Array(12).fill(0);
-//     const values = Array(12).fill(0);
-//     const targetValues = Array(12).fill(0);
-//     const targetCounts = Array(12).fill(0);
-
-//     leads.forEach((item) => {
-//       counts[item._id - 1] = item.count;
-//       values[item._id - 1] = item.totalValue;
-//     });
-
-
-//     // if(!fetchedUser) {
-//     //   return res.json({ counts, values, targetValues, targetCounts  });
-//     // } 
-//     // --- Fetch goals (monthly goals) ---
-//     const goalFilters = { goalType: "Target Lead Value"};
-//     if (user) {
-//       goalFilters.jobHolder = fetchedUser._id;
-//     }
-//     if (startDate && endDate) {
-//       goalFilters.startDate = {
-//         $gte: new Date(startDate),
-//         $lte: new Date(endDate),
-//       };
-//     }
-
-//     const goals = await goalModel.find(goalFilters).lean();
-
-//     goals.forEach((goal) => {
-//       if (goal.startDate) {
-//         const monthIndex = new Date(goal.startDate).getMonth(); // 0–11
-//         targetValues[monthIndex] += goal.achievement || 0;
-//         // targetCounts[monthIndex] += goal.achievement || 0;
-//       }
-//     });
-
-//     res.json({ counts, values, targetValues, targetCounts });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Server Error" });
-//   }
-// };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
 
 const getWeekRangeLabel = (year, week) => {
   const monday = moment().isoWeekYear(year).isoWeek(week).startOf("isoWeek");
@@ -1483,10 +845,16 @@ export const getWonLeadData = async (req, res) => {
     let sortStage;
 
     if (view === "weekly") {
-      groupId = { year: { $isoWeekYear: "$leadCreatedAt" }, week: { $isoWeek: "$leadCreatedAt" } };
+      groupId = {
+        year: { $isoWeekYear: "$leadCreatedAt" },
+        week: { $isoWeek: "$leadCreatedAt" },
+      };
       sortStage = { "_id.year": 1, "_id.week": 1 };
     } else {
-      groupId = { year: { $year: "$leadCreatedAt" }, month: { $month: "$leadCreatedAt" } };
+      groupId = {
+        year: { $year: "$leadCreatedAt" },
+        month: { $month: "$leadCreatedAt" },
+      };
       sortStage = { "_id.year": 1, "_id.month": 1 };
     }
 
@@ -1558,8 +926,12 @@ export const getWonLeadData = async (req, res) => {
       // Monthly view: 12 months between start and end
       const monthMap = {};
       let monthIndex = 0;
-      const start = startDate ? moment(startDate).startOf("month") : moment().startOf("year");
-      const end = endDate ? moment(endDate).endOf("month") : moment().endOf("year");
+      const start = startDate
+        ? moment(startDate).startOf("month")
+        : moment().startOf("year");
+      const end = endDate
+        ? moment(endDate).endOf("month")
+        : moment().endOf("year");
       let current = start.clone();
       while (current.isSameOrBefore(end)) {
         const key = `${current.year()}-${current.month() + 1}`; // month 0-indexed
@@ -1587,20 +959,39 @@ export const getWonLeadData = async (req, res) => {
     // -------------------------
     // Fetch Goals
     // -------------------------
-    const goalMatch = { goalType: { $in: ["Target Lead Value", "Target Lead Count"] } };
+    const goalMatch = {
+      goalType: { $in: ["Target Lead Value", "Target Lead Count"] },
+    };
     if (fetchedUser) goalMatch.jobHolder = fetchedUser._id;
-    if (startDate && endDate) goalMatch.startDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
+    if (startDate && endDate)
+      goalMatch.startDate = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
 
     let goalGroupId;
     if (view === "weekly") {
-      goalGroupId = { year: { $isoWeekYear: "$startDate" }, week: { $isoWeek: "$startDate" }, type: "$goalType" };
+      goalGroupId = {
+        year: { $isoWeekYear: "$startDate" },
+        week: { $isoWeek: "$startDate" },
+        type: "$goalType",
+      };
     } else {
-      goalGroupId = { year: { $year: "$startDate" }, month: { $month: "$startDate" }, type: "$goalType" };
+      goalGroupId = {
+        year: { $year: "$startDate" },
+        month: { $month: "$startDate" },
+        type: "$goalType",
+      };
     }
 
     const goals = await goalModel.aggregate([
       { $match: goalMatch },
-      { $group: { _id: goalGroupId, total: { $sum: { $ifNull: ["$achievement", 0] } } } },
+      {
+        $group: {
+          _id: goalGroupId,
+          total: { $sum: { $ifNull: ["$achievement", 0] } },
+        },
+      },
     ]);
 
     // Map goals to label index
@@ -1613,12 +1004,20 @@ export const getWonLeadData = async (req, res) => {
       }
 
       const index = labels.findIndex((_, idx) => {
-        if (view === "weekly") return labels[idx] === getWeekRangeLabel(goal._id.year, goal._id.week);
-        else return labels[idx] === moment(`${goal._id.year}-${goal._id.month}-01`).format("MMM YYYY");
+        if (view === "weekly")
+          return (
+            labels[idx] === getWeekRangeLabel(goal._id.year, goal._id.week)
+          );
+        else
+          return (
+            labels[idx] ===
+            moment(`${goal._id.year}-${goal._id.month}-01`).format("MMM YYYY")
+          );
       });
 
       if (index !== -1) {
-        if (goal._id.type === "Target Lead Value") targetValues[index] = goal.total;
+        if (goal._id.type === "Target Lead Value")
+          targetValues[index] = goal.total;
         else targetCounts[index] = goal.total;
       }
     });
@@ -1630,51 +1029,6 @@ export const getWonLeadData = async (req, res) => {
   }
 };
 
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const getWonLeadStats = async (req, res) => {
   try {
     const { user, startDate, endDate } = req.query;
@@ -1682,7 +1036,9 @@ export const getWonLeadStats = async (req, res) => {
     const filters = { status: "won" };
 
     // find the user (to map goals properly)
-    const fetchedUser = user ? await userModel.findOne({ name: user }).lean() : null;
+    const fetchedUser = user
+      ? await userModel.findOne({ name: user }).lean()
+      : null;
 
     if (user) {
       filters.jobHolder = user;
@@ -1716,19 +1072,19 @@ export const getWonLeadStats = async (req, res) => {
             },
           },
 
-           totalCount: { $sum: 1 }, // ✅ count of leads
+          totalCount: { $sum: 1 }, // ✅ count of leads
         },
       },
     ]);
 
     const totalValues = leadsAgg.length > 0 ? leadsAgg[0].totalValue : 0;
-     const totalCount = leadsAgg.length > 0 ? leadsAgg[0].totalCount : 0;
+    const totalCount = leadsAgg.length > 0 ? leadsAgg[0].totalCount : 0;
 
     // --- Total targeted values (goals) ---
     let targetValues = 0;
     let targetCount = 0;
 
-     const goalFilters = {};
+    const goalFilters = {};
     if (user) {
       goalFilters.jobHolder = fetchedUser._id;
     }
@@ -1753,12 +1109,11 @@ export const getWonLeadStats = async (req, res) => {
     return res.json({
       totalValues,
       targetValues,
-      
+
       totalCount,
       targetCount,
       // percentage calculations are better done in frontend
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server Error" });

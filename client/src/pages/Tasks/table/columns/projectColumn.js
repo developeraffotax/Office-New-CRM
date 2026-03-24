@@ -59,6 +59,9 @@ export const projectColumn = () => {
       );
     },
 
-    filterFn: "equals",
+    filterFn: (row, columnId, filterValue) => {
+      const cellValue = row.getValue(columnId);
+      return (cellValue ?? "").toString() === (filterValue ?? "").toString();
+    },
   };
 };

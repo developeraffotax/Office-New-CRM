@@ -62,7 +62,10 @@ export const jobHolderColumn = () => {
         </div>
       );
     },
-    filterFn: "equals",
+    filterFn: (row, columnId, filterValue) => {
+      const cellValue = row.getValue(columnId);
+      return (cellValue ?? "").toString() === (filterValue ?? "").toString();
+    },
     filterSelectOptions: [],
     filterVariant: "select",
     size: 100,

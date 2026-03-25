@@ -89,7 +89,7 @@ export default function AssignUser({
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute right-0 top-full mt-2 w-56 max-h-96 overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-xl z-50 py-1"
+          className="absolute right-0 top-full mt-2 w-56 max-h-[480px] overflow-y-auto border border-gray-200 rounded-lg bg-white shadow-xl z-50 py-1"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">

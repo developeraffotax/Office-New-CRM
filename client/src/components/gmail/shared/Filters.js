@@ -51,6 +51,7 @@ import PendingActionsIcon from "@mui/icons-material/PendingActions"; // For Pro
 
 import { IoClose } from "react-icons/io5";
 import ContextMenu from "./ui/ContextMenu";
+import StatusDropdown from "./ui/StatusDropdown";
 
 export default function Filters({
   filters,
@@ -147,7 +148,11 @@ export default function Filters({
       startDate: "",
       endDate: "",
       page: 1,
+      search: ""
+      
     });
+
+    setSearchInput("");
   };
 
   const handleUpdate = (updates) => {
@@ -462,36 +467,7 @@ export default function Filters({
             </Box>
           </FormControl>
 
-          <ToggleButtonGroup
-            value={filters.status} // Assumes status is 'completed' | 'progress' | 'all'
-            exclusive
-            onChange={(event, newStatus) => {
-              // If user clicks the same button again (newStatus is null), you might want to reset to 'all'
-              handleUpdate({ status: newStatus });
-            }}
-            size="small"
-            sx={{
-              gap: 0.5,
-              "& .MuiToggleButton-root": {
-                border: "none",
-                borderRadius: "8px !important", // Ensures all buttons stay rounded
-                mx: 0.5,
-              },
-            }}
-          >
-            <Tooltip title="In Progress">
-              <ToggleButton value="progress" color="warning">
-                <PendingActionsIcon fontSize="small" />
-              </ToggleButton>
-            </Tooltip>
-
-            <Tooltip title="Completed">
-              <ToggleButton value="completed" color="success">
-                <CheckCircleIcon fontSize="small" />
-              </ToggleButton>
-            </Tooltip>
-          </ToggleButtonGroup>
-
+          <StatusDropdown filters={filters} handleUpdate={handleUpdate} />
           {/* Spacer */}
           {/* <Box sx={{ flexGrow: 1 }} /> */}
 

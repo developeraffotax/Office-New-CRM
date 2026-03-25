@@ -24,6 +24,7 @@ export default function MailLayout({
   markAsRead,
   markAsUnread,
   deleteThread,
+  toggleStar,
 
   companyName,
   folder,
@@ -127,6 +128,7 @@ export default function MailLayout({
           categories={categories}
           handleUpdateThread={handleUpdateThread}
           deleteThread={deleteThread}
+          toggleStar={toggleStar}
           filters={filters}
           setEmailDetail={setEmailDetail}
           setCreateTicketModal={setCreateTicketModal}

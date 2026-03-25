@@ -257,10 +257,41 @@ const handleUpdateThread = async (_id, updateData, type = "default") => {
 
 
 
+const toggleStar = async (threadId, companyName, isStarred) => {
+  if (!threadId) return;
 
+  // ⭐ Optimistic update
+  setThreads((prev) =>
+    prev.map((t) =>
+      t.threadId === threadId
+        ? {
+            ...t,
+            labels: isStarred
+              ? t.labels.filter((l) => l !== "STARRED")
+              : [...(t.labels || []), "STARRED"],
+          }
+        : t
+    )
+  );
 
+  try {
+    setLoading((prev) => ({ ...prev, updating: true }));
 
+    const { data } = await axios.patch(
+      `${process.env.REACT_APP_API_URL}/api/v1/gmail/star/${threadId}`,
+      { companyName }
+    );
 
+    toast.success(data.message);
+
+  } catch (error) {
+    console.error("Failed to update thread!", error);
+    toast.error("Failed to update star");
+
+  } finally {
+    setLoading((prev) => ({ ...prev, updating: false }));
+  }
+};
 
 
 
@@ -559,6 +590,7 @@ useEffect(() => {
     markAsRead,
     markAsUnread,
     deleteThread,
+    toggleStar,
  
     folder, // optional but useful
     companyName,

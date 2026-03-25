@@ -8,10 +8,10 @@ import {
 } from "react-icons/fi";
 import clsx from "clsx";
 import AttachmentChip from "./attachments/AttachmentChip";
-import { MdDeleteOutline } from "react-icons/md";
+import { MdDeleteOutline, MdOutlineStarBorder, MdStarBorder } from "react-icons/md";
 import { useSearchParams } from "react-router-dom";
 import { ReplyPopup } from "../reply/ReplyPopup";
-import { FaCheckCircle, FaUndoAlt } from "react-icons/fa";
+import { FaCheckCircle, FaRegStar, FaStar, FaUndoAlt } from "react-icons/fa";
 import Swal from "sweetalert2";
 import AssignUser from "./ui/AssignUser";
 import AssignCategory from "./ui/AssignCategory";
@@ -50,6 +50,7 @@ export default function Row({
   setCreateTicketModal,
   setCreateLeadModal,
   deleteThread,
+  toggleStar,
  
   filters,
   selected,
@@ -145,9 +146,11 @@ const folder = searchParams.get("folder") || "inbox";
       {/* {thread.unreadCount > 0 && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />} */}
 
       {/* ================= MAIN ROW ================= */}
-      <div className="grid items-center px-4 py-3 grid-cols-[1rem_15rem_1fr_auto_auto_auto_7rem] gap-5 ">
+      <div className="grid items-start px-4 py-3 grid-cols-[2rem_15rem_1fr_auto_auto_auto_7rem] gap-5  ">
         {/* Select checkbox */}
-        <input
+<div className="flex justify-start items-start gap-3  ">
+
+          <input
           type="checkbox"
           checked={selected}
           onClick={(e) => {
@@ -156,9 +159,32 @@ const folder = searchParams.get("folder") || "inbox";
           }}
           readOnly
           className={clsx(
-            "h-4 w-4 rounded-sm border border-gray-300 accent-blue-500 ",
+            "h-5 w-5 rounded-sm border border-gray-300 accent-blue-500 ",
           )}
         />
+
+ 
+<button
+  title={thread.labels.includes("STARRED") ? "Unstar Thread" : "Star Thread"}
+  className={clsx(
+    "  rounded-md transition-colors  h-5 w-5 ",
+    
+  )}
+ onClick={(e) => {
+                toggleStar(thread?.threadId, thread?.companyName, thread?.labels?.includes("STARRED"));
+              }}
+>
+  {
+    thread.labels.includes("STARRED") ? 
+    <FaStar className="  h-4 w-4 text-yellow-400 hover:text-yellow-500"  /> :
+    <FaRegStar className="  h-4 w-4 text-gray-400 hover:text-gray-600"  />
+
+
+  }
+</button>
+
+
+</div>
 
         {/* Sender Info */}
         <div className="flex flex-col min-w-0">

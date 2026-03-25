@@ -708,6 +708,71 @@ export const deleteThread = async (req, res) => {
 
 
 
+
+
+
+export const toggleStarredThread = async (req, res) => {
+  try {
+    const { threadId } = req.params; // MongoDB _id
+    const { companyName } = req.body;
+
+    // Find the thread in local DB
+    const thread = await EmailThread.findOne({ threadId, companyName });
+    if (!thread) {
+      return res.status(404).json({
+        success: false,
+        message: "Thread not found",
+      });
+    }
+
+    // ----------- 1. Delete from Gmail (if Gmail client available) -----------
+    const gmailClient = await getGmailClient(companyName);
+    const isStarred = thread.labels?.includes("STARRED")
+
+    const updateObject = {
+      userId: "me",
+      id: thread.threadId,
+          
+    }
+
+    if(isStarred) {
+      updateObject.removeLabelIds = ["STARRED"]
+    } else {
+      updateObject.addLabelIds = ["STARRED"]
+    }
+
+    if (gmailClient && thread.threadId) {
+      
+
+              await gmailClient.users.threads.modify(updateObject);
+    }
+
+ 
+
+ res.status(200).json({
+      success: true,
+      isStarred: isStarred,
+      message: isStarred ? "Thread unstarred" : "Thread starred",
+    });
+  } catch (error) {
+   console.error("Error starring thread:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update starred status",
+      error: error.message,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
  
 
 export const getMailboxUserCounts = async (req, res) => {

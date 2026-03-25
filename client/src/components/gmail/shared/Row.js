@@ -77,7 +77,7 @@ export default function Row({
 
 const folder = searchParams.get("folder") || "inbox";
 
-
+  const isLastFromMe = thread?.lastMessageBy === "me";
 
   // ----------------------- Sender / Participants -----------------------
   const myCompanyName = thread.companyName; // your company
@@ -220,7 +220,12 @@ const folder = searchParams.get("folder") || "inbox";
             })
           }
         >
-          <span
+        
+
+          <div className="w-full flex items-center gap-2 justify-start ">
+
+
+            <span
             className={clsx(
               "truncate text-base  font-google ",
               thread.unreadCount > 0
@@ -231,9 +236,18 @@ const folder = searchParams.get("folder") || "inbox";
               __html: highlightText(thread.subject, filters.search),
             }}
           ></span>
+
+ 
+  
+          </div>
           <span className="text-sm text-gray-500 truncate font-normal  font-google ">
             {thread.lastMessageSnippet}
           </span>
+
+
+
+
+
         </div>
 
         {/* Attachment count/icon spacer (Optional) */}
@@ -529,22 +543,40 @@ const folder = searchParams.get("folder") || "inbox";
 
         </div>
 
-        {/* Date/Time */}
+{/* Date/Time Container */}
+<div className="text-[11px] text-right text-gray-500 font-medium tabular-nums flex flex-col items-end gap-0.5">
 
-        <div className="text-[11px] text-right text-gray-500 font-medium tabular-nums">
-          {new Date(folder === "inbox" ? thread.lastMessageAtInbox : thread.lastMessageAtSent).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })}
-          <div className="text-[10px] opacity-90">
-            {new Date(folder === "inbox" ? thread.lastMessageAtInbox : thread.lastMessageAtSent).toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true,
-            })}
-          </div>
-        </div>
+  {/* Date Line */}
+  <div>
+    {new Date(folder === "inbox" ? thread.lastMessageAtInbox : thread.lastMessageAtSent).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })}
+  </div>
+
+  {/* Time Line + Avatar Wrapper */}
+  <div className="flex items-center gap-1.5 text-[10px] opacity-80 font-normal">
+    
+    {/* ✅ NEW: Avatar "A" with orange circle bg */}
+    {isLastFromMe && (<span className="flex items-center justify-center size-4 rounded-full bg-orange-500 text-[9px] font-bold text-white shrink-0">
+      A
+    </span>)}
+
+    {/* The Time String */}
+    <span>
+      {new Date(folder === "inbox" ? thread.lastMessageAtInbox : thread.lastMessageAtSent).toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })}
+    </span>
+  </div>
+
+ 
+
+</div>
+        
       </div>
 
       {/* ================= ATTACHMENTS ROW ================= */}

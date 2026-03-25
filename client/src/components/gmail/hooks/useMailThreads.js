@@ -121,6 +121,7 @@ const filters = useMemo(() => {
     limit: Number(searchParams.get("limit") || 20),
     search: searchParams.get("search") || "",
     status: searchParams.get("status") || "",
+    lastMessageBy: searchParams.get("lastMessageBy") || "",
   };
 }, [searchParams, folder, isAdmin]);
 

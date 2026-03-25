@@ -23,7 +23,7 @@ export async function persistThread({ threadId, companyName, }) {
  
     let sentLastMessageAt = null;
  
-
+    let lastMessageBy = "client";
     let lastMessageAt = null;
    let lastMessageSnippet = "";
 
@@ -51,7 +51,13 @@ export async function persistThread({ threadId, companyName, }) {
             if (!lastMessageAt || date > lastMessageAt) {
         lastMessageAt = date;
         lastMessageSnippet = msg.snippet ? decode(msg.snippet) : "";
-          
+              
+         // Determine sender
+  if (isSent) {
+    lastMessageBy = "me";
+  } else {
+    lastMessageBy = "client";
+  }
           
       }
 
@@ -100,7 +106,9 @@ export async function persistThread({ threadId, companyName, }) {
         lastMessageAtSent: sentLastMessageAt,
 
         lastMessageAt: lastMessageAt,
-        lastMessageSnippet: lastMessageSnippet
+        lastMessageSnippet: lastMessageSnippet,
+
+        lastMessageBy: lastMessageBy   // ✅ NEW
       },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );

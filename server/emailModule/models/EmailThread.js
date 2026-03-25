@@ -15,6 +15,12 @@ const EmailThreadSchema = new mongoose.Schema(
     
     lastMessageAt: Date,
     lastMessageSnippet: String,
+
+    lastMessageBy: { 
+        type: String,
+        enum: ["me", "client"], 
+        default: "client" 
+      },
    
 
     unreadCount: { type: Number, default: 0 }, // only counts INBOX messages

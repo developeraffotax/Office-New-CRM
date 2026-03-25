@@ -51,7 +51,8 @@ import PendingActionsIcon from "@mui/icons-material/PendingActions"; // For Pro
 
 import { IoClose } from "react-icons/io5";
 import ContextMenu from "./ui/ContextMenu";
-import StatusDropdown from "./ui/StatusDropdown";
+ 
+import UnifiedThreadFilters from "./ui/LastMessageByDropdown";
 
 export default function Filters({
   filters,
@@ -148,7 +149,8 @@ export default function Filters({
       startDate: "",
       endDate: "",
       page: 1,
-      search: ""
+      search: "",
+      lastMessageBy: ""
       
     });
 
@@ -467,7 +469,9 @@ export default function Filters({
             </Box>
           </FormControl>
 
-          <StatusDropdown filters={filters} handleUpdate={handleUpdate} />
+          {/* <StatusDropdown filters={filters} handleUpdate={handleUpdate} /> */}
+
+          <UnifiedThreadFilters filters={filters} handleUpdate={handleUpdate}/>
           {/* Spacer */}
           {/* <Box sx={{ flexGrow: 1 }} /> */}
 

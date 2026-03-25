@@ -127,6 +127,10 @@ export const buildFilterQuery = (req) => {
     andFilters.push({ status: filters?.status });
   }
 
+  if (filters?.lastMessageBy) {
+    andFilters.push({ lastMessageBy: filters?.lastMessageBy });
+  }
+
 
   // User filter
   if (isAdmin && filters.userId ) {

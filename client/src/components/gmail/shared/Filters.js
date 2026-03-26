@@ -1,115 +1,49 @@
-import * as React from "react";
+import axios from "axios";
 import dayjs from "dayjs";
-import {
-  Paper,
-  Stack,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Checkbox,
-  FormControlLabel,
-  Button,
-  Menu,
-  Divider,
-  Box,
-  Typography,
-  Chip,
-  Grow,
-  IconButton,
-  Tooltip,
-  ToggleButton,
-  ToggleButtonGroup,
-} from "@mui/material";
+import { useEffect, useRef, useState } from "react"; 
+import { useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+
+import { Paper, Stack, FormControl, Select, MenuItem, Button, Menu, Divider, Box, Typography, Chip, Grow, IconButton, Tooltip, ToggleButton, } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import {
-  FiCalendar,
-  FiFilter,
-  FiX,
-  FiUser,
-  FiChevronDown,
-  FiLayers,
-  FiRefreshCcw,
-  FiColumns,
-  FiMoreVertical,
-  FiPlus,
-} from "react-icons/fi";
 import MarkEmailUnreadIcon from "@mui/icons-material/MarkEmailUnread";
-import ManageCategoriesModal from "../categories/ManageCategoriesModal";
+import StarOutlineIcon from "@mui/icons-material/StarOutline";
+import StarIcon from "@mui/icons-material/Star";
 import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
 import { alpha } from "@mui/material/styles";
-import { useSelector } from "react-redux";
+import { FiCalendar, FiX, FiChevronDown, FiLayers, FiMoreVertical, } from "react-icons/fi";
+import { IoClose } from "react-icons/io5";
 
+import ManageCategoriesModal from "../categories/ManageCategoriesModal";
 import InboxUserTabs from "./ui/InboxUserTabs";
 import UserTabToggleButton from "./ui/UserTabToggleButton";
-import axios from "axios";
-import { useSearchParams } from "react-router-dom";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle"; // For Completed
-import PendingActionsIcon from "@mui/icons-material/PendingActions"; // For Pro
-
-import { IoClose } from "react-icons/io5";
 import ContextMenu from "./ui/ContextMenu";
- 
 import UnifiedThreadFilters from "./ui/LastMessageByDropdown";
 
-export default function Filters({
-  filters,
-  setFilters,
-  users = [],
-  categories = [],
-}) {
-  const [isCategoryModal, setIsCategoryModal] = React.useState(false);
 
-  const [isInboxUserTabs, setIsInboxUserTabs] = React.useState(true);
-  const [inboxStats, setInboxStats] = React.useState(null);
 
- 
+
+export default function Filters({ filters, setFilters, users = [], categories = [], }) {
+
+  const { auth: { user } } = useSelector((state) => state.auth);
+  const isAdmin = user?.role?.name === "Admin";
 
   const [searchParams] = useSearchParams();
-
   const folder = searchParams.get("folder") || "inbox";
   const companyName = searchParams.get("companyName") || "affotax";
 
-  const {
-    auth: { user },
-  } = useSelector((state) => state.auth);
+  const [inboxStats, setInboxStats] = useState(null);
+  const [isCategoryModal, setIsCategoryModal] = useState(false);
+  const [isInboxUserTabs, setIsInboxUserTabs] = useState(true);
+  const [anchorEl, setAnchorEl] = useState(null);
 
-  const isAdmin = user?.role?.name === "Admin";
+  const [searchInput, setSearchInput] = useState("");
+  const prevSearchRef = useRef("");
 
-  const [searchInput, setSearchInput] = React.useState("");
 
-  const prevSearchRef = React.useRef("");
 
-  React.useEffect(() => {
-    const trimmed = searchInput.trim();
-
-    // ⛔ Ignore whitespace-only typing
-    if (!trimmed && !prevSearchRef.current) return;
-
-    const timer = setTimeout(() => {
-      // ⛔ No change → no setFilters
-      if (trimmed === prevSearchRef.current) return;
-
-      setFilters({
-        search: trimmed,
-        page: 1,
-      });
-
-      prevSearchRef.current = trimmed;
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchInput, setFilters]);
-
-  const [anchorEl, setAnchorEl] = React.useState(null);
-
-  const hasActiveFilters =
-    filters.category ||
-    filters.userId ||
-    filters.unreadOnly ||
-    filters.startDate;
 
   const applyPreset = (days) => {
     const now = dayjs();
@@ -117,32 +51,22 @@ export default function Filters({
     let end;
 
     if (days === 0) {
-      // Today
       start = now.startOf("day");
       end = now.endOf("day");
     } else if (days === -1) {
-      // Yesterday
       start = now.subtract(1, "day").startOf("day");
       end = now.subtract(1, "day").endOf("day");
     } else {
-      // Last N days
       start = now.subtract(days, "day").startOf("day");
       end = now.endOf("day");
     }
 
-    setFilters({
-      ...filters,
-      startDate: start.toISOString(),
-      endDate: end.toISOString(),
-      page: 1,
-    });
-
+    setFilters({ ...filters, startDate: start.toISOString(), endDate: end.toISOString(), page: 1, });
     setAnchorEl(null);
   };
 
   const clearFilters = () => {
     setFilters({
-      // label: "",
       category: "",
       userId: "",
       unreadOnly: false,
@@ -150,8 +74,8 @@ export default function Filters({
       endDate: "",
       page: 1,
       search: "",
-      lastMessageBy: ""
-      
+      lastMessageBy: "",
+      starred: false,
     });
 
     setSearchInput("");
@@ -161,7 +85,55 @@ export default function Filters({
     setFilters({ ...updates, page: 1 });
   };
 
-  // Common styles for a compact, modern look
+
+
+
+
+
+  useEffect(() => {
+    if (!isAdmin || !isInboxUserTabs) return;
+
+    const fetchUserCounts = async () => {
+      try {
+        const res = await axios.get( `${process.env.REACT_APP_API_URL}/api/v1/gmail/mailbox-user-counts`, { params: { companyName: companyName, folder: folder, ...filters, }, }, );
+
+        if (res.data?.success) {
+          setInboxStats(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user counts", err);
+      }
+    };
+
+    fetchUserCounts();
+  }, [filters, folder, companyName, isAdmin, isInboxUserTabs]);
+
+
+
+  useEffect(() => {
+    const trimmed = searchInput.trim();
+    if (!trimmed && !prevSearchRef.current) return;
+
+    const timer = setTimeout(() => {
+      if (trimmed === prevSearchRef.current) return;
+      setFilters({
+        search: trimmed,
+        page: 1,
+      });
+      prevSearchRef.current = trimmed;
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchInput, setFilters]);
+
+
+
+
+
+
+
+
+    // Common styles for a compact, modern look
   const selectStyle = {
     borderRadius: "12px",
     backgroundColor: "#f8f9fa",
@@ -183,429 +155,259 @@ export default function Filters({
     },
   };
 
-  React.useEffect(() => {
-    if (!isAdmin || !isInboxUserTabs) return;
 
-    const fetchUserCounts = async () => {
-      try {
-        const res = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/gmail/mailbox-user-counts`,
-          {
-            params: {
-              companyName: companyName,
-              folder: folder,
+  const hasActiveFilters = filters.category || filters.userId || filters.unreadOnly || filters.starred || filters.startDate;
 
-              ...filters,
-            },
-          },
-        );
 
-        if (res.data?.success) {
-          setInboxStats(res.data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch user counts", err);
-      }
-    };
-
-    fetchUserCounts();
-  }, [filters, folder, companyName, isAdmin, isInboxUserTabs]);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Paper
-        elevation={0}
-        sx={{
-          p: 2,
+      <Paper elevation={0} sx={{ p: 2, borderRadius: 0, border: "1px solid", borderColor: "divider", bgcolor: "background.paper", }} >
+        <Stack direction="row" spacing={4} alignItems="center" justifyContent="space-between" flexWrap="wrap" sx={{ mb: hasActiveFilters ? 2 : 0 }} >
+          <Stack direction="row" spacing={1} alignItems="center">
+            <button onClick={clearFilters} title="Clear all filters" className={`group flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-yellow-600 text-white shadow-md transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-110 hover:rotate-180 cursor-pointer mb-1 outline-none `} >
+              <IoClose className="h-5 w-5" />
+            </button>
 
-          borderRadius: 0,
-          border: "1px solid",
-          borderColor: "divider",
-          bgcolor: "background.paper",
-        }}
-      >
-        <Stack
-          direction="row"
-          spacing={4}
-          alignItems="center"
-          justifyContent="space-between"
-          flexWrap="wrap"
-          sx={{ mb: hasActiveFilters ? 2 : 0 }}
-        >
-
-
-
-          <Stack
-          direction="row"
-          spacing={1}
-          alignItems="center"
- 
-           
-        >
-
-
-
-             <button
-
-            onClick={clearFilters}
-            // disabled={!hasActiveFilters}
-            title="Clear all filters"
-            className={`
-                group flex items-center justify-center
-                w-8 h-8
-                rounded-full 
-                bg-gradient-to-r from-orange-500 to-yellow-600 
-                text-white shadow-md
-                transition-all duration-300 ease-in-out 
-                hover:shadow-lg hover:scale-110 hover:rotate-180 
-                cursor-pointer mb-1
-                outline-none
-                
-              `}
-            >
-            <IoClose className="h-5 w-5" />
-          </button>
-
-         
-
-          {/* 1. Category Select */}
-          <FormControl size="small" sx={{ minWidth: 150, }}>
-            <Select
-              value={filters.category || ""}
-              displayEmpty
-              onChange={(e) => handleUpdate({ category: e.target.value })}
-              IconComponent={FiChevronDown}
-              renderValue={(selected) => {
-                if (!selected) {
+            {/* 1. Category Select */}
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <Select
+                value={filters.category || ""}
+                displayEmpty
+                onChange={(e) => handleUpdate({ category: e.target.value })}
+                IconComponent={FiChevronDown}
+                renderValue={(selected) => {
+                  if (!selected) {
+                    return (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          opacity: 0.7,
+                        }}
+                      >
+                        <FiLayers size={14} />
+                        <Typography variant="body2">All</Typography>
+                      </Box>
+                    );
+                  }
                   return (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        opacity: 0.7,
-                      }}
-                    >
-                      <FiLayers size={14} />
-                      <Typography variant="body2">All</Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <FiLayers size={14} color="#3b82f6" />
+                      <Typography variant="body2">
+                        {selected.charAt(0).toUpperCase() + selected.slice(1)}
+                      </Typography>
                     </Box>
                   );
-                }
-                return (
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <FiLayers size={14} color="#3b82f6" />
-                    <Typography variant="body2">
-                      {selected.charAt(0).toUpperCase() + selected.slice(1)}
-                    </Typography>
-                  </Box>
-                );
-              }}
-              sx={selectStyle}
-            >
-              <MenuItem value="">
-                <Typography variant="body2" fontWeight={600}>
-                  All
-                </Typography>
-              </MenuItem>
-              <MenuItem
-                sx={{
-                  borderBottom: 1,
-                  borderColor: "#ddd",
                 }}
-                value={"unassigned"}
+                sx={selectStyle}
               >
-                {" "}
-                Unassigned{" "}
-              </MenuItem>
+                <MenuItem value=""> <Typography variant="body2" fontWeight={600}> All </Typography> </MenuItem>
+                <MenuItem sx={{ borderBottom: 1, borderColor: "#ddd", }} value={"unassigned"} > {" "} Unassigned{" "} </MenuItem>
 
-              {categories.map(({ name }) => {
-                return (
-                  <MenuItem value={name}>
-                    {name.charAt(0).toUpperCase() + name.slice(1)}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </FormControl>
+                {categories.map(({ name }) => {
+                  return  <MenuItem value={name}> {name.charAt(0).toUpperCase() + name.slice(1)} </MenuItem>;
+                })}
+              </Select>
 
-          {[
-            { label: "T", title: "Today", value: 0 },
-            { label: "Y", title: "Yesterday", value: -1 },
-            { label: "3D", title: "Last 3 Days", value: 3 },
-            { label: "7D", title: "Last 7 Days", value: 7 },
-          ].map((range) => {
-            const isActive = (() => {
-              if (!filters.startDate) return false;
-              const now = dayjs();
-              let expectedStart;
-              if (range.value === 0) expectedStart = now.startOf("day");
-              else if (range.value === -1)
-                expectedStart = now.subtract(1, "day").startOf("day");
-              else
-                expectedStart = now.subtract(range.value, "day").startOf("day");
-              return dayjs(filters.startDate).isSame(expectedStart, "minute");
-            })();
+            </FormControl>
 
-            return (
-              <Tooltip key={range.label} title={range.title}>
-                <Button
-                  size="small"
-                  onClick={() => applyPreset(range.value)}
-                  sx={{
-                    minWidth: 36,
-                    width: 36,
-                    height: 36,
-                    p: 0,
-                    borderRadius: "8px",
-                    textTransform: "none",
-                    fontWeight: 700,
-                    fontSize: "0.72rem",
-                    border: "1px solid",
-                    borderColor: isActive ? "primary.main" : "rgba(0,0,0,0.15)",
-                    color: isActive ? "primary.main" : "text.secondary",
-                    bgcolor: isActive
-                      ? (theme) => alpha(theme.palette.primary.main, 0.08)
-                      : "transparent",
-                    "&:hover": {
-                      bgcolor: (theme) =>
-                        alpha(theme.palette.primary.main, 0.1),
-                      borderColor: "primary.main",
-                      color: "primary.main",
-                    },
-                  }}
-                >
-                  {range.label}
-                </Button>
-              </Tooltip>
-            );
-          })}
+            {[
+              { label: "T", title: "Today", value: 0 },
+              { label: "Y", title: "Yesterday", value: -1 },
+              { label: "3D", title: "Last 3 Days", value: 3 },
+              { label: "7D", title: "Last 7 Days", value: 7 },
+            ].map((range) => {
+              const isActive = (() => {
+                if (!filters.startDate) return false;
+                const now = dayjs();
+                let expectedStart;
+                if (range.value === 0) expectedStart = now.startOf("day");
+                else if (range.value === -1)
+                  expectedStart = now.subtract(1, "day").startOf("day");
+                else
+                  expectedStart = now
+                    .subtract(range.value, "day")
+                    .startOf("day");
+                return dayjs(filters.startDate).isSame(expectedStart, "minute");
+              })();
 
-          {/* Date Picker Trigger */}
-          <Button
-            variant="outlined"
-            size="medium"
-            color="inherit"
-            startIcon={<FiCalendar size={16} />}
-            onClick={(e) => setAnchorEl(e.currentTarget)}
-            sx={{
-              borderRadius: 2,
-              textTransform: "none",
-              borderColor: "rgba(0,0,0,0.23)",
-              px: 2,
-              height: 40,
-            }}
-          >
-            {filters.startDate ? (
-              <Typography variant="body2" fontWeight={500}>
-                {dayjs(filters.startDate).format("MMM DD")} —{" "}
-                {dayjs(filters.endDate).format("MMM DD")}
-              </Typography>
-            ) : (
-              "Date Range"
-            )}
-          </Button>
+              return (
+                <Tooltip key={range.label} title={range.title}>
+                  <Button
+                    size="small"
+                    onClick={() => applyPreset(range.value)}
+                    sx={{
+                      minWidth: 36,
+                      width: 36,
+                      height: 36,
+                      p: 0,
+                      borderRadius: "8px",
+                      textTransform: "none",
+                      fontWeight: 700,
+                      fontSize: "0.72rem",
+                      border: "1px solid",
+                      borderColor: isActive
+                        ? "primary.main"
+                        : "rgba(0,0,0,0.15)",
+                      color: isActive ? "primary.main" : "text.secondary",
+                      bgcolor: isActive
+                        ? (theme) => alpha(theme.palette.primary.main, 0.08)
+                        : "transparent",
+                      "&:hover": {
+                        bgcolor: (theme) =>
+                          alpha(theme.palette.primary.main, 0.1),
+                        borderColor: "primary.main",
+                        color: "primary.main",
+                      },
+                    }}
+                  >
+                    {range.label}
+                  </Button>
+                </Tooltip>
+              );
+            })}
 
-          <Divider
-            orientation="vertical"
-            flexItem
-            sx={{ height: 24, alignSelf: "center" }}
-          />
+            {/* Date Picker Trigger */}
+            <Button
+              variant="outlined"
+              size="medium"
+              color="inherit"
+              startIcon={<FiCalendar size={16} />}
+              onClick={(e) => setAnchorEl(e.currentTarget)}
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                borderColor: "rgba(0,0,0,0.23)",
+                px: 2,
+                height: 40,
+              }}
+            >
+              {filters.startDate ? (
+                <Typography variant="body2" fontWeight={500}>
+                  {dayjs(filters.startDate).format("MMM DD")} —{" "}
+                  {dayjs(filters.endDate).format("MMM DD")}
+                </Typography>
+              ) : (
+                "Date Range"
+              )}
+            </Button>
 
-          <Tooltip title="Show Unread Only">
+            <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} />
+
+            
             <ToggleButton
               value="unread"
               size="small"
+              title="Show Unread Only"
               selected={filters.unreadOnly}
-              onChange={() => handleUpdate({ unreadOnly: !filters.unreadOnly })}
+              onChange={() =>
+                handleUpdate({ unreadOnly: !filters.unreadOnly })
+              }
               color="primary"
               sx={{ border: "none", borderRadius: "8px" }}
             >
               <MarkEmailUnreadIcon fontSize="small" />
             </ToggleButton>
-          </Tooltip>
-
-          <FormControl size="small" sx={{ minWidth: 300 }}>
-            <Box sx={{ position: "relative" }}>
-              <input
-                type="text"
-                placeholder="Search subject, email…"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                style={{
-                  height: 40,
-                  width: "100%",
-                  padding: "0 40px 0 12px", // space for ❌
-                  borderRadius: 12,
-                  border: "1px solid #e5e7eb",
-                  outline: "none",
-                  fontSize: "0.875rem",
-                }}
-              />
-
-              {/* Clear Button */}
-              {searchInput.trim() && (
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    setSearchInput("");
-                    // setFilters((prev) => ({
-                    //   ...prev,
-                    //   search: "",
-                    //   page: 1,
-                    // }));
-                  }}
-                  sx={{
-                    position: "absolute",
-                    right: 6,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    color: "grey.500",
-                    "&:hover": { color: "grey.700" },
-                  }}
-                >
-                  <FiX size={14} />
-                </IconButton>
-              )}
-            </Box>
-          </FormControl>
-
-          {/* <StatusDropdown filters={filters} handleUpdate={handleUpdate} /> */}
-
-          <UnifiedThreadFilters filters={filters} handleUpdate={handleUpdate}/>
-          {/* Spacer */}
-          {/* <Box sx={{ flexGrow: 1 }} /> */}
-
-          {isAdmin && (
-            <UserTabToggleButton
-              active={isInboxUserTabs}
-              onClick={() => setIsInboxUserTabs((prev) => !prev)}
-            />
-          )}
-
-          {/* Reset Action */}
-          {/* {hasActiveFilters && (
-            <Tooltip title="Reset all filters">
-              <Button
-                size="small"
-                color="inherit"
-                onClick={clearFilters}
-                startIcon={<FiRefreshCcw size={14} />}
-                sx={{
-                  opacity: 0.8,
-                  "&:hover": { opacity: 1 },
-                  textTransform: "none",
-                  color: "#1151D1",
-                  px: 2,
-                }}
-              >
-                Reset
-              </Button>
-            </Tooltip>
-          )} */}
-
-          </Stack>
-
-
-
-
-
-          
-          <Stack
-          direction="row"
-          spacing={1}
-          alignItems="center"
  
-           
-        >
 
+            <FormControl size="small" sx={{ minWidth: 300 }}>
+              <Box sx={{ position: "relative" }}>
+                <input
+                  type="text"
+                  placeholder="Search subject, email…"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  style={{
+                    height: 40,
+                    width: "100%",
+                    padding: "0 40px 0 12px", // space for ❌
+                    borderRadius: 12,
+                    border: "1px solid #e5e7eb",
+                    outline: "none",
+                    fontSize: "0.875rem",
+                  }}
+                />
 
-         {/* <Tooltip title="Manage Categories">
-            <IconButton
-              onClick={() => setIsCategoryModal(true)}
+                {/* Clear Button */}
+                {searchInput.trim() && (
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      setSearchInput("");
+
+                    }}
+                    sx={{
+                      position: "absolute",
+                      right: 6,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      color: "grey.500",
+                      "&:hover": { color: "grey.700" },
+                    }}
+                  >
+                    <FiX size={14} />
+                  </IconButton>
+                )}
+              </Box>
+            </FormControl>
+
+ 
+
+            <UnifiedThreadFilters filters={filters} handleUpdate={handleUpdate} />
+            
+
+            <ToggleButton
+              value="starred"
               size="small"
+              selected={filters.starred === true}
+              onChange={() =>
+                handleUpdate({
+                  starred: !filters.starred,
+                })
+              }
+              title={`Starred Emails`}
+              color="warning"
               sx={{
+                border: "none",
                 borderRadius: "8px",
-                bgcolor: isCategoryModal ? "primary.50" : "transparent",
-                color: isCategoryModal ? "primary.main" : "grey.600",
-                "&:hover": {
-                  bgcolor: "primary.100",
-                },
               }}
             >
-              <LabelOutlinedIcon fontSize="small" />
-            </IconButton>
-          </Tooltip> */}
+              {filters.starred ? (
+                <StarIcon fontSize="small" />
+              ) : (
+                <StarOutlineIcon fontSize="small" />
+              )}
+            </ToggleButton>
 
-
-
-          <ContextMenu
-            trigger={
-              <button className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 transition">
-                <FiMoreVertical className="text-gray-600 text-lg" />
-              </button>
-            }
-            items={[
-              { type: "label", label: "CATEGORIES" },
-
-              {
-                icon: <LabelOutlinedIcon sx={{ fontSize: 18 }} />,
-                label: "Manage Categories",
-                onClick: () => setIsCategoryModal(true),
-              },
-
-            
-              // { type: "divider" },
-
-              
-             
-              
-            ]}
-          />
-            
+            {isAdmin && ( <UserTabToggleButton active={isInboxUserTabs} onClick={() => setIsInboxUserTabs((prev) => !prev)} /> )}
+ 
           </Stack>
 
 
-         
+
+          <Stack direction="row" spacing={1} alignItems="center">
+            <ContextMenu
+              trigger={
+                <button className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 transition">
+                  <FiMoreVertical className="text-gray-600 text-lg" />
+                </button>
+              }
+              items={[
+                { type: "label", label: "CATEGORIES" },
+
+                {
+                  icon: <LabelOutlinedIcon sx={{ fontSize: 18 }} />,
+                  label: "Manage Categories",
+                  onClick: () => setIsCategoryModal(true),
+                },
+              ]}
+            />
+          </Stack>
+
+
         </Stack>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         {isInboxUserTabs && isAdmin && (
           <div className="w-full animate-pop mt-3   ">
@@ -648,81 +450,20 @@ export default function Filters({
         {hasActiveFilters && (
           <>
             <Divider sx={{ mb: 2, borderStyle: "dashed" }} />
-            <Stack
-              direction="row"
-              spacing={1}
-              flexWrap="wrap"
-              alignItems="center"
-            >
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{
-                  mr: 1,
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                  letterSpacing: 0.5,
-                }}
-              >
-                Active Filters:
-              </Typography>
+            <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center" >
 
-              {/* {filters.category && (
-                <Chip
-                  size="small"
-                  label={`Category: ${filters.category}`}
-                  onDelete={() => handleUpdate({ category: "" })}
-                  sx={{ bgcolor: "action.selected", fontWeight: 500 }}
-                />
-              )} */}
+              <Typography variant="caption" color="text.secondary" sx={{ mr: 1, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, }} > Active Filters: </Typography>
 
-              {filters.category && (
-                <Chip
-                  size="small"
-                  label={`Category: ${filters.category}`}
-                  onDelete={() => handleUpdate({ category: "" })}
-                  sx={{ bgcolor: "action.selected", fontWeight: 500 }}
-                />
-              )}
+              {filters.category && ( <Chip size="small" label={`Category: ${filters.category}`} onDelete={() => handleUpdate({ category: "" })} sx={{ bgcolor: "action.selected", fontWeight: 500 }} /> )}
 
-              {filters.userId && (
-                <Chip
-                  size="small"
-                  label={`User: ${
-                    filters.userId === "unassigned"
-                      ? "unassigned"
-                      : users.find((u) => u._id === filters.userId)?.name ||
-                        "User"
-                  }`}
-                  onDelete={() => handleUpdate({ userId: "" })}
-                  sx={{ bgcolor: "action.selected", fontWeight: 500 }}
-                />
-              )}
+              {filters.userId && ( <Chip size="small" label={`User: ${ filters.userId === "unassigned" ? "unassigned" : users.find((u) => u._id === filters.userId)?.name || "User" }`} onDelete={() => handleUpdate({ userId: "" })} sx={{ bgcolor: "action.selected", fontWeight: 500 }} /> )}
 
-              {filters.startDate && (
-                <Chip
-                  size="small"
-                  icon={<FiCalendar size={12} />}
-                  label={`${dayjs(filters.startDate).format("MMM D")} - ${dayjs(
-                    filters.endDate,
-                  ).format("MMM D")}`}
-                  onDelete={() => handleUpdate({ startDate: "", endDate: "" })}
-                  sx={{ bgcolor: "action.selected", fontWeight: 500 }}
-                />
-              )}
+              {filters.startDate && ( <Chip size="small" icon={<FiCalendar size={12} />} label={`${dayjs(filters.startDate).format("MMM D")} - ${dayjs( filters.endDate, ).format("MMM D")}`} onDelete={() => handleUpdate({ startDate: "", endDate: "" })} sx={{ bgcolor: "action.selected", fontWeight: 500 }} /> )}
 
-              {filters.unreadOnly && (
-                <Chip
-                  size="small"
-                  label="Unread"
-                  onDelete={() => handleUpdate({ unreadOnly: false })}
-                  sx={{
-                    bgcolor: "primary.light",
-                    color: "primary.contrastText",
-                    fontWeight: 500,
-                  }}
-                />
-              )}
+              {filters.unreadOnly && ( <Chip size="small" label="Unread" onDelete={() => handleUpdate({ unreadOnly: false })} sx={{ bgcolor: "primary.light", color: "primary.contrastText", fontWeight: 500, }} /> )}
+
+              {filters.starred && ( <Chip size="small" label="Starred" onDelete={() => handleUpdate({ starred: false })} sx={{ bgcolor: "warning.light", color: "warning.contrastText", fontWeight: 500, }} /> )}
+
             </Stack>
           </>
         )}
@@ -764,20 +505,7 @@ export default function Filters({
           }}
         >
           <Box sx={{ p: 2.5, width: 300 }}>
-            <Typography
-              variant="caption"
-              sx={{
-                display: "block",
-                color: "text.secondary",
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                mb: 1.5,
-                ml: 0.5,
-              }}
-            >
-              Quick Ranges
-            </Typography>
+            <Typography variant="caption" sx={{ display: "block", color: "text.secondary", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", mb: 1.5, ml: 0.5, }} > Quick Ranges </Typography>
 
             <Box
               sx={{
@@ -821,20 +549,7 @@ export default function Filters({
 
             <Divider sx={{ my: 2.5, opacity: 0.6 }} />
 
-            <Typography
-              variant="caption"
-              sx={{
-                display: "block",
-                color: "text.secondary",
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                mb: 1.5,
-                ml: 0.5,
-              }}
-            >
-              Custom Range
-            </Typography>
+            <Typography variant="caption" sx={{ display: "block", color: "text.secondary", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", mb: 1.5, ml: 0.5, }} > Custom Range </Typography>
 
             <Stack spacing={2}>
               <DatePicker
@@ -880,17 +595,9 @@ export default function Filters({
         </Menu>
       </Paper>
 
-      {
-        <ManageCategoriesModal
-          open={isCategoryModal}
-          onClose={() => setIsCategoryModal(false)}
-        />
-      }
+      { <ManageCategoriesModal open={isCategoryModal} onClose={() => setIsCategoryModal(false)} /> }
 
-
-      
-
-
+        
     </LocalizationProvider>
   );
 }

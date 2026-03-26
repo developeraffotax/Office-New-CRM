@@ -122,6 +122,7 @@ const filters = useMemo(() => {
     search: searchParams.get("search") || "",
     status: searchParams.get("status") || "",
     lastMessageBy: searchParams.get("lastMessageBy") || "",
+    starred: searchParams.get("starred") === "true",
   };
 }, [searchParams, folder, isAdmin]);
 

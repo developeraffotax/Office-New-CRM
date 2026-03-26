@@ -131,6 +131,11 @@ export const buildFilterQuery = (req) => {
     andFilters.push({ lastMessageBy: filters?.lastMessageBy });
   }
 
+  // ⭐ Starred filter
+    if (filters?.starred === "true") {
+      andFilters.push({ labels: "STARRED" });
+    }
+
 
   // User filter
   if (isAdmin && filters.userId ) {

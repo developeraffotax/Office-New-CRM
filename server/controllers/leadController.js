@@ -1461,12 +1461,27 @@ export const getWonLeadData = async (req, res) => {
 
     const filters = { status: "won" };
 
-    const fetchedUser = user
-      ? await userModel.findOne({ name: user }).lean()
-      : null;
+    let fetchedUser = null;
 
     if (user && user !== "All") {
-      filters.jobHolder = user;
+      fetchedUser = await userModel
+        .findOne({ name: user })
+        .select("name juniors isTeamLead")
+        .populate("juniors", "name") // avoids second query
+        .lean();
+
+      if (fetchedUser) {
+        if (fetchedUser.isTeamLead) {
+          const juniorNames =
+            fetchedUser.juniors?.map(j => j.name) || [];
+
+          filters.jobHolder = {
+            $in: [fetchedUser.name, ...juniorNames],
+          };
+        } else {
+          filters.jobHolder = fetchedUser.name;
+        }
+      }
     }
 
     if (startDate && endDate) {
@@ -1587,7 +1602,7 @@ export const getWonLeadData = async (req, res) => {
     // -------------------------
     // Fetch Goals
     // -------------------------
-    const goalMatch = { goalType: { $in: ["Target Lead Value", "Target Lead Count"] } };
+    const goalMatch = { goalType: { $in: ["Target Lead Value", "Target Lead Count", "Target Lead Value (Team Lead)", "Target Lead Count (Team Lead)"] } };
     if (fetchedUser) goalMatch.jobHolder = fetchedUser._id;
     if (startDate && endDate) goalMatch.startDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
 
@@ -1603,6 +1618,7 @@ export const getWonLeadData = async (req, res) => {
       { $group: { _id: goalGroupId, total: { $sum: { $ifNull: ["$achievement", 0] } } } },
     ]);
 
+    
     // Map goals to label index
     goals.forEach((goal) => {
       let labelKey;
@@ -1611,17 +1627,24 @@ export const getWonLeadData = async (req, res) => {
       } else {
         labelKey = `${goal._id.year}-${goal._id.month}`;
       }
-
+      
       const index = labels.findIndex((_, idx) => {
         if (view === "weekly") return labels[idx] === getWeekRangeLabel(goal._id.year, goal._id.week);
         else return labels[idx] === moment(`${goal._id.year}-${goal._id.month}-01`).format("MMM YYYY");
       });
-
+      
       if (index !== -1) {
-        if (goal._id.type === "Target Lead Value") targetValues[index] = goal.total;
-        else targetCounts[index] = goal.total;
+
+
+
+        if ((goal._id.type === "Target Lead Value" && !fetchedUser.isTeamLead) || (goal._id.type === "Target Lead Value (Team Lead)" && fetchedUser.isTeamLead)) targetValues[index] = goal.total;
+        if ((goal._id.type === "Target Lead Count" && !fetchedUser.isTeamLead) || (goal._id.type === "Target Lead Count (Team Lead)" && fetchedUser.isTeamLead)) targetCounts[index] = goal.total;
+         
       }
     });
+    
+    
+    console.log("GOALS ARE❤️❤️❤️",{ labels, counts, values, targetCounts, targetValues })
 
     return res.json({ labels, counts, values, targetCounts, targetValues });
   } catch (error) {
@@ -1681,11 +1704,27 @@ export const getWonLeadStats = async (req, res) => {
 
     const filters = { status: "won" };
 
-    // find the user (to map goals properly)
-    const fetchedUser = user ? await userModel.findOne({ name: user }).lean() : null;
+    let fetchedUser = null;
 
-    if (user) {
-      filters.jobHolder = user;
+    if (user && user !== "All") {
+      fetchedUser = await userModel
+        .findOne({ name: user })
+        .select("name juniors isTeamLead")
+        .populate("juniors", "name") // avoids second query
+        .lean();
+
+      if (fetchedUser) {
+        if (fetchedUser.isTeamLead) {
+          const juniorNames =
+            fetchedUser.juniors?.map(j => j.name) || [];
+
+          filters.jobHolder = {
+            $in: [fetchedUser.name, ...juniorNames],
+          };
+        } else {
+          filters.jobHolder = fetchedUser.name;
+        }
+      }
     }
 
     if (startDate && endDate) {
@@ -1743,12 +1782,14 @@ export const getWonLeadStats = async (req, res) => {
     const goals = await goalModel.find(goalFilters).lean();
 
     targetValues = goals
-      .filter((g) => g.goalType === "Target Lead Value")
+      .filter((g) => (g.goalType === "Target Lead Value" && !fetchedUser.isTeamLead) || (g.goalType === "Target Lead Value (Team Lead)" && fetchedUser.isTeamLead))
       .reduce((acc, g) => acc + (g.achievement || 0), 0);
 
     targetCount = goals
-      .filter((g) => g.goalType === "Target Lead Count")
+      .filter((g) => (g.goalType === "Target Lead Count" && !fetchedUser.isTeamLead) || (g.goalType === "Target Lead Count (Team Lead)" && fetchedUser.isTeamLead))
       .reduce((acc, g) => acc + (g.achievement || 0), 0);
+
+      
 
     return res.json({
       totalValues,

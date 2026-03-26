@@ -61,6 +61,11 @@ const userSchema = new mongoose.Schema(
       default: 0,
     },
 
+    isTeamLead: {
+      type: Boolean,
+      default: false,
+    },
+
     juniors: [
       {
         type: Schema.Types.ObjectId,

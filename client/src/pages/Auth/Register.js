@@ -279,20 +279,26 @@ export default function Register({
           </div>
 
 
-              {/* Toggle Team Lead */}
-<div className="flex items-center gap-2 mt-4">
-  <input
-    id="isTeamLead"
-    type="checkbox"
-    checked={isTeamLead}
-    onChange={() => setIsTeamLead(prev => !prev)}
-    className="accent-blue-600 w-4 h-4 rounded border-gray-300 focus:ring-blue-500"
-  />
-  <label htmlFor="isTeamLead" className="text-[1rem] font-[400]">
-    Is Team Lead
+        <div className="flex items-center gap-3 pt-5 col-span-2">
+  <label htmlFor="isTeamLead" className="relative inline-flex items-center cursor-pointer">
+    {/* Hidden Checkbox */}
+    <input
+      id="isTeamLead"
+      type="checkbox"
+      checked={isTeamLead}
+      onChange={() => setIsTeamLead(prev => !prev)}
+      className="sr-only peer"
+    />
+    
+    {/* Switch Track */}
+    <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+    
+    {/* Label Text */}
+    <span className="ms-3 text-sm font-medium text-gray-700">
+ Team Lead
+    </span>
   </label>
 </div>
-
 
 
 

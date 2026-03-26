@@ -24,6 +24,8 @@ export default function Register({
   const [address, setAddress] = useState("");
   const [role, setRole] = useState("");
   const [userRoles, setUserRoles] = useState([]);
+  const [isTeamLead, setIsTeamLead] = useState(false);
+
 
 
   console.log("USERS ARE>>>💙💚💚💛💛", userData)
@@ -63,7 +65,8 @@ export default function Register({
             emergency_contact,
             address,
             role,
-            juniors
+            juniors,
+            isTeamLead
           }
         );
         if (data) {
@@ -84,6 +87,7 @@ export default function Register({
             emergency_contact,
             address,
             role,
+            isTeamLead
           }
         );
         if (data) {
@@ -116,6 +120,7 @@ export default function Register({
       if(userId) {
         setJuniors(data?.user?.juniors)
       }
+      setIsTeamLead(data?.user?.isTeamLead || false)
     } catch (error) {
       console.log(error);
     }
@@ -274,7 +279,19 @@ export default function Register({
           </div>
 
 
-          
+              {/* Toggle Team Lead */}
+<div className="flex items-center gap-2 mt-4">
+  <input
+    id="isTeamLead"
+    type="checkbox"
+    checked={isTeamLead}
+    onChange={() => setIsTeamLead(prev => !prev)}
+    className="accent-blue-600 w-4 h-4 rounded border-gray-300 focus:ring-blue-500"
+  />
+  <label htmlFor="isTeamLead" className="text-[1rem] font-[400]">
+    Is Team Lead
+  </label>
+</div>
 
 
 

@@ -257,7 +257,8 @@ export const updateUserProfile = async (req, res) => {
       isActive,
       createdAt,
       updatedAt,
-      juniors
+      juniors,
+      isTeamLead
     } = req.body;
 
     // Check if userId is provided
@@ -305,7 +306,8 @@ export const updateUserProfile = async (req, res) => {
         isActive: isActive !== undefined ? isActive : isExisting.isActive,
         createdAt: createdAt || isExisting.createdAt,
         updatedAt: updatedAt || isExisting.updatedAt,
-        juniors: juniors
+        juniors: juniors,
+        isTeamLead: isTeamLead
       },
       { new: true }
     );

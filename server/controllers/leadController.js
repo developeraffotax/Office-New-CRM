@@ -1637,8 +1637,8 @@ export const getWonLeadData = async (req, res) => {
 
 
 
-        if ((goal._id.type === "Target Lead Value" && !fetchedUser.isTeamLead) || (goal._id.type === "Target Lead Value (Team Lead)" && fetchedUser.isTeamLead)) targetValues[index] = goal.total;
-        if ((goal._id.type === "Target Lead Count" && !fetchedUser.isTeamLead) || (goal._id.type === "Target Lead Count (Team Lead)" && fetchedUser.isTeamLead)) targetCounts[index] = goal.total;
+        if ((goal._id.type === "Target Lead Value" && !fetchedUser?.isTeamLead) || (goal._id.type === "Target Lead Value (Team Lead)" && fetchedUser?.isTeamLead)) targetValues[index] = goal.total;
+        if ((goal._id.type === "Target Lead Count" && !fetchedUser?.isTeamLead) || (goal._id.type === "Target Lead Count (Team Lead)" && fetchedUser?.isTeamLead)) targetCounts[index] = goal.total;
          
       }
     });
@@ -1782,11 +1782,11 @@ export const getWonLeadStats = async (req, res) => {
     const goals = await goalModel.find(goalFilters).lean();
 
     targetValues = goals
-      .filter((g) => (g.goalType === "Target Lead Value" && !fetchedUser.isTeamLead) || (g.goalType === "Target Lead Value (Team Lead)" && fetchedUser.isTeamLead))
+      .filter((g) => (g.goalType === "Target Lead Value" && !fetchedUser?.isTeamLead) || (g.goalType === "Target Lead Value (Team Lead)" && fetchedUser?.isTeamLead))
       .reduce((acc, g) => acc + (g.achievement || 0), 0);
 
     targetCount = goals
-      .filter((g) => (g.goalType === "Target Lead Count" && !fetchedUser.isTeamLead) || (g.goalType === "Target Lead Count (Team Lead)" && fetchedUser.isTeamLead))
+      .filter((g) => (g.goalType === "Target Lead Count" && !fetchedUser?.isTeamLead) || (g.goalType === "Target Lead Count (Team Lead)" && fetchedUser?.isTeamLead))
       .reduce((acc, g) => acc + (g.achievement || 0), 0);
 
       

@@ -4,6 +4,7 @@ import { style } from "../../utlis/CommonStyle";
 import { BiLoaderCircle } from "react-icons/bi";
 import axios from "axios";
 import { CompactSelect } from "../../pages/Jobs/utils/CompactSelect";
+import { trimPayload } from "../../pages/Jobs/utils/utils";
  
 
  
@@ -23,7 +24,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
   const [totalHours, setTotalHours] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   const [source, setSource] = useState("");
-  const [clientType, setClientType] = useState("");
+  const [clientType, setClientType] = useState("Limited");
   const [partner, setPartner] = useState("Affotax");
   const [country, setCountry] = useState("");
   const [fee, setFee] = useState("");
@@ -42,6 +43,8 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
   const [clientPaidFee, setClientPaidFee] = useState("");
 
   const [subtaskTemplates, setSubtaskTemplates] = useState([]);
+
+  const [submitted, setSubmitted] = useState(false);
 
   const [clientBookKeepingFormData, setClientBookKeepingFormData] = useState({
     jobName: "Bookkeeping",
@@ -243,14 +246,10 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
   //   Add Job
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (jobs.length === 0) {
-      return toast.error("At least one job is required!");
-    }
-    setLoading(true);
-    try {
-      const { data } = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/create/client/job`,
-        {
+
+    setSubmitted(true);
+
+    const payload = {
           clientName,
           regNumber,
           companyName,
@@ -277,22 +276,35 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
           clientPaidFee,
           jobs,
         }
+
+    const trimmedPayload = trimPayload(payload);
+
+    if (!trimmedPayload.clientName.trim() || !trimmedPayload.companyName.trim() || !trimmedPayload.source.trim() || !trimmedPayload.partner.trim() || !trimmedPayload.clientPaidFee.trim() ) {
+      return toast.error("Fill the required fields!");
+    }
+
+    if (jobs.length === 0) {
+      return toast.error("At least one job is required!");
+    }
+    try {
+      setLoading(true);
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/create/client/job`,
+        trimmedPayload
       );
       if (data) {
         allClientJobData();
-        // Socket
-        // socketId.emit("addJob", {
-        //   note: "New Task Added",
-        // });
         toast.success("Job added successfully!");
         setIsOpen(false);
       }
 
-      setLoading(false);
+      
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
+    } finally {
       setLoading(false);
+      setSubmitted(false)
     }
   };
 
@@ -311,6 +323,11 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     const date = getCurrentDate();
     setCurrentDate(date);
   }, []);
+
+
+  const isInvalid = (value) => submitted && !value?.trim();
+
+
 
   return (
     <div className="relative w-full sm:w-full lg:w-[95%] xl:w-[85%] 2xl:w-[80%] 3xl:w-[70%]    z-[50]  px-12 py-5 shadow-md shadow-black/25 rounded-xl bg-gray-200 hidden1   ">
@@ -344,6 +361,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
         <form
           className="w-full h-full flex flex-col gap-8 "
           onSubmit={handleSubmit}
+
         >
           <div className="w-full max-w-[1000px] mx-auto    h-full grid grid-cols-1 gap-6 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:[grid-template-columns:1fr_1fr_1.5fr_1fr] ">
             {/* 1 */}
@@ -354,9 +372,9 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
               <input
                 type="text"
                 placeholder="Client Name"
-                className={`${style.input} `}
+                className={`${style.input} ${ isInvalid(clientName) ? "border-red-500" : "" }`}
                 value={clientName}
-                required
+                
                 onChange={(e) => setClientName(e.target.value)}
               />
               <input
@@ -369,8 +387,8 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
               <input
                 type="text"
                 placeholder="Company Name"
-                required
-                className={`${style.input}`}
+ 
+                className={`${style.input} ${ isInvalid(companyName) ? "border-red-500" : "" }`}
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
               />
@@ -408,8 +426,9 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 className={`${style.input}`}
               />
               <select
-                required
-                className={`${style.input} h-[2.5rem] `}
+ 
+                
+                className={`${style.input} h-[2.5rem] ${ isInvalid(source) ? "border-red-500" : "" }`}
                 value={source}
                 onChange={(e) => setSource(e.target.value)}
               >
@@ -434,8 +453,8 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 ))}
               </select>
               <select
-                required
-                className={`${style.input} h-[2.5rem] `}
+ 
+                className={`${style.input} h-[2.5rem] ${ isInvalid(partner) ? "border-red-500" : "" }`}
                 value={partner}
                 onChange={(e) => setPartner(e.target.value)}
               >
@@ -452,10 +471,11 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 <input
                 type="text"
                 placeholder="Paid Fee"
-                className={`${style.input} w-[50%]`}
+                 
+                className={`${style.input} w-[50%] ${ isInvalid(clientPaidFee) ? "border-red-500" : "" }`}
                 value={clientPaidFee}
                 onChange={(e) => setClientPaidFee(e.target.value)}
-                required
+ 
               />
 
               <input

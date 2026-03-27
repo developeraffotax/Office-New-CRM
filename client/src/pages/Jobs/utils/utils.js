@@ -32,10 +32,22 @@ export   // -----------Handle Custom date filter------
   };
 
 
+ 
 
 
+export const trimPayload = (obj) => {
+  const trimmed = {};
 
+  for (const key in obj) {
+    if (typeof obj[key] === "string") {
+      trimmed[key] = obj[key].trim();
+    } else {
+      trimmed[key] = obj[key];
+    }
+  }
 
+  return trimmed;
+};
 
 
 

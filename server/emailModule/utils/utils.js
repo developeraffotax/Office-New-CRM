@@ -282,3 +282,33 @@ export const isSelfAssignment = (user, newUserId) => {
 
   return user._id.toString() === newUserId.toString();
 };
+
+
+
+
+
+
+
+
+
+
+
+export const addParticipant = (map, participant) => {
+  if (!participant?.email) return;
+
+  const email = participant.email.toLowerCase();
+
+  const existing = map.get(email);
+
+  if (existing) {
+    map.set(email, {
+      email,
+      name: existing.name || participant.name || "",
+    });
+  } else {
+    map.set(email, {
+      email,
+      name: participant.name || "",
+    });
+  }
+}

@@ -1,7 +1,7 @@
 // services/persistThread.js
 import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
 import EmailThread from "../models/EmailThread.js";
-import { getHeader, parseEmail, parseEmailList, extractAttachments } from "../utils/utils.js";
+import { getHeader, parseEmail, parseEmailList, extractAttachments, addParticipant } from "../utils/utils.js";
 import { getGmailClient } from "./gmail.service.js";
 import { decode } from "entities";
 
@@ -44,8 +44,14 @@ export async function persistThread({ threadId, companyName, }) {
       msg.labelIds.forEach(l => labels.add(l));
 
       // Participants
-      if (from.email) participantsMap.set(from.email, from);
-      toList.forEach(t => t.email && participantsMap.set(t.email, t));
+      // if (from.email) participantsMap.set(from.email, from);
+      // toList.forEach(t => t.email && participantsMap.set(t.email, t));
+
+      addParticipant(participantsMap, from);
+
+      toList.forEach(t => {
+        addParticipant(participantsMap, t);
+      });
 
 
             if (!lastMessageAt || date > lastMessageAt) {

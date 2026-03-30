@@ -6,18 +6,24 @@ import {
   FaTimesCircle,
   FaHourglassHalf,
   FaPercentage,
+  FaClock,
 } from "react-icons/fa";
 
-const LeadStatsCards = ({ start, end,  lead_Source ,
-             setLeadSource ,
-             department ,
-             setDepartment }) => {
+const LeadStatsCards = ({
+  start,
+  end,
+  lead_Source,
+  setLeadSource,
+  department,
+  setDepartment,
+}) => {
   const [stats, setStats] = useState({
     total: null,
     won: null,
     lost: null,
     progress: null,
     conversionRate: null,
+    avgConversionDays: null, // ⭐ NEW
   });
 
   useEffect(() => {
@@ -26,6 +32,7 @@ const LeadStatsCards = ({ start, end,  lead_Source ,
         const { data } = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/v1/leads/conversion-stats?start=${start}&end=${end}&lead_Source=${lead_Source}&department=${department}`
         );
+
         if (data.success) {
           setStats(data.stats);
         }
@@ -35,7 +42,7 @@ const LeadStatsCards = ({ start, end,  lead_Source ,
     };
 
     if (start && end) fetchStats();
-  }, [start, end,lead_Source, department]);
+  }, [start, end, lead_Source, department]);
 
   const cards = [
     {
@@ -68,10 +75,25 @@ const LeadStatsCards = ({ start, end,  lead_Source ,
     },
     {
       label: "Conversion Rate",
-      value: stats.conversionRate ? `${stats.conversionRate}%` : "--",
+      value:
+        stats.conversionRate !== null
+          ? `${stats.conversionRate}%`
+          : "--",
       icon: <FaPercentage className="text-purple-500 text-2xl" />,
       glow: "from-purple-400/20 to-pink-400/20",
       border: "border-purple-200",
+    },
+
+    // ⭐ NEW CARD
+    {
+      label: "Avg Conversion Time",
+      value:
+        stats.avgConversionDays !== null
+          ? `${stats.avgConversionDays} days`
+          : "--",
+      icon: <FaClock className="text-indigo-500 text-2xl" />,
+      glow: "from-indigo-400/20 to-blue-400/20",
+      border: "border-indigo-200",
     },
   ];
 
@@ -93,6 +115,7 @@ const LeadStatsCards = ({ start, end,  lead_Source ,
                   {card.label}
                 </h3>
               </div>
+
               <p className="text-3xl font-extrabold text-gray-900 mt-3 drop-shadow-sm">
                 {card.value !== null ? card.value : "--"}
               </p>
@@ -101,8 +124,8 @@ const LeadStatsCards = ({ start, end,  lead_Source ,
         ))}
       </div>
 
-      {/* Bottom row: 2 cards centered */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 justify-center max-w-2xl mx-auto">
+      {/* Bottom row: 3 cards now */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 justify-center max-w-4xl mx-auto">
         {cards.slice(3).map((card, idx) => (
           <div
             key={idx}
@@ -117,6 +140,7 @@ const LeadStatsCards = ({ start, end,  lead_Source ,
                   {card.label}
                 </h3>
               </div>
+
               <p className="text-3xl font-extrabold text-gray-900 mt-3 drop-shadow-sm">
                 {card.value !== null ? card.value : "--"}
               </p>

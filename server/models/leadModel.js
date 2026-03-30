@@ -52,42 +52,121 @@ const leadSchema = new mongoose.Schema(
     },
 
     email: {
-      type: String
+      type: String,
     },
-
 
     yearEnd: {
       type: Date,
-      
-     
     },
     jobDeadline: {
       type: Date,
-      
     },
 
-
-     sent: {
+    sent: {
       type: Number,
       default: 0,
     },
-
 
     received: {
       type: Number,
       default: 0,
     },
 
+    wonAt: {
+      type: Date,
+    },
+
+    lostAt: {
+      type: Date,
+    },
+
     leadRef: { type: Number, unique: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
-
 
 leadSchema.pre("save", async function (next) {
   if (this.leadRef) return next();
   this.leadRef = await generateRef("lead");
   next();
 });
+
+/* ===============================
+   Handle Status Changes
+   (Works with findByIdAndUpdate)
+=============================== */
+
+leadSchema.pre("findOneAndUpdate", function (next) {
+  try {
+    let update = this.getUpdate();
+
+    if (!update) return next();
+
+    // Ensure $set exists
+    if (!update.$set) {
+      update.$set = {};
+    }
+
+    // Ensure $unset exists
+    if (!update.$unset) {
+      update.$unset = {};
+    }
+
+    // Get status from update
+    const status =
+      update.status || update.$set.status;
+
+    // Get manually provided timestamps
+    const manualWonAt =
+      update.wonAt || update.$set.wonAt;
+
+    const manualLostAt =
+      update.lostAt || update.$set.lostAt;
+
+    if (!status) {
+      this.setUpdate(update);
+      return next();
+    }
+
+    /* ===============================
+       STATUS LOGIC
+    =============================== */
+
+    if (status === "won") {
+
+      // Only auto-set if frontend did NOT send wonAt
+      if (!manualWonAt) {
+        update.$set.wonAt = new Date();
+      }
+
+      // Remove lostAt
+      update.$unset.lostAt = "";
+    }
+
+    if (status === "lost") {
+
+      if (!manualLostAt) {
+        update.$set.lostAt = new Date();
+      }
+
+      update.$unset.wonAt = "";
+    }
+
+    if (status === "progress") {
+
+      update.$unset.wonAt = "";
+      update.$unset.lostAt = "";
+    }
+
+    this.setUpdate(update);
+
+    next();
+
+  } catch (error) {
+    next(error);
+  }
+});
+
+
 
 export default mongoose.model("Lead", leadSchema);

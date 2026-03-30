@@ -1154,9 +1154,25 @@ export const getLeadConversionStats = async (req, res) => {
           won: { $sum: { $cond: [{ $eq: ["$status", "won"] }, 1, 0] } },
           lost: { $sum: { $cond: [{ $eq: ["$status", "lost"] }, 1, 0] } },
           progress: { $sum: { $cond: [{ $eq: ["$status", "progress"] }, 1, 0] } },
+                // Average conversion time
+          avgConversionMs: {
+            $avg: {
+              $cond: [
+                { $eq: ["$status", "won"] },
+                {
+                  $subtract: ["$wonAt", "$leadCreatedAt"],
+                },
+                null,
+              ],
+            },
+
+
+          },
         },
       },
     ]);
+
+    
 
     if (!stats) {
       return res.json({
@@ -1168,6 +1184,14 @@ export const getLeadConversionStats = async (req, res) => {
     // Conversion = Won / Total * 100
     const conversionRate = stats.total > 0 ? ((stats.won / stats.total) * 100).toFixed(2) : 0;
 
+ 
+// Convert ms → days
+const avgConversionDays =
+  stats.avgConversionMs
+    ? (stats.avgConversionMs / (1000 * 60 * 60 * 24)).toFixed(1)
+    : 0;
+
+
     res.json({
       success: true,
       filters: { start, end },
@@ -1177,6 +1201,7 @@ export const getLeadConversionStats = async (req, res) => {
         lost: stats.lost,
         progress: stats.progress,
         conversionRate: Number(conversionRate), // percentage
+        avgConversionDays: Number(avgConversionDays), // ⭐ new KPI
       },
     });
   } catch (error) {

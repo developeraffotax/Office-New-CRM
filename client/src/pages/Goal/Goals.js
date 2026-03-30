@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
- 
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import HandleGoalModal from "../../components/Goal/HandleGoalModal";
 import axios from "axios";
- 
+
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -13,7 +13,12 @@ import Loader from "../../utlis/Loader";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { AiTwotoneDelete } from "react-icons/ai";
-import { MdCheckCircle, MdDeleteOutline, MdInsertComment, MdOutlineContentCopy } from "react-icons/md";
+import {
+  MdCheckCircle,
+  MdDeleteOutline,
+  MdInsertComment,
+  MdOutlineContentCopy,
+} from "react-icons/md";
 import { MdOutlineModeEdit } from "react-icons/md";
 import Swal from "sweetalert2";
 import CompletedGoals from "./CompletedGoals";
@@ -22,9 +27,9 @@ import { VscGraph } from "react-icons/vsc";
 import JobCommentModal from "../Jobs/JobCommentModal";
 import { TbLoader2 } from "react-icons/tb";
 import { GrCopy } from "react-icons/gr";
-import { GoEye } from "react-icons/go";
+import { GoEye, GoEyeClosed } from "react-icons/go";
 import GoalDetail from "../../components/Goal/GoalDetail";
- 
+
 import { FaListOl } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import QuickAccess from "../../utlis/QuickAccess";
@@ -34,12 +39,12 @@ import { useSelector } from "react-redux";
 import getGoalColumns from "./table/columns";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { isAdmin } from "../../utlis/isAdmin";
+import SelectedUsers from "../../components/SelectedUsers";
+import { usePersistedUsers } from "../../hooks/usePersistedUsers";
+import { useClickOutside } from "../../utlis/useClickOutside";
 
 export default function Goals() {
-
-
-   
-const auth = useSelector((state) => state.auth.auth);
+  const auth = useSelector((state) => state.auth.auth);
 
   const [show, setShow] = useState(false);
   const [goalId, setGoalId] = useState("");
@@ -79,7 +84,7 @@ const auth = useSelector((state) => state.auth.auth);
     "Target Proposal Count",
     "Target Proposal Value",
     "Target Ticket Generated",
-          "Target Ticket Replied",
+    "Target Ticket Replied",
     "Increase Client",
     "Increase Fee",
     "Total Proposal",
@@ -97,30 +102,18 @@ const auth = useSelector((state) => state.auth.auth);
     "Manual Goal",
   ];
 
- 
+  const [showJobHolderFilter, setShowJobHolderFilter] = useState(true);
+
+  const [searchParams] = useSearchParams();
+  const comment_taskId = searchParams.get("comment_taskId");
+  const navigate = useNavigate();
 
 
+  const [showcolumn, setShowColumn] = useState(false);
+  const showColumnRef = useRef(false);
 
-
-
-
-
-
-
- 
-
-  
-        const [showJobHolderFilter, setShowJobHolderFilter] = useState(true);
-
-
-    const [searchParams] = useSearchParams();
-    const comment_taskId = searchParams.get('comment_taskId');
-    const navigate = useNavigate();
-  
- 
-  
-
-
+  useClickOutside(showColumnRef, () => setShowColumn(false));
+          const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsers("goals:selected_users", userName);
 
 
   // -------Get All Proposal-------
@@ -128,17 +121,17 @@ const auth = useSelector((state) => state.auth.auth);
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/goals/fetch/all/goals`
+        `${process.env.REACT_APP_API_URL}/api/v1/goals/fetch/all/goals`,
       );
       if (data) {
         // setGoalsData(data.goals);
         setLoading(false);
-         
+
         if (auth.user.role.name === "Admin") {
           setGoalsData(data.goals);
         } else {
           const filteredGoals = data.goals.filter((goal) =>
-            goal.usersList.some((user) => user._id === auth?.user?.id)
+            goal.usersList.some((user) => user._id === auth?.user?.id),
           );
           setGoalsData(filteredGoals);
         }
@@ -157,7 +150,7 @@ const auth = useSelector((state) => state.auth.auth);
   const getGoals = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/goals/fetch/all/goals`
+        `${process.env.REACT_APP_API_URL}/api/v1/goals/fetch/all/goals`,
       );
       if (data) {
         // setGoalsData(data.goals);
@@ -165,7 +158,7 @@ const auth = useSelector((state) => state.auth.auth);
           setGoalsData(data.goals);
         } else {
           const filteredGoals = data.goals.filter((goal) =>
-            goal.usersList.some((user) => user._id === auth?.user?.id)
+            goal.usersList.some((user) => user._id === auth?.user?.id),
           );
           setGoalsData(filteredGoals);
         }
@@ -175,65 +168,49 @@ const auth = useSelector((state) => state.auth.auth);
     }
   };
 
-
-
-
-
-
-
-
-
-
-
-
-
   function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
     const savedSet = new Set(savedOrder);
-    console.log("savedSET>>>>", savedSet)
+    console.log("savedSET>>>>", savedSet);
     // Preserve the order from savedOrder, but only if the username still exists in the fetched data
-    const ordered = savedOrder.filter(name => fetchedUsernames.includes(name));
-    
+    const ordered = savedOrder.filter((name) =>
+      fetchedUsernames.includes(name),
+    );
+
     // Add any new usernames that aren't in the saved order
-    const newOnes = fetchedUsernames.filter(name => !savedSet.has(name));
-    
+    const newOnes = fetchedUsernames.filter((name) => !savedSet.has(name));
+
     return [...ordered, ...newOnes];
   }
-
-
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
       );
       setUsers(
         data?.users?.filter((user) =>
-          user.role?.access.some((item) => item?.permission?.includes("Goals"))
-        ) || []
+          user.role?.access.some((item) => item?.permission?.includes("Goals")),
+        ) || [],
       );
 
-      
-      const userNameArr = data?.users
-      ?.filter((user) =>
-        user.role?.access.some((item) =>
-          item?.permission?.includes("Goals")
-        )
-      )
-      ?.map((user) => user.name) || []
+      const userNameArr =
+        data?.users
+          ?.filter((user) =>
+            user.role?.access.some((item) =>
+              item?.permission?.includes("Goals"),
+            ),
+          )
+          ?.map((user) => user.name) || [];
 
       setUserName(userNameArr);
 
       const savedOrder = JSON.parse(localStorage.getItem("usernamesOrder"));
-        if(savedOrder) {
-          const savedUserNames = mergeWithSavedOrder(userNameArr, savedOrder);
-          
-            setUserName(savedUserNames)
-        }
+      if (savedOrder) {
+        const savedUserNames = mergeWithSavedOrder(userNameArr, savedOrder);
 
-
-
-
+        setUserName(savedUserNames);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -242,15 +219,6 @@ const auth = useSelector((state) => state.auth.auth);
   useEffect(() => {
     getAllUsers();
     // eslint-disable-next-line
-
-
-
-
-   
-
-
-
-
   }, []);
 
   // ---------------Filter Goals By User---------->
@@ -261,15 +229,13 @@ const auth = useSelector((state) => state.auth.auth);
 
     const selected_user = localStorage.getItem("selected_user_goals");
 
-    if(selected_user) {
-      filterGoalsByUser(selected_user)
+    if (selected_user) {
+      filterGoalsByUser(selected_user);
     }
-
-
   }, [goalsData, completeGoalsData, selectedTab]);
 
   const filterGoalsByUser = (user) => {
-    localStorage.setItem("selected_user_goals", user)
+    localStorage.setItem("selected_user_goals", user);
     setActiveUser(user);
     const goals = selectedTab === "progress" ? goalsData : completeGoalsData;
 
@@ -292,17 +258,17 @@ const auth = useSelector((state) => state.auth.auth);
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/goals/update/goal/${goalId}`,
-        { ...updateData }
+        { ...updateData },
       );
       if (data?.success) {
         const updateGoal = data.goal;
 
         setGoalsData((prevData) =>
-          prevData?.filter((item) => item._id !== updateGoal._id)
+          prevData?.filter((item) => item._id !== updateGoal._id),
         );
         if (filterData) {
           setFilterData((prevData) =>
-            prevData.filter((item) => item._id !== updateGoal._id)
+            prevData.filter((item) => item._id !== updateGoal._id),
           );
         }
         setFormData({
@@ -344,7 +310,7 @@ const auth = useSelector((state) => state.auth.auth);
   const handleDeleteGoal = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/goals/delete/goals/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/goals/delete/goals/${id}`,
       );
       if (data) {
         getGoals();
@@ -379,7 +345,7 @@ const auth = useSelector((state) => state.auth.auth);
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/goals/upadate/goals/status/${id}`,
-        { status: "completed" }
+        { status: "completed" },
       );
       if (data) {
         getGoals();
@@ -394,7 +360,7 @@ const auth = useSelector((state) => state.auth.auth);
   const handleCopyGoal = async (id) => {
     try {
       const { data } = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/v1/goals/copy/goal/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/goals/copy/goal/${id}`,
       );
       if (data) {
         getGoals();
@@ -416,10 +382,10 @@ const auth = useSelector((state) => state.auth.auth);
         `${process.env.REACT_APP_API_URL}/api/v1/goals/bulk/goals`,
         {
           rowSelection: Object.keys(rowSelection).filter(
-            (id) => rowSelection[id] === true
+            (id) => rowSelection[id] === true,
           ),
           status,
-        }
+        },
       );
 
       if (data) {
@@ -450,33 +416,27 @@ const auth = useSelector((state) => state.auth.auth);
     table.setGlobalFilter("");
   };
 
- 
-  const columns = useMemo(() => getGoalColumns({
-    users,
-    auth,
-    setFormData,
-    handleUpdateData,
-    formData,
-    goalTypes,
-    setCommentTaskId,
-    setIsComment,
-    setShowGoalDetail,
-    setNote,
-    handleCopyGoal,
-    setGoalId,
-    setShow,
-    handleupdateConfirmation,
-    handleDeleteGoalConfirmation,
-     
-  }), [users, auth,  formData, goalTypes,  ]);
-
-
-
- 
-
-
-
-
+  const columns = useMemo(
+    () =>
+      getGoalColumns({
+        users,
+        auth,
+        setFormData,
+        handleUpdateData,
+        formData,
+        goalTypes,
+        setCommentTaskId,
+        setIsComment,
+        setShowGoalDetail,
+        setNote,
+        handleCopyGoal,
+        setGoalId,
+        setShow,
+        handleupdateConfirmation,
+        handleDeleteGoalConfirmation,
+      }),
+    [users, auth, formData, goalTypes],
+  );
 
   const table = useMaterialReactTable({
     columns,
@@ -499,12 +459,12 @@ const auth = useSelector((state) => state.auth.auth);
       pageSize: 20,
       density: "compact",
       columnVisibility: {
-      _id: false,
-    },
+        _id: false,
+      },
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
-    state: { rowSelection, },
+    state: { rowSelection },
 
     muiTableHeadCellProps: {
       style: {
@@ -543,49 +503,30 @@ const auth = useSelector((state) => state.auth.auth);
     setFilterData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
 
-  
-
-    // Close Comment Box to click anywhere
+  // Close Comment Box to click anywhere
   //   useEffect(() => {
   //      const handleClickOutside = (event) => {
-  
-           
+
   //   const clickInside =
   //     commentStatusRef.current?.contains(event.target) ||
   //     document.querySelector(".MuiPopover-root")?.contains(event.target) || // for MUI Menu
   //     document.querySelector(".EmojiPickerReact")?.contains(event.target) || // for emoji picker
   //     document.querySelector(".MuiDialog-root")?.contains(event.target); // ✅ For Dialog
-  
+
   //   if (!clickInside) {
   //     setIsComment(false);
   //   }
   // };
-  
+
   //     document.addEventListener("mousedown", handleClickOutside);
   //     return () => document.removeEventListener("mousedown", handleClickOutside);
   //   }, []);
-  
 
-
-
-
-
-
-
-
-
-  const [isReorderList, setIsReorderList] = useState(false)
-
-
-
-
-
-
-
+  const [isReorderList, setIsReorderList] = useState(false);
 
   const grid = userName?.length || 10;
 
-  const getListStyle = isDraggingOver => ({
+  const getListStyle = (isDraggingOver) => ({
     background: isDraggingOver ? "#34495e" : "#34495e",
     padding: grid,
     width: 250,
@@ -599,80 +540,55 @@ const auth = useSelector((state) => state.auth.auth);
     margin: `0 0 ${grid}px 0`,
     color: "black",
     borderRadius: "5px",
-    
-  
+
     // change background colour if dragging
     background: isDragging ? "#95a5a6" : " #f0f3f4",
-  
+
     // styles we need to apply on draggables
-    ...draggableStyle
+    ...draggableStyle,
   });
 
-
-
-
-
-
-
-
   // a little function to help us with reordering the result
-const reorder = (list, startIndex, endIndex) => {
-  const result = Array.from(list);
-  const [removed] = result.splice(startIndex, 1);
-  result.splice(endIndex, 0, removed);
+  const reorder = (list, startIndex, endIndex) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
 
-  return result;
-};
+    return result;
+  };
 
+  const onDragEnd = (result) => {
+    // dropped outside the list
+    if (!result.destination) {
+      return;
+    }
 
+    const items = reorder(
+      userName,
+      result.source.index,
+      result.destination.index,
+    );
 
-const onDragEnd = (result) => {
-  // dropped outside the list
-  if (!result.destination) {
-    return;
-  }
-
-  const items = reorder(
-    userName,
-    result.source.index,
-    result.destination.index
-  );
-
-
-  localStorage.setItem("usernamesOrder", JSON.stringify(items));
-  setUserName( items )
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    localStorage.setItem("usernamesOrder", JSON.stringify(items));
+    setUserName(items);
+  };
 
   // ----------Copy Selected Goal---------->
   const copySelectedGoals = async () => {
+    const selectedRowsArr = Object.keys(rowSelection);
 
-    const selectedRowsArr = Object.keys(rowSelection)
-    
-    const requestsArr = selectedRowsArr.map(id => axios.post( `${process.env.REACT_APP_API_URL}/api/v1/goals/copy/goal/${id}` ))
-    
+    const requestsArr = selectedRowsArr.map((id) =>
+      axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/goals/copy/goal/${id}`,
+      ),
+    );
+
     try {
-     
-       const responses = await Promise.all(requestsArr)
-    
+      const responses = await Promise.all(requestsArr);
+
       if (responses) {
         getGoals();
         toast.success("Goals copied successfully!");
-
-       
       }
     } catch (error) {
       console.log(error);
@@ -680,72 +596,123 @@ const onDragEnd = (result) => {
     }
   };
 
-
-
-
-
-
-
-
-
- 
- 
-
-
   // ----------Delete Selected Goal---------->
   const deleteSelectedGoals = async () => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    });
 
-    const result = await Swal.fire({ title: "Are you sure?", text: "You won't be able to revert this!", icon: "warning", showCancelButton: true, confirmButtonColor: "#3085d6", cancelButtonColor: "#d33", confirmButtonText: "Yes, delete it!", })
-    
-    
+    const selectedRowsArr = Object.keys(rowSelection);
+    const requestsArr = selectedRowsArr.map((id) =>
+      axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/v1/goals/delete/goals/${id}`,
+      ),
+    );
 
-    const selectedRowsArr = Object.keys(rowSelection)
-    const requestsArr = selectedRowsArr.map(id => axios.delete( `${process.env.REACT_APP_API_URL}/api/v1/goals/delete/goals/${id}` ))
-
-
-    if(result.isConfirmed) {
+    if (result.isConfirmed) {
       try {
-     
-        const responses = await Promise.all(requestsArr)
-        
-       if (responses) {
-         getGoals();
-         toast.success("Goals Deleted successfully!");
-         Swal.fire("Deleted!", "Your goals has been deleted.", "success");
-       }
-     } catch (error) {
-       console.log(error);
-       toast.error(error?.response?.data?.message);
-     }
-    }
+        const responses = await Promise.all(requestsArr);
 
-    
+        if (responses) {
+          getGoals();
+          toast.success("Goals Deleted successfully!");
+          Swal.fire("Deleted!", "Your goals has been deleted.", "success");
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error(error?.response?.data?.message);
+      }
+    }
   };
 
+  useEffect(() => {
+    if (comment_taskId) {
+      console.log(
+        comment_taskId,
+        "The comment taskid is 🤎💜💜💙💙💚💚💛💛🧡🧡❤",
+      );
+      filterByRowId(table, comment_taskId, setCommentTaskId, setIsComment);
+
+      // searchParams.delete("comment_taskId");
+      // navigate({ search: searchParams.toString() }, { replace: true });
+    }
+  }, [comment_taskId, searchParams, navigate, table]);
+
+const getGoalsCount = useCallback((user) => {
+  return goalsData.filter((item) => item?.jobHolder?.name === user)?.length;
+}, [goalsData]);
+
+  const user_goals_count_map = useMemo(() => {
+    return Object.fromEntries(
+      userName.map((user) => [user, getGoalsCount(user)])
+    );
+  }, [userName,  getGoalsCount]);
 
 
+  const renderColumnControls = () => (
+  <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
+    {/* Header */}
+    <header className="px-5 py-3 border-b">
+      <h3 className="text-sm font-semibold text-slate-800">
+        View settings
+      </h3>
+    </header>
 
+    {/* Content */}
+    <div className="grid grid-cols-2 divide-x">
+      {/* LEFT — Columns */}
+      {/* <section className="px-5 py-4">
+        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+          Columns
+        </h4>
 
+        <ul className="space-y-1 list-decimal">
+          {Object.keys(colVisibility)?.map((column) => (
+            <li key={column}>
+              <label
+                className="flex items-center justify-between rounded-md px-2 py-1.5
+                           text-sm text-slate-700 cursor-pointer
+                           hover:bg-slate-50 transition"
+              >
+                <span className="capitalize">{column}</span>
+                <input
+                  type="checkbox"
+                  checked={columnVisibility[column]}
+                  onChange={() => toggleColumnVisibility(column)}
+                  className="h-4 w-4 accent-orange-600"
+                />
+              </label>
+            </li>
+          ))}
+        </ul>
+      </section> */}
 
+      {/* RIGHT — Users */}
+      <section className="px-5 py-4">
+        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+          Users
+        </h4>
 
+        <div className="h-full overflow-y-auto space-y-1 pr-1">
+          <SelectedUsers
+          selectedUsers={selectedUsers}
+          setSelectedUsers={setSelectedUsers}
+          userNameArr={userName}
+          countMap={user_goals_count_map}
+          label={"goal"}
+        />
+        </div>
+      </section>
+    </div>
+  </section>
+);
 
-
-
-
-  
-useEffect(() => {
-  if (comment_taskId) {
-      console.log(comment_taskId, "The comment taskid is 🤎💜💜💙💙💚💚💛💛🧡🧡❤")
-    filterByRowId(table, comment_taskId, setCommentTaskId, setIsComment);
-
-    // searchParams.delete("comment_taskId");
-    // navigate({ search: searchParams.toString() }, { replace: true });
-  }
-}, [comment_taskId, searchParams, navigate, table]);
-
-
-
- 
 
 
   return (
@@ -767,8 +734,15 @@ useEffect(() => {
               >
                 <IoClose className="h-6 w-6 text-white" />
               </span>
-              <span className="mt-2"><QuickAccess /></span>
-                {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
+              <span className="mt-2">
+                <QuickAccess />
+              </span>
+              {isAdmin(auth) && (
+                <span className=" ">
+                  {" "}
+                  <OverviewForPages />{" "}
+                </span>
+              )}
               <span
                 onClick={() => setShowGraph(!showGraph)}
                 className="ml-[2rem] hidden sm:block mb-1 p-1 rounded-md hover:shadow-md transition-all duration-300 cursor-pointer text-orange-500 hover:text-orange-600 bg-gray-200/60 hover:bg-gray-200/80 border"
@@ -776,10 +750,55 @@ useEffect(() => {
                 <VscGraph className="h-6 w-6" />
               </span>
 
-              {auth?.user?.role?.name === "Admin" && <button onClick={(e) => setIsReorderList(prev => !prev)} className={`ml-4 mb-1 p-2 ${isReorderList ? 'bg-orange-500 text-white' : "bg-gray-100"} rounded-md   text-xl  flex gap-2   cursor-pointer hover:shadow-md`}> <FaListOl  />  </button>}
+               <div className="relative ">
+                              <div
+                                className={`  p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+                                  showcolumn && "bg-orange-500 text-white"
+                                }`}
+                                onClick={() => setShowColumn(!showcolumn)}
+                              >
+                                {" "}
+                                {showcolumn ? (
+                                  <GoEyeClosed className="h-5 w-5" />
+                                ) : (
+                                  <GoEye className="h-5 w-5" />
+                                )}{" "}
+                              </div>
+                              {showcolumn && (
+                                <div
+                                  ref={showColumnRef}
+                                  className="fixed top-32 left-[50%] z-[9999]    w-[12rem]"
+                                >
+                                  {renderColumnControls()}
+                                </div>
+                              )}
+                            </div>
+              
 
-              {auth?.user?.role?.name === "Admin" && <button onClick={copySelectedGoals} title="Copy Multiple Goals" className="transition-all duration-500 ml-4 mb-1 p-2 bg-orange-400 hover:bg-orange-500 text-white rounded-md   text-xl disabled:text-black  disabled:bg-gray-100 disabled:cursor-not-allowed hover:cursor-pointer hover:shadow-md " disabled={Object.keys(rowSelection).length === 0}>   <MdOutlineContentCopy /> </button>}
-              {auth?.user?.role?.name === "Admin" && <button onClick={deleteSelectedGoals} title="Delete Multiple Goals" className="transition-all duration-500 ml-4 mb-1 p-2 bg-red-400 hover:bg-red-500 text-white rounded-md   text-xl disabled:text-black  disabled:bg-gray-100 disabled:cursor-not-allowed hover:cursor-pointer hover:shadow-md " disabled={Object.keys(rowSelection).length === 0}>   <MdDeleteOutline /> </button>}
+             
+
+              {auth?.user?.role?.name === "Admin" && (
+                <button
+                  onClick={copySelectedGoals}
+                  title="Copy Multiple Goals"
+                  className="transition-all duration-500 ml-4 mb-1 p-2 bg-orange-400 hover:bg-orange-500 text-white rounded-md   text-xl disabled:text-black  disabled:bg-gray-100 disabled:cursor-not-allowed hover:cursor-pointer hover:shadow-md "
+                  disabled={Object.keys(rowSelection).length === 0}
+                >
+                  {" "}
+                  <MdOutlineContentCopy />{" "}
+                </button>
+              )}
+              {auth?.user?.role?.name === "Admin" && (
+                <button
+                  onClick={deleteSelectedGoals}
+                  title="Delete Multiple Goals"
+                  className="transition-all duration-500 ml-4 mb-1 p-2 bg-red-400 hover:bg-red-500 text-white rounded-md   text-xl disabled:text-black  disabled:bg-gray-100 disabled:cursor-not-allowed hover:cursor-pointer hover:shadow-md "
+                  disabled={Object.keys(rowSelection).length === 0}
+                >
+                  {" "}
+                  <MdDeleteOutline />{" "}
+                </button>
+              )}
             </div>
           </div>
 
@@ -834,42 +853,19 @@ useEffect(() => {
             </button>
           </div>
 
-
-
-              {auth?.user?.role?.name === "Admin" &&
-
-                           <span
-                                                className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${showJobHolderFilter && 'bg-orange-500 text-white '}  `}
-                                                onClick={() => {
-                                                  
-                                                  setShowJobHolderFilter(!showJobHolderFilter);
-                                  
-                                                }}
-                                                title="Filter by Job Holder"
-                                              >
-                                                <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
-                                              </span>}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+          {auth?.user?.role?.name === "Admin" && (
+            <span
+              className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${
+                showJobHolderFilter && "bg-orange-500 text-white "
+              }  `}
+              onClick={() => {
+                setShowJobHolderFilter(!showJobHolderFilter);
+              }}
+              title="Filter by Job Holder"
+            >
+              <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
+            </span>
+          )}
 
           {/* ----- Users ---------
           {auth?.user?.role?.name === "Admin" && selectedTab === "progress" && (
@@ -958,33 +954,34 @@ useEffect(() => {
           )} */}
         </div>
 
+        <div className="w-full py-2">
+          {auth?.user?.role?.name === "Admin" &&
+            showJobHolderFilter &&
+            selectedTab === "progress" && (
+              <DraggableUserList
+                table={table}
+                usersArray={selectedUsers.map((el) =>  el)}
+                updateJobHolderCountMapFn={(map, totalCount) => {
+                  for (const item of goalsData || []) {
+                    const holder = item.jobHolder.name;
+                    map.set(holder, (map.get(holder) || 0) + 1);
+                    totalCount++;
+                  }
+
+                  map.set("All", totalCount);
+                }}
+                listName={"goals"}
+                filterColName="jobHolderId"
+              />
 
 
 
+              
+            )}
 
 
-
-
-
-
-           <div className="w-full py-2">
-            {auth?.user?.role?.name === "Admin" && showJobHolderFilter && selectedTab === "progress" && <DraggableUserList table={table} usersArray={users.map(el => el.name)} updateJobHolderCountMapFn={(map, totalCount) => {
-          
-                            for (const item of goalsData || []) {
-                                const holder = item.jobHolder.name ;
-                                map.set(holder, (map.get(holder) || 0) + 1);
-                                totalCount++;
-                              }
-          
-                              map.set("All", totalCount);
-                          
-                        } } listName={'goals'} filterColName="jobHolderId"  />}
-
-           </div>
-
-
-                        
-
+            
+        </div>
 
         {/* Update Bulk Jobs */}
         {showEdit && (
@@ -1025,7 +1022,6 @@ useEffect(() => {
             </form>
           </div>
         )}
-       
 
         {/* ---------Table Detail---------- */}
         {selectedTab === "progress" ? (
@@ -1036,7 +1032,7 @@ useEffect(() => {
               </div>
             ) : (
               <div className="w-full min-h-[10vh] relative ">
-                 <hr className="w-full h-[1px] bg-gray-300 my-2" />
+                <hr className="w-full h-[1px] bg-gray-300 my-2" />
                 <div className="h-full hidden1 overflow-y-auto relative">
                   <MaterialReactTable table={table} />
                 </div>

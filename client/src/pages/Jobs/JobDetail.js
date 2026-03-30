@@ -550,11 +550,12 @@ export default function JobDetail({
                 <option value="Quote">Quote</option>
                 <option value="Data">Data</option>
                 <option value="Progress">Progress</option>
-                <option value="Queries">Queries</option>
+                <option value="Revision">Revision</option>
                 <option value="Approval">Approval</option>
                 <option value="Submission">Submission</option>
                 <option value="Billing">Billing</option>
                 <option value="Feedback">Feedback</option>
+                <option value="Missing Info">Missing Info</option>
               </select>
             </div>
             {/*  */}

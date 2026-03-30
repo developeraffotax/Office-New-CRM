@@ -162,125 +162,94 @@ const [categories, setCategories] = useState([]);
   }, [active1, auth]);
  
 
-  const options = useMemo(() => {
-    const width = chartType === "bar" ? 0 : 3; // bar width or line width
-   // Determine width based on data density
-  const dataCount = categories.length;
-  let dynamicWidth = "50%"; // Default
+const options = useMemo(() => {
+    const isBar = chartType === "bar";
+    const width = isBar ? 0 : 3; 
+    
+    const dataCount = categories.length;
+    let dynamicWidth = "50%";
+    if (dataCount === 1) dynamicWidth = "10%";
+    else if (dataCount === 2) dynamicWidth = "25%";
 
-  if (dataCount === 1) {
-    dynamicWidth = "10%"; // Very thin for 1 item
-  } else if (dataCount === 2) {
-    dynamicWidth = "25%"; // Thin for 2 items
-  }
     return {
-      chart: { toolbar: { show: true }, type: chartType, },
-
-
-      // --- FIX FOR WIDE BARS ---
-     plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: dynamicWidth, // <--- This acts as your "max width"
-        borderRadius: 0,
+      chart: { toolbar: { show: true }, type: chartType },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: dynamicWidth,
+          borderRadius: 0,
+          dataLabels: {
+            position: 'top', // puts the label on top of the bar
+          },
+        },
       },
-    },
-
       stroke: {
         width: [width, width, width, width],
-        dashArray: [0, 0, 0, 0],
         curve: "smooth",
       },
-      xaxis: {
-        categories: categories,
-      },
+      xaxis: { categories: categories },
       yaxis: [
         {
           seriesName: "Count",
           title: { text: "Lead Count" },
           labels: {
             formatter: (val) => val.toFixed(0),
-            style: { colors: SERIES_COLORS[0] }, // same color as Count series
+            style: { colors: SERIES_COLORS[0] },
           },
           min: 0,
         },
-
-        {
-          seriesName: "Count",
-          show: false,
-        },
-
+        { seriesName: "Count", show: false },
         {
           seriesName: "Value",
           opposite: true,
           title: { text: "Total Value (£)" },
           labels: {
             formatter: (val) => `£${val.toLocaleString()}`,
-            style: { colors: SERIES_COLORS[1] }, // same color as Value series
+            style: { colors: SERIES_COLORS[1] },
           },
           min: 0,
         },
-
-        {
-          seriesName: "Value",
-          show: false,
-        },
+        { seriesName: "Value", show: false },
       ],
-
-      colors: SERIES_COLORS, // blue=leads, green=actual, red=target
-      legend: { position: "top",  },
-
+      colors: SERIES_COLORS,
+      legend: { position: "top" },
       dataLabels: {
-        enabled: true, // show numbers
+        enabled: true,
+        offsetY: isBar ? -20 : 0, // Lift labels up if it's a bar chart
         style: {
-          colors:
-            chartType !== "bar"
-              ? SERIES_COLORS
-              : ["#ffffff", "#ffffff", "#ffffff", "#ffffff"], // 👈 set custom color
-          fontSize: "13px",
+          colors: isBar ? ["#333"] : SERIES_COLORS, // Dark text for bars to be readable above them
+          fontSize: "12px",
           fontWeight: "bold",
         },
-
         background: {
-          enabled: chartType !== "bar", // remove the default white background box
+          enabled: !isBar, 
         },
-
         formatter: function (val, opts) {
           const seriesIndex = opts.seriesIndex;
           const dataPointIndex = opts.dataPointIndex;
+          const w = opts.w;
 
-          // Check if this series is currently visible
-          const isTargetVisisbleForCount =
-            opts.w?.globals?.seriesVisibility?.[0] ?? true;
-
-          // For the "Value" series (index 1)
-          if (
-            seriesIndex === 1 &&
-            chartType !== "bar" &&
-            isTargetVisisbleForCount
-          ) {
-            const targetVal = opts.w.config.series[0].data[dataPointIndex]; // Target Value
-            if (targetVal) {
-              const percent = ((val / targetVal) * 100).toFixed(1);
+          // Logic for Count Percentage (Actual vs Target)
+          // Index 1 is "Count", Index 0 is "Target Count"
+          if (seriesIndex === 1) {
+            const target = w.config.series[0].data[dataPointIndex];
+            if (target && target !== 0) {
+              const percent = ((val / target) * 100).toFixed(0);
               return `${val} (${percent}%)`;
             }
           }
 
-          const isTargetVisisbleForValue =
-            opts.w?.globals?.seriesVisibility?.[2] ?? true;
-          if (
-            seriesIndex === 3 &&
-            chartType !== "bar" &&
-            isTargetVisisbleForValue
-          ) {
-            const targetVal = opts.w.config.series[2].data[dataPointIndex]; // Target Value
-            if (targetVal) {
-              const percent = ((val / targetVal) * 100).toFixed(1);
+          // Logic for Value Percentage (Actual vs Target)
+          // Index 3 is "Value", Index 2 is "Target Value"
+          if (seriesIndex === 3) {
+            const target = w.config.series[2].data[dataPointIndex];
+            if (target && target !== 0) {
+              const percent = ((val / target) * 100).toFixed(0);
               return `${val} (${percent}%)`;
             }
           }
 
-          // Default: just show value
+          // For target bars (Index 0 and 2), just show the number
           return val;
         },
       },

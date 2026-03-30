@@ -43,6 +43,25 @@ import SelectedUsers from "../../components/SelectedUsers";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import { useClickOutside } from "../../utlis/useClickOutside";
 
+
+const colVisibility = {
+  jobHolderId: true,
+  subject: true,
+  startDate: true,
+  endDate: true,
+  goalType: true,
+  achievement: true,
+  achievedCount: true,
+  difference: true,
+  comments: true,
+  actions: true,
+
+  progress: true,
+   
+};
+
+
+
 export default function Goals() {
   const auth = useSelector((state) => state.auth.auth);
 
@@ -115,6 +134,38 @@ export default function Goals() {
   useClickOutside(showColumnRef, () => setShowColumn(false));
           const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsers("goals:selected_users", userName);
 
+
+            const [columnVisibility, setColumnVisibility] = useState({
+              _id: false,
+              ...colVisibility,
+            });
+          
+ 
+          
+            useClickOutside(showColumnRef, () => setShowColumn(false));
+          
+            useEffect(() => {
+              // Load saved column visibility from localStorage
+              const savedVisibility = JSON.parse(
+                localStorage.getItem("visibileGoalsColumn")
+              );
+          
+              if (savedVisibility) {
+                setColumnVisibility(savedVisibility);
+              }
+            }, []);
+          
+            const toggleColumnVisibility = (column) => {
+              const updatedVisibility = {
+                ...columnVisibility,
+                [column]: !columnVisibility[column],
+              };
+              setColumnVisibility(updatedVisibility);
+              localStorage.setItem(
+                "visibileGoalsColumn",
+                JSON.stringify(updatedVisibility)
+              );
+            };
 
   // -------Get All Proposal-------
   const getAllGoals = async () => {
@@ -458,13 +509,12 @@ export default function Goals() {
       pagination: { pageSize: 20 },
       pageSize: 20,
       density: "compact",
-      columnVisibility: {
-        _id: false,
-      },
+      
     },
+    onColumnVisibilityChange: setColumnVisibility,
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
-    state: { rowSelection },
+    state: { rowSelection, columnVisibility },
 
     muiTableHeadCellProps: {
       style: {
@@ -667,7 +717,7 @@ const getGoalsCount = useCallback((user) => {
     {/* Content */}
     <div className="grid grid-cols-2 divide-x">
       {/* LEFT — Columns */}
-      {/* <section className="px-5 py-4">
+      <section className="px-5 py-4">
         <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
           Columns
         </h4>
@@ -691,7 +741,7 @@ const getGoalsCount = useCallback((user) => {
             </li>
           ))}
         </ul>
-      </section> */}
+      </section>
 
       {/* RIGHT — Users */}
       <section className="px-5 py-4">

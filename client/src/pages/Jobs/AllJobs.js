@@ -331,10 +331,12 @@ export default function AllJobs() {
     "Data",
     "Progress",
     "Queries",
+    "Revision",
     "Approval",
     "Submission",
     "Billing",
     "Feedback",
+    "Missing Info",
     "Inactive",
     
   ];
@@ -344,10 +346,12 @@ export default function AllJobs() {
     "Data",
     "Progress",
     "Queries",
+    "Revision",
     "Approval",
     "Submission",
     "Billing",
     "Feedback",
+    "Missing Info",
     
     
   ];

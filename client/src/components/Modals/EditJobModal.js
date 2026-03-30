@@ -7,7 +7,7 @@ import StatusPills from "../../utlis/StatusPills";
 import { trimPayload } from "../../pages/Jobs/utils/utils";
 
 
-const jobStatuses = [ "Quote", "Data", "Progress", "Revision", "Approval", "Submission", "Billing", "Feedback", "Missing Info", "Inactive"]
+const jobStatuses = [ "Quote", "Data", "Progress", "Queries", "Revision", "Approval", "Submission", "Billing", "Feedback", "Missing Info", "Inactive"]
 
 
 export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {

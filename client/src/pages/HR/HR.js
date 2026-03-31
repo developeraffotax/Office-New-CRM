@@ -1038,18 +1038,22 @@ export default function HR() {
 
   // --------------Job_Holder Length---------->
 
-  const getJobHolderCount = (name) => {
-    let yesCount = 0;
-    taskData.forEach((task) => {
-      task.users.forEach((u) => {
-        if (u.user.name === name && u.status === "Yes") {
-          yesCount++;
-        }
-      });
-    });
+const getJobHolderCount = (name) => {
+  let yesCount = 0;
 
-    return yesCount;
-  };
+  taskData?.forEach((task) => {
+    task?.users?.forEach((u) => {
+      if (
+        u?.user?.name === name &&
+        u?.status === "Yes"
+      ) {
+        yesCount++;
+      }
+    });
+  });
+
+  return yesCount;
+};
 
   const setColumnFromOutsideTable = (colKey, filterVal) => {
     const col = table.getColumn(colKey);

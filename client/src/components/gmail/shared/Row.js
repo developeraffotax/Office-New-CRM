@@ -163,25 +163,16 @@ const folder = searchParams.get("folder") || "inbox";
           )}
         />
 
+
+
+<div className="h-5 w-5 flex items-center  ">
+
+
+ {isLastFromMe && (<div className="flex items-center justify-center size-4 rounded-full bg-orange-500 text-[9px] font-bold text-white shrink-0"> A </div>)}
+
+</div>
  
-<button
-  title={thread.labels.includes("STARRED") ? "Unstar Thread" : "Star Thread"}
-  className={clsx(
-    "  rounded-md transition-colors  h-5 w-5 ",
-    
-  )}
- onClick={(e) => {
-                toggleStar(thread?.threadId, thread?.companyName, thread?.labels?.includes("STARRED"));
-              }}
->
-  {
-    thread.labels.includes("STARRED") ? 
-    <FaStar className="  h-4 w-4 text-yellow-400 hover:text-yellow-500"  /> :
-    <FaRegStar className="  h-4 w-4 text-gray-400 hover:text-gray-600"  />
 
-
-  }
-</button>
 
 
 </div>
@@ -581,23 +572,46 @@ const folder = searchParams.get("folder") || "inbox";
     })}
   </div>
 
-  {/* Time Line + Avatar Wrapper */}
-  <div className="flex items-center gap-1.5 text-[10px] opacity-80 font-normal">
-    
-    {/* ✅ NEW: Avatar "A" with orange circle bg */}
-    {isLastFromMe && (<span className="flex items-center justify-center size-4 rounded-full bg-orange-500 text-[9px] font-bold text-white shrink-0">
-      A
-    </span>)}
+{/* Time Line + Star Wrapper */}
+<div className="flex items-center gap-1.5 text-[10px] opacity-80 font-normal  ">
 
-    {/* The Time String */}
-    <span>
-      {new Date(folder === "inbox" ? thread.lastMessageAtInbox : thread.lastMessageAtSent).toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      })}
-    </span>
+  {/* Star Button */}
+  <button
+    title={
+      thread.labels.includes("STARRED")
+        ? "Unstar Thread"
+        : "Star Thread"
+    }
+    className="flex items-center justify-center    "
+    onClick={(e) => {
+      toggleStar(
+        thread?.threadId,
+        thread?.companyName,
+        thread?.labels?.includes("STARRED")
+      );
+    }}
+  >
+    {thread.labels.includes("STARRED") ? (
+      <FaStar className="h-3.5 w-3.5 text-yellow-400 hover:text-yellow-500" />
+    ) : (
+      <FaRegStar className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600" />
+    )}
+  </button>
+
+  {/* Time */}
+  <div className="flex items-center mt-0.5 ">
+    {new Date(
+      folder === "inbox"
+        ? thread.lastMessageAtInbox
+        : thread.lastMessageAtSent
+    ).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })}
   </div>
+
+</div>
 
  
 

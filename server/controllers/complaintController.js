@@ -123,6 +123,7 @@ export const fetchAllComplains = async (req, res) => {
       .populate([
         { path: "assign", select: "name" },
         { path: "lead", select: "name" },
+        { path: "createdBy", select: "name" },
         { path: "errorType" },
         { path: "solution" },
       ]);

@@ -49,6 +49,8 @@ export default function Complaints() {
 
   const auth = useSelector( (state) => state.auth.auth );
 
+
+  console.log("THE COMPLAIN DATA IS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", complaintData)
   // Get All Complaints
   const getAllComplaints = async () => {
     setIsLoading(true);
@@ -205,6 +207,221 @@ export default function Complaints() {
 
   const columns = useMemo(
     () => [
+
+
+        {
+        accessorKey: "entityType",
+         
+        size: 80,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Type
+              </span>
+               <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {["Task", "Job"]?.map((type, i) => (
+                  <option key={type} value={type.toLowerCase()}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell }) => {
+    const value = cell.getValue()?.toString().toLowerCase();
+    
+    // Define colors based on the entity type
+    const styles = {
+      task: "bg-blue-100 text-blue-700 border-blue-200",
+      job: "bg-orange-100 text-orange-700 border-orange-200",
+      default: "bg-gray-100 text-gray-700 border-gray-200"
+    };
+
+    const currentStyle = styles[value] || styles.default;
+
+    return (
+      <div className="flex items-center h-full w-full">
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${currentStyle}`}>
+          {value ? value.charAt(0).toUpperCase() + value.slice(1) : "N/A"}
+        </span>
+      </div>
+    );
+  },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+
+          return cellValue.includes(filterValue.toLowerCase());
+        },
+      },
+
+
+
+
+       {
+        accessorKey: "entityRef",
+         
+        size: 80,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Ref
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-white rounded-md border border-gray-300 outline-none"
+              />
+            </div>
+          );
+        },
+       Cell: ({ cell, row }) => {
+  const entityRef = cell.getValue();
+  const entityType = row.original?.entityType;
+
+   const styles = {
+      task: "bg-blue-50/50 text-blue-700 border-blue-100 hover:bg-blue-100 hover:text-blue-800",
+      job: "bg-orange-50/50 text-orange-700 border-orange-100 hover:bg-orange-100 hover:text-orange-800",
+      default: "bg-gray-50/50 text-gray-700 border-gray-100 hover:bg-gray-100 hover:text-gray-800",
+      
+    };
+
+    const currentStyle = styles[entityType] || styles.default;
+
+  return (
+    <div className="flex items-center h-full w-full">
+      <span 
+        className={`px-2 py-1 font-mono text-[13px] font-medium   border  rounded  transition-colors cursor-pointer ${currentStyle}`}
+        title={`Reference: ${entityRef}`}
+      >
+        {entityRef || "—"}
+      </span>
+    </div>
+  );
+},
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+
+          return cellValue.includes(filterValue.toLowerCase());
+        },
+      },
+
+
+
+        {
+        accessorKey: "task",
+         
+        size: 210,
+        grow: true,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Task
+              </span>
+              <input
+                type="search"
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] px-2 cursor-pointer bg-white rounded-md border border-gray-300 outline-none"
+              />
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const task = cell.getValue();
+
+          return (
+           <div className="cursor-pointer text-[#000] w-full h-full">
+            {task}
+          </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue =
+            row.original[columnId]?.toString().toLowerCase() || "";
+
+          return cellValue.includes(filterValue.toLowerCase());
+        },
+      },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       {
         accessorKey: "company",
         minSize: 190,
@@ -606,6 +823,67 @@ export default function Complaints() {
         maxSize: 110,
         grow: false,
       },
+
+
+
+
+
+
+
+       {
+        accessorKey: "createdBy",
+        Header: ({ column }) => {
+          console.log("users", users);
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Created By
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {users?.map((user, i) => (
+                  <option key={user._id} value={user.name}>
+                    {user.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const createdBy = cell.getValue() || "";
+
+          return (
+            <div className="w-full flex items-center justify-start">
+              <span>{createdBy.name}</span>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const user = row.original?.assign?.name || "";
+          return user === filterValue;
+        },
+        filterSelectOptions: users.map((jobhold) => jobhold.name),
+        filterVariant: "select",
+        size: 110,
+        minSize: 80,
+        maxSize: 150,
+        grow: false,
+      },
+
+
+
+
       {
         accessorKey: "errorType",
 

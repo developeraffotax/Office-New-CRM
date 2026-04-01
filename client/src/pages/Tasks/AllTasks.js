@@ -204,9 +204,6 @@ const AllTasks = ({ justShowTable = false }) => {
 
         const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsers("tasks:selected_users", userName);
 
-
-
-
   const [showcolumn, setShowColumn] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState({
     _id: false,

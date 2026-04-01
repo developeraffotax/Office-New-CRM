@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
- 
+import React, { useEffect, useMemo, useRef, useState } from "react";
+
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { style } from "../../utlis/CommonStyle";
 import axios from "axios";
@@ -16,16 +16,41 @@ import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
-import { GoEye } from "react-icons/go";
+import { GoEye, GoEyeClosed } from "react-icons/go";
 import ComplaintDetail from "../../components/Complaint/ComplaintDetail";
 import { GrCopy } from "react-icons/gr";
- 
+
 import QuickAccess from "../../utlis/QuickAccess";
 import DraggableUserList from "../../utlis/DraggableUserList";
 import { LuFilter } from "react-icons/lu";
 import { useSelector } from "react-redux";
 import { isAdmin } from "../../utlis/isAdmin";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
+import { useClickOutside } from "../../utlis/useClickOutside";
+import { usePersistedUsers } from "../../hooks/usePersistedUsers";
+import SelectedUsers from "../../components/SelectedUsers";
+
+const colVisibility = {
+  entityType: true,
+  entityRef: true,
+
+  task: true,
+
+  company: true,
+  client: true,
+  department: true,
+
+  lead: true,
+  assign: true,
+  createdAt: true,
+  createdBy: true,
+
+  errorType: true,
+  note: true,
+  points: true,
+  solution: true,
+  actions: true,
+};
 
 export default function Complaints() {
   const [show, setShow] = useState(false);
@@ -35,6 +60,7 @@ export default function Complaints() {
   const [solutionData, setSolutionData] = useState([]);
   const [complaintId, setComplaintId] = useState("");
   const [users, setUsers] = useState([]);
+  const [userName, setUserName] = useState([]);
   const [complaintData, setComplaintData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [totalPoint, setTotalPoint] = useState(0);
@@ -42,21 +68,121 @@ export default function Complaints() {
   const [showDetail, setShowDetail] = useState(false);
   const [copyLoad, setCopyLoad] = useState(false);
 
-    const [showExternalFilters, setShowExternalFilters] = useState(true);
-    const [showExternalFilters2, setShowExternalFilters2] = useState(false);
-      const [filter1, setFilter1] = useState("");
-      const [filter2, setFilter2] = useState("");
+  const [showExternalFilters, setShowExternalFilters] = useState(true);
+  const [showExternalFilters2, setShowExternalFilters2] = useState(false);
+  const [filter1, setFilter1] = useState("");
+  const [filter2, setFilter2] = useState("");
 
-  const auth = useSelector( (state) => state.auth.auth );
+  const auth = useSelector((state) => state.auth.auth);
 
+  const { selectedUsers, setSelectedUsers, toggleUser, resetUsers } =
+    usePersistedUsers("tasks:selected_users", userName);
 
-  console.log("THE COMPLAIN DATA IS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", complaintData)
+  const [showcolumn, setShowColumn] = useState(false);
+  const [columnVisibility, setColumnVisibility] = useState({
+    _id: false,
+    ...colVisibility,
+  });
+
+  const showColumnRef = useRef(false);
+
+  useClickOutside(showColumnRef, () => setShowColumn(false));
+
+  useEffect(() => {
+    // Load saved column visibility from localStorage
+    const savedVisibility = JSON.parse(
+      localStorage.getItem("visibileComplaintsColumn"),
+    );
+
+    if (savedVisibility) {
+      setColumnVisibility(savedVisibility);
+    }
+  }, []);
+
+  const toggleColumnVisibility = (column) => {
+    const updatedVisibility = {
+      ...columnVisibility,
+      [column]: !columnVisibility[column],
+    };
+    setColumnVisibility(updatedVisibility);
+    localStorage.setItem(
+      "visibileComplaintsColumn",
+      JSON.stringify(updatedVisibility),
+    );
+  };
+
+  const getJobHolderCount = (user, project) => {
+    return complaintData.filter((item) => item.assign.name === user)?.length;
+  };
+
+  const user_complaints_count_map = useMemo(() => {
+    return Object.fromEntries(
+      userName.map((user) => [user, getJobHolderCount(user)]),
+    );
+  }, [userName]);
+
+  const renderColumnControls = () => (
+    <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
+      {/* Header */}
+      <header className="px-5 py-3 border-b">
+        <h3 className="text-sm font-semibold text-slate-800">View settings</h3>
+      </header>
+
+      {/* Content */}
+      <div className="grid grid-cols-2 divide-x">
+        {/* LEFT — Columns */}
+        <section className="px-5 py-4">
+          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+            Columns
+          </h4>
+
+          <ul className="space-y-1 list-decimal">
+            {Object.keys(colVisibility)?.map((column) => (
+              <li key={column}>
+                <label
+                  className="flex items-center justify-between rounded-md px-2 py-1.5
+                               text-sm text-slate-700 cursor-pointer
+                               hover:bg-slate-50 transition"
+                >
+                  <span className="capitalize">{column}</span>
+                  <input
+                    type="checkbox"
+                    checked={columnVisibility[column]}
+                    onChange={() => toggleColumnVisibility(column)}
+                    className="h-4 w-4 accent-orange-600"
+                  />
+                </label>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* RIGHT — Users */}
+        <section className="px-5 py-4">
+          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+            Users
+          </h4>
+
+          <div className="h-full overflow-y-auto space-y-1 pr-1">
+            <SelectedUsers
+              selectedUsers={selectedUsers}
+              setSelectedUsers={setSelectedUsers}
+              userNameArr={userName}
+              countMap={user_complaints_count_map}
+              label={"complaint"}
+            />
+          </div>
+        </section>
+      </div>
+    </section>
+  );
+
   // Get All Complaints
   const getAllComplaints = async () => {
     setIsLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/complaints/fetch/complaint`
+        `${process.env.REACT_APP_API_URL}/api/v1/complaints/fetch/complaint`,
       );
 
       setComplaintData(data.complaints);
@@ -74,7 +200,7 @@ export default function Complaints() {
   const getComplaints = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/complaints/fetch/complaint`
+        `${process.env.REACT_APP_API_URL}/api/v1/complaints/fetch/complaint`,
       );
 
       setComplaintData(data.complaints);
@@ -87,10 +213,11 @@ export default function Complaints() {
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
       );
 
       setUsers(data?.users);
+      setUserName(data?.users?.map((user) => user.name));
     } catch (error) {
       console.log(error);
     }
@@ -114,7 +241,7 @@ export default function Complaints() {
   const getlabel = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/label/complaint/labels/error`
+        `${process.env.REACT_APP_API_URL}/api/v1/label/complaint/labels/error`,
       );
       if (data.success) {
         setErrorData(data.labels);
@@ -132,7 +259,7 @@ export default function Complaints() {
   const getDatalable = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/label/complaint/labels/solutions`
+        `${process.env.REACT_APP_API_URL}/api/v1/label/complaint/labels/solutions`,
       );
       if (data.success) {
         setSolutionData(data.labels);
@@ -167,7 +294,7 @@ export default function Complaints() {
   const handleDeleteComplaint = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/complaints/delete/complaint/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/complaints/delete/complaint/${id}`,
       );
       if (data) {
         getComplaints();
@@ -183,7 +310,7 @@ export default function Complaints() {
     setCopyLoad(true);
     try {
       const { data } = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/v1/complaints/copy/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/complaints/copy/${id}`,
       );
       if (data) {
         getComplaints();
@@ -207,11 +334,9 @@ export default function Complaints() {
 
   const columns = useMemo(
     () => [
-
-
-        {
+      {
         accessorKey: "entityType",
-         
+
         size: 80,
         grow: false,
         Header: ({ column }) => {
@@ -226,7 +351,7 @@ export default function Complaints() {
               >
                 Type
               </span>
-               <select
+              <select
                 value={column.getFilterValue() || ""}
                 onChange={(e) => column.setFilterValue(e.target.value)}
                 className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
@@ -242,25 +367,27 @@ export default function Complaints() {
           );
         },
         Cell: ({ cell }) => {
-    const value = cell.getValue()?.toString().toLowerCase();
-    
-    // Define colors based on the entity type
-    const styles = {
-      task: "bg-blue-100 text-blue-700 border-blue-200",
-      job: "bg-orange-100 text-orange-700 border-orange-200",
-      default: "bg-gray-100 text-gray-700 border-gray-200"
-    };
+          const value = cell.getValue()?.toString().toLowerCase();
 
-    const currentStyle = styles[value] || styles.default;
+          // Define colors based on the entity type
+          const styles = {
+            task: "bg-blue-100 text-blue-700 border-blue-200",
+            job: "bg-orange-100 text-orange-700 border-orange-200",
+            default: "bg-gray-100 text-gray-700 border-gray-200",
+          };
 
-    return (
-      <div className="flex items-center h-full w-full">
-        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${currentStyle}`}>
-          {value ? value.charAt(0).toUpperCase() + value.slice(1) : "N/A"}
-        </span>
-      </div>
-    );
-  },
+          const currentStyle = styles[value] || styles.default;
+
+          return (
+            <div className="flex items-center h-full w-full">
+              <span
+                className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${currentStyle}`}
+              >
+                {value ? value.charAt(0).toUpperCase() + value.slice(1) : "N/A"}
+              </span>
+            </div>
+          );
+        },
         filterFn: (row, columnId, filterValue) => {
           const cellValue =
             row.original[columnId]?.toString().toLowerCase() || "";
@@ -269,12 +396,9 @@ export default function Complaints() {
         },
       },
 
-
-
-
-       {
+      {
         accessorKey: "entityRef",
-         
+
         size: 80,
         grow: false,
         Header: ({ column }) => {
@@ -298,30 +422,30 @@ export default function Complaints() {
             </div>
           );
         },
-       Cell: ({ cell, row }) => {
-  const entityRef = cell.getValue();
-  const entityType = row.original?.entityType;
+        Cell: ({ cell, row }) => {
+          const entityRef = cell.getValue();
+          const entityType = row.original?.entityType;
 
-   const styles = {
-      task: "bg-blue-50/50 text-blue-700 border-blue-100 hover:bg-blue-100 hover:text-blue-800",
-      job: "bg-orange-50/50 text-orange-700 border-orange-100 hover:bg-orange-100 hover:text-orange-800",
-      default: "bg-gray-50/50 text-gray-700 border-gray-100 hover:bg-gray-100 hover:text-gray-800",
-      
-    };
+          const styles = {
+            task: "bg-blue-50/50 text-blue-700 border-blue-100 hover:bg-blue-100 hover:text-blue-800",
+            job: "bg-orange-50/50 text-orange-700 border-orange-100 hover:bg-orange-100 hover:text-orange-800",
+            default:
+              "bg-gray-50/50 text-gray-700 border-gray-100 hover:bg-gray-100 hover:text-gray-800",
+          };
 
-    const currentStyle = styles[entityType] || styles.default;
+          const currentStyle = styles[entityType] || styles.default;
 
-  return (
-    <div className="flex items-center h-full w-full">
-      <span 
-        className={`px-2 py-1 font-mono text-[13px] font-medium   border  rounded  transition-colors cursor-pointer ${currentStyle}`}
-        title={`Reference: ${entityRef}`}
-      >
-        {entityRef || "—"}
-      </span>
-    </div>
-  );
-},
+          return (
+            <div className="flex items-center h-full w-full">
+              <span
+                className={`px-2 py-1 font-mono text-[13px] font-medium   border  rounded  transition-colors cursor-pointer ${currentStyle}`}
+                title={`Reference: ${entityRef}`}
+              >
+                {entityRef || "—"}
+              </span>
+            </div>
+          );
+        },
         filterFn: (row, columnId, filterValue) => {
           const cellValue =
             row.original[columnId]?.toString().toLowerCase() || "";
@@ -330,11 +454,9 @@ export default function Complaints() {
         },
       },
 
-
-
-        {
+      {
         accessorKey: "task",
-         
+
         size: 210,
         grow: true,
         Header: ({ column }) => {
@@ -362,9 +484,9 @@ export default function Complaints() {
           const task = cell.getValue();
 
           return (
-           <div className="cursor-pointer text-[#000] w-full h-full">
-            {task}
-          </div>
+            <div className="cursor-pointer text-[#000] w-full h-full">
+              {task}
+            </div>
           );
         },
         filterFn: (row, columnId, filterValue) => {
@@ -374,53 +496,6 @@ export default function Complaints() {
           return cellValue.includes(filterValue.toLowerCase());
         },
       },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       {
         accessorKey: "company",
@@ -566,15 +641,7 @@ export default function Complaints() {
         grow: false,
       },
 
-
-
-
-
-
-
-
-
-            {
+      {
         accessorKey: "lead",
         Header: ({ column }) => {
           console.log("users", users);
@@ -624,14 +691,6 @@ export default function Complaints() {
         maxSize: 150,
         grow: false,
       },
-
-
-
-
-
-
-
-
 
       {
         accessorKey: "assign",
@@ -763,7 +822,7 @@ export default function Complaints() {
           const startOfToday = new Date(
             today.getFullYear(),
             today.getMonth(),
-            today.getDate()
+            today.getDate(),
           );
 
           // Handle "Custom date" filter (if it includes a specific month-year)
@@ -824,13 +883,7 @@ export default function Complaints() {
         grow: false,
       },
 
-
-
-
-
-
-
-       {
+      {
         accessorKey: "createdBy",
         Header: ({ column }) => {
           console.log("users", users);
@@ -880,9 +933,6 @@ export default function Complaints() {
         maxSize: 150,
         grow: false,
       },
-
-
-
 
       {
         accessorKey: "errorType",
@@ -993,17 +1043,15 @@ export default function Complaints() {
         Cell: ({ cell, row }) => {
           const note = row.original.note;
 
-
           function stripHtml(html) {
-          const div = document.createElement("div");
-          html = html.replace(/<br\s*\/?>/gi, '\n').replace(/&nbsp;/gi, ' ');
-           // Handle <li> with bullets
-          html = html.replace(/<li[^>]*>/gi, '\n• ').replace(/<\/li>/gi, '');
+            const div = document.createElement("div");
+            html = html.replace(/<br\s*\/?>/gi, "\n").replace(/&nbsp;/gi, " ");
+            // Handle <li> with bullets
+            html = html.replace(/<li[^>]*>/gi, "\n• ").replace(/<\/li>/gi, "");
 
- 
-          div.innerHTML = html;
-          return div.textContent || div.innerText || "";
-        }
+            div.innerHTML = html;
+            return div.textContent || div.innerText || "";
+          }
           return (
             <div className="w-full px-1">
               <div
@@ -1014,11 +1062,13 @@ export default function Complaints() {
                 className="cursor-pointer w-full select-none text-blue-500  text-[15px]  "
                 title={note ? stripHtml(note) : "No note available"}
               >
-                {note ? stripHtml(note).slice(0, 80) + "..." : <div className="text-white w-full h-full">.</div>}
+                {note ? (
+                  stripHtml(note).slice(0, 80) + "..."
+                ) : (
+                  <div className="text-white w-full h-full">.</div>
+                )}
               </div>
             </div>
-
-
 
             // <div className="w-full px-1">
             //   <div
@@ -1031,9 +1081,6 @@ export default function Complaints() {
             //     <div className="w-full   max-h-7" dangerouslySetInnerHTML={{__html: note}}></div>
             //   </div>
             // </div>
-
-
-
           );
         },
         filterFn: (row, columnId, filterValue) => {
@@ -1206,7 +1253,7 @@ export default function Complaints() {
       },
     ],
     // eslint-disable-next-line
-    [totalPoint, complaintData, users, errorData, solutionData]
+    [totalPoint, complaintData, users, errorData, solutionData],
   );
 
   // Clear table Filter
@@ -1238,6 +1285,11 @@ export default function Complaints() {
       pageSize: 20,
       density: "compact",
     },
+
+    state: {
+      columnVisibility: columnVisibility,
+    },
+    onColumnVisibilityChange: setColumnVisibility,
 
     muiTableHeadCellProps: {
       style: {
@@ -1276,20 +1328,19 @@ export default function Complaints() {
     setFilteredData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
 
-
-
-  
-  
-    const setColumnFromOutsideTable = (colKey, filterVal) => {
-
+  const setColumnFromOutsideTable = (colKey, filterVal) => {
     const col = table.getColumn(colKey);
 
     //console.log(col, "THE COLUMN 💚")
     return col.setFilterValue(filterVal);
-  }
+  };
 
+const getColumnFilterValue = (colKey) => {
+  const col = table.getColumn(colKey);
 
-
+  // Call the function with () and use optional chaining to avoid errors
+  return col?.getFilterValue();
+};
 
   return (
     <>
@@ -1309,41 +1360,111 @@ export default function Complaints() {
             >
               <IoClose className="h-6 w-6 text-white" />
             </span>
-            <span className="mt-2"><QuickAccess /></span>
-              {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
+            <span className="mt-2">
+              <QuickAccess />
+            </span>
+            {isAdmin(auth) && (
+              <span className=" ">
+                {" "}
+                <OverviewForPages />{" "}
+              </span>
+            )}
 
-             <span
-                                  className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${showExternalFilters && 'bg-orange-500 text-white '}  `}
-                                  onClick={() => {
-                                    
-                                    setShowExternalFilters(!showExternalFilters);
-                    
-                                  }}
-                                  title="Filter by Job Holder"
-                                >
-                                  <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
-                                </span>
+            <span
+              className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${
+                showExternalFilters && "bg-orange-500 text-white "
+              }  `}
+              onClick={() => {
+                setShowExternalFilters(!showExternalFilters);
+              }}
+              title="Filter by Job Holder"
+            >
+              <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
+            </span>
 
+            <span
+              className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${
+                showExternalFilters2 && "bg-orange-500 text-white "
+              }  `}
+              onClick={() => {
+                setShowExternalFilters2(!showExternalFilters2);
+              }}
+              title="Filter by Department"
+            >
+              <LuFilter className="h-6 w-6  cursor-pointer " />
+            </span>
 
+            <div className="relative">
+              <div
+                className={`  p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+                  showcolumn && "bg-orange-500 text-white"
+                }`}
+                onClick={() => setShowColumn(!showcolumn)}
+              >
+                {" "}
+                {showcolumn ? (
+                  <GoEyeClosed className="h-5 w-5" />
+                ) : (
+                  <GoEye className="h-5 w-5" />
+                )}{" "}
+              </div>
+              {showcolumn && (
+                <div
+                  ref={showColumnRef}
+                  className="fixed top-32 left-[50%] z-[9999]    w-[12rem]"
+                >
+                  {renderColumnControls()}
+                </div>
+              )}
+            </div>
+<div className="flex items-center p-1 bg-gray-50/80 rounded-xl border border-gray-200 w-fit shadow-sm">
+  {/* The Label - Shifted to semi-bold for better legibility */}
+  <span className="px-3 text-[10px] font-bold uppercase tracking-widest text-gray-800 border-r border-gray-200">
+    Type
+  </span>
 
-
-                                <span
-                                  className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${showExternalFilters2 && 'bg-orange-500 text-white '}  `}
-                                  onClick={() => {
-                                    
-                                    setShowExternalFilters2(!showExternalFilters2);
-                    
-                                  }}
-                                  title="Filter by Department"
-                                >
-                                  <LuFilter  className="h-6 w-6  cursor-pointer " />
-                                </span>
-
+  <div className="flex items-center">
+    {[
+      { label: 'All', val: undefined },
+      { label: 'Task', val: 'task' },
+      { label: 'Job',  val: 'job' }
+    ].map((opt, index, array) => {
+      const isActive = getColumnFilterValue("entityType") === opt.val;
+      
+      return (
+        <div key={opt.label} className="flex items-center">
+          <button
+            type="button"
+            onClick={() => setColumnFromOutsideTable("entityType", opt.val)}
+            className={`
+              mx-1 px-4 py-1.5 text-[11px] uppercase tracking-wide font-bold rounded-lg
+              transition-all duration-200 ease-in-out
+              ${isActive 
+                ? 'bg-orange-600/90 text-white shadow-md transform scale-105 z-10' 
+                : 'text-gray-500 hover:bg-gray-200/50 hover:text-gray-700'
+              }
+            `}
+          >
+            {opt.label}
+          </button>
+          
+          {/* Vertical Divider - only shows between items, not after the last one */}
+          {index < array.length - 1 && !isActive && (
+            <div className="h-4 w-[1px] bg-gray-300" />
+          )}
+        </div>
+      );
+    })}
+  </div>
+</div>
 
           </div>
 
           {/* ---------Template Buttons */}
           <div className="flex items-center gap-4">
+
+
+
             <button
               className={`${style.button1} text-[13px] sm:text-[15px] `}
               onClick={() => setShowError(true)}
@@ -1367,7 +1488,7 @@ export default function Complaints() {
             </button>
           </div>
         </div>
-        
+
         {/* Load */}
         {copyLoad && (
           <div className="pb-5">
@@ -1376,21 +1497,10 @@ export default function Complaints() {
         )}
         {/*  */}
 
+        {/* --------------External Filter---------------- */}
 
-
-
-
-
-
-
-           {/* --------------External Filter---------------- */}
-        
-            <div className="w-full flex flex-col items-start justify-start gap-4 mt-4">
-              
-
-                 
-
-              {/* <div className="flex items-center gap-2">
+        <div className="w-full flex flex-col items-start justify-start gap-4 mt-4">
+          {/* <div className="flex items-center gap-2">
                  
                 <ul className="flex items-center gap-2 list-none  ">
                   {users?.map((user, i) => (
@@ -1418,92 +1528,62 @@ export default function Complaints() {
                 </ul>
               </div> */}
 
+          {showExternalFilters && (
+            <DraggableUserList
+              table={table}
+              usersArray={selectedUsers.map((el) => el)}
+              updateJobHolderCountMapFn={(map, totalCount) => {
+                for (const item of complaintData || []) {
+                  const holder = item.assign.name;
+                  map.set(holder, (map.get(holder) || 0) + 1);
+                  totalCount++;
+                }
 
-              {showExternalFilters && <DraggableUserList table={table} usersArray={users.map(el => el.name)} updateJobHolderCountMapFn={(map, totalCount) => {
+                map.set("All", totalCount);
+              }}
+              listName={"complain"}
+              filterColName="assign"
+            />
+          )}
 
-                  for (const item of complaintData || []) {
-                      const holder = item.assign.name ;
-                      map.set(holder, (map.get(holder) || 0) + 1);
-                      totalCount++;
-                    }
+          {showExternalFilters2 && (
+            <div className="flex items-center gap-2">
+              <ul className="flex items-center gap-2 list-none  ">
+                {[
+                  "Bookkeeping",
+                  "Payroll",
+                  "Vat Return",
+                  "Personal Tax",
+                  "Accounts",
+                  "Company Sec",
+                  "Address",
+                ]?.map((department, i) => (
+                  <li
+                    key={`department-${i}-${department}`}
+                    className={`${
+                      filter2 === department
+                        ? "bg-orange-500 text-white"
+                        : "bg-gray-200 text-gray-700"
+                    } px-2 py-1 rounded-md cursor-pointer m-0 `}
+                    onClick={() => {
+                      setFilter2((prev) => {
+                        const isSameDpt = prev === department;
+                        const newValue = isSameDpt ? "" : department;
 
-                    map.set("All", totalCount);
-                
-              } } listName={'complain'} filterColName="assign"  />}
-              
-
-
-
-
-
-
-
-              
-
-              {showExternalFilters2 && <div className="flex items-center gap-2">
-                 
-                <ul className="flex items-center gap-2 list-none  ">
-                  {[ "Bookkeeping", "Payroll", "Vat Return", "Personal Tax", "Accounts", "Company Sec", "Address", ]?.map((department, i) => (
-                    <li
-                      key={`department-${i}-${department}`}
-                      className={`${
-                        filter2 === department
-                          ? "bg-orange-500 text-white"
-                          : "bg-gray-200 text-gray-700"
-                      } px-2 py-1 rounded-md cursor-pointer m-0 `}
-                      onClick={() => {
-                        setFilter2(prev => {
-                          const isSameDpt = prev === department
-                          const newValue = isSameDpt ? "" : department;
-
-                          setColumnFromOutsideTable("department", newValue);
-                          return newValue;
-                        });
-                         
-                      }}
-                    >
-                      {department}
-                    </li>
-                  ))}
-                </ul>
-              </div>}
-
-
-
+                        setColumnFromOutsideTable("department", newValue);
+                        return newValue;
+                      });
+                    }}
+                  >
+                    {department}
+                  </li>
+                ))}
+              </ul>
             </div>
-          
+          )}
+        </div>
 
-
-
-
-<hr className="w-full h-[1px] bg-gray-300 my-4" />
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        <hr className="w-full h-[1px] bg-gray-300 my-4" />
 
         {/* ---------Table Detail---------- */}
         <div className="w-full h-full">

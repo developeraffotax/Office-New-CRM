@@ -543,7 +543,7 @@ export const getAllTeamMembers = async (req, res) => {
     if (loggedInUser.role.name === "Admin") {
       // Admin → fetch all active users
       users = await userModel
-        .find({ isActive: { $ne: false } })
+        .find({ isActive: { $ne: false }, name: {$ne: "Admin"} })
         .select("-password")
         .populate("role")
         .populate("juniors")

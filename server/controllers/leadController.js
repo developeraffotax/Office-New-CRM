@@ -1486,7 +1486,10 @@ export const getWonLeadData = async (req, res) => {
 
     const filters = { status: "won" };
 
+    console.log("USER >>>", user)
+
     let fetchedUser = null;
+    let teamLeads = [];
 
     if (user && user !== "All") {
       fetchedUser = await userModel
@@ -1508,6 +1511,33 @@ export const getWonLeadData = async (req, res) => {
         }
       }
     }
+
+        if (user && user === "All") {
+
+          teamLeads = await userModel
+            .find({ isTeamLead: true })
+            .select("name isTeamLead juniors")
+            .populate("juniors", "name")
+            .lean();
+
+          // Team lead names
+          const teamLeadsNames = teamLeads.map(user => user.name);
+
+          // Juniors names (flattened)
+          const juniorsNames = teamLeads
+            .flatMap(user => user.juniors || [])
+            .map(junior => junior.name);
+
+          // Combine both
+          const allNames = [...teamLeadsNames, ...juniorsNames];
+
+          
+
+          filters.jobHolder = {
+            $in: allNames,
+          };
+
+        }
 
     if (startDate && endDate) {
       filters.leadCreatedAt = {
@@ -1629,6 +1659,13 @@ export const getWonLeadData = async (req, res) => {
     // -------------------------
     const goalMatch = { goalType: { $in: ["Target Lead Value", "Target Lead Count", "Target Lead Value (Team Lead)", "Target Lead Count (Team Lead)"] } };
     if (fetchedUser) goalMatch.jobHolder = fetchedUser._id;
+    if (user === "All") goalMatch.jobHolder = {
+            $in: teamLeads.map(user => user._id),
+          };
+
+
+          console.log("GOAL MATCH", goalMatch)
+
     if (startDate && endDate) goalMatch.startDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
 
     let goalGroupId;
@@ -1644,6 +1681,9 @@ export const getWonLeadData = async (req, res) => {
     ]);
 
     
+
+    console.log("GOALS ARE" , goals)
+
     // Map goals to label index
     goals.forEach((goal) => {
       let labelKey;
@@ -1660,11 +1700,20 @@ export const getWonLeadData = async (req, res) => {
       
       if (index !== -1) {
 
+        if(user === "All") {
+
+          if  (goal._id.type === "Target Lead Value (Team Lead)" ) targetValues[index] = goal.total;
+          if  (goal._id.type === "Target Lead Count (Team Lead)" ) targetCounts[index] = goal.total;
 
 
-        if ((goal._id.type === "Target Lead Value" && !fetchedUser?.isTeamLead) || (goal._id.type === "Target Lead Value (Team Lead)" && fetchedUser?.isTeamLead)) targetValues[index] = goal.total;
-        if ((goal._id.type === "Target Lead Count" && !fetchedUser?.isTeamLead) || (goal._id.type === "Target Lead Count (Team Lead)" && fetchedUser?.isTeamLead)) targetCounts[index] = goal.total;
-         
+
+        } else {
+          if ((goal._id.type === "Target Lead Value" && !fetchedUser?.isTeamLead) || (goal._id.type === "Target Lead Value (Team Lead)" && fetchedUser?.isTeamLead)) targetValues[index] = goal.total;
+          if ((goal._id.type === "Target Lead Count" && !fetchedUser?.isTeamLead) || (goal._id.type === "Target Lead Count (Team Lead)" && fetchedUser?.isTeamLead)) targetCounts[index] = goal.total;
+           
+
+        }
+
       }
     });
     
@@ -1729,7 +1778,11 @@ export const getWonLeadStats = async (req, res) => {
 
     const filters = { status: "won" };
 
+
+    console.log("USER", user)
+
     let fetchedUser = null;
+    let teamLeads = [];
 
     if (user && user !== "All") {
       fetchedUser = await userModel
@@ -1751,6 +1804,40 @@ export const getWonLeadStats = async (req, res) => {
         }
       }
     }
+
+    
+        if (user && user === "All") {
+
+          teamLeads = await userModel
+            .find({ isTeamLead: true })
+            .select("name isTeamLead juniors")
+            .populate("juniors", "name")
+            .lean();
+
+          // Team lead names
+          const teamLeadsNames = teamLeads.map(user => user.name);
+
+          // Juniors names (flattened)
+          const juniorsNames = teamLeads
+            .flatMap(user => user.juniors || [])
+            .map(junior => junior.name);
+
+          // Combine both
+          const allNames = [...teamLeadsNames, ...juniorsNames];
+
+          
+          console.log("TEAM LEADS 🌹", teamLeadsNames);
+          console.log("JUNIORS 🌿", juniorsNames);
+          console.log("ALL USERS ✅", allNames);
+
+          filters.jobHolder = {
+            $in: allNames,
+          };
+
+        }
+
+
+
 
     if (startDate && endDate) {
       filters.leadCreatedAt = {
@@ -1793,9 +1880,14 @@ export const getWonLeadStats = async (req, res) => {
     let targetCount = 0;
 
      const goalFilters = {};
-    if (user) {
+    if (user && user !== "All") {
       goalFilters.jobHolder = fetchedUser._id;
     }
+
+    if (user === "All") goalFilters.jobHolder = {
+        $in: teamLeads.map(user => user._id),
+      };
+
     if (startDate && endDate) {
       goalFilters.startDate = {
         $gte: new Date(startDate),
@@ -1806,7 +1898,24 @@ export const getWonLeadStats = async (req, res) => {
     // fetch both types of goals
     const goals = await goalModel.find(goalFilters).lean();
 
-    targetValues = goals
+
+    if(user === "All") {
+
+         
+          
+          targetValues = goals
+      .filter((g) =>  (g.goalType === "Target Lead Value (Team Lead)"))
+      .reduce((acc, g) => acc + (g.achievement || 0), 0);
+
+    targetCount = goals
+      .filter((g) =>  (g.goalType === "Target Lead Count (Team Lead)"))
+      .reduce((acc, g) => acc + (g.achievement || 0), 0);
+
+
+        } else {
+
+
+          targetValues = goals
       .filter((g) => (g.goalType === "Target Lead Value" && !fetchedUser?.isTeamLead) || (g.goalType === "Target Lead Value (Team Lead)" && fetchedUser?.isTeamLead))
       .reduce((acc, g) => acc + (g.achievement || 0), 0);
 
@@ -1814,6 +1923,13 @@ export const getWonLeadStats = async (req, res) => {
       .filter((g) => (g.goalType === "Target Lead Count" && !fetchedUser?.isTeamLead) || (g.goalType === "Target Lead Count (Team Lead)" && fetchedUser?.isTeamLead))
       .reduce((acc, g) => acc + (g.achievement || 0), 0);
 
+
+
+
+        }
+
+
+    
       
 
     return res.json({

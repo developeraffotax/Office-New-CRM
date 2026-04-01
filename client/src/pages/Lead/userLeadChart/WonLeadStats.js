@@ -21,7 +21,8 @@ export default function WonLeadStats({ user, dateRange }) {
           `${process.env.REACT_APP_API_URL}/api/v1/leads/userchart/won/stats`,
           {
             params: {
-              user: user !== "All" ? user : null,
+              // user: user !== "All" ? user : null,
+              user: user,
               startDate: start ? start.toISOString() : null,
               endDate: end ? end.toISOString() : null,
             },

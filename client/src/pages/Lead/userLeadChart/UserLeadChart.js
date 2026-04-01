@@ -127,7 +127,8 @@ const [categories, setCategories] = useState([]);
         `${process.env.REACT_APP_API_URL}/api/v1/leads/userchart/won`,
         {
           params: {
-            user: user !== "All" ? user : null,
+            // user: user !== "All" ? user : null,
+            user: user,
             startDate: start ? start.toISOString() : null,
             endDate: end ? end.toISOString() : null,
             view, // 👈 important
@@ -354,9 +355,16 @@ const options = useMemo(() => {
                   sx={{ minWidth: 180 }}
                 >
                   {isAdmin(auth) && <MenuItem value="All">All Users</MenuItem>}
-                  {users.map((user) => (
-                    <MenuItem value={user.name}>{user.name}</MenuItem>
-                  ))}
+                  {users.map((u) => (
+                  <MenuItem key={u._id || u.name} value={u.name} className="flex justify-between items-center w-full">
+                    <span>{u.name}</span>
+                    {u?.isTeamLead && (
+                      <span className="ml-2 px-1.5 py-0.5 text-[10px] font-bold uppercase rounded bg-blue-100 text-blue-600 border border-blue-200 shadow-sm">
+                        Lead
+                      </span>
+                    )}
+                  </MenuItem>
+                ))}
                 </Select>
               </FormControl>
                </div>

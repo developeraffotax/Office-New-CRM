@@ -17,13 +17,22 @@ const get_lead_count_and_value = async (goal) => {
 
     if (!jobHolder) return;
 
+    const start = new Date(goal.startDate);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(goal.endDate);
+    end.setDate(end.getDate() + 1);
+    end.setHours(0, 0, 0, 0);
+
+    
+
     const filters = {
       status: "won",
       jobHolder: jobHolder.name,
       leadCreatedAt: {
-        $gte: new Date(goal.startDate),
-        $lte: new Date(goal.endDate),
-      },
+        $gte: start,
+        $lt: end,
+    }
     };
 
     const result = await leadModel.aggregate([
@@ -89,13 +98,22 @@ const get_lead_count_and_value_for_team = async (goal) => {
     }
 
     console.log("JUNIORS", juniorNames)
+
+    const start = new Date(goal.startDate);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(goal.endDate);
+    end.setDate(end.getDate() + 1);
+    end.setHours(0, 0, 0, 0);
+
+
     const filters = {
       status: "won",
       jobHolder: { $in: [jobHolder?.name, ...juniorNames] }, // ✅ key change
       leadCreatedAt: {
-        $gte: new Date(goal.startDate),
-        $lte: new Date(goal.endDate),
-      },
+        $gte: start,
+        $lt: end,
+    }
     };
 
     const result = await leadModel.aggregate([

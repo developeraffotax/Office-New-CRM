@@ -13,8 +13,15 @@ export const createComplain = async (req, res) => {
       solution,
       points,
       note,
+
+      task,
+      entityRef,
+      entityType,
+
       
     } = req.body;
+
+    const userId = req.user.user._id;
 
     const complaint = await complainModel.create({
       company,
@@ -26,6 +33,11 @@ export const createComplain = async (req, res) => {
       solution,
       points,
       note,
+
+      task,
+      entityRef,
+      entityType,
+      createdBy: userId
        
     });
 

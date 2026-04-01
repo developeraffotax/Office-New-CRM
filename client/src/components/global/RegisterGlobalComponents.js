@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import {TicketModalGlobal} from "./TicketModalGlobal";
 import { JobModalGlobal } from "./JobModalGlobal";
 import { TaskModalGlobal } from "./TaskModalGlobal";
+import AddComplaintModalGlobal from "./AddComplaintModalGlobal";
  
 
 const RegisterGlobalComponents = () => {
@@ -22,6 +23,10 @@ const RegisterGlobalComponents = () => {
 
       {activeModal === "task" && (
         <TaskModalGlobal taskId={modalData?.taskId} />
+      )}
+
+      {activeModal === "complaint" && (
+        <AddComplaintModalGlobal {...modalData} />
       )}
     </>
   );

@@ -37,6 +37,7 @@ const complaintSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+
     createdAt: {
       type: Date,
       default: Date.now,
@@ -45,8 +46,28 @@ const complaintSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+
+    entityType: {
+      type: String,
+      enum: ["task", "job"],
+    },
+
+    entityRef: {
+      type: String,
+    },
+
+    task: {
+      type: String,
+    },
+
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Users",
+    },
+
+
   },
-  { timestamps: false }
+  { timestamps: false },
 );
 
 export default mongoose.model("Complaint", complaintSchema);

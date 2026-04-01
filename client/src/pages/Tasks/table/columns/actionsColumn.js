@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import { AiTwotoneDelete } from "react-icons/ai";
 import { GrCopy } from "react-icons/gr";
-import { MdCheckCircle, MdInsertComment } from "react-icons/md";
+import { MdCheckCircle, MdErrorOutline, MdInsertComment } from "react-icons/md";
+import { hasSubrole } from "../../../../utlis/checkPermission";
+
+
+
+
+
 
 export const actionsColumn = (ctx) => {
   return {
@@ -11,6 +17,10 @@ export const actionsColumn = (ctx) => {
       const comments = row.original.comments;
       const [unreadComments, setUnreadComments] = useState([]);
 
+ 
+      const hasAddComplainPermission = hasSubrole(ctx.auth.user, "Tasks", "Complain")
+
+ 
       useEffect(() => {
         const filterComments = comments.filter(
           (item) => item.status === "unread"
@@ -78,9 +88,37 @@ export const actionsColumn = (ctx) => {
             {" "}
             <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600" />{" "}
           </button>
+
+              {
+                hasAddComplainPermission && (
+                  <button
+            
+           title="Create Complaint for this task"
+            onClick={() => {
+              ctx.createComplaint({
+
+                defaultEntityType: "task",
+                defaultEntityRef: `T-${row.original.taskRef}`,
+                defaultTask: row.original.task,
+                 
+                defaultLead: row.original.lead,
+                defaultAssign: row.original.jobHolder,
+
+              })
+            }}
+           
+          >
+            
+             <MdErrorOutline className="h-5 w-5 text-red-500 hover:text-red-600" />{" "}
+          </button>
+
+                )
+              }
+                    
+          
         </div>
       );
     },
-    size: 140,
+    size: 160,
   };
 };

@@ -63,6 +63,7 @@ import { SubtaskListManager } from "./SubtaskListManager";
 import OutsideFilter from "./utils/OutsideFilter";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import SelectedUsers from "../../components/SelectedUsers";
+import { openModal } from "../../redux/slices/globalModalSlice";
  
  
  
@@ -1417,6 +1418,19 @@ export default function AllJobs() {
 
  
 
+  const createComplaint = (data) => {
+
+
+    dispatch(
+        openModal({
+          modal: "complaint",
+          data: data
+        })
+      );
+
+
+
+  }
 
 // ----------------------------
 // 🔑 Authentication Context
@@ -1467,7 +1481,8 @@ const jobCtx = useMemo(() => {
     moveJobToLead,      
     handleUpdateLead,  
     handleUpdateTicketStatusConfirmation, 
-    handleUpdateJobHolder  
+    handleUpdateJobHolder,
+    createComplaint 
   }
 }, [totalFee, totalHours, dataLable, labelData, totalClientPaidFee, showUniqueClients])
 

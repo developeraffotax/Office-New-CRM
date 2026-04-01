@@ -2,13 +2,14 @@ import { Popover, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { FiPlusSquare } from "react-icons/fi";
 import { IoTicketOutline } from "react-icons/io5";
-import { MdDriveFileMoveOutline } from "react-icons/md";
+import { MdDriveFileMoveOutline, MdErrorOutline } from "react-icons/md";
 import { MdInsertComment } from "react-icons/md";
 import TicketsPopUp from "../../../../components/shared/TicketsPopUp";
 import axios from "axios";
 import { MdOutlineFolder } from "react-icons/md";
 import toast from "react-hot-toast";
 import { PiSpinnerGap } from "react-icons/pi";
+import { hasSubrole } from "../../../../utlis/checkPermission";
 
 export const actionsColumn = ({
   setJobId,
@@ -16,19 +17,9 @@ export const actionsColumn = ({
   setClientCompanyName,
   setShowNewTicketModal,
   moveJobToLead,
+  createComplaint,
+  auth
 }) => {
-
-
-  
-
-
-
-
-
-
-
-
-  
   return {
     id: "Actions",
     accessorKey: "actions",
@@ -38,15 +29,16 @@ export const actionsColumn = ({
       // related to comments
       //const comments = cell.getValue();
 
-      const [isLoading, setIsLoading] = useState(false)
+      const [isLoading, setIsLoading] = useState(false);
 
-
+      const hasAddComplainPermission = hasSubrole(auth.user, "Jobs", "Complain")
+      
       const comments = row.original?.comments;
       const [readComments, setReadComments] = useState([]);
 
       useEffect(() => {
         const filterComments = comments.filter(
-          (item) => item.status === "unread"
+          (item) => item.status === "unread",
         );
         setReadComments(filterComments);
         // eslint-disable-next-line
@@ -65,37 +57,32 @@ export const actionsColumn = ({
       const open = Boolean(anchorEl);
       const id = open ? "simple-popover" : undefined;
 
+      const openFolder = async (clientName) => {
+        setIsLoading(true);
+        try {
+          const { data } = await axios(
+            `${
+              process.env.REACT_APP_API_URL
+            }/api/v1/onedrive/folder/${encodeURIComponent(clientName)}`,
+          );
 
-
-        const openFolder = async (clientName) => {
-          setIsLoading(true)
-          try {
-            const { data } = await axios(
-              `${
-                process.env.REACT_APP_API_URL
-              }/api/v1/onedrive/folder/${encodeURIComponent(clientName)}`
-            );
-
-            if (data.url) {
-              window.open(data.url, "_blank");
-            } else {
-              toast.error("No folder found for this client.");
-            }
-          } catch (err) {
-            console.error(err);
-
-            toast.error(err?.response?.data?.message || "Error fetching folder.");
-          } finally {
-            setIsLoading(false)
+          if (data.url) {
+            window.open(data.url, "_blank");
+          } else {
+            toast.error("No folder found for this client.");
           }
-        };
+        } catch (err) {
+          console.error(err);
 
-
+          toast.error(err?.response?.data?.message || "Error fetching folder.");
+        } finally {
+          setIsLoading(false);
+        }
+      };
 
       return (
         <div className="flex items-center justify-center gap-3 w-full h-full ">
-
-           <div>
+          <div>
             <span
               title="Create New Ticket"
               onClick={() => {
@@ -109,9 +96,7 @@ export const actionsColumn = ({
             </span>
           </div>
 
-
-
-                        <div>
+          <div>
             <span
               title="Ticket"
               onClick={handleClick}
@@ -154,15 +139,6 @@ export const actionsColumn = ({
             </Popover>
           </div>
 
-
-
-
-
-
-
-
-
-
           <div
             title="Comments"
             className="flex items-center justify-center gap-1 w-full h-full"
@@ -183,10 +159,6 @@ export const actionsColumn = ({
             </div>
           </div>
 
-         
-
-                
-
           <div>
             <span
               title="Open OneDrive Folder"
@@ -194,13 +166,12 @@ export const actionsColumn = ({
                 openFolder(row?.original?.clientName);
               }}
               className="text-xl text-orange-500 cursor-pointer"
-            > 
-
-            {
-              isLoading ? <PiSpinnerGap className="animate-spin h-5 w-5 text-orange-600 "  /> :  <MdOutlineFolder className="h-5 w-5 text-orange-600 " />
-            }
-            
-              
+            >
+              {isLoading ? (
+                <PiSpinnerGap className="animate-spin h-5 w-5 text-orange-600 " />
+              ) : (
+                <MdOutlineFolder className="h-5 w-5 text-orange-600 " />
+              )}
             </span>
           </div>
 
@@ -216,11 +187,32 @@ export const actionsColumn = ({
             </span>
           </div>
 
+            {
+              hasAddComplainPermission && (
+                <button
+            title="Create Complaint for this job"
+            onClick={() => {
+              createComplaint({
+                defaultEntityType: "job",
+                defaultEntityRef: `J-${row.original?.jobRef}`,
 
+                defaultCompany: row.original?.companyName,
+                defaultClient: row.original?.clientName,
+                defaultDepartment: row.original?.job?.jobName,
+
+                defaultLead: row.original?.job?.lead,
+                defaultAssign: row.original?.job?.jobHolder,
+              });
+            }}
+          >
+            <MdErrorOutline className="h-5 w-5 text-red-500 hover:text-red-600" />{" "}
+          </button>
+              )
+            }
           
         </div>
       );
     },
-    size: 180,
+    size: 200,
   };
 };

@@ -49,6 +49,7 @@ import { isAdmin } from "../../utlis/isAdmin";
 import OutsideFilter from "../Jobs/utils/OutsideFilter";
 import SelectedUsers from "../../components/SelectedUsers";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
+import { openModal } from "../../redux/slices/globalModalSlice";
 
 const colVisibility = {
   taskRef: true,
@@ -969,6 +970,22 @@ const AllTasks = ({ justShowTable = false }) => {
     });
   };
 
+
+
+
+  const createComplaint = (data) => {
+
+
+    dispatch(
+        openModal({
+          modal: "complaint",
+          data: data
+        })
+      );
+
+
+
+  }
   // ----------------------------
   // 🔑 Authentication & User Data
   // ----------------------------
@@ -1011,6 +1028,7 @@ const AllTasks = ({ justShowTable = false }) => {
       copyTask,
       handleCompleteStatus,
       handleDeleteTaskConfirmation,
+      createComplaint
     }),
     [totalHours, filterId, active, active1]
   );

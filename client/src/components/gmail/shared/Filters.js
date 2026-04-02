@@ -355,8 +355,54 @@ export default function Filters({ filters, setFilters, users = [], categories = 
 
  
 
-            <UnifiedThreadFilters filters={filters} handleUpdate={handleUpdate} />
             
+                
+
+
+            {/* Last Message By Client Quick Filter */}
+<ToggleButton
+  value="lastMessageClient"
+  size="small"
+  selected={filters.lastMessageBy === "client"}
+  onChange={() =>
+    handleUpdate({
+      lastMessageBy:
+        filters.lastMessageBy === "client"
+          ? ""
+          : "client",
+    })
+  }
+  title="Last message sent by client"
+  color="primary"
+  sx={{
+    border: "none",
+    borderRadius: "8px",
+  }}
+>
+  {/* Client badge style icon */}
+  <Box
+    sx={{
+      width: 18,
+      height: 18,
+      borderRadius: "50%",
+      bgcolor:
+        filters.lastMessageBy === "client"
+          ? "primary.main"
+          : "grey.400",
+      color: "white",
+      fontSize: "0.65rem",
+      fontWeight: 700,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    C
+  </Box>
+</ToggleButton>
+
+
+
 
             <ToggleButton
               value="starred"
@@ -382,7 +428,13 @@ export default function Filters({ filters, setFilters, users = [], categories = 
             </ToggleButton>
 
             {isAdmin && ( <UserTabToggleButton active={isInboxUserTabs} onClick={() => setIsInboxUserTabs((prev) => !prev)} /> )}
- 
+              
+              <UnifiedThreadFilters filters={filters} handleUpdate={handleUpdate} />
+
+              {/* <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} /> */}
+
+
+
           </Stack>
 
 

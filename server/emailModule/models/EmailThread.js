@@ -38,7 +38,20 @@ const EmailThreadSchema = new mongoose.Schema(
       type: String, 
       enum: ["progress", "completed"], 
       default: "progress" 
-    }
+    },
+
+
+    readBy: {
+      type: [
+        {
+          userId: { type: mongoose.Schema.Types.ObjectId, ref: "Users" },
+          lastReadAt: Date,
+        }
+      ],
+      default: []
+    },
+
+
     
   },
   { timestamps: true }

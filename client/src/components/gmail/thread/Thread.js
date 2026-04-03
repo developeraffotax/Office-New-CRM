@@ -693,6 +693,29 @@ useOverlayStack({
               </div>
             )}
           </div>
+
+
+
+          {/* <div
+            ref={replySectionRef}
+            className={`w-full transition-all duration-200 ${
+              showReplyEditor ? "block" : "hidden"
+            }`}
+          >
+            <div className="w-full py-5">
+              <Reply
+                company={company}
+                emailDetail={messages}
+                getEmailDetail={() => {
+                  getEmailDetail();
+                  setShowReplyEditor(false);
+                }}
+                setShowReplyEditor={setShowReplyEditor}
+              />
+            </div>
+          </div> */}
+
+
         </div>
       )}
 

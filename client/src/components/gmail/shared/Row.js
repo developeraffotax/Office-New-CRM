@@ -17,7 +17,9 @@ import AssignUser from "./ui/AssignUser";
 import AssignCategory from "./ui/AssignCategory";
 import IconButtonWithBadge from "./ui/IconButtonWithBadge";
 import { confirmAlert } from "./ui/Swal";
- 
+ import { useSelector } from "react-redux";
+
+
 function parseEmail(str) {
   if (!str) return "";
 
@@ -128,6 +130,22 @@ const folder = searchParams.get("folder") || "inbox";
 
 
 
+  const {auth} = useSelector((state) => state.auth);
+ 
+const currentUserId = auth?.user?.id;
+
+// Find read status for current user
+const userReadEntry = thread?.readBy?.find(
+  (r) => r.userId === currentUserId
+);
+
+// Determine unread
+// const isUnreadForUser =
+//   thread.hasInboxMessage && thread.lastMessageAtInbox && (!userReadEntry?.lastReadAt ||
+//   new Date(thread.lastMessageAtInbox) >
+//     new Date(userReadEntry.lastReadAt))
+
+const isUnreadForUser = !userReadEntry?.lastReadAt || new Date(thread.lastMessageAtInbox) > new Date(userReadEntry.lastReadAt)
 
 
   return (
@@ -137,13 +155,13 @@ const folder = searchParams.get("folder") || "inbox";
         "hover:shadow-[0_1px_2px_rgba(60,60,67,0.18),0_2px_4px_rgba(60,60,67,0.22),0_3px_6px_rgba(60,60,67,0.45)]",
         selected
           ? "bg-blue-200"
-          : thread.unreadCount > 0
+          : isUnreadForUser
           ? "bg-white"
           : "bg-blue-50/60 ",
       )}
     >
       {/* Indicator for Unread */}
-      {/* {thread.unreadCount > 0 && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />} */}
+      {isUnreadForUser && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />}
 
       {/* ================= MAIN ROW ================= */}
       <div className="grid items-start px-4 py-3 grid-cols-[2rem_15rem_1fr_auto_auto_auto_7rem] gap-5  ">
@@ -180,11 +198,12 @@ const folder = searchParams.get("folder") || "inbox";
         {/* Sender Info */}
         <div className="flex flex-col min-w-0">
           <div className="flex items-center    gap-2">
+            
             <span
               title={sender}
               className={clsx(
                 "truncate text-base  font-google ",
-                thread.unreadCount > 0
+                isUnreadForUser
                   ? "font-medium text-gray-900"
                   : "  text-gray-700",
               )}
@@ -192,6 +211,10 @@ const folder = searchParams.get("folder") || "inbox";
                 __html: highlightText(sender, filters.search),
               }}
             ></span>
+
+
+
+
             {/* {attachments.length > 0 && <FiPaperclip className="text-gray-400 size-3 shrink-0" />} */}
             {thread?.messageCount > 1 && (
               <span className="text-gray-500 text-[12px] shrink-0 font-google">
@@ -245,7 +268,7 @@ const folder = searchParams.get("folder") || "inbox";
             <span
             className={clsx(
               "truncate text-base  font-google ",
-              thread.unreadCount > 0
+              isUnreadForUser
                 ? "text-gray-900 font-medium"
                 : "text-gray-700   ",
             )}
@@ -539,8 +562,13 @@ const folder = searchParams.get("folder") || "inbox";
           </div>
         </div>
 
-        <div>
+        <div className="flex-1 flex justify-start items-center gap-2">
            
+          {isUnreadForUser && (
+            <span className="flex justify-center items-center tracking-wide  px-1.5 py-0.5 text-[10px] font-inter  font-semibold   text-white bg-blue-500 rounded-tr-lg rounded-bl-lg animate-pop">
+              UNREAD
+            </span>
+          )}
                   <IconButtonWithBadge
           icon={FiMessageSquare}
           unreadCount={thread?.unreadComments || 0}
@@ -556,9 +584,15 @@ const folder = searchParams.get("folder") || "inbox";
           }
         />
 
+          
+
+            
 
 
         </div>
+
+
+
 
 {/* Date/Time Container */}
 <div className="text-[11px] text-right text-gray-500 font-medium tabular-nums flex flex-col items-end gap-0.5">

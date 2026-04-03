@@ -171,7 +171,72 @@ export const buildFilterQuery = (req) => {
  
 
   // Unread
-  if (filters.unreadOnly === "true") andFilters.push({ unreadCount: { $gt: 0 } });
+  // if (filters.unreadOnly === "true") andFilters.push({ unreadCount: { $gt: 0 } });
+  // ---------------- Unread (Per User) ----------------
+
+if (filters.unreadOnly === "true") {
+
+  const userIdObj = new mongoose.Types.ObjectId(user?._id);
+
+  const lastMessageField =
+    filters.folder === "sent"
+      ? "$lastMessageAtSent"
+      : "$lastMessageAtInbox";
+
+  andFilters.push({
+    $expr: {
+      $or: [
+
+        // Case 1: user never read → unread
+        {
+          $eq: [
+            {
+              $size: {
+                $filter: {
+                  input: "$readBy",
+                  as: "r",
+                  cond: {
+                    $eq: ["$$r.userId", userIdObj],
+                  },
+                },
+              },
+            },
+            0,
+          ],
+        },
+
+        // Case 2: lastReadAt < lastMessageAt → unread
+        {
+          $lt: [
+            {
+              $let: {
+                vars: {
+                  userRead: {
+                    $first: {
+                      $filter: {
+                        input: "$readBy",
+                        as: "r",
+                        cond: {
+                          $eq: ["$$r.userId", userIdObj],
+                        },
+                      },
+                    },
+                  },
+                },
+                in: "$$userRead.lastReadAt",
+              },
+            },
+            lastMessageField,
+          ],
+        },
+
+      ],
+    },
+  });
+
+}
+
+
 
   // Date filter
   const dateField = filters.folder === "sent" ? "lastMessageAtSent" : "lastMessageAtInbox";

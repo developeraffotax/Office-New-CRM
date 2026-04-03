@@ -94,7 +94,7 @@ export const getMailbox = async (req, res) => {
   }
 };
 
-export const getUnreadCounts = async (req, res) => {
+export const getUnreadCounts2 = async (req, res) => {
   try {
     const user = req?.user?.user;
     const userId = user?._id;
@@ -131,14 +131,122 @@ export const getUnreadCounts = async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Thread count error:", err);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to fetch unread counts for inbox",
-      });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch unread counts for inbox",
+    });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getUnreadCounts = async (req, res) => {
+  try {
+    const user = req?.user?.user;
+    const userId = new mongoose.Types.ObjectId(user?._id);
+    const isAdmin = user?.role?.name === "Admin";
+
+    const baseMatch = {
+      hasInboxMessage: true,
+      lastMessageAtInbox: { $ne: null },
+    };
+    
+    if (!isAdmin) {
+      baseMatch.userId = userId;
+    }  
+
+    const buildPipeline = (companyName) => [
+      {
+        $match: {
+          companyName,
+          ...baseMatch,
+        },
+      },
+
+      // Extract user's read record
+      {
+        $addFields: {
+          userRead: {
+            $first: {
+              $filter: {
+                input: "$readBy",
+                as: "r",
+                cond: {
+                  $eq: ["$$r.userId", userId],
+                },
+              },
+            },
+          },
+        },
+      },
+
+      // Keep unread only
+      {
+        $match: {
+          $expr: {
+            $or: [
+              // User never read
+              { $eq: ["$userRead", null] },
+
+              // User read older messages
+              {
+                $lt: [
+                  "$userRead.lastReadAt",
+                  "$lastMessageAtInbox",
+                ],
+              },
+            ],
+          },
+        },
+      },
+
+      {
+        $count: "total",
+      },
+    ];
+
+    const [affotaxResult] = await EmailThread.aggregate(
+      buildPipeline("affotax")
+    );
+
+    const [outsourceResult] = await EmailThread.aggregate(
+      buildPipeline("outsource")
+    );
+
+    res.status(200).json({
+      success: true,
+      counts: {
+        affotax: affotaxResult?.total || 0,
+        outsource: outsourceResult?.total || 0,
+      },
+    });
+
+  } catch (err) {
+    console.error("❌ Thread count error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch unread counts for inbox",
+      error: err.message,
+    });
+  }
+};
+
+
+
 
 // ------------------ Inbox ------------------
 // GET /api/v1/gmail/threads
@@ -317,7 +425,7 @@ export const updateThreadMetadata = async (req, res) => {
     /**
      * 1️⃣ Whitelist validation
      */
-    const allowedUpdates = ["category", "userId", "status" ];
+    const allowedUpdates = ["category", "userId", "status"];
     const updateKeys = Object.keys(updates);
 
     const isValidUpdate = updateKeys.every((key) =>
@@ -427,22 +535,6 @@ export const updateThreadMetadata = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  * PATCH /api/v1/gmail/mark-as-unread/:id
  * Marks the thread as unread
@@ -450,8 +542,11 @@ export const updateThreadMetadata = async (req, res) => {
  */
 export const markThreadAsUnread = async (req, res) => {
   try {
-    const { threadId } = req.params;  
+    const { threadId } = req.params;
     const { companyName } = req.body;
+
+    const userId = req.user.user._id;
+    const roleName = req.user.user.role.name;
 
     // ----------- Find thread -----------
     const thread = await EmailThread.findOne({
@@ -466,38 +561,67 @@ export const markThreadAsUnread = async (req, res) => {
       });
     }
 
-    // 👇 already unread → no-op
-    if (thread.unreadCount > 0) {
-      return res.json({
-        success: true,
-        thread,
-        alreadyUnread: true,
+    const now = new Date();
+
+    // ---------------- Update readBy ----------------
+    if (!thread.readBy) thread.readBy = [];
+
+    const existingUser = thread.readBy.find(
+      (r) => r.userId.toString() === userId.toString(),
+    );
+
+    let alreadyUnread = false;
+
+    if (existingUser) {
+      // If user's lastReadAt is already before last message → already unread
+      alreadyUnread =
+        !existingUser.lastReadAt ||
+        existingUser.lastReadAt < thread.lastMessageAtInbox;
+
+      // Move lastReadAt BEFORE latest message
+      existingUser.lastReadAt = new Date(
+        thread.lastMessageAtInbox.getTime() - 1000
+      );
+    } else {
+      // User never read → already unread
+      alreadyUnread = true;
+
+      // Add entry marking unread
+      thread.readBy.push({
+        userId,
+        lastReadAt: new Date(
+          thread.lastMessageAtInbox.getTime() - 1000
+        ),
       });
     }
 
-    // ----------- 1. Update Gmail -----------
-    const gmailClient = await getGmailClient(companyName);
+    // ----------- Gmail update (Admin only) -----------
+    if (roleName === "Admin") {
+      const gmailClient = await getGmailClient(companyName);
 
-    if (gmailClient && thread.threadId) {
-      await gmailClient.users.threads.modify({
-        userId: "me",
-        id: thread.threadId,
-        requestBody: {
-          addLabelIds: ["UNREAD"],
-        },
-      });
+      if (gmailClient && thread.threadId) {
+        await gmailClient.users.threads.modify({
+          userId: "me",
+          id: thread.threadId,
+          requestBody: {
+            addLabelIds: ["UNREAD"],
+          },
+        });
+      }
+
+      // Optional: keep legacy unreadCount support
+      thread.unreadCount = 1;
     }
 
-    // ----------- 2. Update local DB -----------
-    thread.unreadCount = 1; // mark as unread
     await thread.save();
 
     res.status(200).json({
       success: true,
       message: "Thread marked as unread",
       thread,
-      alreadyUnread: false,
+      alreadyUnread,
     });
+
   } catch (error) {
     console.error("Error marking thread as unread:", error);
 
@@ -554,12 +678,6 @@ export const markThreadAsUnread = async (req, res) => {
 
 
 
-
-
-
-
-
-
 /**
  * PATCH /api/v1/gmail/mark-as-read/:id
  * Marks the thread as read (unreadCount = 0)
@@ -569,6 +687,9 @@ export const markThreadAsRead = async (req, res) => {
   try {
     const { threadId } = req.params; // MongoDB _id
     const { companyName } = req.body;
+    const userId = req.user.user._id;
+    const roleName = req.user.user.role.name;
+    const now = new Date();
 
     // Find the thread
     const thread = await EmailThread.findOne({
@@ -582,45 +703,48 @@ export const markThreadAsRead = async (req, res) => {
       });
     }
 
-    // 👇 already read → no-op
-    if (thread.unreadCount === 0) {
-      return res.json({
-        success: true,
-        thread,
-        alreadyRead: true,
-      });
+
+    // ---------------- Update readBy (Upsert user) ----------------
+    if (!thread.readBy) thread.readBy = [];
+    const existingUser = thread.readBy.find(
+      (r) => r.userId.toString() === userId.toString(),
+    );
+
+      let alreadyRead = false;
+
+      if (existingUser) {
+        // Check if lastReadAt is already after latest message
+        alreadyRead = existingUser.lastReadAt && existingUser.lastReadAt >= thread.lastMessageAtInbox;
+        // Always update lastReadAt to now
+        existingUser.lastReadAt = now;
+      } else {
+        // New user entry
+        thread.readBy.push({ userId, lastReadAt: now });
+        alreadyRead = false;
+      }
+
+    if (roleName === "Admin") {
+      const gmailClient = await getGmailClient(companyName);
+      if (gmailClient && thread.threadId) {
+        await gmailClient.users.threads.modify({
+          userId: "me",
+          id: thread.threadId,
+          requestBody: {
+            removeLabelIds: ["UNREAD"],
+          },
+        });
+      }
+
+      thread.unreadCount = 0;
     }
 
-    // ----------- 1. Update Gmail (if applicable) -----------
-    // Assume you have a function to get Gmail OAuth client per company
-
-    const gmailClient = await getGmailClient(companyName);
-    if (gmailClient && thread.threadId) {
-      await gmailClient.users.threads.modify({
-        userId: "me",
-        id: thread.threadId,
-        requestBody: {
-          removeLabelIds: ["UNREAD"],
-        },
-      });
-    }
-
-    // ----------- 2. Update local DB -----------
-    thread.unreadCount = 0;
     await thread.save();
 
-    // const eventName = `metadata:updated-${thread.companyName}`;
-    // const assignedUserId = thread.userId?.toString() || null;
-
-    // if (assignedUserId && !isSelfAssignment(req?.user?.user, assignedUserId)) {
-    //   emitToUser(assignedUserId, eventName, {});
-    // }
-
     res.status(200).json({
-      success: true,
+      success: true, 
       message: "Thread marked as read",
       thread,
-      alreadyRead: false,
+      alreadyRead: alreadyRead,
     });
   } catch (error) {
     console.error("Error marking thread as read:", error);
@@ -631,6 +755,46 @@ export const markThreadAsRead = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * DELETE /api/v1/gmail/delete-thread/:id
@@ -690,27 +854,6 @@ export const deleteThread = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
 export const toggleStarredThread = async (req, res) => {
   try {
     const { threadId } = req.params; // MongoDB _id
@@ -727,35 +870,30 @@ export const toggleStarredThread = async (req, res) => {
 
     // ----------- 1. Delete from Gmail (if Gmail client available) -----------
     const gmailClient = await getGmailClient(companyName);
-    const isStarred = thread.labels?.includes("STARRED")
+    const isStarred = thread.labels?.includes("STARRED");
 
     const updateObject = {
       userId: "me",
       id: thread.threadId,
-          
-    }
+    };
 
-    if(isStarred) {
-      updateObject.removeLabelIds = ["STARRED"]
+    if (isStarred) {
+      updateObject.removeLabelIds = ["STARRED"];
     } else {
-      updateObject.addLabelIds = ["STARRED"]
+      updateObject.addLabelIds = ["STARRED"];
     }
 
     if (gmailClient && thread.threadId) {
-      
-
-              await gmailClient.users.threads.modify(updateObject);
+      await gmailClient.users.threads.modify(updateObject);
     }
 
- 
-
- res.status(200).json({
+    res.status(200).json({
       success: true,
       isStarred: isStarred,
       message: isStarred ? "Thread unstarred" : "Thread starred",
     });
   } catch (error) {
-   console.error("Error starring thread:", error);
+    console.error("Error starring thread:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update starred status",
@@ -764,24 +902,12 @@ export const toggleStarredThread = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
- 
-
 export const getMailboxUserCounts = async (req, res) => {
   try {
     const query = buildFilterQuery(req);
 
     // 🔥 Deep clone to avoid mutation
     const countQuery = structuredClone(query);
- 
 
     // --------------------------------------------------
     // Remove userId filter from $and
@@ -792,7 +918,7 @@ export const getMailboxUserCounts = async (req, res) => {
 
         if (condition.$or) {
           const containsUserId = condition.$or.some(
-            (c) => c.userId !== undefined
+            (c) => c.userId !== undefined,
           );
           if (containsUserId) return false;
         }
@@ -804,8 +930,6 @@ export const getMailboxUserCounts = async (req, res) => {
         delete countQuery.$and;
       }
     }
-
-     
 
     // --------------------------------------------------
     // Aggregate User Counts
@@ -847,38 +971,6 @@ export const getMailboxUserCounts = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const getThreadMessageUsers = async (req, res) => {
   try {
     const { threadId, companyName } = req.query;
@@ -890,12 +982,11 @@ export const getThreadMessageUsers = async (req, res) => {
       });
     }
 
-
     // get messages
     const messages = await EmailMessage.find({
       gmailThreadId: threadId,
-      companyName: companyName
-    })
+      companyName: companyName,
+    });
 
     // build map
     const messageUserMap = {};
@@ -908,7 +999,6 @@ export const getThreadMessageUsers = async (req, res) => {
       success: true,
       data: messageUserMap,
     });
-
   } catch (error) {
     console.error("getThreadMessageUsers error:", error);
     return res.status(500).json({

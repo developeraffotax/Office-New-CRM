@@ -18,6 +18,7 @@ import AssignCategory from "./ui/AssignCategory";
 import IconButtonWithBadge from "./ui/IconButtonWithBadge";
 import { confirmAlert } from "./ui/Swal";
  import { useSelector } from "react-redux";
+import ThreadDateTime from "./ui/ThreadDateTime";
 
 
 function parseEmail(str) {
@@ -594,22 +595,26 @@ const isUnreadForUser = !userReadEntry?.lastReadAt || new Date(thread.lastMessag
 
 
 
-{/* Date/Time Container */}
-<div className="text-[11px] text-right text-gray-500 font-medium tabular-nums flex flex-col items-end gap-0.5">
+ 
+{/* <div className="text-[11px] text-right text-gray-700 font-medium tabular-nums flex flex-col items-end gap-0.5 font-google">
 
-  {/* Date Line */}
-  <div>
-    {new Date(folder === "inbox" ? thread.lastMessageAtInbox : thread.lastMessageAtSent).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+ 
+  <div className="flex items-center text-[12px]  text-gray-800 ">
+    {new Date(
+      folder === "inbox"
+        ? thread.lastMessageAtInbox
+        : thread.lastMessageAtSent
+    ).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
     })}
   </div>
 
-{/* Time Line + Star Wrapper */}
-<div className="flex items-center gap-1.5 text-[10px] opacity-80 font-normal  ">
+ 
+<div className="flex items-center gap-1.5 text-[10px]   ">
 
-  {/* Star Button */}
+ 
   <button
     title={
       thread.labels.includes("STARRED")
@@ -632,24 +637,59 @@ const isUnreadForUser = !userReadEntry?.lastReadAt || new Date(thread.lastMessag
     )}
   </button>
 
-  {/* Time */}
-  <div className="flex items-center mt-0.5 ">
-    {new Date(
-      folder === "inbox"
-        ? thread.lastMessageAtInbox
-        : thread.lastMessageAtSent
-    ).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
+
+
+
+
+ 
+  <div className="mt-0.5 ">
+    {new Date(folder === "inbox" ? thread.lastMessageAtInbox : thread.lastMessageAtSent).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     })}
   </div>
+
+
 
 </div>
 
  
 
+</div> */}
+
+
+{/* Final Column: Star + Date/Time */}
+<div className="flex items-center flex-r justify-end gap-3 min-w-[80px]">
+  
+  {/* Star Button (Now positioned before date) */}
+  <button
+    title={thread.labels.includes("STARRED") ? "Unstar Thread" : "Star Thread"}
+    className="transition-transform active:scale-125 focus:outline-none"
+    onClick={(e) => {
+      e.stopPropagation();
+      toggleStar(
+        thread?.threadId,
+        thread?.companyName,
+        thread?.labels?.includes("STARRED")
+      );
+    }}
+  >
+    {thread.labels.includes("STARRED") ? (
+      <FaStar className="h-4 w-4 text-yellow-400 drop-shadow-sm" />
+    ) : (
+      <FaRegStar className="h-4 w-4 text-gray-300 hover:text-gray-400 transition-colors" />
+    )}
+  </button>
+
+  {/* Date Component */}
+  <ThreadDateTime 
+    thread={thread} 
+    folder={folder} 
+    index={index} 
+  />
 </div>
+
         
       </div>
 

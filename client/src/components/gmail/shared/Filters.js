@@ -15,6 +15,7 @@ import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
 import { alpha } from "@mui/material/styles";
 import { FiCalendar, FiX, FiChevronDown, FiLayers, FiMoreVertical, } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
+import AutorenewIcon from '@mui/icons-material/Autorenew';
 
 import ManageCategoriesModal from "../categories/ManageCategoriesModal";
 import InboxUserTabs from "./ui/InboxUserTabs";
@@ -353,8 +354,51 @@ export default function Filters({ filters, setFilters, users = [], categories = 
               </Box>
             </FormControl>
 
- 
+                
 
+                
+
+
+<ToggleButton
+  value="status"
+  size="small"
+  selected={filters.status === "progress"}
+  color="primary"
+  onChange={() =>
+    handleUpdate({
+      status: filters.status === "progress" ? "" : "progress",
+    })
+  }
+  title="Show emails in progress"
+ sx={{
+    border: "none",
+    borderRadius: "8px",
+  }}
+>
+  {/* Client badge style icon */}
+  <Box
+    sx={{
+      width: 18,
+      height: 18,
+      borderRadius: "50%",
+      bgcolor:
+        filters.status === "progress"
+          ? "primary.main"
+          : "grey.400",
+      color: "white",
+      fontSize: "0.65rem",
+      fontWeight: 700,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    P
+  </Box>
+</ToggleButton>
+
+
+    <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} />
             
                 
 
@@ -401,6 +445,8 @@ export default function Filters({ filters, setFilters, users = [], categories = 
   </Box>
 </ToggleButton>
 
+
+<Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} />
 
 
 

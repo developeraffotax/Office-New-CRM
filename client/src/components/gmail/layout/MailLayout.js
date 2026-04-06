@@ -128,6 +128,7 @@ export default function MailLayout({
           categories={categories}
           handleUpdateThread={handleUpdateThread}
           deleteThread={deleteThread}
+          markAsRead={markAsRead}
           toggleStar={toggleStar}
           filters={filters}
           setEmailDetail={setEmailDetail}
@@ -149,6 +150,7 @@ export default function MailLayout({
 
           handleUpdateThread={handleUpdateThread} 
           markAsRead={markAsRead}
+          deleteThread={deleteThread}
 
           
           

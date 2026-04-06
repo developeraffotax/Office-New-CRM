@@ -53,6 +53,7 @@ export default function Row({
   setCreateTicketModal,
   setCreateLeadModal,
   deleteThread,
+  markAsRead,
   toggleStar,
  
   filters,
@@ -66,6 +67,11 @@ export default function Row({
   const [assignOpen, setAssignOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const [isLoading, setIsLoading] = useState({
+    markAsRead: false
+  });
+
 
   const isRowActive =
   replyThread?.threadId === thread.threadId ||
@@ -148,6 +154,20 @@ const userReadEntry = thread?.readBy?.find(
 
 const isUnreadForUser = !userReadEntry?.lastReadAt || new Date(thread.lastMessageAtInbox) > new Date(userReadEntry.lastReadAt)
 
+
+const handleMarkAsRead = async (threadId, companyName) => {
+
+
+   setIsLoading(prev => ({...prev, markAsRead:true}));
+
+    await markAsRead(threadId, companyName);
+
+    setIsLoading(prev => ({...prev, markAsRead:false}));
+
+
+ 
+
+}
 
   return (
     <div
@@ -565,11 +585,23 @@ const isUnreadForUser = !userReadEntry?.lastReadAt || new Date(thread.lastMessag
 
         <div className="flex-1 flex justify-start items-center gap-2">
            
-          {isUnreadForUser && (
-            <span className="flex justify-center items-center tracking-wide  px-1.5 py-0.5 text-[10px] font-inter  font-semibold   text-white bg-blue-500 rounded-tr-lg rounded-bl-lg animate-pop">
-              UNREAD
-            </span>
-          )}
+        {isUnreadForUser && (
+  <button 
+    onClick={() => handleMarkAsRead(thread?.threadId, thread?.companyName)} 
+    disabled={isLoading.markAsRead}
+    className="flex justify-center items-center tracking-wide px-2 py-0.5  w-[56px] min-h-[18px] text-[10px] font-inter font-semibold text-white bg-blue-500 rounded-tr-lg rounded-bl-lg animate-pop disabled:opacity-80"
+  >
+    {isLoading.markAsRead ? (
+  <div className="flex gap-1 items-center justify-center">
+    <span className="w-[5px] h-[5px] bg-white rounded-full animate-pulse"></span>
+    <span className="w-[5px] h-[5px] bg-white rounded-full animate-pulse [animation-delay:200ms]"></span>
+    <span className="w-[5px] h-[5px] bg-white rounded-full animate-pulse [animation-delay:400ms]"></span>
+  </div>
+) : (
+  "UNREAD"
+)}
+  </button>
+)}
                   <IconButtonWithBadge
           icon={FiMessageSquare}
           unreadCount={thread?.unreadComments || 0}

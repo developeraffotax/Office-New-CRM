@@ -24,6 +24,7 @@ import IconButtonWithBadge from "../shared/ui/IconButtonWithBadge.js";
 import { useOverlayStack } from "../hooks/useOverlayStack.js";
 import Swal from "sweetalert2";
 import { confirmAlert } from "../shared/ui/Swal.js";
+import { MdDeleteOutline } from "react-icons/md";
 
 export default function Thread({
   company,
@@ -31,6 +32,7 @@ export default function Thread({
   subject,
  setEmailDetail,
   markAsRead,
+  deleteThread,
   users,
   handleUpdateThread,
   mongoThreadId,
@@ -340,6 +342,23 @@ const updateStatus = async (status) => {
 
 
 
+const deleteThreadHandler = async (threadId, company) => {
+    setSwalOpen(true); // block overlay
+  const { isConfirmed } = await confirmAlert({ type: "warning" });
+  setSwalOpen(false);
+   
+    if (!isConfirmed) return;
+  await deleteThread(threadId, company, false);
+  setEmailDetail(prev => ({ ...prev, threadId: "", show: false, subject: "" }))
+
+};
+
+
+
+
+
+
+
 useOverlayStack({
   ref: threadRef,
   onClose: () => {
@@ -375,6 +394,16 @@ useOverlayStack({
           <div className=" flex justify-center items-center gap-4 ">
 
 
+
+         <button
+              className="p-1 rounded-md hover:bg-gray-200 text-gray-500  hover:text-red-500"
+              title="Delete Thread"
+              onClick={(e) => {
+                deleteThreadHandler(threadId, company);
+              }}
+            >
+              <MdDeleteOutline className="size-5   " />
+            </button>
 
      {
                 status === "progress" ? (

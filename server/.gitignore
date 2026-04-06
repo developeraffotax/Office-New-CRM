@@ -4,6 +4,9 @@ node_modules/
 # Ignore Credentials Folder
 creds/
 
+# Ignore Credentials Folder
+migrations/
+
 # Ignore environment variables files
 .env
 

@@ -22,9 +22,8 @@ export const hrsColumn = ({totalHours}) => {
               </div>
             );
           },
-          Cell: ({ cell, row }) => {
-            const hours = row.original.job.hours
-            console.log("THE JOB ORIGINIAL IS", row.original)
+           Cell: ({ cell, row }) => {
+            const hours = cell.getValue();
             return (
               <div className="w-full flex items-center justify-center">
                 <span className="text-[15px] font-medium">{hours}</span>

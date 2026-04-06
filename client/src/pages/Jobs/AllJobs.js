@@ -1482,9 +1482,10 @@ const jobCtx = useMemo(() => {
     handleUpdateLead,  
     handleUpdateTicketStatusConfirmation, 
     handleUpdateJobHolder,
-    createComplaint 
+    createComplaint,
+    setTableData 
   }
-}, [totalFee, totalHours, dataLable, labelData, totalClientPaidFee, showUniqueClients])
+}, [totalFee, totalHours, dataLable, labelData, totalClientPaidFee, showUniqueClients,])
 
 
 // ----------------------------

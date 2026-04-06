@@ -415,6 +415,7 @@ export const totalTime = async (req, res) => {
       });
     };
 
+    let consumedTime = null;
     // Update job's total time
     const job = await jobsModel.findById(jobId);
 
@@ -445,6 +446,7 @@ export const totalTime = async (req, res) => {
         )}" in this job.`,
       });
 
+      consumedTime = updateJob?.totalTime;
       await updateJob.save();
     }
 
@@ -479,12 +481,14 @@ export const totalTime = async (req, res) => {
         )}" in this task.`,
       });
 
+      consumedTime = updateTask?.estimate_Time;
       await updateTask.save();
     }
 
     res.status(200).send({
       success: true,
       message: "Total time calculated and updated successfully!",
+      consumedTime
     });
   } catch (error) {
     console.log(error);

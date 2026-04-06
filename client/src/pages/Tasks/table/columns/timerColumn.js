@@ -69,6 +69,7 @@ export const timerColumn = (ctx) => {
                 setTaskIdForNote={ctx.setTaskIdForNote}
                 taskIdForNote={ctx.taskIdForNote}
                 setIsSubmitting={ctx.setIsSubmitting}
+                stateSetter={ctx.setTasksData}
               />
             </span>
           </div>

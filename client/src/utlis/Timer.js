@@ -43,7 +43,9 @@ export const Timer = forwardRef(
       setTaskIdForNote,
       
       setIsNonChargeable,
-      setIsSubmitting
+      setIsSubmitting,
+
+      stateSetter,
     },
     ref
   ) => {
@@ -311,7 +313,19 @@ export const Timer = forwardRef(
             params: { jobId },
           }
         );
-        setTotalTime(data.totalTime);
+       
+        setTotalTime(data.consumedTime);
+
+        const key = pageName === "Tasks" ? "estimate_Time" : "totalTime";
+        
+        stateSetter?.((prev) =>
+          prev.map((entity) =>
+            entity._id === jobId
+              ? { ...entity, [key]: data.consumedTime }
+              : entity
+          )
+        );
+
       } catch (error) {
         console.log(error);
       }

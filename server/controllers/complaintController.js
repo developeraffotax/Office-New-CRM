@@ -1,4 +1,7 @@
 import complainModel from "../models/complainModel.js";
+import { uploadBase64Images } from "../utils/cloudinary/uploadBase64Images.js";
+
+ 
 
 // Create Complain
 export const createComplain = async (req, res) => {
@@ -13,15 +16,15 @@ export const createComplain = async (req, res) => {
       solution,
       points,
       note,
-
       task,
       entityRef,
       entityType,
-
-      
     } = req.body;
 
     const userId = req.user.user._id;
+
+    // Upload base64 images inside note
+    const updatedNote = await uploadBase64Images(note);
 
     const complaint = await complainModel.create({
       company,
@@ -32,30 +35,28 @@ export const createComplain = async (req, res) => {
       errorType,
       solution,
       points,
-      note,
-
+      note: updatedNote, // store cloudinary URLs
       task,
       entityRef,
       entityType,
-      createdBy: userId
-       
+      createdBy: userId,
     });
 
     res.status(200).send({
       success: true,
-      message: "Compliant post successfully.",
-      complaint: complaint,
+      message: "Complaint posted successfully.",
+      complaint,
     });
   } catch (error) {
     console.log(error);
+
     res.status(500).send({
       success: false,
-      message: "Error while create complaint!",
-      error: error,
+      message: "Error while creating complaint!",
+      error,
     });
   }
 };
-
 // Update Complain
 export const updateComplain = async (req, res) => {
   try {

@@ -720,7 +720,13 @@ export const markThreadAsRead = async (req, res) => {
       } else {
         // New user entry
         thread.readBy.push({ userId, lastReadAt: now });
-        alreadyRead = false;
+        
+        if (thread.hasInboxMessage) {
+          alreadyRead = false;
+
+        } else {
+          alreadyRead = true;
+        }
       }
 
     if (roleName === "Admin") {

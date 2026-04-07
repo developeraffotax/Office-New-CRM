@@ -152,8 +152,14 @@ const userReadEntry = thread?.readBy?.find(
 //   new Date(thread.lastMessageAtInbox) >
 //     new Date(userReadEntry.lastReadAt))
 
-const isUnreadForUser = !userReadEntry?.lastReadAt || new Date(thread.lastMessageAtInbox) > new Date(userReadEntry.lastReadAt)
-
+// Determine unread
+const isUnreadForUser =
+  thread?.hasInboxMessage && // must not be null
+  (
+    !userReadEntry?.lastReadAt ||
+    new Date(thread.lastMessageAtInbox) >
+      new Date(userReadEntry.lastReadAt)
+  );
 
 const handleMarkAsRead = async (threadId, companyName) => {
 

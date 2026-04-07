@@ -2623,7 +2623,7 @@ useEffect(() => {
                 </DragDropContext>
 
 
-                <div className=" border-l px-5 ">
+                <div className=" border-l pl-5 ">
 
                   <OutsideFilter setColumnFromOutsideTable={setColumnFromOutsideTable} title={"Job_Date"} />
                 </div>
@@ -2632,12 +2632,28 @@ useEffect(() => {
 
 
 
-              <div className="flex items-center gap-4 border-l px-4">
+              <div className="flex items-center gap-2 border-l px-4">
                 {statusInit?.map((stat, i) => (
-                  <div
-                    className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                  // <div
+                  //   className={`py-1 rounded-full px-3 cursor-pointer font-[500] text-[13px] border shadow-sm  ${
+                  //     active2 === stat &&
+                  //     "    text-white border-orange-600 bg-orange-600 "
+                  //   }`}
+                  //   key={i}
+                  //   onClick={() => {
+                  //     setActive2(stat);
+                  //     // filterByDepStat(stat, active);
+
+                  //      setColumnFromOutsideTable("Job_Status", stat);
+                  //   }}
+                  // >
+                  //   {stat} ({getStatusCount(stat, active)})
+                  // </div>
+
+                   <div
+                    className={`py-1 rounded-full px-3 cursor-pointer font-[500] text-[13px] border shadow-sm  ${
                       active2 === stat &&
-                      "  border-b-2 text-orange-600 border-orange-600"
+                      "    bg-gray-200 "
                     }`}
                     key={i}
                     onClick={() => {
@@ -2648,7 +2664,7 @@ useEffect(() => {
                     }}
                   >
                     {stat} ({getStatusCount(stat, active)})
-                  </div>
+                  </div>  
                 ))}
               </div>
 

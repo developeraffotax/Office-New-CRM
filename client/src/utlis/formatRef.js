@@ -2,7 +2,7 @@ export function formatRef(prefix, number) {
   
 
   if(!number) return "-";
-  return `${prefix}-${String(number).padStart(3, "0")}`;
+  return `${prefix}-${String(number)}`;
 }
 
 export const refFilterFn = (row, columnId, filterValue) => {

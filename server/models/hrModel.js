@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { generateRef } from "../utils/generateRef.js";
 
 const hrSchema = new mongoose.Schema(
   {
@@ -6,6 +7,9 @@ const hrSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    
+    hrTaskRef: { type: Number, unique: true },
+
     department: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "departments",
@@ -43,8 +47,19 @@ const hrSchema = new mongoose.Schema(
         },
       },
     ],
+
+
   },
   { timestamps: true }
 );
+
+
+hrSchema.pre("save", async function (next) {
+  if (this.hrTaskRef) return next();
+  this.hrTaskRef = await generateRef("hr");
+  next();
+});
+
+
 
 export default mongoose.model("HR", hrSchema);

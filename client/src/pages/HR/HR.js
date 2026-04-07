@@ -34,6 +34,7 @@ import { isAdmin } from "../../utlis/isAdmin";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { Link } from "react-router-dom";
 import { FiExternalLink } from "react-icons/fi";
+import { formatRef, refFilterFn } from "../../utlis/formatRef";
 
 const months = [
   "January",
@@ -465,6 +466,63 @@ export default function HR() {
   // ---------------Table Detail------------->
   const columns = useMemo(
     () => [
+
+
+      {
+    id: "hrTaskRef",
+    accessorFn: (row) => row.hrTaskRef || "", // safely handle missing jobRef
+    // header: "Ref",
+    size: 70,
+
+    
+            Header: ({ column }) => {
+          return (
+            <div className="flex flex-col gap-1">
+              <span className="font-semibold">Ref</span>
+    
+              {/* 🔍 Header Search Input */}
+              <input
+                type="text"
+                
+                className="border font-normal rounded px-2 py-1 text-sm outline-none"
+                value={column.getFilterValue() ?? ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+              />
+            </div>
+          );
+        },
+        filterFn: refFilterFn,
+ 
+    Cell: ({ cell }) => {
+
+      const prefix = "HR"; 
+      const number = cell.getValue();
+      const cellValue = formatRef(prefix, number);
+        
+      
+
+      const handleCopy = () => {
+        if(!number) return;
+        navigator.clipboard.writeText(cellValue);
+        toast.success(`Copied ${cellValue}`);
+      };
+
+
+      return (
+        <span
+        className=" text-gray-700 font-semibold text-sm cursor-pointer "
+        onClick={handleCopy}
+        title="Click to copy"
+      >
+        {cellValue}
+      </span>
+      )
+    },
+    
+  },
+
+
+
       {
         accessorKey: "hrRole.roleName",
         minSize: 100,

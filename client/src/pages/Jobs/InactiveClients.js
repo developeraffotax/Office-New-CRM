@@ -1020,7 +1020,8 @@ export default function InactiveClients({
             "Quote",
             "Data",
             "Progress",
-            "Queries",
+            // "Queries",
+            "Revision",
             "Approval",
             "Submission",
             "Billing",
@@ -1072,7 +1073,8 @@ export default function InactiveClients({
               <option value="Quote">Quote</option>
               <option value="Data">Data</option>
               <option value="Progress">Progress</option>
-              <option value="Queries">Queries</option>
+              {/* <option value="Queries">Queries</option> */}
+              <option value="Revision">Revision</option>
               <option value="Approval">Approval</option>
               <option value="Submission">Submission</option>
               <option value="Billing">Billing</option>
@@ -1091,7 +1093,8 @@ export default function InactiveClients({
           "Quote",
           "Data",
           "Progress",
-          "Queries",
+          // "Queries",
+          "Revision",
           "Approval",
           "Submission",
           "Billing",

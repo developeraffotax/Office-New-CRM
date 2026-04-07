@@ -12,7 +12,7 @@ export const jobStatusColumn = ({comment_taskId, handleUpdateTicketStatusConfirm
               "Quote",
               "Data",
               "Progress",
-              "Queries",
+              // "Queries",
               "Revision",
               "Approval",
               "Submission",
@@ -75,7 +75,7 @@ export const jobStatusColumn = ({comment_taskId, handleUpdateTicketStatusConfirm
                 <option value="Quote">Quote</option>
                 <option value="Data">Data</option>
                 <option value="Progress">Progress</option>
-                <option value="Queries">Queries</option>
+                {/* <option value="Queries">Queries</option> */}
                 <option value="Revision">Revision</option>
                 <option value="Approval">Approval</option>
                 <option value="Submission">Submission</option>
@@ -115,7 +115,7 @@ export const jobStatusColumn = ({comment_taskId, handleUpdateTicketStatusConfirm
             "Quote",
             "Data",
             "Progress",
-            "Queries",
+            // "Queries",
             "Revision",
             "Approval",
             "Submission",

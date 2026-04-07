@@ -984,7 +984,8 @@ export default function CompletedJobs({
           const jobStatus = [
             "Data",
             "Progress",
-            "Queries",
+            // "Queries",
+            "Revision",
             "Approval",
             "Submission",
             "Billing",
@@ -1031,7 +1032,8 @@ export default function CompletedJobs({
               <option value="empty"></option>
               <option value="Data">Data</option>
               <option value="Progress">Progress</option>
-              <option value="Queries">Queries</option>
+              {/* <option value="Queries">Queries</option> */}
+              <option value="Revision">Revision</option>
               <option value="Approval">Approval</option>
               <option value="Submission">Submission</option>
               <option value="Billing">Billing</option>
@@ -1047,7 +1049,8 @@ export default function CompletedJobs({
         filterSelectOptions: [
           "Data",
           "Progress",
-          "Queries",
+          // "Queries",
+          "Revision",
           "Approval",
           "Submission",
           "Billing",

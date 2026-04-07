@@ -2204,8 +2204,8 @@ useEffect(() => {
           {/*  */}
           {/* -------------Filter Open Buttons-------- */}
           <span
-            className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border  ${
-              activeBtn === "jobHolder" && showJobHolder && "bg-orange-500 text-white"
+            className={` p-1 rounded-md hover:shadow-md   mb-1  cursor-pointer border  ${
+              activeBtn === "jobHolder" && showJobHolder && "bg-gray-200 "
             }`}
             onClick={() => {
               setActiveBtn("jobHolder");
@@ -2229,7 +2229,7 @@ useEffect(() => {
             <TbCalendarDue className="h-6 w-6  cursor-pointer" />
           </span> */}
           <span
-            className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+            className={` p-1 rounded-md hover:shadow-md mb-1 cursor-pointer border ${
               activeBtn === "status" && showStatus && "bg-orange-500 text-white"
             }`}
             onClick={() => {
@@ -2244,7 +2244,7 @@ useEffect(() => {
           </span>
           {/* Edit Multiple Job */}
           <span
-            className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+            className={` p-1 rounded-md hover:shadow-md mb-1 cursor-pointer border ${
               showEdit && "bg-orange-500 text-white"
             }`}
             onClick={() => {
@@ -2257,7 +2257,7 @@ useEffect(() => {
           {/* Hide & Show */}
           <div className="relative">
             <div
-              className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+              className={` p-1 rounded-md hover:shadow-md mb-1 cursor-pointer border ${
                 showcolumn && "bg-orange-500 text-white"
               }`}
               onClick={() => setShowColumn(!showcolumn)}
@@ -2276,7 +2276,7 @@ useEffect(() => {
           </div>
           {/* Refresh */}
           <span
-            className={` p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
+            className={` p-[6px] rounded-md hover:shadow-md mb-1 cursor-pointer border `}
             onClick={() => {
               allClientData();
               // setActive("All");
@@ -2299,7 +2299,7 @@ useEffect(() => {
 
 
           <div
-            className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+            className={` p-1 rounded-md hover:shadow-md mb-1  cursor-pointer border ${
               showUniqueClients && "bg-orange-500 text-white"
             }`}
             title="Clients"

@@ -81,7 +81,7 @@ export const actionsColumn = ({
       };
 
       return (
-        <div className="flex items-center justify-center gap-3 w-full h-full ">
+        <div className="flex items-center justify-center gap-2 w-full h-full ">
           <div>
             <span
               title="Create New Ticket"

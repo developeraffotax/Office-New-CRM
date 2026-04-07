@@ -90,7 +90,7 @@ export default function OnlineUsers() {
   };
 
   return (
-    <div className="relative inline-block" ref={wrapperRef}>
+    <div className="relative inline-block   " ref={wrapperRef}>
       {/* Trigger */}
       <div
 className={` flex items-center gap-2 cursor-pointer 
@@ -116,7 +116,7 @@ className={` flex items-center gap-2 cursor-pointer
           </div>
 
           {/* User List */}
-          <ul className="overflow-y-auto">
+          <ul className="overflow-y-auto max-h-[800px] ">
             {runningTimers.length > 0 ? (
               runningTimers
                 .slice()

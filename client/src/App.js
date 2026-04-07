@@ -69,7 +69,7 @@ function App() {
   const { user, token } = auth || {};
 
 
-  console.log("THE SETTINGS ARE >>>>>>>>>>>>> 1️⃣2️⃣3️⃣4️⃣5️⃣", settings)
+ 
 
   // Load auth from storage & check token expiry
   useEffect(() => {

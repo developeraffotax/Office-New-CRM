@@ -270,30 +270,84 @@ export default function Filters({ filters, setFilters, users = [], categories = 
               );
             })}
 
-            {/* Date Picker Trigger */}
-            <Button
-              variant="outlined"
-              size="medium"
-              color="inherit"
-              startIcon={<FiCalendar size={16} />}
-              onClick={(e) => setAnchorEl(e.currentTarget)}
+
+
+
+            {/* Last Message By Client Quick Filter */}
+<ToggleButton
+  value="lastMessageClient"
+  size="small"
+  selected={filters.lastMessageBy === "client"}
+  onChange={() =>
+    handleUpdate({
+      lastMessageBy:
+        filters.lastMessageBy === "client"
+          ? ""
+          : "client",
+    })
+  }
+  title="Last message sent by client"
+  color="primary"
+  sx={{
+    border: "none",
+    borderRadius: "8px",
+  }}
+>
+  {/* Client badge style icon */}
+  <Box
+    sx={{
+      width: 18,
+      height: 18,
+      borderRadius: "50%",
+      bgcolor:
+        filters.lastMessageBy === "client"
+          ? "primary.main"
+          : "grey.400",
+      color: "white",
+      fontSize: "0.65rem",
+      fontWeight: 700,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    C
+  </Box>
+</ToggleButton>
+
+
+<Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} />
+
+
+
+            <ToggleButton
+              value="starred"
+              size="small"
+              selected={filters.starred === true}
+              onChange={() =>
+                handleUpdate({
+                  starred: !filters.starred,
+                })
+              }
+              title={`Starred Emails`}
+              color="warning"
               sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                borderColor: "rgba(0,0,0,0.23)",
-                px: 2,
-                height: 40,
+                border: "none",
+                borderRadius: "8px",
               }}
             >
-              {filters.startDate ? (
-                <Typography variant="body2" fontWeight={500}>
-                  {dayjs(filters.startDate).format("MMM DD")} —{" "}
-                  {dayjs(filters.endDate).format("MMM DD")}
-                </Typography>
+              {filters.starred ? (
+                <StarIcon fontSize="small" />
               ) : (
-                "Date Range"
+                <StarOutlineIcon fontSize="small" />
               )}
-            </Button>
+            </ToggleButton>
+
+
+
+
+
+
 
             <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} />
 
@@ -398,83 +452,39 @@ export default function Filters({ filters, setFilters, users = [], categories = 
 </ToggleButton>
 
 
-    <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} />
-            
+    { isAdmin && <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} />}
+
+              
+                {isAdmin && ( <UserTabToggleButton active={isInboxUserTabs} onClick={() => setIsInboxUserTabs((prev) => !prev)} /> )}
                 
-
-
-            {/* Last Message By Client Quick Filter */}
-<ToggleButton
-  value="lastMessageClient"
-  size="small"
-  selected={filters.lastMessageBy === "client"}
-  onChange={() =>
-    handleUpdate({
-      lastMessageBy:
-        filters.lastMessageBy === "client"
-          ? ""
-          : "client",
-    })
-  }
-  title="Last message sent by client"
-  color="primary"
-  sx={{
-    border: "none",
-    borderRadius: "8px",
-  }}
->
-  {/* Client badge style icon */}
-  <Box
-    sx={{
-      width: 18,
-      height: 18,
-      borderRadius: "50%",
-      bgcolor:
-        filters.lastMessageBy === "client"
-          ? "primary.main"
-          : "grey.400",
-      color: "white",
-      fontSize: "0.65rem",
-      fontWeight: 700,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    }}
-  >
-    C
-  </Box>
-</ToggleButton>
-
-
-<Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} />
-
-
-
-            <ToggleButton
-              value="starred"
-              size="small"
-              selected={filters.starred === true}
-              onChange={() =>
-                handleUpdate({
-                  starred: !filters.starred,
-                })
-              }
-              title={`Starred Emails`}
-              color="warning"
+                {/* Date Picker Trigger */}
+            <Button
+              variant="outlined"
+              size="medium"
+              color="inherit"
+              startIcon={<FiCalendar size={16} />}
+              onClick={(e) => setAnchorEl(e.currentTarget)}
               sx={{
-                border: "none",
-                borderRadius: "8px",
+                borderRadius: 2,
+                textTransform: "none",
+                borderColor: "rgba(0,0,0,0.23)",
+                px: 2,
+                height: 40,
               }}
             >
-              {filters.starred ? (
-                <StarIcon fontSize="small" />
+              {filters.startDate ? (
+                <Typography variant="body2" fontWeight={500}>
+                  {dayjs(filters.startDate).format("MMM DD")} —{" "}
+                  {dayjs(filters.endDate).format("MMM DD")}
+                </Typography>
               ) : (
-                <StarOutlineIcon fontSize="small" />
+                "Date Range"
               )}
-            </ToggleButton>
+            </Button>
 
-            {isAdmin && ( <UserTabToggleButton active={isInboxUserTabs} onClick={() => setIsInboxUserTabs((prev) => !prev)} /> )}
-              
+
+
+          
               <UnifiedThreadFilters filters={filters} handleUpdate={handleUpdate} />
 
               {/* <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} /> */}

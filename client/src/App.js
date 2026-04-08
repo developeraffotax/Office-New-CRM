@@ -68,9 +68,6 @@ function App() {
   const settings = useSelector((state) => state.settings);
   const { user, token } = auth || {};
 
-
- 
-
   // Load auth from storage & check token expiry
   useEffect(() => {
     dispatch(loadAuthFromLocalStorage());

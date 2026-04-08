@@ -96,7 +96,7 @@ export default function AIReplySelector({ threadId, onSelect, companyName }) {
   useEffect(() => {
     generateReplies();
     return () => abortControllerRef.current?.abort();
-  }, [generateReplies]);
+  }, [threadId, project?._id, companyName ]);
 
   const copyToClipboard = (e, text) => {
     e.stopPropagation();
@@ -178,7 +178,16 @@ export default function AIReplySelector({ threadId, onSelect, companyName }) {
             <textarea
               value={customInstructions}
               onChange={(e) => setCustomInstructions(e.target.value)}
-              placeholder="E.g. Keep it short and polite..."
+              onKeyDown={(e) => {
+                  // Enter without Shift → regenerate
+                  if (e.key === "Enter" && !e.shiftKey) {
+
+                    e.preventDefault(); // stop newline
+                    if(!customInstructions?.trim()) return;
+                    generateReplies(); // regenerate with instructions
+                  }
+                }}
+              placeholder="Press ENTER to regenerate..."
               className="w-full resize-none rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-orange-400 outline-none"
               rows={3}
             />

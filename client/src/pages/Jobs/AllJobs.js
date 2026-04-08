@@ -2634,26 +2634,10 @@ useEffect(() => {
 
               <div className="flex items-center gap-2 border-l px-4">
                 {statusInit?.map((stat, i) => (
-                  // <div
-                  //   className={`py-1 rounded-full px-3 cursor-pointer font-[500] text-[13px] border shadow-sm  ${
-                  //     active2 === stat &&
-                  //     "    text-white border-orange-600 bg-orange-600 "
-                  //   }`}
-                  //   key={i}
-                  //   onClick={() => {
-                  //     setActive2(stat);
-                  //     // filterByDepStat(stat, active);
-
-                  //      setColumnFromOutsideTable("Job_Status", stat);
-                  //   }}
-                  // >
-                  //   {stat} ({getStatusCount(stat, active)})
-                  // </div>
-
-                   <div
+                  <div
                     className={`py-1 rounded-full px-3 cursor-pointer font-[500] text-[13px] border shadow-sm  ${
                       active2 === stat &&
-                      "    bg-gray-200 "
+                      "    text-white border-orange-600 bg-orange-600 "
                     }`}
                     key={i}
                     onClick={() => {
@@ -2664,7 +2648,23 @@ useEffect(() => {
                     }}
                   >
                     {stat} ({getStatusCount(stat, active)})
-                  </div>  
+                  </div>
+
+                  //  <div
+                  //   className={`py-1 rounded-full px-3 cursor-pointer font-[500] text-[13px] border shadow-sm  ${
+                  //     active2 === stat &&
+                  //     "    bg-gray-200 "
+                  //   }`}
+                  //   key={i}
+                  //   onClick={() => {
+                  //     setActive2(stat);
+                  //     // filterByDepStat(stat, active);
+
+                  //      setColumnFromOutsideTable("Job_Status", stat);
+                  //   }}
+                  // >
+                  //   {stat} ({getStatusCount(stat, active)})
+                  // </div>  
                 ))}
               </div>
 

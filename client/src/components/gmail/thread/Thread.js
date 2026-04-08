@@ -58,7 +58,7 @@ const [loadingMore, setLoadingMore] = useState(false);
   const [swalOpen, setSwalOpen] = useState(false);
 
 
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState({});
   const [loading, setLoading] = useState(false);
   const [isloading, setIsLoading] = useState(false);
   const [attachmentId, setAttachmentId] = useState("");
@@ -732,7 +732,7 @@ useOverlayStack({
             }`}
           >
             <div className="w-full py-5">
-              <Reply
+             { (messages?.decryptedMessages?.length > 0) && <Reply
                 company={company}
                 emailDetail={messages}
                 getEmailDetail={() => {
@@ -740,7 +740,7 @@ useOverlayStack({
                   setShowReplyEditor(false);
                 }}
                 setShowReplyEditor={setShowReplyEditor}
-              />
+              />}
             </div>
           </div> */}
 

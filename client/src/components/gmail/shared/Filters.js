@@ -77,6 +77,7 @@ export default function Filters({ filters, setFilters, users = [], categories = 
       search: "",
       lastMessageBy: "",
       starred: false,
+      mailThreadId: ""
     });
 
     setSearchInput("");

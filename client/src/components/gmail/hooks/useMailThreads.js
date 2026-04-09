@@ -61,7 +61,7 @@ export function useMailThreads({ endpoint }) {
 const folder = searchParams.get("folder") || "inbox";
 const companyName = searchParams.get("companyName") || "affotax";
 
-
+ 
 
   const {
     auth: { user },
@@ -80,6 +80,7 @@ const [loading, setLoading] = useState({
 });
   const [pagination, setPagination] = useState({});
 
+ 
  
   // const [filters, setFilters] = useState({
   //   userId: isAdmin ? "unassigned" : "",
@@ -123,6 +124,9 @@ const filters = useMemo(() => {
     status: searchParams.get("status") || "",
     lastMessageBy: searchParams.get("lastMessageBy") || "",
     starred: searchParams.get("starred") === "true",
+
+    mailThreadId: searchParams.get("mailThreadId") || "",
+
   };
 }, [searchParams, folder, isAdmin]);
 

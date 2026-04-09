@@ -14,7 +14,7 @@ export const createNotification = async (req, updatedThread) => {
           ✔ Subject: ${updatedThread?.subject}
           ✔ From: ${getOtherParticipantEmail(updatedThread?.participants, updatedThread?.companyName === "affotax" ? "info@affotax.com" : "Admin@outsourceaccountings.co.uk")}
           `,
-    taskId: `${updatedThread._id}`,
+    taskId: `${updatedThread?.threadId || ""}`,
     userId: updatedThread.userId,
     type: "thread_assigned",
     entityType: `mailbox`,

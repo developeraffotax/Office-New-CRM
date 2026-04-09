@@ -137,6 +137,12 @@ export const buildFilterQuery = (req) => {
     }
 
 
+
+    if (filters?.mailThreadId) {
+      andFilters.push({ threadId: filters?.mailThreadId });
+    }
+
+
   // User filter
   if (isAdmin && filters.userId ) {
     if (filters.userId === "unassigned") {

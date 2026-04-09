@@ -19,6 +19,8 @@ const NavItem = ({ icon, label, folder, count, company }) => {
   params.set("folder", folder);
   params.set("companyName", company);
 
+  params.delete("mailThreadId")
+
   return (
     <NavLink
       to={`/mail?${params.toString()}`}

@@ -93,7 +93,7 @@ export const useNotifications = () => {
 
     if (item.entityType === "mailbox"  ) {
         setOpen(false);
-      return navigate(`${item.redirectLink}`);
+      return navigate(`${item.redirectLink}&mailThreadId=${item.taskId}`);
     }
 
 

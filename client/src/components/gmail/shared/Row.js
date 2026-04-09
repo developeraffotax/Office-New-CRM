@@ -210,10 +210,33 @@ const handleMarkAsRead = async (threadId, companyName) => {
 
 
 
-<div className="h-5 w-5 flex items-center  ">
+<div className=" flex flex-col items-center  gap-1 mt-0.5 ">
 
 
  {isLastFromMe && (<div className="flex items-center justify-center size-4 rounded-full bg-orange-500 text-[9px] font-bold text-white shrink-0"> A </div>)}
+ {!isLastFromMe && (<div className="flex items-center justify-center size-4 rounded-full bg-blue-500 text-[9px] font-bold text-white shrink-0"> C </div>)}
+
+   {/* Star Button (Now positioned before date) */}
+  <button
+    title={thread.labels.includes("STARRED") ? "Unstar Thread" : "Star Thread"}
+    className="transition-transform active:scale-125 focus:outline-none"
+    onClick={(e) => {
+      e.stopPropagation();
+      toggleStar(
+        thread?.threadId,
+        thread?.companyName,
+        thread?.labels?.includes("STARRED")
+      );
+    }}
+  >
+    {thread.labels.includes("STARRED") ? (
+      <FaStar className="h-4 w-4 text-yellow-400 drop-shadow-sm" />
+    ) : (
+      <FaRegStar className="h-4 w-4 text-gray-300 hover:text-gray-400 transition-colors" />
+    )}
+  </button>
+
+
 
 </div>
  
@@ -700,25 +723,7 @@ const handleMarkAsRead = async (threadId, companyName) => {
 {/* Final Column: Star + Date/Time */}
 <div className="flex items-center flex-r justify-end gap-3 min-w-[80px]">
   
-  {/* Star Button (Now positioned before date) */}
-  <button
-    title={thread.labels.includes("STARRED") ? "Unstar Thread" : "Star Thread"}
-    className="transition-transform active:scale-125 focus:outline-none"
-    onClick={(e) => {
-      e.stopPropagation();
-      toggleStar(
-        thread?.threadId,
-        thread?.companyName,
-        thread?.labels?.includes("STARRED")
-      );
-    }}
-  >
-    {thread.labels.includes("STARRED") ? (
-      <FaStar className="h-4 w-4 text-yellow-400 drop-shadow-sm" />
-    ) : (
-      <FaRegStar className="h-4 w-4 text-gray-300 hover:text-gray-400 transition-colors" />
-    )}
-  </button>
+
 
   {/* Date Component */}
   <ThreadDateTime 

@@ -524,6 +524,7 @@ export const getDueRemindersCount = async (req, res) => {
       userId,
       isCompleted: false,
       isRead: false,
+      // scheduledAt: { $lte: now }
     });
 
     // Optionally, count only "due" reminders (past or now)
@@ -658,5 +659,35 @@ export const markAsReadReminder = async (req, res) => {
     res.status(200).json({ message: "Reminder marked Read" });
   } catch (err) {
     res.status(500).json({ message: "Failed to update reminder" });
+  }
+};
+
+
+
+
+export const markAllAsRead = async (req, res) => {
+  const userId = req.user.user._id;
+  console.log("THE USER ID >>> ❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️ ", userId)
+  try {
+
+    const result = await reminderModel.updateMany({
+      isRead: false,
+      userId: userId
+    },
+   { $set: { isRead: true } }
+  )
+
+
+ 
+
+    res.status(200).json({
+      success: true,
+      message: "All reminders marked as read",
+    });
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      message: "Failed to mark all reminders as read",
+    });
   }
 };

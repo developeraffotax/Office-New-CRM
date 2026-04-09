@@ -5,6 +5,7 @@ import { MdDelete, MdEdit, MdOutlineMarkChatRead } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchReminders,
+  markAllAsReadReminders,
   markAsReadReminder,
   setReminderData,
   setShowReminder,
@@ -108,9 +109,23 @@ const ReminderNotifications = ({ setShowReminderNotificationPanel }) => {
   return (
     <div className="absolute z-[999] top-[3rem] right-[2rem] w-[400px] rounded-lg overflow-clip   bg-white shadow-lg ">
       {/* Header */}
-      <div className="relative bg-gradient-to-r from-orange-600 to-orange-400  text-white text-lg font-bold text-center   py-3 shadow-md">
-        Reminders
-      </div>
+      <div className="relative bg-gradient-to-r from-orange-600 to-orange-400 text-white text-lg font-bold py-3 shadow-md flex items-center justify-between px-4">
+
+  <span>Reminders</span>
+
+  {/* Mark All Read Button */}
+  {reminders.some(r => !r.isRead) && (
+    <button
+      onClick={() => dispatch(markAllAsReadReminders())}
+      className="flex items-center gap-1 text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded-md transition"
+      title="Mark all as read"
+    >
+      <MdOutlineMarkChatRead className="text-sm" />
+      Mark all
+    </button>
+  )}
+
+</div>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2 px-4 py-2 border-b bg-gray-50">
@@ -183,7 +198,7 @@ const ReminderNotifications = ({ setShowReminderNotificationPanel }) => {
 
                          
                           <div className="flex justify-end  items-center gap-2">
-                            {showActions && !reminder.isRead && (
+                            {!reminder.isRead && (
                               <button
                                 className="text-orange-500 text-lg hover:text-orange-600 transition"
                                 onClick={() =>

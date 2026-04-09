@@ -8,6 +8,8 @@ import {
  
   getDueRemindersCount,
  
+  markAllAsRead,
+ 
   markAsReadReminder,
  
   snoozeReminder,
@@ -31,12 +33,15 @@ router.get("/fetch/remindersCount", requiredSignIn, getDueRemindersCount);
 // Delete Reminder
 router.delete("/delete/reminder/:reminderId", requiredSignIn, deleteReminder);
 
-// PUT - Snooze reminder (update scheduledAt)
-router.put("/:id", snoozeReminder);
 
 // PUT - Complete reminder  
 router.put("/:id/complete", completeReminder);
 
 router.put("/:id/markAsRead", markAsReadReminder);
+router.put("/markAllAsRead", requiredSignIn , markAllAsRead );
+
+// PUT - Snooze reminder (update scheduledAt)
+router.put("/:id", snoozeReminder);
+
 
 export default router;

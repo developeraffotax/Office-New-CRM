@@ -155,7 +155,8 @@ export const markAsReadReminder = createAsyncThunk(
 
       if (status === 200) {
         toast.success("Marked as Read");
-        dispatch(decrementUnreadCount());
+        // dispatch(decrementUnreadCount());
+        dispatch(getRemindersCount());
         dispatch(fetchReminders());
 
 
@@ -173,6 +174,36 @@ export const markAsReadReminder = createAsyncThunk(
     }
   }
 );
+
+
+export const markAllAsReadReminders = createAsyncThunk(
+  "reminders/markAllAsReadReminders",
+  async (_, { dispatch, rejectWithValue }) => {
+    try {
+      const { status } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/reminders/markAllAsRead`
+      );
+
+      if (status === 200) {
+        toast.success("All reminders marked as read");
+
+        dispatch(getRemindersCount());
+        dispatch(fetchReminders());
+
+        // 🔄 Sync other tabs
+        channel.postMessage({
+          type: "MARK_ALL_AS_READ_REMINDERS",
+        });
+      }
+    } catch (err) {
+      toast.error("Failed to mark all reminders as read");
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+
+
+
 
 export const completeReminder = createAsyncThunk(
   "reminders/completeReminder",
@@ -278,6 +309,11 @@ export const initReminderListener = () => (dispatch) => {
       dispatch(decrementUnreadCount());
         dispatch(fetchReminders());
     }
+
+    if (type === "MARK_ALL_AS_READ_REMINDERS") {
+        dispatch(getRemindersCount());
+        dispatch(fetchReminders());
+      }
 
 
     if (type === "COMPLETE_REMINDER" ) {

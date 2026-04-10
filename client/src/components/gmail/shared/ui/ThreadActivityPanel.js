@@ -107,11 +107,13 @@ export default function ThreadActivityPanel({ threadId, onClose }) {
       />
       
       <div className="fixed right-0 top-0 h-full w-80 md:w-[400px] bg-white shadow-2xl z-[70] flex flex-col border-l border-gray-100 animate-slide-in-right duration-300">
-        
-        <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10">
+
+            
+        <div className="px-6 py-3 border-b border-gray-100 flex items-center justify-between sticky top-0 z-10 shadow-md    ">
+          
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2 font-inter">
-              <h3 className="text-xl font-semibold text-gray-900 uppercase  ">
+            <div className="flex items-center gap-2 font-google">
+              <h3 className="text-3xl font-  text-gray-700 uppercase  ">
                 Activity Log
               </h3>
               {!loading && activities.length > 0 && (
@@ -120,7 +122,7 @@ export default function ThreadActivityPanel({ threadId, onClose }) {
                 </span>
               )}
             </div>
-            <p className="text-[10px] text-gray-400 font-medium uppercase ">
+            <p className="text-[10px] text-gray-400  uppercase   font-google ">
               Thread Activity
             </p>
           </div>

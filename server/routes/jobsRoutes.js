@@ -51,7 +51,7 @@ const router = express.Router();
 router.post("/create/client/job", requiredSignIn, createJob);
 
 // Get All Client
-router.get("/all/client/job", getAllClients);
+router.get("/all/client/job", requiredSignIn, getAllClients);
 
 // Update Fee
 router.patch("/update/fee/:id", requiredSignIn, updateFee);
@@ -75,7 +75,7 @@ router.get("/single/client/:id", requiredSignIn, singleClientJob);
 router.delete("/delete/job/:id", requiredSignIn, deleteClientJob);
 
 // Get Client with all jobs
-router.get("/jobs", getClientWithJobs);
+router.get("/jobs", requiredSignIn, getClientWithJobs);
 
 // Update Client Job
 router.put("/update/job", requiredSignIn, updateClientJob);
@@ -84,10 +84,10 @@ router.put("/update/job", requiredSignIn, updateClientJob);
 router.put("/update/dates/:id", requiredSignIn, updateDates);
 
 // Get Comments
-router.get("/job/comments/:id", singleClientComments);
+router.get("/job/comments/:id", requiredSignIn, singleClientComments);
 
 // Get Only Status (Completed) Jobs
-router.get("/jobs/status/complete", getClientJobs);
+router.get("/jobs/status/complete", requiredSignIn, getClientJobs);
 
 // Create Dublicate Job (Completed)
 router.post("/dublicate/job/complete", requiredSignIn, createDublicateJob);
@@ -115,7 +115,7 @@ router.delete(
 );
 
 // Get All Tickets Routes
-router.get("/tickets/clients", getTicketClients);
+router.get("/tickets/clients", requiredSignIn, getTicketClients);
 
 // Add Label
 router.put("/add/job/data/:id", requiredSignIn, addDatalabel);
@@ -130,8 +130,8 @@ router.put("/update/bulk/job", requiredSignIn,  updateBulkJob);
 router.get("/workflow/clients", getWorkflowClients);
 
 // Dashboard Client
-router.get("/dashboard/clients/:type", getDashboardClients);
-router.get("/completed/clients", dashboardCompletedClients);
+router.get("/dashboard/clients/:type", requiredSignIn, getDashboardClients);
+router.get("/completed/clients", requiredSignIn, dashboardCompletedClients);
 
 // Get Inactive Client_Job
 router.get("/inactive/clients", getInactiveClientJobs);

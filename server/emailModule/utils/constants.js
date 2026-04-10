@@ -15,3 +15,16 @@ export const OUTSOURCE = {
     redirectUri: process.env.OUTSOURCING_REDIRECT_URI,
 }
 
+
+
+
+
+export const TRACKED_FIELDS = {
+  category: "category_changed",
+
+  userId: "user_changed",
+
+  status: "status_changed",
+
+  
+};

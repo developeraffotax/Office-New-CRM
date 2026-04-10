@@ -49,7 +49,7 @@ router.get("/mailbox-user-counts", requiredSignIn, getMailboxUserCounts);
 
 
 
-router.get("/thread-message-users", getThreadMessageUsers);
+router.get("/thread-message-users", requiredSignIn, getThreadMessageUsers);
 
 
 export default router;

@@ -38,6 +38,7 @@ import aiRoutes from "../aiModule/routes/ai.routes.js";
 import emailRoutes from "../emailModule/routes/email.routes.js";
 import threadCategoryRoutes from "../emailModule/routes/threadCategory.routes.js";
 import threadCommentsRoutes from "../emailModule/routes/comment.routes.js";
+import threadActivityRoutes from "../emailModule/routes/threadActivity.routes.js";
 
  
  
@@ -96,4 +97,5 @@ export const registerRoutes = (app) => {
   
   app.use("/api/v1/gmail/category", requiredSignIn , threadCategoryRoutes);
   app.use("/api/v1/gmail/comments", requiredSignIn , threadCommentsRoutes);
+  app.use("/api/v1/gmail/activity", requiredSignIn , threadActivityRoutes);
 };

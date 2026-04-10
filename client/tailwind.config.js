@@ -30,6 +30,7 @@ module.exports = {
         // Panel / container
         "fade-in": "fade-in 1s ease-out forwards",
         "slide-in-left": "slide-in-left 5s ease-out forwards",
+        "slide-in-right": "slide-in-right 0.5s ease-out forwards",
 
         // Badge / micro-interactions
         "badge-pop": "badge-pop 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -59,6 +60,11 @@ module.exports = {
         /* Slide in from left */
         "slide-in-left": {
           "0%": { transform: "translateX(-100%)", opacity: 0,  },
+          "100%": { transform: "translateX(0)", opacity: 1,   },
+        },
+
+         "slide-in-right": {
+          "0%": { transform: "translateX(100%)", opacity: 0,  },
           "100%": { transform: "translateX(0)", opacity: 1,   },
         },
 

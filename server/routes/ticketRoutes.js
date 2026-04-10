@@ -43,6 +43,7 @@ router.post("/create-ticket", requiredSignIn, createTicket);
 // Get Single Email Detail
 router.get(
   "/single/email/detail/:mailThreadId/:company/:ticketId",
+  requiredSignIn,
   getSingleEmailDetail
 );
 
@@ -54,7 +55,7 @@ router.get("/all/tickets",requiredSignIn, getAllSendTickets);
 router.get("/all/tickets-replies",requiredSignIn, getSentReceivedCountsPerThread);
 
 // Get All Send Tickets      ------------------->>>    /api/v1/tickets/all/ticketsByClientName/:clientName
-router.get("/all/ticketsByClientName", getTicketsByClientName);
+router.get("/all/ticketsByClientName", requiredSignIn, getTicketsByClientName);
 
  
 
@@ -65,11 +66,11 @@ router.delete("/delete/ticket/:id", requiredSignIn, deleteTicket);
 router.put("/update/ticket/:id", requiredSignIn, updateTickets);
 
 // Get Single Ticket
-router.get("/single/ticket/:id", singleTicket);
+router.get("/single/ticket/:id", requiredSignIn, singleTicket);
 
 
 //get single ticket using the mail thrad id
-router.get("/get/mailThreadId/:id", singleTicketByMailThreadId);
+router.get("/get/mailThreadId/:id", requiredSignIn, singleTicketByMailThreadId);
 
 // Get Attachment
 router.get(
@@ -87,16 +88,16 @@ router.post(
 );
 
 // Mark as Read
-router.put("/markAsRead/:id", markAsRead);
+router.put("/markAsRead/:id", requiredSignIn, markAsRead);
 
 // Get Comments
-router.get("/ticket/comments/:id", singleTicketComments);
+router.get("/ticket/comments/:id", requiredSignIn, singleTicketComments);
 
 // Get Complete Ticket
 router.get("/complete/tickets", requiredSignIn, getCompleteTickets);
 
 // Fetch All Inbox
-router.get("/fetch/inbox/:selectedCompany/:pageNo/:type", getAllInbox);
+router.get("/fetch/inbox/:selectedCompany/:pageNo/:type", requiredSignIn, getAllInbox);
 
 // Delete Email
 router.delete(
@@ -113,17 +114,17 @@ router.delete(
 );
 
 // Get Single Email Detail
-router.get("/single/inbox/detail/:mailThreadId/:company", getInboxDetail);
-router.get("/single/inbox/detail/pagination/:mailThreadId/:company", getInboxDetailWithPagination);
+router.get("/single/inbox/detail/:mailThreadId/:company", requiredSignIn, getInboxDetail);
+router.get("/single/inbox/detail/pagination/:mailThreadId/:company", requiredSignIn, getInboxDetailWithPagination);
 
 // Mark as Read Inbox
-router.put("/markAsRead/inbox/email", markAsReadInboxEmail);
+router.put("/markAsRead/inbox/email", requiredSignIn, markAsReadInboxEmail);
 
 // Assign Inbox email to User
 router.post("/assign/email", requiredSignIn, assignEmail);
 
 // Dashboard Tickets
-router.get("/dashboard/tickets", getDashboardTickets);
+router.get("/dashboard/tickets", requiredSignIn, getDashboardTickets);
 
 
 
@@ -178,8 +179,8 @@ router.get("/update-tickets", requiredSignIn, async (req, res) => {
 
 
 
-router.get("/userchart/ticketActivity",    getTicketActivity);
-router.get("/userchart/ticketActivity/stats",    getTicketActivityStats);
+router.get("/userchart/ticketActivity",   requiredSignIn, getTicketActivity);
+router.get("/userchart/ticketActivity/stats",   requiredSignIn, getTicketActivityStats);
 
 
 

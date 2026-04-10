@@ -3,7 +3,7 @@ import { IoArrowBackOutline } from "react-icons/io5";
 import { HiReply } from "react-icons/hi";
 import { Buffer } from "buffer";
 import { FaCaretDown, FaCheckCircle, FaRegFileImage, FaUndoAlt } from "react-icons/fa";
-import { FaRegFileLines } from "react-icons/fa6";
+import { FaRegCircleCheck, FaRegFileLines } from "react-icons/fa6";
 import { LuDownload } from "react-icons/lu";
 import { ImAttachment } from "react-icons/im";
 import { TbArrowForwardUp, TbLoader2 } from "react-icons/tb";
@@ -19,13 +19,14 @@ import { gmailParser } from "../utils/gmailParser.js";
 import EmailHeaderDetails from "./EmailHeaderDetails.js";
 import AssignUser from "../shared/ui/AssignUser.js";
 import AssignCategory from "../shared/ui/AssignCategory.js";
-import { FiMessageSquare } from "react-icons/fi";
+import { FiClock, FiMessageSquare } from "react-icons/fi";
 import IconButtonWithBadge from "../shared/ui/IconButtonWithBadge.js";
 import { useOverlayStack } from "../hooks/useOverlayStack.js";
 import Swal from "sweetalert2";
 import { confirmAlert } from "../shared/ui/Swal.js";
 import { MdDeleteOutline } from "react-icons/md";
-
+import ThreadActivityPanel from "../shared/ui/ThreadActivityPanel.js";
+import { LiaUndoAltSolid } from "react-icons/lia";
 export default function Thread({
   company,
   threadId,
@@ -82,6 +83,13 @@ const [loadingMore, setLoadingMore] = useState(false);
   const replySectionRef = useRef(null);
  
 const scrollAnchorRef = useRef(null); // { previousHeight }
+
+
+const [activityPanel, setActivityPanel] = useState({
+  show: false,
+  threadId: null,
+});
+
 
 
   useLayoutEffect(() => {
@@ -394,41 +402,20 @@ useOverlayStack({
 
 
 
-         <button
-              className="p-1 rounded-md hover:bg-gray-200 text-gray-500  hover:text-red-500"
-              title="Delete Thread"
-              onClick={(e) => {
-                deleteThreadHandler(threadId, company);
-              }}
-            >
-              <MdDeleteOutline className="size-5   " />
-            </button>
+      
+              <IconButtonWithBadge
+              icon={FiClock}
+              title="View Activity"
+              onClick={() => {
+                setActivityPanel({
+                  show: true,
+                  threadId: mongoThreadId,
+                });
 
-     {
-                status === "progress" ? (
-                  <button
-              className="p-1 rounded-md   text-gray-500  hover:text-green-500"
-              title="Complete Thread"
-              onClick={(e) => {
                 
-                updateStatus("completed");
               }}
-            > 
-              <FaCheckCircle className="size-4   " />
-            </button>
-                ) : (
-                   <button
-              className="p-1 rounded-md   text-gray-500  hover:text-red-500"
-              title="Undo Complete"
-              onClick={(e) => {
-                 
-                updateStatus("progress");
-              }}
-            > 
-              <FaUndoAlt className="size-4   " />
-            </button>
-                )
-              }
+            />
+
 
 
 
@@ -445,6 +432,48 @@ useOverlayStack({
             })
           }
         />
+
+
+
+<span className="w-[1px] h-8 bg-slate-300 rounded-full"></span>
+
+         <button
+              className="p-2 rounded-lg hover:bg-gray-200 text-gray-500  hover:text-red-500"
+              title="Delete Thread"
+              onClick={(e) => {
+                deleteThreadHandler(threadId, company);
+              }}
+            >
+              <MdDeleteOutline className="size-5   " />
+            </button>
+
+     {
+                status === "progress" ? (
+                  <button
+              className="p-2 rounded-lg hover:bg-gray-200  text-gray-500  hover:text-green-500"
+              title="Complete Thread"
+              onClick={(e) => {
+                
+                updateStatus("completed");
+              }}
+            > 
+              <FaRegCircleCheck className="size-5   " />
+            </button>
+                ) : (
+                   <button
+              className="p-2 rounded-lg  hover:bg-gray-200 text-gray-500  hover:text-red-500"
+              title="Undo Complete"
+              onClick={(e) => {
+                 
+                updateStatus("progress");
+              }}
+            > 
+              <LiaUndoAltSolid className="size-5   " />
+            </button>
+                )
+              }
+
+
 
                             
                    
@@ -791,6 +820,28 @@ useOverlayStack({
           </div>
         </div>
       )}
+
+
+
+
+
+
+
+
+
+
+
+      {activityPanel.show && <ThreadActivityPanel
+   
+   
+   threadId={activityPanel.threadId}
+    onClose={() =>
+    setActivityPanel({
+      show: false,
+      threadId: null,
+    })
+  }
+/>}
     </div>
   );
 }

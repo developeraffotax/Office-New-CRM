@@ -18,16 +18,16 @@ import { isAdmin, requiredSignIn } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 // Register User
-router.post("/register/user", registerUser);
+router.post("/register/user",requiredSignIn, registerUser);
 
 // Login User
 router.post("/login/user", loginUser);
 
 // Get All Users
-router.get("/get_all", getAllUsers);
+router.get("/get_all", requiredSignIn, getAllUsers);
 
 // Get All
-router.get("/get_all/users", getAllActiveUsers);
+router.get("/get_all/users", requiredSignIn, getAllActiveUsers);
 
 // Get Single User
 router.get("/get_user/:id", requiredSignIn, singleUser);

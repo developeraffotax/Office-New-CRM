@@ -6,14 +6,14 @@ import { addComment, deleteComment, getComments, getUnreadCounts } from "../cont
 
 const router = express.Router();
 
-router.post("/",  addComment);
+router.post("/", requiredSignIn, addComment);
 
-router.post("/unread",  getUnreadCounts);
+router.post("/unread",requiredSignIn,  getUnreadCounts);
 
 
 
-router.get("/:threadId",  getComments);
+router.get("/:threadId",requiredSignIn,  getComments);
 
-router.delete("/:commentId",  deleteComment);
+router.delete("/:commentId",requiredSignIn,  deleteComment);
 
 export default router;

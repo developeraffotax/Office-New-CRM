@@ -450,13 +450,21 @@ export const updateThreadMetadata = async (req, res) => {
       });
     }
 
+    if (updates?.userId) {
+      updates.userId = new mongoose.Types.ObjectId(updates.userId);
+    }
+
+
     /**
      * 3️⃣ Update thread
      */
-    const updatedThread = await EmailThread.findByIdAndUpdate(id, updates, {
+    const updatedThread = await EmailThread.findOneAndUpdate({_id: id}, {$set: {...updates}}, {
       new: true,
       runValidators: true,
-    });
+       updatedBy: req?.user?.user?._id
+    })
+
+    // console.log("UPDATED THREAD✔️", updatedThread)
 
     /**
      * 4️⃣ Assignment diff

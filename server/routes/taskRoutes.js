@@ -38,13 +38,13 @@ const router = express.Router();
 router.post("/create/task", requiredSignIn, createTask);
 
 // Get All Tasks
-router.get("/get/all", getAllTasks);
+router.get("/get/all", requiredSignIn,  getAllTasks);
 
 // Completed Tasks
-router.get("/get/all/completed", getCompletedTasks);
+router.get("/get/all/completed", requiredSignIn, getCompletedTasks);
 
 // Single task
-router.get("/get/single/:id", getSingleTask);
+router.get("/get/single/:id" , requiredSignIn, getSingleTask);
 
 // Update task/Project
 router.put("/update/project/:id", requiredSignIn, updatetaskProject);
@@ -78,7 +78,7 @@ router.delete(
 );
 
 // Completed Tasks
-router.get("/get/completed", getAllCompletedTasks);
+router.get("/get/completed", requiredSignIn, getAllCompletedTasks);
 
 // Add Label
 router.put("/add/label/:id", requiredSignIn, addlabel);
@@ -86,18 +86,18 @@ router.put("/add/label/:id", requiredSignIn, addlabel);
 router.put("/update/hours/:id", requiredSignIn, updateTaskHours);
 
 // Delet Many Task
-router.delete("/delete/many", deleteDailyRecurringTasks);
+router.delete("/delete/many", requiredSignIn, deleteDailyRecurringTasks);
 
 // Duplicate Task
-router.delete("/delete/diplicate", deleteDuplicateTasks);
+router.delete("/delete/diplicate", requiredSignIn, deleteDuplicateTasks);
 
-router.get("/dashboard/tasks", getDashboardTasks);
+router.get("/dashboard/tasks", requiredSignIn, getDashboardTasks);
 
 // Reordering Subtask
-router.put("/reorder/subtasks/:id", reordering);
+router.put("/reorder/subtasks/:id", requiredSignIn, reordering);
 
 // Call Recurring Function
-router.get("/call/recurring", autoCreateRecurringTasks);
+router.get("/call/recurring", requiredSignIn, autoCreateRecurringTasks);
 
 // Import CSV File
 router.post("/import", requiredSignIn, upload.single("file"), importData);

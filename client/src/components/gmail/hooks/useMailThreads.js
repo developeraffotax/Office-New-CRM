@@ -10,13 +10,27 @@ import { fetchInboxUnreadCounts } from "../../../redux/slices/inboxUnreadSlice";
 function matchesFilters(thread, filters, user) {
   if (!thread || !filters) return false;
 
+
+ 
+
   const { label, unreadOnly, startDate, endDate, category, userId, status } = filters;
 
     // ✅ Status filter (progress or completed)
     if (status && thread.status !== status) return false;
 
   if (label && (!thread.labels?.includes(label) || thread.labels?.includes("TRASH"))) return false;
-  if (unreadOnly && thread.unreadCount <= 0) return false;
+  // if (unreadOnly && thread.unreadCount <= 0) {
+  //   console.log("INSIDE THE >>>>>>>> unreadOnly && thread.unreadCount <= 0")
+  // return false;
+  // }
+
+  // console.log("RES IS >>> 🧡🧡🧡🧡🧡🧡🧡",thread.readBy.some(u => ((u.userId === user.id) && (new Date(thread.lastMessageAtInbox) < new Date(u.lastReadAt)))))
+
+  // if (unreadOnly && thread.readBy.some(u => ((u.userId === user.id) && (new Date(thread.lastMessageAtInbox) < new Date(u.lastReadAt))))) {
+  //   console.log("INSIDE THE >>>>>>>> unreadOnly && thread.unreadCount <= 0")
+  // return false;
+  // }
+    
 
   if (startDate && new Date(thread.lastMessageAt) < new Date(startDate))
     return false;

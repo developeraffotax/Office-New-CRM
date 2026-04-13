@@ -8,6 +8,7 @@ export default function InboxUserTabs({
   onChange,
   getCountFn,
   showAll = true,
+  showUnassigned = true,
   getLabelFn = (u) => u,
 }) {
   const [orderedUsers, setOrderedUsers] = useState([]);
@@ -68,8 +69,9 @@ export default function InboxUserTabs({
               </div>
             )}
 
-
-            <div
+            {
+              showUnassigned && (
+                <div
                 onClick={() => onChange("unassigned")}
                 className={`
                   relative px-4 py-2 text-sm transition-all cursor-pointer whitespace-nowrap
@@ -83,6 +85,9 @@ export default function InboxUserTabs({
                  ( {getCountFn ? getCountFn("unassigned") : 0})
                 </span>
               </div>
+              )
+            }
+            
 
             {/* ---------------- USER TABS ---------------- */}
             {orderedUsers.map((user, index) => {

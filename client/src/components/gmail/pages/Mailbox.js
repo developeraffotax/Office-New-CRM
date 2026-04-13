@@ -6,6 +6,7 @@ import { fetchCategories } from "../categories/categoryApi";
 
 export default function Mailbox() {
   const [users, setUsers] = useState([]);
+  const [team, setTeam] = useState([]);
   const [categories, setCategories] = useState([]);
 
 
@@ -34,11 +35,32 @@ export default function Mailbox() {
     }
   };
 
+
+
+    const getTeam = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get/active/team`
+      );
+
+      console.log("TEAMMMM", data)
+      setTeam( data?.users);
+
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
+  
  
     useEffect(() => {
       getAllUsers();
+getTeam()      
+
       fetchCategories().then(res => setCategories(res.data));
   }, []);
 
-  return <MailLayout users={users} categories={categories} {...mail} />;
+  return <MailLayout users={users}  team={team}  categories={categories} {...mail} />;
 }

@@ -14,6 +14,7 @@ import { useSelector } from "react-redux";
 
 export default function MailLayout({
   users,
+  team,
   categories,
   threads,
   loading,
@@ -108,6 +109,7 @@ export default function MailLayout({
           filters={filters}
           setFilters={setFilters}
           users={users}
+          team={team}
           categories={categories}
         />
 

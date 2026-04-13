@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-import { Paper, Stack, FormControl, Select, MenuItem, Button, Menu, Divider, Box, Typography, Chip, Grow, IconButton, Tooltip, ToggleButton, } from "@mui/material";
+import { Paper, Stack, FormControl, Select, MenuItem, Button, Menu, Divider, Box, Typography, Chip, Grow, IconButton, Tooltip, ToggleButton, Checkbox, Avatar, } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -16,6 +16,8 @@ import { alpha } from "@mui/material/styles";
 import { FiCalendar, FiX, FiChevronDown, FiLayers, FiMoreVertical, } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
 import AutorenewIcon from '@mui/icons-material/Autorenew';
+import PersonPinIcon from '@mui/icons-material/PersonPin';
+import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 
 import ManageCategoriesModal from "../categories/ManageCategoriesModal";
 import InboxUserTabs from "./ui/InboxUserTabs";
@@ -26,10 +28,16 @@ import UnifiedThreadFilters from "./ui/LastMessageByDropdown";
 
 
 
-export default function Filters({ filters, setFilters, users = [], categories = [], }) {
+export default function Filters({ filters, setFilters, users = [], team = [], categories = [], }) {
 
   const { auth: { user } } = useSelector((state) => state.auth);
   const isAdmin = user?.role?.name === "Admin";
+  const isTeamLead = user?.isTeamLead;
+
+  const hasPermission = isAdmin || isTeamLead; 
+
+  console.log("USER >>> 🧡🧡🧡", user)
+  console.log("USERS🧡🧡🧡", users)
 
   const [searchParams] = useSearchParams();
   const folder = searchParams.get("folder") || "inbox";
@@ -42,6 +50,53 @@ export default function Filters({ filters, setFilters, users = [], categories = 
 
   const [searchInput, setSearchInput] = useState("");
   const prevSearchRef = useRef("");
+
+const [anchorTeamEl, setAnchorTeamEl] = useState(null);
+
+  const [visibleTabs, setVisibleTabs] = useState(() => {
+  const saved = localStorage.getItem("visible_inbox_tabs");
+
+  if (saved) return JSON.parse(saved);
+
+  return [
+    "all",
+    "unassigned",
+    ...users.map(u => u._id),
+  ];
+});
+
+useEffect(() => {
+  if (!users.length) return;
+
+  setVisibleTabs(prev => {
+    if (!prev?.length) {
+      return [
+        "all",
+        "unassigned",
+        ...users.map(u => u._id),
+      ];
+    }
+
+    return prev;
+  });
+}, [users]);
+
+const toggleTab = (id) => {
+  let updated;
+
+  if (visibleTabs.includes(id)) {
+    updated = visibleTabs.filter(t => t !== id);
+  } else {
+    updated = [...visibleTabs, id];
+  }
+
+  setVisibleTabs(updated);
+
+  localStorage.setItem(
+    "visible_inbox_tabs",
+    JSON.stringify(updated)
+  );
+};
 
 
 
@@ -91,24 +146,36 @@ export default function Filters({ filters, setFilters, users = [], categories = 
 
 
 
+useEffect(() => {
+  // Check if user is Admin OR Team Lead, AND the feature is enabled
+  
+  
+  if (!hasPermission || !isInboxUserTabs) return;
 
-  useEffect(() => {
-    if (!isAdmin || !isInboxUserTabs) return;
-
-    const fetchUserCounts = async () => {
-      try {
-        const res = await axios.get( `${process.env.REACT_APP_API_URL}/api/v1/gmail/mailbox-user-counts`, { params: { companyName: companyName, folder: folder, ...filters, }, }, );
-
-        if (res.data?.success) {
-          setInboxStats(res.data);
+  const fetchUserCounts = async () => {
+    try {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/gmail/mailbox-user-counts`,
+        {
+          params: {
+            companyName: companyName,
+            folder: folder,
+            ...filters,
+          },
         }
-      } catch (err) {
-        console.error("Failed to fetch user counts", err);
-      }
-    };
+      );
 
-    fetchUserCounts();
-  }, [filters, folder, companyName, isAdmin, isInboxUserTabs]);
+      if (res.data?.success) {
+        setInboxStats(res.data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch user counts", err);
+    }
+  };
+
+  fetchUserCounts();
+  // Added isTeamLead to the dependency array
+}, [filters, folder, companyName, isAdmin, isTeamLead, isInboxUserTabs]);
 
 
 
@@ -453,10 +520,28 @@ export default function Filters({ filters, setFilters, users = [], categories = 
 </ToggleButton>
 
 
-    { isAdmin && <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} />}
+    { hasPermission && <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} />}
 
               
-                {isAdmin && ( <UserTabToggleButton active={isInboxUserTabs} onClick={() => setIsInboxUserTabs((prev) => !prev)} /> )}
+                {hasPermission && ( <UserTabToggleButton active={isInboxUserTabs} onClick={() => setIsInboxUserTabs((prev) => !prev)} /> )}
+
+    { hasPermission && <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} />}
+                  
+           {
+            hasPermission && (
+              <ToggleButton
+               value="team"
+              size="small"
+              title="Select visible users"
+              selected={anchorTeamEl}
+              onClick={(e) => setAnchorTeamEl(e.currentTarget)}
+              color="primary"
+              sx={{ border: "none", borderRadius: "8px" }}
+            >
+              <RemoveRedEyeIcon fontSize="small" />
+            </ToggleButton>
+            )
+           }
                 
                 {/* Date Picker Trigger */}
             <Button
@@ -488,7 +573,13 @@ export default function Filters({ filters, setFilters, users = [], categories = 
           
               <UnifiedThreadFilters filters={filters} handleUpdate={handleUpdate} />
 
+
+
               {/* <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} /> */}
+ 
+
+
+
 
 
 
@@ -515,16 +606,22 @@ export default function Filters({ filters, setFilters, users = [], categories = 
             />
           </Stack>
 
+                      
+
 
         </Stack>
 
-        {isInboxUserTabs && isAdmin && (
+        {isInboxUserTabs && hasPermission && (
           <div className="w-full animate-pop mt-3   ">
             <InboxUserTabs
               droppableId="inbox_users"
-              users={users}
+              users={team.filter(u =>
+                visibleTabs.includes(u._id)
+              )}
+              showAll={isAdmin && visibleTabs.includes("all")}
+              showUnassigned={ isAdmin && visibleTabs.includes("unassigned")}
               activeValue={filters.userId || ""}
-              showAll={true}
+              // showAll={true}
               onChange={(userId) =>
                 setFilters({
                   userId,
@@ -613,6 +710,8 @@ export default function Filters({ filters, setFilters, users = [], categories = 
             },
           }}
         >
+
+          
           <Box sx={{ p: 2.5, width: 300 }}>
             <Typography variant="caption" sx={{ display: "block", color: "text.secondary", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", mb: 1.5, ml: 0.5, }} > Quick Ranges </Typography>
 
@@ -658,6 +757,10 @@ export default function Filters({ filters, setFilters, users = [], categories = 
 
             <Divider sx={{ my: 2.5, opacity: 0.6 }} />
 
+
+
+
+
             <Typography variant="caption" sx={{ display: "block", color: "text.secondary", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", mb: 1.5, ml: 0.5, }} > Custom Range </Typography>
 
             <Stack spacing={2}>
@@ -702,11 +805,173 @@ export default function Filters({ filters, setFilters, users = [], categories = 
             </Stack>
           </Box>
         </Menu>
+
+<Menu
+  anchorEl={anchorTeamEl}
+  open={Boolean(anchorTeamEl)}
+  onClose={() => setAnchorTeamEl(null)}
+  slotProps={{
+    paper: {
+      elevation: 0,
+      sx: {
+        width: 320,
+        borderRadius: '12px',
+        mt: 1,
+        border: '1px solid',
+         borderColor: 'divider',
+        boxShadow: '0px 10px 15px -3px rgba(0,0,0,0.1), 0px 4px 6px -2px rgba(0,0,0,0.05)',
+        p: 0.5,
+      },
+    },
+  }}
+>
+  <Box sx={{ px: 2, py: 1 }}>
+    <Typography
+      variant="subtitle2"
+      sx={{
+        fontWeight: 700,
+        fontSize: '0.75rem',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05rem',
+        color: 'text.secondary',
+      }}
+    >
+      Team Visibility
+    </Typography>
+  </Box>
+
+  {/* Main Categories */}
+  {isAdmin && (
+    <Stack spacing={0.5} sx={{ px: 1 }}>
+    {[
+      { id: 'all', label: 'All Conversations' },
+      { id: 'unassigned', label: 'Unassigned' }
+    ].map((item) => (
+      <MenuItem
+        key={item.id}
+        onClick={() => toggleTab(item.id)}
+        sx={{
+          borderRadius: '8px',
+          transition: 'all 0.2s',
+          display: 'flex',
+          justifyContent: 'space-between',
+          backgroundColor: visibleTabs.includes(item.id) ? 'action.selected' : 'transparent',
+          '&:hover': { backgroundColor: 'action.hover' },
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              bgcolor: visibleTabs.includes(item.id) ? 'primary.main' : 'action.disabled',
+              transition: 'background-color 0.3s',
+            }}
+          />
+          <Typography variant="body2" sx={{ fontWeight: visibleTabs.includes(item.id) ? 600 : 400 }}>
+            {item.label}
+          </Typography>
+        </Box>
+      </MenuItem>
+    ))}
+  </Stack>
+
+)}
+
+<Divider sx={{ my: 1, opacity: 0.6 }} />
+  {/* Team Members List */}
+  <Box sx={{ px: 1 }}>
+    <Typography
+      variant="caption"
+      sx={{ px: 1.5, py: 0.5, display: 'block', color: 'text.disabled', fontWeight: 600 }}
+    >
+      MEMBERS
+    </Typography>
+ 
+    
+    <Box sx={{ maxHeight: 400, overflowY: 'auto', mt: 0.5 }}>
+      {team
+        .map((u) => {
+          const count = inboxStats?.userCounts?.find((us) => us.userId === u._id)?.count || 0;
+          const isActive = visibleTabs.includes(u._id);
+
+          return (
+            <MenuItem
+              key={u._id}
+              onClick={() => toggleTab(u._id)}
+              sx={{
+                borderRadius: '8px',
+                mb: 0.5,
+                backgroundColor: isActive ? 'primary.lighter' : 'transparent', // Note: use 'action.selected' if custom colors aren't defined
+                '&:hover': { backgroundColor: 'action.hover' },
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexGrow: 1 }}>
+                <Avatar 
+                  src={u?.avatar || ""}
+                  sx={{ 
+                    width: 24, 
+                    height: 24, 
+                    fontSize: '0.65rem', 
+                    bgcolor: isActive ? 'primary.main' : 'grey.400',
+                    fontWeight: 700 
+                  }}
+                >
+                  {u?.avatar ? "" : u.name.charAt(0)}
+                </Avatar>
+                <Typography variant="body2" sx={{ fontWeight: isActive ? 600 : 400, flexGrow: 1 }}>
+                  {u.name} ({count})
+                </Typography>
+
+
+{/*                   
+                {count > 0 && (
+                  <Chip
+                    label={count}
+                    size="small"
+                    sx={{
+                      height: 18,
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      backgroundColor: isActive ? 'primary.main' : 'action.selected',
+                      color: isActive ? 'white' : 'text.primary',
+                    }}
+                  />
+                )} */}
+
+
+                {isActive && (
+               <Chip
+                label="Selected"
+                size="small"
+                sx={{
+                  height: 18,
+                  fontSize: '0.65rem',
+                  fontWeight: 800,
+                 
+                   
+                   
+                }}
+              />
+                )}
+
+
+              </Box>
+            </MenuItem>
+          );
+        })}
+    </Box>
+  </Box>
+</Menu>
+
+
       </Paper>
 
       { <ManageCategoriesModal open={isCategoryModal} onClose={() => setIsCategoryModal(false)} /> }
 
         
+ 
     </LocalizationProvider>
   );
 }

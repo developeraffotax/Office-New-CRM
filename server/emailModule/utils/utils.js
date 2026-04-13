@@ -113,6 +113,11 @@ export const buildFilterQuery = (req) => {
   const user = req?.user?.user;
 
   const isAdmin = user?.role?.name === "Admin";
+  const isTeamLead = user?.isTeamLead;
+  const juniors = user?.juniors || [];
+
+
+  console.log(" THE USER IS ❤️❤️", user)
 
   const filters = req.query;
   const andFilters = [];
@@ -152,7 +157,39 @@ export const buildFilterQuery = (req) => {
     }
   }
 
-  if(!isAdmin) {
+  if (!isAdmin && isTeamLead) {
+    if(filters.userId && mongoose.Types.ObjectId.isValid(filters.userId)) {
+
+      andFilters.push({ userId: new mongoose.Types.ObjectId(filters.userId) });
+
+
+
+
+
+    } else {
+        // Convert self id
+      const selfId = new mongoose.Types.ObjectId(user?._id);
+
+      // Convert juniors ids if exist
+      const juniorIds = (juniors || [])
+        .filter(id => mongoose.Types.ObjectId.isValid(id))
+        .map(id => new mongoose.Types.ObjectId(id));
+
+      // Include self + juniors
+      const allowedUserIds = [selfId, ...juniorIds];
+
+      andFilters.push({
+        userId: { $in: allowedUserIds }
+      });
+
+
+    }
+
+
+
+}
+
+  if(!isAdmin && !isTeamLead) {
     andFilters.push({ userId: new mongoose.Types.ObjectId(user?._id) });
   }
 

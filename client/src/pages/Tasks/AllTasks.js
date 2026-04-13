@@ -1659,9 +1659,9 @@ const renderColumnControls = () => (
             </div>
           </div>
           {/*  */}
-          <div className="flex flex-col gap-2 mt-3">
+          <div className="flex flex-col gap-2 mt-2">
             {/* -----------Filters By Projects--------- */}
-            <div className="flex items-center flex-row overflow-x-auto hidden1 gap-2 mt-3 max-lg:hidden">
+            <div className="flex items-center flex-row overflow-x-auto hidden1 gap-2  max-lg:hidden">
               <div
                 className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
                   allDepartmentsSelected &&
@@ -1900,7 +1900,7 @@ const renderColumnControls = () => (
             {/* ----------Job_Holder Summery Filters---------- */}
             {showJobHolder && activeBtn === "jobHolder" && (
               <>
-                <div className="w-full  py-2 max-lg:hidden ">
+                <div className="w-full    max-lg:hidden ">
                   <div className="flex items-center flex-wrap gap-4">
                     <DraggableFilterTabs
                       droppableId={"users"}

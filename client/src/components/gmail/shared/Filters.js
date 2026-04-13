@@ -1,10 +1,28 @@
 import axios from "axios";
 import dayjs from "dayjs";
-import { useEffect, useRef, useState } from "react"; 
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-import { Paper, Stack, FormControl, Select, MenuItem, Button, Menu, Divider, Box, Typography, Chip, Grow, IconButton, Tooltip, ToggleButton, Checkbox, Avatar, } from "@mui/material";
+import {
+  Paper,
+  Stack,
+  FormControl,
+  Select,
+  MenuItem,
+  Button,
+  Menu,
+  Divider,
+  Box,
+  Typography,
+  Chip,
+  Grow,
+  IconButton,
+  Tooltip,
+  ToggleButton,
+  Checkbox,
+  Avatar,
+} from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -13,11 +31,17 @@ import StarOutlineIcon from "@mui/icons-material/StarOutline";
 import StarIcon from "@mui/icons-material/Star";
 import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
 import { alpha } from "@mui/material/styles";
-import { FiCalendar, FiX, FiChevronDown, FiLayers, FiMoreVertical, } from "react-icons/fi";
+import {
+  FiCalendar,
+  FiX,
+  FiChevronDown,
+  FiLayers,
+  FiMoreVertical,
+} from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
-import AutorenewIcon from '@mui/icons-material/Autorenew';
-import PersonPinIcon from '@mui/icons-material/PersonPin';
-import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
+import AutorenewIcon from "@mui/icons-material/Autorenew";
+import PersonPinIcon from "@mui/icons-material/PersonPin";
+import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 
 import ManageCategoriesModal from "../categories/ManageCategoriesModal";
 import InboxUserTabs from "./ui/InboxUserTabs";
@@ -25,19 +49,22 @@ import UserTabToggleButton from "./ui/UserTabToggleButton";
 import ContextMenu from "./ui/ContextMenu";
 import UnifiedThreadFilters from "./ui/LastMessageByDropdown";
 
-
-
-
-export default function Filters({ filters, setFilters, users = [], team = [], categories = [], }) {
-
-  const { auth: { user } } = useSelector((state) => state.auth);
+export default function Filters({
+  filters,
+  setFilters,
+  users = [],
+  team = [],
+  categories = [],
+}) {
+  const {
+    auth: { user },
+  } = useSelector((state) => state.auth);
   const isAdmin = user?.role?.name === "Admin";
   const isTeamLead = user?.isTeamLead;
 
-  const hasPermission = isAdmin || isTeamLead; 
+  const hasPermission = isAdmin || isTeamLead;
 
-  console.log("USER >>> 🧡🧡🧡", user)
-  console.log("USERS🧡🧡🧡", users)
+ 
 
   const [searchParams] = useSearchParams();
   const folder = searchParams.get("folder") || "inbox";
@@ -51,55 +78,41 @@ export default function Filters({ filters, setFilters, users = [], team = [], ca
   const [searchInput, setSearchInput] = useState("");
   const prevSearchRef = useRef("");
 
-const [anchorTeamEl, setAnchorTeamEl] = useState(null);
+  const [anchorTeamEl, setAnchorTeamEl] = useState(null);
 
   const [visibleTabs, setVisibleTabs] = useState(() => {
-  const saved = localStorage.getItem("visible_inbox_tabs");
+    const saved = localStorage.getItem("visible_inbox_tabs");
 
-  if (saved) return JSON.parse(saved);
+    if (saved) return JSON.parse(saved);
 
-  return [
-    "all",
-    "unassigned",
-    ...users.map(u => u._id),
-  ];
-});
+    return ["all", "unassigned", ...users.map((u) => u._id)];
+  });
 
-useEffect(() => {
-  if (!users.length) return;
+  useEffect(() => {
+    if (!users.length) return;
 
-  setVisibleTabs(prev => {
-    if (!prev?.length) {
-      return [
-        "all",
-        "unassigned",
-        ...users.map(u => u._id),
-      ];
+    setVisibleTabs((prev) => {
+      if (!prev?.length) {
+        return ["all", "unassigned", ...users.map((u) => u._id)];
+      }
+
+      return prev;
+    });
+  }, [users]);
+
+  const toggleTab = (id) => {
+    let updated;
+
+    if (visibleTabs.includes(id)) {
+      updated = visibleTabs.filter((t) => t !== id);
+    } else {
+      updated = [...visibleTabs, id];
     }
 
-    return prev;
-  });
-}, [users]);
+    setVisibleTabs(updated);
 
-const toggleTab = (id) => {
-  let updated;
-
-  if (visibleTabs.includes(id)) {
-    updated = visibleTabs.filter(t => t !== id);
-  } else {
-    updated = [...visibleTabs, id];
-  }
-
-  setVisibleTabs(updated);
-
-  localStorage.setItem(
-    "visible_inbox_tabs",
-    JSON.stringify(updated)
-  );
-};
-
-
-
+    localStorage.setItem("visible_inbox_tabs", JSON.stringify(updated));
+  };
 
   const applyPreset = (days) => {
     const now = dayjs();
@@ -117,7 +130,12 @@ const toggleTab = (id) => {
       end = now.endOf("day");
     }
 
-    setFilters({ ...filters, startDate: start.toISOString(), endDate: end.toISOString(), page: 1, });
+    setFilters({
+      ...filters,
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+      page: 1,
+    });
     setAnchorEl(null);
   };
 
@@ -132,7 +150,7 @@ const toggleTab = (id) => {
       search: "",
       lastMessageBy: "",
       starred: false,
-      mailThreadId: ""
+      mailThreadId: "",
     });
 
     setSearchInput("");
@@ -142,42 +160,35 @@ const toggleTab = (id) => {
     setFilters({ ...updates, page: 1 });
   };
 
+  useEffect(() => {
+    // Check if user is Admin OR Team Lead, AND the feature is enabled
 
+    if (!hasPermission || !isInboxUserTabs) return;
 
-
-
-useEffect(() => {
-  // Check if user is Admin OR Team Lead, AND the feature is enabled
-  
-  
-  if (!hasPermission || !isInboxUserTabs) return;
-
-  const fetchUserCounts = async () => {
-    try {
-      const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/gmail/mailbox-user-counts`,
-        {
-          params: {
-            companyName: companyName,
-            folder: folder,
-            ...filters,
+    const fetchUserCounts = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/gmail/mailbox-user-counts`,
+          {
+            params: {
+              companyName: companyName,
+              folder: folder,
+              ...filters,
+            },
           },
+        );
+
+        if (res.data?.success) {
+          setInboxStats(res.data);
         }
-      );
-
-      if (res.data?.success) {
-        setInboxStats(res.data);
+      } catch (err) {
+        console.error("Failed to fetch user counts", err);
       }
-    } catch (err) {
-      console.error("Failed to fetch user counts", err);
-    }
-  };
+    };
 
-  fetchUserCounts();
-  // Added isTeamLead to the dependency array
-}, [filters, folder, companyName, isAdmin, isTeamLead, isInboxUserTabs]);
-
-
+    fetchUserCounts();
+    // Added isTeamLead to the dependency array
+  }, [filters, folder, companyName, isAdmin, isTeamLead, isInboxUserTabs]);
 
   useEffect(() => {
     const trimmed = searchInput.trim();
@@ -195,14 +206,7 @@ useEffect(() => {
     return () => clearTimeout(timer);
   }, [searchInput, setFilters]);
 
-
-
-
-
-
-
-
-    // Common styles for a compact, modern look
+  // Common styles for a compact, modern look
   const selectStyle = {
     borderRadius: "12px",
     backgroundColor: "#f8f9fa",
@@ -224,17 +228,39 @@ useEffect(() => {
     },
   };
 
-
-  const hasActiveFilters = filters.category || filters.userId || filters.unreadOnly || filters.starred || filters.startDate;
-
-
+  const hasActiveFilters =
+    filters.category ||
+    filters.userId ||
+    filters.unreadOnly ||
+    filters.starred ||
+    filters.startDate;
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Paper elevation={0} sx={{ p: 2, borderRadius: 0, border: "1px solid", borderColor: "divider", bgcolor: "background.paper", }} >
-        <Stack direction="row" spacing={4} alignItems="center" justifyContent="space-between" flexWrap="wrap" sx={{ mb: hasActiveFilters ? 2 : 0 }} >
+      <Paper
+        elevation={0}
+        sx={{
+          p: 2,
+          borderRadius: 0,
+          border: "1px solid",
+          borderColor: "divider",
+          bgcolor: "background.paper",
+        }}
+      >
+        <Stack
+          direction="row"
+          spacing={4}
+          alignItems="center"
+          justifyContent="space-between"
+          flexWrap="wrap"
+          sx={{ mb: hasActiveFilters ? 2 : 0 }}
+        >
           <Stack direction="row" spacing={1} alignItems="center">
-            <button onClick={clearFilters} title="Clear all filters" className={`group flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-yellow-600 text-white shadow-md transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-110 hover:rotate-180 cursor-pointer mb-1 outline-none `} >
+            <button
+              onClick={clearFilters}
+              title="Clear all filters"
+              className={`group flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-yellow-600 text-white shadow-md transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-110 hover:rotate-180 cursor-pointer mb-1 outline-none `}
+            >
               <IoClose className="h-5 w-5" />
             </button>
 
@@ -272,14 +298,30 @@ useEffect(() => {
                 }}
                 sx={selectStyle}
               >
-                <MenuItem value=""> <Typography variant="body2" fontWeight={600}> All </Typography> </MenuItem>
-                <MenuItem sx={{ borderBottom: 1, borderColor: "#ddd", }} value={"unassigned"} > {" "} Unassigned{" "} </MenuItem>
+                <MenuItem value="">
+                  {" "}
+                  <Typography variant="body2" fontWeight={600}>
+                    {" "}
+                    All{" "}
+                  </Typography>{" "}
+                </MenuItem>
+                <MenuItem
+                  sx={{ borderBottom: 1, borderColor: "#ddd" }}
+                  value={"unassigned"}
+                >
+                  {" "}
+                  Unassigned{" "}
+                </MenuItem>
 
                 {categories.map(({ name }) => {
-                  return  <MenuItem value={name}> {name.charAt(0).toUpperCase() + name.slice(1)} </MenuItem>;
+                  return (
+                    <MenuItem value={name}>
+                      {" "}
+                      {name.charAt(0).toUpperCase() + name.slice(1)}{" "}
+                    </MenuItem>
+                  );
                 })}
               </Select>
-
             </FormControl>
 
             {[
@@ -338,55 +380,51 @@ useEffect(() => {
               );
             })}
 
-
-
-
             {/* Last Message By Client Quick Filter */}
-<ToggleButton
-  value="lastMessageClient"
-  size="small"
-  selected={filters.lastMessageBy === "client"}
-  onChange={() =>
-    handleUpdate({
-      lastMessageBy:
-        filters.lastMessageBy === "client"
-          ? ""
-          : "client",
-    })
-  }
-  title="Last message sent by client"
-  color="primary"
-  sx={{
-    border: "none",
-    borderRadius: "8px",
-  }}
->
-  {/* Client badge style icon */}
-  <Box
-    sx={{
-      width: 18,
-      height: 18,
-      borderRadius: "50%",
-      bgcolor:
-        filters.lastMessageBy === "client"
-          ? "primary.main"
-          : "grey.400",
-      color: "white",
-      fontSize: "0.65rem",
-      fontWeight: 700,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    }}
-  >
-    C
-  </Box>
-</ToggleButton>
+            <ToggleButton
+              value="lastMessageClient"
+              size="small"
+              selected={filters.lastMessageBy === "client"}
+              onChange={() =>
+                handleUpdate({
+                  lastMessageBy:
+                    filters.lastMessageBy === "client" ? "" : "client",
+                })
+              }
+              title="Last message sent by client"
+              color="primary"
+              sx={{
+                border: "none",
+                borderRadius: "8px",
+              }}
+            >
+              {/* Client badge style icon */}
+              <Box
+                sx={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: "50%",
+                  bgcolor:
+                    filters.lastMessageBy === "client"
+                      ? "primary.main"
+                      : "grey.400",
+                  color: "white",
+                  fontSize: "0.65rem",
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                C
+              </Box>
+            </ToggleButton>
 
-
-<Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} />
-
-
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{ height: 24, alignSelf: "center" }}
+            />
 
             <ToggleButton
               value="starred"
@@ -411,29 +449,23 @@ useEffect(() => {
               )}
             </ToggleButton>
 
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{ height: 24, alignSelf: "center" }}
+            />
 
-
-
-
-
-
-            <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} />
-
-            
             <ToggleButton
               value="unread"
               size="small"
               title="Show Unread Only"
               selected={filters.unreadOnly}
-              onChange={() =>
-                handleUpdate({ unreadOnly: !filters.unreadOnly })
-              }
+              onChange={() => handleUpdate({ unreadOnly: !filters.unreadOnly })}
               color="primary"
               sx={{ border: "none", borderRadius: "8px" }}
             >
               <MarkEmailUnreadIcon fontSize="small" />
             </ToggleButton>
- 
 
             <FormControl size="small" sx={{ minWidth: 300 }}>
               <Box sx={{ position: "relative" }}>
@@ -459,7 +491,6 @@ useEffect(() => {
                     size="small"
                     onClick={() => {
                       setSearchInput("");
-
                     }}
                     sx={{
                       position: "absolute",
@@ -476,74 +507,80 @@ useEffect(() => {
               </Box>
             </FormControl>
 
-                
-
-                
-
-
-<ToggleButton
-  value="status"
-  size="small"
-  selected={filters.status === "progress"}
-  color="primary"
-  onChange={() =>
-    handleUpdate({
-      status: filters.status === "progress" ? "" : "progress",
-    })
-  }
-  title="Show emails in progress"
- sx={{
-    border: "none",
-    borderRadius: "8px",
-  }}
->
-  {/* Client badge style icon */}
-  <Box
-    sx={{
-      width: 18,
-      height: 18,
-      borderRadius: "50%",
-      bgcolor:
-        filters.status === "progress"
-          ? "primary.main"
-          : "grey.400",
-      color: "white",
-      fontSize: "0.65rem",
-      fontWeight: 700,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    }}
-  >
-    P
-  </Box>
-</ToggleButton>
-
-
-    { hasPermission && <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} />}
-
-              
-                {hasPermission && ( <UserTabToggleButton active={isInboxUserTabs} onClick={() => setIsInboxUserTabs((prev) => !prev)} /> )}
-
-    { hasPermission && <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} />}
-                  
-           {
-            hasPermission && (
-              <ToggleButton
-               value="team"
+            <ToggleButton
+              value="status"
               size="small"
-              title="Select visible users"
-              selected={anchorTeamEl}
-              onClick={(e) => setAnchorTeamEl(e.currentTarget)}
+              selected={filters.status === "progress"}
               color="primary"
-              sx={{ border: "none", borderRadius: "8px" }}
+              onChange={() =>
+                handleUpdate({
+                  status: filters.status === "progress" ? "" : "progress",
+                })
+              }
+              title="Show emails in progress"
+              sx={{
+                border: "none",
+                borderRadius: "8px",
+              }}
             >
-              <RemoveRedEyeIcon fontSize="small" />
+              {/* Client badge style icon */}
+              <Box
+                sx={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: "50%",
+                  bgcolor:
+                    filters.status === "progress" ? "primary.main" : "grey.400",
+                  color: "white",
+                  fontSize: "0.65rem",
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                P
+              </Box>
             </ToggleButton>
-            )
-           }
-                
-                {/* Date Picker Trigger */}
+
+            {hasPermission && (
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ height: 24, alignSelf: "center" }}
+              />
+            )}
+
+            {hasPermission && (
+              <UserTabToggleButton
+                active={isInboxUserTabs}
+                onClick={() => setIsInboxUserTabs((prev) => !prev)}
+              />
+            )}
+
+            {hasPermission && (
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ height: 24, alignSelf: "center" }}
+              />
+            )}
+
+            {hasPermission && (
+              <ToggleButton
+                value="team"
+                size="small"
+                title="Select visible users"
+                selected={anchorTeamEl}
+                onClick={(e) => setAnchorTeamEl(e.currentTarget)}
+                color="primary"
+                sx={{ border: "none", borderRadius: "8px" }}
+              >
+                <RemoveRedEyeIcon fontSize="small" />
+              </ToggleButton>
+            )}
+
+            {/* Date Picker Trigger */}
             <Button
               variant="outlined"
               size="medium"
@@ -568,24 +605,13 @@ useEffect(() => {
               )}
             </Button>
 
+            <UnifiedThreadFilters
+              filters={filters}
+              handleUpdate={handleUpdate}
+            />
 
-
-          
-              <UnifiedThreadFilters filters={filters} handleUpdate={handleUpdate} />
-
-
-
-              {/* <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} /> */}
- 
-
-
-
-
-
-
+            {/* <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} /> */}
           </Stack>
-
-
 
           <Stack direction="row" spacing={1} alignItems="center">
             <ContextMenu
@@ -605,21 +631,15 @@ useEffect(() => {
               ]}
             />
           </Stack>
-
-                      
-
-
         </Stack>
 
         {isInboxUserTabs && hasPermission && (
           <div className="w-full animate-pop mt-3   ">
             <InboxUserTabs
               droppableId="inbox_users"
-              users={team.filter(u =>
-                visibleTabs.includes(u._id)
-              )}
+              users={team.filter((u) => visibleTabs.includes(u._id))}
               showAll={isAdmin && visibleTabs.includes("all")}
-              showUnassigned={ isAdmin && visibleTabs.includes("unassigned")}
+              showUnassigned={isAdmin && visibleTabs.includes("unassigned")}
               activeValue={filters.userId || ""}
               // showAll={true}
               onChange={(userId) =>
@@ -656,20 +676,86 @@ useEffect(() => {
         {hasActiveFilters && (
           <>
             <Divider sx={{ mb: 2, borderStyle: "dashed" }} />
-            <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center" >
+            <Stack
+              direction="row"
+              spacing={1}
+              flexWrap="wrap"
+              alignItems="center"
+            >
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{
+                  mr: 1,
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                }}
+              >
+                {" "}
+                Active Filters:{" "}
+              </Typography>
 
-              <Typography variant="caption" color="text.secondary" sx={{ mr: 1, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, }} > Active Filters: </Typography>
+              {filters.category && (
+                <Chip
+                  size="small"
+                  label={`Category: ${filters.category}`}
+                  onDelete={() => handleUpdate({ category: "" })}
+                  sx={{ bgcolor: "action.selected", fontWeight: 500 }}
+                />
+              )}
 
-              {filters.category && ( <Chip size="small" label={`Category: ${filters.category}`} onDelete={() => handleUpdate({ category: "" })} sx={{ bgcolor: "action.selected", fontWeight: 500 }} /> )}
+              {filters.userId && (
+                <Chip
+                  size="small"
+                  label={`User: ${
+                    filters.userId === "unassigned"
+                      ? "unassigned"
+                      : users.find((u) => u._id === filters.userId)?.name ||
+                        "User"
+                  }`}
+                  onDelete={() => handleUpdate({ userId: "" })}
+                  sx={{ bgcolor: "action.selected", fontWeight: 500 }}
+                />
+              )}
 
-              {filters.userId && ( <Chip size="small" label={`User: ${ filters.userId === "unassigned" ? "unassigned" : users.find((u) => u._id === filters.userId)?.name || "User" }`} onDelete={() => handleUpdate({ userId: "" })} sx={{ bgcolor: "action.selected", fontWeight: 500 }} /> )}
+              {filters.startDate && (
+                <Chip
+                  size="small"
+                  icon={<FiCalendar size={12} />}
+                  label={`${dayjs(filters.startDate).format("MMM D")} - ${dayjs(
+                    filters.endDate,
+                  ).format("MMM D")}`}
+                  onDelete={() => handleUpdate({ startDate: "", endDate: "" })}
+                  sx={{ bgcolor: "action.selected", fontWeight: 500 }}
+                />
+              )}
 
-              {filters.startDate && ( <Chip size="small" icon={<FiCalendar size={12} />} label={`${dayjs(filters.startDate).format("MMM D")} - ${dayjs( filters.endDate, ).format("MMM D")}`} onDelete={() => handleUpdate({ startDate: "", endDate: "" })} sx={{ bgcolor: "action.selected", fontWeight: 500 }} /> )}
+              {filters.unreadOnly && (
+                <Chip
+                  size="small"
+                  label="Unread"
+                  onDelete={() => handleUpdate({ unreadOnly: false })}
+                  sx={{
+                    bgcolor: "primary.light",
+                    color: "primary.contrastText",
+                    fontWeight: 500,
+                  }}
+                />
+              )}
 
-              {filters.unreadOnly && ( <Chip size="small" label="Unread" onDelete={() => handleUpdate({ unreadOnly: false })} sx={{ bgcolor: "primary.light", color: "primary.contrastText", fontWeight: 500, }} /> )}
-
-              {filters.starred && ( <Chip size="small" label="Starred" onDelete={() => handleUpdate({ starred: false })} sx={{ bgcolor: "warning.light", color: "warning.contrastText", fontWeight: 500, }} /> )}
-
+              {filters.starred && (
+                <Chip
+                  size="small"
+                  label="Starred"
+                  onDelete={() => handleUpdate({ starred: false })}
+                  sx={{
+                    bgcolor: "warning.light",
+                    color: "warning.contrastText",
+                    fontWeight: 500,
+                  }}
+                />
+              )}
             </Stack>
           </>
         )}
@@ -710,10 +796,22 @@ useEffect(() => {
             },
           }}
         >
-
-          
           <Box sx={{ p: 2.5, width: 300 }}>
-            <Typography variant="caption" sx={{ display: "block", color: "text.secondary", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", mb: 1.5, ml: 0.5, }} > Quick Ranges </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                display: "block",
+                color: "text.secondary",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                mb: 1.5,
+                ml: 0.5,
+              }}
+            >
+              {" "}
+              Quick Ranges{" "}
+            </Typography>
 
             <Box
               sx={{
@@ -757,11 +855,21 @@ useEffect(() => {
 
             <Divider sx={{ my: 2.5, opacity: 0.6 }} />
 
-
-
-
-
-            <Typography variant="caption" sx={{ display: "block", color: "text.secondary", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", mb: 1.5, ml: 0.5, }} > Custom Range </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                display: "block",
+                color: "text.secondary",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                mb: 1.5,
+                ml: 0.5,
+              }}
+            >
+              {" "}
+              Custom Range{" "}
+            </Typography>
 
             <Stack spacing={2}>
               <DatePicker
@@ -806,126 +914,152 @@ useEffect(() => {
           </Box>
         </Menu>
 
-<Menu
-  anchorEl={anchorTeamEl}
-  open={Boolean(anchorTeamEl)}
-  onClose={() => setAnchorTeamEl(null)}
-  slotProps={{
-    paper: {
-      elevation: 0,
-      sx: {
-        width: 320,
-        borderRadius: '12px',
-        mt: 1,
-        border: '1px solid',
-         borderColor: 'divider',
-        boxShadow: '0px 10px 15px -3px rgba(0,0,0,0.1), 0px 4px 6px -2px rgba(0,0,0,0.05)',
-        p: 0.5,
-      },
-    },
-  }}
->
-  <Box sx={{ px: 2, py: 1 }}>
-    <Typography
-      variant="subtitle2"
-      sx={{
-        fontWeight: 700,
-        fontSize: '0.75rem',
-        textTransform: 'uppercase',
-        letterSpacing: '0.05rem',
-        color: 'text.secondary',
-      }}
-    >
-      Team Visibility
-    </Typography>
-  </Box>
-
-  {/* Main Categories */}
-  {isAdmin && (
-    <Stack spacing={0.5} sx={{ px: 1 }}>
-    {[
-      { id: 'all', label: 'All Conversations' },
-      { id: 'unassigned', label: 'Unassigned' }
-    ].map((item) => (
-      <MenuItem
-        key={item.id}
-        onClick={() => toggleTab(item.id)}
-        sx={{
-          borderRadius: '8px',
-          transition: 'all 0.2s',
-          display: 'flex',
-          justifyContent: 'space-between',
-          backgroundColor: visibleTabs.includes(item.id) ? 'action.selected' : 'transparent',
-          '&:hover': { backgroundColor: 'action.hover' },
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              bgcolor: visibleTabs.includes(item.id) ? 'primary.main' : 'action.disabled',
-              transition: 'background-color 0.3s',
-            }}
-          />
-          <Typography variant="body2" sx={{ fontWeight: visibleTabs.includes(item.id) ? 600 : 400 }}>
-            {item.label}
-          </Typography>
-        </Box>
-      </MenuItem>
-    ))}
-  </Stack>
-
-)}
-
-<Divider sx={{ my: 1, opacity: 0.6 }} />
-  {/* Team Members List */}
-  <Box sx={{ px: 1 }}>
-    <Typography
-      variant="caption"
-      sx={{ px: 1.5, py: 0.5, display: 'block', color: 'text.disabled', fontWeight: 600 }}
-    >
-      MEMBERS
-    </Typography>
- 
-    
-    <Box sx={{ maxHeight: 400, overflowY: 'auto', mt: 0.5 }}>
-      {team
-        .map((u) => {
-          const count = inboxStats?.userCounts?.find((us) => us.userId === u._id)?.count || 0;
-          const isActive = visibleTabs.includes(u._id);
-
-          return (
-            <MenuItem
-              key={u._id}
-              onClick={() => toggleTab(u._id)}
+        <Menu
+          anchorEl={anchorTeamEl}
+          open={Boolean(anchorTeamEl)}
+          onClose={() => setAnchorTeamEl(null)}
+          slotProps={{
+            paper: {
+              elevation: 0,
+              sx: {
+                width: 320,
+                borderRadius: "12px",
+                mt: 1,
+                border: "1px solid",
+                borderColor: "divider",
+                boxShadow:
+                  "0px 10px 15px -3px rgba(0,0,0,0.1), 0px 4px 6px -2px rgba(0,0,0,0.05)",
+                p: 0.5,
+              },
+            },
+          }}
+        >
+          <Box sx={{ px: 2, py: 1 }}>
+            <Typography
+              variant="subtitle2"
               sx={{
-                borderRadius: '8px',
-                mb: 0.5,
-                backgroundColor: isActive ? 'primary.lighter' : 'transparent', // Note: use 'action.selected' if custom colors aren't defined
-                '&:hover': { backgroundColor: 'action.hover' },
+                fontWeight: 700,
+                fontSize: "0.75rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.05rem",
+                color: "text.secondary",
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexGrow: 1 }}>
-                <Avatar 
-                  src={u?.avatar || ""}
-                  sx={{ 
-                    width: 24, 
-                    height: 24, 
-                    fontSize: '0.65rem', 
-                    bgcolor: isActive ? 'primary.main' : 'grey.400',
-                    fontWeight: 700 
+              Team Visibility
+            </Typography>
+          </Box>
+
+          {/* Main Categories */}
+          {isAdmin && (
+            <Stack spacing={0.5} sx={{ px: 1 }}>
+              {[
+                { id: "all", label: "All Conversations" },
+                { id: "unassigned", label: "Unassigned" },
+              ].map((item) => (
+                <MenuItem
+                  key={item.id}
+                  onClick={() => toggleTab(item.id)}
+                  sx={{
+                    borderRadius: "8px",
+                    transition: "all 0.2s",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    backgroundColor: visibleTabs.includes(item.id)
+                      ? "action.selected"
+                      : "transparent",
+                    "&:hover": { backgroundColor: "action.hover" },
                   }}
                 >
-                  {u?.avatar ? "" : u.name.charAt(0)}
-                </Avatar>
-                <Typography variant="body2" sx={{ fontWeight: isActive ? 600 : 400, flexGrow: 1 }}>
-                  {u.name} ({count})
-                </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        bgcolor: visibleTabs.includes(item.id)
+                          ? "primary.main"
+                          : "action.disabled",
+                        transition: "background-color 0.3s",
+                      }}
+                    />
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: visibleTabs.includes(item.id) ? 600 : 400,
+                      }}
+                    >
+                      {item.label}
+                    </Typography>
+                  </Box>
+                </MenuItem>
+              ))}
+            </Stack>
+          )}
 
+          <Divider sx={{ my: 1, opacity: 0.6 }} />
+          {/* Team Members List */}
+          <Box sx={{ px: 1 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                px: 1.5,
+                py: 0.5,
+                display: "block",
+                color: "text.disabled",
+                fontWeight: 600,
+              }}
+            >
+              MEMBERS
+            </Typography>
 
-{/*                   
+            <Box sx={{ maxHeight: 400, overflowY: "auto", mt: 0.5 }}>
+              {team.map((u) => {
+                const count =
+                  inboxStats?.userCounts?.find((us) => us.userId === u._id)
+                    ?.count || 0;
+                const isActive = visibleTabs.includes(u._id);
+
+                return (
+                  <MenuItem
+                    key={u._id}
+                    onClick={() => toggleTab(u._id)}
+                    sx={{
+                      borderRadius: "8px",
+                      mb: 0.5,
+                      backgroundColor: isActive
+                        ? "primary.lighter"
+                        : "transparent", // Note: use 'action.selected' if custom colors aren't defined
+                      "&:hover": { backgroundColor: "action.hover" },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5,
+                        flexGrow: 1,
+                      }}
+                    >
+                      <Avatar
+                        src={u?.avatar || ""}
+                        sx={{
+                          width: 24,
+                          height: 24,
+                          fontSize: "0.65rem",
+                          bgcolor: isActive ? "primary.main" : "grey.400",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {u?.avatar ? "" : u.name.charAt(0)}
+                      </Avatar>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: isActive ? 600 : 400, flexGrow: 1 }}
+                      >
+                        {u.name} ({count})
+                      </Typography>
+
+                      {/*                   
                 {count > 0 && (
                   <Chip
                     label={count}
@@ -940,38 +1074,32 @@ useEffect(() => {
                   />
                 )} */}
 
-
-                {isActive && (
-               <Chip
-                label="Selected"
-                size="small"
-                sx={{
-                  height: 18,
-                  fontSize: '0.65rem',
-                  fontWeight: 800,
-                 
-                   
-                   
-                }}
-              />
-                )}
-
-
-              </Box>
-            </MenuItem>
-          );
-        })}
-    </Box>
-  </Box>
-</Menu>
-
-
+                      {isActive && (
+                        <Chip
+                          label="Selected"
+                          size="small"
+                          sx={{
+                            height: 18,
+                            fontSize: "0.65rem",
+                            fontWeight: 800,
+                          }}
+                        />
+                      )}
+                    </Box>
+                  </MenuItem>
+                );
+              })}
+            </Box>
+          </Box>
+        </Menu>
       </Paper>
 
-      { <ManageCategoriesModal open={isCategoryModal} onClose={() => setIsCategoryModal(false)} /> }
-
-        
- 
+      {
+        <ManageCategoriesModal
+          open={isCategoryModal}
+          onClose={() => setIsCategoryModal(false)}
+        />
+      }
     </LocalizationProvider>
   );
 }

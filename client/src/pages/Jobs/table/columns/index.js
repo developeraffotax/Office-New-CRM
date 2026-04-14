@@ -47,18 +47,18 @@ export const getJobsColumns = (ctx) => {
     clientNameColumn(ctx),
     assignColumn(ctx),
     departmentsColumn(ctx),
-    hrsColumn(ctx),
-    yearEndColumn(ctx),
-    deadlineColumn(ctx),
-    jobDateColumn(ctx),
-    statusColumn(ctx),
-    jobStatusColumn(ctx),
-    ownerColumn(ctx),
-    budgetColumn(ctx),
-    timerColumn(ctx),
-    actionsColumn(ctx),
-    emailColumn(ctx),
-    phoneColumn(ctx),
+    // hrsColumn(ctx),
+  yearEndColumn(ctx),
+  deadlineColumn(ctx),
+ jobDateColumn(ctx),
+    // statusColumn(ctx),
+    // jobStatusColumn(ctx),
+    // ownerColumn(ctx),
+    // budgetColumn(ctx),
+    // timerColumn(ctx),
+    // actionsColumn(ctx),
+    // emailColumn(ctx),
+    // phoneColumn(ctx),
      
   ];
 
@@ -66,30 +66,30 @@ export const getJobsColumns = (ctx) => {
   let columns = [...baseColumns];
 
   // Conditionally push extra columns
-  if ((auth?.user?.role?.name === "Admin" || access.includes("Fee")) && !showUniqueClients) {
-    columns.push(feeColumn(ctx));
-  }
+  // if ((auth?.user?.role?.name === "Admin" || access.includes("Fee")) && !showUniqueClients) {
+  //   columns.push(feeColumn(ctx));
+  // }
 
-  if ((auth?.user?.role?.name === "Admin" || access.includes("Fee")) && showUniqueClients) {
-    columns.push(paidFeeColumn(ctx));
-  }
+  // if ((auth?.user?.role?.name === "Admin" || access.includes("Fee")) && showUniqueClients) {
+  //   columns.push(paidFeeColumn(ctx));
+  // }
 
-  if (auth?.user?.role?.name === "Admin" || access.includes("Source")) {
-    columns.push(sourceColumn(ctx));
-    columns.push(partnerColumn(ctx));
-    columns.push(clientTypeColumn(ctx));
-  }
+  // if (auth?.user?.role?.name === "Admin" || access.includes("Source")) {
+  //   columns.push(sourceColumn(ctx));
+  //   columns.push(partnerColumn(ctx));
+  //   columns.push(clientTypeColumn(ctx));
+  // }
 
  
 
-  if (auth?.user?.role?.name === "Admin" || access.includes("Data")) {
-    columns.push(pocColumn(ctx));
-  }
+  // if (auth?.user?.role?.name === "Admin" || access.includes("Data")) {
+  //   columns.push(pocColumn(ctx));
+  // }
 
-  if (auth?.user?.role?.name === "Admin") {
-    columns.push(acColumn(ctx));
-     columns.push(signupDateColumn(ctx));
-  }
+  // if (auth?.user?.role?.name === "Admin") {
+  //   columns.push(acColumn(ctx));
+  //    columns.push(signupDateColumn(ctx));
+  // }
 
    columns.push(labelsColumn(ctx))
   return columns;

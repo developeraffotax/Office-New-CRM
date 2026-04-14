@@ -1,13 +1,6 @@
 export const departmentsColumn = (ctx) => {
 
-
-    return         {
-          id: "Departments",
-          accessorKey: "job.jobName",
-          header: "Departments",
-          filterFn: "equals",
-          Header: ({ column }) => {
-            const deparments = [
+  const deparments = [
               "Bookkeeping",
               "Payroll",
               "Vat Return",
@@ -16,6 +9,15 @@ export const departmentsColumn = (ctx) => {
               "Company Sec",
               "Address",
             ];
+
+
+    return         {
+          id: "Department",
+          accessorKey: "job.jobName",
+          header: "Department",
+          
+          Header: ({ column }) => {
+            
             return (
               <div className=" flex flex-col gap-[2px]">
                 <span
@@ -25,7 +27,7 @@ export const departmentsColumn = (ctx) => {
                     column.setFilterValue("");
                   }}
                 >
-                  Departments
+                  Department
                 </span>
                 <select
                   value={column.getFilterValue() || ""}
@@ -42,17 +44,12 @@ export const departmentsColumn = (ctx) => {
               </div>
             );
           },
-          filterSelectOptions: [
-            "Bookkeeping",
-            "Payroll",
-            "Vat Return",
-            "Personal Tax",
-            "Accounts",
-            "Company Sec",
-            "Address",
-          ],
+         
 
+            filterFn: "equals",
+          filterSelectOptions: deparments,
           filterVariant: "select",
+
           size: 105,
           minSize: 100,
           maxSize: 140,

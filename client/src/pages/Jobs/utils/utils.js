@@ -1,3 +1,5 @@
+import { columnFieldMap } from "../constants";
+
 export   // -----------Handle Custom date filter------
   const getCurrentMonthYear = () => {
     const today = new Date();
@@ -55,3 +57,20 @@ export const trimPayload = (obj) => {
 
 
 
+
+
+
+
+export const buildFilters = (columnFilters) => {
+  const filters = {};
+
+  columnFilters.forEach((f) => {
+    const dbField = columnFieldMap[f.id];
+
+    if (dbField && f.value) {
+      filters[dbField] = f.value;
+    }
+  });
+
+  return filters;
+};

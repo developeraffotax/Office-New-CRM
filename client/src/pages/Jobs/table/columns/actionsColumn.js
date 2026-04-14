@@ -21,7 +21,7 @@ export const actionsColumn = ({
   auth
 }) => {
   return {
-    id: "Actions",
+    id: "actions",
     accessorKey: "actions",
     header: "Actions",
 

@@ -12,6 +12,7 @@ import {
   deleteClientJob,
   deleteQuality,
   deleteSubTask,
+  getAllClientJobs,
   getAllClients,
   getClientId,
   getClientJobs,
@@ -52,6 +53,9 @@ router.post("/create/client/job", requiredSignIn, createJob);
 
 // Get All Client
 router.get("/all/client/job", requiredSignIn, getAllClients);
+
+
+router.get("/all/client/jobs", requiredSignIn, getAllClientJobs);
 
 // Update Fee
 router.patch("/update/fee/:id", requiredSignIn, updateFee);

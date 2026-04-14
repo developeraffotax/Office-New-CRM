@@ -4,7 +4,7 @@ export const acColumn = ({updateActiveClient}) => {
 
 
     return {
-                id: "AC",
+                id: "ac",
                 accessorKey: "activeClient",
                 Header: ({ column }) => {
                   return (

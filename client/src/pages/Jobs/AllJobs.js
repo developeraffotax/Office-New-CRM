@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
  
 import { style } from "../../utlis/CommonStyle";
 import NewJobModal from "../../components/Modals/NewJobModal";
@@ -11,25 +11,24 @@ import {
   useMaterialReactTable,
 } from "material-react-table";
 import {  format, formatISO } from "date-fns";
-import {  MdInsertComment } from "react-icons/md";
+ 
 import toast from "react-hot-toast";
  
 import Loader from "../../utlis/Loader";
 import {   TbLoader2 } from "react-icons/tb";
-import { IoClose, IoTicketOutline } from "react-icons/io5";
+import { IoClose } from "react-icons/io5";
 import JobDetail from "./JobDetail";
 import { IoBriefcaseOutline } from "react-icons/io5";
-import { MdDriveFileMoveOutline } from "react-icons/md";
-import { Timer } from "../../utlis/Timer";
+ 
 import JobCommentModal from "./JobCommentModal";
 import { MdAutoGraph } from "react-icons/md";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { TbLoader } from "react-icons/tb";
-import { Box, Button, LinearProgress,   Popover, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, LinearProgress,   } from "@mui/material";
 import { MdOutlineModeEdit } from "react-icons/md";
 import { mkConfig, generateCsv, download } from "export-to-csv";
-import { IoIosCheckmarkCircleOutline, IoMdDownload } from "react-icons/io";
-import { GoCheckCircleFill, GoEye } from "react-icons/go";
+import { IoMdDownload } from "react-icons/io";
+import {   GoEye } from "react-icons/go";
 import { GoEyeClosed } from "react-icons/go";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
  
@@ -42,16 +41,15 @@ import AddDataLabel from "../../components/Modals/AddDataLabel";
 import InactiveClients from "./InactiveClients";
 import Swal from "sweetalert2";
 import HandleQualityModal from "../../components/Modals/HandleQualityModal";
-import TicketsPopUp from "../../components/shared/TicketsPopUp";
+ 
  
 import { BsPersonCheckFill } from "react-icons/bs";
 import QuickAccess from "../../utlis/QuickAccess";
 import { filterByRowId } from "../../utlis/filterByRowId";
-import CompanyInfo from "../../utlis/CompanyInfo";
-import { FiPlusSquare } from "react-icons/fi";
+ 
+ 
 import NewTicketModal from "../../utlis/NewTicketModal";
-import DateRangePopover from "../../utlis/DateRangePopover";
-import { DateFilterFn } from "../../utlis/DateFilterFn";
+ 
 import { useDispatch, useSelector } from "react-redux";
  
 import { setFilterId, setSearchValue } from "../../redux/slices/authSlice";
@@ -64,6 +62,8 @@ import OutsideFilter from "./utils/OutsideFilter";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import SelectedUsers from "../../components/SelectedUsers";
 import { openModal } from "../../redux/slices/globalModalSlice";
+import { columnData, dateStatus, departments, status, statusInit } from "./constants";
+import { buildFilters } from "./utils/utils";
  
  
  
@@ -177,6 +177,7 @@ export default function AllJobs() {
  
  
 
+   const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsers("jobs:selected_users", users);
 
 
 
@@ -187,38 +188,11 @@ export default function AllJobs() {
 
 
 
+  const boxRef = useRef(null);
   const [showcolumn, setShowColumn] = useState(false);
-    const boxRef = useRef(null);
   const [showQuickList, setShowQuickList] = useState(false);
   const [qualityData, setQualityData] = useState([]);
-  const columnData = [
-    "jobRef",
-    "companyName",
-    "clientName",
-    "Assign",
-    "Departments",
-    "Hrs",
-    "Year_End",
-    "Deadline",
-    "Job_Date",
-    "Status",
-    "Job_Status",
-    "Owner",
-    "Budget",
-    "Timer",
-    // "Comments",
-    "Labels",
-    "Fee",
-    "Source",
-    "ClientType",
-    "POC",
-    "AC",
-    "SignUp_Date",
-    "Actions",
-    "Partner",
-    "email",
-    "phone",
-  ];
+
   const [columnVisibility, setColumnVisibility] = useState(() => {
     const savedVisibility = JSON.parse(
       localStorage.getItem("columnVisibility")
@@ -242,11 +216,8 @@ export default function AllJobs() {
   };
 
  
-      const [pagination, setPagination] = useState({
-        pageIndex: 0,
-        pageSize: 30, // ✅ default page size
-      });
-
+    
+  
 
     const [searchParams] = useSearchParams();
     const comment_taskId = searchParams.get('comment_taskId');
@@ -255,7 +226,21 @@ export default function AllJobs() {
 
 
 
-      const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsers("jobs:selected_users", users);
+
+      // Pagination
+const [pagination, setPagination] = useState({
+  pageIndex: 0,
+  pageSize: 20,
+});
+
+// Sorting
+const [sorting, setSorting] = useState([]);
+
+// Column Filters
+const [columnFilters, setColumnFilters] = useState([]);
+
+// Total rows
+const [rowCount, setRowCount] = useState(0);
 
 
 
@@ -286,76 +271,13 @@ export default function AllJobs() {
 
 
 
-  
-    // useEffect(() => {
-    //   if (comment_taskId) {
-    //     setJobId(comment_taskId);
-    //     setIsComment(true);
-
-    //     setRowSelection(prev => {
-    //     return {
-    //       ...prev,
-    //       [comment_taskId]:true
-    //     }
-    //   })
-
-      
-    // searchParams.delete("comment_taskId");
-    // navigate({ search: searchParams.toString() }, { replace: true });
-
-    //   }
-  
-    // }, [comment_taskId, searchParams, navigate]);
-
-
+ 
 
 
 
   // Extract the current path
   const currentPath = location.pathname;
 
-  const departments = [
-    "All",
-    "Bookkeeping",
-    "Payroll",
-    "Vat Return",
-    "Personal Tax",
-    "Accounts",
-    "Company Sec",
-    "Address",
-  ];
-
-  const dateStatus = ["Due", "Overdue", "Upcoming"];
-
-  const status = [
-    "Quote",
-    "Data",
-    "Progress",
-    // "Queries",
-    "Revision",
-    "Approval",
-    "Submission",
-    "Billing",
-    "Feedback",
-    "Missing Info",
-    "Inactive",
-    
-  ];
-
-    const statusInit = [
-    "Quote",
-    "Data",
-    "Progress",
-    // "Queries",
-    "Revision",
-    "Approval",
-    "Submission",
-    "Billing",
-    "Feedback",
-    "Missing Info",
-    
-    
-  ];
  
  
   const [isMoving, setIsMoving] = useState(false)
@@ -366,9 +288,7 @@ export default function AllJobs() {
 
     // Get today's date
     const today = new Date();
-
-    // Add one month to today's date
-    // const nextMonthDate = addMonths(today, 1);
+ 
 
     // Format the new date to ISO format (including the time and timezone)
     const followUpDate = formatISO(today);
@@ -436,17 +356,7 @@ export default function AllJobs() {
 
 
 
-
-          // const res = await axios.delete(
-          //   `${process.env.REACT_APP_API_URL}/api/v1/client/delete/job/${client._id}`
-          // );
-          // if (res.data) {
-          //   const filterData = tableData.filter((item) => item._id !== client._id);
-          //   setTableData(filterData);
-          // }
-        
  
-
 
       }
     } catch (error) {
@@ -471,27 +381,7 @@ export default function AllJobs() {
 
 
 
-  
-
-  useEffect(() => {
-  const handleKeyDown = (e) => {
-
-    if (e.key === "Escape") {
-      
-      setShowDetail(false)
-      
-    }
-  };
-
-  window.addEventListener("keydown", handleKeyDown);
-
-  return () => {
-    window.removeEventListener("keydown", handleKeyDown);
-  };
-}, []);
-
-
-
+ 
 
 
 
@@ -513,35 +403,7 @@ export default function AllJobs() {
     setTimerId(JSON.parse(timeId)); 
   }, [anyTimerRunning]);
 
-  // -----------Total Hours-------->
-
-  // useEffect(() => {
-  //   const calculateTotalHours = (data) => {
-  //     return data.reduce((sum, client) => sum + Number(client.totalHours), 0);
-  //   };
-
-  //   if (active === "All" && !active1) {
-  //     setTotalHours(calculateTotalHours(tableData).toFixed(0));
-  //   } else if (filterData) {
-  //     setTotalHours(calculateTotalHours(filterData).toFixed(0));
-  //   }
-  // }, [tableData, filterData, active, active1]);
-
-  // ------------Total Fee-------->
-  // useEffect(() => {
-  //   const calculateTotalFee = (data) => {
-  //     return data.reduce((sum, client) => sum + Number(client.fee), 0);
-  //   };
-
-  //   console.log("USE EFFECT RUN FOR THE FEE CALCULATE< ", filterData)
-  //   if (active === "All") {
-  //     setTotalFee(calculateTotalFee(tableData).toFixed(0));
-  //   } else if (filterData) {
-  //     setTotalFee(calculateTotalFee(filterData).toFixed(0));
-  //   }
-  // }, [tableData, filterData, active, active1]);
-
-
+ 
 
 
   const getUniqueClients = (clients) => {
@@ -572,49 +434,172 @@ export default function AllJobs() {
 
 
 
-  // ---------------All Client_Job Data----------->
-  const allClientJobData = async () => {
-    setLoading(true);
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/job`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Fetch Jobs with:
+ * - Pagination
+ * - Sorting
+ * - Column Filters
+ * - Custom Filters
+ */
+
+const allClientJobData = useCallback(async () => {
+
+  setLoading(true);
+
+  try {
+
+    // ======================================================
+    // BUILD SORT PARAMS
+    // ======================================================
+
+    // const sortField =
+    //   sorting?.length > 0
+    //     ? sorting[0].id
+    //     : "currentDate";
+
+    // const sortOrder =
+    //   sorting?.length > 0
+    //     ? (sorting[0].desc ? "desc" : "asc")
+    //     : "desc";
+
+
+    // ======================================================
+    // BUILD COLUMN FILTERS
+    // ======================================================
+
+ 
+
+
+    const filters = buildFilters(columnFilters);
+
+
+    // ======================================================
+    // BUILD FINAL PARAMS
+    // ======================================================
+
+    const params = {
+
+      // Pagination
+      page: pagination.pageIndex + 1,
+      limit: pagination.pageSize,
+
+      // Sorting
+      // sortField,
+      // sortOrder,
+
+      // Global Search
+      search: searchValue || "",
+
+      // Custom Filters
+      // jobStatus: activeBtn || "",
+      // lead: lead || "",
+      // jobHolder: jobHolder || "",
+      // clientType: clientType || "",
+      // partner: filterId || "",
+
+      // Column Filters
+      ...filters,
+
+    };
+
+
+    // ======================================================
+    // API CALL
+    // ======================================================
+
+    const { data } = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/jobs`,
+      { params }
+    );
+
+
+    // ======================================================
+    // HANDLE RESPONSE
+    // ======================================================
+
+    if (data?.success) {
+
+      setTableData(data.clients || []);
+
+      setRowCount(
+        data?.pagination?.total || 0
       );
-      if (data) {
-        setTableData(data?.clients);
-        setLoading(false);
-      }
-    } catch (error) {
-      setLoading(false);
-      console.log(error);
-      toast.error(error?.response?.data?.message || "Error in client Jobs");
+
     }
-  };
 
+  } catch (error) {
 
+    console.log(error);
+
+    toast.error(
+      error?.response?.data?.message ||
+      "Error loading jobs"
+    );
+
+  } finally {
+
+    setLoading(false);
+
+  }
+
+}, [
+
+  // Pagination (SAFE way)
+  pagination.pageIndex,
+  pagination.pageSize,
+
+  // Sorting
+  // sorting,
+
+  // Column Filters
+  columnFilters,
+
+  // Global Search
+  searchValue,
+
+  // Custom Filters
+  // activeBtn,
+  // lead,
+  // jobHolder,
+  // clientType,
+  // filterId,
+
+]);
   
 
   useEffect(() => {
 
-    if(showUniqueClients) {
-      setTableData(prev => {
-        return getUniqueClients(prev)
-      })
-      
-    } else {
-     
-      allClientJobData();
-    }
+   allClientJobData();
 
 
-  }, [showUniqueClients])
+  }, [allClientJobData])
 
 
-
-  // useEffect(() => {
-  //   allClientJobData();
-  //   // eslint-disable-next-line
-  // }, []);
-
+ 
   // -----------Get Client without Showing Loading-------->
   const allClientData = async () => {
     setIsLoad(true);
@@ -639,19 +624,7 @@ export default function AllJobs() {
       setIsLoad(false);
     }
   };
-
-  // Socket
-  // useEffect(() => {
-  //   socketId.on("newJob", () => {
-  //     allClientData();
-  //   });
-
-  //   return () => {
-  //     socketId.off("newJob", allClientData);
-  //   };
-     
-  // }, [socketId]);
-
+ 
   //   Get All Labels
   const getlabel = async () => {
     try {
@@ -812,12 +785,7 @@ export default function AllJobs() {
     setFilterData([...filteredData]);
   };
 
-  // Update Filter
-  // useEffect(() => {
-  //   filterByDepStat(active1, active);
-
-  //   // eslint-disable-next-line
-  // }, [tableData, filterData, active1, active]);
+ 
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
@@ -1096,10 +1064,7 @@ export default function AllJobs() {
           )
         );
         toast.success("Job lead updated!");
-        // Socket
-        // socketId.emit("addJob", {
-        //   note: "New Task Added",
-        // });
+        
       }
     } catch (error) {
       console.error("Error updating status", error);
@@ -1137,19 +1102,7 @@ export default function AllJobs() {
         );
 
         toast.success("Job holder updated!");
-        // Socket
-        // socketId.emit("addJob", {
-        //   note: "New Task Added",
-        // });
-        // Send Socket Notification
-        // socketId.emit("notification", {
-        //   title: "New Job Assigned",
-        //   redirectLink: "/job-planning",
-        //   description: data?.notification?.description,
-        //   taskId: data?.notification?.taskId,
-        //   userId: data?.notification?.userId,
-        //   status: "unread",
-        // });
+ 
       }
     } catch (error) {
       console.error("Error updating status", error);
@@ -1196,10 +1149,7 @@ export default function AllJobs() {
       if (data) {
         setShowDetail(false);
         toast.success("Client job deleted successfully!");
-        // Socket
-        // socketId.emit("addJob", {
-        //   note: "New Task Added",
-        // });
+         
       }
     } catch (error) {
       console.log(error);
@@ -1311,28 +1261,7 @@ export default function AllJobs() {
     download(csvConfig)(csv);
   };
 
-  // Close Comment Box to click anywhere
-//   useEffect(() => {
-//      const handleClickOutside = (event) => {
-
-         
-//   const clickInside =
-//     commentStatusRef.current?.contains(event.target) ||
-//     document.querySelector(".MuiPopover-root")?.contains(event.target) || // for MUI Menu
-//     document.querySelector(".EmojiPickerReact")?.contains(event.target) || // for emoji picker
-//     document.querySelector(".MuiDialog-root")?.contains(event.target); // ✅ For Dialog
-
-//   if (!clickInside) {
-//     setIsComment(false);
-//   }
-// };
-
-//     document.addEventListener("mousedown", handleClickOutside);
-//     return () => document.removeEventListener("mousedown", handleClickOutside);
-//   }, []);
-
-
-
+ 
 
 
 
@@ -1549,19 +1478,68 @@ const ctx = useMemo(() => {
     table.setGlobalFilter("");
   };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   const table = useMaterialReactTable({
     columns,
-    data:
-      active === "All" && !active1 && !filterId && !searchValue
-        ? tableData
-        : filterData,
+    data: tableData,
     getRowId: (row) => row._id,
 
-     
+    manualPagination: true,
+    manualFiltering: true,
+    // manualSorting: true,
+
+    // Total rows from backend
+    rowCount: rowCount,
+    enablePagination: true,
+    onPaginationChange: setPagination,  
+    autoResetPageIndex: false,
+
+    
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "850px" } },
+    muiTableContainerProps: { sx: { maxHeight: "800px",  } },
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -1571,11 +1549,10 @@ const ctx = useMemo(() => {
     enableTopToolbar: true,
     enableBottomToolbar: true,
     enableRowSelection: true,
-    // enableColumnPinning: true,
-     
-    // enableRowVirtualization: true,
-    // enableColumnVirtualization: true,
+ 
     onRowSelectionChange: setRowSelection,
+ 
+    onColumnFiltersChange: setColumnFilters,
 
     initialState: {
       columnVisibility: {
@@ -1583,14 +1560,34 @@ const ctx = useMemo(() => {
       }
     },
 
-    renderTopToolbar:() => (
+    
+
+
+    state: {
+    rowSelection,
+    pagination,
+    sorting,
+    columnFilters,
+    // globalFilter: searchValue,
+    isLoading: loading,
+    showProgressBars: false,
+    showSkeletons: false,
+    showLoadingOverlay: false,
+    
+    density: "compact",
+
+  },
+
+
+
+  renderTopToolbar:() => (
       
       <div style={{ width: '100%' }}>
-        {isMoving && (
+        {loading && (
           <LinearProgress
             sx={{
               width: '100%',
-              marginBottom: '16px', // Space between the progress bar and table
+              
                
             }}
           />
@@ -1598,59 +1595,12 @@ const ctx = useMemo(() => {
       </div>
     ),
 
-    // enableRowActions: true,
 
-    // renderRowActionMenuItems: ({ closeMenu }) => [
-    //   <MenuItem
-    //     key={0}
-    //     onClick={() => {
-    //       // View profile logic...
-    //       closeMenu();
-    //     }}
-    //     sx={{ m: 0 }}
-    //   >
-    //     <ListItemIcon>
-    //       <MdAccountCircle />
-    //     </ListItemIcon>
-    //     View Profile
-    //   </MenuItem>,
-    //   <MenuItem
-    //     key={1}
-    //     onClick={() => {
-    //       // Send email logic...
-    //       closeMenu();
-    //     }}
-    //     sx={{ m: 0 }}
-    //   >
-    //     <ListItemIcon>
-    //       <BiSend />
-    //     </ListItemIcon>
-    //     Send Email
-    //   </MenuItem>,
-    // ],
+ 
 
 
-     
-
-    // state: { rowSelection,  columnPinning: { right: ['mrt-row-actions'],}  },
-    state: { rowSelection,  pagination, density: "compact"  },
-    // enableEditing: true,
-    // state: { isLoading: loading },
-
-    enablePagination: true,
-    // initialState: {
-    //   pagination: { pageSize: 30 },
-    //   pageSize: 20,
-    //   density: "compact",
-    //   // columnPinning: {
-        
-    //   //   right: ['mrt-row-actions'],
-    //   // },
-    // },
-
-    onPaginationChange: setPagination, // ✅ Hook for page changes
-
-    autoResetPageIndex: false,
+ 
+  
 
     muiTableHeadCellProps: {
       style: {
@@ -1661,16 +1611,32 @@ const ctx = useMemo(() => {
         padding: ".7rem 0.3rem",
       },
     },
-    muiTableBodyCellProps: {
-      sx: {
-        border: "1px solid rgba(203, 201, 201, 0.5)",
-      },
-    },
+
+
+
+  muiTableBodyCellProps: {
+  sx: {
+    border: "none",
+    borderBottom: "1px solid rgba(203, 201, 201, 0.5)",
+    borderRight: "1px solid rgba(203, 201, 201, 0.5)",
+  },
+},
+
+
+
+
     muiTableProps: {
       sx: {
+          
         "& .MuiTableHead-root": {
           backgroundColor: "#f0f0f0",
+           
         },
+        
+        border: "1px solid rgba(203, 201, 201, 0.5)",
+     
+        overflow: "hidden",
+       
         tableLayout: "auto",
         fontSize: "13px",
         // border: "1px solid rgba(81, 81, 81, .5)",
@@ -1680,6 +1646,15 @@ const ctx = useMemo(() => {
       },
     },
 
+
+
+
+
+
+
+
+
+    
     renderTopToolbarCustomActions: ({ table }) => {
       const handleClearFilters = () => {
         table.setColumnFilters([]);
@@ -1713,6 +1688,53 @@ const ctx = useMemo(() => {
       );
     },
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // -------Update Bulk Jobs------------->
 
@@ -2216,18 +2238,7 @@ useEffect(() => {
           >
             <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
           </span>
-          {/* <span
-            className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
-              activeBtn === "due" && "bg-orange-500 text-white"
-            }`}
-            onClick={() => {
-              setActiveBtn("due");
-              setShowDue(!showDue);
-            }}
-            title="Filter by Status"
-          >
-            <TbCalendarDue className="h-6 w-6  cursor-pointer" />
-          </span> */}
+          
           <span
             className={` p-1 rounded-md hover:shadow-md mb-1 cursor-pointer border ${
               activeBtn === "status" && showStatus && "bg-orange-500 text-white"
@@ -2279,12 +2290,7 @@ useEffect(() => {
             className={` p-[6px] rounded-md hover:shadow-md mb-1 cursor-pointer border `}
             onClick={() => {
               allClientData();
-              // setActive("All");
-              // setActiveBtn("");
-              // setShowStatus(false);
-              // setShowJobHolder(false);
-              // setShowDue(false);
-              // setActive1("");
+              
               dispatch(setFilterId(""));
             }}
             title="Refresh Data"
@@ -2510,16 +2516,7 @@ useEffect(() => {
                 </select>
               </div>
 
-              {/* <div className=" z-[999]">
-                <Select
-                  options={qualityOptions}
-                  value={qualities}
-                  onChange={setQualities}
-                  // isMulti
-                  placeholder="Quality Check"
-                  className="min-w-[8rem]"
-                />
-              </div> */}
+               
 
               <div className="flex items-center justify-end pl-4">
                 <button
@@ -2543,27 +2540,7 @@ useEffect(() => {
         {/* ----------Job_Holder Summery Filters---------- */}
         {showJobHolder && activeBtn === "jobHolder" && (
           <>
-            {/* <div className="w-full  py-2 ">
-              <div className="flex items-center flex-wrap gap-4">
-                {users
-                  ?.filter((user) => getJobHolderCount(user, active) > 0)
-                  .map((user, i) => (
-                    <div
-                      className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                        active1 === user &&
-                        "  border-b-2 text-orange-600 border-orange-600"
-                      }`}
-                      key={i}
-                      onClick={() => {
-                        setActive1(user);
-                        filterByDepStat(user, active);
-                      }}
-                    >
-                      {user} ({getJobHolderCount(user, active)})
-                    </div>
-                  ))}
-              </div>
-            </div> */}
+            
             <div className="w-full  py-2 max-lg:hidden">
               <div className="flex items-center flex-wrap gap-4">
                 <DragDropContext onDragEnd={handleUserOnDragEnd}>
@@ -2649,22 +2626,7 @@ useEffect(() => {
                   >
                     {stat} ({getStatusCount(stat, active)})
                   </div>
-
-                  //  <div
-                  //   className={`py-1 rounded-full px-3 cursor-pointer font-[500] text-[13px] border shadow-sm  ${
-                  //     active2 === stat &&
-                  //     "    bg-gray-200 "
-                  //   }`}
-                  //   key={i}
-                  //   onClick={() => {
-                  //     setActive2(stat);
-                  //     // filterByDepStat(stat, active);
-
-                  //      setColumnFromOutsideTable("Job_Status", stat);
-                  //   }}
-                  // >
-                  //   {stat} ({getStatusCount(stat, active)})
-                  // </div>  
+ 
                 ))}
               </div>
 
@@ -2677,7 +2639,7 @@ useEffect(() => {
             
 
 
-            <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
+            {/* <hr className="mb-1 bg-gray-300 w-full h-[1px]" /> */}
           </>
         )}
 
@@ -2802,17 +2764,11 @@ useEffect(() => {
           </div>
         ) : (
           <>
-            {loading ? (
-              <div className="flex items-center justify-center w-full h-screen px-4 py-4">
-                <Loader />
-              </div>
-            ) : (
-              <div className="w-full min-h-[20vh] relative ">
+            <div className="w-full min-h-[20vh] relative ">
                 <div className="h-full overflow-y-auto relative">
                   <MaterialReactTable table={table}  />
                 </div>
               </div>
-            )}
           </>
         )}
       </div>
@@ -2820,13 +2776,7 @@ useEffect(() => {
       {/* ------------Add Client_Job Modal -------------*/}
       {isOpen && (
         <div className="fixed top-0 left-0 w-full min-h-full overflow-y-auto z-[999] bg-gray-100   flex items-center justify-center py-6  px-4">
-          {/* <span
-            className="absolute  top-[4px] right-[.8rem]  cursor-pointer z-10 p-1 rounded-lg bg-white/50 hover:bg-gray-300/70 transition-all duration-150 flex items-center justify-center"
-            onClick={() => setIsOpen(false)}
-          >
-            <CgClose className="h-5 w-5 text-black" />
-          </span> */}
-
+          
  
           <NewJobModal
             setIsOpen={setIsOpen}
@@ -2838,25 +2788,7 @@ useEffect(() => {
       {/*---------------Job Details---------------*/}
 
       {showDetail && (
-        // <div className="fixed right-0 top-[3.8rem] z-[999] bg-gray-100 w-[97%] sm:w-[37%] 3xl:w-[26%] h-[calc(103vh-0rem)] py-3 px-3 ">
-        //   <div className="flex items-center justify-between">
-        //     <h3 className="text-lg font-semibold">Company: {companyName}</h3>
-        //     <span
-        //       className="p-1 rounded-md bg-gray-50 border  hover:shadow-md hover:bg-gray-100"
-        //       onClick={() => setShowDetail(false)}
-        //     >
-        //       <IoClose className="h-5 w-5 cursor-pointer" />
-        //     </span>
-        //   </div>
-        //   <JobDetail
-        //     clientId={clientId}
-        //     handleStatus={handleStatusChange}
-        //     allClientJobData={allClientJobData}
-        //     handleDeleteJob={handleDeleteJob}
-        //     users={users}
-        //     allClientData={allClientData}
-        //   />
-        // </div>
+   
 
 
 

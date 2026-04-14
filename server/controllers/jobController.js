@@ -8,6 +8,7 @@ import moment from "moment";
 import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
 import { emitJobUpdate } from "../utils/customFns/emitJobUpdate.js";
 import subtaskListModel from "../models/subtaskListModel.js";
+import { buildJobsQuery } from "./jobController.utils.js";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
@@ -2777,3 +2778,230 @@ export const getClientId = async (req, res) => {
     });
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const getDatePresetRange = (preset) => {
+  const today = new Date();
+
+  const startOfToday = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+
+  const endOfToday = new Date(startOfToday);
+  endOfToday.setDate(endOfToday.getDate() + 1);
+
+  switch (preset) {
+
+    case "Expired":
+      return {
+        $lt: startOfToday,
+      };
+
+    case "Today":
+      return {
+        $gte: startOfToday,
+        $lt: endOfToday,
+      };
+
+    case "Tomorrow": {
+      const tomorrow = new Date(startOfToday);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const nextDay = new Date(tomorrow);
+      nextDay.setDate(nextDay.getDate() + 1);
+
+      return {
+        $gte: tomorrow,
+        $lt: nextDay,
+      };
+    }
+
+    case "In 7 days": {
+      const future = new Date(startOfToday);
+      future.setDate(future.getDate() + 7);
+
+      return {
+        $gte: startOfToday,
+        $lte: future,
+      };
+    }
+
+    case "In 15 days": {
+      const future = new Date(startOfToday);
+      future.setDate(future.getDate() + 15);
+
+      return {
+        $gte: startOfToday,
+        $lte: future,
+      };
+    }
+
+    case "30 Days": {
+      const future = new Date(startOfToday);
+      future.setDate(future.getDate() + 30);
+
+      return {
+        $gte: startOfToday,
+        $lte: future,
+      };
+    }
+
+    case "60 Days": {
+      const future = new Date(startOfToday);
+      future.setDate(future.getDate() + 60);
+
+      return {
+        $gte: startOfToday,
+        $lte: future,
+      };
+    }
+
+    case "Upcoming":
+      return {
+        $gte: startOfToday,
+      };
+
+    default:
+      return null;
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getAllClientJobs = async (req, res) => {
+
+  try {
+
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+
+    const skip = (page - 1) * limit;
+
+    // Sorting
+    const sortField = req.query.sortField || "currentDate";
+    const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+
+    // Build query dynamically
+    const query = buildJobsQuery(req.query);
+
+    // Fetch clients
+    const clients = await jobsModel
+      .find(query)
+      .select(
+        "clientName companyName regNumber email phone fee currentDate totalHours totalTime jobRef job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data activeClient clientType partner clientPaidFee"
+      )
+      .populate("data")
+      // .sort({ [sortField]: sortOrder })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    // Count total
+    const total = await jobsModel.countDocuments(query);
+
+    res.status(200).send({
+      success: true,
+      message: "All clients",
+
+      clients,
+
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).send({
+      success: false,
+      message: "Error while get all job!",
+      error,
+    });
+  }
+};

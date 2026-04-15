@@ -9,8 +9,8 @@ export const assignColumn = ({
 
   return {
     id: "Assign",
-    accessorKey: "job.jobHolder",
-
+    // accessorKey: "job.jobHolder",
+    accessorFn: (row) => row.job?.jobHolder || "",
     // ======================================================
     // HEADER (PURE UI ONLY)
     // ======================================================

@@ -1,7 +1,8 @@
 export const phoneColumn = (ctx) => {
   return {
     id: "phone",
-    accessorKey: "phone",
+    // accessorKey: "phone",
+    accessorFn: (row) => row.phone || "",
 
     Header: ({ column }) => {
       const filterValue = column.getFilterValue() ?? "";
@@ -37,11 +38,6 @@ export const phoneColumn = (ctx) => {
       );
     },
 
-    // ✅ Case-insensitive phone filter
-    filterFn: (row, columnId, filterValue) => {
-      const cellValue = row.original[columnId]?.toString().toLowerCase() || "";
-      return cellValue.includes(filterValue.toLowerCase());
-    },
     minSize: 80,
     maxSize: 150,
     grow: true,

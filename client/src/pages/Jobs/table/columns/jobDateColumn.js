@@ -9,8 +9,8 @@ import { DEFAULT_DATE_FILTERS } from "../../constants";
 
 export const jobDateColumn = ({ handleUpdateDates }) => ({
   id: "Job_Date",
-  accessorKey: "job.workDeadline",
-
+  // accessorKey: "job.workDeadline",
+  accessorFn: (row) => row.job?.workDeadline || "",
   Header: ({ column }) => <DateHeader column={column} />,
 
   Cell: (props) => (

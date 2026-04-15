@@ -21,28 +21,18 @@ export const actionsColumn = ({
   auth
 }) => {
   return {
-    id: "actions",
-    accessorKey: "actions",
+    id: "Actions",
+    // accessorKey: "actions",
     header: "Actions",
 
     Cell: ({ cell, row }) => {
-      // related to comments
-      //const comments = cell.getValue();
+      
 
       const [isLoading, setIsLoading] = useState(false);
 
       const hasAddComplainPermission = hasSubrole(auth.user, "Jobs", "Complain")
       
-      const comments = row.original?.comments;
-      const [readComments, setReadComments] = useState([]);
-
-      useEffect(() => {
-        const filterComments = comments.filter(
-          (item) => item.status === "unread",
-        );
-        setReadComments(filterComments);
-        // eslint-disable-next-line
-      }, [comments]);
+ 
 
       const [anchorEl, setAnchorEl] = useState(null);
 
@@ -151,11 +141,7 @@ export const actionsColumn = ({
               <span className="text-[1rem] cursor-pointer relative">
                 <MdInsertComment className="h-5 w-5 text-orange-600 " />
               </span>
-              {/* {readComments?.length > 0 && (
-                  <span className="absolute -top-3 -right-3 bg-green-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
-                    {readComments?.length}
-                  </span>
-                )} */}
+ 
             </div>
           </div>
 

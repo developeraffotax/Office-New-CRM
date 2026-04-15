@@ -168,11 +168,43 @@ const applyDateFilter = (
 
 
 
+export const columnFieldMap = {
+  clientName: "clientName",
+  companyName: "companyName",
+  Status: "dueStatus", // process 
+  
+  Assign: "jobHolder",
+  Owner: "lead",
+  Year_End: "yearEnd",
+  Deadline: "deadline",
+  Job_Date: "jobDate",
+  Job_Status: "jobStatus",
+  Department: "jobName",
+  
+  Hrs: "totalHours",
+  Budget: "totalTime",
+
+  email: "email",
+  phone: "phone",
+
+  
+
+
+
+
+  
+};
+
+
+
+
 export const buildJobsQuery = (queryParams) => {
 
   const {
+    search,
     clientName,
     companyName,
+    dueStatus,
     jobHolder,
     lead,
     jobName,
@@ -181,7 +213,9 @@ export const buildJobsQuery = (queryParams) => {
     jobDate,
     deadline,
     clientType,
-    search,
+    email,
+    phone,
+    label,
   } = queryParams;
 
   const query = {
@@ -190,6 +224,12 @@ export const buildJobsQuery = (queryParams) => {
   };
 
   console.log(queryParams);
+
+  /*
+  ==========================================
+  BASIC FILTERS
+  ==========================================
+  */
 
   if (companyName) {
     query.companyName = companyName;
@@ -213,6 +253,34 @@ export const buildJobsQuery = (queryParams) => {
 
   if (jobStatus) {
     query["job.jobStatus"] = jobStatus;
+  }
+
+  if (label) {
+    query["label.name"] = label;
+  }
+
+  /*
+  ==========================================
+  EMAIL / PHONE SEARCH
+  ==========================================
+  */
+
+  if (email) {
+    const normalizedEmail = email.toLowerCase().trim();
+
+    query.email = {
+      $regex: normalizedEmail,
+      $options: "i",
+    };
+  }
+
+  if (phone) {
+    const normalizedPhone = phone.toLowerCase().trim();
+
+    query.phone = {
+      $regex: normalizedPhone,
+      $options: "i",
+    };
   }
 
   /*
@@ -241,11 +309,100 @@ export const buildJobsQuery = (queryParams) => {
 
   /*
   ==========================================
-  SEARCH
+  DUE STATUS FILTER (SERVER SIDE)
+  ==========================================
+  */
+
+  if (dueStatus) {
+    const normalizedDueStatus = dueStatus.toLowerCase().trim();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (normalizedDueStatus === "overdue") {
+
+      // deadline < today
+
+      query["job.jobDeadline"] = {
+        ...(query["job.jobDeadline"] || {}),
+        $lt: today,
+      };
+
+    }
+
+    else if (normalizedDueStatus === "due") {
+
+      // (yearEnd <= today AND deadline > today)
+      // OR (deadline === today)
+
+      query.$expr = {
+        $or: [
+
+          {
+            $and: [
+              {
+                $lte: [
+                  "$job.yearEnd",
+                  today,
+                ],
+              },
+              {
+                $gt: [
+                  "$job.jobDeadline",
+                  today,
+                ],
+              },
+            ],
+          },
+
+          {
+            $eq: [
+              {
+                $dateTrunc: {
+                  date: "$job.jobDeadline",
+                  unit: "day",
+                },
+              },
+              today,
+            ],
+          },
+
+        ],
+      };
+
+    }
+
+    else if (normalizedDueStatus === "upcoming") {
+
+      // deadline > today AND yearEnd > today
+
+      query.$expr = {
+        $and: [
+          {
+            $gt: [
+              "$job.jobDeadline",
+              today,
+            ],
+          },
+          {
+            $gt: [
+              "$job.yearEnd",
+              today,
+            ],
+          },
+        ],
+      };
+
+    }
+  }
+
+  /*
+  ==========================================
+  GLOBAL SEARCH
   ==========================================
   */
 
   if (search) {
+
     query.$or = [
       {
         clientName: {

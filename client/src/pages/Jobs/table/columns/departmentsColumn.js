@@ -13,9 +13,9 @@ export const departmentsColumn = (ctx) => {
 
     return         {
           id: "Department",
-          accessorKey: "job.jobName",
-          header: "Department",
-          
+          // accessorKey: "job.jobName",
+          // header: "Department",
+           accessorFn: (row) => row.job?.jobName || "", 
           Header: ({ column }) => {
             
             return (

@@ -6,7 +6,7 @@ export const timerColumn = ({auth, timerRef, timerId ,jid, play, setPlay, setIsS
 
     return         {
           id: "Timer",
-          accessorKey: "timertracker",
+          // accessorKey: "timertracker",
           Header: ({ column }) => {
             const [isRunning, setIsRunning] = useState(false);
 
@@ -36,9 +36,7 @@ export const timerColumn = ({auth, timerRef, timerId ,jid, play, setPlay, setIsS
             );
           },
           Cell: ({ cell, row }) => {
-            // const statusValue = cell.getValue();
-            // console.log("row", row.original, row.original.job.jobName);
-
+            
             return (
               <div
                 className="flex items-center justify-center gap-1 w-full h-full "
@@ -54,14 +52,14 @@ export const timerColumn = ({auth, timerRef, timerId ,jid, play, setPlay, setIsS
                     note={note}
                     taskLink={currentPath}
                     pageName={"Jobs"}
-                    taskName={row.original.companyName}
+                    taskName={row.original?.companyName}
                     setNote={setNote}
-                    department={row.original.job.jobName}
-                    clientName={row.original.clientName}
-                    JobHolderName={row.original.job.jobHolder}
+                    department={row.original?.job?.jobName || ""}
+                    clientName={row.original?.clientName || ""}
+                    JobHolderName={row.original?.job?.jobHolder}
                     projectName={""}
                     task={""}
-                    companyName={row.original.companyName}
+                    companyName={row.original?.companyName}
                     activity={activity}
                     setActivity={setActivity}
 
@@ -76,12 +74,12 @@ export const timerColumn = ({auth, timerRef, timerId ,jid, play, setPlay, setIsS
               </div>
             );
           },
-          filterFn: (row, columnId, filterValue) => {
-            const cellValue = row.original._id;
-            // console.log("T_ID:", filterValue, cellValue);
-            return cellValue === filterValue;
-          },
-          filterVariant: "select",
+          // filterFn: (row, columnId, filterValue) => {
+          //   const cellValue = row.original._id;
+            
+          //   return cellValue === filterValue;
+          // },
+          // filterVariant: "select",
           size: 90,
         }
 }

@@ -1,13 +1,13 @@
 import { getStatus } from "../../utils/utils";
-
+//actually the due status
 export const statusColumn = (ctx) => {
 
+  const dateStatus = ["Overdue", "Due", "Upcoming"];
 
     return         {
           id: "Status",
-          accessorKey: "status",
+          // accessorKey: "status",
           Header: ({ column }) => {
-            const dateStatus = ["Overdue", "Due", "Upcoming"];
             return (
               <div className=" flex flex-col gap-[2px]">
                 <span
@@ -36,8 +36,8 @@ export const statusColumn = (ctx) => {
           },
           Cell: ({ row }) => {
             const status = getStatus(
-              row.original.job.jobDeadline,
-              row.original.job.yearEnd
+              row.original.job?.jobDeadline,
+              row.original.job?.yearEnd
             );
  
             return (
@@ -56,18 +56,8 @@ export const statusColumn = (ctx) => {
               </div>
             );
           },
-          filterFn: (row, id, filterValue) => {
-            const status = getStatus(
-              row.original.job.jobDeadline,
-              row.original.job.yearEnd
-            );
-            if (status === undefined || status === null) return false;
-            return (
-              status.toString().toLowerCase() === filterValue.toLowerCase()
-            );
-          },
-          filterSelectOptions: ["Overdue", "Due", "Upcoming"],
-          filterVariant: "select",
+           
+ 
           size: 95,
           minSize: 70,
           maxSize: 120,

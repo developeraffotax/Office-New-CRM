@@ -282,28 +282,7 @@ export const Timer = forwardRef(
 
  
 
-
-
-
-    // ------Automatically Stop Timer------>
-    // useEffect(() => {
-    //   const handleVisibilityChange = () => {
-    //     if (document.hidden) {
-    //       stopTimer();
-    //     }
-    //   };
-    //   document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    //   return () => {
-    //     document.removeEventListener(
-    //       "visibilitychange",
-    //       handleVisibilityChange
-    //     );
-    //   };
-
-    //   // eslint-disable-next-line
-    // }, [timerId]);
-
+ 
     // Get Total time
     const gettotalTime = async (id) => {
       try {
@@ -366,27 +345,7 @@ export const Timer = forwardRef(
         console.log(error);
       }
     };
-
-    //----------------- Display time in Favicon right side--------------
-
-    // useEffect(() => {
-    //   if (isRunning) {
-    //     const hours = Math.floor(elapsedTime / 3600)
-    //       .toString()
-    //       .padStart(2, "0");
-    //     const minutes = Math.floor((elapsedTime % 3600) / 60)
-    //       .toString()
-    //       .padStart(2, "0");
-    //     const seconds = (elapsedTime % 60).toString().padStart(2, "0");
-    //     // setTime(`${hours}:${minutes}:${seconds}`);
-    //     document.title = `${hours}:${minutes}:${seconds} ⏱`;
-    //   } else {
-    //     document.title = "Affotax-CRM";
-    //   }
-    //   // eslint-disable-next-line
-    // }, [isRunning, elapsedTime]);
-
-
+ 
 
     
 

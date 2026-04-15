@@ -95,13 +95,26 @@ export const DEFAULT_DATE_FILTERS = [
 export const columnFieldMap = {
   clientName: "clientName",
   companyName: "companyName",
+  Status: "dueStatus",
   
   Assign: "jobHolder",
-  jobStatus: "jobStatus",
   Owner: "lead",
   Year_End: "yearEnd",
   Deadline: "deadline",
   Job_Date: "jobDate",
+  Job_Status: "jobStatus",
+  Department: "jobName",
+  
+  Hrs: "totalHours",
+  Budget: "totalTime",
+
+  email: "email",
+  phone: "phone",
+
+  Labels: "label"
+
+  
+
 
 
 

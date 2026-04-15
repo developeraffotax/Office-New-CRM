@@ -7,9 +7,9 @@ import { DEFAULT_DATE_FILTERS } from "../../constants";
 
 export const yearEndColumn = ({ handleUpdateDates }) => ({
   id: "Year_End",
-  accessorKey: "job.yearEnd",
-
-  header: "Year End",
+  accessorFn: (row) => row.job?.yearEnd || "",
+  // accessorKey: "job.yearEnd",
+  // header: "Year End",
 
   Header: ({ column }) => (
     <DateHeader column={column} />

@@ -1,8 +1,8 @@
 export const emailColumn = (ctx) => {
   return {
     id: "email",
-    accessorKey: "email",
-
+    // accessorKey: "email",
+    accessorFn: (row) => row.email || "",
     Header: ({ column }) => {
       const filterValue = column.getFilterValue() ?? "";
 
@@ -37,11 +37,6 @@ export const emailColumn = (ctx) => {
       );
     },
 
-    // ✅ Case-insensitive email filter
-    filterFn: (row, columnId, filterValue) => {
-      const cellValue = row.original[columnId]?.toString().toLowerCase() || "";
-      return cellValue.includes(filterValue.toLowerCase());
-    },
     minSize: 100,
     maxSize: 220,
     grow: true,

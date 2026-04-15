@@ -14,10 +14,7 @@ export const feeColumn = ({totalFee, handleUpdateFee}) => {
                       <span
                         className="ml-1 w-full text-center cursor-pointer pr-6"
                         title="Filter out the empty fees"
-                        onClick={() => {
-                          column.setFilterValue("empty");
-                           
-                        }}
+                        
                       >
                         Fee
                       </span>
@@ -63,25 +60,12 @@ export const feeColumn = ({totalFee, handleUpdateFee}) => {
                   </div>
 
 
-                    // <div className="w-full flex items-center justify-center">
-                    //   <span className="text-[15px] font-medium">
-                    //     {fee && fee}
-                    //   </span>
-                    // </div>
+                    
                   );
                 },
 
 
-
-                filterFn: (row, columnId, filterValue) => {
-                  const fee = row.getValue(columnId);
-
-                  if (filterValue === "empty") {
-                    return !fee;
-                  }
-
-                  return fee === filterValue;
-                },
+ 
                 size: 60,
 
                  

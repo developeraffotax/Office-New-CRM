@@ -1,17 +1,11 @@
 export const partnerColumn = (ctx) => {
 
+  const partners = [ "Affotax", "Outsource", "OTL", "No Partner", ];
 
     return   {
                 id: "Partner",
                 accessorKey: "partner",
                 Header: ({ column }) => {
-                  const partners = [
-                    "Affotax",
-                    "Outsource",
-                    "OTL",
-                    
-                    "No Partner",
-                  ];
                   return (
                     <div className=" flex flex-col gap-[2px] w-[80px] items-center justify-center  ">
                       <span
@@ -52,15 +46,7 @@ export const partnerColumn = (ctx) => {
                   );
                 },
                 
-                filterFn: (row, columnId, filterValue) => {
-                  const partner = row.getValue(columnId);
-
-                  if (filterValue === "No Partner") {
-                    return !partner;
-                  }
-
-                  return partner === filterValue;
-                },
+               
                 size: 90,
               }
 }

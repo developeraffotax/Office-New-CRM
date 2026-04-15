@@ -42,7 +42,7 @@ export const getJobsColumns = (ctx) => {
   // Always visible columns
   const baseColumns = [
     idColumn(),
-    refColumn(),
+    refColumn(ctx),
     companyNameColumn(ctx),
     clientNameColumn(ctx),
     assignColumn(ctx),
@@ -66,30 +66,30 @@ export const getJobsColumns = (ctx) => {
   let columns = [...baseColumns];
 
   // Conditionally push extra columns
-  // if ((auth?.user?.role?.name === "Admin" || access.includes("Fee")) && !showUniqueClients) {
-  //   columns.push(feeColumn(ctx));
-  // }
+  if ((auth?.user?.role?.name === "Admin" || access.includes("Fee")) && !showUniqueClients) {
+    columns.push(feeColumn(ctx));
+  }
 
-  // if ((auth?.user?.role?.name === "Admin" || access.includes("Fee")) && showUniqueClients) {
-  //   columns.push(paidFeeColumn(ctx));
-  // }
+  if ((auth?.user?.role?.name === "Admin" || access.includes("Fee")) && showUniqueClients) {
+    columns.push(paidFeeColumn(ctx));
+  }
 
-  // if (auth?.user?.role?.name === "Admin" || access.includes("Source")) {
-  //   columns.push(sourceColumn(ctx));
-  //   columns.push(partnerColumn(ctx));
-  //   columns.push(clientTypeColumn(ctx));
-  // }
+  if (auth?.user?.role?.name === "Admin" || access.includes("Source")) {
+    columns.push(sourceColumn(ctx));
+    columns.push(partnerColumn(ctx));
+    columns.push(clientTypeColumn(ctx));
+  }
 
  
 
-  // if (auth?.user?.role?.name === "Admin" || access.includes("Data")) {
-  //   columns.push(pocColumn(ctx));
-  // }
+  if (auth?.user?.role?.name === "Admin" || access.includes("Data")) {
+    columns.push(pocColumn(ctx));
+  }
 
-  // if (auth?.user?.role?.name === "Admin") {
-  //   columns.push(acColumn(ctx));
-  //    columns.push(signupDateColumn(ctx));
-  // }
+  if (auth?.user?.role?.name === "Admin") {
+    columns.push(acColumn(ctx));
+     columns.push(signupDateColumn(ctx));
+  }
 
    columns.push(labelsColumn(ctx))
   return columns;

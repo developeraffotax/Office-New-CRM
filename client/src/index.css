@@ -591,3 +591,50 @@ inputBox > textarea:focus ~ span {
 .activity-scroll-container::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(to bottom, #3b3b3b, #3b3b3b); /* deeper orange */
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 
+.mrt-highlight {
+  background-color: #fef3c7;
+  color: #92400e;
+  font-weight: 600;
+  padding: 0 2px;
+  border-radius: 3px;
+
+  animation: highlightFade 0.35s ease-in-out;
+}
+
+@keyframes highlightFade {
+  from {
+    background-color: #fde68a;
+  }
+
+  to {
+    background-color: #fef3c7;
+  }
+} */

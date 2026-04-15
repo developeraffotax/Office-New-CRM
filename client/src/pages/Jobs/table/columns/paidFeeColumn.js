@@ -11,9 +11,7 @@ export const paidFeeColumn = ({ totalClientPaidFee }) => {
           <span
             className="ml-1 w-full flex items-center gap-0.5  text-center cursor-pointer "
             title="Filter out the empty fees"
-            onClick={() => {
-              column.setFilterValue("empty");
-            }}
+            
           >
             Fee
             <GoCheckCircleFill className="text-green-500 text-lg" />

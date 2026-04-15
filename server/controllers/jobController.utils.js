@@ -171,7 +171,7 @@ const applyDateFilter = (
 export const columnFieldMap = {
   clientName: "clientName",
   companyName: "companyName",
-  Status: "dueStatus", // process 
+  Status: "dueStatus",
   
   Assign: "jobHolder",
   Owner: "lead",
@@ -187,6 +187,12 @@ export const columnFieldMap = {
   email: "email",
   phone: "phone",
 
+  Labels: "label",
+
+  Source: "source",
+  Partner: "partner",
+  ClientType: "clientType",
+
   
 
 
@@ -198,13 +204,17 @@ export const columnFieldMap = {
 
 
 
+
 export const buildJobsQuery = (queryParams) => {
 
   const {
+    jobRef,
+
     search,
     clientName,
     companyName,
     dueStatus,
+
     jobHolder,
     lead,
     jobName,
@@ -212,10 +222,17 @@ export const buildJobsQuery = (queryParams) => {
     yearEnd,
     jobDate,
     deadline,
-    clientType,
+
     email,
     phone,
     label,
+
+    source,
+    partner,
+    clientType,
+
+    activeClient
+
   } = queryParams;
 
   const query = {
@@ -231,12 +248,32 @@ export const buildJobsQuery = (queryParams) => {
   ==========================================
   */
 
+
+    if (jobRef) {
+      const cleaned = jobRef.toString().replace(/[^0-9]/g, "");
+
+      if (cleaned) {
+        const numericRef = Number(cleaned);
+
+        if (!isNaN(numericRef)) {
+          query.jobRef = numericRef;
+        }
+      }
+    }
+
+
   if (companyName) {
-    query.companyName = companyName;
+    query.companyName = {
+        $regex: companyName.trim(),
+        $options: "i",
+      }
   }
 
   if (clientName) {
-    query.clientName = clientName;
+    query.clientName = {
+        $regex: clientName.trim(),
+        $options: "i",
+      }
   }
 
   if (jobHolder) {
@@ -257,6 +294,24 @@ export const buildJobsQuery = (queryParams) => {
 
   if (label) {
     query["label.name"] = label;
+  }
+
+  if(source) {
+    query.source = source;
+  }
+
+  
+  if(partner) {
+    query.partner = partner;
+  }
+
+  
+  if(clientType) {
+    query.clientType = clientType;
+  }
+
+  if (activeClient) {
+    query.activeClient = activeClient;
   }
 
   /*
@@ -401,29 +456,43 @@ export const buildJobsQuery = (queryParams) => {
   ==========================================
   */
 
-  if (search) {
+if (search) {
+  const normalizedSearch = search.trim();
 
-    query.$or = [
-      {
-        clientName: {
-          $regex: search,
-          $options: "i",
-        },
+  // Extract numbers for jobRef search
+  const cleanedNumber = normalizedSearch.replace(/[^0-9]/g, "");
+  const numericRef = Number(cleanedNumber);
+
+  const orConditions = [
+    {
+      clientName: {
+        $regex: normalizedSearch,
+        $options: "i",
       },
-      {
-        companyName: {
-          $regex: search,
-          $options: "i",
-        },
+    },
+    {
+      companyName: {
+        $regex: normalizedSearch,
+        $options: "i",
       },
-      {
-        jobRef: {
-          $regex: search,
-          $options: "i",
-        },
+    },
+    {
+      email: {
+        $regex: normalizedSearch,
+        $options: "i",
       },
-    ];
+    },
+  ];
+
+  // ✅ Add jobRef numeric search only if valid number
+  if (cleanedNumber && !isNaN(numericRef)) {
+    orConditions.push({
+      jobRef: numericRef,
+    });
   }
+
+  query.$or = orConditions;
+}
 
   return query;
 };

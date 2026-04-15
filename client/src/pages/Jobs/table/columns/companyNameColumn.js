@@ -1,7 +1,8 @@
- 
 import { Link } from "react-router-dom";
+import { getColumnSearchValue } from "../../utils/getColumnSearchValue";
+import { highlightText } from "../../utils/highlightText";
 
-export const companyNameColumn = () => {
+export const companyNameColumn = ({ columnFilters, searchValue }) => {
   return {
     id: "companyName",
     accessorKey: "companyName",
@@ -34,7 +35,15 @@ export const companyNameColumn = () => {
     Cell: ({ cell, row }) => {
       const companyName = row.original.companyName;
       const regNo = row.original.regNumber || "";
-    
+
+     
+
+
+      const activeSearch = getColumnSearchValue(
+        columnFilters,
+        "companyName",
+        searchValue,
+      );
 
       return (
         <Link
@@ -48,7 +57,7 @@ export const companyNameColumn = () => {
             regNo && "text-[#0078c8] hover:text-[#0053c8]"
           }   w-full h-full`}
         >
-          {companyName}
+          {highlightText(companyName, activeSearch)}
         </Link>
       );
     },

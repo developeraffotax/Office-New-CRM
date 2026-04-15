@@ -1,6 +1,8 @@
 import { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import CompanyInfo from "../../../../utlis/CompanyInfo";
+import { getColumnSearchValue } from "../../utils/getColumnSearchValue";
+import { highlightText } from "../../utils/highlightText";
 
 /**
  * Client Name Column (Server-Side + Debounced Filtering)
@@ -8,6 +10,8 @@ import CompanyInfo from "../../../../utlis/CompanyInfo";
 export const clientNameColumn = ({
   getSingleJobDetail,
   setCompanyName,
+  searchValue,
+  columnFilters
  
 }) => {
   return {
@@ -69,12 +73,18 @@ export const clientNameColumn = ({
     // ======================================================
     // CELL (unchanged logic)
     // ======================================================
+   
     Cell: ({ cell, row }) => {
       const clientName = cell.getValue();
       const companyName = row.original.companyName;
 
-      const [showCompanyInfo, setShowCompanyInfo] = useState(false);
+      const [showCompanyInfo, setShowCompanyInfo] =
+        useState(false);
+
       const anchorRef = useRef(null);
+
+      // ✅ Get active search
+      const activeSearch = getColumnSearchValue( columnFilters, "clientName", searchValue );
 
       return (
         <div
@@ -83,25 +93,34 @@ export const clientNameColumn = ({
         >
           <span
             onClick={(e) => {
-              const isCtrlClick = e.ctrlKey || e.metaKey;
+              const isCtrlClick =
+                e.ctrlKey || e.metaKey;
 
               if (isCtrlClick) {
                 setShowCompanyInfo(true);
               } else {
-                getSingleJobDetail(row.original._id);
+                getSingleJobDetail(
+                  row.original._id
+                );
                 setCompanyName(companyName);
               }
             }}
             className="cursor-pointer"
           >
-            {clientName}
+            {/* ✅ Highlight Applied */}
+            {highlightText(
+              clientName,
+              activeSearch
+            )}
           </span>
 
           {showCompanyInfo && (
             <CompanyInfo
               anchorRef={anchorRef}
               clientId={row.original._id}
-              onClose={() => setShowCompanyInfo(false)}
+              onClose={() =>
+                setShowCompanyInfo(false)
+              }
             />
           )}
         </div>

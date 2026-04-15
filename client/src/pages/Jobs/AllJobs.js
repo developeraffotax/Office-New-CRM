@@ -64,6 +64,7 @@ import SelectedUsers from "../../components/SelectedUsers";
 import { openModal } from "../../redux/slices/globalModalSlice";
 import { columnData, dateStatus, departments, status, statusInit } from "./constants";
 import { buildFilters } from "./utils/utils";
+import { rowMatchesSearch } from "./utils/rowMatchesSearch";
  
  
  
@@ -1412,9 +1413,12 @@ const jobCtx = useMemo(() => {
     handleUpdateTicketStatusConfirmation, 
     handleUpdateJobHolder,
     createComplaint,
-    setTableData 
+    setTableData,
+
+    columnFilters,
+    searchValue
   }
-}, [totalFee, totalHours, dataLable, labelData, totalClientPaidFee, showUniqueClients,])
+}, [totalFee, totalHours, dataLable, labelData, totalClientPaidFee, showUniqueClients, columnFilters, searchValue])
 
 
 // ----------------------------
@@ -1535,13 +1539,15 @@ const ctx = useMemo(() => {
     onPaginationChange: setPagination,  
     autoResetPageIndex: false,
 
+    enableFilterMatchHighlighting: false,
+    enableColumnFilters: false,
     
+
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
     muiTableContainerProps: { sx: { maxHeight: "800px",  } },
     enableColumnActions: false,
-    enableColumnFilters: false,
     enableSorting: false,
     enableGlobalFilter: true,
     enableRowNumbers: true,
@@ -1635,7 +1641,7 @@ const ctx = useMemo(() => {
   },
 },
 
-
+ 
 
 
     muiTableProps: {
@@ -1648,7 +1654,7 @@ const ctx = useMemo(() => {
         
         border: "1px solid rgba(203, 201, 201, 0.5)",
      
-        overflow: "hidden",
+
        
         tableLayout: "auto",
         fontSize: "13px",

@@ -1,7 +1,9 @@
 import toast from "react-hot-toast";
 import { formatRef, refFilterFn } from "../../../../utlis/formatRef";
+import { getColumnSearchValue } from "../../utils/getColumnSearchValue";
+import { highlightText } from "../../utils/highlightText";
 
-export const refColumn = () => {
+export const refColumn = ({ columnFilters, searchValue }) => {
   return {
     id: "jobRef",
     accessorFn: (row) => row.jobRef || "", // safely handle missing jobRef
@@ -16,7 +18,6 @@ export const refColumn = () => {
           {/* 🔍 Header Search Input */}
           <input
             type="text"
-            
             className="border font-normal rounded px-2 py-1 text-sm outline-none"
             value={column.getFilterValue() ?? ""}
             onChange={(e) => column.setFilterValue(e.target.value)}
@@ -24,21 +25,22 @@ export const refColumn = () => {
         </div>
       );
     },
-    filterFn: refFilterFn,
 
-    // enableColumnFilter: true,
-    // enableSorting: true,
-    // sortingFn: "alphanumeric",
     Cell: ({ cell }) => {
       const prefix = "J";
       const number = cell.getValue();
       const cellValue = formatRef(prefix, number);
 
       const handleCopy = () => {
-         if(!number) return;
+        if (!number) return;
         navigator.clipboard.writeText(cellValue);
         toast.success(`Copied ${cellValue}`);
       };
+      const activeSearch = getColumnSearchValue(
+        columnFilters,
+        "jobRef",
+        searchValue,
+      );
 
       return (
         <span
@@ -46,7 +48,7 @@ export const refColumn = () => {
           onClick={handleCopy}
           title="Click to copy"
         >
-          {cellValue}
+          {highlightText(cellValue, activeSearch)}
         </span>
       );
     },

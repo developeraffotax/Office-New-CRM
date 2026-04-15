@@ -93,6 +93,7 @@ export const DEFAULT_DATE_FILTERS = [
 
 
 export const columnFieldMap = {
+  jobRef: "jobRef",
   clientName: "clientName",
   companyName: "companyName",
   Status: "dueStatus",
@@ -111,7 +112,14 @@ export const columnFieldMap = {
   email: "email",
   phone: "phone",
 
-  Labels: "label"
+  Labels: "label",
+
+  Source: "source",
+  Partner: "partner",
+  ClientType: "clientType",
+
+  AC: "activeClient",
+  SignUp_Date: "currentDate"
 
   
 

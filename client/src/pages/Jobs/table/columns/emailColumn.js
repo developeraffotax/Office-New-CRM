@@ -1,7 +1,9 @@
-export const emailColumn = (ctx) => {
+import { getColumnSearchValue } from "../../utils/getColumnSearchValue";
+import { highlightText } from "../../utils/highlightText";
+
+export const emailColumn = ({ columnFilters, searchValue }) => {
   return {
     id: "email",
-    // accessorKey: "email",
     accessorFn: (row) => row.email || "",
     Header: ({ column }) => {
       const filterValue = column.getFilterValue() ?? "";
@@ -30,9 +32,14 @@ export const emailColumn = (ctx) => {
     Cell: ({ row }) => {
       const email = row.original.email;
 
+      const activeSearch = getColumnSearchValue(
+        columnFilters,
+        "email",
+        searchValue,
+      );
       return (
         <div className="w-full">
-          <span>{email}</span>
+          <span> {highlightText(email, activeSearch)}</span>
         </div>
       );
     },

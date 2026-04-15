@@ -1549,6 +1549,8 @@ const ctx = useMemo(() => {
     enableTopToolbar: true,
     enableBottomToolbar: true,
     enableRowSelection: true,
+    enableTableHead: true,
+ 
  
     onRowSelectionChange: setRowSelection,
  
@@ -1569,7 +1571,7 @@ const ctx = useMemo(() => {
     sorting,
     columnFilters,
     // globalFilter: searchValue,
-    isLoading: loading,
+    // isLoading: loading,
     showProgressBars: false,
     showSkeletons: false,
     showLoadingOverlay: false,
@@ -1585,9 +1587,20 @@ const ctx = useMemo(() => {
       <div style={{ width: '100%' }}>
         {loading && (
           <LinearProgress
+             
             sx={{
               width: '100%',
-              
+              height: "3px",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              zIndex: 99,
+ 
+              backgroundColor: "rgba(0, 0, 0, 0.05)", // Barely visible track
+              "& .MuiLinearProgress-bar": {
+                backgroundColor: "#007FFF", // Branded Blue
+                boxShadow: "0 0 4px #007FFF", // Adds depth to a thin line
+              },
                
             }}
           />
@@ -1687,6 +1700,9 @@ const ctx = useMemo(() => {
         </Box>
       );
     },
+
+
+    
   });
 
 

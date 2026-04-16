@@ -125,7 +125,9 @@ export default function AllJobs() {
 
 
   const [active1, setActive1] = useState("");
-  const [active2, setActive2] = useState("");
+  // const [active2, setActive2] = useState("");
+
+  
   const timerRef = useRef();
   const [showStatus, setShowStatus] = useState(false);
   const location = useLocation();
@@ -225,7 +227,7 @@ export default function AllJobs() {
       const show_completed = searchParams.get("completed");
       const navigate = useNavigate();
 
-
+  
 
 
       // Pagination
@@ -247,7 +249,13 @@ const [rowCount, setRowCount] = useState(0);
 
 
 
+  const jobStatusFilter = useMemo(() => {
+  const statusFilter = columnFilters.find(
+    (f) => f.id === "Job_Status"
+  );
 
+  return statusFilter?.value || null;
+}, [columnFilters]);
 
 
 
@@ -1987,15 +1995,31 @@ useEffect(() => {
 
 
 
+const setColumnFromOutsideTable = (colKey, filterVal) => {
+  setColumnFilters((prev) => {
+    // Remove existing filter for this column
+    const filtered = prev.filter((f) => f.id !== colKey);
 
-  const setColumnFromOutsideTable = (colKey, filterVal) => {
+    // If empty → just remove filter
+    if (
+      filterVal === undefined ||
+      filterVal === null ||
+      filterVal === "" ||
+      (Array.isArray(filterVal) && filterVal.length === 0)
+    ) {
+      return filtered;
+    }
 
-    const col = table.getColumn(colKey);
-
-    return col.setFilterValue(filterVal);
-  }
-
-
+    // Otherwise add updated filter
+    return [
+      ...filtered,
+      {
+        id: colKey,
+        value: filterVal,
+      },
+    ];
+  });
+};
 
 
   useEffect(() => {
@@ -2095,7 +2119,7 @@ useEffect(() => {
                 // setShowJobHolder(false);
                 // setShowDue(false);
                 setActive1("");
-                setActive2("");
+                // setActive2("");
                 dispatch(setFilterId(""));
                 handleClearFilters();
                 dispatch(setSearchValue(""));
@@ -2565,7 +2589,7 @@ useEffect(() => {
             
             <div className="w-full  py-2 max-lg:hidden">
               <div className="flex items-center flex-wrap gap-4">
-                <DragDropContext onDragEnd={handleUserOnDragEnd}>
+                {/* <DragDropContext onDragEnd={handleUserOnDragEnd}>
                   <Droppable droppableId="users" direction="horizontal">
                     {(provided) => (
                       <div
@@ -2619,38 +2643,63 @@ useEffect(() => {
                       </div>
                     )}
                   </Droppable>
-                </DragDropContext>
+                </DragDropContext> */}
+
+
+
+
+
+
 
 
                 <div className=" border-l pl-5 ">
 
-                  <OutsideFilter setColumnFromOutsideTable={setColumnFromOutsideTable} title={"Job_Date"} />
+                  <OutsideFilter setColumnFromOutsideTable={setColumnFromOutsideTable} title={"Job_Date"}  columnFilters={columnFilters}/>
                 </div>
 
 
-
-
-
-              <div className="flex items-center gap-2 border-l px-4">
+             <div className="flex items-center gap-2 border-l px-4">
                 {statusInit?.map((stat, i) => (
                   <div
-                    className={`py-1 rounded-full px-3 cursor-pointer font-[500] text-[13px] border shadow-sm  ${
-                      active2 === stat &&
-                      "    text-white border-orange-600 bg-orange-600 "
-                    }`}
                     key={i}
-                    onClick={() => {
-                      setActive2(stat);
-                      // filterByDepStat(stat, active);
+                    className={`
+                      py-1 px-3 rounded-full cursor-pointer
+                      font-[500] text-[13px]
+                      border shadow-sm transition-all duration-150
 
-                       setColumnFromOutsideTable("Job_Status", stat);
+                      ${
+                        jobStatusFilter === stat
+                          ? "text-white border-orange-600 bg-orange-600"
+                          : "hover:bg-gray-100"
+                      }
+                    `}
+                    onClick={() => {
+
+                      // Toggle behavior (Enterprise UX)
+                      if (jobStatusFilter === stat) {
+                        setColumnFromOutsideTable(
+                          "Job_Status",
+                          undefined
+                        );
+                      } else {
+                        setColumnFromOutsideTable(
+                          "Job_Status",
+                          stat
+                        );
+                      }
+
                     }}
                   >
-                    {stat} ({getStatusCount(stat, active)})
+                    {stat} 
+                    {/* ({getStatusCount(stat, active)}) */}
                   </div>
- 
                 ))}
               </div>
+
+
+
+
+
 
               </div>
 

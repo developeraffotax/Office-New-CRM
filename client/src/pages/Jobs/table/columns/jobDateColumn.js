@@ -4,9 +4,6 @@ import { useEffect, useMemo, useRef, useState, memo } from "react";
 import toast from "react-hot-toast";
 import { DEFAULT_DATE_FILTERS } from "../../constants";
 
-
-
-
 export const jobDateColumn = ({ handleUpdateDates }) => ({
   id: "Job_Date",
   // accessorKey: "job.workDeadline",
@@ -59,12 +56,32 @@ const DateHeader = memo(({ column }) => {
     }
   }, [filterValue, dateRange]);
 
-  // Reset when cleared externally
   useEffect(() => {
-    if (!column.getFilterValue()) {
+    const filter = column.getFilterValue();
+
+    if (!filter) {
       setFilterValue("");
       setDateRange({ from: "", to: "" });
       setShowPopover(false);
+      return;
+    }
+
+    // ✅ Handle preset
+    if (filter.type === "preset") {
+      setFilterValue(filter.value);
+      setShowPopover(false);
+    }
+
+    // ✅ Handle range
+    if (filter.type === "range") {
+      setFilterValue("Custom Range");
+
+      setDateRange({
+        from: filter.from,
+        to: filter.to,
+      });
+
+      setShowPopover(true);
     }
   }, [column.getFilterValue()]);
 

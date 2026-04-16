@@ -188,6 +188,37 @@ export default function AllJobs() {
 
 
 
+const [jobStats, setJobStats] = useState({
+  allJobsCount: [],
+  departmentJobCounts: [],
+  userJobCounts: [],
+  jobStatusJobCounts: [],
+});
+
+
+
+
+
+const getuserJobCounts = (userName) => {
+  return jobStats?.userJobCounts?.find(
+    (u) => u._id === userName
+  )?.count || 0;
+};
+
+const getdepartmentJobCounts = (departmentName) => {
+  if(departmentName === "All") return jobStats?.allJobsCount[0]?.count || 0;
+  return jobStats?.departmentJobCounts?.find(
+    (u) => u._id === departmentName
+  )?.count || 0;
+};
+
+const getjobStatusJobCounts = (jobStatus) => {
+ 
+  return jobStats?.jobStatusJobCounts?.find(
+    (u) => u._id === jobStatus
+  )?.count || 0;
+};
+
 
 
 
@@ -621,7 +652,82 @@ const allClientJobData = useCallback(async () => {
   // filterId,
 
 ]);
+
+
+
+
+
+const getJobsStats = useCallback(async () => {
+
+   
+
+  try {
+ 
+
+    // ======================================================
+    // BUILD COLUMN FILTERS
+    // ======================================================
+
+ 
+
+    console.log("THE COLUMN FILTERS ", columnFilters)
+    const filters = buildFilters(columnFilters);
+
+
+    // ======================================================
+    // BUILD FINAL PARAMS
+    // ======================================================
+
+    const params = {
+
+ 
+      // ...filters,
+
+    };
+
+
+    // ======================================================
+    // API CALL
+    // ======================================================
+
+    const { data } = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/jobs/stats`,
+      { params }
+    );
+
+
+    // ======================================================
+    // HANDLE RESPONSE
+    // ======================================================
+
+    console.log("THE RESULT OF HTE API CALL FROM JOB STATS", data)
+
+      if (data?.success) {
+            setJobStats(data.data); // ✅ IMPORTANT FIX
+          }
+
+
+  } catch (error) {
+
+    console.log(error);
+
+    // toast.error(
+    //   error?.response?.data?.message ||
+    //   "Error loading jobs"
+    // );
+
+  } finally {
+
+   // setLoading(false);
+
+  }
+
+}, []);
   
+  useEffect(() => {
+    getJobsStats()
+  }, []);
+
 
   useEffect(() => {
 
@@ -704,49 +810,49 @@ const allClientJobData = useCallback(async () => {
   };
 
   // -------------- Department Lenght--------->
-  const getDepartmentCount = (department) => {
-    if (department === "All") {
-      return tableData?.length;
-    }
-    return tableData.filter((item) => item?.job?.jobName === department)
-      ?.length;
-  };
+  // const getDepartmentCount = (department) => {
+  //   if (department === "All") {
+  //     return tableData?.length;
+  //   }
+  //   return tableData.filter((item) => item?.job?.jobName === department)
+  //     ?.length;
+  // };
 
-  // -------Due & Overdue count------->
-  const getDueAndOverdueCountByDepartment = (department) => {
-    const filteredData = tableData.filter(
-      (item) => item.job.jobName === department || department === "All"
-    );
+  // // -------Due & Overdue count------->
+  // const getDueAndOverdueCountByDepartment = (department) => {
+  //   const filteredData = tableData.filter(
+  //     (item) => item.job.jobName === department || department === "All"
+  //   );
 
-    const dueCount = filteredData.filter(
-      (item) => getStatus(item.job.jobDeadline, item.job.yearEnd) === "Due"
-    ).length;
-    const overdueCount = filteredData.filter(
-      (item) => getStatus(item.job.jobDeadline, item.job.yearEnd) === "Overdue"
-    ).length;
-    const upcomingCount = filteredData.filter(
-      (item) => getStatus(item.job.jobDeadline, item.job.yearEnd) === "Upcoming"
-    ).length;
+  //   const dueCount = filteredData.filter(
+  //     (item) => getStatus(item.job.jobDeadline, item.job.yearEnd) === "Due"
+  //   ).length;
+  //   const overdueCount = filteredData.filter(
+  //     (item) => getStatus(item.job.jobDeadline, item.job.yearEnd) === "Overdue"
+  //   ).length;
+  //   const upcomingCount = filteredData.filter(
+  //     (item) => getStatus(item.job.jobDeadline, item.job.yearEnd) === "Upcoming"
+  //   ).length;
 
-    return { due: dueCount, overdue: overdueCount, upcoming: upcomingCount };
-  };
-  // --------------Status Length---------->
-  const getStatusCount = (status, department) => {
-    return tableData.filter((item) =>
-      department === "All"
-        ? item?.job?.jobStatus === status
-        : item?.job?.jobStatus === status && item?.job?.jobName === department
-    )?.length;
-  };
-  // --------------Job_Holder Length---------->
+  //   return { due: dueCount, overdue: overdueCount, upcoming: upcomingCount };
+  // };
+  // // --------------Status Length---------->
+  // const getStatusCount = (status, department) => {
+  //   return tableData.filter((item) =>
+  //     department === "All"
+  //       ? item?.job?.jobStatus === status
+  //       : item?.job?.jobStatus === status && item?.job?.jobName === department
+  //   )?.length;
+  // };
+  // // --------------Job_Holder Length---------->
 
-  const getJobHolderCount = (user, department) => {
-    return tableData.filter((item) =>
-      department === "All"
-        ? item?.job?.jobHolder === user
-        : item?.job?.jobHolder === user && item?.job?.jobName === department
-    )?.length;
-  };
+  // const getuserJobCounts = (user, department) => {
+  //   return tableData.filter((item) =>
+  //     department === "All"
+  //       ? item?.job?.jobHolder === user
+  //       : item?.job?.jobHolder === user && item?.job?.jobName === department
+  //   )?.length;
+  // };
 
   // --------------Filter Data By Department ----------->
 
@@ -1858,11 +1964,11 @@ const ctx = useMemo(() => {
   };
 
 
-    const user_jobs_count_map = useMemo(() => {
-    return Object.fromEntries(
-      users.map((user) => [user, getJobHolderCount(user, active)])
-    );
-  }, [users, active, getJobHolderCount]);
+  //   const user_jobs_count_map = useMemo(() => {
+  //   return Object.fromEntries(
+  //     users.map((user) => [user, getuserJobCounts(user, active)])
+  //   );
+  // }, [users, active, getuserJobCounts]);
 
 
 
@@ -1915,7 +2021,7 @@ const renderColumnControls = () => (
             selectedUsers={selectedUsers}
             setSelectedUsers={setSelectedUsers}
             userNameArr={users}
-            countMap={user_jobs_count_map}
+            countMap={{}}
             label={"job"}
           />
         </div>
@@ -2233,58 +2339,111 @@ useEffect(() => {
         {/*  */}
 
         {/* -----------Filters By Deparment--------- */}
-        <div className="flex items-center overflow-x-auto hidden1 gap-2 mt-6 max-lg:hidden">
+        <div className="flex items-center overflow-x-auto hidden1 gap-1 mt-4 max-lg:hidden">
+
+
 
 
          {departments?.map((dep, i) => {
-  const activeDep = departmentFilter || "All";
+            const activeDep = departmentFilter || "All";
+            const isActive = activeDep === dep;
 
-  getDueAndOverdueCountByDepartment(dep);
+            return (
+              <div
+                key={i}
+                onClick={() => {
+                  setActive(dep);
+                  setShowCompleted(false);
+                  setShowInactive(false);
+                  dispatch(setFilterId(""));
 
-  const isActive = activeDep === dep;
+                  if (dep === "All") {
+                    setColumnFromOutsideTable("Department", "");
+                  } else {
+                    setColumnFromOutsideTable("Department", dep);
+                  }
+                }}
+                className={`
+                  relative flex items-center gap-1 px-2 py-1.5 cursor-pointer
+                  text-[13px] font-[400] whitespace-nowrap  
+                  rounded-t-md border-b-2 font-google
 
-  return (
-    <div
-      key={i}
-      onClick={() => {
-        setActive(dep);
-        setShowCompleted(false);
-        setShowInactive(false);
-        dispatch(setFilterId(""));
+                  ${
+                    isActive
+                      ? "text-orange-600 border-orange-500 bg-orange-50"
+                      : "text-gray-800 border-transparent hover:text-gray-900 hover:bg-gray-50"
+                  }
+                `}
+              >
+               
+                <span className="tracking-wide ">{dep} ({getdepartmentJobCounts(dep)})</span>
+                   {/* <span className={`text-[11px] ${isActive ? "text-orange-600" : "text-gray-600"}`}>
+                  {getdepartmentJobCounts(dep)}
+                </span> */}
 
-        if (dep === "All") {
-          setColumnFromOutsideTable("Department", "");
-        } else {
-          setColumnFromOutsideTable("Department", dep);
-        }
-      }}
-      className={`
-        relative flex items-center gap-2 px-3 py-1.5 cursor-pointer
-        text-[13.5px] font-medium whitespace-nowrap transition-all duration-200
-        rounded-t-md border-b-2
+                
+                {isActive && (
+                  <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-orange-500 rounded-full" />
+                )}
+              </div>
+            );
+          })}
 
-        ${
-          isActive
-            ? "text-orange-600 border-orange-500 bg-orange-50"
-            : "text-gray-600 border-transparent hover:text-gray-900 hover:bg-gray-50"
-        }
-      `}
-    >
-      {/* Label */}
-      <span className="tracking-wide">{dep}</span>
 
-      {/* Optional Badge (you already compute counts) */}
-      {/* <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-600">
-        {getDepartmentCount(dep)}
-      </span> */}
 
-      {/* Active underline glow effect */}
-      {isActive && (
-        <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-orange-500 rounded-full" />
-      )}
-    </div>
-  );
-})}
+
+
+
+
+
+
+
+
+              {/* <div className="flex border border-gray-200 rounded-md overflow-hidden w-fit">
+                  {departments.map((dep, i) => {
+                    const isActive = active === dep;
+                    return (
+                      <div
+                        key={i}
+                        onClick={() => {
+                          setActive(dep);
+                          setShowCompleted(false);
+                          setShowInactive(false);
+                          dispatch(setFilterId(""));
+                          if (dep === "All") {
+                            setColumnFromOutsideTable("Department", "");
+                          } else {
+                            setColumnFromOutsideTable("Department", dep);
+                          }
+                        }}
+                        className={`
+                          flex items-center gap-1.5 px-4 py-2 cursor-pointer text-[13px] font-google
+                          border-r border-gray-200 last:border-r-0 transition-all duration-150 whitespace-nowrap
+                          ${isActive
+                            ? "bg-gray-700 text-white"
+                            : "bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                          }
+                        `}
+                      >
+                        <span>{dep}</span>
+                        <span className={`text-[11px] ${isActive ? "text-white/50" : "text-gray-400"}`}>
+                          {getdepartmentJobCounts(dep)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div> */}
+
+                       
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2660,9 +2819,9 @@ useEffect(() => {
                             >
                               {(provided) => (
                                 <div
-                                  className={`py-1 rounded-tl-md rounded-tr-md w-[5.8rem] sm:w-fit px-1 !cursor-pointer font-[500] text-[14px] ${
+                                  className={`py-1 rounded-tl-md rounded-tr-md w-[5.8rem] sm:w-fit px-1 !cursor-pointer font-[400] text-[13px] text-gray-800 font-google ${
                                     assignedJobholderFilter === user &&
-                                    "  border-b-2 text-orange-600 border-orange-600"
+                                    "  border-b-2 text-orange-600 border-orange-600 "
                                   }`}
                                   ref={provided.innerRef}
                                   {...provided.draggableProps}
@@ -2685,8 +2844,7 @@ useEffect(() => {
 
                                   }}
                                 >
-                                  {user} 
-                                  {/* ({getJobHolderCount(user, active)}) */}
+                                  {user} ({getuserJobCounts(user)})
                                 </div>
                               )}
                             </Draggable>
@@ -2716,7 +2874,7 @@ useEffect(() => {
                     key={i}
                     className={`
                       py-1 px-3 rounded-full cursor-pointer
-                      font-[500] text-[13px]
+                      font-[400] text-[13px] text-gray-800 font-google
                       border shadow-sm transition-all duration-150
 
                       ${
@@ -2742,8 +2900,8 @@ useEffect(() => {
 
                     }}
                   >
-                    {stat} 
-                    {/* ({getStatusCount(stat, active)}) */}
+                    {stat} ({getjobStatusJobCounts(stat)})
+ 
                   </div>
                 ))}
               </div>

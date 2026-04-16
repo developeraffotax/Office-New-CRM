@@ -3005,3 +3005,93 @@ export const getAllClientJobs = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getJobsStats = async (req, res) => {
+  try {
+
+    const match = buildJobsQuery(req.query);
+
+    const stats = await jobsModel.aggregate([
+
+      { $match: match },
+
+      {
+        $facet: {
+
+          // =========================
+          // TOTAL JOB COUNT
+          // =========================
+          allJobsCount: [
+            { $count: "count" }
+          ],
+
+
+          // =========================
+          // USER WISE JOB COUNT
+          // =========================
+          userJobCounts: [
+            {
+              $group: {
+                _id: "$job.jobHolder",
+                count: { $sum: 1 }
+              }
+            }
+          ],
+
+          // =========================
+          // DEPARTMENT COUNT
+          // =========================
+          departmentJobCounts: [
+            {
+              $group: {
+                _id: "$job.jobName",
+                count: { $sum: 1 }
+              }
+            }
+          ],
+
+          // =========================
+          // STATUS COUNT
+          // =========================
+          jobStatusJobCounts: [
+            {
+              $group: {
+                _id: "$job.jobStatus",
+                count: { $sum: 1 }
+              }
+            }
+          ],
+
+          
+
+        }
+      }
+
+    ]);
+
+    res.status(200).send({
+      success: true,
+      data: stats[0]
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error fetching stats",
+      error
+    });
+  }
+};

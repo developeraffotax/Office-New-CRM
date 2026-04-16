@@ -19,6 +19,8 @@ import {
   getClientWithJobs,
   getDashboardClients,
   getInactiveClientJobs,
+  getJobsStats,
+ 
   getTicketClients,
   getWorkflowClients,
   importData,
@@ -56,6 +58,7 @@ router.get("/all/client/job", requiredSignIn, getAllClients);
 
 
 router.get("/all/client/jobs", requiredSignIn, getAllClientJobs);
+router.get("/all/client/jobs/stats", requiredSignIn, getJobsStats);
 
 // Update Fee
 router.patch("/update/fee/:id", requiredSignIn, updateFee);

@@ -92,6 +92,10 @@ export const DEFAULT_DATE_FILTERS = [
 
 
 
+
+
+
+
 export const columnFieldMap = {
   jobRef: "jobRef",
   clientName: "clientName",
@@ -119,7 +123,8 @@ export const columnFieldMap = {
   ClientType: "clientType",
 
   AC: "activeClient",
-  SignUp_Date: "currentDate"
+  POC: "pocId",
+  SignUp_Date: "signupDate",
 
   
 

@@ -1,3 +1,36 @@
+
+
+
+
+
+
+
+const ALL_DATE_FILTERS = [
+  "Expired",
+  "Today",
+  "Tomorrow",
+
+  "Yesterday",
+  "Last 7 days",
+  "Last 15 days",
+  "Last 30 Days",
+
+  "In 7 days",
+  "In 15 days",
+  "In 30 Days",
+  "In 60 Days",
+
+  "This Month",
+  "Last Month",
+
+  "This Year",
+  "Last Year",
+
+  "Last 12 months",
+  "Upcoming",
+];
+
+
 const getDatePresetRange = (preset) => {
   const today = new Date();
 
@@ -11,16 +44,110 @@ const getDatePresetRange = (preset) => {
   endOfToday.setDate(endOfToday.getDate() + 1);
 
   switch (preset) {
+    /* -------------------- PAST -------------------- */
+
     case "Expired":
       return {
         $lt: startOfToday,
       };
+
+    case "Yesterday": {
+      const yesterday = new Date(startOfToday);
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      return {
+        $gte: yesterday,
+        $lt: startOfToday,
+      };
+    }
+
+    case "Last 7 days": {
+      const start = new Date(startOfToday);
+      start.setDate(start.getDate() - 7);
+
+      return {
+        $gte: start,
+        $lt: startOfToday,
+      };
+    }
+
+    case "Last 15 days": {
+      const start = new Date(startOfToday);
+      start.setDate(start.getDate() - 15);
+
+      return {
+        $gte: start,
+        $lt: startOfToday,
+      };
+    }
+
+    case "Last 30 Days": {
+      const start = new Date(startOfToday);
+      start.setDate(start.getDate() - 30);
+
+      return {
+        $gte: start,
+        $lt: startOfToday,
+      };
+    }
+
+    case "Last Month": {
+      const start = new Date(
+        today.getFullYear(),
+        today.getMonth() - 1,
+        1
+      );
+
+      const end = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        1
+      );
+
+      return {
+        $gte: start,
+        $lt: end,
+      };
+    }
+
+    case "Last Year": {
+      const start = new Date(
+        today.getFullYear() - 1,
+        0,
+        1
+      );
+
+      const end = new Date(
+        today.getFullYear(),
+        0,
+        1
+      );
+
+      return {
+        $gte: start,
+        $lt: end,
+      };
+    }
+
+    case "Last 12 months": {
+      const start = new Date(startOfToday);
+      start.setMonth(start.getMonth() - 12);
+
+      return {
+        $gte: start,
+        $lt: startOfToday,
+      };
+    }
+
+    /* -------------------- TODAY -------------------- */
 
     case "Today":
       return {
         $gte: startOfToday,
         $lt: endOfToday,
       };
+
+    /* -------------------- FUTURE -------------------- */
 
     case "Tomorrow": {
       const tomorrow = new Date(startOfToday);
@@ -80,11 +207,50 @@ const getDatePresetRange = (preset) => {
         $gte: startOfToday,
       };
 
+    /* -------------------- CURRENT PERIODS -------------------- */
+
+    case "This Month": {
+      const start = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        1
+      );
+
+      const end = new Date(
+        today.getFullYear(),
+        today.getMonth() + 1,
+        1
+      );
+
+      return {
+        $gte: start,
+        $lt: end,
+      };
+    }
+
+    case "This Year": {
+      const start = new Date(
+        today.getFullYear(),
+        0,
+        1
+      );
+
+      const end = new Date(
+        today.getFullYear() + 1,
+        0,
+        1
+      );
+
+      return {
+        $gte: start,
+        $lt: end,
+      };
+    }
+
     default:
       return null;
   }
 };
-
 
 
 
@@ -231,7 +397,9 @@ export const buildJobsQuery = (queryParams) => {
     partner,
     clientType,
 
-    activeClient
+    activeClient,
+    pocId,
+    signupDate
 
   } = queryParams;
 
@@ -314,6 +482,11 @@ export const buildJobsQuery = (queryParams) => {
     query.activeClient = activeClient;
   }
 
+  if (pocId) {
+    query.data = pocId;
+  }
+
+
   /*
   ==========================================
   EMAIL / PHONE SEARCH
@@ -360,6 +533,13 @@ export const buildJobsQuery = (queryParams) => {
     query,
     "job.workDeadline",
     jobDate
+  );
+
+
+    applyDateFilter(
+    query,
+    "currentDate",
+    signupDate
   );
 
   /*

@@ -25,11 +25,11 @@ export const pocColumn = ({ dataLable, addDatalabel1 }) => {
           >
             <option value="">Select</option>
             {dataLable?.map((label, i) => (
-              <option key={i} value={label?.name}>
+              <option key={i} value={label?._id}>
                 {label?.name}
               </option>
             ))}
-            <option value="empty">Empty</option>
+            {/* <option value="empty">Empty</option> */}
           </select>
         </div>
       );
@@ -97,17 +97,7 @@ export const pocColumn = ({ dataLable, addDatalabel1 }) => {
         </div>
       );
     },
-
-    // filterFn: (row, columnId, filterValue) => {
-    //   const labelName = row.original?.data?.name || "";
-    //   if (filterValue === "empty") {
-    //     return !labelName;
-    //   }
-    //   return labelName === filterValue;
-    // },
-
-    // filterVariant: "select",
-    // filterSelectOptions: dataLable.map((label) => label.name),
+ 
     size: 80,
     minSize: 80,
     maxSize: 180,

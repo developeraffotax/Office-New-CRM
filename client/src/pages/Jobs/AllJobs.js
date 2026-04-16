@@ -124,7 +124,7 @@ export default function AllJobs() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
 
-  const [active1, setActive1] = useState("");
+  // const [active1, setActive1] = useState("");
   // const [active2, setActive2] = useState("");
 
   
@@ -192,6 +192,9 @@ export default function AllJobs() {
 
 
   const boxRef = useRef(null);
+  const fetchRef = useRef(null);
+
+
   const [showcolumn, setShowColumn] = useState(false);
   const [showQuickList, setShowQuickList] = useState(false);
   const [qualityData, setQualityData] = useState([]);
@@ -247,7 +250,14 @@ const [rowCount, setRowCount] = useState(0);
 
 
 
+  
+  const assignedJobholderFilter = useMemo(() => {
+  const assignedFilter = columnFilters.find(
+    (f) => f.id === "Assign"
+  );
 
+  return assignedFilter?.value || null;
+}, [columnFilters]);
 
   const jobStatusFilter = useMemo(() => {
   const statusFilter = columnFilters.find(
@@ -265,19 +275,25 @@ const [rowCount, setRowCount] = useState(0);
           const socket  = useSocket();
       
       
-            useEffect(() => {
-      
-      
-              if (!socket) return;
-               
-              socket.on('job_updated', () => {
-               
-      
-                allClientData()
-              })
-            }, [socket])
+           useEffect(() => {
 
+  if (!socket) return;
 
+  const handleJobUpdate = () => {
+
+    console.log("Socket refresh with latest filters");
+
+    fetchRef.current?.(); // ✅ uses latest filters
+
+  };
+
+  socket.on('job_updated', handleJobUpdate);
+
+  return () => {
+    socket.off('job_updated', handleJobUpdate);
+  };
+
+}, [socket]);
 
 
  
@@ -502,7 +518,7 @@ const allClientJobData = useCallback(async () => {
 
  
 
-
+    console.log("THE COLUMN FILTERS ", columnFilters)
     const filters = buildFilters(columnFilters);
 
 
@@ -589,7 +605,7 @@ const allClientJobData = useCallback(async () => {
 
   // Global Search
   searchValue,
-
+   
   // Custom Filters
   // activeBtn,
   // lead,
@@ -607,32 +623,34 @@ const allClientJobData = useCallback(async () => {
 
   }, [allClientJobData])
 
-
+            useEffect(() => {
+  fetchRef.current = allClientJobData;
+}, [allClientJobData]);
  
   // -----------Get Client without Showing Loading-------->
-  const allClientData = async () => {
-    setIsLoad(true);
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/job`
-      );
-      if (data) {
-        if (active !== "All") {
-          setFilterData((prevData) => {
-            if (Array.isArray(prevData)) {
-              return [...prevData, data.clients];
-            }
-          });
-        }
-        setTableData(data?.clients);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error(error?.response?.data?.message || "Error in client Jobs");
-    } finally {
-      setIsLoad(false);
-    }
-  };
+  // const allClientData = async () => {
+  //   setIsLoad(true);
+  //   try {
+  //     const { data } = await axios.get(
+  //       `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/job`
+  //     );
+  //     if (data) {
+  //       if (active !== "All") {
+  //         setFilterData((prevData) => {
+  //           if (Array.isArray(prevData)) {
+  //             return [...prevData, data.clients];
+  //           }
+  //         });
+  //       }
+  //       setTableData(data?.clients);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     toast.error(error?.response?.data?.message || "Error in client Jobs");
+  //   } finally {
+  //     setIsLoad(false);
+  //   }
+  // };
  
   //   Get All Labels
   const getlabel = async () => {
@@ -725,26 +743,26 @@ const allClientJobData = useCallback(async () => {
 
   // --------------Filter Data By Department ----------->
 
-  const filterByDep = (value) => {
-    const filteredData = tableData.filter(
-      (item) =>
-        item.job.jobName === value ||
-        item.job?.jobStatus === value ||
-        item.job.jobHolder === value ||
-        item._id === value
-    );
+  // const filterByDep = (value) => {
+  //   const filteredData = tableData.filter(
+  //     (item) =>
+  //       item.job.jobName === value ||
+  //       item.job?.jobStatus === value ||
+  //       item.job.jobHolder === value ||
+  //       item._id === value
+  //   );
 
-    // console.log("FilterData", filteredData);
+  //   // console.log("FilterData", filteredData);
 
-    setFilterData([...filteredData]);
-  };
+  //   setFilterData([...filteredData]);
+  // };
 
-  useEffect(() => {
-    if (tableData && filterId) {
-      filterByDep(filterId);
-    }
-    // eslint-disable-next-line
-  }, [tableData, filterId]);
+  // useEffect(() => {
+  //   if (tableData && filterId) {
+  //     filterByDep(filterId);
+  //   }
+  //   // eslint-disable-next-line
+  // }, [tableData, filterId]);
 
   // Filter by Header Search
   useEffect(() => {
@@ -868,15 +886,15 @@ const allClientJobData = useCallback(async () => {
         }
       );
       if (data) {
-        if (filterId || active || active1) {
-          setFilterData((prevData) =>
-            prevData?.map((item) =>
-              item._id === rowId
-                ? { ...item, job: { ...item.job, jobStatus: newStatus } }
-                : item
-            )
-          );
-        }
+        // if (filterId || active || active1) {
+        //   setFilterData((prevData) =>
+        //     prevData?.map((item) =>
+        //       item._id === rowId
+        //         ? { ...item, job: { ...item.job, jobStatus: newStatus } }
+        //         : item
+        //     )
+        //   );
+        // }
         setTableData((prevData) =>
           prevData?.map((item) =>
             item._id === rowId
@@ -933,20 +951,20 @@ const allClientJobData = useCallback(async () => {
 
        
       if (data) {
-        if (filterId || active || active1) {
-          setFilterData((prevData) => {
+        // if (filterId || active || active1) {
+        //   setFilterData((prevData) => {
              
 
-            return  prevData?.map((item) =>
-              item._id === rowId
-                ? { ...item, activeClient: newValue }
-                : item
-            )
-          }
+        //     return  prevData?.map((item) =>
+        //       item._id === rowId
+        //         ? { ...item, activeClient: newValue }
+        //         : item
+        //     )
+        //   }
             
            
-          );
-        }
+        //   );
+        // }
         setTableData((prevData) => {
 
            
@@ -984,20 +1002,20 @@ const allClientJobData = useCallback(async () => {
       );
 
        if (data) {
-        if (filterId || active || active1) {
-          setFilterData((prevData) => {
+        // if (filterId || active || active1) {
+        //   setFilterData((prevData) => {
              
 
-            return  prevData?.map((item) =>
-              item._id === rowId
-                ? { ...item, fee: fee }
-                : item
-            )
-          }
+        //     return  prevData?.map((item) =>
+        //       item._id === rowId
+        //         ? { ...item, fee: fee }
+        //         : item
+        //     )
+        //   }
             
            
-          );
-        }
+        //   );
+        // }
         setTableData((prevData) => {
 
            
@@ -1056,15 +1074,15 @@ const allClientJobData = useCallback(async () => {
         }
       );
       if (data) {
-        if (filterId || active || active1) {
-          setFilterData((prevData) =>
-            prevData?.map((item) =>
-              item._id === rowId
-                ? { ...item, job: { ...item.job, lead: lead } }
-                : item
-            )
-          );
-        }
+        // if (filterId || active || active1) {
+        //   setFilterData((prevData) =>
+        //     prevData?.map((item) =>
+        //       item._id === rowId
+        //         ? { ...item, job: { ...item.job, lead: lead } }
+        //         : item
+        //     )
+        //   );
+        // }
         setTableData((prevData) =>
           prevData?.map((item) =>
             item._id === rowId
@@ -1093,15 +1111,15 @@ const allClientJobData = useCallback(async () => {
         }
       );
       if (data) {
-        if (filterId || active || active1) {
-          setFilterData((prevData) =>
-            prevData?.map((item) =>
-              item._id === rowId
-                ? { ...item, job: { ...item.job, jobHolder: jobHolder } }
-                : item
-            )
-          );
-        }
+        // if (filterId || active || active1) {
+        //   setFilterData((prevData) =>
+        //     prevData?.map((item) =>
+        //       item._id === rowId
+        //         ? { ...item, job: { ...item.job, jobHolder: jobHolder } }
+        //         : item
+        //     )
+        //   );
+        // }
         setTableData((prevData) =>
           prevData?.map((item) =>
             item._id === rowId
@@ -1185,13 +1203,13 @@ const allClientJobData = useCallback(async () => {
         // socketId.emit("addJob", {
         //   note: "New Task Added",
         // });
-        if (filterId || active || active1) {
-          setFilterData((prevData) =>
-            prevData?.map((item) =>
-              item._id === jobId ? { ...item, ...clientJob } : item
-            )
-          );
-        }
+        // if (filterId || active || active1) {
+        //   setFilterData((prevData) =>
+        //     prevData?.map((item) =>
+        //       item._id === jobId ? { ...item, ...clientJob } : item
+        //     )
+        //   );
+        // }
         setTableData((prevData) =>
           prevData?.map((item) =>
             item._id === jobId ? { ...item, ...clientJob } : item
@@ -1286,13 +1304,13 @@ const allClientJobData = useCallback(async () => {
       );
       if (data) {
         const clientJob = data.job;
-        if (filterId || active || active1) {
-          setFilterData((prevData) =>
-            prevData?.map((item) =>
-              item._id === id ? { ...item, ...clientJob } : item
-            )
-          );
-        }
+        // if (filterId || active || active1) {
+        //   setFilterData((prevData) =>
+        //     prevData?.map((item) =>
+        //       item._id === id ? { ...item, ...clientJob } : item
+        //     )
+        //   );
+        // }
         setTableData((prevData) =>
           prevData?.map((item) =>
             item._id === id ? { ...item, ...clientJob } : item
@@ -1327,13 +1345,13 @@ const allClientJobData = useCallback(async () => {
         const clientJob = data.job;
         // console.log("ClientJob:", clientJob);
 
-        if (filterId || active || active1) {
-          setFilterData((prevData) =>
-            prevData?.map((item) =>
-              item._id === clientJob._id ? { ...item, ...clientJob } : item
-            )
-          );
-        }
+        // if (filterId || active || active1) {
+        //   setFilterData((prevData) =>
+        //     prevData?.map((item) =>
+        //       item._id === clientJob._id ? { ...item, ...clientJob } : item
+        //     )
+        //   );
+        // }
 
         setTableData((prevData) =>
           prevData?.map((item) =>
@@ -2118,7 +2136,7 @@ useEffect(() => {
                 // setShowStatus(false);
                 // setShowJobHolder(false);
                 // setShowDue(false);
-                setActive1("");
+                // setActive1("");
                 // setActive2("");
                 dispatch(setFilterId(""));
                 handleClearFilters();
@@ -2220,19 +2238,21 @@ useEffect(() => {
                 key={i}
                 onClick={() => {
                   setActive(dep);
-                  filterByDep(dep);
+                  // filterByDep(dep);
                   setShowCompleted(false);
                   setShowInactive(false);
-                  setActive1("");
                   dispatch(setFilterId(""));
-                  dep === "All" && allClientData();
+                  // setActive1("");
+                  // dep === "All" && allClientData();
 
                   setColumnFromOutsideTable('Departments', (dep === "All" ? "" : dep));
 
                   
                 }}
               >
-                {dep} ({getDepartmentCount(dep)})
+                {dep} 
+                
+                {/* ({getDepartmentCount(dep)}) */}
               </div>
             );
           })}
@@ -2335,8 +2355,8 @@ useEffect(() => {
           <span
             className={` p-[6px] rounded-md hover:shadow-md mb-1 cursor-pointer border `}
             onClick={() => {
-              allClientData();
-              
+              // allClientData();
+              allClientJobData()
               dispatch(setFilterId(""));
             }}
             title="Refresh Data"
@@ -2589,7 +2609,7 @@ useEffect(() => {
             
             <div className="w-full  py-2 max-lg:hidden">
               <div className="flex items-center flex-wrap gap-4">
-                {/* <DragDropContext onDragEnd={handleUserOnDragEnd}>
+                <DragDropContext onDragEnd={handleUserOnDragEnd}>
                   <Droppable droppableId="users" direction="horizontal">
                     {(provided) => (
                       <div
@@ -2598,9 +2618,6 @@ useEffect(() => {
                         className="flex items-center gap-2 overflow-x-auto hidden1"
                       >
                         {selectedUsers
-                          ?.filter(
-                            (user) => getJobHolderCount(user, active) > 0
-                          )
                           ?.map((user, index) => (
                             <Draggable
                               key={user}
@@ -2610,31 +2627,32 @@ useEffect(() => {
                               {(provided) => (
                                 <div
                                   className={`py-1 rounded-tl-md rounded-tr-md w-[5.8rem] sm:w-fit px-1 !cursor-pointer font-[500] text-[14px] ${
-                                    active1 === user &&
+                                    assignedJobholderFilter === user &&
                                     "  border-b-2 text-orange-600 border-orange-600"
                                   }`}
                                   ref={provided.innerRef}
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
                                   onClick={() => {
-                                    setActive1(user);
+
+                                    // setActive1(user);
                                     filterByDepStat(user, active);
 
                                     setColumnFromOutsideTable("Job_Status", "Progress");
                                     setColumnFromOutsideTable("Assign", user);
 
 
-                                    if(auth.user?.role === "Admin" && (user === auth.user?.name) ) {
-                                      setColumnFromOutsideTable("Job_Date", "Today");
-                                    } else {
-                                       setColumnFromOutsideTable("Job_Date", "");
-                                    }
+                                    // if(auth.user?.role === "Admin" && (user === auth.user?.name) ) {
+                                    //   setColumnFromOutsideTable("Job_Date", "Today");
+                                    // } else {
+                                    //    setColumnFromOutsideTable("Job_Date", "");
+                                    // }
 
 
                                   }}
                                 >
-                                  {user} (
-                                  {getJobHolderCount(user, active)})
+                                  {user} 
+                                  {/* ({getJobHolderCount(user, active)}) */}
                                 </div>
                               )}
                             </Draggable>
@@ -2643,7 +2661,7 @@ useEffect(() => {
                       </div>
                     )}
                   </Droppable>
-                </DragDropContext> */}
+                </DragDropContext>
 
 
 
@@ -2717,7 +2735,7 @@ useEffect(() => {
         {/* ----------Date Status Summery Filters---------- */}
         {showDue && activeBtn === "due" && (
           <>
-            <div className="w-full py-2">
+            {/* <div className="w-full py-2">
               <div className="flex items-center flex-wrap gap-4">
                 {dateStatus?.map((stat, i) => {
                   const { due, overdue, upcoming } =
@@ -2745,7 +2763,7 @@ useEffect(() => {
                   );
                 })}
               </div>
-            </div>
+            </div> */}
             <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
           </>
         )}
@@ -2753,7 +2771,7 @@ useEffect(() => {
         {/* ----------Status Summery Filters---------- */}
         {showStatus && activeBtn === "status" && (
           <>
-            <div className="w-full py-2 flex items-center overflow-x-auto hidden1 gap-2 ">
+            {/* <div className="w-full py-2 flex items-center overflow-x-auto hidden1 gap-2 ">
               <div className="flex items-center  gap-4">
                 {dateStatus?.map((stat, i) => {
                   const { due, overdue, upcoming } =
@@ -2798,7 +2816,7 @@ useEffect(() => {
                   </div>
                 ))}
               </div>
-            </div>
+            </div> */}
             <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
           </>
         )}
@@ -2883,7 +2901,7 @@ useEffect(() => {
             allClientJobData={allClientJobData}
             handleDeleteJob={handleDeleteJob}
             users={users}
-            allClientData={allClientData}
+            
           />
 
                 </div>
@@ -2906,7 +2924,8 @@ useEffect(() => {
             setJobId={setJobId}
             users={users}
             type={"Jobs"}
-            getTasks1={allClientData}
+           
+            getTasks1={allClientJobData}
             page={"job"}
           />
         </div>

@@ -249,22 +249,29 @@ const [columnFilters, setColumnFilters] = useState([]);
 const [rowCount, setRowCount] = useState(0);
 
 
+  const departmentFilter = useMemo(() => {
+  const colFilter = columnFilters.find(
+    (f) => f.id === "Department"
+  );
+
+  return colFilter?.value || null;
+}, [columnFilters]);
 
   
   const assignedJobholderFilter = useMemo(() => {
-  const assignedFilter = columnFilters.find(
+  const colFilter = columnFilters.find(
     (f) => f.id === "Assign"
   );
 
-  return assignedFilter?.value || null;
+  return colFilter?.value || null;
 }, [columnFilters]);
 
   const jobStatusFilter = useMemo(() => {
-  const statusFilter = columnFilters.find(
+  const colFilter = columnFilters.find(
     (f) => f.id === "Job_Status"
   );
 
-  return statusFilter?.value || null;
+  return colFilter?.value || null;
 }, [columnFilters]);
 
 
@@ -2227,35 +2234,62 @@ useEffect(() => {
 
         {/* -----------Filters By Deparment--------- */}
         <div className="flex items-center overflow-x-auto hidden1 gap-2 mt-6 max-lg:hidden">
-          {departments?.map((dep, i) => {
-            getDueAndOverdueCountByDepartment(dep);
-            return (
-              <div
-                className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                  active === dep &&
-                  " border-2 border-b-0 text-orange-600 border-gray-300"
-                }`}
-                key={i}
-                onClick={() => {
-                  setActive(dep);
-                  // filterByDep(dep);
-                  setShowCompleted(false);
-                  setShowInactive(false);
-                  dispatch(setFilterId(""));
-                  // setActive1("");
-                  // dep === "All" && allClientData();
 
-                  setColumnFromOutsideTable('Departments', (dep === "All" ? "" : dep));
 
-                  
-                }}
-              >
-                {dep} 
-                
-                {/* ({getDepartmentCount(dep)}) */}
-              </div>
-            );
-          })}
+         {departments?.map((dep, i) => {
+  const activeDep = departmentFilter || "All";
+
+  getDueAndOverdueCountByDepartment(dep);
+
+  const isActive = activeDep === dep;
+
+  return (
+    <div
+      key={i}
+      onClick={() => {
+        setActive(dep);
+        setShowCompleted(false);
+        setShowInactive(false);
+        dispatch(setFilterId(""));
+
+        if (dep === "All") {
+          setColumnFromOutsideTable("Department", "");
+        } else {
+          setColumnFromOutsideTable("Department", dep);
+        }
+      }}
+      className={`
+        relative flex items-center gap-2 px-3 py-1.5 cursor-pointer
+        text-[13.5px] font-medium whitespace-nowrap transition-all duration-200
+        rounded-t-md border-b-2
+
+        ${
+          isActive
+            ? "text-orange-600 border-orange-500 bg-orange-50"
+            : "text-gray-600 border-transparent hover:text-gray-900 hover:bg-gray-50"
+        }
+      `}
+    >
+      {/* Label */}
+      <span className="tracking-wide">{dep}</span>
+
+      {/* Optional Badge (you already compute counts) */}
+      {/* <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-600">
+        {getDepartmentCount(dep)}
+      </span> */}
+
+      {/* Active underline glow effect */}
+      {isActive && (
+        <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-orange-500 rounded-full" />
+      )}
+    </div>
+  );
+})}
+
+
+
+
+
           <div
             className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
               activeBtn === "completed" &&

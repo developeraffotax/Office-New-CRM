@@ -185,7 +185,7 @@ export default function AllJobs() {
 
 
 
-
+   const [status, setStatus] = useState("progress")
 
 
 const [jobStats, setJobStats] = useState({
@@ -570,6 +570,7 @@ const allClientJobData = useCallback(async () => {
       page: pagination.pageIndex + 1,
       limit: pagination.pageSize,
 
+      status: status,
       // Sorting
       // sortField,
       // sortOrder,
@@ -634,7 +635,7 @@ const allClientJobData = useCallback(async () => {
   // Pagination (SAFE way)
   pagination.pageIndex,
   pagination.pageSize,
-
+  status,
   // Sorting
   // sorting,
 
@@ -680,7 +681,7 @@ const getJobsStats = useCallback(async () => {
 
     const params = {
 
- 
+        status,
       // ...filters,
 
     };
@@ -722,11 +723,11 @@ const getJobsStats = useCallback(async () => {
 
   }
 
-}, []);
+}, [status]);
   
   useEffect(() => {
     getJobsStats()
-  }, []);
+  }, [getJobsStats]);
 
 
   useEffect(() => {
@@ -894,36 +895,36 @@ const getJobsStats = useCallback(async () => {
 
   // -------------- Filter Data By Department || Status || Jobholder ----------->
 
-  const filterByDepStat = (value, dep) => {
-    let filteredData = [];
+  // const filterByDepStat = (value, dep) => {
+  //   let filteredData = [];
 
-    if (dep === "All") {
-      filteredData = tableData.filter(
-        (item) =>
-          item.job?.jobStatus === value ||
-          item.job.jobHolder === value ||
-          getStatus(item.job.jobDeadline, item.job.yearEnd) === value ||
-          getStatus(item.job.jobDeadline, item.job.yearEnd) === value
-      );
-    } else {
-      filteredData = tableData.filter((item) => {
-        const jobMatches = item.job.jobName === dep;
-        const statusMatches = item.job?.jobStatus === value;
-        const holderMatches = item.job.jobHolder === value;
+  //   if (dep === "All") {
+  //     filteredData = tableData.filter(
+  //       (item) =>
+  //         item.job?.jobStatus === value ||
+  //         item.job.jobHolder === value ||
+  //         getStatus(item.job.jobDeadline, item.job.yearEnd) === value ||
+  //         getStatus(item.job.jobDeadline, item.job.yearEnd) === value
+  //     );
+  //   } else {
+  //     filteredData = tableData.filter((item) => {
+  //       const jobMatches = item.job.jobName === dep;
+  //       const statusMatches = item.job?.jobStatus === value;
+  //       const holderMatches = item.job.jobHolder === value;
 
-        return (
-          (holderMatches && jobMatches) ||
-          (statusMatches && jobMatches) ||
-          (jobMatches &&
-            getStatus(item.job.jobDeadline, item.job.yearEnd) === value) ||
-          (jobMatches &&
-            getStatus(item.job.jobDeadline, item.job.yearEnd) === value)
-        );
-      });
-    }
+  //       return (
+  //         (holderMatches && jobMatches) ||
+  //         (statusMatches && jobMatches) ||
+  //         (jobMatches &&
+  //           getStatus(item.job.jobDeadline, item.job.yearEnd) === value) ||
+  //         (jobMatches &&
+  //           getStatus(item.job.jobDeadline, item.job.yearEnd) === value)
+  //       );
+  //     });
+  //   }
 
-    setFilterData([...filteredData]);
-  };
+  //   setFilterData([...filteredData]);
+  // };
 
  
 
@@ -2122,7 +2123,14 @@ useEffect(() => {
 
 
 
- 
+     const dotColors = {
+  progress:  "bg-blue-500",
+  completed: "bg-green-500",
+  inactive:  "bg-red-500",
+};
+
+
+
 
 
 
@@ -2261,6 +2269,32 @@ useEffect(() => {
             </span>
             <QuickAccess />
                {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
+
+
+              <span className="w-[1px] h-8 bg-gray-200 rounded "></span>
+           
+<div className="flex gap-2 w-fit font-google font-medium ">
+  {[{label: "In-Progress", value: "progress"}, {label: "Completed", value: "completed"}, {label: "Inactive", value: "inactive"}].map(({ label, value }) => (
+    <button
+      key={value}
+      onClick={() => setStatus(value)}
+      className={`flex items-center gap-[7px] px-[14px] py-[6px] text-[13px] rounded-xl  border cursor-pointer  transition-all duration-200
+        ${status === value
+          ? "border-gray-300 bg-gray-50 text-gray-900"
+          : "border-gray-200 bg-white text-gray-400 hover:text-gray-700"
+        }`}
+    >
+      <span className={`w-[7px] h-[7px] rounded-full flex-shrink-0  
+        ${status === value ? dotColors[value] : "bg-gray-300"}`}
+      />
+
+ 
+      {label}
+    </button>
+  ))}
+</div>
+
+
           </div>
 
           <div className="flex items-center gap-4">
@@ -2829,9 +2863,9 @@ useEffect(() => {
                                   onClick={() => {
 
                                     // setActive1(user);
-                                    filterByDepStat(user, active);
+                                    //filterByDepStat(user, active);
 
-                                    setColumnFromOutsideTable("Job_Status", "Progress");
+                                    // setColumnFromOutsideTable("Job_Status", "Progress");
                                     setColumnFromOutsideTable("Assign", user);
 
 

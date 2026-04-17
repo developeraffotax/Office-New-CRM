@@ -374,6 +374,9 @@ export const columnFieldMap = {
 export const buildJobsQuery = (queryParams) => {
 
   const {
+
+    status = "progress",
+
     jobRef,
 
     search,
@@ -403,12 +406,28 @@ export const buildJobsQuery = (queryParams) => {
 
   } = queryParams;
 
-  const query = {
-    status: { $eq: "process" },
-    "job.jobStatus": { $ne: "Inactive" },
-  };
+  const query = {};
+
+
+  if (status === "progress") {
+    query.status =  { $eq: "process" }
+    query["job.jobStatus"] = { $ne: "Inactive" }
+
+  }
+
+
+  if (status === "completed") {
+    query.status =  { $eq: "completed" }
+  }
+
+  if (status === "inactive") {
+     query["job.jobStatus"] = { $eq: "Inactive" }
+       
+  }
+
 
   console.log(queryParams);
+  console.log("THE QUERY 🌹🧡🧡", query);
 
   /*
   ==========================================
@@ -456,7 +475,7 @@ export const buildJobsQuery = (queryParams) => {
     query["job.jobName"] = jobName;
   }
 
-  if (jobStatus) {
+  if (jobStatus && (status === "progress" || status === "completed")) {
     query["job.jobStatus"] = jobStatus;
   }
 

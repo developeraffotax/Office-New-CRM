@@ -1,7 +1,7 @@
 import { Popover, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { FiPlusSquare } from "react-icons/fi";
-import { IoTicketOutline } from "react-icons/io5";
+import { IoRemoveCircle, IoTicketOutline } from "react-icons/io5";
 import { MdDriveFileMoveOutline, MdErrorOutline } from "react-icons/md";
 import { MdInsertComment } from "react-icons/md";
 import TicketsPopUp from "../../../../components/shared/TicketsPopUp";
@@ -18,22 +18,22 @@ export const actionsColumn = ({
   setShowNewTicketModal,
   moveJobToLead,
   createComplaint,
-  auth
+  handleUpdateClientStatus,
+  auth,
+  status,
 }) => {
+  const isProgress = status === "progress";
+  const isCompleted = status === "completed";
+  const isInactive = status === "inactive";
+
   return {
     id: "Actions",
-    // accessorKey: "actions",
     header: "Actions",
 
     Cell: ({ cell, row }) => {
-      
 
+      const hasAddComplainPermission = hasSubrole( auth.user, "Jobs", "Complain", );
       const [isLoading, setIsLoading] = useState(false);
-
-      const hasAddComplainPermission = hasSubrole(auth.user, "Jobs", "Complain")
-      
- 
-
       const [anchorEl, setAnchorEl] = useState(null);
 
       const handleClick = (event) => {
@@ -72,7 +72,7 @@ export const actionsColumn = ({
 
       return (
         <div className="flex items-center justify-center gap-2 w-full h-full ">
-          <div>
+          {isProgress && (<div>
             <span
               title="Create New Ticket"
               onClick={() => {
@@ -84,9 +84,9 @@ export const actionsColumn = ({
               {" "}
               <FiPlusSquare />
             </span>
-          </div>
+          </div>)}
 
-          <div>
+          {isProgress && (<div>
             <span
               title="Ticket"
               onClick={handleClick}
@@ -127,7 +127,7 @@ export const actionsColumn = ({
                 />
               </div>
             </Popover>
-          </div>
+          </div>)}
 
           <div
             title="Comments"
@@ -141,11 +141,10 @@ export const actionsColumn = ({
               <span className="text-[1rem] cursor-pointer relative">
                 <MdInsertComment className="h-5 w-5 text-orange-600 " />
               </span>
- 
             </div>
           </div>
 
-          <div>
+          {isProgress && (<div>
             <span
               title="Open OneDrive Folder"
               onClick={() => {
@@ -159,9 +158,9 @@ export const actionsColumn = ({
                 <MdOutlineFolder className="h-5 w-5 text-orange-600 " />
               )}
             </span>
-          </div>
+          </div>)}
 
-          <div
+          {isProgress && (<div
             className="relative"
             title="Move to Lead"
             onClick={() => {
@@ -171,34 +170,44 @@ export const actionsColumn = ({
             <span className="text-[1rem] cursor-pointer relative">
               <MdDriveFileMoveOutline className="h-6 w-6 text-orange-600 " />
             </span>
-          </div>
+          </div>)}
 
-            {
-              hasAddComplainPermission && (
-                <button
-            title="Create Complaint for this job"
-            onClick={() => {
-              createComplaint({
-                defaultEntityType: "job",
-                defaultEntityRef: `J-${row.original?.jobRef}`,
+            {isCompleted && (
+               <div
+                className="flex items-center justify-center gap-1 w-full h-full"
+                onClick={() => {
+                  handleUpdateClientStatus(row.original._id);
+                }}
+              >
+                <span className="text-[1rem] cursor-pointer">
+                  <IoRemoveCircle className="h-5 w-5 text-red-500 hover:text-red-600" />
+                </span>
+              </div>
+            )}
 
-                defaultCompany: row.original?.companyName,
-                defaultClient: row.original?.clientName,
-                defaultDepartment: row.original?.job?.jobName,
+          {hasAddComplainPermission && (
+            <button
+              title="Create Complaint for this job"
+              onClick={() => {
+                createComplaint({
+                  defaultEntityType: "job",
+                  defaultEntityRef: `J-${row.original?.jobRef}`,
 
-                defaultLead: row.original?.job?.lead,
-                defaultAssign: row.original?.job?.jobHolder,
-              });
-            }}
-          >
-            <MdErrorOutline className="h-5 w-5 text-red-500 hover:text-red-600" />{" "}
-          </button>
-              )
-            }
-          
+                  defaultCompany: row.original?.companyName,
+                  defaultClient: row.original?.clientName,
+                  defaultDepartment: row.original?.job?.jobName,
+
+                  defaultLead: row.original?.job?.lead,
+                  defaultAssign: row.original?.job?.jobHolder,
+                });
+              }}
+            >
+              <MdErrorOutline className="h-5 w-5 text-red-500 hover:text-red-600" />{" "}
+            </button>
+          )}
         </div>
       );
     },
-    size: 200,
+    size: isProgress ? 200 :100,
   };
 };

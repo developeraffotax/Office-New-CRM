@@ -35,7 +35,7 @@ import { yearEndColumn } from "./yearEndColumn"
 
 
 export const getJobsColumns = (ctx) => {
-  const { auth, access, showUniqueClients } = ctx;
+  const { auth, access, showUniqueClients, status } = ctx;
 
    
 
@@ -55,7 +55,7 @@ export const getJobsColumns = (ctx) => {
    jobStatusColumn(ctx),
   ownerColumn(ctx),
     budgetColumn(ctx),
-   timerColumn(ctx),
+   (status === "progress" && timerColumn(ctx)),
     actionsColumn(ctx),
      emailColumn(ctx),
    phoneColumn(ctx),

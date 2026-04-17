@@ -2973,6 +2973,7 @@ export const getAllClientJobs = async (req, res) => {
       )
       .populate("data")
       // .sort({ [sortField]: sortOrder })
+      .sort({ _id: 1 })
       .skip(skip)
       .limit(limit)
       .lean();

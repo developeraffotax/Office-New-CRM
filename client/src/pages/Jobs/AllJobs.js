@@ -1500,7 +1500,50 @@ const getJobsStats = useCallback(async () => {
 
 
 
+
   }
+
+
+
+
+
+
+
+  
+    const handleUpdateClientStatus = (id) => {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You want to undo this job!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, update it!",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          updateClientStatus(id);
+          Swal.fire("Updated!", "Your job status successfully!.", "success");
+        }
+      });
+    };
+    const updateClientStatus = async (id) => {
+      try {
+        const { data } = await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/v1/client/update/client/status/${id}`
+        );
+        if (data) {
+          allClientJobData();
+          toast.success("Status updated!");
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error(error?.response?.data?.message || "Error in client Jobs");
+      }
+    };
+
+
+
+
 
 // ----------------------------
 // 🔑 Authentication Context
@@ -1554,11 +1597,13 @@ const jobCtx = useMemo(() => {
     handleUpdateJobHolder,
     createComplaint,
     setTableData,
+    handleUpdateClientStatus,
 
     columnFilters,
-    searchValue
+    searchValue,
+    status
   }
-}, [totalFee, totalHours, dataLable, labelData, totalClientPaidFee, showUniqueClients, columnFilters, searchValue])
+}, [totalFee, totalHours, dataLable, labelData, totalClientPaidFee, showUniqueClients, columnFilters, searchValue, status])
 
 
 // ----------------------------
@@ -2902,7 +2947,7 @@ useEffect(() => {
                 </div>
 
 
-             <div className="flex items-center gap-2 border-l px-4">
+             {status !== "inactive" && <div className="flex items-center gap-2 border-l px-4">
                 {statusInit?.map((stat, i) => (
                   <div
                     key={i}
@@ -2938,7 +2983,7 @@ useEffect(() => {
  
                   </div>
                 ))}
-              </div>
+              </div>}
 
 
 

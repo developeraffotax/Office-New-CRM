@@ -1815,7 +1815,7 @@ const ctx = useMemo(() => {
  
               backgroundColor: "rgba(0, 0, 0, 0.05)", // Barely visible track
               "& .MuiLinearProgress-bar": {
-                backgroundColor: "#007FFF", // Branded Blue
+                backgroundColor: status === "progress" ? "#3b82f6" : status === "completed" ? "#22c55e" : "#ef4444", // Branded Blue
                 boxShadow: "0 0 4px #007FFF", // Adds depth to a thin line
               },
                
@@ -1827,9 +1827,9 @@ const ctx = useMemo(() => {
 
 
  
-
-
- 
+// #3b82f6
+// 
+//  #ef4444
   
 
     muiTableHeadCellProps: {
@@ -2444,7 +2444,7 @@ useEffect(() => {
         {/*  */}
 
         {/* -----------Filters By Deparment--------- */}
-        <div className="flex items-center overflow-x-auto hidden1 gap-1 mt-4 max-lg:hidden">
+        <div className="flex items-center overflow-x-auto hidden1 gap-1    py-1.5 max-lg:hidden">
 
 
 
@@ -2692,11 +2692,12 @@ useEffect(() => {
 
         </div>
         {/*  */}
-        <hr className="mb-1 bg-gray-200 w-full h-[1px] max-lg:hidden" />
+        
+        {/* <hr className="mb-1 bg-gray-200 w-full h-[1px] max-lg:hidden" /> */}
 
         {/* Update Bulk Jobs */}
         {showEdit && (
-          <div className="w-full  py-2">
+          <div className="w-full  py-2   ">
             <form
               onSubmit={updateBulkJob}
               className="w-full flex items-center flex-wrap gap-2 "
@@ -2905,7 +2906,7 @@ useEffect(() => {
         {showJobHolder && activeBtn === "jobHolder" && (
           <>
             
-            <div className="w-full  py-2 max-lg:hidden">
+            <div className="w-full  py-1.5 max-lg:hidden border-t ">
               <div className="flex items-center flex-wrap gap-4">
                 <DragDropContext onDragEnd={handleUserOnDragEnd}>
                   <Droppable droppableId="users" direction="horizontal">

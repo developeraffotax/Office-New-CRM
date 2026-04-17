@@ -198,7 +198,7 @@ const [jobStats, setJobStats] = useState({
 
 
 
-console.log("THE jobStats >>>>>>>>>>>> ❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️", jobStats)
+ 
 
 const getuserJobCounts = (userName) => {
   return jobStats?.userJobCounts?.find(
@@ -280,8 +280,27 @@ const [pagination, setPagination] = useState({
 // Sorting
 const [sorting, setSorting] = useState([]);
 
+
+
 // Column Filters
-const [columnFilters, setColumnFilters] = useState([]);
+const [columnFilters, setColumnFilters] = useState(() => {
+  const userName = auth?.user?.name;
+  
+
+  const filters = [ { id: "Job_Status", value: "Progress", }, ];
+  // Add Assign filter only if NOT admin
+  if (!isAdmin(auth)) {
+    filters.push({
+      id: "Assign",
+      value: userName, // filter by logged-in user
+    });
+  }
+
+  return filters;
+});
+
+
+
 
 // Total rows
 const [rowCount, setRowCount] = useState(0);
@@ -913,19 +932,19 @@ const getJobsStats = useCallback(async () => {
   // }, [tableData, filterId]);
 
   // Filter by Header Search
-  useEffect(() => {
-    if (searchValue) {
-      const filteredData = tableData.filter(
-        (item) =>
-          item?.clientName.toLowerCase().includes(searchValue.toLowerCase()) ||
-          item?.companyName.toLowerCase().includes(searchValue.toLowerCase())
-      );
-      setFilterData(filteredData);
-      // console.log("SearchData:", filteredData);
-    } else {
-      setFilterData(tableData);
-    }
-  }, [searchValue, tableData]);
+  // useEffect(() => {
+  //   if (searchValue) {
+  //     const filteredData = tableData.filter(
+  //       (item) =>
+  //         item?.clientName.toLowerCase().includes(searchValue.toLowerCase()) ||
+  //         item?.companyName.toLowerCase().includes(searchValue.toLowerCase())
+  //     );
+  //     setFilterData(filteredData);
+  //     // console.log("SearchData:", filteredData);
+  //   } else {
+  //     setFilterData(tableData);
+  //   }
+  // }, [searchValue, tableData]);
 
   // -------------- Filter Data By Department || Status || Jobholder ----------->
 
@@ -2683,7 +2702,7 @@ useEffect(() => {
             <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
           </span>
           
-          <span
+          {/* <span
             className={` p-1 rounded-md hover:shadow-md mb-1 cursor-pointer border ${
               activeBtn === "status" && showStatus && "bg-orange-500 text-white"
             }`}
@@ -2696,7 +2715,7 @@ useEffect(() => {
             title="Filter by Job Status"
           >
             <MdAutoGraph className="h-6 w-6  cursor-pointer" />
-          </span>
+          </span> */}
           {/* Edit Multiple Job */}
           <span
             className={` p-1 rounded-md hover:shadow-md mb-1 cursor-pointer border ${

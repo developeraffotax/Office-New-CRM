@@ -1544,6 +1544,31 @@ const getJobsStats = useCallback(async () => {
 
 
 
+const handleUpdateUser = async (jobId, users) => {
+  try {
+    const { prepared, review, filed } = users;
+
+    const { data } = await axios.put(
+      `${process.env.REACT_APP_API_URL}/api/v1/client/job/users/${jobId}`,
+      { prepared, review, filed }
+    );
+ 
+    if(data) {
+
+      toast.success("Job updated successfully.");
+    }
+
+  } catch (error) {
+    console.error("Update Job Users Error:", error);
+
+    toast.error(
+      error?.response?.data?.message ||
+      error.message ||
+      "Failed to update job"
+    );
+  }
+};
+
 
 // ----------------------------
 // 🔑 Authentication Context
@@ -1598,6 +1623,7 @@ const jobCtx = useMemo(() => {
     createComplaint,
     setTableData,
     handleUpdateClientStatus,
+    handleUpdateUser,
 
     columnFilters,
     searchValue,

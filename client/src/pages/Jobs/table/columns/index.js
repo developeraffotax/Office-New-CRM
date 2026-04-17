@@ -15,6 +15,9 @@ import { feeColumn } from "./feeColumn"
 import { hrsColumn } from "./hrsColumn"
 import { idColumn } from "./idColumn"
 import { jobDateColumn } from "./jobDateColumn"
+import { jobFiledColumn } from "./jobFiledColumn"
+import { jobPreparedColumn } from "./jobPreparedColumn"
+import { jobReviewColumn } from "./jobReviewColumn"
 import { jobStatusColumn } from "./jobStatusColumn"
 import {   labelsColumn } from "./labelsColumn"
 import { ownerColumn } from "./ownerColumn"
@@ -59,6 +62,10 @@ export const getJobsColumns = (ctx) => {
     actionsColumn(ctx),
      emailColumn(ctx),
    phoneColumn(ctx),
+
+   (status === "completed" && jobPreparedColumn(ctx)),
+   (status === "completed" && jobReviewColumn(ctx)),
+   (status === "completed" && jobFiledColumn(ctx))
      
   ];
 

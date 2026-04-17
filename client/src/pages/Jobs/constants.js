@@ -25,6 +25,10 @@ export const columnData = [
   "Partner",
   "email",
   "phone",
+
+  "jobPrepared",
+  "jobReview",
+  "jobFiled",
 ];
 
 export const departments = [
@@ -95,7 +99,7 @@ export const DEFAULT_DATE_FILTERS = [
 
 
 
-
+// used for api call
 export const columnFieldMap = {
   jobRef: "jobRef",
   clientName: "clientName",
@@ -125,6 +129,11 @@ export const columnFieldMap = {
   AC: "activeClient",
   POC: "pocId",
   SignUp_Date: "signupDate",
+
+
+  jobPrepared: "jobPrepared",
+  jobReview: "jobReview",
+  jobFiled: "jobFiled",
 
   
 

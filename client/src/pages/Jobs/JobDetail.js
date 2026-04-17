@@ -35,6 +35,8 @@ import { SalesTab } from "./detailComponents/SalesTab";
 import { LoginInfoTab } from "./detailComponents/LoginInfoTab";
 import { DepartmentTab } from "./detailComponents/DepartmentTab";
 import DetailComments from "../Tasks/TaskDetailComments";
+import { useEscapeKey } from "../../utlis/useEscapeKey";
+ 
 
 export default function JobDetail({
   clientId,
@@ -44,6 +46,7 @@ export default function JobDetail({
   users,
   allClientData,
   setCompanyName,
+  setShowDetail
 }) {
   const [clientDetail, setClientDetail] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -80,6 +83,10 @@ export default function JobDetail({
       timerRef.current.stopTimer();
     }
   };
+
+
+  useEscapeKey(() => setShowDetail(false));
+ 
 
   useEffect(() => {
     if (clientDetail) {

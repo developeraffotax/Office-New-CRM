@@ -3301,6 +3301,7 @@ useEffect(() => {
             allClientJobData={allClientJobData}
             handleDeleteJob={handleDeleteJob}
             users={users}
+            setShowDetail={setShowDetail}
             
           />
 

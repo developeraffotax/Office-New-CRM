@@ -44,19 +44,19 @@ export const departments = [
 
 export const dateStatus = ["Due", "Overdue", "Upcoming"];
 
-export const status = [
-  "Quote",
-  "Data",
-  "Progress",
-  // "Queries",
-  "Revision",
-  "Approval",
-  "Submission",
-  "Billing",
-  "Feedback",
-  "Missing Info",
-  "Inactive",
-];
+// export const status = [
+//   "Quote",
+//   "Data",
+//   "Progress",
+//   // "Queries",
+//   "Revision",
+//   "Approval",
+//   "Submission",
+//   "Billing",
+//   "Feedback",
+//   "Missing Info",
+//   "Inactive",
+// ];
 
 export const statusInit = [
   "Quote",

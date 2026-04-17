@@ -3022,7 +3022,14 @@ export const getAllClientJobs = async (req, res) => {
 export const getJobsStats = async (req, res) => {
   try {
 
-    const match = buildJobsQuery(req.query);
+    // Clone query params and REMOVE dueStatus
+    const { dueStatus, ...restQuery } = req.query;
+
+    // Build base match WITHOUT dueStatus
+    const match = buildJobsQuery(restQuery);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     const stats = await jobsModel.aggregate([
 
@@ -3037,7 +3044,6 @@ export const getJobsStats = async (req, res) => {
           allJobsCount: [
             { $count: "count" }
           ],
-
 
           // =========================
           // USER WISE JOB COUNT
@@ -3075,7 +3081,116 @@ export const getJobsStats = async (req, res) => {
             }
           ],
 
-          
+          // =========================
+          // DUE STATUS COUNTS
+          // =========================
+          dueStatusCounts: [
+
+            {
+              $group: {
+
+                _id: {
+                  $switch: {
+
+                    branches: [
+
+                      // =====================
+                      // OVERDUE
+                      // deadline < today
+                      // =====================
+                      {
+                        case: {
+                          $lt: [
+                            "$job.jobDeadline",
+                            today
+                          ]
+                        },
+                        then: "overdue"
+                      },
+
+                      // =====================
+                      // DUE
+                      // (yearEnd <= today AND deadline > today)
+                      // OR (deadline === today)
+                      // =====================
+                      {
+                        case: {
+                          $or: [
+
+                            {
+                              $and: [
+                                {
+                                  $lte: [
+                                    "$job.yearEnd",
+                                    today
+                                  ]
+                                },
+                                {
+                                  $gt: [
+                                    "$job.jobDeadline",
+                                    today
+                                  ]
+                                }
+                              ]
+                            },
+
+                            {
+                              $eq: [
+
+                                {
+                                  $dateTrunc: {
+                                    date: "$job.jobDeadline",
+                                    unit: "day"
+                                  }
+                                },
+
+                                today
+                              ]
+                            }
+
+                          ]
+                        },
+                        then: "due"
+                      },
+
+                      // =====================
+                      // UPCOMING
+                      // deadline > today
+                      // AND yearEnd > today
+                      // =====================
+                      {
+                        case: {
+                          $and: [
+                            {
+                              $gt: [
+                                "$job.jobDeadline",
+                                today
+                              ]
+                            },
+                            {
+                              $gt: [
+                                "$job.yearEnd",
+                                today
+                              ]
+                            }
+                          ]
+                        },
+                        then: "upcoming"
+                      }
+
+                    ],
+
+                    default: "other"
+
+                  }
+                },
+
+                count: { $sum: 1 }
+
+              }
+            }
+
+          ]
 
         }
       }
@@ -3088,11 +3203,14 @@ export const getJobsStats = async (req, res) => {
     });
 
   } catch (error) {
+
     console.log(error);
+
     res.status(500).send({
       success: false,
       message: "Error fetching stats",
       error
     });
+
   }
 };

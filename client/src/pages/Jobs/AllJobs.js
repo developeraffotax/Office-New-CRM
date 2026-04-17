@@ -62,7 +62,7 @@ import OutsideFilter from "./utils/OutsideFilter";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import SelectedUsers from "../../components/SelectedUsers";
 import { openModal } from "../../redux/slices/globalModalSlice";
-import { columnData, dateStatus, departments, status, statusInit } from "./constants";
+import { columnData, dateStatus, departments,   statusInit } from "./constants";
 import { buildFilters } from "./utils/utils";
 import { rowMatchesSearch } from "./utils/rowMatchesSearch";
  
@@ -193,11 +193,12 @@ const [jobStats, setJobStats] = useState({
   departmentJobCounts: [],
   userJobCounts: [],
   jobStatusJobCounts: [],
+  dueStatusCounts: []
 });
 
 
 
-
+console.log("THE jobStats >>>>>>>>>>>> ❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️", jobStats)
 
 const getuserJobCounts = (userName) => {
   return jobStats?.userJobCounts?.find(
@@ -219,6 +220,12 @@ const getjobStatusJobCounts = (jobStatus) => {
   )?.count || 0;
 };
 
+
+const getdueStatusCounts = (dueStatus) => {
+  return jobStats?.dueStatusCounts?.find(
+    (u) => u._id === dueStatus
+  )?.count || 0;
+};
 
 
 
@@ -278,6 +285,17 @@ const [columnFilters, setColumnFilters] = useState([]);
 
 // Total rows
 const [rowCount, setRowCount] = useState(0);
+
+
+
+  const dueStatusFilter = useMemo(() => {
+  const colFilter = columnFilters.find(
+    (f) => f.id === "Status"
+  );
+
+  return colFilter?.value || null;
+}, [columnFilters]);
+
 
 
   const departmentFilter = useMemo(() => {
@@ -723,7 +741,16 @@ const getJobsStats = useCallback(async () => {
 
   }
 
-}, [status]);
+}, [
+ 
+  status,
+ 
+
+ 
+  columnFilters,
+
+ 
+]);
   
   useEffect(() => {
     getJobsStats()
@@ -1000,15 +1027,7 @@ const getJobsStats = useCallback(async () => {
         }
       );
       if (data) {
-        // if (filterId || active || active1) {
-        //   setFilterData((prevData) =>
-        //     prevData?.map((item) =>
-        //       item._id === rowId
-        //         ? { ...item, job: { ...item.job, jobStatus: newStatus } }
-        //         : item
-        //     )
-        //   );
-        // }
+        
         setTableData((prevData) =>
           prevData?.map((item) =>
             item._id === rowId
@@ -1016,11 +1035,14 @@ const getJobsStats = useCallback(async () => {
               : item
           )
         );
+
+        // if(newStatus === "Inactive") {
+        //   allClientJobData()
+        //   getJobsStats()
+
+        // }
         toast.success("Job status updated!");
-        // Socket
-        // socketId.emit("addJob", {
-        //   note: "New Task Added",
-        // });
+       
       }
     } catch (error) {
       console.error("Error updating status", error);
@@ -1757,7 +1779,7 @@ const ctx = useMemo(() => {
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "800px",  } },
+    muiTableContainerProps: { sx: { maxHeight: "78vh",  } },
     enableColumnActions: false,
     enableSorting: false,
     enableGlobalFilter: true,
@@ -2008,6 +2030,7 @@ const ctx = useMemo(() => {
 
       if (data) {
         allClientJobData();
+        getJobsStats()
         setIsUpdate(false);
         setShowEdit(false);
         setRowSelection({});
@@ -2198,7 +2221,20 @@ useEffect(() => {
   progress:  "bg-blue-500",
   completed: "bg-green-500",
   inactive:  "bg-red-500",
+
+  due:  " bg-green-500",
+  overdue: "  bg-red-500",
+  upcoming:  " bg-gray-500",
 };
+
+const textColors = {
+  due:  "text-green-500 ",
+  overdue: "text-red-500",
+  upcoming:  "text-gray-500",
+
+
+
+}
 
 
 
@@ -2309,9 +2345,9 @@ useEffect(() => {
 
   return (
     <>
-      <div className="w-full h-[100%] py-4 px-2 sm:px-4 overflow-y-auto ">
+      <div className="w-full h-[100vh] py-4 px-2 sm:px-4 overflow-y-auto ">
         <div className="flex items-start sm:items-center sm:justify-between flex-col sm:flex-row gap-3 ">
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-3">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
               {showCompleted && activeBtn === "completed"
                 ? "Completed Job's"
@@ -2344,26 +2380,63 @@ useEffect(() => {
 
               <span className="w-[1px] h-8 bg-gray-200 rounded "></span>
            
-<div className="flex gap-2 w-fit font-google font-medium ">
-  {[{label: "In-Progress", value: "progress"}, {label: "Completed", value: "completed"}, {label: "Inactive", value: "inactive"}].map(({ label, value }) => (
-    <button
-      key={value}
-      onClick={() => setStatus(value)}
-      className={`flex items-center gap-[7px] px-[14px] py-[6px] text-[13px] rounded-xl  border cursor-pointer  transition-all duration-200
-        ${status === value
-          ? "border-gray-300 bg-gray-50 text-gray-900"
-          : "border-gray-200 bg-white text-gray-400 hover:text-gray-700"
-        }`}
-    >
-      <span className={`w-[7px] h-[7px] rounded-full flex-shrink-0  
-        ${status === value ? dotColors[value] : "bg-gray-300"}`}
-      />
+              <div className="flex gap-2 w-fit font-google font-medium ">
+                {[{label: "In-Progress", value: "progress"}, {label: "Completed", value: "completed"}, {label: "Inactive", value: "inactive"}].map(({ label, value }) => (
+                  <button
+                    key={value}
+                    onClick={() => setStatus(value)}
+                    className={`flex items-center gap-[7px] px-[14px] py-[6px] text-[13px] rounded-xl  border cursor-pointer  transition-all duration-200
+                      ${status === value
+                        ? "border-gray-300 bg-gray-50 text-gray-900"
+                        : "border-gray-200 bg-white text-gray-400 hover:text-gray-700"
+                      }`}
+                  >
+                    <span className={`w-[7px] h-[7px] rounded-full flex-shrink-0  
+                      ${status === value ? dotColors[value] : "bg-gray-300"}`}
+                    />
 
- 
-      {label}
-    </button>
-  ))}
-</div>
+              
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+
+                {  <span className="w-[1px] h-8 bg-gray-200 rounded "></span>}
+
+             {  (
+              <div className="flex gap-1 w-fit font-google font-medium ">
+                  {[
+                    { label: "Due", value: "due" },
+                    { label: "Overdue", value: "overdue" },
+                    { label: "Upcoming", value: "upcoming" },
+                  ].map(({ label, value }) => {
+                    const isActive = dueStatusFilter === value;
+
+                    return (
+                      <button
+                        key={value}
+                        onClick={() => setColumnFromOutsideTable("Status", value)}
+                        className={`
+                          flex items-center gap-1 px-2 py-1 text-[12px] font-normal rounded-xl cursor-pointer border-none
+                          ${isActive
+                            ? `${textColors[value]} bg-gray-100`
+                            : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                          }
+                        `}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full transition-all duration-150
+                            ${isActive ? dotColors[value] : "bg-transparent"}
+                          `}
+                        />
+                        {label} ({getdueStatusCounts(value)})
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
 
 
           </div>
@@ -2554,7 +2627,7 @@ useEffect(() => {
 
 
 
-          <div
+          {/* <div
             className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
               activeBtn === "completed" &&
               showCompleted &&
@@ -2581,7 +2654,7 @@ useEffect(() => {
             }}
           >
             Inactive
-          </div>
+          </div> */}
 
 
           
@@ -2768,11 +2841,14 @@ useEffect(() => {
                   style={{ width: "6.5rem" }}
                 >
                   <option value="empty">Status</option>
-                  {status.map((stat, i) => (
+                  {statusInit.map((stat, i) => (
                     <option value={stat} key={i}>
                       {stat}
                     </option>
                   ))}
+                  <option value={"Inactive"} >
+                      Inactive
+                    </option>
                 </select>
               </div>
               <div className="">

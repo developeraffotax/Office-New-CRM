@@ -3023,17 +3023,21 @@ export const getJobsStats = async (req, res) => {
   try {
 
     // Clone query params and REMOVE dueStatus
-    const { dueStatus, ...restQuery } = req.query;
+    const query = req.query;
+
+    const { jobName, ...restQuery } = query;
+    
 
     // Build base match WITHOUT dueStatus
-    const match = buildJobsQuery(restQuery);
+    const baseMatch = buildJobsQuery(query);
+    const baseMatchWithoutJobName = buildJobsQuery({...restQuery});
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const stats = await jobsModel.aggregate([
 
-      { $match: match },
+      // { $match: match },
 
       {
         $facet: {
@@ -3042,6 +3046,7 @@ export const getJobsStats = async (req, res) => {
           // TOTAL JOB COUNT
           // =========================
           allJobsCount: [
+             { $match: baseMatchWithoutJobName },
             { $count: "count" }
           ],
 
@@ -3049,6 +3054,7 @@ export const getJobsStats = async (req, res) => {
           // USER WISE JOB COUNT
           // =========================
           userJobCounts: [
+             { $match: baseMatch },
             {
               $group: {
                 _id: "$job.jobHolder",
@@ -3061,6 +3067,7 @@ export const getJobsStats = async (req, res) => {
           // DEPARTMENT COUNT
           // =========================
           departmentJobCounts: [
+             { $match: baseMatchWithoutJobName },
             {
               $group: {
                 _id: "$job.jobName",
@@ -3073,6 +3080,7 @@ export const getJobsStats = async (req, res) => {
           // STATUS COUNT
           // =========================
           jobStatusJobCounts: [
+             { $match: baseMatch },
             {
               $group: {
                 _id: "$job.jobStatus",
@@ -3085,6 +3093,7 @@ export const getJobsStats = async (req, res) => {
           // DUE STATUS COUNTS
           // =========================
           dueStatusCounts: [
+             { $match: baseMatch },
 
             {
               $group: {

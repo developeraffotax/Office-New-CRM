@@ -574,7 +574,7 @@ const allClientJobData = useCallback(async () => {
 
  
 
-    console.log("THE COLUMN FILTERS ", columnFilters)
+    // console.log("THE COLUMN FILTERS ", columnFilters)
     const filters = buildFilters(columnFilters);
 
 
@@ -689,9 +689,10 @@ const getJobsStats = useCallback(async () => {
 
  
 
-    console.log("THE COLUMN FILTERS ", columnFilters)
     const filters = buildFilters(columnFilters);
-
+    
+    console.log("THE COLUMN FILTERS ", columnFilters)
+    console.log("filters ✔️🌹🧡❤️", filters)
 
     // ======================================================
     // BUILD FINAL PARAMS
@@ -702,7 +703,13 @@ const getJobsStats = useCallback(async () => {
         status,
       // ...filters,
 
+       
+
     };
+
+    if(filters?.jobName) {
+      params.jobName = filters.jobName
+    }
 
 
     // ======================================================

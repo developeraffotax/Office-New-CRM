@@ -427,7 +427,7 @@ export const buildJobsQuery = (queryParams) => {
 
 
   console.log(queryParams);
-  console.log("THE QUERY 🌹🧡🧡", query);
+
 
   /*
   ==========================================
@@ -693,5 +693,7 @@ if (search) {
   query.$or = orConditions;
 }
 
+
+  console.log("THE QUERY 🌹🧡🧡", query);
   return query;
 };

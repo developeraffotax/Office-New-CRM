@@ -254,6 +254,16 @@ const clientSchema = new mongoose.Schema(
 );
 
 
+
+// Primary index
+clientSchema.index({
+  status: 1,
+  "job.jobStatus": 1,
+  "job.jobHolder": 1
+})
+
+
+
 clientSchema.pre("save", async function (next) {
   if (this.jobRef) return next();
   

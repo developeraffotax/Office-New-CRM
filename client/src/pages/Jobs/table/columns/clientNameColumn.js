@@ -58,7 +58,7 @@ export const clientNameColumn = ({
             value={value}
             onChange={handleChange}
             className="font-normal h-[1.8rem] px-2 bg-white rounded-md border border-gray-300 outline-none"
-            placeholder="Search client..."
+             
           />
         </div>
       );

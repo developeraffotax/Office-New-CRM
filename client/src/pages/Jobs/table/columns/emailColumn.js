@@ -45,7 +45,7 @@ export const emailColumn = ({ columnFilters, searchValue }) => {
             type="search"
             value={value}
             onChange={handleChange}
-            placeholder="Search email..."
+            
             className="font-normal h-[1.8rem] px-2 cursor-pointer bg-white rounded-md border border-gray-300 outline-none"
           />
         </div>

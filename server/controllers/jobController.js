@@ -8,7 +8,7 @@ import moment from "moment";
 import { scheduleNotification } from "../utils/customFns/scheduleNotification.js";
 import { emitJobUpdate } from "../utils/customFns/emitJobUpdate.js";
 import subtaskListModel from "../models/subtaskListModel.js";
-import { buildJobsQuery } from "./jobController.utils.js";
+import { buildJobsQuery, } from "./jobController.utils.js";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
@@ -2930,6 +2930,27 @@ const getDatePresetRange = (preset) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  
 
 
@@ -3223,3 +3244,86 @@ export const getJobsStats = async (req, res) => {
 
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 

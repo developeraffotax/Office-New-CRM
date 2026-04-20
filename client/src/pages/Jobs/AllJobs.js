@@ -167,6 +167,8 @@ export default function AllJobs() {
   const ctypes = ["Limited", "LLP", "Individual", "Non UK"];
   const [timerId, setTimerId] = useState("");
   const [showInactive, setShowInactive] = useState(false);
+
+
   const [showUniqueClients, setShowUniqueClients] = useState(false);
   const [isLoad, setIsLoad] = useState(false);
 
@@ -3064,7 +3066,7 @@ useEffect(() => {
                             >
                               {(provided) => (
                                 <div
-                                  className={`py-1 rounded-tl-md rounded-tr-md w-[5.8rem] sm:w-fit px-1 !cursor-pointer font-[400] text-[13px] text-gray-900 font-google ${
+                                  className={`py-1 rounded-tl-md rounded-tr-md w-[5.8rem] sm:w-fit px-1 !cursor-pointer font-[400] text-[14px] text-gray-900 font-google ${
                                     assignedJobholderFilter === user &&
                                     "  border-b-2 text-orange-600 border-orange-600 "
                                   }`}
@@ -3119,7 +3121,7 @@ useEffect(() => {
                     key={i}
                     className={`
                       py-1 px-3 rounded-full cursor-pointer
-                      font-[400] text-[13px] text-gray-900 font-google
+                      font-[400] text-[14px] text-gray-900 font-google
                       border shadow-sm transition-all duration-150
 
                       ${

@@ -22,6 +22,7 @@ import {
   getJobsStats,
  
   getTicketClients,
+ 
   getWorkflowClients,
   importData,
   reordering,
@@ -56,6 +57,9 @@ router.post("/create/client/job", requiredSignIn, createJob);
 // Get All Client
 router.get("/all/client/job", requiredSignIn, getAllClients);
 
+
+// router.get("/all/unique_client/jobs", requiredSignIn, getUniqueClientJobs);
+// router.get("/all/unique_client/jobs/stats", requiredSignIn, getUniqueClientJobsStats);
 
 router.get("/all/client/jobs", requiredSignIn, getAllClientJobs);
 router.get("/all/client/jobs/stats", requiredSignIn, getJobsStats);

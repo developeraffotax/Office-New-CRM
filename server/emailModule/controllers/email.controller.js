@@ -417,6 +417,17 @@ export const getSentItems = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+
 export const updateThreadMetadata = async (req, res) => {
   try {
     const { id } = req.params;
@@ -526,6 +537,189 @@ export const updateThreadMetadata = async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const bulkUpdateThreadMetadata = async (req, res) => {
+  try {
+    const { threadIds, updates } = req.body;
+
+    /**
+     * 1️⃣ Validate input
+     */
+    if (!Array.isArray(threadIds) || threadIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "threadIds must be a non-empty array",
+      });
+    }
+
+    /**
+     * 2️⃣ Whitelist validation
+     */
+    const allowedUpdates = ["category", "userId", "status"];
+    const updateKeys = Object.keys(updates || {});
+
+    const isValidUpdate = updateKeys.every((key) =>
+      allowedUpdates.includes(key)
+    );
+
+    if (!isValidUpdate) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid fields in update!",
+      });
+    }
+
+    /**
+     * 3️⃣ Convert IDs
+     */
+    const objectIds = threadIds
+      .filter((id) => mongoose.Types.ObjectId.isValid(id))
+      .map((id) => new mongoose.Types.ObjectId(id));
+
+    if (objectIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No valid thread IDs provided",
+      });
+    }
+
+    /**
+     * 4️⃣ Convert userId if exists
+     */
+    if (updates?.userId) {
+      updates.userId = new mongoose.Types.ObjectId(
+        updates.userId
+      );
+    }
+
+    /**
+     * 5️⃣ Fetch old threads (needed for diff logic)
+     */
+    const oldThreads = await EmailThread.find({
+      _id: { $in: objectIds },
+    }).select("_id userId companyName");
+
+    /**
+     * 6️⃣ Bulk update
+     */
+    await EmailThread.updateMany(
+      { _id: { $in: objectIds } },
+      {
+        $set: {
+          ...updates,
+          updatedBy: req?.user?.user?._id,
+        },
+      },
+      {
+        runValidators: true,
+      }
+    );
+
+    /**
+     * 7️⃣ Fetch updated threads
+     */
+    const updatedThreads = await EmailThread.find({
+      _id: { $in: objectIds },
+    }).select("_id userId companyName");
+
+    /**
+     * 8️⃣ Notifications + sockets
+     */
+    for (let i = 0; i < updatedThreads.length; i++) {
+      const oldThread = oldThreads[i];
+      const updatedThread = updatedThreads[i];
+
+      if (!oldThread || !updatedThread) continue;
+
+      const oldUserId =
+        oldThread.userId?.toString() || null;
+
+      const newUserId =
+        updatedThread.userId?.toString() || null;
+
+      const selfAssign = isSelfAssignment(
+        req?.user?.user,
+        newUserId
+      );
+
+      /**
+       * Notification
+       */
+      if (
+        updateKeys.includes("userId") &&
+        !selfAssign
+      ) {
+        await createNotification(req, updatedThread);
+      }
+
+      /**
+       * Socket emits
+       */
+      const eventName = `metadata:updated-${updatedThread.companyName}`;
+
+      // Assigned → Unassigned
+      if (
+        oldUserId &&
+        !isSelfAssignment(
+          req?.user?.user,
+          oldUserId
+        )
+      ) {
+        emitToUser(oldUserId, eventName, {});
+      }
+
+      // Assigned → Reassigned
+      if (
+        newUserId &&
+        newUserId !== oldUserId &&
+        !isSelfAssignment(
+          req?.user?.user,
+          newUserId
+        )
+      ) {
+        emitToUser(newUserId, eventName, {});
+      }
+    }
+
+    /**
+     * 9️⃣ Response
+     */
+    res.status(200).json({
+      success: true,
+      message: "Threads updated successfully",
+      updatedCount: objectIds.length,
+    });
+
+  } catch (error) {
+    console.error(
+      "Error bulk updating threads:",
+      error
+    );
+
+    res.status(500).json({
+      success: false,
+      message:
+        "Server error while bulk updating threads.",
+      error: error.message,
+    });
+  }
+};
 
 
 

@@ -276,6 +276,50 @@ const handleUpdateThread = async (_id, updateData, type = "default") => {
 
 
 
+
+
+
+
+
+
+
+
+  const handleBulkUpdateThreads = async (updates, selectedThreads=[]) => {
+    try {
+      setLoading(prev => ({...prev, updating: true}))
+      const { data } = await axios.patch(
+         `${process.env.REACT_APP_API_URL}/api/v1/gmail/bulk-update-thread`,
+        {
+          threadIds: [...selectedThreads],
+          updates,
+        }
+      );
+
+      if(data) {
+        fetchThreads();
+        
+      }
+     
+
+    } catch (error) {
+      console.error("Bulk update failed:", error);
+    }finally {
+      setLoading(prev => ({...prev, updating: false}))
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
 const toggleStar = async (threadId, companyName, isStarred) => {
   if (!threadId) return;
 
@@ -605,6 +649,7 @@ useEffect(() => {
     filters,
     setFilters: updateFilters, // 👈 use this
     handleUpdateThread,
+    handleBulkUpdateThreads,
     fetchThreads,
     markAsRead,
     markAsUnread,

@@ -22,6 +22,7 @@ export default function MailLayout({
   filters,
   setFilters,
   handleUpdateThread,
+  handleBulkUpdateThreads,
   markAsRead,
   markAsUnread,
   deleteThread,
@@ -117,9 +118,12 @@ export default function MailLayout({
         <SelectionHeader
           selectedThreads={selectedThreads}
           threads={threads}
+          users={users}
+          categories={categories}
           markAsRead={markAsRead}
           markAsUnread={markAsUnread}
           deleteThread={deleteThread}
+          handleBulkUpdateThreads={handleBulkUpdateThreads}
           clearSelection={clearSelection}
         />
 

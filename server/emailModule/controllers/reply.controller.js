@@ -7,79 +7,102 @@ import ticketActivityModel from "../../models/ticketActivityModel.js";
 import { saveEmailMessage } from "../utils/saveEmailMessage.js";
 
 export async function reply(req, res) {
-  const {
-    companyName,
-    threadId,
-    to,
-    cc,
-    bcc,
-    replyTo,
-    html,
-    quotedHtml,
-    headers,
-    attachments,
-
-    ticketId,
-    jobHolder,
-  } = req.body;
-
-  const userName = req.user.user.name;
-
-  const gmail = await getGmailClient(companyName);
-
-  const raw = buildGmailReply({
-    to,
-    cc,
-    bcc,
-    replyTo,
-    subject: headers.Subject,
-    html,
-    quotedHtml,
-    headers,
-    attachments,
-  });
-
-  const response = await gmail.users.messages.send({
-    userId: "me",
-    requestBody: {
-      raw,
+  try {
+    const {
+      companyName,
       threadId,
-    },
-  });
+      to,
+      cc,
+      bcc,
+      replyTo,
+      html,
+      quotedHtml,
+      headers,
+      attachments,
+      ticketId,
+      jobHolder,
+    } = req.body;
 
-  await saveEmailMessage({
-    gmailThreadId: threadId,
-    gmailMessageId: response?.data?.id,
-    userName,
-    companyName,
-  });
+    const userName = req.user.user.name;
 
-  if (ticketId) {
-    const update = {
-      lastMessageSentBy: userName,
-      lastMessageSentTime: new Date(),
-      status: "Sent",
-    };
+    // Get Gmail client
+    const gmail = await getGmailClient(companyName);
 
-    if (jobHolder) {
-      update.jobHolder = jobHolder;
-    }
+    // Build raw email
+    const raw = buildGmailReply({
+      to,
+      cc,
+      bcc,
+      replyTo,
+      subject: headers.Subject,
+      html,
+      quotedHtml,
+      headers,
+      attachments,
+    });
 
-    await updateTicketAfterEmail(ticketId, update);
+    // Send email
+    const response = await gmail.users.messages.send({
+      userId: "me",
+      requestBody: {
+        raw,
+        threadId,
+      },
+    });
 
-    await ticketActivityModel.create({
-      ticketId: ticketId,
-      userId: req.user.user._id,
-      action: "replied",
-      gmailMessageId: response?.data?.id || "",
-      details: `
+    // Save message reference
+    await saveEmailMessage({
+      gmailThreadId: threadId,
+      gmailMessageId: response?.data?.id,
+      userName,
+      companyName,
+    });
+
+    // If linked to ticket → update ticket
+    if (ticketId) {
+      const update = {
+        lastMessageSentBy: userName,
+        lastMessageSentTime: new Date(),
+        status: "Sent",
+      };
+
+      if (jobHolder) {
+        update.jobHolder = jobHolder;
+      }
+
+      await updateTicketAfterEmail(ticketId, update);
+
+      // Log activity
+      await ticketActivityModel.create({
+        ticketId: ticketId,
+        userId: req.user.user._id,
+        action: "replied",
+        gmailMessageId: response?.data?.id || "",
+        details: `
           "${req.user.user.name}" replied to this ticket.
-          ${jobHolder ? `And updated the job holder to ${jobHolder}` : ""}
+          ${
+            jobHolder
+              ? `And updated the job holder to ${jobHolder}`
+              : ""
+          }
           -- Company: ${companyName}
           -- Email: ${to}
         `,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Reply sent successfully",
+    });
+
+  } catch (error) {
+    console.error("Reply Controller Error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to send reply",
+      error: error.message,
     });
   }
-
-  res.status(200).json({ success: true });
 }

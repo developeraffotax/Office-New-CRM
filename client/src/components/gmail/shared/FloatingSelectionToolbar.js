@@ -73,156 +73,201 @@
 
 
 
-
 import { IoMdClose } from "react-icons/io";
 import { HiOutlineMailOpen, HiOutlineTrash } from "react-icons/hi";
-import { useEffect } from "react";
 import { IoMailUnreadOutline } from "react-icons/io5";
+
+import { useEffect } from "react";
+import axios from "axios";
+import AssignCategory from "./ui/AssignCategory";
+import AssignUser from "./ui/AssignUser";
+
+ 
 
 export const SelectionHeader = ({
   selectedThreads,
   threads,
+  users,
+  categories,
   markAsRead,
   markAsUnread,
   deleteThread,
+  handleBulkUpdateThreads,
   clearSelection,
 }) => {
 
+  /**
+   * 🔹 BULK UPDATE FUNCTION
+   */
+  const bulkUpdateThreads = async (updates) => {
+    await handleBulkUpdateThreads(updates, [...selectedThreads]);
+    clearSelection()
+  };
 
-
+  /**
+   * 🔹 BULK DELETE
+   */
   const handleDeleteSelected = () => {
     [...selectedThreads].forEach((id) => {
       const t = threads.find((t) => t._id === id);
       deleteThread(t.threadId, t.companyName, false);
     });
+
     clearSelection();
   };
 
+  /**
+   * 🔹 DELETE KEY SUPPORT
+   */
   useEffect(() => {
     if (selectedThreads.size === 0) return;
+
     const handleKeyDown = (e) => {
-      if (e.key === "Delete" && selectedThreads.size > 0) {
+      if (e.key === "Delete") {
         e.preventDefault();
         handleDeleteSelected();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedThreads]);
 
-  
+    return () =>
+      window.removeEventListener("keydown", handleKeyDown);
+
+  }, [selectedThreads]);
 
   if (selectedThreads.size === 0) return null;
 
   return (
-    <div className="flex items-center justify-start w-full px-4 py-2 bg-white-50 border-b border-gray-100 transition-all duration-200">
+    <div className="flex items-center justify-start w-full px-4 py-2 border-b border-gray-100 bg-white transition-all duration-200">
+
       <div className="flex items-center gap-4">
-        {/* Count Label */}
+
+        {/* Selected Count */}
         <div className="flex items-center gap-2">
           <span className="flex items-center justify-center bg-blue-600 text-white text-[10px] font-bold w-5 h-5 rounded-full">
             {selectedThreads.size}
           </span>
-          <span className="text-sm font-semibold text-blue-900">Selected</span>
+
+          <span className="text-sm font-semibold text-blue-900">
+            Selected
+          </span>
         </div>
 
         {/* Action Group */}
         <div className="flex items-center bg-white/50 rounded-lg p-0.5 border border-blue-200">
 
-
-        <button
+          {/* MARK UNREAD */}
+          <button
             onClick={() => {
               [...selectedThreads].forEach((id) => {
                 const t = threads.find((t) => t._id === id);
                 markAsUnread(t.threadId, t.companyName);
               });
+
               clearSelection();
             }}
             className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-white hover:text-blue-600 rounded-md transition-all group"
-            title="Mark as Read"
           >
             <IoMailUnreadOutline
               className="text-slate-500 group-hover:text-blue-600"
               size={18}
             />
-            <span className="hidden sm:inline">Mark as Unread</span>
+
+            <span className="hidden sm:inline">
+              Mark as Unread
+            </span>
           </button>
 
+          <div className="w-[1px] h-4 bg-blue-200 mx-1" />
 
-
-            <div className="w-[1px] h-4 bg-blue-200 mx-1" />
-
-
-
+          {/* MARK READ */}
           <button
             onClick={() => {
               [...selectedThreads].forEach((id) => {
                 const t = threads.find((t) => t._id === id);
                 markAsRead(t.threadId, t.companyName);
               });
+
               clearSelection();
             }}
             className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-white hover:text-blue-600 rounded-md transition-all group"
-            title="Mark as Read"
           >
             <HiOutlineMailOpen
               className="text-slate-500 group-hover:text-blue-600"
               size={18}
             />
-            <span className="hidden sm:inline">Mark as Read</span>
+
+            <span className="hidden sm:inline">
+              Mark as Read
+            </span>
           </button>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-          
-
-
-
-
-
-
-
-
-
 
           <div className="w-[1px] h-4 bg-blue-200 mx-1" />
 
+          {/* 🔹 BULK ASSIGN USER */}
+          <AssignUser
+            users={users}
+            mongoThreadId={null}
+            currentUserId={null}
+            showLabel={false}
+            buttonStyle="border-none shadow-none bg-transparent hover:bg-white"
+
+            handleUpdateThread={(id, data) => {
+              bulkUpdateThreads({
+                userId: data.userId,
+              });
+            }}
+          />
+
+          <div className="w-[1px] h-4 bg-blue-200 mx-1" />
+
+          {/* 🔹 BULK ASSIGN CATEGORY */}
+          <AssignCategory
+            categories={categories}
+            mongoThreadId={null}
+            currentCategory={null}
+            showLabel={false}
+            buttonStyle="border-none shadow-none bg-transparent hover:bg-white"
+
+            handleUpdateThread={(id, data) => {
+              bulkUpdateThreads({
+                category: data.category,
+              });
+            }}
+          />
+
+          <div className="w-[1px] h-4 bg-blue-200 mx-1" />
+
+          {/* DELETE */}
           <button
             onClick={handleDeleteSelected}
             className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-white hover:text-red-600 rounded-md transition-all group"
-            title="Delete Selected"
           >
             <HiOutlineTrash
               className="text-slate-500 group-hover:text-red-600"
               size={18}
             />
-            <span className="hidden sm:inline">Delete</span>
+
+            <span className="hidden sm:inline">
+              Delete
+            </span>
           </button>
+
         </div>
+
       </div>
 
-      {/* Clear/Cancel Action */}
+      {/* CANCEL */}
       <button
         onClick={clearSelection}
-        className="flex items-center gap-1 px-3 py-1.5 text-sm  ml-5 font-medium text-slate-500 hover:text-slate-800 hover:bg-blue-100 rounded-md transition-colors"
+        className="flex items-center gap-1 px-3 py-1.5 ml-5 text-sm font-medium text-slate-500 hover:text-slate-800 hover:bg-blue-100 rounded-md transition-colors"
       >
         <IoMdClose size={18} />
+
         <span>Cancel</span>
       </button>
+
     </div>
   );
 };

@@ -374,7 +374,7 @@ export const columnFieldMap = {
 export const buildJobsQuery = (queryParams) => {
 
   const {
-
+    _id,
     status = "progress",
 
     jobRef,
@@ -408,6 +408,8 @@ export const buildJobsQuery = (queryParams) => {
 
   const query = {};
 
+  
+
 
   if (status === "progress") {
     query.status =  { $eq: "process" }
@@ -434,7 +436,11 @@ export const buildJobsQuery = (queryParams) => {
   BASIC FILTERS
   ==========================================
   */
-
+    if (_id) {
+    query._id =  _id;
+    
+  }
+  
 
     if (jobRef) {
       const cleaned = jobRef.toString().replace(/[^0-9]/g, "");

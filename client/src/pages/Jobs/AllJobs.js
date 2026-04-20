@@ -261,9 +261,9 @@ const getdueStatusCounts = (dueStatus) => {
 
  
     
-  
+    const isFirstRender = useRef(true);
 
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const comment_taskId = searchParams.get('comment_taskId');
       const show_completed = searchParams.get("completed");
       const navigate = useNavigate();
@@ -287,7 +287,18 @@ const [columnFilters, setColumnFilters] = useState(() => {
   const userName = auth?.user?.name;
   
 
-  const filters = [ { id: "Job_Status", value: "Progress", }, ];
+  const filters = [];
+
+    if(comment_taskId) {
+    filters.push({id: "_id", value: comment_taskId});
+
+    return filters;
+   }
+
+
+
+  filters.push({ id: "Job_Status", value: "Progress", });
+
   // Add Assign filter only if NOT admin
   if (!isAdmin(auth)) {
     filters.push({
@@ -300,10 +311,11 @@ const [columnFilters, setColumnFilters] = useState(() => {
 });
 
 
-
+ 
 
 // Total rows
 const [rowCount, setRowCount] = useState(0);
+
 
 
 
@@ -614,7 +626,7 @@ const allClientJobData = useCallback(async () => {
 
       // Global Search
       search: searchValue || "",
-
+      // searchParams,
       // Custom Filters
       // jobStatus: activeBtn || "",
       // lead: lead || "",
@@ -779,7 +791,7 @@ const getJobsStats = useCallback(async () => {
 ]);
   
   useEffect(() => {
-    getJobsStats()
+    //getJobsStats()
   }, [getJobsStats]);
 
 
@@ -788,7 +800,7 @@ const getJobsStats = useCallback(async () => {
    allClientJobData();
 
 
-  }, [allClientJobData])
+  }, [allClientJobData,])
 
             useEffect(() => {
   fetchRef.current = allClientJobData;
@@ -1739,6 +1751,11 @@ const ctx = useMemo(() => {
   const handleClearFilters = () => {
     table.setColumnFilters([]);
     table.setGlobalFilter("");
+
+    if (comment_taskId) {
+    searchParams.delete("comment_taskId");
+    setSearchParams(searchParams, { replace: true });
+    }
   };
 
 
@@ -2342,31 +2359,48 @@ const setColumnFromOutsideTable = (colKey, filterVal) => {
 
 
 
+ 
 
 useEffect(() => {
-  if (comment_taskId) {
-    
-    filterByRowId(table, comment_taskId, setJobId, setIsComment);
 
-    // searchParams.delete("comment_taskId");
-    // navigate({ search: searchParams.toString() }, { replace: true });
+  // Skip first render
+  if (isFirstRender.current) {
+    isFirstRender.current = false;
+    return;
   }
-}, [comment_taskId, searchParams, navigate, table]);
 
+  if (comment_taskId) {
+
+    // Apply ONLY _id filter
+    setColumnFilters([
+      { id: "_id", value: comment_taskId }
+    ]);
+
+     setPagination((prev) => ({
+        ...prev,
+        pageIndex: 0,
+  }));
+
+  } 
+
+  // Reset pagination
+ 
+
+}, [comment_taskId]);
 
 
 
 
 
   
-  useEffect(() => {
-    if (show_completed) {
+  // useEffect(() => {
+  //   if (show_completed) {
 
-      setActiveBtn("completed");
-              setShowCompleted(true);
-              setActive("");
-    }
-  }, [show_completed]);
+  //     setActiveBtn("completed");
+  //             setShowCompleted(true);
+  //             setActive("");
+  //   }
+  // }, [show_completed]);
 
 
   return (

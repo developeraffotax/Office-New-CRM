@@ -101,6 +101,8 @@ export const DEFAULT_DATE_FILTERS = [
 
 // used for api call
 export const columnFieldMap = {
+  _id: "_id",
+
   jobRef: "jobRef",
   clientName: "clientName",
   companyName: "companyName",

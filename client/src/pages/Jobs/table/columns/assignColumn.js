@@ -57,7 +57,7 @@ export const assignColumn = ({
             }
             className="w-full h-[2rem] rounded-md border-none outline-none"
           >
-            <option value=""> </option>
+            <option value="empty"> </option>
 
             {users.map((jobHold, i) => (
               <option value={jobHold} key={i}>

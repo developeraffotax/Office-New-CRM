@@ -56,15 +56,7 @@ export const ownerColumn = ({users, handleUpdateLead}) => {
             );
           },
 
-          filterFn: (row, columnId, filterValue) => {
-            const cellValue = row.getValue(columnId);
           
-            if (filterValue === "empty") {
-              return !cellValue || cellValue === "empty";
-            }
-          
-            return String(cellValue ?? "") === String(filterValue);
-          },
           // filterFn: "equals",
           filterSelectOptions: users.map((lead) => lead),
           filterVariant: "select",

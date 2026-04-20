@@ -1066,13 +1066,15 @@ const getJobsStats = useCallback(async () => {
       );
       if (data) {
         
-        setTableData((prevData) =>
-          prevData?.map((item) =>
-            item._id === rowId
-              ? { ...item, job: { ...item.job, jobStatus: newStatus } }
-              : item
-          )
-        );
+        // setTableData((prevData) =>
+        //   prevData?.map((item) =>
+        //     item._id === rowId
+        //       ? { ...item, job: { ...item.job, jobStatus: newStatus } }
+        //       : item
+        //   )
+        // );
+
+        allClientJobData()
 
         // if(newStatus === "Inactive") {
         //   allClientJobData()
@@ -1294,14 +1296,15 @@ const getJobsStats = useCallback(async () => {
         //     )
         //   );
         // }
-        setTableData((prevData) =>
-          prevData?.map((item) =>
-            item._id === rowId
-              ? { ...item, job: { ...item.job, jobHolder: jobHolder } }
-              : item
-          )
-        );
+        // setTableData((prevData) =>
+        //   prevData?.map((item) =>
+        //     item._id === rowId
+        //       ? { ...item, job: { ...item.job, jobHolder: jobHolder } }
+        //       : item
+        //   )
+        // );
 
+        allClientJobData()
         toast.success("Job holder updated!");
  
       }
@@ -3061,7 +3064,7 @@ useEffect(() => {
                             >
                               {(provided) => (
                                 <div
-                                  className={`py-1 rounded-tl-md rounded-tr-md w-[5.8rem] sm:w-fit px-1 !cursor-pointer font-[400] text-[13px] text-gray-800 font-google ${
+                                  className={`py-1 rounded-tl-md rounded-tr-md w-[5.8rem] sm:w-fit px-1 !cursor-pointer font-[400] text-[13px] text-gray-900 font-google ${
                                     assignedJobholderFilter === user &&
                                     "  border-b-2 text-orange-600 border-orange-600 "
                                   }`}
@@ -3073,7 +3076,7 @@ useEffect(() => {
                                     // setActive1(user);
                                     //filterByDepStat(user, active);
 
-                                    // setColumnFromOutsideTable("Job_Status", "Progress");
+                                    setColumnFromOutsideTable("Job_Status", "Progress");
                                     setColumnFromOutsideTable("Assign", user);
 
 
@@ -3116,7 +3119,7 @@ useEffect(() => {
                     key={i}
                     className={`
                       py-1 px-3 rounded-full cursor-pointer
-                      font-[400] text-[13px] text-gray-800 font-google
+                      font-[400] text-[13px] text-gray-900 font-google
                       border shadow-sm transition-all duration-150
 
                       ${

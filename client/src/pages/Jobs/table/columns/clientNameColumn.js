@@ -4,47 +4,41 @@ import CompanyInfo from "../../../../utlis/CompanyInfo";
 import { getColumnSearchValue } from "../../utils/getColumnSearchValue";
 import { highlightText } from "../../utils/highlightText";
 
-/**
- * Client Name Column (Server-Side + Debounced Filtering)
- */
 export const clientNameColumn = ({
   getSingleJobDetail,
   setCompanyName,
   searchValue,
-  columnFilters
- 
+  columnFilters,
 }) => {
   return {
     id: "clientName",
     accessorKey: "clientName",
     header: "Client",
 
-    // ======================================================
-    // HEADER (SERVER-SIDE + DEBOUNCE)
-    // ======================================================
+    // ✅ Stable reference — React will never remount this
     Header: ({ column }) => {
-      const [value, setValue] = useState(column.getFilterValue() || "");
+      const [value, setValue] = useState(column.getFilterValue() ?? "");
       const debounceRef = useRef(null);
 
-      useEffect(() => {
-        setValue(column.getFilterValue() || "");
-      }, [column]);
+       
 
       const handleChange = (e) => {
         const val = e.target.value;
-
         setValue(val);
 
-        // clear old timer
-        if (debounceRef.current) {
-          clearTimeout(debounceRef.current);
-        }
+        if (debounceRef.current) clearTimeout(debounceRef.current);
 
-        // debounce API trigger via MRT filter state
         debounceRef.current = setTimeout(() => {
           column.setFilterValue(val);
-        }, 500); // 👈 debounce delay
+        }, 300);
       };
+
+      // Cleanup debounce on unmount
+      useEffect(() => {
+        return () => {
+          if (debounceRef.current) clearTimeout(debounceRef.current);
+        };
+      }, []);
 
       return (
         <div className="flex flex-col gap-[2px]">
@@ -70,21 +64,17 @@ export const clientNameColumn = ({
       );
     },
 
-    // ======================================================
-    // CELL (unchanged logic)
-    // ======================================================
-   
     Cell: ({ cell, row }) => {
       const clientName = cell.getValue();
       const companyName = row.original.companyName;
-
-      const [showCompanyInfo, setShowCompanyInfo] =
-        useState(false);
-
+      const [showCompanyInfo, setShowCompanyInfo] = useState(false);
       const anchorRef = useRef(null);
 
-      // ✅ Get active search
-      const activeSearch = getColumnSearchValue( columnFilters, "clientName", searchValue );
+      const activeSearch = getColumnSearchValue(
+        columnFilters,
+        "clientName",
+        searchValue,
+      );
 
       return (
         <div
@@ -93,41 +83,28 @@ export const clientNameColumn = ({
         >
           <span
             onClick={(e) => {
-              const isCtrlClick =
-                e.ctrlKey || e.metaKey;
-
-              if (isCtrlClick) {
+              if (e.ctrlKey || e.metaKey) {
                 setShowCompanyInfo(true);
               } else {
-                getSingleJobDetail(
-                  row.original._id
-                );
+                getSingleJobDetail(row.original._id);
                 setCompanyName(companyName);
               }
             }}
             className="cursor-pointer"
           >
-            {/* ✅ Highlight Applied */}
-            {highlightText(
-              clientName,
-              activeSearch
-            )}
+            {highlightText(clientName, activeSearch)}
           </span>
 
           {showCompanyInfo && (
             <CompanyInfo
               anchorRef={anchorRef}
               clientId={row.original._id}
-              onClose={() =>
-                setShowCompanyInfo(false)
-              }
+              onClose={() => setShowCompanyInfo(false)}
             />
           )}
         </div>
       );
     },
-
- 
 
     size: 120,
     minSize: 80,

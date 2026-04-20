@@ -791,7 +791,7 @@ const getJobsStats = useCallback(async () => {
 ]);
   
   useEffect(() => {
-    //getJobsStats()
+    getJobsStats()
   }, [getJobsStats]);
 
 

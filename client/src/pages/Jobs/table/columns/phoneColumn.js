@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+
 export const phoneColumn = (ctx) => {
   return {
     id: "phone",
@@ -5,22 +7,44 @@ export const phoneColumn = (ctx) => {
     accessorFn: (row) => row.phone || "",
 
     Header: ({ column }) => {
-      const filterValue = column.getFilterValue() ?? "";
+      const [value, setValue] = useState(column.getFilterValue() ?? "");
+      const debounceRef = useRef(null);
+
+      const handleChange = (e) => {
+        const val = e.target.value;
+        setValue(val);
+
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+
+        debounceRef.current = setTimeout(() => {
+          column.setFilterValue(val);
+        }, 300);
+      };
+
+      // Cleanup debounce on unmount
+      useEffect(() => {
+        return () => {
+          if (debounceRef.current) clearTimeout(debounceRef.current);
+        };
+      }, []);
 
       return (
         <div className="flex flex-col gap-1">
           <span
             className="ml-1 cursor-pointer text-sm font-medium"
             title="Clear Filter"
-            onClick={() => column.setFilterValue("")}
+            onClick={() => {
+              column.setFilterValue("");
+              setValue("");
+            }}
           >
             Phone
           </span>
 
           <input
             type="search"
-            value={filterValue}
-            onChange={(e) => column.setFilterValue(e.target.value)}
+            value={value}
+            onChange={handleChange}
             placeholder="Search phone..."
             className="font-normal h-[1.8rem] px-2 cursor-pointer bg-white rounded-md border border-gray-300 outline-none"
           />

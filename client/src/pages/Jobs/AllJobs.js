@@ -645,9 +645,14 @@ const allClientJobData = useCallback(async () => {
     // ======================================================
     // API CALL
     // ======================================================
+    let URL = `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/jobs`;
+
+    if(showUniqueClients) {
+       URL = `${process.env.REACT_APP_API_URL}/api/v1/client/all/unique_client/jobs`;
+    }
 
     const { data } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/jobs`,
+     URL,
       { params }
     );
 
@@ -695,7 +700,7 @@ const allClientJobData = useCallback(async () => {
 
   // Global Search
   searchValue,
-   
+    showUniqueClients
   // Custom Filters
   // activeBtn,
   // lead,
@@ -723,9 +728,7 @@ const getJobsStats = useCallback(async () => {
  
 
     const filters = buildFilters(columnFilters);
-    
-    console.log("THE COLUMN FILTERS ", columnFilters)
-    console.log("filters ✔️🌹🧡❤️", filters)
+ 
 
     // ======================================================
     // BUILD FINAL PARAMS
@@ -749,8 +752,14 @@ const getJobsStats = useCallback(async () => {
     // API CALL
     // ======================================================
 
+    let URL = `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/jobs/stats`;
+
+    if(showUniqueClients) {
+       URL = `${process.env.REACT_APP_API_URL}/api/v1/client/all/unique_client/jobs/stats`;
+    }
+
     const { data } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/jobs/stats`,
+      URL,
       { params }
     );
 
@@ -786,7 +795,7 @@ const getJobsStats = useCallback(async () => {
   status,
  
 
- 
+ showUniqueClients,
   columnFilters,
 
  
@@ -2806,7 +2815,7 @@ useEffect(() => {
 
 
 
-          <div
+          {/* <div
             className={` p-1 rounded-md hover:shadow-md mb-1  cursor-pointer border ${
               showUniqueClients && "bg-orange-500 text-white"
             }`}
@@ -2814,18 +2823,14 @@ useEffect(() => {
             onClick={() => {
 
               
-            
-              // setTableData((prev) => {
-              //   return getUniqueClients(prev)
-              // })
-
+           
               
               setShowUniqueClients(prev => !prev);
                
             }}
           >
             <BsPersonCheckFill className="h-6 w-6  cursor-pointer" />
-          </div>
+          </div> */}
 
 
         </div>

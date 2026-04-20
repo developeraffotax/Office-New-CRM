@@ -3040,35 +3040,45 @@ export const getAllClientJobs = async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
 export const getJobsStats = async (req, res) => {
   try {
 
     // Clone query params and REMOVE dueStatus
     const query = req.query;
-
+    
     const { jobName, ...restQuery } = query;
     
-
+    
     // Build base match WITHOUT dueStatus
     const baseMatch = buildJobsQuery(query);
     const baseMatchWithoutJobName = buildJobsQuery({...restQuery});
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
+    
     const stats = await jobsModel.aggregate([
-
+      
       // { $match: match },
-
+      
       {
         $facet: {
-
+          
           // =========================
           // TOTAL JOB COUNT
           // =========================
           allJobsCount: [
              { $match: baseMatchWithoutJobName },
-            { $count: "count" }
+             { $count: "count" }
           ],
 
           // =========================
@@ -3076,21 +3086,21 @@ export const getJobsStats = async (req, res) => {
           // =========================
           userJobCounts: [
              { $match: baseMatch },
-            {
+             {
               $group: {
                 _id: "$job.jobHolder",
                 count: { $sum: 1 }
               }
             }
           ],
-
+          
           // =========================
           // DEPARTMENT COUNT
           // =========================
           departmentJobCounts: [
              { $match: baseMatchWithoutJobName },
-            {
-              $group: {
+             {
+               $group: {
                 _id: "$job.jobName",
                 count: { $sum: 1 }
               }
@@ -3101,7 +3111,7 @@ export const getJobsStats = async (req, res) => {
           // STATUS COUNT
           // =========================
           jobStatusJobCounts: [
-             { $match: baseMatch },
+            { $match: baseMatch },
             {
               $group: {
                 _id: "$job.jobStatus",
@@ -3109,21 +3119,21 @@ export const getJobsStats = async (req, res) => {
               }
             }
           ],
-
+          
           // =========================
           // DUE STATUS COUNTS
           // =========================
           dueStatusCounts: [
-             { $match: baseMatch },
-
+            { $match: baseMatch },
+            
             {
               $group: {
-
+                
                 _id: {
                   $switch: {
-
+                    
                     branches: [
-
+                      
                       // =====================
                       // OVERDUE
                       // deadline < today
@@ -3137,7 +3147,7 @@ export const getJobsStats = async (req, res) => {
                         },
                         then: "overdue"
                       },
-
+                      
                       // =====================
                       // DUE
                       // (yearEnd <= today AND deadline > today)
@@ -3177,7 +3187,7 @@ export const getJobsStats = async (req, res) => {
                                 today
                               ]
                             }
-
+                            
                           ]
                         },
                         then: "due"
@@ -3209,33 +3219,33 @@ export const getJobsStats = async (req, res) => {
                       }
 
                     ],
-
+                    
                     default: "other"
-
+                    
                   }
                 },
-
+                
                 count: { $sum: 1 }
-
+                
               }
             }
 
           ]
-
+          
         }
       }
-
+      
     ]);
-
+    
     res.status(200).send({
       success: true,
       data: stats[0]
     });
 
   } catch (error) {
-
+    
     console.log(error);
-
+    
     res.status(500).send({
       success: false,
       message: "Error fetching stats",
@@ -3284,6 +3294,128 @@ export const getJobsStats = async (req, res) => {
 
 
 
+export const getUniqueClientJobs = async (req, res) => {
+
+  try {
+
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+
+    // Sorting
+    // const sortField = req.query.sortField || "currentDate";
+    // const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+
+    // Build query
+    const query = buildJobsQuery(req.query);
+
+    const pipeline = [
+
+      // Step 1: Apply filters
+      {
+        $match: query
+      },
+
+      // Step 2: Sort BEFORE grouping
+      // This decides WHICH job is kept
+      {
+        $sort: {
+          _id : 1
+        }
+      },
+
+      // Step 3: Group by company
+      {
+        $group: {
+          _id: "$companyName",
+
+          // keep FIRST document
+          doc: {
+            $first: "$$ROOT"
+          }
+
+        }
+      },
+
+      // Step 4: Restore original document
+      {
+        $replaceRoot: {
+          newRoot: "$doc"
+        }
+      },
+
+      // Step 5: Pagination
+      {
+        $skip: skip
+      },
+
+      {
+        $limit: limit
+      }
+
+    ];
+
+    const clients =
+      await jobsModel.aggregate(pipeline);
+
+    // Populate (after aggregation)
+    await jobsModel.populate(
+      clients,
+      { path: "data" }
+    );
+
+    // Count total UNIQUE companies
+    const totalResult =
+      await jobsModel.aggregate([
+
+        { $match: query },
+
+        {
+          $group: {
+            _id: "$companyName"
+          }
+        },
+
+        {
+          $count: "total"
+        }
+
+      ]);
+
+    const total =
+      totalResult.length
+        ? totalResult[0].total
+        : 0;
+
+    res.status(200).send({
+      success: true,
+      message: "Unique clients",
+
+      clients,
+
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages:
+          Math.ceil(total / limit),
+      },
+
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).send({
+      success: false,
+      message: "Error while get all job!",
+      error,
+    });
+
+  }
+};
 
 
 
@@ -3303,6 +3435,296 @@ export const getJobsStats = async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+export const getUniqueClientJobsStats = async (req, res) => {
+
+  try {
+
+    const query = req.query;
+
+    const { jobName, ...restQuery } = query;
+
+    // Build filters
+    const baseMatch = buildJobsQuery(query);
+    const baseMatchWithoutJobName = buildJobsQuery({ ...restQuery });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+ 
+    const stats = await jobsModel.aggregate([
+
+      {
+        $facet: {
+
+          // =========================
+          // UNIQUE CLIENT JOBS COUNT
+           
+          // =========================
+          allJobsCount: [
+
+            { $match: baseMatchWithoutJobName },
+
+            { $sort: { _id: 1 } },
+
+            {
+              $group: {
+                _id: "$companyName",
+                doc: { $first: "$$ROOT" }
+              }
+            },
+
+            {
+              $count: "count"
+            }
+
+          ],
+
+          // =========================
+          // USER WISE JOB COUNT
+          // =========================
+        userJobCounts: [
+
+            // 1. FILTER
+            { $match: baseMatch },
+
+            // 2. SORT (controls which job represents company)
+            { $sort: { _id: 1 } },
+
+            // 3. DEDUPE by company
+            {
+              $group: {
+                _id: "$companyName",
+                doc: { $first: "$$ROOT" }
+              }
+            },
+
+            // 4. FLATTEN
+            {
+              $replaceRoot: {
+                newRoot: "$doc"
+              }
+            },
+
+            // 5. FINAL STATS (ON UNIQUE COMPANIES ONLY)
+            {
+              $group: {
+                _id: "$job.jobHolder",
+                count: { $sum: 1 }
+              }
+            }
+
+          ],
+
+          // =========================
+          // DEPARTMENT COUNT
+          // =========================
+          // departmentJobCounts: [
+
+          //   { $match: baseMatchWithoutJobName },
+
+          //   { $sort: { _id: 1 } },
+
+          //   {
+          //     $group: {
+          //       _id: "$companyName",
+          //       doc: { $first: "$$ROOT" }
+          //     }
+          //   },
+
+          //   {
+          //     $replaceRoot: {
+          //       newRoot: "$doc"
+          //     }
+          //   },
+
+          //   {
+          //     $group: {
+          //       _id: "$job.jobName",
+          //       count: { $sum: 1 }
+          //     }
+          //   }
+
+          // ],
+
+          // =========================
+          // STATUS COUNT
+          // =========================
+          // jobStatusJobCounts: [
+
+          //   { $match: baseMatch },
+
+          //   { $sort: { _id: 1 } },
+
+          //   {
+          //     $group: {
+          //       _id: "$companyName",
+          //       doc: { $first: "$$ROOT" }
+          //     }
+          //   },
+
+          //   {
+          //     $replaceRoot: {
+          //       newRoot: "$doc"
+          //     }
+          //   },
+
+          //   {
+          //     $group: {
+          //       _id: "$job.jobStatus",
+          //       count: { $sum: 1 }
+          //     }
+          //   }
+
+          // ],
+
+          // =========================
+          // DUE STATUS COUNTS
+          // =========================
+          // dueStatusCounts: [
+
+          //   { $match: baseMatch },
+
+          //   { $sort: { _id: 1 } },
+
+          //   {
+          //     $group: {
+          //       _id: "$companyName",
+          //       doc: { $first: "$$ROOT" }
+          //     }
+          //   },
+
+          //   {
+          //     $replaceRoot: {
+          //       newRoot: "$doc"
+          //     }
+          //   },
+
+          //   {
+          //     $group: {
+
+          //       _id: {
+          //         $switch: {
+
+          //           branches: [
+
+          //             {
+          //               case: {
+          //                 $lt: [
+          //                   "$job.jobDeadline",
+          //                   today
+          //                 ]
+          //               },
+          //               then: "overdue"
+          //             },
+
+          //             {
+          //               case: {
+          //                 $or: [
+
+          //                   {
+          //                     $and: [
+          //                       {
+          //                         $lte: [
+          //                           "$job.yearEnd",
+          //                           today
+          //                         ]
+          //                       },
+          //                       {
+          //                         $gt: [
+          //                           "$job.jobDeadline",
+          //                           today
+          //                         ]
+          //                       }
+          //                     ]
+          //                   },
+
+          //                   {
+          //                     $eq: [
+
+          //                       {
+          //                         $dateTrunc: {
+          //                           date: "$job.jobDeadline",
+          //                           unit: "day"
+          //                         }
+          //                       },
+
+          //                       today
+          //                     ]
+          //                   }
+
+          //                 ]
+          //               },
+          //               then: "due"
+          //             },
+
+          //             {
+          //               case: {
+          //                 $and: [
+          //                   {
+          //                     $gt: [
+          //                       "$job.jobDeadline",
+          //                       today
+          //                     ]
+          //                   },
+          //                   {
+          //                     $gt: [
+          //                       "$job.yearEnd",
+          //                       today
+          //                     ]
+          //                   }
+          //                 ]
+          //               },
+          //               then: "upcoming"
+          //             }
+
+          //           ],
+
+          //           default: "other"
+
+          //         }
+          //       },
+
+          //       count: { $sum: 1 }
+
+          //     }
+          //   }
+
+          // ]
+
+        }
+
+      }
+
+    ]);
+
+
+    console.log("THE STATS ARE🌹🌹🌹🌹✔️✔️✔️✔️✔️👍👍👍👍👍", stats[0])
+
+    return;
+    res.status(200).send({
+      success: true,
+      data: stats[0]
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).send({
+      success: false,
+      message: "Error fetching stats",
+      error
+    });
+
+  }
+
+};
 
 
 

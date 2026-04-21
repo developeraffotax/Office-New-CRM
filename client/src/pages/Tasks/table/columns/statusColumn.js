@@ -2,17 +2,19 @@ import { useEffect } from "react";
 
 export const statusColumn = (ctx) => {
   return {
-    accessorKey: "status",
-    header: "Task Status",
+    
+      id: "taskStatus",
+ 
+    accessorFn: (row) => row?.status || "",
 
     Header: ({ column }) => {
       const statusData = ["To do", "Progress", "Review", "Awaiting", "On hold"];
 
-      useEffect(() => {
-        if (!ctx.comment_taskId) {
-          column.setFilterValue("Progress");
-        }
-      }, []);
+      // useEffect(() => {
+      //   if (!ctx.comment_taskId) {
+      //     column.setFilterValue("Progress");
+      //   }
+      // }, []);
       return (
         <div className=" flex flex-col gap-[2px]">
           <span
@@ -63,20 +65,7 @@ export const statusColumn = (ctx) => {
         </div>
       );
     },
-    // filterFn: "equals",
-    filterFn: (row, columnId, filterValue) => {
-      const cellValue = row.getValue(columnId);
-      return (cellValue || "").toString() === filterValue.toString();
-    },
-    filterSelectOptions: [
-      "Select",
-      "To do",
-      "Progress",
-      "Review",
-      "Awaiting",
-      "On hold",
-    ],
-    filterVariant: "select",
+    
     minSize: 90,
     size: 100,
     maxSize: 140,

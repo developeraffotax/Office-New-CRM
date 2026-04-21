@@ -4,29 +4,18 @@ import { GrCopy } from "react-icons/gr";
 import { MdCheckCircle, MdErrorOutline, MdInsertComment } from "react-icons/md";
 import { hasSubrole } from "../../../../utlis/checkPermission";
 
-
-
-
-
-
 export const actionsColumn = (ctx) => {
   return {
     accessorKey: "actions",
     header: "Actions",
     Cell: ({ cell, row }) => {
-      const comments = row.original.comments;
-      const [unreadComments, setUnreadComments] = useState([]);
+       
 
- 
-      const hasAddComplainPermission = hasSubrole(ctx.auth.user, "Tasks", "Complain")
-
- 
-      useEffect(() => {
-        const filterComments = comments.filter(
-          (item) => item.status === "unread"
-        );
-        setUnreadComments(filterComments);
-      }, [comments]);
+      const hasAddComplainPermission = hasSubrole(
+        ctx.auth.user,
+        "Tasks",
+        "Complain",
+      );
 
       return (
         <div className="flex items-center justify-center gap-3 w-full h-full">
@@ -54,12 +43,7 @@ export const actionsColumn = (ctx) => {
                 {" "}
                 <MdInsertComment className="h-5 w-5 text-orange-600 " />{" "}
               </span>{" "}
-              {/* {unreadComments?.length > 0 && (
-                <span className="absolute -top-3 -right-3 bg-sky-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center ">
-                  {" "}
-                  {unreadComments?.length}{" "}
-                </span>
-              )}{" "} */}
+ 
             </div>{" "}
           </span>
 
@@ -89,33 +73,23 @@ export const actionsColumn = (ctx) => {
             <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600" />{" "}
           </button>
 
-              {
-                hasAddComplainPermission && (
-                  <button
-            
-           title="Create Complaint for this task"
-            onClick={() => {
-              ctx.createComplaint({
+          {hasAddComplainPermission && (
+            <button
+              title="Create Complaint for this task"
+              onClick={() => {
+                ctx.createComplaint({
+                  defaultEntityType: "task",
+                  defaultEntityRef: `T-${row.original.taskRef}`,
+                  defaultTask: row.original.task,
 
-                defaultEntityType: "task",
-                defaultEntityRef: `T-${row.original.taskRef}`,
-                defaultTask: row.original.task,
-                 
-                defaultLead: row.original.lead,
-                defaultAssign: row.original.jobHolder,
-
-              })
-            }}
-           
-          >
-            
-             <MdErrorOutline className="h-5 w-5 text-red-500 hover:text-red-600" />{" "}
-          </button>
-
-                )
-              }
-                    
-          
+                  defaultLead: row.original.lead,
+                  defaultAssign: row.original.jobHolder,
+                });
+              }}
+            >
+              <MdErrorOutline className="h-5 w-5 text-red-500 hover:text-red-600" />{" "}
+            </button>
+          )}
         </div>
       );
     },

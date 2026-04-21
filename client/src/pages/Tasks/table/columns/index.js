@@ -31,18 +31,18 @@ export const getTaskColumns = (ctx) => [
   jobHolderColumn(ctx),
  taskColumn(ctx),
   hoursColumn(ctx),
-  // startDateColumn(ctx),
-  // deadlineColumn(ctx),
-  // taskDateColumn(ctx),
-  // dateStatusColumn(ctx),
-  // statusColumn(ctx),
-  // leadColumn(ctx),
-  // budgetColumn(ctx),
-  // timerColumn(ctx),
+  startDateColumn(ctx),
+  deadlineColumn(ctx),
+  taskDateColumn(ctx),
+  dateStatusColumn(ctx),
+ statusColumn(ctx),
+  leadColumn(ctx),
+  budgetColumn(ctx),
+  timerColumn(ctx),
    
-  // actionsColumn(ctx),
-  // labelColumn(ctx),
-  // recurringColumn(ctx)
+ actionsColumn(ctx),
+  labelColumn(ctx),
+  recurringColumn(ctx)
 ];
 
 
@@ -63,7 +63,7 @@ export const getCompletedTaskColumns = (ctx) => [
   hoursColumn(ctx),
   startDateColumn(ctx),
   deadlineColumn(ctx),
-  taskDateColumnCompleted(ctx),
+  // taskDateColumnCompleted(ctx),
   dateStatusColumn(ctx),
   statusColumnCompleted(ctx),
   leadColumn(ctx),

@@ -44,19 +44,7 @@ export const departments = [
 
 export const dateStatus = ["Due", "Overdue", "Upcoming"];
 
-// export const status = [
-//   "Quote",
-//   "Data",
-//   "Progress",
-//   // "Queries",
-//   "Revision",
-//   "Approval",
-//   "Submission",
-//   "Billing",
-//   "Feedback",
-//   "Missing Info",
-//   "Inactive",
-// ];
+ 
 
 export const statusInit = [
   "Quote",
@@ -137,13 +125,15 @@ export const columnFieldMap = {
   startDate: "startDate",
   deadline: "deadline",
   taskDate: "taskDate",
-  datestatus: "datestatus",
+  datestatus: "dueStatus",  // due overdue
   
   estimate_Time: "estimate_Time",
   hours: "hours",
 
   labal: "labal",
   recurring: "recurring",
+
+  taskStatus: "taskStatus"
  
 
   

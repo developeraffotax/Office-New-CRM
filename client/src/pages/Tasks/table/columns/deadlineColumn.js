@@ -1,156 +1,160 @@
-import { useEffect, useRef, useState } from "react";
-import { getCurrentMonthYear, TaskDateFilterFn } from "../../utils";
-import toast from "react-hot-toast";
 import { format } from "date-fns";
 import DateRangePopover from "../../../../utlis/DateRangePopover";
+import { useEffect, useMemo, useRef, useState, memo } from "react";
+import toast from "react-hot-toast";
 
-export const deadlineColumn = (ctx) => {
-  return {
-    accessorKey: "deadline",
-    header: "Deadline",
+const START_DATE_FILTERS = [
+  "Expired",
+  "Yesterday",
+  "Today",
+  "Tomorrow",
+  "In 7 days",
+  "In 15 days",
+  "In 30 Days",
+  "In 60 Days",
+];
 
-    Header: ({ column }) => {
-      const [filterValue, setFilterValue] = useState("");
-      const [dateRange, setDateRange] = useState({ from: "", to: "" });
-      const [showPopover, setShowPopover] = useState(false);
-      const selectRef = useRef(null);
+export const deadlineColumn = (ctx) => ({
+  accessorKey: "deadline",
 
-      const filterValues = [
-        "Expired",
-        "Yesterday",
-        "Today",
-        "Tomorrow",
-        "In 7 days",
-        "In 15 days",
-        "In 30 Days",
-        "In 60 Days",
-      ];
+  Header: ({ column }) => <StartDateHeader column={column} />,
 
-      useEffect(() => {
-        if (filterValue === "Custom Range" || filterValue === "Custom Day") {
-          column.setFilterValue(dateRange);
-        } else {
-          column.setFilterValue(filterValue);
-        }
-      }, [dateRange, filterValue]);
+  Cell: (props) => <StartDateCell {...props} ctx={ctx} />,
 
-      // 🔄 Reset local state when external filter is cleared
-      useEffect(() => {
-        const currentFilter = column.getFilterValue();
-        if (!currentFilter) {
+  size: 100,
+  minSize: 90,
+  maxSize: 110,
+  grow: false,
+});
+
+/* ---------------- HEADER ---------------- */
+
+const StartDateHeader = memo(({ column }) => {
+  const [filterValue, setFilterValue] = useState("");
+  const [dateRange, setDateRange] = useState({ from: "", to: "" });
+  const [showPopover, setShowPopover] = useState(false);
+
+  const selectRef = useRef(null);
+
+  // ✅ Push filter to MRT (server-side format)
+  useEffect(() => {
+    if (filterValue === "Custom Range") {
+      if (dateRange.from && dateRange.to) {
+        column.setFilterValue({
+          type: "range",
+          from: dateRange.from,
+          to: dateRange.to,
+        });
+      }
+    } else if (filterValue) {
+      column.setFilterValue({
+        type: "preset",
+        value: filterValue,
+      });
+    } else {
+      column.setFilterValue(undefined);
+    }
+  }, [filterValue, dateRange]);
+
+  const handleChange = (e) => {
+    const val = e.target.value;
+    setFilterValue(val);
+    setShowPopover(val === "Custom Range");
+  };
+
+  return (
+    <div className="flex flex-col gap-[2px] relative">
+      <span
+        className="ml-1 cursor-pointer"
+        title="Clear Filter"
+        onClick={() => {
           setFilterValue("");
           setDateRange({ from: "", to: "" });
-          setShowPopover(false);
-        }
-      }, [column.getFilterValue()]);
+          column.setFilterValue(undefined);
+        }}
+      >
+        Deadline
+      </span>
 
-      const handleFilterChange = (e) => {
-        const val = e.target.value;
-        setFilterValue(val);
+      <select
+        ref={selectRef}
+        value={filterValue}
+        onChange={handleChange}
+        className="h-[1.8rem] w-full rounded-md border border-gray-200 font-normal outline-none"
+      >
+        <option value="">Select</option>
 
-        if (val === "Custom Range" || val === "Custom Day") {
-          setShowPopover(true);
-        } else {
-          setShowPopover(false);
-        }
-      };
+        {START_DATE_FILTERS.map((opt) => (
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
+        ))}
 
-      const handleRangeChange = (key, value) => {
-        setDateRange((prev) => ({ ...prev, [key]: value }));
-      };
+        <option value="Custom Range">Custom Date</option>
+      </select>
 
-      return (
-        <div className="flex flex-col gap-[2px] relative">
-          <span
-            className="ml-1 cursor-pointer"
-            title="Clear Filter"
-            onClick={() => {
-              setFilterValue("");
-              setDateRange({ from: "", to: "" });
-              column.setFilterValue("");
-            }}
-          >
-            Deadline
-          </span>
+      {showPopover && (
+        <DateRangePopover
+          anchorRef={selectRef}
+          value={dateRange}
+          onChange={(key, val) =>
+            setDateRange((p) => ({
+              ...p,
+              [key]: val,
+            }))
+          }
+          onClose={() => setShowPopover(false)}
+        />
+      )}
+    </div>
+  );
+});
 
-          <select
-            ref={selectRef}
-            value={filterValue}
-            onChange={handleFilterChange}
-            
-            className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
-          >
-            <option value="">Select</option>
-            {filterValues.map((option, idx) => (
-              <option key={idx} value={option}>
-                {option}
-              </option>
-            ))}
-            <option value="Custom Day">Custom Day</option>
-            <option value="Custom Range">Custom Date</option>
-          </select>
+/* ---------------- CELL ---------------- */
 
-          {showPopover && (
-            <DateRangePopover
-              anchorRef={selectRef}
-              type={filterValue === "Custom Day" ? "day" : "range"}
-              onChange={handleRangeChange}
-              onClose={() => setShowPopover(false)}
-            />
-          )}
+const StartDateCell = memo(({ cell, row, ctx }) => {
+  const initialDate = useMemo(() => {
+    const d = new Date(cell.getValue());
+    return isNaN(d) ? "" : d.toISOString().split("T")[0];
+  }, [cell]);
+
+  const [date, setDate] = useState(initialDate);
+  const [editing, setEditing] = useState(false);
+
+  const commitChange = (value) => {
+    const parsed = new Date(value);
+
+    if (isNaN(parsed)) {
+      toast.error("Please enter a valid date");
+      return;
+    }
+
+    setDate(value);
+
+    ctx.updateAlocateTask(row.original._id, "", "", value);
+
+    setEditing(false);
+  };
+
+  return (
+    <div className="w-full">
+      {!editing ? (
+        <p className="cursor-pointer" onDoubleClick={() => setEditing(true)}>
+          {date ? format(new Date(date), "dd-MMM-yyyy") : "-"}
+        </p>
+      ) : (
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          onBlur={(e) => commitChange(e.target.value)}
+          className="h-[2rem] w-full text-center rounded-md border outline-none"
+        />
+      )}
+    </div>
+  );
+});
 
 
-
-
-        </div>
-      );
-    },
-
-    Cell: ({ cell, row }) => {
-      const [date, setDate] = useState(() => {
-        const cellDate = new Date(cell.getValue());
-        return cellDate.toISOString().split("T")[0];
-      });
-
-      const [showInput, setShowInput] = useState(false);
-
-      const handleDateChange = (newDate) => {
-        const parsedDate = new Date(newDate);
-        if (isNaN(parsedDate.getTime())) {
-          toast.error("Please enter a valid date.");
-          return;
-        }
-        setDate(newDate);
-        ctx.updateAlocateTask(row.original._id, "", "", newDate);
-        setShowInput(false);
-      };
-
-      return (
-        <div className="w-full">
-          {!showInput ? (
-            <p onDoubleClick={() => setShowInput(true)}>
-              {format(new Date(date), "dd-MMM-yyyy")}
-            </p>
-          ) : (
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              onBlur={(e) => handleDateChange(e.target.value)}
-              className="h-[2rem] w-full cursor-pointer text-center rounded-md border border-gray-200 outline-none"
-            />
-          )}
-        </div>
-      );
-    },
-
-    filterFn: TaskDateFilterFn,
 
  
-    filterVariant: "custom",
-    size: 100,
-    minSize: 80,
-    maxSize: 140,
-    grow: false,
-  };
-};

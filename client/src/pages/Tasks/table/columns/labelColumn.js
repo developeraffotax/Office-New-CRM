@@ -91,13 +91,7 @@ export const labelColumn = (ctx) => {
         );
       },
 
-      filterFn: (row, columnId, filterValue) => {
-        const labelName = row.original?.labal?.name || "";
-        return labelName === filterValue;
-      },
-
-      filterVariant: "select",
-      filterSelectOptions: ctx.labelData?.map((label) => label.name),
+     
       size: 140,
       minSize: 100,
       maxSize: 210,

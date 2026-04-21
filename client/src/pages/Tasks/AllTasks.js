@@ -65,7 +65,7 @@ const colVisibility = {
   taskDate: true,
   datestatus: true,
 
-  status: true,
+  taskStatus: true,
   lead: true,
   estimate_Time: true,
   timertracker: true,

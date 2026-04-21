@@ -389,7 +389,7 @@ export const buildTasksQuery = (queryParams) => {
     startDate,
     deadline,
     taskDate,
-    datestatus, // due status
+    dueStatus, // due status
  
 
     estimate_Time,
@@ -416,7 +416,14 @@ console.log("REQ.QUERY🧡", queryParams)
     query.status =  { $eq: "completed" }
   }
 
- 
+  
+  
+
+    if (taskStatus) {
+    query.status = taskStatus;
+  }
+
+  
   
 
   /*
@@ -456,18 +463,23 @@ if (projectId && mongoose.Types.ObjectId.isValid(projectId)) {
     query.lead = lead;
   }
 
-  if (taskStatus) {
-    query.status = taskStatus;
-  }
 
- 
+  if(recurring) {
+    query.recurring = recurring;
+  }
 
   if (labal) {
-    query["label.name"] = label;
+    query["labal.name"] = labal;
   }
 
  
- 
+  
+
+
+
+
+
+
 
   /*
   ==========================================
@@ -491,106 +503,89 @@ if (projectId && mongoose.Types.ObjectId.isValid(projectId)) {
   ==========================================
   */
 
-  // applyDateFilter(
-  //   query,
-  //   "job.yearEnd",
-  //   yearEnd
-  // );
+  applyDateFilter(
+    query,
+    "startDate",
+    startDate
+  );
 
-  // applyDateFilter(
-  //   query,
-  //   "job.jobDeadline",
-  //   deadline
-  // );
+    applyDateFilter(
+    query,
+    "deadline",
+    deadline
+  );
+
+    applyDateFilter(
+    query,
+    "taskDate",
+    taskDate
+  );
  
-
   /*
   ==========================================
   DUE STATUS FILTER (SERVER SIDE)
   ==========================================
   */
 
-  // if (dueStatus) {
-  //   const normalizedDueStatus = dueStatus.toLowerCase().trim();
-  //   const today = new Date();
-  //   today.setHours(0, 0, 0, 0);
+if (dueStatus) {
+  const normalizedDueStatus = dueStatus.toLowerCase().trim();
 
-  //   if (normalizedDueStatus === "overdue") {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
 
-  //     // deadline < today
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
 
-  //     query["job.jobDeadline"] = {
-  //       ...(query["job.jobDeadline"] || {}),
-  //       $lt: today,
-  //     };
+  /*
+  ==========================================
+  OVERDUE
+  deadline < today
+  ==========================================
+  */
 
-  //   }
+  if (normalizedDueStatus === "overdue") {
+    query.deadline = {
+      ...(query.deadline || {}),
+      $lt: startOfToday,
+    };
+  }
 
-  //   else if (normalizedDueStatus === "due") {
+  /*
+  ==========================================
+  DUE
+  startDate <= today AND deadline >= today
+  ==========================================
+  */
 
-  //     // (yearEnd <= today AND deadline > today)
-  //     // OR (deadline === today)
+else if (normalizedDueStatus === "due") {
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
 
-  //     query.$expr = {
-  //       $or: [
+  query.startDate = {
+    ...(query.startDate || {}),
+    $lte: endOfToday,   // startDate is today or earlier (cover full day)
+  };
 
-  //         {
-  //           $and: [
-  //             {
-  //               $lte: [
-  //                 "$job.yearEnd",
-  //                 today,
-  //               ],
-  //             },
-  //             {
-  //               $gt: [
-  //                 "$job.jobDeadline",
-  //                 today,
-  //               ],
-  //             },
-  //           ],
-  //         },
+  query.deadline = {
+    ...(query.deadline || {}),
+    $gte: startOfToday,        // deadline is today midnight or later (not overdue)
+  };
+}
 
-  //         {
-  //           $eq: [
-  //             {
-  //               $dateTrunc: {
-  //                 date: "$job.jobDeadline",
-  //                 unit: "day",
-  //               },
-  //             },
-  //             today,
-  //           ],
-  //         },
+  /*
+  ==========================================
+  UPCOMING
+  startDate > today
+  ==========================================
+  */
 
-  //       ],
-  //     };
-
-  //   }
-
-  //   else if (normalizedDueStatus === "upcoming") {
-
-  //     // deadline > today AND yearEnd > today
-
-  //     query.$expr = {
-  //       $and: [
-  //         {
-  //           $gt: [
-  //             "$job.jobDeadline",
-  //             today,
-  //           ],
-  //         },
-  //         {
-  //           $gt: [
-  //             "$job.yearEnd",
-  //             today,
-  //           ],
-  //         },
-  //       ],
-  //     };
-
-  //   }
-  // }
+  else if (normalizedDueStatus === "upcoming") {
+    query.startDate = {
+      ...(query.startDate || {}),
+      $gt: endOfToday,
+    };
+  }
+}
 
   /*
   ==========================================

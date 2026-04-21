@@ -10,23 +10,23 @@ export const timerColumn = (ctx) => {
       Header: ({ column }) => {
         const [isRunning, setIsRunning] = useState(false);
 
-        const handleCheckboxChange = () => {
-          const newIsRunning = !isRunning;
-          setIsRunning(newIsRunning);
+        // const handleCheckboxChange = () => {
+        //   const newIsRunning = !isRunning;
+        //   setIsRunning(newIsRunning);
 
-          if (newIsRunning) {
-            column.setFilterValue(ctx.timerId || ctx.jid);
-          } else {
-            column.setFilterValue(undefined);
-          }
-          ctx.setReload((prev) => !prev);
-        };
+        //   if (newIsRunning) {
+        //     column.setFilterValue(ctx.timerId || ctx.jid);
+        //   } else {
+        //     column.setFilterValue(undefined);
+        //   }
+        //   ctx.setReload((prev) => !prev);
+        // };
         return (
           <div className=" flex flex-col gap-[2px] w-[5rem]">
             <span className="ml-1 cursor-pointer w-full text-center">
               Timer
             </span>
-            <div className="w-full flex items-center justify-center">
+            {/* <div className="w-full flex items-center justify-center">
               <input
                 type="checkbox"
                 className="cursor-pointer h-5 w-5 ml-3 accent-orange-600 "
@@ -34,7 +34,7 @@ export const timerColumn = (ctx) => {
                 onChange={handleCheckboxChange}
               />
               <label className="ml-2 text-sm cursor-pointer"></label>
-            </div>
+            </div> */}
           </div>
         );
       },
@@ -75,12 +75,12 @@ export const timerColumn = (ctx) => {
           </div>
         );
       },
-      filterFn: (row, columnId, filterValue) => {
-        const cellValue = row.original._id;
+      // filterFn: (row, columnId, filterValue) => {
+      //   const cellValue = row.original._id;
 
-        return cellValue === filterValue;
-      },
-      filterVariant: "select",
+      //   return cellValue === filterValue;
+      // },
+ 
       size: 90,
     }
 }

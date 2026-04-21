@@ -54,12 +54,7 @@ export const recurringColumn = (ctx) => {
           </div>
         );
       },
-      filterFn: (row, columnId, filterValue) => {
-        const cellValue =
-          row.original[columnId]?.toString().toLowerCase() || "";
-
-        return cellValue.startsWith(filterValue.toLowerCase());
-      },
+      
       size: 100,
       grow: false,
     }

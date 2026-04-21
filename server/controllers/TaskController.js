@@ -2180,7 +2180,7 @@ export const getTasks = async (req, res) => {
           ],
 
           data: [
-            { $sort: { deadline: 1 } },
+            { $sort: { _id: 1 } },
             { $skip: skip },
             { $limit: limit }
           ],

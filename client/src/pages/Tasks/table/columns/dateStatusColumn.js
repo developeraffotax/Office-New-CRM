@@ -21,15 +21,7 @@ const getStatus = (startDateOfTask, deadlineOfTask) => {
     return "Upcoming";
   }
   
-  // if (end.getTime() === today.getTime()) {
-  //   return "Due";
-  // }
-
-  // if (end > today) {
-  //   return "Upcoming";
-  // }
-
-  // return "";
+ 
 };
 
 

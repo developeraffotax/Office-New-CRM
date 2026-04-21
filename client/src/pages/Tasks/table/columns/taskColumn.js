@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 
 import Subtasks from "../../Subtasks";
@@ -8,6 +8,27 @@ export const taskColumn = (ctx) => {
     accessorKey: "task",
     header: "Tasks",
     Header: ({ column }) => {
+      const [value, setValue] = useState(column.getFilterValue() ?? "");
+      const debounceRef = useRef(null);
+
+      const handleChange = (e) => {
+        const val = e.target.value;
+        setValue(val);
+
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+
+        debounceRef.current = setTimeout(() => {
+          column.setFilterValue(val);
+        }, 300);
+      };
+
+      // Cleanup debounce on unmount
+      useEffect(() => {
+        return () => {
+          if (debounceRef.current) clearTimeout(debounceRef.current);
+        };
+      }, []);
+
       return (
         <div className=" w-[380px] flex flex-col gap-[2px]">
           <span
@@ -21,8 +42,8 @@ export const taskColumn = (ctx) => {
           </span>
           <input
             type="search"
-            value={column.getFilterValue() || ""}
-            onChange={(e) => column.setFilterValue(e.target.value)}
+            value={value}
+            onChange={handleChange}
             className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
           />
         </div>

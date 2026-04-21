@@ -487,14 +487,14 @@ if (projectId && mongoose.Types.ObjectId.isValid(projectId)) {
   ==========================================
   */
 
-  // if (email) {
-  //   const normalizedEmail = email.toLowerCase().trim();
+  if (task) {
+    const normalizedTask = task.toLowerCase().trim();
 
-  //   query.email = {
-  //     $regex: normalizedEmail,
-  //     $options: "i",
-  //   };
-  // }
+    query.task = {
+      $regex: normalizedTask,
+      $options: "i",
+    };
+  }
 
  
   /*

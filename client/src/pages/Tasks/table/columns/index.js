@@ -27,22 +27,22 @@ export const getTaskColumns = (ctx) => [
   idColumn(),
   refColumn(),
   departmentColumn(ctx),
-  projectColumn(ctx),
+ projectColumn(ctx),
   jobHolderColumn(ctx),
-  taskColumn(ctx),
+ taskColumn(ctx),
   hoursColumn(ctx),
-  startDateColumn(ctx),
-  deadlineColumn(ctx),
-  taskDateColumn(ctx),
-  dateStatusColumn(ctx),
-  statusColumn(ctx),
-  leadColumn(ctx),
-  budgetColumn(ctx),
-  timerColumn(ctx),
+  // startDateColumn(ctx),
+  // deadlineColumn(ctx),
+  // taskDateColumn(ctx),
+  // dateStatusColumn(ctx),
+  // statusColumn(ctx),
+  // leadColumn(ctx),
+  // budgetColumn(ctx),
+  // timerColumn(ctx),
    
-  actionsColumn(ctx),
-  labelColumn(ctx),
-  recurringColumn(ctx)
+  // actionsColumn(ctx),
+  // labelColumn(ctx),
+  // recurringColumn(ctx)
 ];
 
 

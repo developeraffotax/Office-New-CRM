@@ -25,7 +25,7 @@ export const projectColumn = (ctx) => {
         >
           <option value="">Select</option>
           {ctx.allProjects?.map((proj) => (
-            <option key={proj._id} value={proj.projectName}>
+            <option key={proj._id} value={proj._id}>
               {proj.projectName}
             </option>
           ))}
@@ -52,6 +52,6 @@ export const projectColumn = (ctx) => {
       );
     },
 
-    filterFn: "equals",
+     
   };
 };

@@ -1,3 +1,5 @@
+import { columnFieldMap } from "./constants";
+
 // -----------Handle Custom date filter------
 export const getCurrentMonthYear = () => {
   const today = new Date();
@@ -157,4 +159,36 @@ export const TaskDateFilterFn = (row, columnId, filterValue) => {
         default:
           return false;
       }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const buildFilters = (columnFilters) => {
+  const filters = {};
+
+  columnFilters.forEach((f) => {
+    const dbField = columnFieldMap[f.id];
+
+    if (dbField && f.value) {
+      filters[dbField] = f.value;
+    }
+  });
+
+  return filters;
 };

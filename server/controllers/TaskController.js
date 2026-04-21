@@ -10,6 +10,8 @@ import { scheduleNotification } from "../utils/customFns/scheduleNotification.js
 import { emitTaskUpdate } from "../utils/customFns/emitTaskUpdate.js";
 import { io } from "../index.js";
 import { emitTaskHoursUpdate } from "../utils/customFns/emitTaskHoursUpdate.js";
+import { buildTasksQuery } from "./taskController.utils.js";
+import mongoose from "mongoose";
  
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -192,144 +194,25 @@ export const createTask = async (req, res) => {
   }
 };
 
-// Get ALl Tasks
-// Get All Tasks
-export const getAllTasks = async (req, res) => {
-  try {
-    const tasks = await taskModel.aggregate([
-      {
-        $match: { status: { $ne: "completed" } },
-      },
-      {
-        $project: {
-          project: 1,
-          jobHolder: 1,
-          task: 1,
-          hours: 1,
-          startDate: 1,
-          deadline: 1,
-          taskDate: 1,
-          status: 1,
-          lead: 1,
-          estimate_Time: 1,
-          comments: { _id: 1, status: 1 },
-          subtasksLength: { $size: "$subtasks" },
-          labal: 1,
-          recurring: 1,
-          taskRef: 1,
-        },
-      },
-      // lookup projects
-      {
-        $lookup: {
-          from: "projects", // collection name (lowercase plural of model)
-          localField: "project",
-          foreignField: "_id",
-          as: "project",
-        },
-      },
-      { $unwind: { path: "$project", preserveNullAndEmptyArrays: true } },
-
-      // lookup departments inside project
-      {
-        $lookup: {
-          from: "taskdepartments", // collection name for department model
-          localField: "project.departments",
-          foreignField: "_id",
-          as: "project.departments",
-        },
-      },
-      // { $unwind: { path: "$project.department", preserveNullAndEmptyArrays: true } },
-    ]);
-
-    res.status(200).send({
-      success: true,
-      message: "All task list!",
-      tasks,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({
-      success: false,
-      message: "Error in get all tasks!",
-      error,
-    });
-  }
-};
-
-// Get ALl Tasks
-export const getCompletedTasks = async (req, res) => {
-  try {
-    // const tasks = await taskModel
-    //   .find({ status: { $ne: "completed" } })
-    //   .select(
-    //     "project jobHolder task hours startDate deadline status lead  estimate_Time comments._id comments.status labal recurring"
-    //   );
-
-    const tasks = await taskModel.aggregate([
-      {
-        $match: { status: { $eq: "completed" } },
-      },
-      {
-        $project: {
-          project: 1,
-          jobHolder: 1,
-          task: 1,
-          hours: 1,
-          startDate: 1,
-          deadline: 1,
-          status: 1,
-          lead: 1,
-          estimate_Time: 1,
-          comments: { _id: 1, status: 1 },
-          subtasksLength: { $size: "$subtasks" },
-          labal: 1,
-          recurring: 1,
-          taskRef: 1,
-        },
-      },
-
-
-            // lookup projects
-      {
-        $lookup: {
-          from: "projects", // collection name (lowercase plural of model)
-          localField: "project",
-          foreignField: "_id",
-          as: "project",
-        },
-      },
-      { $unwind: { path: "$project", preserveNullAndEmptyArrays: true } },
-
-      // lookup departments inside project
-      {
-        $lookup: {
-          from: "taskdepartments", // collection name for department model
-          localField: "project.department",
-          foreignField: "_id",
-          as: "project.department",
-        },
-      },
-      { $unwind: { path: "$project.department", preserveNullAndEmptyArrays: true } },
 
 
 
-    ]);
 
-    res.status(200).send({
-      success: true,
-      message: "All task list!",
-      tasks: tasks,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({
-      success: false,
-      messsage: "Error in get all tasks!",
-      error: error,
-    });
-  }
-};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Get Single Task
 export const getSingleTask = async (req, res) => {
@@ -1945,6 +1828,510 @@ export const updateMultipleTasks = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in update multiple tasks!",
+      error: error,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+// Get All Tasks
+export const getAllTasks = async (req, res) => {
+  try {
+    const tasks = await taskModel.aggregate([
+      {
+        $match: { status: { $ne: "completed" } },
+      },
+      {
+        $project: {
+          project: 1,
+          jobHolder: 1,
+          task: 1,
+          hours: 1,
+          startDate: 1,
+          deadline: 1,
+          taskDate: 1,
+          status: 1,
+          lead: 1,
+          estimate_Time: 1,
+          comments: { _id: 1, status: 1 },
+          subtasksLength: { $size: "$subtasks" },
+          labal: 1,
+          recurring: 1,
+          taskRef: 1,
+        },
+      },
+      // lookup projects
+      {
+        $lookup: {
+          from: "projects", // collection name (lowercase plural of model)
+          localField: "project",
+          foreignField: "_id",
+          as: "project",
+        },
+      },
+      { $unwind: { path: "$project", preserveNullAndEmptyArrays: true } },
+
+      // lookup departments inside project
+      {
+        $lookup: {
+          from: "taskdepartments", // collection name for department model
+          localField: "project.departments",
+          foreignField: "_id",
+          as: "project.departments",
+        },
+      },
+      // { $unwind: { path: "$project.department", preserveNullAndEmptyArrays: true } },
+    ]);
+
+    res.status(200).send({
+      success: true,
+      message: "All task list!",
+      tasks,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in get all tasks!",
+      error,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+ 
+export const getTasks = async (req, res) => {
+  try {
+
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const { departmentId } = req.query;
+
+    // Base filters
+    const matchQuery = buildTasksQuery(req.query);
+
+    const pipeline = [
+
+      /*
+      ==========================================
+      TASK FILTER
+      ==========================================
+      */
+
+      {
+        $match: matchQuery,
+      },
+
+      /*
+      ==========================================
+      PROJECT LOOKUP
+      ==========================================
+      */
+
+      {
+        $lookup: {
+          from: "projects",
+          localField: "project",
+          foreignField: "_id",
+          as: "project",
+        },
+      },
+
+      {
+        $unwind: {
+          path: "$project",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+    ];
+
+    /*
+    ==========================================
+    ENTERPRISE DEPARTMENT FILTER
+    ==========================================
+    */
+
+    if (
+      departmentId &&
+      mongoose.Types.ObjectId.isValid(departmentId)
+    ) {
+
+      pipeline.push({
+        $match: {
+          "project.departments":
+            new mongoose.Types.ObjectId(departmentId),
+        },
+      });
+
+    }
+
+    pipeline.push(  // Lookup Departments
+      {
+        $lookup: {
+          from: "taskdepartments",
+          localField: "project.departments",
+          foreignField: "_id",
+          as: "project.departments",
+        },
+      }
+    )
+
+    /*
+    ==========================================
+    PROJECT OUTPUT
+    ==========================================
+    */
+
+    pipeline.push(
+
+      {
+        $project: {
+          project: 1,
+          jobHolder: 1,
+          task: 1,
+          hours: 1,
+          startDate: 1,
+          deadline: 1,
+          taskDate: 1,
+          status: 1,
+          lead: 1,
+          estimate_Time: 1,
+          comments: { _id: 1, status: 1 },
+          subtasksLength: { $size: "$subtasks" },
+          labal: 1,
+          recurring: 1,
+          taskRef: 1,
+        },
+      },
+
+      /*
+      ==========================================
+      PAGINATION
+      ==========================================
+      */
+
+      {
+        $facet: {
+
+          metadata: [
+            { $count: "total" }
+          ],
+
+          data: [
+            { $sort: { deadline: 1 } },
+            { $skip: skip },
+            { $limit: limit }
+          ],
+
+        },
+      }
+
+    );
+
+    const result = await taskModel.aggregate(pipeline);
+
+    const tasks = result[0]?.data || [];
+    const total = result[0]?.metadata[0]?.total || 0;
+
+    res.status(200).send({
+      success: true,
+      message: "Tasks fetched successfully",
+
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit),
+      },
+
+      tasks,
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).send({
+      success: false,
+      message: "Error fetching tasks",
+      error,
+    });
+
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Get ALl Tasks
+export const getCompletedTasks = async (req, res) => {
+  try {
+    // const tasks = await taskModel
+    //   .find({ status: { $ne: "completed" } })
+    //   .select(
+    //     "project jobHolder task hours startDate deadline status lead  estimate_Time comments._id comments.status labal recurring"
+    //   );
+
+    const tasks = await taskModel.aggregate([
+      {
+        $match: { status: { $eq: "completed" } },
+      },
+      {
+        $project: {
+          project: 1,
+          jobHolder: 1,
+          task: 1,
+          hours: 1,
+          startDate: 1,
+          deadline: 1,
+          status: 1,
+          lead: 1,
+          estimate_Time: 1,
+          comments: { _id: 1, status: 1 },
+          subtasksLength: { $size: "$subtasks" },
+          labal: 1,
+          recurring: 1,
+          taskRef: 1,
+        },
+      },
+
+
+            // lookup projects
+      {
+        $lookup: {
+          from: "projects", // collection name (lowercase plural of model)
+          localField: "project",
+          foreignField: "_id",
+          as: "project",
+        },
+      },
+      { $unwind: { path: "$project", preserveNullAndEmptyArrays: true } },
+
+      // lookup departments inside project
+      {
+        $lookup: {
+          from: "taskdepartments", // collection name for department model
+          localField: "project.department",
+          foreignField: "_id",
+          as: "project.department",
+        },
+      },
+      { $unwind: { path: "$project.department", preserveNullAndEmptyArrays: true } },
+
+
+
+    ]);
+
+    res.status(200).send({
+      success: true,
+      message: "All task list!",
+      tasks: tasks,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      messsage: "Error in get all tasks!",
       error: error,
     });
   }

@@ -1,8 +1,7 @@
 import React from "react";
 
 export const departmentColumn = (ctx) => ({
-  accessorFn: (row) =>
-    row.project?.departments?.map((d) => d.departmentName) || [],
+  accessorFn: (row) => row.project?.departments?.map((d) => d.departmentName) || [],
   id: "departmentName",
   minSize: 150,
   maxSize: 200,
@@ -25,7 +24,7 @@ export const departmentColumn = (ctx) => ({
       >
         <option value="">Select</option>
         {ctx.departments?.map((dpt) => (
-          <option key={dpt._id} value={dpt.departmentName}>
+          <option key={dpt._id} value={dpt._id}>
             {dpt.departmentName}
           </option>
         ))}
@@ -50,9 +49,5 @@ export const departmentColumn = (ctx) => ({
       </div>
     );
   },
-
-  filterFn: (row, columnId, filterValue) => {
-    const values = row.getValue(columnId) || [];
-    return values.includes(filterValue);
-  },
+ 
 });

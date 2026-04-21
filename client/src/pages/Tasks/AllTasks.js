@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { style } from "../../utlis/CommonStyle";
 import axios from "axios";
@@ -50,6 +50,8 @@ import OutsideFilter from "../Jobs/utils/OutsideFilter";
 import SelectedUsers from "../../components/SelectedUsers";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import { openModal } from "../../redux/slices/globalModalSlice";
+import { buildFilters } from "./utils";
+import { dotColors } from "./constants";
 
 const colVisibility = {
   taskRef: true,
@@ -165,7 +167,7 @@ const AllTasks = ({ justShowTable = false }) => {
   const [showlabel, setShowlabel] = useState(false);
   const [timerId, setTimerId] = useState("");
   const dateStatus = ["Due", "Overdue"];
-  const status = ["To do", "Progress", "Review", "Onhold"];
+  const statusArr = ["To do", "Progress", "Review", "Onhold"];
 
   const [state, setState] = useState("");
   const [stateData, setStateData] = useState([]);
@@ -204,6 +206,7 @@ const AllTasks = ({ justShowTable = false }) => {
 
         const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsers("tasks:selected_users", userName);
 
+
   const [showcolumn, setShowColumn] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState({
     _id: false,
@@ -239,8 +242,35 @@ const AllTasks = ({ justShowTable = false }) => {
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 30, // ✅ default page size
+    pageSize: 20,  
   });
+
+
+const [rowCount, setRowCount] = useState(0);
+const [sorting, setSorting] = useState([]);
+
+  const [columnFilters, setColumnFilters] = useState([])
+
+
+   const [status, setStatus] = useState("progress")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   const socket = useSocket();
 
@@ -248,7 +278,7 @@ const AllTasks = ({ justShowTable = false }) => {
     if (!socket) return;
 
     socket.on("task_updated", () => {
-      getAllTasks();
+      getTasks();
     });
   }, [socket]);
 
@@ -308,7 +338,7 @@ const AllTasks = ({ justShowTable = false }) => {
     getAllProjects();
   }, [auth]);
 
-  //---------- Get All Projects-----------
+  //---------- Get All Deps-----------
   const getAllDepartments = async () => {
     try {
       const { data } = await axios.get(
@@ -351,40 +381,29 @@ const AllTasks = ({ justShowTable = false }) => {
     }
   }, [auth, allProjects]);
 
-  // -------Get All Tasks----->
-  const getAllTasks = async () => {
-    setLoading(true);
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/all`
-      );
 
-      setTasksData(data.tasks);
 
-      // console.log("data.tasks:", data?.tasks);
-      if (auth.user.role.name === "Admin") {
-        setTasksData(data?.tasks);
-      } else {
-        const filteredTasks = data?.tasks?.filter((item) => {
-          // item?.jobHolder === auth?.user?.name ||
-          return item?.project?.users_list?.some(
-            (user) => user?.name === auth?.user?.name
-          );
-        });
 
-        setTasksData(filteredTasks || []);
-      }
 
-      setLoading(false);
-    } catch (error) {
-      console.log(error);
-      setLoading(false);
-    }
-  };
 
-  useEffect(() => {
-    getAllTasks();
-  }, []);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   //   Get All Labels
   const getlabel = async () => {
@@ -435,62 +454,36 @@ const AllTasks = ({ justShowTable = false }) => {
     // eslint-disable-next-line
   }, []);
 
-  // ---------------Get Task on WithoutLoad-----
-  const getTasks1 = async () => {
-    setIsLoad(true);
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/all`
-      );
+ 
 
-      setTasksData(data.tasks);
+  // useEffect(() => {
+  //   const calculateTotalHours = (data) => {
+  //     return data?.reduce((sum, client) => sum + Number(client.hours), 0);
+  //   };
 
-      if (auth.user.role.name === "Admin") {
-        setTasksData(data?.tasks);
-      } else {
-        const filteredTasks = data?.tasks?.filter((item) => {
-          return item?.project?.users_list?.some(
-            (user) => user?.name === auth?.user?.name
-          );
-        });
-
-        setTasksData(filteredTasks || []);
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsLoad(false);
-    }
-  };
-
-  useEffect(() => {
-    const calculateTotalHours = (data) => {
-      return data?.reduce((sum, client) => sum + Number(client.hours), 0);
-    };
-
-    if (active === "All" && !active1) {
-      setTotalHours(calculateTotalHours(tasksData).toFixed(0));
-    } else if (filterData) {
-      setTotalHours(calculateTotalHours(filterData).toFixed(0));
-    }
-  }, [tasksData, filterData, active, active1, activeBtn]);
+  //   if (active === "All" && !active1) {
+  //     setTotalHours(calculateTotalHours(tasksData).toFixed(0));
+  //   } else if (filterData) {
+  //     setTotalHours(calculateTotalHours(filterData).toFixed(0));
+  //   }
+  // }, [tasksData, filterData, active, active1, activeBtn]);
 
   // ------------Filter By Projects---------->
 
-  console.log("TASKS💛💛💛", tasksData);
-  const getDepartmentTaskCount = (departmentId, tasks) => {
-    return tasks.filter(
-      (task) => task.project?.department?._id === departmentId
-    ).length;
-  };
+  // console.log("TASKS💛💛💛", tasksData);
+  // const getDepartmentTaskCount = (departmentId, tasks) => {
+  //   return tasks.filter(
+  //     (task) => task.project?.department?._id === departmentId
+  //   ).length;
+  // };
 
-  const getProjectTaskCount = (projectId, tasks) => {
-    return tasks.filter((task) => task.project?._id === projectId).length;
-  };
+  // const getProjectTaskCount = (projectId, tasks) => {
+  //   return tasks.filter((task) => task.project?._id === projectId).length;
+  // };
 
-  const getUserTaskCount = (userName, tasks) => {
-    return tasks.filter((task) => task.jobHolder === userName).length;
-  };
+  // const getUserTaskCount = (userName, tasks) => {
+  //   return tasks.filter((task) => task.jobHolder === userName).length;
+  // };
 
   // const getProjectsCount = (project) => {
   //   if (project === "All") {
@@ -502,95 +495,95 @@ const AllTasks = ({ justShowTable = false }) => {
 
   // --------------Job_Holder Length---------->
 
-  const getJobHolderCount = (user, project) => {
-    return tasksData.filter((item) =>
-      project === "All"
-        ? item?.jobHolder === user
-        : item?.jobHolder === user && item?.project?.projectName === project
-    )?.length;
-  };
+  // const getJobHolderCount = (user, project) => {
+  //   return tasksData.filter((item) =>
+  //     project === "All"
+  //       ? item?.jobHolder === user
+  //       : item?.jobHolder === user && item?.project?.projectName === project
+  //   )?.length;
+  // };
 
-  // -------Due & Overdue count------->
-  const getDueAndOverdueCountByDepartment = (project) => {
-    const filteredData = tasksData?.filter(
-      (item) => item.project?.projectName === project || project === "All"
-    );
+  // // -------Due & Overdue count------->
+  // const getDueAndOverdueCountByDepartment = (project) => {
+  //   const filteredData = tasksData?.filter(
+  //     (item) => item.project?.projectName === project || project === "All"
+  //   );
 
-    const dueCount = filteredData?.filter(
-      (item) => getStatus(item.startDate, item.deadline) === "Due"
-    )?.length;
-    const overdueCount = filteredData?.filter(
-      (item) => getStatus(item.startDate, item.deadline) === "Overdue"
-    )?.length;
+  //   const dueCount = filteredData?.filter(
+  //     (item) => getStatus(item.startDate, item.deadline) === "Due"
+  //   )?.length;
+  //   const overdueCount = filteredData?.filter(
+  //     (item) => getStatus(item.startDate, item.deadline) === "Overdue"
+  //   )?.length;
 
-    return { due: dueCount, overdue: overdueCount };
-  };
+  //   return { due: dueCount, overdue: overdueCount };
+  // };
 
-  // --------------Status Length---------->
-  const getStatusCount = (status, projectName) => {
-    return tasksData?.filter((item) =>
-      projectName === "All"
-        ? item?.status === status
-        : item?.status === status && item?.project?.projectName === projectName
-    )?.length;
-  };
+  // // --------------Status Length---------->
+  // const getStatusCount = (status, projectName) => {
+  //   return tasksData?.filter((item) =>
+  //     projectName === "All"
+  //       ? item?.status === status
+  //       : item?.status === status && item?.project?.projectName === projectName
+  //   )?.length;
+  // };
 
   // --------------Filter Data By Department ----------->
 
-  const filterByDep = (value) => {
-    setFilterData("");
+  // const filterByDep = (value) => {
+  //   setFilterData("");
 
-    if (value !== "All") {
-      const filteredData = tasksData?.filter(
-        (item) =>
-          item.project?.projectName === value ||
-          item.status === value ||
-          item.jobHolder === value ||
-          item._id === value
-      );
+  //   if (value !== "All") {
+  //     const filteredData = tasksData?.filter(
+  //       (item) =>
+  //         item.project?.projectName === value ||
+  //         item.status === value ||
+  //         item.jobHolder === value ||
+  //         item._id === value
+  //     );
 
-      // console.log("FilterData", filteredData);
+  //     // console.log("FilterData", filteredData);
 
-      setFilterData([...filteredData]);
-    }
-  };
+  //     setFilterData([...filteredData]);
+  //   }
+  // };
 
-  useEffect(() => {
-    if (tasksData && filterId) {
-      filterByDep(filterId);
-    }
-  }, [tasksData, filterId]);
+  // useEffect(() => {
+  //   if (tasksData && filterId) {
+  //     filterByDep(filterId);
+  //   }
+  // }, [tasksData, filterId]);
 
   // -------------- Filter Data By Department || Status || Placeholder ----------->
 
-  const filterByProjStat = (value, proj) => {
-    let filteredData = [];
+  // const filterByProjStat = (value, proj) => {
+  //   let filteredData = [];
 
-    if (proj === "All") {
-      filteredData = tasksData.filter(
-        (item) =>
-          item.status === value ||
-          item.jobHolder === value ||
-          getStatus(item.startDate, item.deadline) === value ||
-          getStatus(item.startDate, item.deadline) === value
-      );
-    } else {
-      filteredData = tasksData?.filter((item) => {
-        const jobMatches = item.project?.projectName === proj;
-        const statusMatches = item.status === value;
-        const holderMatches = item.jobHolder === value;
+  //   if (proj === "All") {
+  //     filteredData = tasksData.filter(
+  //       (item) =>
+  //         item.status === value ||
+  //         item.jobHolder === value ||
+  //         getStatus(item.startDate, item.deadline) === value ||
+  //         getStatus(item.startDate, item.deadline) === value
+  //     );
+  //   } else {
+  //     filteredData = tasksData?.filter((item) => {
+  //       const jobMatches = item.project?.projectName === proj;
+  //       const statusMatches = item.status === value;
+  //       const holderMatches = item.jobHolder === value;
 
-        return (
-          (holderMatches && jobMatches) ||
-          (statusMatches && jobMatches) ||
-          (jobMatches && getStatus(item.startDate, item.deadline) === value) ||
-          (jobMatches && getStatus(item.startDate, item.deadline) === value)
-        );
-      });
-    }
+  //       return (
+  //         (holderMatches && jobMatches) ||
+  //         (statusMatches && jobMatches) ||
+  //         (jobMatches && getStatus(item.startDate, item.deadline) === value) ||
+  //         (jobMatches && getStatus(item.startDate, item.deadline) === value)
+  //       );
+  //     });
+  //   }
 
-    setFilterData([...filteredData]);
-  };
+  //   setFilterData([...filteredData]);
+  // };
 
   // Update Filter
   // useEffect(() => {
@@ -600,17 +593,197 @@ const AllTasks = ({ justShowTable = false }) => {
   // }, [tasksData, filterData, active1, active]);
 
   // Filter By State
-  const filterByState = (state) => {
-    if (!state) {
-      return;
+  // const filterByState = (state) => {
+  //   if (!state) {
+  //     return;
+  //   }
+  //   setStateData("");
+
+  //   const filteredData = tasksData?.filter((item) => item.status === state);
+
+  //   setStateData([...filteredData]);
+  //   console.log("stateData:", stateData);
+  // };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Fetch Jobs with:
+ * - Pagination
+ * - Sorting
+ * - Column Filters
+ * - Custom Filters
+ */
+
+const getTasks = useCallback(async () => {
+
+  setLoading(true);
+
+  try {
+ 
+
+    // ======================================================
+    // BUILD COLUMN FILTERS
+    // ======================================================
+
+ 
+
+    // console.log("THE COLUMN FILTERS ", columnFilters)
+    const filters = buildFilters(columnFilters);
+
+
+    // ======================================================
+    // BUILD FINAL PARAMS
+    // ======================================================
+
+    const params = {
+
+      // Pagination
+      page: pagination.pageIndex + 1,
+      limit: pagination.pageSize,
+
+      status: status,
+      // Sorting
+      // sortField,
+      // sortOrder,
+
+      // Global Search
+      search: searchValue || "",
+      // searchParams,
+      
+      // Column Filters
+      ...filters,
+
+    };
+
+
+    // ======================================================
+    // API CALL
+    // ======================================================
+    let URL = `${process.env.REACT_APP_API_URL}/api/v1/tasks`;
+
+ 
+
+    const { data } = await axios.get(
+     URL,
+      { params }
+    );
+
+
+    // ======================================================
+    // HANDLE RESPONSE
+    // ======================================================
+
+    if (data?.success) {
+
+      setTasksData(data.tasks || []);
+
+      setRowCount(
+        data?.pagination?.total || 0
+      );
+
     }
-    setStateData("");
 
-    const filteredData = tasksData?.filter((item) => item.status === state);
+  } catch (error) {
 
-    setStateData([...filteredData]);
-    console.log("stateData:", stateData);
-  };
+    console.log(error);
+
+    toast.error(
+      error?.response?.data?.message ||
+      "Error loading jobs"
+    );
+
+  } finally {
+
+    setLoading(false);
+
+  }
+
+}, [
+
+  // Pagination (SAFE way)
+  pagination.pageIndex,
+  pagination.pageSize,
+ // status,
+  // Sorting
+  // sorting,
+
+  // Column Filters
+ columnFilters,
+status,
+  // Global Search
+ searchValue,
+ 
+  // Custom Filters
+  // activeBtn,
+  // lead,
+  // jobHolder,
+  // clientType,
+  // filterId,
+
+]);
+
+
+
+
+
+
+
+
+
+
+
+
+useEffect(() => {
+
+getTasks()
+
+
+}, [getTasks])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // -----------Update Task-Project-------->
   const updateTaskProject = async (taskId, projectId) => {
@@ -684,7 +857,7 @@ const AllTasks = ({ justShowTable = false }) => {
           }
         });
 
-        getTasks1();
+        getTasks();
       }
 
       // Send Socket Timer
@@ -738,7 +911,7 @@ const AllTasks = ({ justShowTable = false }) => {
         }
       }
 
-      getTasks1();
+      getTasks();
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
@@ -764,19 +937,7 @@ const AllTasks = ({ justShowTable = false }) => {
     }
   };
 
-  // Filter by Header Search
-  useEffect(() => {
-    if (searchValue) {
-      const filteredData = tasksData.filter(
-        (item) =>
-          item?.task.toLowerCase().includes(searchValue.toLowerCase()) ||
-          item?.jobHolder.toLowerCase().includes(searchValue.toLowerCase())
-      );
-      setFilterData(filteredData);
-    } else {
-      setFilterData(tasksData);
-    }
-  }, [searchValue, tasksData]);
+ 
 
   // -----------Copy Task------->
 
@@ -866,8 +1027,7 @@ const AllTasks = ({ justShowTable = false }) => {
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/delete/task/${id}`
       );
       if (data) {
-        // getAllTasks();
-        setShowDetail(false);
+         setShowDetail(false);
         toast.success("Task deleted successfully!");
 
         // Send Socket Timer
@@ -908,7 +1068,7 @@ const AllTasks = ({ justShowTable = false }) => {
           toast.success("label Updated!");
         }
 
-        getTasks1();
+        getTasks();
       }
     } catch (error) {
       console.log(error);
@@ -1017,6 +1177,10 @@ const AllTasks = ({ justShowTable = false }) => {
       filterId,
       active,
       active1,
+          columnFilters,
+    searchValue,
+    status,
+
       setFilterData,
       setTasksData,
       setTaskID,
@@ -1027,7 +1191,7 @@ const AllTasks = ({ justShowTable = false }) => {
       handleDeleteTaskConfirmation,
       createComplaint
     }),
-    [totalHours, filterId, active, active1]
+    [totalHours, filterId, active, active1, columnFilters, searchValue, status]
   );
 
   // ----------------------------
@@ -1118,21 +1282,43 @@ const AllTasks = ({ justShowTable = false }) => {
     // table.resetColumnFilters();
   };
 
+
+
+
+  console.log("THE COLUMN FILTERS ARE >>> IN TASKS", columnFilters)
+
+
+
+
+
+
+
+
+
   const table = useMaterialReactTable({
     columns,
-    data:
-      (active === "All" && !active1 && !filterId && !searchValue
-        ? tasksData
-        : filterData) || [],
+    data: tasksData || [],
     getRowId: (row) => row._id,
 
-    enableStickyHeader: true,
-    enableStickyFooter: true,
-    // columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "860px" } },
+     
+    manualPagination: true,
+    manualFiltering: true,
+    // manualSorting: true,
 
-    enableColumnActions: false,
+    rowCount: rowCount,
+    enablePagination: true,
+    onPaginationChange: setPagination,  
+    autoResetPageIndex: false,
+
+    enableFilterMatchHighlighting: false,
     enableColumnFilters: false,
+
+
+   enableStickyHeader: true,
+    enableStickyFooter: true,
+    columnFilterDisplayMode: "popover",
+    muiTableContainerProps: { sx: { maxHeight: "78vh",  } },
+    enableColumnActions: false,
     enableSorting: false,
     enableGlobalFilter: true,
     enableRowNumbers: true,
@@ -1140,28 +1326,40 @@ const AllTasks = ({ justShowTable = false }) => {
     enableTopToolbar: true,
     enableBottomToolbar: true,
     enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
+    enableTableHead: true,
 
-    // enableEditing: true,
+     onRowSelectionChange: setRowSelection,
+     onColumnVisibilityChange: setColumnVisibility,
+     onColumnFiltersChange: setColumnFilters,
+ 
+
+    initialState: {
+      columnVisibility: {
+        _id: false
+      }
+    },
 
     state: {
       rowSelection,
       pagination,
       density: "compact",
       columnVisibility: columnVisibility,
+      
+ 
+    sorting,
+    columnFilters,
+    // globalFilter: searchValue,
+    // isLoading: loading,
+    showProgressBars: false,
+    showSkeletons: loading,
+    showLoadingOverlay: false,
+    
+ 
     },
-    onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: setPagination, // ✅ Hook for page changes
-    autoResetPageIndex: false,
-    enablePagination: true,
-    initialState: {
-      // pagination: { pageSize: 20 },
-      // pageSize: 20,
-      // density: "compact",
-      // columnVisibility: {
-      //   _id: false
-      // }
-    },
+   
+     
+     
+     
 
     muiTableHeadCellProps: {
       style: {
@@ -1218,7 +1416,7 @@ const AllTasks = ({ justShowTable = false }) => {
         }
       );
       if (data) {
-        getAllTasks();
+        getTasks();
         toast.success("Tasks Data imported successfully!");
       }
     } catch (error) {
@@ -1253,7 +1451,7 @@ const AllTasks = ({ justShowTable = false }) => {
         }
       );
       if (data) {
-        getAllTasks();
+        getTasks();
         toast.success("Bulk Action updated successfully!");
         setRowSelection({});
         setProject("");
@@ -1275,83 +1473,42 @@ const AllTasks = ({ justShowTable = false }) => {
     }
   };
 
-  // To Change the total hours when filter is applied inside the table
-  useEffect(() => {
-    console.log(
-      "table.getFilteredRowModel().rows.length",
-      table.getFilteredRowModel().rows.length
-    );
-    const showingRows = table.getFilteredRowModel().rows;
-    setTotalHours((prev) => {
-      const totalHours = showingRows.reduce((acc, row) => {
-        const hours = row.original.hours;
-        return acc + Number(hours);
-      }, 0);
+ 
 
-      return totalHours.toFixed(0);
-    });
-  }, [table.getFilteredRowModel().rows]);
+const setColumnFromOutsideTable = (colKey, filterVal) => {
+  setColumnFilters((prev) => {
+    // Remove existing filter for this column
+    const filtered = prev.filter((f) => f.id !== colKey);
 
-  const setColumnFromOutsideTable = (colKey, filterVal) => {
-    const col = table.getColumn(colKey);
-    return col.setFilterValue(filterVal);
-  };
-
-  // To see the document.title timer even if the filter is applied to the Jobholder | coz it will unmount the grid timer
-  // useEffect(() => {
-  //   const col = table.getColumn("jobHolder");
-
-  //   const filteredValue = col.getFilterValue();
-
-  //   if (filteredValue === auth?.user?.name) {
-  //     setShowActiveTimer(false);
-  //   } else {
-  //     console.log("set show timer trueeeee");
-  //     setShowActiveTimer(true);
-  //   }
-  // }, [table.getColumn("jobHolder").getFilterValue]);
-
-  useEffect(() => {
-    if (auth.user?.role?.name === "Admin") {
-      console.log("Admin Role Detected, setting showJobHolder to true💛💛🧡🧡");
-      setShowJobHolder(true);
-      setActiveBtn("jobHolder");
-
-      setActive1(auth?.user?.name);
-
-      // setColumnFromOutsideTable("taskDate", "Today");
+    // If empty → just remove filter
+    if (
+      filterVal === undefined ||
+      filterVal === null ||
+      filterVal === "" ||
+      (Array.isArray(filterVal) && filterVal.length === 0)
+    ) {
+      return filtered;
     }
-  }, []);
 
-  useEffect(() => {
-    if (comment_taskId) {
-      filterByRowId(table, comment_taskId, setCommentTaskId, setIsComment);
-
-      // searchParams.delete("comment_taskId");
-      // navigate({ search: searchParams.toString() }, { replace: true });
-    }
-  }, [comment_taskId, searchParams, navigate, table]);
-
-  
-  useEffect(() => {
-    if (show_completed) {
-
-      setActiveBtn("completed");
-                  setShowCompleted(true);
-                  setActive("");
-
-    }
-  }, [show_completed])
+    // Otherwise add updated filter
+    return [
+      ...filtered,
+      {
+        id: colKey,
+        value: filterVal,
+      },
+    ];
+  });
+};
 
 
+ 
 
-
-
-  const user_tasks_count_map = useMemo(() => {
-    return Object.fromEntries(
-      userName.map((user) => [user, getJobHolderCount(user, active)])
-    );
-  }, [userName, active, getJobHolderCount]);
+  // const user_tasks_count_map = useMemo(() => {
+  //   return Object.fromEntries(
+  //     userName.map((user) => [user, getJobHolderCount(user, active)])
+  //   );
+  // }, [userName, active, getJobHolderCount]);
 
 
 
@@ -1406,7 +1563,7 @@ const renderColumnControls = () => (
           selectedUsers={selectedUsers}
           setSelectedUsers={setSelectedUsers}
           userNameArr={userName}
-          countMap={user_tasks_count_map}
+          countMap={{}}
           label={"task"}
         />
         </div>
@@ -1415,47 +1572,7 @@ const renderColumnControls = () => (
   </section>
 );
 
-  // const columnFilters = table.getState().columnFilters;
-
-  // useEffect(() => {
-  //   if (!table) return;
-
-  //   const col = table.getColumn("departmentName");
-  //   if (!col) return;
-
-  //   const val = col.getFilterValue() || "";
-
-  //   if(!val) return
-  //   if (val !== filter1) {
-  //     setFilter1(val);
-  //   }
-  // }, [table, columnFilters]);
-
-  // useEffect(() => {
-  //   if (!table) return;
-
-  //   const col = table.getColumn("projectName");
-  //   if (!col) return;
-
-  //   const val = col.getFilterValue() || "";
-
-  //   if (val !== filter2) {
-  //     setFilter2(val);
-  //   }
-  // }, [table, columnFilters]);
-
-  // useEffect(() => {
-  //   if (!table) return;
-
-  //   const col = table.getColumn("jobHolder");
-  //   if (!col) return;
-
-  //   const val = col.getFilterValue() || "";
-
-  //   if (val !== filter3) {
-  //     setFilter3(val);
-  //   }
-  // }, [table, columnFilters]);
+ 
 
   // Hook returns an updater for each column
   const updateDepartment = useColumnFilterSync(
@@ -1507,7 +1624,7 @@ const renderColumnControls = () => (
                   // setShowDue(false);
                   dispatch(setFilterId(""));
                   handleClearFilters();
-                  filterByState(state);
+                  //filterByState(state);
                   dispatch(setSearchValue(""));
                 }}
                 title="Clear filters"
@@ -1524,6 +1641,35 @@ const renderColumnControls = () => (
 
                 {isAdmin(auth) && <span className=" mb-2"> <OverviewForPages /> </span>}
                 
+
+                  {  <span className="w-[1px] h-8 bg-gray-200 rounded "></span>}
+
+
+                <div className="flex gap-2 w-fit font-google font-medium ">
+                {[{label: "In-Progress", value: "progress"}, {label: "Completed", value: "completed"}].map(({ label, value }) => (
+                  <button
+                    key={value}
+                    onClick={() => setStatus(value)}
+                    className={`flex items-center gap-[7px] px-[14px] py-[6px] text-[13px] rounded-xl  border cursor-pointer  transition-all duration-200
+                      ${status === value
+                        ? "border-gray-300 bg-gray-50 text-gray-900"
+                        : "border-gray-200 bg-white text-gray-400 hover:text-gray-700"
+                      }`}
+                  >
+                    <span className={`w-[7px] h-[7px] rounded-full flex-shrink-0  
+                      ${status === value ? dotColors[value] : "bg-gray-300"}`}
+                    />
+
+              
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+
+
+
+
             </div>
 
             {/* Project Buttons */}
@@ -1584,7 +1730,7 @@ const renderColumnControls = () => (
                     showProject={showProject}
                     projects={projects}
                     getAllProjects={getAllProjects}
-                    getAllTasks={getAllTasks}
+                    getAllTasks={getTasks}
                     setShowProject={setShowProject}
                     setProjectId={setProjectId}
                     setOpenAddProject={setOpenAddProject}
@@ -1694,18 +1840,7 @@ const renderColumnControls = () => (
                   ).length
                 }
                 getLabelFn={(department) => department?.departmentName}
-                // onClick={
-                //   (department) => setFilter1((prev) => {
-                //     const isSameUser = prev === department?.departmentName;
-                //     const newValue = isSameUser ? "" : department?.departmentName;
-
-                //       setColumnFromOutsideTable("departmentName", newValue);
-
-                //        setColumnFromOutsideTable("projectName", "");
-                //        setColumnFromOutsideTable("jobHolder", "");
-                //     return newValue;
-                //   })
-                // }
+               
 
                 onClick={(dep) => {
                   const newValue =
@@ -1722,65 +1857,7 @@ const renderColumnControls = () => (
                 }
               />
 
-              {/* <DragDropContext onDragEnd={handleOnDragEnd}>
-                <Droppable droppableId="departments" direction="horizontal">
-                  {(provided) => (
-                    <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      className="flex items-center gap-2 "
-                    >
-                      {departments?.map((dpt, index) => (
-                        <Draggable
-                          key={dpt._id}
-                          draggableId={dpt._id}
-                          index={index}
-                        >
-                          {(provided) => (
-                            <div
-                              className={`py-1 rounded-tl-md rounded-tr-md px-1 w-fit cursor-pointer font-[500] text-[14px] ${
-                                filter1 === dpt?.departmentName &&
-                                " border-2 border-b-0 text-orange-600 border-gray-300"
-                              }`}
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              onClick={() => {
-                                setFilterData("");
-                                setActive(dpt?.departmentName);
-                                filterByDep(dpt?.departmentName);
-
-                                setShowCompleted(false);
-                                setActive1("");
-
-                                dispatch(setFilterId(""));
-
-                                setColumnFromOutsideTable('departmentName', dpt?.departmentName);
-                                setColumnFromOutsideTable('jobHolder', "");
-
-                                 setFilter1((prev) => {
-                                    const isSameUser = prev === dpt?.departmentName;
-                                    const newValue = isSameUser ? "" : dpt?.departmentName;
-
-                                    setColumnFromOutsideTable("departmentName", newValue);
-                                    return newValue;
-                                  });
-                              }}
-                            >
-                              {dpt?.departmentName} (
-                                {getDepartmentTaskCount(dpt._id, tasksData)}
-                             
-                              )
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext> */}
-
+              
               <div
                 className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
                   activeBtn === "completed" &&
@@ -1811,18 +1888,7 @@ const renderColumnControls = () => (
               >
                 <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
               </span>
-              {/* <span
-                className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
-                  activeBtn === "due" && "bg-orange-500 text-white"
-                }`}
-                onClick={() => {
-                  setActiveBtn("due");
-                  setShowDue(!showDue);
-                }}
-                title="Filter by Status"
-              >
-                <TbCalendarDue className="h-6 w-6  cursor-pointer" />
-              </span> */}
+              
               <span
                 className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
                   activeBtn === "status" && "bg-orange-500 text-white"
@@ -1876,7 +1942,7 @@ const renderColumnControls = () => (
               <span
                 className={` p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
                 onClick={() => {
-                  getTasks1();
+                  getTasks();
                   getAllProjects();
                   // setActive("All");
                   // setActiveBtn("");
@@ -1905,9 +1971,7 @@ const renderColumnControls = () => (
                     <DraggableFilterTabs
                       droppableId={"users"}
                       // items={filter2 ? projectUsers.filter(user => getJobHolderCount(user?.name, active) > 0) : users.filter(user => getJobHolderCount(user?.name, active) > 0)}
-                      items={selectedUsers.map(uName => ({_id: uName, name: uName})).filter(
-                        (user) => getJobHolderCount(user?.name, active) > 0
-                      )}
+                      items={selectedUsers.map(uName => ({_id: uName, name: uName}))}
                       filterValue={filter3}
                       tasks={tasksData}
                       getCountFn={(user, tasks) =>
@@ -1920,14 +1984,14 @@ const renderColumnControls = () => (
 
                         updateJobHolder(newValue); // reset jobHolder filter when department changes
 
-                        setColumnFromOutsideTable("status", "Progress");
+                        //setColumnFromOutsideTable("status", "Progress");
 
-                        setColumnFromOutsideTable("taskDate", "");
+                        //setColumnFromOutsideTable("taskDate", "");
                         if (
                           auth.user?.role?.name === "Admin" &&
                           user?.name === auth?.user?.name
                         ) {
-                          setColumnFromOutsideTable("taskDate", "Today");
+                          //setColumnFromOutsideTable("taskDate", "Today");
                         }
                       }}
                       activeClassName={
@@ -1955,8 +2019,7 @@ const renderColumnControls = () => (
                 <div className="w-full py-2">
                   <div className="flex items-center flex-wrap gap-4">
                     {dateStatus?.map((stat, i) => {
-                      const { due, overdue } =
-                        getDueAndOverdueCountByDepartment(active);
+                      //const { due, overdue } = getDueAndOverdueCountByDepartment(active);
                       return (
                         <div
                           className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
@@ -1966,13 +2029,13 @@ const renderColumnControls = () => (
                           key={i}
                           onClick={() => {
                             setActive1(stat);
-                            filterByProjStat(stat, active);
+                            //filterByProjStat(stat, active);
                           }}
                         >
                           {stat === "Due" ? (
-                            <span>Due {due}</span>
+                            <span>Due </span>
                           ) : (
-                            <span>Overdue {overdue}</span>
+                            <span>Overdue </span>
                           )}
                         </div>
                       );
@@ -1988,9 +2051,8 @@ const renderColumnControls = () => (
               <>
                 <div className="w-full py-2 flex items-center overflow-x-auto hidden1 gap-2 ">
                   <div className="flex items-center  gap-4">
-                    {dateStatus?.map((stat, i) => {
-                      const { due, overdue } =
-                        getDueAndOverdueCountByDepartment(active);
+                    {/* {dateStatus?.map((stat, i) => {
+                      const { due, overdue } = getDueAndOverdueCountByDepartment(active);
                       return (
                         <div
                           className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
@@ -2000,7 +2062,7 @@ const renderColumnControls = () => (
                           key={i}
                           onClick={() => {
                             setActive1(stat);
-                            filterByProjStat(stat, active);
+                            //filterByProjStat(stat, active);
                           }}
                         >
                           {stat === "Due" ? (
@@ -2010,11 +2072,11 @@ const renderColumnControls = () => (
                           )}
                         </div>
                       );
-                    })}
+                    })} */}
                   </div>
 
                   <div className="flex items-center gap-4">
-                    {status?.map((stat, i) => (
+                    {statusArr?.map((stat, i) => (
                       <div
                         className={`py-1 rounded-tl-md min-w-[4rem] sm:min-w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
                           active1 === stat &&
@@ -2023,10 +2085,10 @@ const renderColumnControls = () => (
                         key={i}
                         onClick={() => {
                           setActive1(stat);
-                          filterByProjStat(stat, active);
+                          //filterByProjStat(stat, active);
                         }}
                       >
-                        {stat} ({getStatusCount(stat, active)})
+                        {stat}  
                       </div>
                     ))}
                   </div>
@@ -2125,7 +2187,7 @@ const renderColumnControls = () => (
                       style={{ width: "6.5rem" }}
                     >
                       <option value="empty">Status</option>
-                      {status.map((stat, i) => (
+                      {statusArr.map((stat, i) => (
                         <option value={stat} key={i}>
                           {stat}
                         </option>
@@ -2142,21 +2204,7 @@ const renderColumnControls = () => (
                     />
                     <span>Hours</span>
                   </div>
-                  {/* <div className="">
-                <select
-                  value={label}
-                  onChange={(e) => setLabel(e.target.value)}
-                  className={`${style.input} w-full`}
-                  style={{ width: "9rem" }}
-                >
-                  <option value="empty">Select Label</option>
-                  {labelData?.map((label, i) => (
-                    <option value={label._id} key={i}>
-                      {label?.name}
-                    </option>
-                  ))}
-                </select>
-              </div> */}
+                 
                   <div className="flex items-center justify-end pl-4">
                     <button
                       className={`${style.button1} text-[15px] `}
@@ -2176,13 +2224,7 @@ const renderColumnControls = () => (
               </div>
             )}
             {/* <hr className="mb-1 bg-gray-300 w-full h-[1px]" /> */}
-            {loading ? (
-              <div className="flex items-center justify-center w-full h-screen px-4 py-4">
-                <Loader />
-              </div>
-            ) : (
-              <TasksTable table={table} />
-            )}
+             <TasksTable table={table} />
           </div>
 
           {/* ----------------Add Task Department-------- */}
@@ -2194,7 +2236,7 @@ const renderColumnControls = () => (
                 getAllDepartments={getAllDepartments}
                 departmentId={departmentId}
                 setDepartmentId={setDepartmentId}
-                getTasks1={getTasks1}
+                getTasks1={getTasks}
               />
             </div>
           )}
@@ -2208,7 +2250,7 @@ const renderColumnControls = () => (
                 getAllProjects={getAllProjects}
                 projectId={projectId}
                 setProjectId={setProjectId}
-                getTasks1={getTasks1}
+                getTasks1={getTasks}
                 departments={departments}
               />
             </div>
@@ -2223,7 +2265,7 @@ const renderColumnControls = () => (
                 projects={projects}
                 taskId={""}
                 setTaskId={setTaskId}
-                getAllTasks={getAllTasks}
+                getAllTasks={getTasks}
                 taskDetal={null}
               />
             </div>
@@ -2242,7 +2284,7 @@ const renderColumnControls = () => (
                 setJobId={setCommentTaskId}
                 users={userName}
                 type={"Task"}
-                getTasks1={getTasks1}
+                getTasks1={getTasks}
                 page={"task"}
               />
             </div>
@@ -2338,7 +2380,7 @@ const renderColumnControls = () => (
 
                 <TaskDetail
                   taskId={taskID}
-                  getAllTasks={getAllTasks}
+                  getAllTasks={getTasks}
                   handleDeleteTask={handleDeleteTask}
                   setTasksData={setTasksData}
                   setShowDetail={setShowDetail}
@@ -2362,7 +2404,7 @@ const renderColumnControls = () => (
         <CompletedTasks
           setShowCompleted={setShowCompleted}
           setActive2={setActive}
-          getTasks={getAllTasks}
+          getTasks={getTasks}
           getAllProj1={getAllProjects}
         />
       )}

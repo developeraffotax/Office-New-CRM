@@ -59,6 +59,10 @@ import { openModal } from "../../redux/slices/globalModalSlice";
 import { buildFilters } from "./utils";
 import { dotColors, textColors } from "./constants";
 import { RefreshButton } from "../../components/ui/RefreshButton";
+import { useTaskFilters } from "./hooks/useTaskFilters";
+import { useTasksData } from "./hooks/useTasksData";
+import { useTaskStats } from "./hooks/useTaskStats";
+import { useTaskActions } from "./hooks/useTaskActions";
 
 const colVisibility = {
   taskRef: true,
@@ -82,25 +86,7 @@ const colVisibility = {
   labal: true,
   recurring: true,
 };
-
-function useColumnFilterSync(table, columnId, value, setValue) {
-  useEffect(() => {
-    if (!table) return;
-    const col = table.getColumn(columnId);
-    if (!col) return;
-
-    const val = col.getFilterValue() || "";
-    if (val !== value) setValue(val);
-  }, [table, columnId, table.getState().columnFilters, value, setValue]);
-
-  // For outside → table, just call this instead of another effect:
-  const updateFilter = (val) => {
-    table.getColumn(columnId)?.setFilterValue(val || undefined);
-    setValue(val);
-  };
-
-  return updateFilter;
-}
+ 
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -139,8 +125,8 @@ const AllTasks = ({ justShowTable = false }) => {
   const [activeBtn, setActiveBtn] = useState("");
   const [showCompleted, setShowCompleted] = useState(false);
   const [taskId, setTaskId] = useState("");
-  const [tasksData, setTasksData] = useState([]);
-  const [loading, setLoading] = useState(false);
+ const [totalHours, setTotalHours] = useState(0);
+ 
   const [note, setNote] = useState("");
   // Timer
   const [play, setPlay] = useState(false);
@@ -150,15 +136,12 @@ const AllTasks = ({ justShowTable = false }) => {
   const location = useLocation();
   const currentPath = location.pathname;
 
-  const [filter1, setFilter1] = useState("");
-  const [filter2, setFilter2] = useState("");
-  const [filter3, setFilter3] = useState("");
+ 
 
   const [fLoading, setFLoading] = useState(false);
   // Filters
   const [showJobHolder, setShowJobHolder] = useState(false);
-  const [showDue, setShowDue] = useState(false);
-  const [showStatus, setShowStatus] = useState(false);
+ 
   const [active1, setActive1] = useState("");
   const [filterData, setFilterData] = useState([]);
   const [isComment, setIsComment] = useState(false);
@@ -167,20 +150,20 @@ const AllTasks = ({ justShowTable = false }) => {
   const [showDetail, setShowDetail] = useState(false);
   const [taskID, setTaskID] = useState("");
   const [projectName, setProjectName] = useState("");
-  const [totalHours, setTotalHours] = useState(0);
+
+  
   const [allProjects, setAllProjects] = useState([]);
   const [labelData, setLabelData] = useState([]);
   const commentStatusRef = useRef(null);
   const [showlabel, setShowlabel] = useState(false);
   const [timerId, setTimerId] = useState("");
-  const dateStatus = ["Due", "Overdue"];
+ 
   const statusArr = ["To do", "Progress", "Review", "Onhold"];
 
-  const [state, setState] = useState("");
-  const [stateData, setStateData] = useState([]);
+ 
   const [activity, setActivity] = useState("Chargeable");
   const [access, setAccess] = useState([]);
-  const [isLoad, setIsLoad] = useState(false);
+ 
   // Bulk Action
   const [showEdit, setShowEdit] = useState(false);
   const [rowSelection, setRowSelection] = useState({});
@@ -200,15 +183,13 @@ const AllTasks = ({ justShowTable = false }) => {
 
   const [taskIdForNote, setTaskIdForNote] = useState("");
 
-  const [showActiveTimer, setShowActiveTimer] = useState(false);
+ 
 
   const [searchParams] = useSearchParams();
   const comment_taskId = searchParams.get("comment_taskId");
-  const show_completed = searchParams.get("completed");
-  const navigate = useNavigate();
+ 
 
-  const { selectedUsers, setSelectedUsers, toggleUser, resetUsers } =
-    usePersistedUsers("tasks:selected_users", userName);
+  const { selectedUsers, setSelectedUsers, toggleUser, resetUsers } = usePersistedUsers("tasks:selected_users", userName);
 
   const [showcolumn, setShowColumn] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState({
@@ -248,68 +229,48 @@ const AllTasks = ({ justShowTable = false }) => {
     pageSize: 20,
   });
 
-  const [rowCount, setRowCount] = useState(0);
+ 
   const [sorting, setSorting] = useState([]);
 
-  const [columnFilters, setColumnFilters] = useState([]);
+  const [columnFilters, setColumnFilters] = useState(() => {
+
+      const userName = auth?.user?.name;
+  
+
+  const filters = [];
+
+
+  filters.push({ id: "taskStatus", value: "Progress", });
+
+ 
+  if (!isAdmin(auth)) {
+    filters.push({
+      id: "jobHolder",
+      value: userName,  
+    });
+  }
+
+  return filters;
+
+
+  });
 
   const [status, setStatus] = useState("progress");
 
-  const isNotCompleted = useMemo(() => status !== "completed", [status])
+  const isNotCompleted = useMemo(() => status !== "completed", [status]);
 
-  const [taskStats, setTaskStats] = useState({
-    totalTasks: [],
-    departmentStats: [],
-    userStats: [],
-    statusStats: [],
-    dueStats: [],
-  });
+ 
 
-  const getuserTaskCounts = (userName) => {
-    console.log("USER NAME IS ", userName);
-    return (
-      taskStats?.userStats?.find((u) => u.userId === userName)?.totalTasks || 0
-    );
-  };
 
-  const getdepartmentTaskCounts = (departId) => {
-    //if(departmentName === "All") return taskStats?.totalTasks[0]?.count || 0;
-    return (
-      taskStats?.departmentStats?.find((u) => u.departmentId === departId)
-        ?.totalTasks || 0
-    );
-  };
+const {departmentFilter, dueStatusFilter, jobHolderFilter, taskStatusFilter} = useTaskFilters(columnFilters)
 
-  const getTaskStatusTaskCounts = (taskStatus) => {
-    return (
-      taskStats?.statusStats?.find((u) => u._id === taskStatus)?.totalTasks || 0
-    );
-  };
-
-  const getdueStatusCounts = (dueStatus) => {
-    return taskStats?.dueStats?.find((u) => u._id === dueStatus)?.totalTasks || 0;
-  };
-
-  const departmentFilter = useMemo(() => {
-    const colFilter = columnFilters.find((f) => f.id === "departmentName");
-
-    return colFilter?.value || null;
-  }, [columnFilters]);
-
-  const taskStatusFilter = useMemo(() => {
-    const colFilter = columnFilters.find((f) => f.id === "taskStatus");
-
-    return colFilter?.value || null;
-  }, [columnFilters]);
-
-    const dueStatusFilter = useMemo(() => {
-    const colFilter = columnFilters.find(
-      (f) => f.id === "datestatus"
-    );
+const { tasksData, loading, refetchTasks, rowCount, setTasksData  } = useTasksData({pagination, searchValue, columnFilters, status})
+const {  refetchStats, taskStats, getuserTaskCounts,
+  getdepartmentTaskCounts,
+  getTaskStatusTaskCounts,
+  getdueStatusCounts } = useTaskStats({columnFilters, status})
   
-    return colFilter?.value || null;
-  }, [columnFilters]);
-
+  const {deleteTask, updateTaskJLS, updateTaskProject,copyTask, updateAlocateTask,addlabelTask,handleStatusComplete} = useTaskActions({refetchStats, refetchTasks})
 
 
   const socket = useSocket();
@@ -318,40 +279,32 @@ const AllTasks = ({ justShowTable = false }) => {
     if (!socket) return;
 
     socket.on("task_updated", () => {
-      getTasks();
+      refetchTasks();
     });
   }, [socket]);
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Escape key shortcut
-      if (e.key === "Escape") {
-        setShowDetail(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
+ 
 
   useEffect(() => {
     const timeId = localStorage.getItem("jobId");
     setTimerId(JSON.parse(timeId));
   }, [anyTimerRunning]);
 
-  // Get Auth Access
-  useEffect(() => {
-    if (auth.user) {
-      const filterAccess = auth.user.role.access
-        .filter((role) => role.permission === "Tasks")
-        .flatMap((jobRole) => jobRole.subRoles);
+  
+// const calculateTotalHours = (data) => {
+//       return data?.reduce((sum, client) => sum + Number(client.hours), 0);
+//     };
 
-      setAccess(filterAccess);
-    }
-  }, [auth]);
+
+//   useEffect(() => {
+    
+//     if(!tasksData) return
+//     setTotalHours(calculateTotalHours(tasksData).toFixed(0));
+
+
+//   }, [  tasksData]);
+
+
 
   //---------- Get All Projects-----------
   const getAllProjects = async () => {
@@ -469,488 +422,13 @@ const AllTasks = ({ justShowTable = false }) => {
 
   useEffect(() => {
     getAllUsers();
-    // eslint-disable-next-line
+ 
   }, []);
 
-  // useEffect(() => {
-  //   const calculateTotalHours = (data) => {
-  //     return data?.reduce((sum, client) => sum + Number(client.hours), 0);
-  //   };
-
-  //   if (active === "All" && !active1) {
-  //     setTotalHours(calculateTotalHours(tasksData).toFixed(0));
-  //   } else if (filterData) {
-  //     setTotalHours(calculateTotalHours(filterData).toFixed(0));
-  //   }
-  // }, [tasksData, filterData, active, active1, activeBtn]);
-
-  // ------------Filter By Projects---------->
-
-  // console.log("TASKS💛💛💛", tasksData);
-  // const getDepartmentTaskCount = (departmentId, tasks) => {
-  //   return tasks.filter(
-  //     (task) => task.project?.department?._id === departmentId
-  //   ).length;
-  // };
-
-  // const getProjectTaskCount = (projectId, tasks) => {
-  //   return tasks.filter((task) => task.project?._id === projectId).length;
-  // };
-
-  // const getUserTaskCount = (userName, tasks) => {
-  //   return tasks.filter((task) => task.jobHolder === userName).length;
-  // };
-
-  // const getProjectsCount = (project) => {
-  //   if (project === "All") {
-  //     return tasksData?.length;
-  //   }
-  //   return tasksData.filter((item) => item?.project?.projectName === project)
-  //     ?.length;
-  // };
-
-  // --------------Job_Holder Length---------->
-
-  // const getJobHolderCount = (user, project) => {
-  //   return tasksData.filter((item) =>
-  //     project === "All"
-  //       ? item?.jobHolder === user
-  //       : item?.jobHolder === user && item?.project?.projectName === project
-  //   )?.length;
-  // };
-
-  // // -------Due & Overdue count------->
-  // const getDueAndOverdueCountByDepartment = (project) => {
-  //   const filteredData = tasksData?.filter(
-  //     (item) => item.project?.projectName === project || project === "All"
-  //   );
-
-  //   const dueCount = filteredData?.filter(
-  //     (item) => getStatus(item.startDate, item.deadline) === "Due"
-  //   )?.length;
-  //   const overdueCount = filteredData?.filter(
-  //     (item) => getStatus(item.startDate, item.deadline) === "Overdue"
-  //   )?.length;
-
-  //   return { due: dueCount, overdue: overdueCount };
-  // };
-
-  // // --------------Status Length---------->
-  // const getStatusCount = (status, projectName) => {
-  //   return tasksData?.filter((item) =>
-  //     projectName === "All"
-  //       ? item?.status === status
-  //       : item?.status === status && item?.project?.projectName === projectName
-  //   )?.length;
-  // };
-
-  // --------------Filter Data By Department ----------->
-
-  // const filterByDep = (value) => {
-  //   setFilterData("");
-
-  //   if (value !== "All") {
-  //     const filteredData = tasksData?.filter(
-  //       (item) =>
-  //         item.project?.projectName === value ||
-  //         item.status === value ||
-  //         item.jobHolder === value ||
-  //         item._id === value
-  //     );
-
-  //     // console.log("FilterData", filteredData);
-
-  //     setFilterData([...filteredData]);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   if (tasksData && filterId) {
-  //     filterByDep(filterId);
-  //   }
-  // }, [tasksData, filterId]);
-
-  // -------------- Filter Data By Department || Status || Placeholder ----------->
-
-  // const filterByProjStat = (value, proj) => {
-  //   let filteredData = [];
-
-  //   if (proj === "All") {
-  //     filteredData = tasksData.filter(
-  //       (item) =>
-  //         item.status === value ||
-  //         item.jobHolder === value ||
-  //         getStatus(item.startDate, item.deadline) === value ||
-  //         getStatus(item.startDate, item.deadline) === value
-  //     );
-  //   } else {
-  //     filteredData = tasksData?.filter((item) => {
-  //       const jobMatches = item.project?.projectName === proj;
-  //       const statusMatches = item.status === value;
-  //       const holderMatches = item.jobHolder === value;
-
-  //       return (
-  //         (holderMatches && jobMatches) ||
-  //         (statusMatches && jobMatches) ||
-  //         (jobMatches && getStatus(item.startDate, item.deadline) === value) ||
-  //         (jobMatches && getStatus(item.startDate, item.deadline) === value)
-  //       );
-  //     });
-  //   }
-
-  //   setFilterData([...filteredData]);
-  // };
-
-  // Update Filter
-  // useEffect(() => {
-  //   filterByProjStat(active1, active);
-
-  //   // eslint-disable-next-line
-  // }, [tasksData, filterData, active1, active]);
-
-  // Filter By State
-  // const filterByState = (state) => {
-  //   if (!state) {
-  //     return;
-  //   }
-  //   setStateData("");
-
-  //   const filteredData = tasksData?.filter((item) => item.status === state);
-
-  //   setStateData([...filteredData]);
-  //   console.log("stateData:", stateData);
-  // };
-
-  /**
-   * Fetch Jobs with:
-   * - Pagination
-   * - Sorting
-   * - Column Filters
-   * - Custom Filters
-   */
-
-  const getTasks = useCallback(async () => {
-    setLoading(true);
-
-    try {
-      // ======================================================
-      // BUILD COLUMN FILTERS
-      // ======================================================
-
-      // console.log("THE COLUMN FILTERS ", columnFilters)
-      const filters = buildFilters(columnFilters);
-
-      // ======================================================
-      // BUILD FINAL PARAMS
-      // ======================================================
-
-      const params = {
-        // Pagination
-        page: pagination.pageIndex + 1,
-        limit: pagination.pageSize,
-
-        status: status,
-        // Sorting
-        // sortField,
-        // sortOrder,
-
-        // Global Search
-        search: searchValue || "",
-        // searchParams,
-
-        // Column Filters
-        ...filters,
-      };
-
-      // ======================================================
-      // API CALL
-      // ======================================================
-      let URL = `${process.env.REACT_APP_API_URL}/api/v1/tasks`;
-
-      const { data } = await axios.get(URL, { params });
-
-      // ======================================================
-      // HANDLE RESPONSE
-      // ======================================================
-
-      if (data?.success) {
-        setTasksData(data.tasks || []);
-
-        setRowCount(data?.pagination?.total || 0);
-      }
-    } catch (error) {
-      console.log(error);
-
-      toast.error(error?.response?.data?.message || "Error loading jobs");
-    } finally {
-      setLoading(false);
-    }
-  }, [
-    // Pagination (SAFE way)
-    pagination.pageIndex,
-    pagination.pageSize,
-    // status,
-    // Sorting
-    // sorting,
-
-    // Column Filters
-    columnFilters,
-    status,
-    // Global Search
-    searchValue,
-
-    // Custom Filters
-    // activeBtn,
-    // lead,
-    // jobHolder,
-    // clientType,
-    // filterId,
-  ]);
-
-  const getTasksStats = useCallback(async () => {
-    try {
-      // ======================================================
-      // BUILD COLUMN FILTERS
-      // ======================================================
-
-      const filters = buildFilters(columnFilters);
-
-      // ======================================================
-      // BUILD FINAL PARAMS
-      // ======================================================
-
-      const params = {
-        status,
-        // ...filters,
-      };
-
-      if (filters?.jobName) {
-        params.jobName = filters.jobName;
-      }
-
-      // ======================================================
-      // API CALL
-      // ======================================================
-
-      let URL = `${process.env.REACT_APP_API_URL}/api/v1/tasks/stats`;
-
-      const { data } = await axios.get(URL, { params });
-
-      // ======================================================
-      // HANDLE RESPONSE
-      // ======================================================
-
-      console.log(
-        "THE RESULT OF HTE API CALL FROM TASK STATS 👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍",
-        data,
-      );
-
-      if (data?.success) {
-        setTaskStats(data.stats); // ✅ IMPORTANT FIX
-      }
-    } catch (error) {
-      console.log(error);
-
-      // toast.error(
-      //   error?.response?.data?.message ||
-      //   "Error loading jobs"
-      // );
-    } finally {
-      // setLoading(false);
-    }
-  }, [status, columnFilters]);
-
-  useEffect(() => {
-    getTasksStats();
-  }, [getTasksStats]);
-
-  useEffect(() => {
-    getTasks();
-  }, [getTasks]);
-
-  // -----------Update Task-Project-------->
-  const updateTaskProject = async (taskId, projectId) => {
-    if (!taskId || !projectId) {
-      toast.error("Project/Task id is required!");
-      return;
-    }
-    try {
-      const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/project/${taskId}`,
-        { projectId: projectId },
-      );
-      if (data?.success) {
-        const updateTask = data?.task;
-        toast.success("Project updated!");
-        setTasksData((prevData) =>
-          prevData?.map((item) =>
-            item._id === updateTask._id ? updateTask : item,
-          ),
-        );
-
-        if (active !== "All") {
-          setFilterData((prevData) =>
-            prevData?.map((item) =>
-              item._id === updateTask._id ? updateTask : item,
-            ),
-          );
-        }
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error(error.response.data.message);
-    }
-  };
-
-  // -----------Update Job Holder, Lead, Status------->
-
-  const updateTaskJLS = async (taskId, jobHolder, lead, status) => {
-    if (!taskId) {
-      toast.error("Project/Task id is required!");
-      return;
-    }
-    try {
-      const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/task/JLS/${taskId}`,
-        { jobHolder, lead, status },
-      );
-      if (data) {
-        const updateTask = data?.task;
-        toast.success("Task updated successfully!");
-
-        if (filterId || active || active1) {
-          setFilterData((prevData) => {
-            if (Array?.isArray(prevData)) {
-              return prevData?.map((item) =>
-                item?._id === updateTask?._id ? updateTask : item,
-              );
-            } else {
-              return [updateTask];
-            }
-          });
-        }
-
-        setTasksData((prevData) => {
-          if (Array?.isArray(prevData)) {
-            return prevData?.map((item) =>
-              item?._id === updateTask?._id ? updateTask : item,
-            );
-          } else {
-            return [updateTask];
-          }
-        });
-
-        getTasks();
-      }
-
-      // Send Socket Timer
-      // socketId.emit("addTask", {
-      //   note: "New Task Added",
-      // });
-
-      // socketId.emit("notification", {
-      //       title: "Task  Updated",
-      //     });
-    } catch (error) {
-      console.log(error);
-      toast.error(error.response?.data?.message || "An error occurred");
-    }
-  };
-
-  // -----------Update Alocate Task-------->
-  const updateAlocateTask = async (
-    taskId,
-    allocateTask,
-    startDate,
-    deadline,
-    taskDate,
-  ) => {
-    if (!taskId) {
-      toast.error("Project/Task id is required!");
-      return;
-    }
-    try {
-      const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/allocate/task/${taskId}`,
-        { allocateTask, startDate, deadline, taskDate },
-      );
-      if (data?.success) {
-        const updateTask = data?.task;
-        toast.success("Task updated successfully!");
-        setTasksData((prevData) =>
-          prevData?.map((item) =>
-            item._id === updateTask._id ? updateTask : item,
-          ),
-        );
-
-        if (Array.isArray(filterData)) {
-          setFilterData(
-            (prevData) =>
-              Array.isArray(prevData)
-                ? prevData.map((item) =>
-                    item?._id === updateTask?._id ? updateTask : item,
-                  )
-                : [updateTask], // fallback if somehow prevData isn't an array
-          );
-        }
-      }
-
-      getTasks();
-    } catch (error) {
-      console.log(error);
-      toast.error(error.response.data.message);
-    }
-  };
-
-  const getStatus = (startDateOfTask, deadlineOfTask) => {
-    const startDate = new Date(startDateOfTask);
-    const deadline = new Date(deadlineOfTask);
-    const today = new Date();
-
-    // Remove time parts for accurate date comparison
-    startDate.setHours(0, 0, 0, 0);
-    deadline.setHours(0, 0, 0, 0);
-    today.setHours(0, 0, 0, 0);
-
-    if (deadline < today) {
-      return "Overdue";
-    } else if (startDate <= today && !(deadline < today)) {
-      return "Due";
-    } else {
-      return "Upcoming";
-    }
-  };
-
-  // -----------Copy Task------->
-
-  const copyTask = async (originalTask) => {
-    const taskCopy = { ...originalTask };
-    taskCopy.task = "Enter Task Here";
-    console.log("taskCopy", taskCopy);
-
-    // delete taskCopy._id;
-    // setTasksData((prevData) => [...prevData, taskCopy]);
-
-    const { data } = await axios.post(
-      `${process.env.REACT_APP_API_URL}/api/v1/tasks/create/task`,
-      {
-        projectId: taskCopy?.project._id,
-        jobHolder: taskCopy?.jobHolder,
-        task: taskCopy?.task,
-        hours: taskCopy?.hours,
-        startDate: taskCopy?.startDate,
-        deadline: taskCopy?.deadline,
-        lead: taskCopy?.lead,
-        label: taskCopy?.label,
-        status: taskCopy?.status,
-      },
-    );
-    if (data) {
-      toast.success("Task copied successfully!");
-      setTasksData((prevData) => [...prevData, data?.task]);
-    }
-  };
-
+ 
+ 
+ 
+ 
   // ---------Stop Timer ----------->
   const handleStopTimer = () => {
     if (timerRef.current) {
@@ -990,107 +468,19 @@ const AllTasks = ({ justShowTable = false }) => {
       confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {
-        handleDeleteTask(taskId);
+        deleteTask(taskId);
         Swal.fire("Deleted!", "Your task has been deleted.", "success");
       }
     });
   };
 
-  const handleDeleteTask = async (id) => {
-    const filteredData = tasksData?.filter((item) => item._id !== id);
-    setTasksData(filteredData);
-
-    if (active !== "All" && filterData) {
-      const filterData1 = filterData?.filter((item) => item._id !== id);
-      setFilterData(filterData1);
-    }
-    try {
-      const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/tasks/delete/task/${id}`,
-      );
-      if (data) {
-        setShowDetail(false);
-        toast.success("Task deleted successfully!");
-
-        // Send Socket Timer
-        // socketId.emit("addTask", {
-        //   note: "New Task Added",
-        // });
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error(error?.response?.data?.message);
-    }
-  };
+ 
 
   // Add label in Task
-  const addlabelTask = async (id, name, color) => {
-    try {
-      const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/tasks/add/label/${id}`,
-        { name, color },
-      );
-      if (data) {
-        if (filterId || active !== "All" || filterData || active1) {
-          setFilterData((prevData = []) =>
-            prevData?.map((item) =>
-              item._id === id ? { ...item, label: { name, color } } : item,
-            ),
-          );
-        }
-        setTasksData((prevData = []) =>
-          prevData?.map((item) =>
-            item._id === id ? { ...item, label: { name, color } } : item,
-          ),
-        );
-
-        if (name) {
-          toast.success("label added!");
-        } else {
-          toast.success("label Updated!");
-        }
-
-        getTasks();
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Error while add label");
-    }
-  };
+ 
 
   // Update Job Status(Completed)
-  const handleStatusComplete = async (taskId) => {
-    if (!taskId) {
-      toast.error("Project/Task id is required!");
-      return;
-    }
-    try {
-      const { data } = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/task/JLS/${taskId}`,
-        { status: "completed" },
-      );
-      if (data?.success) {
-        const updateTask = data?.task;
-        setShowDetail(false);
-        toast.success("Status completed successfully!");
 
-        setTasksData((prevData = []) => {
-          console.log("PREVDATA", prevData);
-          return prevData.filter((item) => item._id !== updateTask._id);
-        });
-
-        if (filterData) {
-          setFilterData((prevData = []) => {
-            console.log("PREVDATA 2💜💜💜💙💚💚💛💛", prevData);
-            return prevData.filter((item) => item._id !== updateTask._id);
-          });
-        }
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error(error.response.data.message);
-    }
-  };
 
   const handleCompleteStatus = (taskId) => {
     Swal.fire({
@@ -1129,57 +519,49 @@ const AllTasks = ({ justShowTable = false }) => {
     [auth, users, departments],
   );
 
-  // ----------------------------
-  // 📂 Projects
-  // ----------------------------
-  const projectCtx = useMemo(
-    () => ({
-      allProjects,
-      updateTaskProject,
-      updateTaskJLS,
-      updateAlocateTask,
-    }),
-    [allProjects],
-  );
+ 
 
   // ----------------------------
   // 📊 Tasks / Filtering
   // ----------------------------
   const taskCtx = useMemo(
     () => ({
-      totalHours,
-      filterId,
-      active,
-      active1,
+      
+
       columnFilters,
       searchValue,
       status,
 
-      setFilterData,
+      totalHours,
+      allProjects,
+      comment_taskId,
+      labelData,
+
+ 
       setTasksData,
       setTaskID,
       setProjectName,
       setShowDetail,
+      setCommentTaskId,
+      setIsComment,
+      createComplaint,
+
       copyTask,
       handleCompleteStatus,
       handleDeleteTaskConfirmation,
-      createComplaint,
+      updateTaskProject,
+      updateTaskJLS,
+      updateAlocateTask,
+      addlabelTask,
+
+      
+
+      
     }),
-    [totalHours, filterId, active, active1, columnFilters, searchValue, status],
+    [  comment_taskId, totalHours, allProjects, labelData, columnFilters, searchValue, status, ],
   );
 
-  // ----------------------------
-  // 💬 Comments
-  // ----------------------------
-  const commentCtx = useMemo(
-    () => ({
-      comment_taskId,
-      setCommentTaskId,
-      setIsComment,
-    }),
-    [comment_taskId],
-  );
-
+ 
   // ----------------------------
   // ⏱️ Timer / Tracking
   // ----------------------------
@@ -1214,33 +596,20 @@ const AllTasks = ({ justShowTable = false }) => {
       activity,
       taskIdForNote,
       timerRef,
+      
     ],
   );
-
-  // ----------------------------
-  // 🏷️ Labels
-  // ----------------------------
-  const labelCtx = useMemo(
-    () => ({
-      labelData,
-      addlabelTask,
-    }),
-    [labelData],
-  );
-
+ 
   // ----------------------------
   // 📦 Merge into one ctx if needed
   // ----------------------------
   const ctx = useMemo(
     () => ({
-      ...authCtx,
-      ...projectCtx,
-      ...taskCtx,
-      ...commentCtx,
-      ...timerCtx,
-      ...labelCtx,
+      ...authCtx, 
+      ...taskCtx, 
+      ...timerCtx, 
     }),
-    [authCtx, projectCtx, taskCtx, commentCtx, timerCtx, labelCtx],
+    [authCtx,  taskCtx, timerCtx],
   );
 
   // ----------------------------
@@ -1251,9 +620,8 @@ const AllTasks = ({ justShowTable = false }) => {
   // Clear table Filter
   const handleClearFilters = () => {
     table.setColumnFilters([]);
-
     table.setGlobalFilter("");
-    // table.resetColumnFilters();
+ 
   };
 
   console.log("THE COLUMN FILTERS ARE >>> IN TASKS", columnFilters);
@@ -1345,7 +713,7 @@ const AllTasks = ({ justShowTable = false }) => {
     },
   });
 
-  console.log("DEPARTMENT FILTER ", departmentFilter);
+ 
   // Import CSV File
   // --------------Import Job data------------>
   const importJobData = async (file) => {
@@ -1370,7 +738,7 @@ const AllTasks = ({ justShowTable = false }) => {
         },
       );
       if (data) {
-        getTasks();
+        refetchTasks();
         toast.success("Tasks Data imported successfully!");
       }
     } catch (error) {
@@ -1405,7 +773,7 @@ const AllTasks = ({ justShowTable = false }) => {
         },
       );
       if (data) {
-        getTasks();
+        refetchTasks();
         toast.success("Bulk Action updated successfully!");
         setRowSelection({});
         setProject("");
@@ -1453,12 +821,7 @@ const AllTasks = ({ justShowTable = false }) => {
     });
   };
 
-  // const user_tasks_count_map = useMemo(() => {
-  //   return Object.fromEntries(
-  //     userName.map((user) => [user, getJobHolderCount(user, active)])
-  //   );
-  // }, [userName, active, getJobHolderCount]);
-
+ 
   const renderColumnControls = () => (
     <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
       {/* Header */}
@@ -1514,32 +877,26 @@ const AllTasks = ({ justShowTable = false }) => {
       </div>
     </section>
   );
+ 
 
-  // Hook returns an updater for each column
-  const updateDepartment = useColumnFilterSync(
-    table,
-    "departmentName",
-    filter1,
-    setFilter1,
-  );
-  const updateProject = useColumnFilterSync(
-    table,
-    "projectName",
-    filter2,
-    setFilter2,
-  );
-  const updateJobHolder = useColumnFilterSync(
-    table,
-    "jobHolder",
-    filter3,
-    setFilter3,
-  );
 
-  // helper to check if "all departments" are selected
-  const allDepartmentsSelected =
-    filter1 === "" ||
-    filter1 === "All" ||
-    (Array.isArray(filter1) && filter1.length === departments.length);
+  
+
+    // useEffect(() => {
+    //   console.log(
+    //     "table.getFilteredRowModel().rows.length",
+    //     table.getFilteredRowModel().rows.length
+    //   );
+    //   const showingRows = table.getFilteredRowModel().rows;
+    //   setTotalHours((prev) => {
+    //     const totalHours = showingRows.reduce((acc, row) => {
+    //       const hours = row.original.hours;
+    //       return acc + Number(hours);
+    //     }, 0);
+  
+    //     return totalHours.toFixed(0);
+    //   });
+    // }, [table.getFilteredRowModel().rows]);
 
   return (
     <>
@@ -1609,13 +966,12 @@ const AllTasks = ({ justShowTable = false }) => {
                 ))}
               </div>
 
+              {isNotCompleted && (
+                <span className="w-[1px] h-8 bg-gray-200 rounded "></span>
+              )}
 
-
-              
-                {isNotCompleted && <span className="w-[1px] h-8 bg-gray-200 rounded "></span>}
-
-             
-              {isNotCompleted && <div className="flex gap-1 w-fit font-google font-medium transition-all duration-500">
+              {isNotCompleted && (
+                <div className="flex gap-1 w-fit font-google font-medium transition-all duration-500">
                   {[
                     { label: "Due", value: "due" },
                     { label: "Overdue", value: "overdue" },
@@ -1626,12 +982,15 @@ const AllTasks = ({ justShowTable = false }) => {
                     return (
                       <button
                         key={value}
-                        onClick={() => setColumnFromOutsideTable("datestatus", value)}
+                        onClick={() =>
+                          setColumnFromOutsideTable("datestatus", value)
+                        }
                         className={`
                           flex items-center gap-1 px-2 py-1 text-[12px] font-normal rounded-xl cursor-pointer border-none
-                          ${isActive
-                            ? `${textColors[value]} bg-gray-100`
-                            : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                          ${
+                            isActive
+                              ? `${textColors[value]} bg-gray-100`
+                              : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
                           }
                         `}
                       >
@@ -1644,11 +1003,8 @@ const AllTasks = ({ justShowTable = false }) => {
                       </button>
                     );
                   })}
-                </div>}
-              
-
-
-
+                </div>
+              )}
             </div>
 
             {/* Project Buttons */}
@@ -1709,7 +1065,7 @@ const AllTasks = ({ justShowTable = false }) => {
                     showProject={showProject}
                     projects={projects}
                     getAllProjects={getAllProjects}
-                    getAllTasks={getTasks}
+                    getAllTasks={refetchTasks}
                     setShowProject={setShowProject}
                     setProjectId={setProjectId}
                     setOpenAddProject={setOpenAddProject}
@@ -1862,8 +1218,6 @@ const AllTasks = ({ justShowTable = false }) => {
                 <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
               </span>
 
-            
-
               {/* Edit Multiple Tasks */}
               <span
                 className={`hidden sm:block p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
@@ -1903,7 +1257,7 @@ const AllTasks = ({ justShowTable = false }) => {
 
               <button
                 onClick={() => {
-                  getTasks();
+                  refetchTasks();
                   getAllProjects();
                 }}
                 title="Refresh Data"
@@ -1920,68 +1274,64 @@ const AllTasks = ({ justShowTable = false }) => {
                   transition-all duration-100
                   ${loading ? " cursor-not-allowed" : "cursor-pointer"}
                 `}
-                >
-                <GrUpdate className={` h-5 w-5 transition-all duration-100 text-gray-600 ${loading ? "animate-spin" : ""} `} />
+              >
+                <GrUpdate
+                  className={` h-5 w-5 transition-all duration-100 text-gray-600 ${
+                    loading ? "animate-spin" : ""
+                  } `}
+                />
               </button>
 
-              {/* <RefreshButton status={status} statusConfig={dotColors} isLoad={loading}  onClick={() => { getTasks(); getAllProjects(); }}/> */}
+              {/* <RefreshButton status={status} statusConfig={dotColors} isLoad={loading}  onClick={() => { refetchTasks(); getAllProjects(); }}/> */}
             </div>
 
             {/* ----------Job_Holder Summery Filters---------- */}
             {showJobHolder && activeBtn === "jobHolder" && (
-              
-                <div className="flex items-center flex-wrap gap-4  py-1.5 border-t  max-lg:hidden">
-                  <DraggableFilterTabs
-                    droppableId={"users"}
-                    // items={filter2 ? projectUsers.filter(user => getJobHolderCount(user?.name, active) > 0) : users.filter(user => getJobHolderCount(user?.name, active) > 0)}
-                    items={selectedUsers.map((uName) => ({
-                      _id: uName,
-                      name: uName,
-                    }))}
-                    filterValue={filter3}
-                    tasks={tasksData}
-                    getCountFn={(user, tasks) => getuserTaskCounts(user.name)}
-                    getLabelFn={(user) => user.name}
-                    onClick={(user) => {
-                      const newValue = filter3 === user?.name ? "" : user?.name;
+              <div className="flex items-center flex-wrap gap-4  py-1.5 border-t  max-lg:hidden">
+                <DraggableFilterTabs
+                  droppableId={"users"}
+                  
+                  items={selectedUsers.map((uName) => ({
+                    _id: uName,
+                    name: uName,
+                  }))}
+                  filterValue={jobHolderFilter}
+                  tasks={[]}
+                  getCountFn={(user, tasks) => getuserTaskCounts(user.name)}
+                  getLabelFn={(user) => user.name}
+                  onClick={(user) => {
+                   
 
-                      updateJobHolder(newValue); // reset jobHolder filter when department changes
+                    setColumnFromOutsideTable("jobHolder", user.name);
 
-                      //setColumnFromOutsideTable("status", "Progress");
+                     
+                     
+                  }}
+                  activeClassName={
+                    jobHolderFilter
+                      ? "border-b-2 text-orange-600 border-orange-600"
+                      : ""
+                  }
+                />
 
-                      //setColumnFromOutsideTable("taskDate", "");
-                      if (
-                        auth.user?.role?.name === "Admin" &&
-                        user?.name === auth?.user?.name
-                      ) {
-                        //setColumnFromOutsideTable("taskDate", "Today");
-                      }
-                    }}
-                    activeClassName={
-                      filter3
-                        ? "border-b-2 text-orange-600 border-orange-600"
-                        : ""
-                    }
-                  />
+                {<span className="w-[1px] h-8 bg-gray-200 rounded "></span>}
 
-                  {<span className="w-[1px] h-8 bg-gray-200 rounded "></span>}
+                <div className="  ">
+                  {" "}
+                  <OutsideFilter
+                    setColumnFromOutsideTable={setColumnFromOutsideTable}
+                    title={"taskDate"}
+                  />{" "}
+                </div>
+                {status !== "completed" && (
+                  <span className="w-[1px] h-8 bg-gray-200 rounded "></span>
+                )}
 
-                  <div className="  ">
-                    {" "}
-                    <OutsideFilter
-                      setColumnFromOutsideTable={setColumnFromOutsideTable}
-                      title={"taskDate"}
-                    />{" "}
-                  </div>
-                  {status !== "completed" && (
-                    <span className="w-[1px] h-8 bg-gray-200 rounded "></span>
-                  )}
-
-                  {status !== "completed" &&
-                    statusArr?.map((stat, i) => (
-                      <div
-                        key={i}
-                        className={`
+                {status !== "completed" &&
+                  statusArr?.map((stat, i) => (
+                    <div
+                      key={i}
+                      className={`
                                          py-1 px-3 rounded-full cursor-pointer
                                          font-[400] text-[14px] text-gray-900 font-google
                                          border shadow-sm transition-all duration-150
@@ -1992,22 +1342,21 @@ const AllTasks = ({ justShowTable = false }) => {
                                              : "hover:bg-gray-100"
                                          }
                                        `}
-                        onClick={() => {
-                          // Toggle behavior (Enterprise UX)
-                          if (taskStatusFilter === stat) {
-                            setColumnFromOutsideTable("taskStatus", undefined);
-                          } else {
-                            setColumnFromOutsideTable("taskStatus", stat);
-                          }
-                        }}
-                      >
-                        {stat} ({getTaskStatusTaskCounts(stat)})
-                      </div>
-                    ))}
-                </div>
-               
+                      onClick={() => {
+                        // Toggle behavior (Enterprise UX)
+                        if (taskStatusFilter === stat) {
+                          setColumnFromOutsideTable("taskStatus", undefined);
+                        } else {
+                          setColumnFromOutsideTable("taskStatus", stat);
+                        }
+                      }}
+                    >
+                      {stat} ({getTaskStatusTaskCounts(stat)})
+                    </div>
+                  ))}
+              </div>
             )}
- 
+
             {/* ----------Bulk Action--------> */}
 
             {showEdit && (
@@ -2148,7 +1497,7 @@ const AllTasks = ({ justShowTable = false }) => {
                 getAllDepartments={getAllDepartments}
                 departmentId={departmentId}
                 setDepartmentId={setDepartmentId}
-                getTasks1={getTasks}
+                getTasks1={refetchTasks}
               />
             </div>
           )}
@@ -2162,7 +1511,7 @@ const AllTasks = ({ justShowTable = false }) => {
                 getAllProjects={getAllProjects}
                 projectId={projectId}
                 setProjectId={setProjectId}
-                getTasks1={getTasks}
+                getTasks1={refetchTasks}
                 departments={departments}
               />
             </div>
@@ -2177,7 +1526,7 @@ const AllTasks = ({ justShowTable = false }) => {
                 projects={projects}
                 taskId={""}
                 setTaskId={setTaskId}
-                getAllTasks={getTasks}
+                getAllTasks={refetchTasks}
                 taskDetal={null}
               />
             </div>
@@ -2196,7 +1545,7 @@ const AllTasks = ({ justShowTable = false }) => {
                 setJobId={setCommentTaskId}
                 users={userName}
                 type={"Task"}
-                getTasks1={getTasks}
+                getTasks1={refetchTasks}
                 page={"task"}
               />
             </div>
@@ -2293,8 +1642,8 @@ const AllTasks = ({ justShowTable = false }) => {
 
                   <TaskDetail
                     taskId={taskID}
-                    getAllTasks={getTasks}
-                    handleDeleteTask={handleDeleteTask}
+                    getAllTasks={refetchTasks}
+                    handleDeleteTask={deleteTask}
                     setTasksData={setTasksData}
                     setShowDetail={setShowDetail}
                     users={users}
@@ -2315,7 +1664,7 @@ const AllTasks = ({ justShowTable = false }) => {
         <CompletedTasks
           setShowCompleted={setShowCompleted}
           setActive2={setActive}
-          getTasks={getTasks}
+          getTasks={refetchTasks}
           getAllProj1={getAllProjects}
         />
       )}
@@ -2330,8 +1679,6 @@ const AllTasks = ({ justShowTable = false }) => {
           />
         </div>
       )}
-
-     
     </>
   );
 };

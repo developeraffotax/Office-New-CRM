@@ -135,9 +135,9 @@ export const taskColumn = (ctx) => {
       );
     },
 
-    size: 200,
+    size: 390,
     minSize: 200,
-    maxSize: 400,
+    maxSize: 450,
     grow: true,
   };
 };

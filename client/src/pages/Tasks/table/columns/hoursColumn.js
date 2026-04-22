@@ -47,26 +47,8 @@ export const hoursColumn = (ctx) => {
           if (data) {
             setValue(newHours);
             toast.success("Hours updated");
-            if (ctx.filterId || ctx.active || ctx.active1) {
-              ctx.setFilterData((prevData) =>
-                Array.isArray(prevData)
-                  ? prevData.map((item) =>
-                      item._id === data?.task?._id
-                        ? { ...item, hours: newHours }
-                        : item,
-                    )
-                  : [],
-              );
-            }
-            ctx.setTasksData((prevData) =>
-              Array.isArray(prevData)
-                ? prevData.map((item) =>
-                    item._id === data?.task?._id
-                      ? { ...item, hours: newHours }
-                      : item,
-                  )
-                : [],
-            );
+             
+             
           }
         } catch (err) {
           toast.error("Update failed");

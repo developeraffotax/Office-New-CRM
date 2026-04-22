@@ -141,6 +141,11 @@ const taskSchema = new mongoose.Schema(
 
 
 
+taskSchema.index({
+  status: 1,
+  jobHolder: 1
+});
+
 taskSchema.pre("save", async function (next) {
   if (this.taskRef) return next();
   this.taskRef = await generateRef("task");

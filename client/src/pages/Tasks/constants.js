@@ -1,46 +1,50 @@
-export const columnData = [
-  "jobRef",
-  "companyName",
-  "clientName",
-  "Assign",
-  "Department",
-  "Hrs",
-  "Year_End",
-  "Deadline",
-  "Job_Date",
-  "Status",
-  "Job_Status",
-  "Owner",
-  "Budget",
-  "Timer",
+import { mkConfig } from "export-to-csv";
 
-  "Labels",
-  "Fee",
-  "Source",
-  "ClientType",
-  "POC",
-  "AC",
-  "SignUp_Date",
-  "Actions",
-  "Partner",
-  "email",
-  "phone",
+export const colVisibility = {
+  taskRef: true,
+  departmentName: true,
+  projectName: true,
+  jobHolder: true,
+  task: true,
+  hours: true,
+  startDate: true,
+  deadline: true,
+  taskDate: true,
+  datestatus: true,
 
-  "jobPrepared",
-  "jobReview",
-  "jobFiled",
-];
+  taskStatus: true,
+  lead: true,
+  estimate_Time: true,
+  timertracker: true,
+  comments: true,
 
-export const departments = [
-  "All",
-  "Bookkeeping",
-  "Payroll",
-  "Vat Return",
-  "Personal Tax",
-  "Accounts",
-  "Company Sec",
-  "Address",
-];
+  actions: true,
+  labal: true,
+  recurring: true,
+};
+
+// CSV Configuration
+export const csvConfig = mkConfig({
+  filename: "full_table_data",
+  fieldSeparator: ",",
+  quoteStrings: '"',
+  decimalSeparator: ".",
+  showLabels: true,
+  showTitle: true,
+  title: "",
+  useTextFile: false,
+  useBom: true,
+  useKeysAsHeaders: true,
+});
+
+ 
+
+
+
+
+
+
+
 
 export const dateStatus = ["Due", "Overdue", "Upcoming"];
 
@@ -59,7 +63,7 @@ export const statusInit = [
   "Missing Info",
 ];
 
-
+export const statusArr = ["To do", "Progress", "Review", "Onhold"];
 
 
 

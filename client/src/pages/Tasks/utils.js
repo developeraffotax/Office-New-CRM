@@ -164,6 +164,23 @@ export const TaskDateFilterFn = (row, columnId, filterValue) => {
 
 
 
+export const convertTasksArrayToObject = (arr = []) => {
+  return arr.reduce((obj, item) => {
+    if (!item.userId) return obj;
+
+    obj[item.userId] =
+      (obj[item.userId] || 0) + item.totalTasks;
+
+    return obj;
+  }, {});
+};
+
+
+
+
+
+
+
 
 
 
@@ -192,3 +209,12 @@ export const buildFilters = (columnFilters) => {
 
   return filters;
 };
+
+
+
+
+
+
+
+
+

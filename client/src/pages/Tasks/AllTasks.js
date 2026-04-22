@@ -51,7 +51,8 @@ import SelectedUsers from "../../components/SelectedUsers";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import { openModal } from "../../redux/slices/globalModalSlice";
 import { buildFilters } from "./utils";
-import { dotColors } from "./constants";
+import { dotColors, textColors } from "./constants";
+import { RefreshButton } from "../../components/ui/RefreshButton";
 
 const colVisibility = {
   taskRef: true,
@@ -1351,7 +1352,7 @@ getTasks()
     // globalFilter: searchValue,
     // isLoading: loading,
     showProgressBars: false,
-    showSkeletons: loading,
+    showSkeletons: false,
     showLoadingOverlay: false,
     
  
@@ -1939,26 +1940,39 @@ const renderColumnControls = () => (
                 )}
               </div>
 
-              <span
-                className={` p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border `}
-                onClick={() => {
-                  getTasks();
-                  getAllProjects();
-                  // setActive("All");
-                  // setActiveBtn("");
-                  // setActive1("");
-                  //setFilterId("");
-                  // setShowStatus(false);
-                  // setShowJobHolder(false);
-                }}
-                title="Refresh Data"
-              >
-                <GrUpdate
-                  className={`h-5 w-5  cursor-pointer ${
-                    isLoad && "animate-spin text-sky-500"
-                  }`}
-                />
-              </span>
+              <button
+  onClick={() => {
+    getTasks();
+    getAllProjects();
+  }}
+  title="Refresh Data"
+  disabled={loading}
+  className={`
+    flex items-center justify-center
+    p-[6px]
+    mb-1
+    rounded-md
+    bg-gray-50
+    border
+    shadow-sm
+    hover:shadow-md
+    transition-all duration-100
+    ${loading ? " cursor-not-allowed" : "cursor-pointer"}
+  `}
+>
+  <GrUpdate
+    className={`
+      h-5 w-5
+      transition-all duration-100 text-gray-600
+      ${loading ? "animate-spin" : ""}
+      
+       
+    `}
+  />
+</button>
+
+            {/* <RefreshButton status={status} statusConfig={dotColors} isLoad={loading}  onClick={() => { getTasks(); getAllProjects(); }}/> */}
+
             </div>
             {/*  */}
             <hr className="mb-1 bg-gray-300 w-full h-[1px] max-lg:hidden" />

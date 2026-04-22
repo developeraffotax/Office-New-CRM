@@ -98,7 +98,24 @@ export const DEFAULT_DATE_FILTERS = [
   upcoming:  " bg-gray-500",
 };
 
+
+export const dotBorderColors = {
+  progress:  "border-blue-500",
+  completed: "border-green-500",
+  inactive:  "border-red-500",
+
+  due:       "border-green-500",
+  overdue:   "border-red-500",
+  upcoming:  "border-gray-500",
+};
+
 export const textColors = {
+
+   progress:  "text-blue-500",
+  completed: "text-green-500",
+  inactive:  "text-red-500",
+
+
   due:  "text-green-500 ",
   overdue: "text-red-500",
   upcoming:  "text-gray-500",

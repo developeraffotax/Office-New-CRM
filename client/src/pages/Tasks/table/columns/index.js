@@ -21,32 +21,39 @@ import { refColumn } from "./refColumn";
  
 
 
+export const getTaskColumns = (ctx) => {
+  const columns = [
+    idColumn(),
+    refColumn(),
+    departmentColumn(ctx),
+    projectColumn(ctx),
+    jobHolderColumn(ctx),
+    taskColumn(ctx),
+    hoursColumn(ctx),
+    startDateColumn(ctx),
+    deadlineColumn(ctx),
+    taskDateColumn(ctx),
+    dateStatusColumn(ctx),
+    statusColumn(ctx),
+    leadColumn(ctx),
+    budgetColumn(ctx),
+ 
+  ];
 
+  // Add actions column only when not completed
+  if (ctx.status !== "completed") {
+    columns.push(timerColumn(ctx));
+    columns.push(actionsColumn(ctx));
+  }
 
-export const getTaskColumns = (ctx) => [
-  idColumn(),
-  refColumn(),
-  departmentColumn(ctx),
- projectColumn(ctx),
-  jobHolderColumn(ctx),
- taskColumn(ctx),
-  hoursColumn(ctx),
-  startDateColumn(ctx),
-  deadlineColumn(ctx),
-  taskDateColumn(ctx),
-  dateStatusColumn(ctx),
- statusColumn(ctx),
-  leadColumn(ctx),
-  budgetColumn(ctx),
-  timerColumn(ctx),
-   
- actionsColumn(ctx),
-  labelColumn(ctx),
-  recurringColumn(ctx)
-];
+  // Always append these at the end
+  columns.push(
+    labelColumn(ctx),
+    recurringColumn(ctx)
+  );
 
-
-
+  return columns;
+};
 
 
 

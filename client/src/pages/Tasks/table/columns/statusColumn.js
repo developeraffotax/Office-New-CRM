@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 
 export const statusColumn = (ctx) => {
+  const statusData = ["To do", "Progress", "Review", "Awaiting", "On hold"];
   return {
     
       id: "taskStatus",
@@ -8,7 +9,6 @@ export const statusColumn = (ctx) => {
     accessorFn: (row) => row?.status || "",
 
     Header: ({ column }) => {
-      const statusData = ["To do", "Progress", "Review", "Awaiting", "On hold"];
 
       // useEffect(() => {
       //   if (!ctx.comment_taskId) {
@@ -38,6 +38,8 @@ export const statusColumn = (ctx) => {
                   {status}
                 </option>
               ))}
+
+              <option value="completed">Completed</option>
             </select>
           </div>
         </div>
@@ -61,6 +63,8 @@ export const statusColumn = (ctx) => {
             <option value="Review">Review</option>
             <option value="Awaiting">Awaiting</option>
             <option value="On hold">On hold</option>
+
+            <option value="completed">Completed</option>
           </select>
         </div>
       );

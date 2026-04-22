@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { style } from "../../utlis/CommonStyle";
 import axios from "axios";
@@ -112,7 +118,7 @@ const csvConfig = mkConfig({
 
 const AllTasks = ({ justShowTable = false }) => {
   const { auth, filterId, anyTimerRunning, searchValue, jid } = useSelector(
-    (state) => state.auth
+    (state) => state.auth,
   );
 
   const dispatch = useDispatch();
@@ -189,7 +195,6 @@ const AllTasks = ({ justShowTable = false }) => {
   const [isUpload, setIsUpdate] = useState(false);
   const [reload, setReload] = useState(false);
 
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   // console.log("tasksData:", tasksData);
 
@@ -202,11 +207,8 @@ const AllTasks = ({ justShowTable = false }) => {
   const show_completed = searchParams.get("completed");
   const navigate = useNavigate();
 
-
-
-
-        const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsers("tasks:selected_users", userName);
-
+  const { selectedUsers, setSelectedUsers, toggleUser, resetUsers } =
+    usePersistedUsers("tasks:selected_users", userName);
 
   const [showcolumn, setShowColumn] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState({
@@ -221,7 +223,7 @@ const AllTasks = ({ justShowTable = false }) => {
   useEffect(() => {
     // Load saved column visibility from localStorage
     const savedVisibility = JSON.parse(
-      localStorage.getItem("visibileTasksColumn")
+      localStorage.getItem("visibileTasksColumn"),
     );
 
     if (savedVisibility) {
@@ -237,39 +239,76 @@ const AllTasks = ({ justShowTable = false }) => {
     setColumnVisibility(updatedVisibility);
     localStorage.setItem(
       "visibileTasksColumn",
-      JSON.stringify(updatedVisibility)
+      JSON.stringify(updatedVisibility),
     );
   };
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 20,  
+    pageSize: 20,
   });
 
+  const [rowCount, setRowCount] = useState(0);
+  const [sorting, setSorting] = useState([]);
 
-const [rowCount, setRowCount] = useState(0);
-const [sorting, setSorting] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([]);
 
-  const [columnFilters, setColumnFilters] = useState([])
+  const [status, setStatus] = useState("progress");
 
+  const isNotCompleted = useMemo(() => status !== "completed", [status])
 
-   const [status, setStatus] = useState("progress")
+  const [taskStats, setTaskStats] = useState({
+    totalTasks: [],
+    departmentStats: [],
+    userStats: [],
+    statusStats: [],
+    dueStats: [],
+  });
 
+  const getuserTaskCounts = (userName) => {
+    console.log("USER NAME IS ", userName);
+    return (
+      taskStats?.userStats?.find((u) => u.userId === userName)?.totalTasks || 0
+    );
+  };
 
+  const getdepartmentTaskCounts = (departId) => {
+    //if(departmentName === "All") return taskStats?.totalTasks[0]?.count || 0;
+    return (
+      taskStats?.departmentStats?.find((u) => u.departmentId === departId)
+        ?.totalTasks || 0
+    );
+  };
 
+  const getTaskStatusTaskCounts = (taskStatus) => {
+    return (
+      taskStats?.statusStats?.find((u) => u._id === taskStatus)?.totalTasks || 0
+    );
+  };
 
+  const getdueStatusCounts = (dueStatus) => {
+    return taskStats?.dueStats?.find((u) => u._id === dueStatus)?.totalTasks || 0;
+  };
 
+  const departmentFilter = useMemo(() => {
+    const colFilter = columnFilters.find((f) => f.id === "departmentName");
 
+    return colFilter?.value || null;
+  }, [columnFilters]);
 
+  const taskStatusFilter = useMemo(() => {
+    const colFilter = columnFilters.find((f) => f.id === "taskStatus");
 
+    return colFilter?.value || null;
+  }, [columnFilters]);
 
-
-
-
-
-
-
-
+    const dueStatusFilter = useMemo(() => {
+    const colFilter = columnFilters.find(
+      (f) => f.id === "datestatus"
+    );
+  
+    return colFilter?.value || null;
+  }, [columnFilters]);
 
 
 
@@ -318,14 +357,14 @@ const [sorting, setSorting] = useState([]);
   const getAllProjects = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/projects/get_all/project`
+        `${process.env.REACT_APP_API_URL}/api/v1/projects/get_all/project`,
       );
       setAllProjects(data?.projects);
       if (auth.user.role.name === "Admin") {
         setProjects(data?.projects);
       } else {
         const filteredProjects = data.projects.filter((project) =>
-          project.users_list.some((user) => user._id === auth?.user?.id)
+          project.users_list.some((user) => user._id === auth?.user?.id),
         );
 
         setProjects(filteredProjects);
@@ -343,7 +382,7 @@ const [sorting, setSorting] = useState([]);
   const getAllDepartments = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tasks/department`
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/department`,
       );
       if (data?.success) {
         if (auth?.user?.role?.name === "Admin") {
@@ -352,7 +391,7 @@ const [sorting, setSorting] = useState([]);
         } else {
           // Non-admin: only include departments linked to projects user is in
           const userProjects = allProjects.filter((project) =>
-            project.users_list.some((user) => user._id === auth?.user?.id)
+            project.users_list.some((user) => user._id === auth?.user?.id),
           );
 
           // Collect all department IDs from user's projects
@@ -365,7 +404,7 @@ const [sorting, setSorting] = useState([]);
 
           // Filter the full department list based on user's accessible departments
           const filteredDepartments = data.departments.filter((dep) =>
-            uniqueDeptIds.includes(dep._id)
+            uniqueDeptIds.includes(dep._id),
           );
 
           setDepartments(filteredDepartments || []);
@@ -382,35 +421,11 @@ const [sorting, setSorting] = useState([]);
     }
   }, [auth, allProjects]);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   //   Get All Labels
   const getlabel = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels/task`
+        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels/task`,
       );
       if (data.success) {
         setLabelData(data.labels);
@@ -428,22 +443,24 @@ const [sorting, setSorting] = useState([]);
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
       );
       setUsers(
         data?.users?.filter((user) =>
           user?.role?.access?.some((item) =>
-            item?.permission?.includes("Tasks")
-          )
-        ) || []
+            item?.permission?.includes("Tasks"),
+          ),
+        ) || [],
       );
 
       setUserName(
         data?.users
           ?.filter((user) =>
-            user?.role?.access?.map((item) => item.permission.includes("Tasks"))
+            user?.role?.access?.map((item) =>
+              item.permission.includes("Tasks"),
+            ),
           )
-          ?.map((user) => user.name)
+          ?.map((user) => user.name),
       );
     } catch (error) {
       console.log(error);
@@ -454,8 +471,6 @@ const [sorting, setSorting] = useState([]);
     getAllUsers();
     // eslint-disable-next-line
   }, []);
-
- 
 
   // useEffect(() => {
   //   const calculateTotalHours = (data) => {
@@ -606,185 +621,152 @@ const [sorting, setSorting] = useState([]);
   //   console.log("stateData:", stateData);
   // };
 
+  /**
+   * Fetch Jobs with:
+   * - Pagination
+   * - Sorting
+   * - Column Filters
+   * - Custom Filters
+   */
 
+  const getTasks = useCallback(async () => {
+    setLoading(true);
 
+    try {
+      // ======================================================
+      // BUILD COLUMN FILTERS
+      // ======================================================
 
+      // console.log("THE COLUMN FILTERS ", columnFilters)
+      const filters = buildFilters(columnFilters);
 
+      // ======================================================
+      // BUILD FINAL PARAMS
+      // ======================================================
 
+      const params = {
+        // Pagination
+        page: pagination.pageIndex + 1,
+        limit: pagination.pageSize,
 
+        status: status,
+        // Sorting
+        // sortField,
+        // sortOrder,
 
+        // Global Search
+        search: searchValue || "",
+        // searchParams,
 
+        // Column Filters
+        ...filters,
+      };
 
+      // ======================================================
+      // API CALL
+      // ======================================================
+      let URL = `${process.env.REACT_APP_API_URL}/api/v1/tasks`;
 
+      const { data } = await axios.get(URL, { params });
 
+      // ======================================================
+      // HANDLE RESPONSE
+      // ======================================================
 
+      if (data?.success) {
+        setTasksData(data.tasks || []);
 
+        setRowCount(data?.pagination?.total || 0);
+      }
+    } catch (error) {
+      console.log(error);
 
+      toast.error(error?.response?.data?.message || "Error loading jobs");
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    // Pagination (SAFE way)
+    pagination.pageIndex,
+    pagination.pageSize,
+    // status,
+    // Sorting
+    // sorting,
 
+    // Column Filters
+    columnFilters,
+    status,
+    // Global Search
+    searchValue,
 
+    // Custom Filters
+    // activeBtn,
+    // lead,
+    // jobHolder,
+    // clientType,
+    // filterId,
+  ]);
 
+  const getTasksStats = useCallback(async () => {
+    try {
+      // ======================================================
+      // BUILD COLUMN FILTERS
+      // ======================================================
 
+      const filters = buildFilters(columnFilters);
 
+      // ======================================================
+      // BUILD FINAL PARAMS
+      // ======================================================
 
+      const params = {
+        status,
+        // ...filters,
+      };
 
+      if (filters?.jobName) {
+        params.jobName = filters.jobName;
+      }
 
+      // ======================================================
+      // API CALL
+      // ======================================================
 
+      let URL = `${process.env.REACT_APP_API_URL}/api/v1/tasks/stats`;
 
+      const { data } = await axios.get(URL, { params });
 
+      // ======================================================
+      // HANDLE RESPONSE
+      // ======================================================
 
-
-
-
-
-
-
-/**
- * Fetch Jobs with:
- * - Pagination
- * - Sorting
- * - Column Filters
- * - Custom Filters
- */
-
-const getTasks = useCallback(async () => {
-
-  setLoading(true);
-
-  try {
- 
-
-    // ======================================================
-    // BUILD COLUMN FILTERS
-    // ======================================================
-
- 
-
-    // console.log("THE COLUMN FILTERS ", columnFilters)
-    const filters = buildFilters(columnFilters);
-
-
-    // ======================================================
-    // BUILD FINAL PARAMS
-    // ======================================================
-
-    const params = {
-
-      // Pagination
-      page: pagination.pageIndex + 1,
-      limit: pagination.pageSize,
-
-      status: status,
-      // Sorting
-      // sortField,
-      // sortOrder,
-
-      // Global Search
-      search: searchValue || "",
-      // searchParams,
-      
-      // Column Filters
-      ...filters,
-
-    };
-
-
-    // ======================================================
-    // API CALL
-    // ======================================================
-    let URL = `${process.env.REACT_APP_API_URL}/api/v1/tasks`;
-
- 
-
-    const { data } = await axios.get(
-     URL,
-      { params }
-    );
-
-
-    // ======================================================
-    // HANDLE RESPONSE
-    // ======================================================
-
-    if (data?.success) {
-
-      setTasksData(data.tasks || []);
-
-      setRowCount(
-        data?.pagination?.total || 0
+      console.log(
+        "THE RESULT OF HTE API CALL FROM TASK STATS 👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍👍",
+        data,
       );
 
+      if (data?.success) {
+        setTaskStats(data.stats); // ✅ IMPORTANT FIX
+      }
+    } catch (error) {
+      console.log(error);
+
+      // toast.error(
+      //   error?.response?.data?.message ||
+      //   "Error loading jobs"
+      // );
+    } finally {
+      // setLoading(false);
     }
+  }, [status, columnFilters]);
 
-  } catch (error) {
+  useEffect(() => {
+    getTasksStats();
+  }, [getTasksStats]);
 
-    console.log(error);
-
-    toast.error(
-      error?.response?.data?.message ||
-      "Error loading jobs"
-    );
-
-  } finally {
-
-    setLoading(false);
-
-  }
-
-}, [
-
-  // Pagination (SAFE way)
-  pagination.pageIndex,
-  pagination.pageSize,
- // status,
-  // Sorting
-  // sorting,
-
-  // Column Filters
- columnFilters,
-status,
-  // Global Search
- searchValue,
- 
-  // Custom Filters
-  // activeBtn,
-  // lead,
-  // jobHolder,
-  // clientType,
-  // filterId,
-
-]);
-
-
-
-
-
-
-
-
-
-
-
-
-useEffect(() => {
-
-getTasks()
-
-
-}, [getTasks])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  useEffect(() => {
+    getTasks();
+  }, [getTasks]);
 
   // -----------Update Task-Project-------->
   const updateTaskProject = async (taskId, projectId) => {
@@ -795,22 +777,22 @@ getTasks()
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/project/${taskId}`,
-        { projectId: projectId }
+        { projectId: projectId },
       );
       if (data?.success) {
         const updateTask = data?.task;
         toast.success("Project updated!");
         setTasksData((prevData) =>
           prevData?.map((item) =>
-            item._id === updateTask._id ? updateTask : item
-          )
+            item._id === updateTask._id ? updateTask : item,
+          ),
         );
 
         if (active !== "All") {
           setFilterData((prevData) =>
             prevData?.map((item) =>
-              item._id === updateTask._id ? updateTask : item
-            )
+              item._id === updateTask._id ? updateTask : item,
+            ),
           );
         }
       }
@@ -830,7 +812,7 @@ getTasks()
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/task/JLS/${taskId}`,
-        { jobHolder, lead, status }
+        { jobHolder, lead, status },
       );
       if (data) {
         const updateTask = data?.task;
@@ -840,7 +822,7 @@ getTasks()
           setFilterData((prevData) => {
             if (Array?.isArray(prevData)) {
               return prevData?.map((item) =>
-                item?._id === updateTask?._id ? updateTask : item
+                item?._id === updateTask?._id ? updateTask : item,
               );
             } else {
               return [updateTask];
@@ -851,7 +833,7 @@ getTasks()
         setTasksData((prevData) => {
           if (Array?.isArray(prevData)) {
             return prevData?.map((item) =>
-              item?._id === updateTask?._id ? updateTask : item
+              item?._id === updateTask?._id ? updateTask : item,
             );
           } else {
             return [updateTask];
@@ -881,7 +863,7 @@ getTasks()
     allocateTask,
     startDate,
     deadline,
-    taskDate
+    taskDate,
   ) => {
     if (!taskId) {
       toast.error("Project/Task id is required!");
@@ -890,24 +872,25 @@ getTasks()
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/allocate/task/${taskId}`,
-        { allocateTask, startDate, deadline, taskDate }
+        { allocateTask, startDate, deadline, taskDate },
       );
       if (data?.success) {
         const updateTask = data?.task;
         toast.success("Task updated successfully!");
         setTasksData((prevData) =>
           prevData?.map((item) =>
-            item._id === updateTask._id ? updateTask : item
-          )
+            item._id === updateTask._id ? updateTask : item,
+          ),
         );
-        
+
         if (Array.isArray(filterData)) {
-          setFilterData((prevData) =>
-            Array.isArray(prevData)
-              ? prevData.map((item) =>
-                  item?._id === updateTask?._id ? updateTask : item
-                )
-              : [updateTask] // fallback if somehow prevData isn't an array
+          setFilterData(
+            (prevData) =>
+              Array.isArray(prevData)
+                ? prevData.map((item) =>
+                    item?._id === updateTask?._id ? updateTask : item,
+                  )
+                : [updateTask], // fallback if somehow prevData isn't an array
           );
         }
       }
@@ -938,8 +921,6 @@ getTasks()
     }
   };
 
- 
-
   // -----------Copy Task------->
 
   const copyTask = async (originalTask) => {
@@ -962,7 +943,7 @@ getTasks()
         lead: taskCopy?.lead,
         label: taskCopy?.label,
         status: taskCopy?.status,
-      }
+      },
     );
     if (data) {
       toast.success("Task copied successfully!");
@@ -1025,10 +1006,10 @@ getTasks()
     }
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/tasks/delete/task/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/tasks/delete/task/${id}`,
       );
       if (data) {
-         setShowDetail(false);
+        setShowDetail(false);
         toast.success("Task deleted successfully!");
 
         // Send Socket Timer
@@ -1047,20 +1028,20 @@ getTasks()
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/add/label/${id}`,
-        { name, color }
+        { name, color },
       );
       if (data) {
         if (filterId || active !== "All" || filterData || active1) {
           setFilterData((prevData = []) =>
             prevData?.map((item) =>
-              item._id === id ? { ...item, label: { name, color } } : item
-            )
+              item._id === id ? { ...item, label: { name, color } } : item,
+            ),
           );
         }
         setTasksData((prevData = []) =>
           prevData?.map((item) =>
-            item._id === id ? { ...item, label: { name, color } } : item
-          )
+            item._id === id ? { ...item, label: { name, color } } : item,
+          ),
         );
 
         if (name) {
@@ -1086,7 +1067,7 @@ getTasks()
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/task/JLS/${taskId}`,
-        { status: "completed" }
+        { status: "completed" },
       );
       if (data?.success) {
         const updateTask = data?.task;
@@ -1128,22 +1109,14 @@ getTasks()
     });
   };
 
-
-
-
   const createComplaint = (data) => {
-
-
     dispatch(
-        openModal({
-          modal: "complaint",
-          data: data
-        })
-      );
-
-
-
-  }
+      openModal({
+        modal: "complaint",
+        data: data,
+      }),
+    );
+  };
   // ----------------------------
   // 🔑 Authentication & User Data
   // ----------------------------
@@ -1153,7 +1126,7 @@ getTasks()
       users,
       departments,
     }),
-    [auth, users, departments]
+    [auth, users, departments],
   );
 
   // ----------------------------
@@ -1166,7 +1139,7 @@ getTasks()
       updateTaskJLS,
       updateAlocateTask,
     }),
-    [allProjects]
+    [allProjects],
   );
 
   // ----------------------------
@@ -1178,9 +1151,9 @@ getTasks()
       filterId,
       active,
       active1,
-          columnFilters,
-    searchValue,
-    status,
+      columnFilters,
+      searchValue,
+      status,
 
       setFilterData,
       setTasksData,
@@ -1190,9 +1163,9 @@ getTasks()
       copyTask,
       handleCompleteStatus,
       handleDeleteTaskConfirmation,
-      createComplaint
+      createComplaint,
     }),
-    [totalHours, filterId, active, active1, columnFilters, searchValue, status]
+    [totalHours, filterId, active, active1, columnFilters, searchValue, status],
   );
 
   // ----------------------------
@@ -1204,7 +1177,7 @@ getTasks()
       setCommentTaskId,
       setIsComment,
     }),
-    [comment_taskId]
+    [comment_taskId],
   );
 
   // ----------------------------
@@ -1228,7 +1201,7 @@ getTasks()
       setNote,
       setActivity,
       setTaskIdForNote,
-      setIsSubmitting
+      setIsSubmitting,
     }),
     [
       anyTimerRunning,
@@ -1241,7 +1214,7 @@ getTasks()
       activity,
       taskIdForNote,
       timerRef,
-    ]
+    ],
   );
 
   // ----------------------------
@@ -1252,7 +1225,7 @@ getTasks()
       labelData,
       addlabelTask,
     }),
-    [labelData]
+    [labelData],
   );
 
   // ----------------------------
@@ -1267,7 +1240,7 @@ getTasks()
       ...timerCtx,
       ...labelCtx,
     }),
-    [authCtx, projectCtx, taskCtx, commentCtx, timerCtx, labelCtx]
+    [authCtx, projectCtx, taskCtx, commentCtx, timerCtx, labelCtx],
   );
 
   // ----------------------------
@@ -1283,42 +1256,29 @@ getTasks()
     // table.resetColumnFilters();
   };
 
-
-
-
-  console.log("THE COLUMN FILTERS ARE >>> IN TASKS", columnFilters)
-
-
-
-
-
-
-
-
+  console.log("THE COLUMN FILTERS ARE >>> IN TASKS", columnFilters);
 
   const table = useMaterialReactTable({
     columns,
     data: tasksData || [],
     getRowId: (row) => row._id,
 
-     
     manualPagination: true,
     manualFiltering: true,
     // manualSorting: true,
 
     rowCount: rowCount,
     enablePagination: true,
-    onPaginationChange: setPagination,  
+    onPaginationChange: setPagination,
     autoResetPageIndex: false,
 
     enableFilterMatchHighlighting: false,
     enableColumnFilters: false,
 
-
-   enableStickyHeader: true,
+    enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "78vh",  } },
+    muiTableContainerProps: { sx: { maxHeight: "78vh" } },
     enableColumnActions: false,
     enableSorting: false,
     enableGlobalFilter: true,
@@ -1329,15 +1289,14 @@ getTasks()
     enableRowSelection: true,
     enableTableHead: true,
 
-     onRowSelectionChange: setRowSelection,
-     onColumnVisibilityChange: setColumnVisibility,
-     onColumnFiltersChange: setColumnFilters,
- 
+    onRowSelectionChange: setRowSelection,
+    onColumnVisibilityChange: setColumnVisibility,
+    onColumnFiltersChange: setColumnFilters,
 
     initialState: {
       columnVisibility: {
-        _id: false
-      }
+        _id: false,
+      },
     },
 
     state: {
@@ -1345,22 +1304,15 @@ getTasks()
       pagination,
       density: "compact",
       columnVisibility: columnVisibility,
-      
- 
-    sorting,
-    columnFilters,
-    // globalFilter: searchValue,
-    // isLoading: loading,
-    showProgressBars: false,
-    showSkeletons: false,
-    showLoadingOverlay: false,
-    
- 
+
+      sorting,
+      columnFilters,
+      // globalFilter: searchValue,
+      // isLoading: loading,
+      showProgressBars: false,
+      showSkeletons: false,
+      showLoadingOverlay: false,
     },
-   
-     
-     
-     
 
     muiTableHeadCellProps: {
       style: {
@@ -1393,6 +1345,7 @@ getTasks()
     },
   });
 
+  console.log("DEPARTMENT FILTER ", departmentFilter);
   // Import CSV File
   // --------------Import Job data------------>
   const importJobData = async (file) => {
@@ -1414,7 +1367,7 @@ getTasks()
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       if (data) {
         getTasks();
@@ -1423,7 +1376,7 @@ getTasks()
     } catch (error) {
       console.error("Error importing data:", error);
       toast.error(
-        error?.response?.data?.message || "Failed to import job data"
+        error?.response?.data?.message || "Failed to import job data",
       );
     } finally {
       setFLoading(false);
@@ -1439,7 +1392,7 @@ getTasks()
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/multiple`,
         {
           rowSelection: Object.keys(rowSelection).filter(
-            (id) => rowSelection[id] === true
+            (id) => rowSelection[id] === true,
           ),
           projectId: project,
           jobHolder,
@@ -1449,7 +1402,7 @@ getTasks()
           deadline,
           taskDate,
           status: tstatus,
-        }
+        },
       );
       if (data) {
         getTasks();
@@ -1461,7 +1414,7 @@ getTasks()
         setHours("");
         setStartDate("");
         setDeadline("");
-        setTaskDate("")
+        setTaskDate("");
         setTStatus("");
       }
     } catch (error) {
@@ -1474,36 +1427,31 @@ getTasks()
     }
   };
 
- 
+  const setColumnFromOutsideTable = (colKey, filterVal) => {
+    setColumnFilters((prev) => {
+      // Remove existing filter for this column
+      const filtered = prev.filter((f) => f.id !== colKey);
 
-const setColumnFromOutsideTable = (colKey, filterVal) => {
-  setColumnFilters((prev) => {
-    // Remove existing filter for this column
-    const filtered = prev.filter((f) => f.id !== colKey);
+      // If empty → just remove filter
+      if (
+        filterVal === undefined ||
+        filterVal === null ||
+        filterVal === "" ||
+        (Array.isArray(filterVal) && filterVal.length === 0)
+      ) {
+        return filtered;
+      }
 
-    // If empty → just remove filter
-    if (
-      filterVal === undefined ||
-      filterVal === null ||
-      filterVal === "" ||
-      (Array.isArray(filterVal) && filterVal.length === 0)
-    ) {
-      return filtered;
-    }
-
-    // Otherwise add updated filter
-    return [
-      ...filtered,
-      {
-        id: colKey,
-        value: filterVal,
-      },
-    ];
-  });
-};
-
-
- 
+      // Otherwise add updated filter
+      return [
+        ...filtered,
+        {
+          id: colKey,
+          value: filterVal,
+        },
+      ];
+    });
+  };
 
   // const user_tasks_count_map = useMemo(() => {
   //   return Object.fromEntries(
@@ -1511,88 +1459,80 @@ const setColumnFromOutsideTable = (colKey, filterVal) => {
   //   );
   // }, [userName, active, getJobHolderCount]);
 
+  const renderColumnControls = () => (
+    <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
+      {/* Header */}
+      <header className="px-5 py-3 border-b">
+        <h3 className="text-sm font-semibold text-slate-800">View settings</h3>
+      </header>
 
+      {/* Content */}
+      <div className="grid grid-cols-2 divide-x">
+        {/* LEFT — Columns */}
+        <section className="px-5 py-4">
+          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+            Columns
+          </h4>
 
-
-
-const renderColumnControls = () => (
-  <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
-    {/* Header */}
-    <header className="px-5 py-3 border-b">
-      <h3 className="text-sm font-semibold text-slate-800">
-        View settings
-      </h3>
-    </header>
-
-    {/* Content */}
-    <div className="grid grid-cols-2 divide-x">
-      {/* LEFT — Columns */}
-      <section className="px-5 py-4">
-        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-          Columns
-        </h4>
-
-        <ul className="space-y-1 list-decimal">
-          {Object.keys(colVisibility)?.map((column) => (
-            <li key={column}>
-              <label
-                className="flex items-center justify-between rounded-md px-2 py-1.5
+          <ul className="space-y-1 list-decimal">
+            {Object.keys(colVisibility)?.map((column) => (
+              <li key={column}>
+                <label
+                  className="flex items-center justify-between rounded-md px-2 py-1.5
                            text-sm text-slate-700 cursor-pointer
                            hover:bg-slate-50 transition"
-              >
-                <span className="capitalize">{column}</span>
-                <input
-                  type="checkbox"
-                  checked={columnVisibility[column]}
-                  onChange={() => toggleColumnVisibility(column)}
-                  className="h-4 w-4 accent-orange-600"
-                />
-              </label>
-            </li>
-          ))}
-        </ul>
-      </section>
+                >
+                  <span className="capitalize">{column}</span>
+                  <input
+                    type="checkbox"
+                    checked={columnVisibility[column]}
+                    onChange={() => toggleColumnVisibility(column)}
+                    className="h-4 w-4 accent-orange-600"
+                  />
+                </label>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-      {/* RIGHT — Users */}
-      <section className="px-5 py-4">
-        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-          Users
-        </h4>
+        {/* RIGHT — Users */}
+        <section className="px-5 py-4">
+          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+            Users
+          </h4>
 
-        <div className="h-full overflow-y-auto space-y-1 pr-1">
-          <SelectedUsers
-          selectedUsers={selectedUsers}
-          setSelectedUsers={setSelectedUsers}
-          userNameArr={userName}
-          countMap={{}}
-          label={"task"}
-        />
-        </div>
-      </section>
-    </div>
-  </section>
-);
-
- 
+          <div className="h-full overflow-y-auto space-y-1 pr-1">
+            <SelectedUsers
+              selectedUsers={selectedUsers}
+              setSelectedUsers={setSelectedUsers}
+              userNameArr={userName}
+              countMap={{}}
+              label={"task"}
+            />
+          </div>
+        </section>
+      </div>
+    </section>
+  );
 
   // Hook returns an updater for each column
   const updateDepartment = useColumnFilterSync(
     table,
     "departmentName",
     filter1,
-    setFilter1
+    setFilter1,
   );
   const updateProject = useColumnFilterSync(
     table,
     "projectName",
     filter2,
-    setFilter2
+    setFilter2,
   );
   const updateJobHolder = useColumnFilterSync(
     table,
     "jobHolder",
     filter3,
-    setFilter3
+    setFilter3,
   );
 
   // helper to check if "all departments" are selected
@@ -1600,8 +1540,6 @@ const renderColumnControls = () => (
     filter1 === "" ||
     filter1 === "All" ||
     (Array.isArray(filter1) && filter1.length === departments.length);
-
- 
 
   return (
     <>
@@ -1633,35 +1571,39 @@ const renderColumnControls = () => (
                 <IoClose className="h-6 w-6 text-white" />
               </span>
 
-
-
-                
-              <span >
+              <span>
                 <QuickAccess />
               </span>
 
-                {isAdmin(auth) && <span className=" mb-2"> <OverviewForPages /> </span>}
-                
+              {isAdmin(auth) && (
+                <span className=" mb-2">
+                  {" "}
+                  <OverviewForPages />{" "}
+                </span>
+              )}
 
-                  {  <span className="w-[1px] h-8 bg-gray-200 rounded "></span>}
+              {<span className="w-[1px] h-8 bg-gray-200 rounded "></span>}
 
-
-                <div className="flex gap-2 w-fit font-google font-medium ">
-                {[{label: "In-Progress", value: "progress"}, {label: "Completed", value: "completed"}].map(({ label, value }) => (
+              <div className="flex gap-2 w-fit font-google font-medium ">
+                {[
+                  { label: "In-Progress", value: "progress" },
+                  { label: "Completed", value: "completed" },
+                ].map(({ label, value }) => (
                   <button
                     key={value}
                     onClick={() => setStatus(value)}
                     className={`flex items-center gap-[7px] px-[14px] py-[6px] text-[13px] rounded-xl  border cursor-pointer  transition-all duration-200
-                      ${status === value
-                        ? "border-gray-300 bg-gray-50 text-gray-900"
-                        : "border-gray-200 bg-white text-gray-400 hover:text-gray-700"
+                      ${
+                        status === value
+                          ? "border-gray-300 bg-gray-50 text-gray-900"
+                          : "border-gray-200 bg-white text-gray-400 hover:text-gray-700"
                       }`}
                   >
-                    <span className={`w-[7px] h-[7px] rounded-full flex-shrink-0  
+                    <span
+                      className={`w-[7px] h-[7px] rounded-full flex-shrink-0  
                       ${status === value ? dotColors[value] : "bg-gray-300"}`}
                     />
 
-              
                     {label}
                   </button>
                 ))}
@@ -1669,12 +1611,48 @@ const renderColumnControls = () => (
 
 
 
+              
+                {isNotCompleted && <span className="w-[1px] h-8 bg-gray-200 rounded "></span>}
+
+             
+              {isNotCompleted && <div className="flex gap-1 w-fit font-google font-medium transition-all duration-500">
+                  {[
+                    { label: "Due", value: "due" },
+                    { label: "Overdue", value: "overdue" },
+                    { label: "Upcoming", value: "upcoming" },
+                  ].map(({ label, value }) => {
+                    const isActive = dueStatusFilter === value;
+
+                    return (
+                      <button
+                        key={value}
+                        onClick={() => setColumnFromOutsideTable("datestatus", value)}
+                        className={`
+                          flex items-center gap-1 px-2 py-1 text-[12px] font-normal rounded-xl cursor-pointer border-none
+                          ${isActive
+                            ? `${textColors[value]} bg-gray-100`
+                            : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                          }
+                        `}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full transition-all duration-150
+                            ${isActive ? dotColors[value] : "bg-transparent"}
+                          `}
+                        />
+                        {label} ({getdueStatusCounts(value)})
+                      </button>
+                    );
+                  })}
+                </div>}
+              
+
 
 
             </div>
 
             {/* Project Buttons */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 ">
               {auth?.user?.role?.name === "Admin" && (
                 <div
                   className=" relative w-[8rem]    border-2 border-gray-200 rounded-md py-1 px-2 hidden sm:flex items-center justify-between gap-1"
@@ -1806,73 +1784,67 @@ const renderColumnControls = () => (
             </div>
           </div>
           {/*  */}
-          <div className="flex flex-col gap-2 mt-2">
-            {/* -----------Filters By Projects--------- */}
-            <div className="flex items-center flex-row overflow-x-auto hidden1 gap-2  max-lg:hidden">
-              <div
-                className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                  allDepartmentsSelected &&
-                  " border-2 border-b-0 text-orange-600 border-gray-300"
-                }`}
-                onClick={() => {
-                  setShowCompleted(false);
+          <div className="flex flex-col   ">
+            {/* -----------Filters By Deps--------- */}
+            <div className="flex items-center flex-row overflow-x-auto hidden1 gap-2 py-1 max-lg:hidden">
+              <div className="flex items-center flex-row overflow-x-auto hidden1 gap-1  ">
+                {/* --- Aligned "All" Tab --- */}
+                <div
+                  onClick={() =>
+                    setColumnFromOutsideTable("departmentName", "")
+                  }
+                  className={`
+                      relative flex items-center gap-1 px-2 py-1.5 cursor-pointer
+                      text-[13px] font-[400] whitespace-nowrap  
+                      rounded-t-md border-b-2 font-google
+                      ${
+                        !departmentFilter
+                          ? "text-orange-600 border-orange-500 bg-orange-50"
+                          : "text-gray-800 border-transparent hover:text-gray-900 hover:bg-gray-50"
+                      }
+                    `}
+                >
+                  <span className="tracking-wide">
+                    All ({taskStats?.totalTasks})
+                  </span>
 
-                  // clear all filters when clicking "All"
-                  updateDepartment("");
-                  updateProject("");
-                  updateJobHolder("");
+                  {!departmentFilter && (
+                    <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-orange-500 rounded-full" />
+                  )}
+                </div>
 
-                  setFilter1("All");
-                }}
-              >
-                All
+                {/* --- Department Tabs --- */}
+                {[...departments]?.map(({ departmentName, _id }, i) => {
+                  const isActive = departmentFilter === _id;
+                  return (
+                    <div
+                      key={i}
+                      onClick={() =>
+                        setColumnFromOutsideTable("departmentName", _id)
+                      }
+                      className={`
+                          relative flex items-center gap-1 px-2 py-1.5 cursor-pointer
+                          text-[13px] font-[400] whitespace-nowrap  
+                          rounded-t-md border-b-2 font-google
+                          ${
+                            isActive
+                              ? "text-orange-600 border-orange-500 bg-orange-50"
+                              : "text-gray-800 border-transparent hover:text-gray-900 hover:bg-gray-50"
+                          }
+                        `}
+                    >
+                      <span className="tracking-wide">
+                        {departmentName} ({getdepartmentTaskCounts(_id)})
+                      </span>
+
+                      {isActive && (
+                        <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-orange-500 rounded-full" />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
-              <DraggableFilterTabs
-                droppableId={"departments"}
-                items={departments}
-                filterValue={filter1}
-                tasks={tasksData}
-                getCountFn={(department, tasks) =>
-                  tasks.filter((t) =>
-                    t.project?.departments?.some(
-                      (d) => d._id === department?._id
-                    )
-                  ).length
-                }
-                getLabelFn={(department) => department?.departmentName}
-               
-
-                onClick={(dep) => {
-                  const newValue =
-                    filter1 === dep.departmentName ? "" : dep.departmentName;
-                  updateDepartment(newValue);
-                  updateProject(""); // reset project filter when department changes
-                  updateJobHolder(""); // reset jobHolder filter when department changes
-                }}
-                onDragEnd={() => {}}
-                activeClassName={
-                  filter1
-                    ? "border-2 border-b-0 text-orange-600 border-gray-300"
-                    : ""
-                }
-              />
-
-              
-              <div
-                className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                  activeBtn === "completed" &&
-                  showCompleted &&
-                  " border-2 border-b-0 text-orange-600 border-gray-300"
-                }`}
-                onClick={() => {
-                  setActiveBtn("completed");
-                  setShowCompleted(true);
-                  setActive("");
-                }}
-              >
-                Completed
-              </div>
               {/*  */}
               {/* -------------Filter Open Buttons-------- */}
               <span
@@ -1889,19 +1861,8 @@ const renderColumnControls = () => (
               >
                 <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
               </span>
-              
-              <span
-                className={` p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
-                  activeBtn === "status" && "bg-orange-500 text-white"
-                }`}
-                onClick={() => {
-                  setActiveBtn("status");
-                  setShowStatus(!showStatus);
-                }}
-                title="Filter by Job Status"
-              >
-                <MdAutoGraph className="h-6 w-6  cursor-pointer" />
-              </span>
+
+            
 
               {/* Edit Multiple Tasks */}
               <span
@@ -1941,175 +1902,112 @@ const renderColumnControls = () => (
               </div>
 
               <button
-  onClick={() => {
-    getTasks();
-    getAllProjects();
-  }}
-  title="Refresh Data"
-  disabled={loading}
-  className={`
-    flex items-center justify-center
-    p-[6px]
-    mb-1
-    rounded-md
-    bg-gray-50
-    border
-    shadow-sm
-    hover:shadow-md
-    transition-all duration-100
-    ${loading ? " cursor-not-allowed" : "cursor-pointer"}
-  `}
->
-  <GrUpdate
-    className={`
-      h-5 w-5
-      transition-all duration-100 text-gray-600
-      ${loading ? "animate-spin" : ""}
-      
-       
-    `}
-  />
-</button>
+                onClick={() => {
+                  getTasks();
+                  getAllProjects();
+                }}
+                title="Refresh Data"
+                disabled={loading}
+                className={`
+                  flex items-center justify-center
+                  p-[6px]
+                  mb-1
+                  rounded-md
+                  bg-gray-50
+                  border
+                  shadow-sm
+                  hover:shadow-md
+                  transition-all duration-100
+                  ${loading ? " cursor-not-allowed" : "cursor-pointer"}
+                `}
+                >
+                <GrUpdate className={` h-5 w-5 transition-all duration-100 text-gray-600 ${loading ? "animate-spin" : ""} `} />
+              </button>
 
-            {/* <RefreshButton status={status} statusConfig={dotColors} isLoad={loading}  onClick={() => { getTasks(); getAllProjects(); }}/> */}
-
+              {/* <RefreshButton status={status} statusConfig={dotColors} isLoad={loading}  onClick={() => { getTasks(); getAllProjects(); }}/> */}
             </div>
-            {/*  */}
-            <hr className="mb-1 bg-gray-300 w-full h-[1px] max-lg:hidden" />
 
             {/* ----------Job_Holder Summery Filters---------- */}
             {showJobHolder && activeBtn === "jobHolder" && (
-              <>
-                <div className="w-full    max-lg:hidden ">
-                  <div className="flex items-center flex-wrap gap-4">
-                    <DraggableFilterTabs
-                      droppableId={"users"}
-                      // items={filter2 ? projectUsers.filter(user => getJobHolderCount(user?.name, active) > 0) : users.filter(user => getJobHolderCount(user?.name, active) > 0)}
-                      items={selectedUsers.map(uName => ({_id: uName, name: uName}))}
-                      filterValue={filter3}
-                      tasks={tasksData}
-                      getCountFn={(user, tasks) =>
-                        tasks.filter((t) => t.jobHolder === user.name).length
-                      }
-                      getLabelFn={(user) => user.name}
-                      onClick={(user) => {
-                        const newValue =
-                          filter3 === user?.name ? "" : user?.name;
-
-                        updateJobHolder(newValue); // reset jobHolder filter when department changes
-
-                        //setColumnFromOutsideTable("status", "Progress");
-
-                        //setColumnFromOutsideTable("taskDate", "");
-                        if (
-                          auth.user?.role?.name === "Admin" &&
-                          user?.name === auth?.user?.name
-                        ) {
-                          //setColumnFromOutsideTable("taskDate", "Today");
-                        }
-                      }}
-                      activeClassName={
-                        filter3
-                          ? "border-b-2 text-orange-600 border-orange-600"
-                          : ""
-                      }
-                    />
-                   <div className=" border-l px-5 "> <OutsideFilter setColumnFromOutsideTable={setColumnFromOutsideTable} title={"taskDate"} /> </div>
-                  </div>
-
-
-                   
-                </div>
-                <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
-              </>
-            )}
-
               
+                <div className="flex items-center flex-wrap gap-4  py-1.5 border-t  max-lg:hidden">
+                  <DraggableFilterTabs
+                    droppableId={"users"}
+                    // items={filter2 ? projectUsers.filter(user => getJobHolderCount(user?.name, active) > 0) : users.filter(user => getJobHolderCount(user?.name, active) > 0)}
+                    items={selectedUsers.map((uName) => ({
+                      _id: uName,
+                      name: uName,
+                    }))}
+                    filterValue={filter3}
+                    tasks={tasksData}
+                    getCountFn={(user, tasks) => getuserTaskCounts(user.name)}
+                    getLabelFn={(user) => user.name}
+                    onClick={(user) => {
+                      const newValue = filter3 === user?.name ? "" : user?.name;
 
+                      updateJobHolder(newValue); // reset jobHolder filter when department changes
 
-            {/* ----------Date Status Summery Filters---------- */}
-            {showDue && activeBtn === "due" && (
-              <>
-                <div className="w-full py-2">
-                  <div className="flex items-center flex-wrap gap-4">
-                    {dateStatus?.map((stat, i) => {
-                      //const { due, overdue } = getDueAndOverdueCountByDepartment(active);
-                      return (
-                        <div
-                          className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                            active1 === stat &&
-                            " border-b-2 text-orange-600 border-orange-600"
-                          }`}
-                          key={i}
-                          onClick={() => {
-                            setActive1(stat);
-                            //filterByProjStat(stat, active);
-                          }}
-                        >
-                          {stat === "Due" ? (
-                            <span>Due </span>
-                          ) : (
-                            <span>Overdue </span>
-                          )}
-                        </div>
-                      );
-                    })}
+                      //setColumnFromOutsideTable("status", "Progress");
+
+                      //setColumnFromOutsideTable("taskDate", "");
+                      if (
+                        auth.user?.role?.name === "Admin" &&
+                        user?.name === auth?.user?.name
+                      ) {
+                        //setColumnFromOutsideTable("taskDate", "Today");
+                      }
+                    }}
+                    activeClassName={
+                      filter3
+                        ? "border-b-2 text-orange-600 border-orange-600"
+                        : ""
+                    }
+                  />
+
+                  {<span className="w-[1px] h-8 bg-gray-200 rounded "></span>}
+
+                  <div className="  ">
+                    {" "}
+                    <OutsideFilter
+                      setColumnFromOutsideTable={setColumnFromOutsideTable}
+                      title={"taskDate"}
+                    />{" "}
                   </div>
-                </div>
-                <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
-              </>
-            )}
+                  {status !== "completed" && (
+                    <span className="w-[1px] h-8 bg-gray-200 rounded "></span>
+                  )}
 
-            {/* ----------Status Summery Filters---------- */}
-            {showStatus && activeBtn === "status" && (
-              <>
-                <div className="w-full py-2 flex items-center overflow-x-auto hidden1 gap-2 ">
-                  <div className="flex items-center  gap-4">
-                    {/* {dateStatus?.map((stat, i) => {
-                      const { due, overdue } = getDueAndOverdueCountByDepartment(active);
-                      return (
-                        <div
-                          className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                            active1 === stat &&
-                            " border-b-2 text-orange-600 border-orange-600"
-                          }`}
-                          key={i}
-                          onClick={() => {
-                            setActive1(stat);
-                            //filterByProjStat(stat, active);
-                          }}
-                        >
-                          {stat === "Due" ? (
-                            <span>Due {due}</span>
-                          ) : (
-                            <span>Overdue {overdue}</span>
-                          )}
-                        </div>
-                      );
-                    })} */}
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    {statusArr?.map((stat, i) => (
+                  {status !== "completed" &&
+                    statusArr?.map((stat, i) => (
                       <div
-                        className={`py-1 rounded-tl-md min-w-[4rem] sm:min-w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                          active1 === stat &&
-                          "  border-b-2 text-orange-600 border-orange-600"
-                        }`}
                         key={i}
+                        className={`
+                                         py-1 px-3 rounded-full cursor-pointer
+                                         font-[400] text-[14px] text-gray-900 font-google
+                                         border shadow-sm transition-all duration-150
+                   
+                                         ${
+                                           taskStatusFilter === stat
+                                             ? "text-white border-orange-600 bg-orange-600"
+                                             : "hover:bg-gray-100"
+                                         }
+                                       `}
                         onClick={() => {
-                          setActive1(stat);
-                          //filterByProjStat(stat, active);
+                          // Toggle behavior (Enterprise UX)
+                          if (taskStatusFilter === stat) {
+                            setColumnFromOutsideTable("taskStatus", undefined);
+                          } else {
+                            setColumnFromOutsideTable("taskStatus", stat);
+                          }
                         }}
                       >
-                        {stat}  
+                        {stat} ({getTaskStatusTaskCounts(stat)})
                       </div>
                     ))}
-                  </div>
                 </div>
-                <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
-              </>
+               
             )}
+ 
             {/* ----------Bulk Action--------> */}
 
             {showEdit && (
@@ -2218,7 +2116,7 @@ const renderColumnControls = () => (
                     />
                     <span>Hours</span>
                   </div>
-                 
+
                   <div className="flex items-center justify-end pl-4">
                     <button
                       className={`${style.button1} text-[15px] `}
@@ -2238,7 +2136,7 @@ const renderColumnControls = () => (
               </div>
             )}
             {/* <hr className="mb-1 bg-gray-300 w-full h-[1px]" /> */}
-             <TasksTable table={table} />
+            <TasksTable table={table} />
           </div>
 
           {/* ----------------Add Task Department-------- */}
@@ -2355,20 +2253,20 @@ const renderColumnControls = () => (
                     />
                     <div className="flex items-center justify-end mt-4">
                       <button
-                          className={`${style.btn} flex items-center justify-center space-x-1`}
-                          onClick={handleStopTimer}
-                          disabled={isSubmitting} // Optional: disable button while submitting
-                        >
-                          {isSubmitting ? (
-                            <span className="flex space-x-1">
-                              <span className="w-2 h-2 bg-white rounded-full animate-bounce"></span>
-                              <span className="w-2 h-2 bg-white rounded-full animate-bounce animation-delay-150"></span>
-                              <span className="w-2 h-2 bg-white rounded-full animate-bounce animation-delay-300"></span>
-                            </span>
-                          ) : (
-                            "Submit"
-                          )}
-                        </button>
+                        className={`${style.btn} flex items-center justify-center space-x-1`}
+                        onClick={handleStopTimer}
+                        disabled={isSubmitting} // Optional: disable button while submitting
+                      >
+                        {isSubmitting ? (
+                          <span className="flex space-x-1">
+                            <span className="w-2 h-2 bg-white rounded-full animate-bounce"></span>
+                            <span className="w-2 h-2 bg-white rounded-full animate-bounce animation-delay-150"></span>
+                            <span className="w-2 h-2 bg-white rounded-full animate-bounce animation-delay-300"></span>
+                          </span>
+                        ) : (
+                          "Submit"
+                        )}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -2377,36 +2275,35 @@ const renderColumnControls = () => (
           )}
 
           {/*---------------Task Details---------------*/}
-         {showDetail && (
+          {showDetail && (
             <div className="fixed inset-0 z-[499] flex items-center justify-center bg-black/30 backdrop-blur-sm">
               <div className="bg-gray-100 rounded-xl shadow-lg w-[95%] sm:w-[80%] md:w-[75%] lg:w-[70%] xl:w-[70%] 3xl:w-[60%]    py-4 px-5   ">
                 <div className="h-full w-full flex flex-col justify-start items-center relative">
-
                   <div className="flex items-center justify-between border-b pb-2 mb-3 self-start w-full">
-                  <h3 className="text-lg font-semibold">Project: {projectName}</h3>
-                  <button
-                    className="p-1 rounded-2xl bg-gray-50 border hover:shadow-md hover:bg-gray-100"
-                    onClick={() => setShowDetail(false)}
-                  >
-                    <IoClose className="h-5 w-5" />
-                  </button>
+                    <h3 className="text-lg font-semibold">
+                      Project: {projectName}
+                    </h3>
+                    <button
+                      className="p-1 rounded-2xl bg-gray-50 border hover:shadow-md hover:bg-gray-100"
+                      onClick={() => setShowDetail(false)}
+                    >
+                      <IoClose className="h-5 w-5" />
+                    </button>
                   </div>
 
-                <TaskDetail
-                  taskId={taskID}
-                  getAllTasks={getTasks}
-                  handleDeleteTask={handleDeleteTask}
-                  setTasksData={setTasksData}
-                  setShowDetail={setShowDetail}
-                  users={users}
-                  projects={projects}
-                  setFilterData={setFilterData}
-                  tasksData={tasksData}
-                  assignedPerson={table.getRow(taskID).original.jobHolder}
-                  setTaskIdForNote={setTaskIdForNote}
-                   
-                />
-
+                  <TaskDetail
+                    taskId={taskID}
+                    getAllTasks={getTasks}
+                    handleDeleteTask={handleDeleteTask}
+                    setTasksData={setTasksData}
+                    setShowDetail={setShowDetail}
+                    users={users}
+                    projects={projects}
+                    setFilterData={setFilterData}
+                    tasksData={tasksData}
+                    assignedPerson={table.getRow(taskID).original.jobHolder}
+                    setTaskIdForNote={setTaskIdForNote}
+                  />
                 </div>
               </div>
             </div>
@@ -2434,7 +2331,7 @@ const renderColumnControls = () => (
         </div>
       )}
 
-      {/* {showActiveTimer && <ActiveTimer />} */}
+     
     </>
   );
 };

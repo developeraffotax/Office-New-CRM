@@ -102,7 +102,7 @@ const handleUserOnDragEnd = (result) => {
                 <Draggable key={id} draggableId={id} index={index}>
                   {(provided) => (
                     <div
-                      className={`py-1 px-1 rounded-tl-md rounded-tr-md !cursor-pointer font-[500] text-[14px] ${
+                      className={`py-1 px-1 rounded-tl-md rounded-tr-md !cursor-pointer  font-[400] text-[14px] text-gray-900 font-google ${
                         filterValue === label ? activeClassName : ""
                       }`}
                       ref={provided.innerRef}

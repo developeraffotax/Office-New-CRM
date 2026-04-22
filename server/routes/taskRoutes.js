@@ -16,6 +16,7 @@ import {
   getDashboardTasks,
   getSingleTask,
   getTasks,
+  getTaskStats,
   importData,
   reordering,
   singleTaskComments,
@@ -42,6 +43,7 @@ router.post("/create/task", requiredSignIn, createTask);
 router.get("/get/all", requiredSignIn,  getAllTasks);
 
 router.get("/", requiredSignIn,  getTasks);
+router.get("/stats", requiredSignIn,  getTaskStats);
 
 // Completed Tasks
 router.get("/get/all/completed", requiredSignIn, getCompletedTasks);

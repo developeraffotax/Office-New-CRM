@@ -28,7 +28,11 @@ const getStatus = (startDateOfTask, deadlineOfTask) => {
     return     {
       accessorKey: "datestatus",
       Header: ({ column }) => {
-        const dateStatus = ["Overdue", "Due", "Upcoming"];
+        const dateStatus = [
+                    { label: "Due", value: "due" },
+                    { label: "Overdue", value: "overdue" },
+                    { label: "Upcoming", value: "upcoming" },
+                  ]
         return (
           <div className=" flex flex-col gap-[2px]">
             <span
@@ -48,8 +52,8 @@ const getStatus = (startDateOfTask, deadlineOfTask) => {
               >
                 <option value="">Select </option>
                 {dateStatus?.map((status, i) => (
-                  <option key={i} value={status}>
-                    {status}
+                  <option key={i} value={status.value}>
+                    {status.label}
                   </option>
                 ))}
               </select>
@@ -76,13 +80,7 @@ const getStatus = (startDateOfTask, deadlineOfTask) => {
           </div>
         );
       },
-      filterFn: (row, id, filterValue) => {
-        const status = getStatus(row.original.startDate, row.original.deadline);
-        if (status === undefined || status === null) return false;
-        return status.toString().toLowerCase() === filterValue.toLowerCase();
-      },
-      filterSelectOptions: ["Overdue", "Due"],
-      filterVariant: "select",
+ 
       size: 100,
       minSize: 90,
       maxSize: 110,

@@ -62,7 +62,7 @@ export const initSocketServer = (server) => {
         await redis.sadd(`sockets:user:${userId}`, socket.id);
         const isOnline = await redis.sismember("onlineUsers", userId);
         if (!isOnline) await redis.sadd("onlineUsers", userId);
-
+        // io.emit("runningTimersUpdate");
         console.log(`🟢 User online → ${userId}`);
       } catch (err) {
         console.error("❌ Failed to mark user online in Redis:", err.message);
@@ -82,6 +82,8 @@ export const initSocketServer = (server) => {
         await redis.sadd(`sockets:agent:${id}`, socket.id);
         const isOnline = await redis.sismember("onlineAgents", id);
         if (!isOnline) await redis.sadd("onlineAgents", id);
+
+        io.emit("runningTimersUpdate");
 
         console.log(`💻 Agent online → ${id}`);
       } catch (err) {
@@ -104,6 +106,7 @@ export const initSocketServer = (server) => {
           await redis.srem(userKey, socket.id);
           const remainingSockets = await redis.scard(userKey);
           if (remainingSockets === 0) {
+            //io.emit("runningTimersUpdate");
             await redis.srem("onlineUsers", socket.data.userId);
             console.log(`⚪ User offline → ${socket.data.userId}`);
           }
@@ -117,13 +120,14 @@ export const initSocketServer = (server) => {
           await redis.srem(agentKey, socket.id);
           const remainingSockets = await redis.scard(agentKey);
           if (remainingSockets === 0) {
+            io.emit("runningTimersUpdate");
             await redis.srem("onlineAgents", socket.data.agentId);
             console.log(`⚪ Agent offline → ${socket.data.agentId}`);
           }
         }
       } catch (err) {
         console.error("❌ Error updating Redis on disconnect:", err.message);
-      }
+      } 
     });
   });
 

@@ -5,6 +5,7 @@ import timerModel from "../models/timerModel.js";
 import timerStatusModel from "../models/timerStatusModel.js";
 
 import { connection as redis } from "../utils/ioredis.js";
+import { getOnlineAgents, getOnlineUsers } from "../utils/onlineStatus.js";
 
 
 // -----------------------------
@@ -813,25 +814,54 @@ export const updateJobHolderName = async (req, res) => {
     });
   }
 };
-
-// All Running Timer
+ 
+// ============================================
+// Get All Running Timers + Online Status
+// ============================================
 export const runningTimers = async (req, res) => {
   try {
-    const timers = await timerModel.find({ isRunning: true });
+    // 1️⃣ Get running timers
+    const timers = await timerModel
+      .find({ isRunning: true })
+      .lean(); // ⚡ important for performance
 
+    // 2️⃣ Get online agents from Redis
+    //const onlineAgents = await getOnlineAgents();
+    const onlineAgents = await getOnlineUsers();
+
+    // Convert to Set (⚡ O(1) lookup)
+    const onlineAgentsSet = new Set(onlineAgents);
+
+    console.log(onlineAgentsSet)
+
+    // 3️⃣ Attach online status
+    const timersWithStatus = timers.map((timer) => ({
+      ...timer,
+      isAgentOnline: onlineAgentsSet.has(
+        timer.clientId?.toString()
+      ),
+    }));
+
+    // 4️⃣ Response
     res.status(200).send({
       success: true,
       message: "List of running timers!",
-      timers: timers,
+      timers: timersWithStatus,
     });
+
   } catch (error) {
     console.log(error);
+
     res.status(500).send({
       success: false,
       message: "Error while get running timers!",
-      error: error,
+      error: error.message,
     });
   }
+
+
+
+
 };
 
 // Update holiday

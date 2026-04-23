@@ -18,6 +18,9 @@ export default function OnlineUsers() {
     return () => socket.off("runningTimersUpdate", getTimers);
   }, [socket]);
 
+
+  //console.log("THE RUNNING TIMERS ARE", runningTimers)
+
   // Fetch Running Timer
   const getTimers = async () => {
     try {
@@ -152,9 +155,18 @@ className={` flex items-center gap-2 cursor-pointer
                       {/* Info */}
                       <div className="flex flex-col truncate w-full">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-900 font-medium truncate">
-                            {timerUser?.name}
+                         <div className="flex items-center justify-start gap-1  ">
+
+                            <span className="text-sm text-gray-900 font-medium truncate">
+                            {timerUser?.name} 
                           </span>
+
+                          {timer?.isAgentOnline && <span title="AffoStaff Running" className=" flex justify-center items-center shrink-0 w-4 h-4 font-[400] text-xs rounded-full bg-amber-500 text-white ">A</span>}
+
+
+
+                          </div>
+
                           <div className="flex gap-1 text-[11px]">
                             <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-lg">
                               {new Date(

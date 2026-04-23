@@ -165,12 +165,15 @@ const AllTasks = ({ justShowTable = false }) => {
     const filters = [];
 
     filters.push({ id: "taskStatus", value: "Progress" });
+  // ✅ FIXED: taskDate default filter
+  
+  if (!isAdmin(auth)) {
+    filters.push({ id: "jobHolder", value: userName, });
+  }
+  
+  if (isAdmin(auth)) {
+      filters.push({ id: "taskDate", value: { type: "preset", value: "Today", }, });
 
-    if (!isAdmin(auth)) {
-      filters.push({
-        id: "jobHolder",
-        value: userName,
-      });
     }
 
     return filters;
@@ -555,6 +558,7 @@ const AllTasks = ({ justShowTable = false }) => {
       labelData,
 
       setTasksData,
+      setColumnFilters,
       setTaskID,
       setProjectName,
       setShowDetail,

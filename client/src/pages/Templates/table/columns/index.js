@@ -4,6 +4,7 @@ import createDescriptionColumn from "./DescriptionColumn";
 import createCopyColumn from "./CopyColumn";
 import createActionsColumn from "./ActionsColumn";
 import createUserListColumn from "./UserListColumn";
+import { refColumn } from "./refColumn";
 
 export const createTemplateColumns = ({
   categoryData,
@@ -16,6 +17,7 @@ export const createTemplateColumns = ({
   handleDeleteTemplateConfirmation,
   userName,
 }) => [
+  refColumn(),
   createCategoryColumn({ categoryData }),
   createNameColumn(),
   createDescriptionColumn({ setTemplate, setShowTemplate }),

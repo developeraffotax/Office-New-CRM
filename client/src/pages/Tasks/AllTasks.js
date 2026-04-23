@@ -21,7 +21,7 @@ import { style } from "../../utlis/CommonStyle";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { MdOutlineModeEdit } from "react-icons/md";
-import { TbLoader, TbLoader2 } from "react-icons/tb"; 
+import { TbLoader, TbLoader2 } from "react-icons/tb";
 import { useMaterialReactTable } from "material-react-table";
 import { format } from "date-fns";
 import { useLocation, useSearchParams } from "react-router-dom";
@@ -39,52 +39,48 @@ import { isAdmin } from "../../utlis/isAdmin";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import { openModal } from "../../redux/slices/globalModalSlice";
 import { convertTasksArrayToObject } from "./utils";
-import { colVisibility, csvConfig, dotColors, statusArr, textColors } from "./constants";
+import {
+  colVisibility,
+  csvConfig,
+  dotColors,
+  statusArr,
+  textColors,
+} from "./constants";
 import { useTaskFilters } from "./hooks/useTaskFilters";
 import { useTasksData } from "./hooks/useTasksData";
 import { useTaskStats } from "./hooks/useTaskStats";
 import { useTaskActions } from "./hooks/useTaskActions";
-
-
-
-
-
-
+import TaskHeaderActions from "./TaskActions";
 
 const AllTasks = ({ justShowTable = false }) => {
-
   const dispatch = useDispatch();
   const location = useLocation();
-    const socket = useSocket();
+  const socket = useSocket();
   const currentPath = location.pathname;
   const [searchParams] = useSearchParams();
   const comment_taskId = searchParams.get("comment_taskId");
 
-
-  const { auth, anyTimerRunning, searchValue, jid } = useSelector( (state) => state.auth, );
-
+  const { auth, anyTimerRunning, searchValue, jid } = useSelector(
+    (state) => state.auth,
+  );
 
   const [isOpen, setIsOpen] = useState(false);
   const [users, setUsers] = useState([]);
-
 
   const [departments, setDepartments] = useState([]);
   const [openAddDepartment, setOpenAddDepartment] = useState(false);
   const [departmentId, setDepartmentId] = useState("");
   const [showDepartment, setShowDepartment] = useState(false);
 
-
   const [openAddProject, setOpenAddProject] = useState(false);
   const [projects, setProjects] = useState([]);
   const [projectId, setProjectId] = useState("");
   const [showProject, setShowProject] = useState(false);
   const [allProjects, setAllProjects] = useState([]);
-  
-  
+
   const [play, setPlay] = useState(false);
   const timerRef = useRef();
   const [isShow, setIsShow] = useState(false);
-  
 
   const [isComment, setIsComment] = useState(false);
   const [commentTaskId, setCommentTaskId] = useState("");
@@ -92,8 +88,7 @@ const AllTasks = ({ justShowTable = false }) => {
   const [showDetail, setShowDetail] = useState(false);
   const [taskID, setTaskID] = useState("");
   const [projectName, setProjectName] = useState("");
-  
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [taskIdForNote, setTaskIdForNote] = useState("");
   const [totalHours, setTotalHours] = useState(0);
@@ -105,8 +100,7 @@ const AllTasks = ({ justShowTable = false }) => {
   const commentStatusRef = useRef(null);
   const [showlabel, setShowlabel] = useState(false);
   const [timerId, setTimerId] = useState("");
-  const [activity, setActivity] = useState("Chargeable"); 
-
+  const [activity, setActivity] = useState("Chargeable");
 
   // Bulk Action
   const [showEdit, setShowEdit] = useState(false);
@@ -122,16 +116,20 @@ const AllTasks = ({ justShowTable = false }) => {
   const [isUpload, setIsUpdate] = useState(false);
   const [reload, setReload] = useState(false);
 
+  const { selectedUsers, setSelectedUsers } = usePersistedUsers(
+    "tasks:selected_users",
+    userName,
+  );
 
-  const { selectedUsers, setSelectedUsers } = usePersistedUsers( "tasks:selected_users", userName, );
-
-
-// ==========================================
-// COLUMN VISIBILITY
-// ==========================================
+  // ==========================================
+  // COLUMN VISIBILITY
+  // ==========================================
   const [showcolumn, setShowColumn] = useState(false);
-  const [columnVisibility, setColumnVisibility] = useState({ _id: false, ...colVisibility, });
-  
+  const [columnVisibility, setColumnVisibility] = useState({
+    _id: false,
+    ...colVisibility,
+  });
+
   const showColumnRef = useRef(false);
   useClickOutside(showColumnRef, () => setShowColumn(false));
 
@@ -147,17 +145,15 @@ const AllTasks = ({ justShowTable = false }) => {
     );
   };
 
-
-
-// ==========================================
-// TABLE
-// ==========================================
+  // ==========================================
+  // TABLE
+  // ==========================================
   const [status, setStatus] = useState("progress");
   const [sorting, setSorting] = useState([]);
 
   const isNotCompleted = useMemo(() => status !== "completed", [status]);
 
-  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 20, });
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 20 });
 
   const [columnFilters, setColumnFilters] = useState(() => {
     const userName = auth?.user?.name;
@@ -165,41 +161,51 @@ const AllTasks = ({ justShowTable = false }) => {
     const filters = [];
 
     filters.push({ id: "taskStatus", value: "Progress" });
-  // ✅ FIXED: taskDate default filter
-  
-  if (!isAdmin(auth)) {
-    filters.push({ id: "jobHolder", value: userName, });
-  }
-  
-  if (isAdmin(auth)) {
-      filters.push({ id: "taskDate", value: { type: "preset", value: "Today", }, });
+    // ✅ FIXED: taskDate default filter
 
+    if (!isAdmin(auth)) {
+      filters.push({ id: "jobHolder", value: userName });
+    }
+
+    if (isAdmin(auth)) {
+      filters.push({
+        id: "taskDate",
+        value: { type: "preset", value: "Today" },
+      });
     }
 
     return filters;
   });
 
+  const {
+    departmentFilter,
+    dueStatusFilter,
+    jobHolderFilter,
+    taskStatusFilter,
+  } = useTaskFilters(columnFilters);
+  const { tasksData, loading, refetchTasks, rowCount, setTasksData } =
+    useTasksData({ pagination, searchValue, columnFilters, status });
+  const {
+    refetchStats,
+    taskStats,
+    getuserTaskCounts,
+    getdepartmentTaskCounts,
+    getTaskStatusTaskCounts,
+    getdueStatusCounts,
+  } = useTaskStats({ columnFilters, status });
+  const {
+    deleteTask,
+    updateTaskJLS,
+    updateTaskProject,
+    copyTask,
+    updateAlocateTask,
+    addlabelTask,
+    handleStatusComplete,
+  } = useTaskActions({ refetchStats, refetchTasks });
 
-
-  const { departmentFilter, dueStatusFilter, jobHolderFilter, taskStatusFilter, } = useTaskFilters(columnFilters);
-  const { tasksData, loading, refetchTasks, rowCount, setTasksData } = useTasksData({ pagination, searchValue, columnFilters, status });
-  const { refetchStats, taskStats, getuserTaskCounts, getdepartmentTaskCounts, getTaskStatusTaskCounts, getdueStatusCounts, } = useTaskStats({ columnFilters, status });
-  const { deleteTask, updateTaskJLS, updateTaskProject, copyTask, updateAlocateTask, addlabelTask, handleStatusComplete, } = useTaskActions({ refetchStats, refetchTasks });
-
-
-  const userTaskCountMap = useMemo(() => { return convertTasksArrayToObject(taskStats?.userStats); }, [taskStats]);
-
-
-
-
-
-
-
-
-
-
-
-
+  const userTaskCountMap = useMemo(() => {
+    return convertTasksArrayToObject(taskStats?.userStats);
+  }, [taskStats]);
 
   //---------- Get All Projects-----------
   const getAllProjects = async () => {
@@ -222,8 +228,6 @@ const AllTasks = ({ justShowTable = false }) => {
     }
   };
 
-
-
   //---------- Get All Deps-----------
   const getAllDepartments = async () => {
     try {
@@ -232,23 +236,18 @@ const AllTasks = ({ justShowTable = false }) => {
       );
       if (data?.success) {
         if (auth?.user?.role?.name === "Admin") {
-          
           setDepartments(data?.departments || []);
         } else {
-          
           const userProjects = allProjects.filter((project) =>
             project.users_list.some((user) => user._id === auth?.user?.id),
           );
 
-           
           const projectDepartmentIds = userProjects
-            .flatMap((proj) => proj.departments?.map((d) => d._id))  
+            .flatMap((proj) => proj.departments?.map((d) => d._id))
             .filter(Boolean);
 
-          
           const uniqueDeptIds = [...new Set(projectDepartmentIds)];
 
-          
           const filteredDepartments = data.departments.filter((dep) =>
             uniqueDeptIds.includes(dep._id),
           );
@@ -260,8 +259,6 @@ const AllTasks = ({ justShowTable = false }) => {
       console.log(error);
     }
   };
-
-  
 
   //   Get All Labels
   const getlabel = async () => {
@@ -276,10 +273,6 @@ const AllTasks = ({ justShowTable = false }) => {
       console.log(error);
     }
   };
-  
-
-
-
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
@@ -309,17 +302,12 @@ const AllTasks = ({ justShowTable = false }) => {
     }
   };
 
-
-
-
   // ---------Stop Timer ----------->
   const handleStopTimer = () => {
     if (timerRef.current) {
       timerRef.current.stopTimer();
     }
   };
-
-
 
   // -----------Download in CSV------>
   const flattenData = (data) => {
@@ -335,15 +323,11 @@ const AllTasks = ({ justShowTable = false }) => {
     }));
   };
 
-
-
   const handleExportData = () => {
-    const csvData = flattenData( tasksData);
+    const csvData = flattenData(tasksData);
     const csv = generateCsv(csvConfig)(csvData);
     download(csvConfig)(csv);
   };
-
-
 
   // ---------Handle Delete Task-------------
   const handleDeleteTaskConfirmation = (taskId) => {
@@ -363,8 +347,6 @@ const AllTasks = ({ justShowTable = false }) => {
     });
   };
 
-
-
   const handleCompleteStatus = (taskId) => {
     Swal.fire({
       title: "Are you sure?",
@@ -382,9 +364,7 @@ const AllTasks = ({ justShowTable = false }) => {
     });
   };
 
-
-
-    // Import CSV File
+  // Import CSV File
   // --------------Import Job data------------>
   const importJobData = async (file) => {
     setFLoading(true);
@@ -465,14 +445,6 @@ const AllTasks = ({ justShowTable = false }) => {
     }
   };
 
-
-
-
-
-
-
-
-
   const setColumnFromOutsideTable = (colKey, filterVal) => {
     setColumnFilters((prev) => {
       // Remove existing filter for this column
@@ -499,13 +471,6 @@ const AllTasks = ({ justShowTable = false }) => {
     });
   };
 
-
-
-
-
-
-
-
   const createComplaint = (data) => {
     dispatch(
       openModal({
@@ -514,22 +479,6 @@ const AllTasks = ({ justShowTable = false }) => {
       }),
     );
   };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   // ----------------------------
   // 🔑 Authentication & User Data
@@ -731,29 +680,9 @@ const AllTasks = ({ justShowTable = false }) => {
     },
   });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ==========================================
-// EFFECTS
-// ==========================================
-
+  // ==========================================
+  // EFFECTS
+  // ==========================================
 
   useEffect(() => {
     getAllProjects();
@@ -761,17 +690,13 @@ const AllTasks = ({ justShowTable = false }) => {
     getlabel();
   }, [auth]);
 
-
   useEffect(() => {
     if (auth) {
       getAllDepartments();
     }
   }, [auth, allProjects]);
 
- 
-
-
-    useEffect(() => {
+  useEffect(() => {
     const savedVisibility = JSON.parse(
       localStorage.getItem("visibileTasksColumn"),
     );
@@ -780,8 +705,6 @@ const AllTasks = ({ justShowTable = false }) => {
       setColumnVisibility(savedVisibility);
     }
   }, []);
-
-
 
   useEffect(() => {
     const timeId = localStorage.getItem("jobId");
@@ -797,21 +720,13 @@ const AllTasks = ({ justShowTable = false }) => {
     setTotalHours(calculateTotalHours(tasksData).toFixed(0));
   }, [tasksData]);
 
-
-
-
-
-  
-    useEffect(() => {
+  useEffect(() => {
     if (!socket) return;
 
     socket.on("task_updated", () => {
       refetchTasks();
     });
   }, [socket]);
-
-
-
 
   const renderColumnControls = () => (
     <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
@@ -969,138 +884,103 @@ const AllTasks = ({ justShowTable = false }) => {
           )}
         </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         {/* Project Buttons */}
         <div className="flex items-center gap-4 ">
-          {auth?.user?.role?.name === "Admin" && (
-            <div
-              className=" relative w-[8rem]    border-2 border-gray-200 rounded-md py-1 px-2 hidden sm:flex items-center justify-between gap-1"
-              onClick={() => setShowDepartment(!showDepartment)}
-            >
-              <span className="text-[15px] text-gray-900 cursor-pointer">
-                Departments
-              </span>
-              <span
-                onClick={() => setShowDepartment(!showDepartment)}
-                className="cursor-pointer"
-              >
-                {!showDepartment ? (
-                  <IoIosArrowDown className="h-5 w-5 text-black cursor-pointer" />
-                ) : (
-                  <IoIosArrowUp className="h-5 w-5 text-black cursor-pointer" />
-                )}
-              </span>
+            
+          <TaskHeaderActions 
+            auth={auth}
+            style={style}
 
-              {/* -----------Departments------- */}
-              <DepartmentDropdown
-                showDepartment={showDepartment}
-                departments={departments}
-                getAllDepartments={getAllDepartments}
-                setShowDepartment={setShowDepartment}
-                setDepartmentId={setDepartmentId}
-                setOpenAddDepartment={setOpenAddDepartment}
-              />
-            </div>
-          )}
+          
+            showDepartment={showDepartment}
+            setShowDepartment={setShowDepartment}
+            departments={departments}
+            getAllDepartments={getAllDepartments}
+            setDepartmentId={setDepartmentId}
+            setOpenAddDepartment={setOpenAddDepartment}
 
-          {/*  */}
-          {auth?.user?.role?.name === "Admin" && (
-            <div
-              className=" relative w-[8rem]    border-2 border-gray-200 rounded-md py-1 px-2 hidden sm:flex items-center justify-between gap-1"
-              onClick={() => setShowProject(!showProject)}
-            >
-              <span className="text-[15px] text-gray-900 cursor-pointer">
-                Projects
-              </span>
-              <span
-                onClick={() => setShowProject(!showProject)}
-                className="cursor-pointer"
-              >
-                {!showProject ? (
-                  <IoIosArrowDown className="h-5 w-5 text-black cursor-pointer" />
-                ) : (
-                  <IoIosArrowUp className="h-5 w-5 text-black cursor-pointer" />
-                )}
-              </span>
+            showProject={showProject}
+            setShowProject={setShowProject}
+            projects={projects}
+            getAllProjects={getAllProjects}
+            refetchTasks={refetchTasks}
+            setProjectId={setProjectId}
+            setOpenAddProject={setOpenAddProject}
 
-              {/* -----------Projects------- */}
-              <ProjectDropdown
-                showProject={showProject}
-                projects={projects}
-                getAllProjects={getAllProjects}
-                getAllTasks={refetchTasks}
-                setShowProject={setShowProject}
-                setProjectId={setProjectId}
-                setOpenAddProject={setOpenAddProject}
-              />
-            </div>
-          )}
+            
+            importJobData={importJobData}
+            fLoading={fLoading}
+            handleExportData={handleExportData}
+            setShowlabel={setShowlabel}
+            setIsOpen={setIsOpen}
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          />
 
-          <form>
-            <input
-              type="file"
-              name="file"
-              onChange={(e) => importJobData(e.target.files[0])}
-              accept=".csv, .xlsx"
-              id="importJobs"
-              className="hidden"
-            />
-            <label
-              htmlFor="importJobs"
-              className={`${
-                style.button1
-              } !bg-gray-100 !shadow-none text-black hidden sm:flex  hover:bg-orange-500 text-[15px] ${
-                fLoading ? "cursor-not-allowed opacity-90" : ""
-              }`}
-              style={{ padding: ".4rem 1.1rem", color: "#000" }}
-              title={"Import csv or excel file!"}
-              onClick={(e) => fLoading && e.preventDefault()}
-            >
-              {fLoading ? (
-                <TbLoader className="h-6 w-6 animate-spin text-black" />
-              ) : (
-                "Import"
-              )}
-            </label>
-          </form>
-          <button
-            className={`px-4 h-[2.2rem] hidden sm:flex items-center justify-center gap-1 rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
-            onClick={handleExportData}
-            title="Export Date"
-          >
-            <LuImport className="h-6 w-6 " /> Export
-          </button>
-          <button
-            className={`${style.button1} text-[15px] `}
-            onClick={() => setShowlabel(true)}
-            style={{ padding: ".4rem 1rem" }}
-          >
-            Add Label
-          </button>
 
-          <button
-            className={`${style.button1} text-[15px] `}
-            onClick={() => setOpenAddDepartment(true)}
-            style={{ padding: ".4rem 1rem" }}
-          >
-            Add Department
-          </button>
-
-          <button
-            className={`${style.button1} text-[15px] `}
-            onClick={() => setOpenAddProject(true)}
-            style={{ padding: ".4rem 1rem" }}
-          >
-            Add Project
-          </button>
-          <button
-            className={`${style.button1} text-[15px] `}
-            onClick={() => setIsOpen(true)}
-            style={{ padding: ".4rem 1rem" }}
-          >
-            Add Task
-          </button>
         </div>
+
+
+
+
+
       </div>
+
       {/*  */}
       <div className="flex flex-col   ">
         {/* -----------Filters By Deps--------- */}
@@ -1163,19 +1043,19 @@ const AllTasks = ({ justShowTable = false }) => {
 
           {/*  */}
           {/* -------------Filter Open Buttons-------- */}
-          {isAdmin(auth) && <span
-            className={` p-1 rounded-md hover:shadow-md    cursor-pointer border  ${
-              showJobHolder &&
-              "bg-gray-200"
-            }`}
-            onClick={() => {
-               
-              setShowJobHolder(!showJobHolder);
-            }}
-            title="Filter by Job Holder"
-          >
-            <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
-          </span>}
+          {isAdmin(auth) && (
+            <span
+              className={` p-1 rounded-md hover:shadow-md    cursor-pointer border  ${
+                showJobHolder && "bg-gray-200"
+              }`}
+              onClick={() => {
+                setShowJobHolder(!showJobHolder);
+              }}
+              title="Filter by Job Holder"
+            >
+              <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
+            </span>
+          )}
 
           {/* Edit Multiple Tasks */}
           <span
@@ -1242,7 +1122,7 @@ const AllTasks = ({ justShowTable = false }) => {
         </div>
 
         {/* ----------Job_Holder Summery Filters---------- */}
-        {isAdmin(auth) && showJobHolder &&  (
+        {isAdmin(auth) && showJobHolder && (
           <div className="flex items-center flex-wrap gap-4  py-1.5 border-t  max-lg:hidden">
             <DraggableFilterTabs
               droppableId={"users"}

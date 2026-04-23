@@ -99,14 +99,13 @@ const AllTasks = ({ justShowTable = false }) => {
   const [totalHours, setTotalHours] = useState(0);
   const [note, setNote] = useState("");
   const [taskId, setTaskId] = useState("");
-  const [showJobHolder, setShowJobHolder] = useState(false);
+  const [showJobHolder, setShowJobHolder] = useState(true);
   const [fLoading, setFLoading] = useState(false);
   const [labelData, setLabelData] = useState([]);
   const commentStatusRef = useRef(null);
   const [showlabel, setShowlabel] = useState(false);
   const [timerId, setTimerId] = useState("");
-  const [activity, setActivity] = useState("Chargeable");
-  const [activeBtn, setActiveBtn] = useState(""); 
+  const [activity, setActivity] = useState("Chargeable"); 
 
 
   // Bulk Action
@@ -1101,7 +1100,7 @@ const AllTasks = ({ justShowTable = false }) => {
       {/*  */}
       <div className="flex flex-col   ">
         {/* -----------Filters By Deps--------- */}
-        <div className="flex items-center flex-row overflow-x-auto hidden1 gap-2 py-1 max-lg:hidden">
+        <div className="flex items-center flex-row overflow-x-auto hidden1 gap-2 py-1.5 max-lg:hidden">
           <div className="flex items-center flex-row overflow-x-auto hidden1 gap-1  ">
             {/* --- Aligned "All" Tab --- */}
             <div
@@ -1160,24 +1159,23 @@ const AllTasks = ({ justShowTable = false }) => {
 
           {/*  */}
           {/* -------------Filter Open Buttons-------- */}
-          <span
-            className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border  ${
-              activeBtn === "jobHolder" &&
+          {isAdmin(auth) && <span
+            className={` p-1 rounded-md hover:shadow-md    cursor-pointer border  ${
               showJobHolder &&
-              "bg-orange-500 text-white"
+              "bg-gray-200"
             }`}
             onClick={() => {
-              setActiveBtn("jobHolder");
+               
               setShowJobHolder(!showJobHolder);
             }}
             title="Filter by Job Holder"
           >
             <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
-          </span>
+          </span>}
 
           {/* Edit Multiple Tasks */}
           <span
-            className={`hidden sm:block p-1 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+            className={`hidden sm:block p-1 rounded-md hover:shadow-md   cursor-pointer border ${
               showEdit && "bg-orange-500 text-white"
             }`}
             onClick={() => {
@@ -1190,7 +1188,7 @@ const AllTasks = ({ justShowTable = false }) => {
 
           <div className="relative">
             <div
-              className={`  p-[6px] rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
+              className={`  p-[6px] rounded-md hover:shadow-md  cursor-pointer border ${
                 showcolumn && "bg-orange-500 text-white"
               }`}
               onClick={() => setShowColumn(!showcolumn)}
@@ -1222,9 +1220,8 @@ const AllTasks = ({ justShowTable = false }) => {
             className={`
                   flex items-center justify-center
                   p-[6px]
-                  mb-1
-                  rounded-md
-                  bg-gray-50
+                  
+                  rounded-md 
                   border
                   shadow-sm
                   hover:shadow-md
@@ -1241,7 +1238,7 @@ const AllTasks = ({ justShowTable = false }) => {
         </div>
 
         {/* ----------Job_Holder Summery Filters---------- */}
-        {showJobHolder && activeBtn === "jobHolder" && (
+        {isAdmin(auth) && showJobHolder &&  (
           <div className="flex items-center flex-wrap gap-4  py-1.5 border-t  max-lg:hidden">
             <DraggableFilterTabs
               droppableId={"users"}
@@ -1270,6 +1267,7 @@ const AllTasks = ({ justShowTable = false }) => {
               <OutsideFilter
                 setColumnFromOutsideTable={setColumnFromOutsideTable}
                 title={"taskDate"}
+                columnFilters={columnFilters}
               />{" "}
             </div>
             {status !== "completed" && (

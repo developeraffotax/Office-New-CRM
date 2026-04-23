@@ -419,7 +419,7 @@ console.log("REQ.QUERY🧡", queryParams)
   
   
 
-    if (taskStatus) {
+    if (taskStatus && status !== "completed") {
     query.status = taskStatus;
   }
 

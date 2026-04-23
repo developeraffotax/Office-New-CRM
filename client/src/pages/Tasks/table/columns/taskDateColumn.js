@@ -61,6 +61,35 @@ const StartDateHeader = memo(({ column }) => {
     }
   }, [filterValue, dateRange]);
 
+    useEffect(() => {
+    const filter = column.getFilterValue();
+
+    if (!filter) {
+      setFilterValue("");
+      setDateRange({ from: "", to: "" });
+      setShowPopover(false);
+      return;
+    }
+
+    // ✅ Handle preset
+    if (filter.type === "preset") {
+      setFilterValue(filter.value);
+      setShowPopover(false);
+    }
+
+    // ✅ Handle range
+    if (filter.type === "range") {
+      setFilterValue("Custom Range");
+
+      setDateRange({
+        from: filter.from,
+        to: filter.to,
+      });
+
+      setShowPopover(true);
+    }
+  }, [column.getFilterValue()]);
+
   const handleChange = (e) => {
     const val = e.target.value;
     setFilterValue(val);

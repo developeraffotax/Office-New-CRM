@@ -58,6 +58,9 @@ export const initSocketServer = (server) => {
       socket.data.userId = userId; // store on socket
       socket.join(`user:${userId}`);
 
+       // ✅ ADD THIS HERE
+      await redis.set(`socket:user:${socket.id}`, userId);
+
       try {
         await redis.sadd(`sockets:user:${userId}`, socket.id);
         const isOnline = await redis.sismember("onlineUsers", userId);
@@ -78,6 +81,9 @@ export const initSocketServer = (server) => {
       socket.data.agentId = id; // store on socket
       socket.join(`agent:${id}`);
 
+       // ✅ ADD THIS HERE
+      await redis.set(`socket:agent:${socket.id}`, id);
+
       try {
         await redis.sadd(`sockets:agent:${id}`, socket.id);
         const isOnline = await redis.sismember("onlineAgents", id);
@@ -94,41 +100,100 @@ export const initSocketServer = (server) => {
     // -----------------------
     // DISCONNECT
     // -----------------------
+
+
+
+
+
     socket.on("disconnect", async () => {
       console.log(`🔴 Socket disconnected: ${socket.id}`);
 
-      try {
-        // -------------------
-        // Handle user disconnect
-        // -------------------
-        if (socket?.data?.userId) {
-          const userKey = `sockets:user:${socket.data.userId}`;
-          await redis.srem(userKey, socket.id);
-          const remainingSockets = await redis.scard(userKey);
-          if (remainingSockets === 0) {
-            //io.emit("runningTimersUpdate");
-            await redis.srem("onlineUsers", socket.data.userId);
-            console.log(`⚪ User offline → ${socket.data.userId}`);
-          }
-        }
+  try {
+    const userId = await redis.get(`socket:user:${socket.id}`);
+    const agentId = await redis.get(`socket:agent:${socket.id}`);
 
-        // -------------------
-        // Handle agent disconnect
-        // -------------------
-        if (socket?.data?.agentId) {
-          const agentKey = `sockets:agent:${socket.data.agentId}`;
-          await redis.srem(agentKey, socket.id);
-          const remainingSockets = await redis.scard(agentKey);
-          if (remainingSockets === 0) {
-            io.emit("runningTimersUpdate");
-            await redis.srem("onlineAgents", socket.data.agentId);
-            console.log(`⚪ Agent offline → ${socket.data.agentId}`);
-          }
-        }
-      } catch (err) {
-        console.error("❌ Error updating Redis on disconnect:", err.message);
-      } 
-    });
+    // delete mapping first (IMPORTANT)
+    await redis.del(`socket:user:${socket.id}`);
+    await redis.del(`socket:agent:${socket.id}`);
+
+    // ---------------- USER CLEANUP ----------------
+    if (userId) {
+      const userKey = `sockets:user:${userId}`;
+
+      await redis.srem(userKey, socket.id);
+
+      const remaining = await redis.scard(userKey);
+
+      if (remaining === 0) {
+        await redis.srem("onlineUsers", userId);
+        console.log(`⚪ User offline → ${userId}`);
+      }
+    }
+
+    // ---------------- AGENT CLEANUP ----------------
+    if (agentId) {
+      const agentKey = `sockets:agent:${agentId}`;
+
+      await redis.srem(agentKey, socket.id);
+
+      const remaining = await redis.scard(agentKey);
+
+      if (remaining === 0) {
+
+        io.emit("runningTimersUpdate");
+
+        
+        await redis.srem("onlineAgents", agentId);
+        console.log(`⚪ Agent offline → ${agentId}`);
+      }
+    }
+
+  } catch (err) {
+    console.error("❌ Disconnect cleanup error:", err.message);
+  }
+});
+
+
+
+
+
+
+
+    // socket.on("disconnect", async () => {
+    //   console.log(`🔴 Socket disconnected: ${socket.id}`);
+
+    //   try {
+    //     // -------------------
+    //     // Handle user disconnect
+    //     // -------------------
+    //     if (socket?.data?.userId) {
+    //       const userKey = `sockets:user:${socket.data.userId}`;
+    //       await redis.srem(userKey, socket.id);
+    //       const remainingSockets = await redis.scard(userKey);
+    //       if (remainingSockets === 0) {
+    //         //io.emit("runningTimersUpdate");
+    //         await redis.srem("onlineUsers", socket.data.userId);
+    //         console.log(`⚪ User offline → ${socket.data.userId}`);
+    //       }
+    //     }
+
+    //     // -------------------
+    //     // Handle agent disconnect
+    //     // -------------------
+    //     if (socket?.data?.agentId) {
+    //       const agentKey = `sockets:agent:${socket.data.agentId}`;
+    //       await redis.srem(agentKey, socket.id);
+    //       const remainingSockets = await redis.scard(agentKey);
+    //       if (remainingSockets === 0) {
+    //         io.emit("runningTimersUpdate");
+    //         await redis.srem("onlineAgents", socket.data.agentId);
+    //         console.log(`⚪ Agent offline → ${socket.data.agentId}`);
+    //       }
+    //     }
+    //   } catch (err) {
+    //     console.error("❌ Error updating Redis on disconnect:", err.message);
+    //   } 
+    // });
   });
 
   return io;

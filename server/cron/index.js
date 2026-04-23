@@ -3,6 +3,7 @@ import {  setWatchForAffotax, setWatchForOutsource } from "../utils/setWatch.js"
 import { getSentReceivedCountsPerThread } from "../controllers/ticketController.js";
 import { sendDatatoGoogleSheet } from "../utils/googleSheet.js";
 import { updateSendReceivedLeads } from "../utils/updateSendReceivedLeads.js";
+import {cleanupStaleOnline} from "../utils/cleanupStaleOnline.js";
 
 export const setupCronJobs = () => {
   // Every 6 days at midnight
@@ -33,9 +34,8 @@ export const setupCronJobs = () => {
     sendDatatoGoogleSheet();
   });
 
-  cron.schedule("* * * * *", async () => {
-  
-  });
+
+  cron.schedule("0 0 * * *", cleanupStaleOnline); 
 
   // Run immediately once at startup
   sendDatatoGoogleSheet();

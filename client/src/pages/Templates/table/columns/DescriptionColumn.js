@@ -66,11 +66,23 @@ export const createDescriptionColumn = ({ setTemplate, setShowTemplate }) => ({
       </div>
     );
   },
-  filterFn: (row, columnId, filterValue) => {
-    const cellValue = row.original[columnId]?.toString().toLowerCase() || "";
-    const keywords = filterValue.toLowerCase().split(" ").filter(Boolean);
-    return keywords.every((keyword) => cellValue.includes(keyword));
-  },
+          filterFn: (row, columnId, filterValue) => {
+  if (!filterValue) return true;
+
+  const cellValue =
+    row.original[columnId]?.toString().toLowerCase() || "";
+
+  // Split search text into words
+  const words = filterValue
+    .toLowerCase()
+    .trim()
+    .split(/\s+/); // split by spaces
+
+  // Check every word exists in text
+  return words.every((word) =>
+    cellValue.includes(word)
+  );
+},
   size: 500,
   minSize: 350,
   maxSize: 560,

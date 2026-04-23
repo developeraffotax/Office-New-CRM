@@ -46,10 +46,23 @@ export const subjectColumn = (ctx) => {
         </div>
       );
     },
-    filterFn: (row, columnId, filterValue) => {
-      const cellValue = row.original[columnId]?.toString().toLowerCase() || "";
-      return cellValue.includes(filterValue.toLowerCase());
-    },
+              filterFn: (row, columnId, filterValue) => {
+  if (!filterValue) return true;
+
+  const cellValue =
+    row.original[columnId]?.toString().toLowerCase() || "";
+
+  // Split search text into words
+  const words = filterValue
+    .toLowerCase()
+    .trim()
+    .split(/\s+/); // split by spaces
+
+  // Check every word exists in text
+  return words.every((word) =>
+    cellValue.includes(word)
+  );
+},
     filterVariant: "select",
   };
 };

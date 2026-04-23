@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
- 
- import { FaPen } from "react-icons/fa";
+
+import { FaDownload, FaPen } from "react-icons/fa";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { style } from "../../utlis/CommonStyle";
@@ -8,7 +8,6 @@ import { BiLoaderCircle } from "react-icons/bi";
 import { useSelector } from "react-redux";
 
 export default function Profile() {
-  
   const auth = useSelector((state) => state.auth.auth);
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -19,11 +18,13 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const [imageLoad, setImageLoad] = useState(false);
 
+  const downloadLink = `https://github.com/developeraffotax/affostaff/releases/download/v1.0.1/AffoStaff-1.0.1.Setup.exe`;
+
   //    Get User Info
   const getUserInfo = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_user/${auth.user.id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_user/${auth.user.id}`,
       );
       setName(data?.user?.name);
       setUsername(data?.user?.username);
@@ -98,7 +99,7 @@ export default function Profile() {
           emergency_contact,
           address,
           avatar,
-        }
+        },
       );
       if (data) {
         getUserInfo();
@@ -114,7 +115,7 @@ export default function Profile() {
 
   return (
     <>
-      <div className="w-full min-h-screen">
+      <div className="w-full min-h-screen  font-inter">
         <div className="bg-gradient-to-br from-orange-600 via-orange-300 to-orange-500 h-[10rem] rounded-b-lg"></div>
         <div className="flex items-center justify-center translate-y-[-10rem] w-full z-[10] py-4 px-3">
           <div className="w-[28rem] min-h-[15rem]  shadow-md rounded-md  bg-gray-50 py-4 px-3">
@@ -202,20 +203,43 @@ export default function Profile() {
                 />
                 <span>Address</span>
               </div>
-              <div className="flex items-center justify-end w-full">
+               
+              <div className=" flex flex-col sm:flex-row items-center justify-between w-full mt-6 gap-4">
+               
+                <a
+                  href={downloadLink}
+                   
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto flex items-center justify-center gap-0.5 px-5 h-[2.6rem] text-sm font-semibold text-gray-600 border-2 border-gray-500 rounded-md hover:bg-gray-200 transition-all duration-200 active:scale-95 shadow-sm"
+                >
+                   
+                  Get AffoStaff<span className=" w-4 h-4 flex justify-center items-center text-xs font-[400] rounded-full bg-amber-500 text-white">A</span>
+                </a>
+
+                
                 <button
                   disabled={loading}
-                  className={`px-6 h-[2.6rem] min-w-[7rem] flex items-center justify-center  rounded-md cursor-pointer shadow-md bg-orange-500 text-white border-none outline-none hover:bg-orange-600 ${
-                    loading && "cursor-not-allowed"
+                  type="submit"
+                  className={`w-full sm:w-auto px-8 h-[2.6rem] min-w-[8rem] flex items-center justify-center gap-2 rounded-md font-semibold cursor-pointer shadow-md bg-orange-500 text-white border-none outline-none hover:bg-orange-600 hover:shadow-lg transition-all duration-200 active:scale-95 ${
+                    loading && "cursor-not-allowed opacity-70"
                   }`}
                 >
                   {loading ? (
                     <BiLoaderCircle className="h-5 w-5 animate-spin" />
                   ) : (
-                    "Update"
+                    "Update Profile"
                   )}
                 </button>
               </div>
+
+
+
+
+
+
+
+
+              
             </form>
           </div>
         </div>

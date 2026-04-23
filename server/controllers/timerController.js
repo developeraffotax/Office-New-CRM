@@ -827,7 +827,7 @@ export const runningTimers = async (req, res) => {
 
     // 2️⃣ Get online agents from Redis
     //const onlineAgents = await getOnlineAgents();
-    const onlineAgents = await getOnlineUsers();
+    const onlineAgents = await getOnlineAgents();
 
     // Convert to Set (⚡ O(1) lookup)
     const onlineAgentsSet = new Set(onlineAgents);

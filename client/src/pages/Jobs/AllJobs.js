@@ -734,6 +734,7 @@ const getJobsStats = useCallback(async () => {
     // BUILD FINAL PARAMS
     // ======================================================
 
+    
     const params = {
 
         status,
@@ -2815,7 +2816,7 @@ useEffect(() => {
 
 
 
-          {/* <div
+          <div
             className={` p-1 rounded-md hover:shadow-md mb-1  cursor-pointer border ${
               showUniqueClients && "bg-orange-500 text-white"
             }`}
@@ -2830,7 +2831,7 @@ useEffect(() => {
             }}
           >
             <BsPersonCheckFill className="h-6 w-6  cursor-pointer" />
-          </div> */}
+          </div>
 
 
         </div>

@@ -3313,10 +3313,8 @@ export const getUniqueClientJobs = async (req, res) => {
     const pipeline = [
 
       // Step 1: Apply filters
-      {
-        $match: query
-      },
-
+      { $match: query },
+      
       // Step 2: Sort BEFORE grouping
       // This decides WHICH job is kept
       {
@@ -3324,27 +3322,27 @@ export const getUniqueClientJobs = async (req, res) => {
           _id : 1
         }
       },
-
+      
       // Step 3: Group by company
       {
         $group: {
           _id: "$companyName",
-
+          
           // keep FIRST document
           doc: {
             $first: "$$ROOT"
           }
-
+          
         }
       },
-
+      
       // Step 4: Restore original document
       {
         $replaceRoot: {
           newRoot: "$doc"
         }
       },
-
+      
       // Step 5: Pagination
       {
         $skip: skip
@@ -3370,12 +3368,13 @@ export const getUniqueClientJobs = async (req, res) => {
       await jobsModel.aggregate([
 
         { $match: query },
-
+        
         {
           $group: {
             _id: "$companyName"
           }
         },
+        
 
         {
           $count: "total"
@@ -3467,17 +3466,18 @@ export const getUniqueClientJobsStats = async (req, res) => {
            
           // =========================
           allJobsCount: [
-
-            { $match: baseMatchWithoutJobName },
-
+            
+            { $match: baseMatchWithoutJobName }, 
+            
             { $sort: { _id: 1 } },
-
+            
             {
               $group: {
                 _id: "$companyName",
                 doc: { $first: "$$ROOT" }
               }
             },
+            
 
             {
               $count: "count"
@@ -3491,30 +3491,64 @@ export const getUniqueClientJobsStats = async (req, res) => {
         userJobCounts: [
 
             // 1. FILTER
-            { $match: baseMatch },
-
-            // 2. SORT (controls which job represents company)
-            { $sort: { _id: 1 } },
-
-            // 3. DEDUPE by company
-            {
-              $group: {
-                _id: "$companyName",
-                doc: { $first: "$$ROOT" }
-              }
-            },
-
-            // 4. FLATTEN
-            {
-              $replaceRoot: {
-                newRoot: "$doc"
-              }
-            },
-
-            // 5. FINAL STATS (ON UNIQUE COMPANIES ONLY)
+            
+            { $match: baseMatch},
+            
+            // { $sort: { _id: 1 } },
+            
+            
+            // {
+            //   $group: {
+            //     _id: "$companyName",
+            //     doc: { $first: "$$ROOT" }
+            //   }
+            // },
+            
+            
+            // {
+            //   $replaceRoot: {
+            //     newRoot: "$doc"
+            //   }
+            // },
+            
+            
             {
               $group: {
                 _id: "$job.jobHolder",
+                jobs: { $push: "$$ROOT" },
+                count: { $sum: 1 }
+              }
+            }
+            
+          ],
+
+          // =========================
+          // DEPARTMENT COUNT
+          // =========================
+          departmentJobCounts: [
+            
+            { $match: baseMatchWithoutJobName },
+            
+            // { $sort: { _id: 1 } },
+            
+            // {
+            //   $group: {
+            //     _id: "$companyName",
+            //     doc: { $first: "$$ROOT" }
+            //   }
+            // },
+            
+            // {
+            //   $replaceRoot: {
+            //     newRoot: "$doc"
+            //   }
+            // },
+
+
+            
+            {
+              $group: {
+                _id: "$job.jobName",
                 count: { $sum: 1 }
               }
             }
@@ -3522,180 +3556,149 @@ export const getUniqueClientJobsStats = async (req, res) => {
           ],
 
           // =========================
-          // DEPARTMENT COUNT
-          // =========================
-          // departmentJobCounts: [
-
-          //   { $match: baseMatchWithoutJobName },
-
-          //   { $sort: { _id: 1 } },
-
-          //   {
-          //     $group: {
-          //       _id: "$companyName",
-          //       doc: { $first: "$$ROOT" }
-          //     }
-          //   },
-
-          //   {
-          //     $replaceRoot: {
-          //       newRoot: "$doc"
-          //     }
-          //   },
-
-          //   {
-          //     $group: {
-          //       _id: "$job.jobName",
-          //       count: { $sum: 1 }
-          //     }
-          //   }
-
-          // ],
-
-          // =========================
           // STATUS COUNT
           // =========================
-          // jobStatusJobCounts: [
+          jobStatusJobCounts: [
+            
+            { $match: baseMatch },
+            
+            // { $sort: { _id: 1 } },
+            
+            // {
+            //   $group: {
+            //     _id: "$companyName",
+            //     doc: { $first: "$$ROOT" }
+            //   }
+            // },
+            
+            // {
+            //   $replaceRoot: {
+            //     newRoot: "$doc"
+            //   }
+            // },
+            
+            {
+              $group: {
+                _id: "$job.jobStatus",
+                count: { $sum: 1 }
+              }
+            }
 
-          //   { $match: baseMatch },
-
-          //   { $sort: { _id: 1 } },
-
-          //   {
-          //     $group: {
-          //       _id: "$companyName",
-          //       doc: { $first: "$$ROOT" }
-          //     }
-          //   },
-
-          //   {
-          //     $replaceRoot: {
-          //       newRoot: "$doc"
-          //     }
-          //   },
-
-          //   {
-          //     $group: {
-          //       _id: "$job.jobStatus",
-          //       count: { $sum: 1 }
-          //     }
-          //   }
-
-          // ],
+          ],
 
           // =========================
           // DUE STATUS COUNTS
           // =========================
-          // dueStatusCounts: [
+          dueStatusCounts: [
 
-          //   { $match: baseMatch },
+            { $match: baseMatch },
+            
+            // { $sort: { _id: 1 } },
+            
+            // {
+            //   $group: {
+            //     _id: "$companyName",
+            //     doc: { $first: "$$ROOT" }
+            //   }
+            // },
+            
+            // {
+            //   $replaceRoot: {
+            //     newRoot: "$doc"
+            //   }
+            // },
+            
+            {
+              $group: {
 
-          //   { $sort: { _id: 1 } },
+                _id: {
+                  $switch: {
 
-          //   {
-          //     $group: {
-          //       _id: "$companyName",
-          //       doc: { $first: "$$ROOT" }
-          //     }
-          //   },
+                    branches: [
 
-          //   {
-          //     $replaceRoot: {
-          //       newRoot: "$doc"
-          //     }
-          //   },
+                      {
+                        case: {
+                          $lt: [
+                            "$job.jobDeadline",
+                            today
+                          ]
+                        },
+                        then: "overdue"
+                      },
 
-          //   {
-          //     $group: {
+                      {
+                        case: {
+                          $or: [
 
-          //       _id: {
-          //         $switch: {
+                            {
+                              $and: [
+                                {
+                                  $lte: [
+                                    "$job.yearEnd",
+                                    today
+                                  ]
+                                },
+                                {
+                                  $gt: [
+                                    "$job.jobDeadline",
+                                    today
+                                  ]
+                                }
+                              ]
+                            },
 
-          //           branches: [
+                            {
+                              $eq: [
 
-          //             {
-          //               case: {
-          //                 $lt: [
-          //                   "$job.jobDeadline",
-          //                   today
-          //                 ]
-          //               },
-          //               then: "overdue"
-          //             },
+                                {
+                                  $dateTrunc: {
+                                    date: "$job.jobDeadline",
+                                    unit: "day"
+                                  }
+                                },
 
-          //             {
-          //               case: {
-          //                 $or: [
+                                today
+                              ]
+                            }
 
-          //                   {
-          //                     $and: [
-          //                       {
-          //                         $lte: [
-          //                           "$job.yearEnd",
-          //                           today
-          //                         ]
-          //                       },
-          //                       {
-          //                         $gt: [
-          //                           "$job.jobDeadline",
-          //                           today
-          //                         ]
-          //                       }
-          //                     ]
-          //                   },
+                          ]
+                        },
+                        then: "due"
+                      },
 
-          //                   {
-          //                     $eq: [
+                      {
+                        case: {
+                          $and: [
+                            {
+                              $gt: [
+                                "$job.jobDeadline",
+                                today
+                              ]
+                            },
+                            {
+                              $gt: [
+                                "$job.yearEnd",
+                                today
+                              ]
+                            }
+                          ]
+                        },
+                        then: "upcoming"
+                      }
 
-          //                       {
-          //                         $dateTrunc: {
-          //                           date: "$job.jobDeadline",
-          //                           unit: "day"
-          //                         }
-          //                       },
+                    ],
 
-          //                       today
-          //                     ]
-          //                   }
+                    default: "other"
 
-          //                 ]
-          //               },
-          //               then: "due"
-          //             },
+                  }
+                },
 
-          //             {
-          //               case: {
-          //                 $and: [
-          //                   {
-          //                     $gt: [
-          //                       "$job.jobDeadline",
-          //                       today
-          //                     ]
-          //                   },
-          //                   {
-          //                     $gt: [
-          //                       "$job.yearEnd",
-          //                       today
-          //                     ]
-          //                   }
-          //                 ]
-          //               },
-          //               then: "upcoming"
-          //             }
+                count: { $sum: 1 }
 
-          //           ],
+              }
+            }
 
-          //           default: "other"
-
-          //         }
-          //       },
-
-          //       count: { $sum: 1 }
-
-          //     }
-          //   }
-
-          // ]
+          ]
 
         }
 
@@ -3704,9 +3707,9 @@ export const getUniqueClientJobsStats = async (req, res) => {
     ]);
 
 
-    console.log("THE STATS ARE🌹🌹🌹🌹✔️✔️✔️✔️✔️👍👍👍👍👍", stats[0])
+     console.log("THE STATS ARE🌹🌹🌹🌹✔️✔️✔️✔️✔️👍👍👍👍👍", stats)
 
-    return;
+     
     res.status(200).send({
       success: true,
       data: stats[0]
@@ -3725,16 +3728,6 @@ export const getUniqueClientJobsStats = async (req, res) => {
   }
 
 };
-
-
-
-
-
-
-
-
-
-
 
 
 

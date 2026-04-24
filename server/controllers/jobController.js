@@ -3474,7 +3474,7 @@ export const getUniqueClientJobsStats = async (req, res) => {
             {
               $group: {
                 _id: "$companyName",
-                doc: { $first: "$$ROOT" }
+                // doc: { $first: "$$ROOT" }
               }
             },
             
@@ -3515,7 +3515,7 @@ export const getUniqueClientJobsStats = async (req, res) => {
             {
               $group: {
                 _id: "$job.jobHolder",
-                jobs: { $push: "$$ROOT" },
+                // jobs: { $push: "$$ROOT" },
                 count: { $sum: 1 }
               }
             }
@@ -3705,9 +3705,7 @@ export const getUniqueClientJobsStats = async (req, res) => {
       }
 
     ]);
-
-
-     console.log("THE STATS ARE🌹🌹🌹🌹✔️✔️✔️✔️✔️👍👍👍👍👍", stats)
+ 
 
      
     res.status(200).send({

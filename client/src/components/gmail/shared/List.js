@@ -43,6 +43,7 @@ export default function List({
   selectedThreads,
   toggleThread,
   setComment,
+  setCreateReminderModal
 }) {
   const [replyThread, setReplyThread] = useState(null);
 
@@ -86,6 +87,7 @@ export default function List({
           setComment={setComment}
           setReplyThread={setReplyThread}
           replyThread={replyThread}
+          setCreateReminderModal={setCreateReminderModal}
         />
       ))}
 

@@ -43,6 +43,11 @@ export const createReminder = async (req, res) => {
 
     const groupId = new mongoose.Types.ObjectId();
 
+    let newRedirectLink = `${redirectLink}`;
+
+    if(!redirectLink.startsWith("/mail")) {
+      newRedirectLink = `${redirectLink}?comment_taskId=${taskId}`
+    }
     
     for (let user of usersList) {
       const reminder = await reminderModel.create({
@@ -51,7 +56,7 @@ export const createReminder = async (req, res) => {
         description,
         taskId,
         scheduledAt: new Date(scheduledAt),
-        redirectLink: `${redirectLink}?comment_taskId=${taskId}`,
+        redirectLink: newRedirectLink,
         groupId,
 });
 

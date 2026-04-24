@@ -19,7 +19,8 @@ import IconButtonWithBadge from "./ui/IconButtonWithBadge";
 import { confirmAlert } from "./ui/Swal";
  import { useSelector } from "react-redux";
 import ThreadDateTime from "./ui/ThreadDateTime";
-
+import { BiSolidBellPlus } from "react-icons/bi";
+import { PiBell } from "react-icons/pi";
 
 function parseEmail(str) {
   if (!str) return "";
@@ -62,7 +63,8 @@ export default function Row({
   index,
   setComment,
   setReplyThread,
-  replyThread
+  replyThread,
+  setCreateReminderModal
 }) {
   const [assignOpen, setAssignOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -560,6 +562,34 @@ const handleMarkAsRead = async (threadId, companyName) => {
             >
               <FiMoreVertical className="size-4" />
             </button> */}
+
+             {/* <div className="flex items-center gap-4">
+                        <span className="flex items-center gap-1 text-gray-500 w-[40%]">
+                          <BiBellPlus className="h-4 w-4 text-gray-500" />
+                          Add Reminder
+                        </span>
+                        <span
+                          onClick={() => setShowReminder(true)}
+                          className=" text-pink-500 hover:text-pink-600"
+                        >
+                          <BiSolidBellPlus className="h-7 w-7 cursor-pointer " />
+                        </span>
+                      </div> */}
+
+
+
+            <button
+              className="p-1 rounded-md hover:bg-gray-200 text-gray-500  hover:text-amber-500"
+              title="Set Reminder"
+              onClick={(e) => {
+                 setCreateReminderModal({isOpen: true, threadId: thread?.threadId, link: `/mail?folder=${folder}&companyName=${myCompanyName}&mailThreadId=${thread?.threadId}` })
+              }}
+            >
+              <PiBell className="size-5  font-semibold " />
+            </button>
+
+
+
 
             <button
               className="p-1 rounded-md hover:bg-gray-200 text-gray-500  hover:text-red-500"

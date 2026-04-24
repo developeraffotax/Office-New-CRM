@@ -11,6 +11,7 @@ import { IoMdClose } from "react-icons/io";
 import { SelectionHeader } from "../shared/FloatingSelectionToolbar";
 import CommentList from "../comments/CommentList";
 import { useSelector } from "react-redux";
+import Reminder from "../../../utlis/Reminder";
 
 export default function MailLayout({
   users,
@@ -62,6 +63,12 @@ export default function MailLayout({
     form: {},
     
     ticketBindings: {}
+  });
+
+    const [createReminderModal, setCreateReminderModal] = useState({
+    isOpen: false,
+    threadId: "",
+    link: "",
   });
 
   // Inside your Threads List component
@@ -143,6 +150,7 @@ export default function MailLayout({
           selectedThreads={selectedThreads}
           toggleThread={toggleThread}
           setComment={setComment}
+          setCreateReminderModal={setCreateReminderModal}
         />
 
         <Pagination pagination={pagination} setFilters={setFilters} />
@@ -190,6 +198,24 @@ export default function MailLayout({
           users={users}
           myCompany={companyName}
         />
+      )}
+
+      {/* Lead Modal */}
+      {createReminderModal.isOpen && (
+        
+      <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/80 flex items-center justify-center">
+        <Reminder
+          setShowReminder={() => {
+            setCreateReminderModal({
+              isOpen: false,
+              link: "",
+              threadId: ""
+            })
+          }}
+          taskId={createReminderModal.threadId}
+          link={createReminderModal.link}
+        />
+      </div> 
       )}
 
       {/* Comments */}

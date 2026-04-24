@@ -33,6 +33,12 @@ export const clientNameColumn = ({
         }, 300);
       };
 
+            useEffect(() => {
+        const filterValue = column.getFilterValue() ?? "";
+
+        setValue(filterValue);
+      }, [column.getFilterValue()]);
+
       // Cleanup debounce on unmount
       useEffect(() => {
         return () => {

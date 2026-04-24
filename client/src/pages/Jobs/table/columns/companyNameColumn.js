@@ -27,6 +27,15 @@ export const companyNameColumn = ({ columnFilters, searchValue }) => {
         }, 300);
       };
 
+        // ✅ Sync when filter is cleared externally
+      useEffect(() => {
+        const filterValue = column.getFilterValue() ?? "";
+
+        setValue(filterValue);
+      }, [column.getFilterValue()]);
+
+  
+
       // Cleanup debounce on unmount
       useEffect(() => {
         return () => {

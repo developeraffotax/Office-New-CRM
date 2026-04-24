@@ -65,6 +65,7 @@ import { openModal } from "../../redux/slices/globalModalSlice";
 import { columnData, dateStatus, departments,   statusInit } from "./constants";
 import { buildFilters } from "./utils/utils";
 import { rowMatchesSearch } from "./utils/rowMatchesSearch";
+import JobHeaderActions from "./JobHeaderActions";
  
  
  
@@ -1681,7 +1682,9 @@ const jobCtx = useMemo(() => {
     dataLable,         
     labelData,
     totalClientPaidFee, 
-    showUniqueClients,         
+    showUniqueClients,   
+    
+    
     addJoblabel,        
     setCompanyName,     
     addDatalabel1,     
@@ -1699,6 +1702,7 @@ const jobCtx = useMemo(() => {
     setTableData,
     handleUpdateClientStatus,
     handleUpdateUser,
+    setColumnFilters,
 
     columnFilters,
     searchValue,
@@ -2517,77 +2521,42 @@ useEffect(() => {
           </div>
 
           <div className="flex items-center gap-4">
-            <form>
-              <input
-                type="file"
-                name="file"
-                onChange={(e) => importJobData(e.target.files[0])}
-                accept=".csv, .xlsx"
-                id="importJobs"
-                className="hidden"
-              />
-              <label
-                htmlFor="importJobs"
-                className={`${
-                  style.button1
-                } !bg-gray-100 hidden sm:flex !shadow-none text-black hover:bg-orange-500 text-[15px] ${
-                  fLoading ? "cursor-not-allowed opacity-90" : ""
-                }`}
-                style={{ padding: ".4rem 1.1rem", color: "#000" }}
-                title={"Import csv or excel file!"}
-                onClick={(e) => fLoading && e.preventDefault()}
-              >
-                {fLoading ? (
-                  <TbLoader className="h-6 w-6 animate-spin text-black" />
-                ) : (
-                  "Import"
-                )}
-              </label>
-            </form>
+ 
+                <JobHeaderActions
+                  auth={auth}
+                  style={style}
+                  // Data Actions
+                  importJobData={importJobData}
+                  fLoading={fLoading}
+                  handleExportData={handleExportData}
+                  // Modal/State Setters
+                  setShowSubtaskList={setShowSubtaskList}
+                  setShowDataLable={setShowDataLable}
+                  setShowlabel={setShowlabel}
+                  setIsOpen={setIsOpen} // Opens "Add Client"
+                />
 
-            <button
-              className={`px-4 h-[2.2rem] hidden sm:flex items-center justify-center gap-1 rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
-              onClick={handleExportData}
-              title="Export Date"
-            >
-              <LuImport className="h-6 w-6 " /> Export
-            </button>
-            {/* <button
-              className={`${style.button1} hidden sm:flex text-[15px] `}
-              onClick={() => setShowQuickList(true)}
-              style={{ padding: ".4rem 1rem" }}
-            >
-              Quality List
-            </button> */}
-             <button
-              className={`${style.button1} text-[15px] `}
-              onClick={() => setShowSubtaskList(true)}
-              style={{ padding: ".4rem 1rem" }}
-            >
-              Manage SubtaskList
-            </button>
-            <button
-              className={`${style.button1} text-[15px] `}
-              onClick={() => setShowDataLable(true)}
-              style={{ padding: ".4rem 1rem" }}
-            >
-              Add Data
-            </button>
-            <button
-              className={`${style.button1} text-[15px] `}
-              onClick={() => setShowlabel(true)}
-              style={{ padding: ".4rem 1rem" }}
-            >
-              Add Label
-            </button>
-            <button
-              className={`${style.button1} text-[15px] `}
-              onClick={() => setIsOpen(true)}
-              style={{ padding: ".4rem 1rem" }}
-            >
-              Add Client
-            </button>
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
+
+
+
+
         </div>
         {/*  */}
 

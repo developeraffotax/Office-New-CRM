@@ -37,8 +37,8 @@ export const setupCronJobs = () => {
   });
 
 
- // cron.schedule("0 0 * * *", () => cleanupStaleOnline(io)); 
-  cron.schedule("* * * * *", () => cleanupStaleOnline(io));
+  cron.schedule("0 0 * * *", () => cleanupStaleOnline(io)); 
+ // cron.schedule("* * * * *", () => cleanupStaleOnline(io));
 
   // Run immediately once at startup
   sendDatatoGoogleSheet();

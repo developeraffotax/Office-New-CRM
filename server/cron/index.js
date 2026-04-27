@@ -4,6 +4,8 @@ import { getSentReceivedCountsPerThread } from "../controllers/ticketController.
 import { sendDatatoGoogleSheet } from "../utils/googleSheet.js";
 import { updateSendReceivedLeads } from "../utils/updateSendReceivedLeads.js";
 import {cleanupStaleOnline} from "../utils/cleanupStaleOnline.js";
+import { io } from "../index.js";
+
 
 export const setupCronJobs = () => {
   // Every 6 days at midnight
@@ -35,7 +37,8 @@ export const setupCronJobs = () => {
   });
 
 
-  cron.schedule("0 0 * * *", cleanupStaleOnline); 
+ // cron.schedule("0 0 * * *", () => cleanupStaleOnline(io)); 
+  cron.schedule("* * * * *", () => cleanupStaleOnline(io));
 
   // Run immediately once at startup
   sendDatatoGoogleSheet();

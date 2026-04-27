@@ -91,7 +91,7 @@ const startServer = async () => {
     app.use(errorHandler);
 
     // 7️⃣ Run cron jobs only on primary instance
-    const isClusterPrimary = process.env.pm_id === "0";
+    const isClusterPrimary = process.env.pm_id === "0" ;
     if (isClusterPrimary) {
       console.log("🕒 Starting scheduled tasks...");
       setupCronJobs();

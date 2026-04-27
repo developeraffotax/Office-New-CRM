@@ -7,7 +7,7 @@ import {
   inlineImages,
 } from "./utility.js";
 
-export const processMessage = async (message, accessToken) => {
+export const processMessage = async (message, accessToken, companyName) => {
   const parts = message.payload.parts?.length
     ? flattenParts(message.payload.parts)
     : [];
@@ -36,7 +36,8 @@ export const processMessage = async (message, accessToken) => {
     decodedMessage,
     parts,
     message.id,
-    accessToken
+    accessToken,
+    companyName
   );
 
   // ---------------------------

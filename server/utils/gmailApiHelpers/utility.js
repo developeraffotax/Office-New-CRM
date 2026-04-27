@@ -1,4 +1,5 @@
 import axios from "axios";
+import jwt from "jsonwebtoken"
 
 // ---------------------------
 // Base64 Helpers
@@ -223,81 +224,81 @@ const extractAttachments = async (parts, messageId, accessToken) => {
 // ---------------------------
 // Inline ALL images (CID, FILENAME, OUTLOOK IDs, EXTERNAL)
 // ---------------------------
-const inlineImages = async (decodedMessage, parts, messageId, accessToken) => {
-  // 1️⃣ Gmail inline image parts
-  for (const part of parts) {
-    const cidHeader = part.headers?.find(
-      (h) => h.name.toLowerCase() === "content-id"
-    )?.value;
+// const inlineImages = async (decodedMessage, parts, messageId, accessToken) => {
+//   // 1️⃣ Gmail inline image parts
+//   for (const part of parts) {
+//     const cidHeader = part.headers?.find(
+//       (h) => h.name.toLowerCase() === "content-id"
+//     )?.value;
 
-    const dispHeader = part.headers?.find(
-      (h) => h.name.toLowerCase() === "content-disposition"
-    )?.value;
+//     const dispHeader = part.headers?.find(
+//       (h) => h.name.toLowerCase() === "content-disposition"
+//     )?.value;
 
-    const isInline =
-      (dispHeader && dispHeader.toLowerCase().includes("inline")) ||
-      !!cidHeader;
+//     const isInline =
+//       (dispHeader && dispHeader.toLowerCase().includes("inline")) ||
+//       !!cidHeader;
 
-    if (part.mimeType?.startsWith("image/") && part.body) {
-      let dataUrl = null;
+//     if (part.mimeType?.startsWith("image/") && part.body) {
+//       let dataUrl = null;
 
-      if (part.body.attachmentId) {
-        const b64 = await fetchAttachmentData(
-          messageId,
-          part.body.attachmentId,
-          accessToken
-        );
-        if (b64) dataUrl = `data:${part.mimeType};base64,${b64}`;
-      } else if (part.body.data) {
-        const b64 = base64UrlToBase64(part.body.data);
-        dataUrl = `data:${part.mimeType};base64,${b64}`;
-      }
+//       if (part.body.attachmentId) {
+//         const b64 = await fetchAttachmentData(
+//           messageId,
+//           part.body.attachmentId,
+//           accessToken
+//         );
+//         if (b64) dataUrl = `data:${part.mimeType};base64,${b64}`;
+//       } else if (part.body.data) {
+//         const b64 = base64UrlToBase64(part.body.data);
+//         dataUrl = `data:${part.mimeType};base64,${b64}`;
+//       }
 
-      if (dataUrl) {
-        if (cidHeader) {
-          const cid = cidHeader.replace(/[<>]/g, "");
-          decodedMessage = decodedMessage.replace(
-            new RegExp(`cid:${cid}`, "gi"),
-            dataUrl
-          );
-        }
+//       if (dataUrl) {
+//         if (cidHeader) {
+//           const cid = cidHeader.replace(/[<>]/g, "");
+//           decodedMessage = decodedMessage.replace(
+//             new RegExp(`cid:${cid}`, "gi"),
+//             dataUrl
+//           );
+//         }
 
-        if (part.filename) {
-          decodedMessage = decodedMessage.replace(
-            new RegExp(part.filename, "gi"),
-            dataUrl
-          );
-        }
-      }
-    }
-  }
+//         if (part.filename) {
+//           decodedMessage = decodedMessage.replace(
+//             new RegExp(part.filename, "gi"),
+//             dataUrl
+//           );
+//         }
+//       }
+//     }
+//   }
 
-  // 2️⃣ EXTERNAL SIGNATURE IMAGES (googleusercontent URLs)
-  const externalImgRegex =
-    /<img[^>]+src="(https:\/\/[^"]+googleusercontent\.com[^"]+)"[^>]*>/gi;
+//   // 2️⃣ EXTERNAL SIGNATURE IMAGES (googleusercontent URLs)
+//   const externalImgRegex =
+//     /<img[^>]+src="(https:\/\/[^"]+googleusercontent\.com[^"]+)"[^>]*>/gi;
 
-  const uniqueUrls = new Set();
-  let match;
+//   const uniqueUrls = new Set();
+//   let match;
 
-  while ((match = externalImgRegex.exec(decodedMessage)) !== null) {
-    uniqueUrls.add(match[1]);
-  }
+//   while ((match = externalImgRegex.exec(decodedMessage)) !== null) {
+//     uniqueUrls.add(match[1]);
+//   }
 
-  for (const url of uniqueUrls) {
-    const base64 = await fetchExternalImageAsBase64(url);
-    if (base64) {
-      decodedMessage = decodedMessage.replace(
-        new RegExp(url.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
-        base64
-      );
-    }
-  }
+//   for (const url of uniqueUrls) {
+//     const base64 = await fetchExternalImageAsBase64(url);
+//     if (base64) {
+//       decodedMessage = decodedMessage.replace(
+//         new RegExp(url.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
+//         base64
+//       );
+//     }
+//   }
 
-  // 3️⃣ OUTLOOK SIGNATURE ID FIX (_x0000_i1025 etc)
-  decodedMessage = decodedMessage.replace(/id="_x0000_i\d+"/g, "");
+//   // 3️⃣ OUTLOOK SIGNATURE ID FIX (_x0000_i1025 etc)
+//   decodedMessage = decodedMessage.replace(/id="_x0000_i\d+"/g, "");
 
-  return decodedMessage;
-};
+//   return decodedMessage;
+// };
 
 
 
@@ -310,6 +311,187 @@ const inlineImages = async (decodedMessage, parts, messageId, accessToken) => {
   }
   return str.trim().toLowerCase();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const INLINE_BASE64_LIMIT = 50 * 1024; // 50KB limit
+
+const inlineImages = async (
+  decodedMessage,
+  parts,
+  messageId,
+  accessToken,
+  companyName
+) => {
+  if (!parts?.length) return decodedMessage;
+
+  const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL;
+
+  // Loop through all parts
+  for (const part of parts) {
+    if (!part.mimeType?.startsWith("image/")) continue;
+
+    const cidHeader = part.headers?.find(
+      (h) => h.name.toLowerCase() === "content-id"
+    )?.value;
+
+    const dispHeader = part.headers?.find(
+      (h) => h.name.toLowerCase() === "content-disposition"
+    )?.value;
+
+    const isInline =
+      (dispHeader &&
+        dispHeader.toLowerCase().includes("inline")) ||
+      !!cidHeader;
+
+    if (!isInline) continue;
+
+    let imageSrc = null;
+
+    // ----------------------------
+    // CASE 1: Image has attachmentId
+    // ----------------------------
+    if (part.body?.attachmentId) {
+      try {
+        // Fetch base64 temporarily to check size
+        const b64 = await fetchAttachmentData(
+          messageId,
+          part.body.attachmentId,
+          accessToken
+        );
+
+        if (!b64) continue;
+
+        const sizeBytes = Buffer.byteLength(
+          b64,
+          "base64"
+        );
+
+        // SMALL IMAGE → inline base64
+        if (sizeBytes < INLINE_BASE64_LIMIT) {
+          imageSrc = `data:${part.mimeType};base64,${b64}`;
+        }
+
+        // LARGE IMAGE → API URL (BEST PRACTICE)
+        else {
+          const imageToken = jwt.sign( { messageId, attachmentId: part.body.attachmentId, companyName, }, process.env.JWT_SECRET, { expiresIn: "5m", } );
+          imageSrc = `${BACKEND_BASE_URL}/api/v1/tickets/mail/image` + `?token=${imageToken}`;
+        }
+      } catch (err) {
+        console.error("Inline image error:", err);
+        continue;
+      }
+    }
+
+    // ----------------------------
+    // CASE 2: Embedded small image
+    // ----------------------------
+    else if (part.body?.data) {
+      const b64 = base64UrlToBase64(
+        part.body.data
+      );
+
+      const sizeBytes = Buffer.byteLength(
+        b64,
+        "base64"
+      );
+
+      if (sizeBytes < INLINE_BASE64_LIMIT) {
+        imageSrc = `data:${part.mimeType};base64,${b64}`;
+      }
+      // Large embedded image
+      else {
+        const imageToken = jwt.sign( { messageId, attachmentId: part.body.attachmentId, companyName, }, process.env.JWT_SECRET, { expiresIn: "5m", } );
+          imageSrc = `${BACKEND_BASE_URL}/api/v1/tickets/mail/image` + `?token=${imageToken}`;
+      }
+    }
+
+    if (!imageSrc) continue;
+
+    // ----------------------------
+    // Replace CID references
+    // ----------------------------
+    if (cidHeader) {
+      const cid = cidHeader.replace(/[<>]/g, "");
+
+      decodedMessage =
+        decodedMessage.replace(
+          new RegExp(`cid:${cid}`, "gi"),
+          imageSrc
+        );
+    }
+
+    // ----------------------------
+    // Replace filename references
+    // ----------------------------
+    if (part.filename) {
+      decodedMessage =
+        decodedMessage.replace(
+          new RegExp(
+            part.filename.replace(
+              /[.*+?^${}()|[\]\\]/g,
+              "\\$&"
+            ),
+            "gi"
+          ),
+          imageSrc
+        );
+    }
+  }
+
+  // ----------------------------
+  // REMOVE External Image Fetching
+  // Let browser load external images
+  // ----------------------------
+
+  // (REMOVED fetchExternalImageAsBase64 logic)
+
+  // ----------------------------
+  // OUTLOOK SIGNATURE FIX
+  // ----------------------------
+  decodedMessage =
+    decodedMessage.replace(
+      /id="_x0000_i\d+"/g,
+      ""
+    );
+
+  return decodedMessage;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -30,6 +30,7 @@ import { getGmailClient } from "../emailModule/services/gmail.service.js";
 import { buildGmailReply } from "../emailModule/utils/buildGmailReply.js";
 import EmailThread from "../emailModule/models/EmailThread.js";
 import ThreadCategory from "../emailModule/models/ThreadCategory.js";
+import { base64UrlToBase64 } from "../utils/gmailApiHelpers/utility.js";
 
 
 
@@ -2269,6 +2270,73 @@ export const getInboxDetailWithPagination = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

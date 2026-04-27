@@ -3,7 +3,9 @@ import axios from "axios";
 import dotenv from "dotenv";
 import { processMessage } from "./gmailApiHelpers/processMessage.js";
 import { getLatestMessageStatus } from "./gmailWorkerUtlity.js";
-import { extractEmail } from "./gmailApiHelpers/utility.js";
+import { base64UrlToBase64, extractEmail } from "./gmailApiHelpers/utility.js";
+import jwt from "jsonwebtoken";
+
 
 // Dotenv Config
 dotenv.config();
@@ -361,7 +363,7 @@ const OUR_EMAILS = ["info@affotax.com", "admin@outsourceaccountings.co.uk"]
 const RECIPIENT_HEADERS = ["to", "cc", "bcc"];
 const GMAIL_BASE = "https://gmail.googleapis.com/gmail/v1/users/me";
 
-const getDetailedThreadsWithPagination = async (threadId, accessToken, page = 1, limit = 10) => {
+const getDetailedThreadsWithPagination = async (companyName, threadId, accessToken, page = 1, limit = 10) => {
   // ✅ Step 1: Fetch thread with METADATA only (very fast — no body content)
   const { data: threadData } = await axios.get(
     `${GMAIL_BASE}/threads/${threadId}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Cc&metadataHeaders=Bcc&metadataHeaders=Date`,
@@ -397,7 +399,7 @@ const getDetailedThreadsWithPagination = async (threadId, accessToken, page = 1,
 
   // ✅ Step 4: Process fetched messages
   const decryptedMessages = await Promise.all(
-    fullMessages.map((msg) => processMessage(msg, accessToken))
+    fullMessages.map((msg) => processMessage(msg, accessToken, companyName))
   );
 
   // ✅ Use metadata from threadData for headers (already available, no extra call)
@@ -483,9 +485,10 @@ export const getSingleEmailWithPagination = async (ticketDetail) => {
     let response;
 
     if (ticketDetail.companyName === "Affotax" || ticketDetail.companyName === "affotax") {
-      response = await getDetailedThreadsWithPagination(ticketDetail.threadId, accessToken, ticketDetail.page, ticketDetail.limit);
+      response = await getDetailedThreadsWithPagination(ticketDetail.companyName, ticketDetail.threadId, accessToken, ticketDetail.page, ticketDetail.limit);
     } else {
       response = await getDetailedThreadsWithPagination(
+        ticketDetail.companyName,
         ticketDetail.threadId,
         outSourcingAccessToken,
          ticketDetail.page,
@@ -499,6 +502,103 @@ export const getSingleEmailWithPagination = async (ticketDetail) => {
     throw new Error("Error while fetching email details");
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getInlineImage = async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(401).send("Missing token");
+    }
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+     
+    const { messageId, attachmentId, companyName, } = decoded;
+
+    // Get Gmail access token
+    let accessToken = "";
+     if (companyName === "Affotax" || companyName === "affotax") {
+      accessToken = await getAccessToken();
+    } else {
+      accessToken = await getOutsourceAccessToken();
+    }
+
+    const { data } = await axios.get(
+      `${GMAIL_BASE}/messages/${messageId}/attachments/${attachmentId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    const buffer = Buffer.from(
+      base64UrlToBase64(data.data),
+      "base64"
+    );
+
+    res.setHeader(
+      "Content-Type",
+      "image/png"
+    );
+
+    res.setHeader(
+      "Cache-Control",
+      "public, max-age=31536000"
+    );
+
+    res.send(buffer);
+
+  } catch (err) {
+    console.error(err);
+    res.status(401).send("Unauthorized");
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

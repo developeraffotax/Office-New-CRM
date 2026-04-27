@@ -11,7 +11,7 @@ import {
   getCompleteTickets,
   getDashboardTickets,
   getInboxDetail,
-  getInboxDetailWithPagination,
+  getInboxDetailWithPagination, 
   getSentReceivedCountsPerThread,
   getSingleEmailDetail,
   getTicketActivity,
@@ -31,6 +31,7 @@ import {
 } from "../controllers/ticketController.js";
 import multer from "multer";
 import { getMessageSender, getThreadSenders, getTicketActivities } from "../controllers/ticketActivityController.js";
+import { getInlineImage } from "../utils/gmailApi.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -116,6 +117,8 @@ router.delete(
 // Get Single Email Detail
 router.get("/single/inbox/detail/:mailThreadId/:company", requiredSignIn, getInboxDetail);
 router.get("/single/inbox/detail/pagination/:mailThreadId/:company", requiredSignIn, getInboxDetailWithPagination);
+
+router.get("/mail/image", getInlineImage);
 
 // Mark as Read Inbox
 router.put("/markAsRead/inbox/email", requiredSignIn, markAsReadInboxEmail);

@@ -62,7 +62,7 @@ export const scheduleShiftEndTimer = async () => {
 
         // Optionally notify each affected user
         runningTimers.forEach((timer) => {
-          io.to(`user:${timer.clientId}`).emit("timer:autoStopped", { message: `Your timer was automatically stopped at shift end (${shift.endTime}).`, task: timer?.task || "", clientName: timer?.clientName || "", });
+          io.to(`user:${timer.clientId}`).emit("timer:autoStopped", { endTime: stopTime, message: `Your timer was automatically stopped at shift end!`, task: timer?.task || "", clientName: timer?.clientName || "", });
           
           // io.to(`user:${timer.clientId}`).emit("task_updated");
           //io.to(`user:${timer.clientId}`).emit("job_updated");

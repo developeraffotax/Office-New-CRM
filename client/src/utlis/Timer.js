@@ -215,7 +215,17 @@ export const Timer = forwardRef(
       } catch (error) {
 
         console.error(error);
-        toast.error(error?.response?.data?.message || "Some thing went wrong!");
+        toast.error(error?.response?.data?.message || "An unexpected error occurred.", {
+          style: {
+            borderRadius: '8px',
+            background: '#333',
+            color: '#fff',
+          },
+          iconTheme: {
+            primary: '#ff4b4b',
+            secondary: '#fff',
+          },
+        });
       }
     };
 
@@ -268,7 +278,7 @@ export const Timer = forwardRef(
         }
       } catch (error) {
         console.error("Error stopping timer:", error);
-        toast.success(error.response?.data?.message);
+        toast.error(error.response?.data?.message);
       } finally {
         setIsSubmitting?.(false);
       }

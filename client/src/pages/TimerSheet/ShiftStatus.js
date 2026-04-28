@@ -6,6 +6,7 @@ import { formatTo12Hour } from "../../utlis/formatTo12Hour";
 import { CiEdit } from "react-icons/ci";
 import { isAdmin } from "../../utlis/isAdmin"; 
 import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 
 /**
@@ -48,7 +49,7 @@ const IconLoading = () => (
 
 
 
- function AdminShiftSettings({ onClose, onUpdate, currentShift }) {
+ function AdminShiftSettings({ onClose, onUpdate,  }) {
   const [shift, setShift] = useState({
     startTime: "",
     endTime: "",
@@ -85,12 +86,20 @@ const IconLoading = () => (
     try {
       setSaving(true);
 
-      await axios.put(`${process.env.REACT_APP_API_URL}/api/v1/officeshift`, shift);
+      const {data} = await axios.put(`${process.env.REACT_APP_API_URL}/api/v1/officeshift`, shift);
 
-      alert("Shift updated successfully");
+      if(data) {
+        onUpdate({
+          startTime: data.shift.startTime,
+          endTime: data.shift.endTime,
+        });
+        onClose();
+      }
+
+      toast.success("Shift updated successfully");
     } catch (err) {
       console.error(err);
-      alert(err?.response?.data?.message || "Failed to update shift");
+      toast.error(err?.response?.data?.message || "Failed to update shift");
     } finally {
       setSaving(false);
     }
@@ -98,13 +107,13 @@ const IconLoading = () => (
  
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 ">
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-pop font-inter">
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
           <div className="flex items-center gap-2 text-slate-800">
             <span className="text-orange-600"><IconSettings /></span>
-            <h2 className="font-bold text-lg">Shift Configuration</h2>
+            <h2 className="font-bold text-lg">Work Shift</h2>
           </div>
           <button 
             onClick={onClose}
@@ -223,7 +232,7 @@ export default function ShiftStatus() {
 
 
   return (
-    <div className="">
+    <div className="font-google">
       <div className="inline-flex items-center gap-3 pl-3 pr-2 py-1.5 bg-white border border-slate-200 rounded-full shadow-sm hover:shadow-md hover:border-orange-200 transition-all duration-300 group">
         {/* Status Indicator Dot + Icon */}
         <div className="relative">
@@ -235,8 +244,8 @@ export default function ShiftStatus() {
 
         {/* Text Details */}
         <div className="flex flex-col">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight leading-none mb-0.5">
-            Office Shift
+          <span className="text-[10px] font-semibold text-slate-500 uppercase  leading-none mb-0.5">
+            Work Shift
           </span>
           <span className="text-[12px] font-bold text-slate-700 leading-none">
             {formatTo12Hour(shift?.startTime)} — {formatTo12Hour(shift?.endTime)}
@@ -258,7 +267,7 @@ export default function ShiftStatus() {
       {/* Modern Modal Overlay */}
       {isAdmin(auth) && isEditing && (
         <AdminShiftSettings 
-          currentShift={shift} 
+           
           onClose={() => setIsEditing(false)} 
           onUpdate={(newShift) => setShift(newShift)}
         />

@@ -1515,7 +1515,7 @@ export default function TimeSheet() {
                     className="text-black cursor-pointer text-start  "
                     onDoubleClick={() => setShowEdit(true)}
                   >
-                    {allocateTask.length > 25
+                    {allocateTask?.length > 25
                       ? allocateTask.slice(0, 25) + "..."
                       : allocateTask}
                   </p>
@@ -1599,7 +1599,7 @@ export default function TimeSheet() {
                       setShowNote(true);
                     }}
                   >
-                    {note.length > 35 ? note.slice(0, 35) + "..." : note}
+                    {note?.length > 35 ? note?.slice(0, 35) + "..." : note}
                   </p>
                 </div>
               )}

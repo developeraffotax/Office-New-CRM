@@ -59,6 +59,8 @@ const timerSchema = new mongoose.Schema(
       default: "",
     },
 
+    autoStoppedByShift: { type: Boolean, default: false },
+
     isRunning: { type: Boolean, default: false },
   },
   { timestamps: true }

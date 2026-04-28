@@ -1,3 +1,4 @@
+import { rescheduleShiftCron } from "../cron/jobs/scheduleShiftEndTimer.js";
 import officeShiftModel from "../models/officeShiftModel.js";
 
  
@@ -66,6 +67,9 @@ export const updateShift = async (req, res) => {
         runValidators: true,
       }
     );
+
+
+    rescheduleShiftCron(); // reschedule cron job after shift update/create
 
     if (!shift) {
       return res.status(404).send({

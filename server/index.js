@@ -22,6 +22,7 @@ import { ExpressAdapter } from "@bull-board/express";
 
 // Import your queue
 import { gmailSyncQueue } from "./emailModule/jobs/queues/gmailSyncQueue.js";
+import { scheduleShiftEndTimer } from "./cron/jobs/scheduleShiftEndTimer.js";
  
 dotenv.config();
 
@@ -97,6 +98,10 @@ const startServer = async () => {
       setupCronJobs();
     }
     
+
+    scheduleShiftEndTimer()
+
+
     // 8️⃣ Start server
     const PORT = process.env.PORT || 8080;
     server.listen(PORT, () => {

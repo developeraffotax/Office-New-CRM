@@ -1,10 +1,12 @@
 import { io } from "../index.js";
 import jobsModel from "../models/jobsModel.js";
+import officeShiftModel from "../models/officeShiftModel.js";
 import taskModel from "../models/taskModel.js";
 import timerModel from "../models/timerModel.js";
 import timerStatusModel from "../models/timerStatusModel.js";
 
 import { connection as redis } from "../utils/ioredis.js";
+import { formatTo12Hour, isWithinShift } from "../utils/isWithinShift.js";
 import { getOnlineAgents, getOnlineUsers } from "../utils/onlineStatus.js";
 
 
@@ -13,10 +15,7 @@ import { getOnlineAgents, getOnlineUsers } from "../utils/onlineStatus.js";
 // -----------------------------
 export const startTimer = async (req, res) => {
   try {
-    const {
-      clientId, jobId, type, department, clientName,
-      projectName, task, companyName, holiday, activity,
-    } = req.body;
+    const { clientId, jobId, type, department, clientName, projectName, task, companyName, holiday, activity, } = req.body;
 
     const startTime = new Date().toISOString();
     const user = req.user.user.name;
@@ -32,6 +31,23 @@ export const startTimer = async (req, res) => {
         success: false,
         message: "Timer is already running in another task!",
       });
+    }
+
+
+
+    const shift = await officeShiftModel.findOne({ isActive: true });
+
+ 
+    if(shift) {
+
+      const allowed = isWithinShift(shift);
+  
+      if (!allowed) {
+        return res.status(403).send({
+          success: false,
+          message: `You can only start timer between ${formatTo12Hour(shift.startTime)} - ${formatTo12Hour(shift.endTime)}`,
+        });
+      }
     }
 
     // Create new timer

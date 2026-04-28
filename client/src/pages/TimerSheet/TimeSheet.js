@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
- 
+
 import axios from "axios";
 import { style } from "../../utlis/CommonStyle";
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
@@ -27,7 +27,7 @@ import UsersTimeSheet from "./UsersTimeSheet";
 import QuickAccess from "../../utlis/QuickAccess";
 import DraggableUserList from "../../utlis/DraggableUserList";
 
-          import {
+import {
   FiCalendar,
   FiClock,
   FiActivity,
@@ -39,7 +39,8 @@ import { MdOutlineWatchLater } from "react-icons/md";
 import { useWorkdayStats } from "./useWorkdayStats";
 import { useSelector } from "react-redux";
 import { isAdmin } from "../../utlis/isAdmin";
-import OverviewForPages from "../../utlis/overview/OverviewForPages";
+import OverviewForPages from "../../utlis/overview/OverviewForPages"; 
+import ShiftStatus from "./ShiftStatus";
 
 // Optional icons per day
 const dayIcons = [
@@ -51,8 +52,6 @@ const dayIcons = [
   FiSun,
   FiSun,
 ];
-
-
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -69,8 +68,6 @@ const csvConfig = mkConfig({
 });
 
 export default function TimeSheet() {
-   
-
   const auth = useSelector((state) => state.auth.auth);
 
   const [timerData, setTimerData] = useState([]);
@@ -142,246 +139,81 @@ export default function TimeSheet() {
   const [showNote, setShowNote] = useState(false);
   const [note, setNote] = useState("");
 
-  
-    const [showExternalFilters, setShowExternalFilters] = useState(true);
-    const [filter1, setFilter1] = useState("");
+  const [showExternalFilters, setShowExternalFilters] = useState(true);
+  const [filter1, setFilter1] = useState("");
 
-
-  const { weekdayCounts, totalWorkdays, requiredHours } = useWorkdayStats(active);
-
-
-
-
-
-
-
+  const { weekdayCounts, totalWorkdays, requiredHours } =
+    useWorkdayStats(active);
 
   const daysData = [
-  { label: "Monday", value: times?.monTotal, required: weekdayCounts["Monday"] * 8 },
-  { label: "Tuesday", value: times?.tueTotal, required: weekdayCounts["Tuesday"] * 8 },
-  { label: "Wednesday", value: times?.wedTotal, required: weekdayCounts["Wednesday"] * 8 },
-  { label: "Thursday", value: times?.thuTotal, required: weekdayCounts["Thursday"] * 8 },
-  { label: "Friday", value: times?.friTotal, required: weekdayCounts["Friday"] * 8 },
-  { label: "Saturday", value: times?.satTotal, required: weekdayCounts["Saturday"] * 8 },
-  { label: "Sunday", value: times?.sunTotal, required: weekdayCounts["Sunday"] * 8 },
-];
+    {
+      label: "Monday",
+      value: times?.monTotal,
+      required: weekdayCounts["Monday"] * 8,
+    },
+    {
+      label: "Tuesday",
+      value: times?.tueTotal,
+      required: weekdayCounts["Tuesday"] * 8,
+    },
+    {
+      label: "Wednesday",
+      value: times?.wedTotal,
+      required: weekdayCounts["Wednesday"] * 8,
+    },
+    {
+      label: "Thursday",
+      value: times?.thuTotal,
+      required: weekdayCounts["Thursday"] * 8,
+    },
+    {
+      label: "Friday",
+      value: times?.friTotal,
+      required: weekdayCounts["Friday"] * 8,
+    },
+    {
+      label: "Saturday",
+      value: times?.satTotal,
+      required: weekdayCounts["Saturday"] * 8,
+    },
+    {
+      label: "Sunday",
+      value: times?.sunTotal,
+      required: weekdayCounts["Sunday"] * 8,
+    },
+  ];
 
-
-const totalCards = [
-  {
-    label:
-      active === "Weekly"
-        ? "Week Total"
-        : active === "Monthly"
-        ? "Month Total"
-        : "Year Total",
-    required: requiredHours, // ✅ from the hook
-    value: times?.weekTotal,
-    icon: FiBarChart2,
-    color: "bg-orange-100 text-orange-800 border-orange-200 font-semibold",
-  },
-  
-   
-];
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Get counts of each weekday in a month or year
-// function getWeekdayCounts({ year, month = null }) {
-//   const counts = {
-//     Monday: 0,
-//     Tuesday: 0,
-//     Wednesday: 0,
-//     Thursday: 0,
-//     Friday: 0,
-//     Saturday: 0,
-//     Sunday: 0,
-//   };
-
-//   console.log("YEAR AND MONTH", year , month)
-
-//   const date = new Date(year, month ?? 0, 1);
-//   const end = month !== null
-//     ? new Date(year, month + 1, 0) // end of month
-//     : new Date(year, 11, 31);     // end of year
-
-//   while (date <= end) {
-//     const day = date.getDay(); // 0: Sun, 1: Mon, ..., 6: Sat
-//     const labels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-//     const label = labels[day];
-//     counts[label]++;
-//     date.setDate(date.getDate() + 1);
-//   }
-
-
-//   console.log("COUNTS", counts)
-
-//   return counts;
-// }
-
-
-
-// function getRequiredHours(active) {
-//   // const today = new Date();
-//   // const year = today.getFullYear();
-//   // const month = today.getMonth(); // 0-based
-
-//     // const year = today.getFullYear();
-//   // const month = today.getMonth(); // 0-based
-
-//   const { Monday, Tuesday, Wednesday, Thursday, Friday } =
-//     active === "Monthly"
-//       ? getWeekdayCounts({ year, month })
-//       : active === "Yearly"
-//       ? getWeekdayCounts({ year })
-//       : { Monday: 1, Tuesday: 1, Wednesday: 1, Thursday: 1, Friday: 1 }; // for weekly
-
-//   const totalWorkdays =
-//     Monday + Tuesday + Wednesday + Thursday + Friday;
-
-//   return totalWorkdays * 8; // assuming 8 hours/day
-// }
-
-
-
-
-
-// const daysData = useMemo(() => {
-//   if (!times || !active) return [];
-
-//   const today = new Date();
-//   const year = today.getFullYear();
-//   const month = today.getMonth();
-
-//   const monthCounts = getWeekdayCounts({ year, month });
-//   const yearCounts = getWeekdayCounts({ year });
-
-//   const weekdaySource =
-//     active === "Weekly"
-//       ? {
-//           Monday: 1, Tuesday: 1, Wednesday: 1,
-//           Thursday: 1, Friday: 1, Saturday: 1, Sunday: 1
-//         }
-//       : active === "Monthly"
-//       ? monthCounts
-//       : yearCounts;
-
-//   return [
-//     { label: "Monday", value: times?.monTotal, required: weekdaySource["Monday"] * 8 },
-//     { label: "Tuesday", value: times?.tueTotal, required: weekdaySource["Tuesday"] * 8 },
-//     { label: "Wednesday", value: times?.wedTotal, required: weekdaySource["Wednesday"] * 8 },
-//     { label: "Thursday", value: times?.thuTotal, required: weekdaySource["Thursday"] * 8 },
-//     { label: "Friday", value: times?.friTotal, required: weekdaySource["Friday"] * 8 },
-//     { label: "Saturday", value: times?.satTotal, required: weekdaySource["Saturday"] * 8 },
-//     { label: "Sunday", value: times?.sunTotal, required: weekdaySource["Sunday"] * 8 },
-//   ];
-// }, [active, times]);
-
-
-// const totalCards = [
-//   {
-//     label: active === "Weekly" ? "Week Total" : active === "Monthly" ? "Month Total" : "Year Total",
-//     required: getRequiredHours(active),
-//     value: times?.weekTotal,
-//     icon: FiBarChart2,
-//     color: "bg-orange-100 text-orange-800 border-orange-200 font-semibold",
-//   },
+  const totalCards = [
+    {
+      label:
+        active === "Weekly"
+          ? "Week Total"
+          : active === "Monthly"
+          ? "Month Total"
+          : "Year Total",
+      required: requiredHours, // ✅ from the hook
+      value: times?.weekTotal,
+      icon: FiBarChart2,
+      color: "bg-orange-100 text-orange-800 border-orange-200 font-semibold",
+    },
+  ];
  
-// ];
+  // Converts "HH:MM" string into decimal hours (e.g., "07:30" → 7.5)
+  const parseTimeToDecimal = (timeStr) => {
+    if (!timeStr || typeof timeStr !== "string") return 0;
 
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    if (isNaN(hours) || isNaN(minutes)) return 0;
 
+    return hours + minutes / 60;
+  };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Converts "HH:MM" string into decimal hours (e.g., "07:30" → 7.5)
-const parseTimeToDecimal = (timeStr) => {
-  if (!timeStr || typeof timeStr !== 'string') return 0;
-
-  const [hours, minutes] = timeStr.split(':').map(Number);
-  if (isNaN(hours) || isNaN(minutes)) return 0;
-
-  return hours + minutes / 60;
-};
-
-const getProgress = (timeStr, total) => {
-  const decimalHours = parseTimeToDecimal(timeStr);
-  // const total = 40; // your weekly max, can be dynamic too
-  const percent = Math.min(100, Math.round((decimalHours / total) * 100));
-  return isNaN(percent) ? 0 : percent;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  const getProgress = (timeStr, total) => {
+    const decimalHours = parseTimeToDecimal(timeStr);
+    // const total = 40; // your weekly max, can be dynamic too
+    const percent = Math.min(100, Math.round((decimalHours / total) * 100));
+    return isNaN(percent) ? 0 : percent;
+  };
 
   useEffect(() => {
     if (auth.user) {
@@ -416,7 +248,7 @@ const getProgress = (timeStr, total) => {
 
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/timer/fetch/timers/${startDate}/${endDate}`
+        `${process.env.REACT_APP_API_URL}/api/v1/timer/fetch/timers/${startDate}/${endDate}`,
       );
 
       setTimerData(data.timers);
@@ -441,7 +273,7 @@ const getProgress = (timeStr, total) => {
   useEffect(() => {
     if (tableFilterData) {
       const filteredData = tableFilterData?.filter(
-        (entry) => !userName || entry.jobHolderName === userName
+        (entry) => !userName || entry.jobHolderName === userName,
       );
       const chargeableCount = filteredData?.reduce((count, entry) => {
         return entry.activity === "Chargeable" ? count + 1 : count;
@@ -478,7 +310,7 @@ const getProgress = (timeStr, total) => {
       });
     } else {
       const filteredData = timerData?.filter(
-        (entry) => !userName || entry.jobHolderName === userName
+        (entry) => !userName || entry.jobHolderName === userName,
       );
       const chargeableCount = filteredData?.reduce((count, entry) => {
         return entry.activity === "Chargeable" ? count + 1 : count;
@@ -527,17 +359,17 @@ const getProgress = (timeStr, total) => {
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
       );
 
       auth?.user?.role?.name === "Admin"
         ? setUsers(
-            data?.users.map((user) => ({ name: user?.name, id: user?._id }))
+            data?.users.map((user) => ({ name: user?.name, id: user?._id })),
           )
         : setUsers(
             data?.users
               ?.filter((user) => user?.role?.name !== "Admin")
-              .map((user) => ({ name: user?.name, id: user?._id }))
+              .map((user) => ({ name: user?.name, id: user?._id })),
           );
       // setUsers(
       //   data?.users.map((user) => ({ name: user?.name, id: user?._id }))
@@ -558,12 +390,12 @@ const getProgress = (timeStr, total) => {
   const getAllProjects = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/projects/get_all/project`
+        `${process.env.REACT_APP_API_URL}/api/v1/projects/get_all/project`,
       );
 
       setProjects((prevProjects) => {
         const projectNamesFromData = (data?.projects || []).map(
-          (project) => project.projectName
+          (project) => project.projectName,
         );
 
         const predefinedProjects = [
@@ -680,12 +512,12 @@ const getProgress = (timeStr, total) => {
       const fdow = new Date(
         today.getFullYear(),
         today.getMonth(),
-        today.getDate() - today.getDay() + 1
+        today.getDate() - today.getDay() + 1,
       );
       const ldow = new Date(
         today.getFullYear(),
         today.getMonth(),
-        today.getDate() - today.getDay() + 7
+        today.getDate() - today.getDay() + 7,
       );
 
       setFirstDayOfWeek(fdow);
@@ -701,12 +533,12 @@ const getProgress = (timeStr, total) => {
       const fdopw = new Date(
         today.getFullYear(),
         today.getMonth(),
-        today.getDate() - today.getDay() - 6
+        today.getDate() - today.getDay() - 6,
       );
       const ldopw = new Date(
         today.getFullYear(),
         today.getMonth(),
-        today.getDate() - today.getDay()
+        today.getDate() - today.getDay(),
       );
 
       setFirstDayOfPrevWeek(fdopw);
@@ -719,12 +551,12 @@ const getProgress = (timeStr, total) => {
       const fdonw = new Date(
         today.getFullYear(),
         today.getMonth(),
-        today.getDate() - today.getDay() + 8
+        today.getDate() - today.getDay() + 8,
       );
       const ldonw = new Date(
         today.getFullYear(),
         today.getMonth(),
-        today.getDate() - today.getDay() + 14
+        today.getDate() - today.getDay() + 14,
       );
 
       setFirstDayOfNextWeek(fdonw);
@@ -860,30 +692,30 @@ const getProgress = (timeStr, total) => {
         break;
       case "Yesterday":
         startDate = endDate = normalizeDate(
-          new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1)
+          new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1),
         );
         break;
       case "Last 7 days":
         startDate = normalizeDate(
-          new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7)
+          new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7),
         );
         endDate = normalizeDate(new Date());
         break;
       case "Last 15 days":
         startDate = normalizeDate(
-          new Date(today.getFullYear(), today.getMonth(), today.getDate() - 15)
+          new Date(today.getFullYear(), today.getMonth(), today.getDate() - 15),
         );
         endDate = normalizeDate(new Date());
         break;
       case "Last 30 days":
         startDate = normalizeDate(
-          new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30)
+          new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30),
         );
         endDate = normalizeDate(new Date());
         break;
       case "Last 60 days":
         startDate = normalizeDate(
-          new Date(today.getFullYear(), today.getMonth(), today.getDate() - 60)
+          new Date(today.getFullYear(), today.getMonth(), today.getDate() - 60),
         );
         endDate = normalizeDate(new Date());
         break;
@@ -977,7 +809,7 @@ const getProgress = (timeStr, total) => {
 
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/timer/delete/timer/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/timer/delete/timer/${id}`,
       );
       if (data) {
         toast.success("Timer deleted successfully!");
@@ -997,15 +829,15 @@ const getProgress = (timeStr, total) => {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/timer/update/timer/${taskId}`,
-        { note }
+        { note },
       );
       if (data?.success) {
         const updateTimer = data?.timer;
         toast.success("Task updated successfully!");
         setTimerData((prevData) =>
           prevData?.map((item) =>
-            item._id === updateTimer._id ? updateTimer : item
-          )
+            item._id === updateTimer._id ? updateTimer : item,
+          ),
         );
       }
     } catch (error) {
@@ -1019,7 +851,7 @@ const getProgress = (timeStr, total) => {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/timer/update/holiday/${timerId}`,
-        { holiday: holidayType }
+        { holiday: holidayType },
       );
       if (data) {
         toast.success("Holiday Updated!");
@@ -1121,7 +953,7 @@ const getProgress = (timeStr, total) => {
           const startOfToday = new Date(
             today.getFullYear(),
             today.getMonth(),
-            today.getDate()
+            today.getDate(),
           );
 
           // Handle "Custom date" filter (if it includes a specific month-year)
@@ -1189,8 +1021,6 @@ const getProgress = (timeStr, total) => {
           useEffect(() => {
             column.setFilterValue(user);
             setUsername(user);
-
-             
           }, []);
           return (
             <div className=" flex flex-col gap-[2px]">
@@ -1242,7 +1072,6 @@ const getProgress = (timeStr, total) => {
           );
         },
         filterFn: (row, columnId, filterValue) => {
-          
           const cellValue = row.getValue(columnId);
           return (cellValue || "").toString() === filterValue.toString();
         },
@@ -1956,8 +1785,7 @@ const getProgress = (timeStr, total) => {
       userName,
       active,
       holidays,
-      
-    ]
+    ],
   );
 
   // Display Time in Correct Day
@@ -2050,8 +1878,6 @@ const getProgress = (timeStr, total) => {
       density: "compact",
     },
 
-    
-
     muiTableHeadCellProps: {
       style: {
         fontWeight: "600",
@@ -2114,33 +1940,19 @@ const getProgress = (timeStr, total) => {
     },
   });
 
-
-
-
-
-
-
-
-  
-    const setColumnFromOutsideTable = (colKey, filterVal) => {
-     
-
+  const setColumnFromOutsideTable = (colKey, filterVal) => {
     const col = table.getColumn(colKey);
 
     setUsername(filterVal);
 
-    
     return col.setFilterValue(filterVal);
-  }
+  };
 
-
-
-
-  if(isRunning) {
+  if (isRunning) {
     return (
-       <div className="  w-full h-[112vh]   bg-gray-50 flex items-start justify-center ">
-            <RunningTimers users={userData} setIsRunning={setIsRunning} />
-          </div>
+      <div className="  w-full h-[112vh]   bg-gray-50 flex items-start justify-center ">
+        <RunningTimers users={userData} setIsRunning={setIsRunning} />
+      </div>
     );
   }
 
@@ -2167,8 +1979,15 @@ const getProgress = (timeStr, total) => {
                     <IoClose className="h-6 w-6 text-white" />
                   </span>
                 )}
-                <span className="mt-2"><QuickAccess /></span>
-                {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
+                <span className="mt-2">
+                  <QuickAccess />
+                </span>
+                {isAdmin(auth) && (
+                  <span className=" ">
+                    {" "}
+                    <OverviewForPages />{" "}
+                  </span>
+                )}
               </div>
             </div>
             {/* Select */}
@@ -2313,8 +2132,13 @@ const getProgress = (timeStr, total) => {
               </div>
             )}
           </div>
+
           {/* ----------Add Manual Buttons---------- */}
           <div className="flex items-center gap-4 w-full justify-end  sm:w-fit">
+           
+
+            <ShiftStatus />
+
             <button
               className={`px-4 h-[2.2rem] hidden sm:flex items-center justify-center gap-1 rounded-md hover:shadow-md text-gray-800 bg-sky-100 hover:text-white hover:bg-sky-600 text-[15px] `}
               onClick={handleExportData}
@@ -2347,166 +2171,65 @@ const getProgress = (timeStr, total) => {
         {/* ---------------Filters---------- */}
 
         <div className="flex items-center justify-start gap-2  w-full mt-5">
-            <div className="flex items-center h-[2.2rem] border-2 border-orange-500 rounded-sm overflow-hidden  transition-all duration-300 w-fit">
-          <button
-            className={`min-h-[2.2rem] px-2 w-[6.5rem] outline-none transition-all duration-300 ${
-              selectedTab === "Single"
-                ? "bg-orange-500 text-white border-r-2 border-orange-500"
-                : "text-black bg-gray-100"
-            }`}
-            onClick={() => setSelectedTab("Single")}
-          >
-            Single
-          </button>
-          <button
-            className={`min-h-[2.2rem] px-2 w-[6.5rem] outline-none transition-all duration-300   ${
-              selectedTab === "Multiple"
-                ? "bg-orange-500 text-white"
-                : "text-black bg-gray-100 hover:bg-slate-200"
-            }`}
-            onClick={() => setSelectedTab("Multiple")}
-          >
-            Multiple
-          </button>
-
-          
+          <div className="flex items-center h-[2.2rem] border-2 border-orange-500 rounded-sm overflow-hidden  transition-all duration-300 w-fit">
+            <button
+              className={`min-h-[2.2rem] px-2 w-[6.5rem] outline-none transition-all duration-300 ${
+                selectedTab === "Single"
+                  ? "bg-orange-500 text-white border-r-2 border-orange-500"
+                  : "text-black bg-gray-100"
+              }`}
+              onClick={() => setSelectedTab("Single")}
+            >
+              Single
+            </button>
+            <button
+              className={`min-h-[2.2rem] px-2 w-[6.5rem] outline-none transition-all duration-300   ${
+                selectedTab === "Multiple"
+                  ? "bg-orange-500 text-white"
+                  : "text-black bg-gray-100 hover:bg-slate-200"
+              }`}
+              onClick={() => setSelectedTab("Multiple")}
+            >
+              Multiple
+            </button>
+          </div>
+          {auth?.user?.role?.name === "Admin" && (
+            <span
+              className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${
+                showExternalFilters && "bg-orange-500 text-white "
+              }  `}
+              onClick={() => {
+                // setActiveBtn("jobHolder");
+                // setShowJobHolder(!showJobHolder);
+                setShowExternalFilters(!showExternalFilters);
+              }}
+              title="Filter by Job Holder"
+            >
+              <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
+            </span>
+          )}
         </div>
-             {
-              auth?.user?.role?.name === "Admin" &&
-              <span
-                      className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${showExternalFilters && 'bg-orange-500 text-white '}  `}
-                      onClick={() => {
-                        // setActiveBtn("jobHolder");
-                        // setShowJobHolder(!showJobHolder);
-                        setShowExternalFilters(!showExternalFilters);
-        
-                      }}
-                      title="Filter by Job Holder"
-                    >
-                      <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
-                    </span>
 
-
-             }
-
-        </div>
-        
         {isload && (
           <div className="pb-1">
             <div class="loader"></div>
           </div>
         )}
 
-
-
-         
-
-
-         {/* --------------External Filter---------------- */}
-        {
-          auth?.user?.role?.name === "Admin" && showExternalFilters && (
-            <div className="w-full flex flex-row items-start justify-start gap-4 mt-4">
-              
-
-                 
-
-              {/* <div className="flex items-center gap-2">
-                 
-                <ul className="flex items-center gap-2 list-none  ">
-                  {users?.map((user, i) => (
-                    <li
-                      key={i}
-                      className={`${
-                        filter1 === user?.name
-                          ? "bg-orange-500 text-white"
-                          : "bg-gray-200 text-gray-700"
-                      } px-2 py-1 rounded-md cursor-pointer m-0 `}
-                      onClick={() => {
-                        setFilter1(prev => {
-                          const isSameUser = prev === user?.name;
-                          const newValue = isSameUser ? "" : user?.name;
-
-                          
-                          setColumnFromOutsideTable("jobHolderName", newValue);
-                          return newValue;
-                        });
-                         
-                      }}
-                    >
-                      {user?.name}
-                    </li>
-                  ))}
-                </ul>
-              </div> */}
-
-
-
-
-
-
-
-
-
-
-              <DraggableUserList table={table} listName="timesheet" usersArray={users.map(el => el.name)} filterColName="jobHolderName"  setColumnFromOutsideTableFn={setColumnFromOutsideTable} />
-
-
-
-            </div>
-          )
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        {/* --------------External Filter---------------- */}
+        {auth?.user?.role?.name === "Admin" && showExternalFilters && (
+          <div className="w-full flex flex-row items-start justify-start gap-4 mt-4">
+            
+
+            <DraggableUserList
+              table={table}
+              listName="timesheet"
+              usersArray={users.map((el) => el.name)}
+              filterColName="jobHolderName"
+              setColumnFromOutsideTableFn={setColumnFromOutsideTable}
+            />
+          </div>
+        )}
 
         <hr className="bg-gray-300 w-full h-[1px] my-2" />
         {/* -----------Tabledata--------------- */}
@@ -2540,195 +2263,90 @@ const getProgress = (timeStr, total) => {
           </>
         )}
 
-        {/* ---------------Total Time---------------- */}
-        {/* {selectedTab === "Single" && (
-          <div className="w-full hidden absolute bottom-4 left-0 px-4 z-[20] sm:grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-9 gap-4 2xl:gap-5">
-            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-              <h4 className="text-[16px] font-medium">Monday</h4>
-              <span className="text-[15px]">{times?.monTotal}</span>
-            </div>
-            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-              <h4 className="text-[16px] font-medium">Tuesday</h4>
-              <span className="text-[15px]">{times?.tueTotal}</span>
-            </div>
-            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-              <h4 className="text-[16px] font-medium">Wednesday</h4>
-              <span className="text-[15px]">{times?.wedTotal}</span>
-            </div>
-            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-              <h4 className="text-[16px] font-medium">Thursday</h4>
-              <span className="text-[15px]">{times?.thuTotal}</span>
-            </div>
-            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-              <h4 className="text-[16px] font-medium">Friday</h4>
-              <span className="text-[15px]">{times?.friTotal}</span>
-            </div>
-            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-              <h4 className="text-[16px] font-medium">Saturday</h4>
-              <span className="text-[15px]">{times?.satTotal}</span>
-            </div>
-            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-green-600 hover:bg-green-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-              <h4 className="text-[16px] font-medium">Sunday</h4>
-              <span className="text-[15px]">{times?.sunTotal}</span>
-            </div>
-            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-orange-600 hover:bg-orange-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-              <h4 className="text-[16px] font-medium">
-                {active === "Weekly"
-                  ? "Week-Total"
-                  : active === "Monthly"
-                  ? "Month-Total"
-                  : "Year-Total"}
-              </h4>
-              <span className="text-[15px]">{times?.weekTotal}</span>
-            </div>
-            <div className="w-full py-4 px-4 rounded-md hover:shadow-md cursor-pointer bg-sky-600 hover:bg-sky-700 transition-all duration-150 flex flex-col items-center justify-center text-white">
-              <h4 className="text-[16px] font-medium">Chargeable</h4>
-              <span className="text-[15px]">
-                {totalCPercengate > 0 ? totalCPercengate : 0} %
-              </span>
-            </div>
-          </div>
-        )} */}
+ 
 
+        {selectedTab === "Single" && (
+          <div className="w-full hidden absolute bottom-[10%] left-0 px-4 z-[20] sm:grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-9 gap-4 2xl:gap-5">
+            {[...daysData, ...totalCards].map(
+              ({ label, value, color, icon, required }, idx) => {
+                const Icon = icon || dayIcons[idx] || FiCalendar;
+                const progress = getProgress(value, required);
 
+                console.log(label, value);
+                console.log("progress", progress);
 
-
-{/* 
- {
-    label: "Chargeable",
-    value: `${totalCPercengate > 0 ? totalCPercengate : 0} %`,
-    required: 100,
-    icon: FiTrendingUp,
-    color: "bg-emerald-100 text-emerald-800 border-emerald-200 font-semibold",
-  }, */}
-
-
-
-
-
-
-
-
-{selectedTab === "Single" && (
-
-    <div className="w-full hidden absolute bottom-[10%] left-0 px-4 z-[20] sm:grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-9 gap-4 2xl:gap-5">
-      {[...daysData, ...totalCards].map(({ label, value, color, icon, required }, idx) => {
-        const Icon = icon || dayIcons[idx] || FiCalendar;
-        const progress = getProgress(value, required );
-
-        console.log(label, value)
-        console.log("progress", progress)
-
-        return (
-          <div
-            key={idx}
-            className={`   w-full  rounded-md px-4 py-3 flex flex-col justify-between text-left transition-all duration-200 cursor-pointer border shadow-sm hover:shadow-md hover:-translate-y-0.5
+                return (
+                  <div
+                    key={idx}
+                    className={`   w-full  rounded-md px-4 py-3 flex flex-col justify-between text-left transition-all duration-200 cursor-pointer border shadow-sm hover:shadow-md hover:-translate-y-0.5
               ${
                 color ||
                 "bg-slate-50 text-slate-800 border-slate-200 hover:bg-slate-100"
               }`}
-            title={`${label}: ${value || 0}`}
-          >
-            {/* Top Row: Icon + Label + Value */}
-            <div className="flex items-center gap-2">
-              <Icon className="w-4 h-4 opacity-70" />
-              <div className="flex flex-col">
-                <span className="text-xs font-medium">{label} </span>
-                <span className="text-[13px] font-semibold leading-none">{value} / {required} hrs</span>
-              </div>
-            </div>
+                    title={`${label}: ${value || 0}`}
+                  >
+                    {/* Top Row: Icon + Label + Value */}
+                    <div className="flex items-center gap-2">
+                      <Icon className="w-4 h-4 opacity-70" />
+                      <div className="flex flex-col">
+                        <span className="text-xs font-medium">{label} </span>
+                        <span className="text-[13px] font-semibold leading-none">
+                          {value} / {required} hrs
+                        </span>
+                      </div>
+                    </div>
 
-            {/* Progress bar */}
-            <div className="mt-2 w-full h-2 bg-stone-200 rounded-full overflow-hidden">
-              <div
-                className={`h-full ${progress < 20 ? "bg-red-400" : (progress > 20 && progress < 70) ? "bg-yellow-400" : 'bg-green-400'} transition-all duration-300`}
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
-        );
-      })}
+                    {/* Progress bar */}
+                    <div className="mt-2 w-full h-2 bg-stone-200 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${
+                          progress < 20
+                            ? "bg-red-400"
+                            : progress > 20 && progress < 70
+                            ? "bg-yellow-400"
+                            : "bg-green-400"
+                        } transition-all duration-300`}
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              },
+            )}
 
-
-
-      <div
-            key={"chargeable"}
-            className={`   w-full  rounded-md px-4 py-3 flex flex-col justify-between text-left transition-all duration-200 cursor-pointer border shadow-sm hover:shadow-md hover:-translate-y-0.5
+            <div
+              key={"chargeable"}
+              className={`   w-full  rounded-md px-4 py-3 flex flex-col justify-between text-left transition-all duration-200 cursor-pointer border shadow-sm hover:shadow-md hover:-translate-y-0.5
               bg-emerald-100 text-emerald-800 border-emerald-200 font-semibold}`}
-            title={`${"Chargeable"}: ${totalCPercengate || 0}`}
-          >
-            {/* Top Row: Icon + Label + Value */}
-            <div className="flex items-center gap-2">
-              <FiTrendingUp className="w-4 h-4 opacity-70" />
-              <div className="flex flex-col">
-                <span className="text-xs font-medium">Chargeable</span>
-                <span className="text-[13px] font-semibold leading-none">{(!isNaN(totalCPercengate) && totalCPercengate) || 0}%</span>
+              title={`${"Chargeable"}: ${totalCPercengate || 0}`}
+            >
+              {/* Top Row: Icon + Label + Value */}
+              <div className="flex items-center gap-2">
+                <FiTrendingUp className="w-4 h-4 opacity-70" />
+                <div className="flex flex-col">
+                  <span className="text-xs font-medium">Chargeable</span>
+                  <span className="text-[13px] font-semibold leading-none">
+                    {(!isNaN(totalCPercengate) && totalCPercengate) || 0}%
+                  </span>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <div className="mt-2 w-full h-2 bg-stone-200 rounded-full overflow-hidden">
+                <div
+                  className={`h-full ${
+                    totalCPercengate < 20
+                      ? "bg-red-400"
+                      : totalCPercengate > 20 && totalCPercengate < 70
+                      ? "bg-yellow-400"
+                      : "bg-green-400"
+                  } transition-all duration-300`}
+                  style={{ width: `${totalCPercengate}%` }}
+                />
               </div>
             </div>
-
-            {/* Progress bar */}
-            <div className="mt-2 w-full h-2 bg-stone-200 rounded-full overflow-hidden">
-              <div
-                className={`h-full ${totalCPercengate < 20 ? "bg-red-400" : (totalCPercengate > 20 && totalCPercengate < 70) ? "bg-yellow-400" : 'bg-green-400'} transition-all duration-300`}
-                style={{ width: `${totalCPercengate}%` }}
-              />
-            </div>
           </div>
-    </div>
-
-)}
-
-
-
-
-
-
-
-
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        )}
 
         {/* -----------Add Timer Manual-------------- */}
         {isOpen && (
@@ -2745,7 +2363,7 @@ const getProgress = (timeStr, total) => {
         )}
 
         {/* -----------All Running Timers-------------- */}
-        
+
         {/* -----------Note Modal-------------- */}
         {showNote && (
           <div className="fixed top-0 left-0 w-full h-full z-[999] bg-gray-200/70 flex items-center justify-center ">

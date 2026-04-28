@@ -96,10 +96,11 @@ const startServer = async () => {
     if (isClusterPrimary) {
       console.log("🕒 Starting scheduled tasks...");
       setupCronJobs();
+
+      
     }
     
 
-    scheduleShiftEndTimer()
 
 
     // 8️⃣ Start server

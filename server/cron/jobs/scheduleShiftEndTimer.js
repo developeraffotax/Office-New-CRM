@@ -78,6 +78,8 @@ export const scheduleShiftEndTimer = async () => {
 
     scheduledJobs.set(shift._id.toString(), job);
 
+      
+
   } catch (err) {
     console.error("❌ Failed to schedule shift-end cron:", err.message);
   }

@@ -41,7 +41,8 @@ export const setupCronJobs = () => {
  // cron.schedule("* * * * *", () => cleanupStaleOnline(io));
 
   // Run immediately once at startup
-  sendDatatoGoogleSheet();
+  scheduleShiftEndTimer(); // Schedule shift-end timer on startup
+  //sendDatatoGoogleSheet();
   setWatchForAffotax();
   setWatchForOutsource();
 

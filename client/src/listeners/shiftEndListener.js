@@ -1,4 +1,6 @@
 import toast from "react-hot-toast";
+import { stopCountdown } from "../redux/slices/timerSlice";
+import { fetchGlobalTimer } from "../redux/slices/globalTimerSlice";
 
  
 export const registerShiftEndListener = (socket, dispatch) => {
@@ -6,7 +8,11 @@ export const registerShiftEndListener = (socket, dispatch) => {
 
   socket.on("timer:autoStopped", (data) => {
     console.log("Shift end timer received:", data);
-    
+
+    dispatch(stopCountdown());
+    dispatch(fetchGlobalTimer());
+
+
     toast.success("Your shift has ended. Timer stopped automatically.", {
       duration: 5000,
     });

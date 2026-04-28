@@ -4,6 +4,7 @@ import timerModel from "../../models/timerModel.js";
 import officeShiftModel from "../../models/officeShiftModel.js";
 import { safeRedisSmembers } from "../../utils/safeRedisSmembers.js";
 import { io } from "../../index.js";
+import { sendSocketEvent } from "../../utils/customFns/emitTaskUpdate.js";
  
  
 const scheduledJobs = new Map(); // track active cron jobs by shift ID
@@ -62,8 +63,10 @@ export const scheduleShiftEndTimer = async () => {
         // Optionally notify each affected user
         runningTimers.forEach((timer) => {
           io.to(`user:${timer.clientId}`).emit("timer:autoStopped", { message: `Your timer was automatically stopped at shift end (${shift.endTime}).`, task: timer?.task || "", clientName: timer?.clientName || "", });
-          io.to(`user:${timer.clientId}`).emit("task_updated");
-          io.to(`user:${timer.clientId}`).emit("job_updated");
+          
+          // io.to(`user:${timer.clientId}`).emit("task_updated");
+          //io.to(`user:${timer.clientId}`).emit("job_updated");
+ 
 
 
         });

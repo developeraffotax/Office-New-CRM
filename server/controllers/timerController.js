@@ -154,6 +154,13 @@ export const stopTimer = async (req, res) => {
       });
     }
 
+    if(existingTimer?.isRunning === false) {
+      return res.status(400).send({
+        success: false,
+        message: "Timer is already stopped!",
+      });
+    }
+
     // Update timer
     const updatedTimer = await timerModel
       .findByIdAndUpdate(

@@ -5,6 +5,7 @@ import { sendDatatoGoogleSheet } from "../utils/googleSheet.js";
 import { updateSendReceivedLeads } from "../utils/updateSendReceivedLeads.js";
 import {cleanupStaleOnline} from "../utils/cleanupStaleOnline.js";
 import { io } from "../index.js";
+import { scheduleShiftEndTimer } from "./jobs/scheduleShiftEndTimer.js";
 
 
 export const setupCronJobs = () => {

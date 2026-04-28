@@ -22,7 +22,6 @@ import { ExpressAdapter } from "@bull-board/express";
 
 // Import your queue
 import { gmailSyncQueue } from "./emailModule/jobs/queues/gmailSyncQueue.js";
-import { scheduleShiftEndTimer } from "./cron/jobs/scheduleShiftEndTimer.js";
  
 dotenv.config();
 

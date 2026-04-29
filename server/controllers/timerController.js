@@ -19,6 +19,9 @@ export const startTimer = async (req, res) => {
 
     const startTime = new Date().toISOString();
     const user = req.user.user.name;
+    const role = req.user.user.role?.name;
+
+    console.log("role 👍👍👍👍👍👍👍",  role);
 
     // Prevent multiple running timers
     const isTimerRunning = await timerModel.findOne({
@@ -53,18 +56,18 @@ export const startTimer = async (req, res) => {
 
 
      //const onlineAgents = await getOnlineAgents();
-    const onlineAgents = await getOnlineAgents();
+    if(role !== "Admin") {
+      const onlineAgents = await getOnlineAgents();
 
     // Convert to Set (⚡ O(1) lookup)
     const onlineAgentsSet = new Set(onlineAgents);
-
-    console.log(onlineAgentsSet)
 
     if (!onlineAgentsSet.has(clientId.toString())) {
       return res.status(400).send({
         success: false,
         message: "Please open AffoStaff to start the timer!",
       });
+    }
     }
  
 
@@ -83,6 +86,7 @@ export const startTimer = async (req, res) => {
       isRunning: true,
       holiday,
       activity: activity || "Chargeable",
+       
     }).save();
 
     // Update job timestamp

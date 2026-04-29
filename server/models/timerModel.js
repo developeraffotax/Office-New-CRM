@@ -59,7 +59,7 @@ const timerSchema = new mongoose.Schema(
       default: "",
     },
 
-    autoStoppedByShift: { type: Boolean, default: false },
+ 
     autoStoppedReason: { type: String, default: "" },
 
     isRunning: { type: Boolean, default: false },

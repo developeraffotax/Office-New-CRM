@@ -102,10 +102,10 @@ const startServer = async () => {
 
     
     
-      cron.schedule("* * * * *", () => {
-        console.log("🕒 Running checkRunningTimers every 5 minutes...");
-        checkRunningTimers();
-      });
+      // cron.schedule("* * * * *", () => {
+      //   console.log("🕒 Running checkRunningTimers every 5 minutes...");
+      //   checkRunningTimers();
+      // });
     
 
 

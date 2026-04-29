@@ -8,12 +8,57 @@ import { getOnlineAgents } from "../../utils/onlineStatus.js";
 export const checkRunningTimers = async () => {
   try {
     // 1. Fetch all currently running timers
-    const runningTimers = await timerModel.find({ isRunning: true });
+     
+
+      const runningTimers = await timerModel.aggregate([
+        { $match: { isRunning: true } },
+
+        {
+          $lookup: {
+            from: "users",
+            localField: "clientId",
+            foreignField: "_id",
+            as: "user"
+          }
+        },
+        { $unwind: "$user" },
+
+        {
+          $lookup: {
+            from: "roles",
+            localField: "user.role",
+            foreignField: "_id",
+            as: "role"
+          }
+        },
+        { $unwind: "$role" },
+
+        {
+          $match: {
+            "role.name": { $ne: "Admin" }
+          }
+        },
+
+        {
+          $project: {
+            _id: 1,
+            clientId: 1,
+            task: 1,
+            clientName: 1,
+            role: 1,
+            user: 1
+          }
+        }
+      ]);
+
+
 
     if (!runningTimers.length) {
       console.log("✅ [CRON] No running timers found. Skipping.");
       return;
     }
+
+    
 
     // 2. Get currently online agents (O(1) lookup via Set)
     const onlineAgents = await getOnlineAgents();
@@ -47,6 +92,7 @@ export const checkRunningTimers = async () => {
           $set: {
             isRunning: false,
             endTime: stopTime,
+            note: reasonToStop,
             autoStoppedReason: reasonToStop,
           },
         }

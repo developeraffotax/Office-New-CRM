@@ -50,6 +50,7 @@ export const scheduleShiftEndTimer = async () => {
             $set: {
               isRunning: false,
               endTime: stopTime,
+               note: reasonToStop,
               autoStoppedReason: reasonToStop, // optional flag for audit
             },
           }

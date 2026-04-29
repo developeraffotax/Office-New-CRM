@@ -362,6 +362,7 @@ const deleteThreadHandler = async (threadId, company) => {
 
 
 
+// swalOpen || timeUp open
 
 
 

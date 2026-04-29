@@ -18,7 +18,8 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const [imageLoad, setImageLoad] = useState(false);
 
-  const downloadLink = `https://github.com/developeraffotax/affostaff/releases/download/v1.0.1/AffoStaff-1.0.1.Setup.exe`;
+
+  const downloadLink = `https://github.com/developeraffotax/affostaff/releases/download/v1.0.2/AffoStaff-1.0.2.Setup.exe`;
 
   //    Get User Info
   const getUserInfo = async () => {

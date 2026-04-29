@@ -1,75 +1,69 @@
- 
-import moment from "moment";
-import timerModel from "../../models/timerModel.js";  
+import timerModel from "../../models/timerModel.js";
 import { io } from "../../index.js";
 import { getOnlineAgents } from "../../utils/onlineStatus.js";
- 
+
+const STOP_REASON = "AffoStaff went offline!";
+const STOP_MESSAGE = "Your timer was automatically stopped because AffoStaff went offline!";
 
 export const checkRunningTimers = async () => {
   try {
-    // 1. Fetch all currently running timers
-     
+    // ── 1. Fetch running timers (non-Admin only, minimal fields) ──────────
+    const runningTimers = await timerModel.aggregate([
+      { $match: { isRunning: true } },
 
-      const runningTimers = await timerModel.aggregate([
-        { $match: { isRunning: true } },
-
-        {
-          $lookup: {
-            from: "users",
-            localField: "clientId",
-            foreignField: "_id",
-            as: "user"
-          }
+      {
+        $lookup: {
+          from: "users",
+          localField: "clientId",
+          foreignField: "_id",
+          pipeline: [{ $project: { role: 1, _id: 0 } }],
+          as: "user",
         },
-        { $unwind: "$user" },
+      },
+      { $unwind: "$user" },
 
-        {
-          $lookup: {
-            from: "roles",
-            localField: "user.role",
-            foreignField: "_id",
-            as: "role"
-          }
+      {
+        $lookup: {
+          from: "roles",
+          localField: "user.role",
+          foreignField: "_id",
+          pipeline: [
+            { $match: { name: { $ne: "Admin" } } },
+            { $project: { _id: 0, name: 1 } },
+          ],
+          as: "role",
         },
-        { $unwind: "$role" },
+      },
 
-        {
-          $match: {
-            "role.name": { $ne: "Admin" }
-          }
+      // Drops Admin timers (empty role array) without an extra $match stage
+      { $unwind: { path: "$role", preserveNullAndEmptyArrays: false } },
+
+      // Only project what downstream logic actually reads
+      {
+        $project: {
+          _id: 1,
+          clientId: 1,
+          task: 1,
+          clientName: 1,
         },
-
-        {
-          $project: {
-            _id: 1,
-            clientId: 1,
-            task: 1,
-            clientName: 1,
-            role: 1,
-            user: 1
-          }
-        }
-      ]);
-
-
+      },
+    ]);
 
     if (!runningTimers.length) {
       console.log("✅ [CRON] No running timers found. Skipping.");
       return;
     }
 
-    
-
-    // 2. Get currently online agents (O(1) lookup via Set)
+    // ── 2. Online-agent lookup ─────────────────────────────────────────────
     const onlineAgents = await getOnlineAgents();
     const onlineAgentsSet = new Set(onlineAgents);
 
-    console.log(`🟢 [CRON] Online agents: ${[...onlineAgentsSet].join(", ") || "none"}`);
+    console.log(`🟢 [CRON] Online agents : ${[...onlineAgentsSet].join(", ") || "none"}`);
     console.log(`⏱  [CRON] Running timers: ${runningTimers.length}`);
 
-    // 3. Find timers whose owner is NOT online (AffoStaff closed)
+    // ── 3. Isolate offline-owner timers ───────────────────────────────────
     const timersToStop = runningTimers.filter(
-      (timer) => !onlineAgentsSet.has(timer.clientId.toString())
+      (t) => !onlineAgentsSet.has(t.clientId.toString())
     );
 
     if (!timersToStop.length) {
@@ -77,48 +71,44 @@ export const checkRunningTimers = async () => {
       return;
     }
 
-    console.log(`🔴 [CRON] Stopping ${timersToStop.length} timer(s) due to AffoStaff being offline.`);
+    console.log(`🔴 [CRON] Stopping ${timersToStop.length} timer(s) — AffoStaff offline.`);
 
-    try {
-      const stopTime = new Date().toISOString();
+    // ── 4. Bulk-stop in one DB round-trip ─────────────────────────────────
+    const stopTime = new Date();                          // single Date object, reused below
+    const timerIds = timersToStop.map((t) => t._id);
 
-      // Extract only the IDs of timers that need to be stopped
-      const timerIdsToStop = timersToStop.map((timer) => timer._id);
-      const reasonToStop = "AffoStaff went offline!";
-      // Update only the offline timers using $in
-      await timerModel.updateMany(
-        { _id: { $in: timerIdsToStop }, isRunning: true },
-        {
-          $set: {
-            isRunning: false,
-            endTime: stopTime,
-            note: reasonToStop,
-            autoStoppedReason: reasonToStop,
-          },
-        }
-      );
+    await timerModel.updateMany(
+      { _id: { $in: timerIds }, isRunning: true },       // guard: only truly-running docs
+      {
+        $set: {
+          isRunning: false,
+          endTime: stopTime.toISOString(),
+          note: STOP_REASON,
+          autoStoppedReason: STOP_REASON,
+        },
+      }
+    );
 
-      console.log(`✅ [CRON] Successfully stopped ${timerIdsToStop.length} timer(s).`);
-        console.log(`🕒 [CRON] Timers stopped at: ${new Date().toLocaleString()}`);
-      // Notify each affected user via socket
-      timersToStop.forEach((timer) => {
-        io.to(`user:${timer.clientId}`).emit("timer:autoStopped", {
-          reasonToStop: reasonToStop,
-          stopTime: new Date().toLocaleString(),
-          message: "Your timer was automatically stopped because AffoStaff went offline!",
-          task: timer?.task || "",
-          clientName: timer?.clientName || "",
-        });
+    const stopTimeLocale = stopTime.toLocaleString();
+    console.log(`✅ [CRON] Stopped ${timerIds.length} timer(s) at ${stopTimeLocale}`);
+
+    // ── 5. Emit socket events ─────────────────────────────────────────────
+    // Per-user notification
+    for (const timer of timersToStop) {
+      io.to(`user:${timer.clientId}`).emit("timer:autoStopped", {
+        reasonToStop : STOP_REASON,
+        stopTime     : stopTimeLocale,
+        message      : STOP_MESSAGE,
+        task         : timer.task       ?? "",
+        clientName   : timer.clientName ?? "",
       });
-
-      // Notify dashboards to refresh UI
-      io.emit("runningTimersUpdate");
-
-    } catch (err) {
-      console.error("❌ [CRON] Error stopping timers:", err.message);
     }
 
+    // Broadcast dashboard refresh
+    io.emit("runningTimersUpdate");
+
   } catch (err) {
-    console.error("❌ [CRON] checkRunningTimers crashed:", err.message);
+    // Single top-level catch — inner try/catch was redundant
+    console.error("❌ [CRON] checkRunningTimers error:", err.message);
   }
 };

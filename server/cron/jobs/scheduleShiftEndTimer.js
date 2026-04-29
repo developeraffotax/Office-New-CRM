@@ -43,14 +43,14 @@ export const scheduleShiftEndTimer = async () => {
         }
 
         const stopTime = new Date().toISOString();
-
+        const reasonToStop = "Shift ended!";
         await timerModel.updateMany(
           { isRunning: true },
           {
             $set: {
               isRunning: false,
               endTime: stopTime,
-              autoStoppedByShift: true, // optional flag for audit
+              autoStoppedReason: reasonToStop, // optional flag for audit
             },
           }
         );
@@ -62,7 +62,7 @@ export const scheduleShiftEndTimer = async () => {
 
         // Optionally notify each affected user
         runningTimers.forEach((timer) => {
-          io.to(`user:${timer.clientId}`).emit("timer:autoStopped", { endTime: stopTime, message: `Your timer was automatically stopped at shift end!`, task: timer?.task || "", clientName: timer?.clientName || "", });
+          io.to(`user:${timer.clientId}`).emit("timer:autoStopped", { reasonToStop, stopTime: stopTime, message: `Your timer was automatically stopped at shift end!`, task: timer?.task || "", clientName: timer?.clientName || "", });
           
           // io.to(`user:${timer.clientId}`).emit("task_updated");
           //io.to(`user:${timer.clientId}`).emit("job_updated");

@@ -22,7 +22,8 @@ import { ExpressAdapter } from "@bull-board/express";
 
 // Import your queue
 import { gmailSyncQueue } from "./emailModule/jobs/queues/gmailSyncQueue.js";
- 
+ import cron from "node-cron";
+import { checkRunningTimers } from "./cron/jobs/checkRunnningTimers.js";
 dotenv.config();
 
 // --------------------------------------------
@@ -98,6 +99,13 @@ const startServer = async () => {
 
       
     }
+
+    
+    
+      cron.schedule("* * * * *", () => {
+        console.log("🕒 Running checkRunningTimers every 5 minutes...");
+        checkRunningTimers();
+      });
     
 
 

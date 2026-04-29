@@ -50,6 +50,24 @@ export const startTimer = async (req, res) => {
       }
     }
 
+
+
+     //const onlineAgents = await getOnlineAgents();
+    const onlineAgents = await getOnlineAgents();
+
+    // Convert to Set (⚡ O(1) lookup)
+    const onlineAgentsSet = new Set(onlineAgents);
+
+    console.log(onlineAgentsSet)
+
+    if (!onlineAgentsSet.has(clientId.toString())) {
+      return res.status(400).send({
+        success: false,
+        message: "Please open AffoStaff to start the timer!",
+      });
+    }
+ 
+
     // Create new timer
     const newTimer = await new timerModel({
       clientId,

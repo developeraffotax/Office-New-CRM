@@ -1,40 +1,38 @@
 import toast from "react-hot-toast";
 import { stopCountdown } from "../redux/slices/timerSlice";
 import { fetchGlobalTimer } from "../redux/slices/globalTimerSlice";
-import { formatTo12Hour } from "../utlis/formatTo12Hour";
- 
+import { formatLocalTimeTo12Hour } from "../utlis/formatTo12Hour";
+
 export const showShiftEndToast = (data) => {
   toast.custom((t) => (
     <div
       className={`
         max-w-md w-full font-inter
-        bg-white/95 backdrop-blur-md
-        border border-slate-200/60
-        shadow-[0_8px_30px_rgb(0,0,0,0.08)]
-        rounded-2xl
+        bg-zinc-950 border border-zinc-800
+        shadow-2xl rounded-2xl
         pointer-events-auto
         flex gap-4 p-4
-        transition-all duration-300 hover:scale-[1.01]
+        transition-all duration-300 hover:border-zinc-700
         relative overflow-hidden
         ${t.visible
-          ? "animate-in fade-in slide-in-from-right-5"
-          : "animate-out fade-out slide-out-to-right-5"
+          ? "animate-pop"
+          : "animate-pop"
         }
       `}
     >
-      {/* Decorative Gradient Background Blur */}
-      <div className="absolute -right-4 -top-4 w-24 h-24 bg-orange-100/50 rounded-full blur-2xl pointer-events-none" />
+      {/* Subtle Glow Effect for better depth */}
+      <div className="absolute -right-6 -top-6 w-24 h-24 bg-orange-500/15 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Icon Container */}
+      {/* Icon Container - Higher contrast orange */}
       <div className="
         flex items-center justify-center
-        w-11 h-11
+        w-12 h-12
         rounded-xl
-        bg-orange-50
-        text-orange-600
-        ring-1 ring-orange-200/50
+        bg-orange-500/20
+        text-orange-400
+        border border-orange-500/30
         flex-shrink-0
-        text-xl
+        text-2xl
       ">
         ⏰
       </div>
@@ -42,61 +40,63 @@ export const showShiftEndToast = (data) => {
       {/* Content */}
       <div className="flex flex-col flex-1 min-w-0">
         <div className="flex flex-col">
-          <p className="text-[15px] font-bold text-slate-900 tracking-tight">
-            Shift Ended | {formatTo12Hour(data?.endTime)}
+          <p className="text-[16px] font-semibold text-white tracking-tight leading-tight">
+            {data?.reasonToStop || "Timer stopped"} 
+            <span className="mx-2 text-zinc-500 font-normal">|</span>
+            <span className="text-orange-400">{formatLocalTimeTo12Hour(data?.stopTime)}</span>
           </p>
-          <p className="text-sm text-slate-500 font-medium leading-relaxed mt-0.5">
+          <p className="text-[14px] text-zinc-300 font-medium leading-relaxed mt-1">
             {data?.message || "Timer stopped automatically."}
           </p>
         </div>
 
-        {/* Badges Container */}
+        {/* Badges Container - Improved legibility */}
         {(data?.task || data?.clientName) && (
-          <div className="flex flex-wrap gap-2 mt-3">
+          <div className="flex flex-wrap gap-2 mt-4">
             {data?.task && (
               <span className="
                 inline-flex items-center gap-1.5
                 px-2.5 py-1
-                text-[11px] font-bold uppercase tracking-wider
+                text-[10px] font-bold uppercase tracking-widest
                 rounded-md
-                bg-slate-100 text-slate-600
-                border border-slate-200/50
+                bg-zinc-800 text-zinc-100
+                border border-zinc-700
               ">
-                <span className="opacity-70">Task:</span> {data.task}
+                <span className="text-zinc-500">Task:</span> {data.task}
               </span>
             )}
             {data?.clientName && (
               <span className="
                 inline-flex items-center gap-1.5
                 px-2.5 py-1
-                text-[11px] font-bold uppercase tracking-wider
+                text-[10px] font-bold uppercase tracking-widest
                 rounded-md
-                bg-blue-50 text-blue-700
-                border border-blue-100
+                bg-blue-900/40 text-blue-300
+                border border-blue-800/50
               ">
-                <span className="opacity-70">Client:</span> {data.clientName}
+                <span className="text-blue-400/60">Client:</span> {data.clientName}
               </span>
             )}
           </div>
         )}
       </div>
 
-      {/* Close Button */}
+      {/* Close Button - Larger tap target and clearer hover */}
       <button
-        onClick={() => toast.dismiss(t.id)}
+        onClick={() => toast.remove(t.id)}
         className="
           h-8 w-8
           inline-flex items-center justify-center
-          rounded-lg
-          text-slate-400
-          hover:text-slate-600
-          hover:bg-slate-100
-          transition-colors
+          rounded-full
+          text-zinc-500
+          hover:text-white
+          hover:bg-zinc-800
+          transition-all
           flex-shrink-0
         "
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
     </div>
@@ -107,18 +107,13 @@ export const showShiftEndToast = (data) => {
 };
 
 
-
 export const registerShiftEndListener = (socket, dispatch) => {
   if (!socket) return;
   
   socket.on("timer:autoStopped", (data) => {
-    console.log("Shift end timer received:", data);
-
     dispatch(stopCountdown());
     dispatch(fetchGlobalTimer());
-    
-    showShiftEndToast(data); // ✅ modern toast
-
+    showShiftEndToast(data);
 
     const audio = new Audio("/beep.mp3");
     audio.play().catch((err) => console.log("Audio play failed:", err));
@@ -128,15 +123,3 @@ export const registerShiftEndListener = (socket, dispatch) => {
     socket.off("timer:autoStopped");
   };
 };
-
-
-
-
-
-
-
-
-
-
-
- 

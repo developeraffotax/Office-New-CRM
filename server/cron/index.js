@@ -6,6 +6,7 @@ import { updateSendReceivedLeads } from "../utils/updateSendReceivedLeads.js";
 import {cleanupStaleOnline} from "../utils/cleanupStaleOnline.js";
 import { io } from "../index.js";
 import { scheduleShiftEndTimer } from "./jobs/scheduleShiftEndTimer.js";
+import { checkRunningTimers } from "./jobs/checkRunnningTimers.js";
 
 
 export const setupCronJobs = () => {
@@ -40,6 +41,16 @@ export const setupCronJobs = () => {
 
   cron.schedule("0 0 * * *", () => cleanupStaleOnline(io)); 
  // cron.schedule("* * * * *", () => cleanupStaleOnline(io));
+
+
+  cron.schedule("*/5 * * * *", () => {
+    console.log("🕒 Running checkRunningTimers every 5 minutes...");
+    checkRunningTimers();
+  });
+
+
+
+
 
   // Run immediately once at startup
   scheduleShiftEndTimer(); // Schedule shift-end timer on startup

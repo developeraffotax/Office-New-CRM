@@ -10,3 +10,26 @@ export const formatTo12Hour = (time) => {
 
   return `${h}:${minute} ${ampm}`;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+export const formatLocalTimeTo12Hour = (dateInput) => {
+  if (!dateInput) return "";
+
+  const date = new Date(dateInput);
+
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};

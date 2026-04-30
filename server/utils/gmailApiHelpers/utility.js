@@ -170,8 +170,66 @@ const cleanMessageHtmlAggressive = (html) => {
 // ---------------------------
 // Extract non-inline attachments
 // ---------------------------
+// const extractAttachments = async (parts, messageId, accessToken) => {
+//   const attachments = [];
+
+//   for (const part of parts) {
+//     const contentIdHeader = part.headers?.find(
+//       (h) => h.name.toLowerCase() === "content-id"
+//     )?.value;
+
+//     const dispositionHeader = part.headers?.find(
+//       (h) => h.name.toLowerCase() === "content-disposition"
+//     )?.value;
+
+//     const isInline =
+//       (dispositionHeader &&
+//         dispositionHeader.toLowerCase().includes("inline"))
+
+
+//     // const filename = part.filename;
+//     // const mimeType = part.mimeType;
+
+//     // let isInline = false;
+
+//     // if (dispositionHeader) {
+//     //   const disp = dispositionHeader.toLowerCase();
+//     //   if (disp.includes("inline")) isInline = true;
+//     //   if (disp.includes("attachment")) isInline = false;
+//     // } else {
+//     //   // Fallback rules when Content-Disposition is missing
+//     //   if (!filename && mimeType?.startsWith("image/")) {
+//     //     // Image with no filename = signature / inline CID image
+//     //     isInline = true;
+//     //   } else {
+//     //     // If filename exists -> probably real attachment
+//     //     isInline = false;
+//     //   }
+//     // }
+
+//     if (part.filename && part.body?.attachmentId && !isInline) {
+//       attachments.push({
+//         attachmentId: part.body.attachmentId,
+//         attachmentMessageId: messageId,
+//         attachmentFileName: part.filename,
+//         attachmentHeaders: part.headers || [],
+//         mimeType: part.mimeType,
+//       });
+//     }
+//   }
+
+//   return attachments;
+// };
+
+
+
+
+
 const extractAttachments = async (parts, messageId, accessToken) => {
   const attachments = [];
+
+
+  console.log("Parts for attachment extraction:", JSON.stringify(parts, null, 2));
 
   for (const part of parts) {
     const contentIdHeader = part.headers?.find(
@@ -182,44 +240,55 @@ const extractAttachments = async (parts, messageId, accessToken) => {
       (h) => h.name.toLowerCase() === "content-disposition"
     )?.value;
 
-    const isInline =
-      (dispositionHeader &&
-        dispositionHeader.toLowerCase().includes("inline"))
+    const filename = part.filename;
+    const mimeType = part.mimeType;
 
+    // Must have an attachmentId and filename to be a real attachment
+    if (!part.body?.attachmentId || !filename) continue;
 
-    // const filename = part.filename;
-    // const mimeType = part.mimeType;
+    const isImage = mimeType?.startsWith("image/");
 
-    // let isInline = false;
+    let isInline = false;
 
-    // if (dispositionHeader) {
-    //   const disp = dispositionHeader.toLowerCase();
-    //   if (disp.includes("inline")) isInline = true;
-    //   if (disp.includes("attachment")) isInline = false;
-    // } else {
-    //   // Fallback rules when Content-Disposition is missing
-    //   if (!filename && mimeType?.startsWith("image/")) {
-    //     // Image with no filename = signature / inline CID image
-    //     isInline = true;
-    //   } else {
-    //     // If filename exists -> probably real attachment
-    //     isInline = false;
-    //   }
-    // }
+    if (dispositionHeader) {
+      const disp = dispositionHeader.toLowerCase();
 
-    if (part.filename && part.body?.attachmentId && !isInline) {
+      if (disp.includes("attachment")) {
+        // Explicit attachment → never inline
+        isInline = false;
+      } else if (disp.includes("inline")) {
+        // "inline" only means skip-as-attachment for actual images
+        // PDFs, docs, etc. marked inline by Apple Mail are still real attachments
+        isInline = isImage;
+      }
+    } else {
+      // No Content-Disposition — use heuristics
+      if (contentIdHeader && isImage) {
+        // Image with CID → referenced in HTML body, skip it
+        isInline = true;
+      } else {
+        isInline = false;
+      }
+    }
+
+    if (!isInline) {
       attachments.push({
         attachmentId: part.body.attachmentId,
         attachmentMessageId: messageId,
-        attachmentFileName: part.filename,
+        attachmentFileName: filename,
         attachmentHeaders: part.headers || [],
-        mimeType: part.mimeType,
+        mimeType,
       });
     }
   }
 
+
+    console.log("Parts for attachment extraction:", JSON.stringify(parts, null, 2));
+
   return attachments;
 };
+
+
 
 // ---------------------------
 // Inline ALL images (CID, FILENAME, OUTLOOK IDs, EXTERNAL)

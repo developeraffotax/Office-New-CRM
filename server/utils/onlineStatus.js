@@ -9,6 +9,7 @@ import { connection as redis } from "./ioredis.js";
  * @returns {Promise<string[]>} Array of agent IDs
  */
 export const getOnlineAgents = async () => {
+  
   try {
     if (!redis || redis.status !== "ready") {
       console.warn("⚠ Redis not ready while fetching online agents");
@@ -21,6 +22,26 @@ export const getOnlineAgents = async () => {
   } catch (error) {
     console.error("❌ getOnlineAgents error:", error.message);
     return [];
+  }
+};
+
+
+
+
+
+export const getOnlineAgentViaHeartbeat = async (agentId) => {
+  try {
+    if (!redis || redis.status !== "ready") {
+      console.warn("⚠ Redis not ready while checking heartbeat");
+      return false;
+    }
+
+    const heartbeat = await redis.get(`heartbeat:${agentId.toString()}`);
+
+    return !!heartbeat; // null → false, JSON string → true
+  } catch (error) {
+    console.error("❌ getOnlineAgentViaHeartbeat error:", error.message);
+    return false;
   }
 };
 

@@ -7,7 +7,7 @@ import timerStatusModel from "../models/timerStatusModel.js";
 
 import { connection as redis } from "../utils/ioredis.js";
 import { formatTo12Hour, isWithinShift } from "../utils/isWithinShift.js";
-import { getOnlineAgents, getOnlineUsers } from "../utils/onlineStatus.js";
+import { getOnlineAgents, getOnlineAgentViaHeartbeat, getOnlineUsers } from "../utils/onlineStatus.js";
 
 
 // -----------------------------
@@ -53,21 +53,17 @@ export const startTimer = async (req, res) => {
       }
     }
 
+ 
+      // ── Heartbeat check — only source of truth ─────────────────────────────
+    if (role !== "Admin") {
+      const isOnline = await getOnlineAgentViaHeartbeat(clientId);
 
-
-     //const onlineAgents = await getOnlineAgents();
-    if(role !== "Admin") {
-      const onlineAgents = await getOnlineAgents();
-
-    // Convert to Set (⚡ O(1) lookup)
-    const onlineAgentsSet = new Set(onlineAgents);
-
-    if (!onlineAgentsSet.has(clientId.toString())) {
-      return res.status(400).send({
-        success: false,
-        message: "Please open AffoStaff to start the timer!",
-      });
-    }
+      if (!isOnline) {
+        return res.status(400).send({
+          success: false,
+          message: "Please open AffoStaff to start the timer!",
+        });
+      }
     }
  
 
@@ -283,7 +279,7 @@ export const timerStatus = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send({
-      success: true,
+      success: false,
       message: "error in timer status controller",
       error,
     });
@@ -331,6 +327,26 @@ export const getTimerStatusForAffoStaff = async (req, res) => {
   try {
     const userId = req.user.user._id;
 
+    // Write heartbeat — proves Affostaff is open on this user's machine.
+    // TTL of 90s means if Electron stops polling (every 30s), key expires
+    // automatically and getOnlineAgents() will no longer see this user.
+    try {
+
+      if (redis && redis.status === "ready") {
+        await redis.setex(
+          `heartbeat:${userId.toString()}`,
+          300,
+          JSON.stringify({ lastSeen: Date.now() })
+        );
+         
+      }
+    } catch (redisErr) {
+      // Don't fail the whole request if Redis has a hiccup
+      console.warn("⚠ Heartbeat write failed:", redisErr.message);
+    }
+
+
+
     const timer = await timerModel.findOne({
       clientId: userId,
 
@@ -354,7 +370,7 @@ export const getTimerStatusForAffoStaff = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send({
-      success: true,
+      success: false,
       message: "error in timer status controller",
       error,
     });

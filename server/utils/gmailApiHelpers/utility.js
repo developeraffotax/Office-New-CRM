@@ -229,7 +229,7 @@ const extractAttachments = async (parts, messageId, accessToken) => {
   const attachments = [];
 
 
-  console.log("Parts for attachment extraction:", JSON.stringify(parts, null, 2));
+ 
 
   for (const part of parts) {
     const contentIdHeader = part.headers?.find(
@@ -283,8 +283,7 @@ const extractAttachments = async (parts, messageId, accessToken) => {
   }
 
 
-    console.log("Parts for attachment extraction:", JSON.stringify(parts, null, 2));
-
+ 
   return attachments;
 };
 

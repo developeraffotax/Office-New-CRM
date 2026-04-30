@@ -420,13 +420,18 @@ const TicketsPopUp = ({ clientName, email, handleClose, selectedTab }) => {
 
               {ticketId ? (
                 <div className=" w-full h-full flex justify-center items-center gap-8 px-8 py-4 overflow-hidden ">
-                  <EmailDetailDrawer
-                    id={ticketId}
-                    setTicketSubject={setTicketSubject}
-                    isReplyModalOpenCb={isReplyModalOpenCb}
-                  />
 
-                  <div className="w-full h-full flex flex-col justify-start items-start gap-5 ">
+
+                   <div className="w-1/2  h-full">
+
+
+                  <EmailDetailDrawer id={ticketId} setTicketSubject={setTicketSubject} isReplyModalOpenCb={isReplyModalOpenCb} />
+
+                  </div>
+
+
+
+                  <div className="w-1/2 h-full flex flex-col justify-start items-start gap-5 ">
                     <div className="max-w-lg w-full h-[50%] px-3">
                       <ActivityLogDrawer ticketId={ticketId} />
                     </div>
@@ -439,6 +444,9 @@ const TicketsPopUp = ({ clientName, email, handleClose, selectedTab }) => {
                       />
                     </div>
                   </div>
+
+
+
                 </div>
               ) : (
                 <div className="text-gray-500 text-sm">Loading ticket...</div>

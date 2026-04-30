@@ -384,7 +384,7 @@ const getDetailedThreadsWithPagination = async (companyName, threadId, accessTok
   const date = new Date(parseInt(latestMessageMeta?.internalDate || Date.now()));
 
 
-  console.log("LATEST MESAGE ❤️❤️❤️❤️", latestMessageMeta)
+ 
 
   // ✅ Step 3: Fetch ONLY the paginated messages in parallel (not all messages)
   const fullMessages = await Promise.all(

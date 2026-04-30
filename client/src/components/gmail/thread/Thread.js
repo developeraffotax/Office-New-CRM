@@ -27,6 +27,7 @@ import { confirmAlert } from "../shared/ui/Swal.js";
 import { MdDeleteOutline } from "react-icons/md";
 import ThreadActivityPanel from "../shared/ui/ThreadActivityPanel.js";
 import { LiaUndoAltSolid } from "react-icons/lia";
+import { useSelector } from "react-redux";
 export default function Thread({
   company,
   threadId,
@@ -53,8 +54,11 @@ const [hasMore, setHasMore] = useState(false);
 const [loadingMore, setLoadingMore] = useState(false);
 
  
+  const isReminderPopupOpen = useSelector((state) => state?.reminder?.showReminder);  
+
+
  
-    
+
   const [swalOpen, setSwalOpen] = useState(false);
 
 
@@ -370,7 +374,7 @@ const deleteThreadHandler = async (threadId, company) => {
 useOverlayStack({
   ref: threadRef,
   onClose: () => {
-    if (swalOpen) return; // prevent closing
+    if (swalOpen || isReminderPopupOpen) return; // prevent closing
     setEmailDetail(prev => ({ ...prev, threadId: "", show: false, subject: "" }))
   },
   isOpen: show,

@@ -8,6 +8,7 @@ import CustomEditorNew from "../../../utlis/CustomEditorNew";
 import {
   sortOptions,
   HighlightedOption,
+  filterOption,
 } from "../../Tickets/HighlightedOption";
 import { useEmailReply } from "../hooks/useEmailReply";
 import EmailChipInput from "./EmailChipInput";
@@ -185,9 +186,16 @@ export default function Reply({
                   )}
                   options={sortOptions(templateOptions, inputValue)}
                   onChange={(opt) => {
+                    if(!opt) {
+                        setTemplateId("");
+                         setMessage("");
+                        return
+                    }  
                     setTemplateId(opt.value);
                     setMessage(opt.description);
                   }}
+                  filterOption={filterOption}
+                  isClearable
                   onInputChange={(val) => setInputValue(val)}
                   components={{ Option: HighlightedOption }}
                   styles={{

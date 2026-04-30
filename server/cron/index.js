@@ -43,8 +43,8 @@ export const setupCronJobs = () => {
  // cron.schedule("* * * * *", () => cleanupStaleOnline(io));
 
 
-  cron.schedule("* * * * *", () => {
-    console.log("🕒 Running checkRunningTimers every 1 minutes...");
+  cron.schedule("*/3 * * * *", () => {
+    console.log("🕒 Running checkRunningTimers every 3 minutes...");
     checkRunningTimers();
   });
 

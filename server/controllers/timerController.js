@@ -335,8 +335,8 @@ export const getTimerStatusForAffoStaff = async (req, res) => {
       if (redis && redis.status === "ready") {
         await redis.setex(
           `heartbeat:${userId.toString()}`,
-          300,
-          JSON.stringify({ lastSeen: Date.now() })
+          600,
+          "1"
         );
          
       }

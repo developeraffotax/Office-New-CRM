@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
- 
+
 import { style } from "../../utlis/CommonStyle";
 import { LuImport } from "react-icons/lu";
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
- 
+
 import axios from "axios";
 import toast from "react-hot-toast";
 import { TbLoader2 } from "react-icons/tb";
-import { MdOutlineEdit } from "react-icons/md";
+import { MdOutlineEdit, MdOutlineModeEdit } from "react-icons/md";
 import { AiTwotoneDelete } from "react-icons/ai";
 import Swal from "sweetalert2";
 import AddTemplateModal from "../../components/Template/AddTemplateModal";
@@ -29,9 +29,7 @@ import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { useEscapeKey } from "../../utlis/useEscapeKey";
 
 export default function Template() {
-
   const auth = useSelector((state) => state.auth.auth);
-
 
   const [showCategory, setShowCategory] = useState(false);
   const [categoryData, setCategoryData] = useState([]);
@@ -54,16 +52,25 @@ export default function Template() {
 
   const [showJobHolderFilter, setShowJobHolderFilter] = useState(true);
 
+  const [showEdit, setShowEdit] = useState(false);
+  const [rowSelection, setRowSelection] = useState({});
+
+  const [bulkForm, setBulkForm] = useState({
+    name: "",
+    description: "",
+    category: "",
+    userList: [],
+    userMode: "replace",
+  });
   // console.log("templateData:", templateData);
 
-    useEscapeKey(() => {
+  useEscapeKey(() => {
     setAddTemplate(false);
   }, addTemplate);
 
-      useEscapeKey(() => {
+  useEscapeKey(() => {
     setShowTemplate(false);
   }, showTemplate);
-
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -85,9 +92,8 @@ export default function Template() {
         .filter((role) => role.permission === "Templates")
         .flatMap((jobRole) => jobRole.subRoles);
 
-
-        console.log("FILTER ACCES IS 🧡💛", filterAccess)
-        console.log("FILTER ACCES IS auth 🧡💛", auth)
+      console.log("FILTER ACCES IS 🧡💛", filterAccess);
+      console.log("FILTER ACCES IS auth 🧡💛", auth);
       setAccess(filterAccess);
     }
   }, [auth]);
@@ -97,14 +103,14 @@ export default function Template() {
     setIsLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/templates/get/all/template`
+        `${process.env.REACT_APP_API_URL}/api/v1/templates/get/all/template`,
       );
       if (auth.user.role.name === "Admin") {
         console.log(data?.templates);
         setTemplateData(data?.templates);
       } else {
         const filteredTemplate = data?.templates.filter((template) =>
-          template?.userList?.some((user) => user._id === auth.user.id)
+          template?.userList?.some((user) => user._id === auth.user.id),
         );
 
         setTemplateData(filteredTemplate);
@@ -126,7 +132,7 @@ export default function Template() {
   const getTemplates = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/templates/get/all/template`
+        `${process.env.REACT_APP_API_URL}/api/v1/templates/get/all/template`,
       );
       setTemplateData(data?.templates);
     } catch (error) {
@@ -138,7 +144,7 @@ export default function Template() {
   const getAllCategories = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/categories/get/all/category`
+        `${process.env.REACT_APP_API_URL}/api/v1/categories/get/all/category`,
       );
       setCategoryData(data?.categories);
     } catch (error) {
@@ -155,24 +161,24 @@ export default function Template() {
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
       );
       setUsers(
         data?.users?.filter((user) =>
           user.role?.access.some((item) =>
-            item?.permission?.includes("Templates")
-          )
-        ) || []
+            item?.permission?.includes("Templates"),
+          ),
+        ) || [],
       );
 
       setUserName(
         data?.users
           ?.filter((user) =>
             user.role?.access.some((item) =>
-              item?.permission?.includes("Templates")
-            )
+              item?.permission?.includes("Templates"),
+            ),
           )
-          .map((user) => user.name)
+          .map((user) => user.name),
       );
     } catch (error) {
       console.log(error);
@@ -193,7 +199,7 @@ export default function Template() {
       if (categoryId) {
         const { data } = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/v1/categories/update/template/category/${categoryId}`,
-          { name }
+          { name },
         );
         if (data) {
           toast.success("Category updated successfully.");
@@ -206,7 +212,7 @@ export default function Template() {
       } else {
         const { data } = await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/categories/create/template/category`,
-          { name }
+          { name },
         );
         if (data) {
           toast.success("Category added successfully.");
@@ -244,7 +250,7 @@ export default function Template() {
   const deleteCategory = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/categories/delete/template/category/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/categories/delete/template/category/${id}`,
       );
       if (data) {
         getAllCategories();
@@ -274,7 +280,7 @@ export default function Template() {
   const deleteTemplate = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/templates/delete/template/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/templates/delete/template/${id}`,
       );
       if (data) {
         const filterTemplate = templateData.filter((item) => item._id !== id);
@@ -295,7 +301,7 @@ export default function Template() {
       `${process.env.REACT_APP_API_URL}/api/v1/templates/create/template`,
       {
         ...taskCopy,
-      }
+      },
     );
     if (data) {
       setTemplateData((prevData) => [...prevData, data.template]);
@@ -304,8 +310,66 @@ export default function Template() {
     }
   };
 
-  console.log("ACCESS IS HERE:", access);
+  const handleBulkUpdate = async (e) => {
+    e.preventDefault();
 
+    try {
+      const selectedTemplates = table
+        .getSelectedRowModel()
+        .rows.map((row) => row.original);
+
+      if (selectedTemplates.length === 0) {
+        return toast.error("Select at least one template");
+      }
+
+      const payload = selectedTemplates.map((item) => {
+        const base = {
+          _id: item._id,
+          ...(bulkForm.name && { name: bulkForm.name }),
+          ...(bulkForm.category && { category: bulkForm.category }),
+          ...(bulkForm.description && { description: bulkForm.description }),
+        };
+
+        // 🔥 USER MODE LOGIC
+        if (bulkForm.userList.length > 0) {
+          if (bulkForm.userMode === "replace") {
+            base.userList = bulkForm.userList;
+          }
+
+          if (bulkForm.userMode === "add") {
+            base.addUsers = bulkForm.userList;
+          }
+
+          if (bulkForm.userMode === "remove") {
+            base.removeUsers = bulkForm.userList.map((u) => u._id);
+          }
+        }
+
+        return base;
+      });
+
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/templates/bulk-update-templates`,
+        payload,
+      );
+
+      if (data?.success) {
+        toast.success("Bulk updated successfully!");
+        getTemplates();
+        setRowSelection({});
+        setBulkForm({
+          name: "",
+          category: "",
+          userList: [],
+          description: "",
+          userMode: "replace",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Bulk update failed");
+    }
+  };
 
   const convertQuillHtmlToPlainText = (html) => {
     // html = html.replace(/<strong>|<b>/g, "**");
@@ -326,7 +390,7 @@ export default function Template() {
     // html = html.replace(/<[^>]*>/g, "");
 
     // Replace line breaks and paragraph endings with newlines
- 
+
     html = html.replace(/<br\s*\/?>/gi, "\n");
     html = html.replace(/<\/p>/gi, "\n");
 
@@ -340,13 +404,11 @@ export default function Template() {
     html = html.replace(/&lt;/g, " ");
     html = html.replace(/&gt;/g, " ");
 
+    // Remove multiple blank lines but keep single \n
+    html = html.replace(/\n{3,}/g, "\n\n");
 
- 
-      // Remove multiple blank lines but keep single \n
-      html = html.replace(/\n{3,}/g, '\n\n');
-
-  // Trim leading/trailing whitespace
-  return html.trim();
+    // Trim leading/trailing whitespace
+    return html.trim();
   };
 
   // const convertQuillHtmlToPlainText = (html) => {
@@ -383,7 +445,7 @@ export default function Template() {
       (err) => {
         console.log("Failed to copy the template!:", err);
         toast.error("Failed to copy the template!");
-      }
+      },
     );
   };
 
@@ -401,10 +463,7 @@ export default function Template() {
         handleDeleteTemplateConfirmation,
         userName,
       }),
-    [
-      categoryData,
-      userName,
-    ]
+    [categoryData, userName],
   );
 
   // Clear table Filter
@@ -421,6 +480,11 @@ export default function Template() {
     enableStickyHeader: true,
     enableStickyFooter: true,
     muiTableContainerProps: { sx: { maxHeight: "850px" } },
+
+    enableRowSelection: true, // ✅ ADD THIS
+    enableMultiRowSelection: true,
+    onRowSelectionChange: setRowSelection,
+
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -434,6 +498,10 @@ export default function Template() {
       pagination: { pageSize: 20 },
       pageSize: 20,
       density: "compact",
+    },
+
+    state: {
+      rowSelection,
     },
 
     muiTableHeadCellProps: {
@@ -487,7 +555,12 @@ export default function Template() {
               <span className="mt-1">
                 <QuickAccess />
               </span>
-                {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
+              {isAdmin(auth) && (
+                <span className=" ">
+                  {" "}
+                  <OverviewForPages />{" "}
+                </span>
+              )}
             </div>
 
             {/* ---------Template Buttons */}
@@ -568,8 +641,8 @@ export default function Template() {
         {/* ------------------ */}
         {selectedTab === "templates" && (
           <>
-            <div className="w-full flex flex-row justify-start items-center gap-2 ">
-              <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden mt-5 transition-all duration-300 w-fit">
+            <div className="w-full flex flex-row justify-start items-center gap-2 mt-2 ">
+              <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden transition-all duration-300 w-fit">
                 <button
                   className={`py-1 px-2 w-[6.5rem] outline-none transition-all duration-300 ${
                     selectedTab === "templates"
@@ -593,43 +666,210 @@ export default function Template() {
               </div>
 
               {auth?.user?.role?.name === "Admin" && (
-                <span
-                  className={`p-[6px] rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  mt-[1.2rem] ${
-                    showJobHolderFilter && "bg-orange-500 text-white"
-                  }`}
-                  onClick={() => {
-                    setShowJobHolderFilter((prev) => !prev);
-                  }}
-                  title="Filter by Job Holder"
-                >
-                  <IoBriefcaseOutline className="  cursor-pointer text-[22px] " />
-                </span>
+                <div className="w-full flex justify-start items-center gap-2">
+                  <span
+                    className={`p-[6px] rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
+                      showJobHolderFilter && "bg-orange-500 text-white"
+                    }`}
+                    onClick={() => {
+                      setShowJobHolderFilter((prev) => !prev);
+                    }}
+                    title="Filter by Job Holder"
+                  >
+                    <IoBriefcaseOutline className="  cursor-pointer text-[22px] " />
+                  </span>
+
+                  <span
+                    className={`hidden sm:block p-1 rounded-md hover:shadow-md   cursor-pointer border ${
+                      showEdit && "bg-orange-500 text-white"
+                    }`}
+                    onClick={() => {
+                      setShowEdit(!showEdit);
+                    }}
+                    title="Edit Multiple Templates"
+                  >
+                    <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
+                  </span>
+                </div>
               )}
             </div>
+
+          {showEdit && (
+  <div className="w-full mt-4 mb-8 p-6 bg-white border border-slate-200 rounded-xl shadow-sm animate-pop ">
+    <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center gap-2">
+        <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+        <h3 className="text-sm font-semibold text-slate-800 uppercase tracking-wider">
+          Bulk Update Actions
+        </h3>
+      </div>
+      <div className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
+        {Object.keys(rowSelection).length} rows selected
+      </div>
+    </div>
+
+    <form onSubmit={handleBulkUpdate} className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+      
+      {/* Name Input */}
+      <div className="md:col-span-3 flex flex-col gap-2">
+        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-tight ml-1">
+          Template Name
+        </label>
+        <input
+          type="text"
+          
+          value={bulkForm.name}
+          onChange={(e) => setBulkForm({ ...bulkForm, name: e.target.value })}
+          className="w-full h-11 px-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all text-sm bg-slate-50/30"
+        />
+      </div>
+
+      {/* Category Select */}
+      <div className="md:col-span-3 flex flex-col gap-2">
+        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-tight ml-1">
+           Category
+        </label>
+        <select
+          value={bulkForm.category}
+          onChange={(e) => setBulkForm({ ...bulkForm, category: e.target.value })}
+          className="w-full h-11 px-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm bg-slate-50/30 cursor-pointer"
+        >
+          <option value="">Choose category...</option>
+          {categoryData.map((cat) => (
+            <option key={cat._id} value={cat.name}>{cat.name}</option>
+          ))}
+        </select>
+      </div>
+
+
+       <div className="md:col-span-3 flex flex-col gap-2">
+        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-tight ml-1">
+          Description
+        </label>
+        <input
+          type="text"
+           
+          value={bulkForm.description}
+          onChange={(e) => setBulkForm({ ...bulkForm, description: e.target.value })}
+          className="w-full h-11 px-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all text-sm bg-slate-50/30"
+        />
+      </div>
+
+      {/* Modern User Pills Section */}
+      <div className="md:col-span-6 flex flex-col gap-2">
+        <div className="flex justify-between items-center ml-1">
+          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">
+            Assign Users
+          </label>
+          <select
+            className="text-[11px] font-bold text-orange-600 bg-orange-50 border-none rounded-md px-2 py-1 outline-none cursor-pointer"
+            value={bulkForm.userMode || "replace"}
+            onChange={(e) => setBulkForm({ ...bulkForm, userMode: e.target.value })}
+          >
+            <option value="replace">REPLACE EXISTING</option>
+            <option value="add">ADD TO LIST</option>
+            <option value="remove">REMOVE FROM LIST</option>
+          </select>
+        </div>
+
+        <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/30 transition-all focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-500/10">
+          {/* Selected Pills Area */}
+          <div className="p-3 flex flex-wrap gap-2 min-h-[52px] bg-white">
+            {bulkForm.userList.length === 0 ? (
+              <span className="text-sm text-slate-400 pl-1 italic">Click users below to add...</span>
+            ) : (
+              bulkForm.userList.map((user) => (
+                <div
+                  key={user._id}
+                  className="group flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-orange-500 text-white shadow-sm transition-transform active:scale-95"
+                >
+                  {user.name}
+                  <IoClose
+                    className="w-4 h-4 cursor-pointer hover:bg-orange-600 rounded-full p-0.5 transition-colors"
+                    onClick={() => {
+                      setBulkForm({
+                        ...bulkForm,
+                        userList: bulkForm.userList.filter((u) => u._id !== user._id),
+                      });
+                    }}
+                  />
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Quick Selection List */}
+          <div className="max-h-32 overflow-y-auto border-t border-slate-100 p-2 flex flex-wrap gap-2">
+            {users.map((user) => {
+              const isSelected = bulkForm.userList.some((u) => u._id === user._id);
+              return (
+                <button
+                  key={user._id}
+                  type="button"
+                  onClick={() => {
+                    if (isSelected) {
+                      setBulkForm({
+                        ...bulkForm,
+                        userList: bulkForm.userList.filter((u) => u._id !== user._id),
+                      });
+                    } else {
+                      setBulkForm({
+                        ...bulkForm,
+                        userList: [...bulkForm.userList, user],
+                      });
+                    }
+                  }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                    isSelected
+                      ? "bg-slate-200 border-transparent text-slate-400 cursor-not-allowed opacity-50"
+                      : "bg-white border-slate-200 text-slate-600 hover:border-orange-500 hover:text-orange-600 hover:shadow-sm shadow-none"
+                  }`}
+                >
+                  {isSelected ? `+ ${user.name}` : user.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer / Submit */}
+      <div className="md:col-span-12 flex justify-end items-center pt-4 border-t border-slate-100 mt-2 gap-4">
+        <button
+          type="submit"
+          className="px-8 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold rounded-lg shadow-lg shadow-orange-500/20 transition-all active:scale-[0.98]"
+        >
+          Save All Changes
+        </button>
+      </div>
+    </form>
+  </div>
+)}
+
             <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
 
             {auth?.user?.role?.name === "Admin" && showJobHolderFilter && (
               <div className="w-full py-2">
                 <DraggableUserList
-                table={table}
-                usersArray={users.map((el) => el.name)}
-                updateJobHolderCountMapFn={(map, totalCount) => {
-                  for (const item of templateData || []) {
-                    const holders = item.userList || [];
+                  table={table}
+                  usersArray={users.map((el) => el.name)}
+                  updateJobHolderCountMapFn={(map, totalCount) => {
+                    for (const item of templateData || []) {
+                      const holders = item.userList || [];
 
-                    for (const holder of holders) {
-                      if (!holder) continue; // skip null/undefined
-                      map.set(holder.name, (map.get(holder.name) || 0) + 1);
+                      for (const holder of holders) {
+                        if (!holder) continue; // skip null/undefined
+                        map.set(holder.name, (map.get(holder.name) || 0) + 1);
+                      }
+
+                      totalCount++; // still count 1 per job
                     }
 
-                    totalCount++; // still count 1 per job
-                  }
-
-                  map.set("All", totalCount); // Total number of jobs, not total assignments
-                }}
-                listName={"template"}
-                filterColName="userList"
-              />
+                    map.set("All", totalCount); // Total number of jobs, not total assignments
+                  }}
+                  listName={"template"}
+                  filterColName="userList"
+                />
               </div>
             )}
           </>

@@ -57,11 +57,23 @@ export const startTimer = async (req, res) => {
       // ── Heartbeat check — only source of truth ─────────────────────────────
     if (role !== "Admin") {
 
-      //  const onlineAgents = await getOnlineAgents();
+       const onlineAgents = await getOnlineAgents();
 
-      //   const onlineAgentsSet = new Set(onlineAgents);    // Convert to Set (⚡ O(1) lookup)
+        const onlineAgentsSet = new Set(onlineAgents);    // Convert to Set (⚡ O(1) lookup)
 
-      //   if (!onlineAgentsSet.has(clientId.toString())) {
+        if (!onlineAgentsSet.has(clientId.toString())) {
+        return res.status(400).send({
+          success: false,
+          message: "Please open AffoStaff to start the timer!",
+        });
+      }
+
+
+
+
+      // const isOnline = await getOnlineAgentViaHeartbeat(clientId);
+    
+      // if (!isOnline) {
       //   return res.status(400).send({
       //     success: false,
       //     message: "Please open AffoStaff to start the timer!",
@@ -70,17 +82,6 @@ export const startTimer = async (req, res) => {
 
 
 
-
-
-
-      const isOnline = await getOnlineAgentViaHeartbeat(clientId);
-    
-      if (!isOnline) {
-        return res.status(400).send({
-          success: false,
-          message: "Please open AffoStaff to start the timer!",
-        });
-      }
     }
  
 

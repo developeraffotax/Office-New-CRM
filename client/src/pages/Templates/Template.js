@@ -18,8 +18,7 @@ import {
 } from "material-react-table";
 import Loader from "../../utlis/Loader";
 import { GrCopy } from "react-icons/gr";
-import { IoMdCopy } from "react-icons/io";
-import { RiEdit2Line } from "react-icons/ri";
+ 
 import QuickAccess from "../../utlis/QuickAccess";
 import DraggableUserList from "../../utlis/DraggableUserList";
 import { useSelector } from "react-redux";
@@ -27,6 +26,24 @@ import createTemplateColumns from "./table/columns";
 import { isAdmin } from "../../utlis/isAdmin";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { useEscapeKey } from "../../utlis/useEscapeKey";
+import { useClickOutside } from "../../utlis/useClickOutside";
+import { usePersistedUsers } from "../../hooks/usePersistedUsers";
+import SelectedUsers from "../../components/SelectedUsers";
+import { GoEye, GoEyeClosed } from "react-icons/go";
+
+
+export const colVisibility = {
+  templateRef: true,
+  name: true,
+  category: true,
+  description: true,
+  template: true,
+  userList: true,
+  actions: true,
+  
+ 
+};
+
 
 export default function Template() {
   const auth = useSelector((state) => state.auth.auth);
@@ -63,6 +80,45 @@ export default function Template() {
     userMode: "replace",
   });
   // console.log("templateData:", templateData);
+
+
+
+
+  
+    const { selectedUsers, setSelectedUsers } = usePersistedUsers(
+      "templates:selected_users",
+      userName,
+    );
+    
+
+ 
+
+
+    // ==========================================
+    // COLUMN VISIBILITY
+    // ==========================================
+    const [showcolumn, setShowColumn] = useState(false);
+    const [columnVisibility, setColumnVisibility] = useState({
+      _id: false,
+      ...colVisibility,
+    });
+  
+    const showColumnRef = useRef(false);
+    useClickOutside(showColumnRef, () => setShowColumn(false));
+  
+    const toggleColumnVisibility = (column) => {
+      const updatedVisibility = {
+        ...columnVisibility,
+        [column]: !columnVisibility[column],
+      };
+      setColumnVisibility(updatedVisibility);
+      localStorage.setItem(
+        "visibleTemplatesColumn",
+        JSON.stringify(updatedVisibility),
+      );
+    };
+
+
 
   useEscapeKey(() => {
     setAddTemplate(false);
@@ -372,24 +428,7 @@ export default function Template() {
   };
 
   const convertQuillHtmlToPlainText = (html) => {
-    // html = html.replace(/<strong>|<b>/g, "**");
-    // html = html.replace(/<\/strong>|<\/b>/g, "**");
-
-    // html = html.replace(/<em>|<i>/g, "_");
-    // html = html.replace(/<\/em>|<\/i>/g, "_");
-
-    // html = html.replace(/<u>/g, "__");
-    // html = html.replace(/<\/u>/g, "__");
-
-    // html = html.replace(/<a.*?href="(.*?)".*?>(.*?)<\/a>/g, "[$2]($1)");
-
-    // html = html.replace(/<br\s*\/?>/g, "");
-
-    // html = html.replace(/<\/p>/g, "\n");
-
-    // html = html.replace(/<[^>]*>/g, "");
-
-    // Replace line breaks and paragraph endings with newlines
+ 
 
     html = html.replace(/<br\s*\/?>/gi, "\n");
     html = html.replace(/<\/p>/gi, "\n");
@@ -411,29 +450,7 @@ export default function Template() {
     return html.trim();
   };
 
-  // const convertQuillHtmlToPlainText = (html) => {
-  //   html = html.replace(/<strong>|<b>/g, "**");
-  //   html = html.replace(/<\/strong>|<\/b>/g, "**");
-
-  //   html = html.replace(/<em>|<i>/g, "_");
-  //   html = html.replace(/<\/em>|<\/i>/g, "_");
-
-  //   html = html.replace(/<u>/g, "__");
-  //   html = html.replace(/<\/u>/g, "__");
-
-  //   html = html.replace(/<a.*?href="(.*?)".*?>(.*?)<\/a>/g, "[$2]($1)");
-
-  //   html = html.replace(/<br\s*\/?>/g, "");
-
-  //   html = html.replace(/<\/p>/g, "\n");
-
-  //   html = html.replace(/<[^>]*>/g, "");
-
-  //   html = html.replace(/\*\*\*(.*?)\*\*\*/g, "$1");
-  //   html = html.replace(/\*\*(.*?)\*\*/g, "$1");
-
-  //   return html;
-  // };
+ 
 
   const copyTemplate = (template) => {
     const cleanText = convertQuillHtmlToPlainText(template);
@@ -485,6 +502,8 @@ export default function Template() {
     enableMultiRowSelection: true,
     onRowSelectionChange: setRowSelection,
 
+    onColumnVisibilityChange: setColumnVisibility,
+
     enableColumnActions: false,
     enableColumnFilters: false,
     enableSorting: false,
@@ -502,6 +521,8 @@ export default function Template() {
 
     state: {
       rowSelection,
+      columnVisibility,
+
     },
 
     muiTableHeadCellProps: {
@@ -532,6 +553,91 @@ export default function Template() {
       },
     },
   });
+
+const buildJobHolderCountMap = (data = []) => {
+  const map = {};
+  let totalCount = 0;
+
+  for (const { userList = [] } of data) {
+    for (const { name } of userList) {
+      if (!name) continue;
+      map[name] = (map[name] ?? 0) + 1;
+    }
+
+    totalCount++;
+  }
+
+  map.All = totalCount;
+
+  return map;
+};
+
+
+const countMap = useMemo(() => {
+  return buildJobHolderCountMap(templateData);
+}, [templateData]);
+
+
+    const renderColumnControls = () => (
+      <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm animate-pop">
+        {/* Header */}
+        <header className="px-5 py-3 border-b">
+          <h3 className="text-sm font-semibold text-slate-800">View settings</h3>
+        </header>
+  
+        {/* Content */}
+        <div className="grid grid-cols-2 divide-x">
+          {/* LEFT — Columns */}
+          <section className="px-5 py-4">
+            <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+              Columns
+            </h4>
+  
+            <ul className="space-y-1 list-decimal">
+              {Object.keys(colVisibility)?.map((column) => (
+                <li key={column}>
+                  <label
+                    className="flex items-center justify-between rounded-md px-2 py-1.5
+                             text-sm text-slate-700 cursor-pointer
+                             hover:bg-slate-50 transition"
+                  >
+                    <span className="capitalize">{column}</span>
+                    <input
+                      type="checkbox"
+                      checked={columnVisibility[column]}
+                      onChange={() => toggleColumnVisibility(column)}
+                      className="h-4 w-4 accent-orange-600"
+                    />
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </section>
+  
+          {/* RIGHT — Users */}
+          <section className="px-5 py-4">
+            <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+              Users
+            </h4>
+  
+            <div className="h-full overflow-y-auto space-y-1 pr-1">
+              <SelectedUsers
+                selectedUsers={selectedUsers}
+                setSelectedUsers={setSelectedUsers}
+                userNameArr={userName}
+                countMap={countMap}
+                label={"template"}
+              />
+            </div>
+          </section>
+        </div>
+      </section>
+    );
+
+
+
+
+
 
   return (
     <>
@@ -690,161 +796,211 @@ export default function Template() {
                   >
                     <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
                   </span>
+
+
+
+                   <div className="relative">
+                              <div
+                                className={`  p-[6px] rounded-md hover:shadow-md  cursor-pointer border ${
+                                  showcolumn && "bg-orange-500 text-white"
+                                }`}
+                                onClick={() => setShowColumn(!showcolumn)}
+                              >
+                                {" "}
+                                {showcolumn ? (
+                                  <GoEyeClosed className="h-5 w-5" />
+                                ) : (
+                                  <GoEye className="h-5 w-5" />
+                                )}{" "}
+                              </div>
+                              {showcolumn && (
+                                <div
+                                  ref={showColumnRef}
+                                  className="fixed top-32 left-[50%] z-[9999]    w-[12rem]"
+                                >
+                                  {renderColumnControls()}
+                                </div>
+                              )}
+                            </div>
+                  
+
+
+
                 </div>
               )}
             </div>
 
-          {showEdit && (
-  <div className="w-full mt-4 mb-8 p-6 bg-white border border-slate-200 rounded-xl shadow-sm animate-pop ">
-    <div className="flex items-center justify-between mb-6">
-      <div className="flex items-center gap-2">
-        <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
-        <h3 className="text-sm font-semibold text-slate-800 uppercase tracking-wider">
-          Bulk Update Actions
-        </h3>
-      </div>
-      <div className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
-        {Object.keys(rowSelection).length} rows selected
-      </div>
-    </div>
-
-    <form onSubmit={handleBulkUpdate} className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-      
-      {/* Name Input */}
-      <div className="md:col-span-3 flex flex-col gap-2">
-        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-tight ml-1">
-          Template Name
-        </label>
-        <input
-          type="text"
-          
-          value={bulkForm.name}
-          onChange={(e) => setBulkForm({ ...bulkForm, name: e.target.value })}
-          className="w-full h-11 px-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all text-sm bg-slate-50/30"
-        />
-      </div>
-
-      {/* Category Select */}
-      <div className="md:col-span-3 flex flex-col gap-2">
-        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-tight ml-1">
-           Category
-        </label>
-        <select
-          value={bulkForm.category}
-          onChange={(e) => setBulkForm({ ...bulkForm, category: e.target.value })}
-          className="w-full h-11 px-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm bg-slate-50/30 cursor-pointer"
-        >
-          <option value="">Choose category...</option>
-          {categoryData.map((cat) => (
-            <option key={cat._id} value={cat.name}>{cat.name}</option>
-          ))}
-        </select>
-      </div>
-
-
-       <div className="md:col-span-3 flex flex-col gap-2">
-        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-tight ml-1">
-          Description
-        </label>
-        <input
-          type="text"
-           
-          value={bulkForm.description}
-          onChange={(e) => setBulkForm({ ...bulkForm, description: e.target.value })}
-          className="w-full h-11 px-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all text-sm bg-slate-50/30"
-        />
-      </div>
-
-      {/* Modern User Pills Section */}
-      <div className="md:col-span-6 flex flex-col gap-2">
-        <div className="flex justify-between items-center ml-1">
-          <label className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">
-            Assign Users
-          </label>
-          <select
-            className="text-[11px] font-bold text-orange-600 bg-orange-50 border-none rounded-md px-2 py-1 outline-none cursor-pointer"
-            value={bulkForm.userMode || "replace"}
-            onChange={(e) => setBulkForm({ ...bulkForm, userMode: e.target.value })}
-          >
-            <option value="replace">REPLACE EXISTING</option>
-            <option value="add">ADD TO LIST</option>
-            <option value="remove">REMOVE FROM LIST</option>
-          </select>
-        </div>
-
-        <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/30 transition-all focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-500/10">
-          {/* Selected Pills Area */}
-          <div className="p-3 flex flex-wrap gap-2 min-h-[52px] bg-white">
-            {bulkForm.userList.length === 0 ? (
-              <span className="text-sm text-slate-400 pl-1 italic">Click users below to add...</span>
-            ) : (
-              bulkForm.userList.map((user) => (
-                <div
-                  key={user._id}
-                  className="group flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-orange-500 text-white shadow-sm transition-transform active:scale-95"
-                >
-                  {user.name}
-                  <IoClose
-                    className="w-4 h-4 cursor-pointer hover:bg-orange-600 rounded-full p-0.5 transition-colors"
-                    onClick={() => {
-                      setBulkForm({
-                        ...bulkForm,
-                        userList: bulkForm.userList.filter((u) => u._id !== user._id),
-                      });
-                    }}
-                  />
+            {showEdit && (
+              <div className="w-full mt-4 mb-8 p-6 bg-white border border-slate-200 rounded-xl shadow-sm animate-pop ">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+                    <h3 className="text-sm font-semibold text-slate-800 uppercase tracking-wider">
+                      Bulk Update Actions
+                    </h3>
+                  </div>
+                  <div className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
+                    {Object.keys(rowSelection).length} rows selected
+                  </div>
                 </div>
-              ))
-            )}
-          </div>
 
-          {/* Quick Selection List */}
-          <div className="max-h-32 overflow-y-auto border-t border-slate-100 p-2 flex flex-wrap gap-2">
-            {users.map((user) => {
-              const isSelected = bulkForm.userList.some((u) => u._id === user._id);
-              return (
-                <button
-                  key={user._id}
-                  type="button"
-                  onClick={() => {
-                    if (isSelected) {
-                      setBulkForm({
-                        ...bulkForm,
-                        userList: bulkForm.userList.filter((u) => u._id !== user._id),
-                      });
-                    } else {
-                      setBulkForm({
-                        ...bulkForm,
-                        userList: [...bulkForm.userList, user],
-                      });
-                    }
-                  }}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                    isSelected
-                      ? "bg-slate-200 border-transparent text-slate-400 cursor-not-allowed opacity-50"
-                      : "bg-white border-slate-200 text-slate-600 hover:border-orange-500 hover:text-orange-600 hover:shadow-sm shadow-none"
-                  }`}
+                <form
+                  onSubmit={handleBulkUpdate}
+                  className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start"
                 >
-                  {isSelected ? `+ ${user.name}` : user.name}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+                  {/* Name Input */}
+                  <div className="md:col-span-3 flex flex-col gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-tight ml-1">
+                      Template Name
+                    </label>
+                    <input
+                      type="text"
+                      value={bulkForm.name}
+                      onChange={(e) =>
+                        setBulkForm({ ...bulkForm, name: e.target.value })
+                      }
+                      className="w-full h-11 px-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all text-sm bg-slate-50/30"
+                    />
+                  </div>
 
-      {/* Footer / Submit */}
-      <div className="md:col-span-12 flex justify-end items-center pt-4 border-t border-slate-100 mt-2 gap-4">
-        <button
-          type="submit"
-          className="px-8 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold rounded-lg shadow-lg shadow-orange-500/20 transition-all active:scale-[0.98]"
-        >
-          Save All Changes
-        </button>
-      </div>
-    </form>
-  </div>
-)}
+                  {/* Category Select */}
+                  <div className="md:col-span-3 flex flex-col gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-tight ml-1">
+                      Category
+                    </label>
+                    <select
+                      value={bulkForm.category}
+                      onChange={(e) =>
+                        setBulkForm({ ...bulkForm, category: e.target.value })
+                      }
+                      className="w-full h-11 px-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm bg-slate-50/30 cursor-pointer"
+                    >
+                      <option value="">Choose category...</option>
+                      {categoryData.map((cat) => (
+                        <option key={cat._id} value={cat.name}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-3 flex flex-col gap-2">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-tight ml-1">
+                      Description
+                    </label>
+                    <input
+                      type="text"
+                      value={bulkForm.description}
+                      onChange={(e) =>
+                        setBulkForm({
+                          ...bulkForm,
+                          description: e.target.value,
+                        })
+                      }
+                      className="w-full h-11 px-4 rounded-lg border border-slate-200 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all text-sm bg-slate-50/30"
+                    />
+                  </div>
+
+                  {/* Modern User Pills Section */}
+                  <div className="md:col-span-6 flex flex-col gap-2">
+                    <div className="flex justify-between items-center ml-1">
+                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">
+                        Assign Users
+                      </label>
+                      <select
+                        className="text-[11px] font-bold text-orange-600 bg-orange-50 border-none rounded-md px-2 py-1 outline-none cursor-pointer"
+                        value={bulkForm.userMode || "replace"}
+                        onChange={(e) =>
+                          setBulkForm({ ...bulkForm, userMode: e.target.value })
+                        }
+                      >
+                        <option value="replace">REPLACE EXISTING</option>
+                        <option value="add">ADD TO LIST</option>
+                        <option value="remove">REMOVE FROM LIST</option>
+                      </select>
+                    </div>
+
+                    <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/30 transition-all focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-500/10">
+                      {/* Selected Pills Area */}
+                      <div className="p-3 flex flex-wrap gap-2 min-h-[52px] bg-white">
+                        {bulkForm.userList.length === 0 ? (
+                          <span className="text-sm text-slate-400 pl-1 italic">
+                            Click users below to add...
+                          </span>
+                        ) : (
+                          bulkForm.userList.map((user) => (
+                            <div
+                              key={user._id}
+                              className="group flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-orange-500 text-white shadow-sm transition-transform active:scale-95"
+                            >
+                              {user.name}
+                              <IoClose
+                                className="w-4 h-4 cursor-pointer hover:bg-orange-600 rounded-full p-0.5 transition-colors"
+                                onClick={() => {
+                                  setBulkForm({
+                                    ...bulkForm,
+                                    userList: bulkForm.userList.filter(
+                                      (u) => u._id !== user._id,
+                                    ),
+                                  });
+                                }}
+                              />
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      {/* Quick Selection List */}
+                      <div className="max-h-32 overflow-y-auto border-t border-slate-100 p-2 flex flex-wrap gap-2">
+                        {users.map((user) => {
+                          const isSelected = bulkForm.userList.some(
+                            (u) => u._id === user._id,
+                          );
+                          return (
+                            <button
+                              key={user._id}
+                              type="button"
+                              onClick={() => {
+                                if (isSelected) {
+                                  setBulkForm({
+                                    ...bulkForm,
+                                    userList: bulkForm.userList.filter(
+                                      (u) => u._id !== user._id,
+                                    ),
+                                  });
+                                } else {
+                                  setBulkForm({
+                                    ...bulkForm,
+                                    userList: [...bulkForm.userList, user],
+                                  });
+                                }
+                              }}
+                              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                                isSelected
+                                  ? "bg-slate-200 border-transparent text-slate-400 cursor-not-allowed opacity-50"
+                                  : "bg-white border-slate-200 text-slate-600 hover:border-orange-500 hover:text-orange-600 hover:shadow-sm shadow-none"
+                              }`}
+                            >
+                              {isSelected ? `+ ${user.name}` : user.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer / Submit */}
+                  <div className="md:col-span-12 flex justify-end items-center pt-4 border-t border-slate-100 mt-2 gap-4">
+                    <button
+                      type="submit"
+                      className="px-8 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold rounded-lg shadow-lg shadow-orange-500/20 transition-all active:scale-[0.98]"
+                    >
+                      Save All Changes
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
 
             <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" />
 
@@ -852,8 +1008,9 @@ export default function Template() {
               <div className="w-full py-2">
                 <DraggableUserList
                   table={table}
-                  usersArray={users.map((el) => el.name)}
+                  usersArray={selectedUsers.map((el) => el)}
                   updateJobHolderCountMapFn={(map, totalCount) => {
+                     
                     for (const item of templateData || []) {
                       const holders = item.userList || [];
 
@@ -865,9 +1022,11 @@ export default function Template() {
                       totalCount++; // still count 1 per job
                     }
 
-                    map.set("All", totalCount); // Total number of jobs, not total assignments
+                    map.set("All", totalCount);
+                    countMap.current = map;
+
                   }}
-                  listName={"template"}
+                  listName={"templates"}
                   filterColName="userList"
                 />
               </div>

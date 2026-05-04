@@ -58,6 +58,7 @@ import RegisterGlobalComponents from "./components/global/RegisterGlobalComponen
  
 import Mailbox from "./components/gmail/pages/Mailbox";
 import { fetchInboxUnreadCounts } from "./redux/slices/inboxUnreadSlice";
+import SignaturesModule from "./components/Signatures/SignaturesModule";
 
 function App() {
   const navigate = useNavigate();
@@ -171,6 +172,7 @@ function App() {
             <Route path="/activity" element={<ScreenshotDashboard />} />
             <Route path="/leads/create" element={<AutoCreateLeadFromURL user={user}/>} />
             <Route path="/settings" element={<SettingsPage  />} />
+            <Route path="/settings/signatures" element={<SignaturesModule  />} />
           </Route>
         ) : (
           // If no token, redirect any private route access to login

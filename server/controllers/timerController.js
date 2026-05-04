@@ -7,21 +7,35 @@ import timerStatusModel from "../models/timerStatusModel.js";
 
 import { connection as redis } from "../utils/ioredis.js";
 import { formatTo12Hour, isWithinShift } from "../utils/isWithinShift.js";
-import { getOnlineAgents, getOnlineAgentViaHeartbeat, getOnlineUsers } from "../utils/onlineStatus.js";
-
+import {
+  getOnlineAgents,
+  getOnlineAgentViaHeartbeat,
+  getOnlineUsers,
+} from "../utils/onlineStatus.js";
 
 // -----------------------------
 // START TIMER
 // -----------------------------
 export const startTimer = async (req, res) => {
   try {
-    const { clientId, jobId, type, department, clientName, projectName, task, companyName, holiday, activity, } = req.body;
+    const {
+      clientId,
+      jobId,
+      type,
+      department,
+      clientName,
+      projectName,
+      task,
+      companyName,
+      holiday,
+      activity,
+    } = req.body;
 
     const startTime = new Date().toISOString();
     const user = req.user.user.name;
     const role = req.user.user.role?.name;
 
-    console.log("role 👍👍👍👍👍👍👍",  role);
+    console.log("role 👍👍👍👍👍👍👍", role);
 
     // Prevent multiple running timers
     const isTimerRunning = await timerModel.findOne({
@@ -36,15 +50,11 @@ export const startTimer = async (req, res) => {
       });
     }
 
-
-
     const shift = await officeShiftModel.findOne({ isActive: true });
 
- 
-    if(shift) {
-
+    if (shift) {
       const allowed = isWithinShift(shift);
-  
+
       if (!allowed) {
         return res.status(403).send({
           success: false,
@@ -53,37 +63,28 @@ export const startTimer = async (req, res) => {
       }
     }
 
- 
-      // ── Heartbeat check — only source of truth ─────────────────────────────
+    // ── Heartbeat check — only source of truth ─────────────────────────────
     if (role !== "Admin") {
+      const onlineAgents = await getOnlineAgents();
 
-       const onlineAgents = await getOnlineAgents();
+      const onlineAgentsSet = new Set(onlineAgents); // Convert to Set (⚡ O(1) lookup)
 
-        const onlineAgentsSet = new Set(onlineAgents);    // Convert to Set (⚡ O(1) lookup)
-
-        if (!onlineAgentsSet.has(clientId.toString())) {
+      if (!onlineAgentsSet.has(clientId.toString())) {
         return res.status(400).send({
           success: false,
           message: "Please open AffoStaff to start the timer!",
         });
       }
 
-
-
-
       // const isOnline = await getOnlineAgentViaHeartbeat(clientId);
-    
+
       // if (!isOnline) {
       //   return res.status(400).send({
       //     success: false,
       //     message: "Please open AffoStaff to start the timer!",
       //   });
       // }
-
-
-
     }
- 
 
     // Create new timer
     const newTimer = await new timerModel({
@@ -100,21 +101,19 @@ export const startTimer = async (req, res) => {
       isRunning: true,
       holiday,
       activity: activity || "Chargeable",
-       
     }).save();
 
     // Update job timestamp
     await jobsModel.findByIdAndUpdate(
       jobId,
       { createdAt: new Date() },
-      { new: true }
+      { new: true },
     );
 
     // Notify all dashboards to refresh UI
     io.emit("runningTimersUpdate");
 
-  
-     // ------------------------------------
+    // ------------------------------------
     // NOTIFY ONLINE AGENT VIA REDIS PRESENCE
     // ------------------------------------
     try {
@@ -132,7 +131,7 @@ export const startTimer = async (req, res) => {
           };
 
           // Emit to all sockets (multi-device support)
-          agentSockets.forEach(socketId => {
+          agentSockets.forEach((socketId) => {
             io.to(socketId).emit("timer:state", timerPayload);
           });
 
@@ -141,10 +140,15 @@ export const startTimer = async (req, res) => {
           console.log(`⚪ Agent ${clientId} is offline. No sockets found.`);
         }
       } else {
-        console.log("⚠ Redis is not connected. Skipping online agent notification.");
+        console.log(
+          "⚠ Redis is not connected. Skipping online agent notification.",
+        );
       }
     } catch (redisError) {
-      console.log("⚠ Failed to notify online agent via Redis:", redisError.message);
+      console.log(
+        "⚠ Failed to notify online agent via Redis:",
+        redisError.message,
+      );
       // Optionally, you could log this to a monitoring service
     }
 
@@ -154,7 +158,6 @@ export const startTimer = async (req, res) => {
       message: "Timer Started",
       timer: newTimer,
     });
-
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -164,13 +167,6 @@ export const startTimer = async (req, res) => {
     });
   }
 };
-
-
-
-
-
-
- 
 
 // -----------------------------
 // STOP TIMER
@@ -190,7 +186,7 @@ export const stopTimer = async (req, res) => {
       });
     }
 
-    if(existingTimer?.isRunning === false) {
+    if (existingTimer?.isRunning === false) {
       return res.status(400).send({
         success: false,
         message: "Timer is already stopped!",
@@ -202,7 +198,7 @@ export const stopTimer = async (req, res) => {
       .findByIdAndUpdate(
         existingTimer._id,
         { endTime, note, activity, isRunning: false },
-        { new: true }
+        { new: true },
       )
       .lean();
 
@@ -218,7 +214,7 @@ export const stopTimer = async (req, res) => {
     try {
       if (redis && redis.status === "ready") {
         const agentSockets = await redis.smembers(
-          `sockets:agent:${updatedTimer.clientId}`
+          `sockets:agent:${updatedTimer.clientId}`,
         );
 
         if (agentSockets && agentSockets.length > 0) {
@@ -230,13 +226,18 @@ export const stopTimer = async (req, res) => {
             activity: updatedTimer.activity,
           };
 
-          agentSockets.forEach(socketId => {
+          agentSockets.forEach((socketId) => {
             io.to(socketId).emit("timer:state", payload);
           });
 
-          console.log(`⏱ Sent timer stop to agent:${updatedTimer.clientId}`, agentSockets);
+          console.log(
+            `⏱ Sent timer stop to agent:${updatedTimer.clientId}`,
+            agentSockets,
+          );
         } else {
-          console.log(`⚪ Agent ${updatedTimer.clientId} is offline. No sockets found.`);
+          console.log(
+            `⚪ Agent ${updatedTimer.clientId} is offline. No sockets found.`,
+          );
         }
       } else {
         console.log("⚠ Redis is not connected. Skipping agent notification.");
@@ -261,13 +262,6 @@ export const stopTimer = async (req, res) => {
     });
   }
 };
-
-
-
-
-
-
-
 
 // Get Timer Status
 export const timerStatus = async (req, res) => {
@@ -304,21 +298,23 @@ export const timerStatus = async (req, res) => {
   }
 };
 
-
 export const getTimerStatusForCrm = async (req, res) => {
   try {
     const userId = req.user.user._id;
 
-    const timer = await timerModel.findOne({
-      clientId: userId,
+    const timer = await timerModel
+      .findOne({
+        clientId: userId,
 
-      isRunning: true,
-      // $or: [
-      //   { endTime: { $exists: false } },
-      //   { endTime: null },
-      //   { endTime: "" },
-      // ],
-    }).select("isRunning startTime endTime task clientName").lean();
+        isRunning: true,
+        // $or: [
+        //   { endTime: { $exists: false } },
+        //   { endTime: null },
+        //   { endTime: "" },
+        // ],
+      })
+      .select("isRunning startTime endTime task clientName")
+      .lean();
 
     if (!timer) {
       return res.status(200).json({ message: "Timer not running!" });
@@ -339,7 +335,6 @@ export const getTimerStatusForCrm = async (req, res) => {
   }
 };
 
-
 // Get Timer Status
 export const getTimerStatusForAffoStaff = async (req, res) => {
   try {
@@ -349,21 +344,17 @@ export const getTimerStatusForAffoStaff = async (req, res) => {
     // TTL of 90s means if Electron stops polling (every 30s), key expires
     // automatically and getOnlineAgents() will no longer see this user.
     try {
-
       if (redis && redis.status === "ready") {
         await redis.setex(
           `heartbeat:${userId.toString()}`,
           600,
-          JSON.stringify({ lastSeen: Date.now() })
+          JSON.stringify({ lastSeen: Date.now() }),
         );
-         
       }
     } catch (redisErr) {
       // Don't fail the whole request if Redis has a hiccup
       console.warn("⚠ Heartbeat write failed:", redisErr.message);
     }
-
-
 
     const timer = await timerModel.findOne({
       clientId: userId,
@@ -501,28 +492,28 @@ export const totalTime = async (req, res) => {
 
     if (job) {
       const prevJobTimeInSeconds = convertTimeToSeconds(
-        job.totalTime === "NaNh" ? "0m" : job.totalTime
+        job.totalTime === "NaNh" ? "0m" : job.totalTime,
       );
       const updatedJobTimeInSeconds = prevJobTimeInSeconds + totalTimeInSeconds;
       const updatedJobTime = convertSecondsToReadableTime(
-        updatedJobTimeInSeconds
+        updatedJobTimeInSeconds,
       );
 
       const updateJob = await jobsModel.findByIdAndUpdate(
         { _id: jobId },
         { $set: { totalTime: updatedJobTime } },
-        { new: true }
+        { new: true },
       );
 
       // Push activity to activities array
       updateJob.activities.push({
         user: req.user.user._id,
         activity: `${req.user.user.name} ⏱️ tracked time from 🕒 "${formatTime(
-          startTime
+          startTime,
         )}" - to 🕒 "${formatTime(
-          endTime
+          endTime,
         )}" with a total duration of ⏳ "${convertSecondsToReadableTime(
-          totalTimeInSeconds
+          totalTimeInSeconds,
         )}" in this job.`,
       });
 
@@ -535,29 +526,29 @@ export const totalTime = async (req, res) => {
 
     if (task) {
       const prevTaskTimeInSeconds = convertTimeToSeconds(
-        task.estimate_Time === "NaNh" ? "0m" : task.estimate_Time
+        task.estimate_Time === "NaNh" ? "0m" : task.estimate_Time,
       );
       const updatedTaskTimeInSeconds =
         prevTaskTimeInSeconds + totalTimeInSeconds;
       const updatedTaskTime = convertSecondsToReadableTime(
-        updatedTaskTimeInSeconds
+        updatedTaskTimeInSeconds,
       );
 
       const updateTask = await taskModel.findByIdAndUpdate(
         { _id: jobId },
         { $set: { estimate_Time: updatedTaskTime } },
-        { new: true }
+        { new: true },
       );
 
       // Push activity to activities array
       updateTask.activities.push({
         user: req.user.user._id,
         activity: `${req.user.user.name} ⏱️ tracked time from 🕒 "${formatTime(
-          startTime
+          startTime,
         )}" - to 🕒 "${formatTime(
-          endTime
+          endTime,
         )}" with a total duration of ⏳ "${convertSecondsToReadableTime(
-          totalTimeInSeconds
+          totalTimeInSeconds,
         )}" in this task.`,
       });
 
@@ -568,7 +559,7 @@ export const totalTime = async (req, res) => {
     res.status(200).send({
       success: true,
       message: "Total time calculated and updated successfully!",
-      consumedTime
+      consumedTime,
     });
   } catch (error) {
     console.log(error);
@@ -802,7 +793,7 @@ export const updateTimer = async (req, res) => {
         note: note || isExist.note,
         activity: activity || isExist.activity,
       },
-      { new: true }
+      { new: true },
     );
     res.status(200).send({
       success: true,
@@ -877,7 +868,7 @@ export const updateJobHolderName = async (req, res) => {
     // Find all timers with the previous jobHolderName and update to the new jobHolderName
     const updatedTimers = await timerModel.updateMany(
       { jobHolderName: prevJobHolderName },
-      { $set: { jobHolderName: newJobHolderName } }
+      { $set: { jobHolderName: newJobHolderName } },
     );
 
     res.status(200).send({
@@ -893,16 +884,14 @@ export const updateJobHolderName = async (req, res) => {
     });
   }
 };
- 
+
 // ============================================
 // Get All Running Timers + Online Status
 // ============================================
 export const runningTimers = async (req, res) => {
   try {
     // 1️⃣ Get running timers
-    const timers = await timerModel
-      .find({ isRunning: true })
-      .lean(); // ⚡ important for performance
+    const timers = await timerModel.find({ isRunning: true }).lean(); // ⚡ important for performance
 
     // 2️⃣ Get online agents from Redis
     //const onlineAgents = await getOnlineAgents();
@@ -911,14 +900,12 @@ export const runningTimers = async (req, res) => {
     // Convert to Set (⚡ O(1) lookup)
     const onlineAgentsSet = new Set(onlineAgents);
 
-    console.log(onlineAgentsSet)
+    console.log(onlineAgentsSet);
 
     // 3️⃣ Attach online status
     const timersWithStatus = timers.map((timer) => ({
       ...timer,
-      isAgentOnline: onlineAgentsSet.has(
-        timer.clientId?.toString()
-      ),
+      isAgentOnline: onlineAgentsSet.has(timer.clientId?.toString()),
     }));
 
     // 4️⃣ Response
@@ -927,7 +914,6 @@ export const runningTimers = async (req, res) => {
       message: "List of running timers!",
       timers: timersWithStatus,
     });
-
   } catch (error) {
     console.log(error);
 
@@ -937,10 +923,6 @@ export const runningTimers = async (req, res) => {
       error: error.message,
     });
   }
-
-
-
-
 };
 
 // Update holiday
@@ -961,7 +943,7 @@ export const updateHoliday = async (req, res) => {
     const updateTimer = await timerModel.findByIdAndUpdate(
       { _id: timer._id },
       { $set: { holiday } },
-      { new: true }
+      { new: true },
     );
 
     res.status(200).send({

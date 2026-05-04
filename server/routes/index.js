@@ -9,6 +9,7 @@ import categoryRoute from "./templates/categoryRoutes.js";
 import templateRoute from "./templates/templateRoutes.js";
 import faqRoute from "./templates/faqRoutes.js";
 import ticketRoute from "./ticketRoutes.js";
+import signatureRoutes from "./signatureRoutes.js";
 import leadRoute from "./leadRoute.js";
 import proposalRoute from "./proposalRoute.js";
 import roleRoute from "./roleRoute.js";
@@ -48,6 +49,8 @@ import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import { sendDatatoGoogleSheet } from "../utils/googleSheet.js";
 import { aiPerMinuteLimiter } from "../utils/rateLimiter.js";
 
+
+
 export const registerRoutes = (app) => {
   app.use("/api/v1/user", userRoute);
   app.use("/api/v1/client", jobRoute);
@@ -61,6 +64,7 @@ export const registerRoutes = (app) => {
   app.use("/api/v1/templates", templateRoute);
   app.use("/api/v1/faqs", faqRoute);
   app.use("/api/v1/tickets", ticketRoute);
+  app.use("/api/v1/tickets/signatures", signatureRoutes);
   app.use("/api/v1/leads", leadRoute);
   app.use("/api/v1/proposal", proposalRoute);
   app.use("/api/v1/roles", roleRoute);

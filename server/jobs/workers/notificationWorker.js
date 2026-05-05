@@ -4,12 +4,13 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
 import { Worker } from "bullmq";
 import { connection as redis } from "../../utils/ioredis.js";
- 
+
 import userModel from "../../models/userModel.js";
 import notificationModel from "../../models/notificationModel.js";
 import { connectDB } from "../../config/db.js";
 import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
 import EmailThread from "../../emailModule/models/EmailThread.js";
+import roleModel from "../../models/roleModel.js";
 
 // ---------------------------
 // CONNECT MONGO
@@ -26,7 +27,12 @@ console.log("🔗 Worker Socket.IO Redis Adapter initialized");
 // ---------------------------
 // GENERIC SOCKET NOTIFICATION
 // ---------------------------
-const sendSocketNotification = async (notification, payload, userId, type = "ticket") => {
+const sendSocketNotification = async (
+  notification,
+  payload,
+  userId,
+  type = "ticket",
+) => {
   if (!userId) return;
 
   const sockets = await redis.smembers(`sockets:user:${userId.toString()}`);
@@ -61,12 +67,24 @@ const processNotificationJob = async (job) => {
       if (!ticket) return true;
 
       const jobHolder = await userModel.findOne({ name: ticket.jobHolder });
-      const lastMessageSentBy = await userModel.findOne({ name: ticket.lastMessageSentBy });
+      const lastMessageSentBy = await userModel.findOne({
+        name: ticket.lastMessageSentBy,
+      });
 
       const recipients = [];
-      if (jobHolder) recipients.push({ user: jobHolder, title: "Reply to a ticket received" });
-      if (lastMessageSentBy && lastMessageSentBy._id.toString() !== jobHolder?._id?.toString()) {
-        recipients.push({ user: lastMessageSentBy, title: "Reply to a ticket received" });
+      if (jobHolder)
+        recipients.push({
+          user: jobHolder,
+          title: "Reply to a ticket received",
+        });
+      if (
+        lastMessageSentBy &&
+        lastMessageSentBy._id.toString() !== jobHolder?._id?.toString()
+      ) {
+        recipients.push({
+          user: lastMessageSentBy,
+          title: "Reply to a ticket received",
+        });
       }
 
       for (const { user, title } of recipients) {
@@ -87,25 +105,25 @@ const processNotificationJob = async (job) => {
 
     case "inbox": {
       // Inbox / email notification
-      const { threadId, senderEmail,  } = payload;
+      const { threadId, senderEmail } = payload;
 
+      const thread = await EmailThread.findOne({ threadId: threadId }).lean();
 
-      const thread = await EmailThread.findOne({threadId: threadId}).lean();
+      if (!thread) return true;
 
-      if(!thread) return true;
+      const myEmail =
+        thread.companyName === "affotax"
+          ? "info@affotax.com"
+          : "Admin@outsourceaccountings.co.uk";
 
-
-      const myEmail = thread.companyName === "affotax" ? "info@affotax.com" : "Admin@outsourceaccountings.co.uk"
-
-        // ONLY notify if sender is not the current user
+      // ONLY notify if sender is not the current user
       if (senderEmail.toLowerCase() === myEmail.toLowerCase()) return true;
-       
 
       const notification = await notificationModel.create({
         title: `New email received: ${thread?.subject}`,
         redirectLink: `/mail?folder=inbox&companyName=${thread?.companyName}`,
- 
-         description: `${thread?.snippet || "You have received a new email"}
+
+        description: `${thread?.snippet || "You have received a new email"}
           ✔ Subject: ${thread?.subject}
           ✔ From: ${senderEmail}
           `,
@@ -116,7 +134,64 @@ const processNotificationJob = async (job) => {
         // meta: { receivedAt },
       });
 
-      await sendSocketNotification(notification, thread, thread?.userId, "inbox");
+      await sendSocketNotification(
+        notification,
+        thread,
+        thread?.userId,
+        "inbox",
+      );
+      break;
+    }
+
+    case "quote": {
+      const { threadId, senderEmail, subject, companyName } = payload;
+
+      const adminRole = await roleModel.findOne({ name: "Admin" });
+      if (!adminRole) return true;
+
+      const admins = await userModel
+        .find({
+          role: adminRole._id,
+          isActive: true,
+        })
+        .select("_id");
+
+      if (!admins.length) return true;
+
+      const now = new Date();
+
+      const time = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: true, });
+      const date = now.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", });
+
+      // 🔥 Create notifications in parallel
+      const notifications = await Promise.all(
+        admins.map((admin) =>
+          notificationModel.create({
+            title: `New Quote Request!`,
+            redirectLink: `/mail?folder=inbox&companyName=${companyName}`,
+            description: `🔥 NEW QUOTE
+              📩 Subject  : ${subject || "No Subject"}
+              📅 Received : ${time} | ${date}`,
+            taskId: threadId,
+            userId: admin._id,
+            type: "email_received",
+            entityType: "mailbox",
+          }),
+        ),
+      );
+
+      // 🔥 Send socket notifications
+      await Promise.all(
+        notifications.map((notification) =>
+          sendSocketNotification(
+            notification,
+            payload,
+            notification.userId,
+            "quote",
+          ),
+        ),
+      );
+
       break;
     }
 
@@ -127,11 +202,22 @@ const processNotificationJob = async (job) => {
   return true;
 };
 
+
+
+
+
+
+
+
+
+
 // ---------------------------
 // INIT WORKER
 // ---------------------------
 const initNotificationWorker = () => {
-  const worker = new Worker("notificationQueue", processNotificationJob, { connection: redis });
+  const worker = new Worker("notificationQueue", processNotificationJob, {
+    connection: redis,
+  });
 
   worker.on("completed", (job) => {
     console.log(`✅ Notification job completed: ${job.id}`);

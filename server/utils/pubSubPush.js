@@ -24,13 +24,120 @@ async function getSenderEmail(gmail, messageId) {
 /**
  * Process a single messageAdded event: update ticket and enqueue notification
  */
-async function processMessageAdded(gmail, msg, yourEmail) {
+// async function processMessageAdded(gmail, msg, yourEmail) {
+//   const { id: messageId, threadId } = msg;
+//   const senderEmail = await getSenderEmail(gmail, messageId);
+
+//   if (!senderEmail || senderEmail === yourEmail) {
+
+//     // ✅ Special case: quote form emails sent by your own system
+//   const isQuoteEmail = subject.includes("Instant Quote from The Affotax");
+
+
+
+//     return threadId;
+//   } 
+    
+//     // --- Update ticket if exists ---
+//   const ticket = await ticketModel.findOneAndUpdate(
+//     { mailThreadId: threadId },
+//     { $set: { status: "Unread" }, $inc: { unreadCount: 1 } },
+//     { new: true }
+//   );
+
+//   if (ticket) {
+//     // Enqueue a generic notification job for ticket
+//     await addNotificationJob({
+//       type: "ticket",
+//       payload: { ticket }
+//     });
+//     return threadId;
+//   }
+
+//   // --- Otherwise, enqueue inbox/email notification ---
+//   // const gmailMessage = await gmail.users.messages.get({
+//   //   userId: "me",
+//   //   id: messageId,
+//   //   format: "full",
+//   // });
+
+//   // const headers = gmailMessage.data.payload.headers;
+//   // const subject = headers.find(h => h.name === "Subject")?.value || "(No subject)";
+ 
+//   // const snippet = gmailMessage.data.snippet || "";
+  
+//   await addNotificationJob({
+//     type: "inbox",
+//     payload: {
+//       // subject,
+//       // snippet,
+//       threadId,
+//       senderEmail
+      
+//     }
+//   });
+
+//   return threadId;
+// }
+
+
+
+
+
+
+async function processMessageAdded(gmail, msg, yourEmail, companyName) {
   const { id: messageId, threadId } = msg;
-  const senderEmail = await getSenderEmail(gmail, messageId);
 
-  if (!senderEmail || senderEmail === yourEmail) return threadId;
+  // Fetch both From and Subject headers
+  const emailResponse = await gmail.users.messages.get({
+    userId: "me",
+    id: messageId,
+    format: "metadata",
+    metadataHeaders: ["From", "Subject"],
+  });
 
-  // --- Update ticket if exists ---
+  const headers = emailResponse.data.payload.headers;
+  const fromHeader = headers.find(h => h.name === "From");
+  const subjectHeader = headers.find(h => h.name === "Subject");
+
+  const senderEmail = fromHeader?.value?.match(/<([^>]+)>/)?.[1] || fromHeader?.value;
+  const subject = subjectHeader?.value || "";
+
+  // ✅ Special case: quote form emails sent by your own system
+  const isQuoteEmail = subject.includes("Quote");
+
+
+  if(!senderEmail) return threadId;
+
+  if(senderEmail === yourEmail) {
+      if (isQuoteEmail) {
+        await addNotificationJob({
+          type: "quote",
+          payload: { threadId, senderEmail, subject, companyName }
+        });
+      }
+      return threadId;
+
+
+
+
+
+
+  }
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+  // --- Check ticket first ---
   const ticket = await ticketModel.findOneAndUpdate(
     { mailThreadId: threadId },
     { $set: { status: "Unread" }, $inc: { unreadCount: 1 } },
@@ -38,39 +145,35 @@ async function processMessageAdded(gmail, msg, yourEmail) {
   );
 
   if (ticket) {
-    // Enqueue a generic notification job for ticket
-    await addNotificationJob({
-      type: "ticket",
-      payload: { ticket }
-    });
+    await addNotificationJob({ type: "ticket", payload: { ticket } });
     return threadId;
   }
 
-  // --- Otherwise, enqueue inbox/email notification ---
-  // const gmailMessage = await gmail.users.messages.get({
-  //   userId: "me",
-  //   id: messageId,
-  //   format: "full",
-  // });
-
-  // const headers = gmailMessage.data.payload.headers;
-  // const subject = headers.find(h => h.name === "Subject")?.value || "(No subject)";
- 
-  // const snippet = gmailMessage.data.snippet || "";
-  
+  // --- Enqueue inbox notification ---
   await addNotificationJob({
     type: "inbox",
-    payload: {
-      // subject,
-      // snippet,
-      threadId,
-      senderEmail
-      
-    }
+    payload: { threadId, senderEmail }
   });
 
   return threadId;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Collect all threadIds for syncing (messageAdded, messageDeleted, label changes)
@@ -154,7 +257,7 @@ export async function gmailWebhookHandlerForAffotax(req, res) {
       // Process new messages
       if (item.messagesAdded) {
         item.messagesAdded.forEach(({ message: msg }) => {
-          notificationPromises.push(processMessageAdded(gmail, msg, yourEmail).then(threadId => {
+          notificationPromises.push(processMessageAdded(gmail, msg, yourEmail, companyName).then(threadId => {
             if (threadId) allThreadIds.add(threadId);
           }));
         });
@@ -228,7 +331,7 @@ export async function gmailWebhookHandlerForOutsource(req, res) {
       // Process new messages
       if (item.messagesAdded) {
         item.messagesAdded.forEach(({ message: msg }) => {
-          notificationPromises.push(processMessageAdded(gmail, msg, yourEmail).then(threadId => {
+          notificationPromises.push(processMessageAdded(gmail, msg, yourEmail, companyName).then(threadId => {
             if (threadId) allThreadIds.add(threadId);
           }));
         });

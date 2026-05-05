@@ -15,7 +15,7 @@ const router = express.Router();
 router.post("/create/template", requiredSignIn, createTemplate);
 
 // Get All template
-router.get("/get/all/template", getAllTemplate);
+router.get("/get/all/template",requiredSignIn, getAllTemplate);
 
 // Get Single Template
 router.get("/get/single/template/:id", getSingleTemplate);

@@ -39,13 +39,24 @@ export const createTemplate = async (req, res) => {
 
 // Get All Template
 export const getAllTemplate = async (req, res) => {
+
+  const userId =  req.user?.user?._id;
+  //const role = req.user?.user?.role?.name;
+    // const userName =  req.user?.user?.name;
+
+ 
   try {
-    const templateDate = await templateModel.find({});
+
+
+ 
+  
+
+    const templates = await templateModel.find({ "userList._id": userId,}).lean();
 
     res.status(200).send({
       success: true,
       message: "Template List!",
-      templates: templateDate,
+      templates: templates,
     });
   } catch (error) {
     console.log(error);

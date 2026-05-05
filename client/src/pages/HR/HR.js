@@ -1133,7 +1133,7 @@ const getJobHolderCount = (name) => {
   return (
     <>
       <div className=" relative w-full h-full overflow-y-auto py-4 px-2 sm:px-4">
-        <div className="flex fles-start sm:items-center sm:justify-between flex-col sm:flex-row gap-4 ">
+        <div className="flex fles-start sm:items-center sm:justify-between flex-col sm:flex-row gap-4 mb-3">
           <div className="flex items-center gap-4 justify-start ">
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-gray-800 relative before:absolute before:left-0 before:-bottom-1.5 before:h-[3px] before:w-10 before:bg-orange-500 before:transition-all before:duration-300 hover:before:w-16">
               HR
@@ -1158,7 +1158,8 @@ const getJobHolderCount = (name) => {
               </span>
             )}
 
-            <div className="flex justify-center items-center  gap-2 ">
+            {
+              isAdmin(auth) && <div className="flex justify-center items-center  gap-2 ">
               <span
                 className={` p-1 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${
                   showEdit && "bg-orange-500 text-white"
@@ -1183,6 +1184,7 @@ const getJobHolderCount = (name) => {
                 <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
               </span>
             </div>
+            }
           </div>
 
           {/* ---------Template Buttons */}
@@ -1211,7 +1213,10 @@ const getJobHolderCount = (name) => {
               )}
             </div>
 
-            <form>
+{ isAdmin(auth) &&
+  <div className="flex items-center justify-end gap-2">
+
+              <form>
               <input
                 type="file"
                 name="file"
@@ -1238,23 +1243,8 @@ const getJobHolderCount = (name) => {
                 )}
               </label>
             </form>
-
-            {/* ----------Months Filter--------- */}
-            {/* <div className="relative">
-              <select
-                className="w-[8rem] p-[6px] rounded-md border border-gray-300 cursor-pointer outline-orange-500"
-                value={month}
-                onChange={(e) => setMonth(parseInt(e.target.value))}
-              >
-                <option value="">Select Month</option>
-                {months.map((monthName, index) => (
-                  <option key={index} value={index}>
-                    {monthName}
-                  </option>
-                ))}
-              </select>
-            </div> */}
-            {/* ----------All Departments--------- */}
+ 
+            
             <div
               className=" hidden sm:flex items-center justify-between relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2  gap-1"
               onClick={() => setShowDepartment(!showDepartment)}
@@ -1311,7 +1301,7 @@ const getJobHolderCount = (name) => {
                 </div>
               )}
             </div>
-            {/* --------- */}
+            
             <button
               className={`${style.button1} text-[15px] `}
               onClick={() => setIshandleDepartment(true)}
@@ -1320,7 +1310,7 @@ const getJobHolderCount = (name) => {
               Add Department
             </button>
 
-            {/* ----------All ROLES--------- */}
+            
             <div
               className="ml-5 hidden sm:flex items-center justify-between relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2  gap-1"
               onClick={() => setShowHrRoles(!showHrRoles)}
@@ -1378,7 +1368,7 @@ const getJobHolderCount = (name) => {
                 </div>
               )}
             </div>
-            {/* --------- */}
+             
 
             <button
               className={`${style.button1} text-[15px] `}
@@ -1387,6 +1377,10 @@ const getJobHolderCount = (name) => {
             >
               Add Role
             </button>
+
+
+</div>
+}
 
             <button
               className={`${style.button1} text-[15px] `}
@@ -1397,7 +1391,7 @@ const getJobHolderCount = (name) => {
             </button>
           </div>
         </div>
-        <hr className="w-full h-[1px] bg-gray-300 mt-5 mb-2" />
+         
         {copyLoad && (
           <div className="pb-5">
             <div class="loader"></div>
@@ -1405,7 +1399,7 @@ const getJobHolderCount = (name) => {
         )}
 
         {/* ----------Job_Holder Summery Filters---------- */}
-        {showJobHolder && (
+        {showJobHolder && isAdmin(auth) && (
           <>
             <div className="w-full  py-2 ">
               <div className="flex items-center flex-wrap gap-4">

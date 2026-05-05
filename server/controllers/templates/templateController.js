@@ -39,19 +39,18 @@ export const createTemplate = async (req, res) => {
 
 // Get All Template
 export const getAllTemplate = async (req, res) => {
+  const userId = req.user?.user?._id;
+  const role = req.user?.user?.role?.name;
+  // const userName =  req.user?.user?.name;
 
-  const userId =  req.user?.user?._id;
-  //const role = req.user?.user?.role?.name;
-    // const userName =  req.user?.user?.name;
-
- 
   try {
+    const filters = {};
 
+    if (role !== "Admin") {
+      filters["userList._id"] = userId;
+    }
 
- 
-  
-
-    const templates = await templateModel.find({ "userList._id": userId,}).lean();
+    const templates = await templateModel.find(filters).lean();
 
     res.status(200).send({
       success: true,
@@ -127,7 +126,7 @@ export const updateTemplate = async (req, res) => {
         category,
         userList,
       },
-      { new: true }
+      { new: true },
     );
 
     res.status(200).send({
@@ -171,16 +170,6 @@ export const deleteTemplate = async (req, res) => {
     });
   }
 };
-
-
-
-
-
-
-
-
-
-
 
 // export const bulkUpdateTemplates = async (req, res) => {
 //   try {
@@ -230,27 +219,6 @@ export const deleteTemplate = async (req, res) => {
 //     });
 //   }
 // };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // export const bulkUpdateTemplates = async (req, res) => {
 //   try {
@@ -331,22 +299,6 @@ export const deleteTemplate = async (req, res) => {
 //     });
 //   }
 // };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 export const bulkUpdateTemplates = async (req, res) => {
   try {

@@ -114,9 +114,25 @@ export const updateHrTask = async (req, res) => {
 
 // Fetch All
 export const allHrTask = async (req, res) => {
+    const userId = req.user?.user?._id;
+  const role = req.user?.user?.role?.name;
+
   try {
+
+     const filters = {};
+
+    if (role !== "Admin") {
+      filters.users = {
+        $elemMatch: {
+          user: new mongoose.Types.ObjectId(userId),
+          status: "Yes",
+        }
+  }
+    }
+
+
     const tasks = await hrModel
-      .find({}).select("-description")
+      .find(filters).select("-description")
       .populate("hrRole")
       .populate({
         path: "users.user",
@@ -132,6 +148,9 @@ export const allHrTask = async (req, res) => {
       }).lean()
       ;
 
+      console.log("TASKS LENGTH 🎈🎈🎈", tasks.length)
+
+
     res.status(200).send({
       success: true,
       message: "HR tasks list!",
@@ -146,6 +165,28 @@ export const allHrTask = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Fetch By ID
 export const hrTaskDetail = async (req, res) => {

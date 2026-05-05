@@ -26,10 +26,10 @@ router.post("/create/task", requiredSignIn, createHrTask);
 router.put("/edit/task/:id", requiredSignIn, updateHrTask);
 
 // Fetch All
-router.get("/all/tasks", allHrTask);
+router.get("/all/tasks", requiredSignIn, allHrTask);
 
 // Task Detail
-router.get("/task/detail/:id", hrTaskDetail);
+router.get("/task/detail/:id", requiredSignIn, hrTaskDetail);
 
 // Delete
 router.delete("/remove/task/:id", requiredSignIn, deleteHrTask);

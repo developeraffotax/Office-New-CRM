@@ -19,7 +19,7 @@ const CustomEditor = ({ template, setTemplate }) => {
           formats={formats}
           value={template}
           onChange={setTemplate}
-          className="rounded-md relative min-h-[13rem]  h-[18rem] 2xl:h-[23rem]"
+          className="rounded-md relative min-h-[13rem]  h-[18rem] 2xl:h-[25rem]"
         />
       </div>
     </div>

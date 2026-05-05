@@ -47,7 +47,7 @@ export default function SignaturesModule() {
         if (res.error) throw new Error(res.error);
         toast("Signature created ✓");
       } else {
-        const res = await signaturesApi.update(editTarget.id, data);
+        const res = await signaturesApi.update(editTarget._id, data);
         if (res.error) throw new Error(res.error);
         toast("Signature updated ✓");
       }
@@ -62,7 +62,7 @@ export default function SignaturesModule() {
 
   const handleDelete = async () => {
     try {
-      await signaturesApi.remove(deleteTarget.id);
+      await signaturesApi.remove(deleteTarget._id);
       toast("Signature deleted");
       setDeleteTarget(null);
       load(search);
@@ -86,18 +86,18 @@ export default function SignaturesModule() {
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <>
-      <div className="min-h-screen bg-[#f8f7f5] text-[#1a1916] font-sans">
+      <div className="   ">
 
         {/* Top Bar */}
-        <div className="border-b border-[#161616] px-7 flex items-center gap-4 h-[60px]">
+        <div className="bg-gray-50 shadow-sm border-b border-[#161616] px-7 flex items-center gap-4 h-[60px]">
           {/* Brand */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 font-google">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-600 to-amber-500 flex items-center justify-center">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
                 <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
               </svg>
             </div>
-            <span className="font-bold text-[15px] text-[#1a1916] tracking-tight">Signatures</span>
+            <span className="font-semibold text-[18px] text-[#1a1916] tracking-tight ">Signatures</span>
           </div>
 
           {/* Search */}
@@ -109,7 +109,7 @@ export default function SignaturesModule() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Search signatures…"
-              className="w-full   border border-[#e4e2dc] rounded-[10px] font-sans text-[12px] pl-8 pr-3 h-9 outline-none box-border transition-colors focus:border-orange-500"
+              className="w-full   border border-[#e4e2dc] rounded-[10px]   text-[12px] pl-8 pr-3 h-9 outline-none box-border transition-colors focus:border-orange-500"
             />
           </div>
 
@@ -117,7 +117,7 @@ export default function SignaturesModule() {
           <div className="ml-auto">
             <button
               onClick={() => setEditTarget("new")}
-              className="bg-orange-600 hover:bg-orange-700 text-white border-none rounded-[9px] px-4 py-2 cursor-pointer font-mono text-[12px] flex items-center gap-1.5 transition-colors duration-150"
+              className="bg-orange-600 hover:bg-orange-700 text-white border-none rounded-[9px] px-4 py-2 cursor-pointer  text-[12px] flex items-center gap-1.5 transition-colors duration-150"
             >
               <Icon name="plus" size={14} />
               New Signature
@@ -132,7 +132,7 @@ export default function SignaturesModule() {
 
           {/* Grid */}
           {loading ? (
-            <div className="text-center py-16 text-[#333] font-mono text-[13px]">Loading…</div>
+            <div className="text-center py-16 text-[#333] text-[13px]">Loading…</div>
           ) : signatures.length === 0 ? (
             <div className="text-center py-20">
               <div className="text-[#e4e2dc] text-5xl mb-4">✉</div>

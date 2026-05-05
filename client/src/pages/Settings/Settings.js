@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate} from "react-router-dom";
  
 import toast from "react-hot-toast";
 import { getUserSettings, updateUserSettings } from "../../redux/slices/settingsSlice";
@@ -9,7 +10,7 @@ export default function SettingsPage() {
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.auth.auth.user?.id);
   const { settings, isLoading } = useSelector((state) => state.settings);
-
+  const navigate = useNavigate();
   const [localSettings, setLocalSettings] = useState({
     theme: "light",
     showSidebar: true,
@@ -105,7 +106,14 @@ export default function SettingsPage() {
                 enabled={localSettings.showEmailNotifications}
                 onChange={() => toggle("showEmailNotifications")}
               />
+
+               <button onClick={() => navigate("/settings/signatures")} className="    text-orange-500 font-medium py-2 rounded-lg transition max-w-[200px]">
+                Manage Signatures
+              </button>
             </div>
+
+             
+
 
             <button
               onClick={handleSave}

@@ -44,27 +44,105 @@ export const getUserDetail = createAsyncThunk(
   }
 );
 
+// export const loginUser = createAsyncThunk(
+//   "auth/loginUser",
+//   async ({ email, password }, { rejectWithValue }) => {
+//     try {
+//       const { data } = await axios.post(
+//         `${process.env.REACT_APP_API_URL}/api/v1/user/login/user`,
+//         { email, password }
+//       );
+
+//       if (data?.success) {
+//         localStorage.setItem("auth", JSON.stringify(data));
+//         axios.defaults.headers.common["Authorization"] = data.token;
+//         return { user: data.user, token: data.token };
+//       } else {
+//         return rejectWithValue("Login failed");
+//       }
+//     } catch (error) {
+//       return rejectWithValue(error?.response?.data?.message || "Login error");
+//     }
+//   }
+// );
+
+
+
+
+
+
+// ─── Phase 1: validate credentials → returns tempToken only ─────────────────
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async ({ email, password }, { rejectWithValue }) => {
     try {
       const { data } = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/login/user`,
+        `${API_URL}/api/v1/user/login/user`,
         { email, password }
       );
 
       if (data?.success) {
-        localStorage.setItem("auth", JSON.stringify(data));
-        axios.defaults.headers.common["Authorization"] = data.token;
-        return { user: data.user, token: data.token };
-      } else {
-        return rejectWithValue("Login failed");
+        // Don't store in localStorage yet — OTP not verified
+        return { tempToken: data.tempToken };
       }
+      return rejectWithValue("Login failed");
     } catch (error) {
       return rejectWithValue(error?.response?.data?.message || "Login error");
     }
   }
 );
+
+// ─── Phase 2: verify OTP → returns real user + token ────────────────────────
+// export const verifyOtp = createAsyncThunk(
+//   "auth/verifyOtp",
+//   async ({ otp, tempToken }, { rejectWithValue }) => {
+//     try {
+//       const { data } = await axios.post(
+//         `${API_URL}/api/v1/user/verify-otp`,
+//         { otp },
+//         { headers: { Authorization: `Bearer ${tempToken}` } }
+//       );
+
+//       if (data?.success) {
+//         // Only now persist to localStorage and set global header
+//         localStorage.setItem("auth", JSON.stringify(data));
+//         axios.defaults.headers.common["Authorization"] = data.token;
+//         return { user: data.user, token: data.token };
+//       }
+//       return rejectWithValue("OTP verification failed");
+//     } catch (error) {
+//       return rejectWithValue(error?.response?.data?.message || "OTP error");
+//     }
+//   }
+// );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const authSlice = createSlice({
   name: "auth",
@@ -149,14 +227,25 @@ const authSlice = createSlice({
         state.isLoading = true;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.auth = action.payload;
-        axios.defaults.headers.common["Authorization"] = action.payload.token;
+        // state.auth = action.payload;
+        // axios.defaults.headers.common["Authorization"] = action.payload.token;
         state.isLoading = false;
       })
       .addCase(loginUser.rejected, (state,) => {
         
         state.isLoading = false;
-      });
+      })
+
+      // ── verifyOtp (Phase 2 — this is where real auth happens)
+      // .addCase(verifyOtp.pending, (state) => { state.isLoading = true; })
+      // .addCase(verifyOtp.fulfilled, (state, action) => {
+      //   state.auth = action.payload;           // sets user + token in Redux
+      //   axios.defaults.headers.common["Authorization"] = action.payload.token;
+      //   state.isLoading = false;
+      // })
+      // .addCase(verifyOtp.rejected, (state) => { state.isLoading = false; });
+
+      
   },
 });
 

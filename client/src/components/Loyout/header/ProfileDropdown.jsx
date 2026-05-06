@@ -10,6 +10,8 @@ const ProfileDropdown = ({ userInfo, show, setShow }) => {
 
   const handleLogout = () => {
     dispatch(setAuth({ ...auth, user: null, token: "" }));
+    
+    localStorage.removeItem("otp_expiry");
     localStorage.removeItem("auth");
     navigate("/");
   };

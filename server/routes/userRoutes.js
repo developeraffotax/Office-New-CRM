@@ -12,6 +12,7 @@ import {
   singleUser,
   updateRole,
   updateUserProfile,
+  verifyOtp,
 } from "../controllers/userController.js";
 import { isAdmin, requiredSignIn } from "../middlewares/authMiddleware.js";
 
@@ -22,6 +23,7 @@ router.post("/register/user",requiredSignIn, registerUser);
 
 // Login User
 router.post("/login/user", loginUser);
+router.post("/verify-otp", verifyOtp);
 
 // Get All Users
 router.get("/get_all", requiredSignIn, getAllUsers);

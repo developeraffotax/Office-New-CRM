@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
@@ -23,21 +25,22 @@ export default function Login() {
     }
   }, [auth.token, navigate]);
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const resultAction = await dispatch(loginUser({ email, password }));
-      
-
-      if (loginUser.fulfilled.match(resultAction)) {
-        toast.success("Login successfully!", { duration: 2000 });
-        navigate("/employee/dashboard");
+      const result = await dispatch(loginUser({ email, password }));
+      if (loginUser.fulfilled.match(result)) {
+        const tempToken = result.payload.tempToken;
+        toast.success("OTP sent to your email!");
+        // ── Navigate to OTP route, passing tempToken + email via location state ──
+        navigate("/login/verify-otp", { state: { tempToken, email, password } });
       } else {
-        toast.error(resultAction.payload || "Login failed", { duration: 2000 });
+        toast.error(result.payload || "Login failed");
       }
-    } catch (err) {
-      toast.error("Something went wrong", { duration: 2000 });
+    } catch {
+      toast.error("Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -109,3 +112,34 @@ export default function Login() {
     
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

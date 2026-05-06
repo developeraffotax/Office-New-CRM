@@ -3,6 +3,7 @@ import { comparePassword, hashPassword } from "../helper/encryption.js";
 import userModel from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import labelModel from "../models/labelModel.js";
+import { sendOtpEmail } from "../utils/sendOtpEmail.js";
 
 // Create User
 export const registerUser = async (req, res) => {
@@ -80,7 +81,7 @@ export const registerUser = async (req, res) => {
 };
 
 // Login User
-export const loginUser = async (req, res) => {
+export const loginUserOld = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email) {
@@ -159,6 +160,280 @@ export const loginUser = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ─── Step 1: Validate credentials → send OTP ────────────────────────────────
+export const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email)
+      return res.status(400).send({ success: false, message: "Email is required!" });
+    if (!password)
+      return res.status(400).send({ success: false, message: "Password is required!" });
+
+    const user = await userModel
+      .findOne({ email: new RegExp(`^${email}$`, "i") })
+      .populate("role");
+
+    if (!user)
+      return res.status(400).send({ success: false, message: "Invalid email or password!" });
+
+    if (!user.isActive)
+      return res.status(400).send({
+        success: false,
+        message: "Access Denied: Your account has been temporarily blocked. Contact support.",
+      });
+
+    const isPassword = await comparePassword(password, user.password);
+    if (!isPassword)
+      return res.status(400).send({ success: false, message: "Invalid Password!" });
+
+    // Generate 4-digit OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    
+    // Save OTP to user
+    user.otp = otp;
+    await user.save();
+
+    // Send OTP via Gmail
+    await sendOtpEmail({
+        
+        to: user.email,
+        userName: user.name,
+        otp,
+        expiryMinutes: 10,
+      });
+
+
+      
+    // Issue a short-lived temp token (carries only the user ID, not full access)
+    const tempToken = jwt.sign(
+      { id: user._id, purpose: "otp-verification" },
+      process.env.JWT_SECRET,
+      { expiresIn: "10m" }
+    );
+
+    return res.status(200).send({
+      success: true,
+      message: "OTP sent to your email. Please verify to continue.",
+      tempToken, // frontend stores this temporarily
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ success: false, message: "Error while logging in!" });
+  }
+};
+
+
+// ─── Step 2: Verify OTP → issue full auth token ──────────────────────────────
+export const verifyOtp = async (req, res) => {
+  try {
+    const { otp } = req.body;
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer "))
+      return res.status(401).send({ success: false, message: "Temp token is required!" });
+
+    if (!otp)
+      return res.status(400).send({ success: false, message: "OTP is required!" });
+
+    // Verify temp token
+    let decoded;
+    try {
+      decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET);
+    } catch {
+      return res.status(401).send({ success: false, message: "Session expired. Please login again." });
+    }
+
+    if (decoded.purpose !== "otp-verification")
+      return res.status(401).send({ success: false, message: "Invalid token purpose." });
+
+    const user = await userModel.findById(decoded.id).populate("role");
+
+    if (!user)
+      return res.status(404).send({ success: false, message: "User not found!" });
+
+    // Check OTP validity
+    if (user.otp !== otp)
+      return res.status(400).send({ success: false, message: "Invalid OTP!" });
+
+    if (new Date() > new Date(user.otpExpiry))
+      return res.status(400).send({ success: false, message: "OTP has expired. Please login again." });
+
+    // Clear OTP fields after successful verification
+    user.otp = null;
+    user.otpExpiry = null;
+    await user.save();
+
+    // Issue full auth token
+    const token = jwt.sign(
+      { id: user._id, user },
+      process.env.JWT_SECRET,
+      { expiresIn: "180d" }
+    );
+
+    return res.status(200).send({
+      success: true,
+      message: "Login successfully!",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        username: user.username,
+        phone: user.phone,
+        emergency_contact: user.emergency_contact,
+        address: user.address,
+        isActive: user.isActive,
+        role: user.role,
+        avatar: user.avatar,
+        access: user.access,
+        juniors: user?.juniors || [],
+        isTeamLead: user?.isTeamLead || false,
+      },
+      token,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ success: false, message: "Error while verifying OTP!" });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Get All User
 export const getAllUsers = async (req, res) => {
@@ -577,3 +852,30 @@ export const getAllTeamMembers = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

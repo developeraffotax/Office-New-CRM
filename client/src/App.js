@@ -59,6 +59,7 @@ import RegisterGlobalComponents from "./components/global/RegisterGlobalComponen
 import Mailbox from "./components/gmail/pages/Mailbox";
 import { fetchInboxUnreadCounts } from "./redux/slices/inboxUnreadSlice";
 import SignaturesModule from "./components/Signatures/SignaturesModule";
+import VerifyOtp from "./pages/Auth/VerifyOtp";
 
 function App() {
   const navigate = useNavigate();
@@ -156,6 +157,7 @@ function App() {
       <Routes>
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/login/verify-otp" element={<VerifyOtp />} />
         <Route path="/temp/:hrTaskId" element={<Temp />} />
          
 

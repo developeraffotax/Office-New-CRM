@@ -1,3 +1,4 @@
+import e from "express";
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
@@ -64,6 +65,11 @@ const userSchema = new mongoose.Schema(
     isTeamLead: {
       type: Boolean,
       default: false,
+    },
+
+    otp: {
+      type: String,
+      expires: 600, // OTP expires after 5 minutes
     },
 
     juniors: [

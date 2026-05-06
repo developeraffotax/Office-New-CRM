@@ -204,11 +204,15 @@ export const loginUser = async (req, res) => {
     if (!isPassword)
       return res.status(400).send({ success: false, message: "Invalid Password!" });
 
-    // Generate 4-digit OTP
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
     
+ // Generate 4-digit OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
     // Save OTP to user
     user.otp = otp;
+    user.otpExpiry = otpExpiry;
     await user.save();
 
     // Send OTP via Gmail
@@ -217,7 +221,7 @@ export const loginUser = async (req, res) => {
         to: user.email,
         userName: user.name,
         otp,
-        expiryMinutes: 10,
+        expiryMinutes: 5,
       });
 
 
@@ -226,7 +230,7 @@ export const loginUser = async (req, res) => {
     const tempToken = jwt.sign(
       { id: user._id, purpose: "otp-verification" },
       process.env.JWT_SECRET,
-      { expiresIn: "10m" }
+      { expiresIn: "5m" }
     );
 
     return res.status(200).send({

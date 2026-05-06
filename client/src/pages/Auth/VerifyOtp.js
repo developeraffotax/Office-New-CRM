@@ -111,8 +111,11 @@ export default function VerifyOtp() {
 
       if (data.success) {
         localStorage.setItem("auth", JSON.stringify(data));
+        localStorage.removeItem("otp_expiry");
+
         dispatch(setAuth({ user: data.user, token: data.token }));
         axios.defaults.headers.common["Authorization"] = data.token;
+        
         toast.success("Login successful!");
         navigate("/employee/dashboard", {replace: true});
       } else {

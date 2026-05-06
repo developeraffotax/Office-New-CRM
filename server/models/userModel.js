@@ -67,10 +67,8 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
-    otp: {
-      type: String,
-      expires: 600, // OTP expires after 5 minutes
-    },
+    otp: { type: String, default: null },
+    otpExpiry: { type: Date, default: null },
 
     juniors: [
       {

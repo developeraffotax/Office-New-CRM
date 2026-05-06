@@ -35,6 +35,7 @@ export default function Login() {
         const tempToken = result.payload.tempToken;
         toast.success("OTP sent to your email!");
         // ── Navigate to OTP route, passing tempToken + email via location state ──
+        localStorage.removeItem("otp_expiry");
         navigate("/login/verify-otp", { state: { tempToken, email, password } });
       } else {
         toast.error(result.payload || "Login failed");

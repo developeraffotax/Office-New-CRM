@@ -15,6 +15,7 @@ import {
   verifyOtp,
 } from "../controllers/userController.js";
 import { isAdmin, requiredSignIn } from "../middlewares/authMiddleware.js";
+import { aiPerMinuteLimiter } from "../utils/rateLimiter.js";
 
 const router = express.Router();
 
@@ -22,8 +23,8 @@ const router = express.Router();
 router.post("/register/user",requiredSignIn, registerUser);
 
 // Login User
-router.post("/login/user", loginUser);
-router.post("/verify-otp", verifyOtp);
+router.post("/login/user", aiPerMinuteLimiter, loginUser);
+router.post("/verify-otp", aiPerMinuteLimiter, verifyOtp);
 
 // Get All Users
 router.get("/get_all", requiredSignIn, getAllUsers);

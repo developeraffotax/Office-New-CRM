@@ -122,8 +122,9 @@ export default function VerifyOtp() {
         setOtp("");
         toast.error(data.message || "Invalid OTP");
       }
-    } catch {
-      toast.error("Something went wrong");
+    } catch(error) {
+      
+      toast.error(error?.response?.data?.message || "Something went wrong");
     } finally {
       setOtpLoading(false);
     }

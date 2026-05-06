@@ -6,6 +6,7 @@ import {
   getAllTeamMembers,
   getAllUsers,
   getDashboardUsers,
+  loginCrmUser,
   loginUser,
   registerUser,
   reordering,
@@ -23,7 +24,9 @@ const router = express.Router();
 router.post("/register/user",requiredSignIn, registerUser);
 
 // Login User
-router.post("/login/user", aiPerMinuteLimiter, loginUser);
+router.post("/login/user",  loginUser);
+
+router.post("/login/crm-user", aiPerMinuteLimiter, loginCrmUser);
 router.post("/verify-otp", aiPerMinuteLimiter, verifyOtp);
 
 // Get All Users

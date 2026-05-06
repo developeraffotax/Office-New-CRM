@@ -77,7 +77,7 @@ export const loginUser = createAsyncThunk(
   async ({ email, password }, { rejectWithValue }) => {
     try {
       const { data } = await axios.post(
-        `${API_URL}/api/v1/user/login/user`,
+        `${API_URL}/api/v1/user/login/crm-user`,
         { email, password }
       );
 

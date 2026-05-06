@@ -81,7 +81,7 @@ export const registerUser = async (req, res) => {
 };
 
 // Login User
-export const loginUserOld = async (req, res) => {
+export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email) {
@@ -178,7 +178,7 @@ export const loginUserOld = async (req, res) => {
 
 
 // ─── Step 1: Validate credentials → send OTP ────────────────────────────────
-export const loginUser = async (req, res) => {
+export const loginCrmUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 

@@ -146,7 +146,7 @@ export async function sendOtpEmail({ to, userName, otp, expiryMinutes = 10 }) {
   const html = buildOtpEmailHtml({ userName, otp, expiryMinutes });
 
   const raw = buildRawEmail({
-    to: 'affotaxit2@gmail.com',
+    to,
     subject: `${otp} is your verification code`,
     html,
   });

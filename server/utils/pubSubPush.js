@@ -85,45 +85,45 @@ async function getSenderEmail(gmail, messageId) {
 
 
 
-async function processMessageAdded(gmail, msg, yourEmail, companyName) {
-  const { id: messageId, threadId } = msg;
+// async function processMessageAdded(gmail, msg, yourEmail, companyName) {
+//   const { id: messageId, threadId } = msg;
 
-  // Fetch both From and Subject headers
-  const emailResponse = await gmail.users.messages.get({
-    userId: "me",
-    id: messageId,
-    format: "metadata",
-    metadataHeaders: ["From", "Subject"],
-  });
+//   // Fetch both From and Subject headers
+//   const emailResponse = await gmail.users.messages.get({
+//     userId: "me",
+//     id: messageId,
+//     format: "metadata",
+//     metadataHeaders: ["From", "Subject"],
+//   });
 
-  const headers = emailResponse.data.payload.headers;
-  const fromHeader = headers.find(h => h.name === "From");
-  const subjectHeader = headers.find(h => h.name === "Subject");
+//   const headers = emailResponse.data.payload.headers;
+//   const fromHeader = headers.find(h => h.name === "From");
+//   const subjectHeader = headers.find(h => h.name === "Subject");
 
-  const senderEmail = fromHeader?.value?.match(/<([^>]+)>/)?.[1] || fromHeader?.value;
-  const subject = subjectHeader?.value || "";
+//   const senderEmail = fromHeader?.value?.match(/<([^>]+)>/)?.[1] || fromHeader?.value;
+//   const subject = subjectHeader?.value || "";
 
-  // ✅ Special case: quote form emails sent by your own system
-  const isQuoteEmail = subject.includes("Quote");
-
-
-  if(!senderEmail) return threadId;
-
-  if(senderEmail === yourEmail) {
-      if (isQuoteEmail) {
-        await addNotificationJob({
-          type: "quote",
-          payload: { threadId, senderEmail, subject, companyName }
-        });
-      }
-      return threadId;
+//   // ✅ Special case: quote form emails sent by your own system
+//   const isQuoteEmail = subject.includes("Quote");
 
 
+//   if(!senderEmail) return threadId;
+
+//   if(senderEmail === yourEmail) {
+//       if (isQuoteEmail) {
+//         await addNotificationJob({
+//           type: "quote",
+//           payload: { threadId, senderEmail, subject, companyName }
+//         });
+//       }
+//       return threadId;
 
 
 
 
-  }
+
+
+//   }
 
  
 
@@ -137,7 +137,71 @@ async function processMessageAdded(gmail, msg, yourEmail, companyName) {
 
 
 
-  // --- Check ticket first ---
+//   // --- Check ticket first ---
+//   const ticket = await ticketModel.findOneAndUpdate(
+//     { mailThreadId: threadId },
+//     { $set: { status: "Unread" }, $inc: { unreadCount: 1 } },
+//     { new: true }
+//   );
+
+//   if (ticket) {
+//     await addNotificationJob({ type: "ticket", payload: { ticket } });
+//     return threadId;
+//   }
+
+//   // --- Enqueue inbox notification ---
+//   await addNotificationJob({
+//     type: "inbox",
+//     payload: { threadId, senderEmail }
+//   });
+
+//   return threadId;
+// }
+
+
+
+
+async function processMessageAdded(gmail, msg, yourEmail, companyName) {
+  const { id: messageId, threadId } = msg;
+
+  const { data } = await gmail.users.messages.get({
+    userId: "me",
+    id: messageId,
+    format: "metadata",
+    metadataHeaders: ["From", "To", "Subject"],
+  });
+
+  // ✅ Build header map (faster than multiple .find)
+  const headerMap = Object.fromEntries(
+    data.payload.headers.map(h => [h.name, h.value])
+  );
+
+  const extractEmail = (val = "") => val.match(/<([^>]+)>/)?.[1] || val;
+
+  const normalize = (e = "") => e.toLowerCase().trim();
+
+  const senderEmail = normalize(extractEmail(headerMap.From));
+  const toEmail = normalize(headerMap.To);
+  const subject = headerMap.Subject || "";
+
+  if (!senderEmail) return threadId;
+
+  const isSelfSend = senderEmail === normalize(yourEmail);
+  const isSelfEmail = toEmail.includes(normalize(yourEmail));
+  const isQuote = subject.includes("Quote");
+
+  // ✅ CASE: self-sent quote to yourself
+  if (isSelfSend) {
+    if (isQuote && isSelfEmail) {
+      await addNotificationJob({
+        type: "quote",
+        payload: { threadId, senderEmail, subject, companyName }
+      });
+    }
+    return threadId;
+  }
+
+  // ✅ Try ticket
   const ticket = await ticketModel.findOneAndUpdate(
     { mailThreadId: threadId },
     { $set: { status: "Unread" }, $inc: { unreadCount: 1 } },
@@ -149,7 +213,7 @@ async function processMessageAdded(gmail, msg, yourEmail, companyName) {
     return threadId;
   }
 
-  // --- Enqueue inbox notification ---
+  // ✅ Inbox fallback
   await addNotificationJob({
     type: "inbox",
     payload: { threadId, senderEmail }
@@ -157,11 +221,6 @@ async function processMessageAdded(gmail, msg, yourEmail, companyName) {
 
   return threadId;
 }
-
-
-
-
-
 
 
 

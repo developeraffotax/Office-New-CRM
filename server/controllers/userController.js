@@ -218,6 +218,7 @@ export const loginCrmUser = async (req, res) => {
 
       await sendOtpEmail({
         to: user.email,
+        // to: `info@affotax.com`,
         userName: user.name,
         otp,
         expiryMinutes: 5,

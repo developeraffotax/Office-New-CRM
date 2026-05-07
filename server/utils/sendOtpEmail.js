@@ -2,11 +2,45 @@
 
 import { getGmailClient } from "../emailModule/services/gmail.service.js";
 
+
+
+
+
+
+
+
+
+
+// function buildRawEmail({ to, subject, html }) {
+//   // Generate a unique ID to prevent Gmail from threading it with old OTPs
+//   const messageId = `<${Date.now()}@affotax.com>`;
+  
+//   const messageParts = [
+//     `From: "Affotax Security" <info@affotax.com>`, // Explicit sender name
+//     `To: ${to}`,
+//     `Message-ID: ${messageId}`, 
+//     `Subject: ${subject}`,
+//     `MIME-Version: 1.0`,
+//     `Content-Type: text/html; charset=UTF-8`,
+//     ``,
+//     html,
+//   ];
+
+//   const raw = messageParts.join("\r\n");
+//   return Buffer.from(raw)
+//     .toString("base64")
+//     .replace(/\+/g, "-")
+//     .replace(/\//g, "_")
+//     .replace(/=+$/, "");
+// }
+
+
  
 
 // ─── Build raw RFC 2822 message ──────────────────────────────────────────────
 function buildRawEmail({ to, subject, html }) {
   const messageParts = [
+    //`From: "Affotax Security" <info@affotax.com>`, 
     `To: ${to}`,
     `Subject: ${subject}`,
     `MIME-Version: 1.0`,
@@ -139,10 +173,126 @@ function buildOtpEmailHtml({ userName, otp, expiryMinutes = 10 }) {
   `;
 }
 
+
+
+
+
+
+
+// ─── Simple Transactional OTP Email Template ─────────────────────────────
+
+// function buildOtpEmailHtml({ userName, otp, expiryMinutes = 10 }) {
+//   const brandOrange = "#ff7f45";
+
+//   return `
+// <!DOCTYPE html>
+// <html lang="en">
+// <head>
+//   <meta charset="UTF-8" />
+//   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+//   <title>Verification Code</title>
+// </head>
+
+// <body style="margin:0;padding:0;background:#ffffff;font-family:Arial,Helvetica,sans-serif;color:#111827;">
+
+//   <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 16px;">
+//     <tr>
+//       <td align="center">
+
+//         <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
+
+//           <!-- Small Brand -->
+//           <tr>
+//             <td style="padding-bottom:24px;text-align:center;">
+//               <div style="font-size:20px;font-weight:700;color:${brandOrange};">
+//                 Affotax
+//               </div>
+//             </td>
+//           </tr>
+
+//           <!-- Main Content -->
+//           <tr>
+//             <td style="border:1px solid #e5e7eb;padding:32px 24px;border-radius:8px;">
+
+//               <h1 style="margin:0 0 16px;font-size:22px;font-weight:600;color:#111827;text-align:center;">
+//                 Verification Code
+//               </h1>
+
+//               <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#4b5563;text-align:center;">
+//                 Hi ${userName},
+//                 use the verification code below to sign in to your Affotax account.
+//               </p>
+
+//               <!-- OTP -->
+//               <div style="text-align:center;margin:32px 0;">
+
+//                 <div style="
+//                   display:inline-block;
+//                   padding:16px 24px;
+//                   border:1px solid #e5e7eb;
+//                   border-radius:8px;
+//                   background:#f9fafb;
+//                   font-size:36px;
+//                   letter-spacing:10px;
+//                   font-weight:700;
+//                   color:#111827;
+//                 ">
+//                   ${otp}
+//                 </div>
+
+//               </div>
+
+//               <p style="margin:0 0 20px;font-size:13px;color:#6b7280;text-align:center;">
+//                 This code expires in ${expiryMinutes} minutes.
+//               </p>
+
+              
+
+//             </td>
+//           </tr>
+ 
+
+//         </table>
+
+//       </td>
+//     </tr>
+//   </table>
+
+// </body>
+// </html>
+//   `;
+// }
+
+
+
+
+
+
 // ─── Main exported function ───────────────────────────────────────────────────
+// export async function sendOtpEmail({ to, userName, otp, expiryMinutes = 10 }) {
+//   const gmail = await getGmailClient("affotax");
+
+//   const html = buildOtpEmailHtml({ userName, otp, expiryMinutes });
+
+//   const raw = buildRawEmail({
+//     to,
+//     subject: `${otp} is your verification code`,
+//     html,
+//   });
+
+//   await gmail.users.messages.send({
+//     userId: "me",
+//     requestBody: { raw },
+//   });
+// }
+
+
+
+
+
+
 export async function sendOtpEmail({ to, userName, otp, expiryMinutes = 10 }) {
   const gmail = await getGmailClient("affotax");
-
   const html = buildOtpEmailHtml({ userName, otp, expiryMinutes });
 
   const raw = buildRawEmail({
@@ -151,8 +301,23 @@ export async function sendOtpEmail({ to, userName, otp, expiryMinutes = 10 }) {
     html,
   });
 
-  await gmail.users.messages.send({
+  // 1. Send the email
+  const sentMessage = await gmail.users.messages.send({
     userId: "me",
     requestBody: { raw },
   });
+
+  // 2. If sending to yourself/alias, manually add the INBOX label
+  // This bypasses the "Self-Sent" archive logic
+  if (to.includes("affotax.com")) {
+    await gmail.users.messages.batchModify({
+      userId: "me",
+      requestBody: {
+        ids: [sentMessage.data.id],
+        addLabelIds: ["INBOX", "UNREAD"],
+      },
+    });
+  }
+
+  return sentMessage.data;
 }

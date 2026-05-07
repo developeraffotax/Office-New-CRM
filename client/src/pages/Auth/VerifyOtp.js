@@ -8,7 +8,7 @@ import { TbLoader3 } from "react-icons/tb";
 import { IoArrowBack } from "react-icons/io5";
 import { OtpInput } from "./components/OtpInput";
 
-const OTP_DURATION = 600;
+const OTP_DURATION = 300;
 const API_URL = process.env.REACT_APP_API_URL;
 
 const btnCls = `
@@ -149,7 +149,12 @@ const handleResend = async () => {
 
       toast.success("New OTP sent!");
     }
-  } finally {
+  }
+  catch(error) {
+      
+      toast.error(error?.response?.data?.message || "Something went wrong");
+    }
+     finally {
     setResendLoading(false);
   }
 };
@@ -260,7 +265,7 @@ const handleResend = async () => {
             Didn't receive it?{" "}
             <button
               onClick={handleResend}
-              disabled={resendLoading || timer > 540}
+              disabled={resendLoading || timer > 240}
               className="text-orange-600 hover:text-orange-700 disabled:text-slate-300 font-medium transition"
             >
               {resendLoading ? "Sending…" : "Resend code"}

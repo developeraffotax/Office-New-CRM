@@ -67,9 +67,7 @@ const processNotificationJob = async (job) => {
       if (!ticket) return true;
 
       const jobHolder = await userModel.findOne({ name: ticket.jobHolder });
-      const lastMessageSentBy = await userModel.findOne({
-        name: ticket.lastMessageSentBy,
-      });
+      // const lastMessageSentBy = await userModel.findOne({ name: ticket.lastMessageSentBy, });
 
       const recipients = [];
       if (jobHolder)
@@ -77,15 +75,15 @@ const processNotificationJob = async (job) => {
           user: jobHolder,
           title: "Reply to a ticket received",
         });
-      if (
-        lastMessageSentBy &&
-        lastMessageSentBy._id.toString() !== jobHolder?._id?.toString()
-      ) {
-        recipients.push({
-          user: lastMessageSentBy,
-          title: "Reply to a ticket received",
-        });
-      }
+      // if (
+      //   lastMessageSentBy &&
+      //   lastMessageSentBy._id.toString() !== jobHolder?._id?.toString()
+      // ) {
+      //   recipients.push({
+      //     user: lastMessageSentBy,
+      //     title: "Reply to a ticket received",
+      //   });
+      // }
 
       for (const { user, title } of recipients) {
         const notification = await notificationModel.create({

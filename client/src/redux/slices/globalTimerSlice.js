@@ -51,10 +51,12 @@ export const startTimer = createAsyncThunk(
       const timer = res?.data?.timer;
 
       // 🔥 instantly set UI (no waiting for fetch)
-      dispatch({
-        type: "globalTimer/setActiveTimer",
-        payload: timer,
-      });
+      // dispatch({
+      //   type: "globalTimer/setActiveTimer",
+      //   payload: timer,
+      // });
+
+       dispatch(fetchGlobalTimer());
 
       // broadcast to other tabs
       globalTimerChannel.postMessage({
@@ -97,10 +99,12 @@ export const stopTimer = createAsyncThunk(
 
       const updatedTimer = res?.data?.timer || null;
 
-      dispatch({
-        type: "globalTimer/setActiveTimer",
-        payload: updatedTimer,
-      });
+      // dispatch({
+      //   type: "globalTimer/fetch",
+      //   payload: updatedTimer,
+      // });
+
+       dispatch(fetchGlobalTimer());
 
       globalTimerChannel.postMessage({
         type: "GLOBAL_TIMER_UPDATED",

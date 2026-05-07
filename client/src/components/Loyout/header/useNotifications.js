@@ -27,7 +27,7 @@ export const useNotifications = () => {
     settings || {};
 
   const isNotificationAllowed = (notificationType) => {
-    if (notificationType === "ticket_received") {
+    if (notificationType === "ticket_received" || notificationType === "email_received") {
       return showEmailNotifications;
     }
     return showCrmNotifications;

@@ -25,6 +25,115 @@ export const fetchGlobalTimer = createAsyncThunk(
   }
 );
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const startTimer = createAsyncThunk(
+  "globalTimer/start",
+  async (payload, { dispatch, rejectWithValue }) => {
+    try {
+      const res = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/timer/start/timer`,
+        payload
+      );
+
+      const timer = res?.data?.timer;
+
+      // 🔥 instantly set UI (no waiting for fetch)
+      dispatch({
+        type: "globalTimer/setActiveTimer",
+        payload: timer,
+      });
+
+      // broadcast to other tabs
+      globalTimerChannel.postMessage({
+        type: "GLOBAL_TIMER_UPDATED",
+        payload: timer,
+      });
+
+      return timer;
+    } catch (err) {
+      return rejectWithValue(
+        err?.response?.data?.message || "Failed to start timer"
+      );
+    }
+  }
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const stopTimer = createAsyncThunk(
+  "globalTimer/stop",
+  async ({ timerId, note, activity }, { dispatch, rejectWithValue }) => {
+    try {
+      const res = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/timer/stop/timer/${timerId}`,
+        { note, activity }
+      );
+
+      const updatedTimer = res?.data?.timer || null;
+
+      dispatch({
+        type: "globalTimer/setActiveTimer",
+        payload: updatedTimer,
+      });
+
+      globalTimerChannel.postMessage({
+        type: "GLOBAL_TIMER_UPDATED",
+        payload: updatedTimer,
+      });
+
+      return true;
+    } catch (err) {
+      return rejectWithValue(
+        err?.response?.data?.message || "Failed to stop timer"
+      );
+    }
+  }
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const initialState = {
   timer: null,
   elapsed: 0,
@@ -70,6 +179,22 @@ const globalTimerSlice = createSlice({
         state.elapsed = Math.max(end - start, 0);
       }
     },
+
+
+    setActiveTimer(state, action) {
+  state.timer = action.payload ?? null;
+
+  const start = safeTime(state.timer?.startTime);
+
+  if (!start) {
+    state.elapsed = 0;
+    return;
+  }
+
+  state.elapsed = state.timer?.isRunning
+    ? Math.max(Date.now() - start, 0)
+    : 0;
+},
 
     // setStaticElapsed(state) {
     //   if (!state.timer || state.timer.isRunning) return;

@@ -1,0 +1,207 @@
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchGlobalTimer, stopTimer, tick } from "../redux/slices/globalTimerSlice";
+import { setAnyTimerRunning } from "../redux/slices/authSlice";
+import { stopCountdown } from "../redux/slices/timerSlice";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { LuClock3 } from "react-icons/lu";
+import { RiStopFill } from "react-icons/ri";
+
+function formatTime(ms) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const h = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+  const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+  const s = String(totalSeconds % 60).padStart(2, "0");
+  return `${h}:${m}:${s}`;
+}
+
+export default function GlobalTimer() {
+  const dispatch = useDispatch();
+  const { timer, elapsed, loading } = useSelector((state) => state.globalTimer);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [stopping, setStopping] = useState(false);
+
+  // Stop popup state
+  const [showStopPopup, setShowStopPopup] = useState(false);
+  const [stopNote, setStopNote] = useState("");
+  const [stopActivity, setStopActivity] = useState("Chargeable");
+
+  useEffect(() => {
+    dispatch(fetchGlobalTimer());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!timer?.isRunning) return;
+    const interval = setInterval(() => dispatch(tick()), 1000);
+    return () => clearInterval(interval);
+  }, [dispatch, timer?.isRunning]);
+
+  const handleStopClick = () => {
+    setShowStopPopup(true);
+    setShowTooltip(false); // close tooltip if open
+  };
+
+  const handleConfirmStop = () => {
+    setStopping(true);
+    dispatch(stopTimer({
+      timerId: timer?._id,
+      note: stopNote,
+      activity: stopActivity,
+    })).finally(() => {
+      setStopping(false);
+      setShowStopPopup(false);
+      setStopNote("");
+      setStopActivity("Chargeable");
+    });
+  };
+
+  const handleCancelStop = () => {
+    setShowStopPopup(false);
+    setStopNote("");
+    setStopActivity("Chargeable");
+  };
+
+  if (loading || !timer) return null;
+
+  const dateObj = new Date(timer.startTime);
+  const timeStr = dateObj.toLocaleTimeString("en-US");
+  const dateStr = dateObj.toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" });
+  const startedAtFormatted = `${timeStr} | ${dateStr}`;
+
+  return (
+    <div className="relative font-google bg-gray-50 border border-gray-200 rounded-full transition-all duration-200 hover:bg-gray-100 hover:shadow-sm cursor-pointer">
+
+      <div className="w-full flex items-center gap-2 px-2.5 py-1">
+
+        <div onClick={() => setShowTooltip(!showTooltip)} className="w-full flex items-center gap-2">
+          <LuClock3 className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+          <span className="w-[60px] text-center text-[13px] font-semibold text-gray-600 leading-none tabular-nums shrink-0">
+            {formatTime(elapsed)}
+          </span>
+          {timer?.isRunning && (
+            <span className="relative flex h-1.5 w-1.5 shrink-0">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-40 animate-ping" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-green-500" />
+            </span>
+          )}
+        </div>
+
+        <span className="w-px h-3.5 bg-gray-200 shrink-0" />
+
+        <button
+          onClick={handleStopClick}
+          disabled={stopping}
+          className="flex items-center justify-center w-[22px] h-[22px] rounded-full text-gray-300 hover:text-red-500 hover:bg-red-100 transition-colors duration-150 disabled:opacity-50"
+        >
+          <RiStopFill className="h-[15px] w-[15px]" />
+        </button>
+
+      </div>
+
+      {/* Tooltip */}
+      {showTooltip && (
+        <div className="absolute top-full right-0 mt-3 w-64 rounded-xl bg-white/80 backdrop-blur-md border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-50 overflow-hidden p-4">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Running Timer</span>
+              <div className="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+            </div>
+
+            {timer?.task ? (
+              <div>
+                <h4 className="text-[11px] text-gray-400 font-medium leading-none mb-1.5">Task</h4>
+                <p className="text-[13px] text-gray-800 font-semibold truncate">{timer?.task || "N/A"}</p>
+              </div>
+            ) : (
+              <div>
+                <h4 className="text-[11px] text-gray-400 font-medium leading-none mb-1.5">Client</h4>
+                <p className="text-[13px] text-gray-800 font-semibold truncate">{timer?.clientName || "N/A"}</p>
+              </div>
+            )}
+
+            <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
+              <span className="text-[11px] text-gray-500">Started at</span>
+              <span className="text-[11px] text-gray-700 font-mono">{startedAtFormatted.split('|')[0]}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Stop Confirmation Popup */}
+      {showStopPopup && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40"
+            onClick={handleCancelStop}
+          />
+
+          <div className="absolute top-full right-0 mt-3 w-72 rounded-xl bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-50 overflow-hidden">
+            {/* Header */}
+            <div className="px-4 pt-4 pb-3 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-red-50">
+                  <RiStopFill className="h-3.5 w-3.5 text-red-500" />
+                </div>
+                <span className="text-[13px] font-semibold text-gray-800">Stop Timer</span>
+              </div>
+            </div>
+
+            <div className="p-4 flex flex-col gap-3">
+              {/* Note Input */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">Note</label>
+                <textarea
+                  value={stopNote}
+                  onChange={(e) => setStopNote(e.target.value)}
+                  placeholder="Add a note..."
+                  rows={2}
+                  className="w-full text-[13px] text-gray-700 placeholder-gray-300 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 resize-none outline-none focus:border-blue-400 focus:bg-white transition-colors duration-150"
+                />
+              </div>
+
+              {/* Activity Toggle */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">Activity Type</label>
+                <div className="flex rounded-lg overflow-hidden border border-gray-200 bg-gray-50 p-0.5 gap-0.5">
+                  {["Chargeable", "Non-Chargeable"].map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => setStopActivity(option)}
+                      className={`flex-1 text-[12px] font-medium py-1.5 rounded-md transition-all duration-150 ${
+                        stopActivity === option
+                          ? "bg-white text-gray-800 shadow-sm"
+                          : "text-gray-400 hover:text-gray-600"
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={handleCancelStop}
+                  className="flex-1 text-[12px] font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg py-2 transition-colors duration-150"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmStop}
+                  disabled={stopping}
+                  className="flex-1 text-[12px] font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg py-2 transition-colors duration-150 disabled:opacity-50"
+                >
+                  {stopping ? "Stopping..." : "Stop"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+    </div>
+  );
+}

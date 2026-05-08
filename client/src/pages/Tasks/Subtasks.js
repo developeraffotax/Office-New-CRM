@@ -8,9 +8,16 @@ import { IoCloseCircleOutline } from "react-icons/io5";
 import { RiLoaderFill } from "react-icons/ri";
 import { ImSpinner9 } from "react-icons/im";
 import { CgSpinner } from "react-icons/cg";
+import { Timer } from "../../utlis/Timer";
+import { useSelector } from "react-redux";
 
 export default function Subtasks({ taskId }) {
+
+  const auth = useSelector((state) => state.auth.auth);
+
   const [loading, setLoading] = useState(false);
+
+  const [task, setTask] = useState({});
 
   const [subTask, setSubtask] = useState("");
   const [subTaskLoading, setSubTaskLoading] = useState(false);
@@ -19,6 +26,12 @@ export default function Subtasks({ taskId }) {
   const [isUpdating, setIsUpdating] = useState(false);
 
   const initialLoad = useRef(true);
+
+
+  console.log("SUBTASKS DATA 🧡🧡🧡🧡🧡🧡🧡", subTaskData)
+
+
+
 
   //    -----------Single Task----------
   const getSingleTask = async () => {
@@ -32,7 +45,11 @@ export default function Subtasks({ taskId }) {
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/get/single/${taskId}`
       );
       if (data) {
+
+
+        console.log("SINGLE TASK DATA 🧡🧡🧡🧡🧡🧡🧡", data)
         setSubTaskData(data?.task?.subtasks);
+        setTask(data?.task);
       }
     } catch (error) {
       console.log(error);
@@ -252,6 +269,45 @@ export default function Subtasks({ taskId }) {
                                       </div>
 
                                       <div className="flex items-center gap-1 w-[20%]">
+
+                                        {/* <span
+                                          className="p-1 cursor-pointer"
+                                          
+                                        >
+                                          <Timer 
+                                          
+                                            
+                                            clientId={auth?.user?.id}
+                                            jobId={_id}
+                                            
+                                            taskLink={"/tasks"}
+                                            pageName={"Tasks"}
+                                            
+                                            //task={subTask}
+                                            //task={task?.task}
+
+                                            task={`${subTask} - ${task?.task}`}
+
+
+                                            department={task?.project?.projectName}
+                                            clientName={task?.project?.projectName}
+                                            companyName={task?.project?.projectName}
+                                            JobHolderName={task?.jobHolder}
+                                          
+                                            
+                                            // allocatedTime={task.hours}
+                                            // taskName={task.project.projectName}
+                                             
+                                             
+                                            
+                                            
+                                          
+                                          />
+
+                                          
+                                        </span> */}
+
+                                        
                                         <span
                                           className="p-1 cursor-pointer"
                                           onClick={() => setSubtask(subTask)}

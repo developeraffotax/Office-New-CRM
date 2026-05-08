@@ -63,7 +63,7 @@ export default function Layout() {
     state.notifications.notificationData.filter(
       (n) =>
         n.status === "unread" &&
-        (n.type === "ticket_received"
+        (n.type === "ticket_received" || n.type === "email_received"
           ? showEmailNotifications
           : showCrmNotifications)
     ).length

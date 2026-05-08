@@ -59,26 +59,37 @@ export const Timer = forwardRef(
  
 
  
-    console.log("TImer", timer)
+    console.log("TImer", {
+       taskName,
+      taskLink,
+      setNote,
+      clientName,
+      companyName,
+      department,
+      JobHolderName,
+      projectName,
+      task,
+      pageName,
+      note
+    })
  
  
-
+    
 
 const start = () => {
   dispatch(startTimer({
     clientId,
     jobId,
-    note,
-    pageName,
-    taskName,
-    taskLink,
-    department,
+     
+    task,
     clientName,
     companyName,
+    department,
+    
+    pageName, 
+    taskLink,
   }));
 }
-
-
 
 
  

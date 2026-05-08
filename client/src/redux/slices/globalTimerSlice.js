@@ -56,7 +56,7 @@ export const startTimer = createAsyncThunk(
       //   payload: timer,
       // });
 
-       dispatch(fetchGlobalTimer());
+        dispatch(fetchGlobalTimer());
 
       // broadcast to other tabs
       globalTimerChannel.postMessage({

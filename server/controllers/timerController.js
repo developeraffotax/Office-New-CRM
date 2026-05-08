@@ -313,7 +313,7 @@ export const getTimerStatusForCrm = async (req, res) => {
         //   { endTime: "" },
         // ],
       })
-      .select("isRunning startTime endTime task clientName")
+      .select("isRunning startTime endTime task clientName jobId")
       .lean();
 
     if (!timer) {

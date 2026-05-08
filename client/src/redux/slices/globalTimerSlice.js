@@ -265,7 +265,27 @@ const globalTimerSlice = createSlice({
         state.timer = null;
         state.elapsed = 0;
         state.error = action.payload || "Unknown error";
-      });
+      })
+
+      .addCase(startTimer.fulfilled, (state) => {
+        state.loading = false;
+      })
+
+      .addCase(startTimer.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to stop timer";
+      })
+
+
+      
+      .addCase(stopTimer.fulfilled, (state) => {
+        state.loading = false;
+      })
+
+      .addCase(stopTimer.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to stop timer";
+      })
   },
 });
 

@@ -8,15 +8,17 @@ import React, {
 import axios from "axios";
 import { FaCirclePlay } from "react-icons/fa6";
 import { IoSettingsOutline, IoStopCircle } from "react-icons/io5";
- import toast from "react-hot-toast";
- 
- 
+import toast from "react-hot-toast";
+
 import { useDispatch, useSelector } from "react-redux";
 import { setAnyTimerRunning, setJid } from "../redux/slices/authSlice";
 import { startCountdown, stopCountdown } from "../redux/slices/timerSlice";
-import { fetchGlobalTimer, startTimer, stopTimer } from "../redux/slices/globalTimerSlice";
+import {
+  fetchGlobalTimer,
+  startTimer,
+  stopTimer,
+} from "../redux/slices/globalTimerSlice";
 import { MdTimer } from "react-icons/md";
- 
 
 export const Timer = forwardRef(
   (
@@ -41,26 +43,22 @@ export const Timer = forwardRef(
 
       allocatedTime,
       setTaskIdForNote,
-      
+
       setIsNonChargeable,
       setIsSubmitting,
 
       stateSetter,
+      entityType,
+      metadata,
     },
-    ref
+    ref,
   ) => {
-    
-
     const dispatch = useDispatch();
     const auth = useSelector((state) => state.auth.auth);
     const timer = useSelector((state) => state.globalTimer.timer);
 
-
- 
-
- 
     console.log("TImer", {
-       taskName,
+      taskName,
       taskLink,
       setNote,
       clientName,
@@ -70,58 +68,62 @@ export const Timer = forwardRef(
       projectName,
       task,
       pageName,
-      note
-    })
- 
- 
-    
+      note,
+    });
 
-const start = () => {
-  dispatch(startTimer({
-    clientId,
-    jobId,
-     
-    task,
-    clientName,
-    companyName,
-    department,
-    
-    pageName, 
-    taskLink,
-  }));
-}
+    const start = () => {
+      dispatch(
+        startTimer({
+          clientId,
+          jobId,
 
+          task,
+          clientName,
+          companyName,
+          department,
+          entityType,
+          metadata,
 
- 
-     
- 
- 
+          pageName,
+          taskLink,
+        }),
+      );
+    };
 
     return (
-      <>
-        <div className="w-full h-full relative">
-          <div className="flex items-center gap-[2px]  ">
-            <div className="flex space-x-4">
-              {(timer?.isRunning && timer?.jobId === jobId) ? (
-              <div className="flex items-center justify-center">
-    <MdTimer className="h-6 w-6 text-green-600 animate-bob" />
-  </div>
-              ) : (
-                <button
-                  onClick={start}
-                   disabled={timer?.isRunning}
-                  className={`flex items-center justify-center ${
-                    timer?.isRunning ? "cursor-not-allowed" : "cursor-pointer"
+      <div className="w-full h-full relative">
+        <div className="flex items-center gap-[2px]  ">
+          <div className="flex space-x-4">
+            {timer?.isRunning && timer?.jobId === jobId ? (
+              <button
+                title="Timer running on this task!"
+                className="flex items-center justify-center animate-badge-pop"
+              >
+                <MdTimer className="h-6 w-6 text-sky-500 animate-pulse" />
+              </button>
+            ) : (
+              <button
+                title={
+                  timer?.isRunning ? "Another timer is running!" : "Start Timer"
+                }
+                onClick={start}
+                disabled={timer?.isRunning}
+                className={`flex items-center justify-center  ${
+                  timer?.isRunning ? "cursor-not-allowed" : "cursor-pointer"
+                }`}
+              >
+                <FaCirclePlay
+                  className={`h-6 w-6 transition-colors duration-500  ${
+                    timer?.isRunning
+                      ? "text-gray-400"
+                      : "text-sky-500 hover:text-sky-600"
                   }`}
-                >
-                  <FaCirclePlay className={`h-6 w-6  ${timer?.isRunning ? "text-gray-500" : "text-sky-500 hover:text-sky-600"}`} />
-                </button>
-              )}
-            </div>
- 
+                />
+              </button>
+            )}
           </div>
         </div>
-      </>
+      </div>
     );
-  }
+  },
 );

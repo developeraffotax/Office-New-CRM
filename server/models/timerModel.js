@@ -59,6 +59,16 @@ const timerSchema = new mongoose.Schema(
       default: "",
     },
 
+    entityType: {
+      type: String,
+      enum: ["job", "task", "subtask"],
+       
+    },
+
+    metadata: {
+      type: mongoose.Schema.Types.Mixed,
+      
+    },
  
     autoStoppedReason: { type: String, default: "" },
 

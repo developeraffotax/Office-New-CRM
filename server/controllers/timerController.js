@@ -29,6 +29,7 @@ export const startTimer = async (req, res) => {
       companyName,
       holiday,
       activity,
+      entityType,
     } = req.body;
 
     const startTime = new Date().toISOString();
@@ -101,6 +102,7 @@ export const startTimer = async (req, res) => {
       isRunning: true,
       holiday,
       activity: activity || "Chargeable",
+      entityType,
     }).save();
 
     // Update job timestamp
@@ -313,7 +315,7 @@ export const getTimerStatusForCrm = async (req, res) => {
         //   { endTime: "" },
         // ],
       })
-      .select("isRunning startTime endTime task clientName jobId")
+      .select("isRunning startTime endTime task clientName jobId companyName department entityType")
       .lean();
 
     if (!timer) {

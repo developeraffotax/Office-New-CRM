@@ -278,6 +278,7 @@ export default function Subtasks({ taskId }) {
                                           
                                             
                                             clientId={auth?.user?.id}
+                                            //jobId={_id}
                                             jobId={_id}
                                             
                                             taskLink={"/tasks"}
@@ -293,8 +294,10 @@ export default function Subtasks({ taskId }) {
                                             clientName={task?.project?.projectName}
                                             companyName={task?.project?.projectName}
                                             JobHolderName={task?.jobHolder}
-                                          
-                                            
+                                            entityType="subtask"
+
+
+                                            metadata={{  parentTaskId: taskId, }}
                                             // allocatedTime={task.hours}
                                             // taskName={task.project.projectName}
                                              

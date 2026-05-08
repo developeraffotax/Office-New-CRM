@@ -268,9 +268,9 @@ export default function Subtasks({ taskId }) {
                                         </p>
                                       </div>
 
-                                      <div className="flex items-center gap-1 w-[20%]">
+                                      <div className="flex items-center gap-1 w-[30%]">
 
-                                        {/* <span
+                                        <span
                                           className="p-1 cursor-pointer"
                                           
                                         >
@@ -303,9 +303,8 @@ export default function Subtasks({ taskId }) {
                                             
                                           
                                           />
-
                                           
-                                        </span> */}
+                                        </span>
 
                                         
                                         <span

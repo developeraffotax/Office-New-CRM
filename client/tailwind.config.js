@@ -17,6 +17,7 @@ module.exports = {
       },
       /* ------------------ Animations ------------------ */
       animation: {
+        bob: "bob 1.4s ease-in-out infinite",
         shake: "shake 0.5s ease-in-out infinite",
         pop: "pop 0.25s ease-out",
         "badge-pop": "badge-pop 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -24,6 +25,10 @@ module.exports = {
         "phase-in": "phaseIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both",
       },
       keyframes: {
+        bob:{
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-3px)" },
+         },
         shake: {
           "0%, 100%": { transform: "translateX(0)" },
           "20%": { transform: "translateX(-6px)" },

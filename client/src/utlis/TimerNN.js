@@ -1,0 +1,413 @@
+import React, {
+  useState,
+  useEffect,
+  useImperativeHandle,
+  forwardRef,
+  useRef,
+} from "react";
+import axios from "axios";
+import { FaCirclePlay } from "react-icons/fa6";
+import { IoStopCircle } from "react-icons/io5";
+ import toast from "react-hot-toast";
+ 
+ 
+import { useDispatch, useSelector } from "react-redux";
+import { setAnyTimerRunning, setJid } from "../redux/slices/authSlice";
+import { startCountdown, stopCountdown } from "../redux/slices/timerSlice";
+import { fetchGlobalTimer } from "../redux/slices/globalTimerSlice";
+
+ 
+
+export const Timer = forwardRef(
+  (
+    {
+      clientId,
+      jobId,
+      setIsShow,
+      note,
+      pageName,
+      taskName,
+      taskLink,
+      setNote,
+      department,
+      clientName,
+      companyName,
+      JobHolderName,
+      projectName,
+      task,
+      activity,
+      setActivity,
+      reload,
+
+      allocatedTime,
+      setTaskIdForNote,
+      
+      setIsNonChargeable,
+      setIsSubmitting,
+
+      stateSetter,
+    },
+    ref
+  ) => {
+    
+
+    const dispatch = useDispatch();
+    const auth = useSelector((state) => state.auth.auth);
+    const anyTimerRunning = useSelector((state) => state.auth.anyTimerRunning);
+
+
+    const [timerId, setTimerId] = useState(null);
+    const [isRunning, setIsRunning] = useState(false);
+    const [elapsedTime, setElapsedTime] = useState(0);
+    const [startTime, setStartTime] = useState(null);
+    const [totalTime, setTotalTime] = useState(null);
+    const isInitialMount = useRef(true);
+    const [runningId, setRunningId] = useState("");
+
+   
+ 
+
+    useEffect(() => {
+      if (!clientId || !jobId) {
+        return;
+      }
+      const fetchTimerStatus = async () => {
+        try {
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_URL}/api/v1/timer/status`,
+            {
+              params: { clientId, jobId },
+            }
+          );
+          const { _id, startTime, endTime, isRunning, activity: fetchedActivity } = response.data.timer;
+          // console.log("Timer:", response.data.timer);
+
+          
+
+
+          if (startTime && !endTime) {
+            setTimerId(_id);
+            setStartTime(new Date(startTime));
+            setIsRunning(isRunning);
+            dispatch(setAnyTimerRunning(isRunning));
+            const timeElapsed = Math.floor(
+              (new Date() - new Date(startTime)) / 1000
+            );
+            setElapsedTime(timeElapsed);
+            dispatch(setJid(response.data.timer.jobId));
+
+            if(pageName === "Jobs") {
+               setActivity?.(fetchedActivity);
+            setIsNonChargeable?.(fetchedActivity === "Non-Chargeable")
+            }
+           
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      // fetchTimerStatus();
+      if (isInitialMount.current) {
+        fetchTimerStatus();
+        isInitialMount.current = false;
+      }
+
+      const timeId = localStorage.getItem("timer_Id");
+      setTimerId(JSON.parse(timeId));
+
+      // eslint-disable-next-line
+    }, [clientId, jobId, setAnyTimerRunning, reload]);
+
+    // ---------Timer-------
+    useEffect(() => {
+      let intervalId;
+
+      if (isRunning) {
+        intervalId = setInterval(() => {
+          setElapsedTime((prevTime) => prevTime + 1);
+        }, 1000);
+      }
+
+      
+
+      return () => clearInterval(intervalId);
+    }, [isRunning]);
+
+
+
+    
+
+    // useEffect(() => {
+    //   const timeId = localStorage.getItem("timer_Id");
+    //   setTimerId(JSON.parse(timeId));
+    // }, []);
+
+    // -------------------Start Timer---------->
+    const startTimer = async () => {
+      localStorage.setItem("jobId", JSON.stringify(jobId));
+      let chargeableActivity = "Chargeable";
+
+      if (pageName === "Jobs") {
+        const isNonChargeable = clientName === "Affotax" || clientName === "Training";
+        if (isNonChargeable) {
+          chargeableActivity = "Non-Chargeable";
+          setActivity?.("Non-Chargeable");
+           
+        }  
+
+      }
+
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/v1/timer/start/timer`,
+          {
+            clientId,
+            jobId,
+            note: `Started work on ${pageName}`,
+            type: "Timer",
+            department,
+            clientName,
+            companyName,
+            JobHolderName,
+            projectName,
+            task,
+            activity: chargeableActivity
+          }
+        );
+        setTimerId(response.data.timer._id);
+        localStorage.setItem(
+          "timer_Id",
+          JSON.stringify(response.data.timer._id)
+        );
+
+        localStorage.setItem('timer_in', `${task ? '/tasks' : '/job-planning'}`);
+
+         if (pageName === "Tasks") {
+
+           dispatch(startCountdown(allocatedTime, jobId, task, response.data.timer._id))
+         }
+         
+
+         if (pageName === "Jobs") {
+          const fetchedActivity = response.data.timer?.activity;
+         setActivity?.(fetchedActivity);
+          setIsNonChargeable?.(fetchedActivity === "Non-Chargeable")
+         }
+         
+
+      
+
+
+        addTimerTaskStatus(response.data.timer._id);
+        setIsRunning(true);
+        setStartTime(new Date());
+        dispatch(setAnyTimerRunning(true));
+        // Send Socket Timer
+        // socketId.emit("timer", {
+        //   clientId: clientId,
+        //   jobId: jobId,
+        //   note: "Started work on job",
+        // });
+
+         dispatch(fetchGlobalTimer());
+
+      } catch (error) {
+
+        console.error(error);
+        toast.error(error?.response?.data?.message || "An unexpected error occurred.", {
+          style: {
+            borderRadius: '8px',
+            background: '#333',
+            color: '#fff',
+          },
+          iconTheme: {
+            primary: '#ff4b4b',
+            secondary: '#fff',
+          },
+        });
+      }
+    };
+
+    // --------------Stop Timer----------->
+    const stopTimer = async () => {
+      if (!timerId) {
+        return;
+      }
+
+      setIsSubmitting?.(true);
+      try {
+        const { data } = await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/v1/timer/stop/timer/${timerId}`,
+          {
+            note: note || "Auto stop due to inactivity!",
+            activity:
+              taskName.trim() === "Training"
+                ? "Non-Chargeable"
+                : activity || "Chargeable",
+          }
+        );
+
+        if (data) {
+
+          if(pageName === "Tasks") {
+            dispatch(stopCountdown())
+          }
+          
+          
+          removeTimerStatus();
+          localStorage.removeItem("timer_Id");
+          dispatch(setAnyTimerRunning(false));
+          setIsShow(false);
+          gettotalTime(timerId);
+          setTimerId(null);
+          setElapsedTime(0);
+          setIsRunning(false);
+          setRunningId("");
+          // Send Socket Timer
+          // socketId.emit("timer", {
+          //   timerId: timerId,
+          //   note: note,
+          // });
+          setNote("");
+          setActivity?.("Chargeable");
+          localStorage.removeItem("jobId");
+          toast.success("Timer stoped successfully!");
+
+          dispatch(fetchGlobalTimer());
+        }
+      } catch (error) {
+        console.error("Error stopping timer:", error);
+        toast.error(error.response?.data?.message);
+      } finally {
+        setIsSubmitting?.(false);
+      }
+    };
+
+
+
+
+
+
+
+ 
+
+ 
+    // Get Total time
+    const gettotalTime = async (id) => {
+      try {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/timer/total_time/${id}`,
+          {
+            params: { jobId },
+          }
+        );
+       
+        setTotalTime(data.consumedTime);
+
+        const key = pageName === "Tasks" ? "estimate_Time" : "totalTime";
+        
+        stateSetter?.((prev) =>
+          prev.map((entity) =>
+            entity._id === jobId
+              ? { ...entity, [key]: data.consumedTime }
+              : entity
+          )
+        );
+
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    useImperativeHandle(ref, () => ({
+      stopTimer,
+    }));
+
+     
+
+    // -----------Timer Status--------->
+    const addTimerTaskStatus = async (tid) => {
+      try {
+        await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/v1/timer/timer_task/status`,
+          {
+            userId: auth.user.id,
+            taskName,
+            pageName,
+            taskLink,
+            taskId: jobId,
+            timerId: tid,
+          }
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    // --------Remove Timer Status-------
+    const removeTimerStatus = async () => {
+      try {
+        await axios.delete(
+          `${process.env.REACT_APP_API_URL}/api/v1/timer/remove/timer_task/Status/${auth.user.id}`
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    };
+ 
+
+    
+
+    const stopTimerPopUpHandler = () => {
+      if(task){
+
+            setTaskIdForNote?.(jobId);
+          }
+      setIsShow(true);
+       
+    }
+
+    return (
+      <>
+        <div className="w-full h-full relative">
+          <div className="flex items-center gap-[2px]  ">
+            <div className="flex space-x-4">
+              {isRunning ? (
+                <button
+                  onClick={stopTimerPopUpHandler}
+                  disabled={!isRunning}
+                  className="flex items-center justify-center  disabled:cursor-not-allowed"
+                >
+                  <IoStopCircle className="h-6 w-6  text-red-500 hover:text-red-600 animate-pulse " />
+                </button>
+              ) : (
+                <button
+                  onClick={startTimer}
+                  disabled={anyTimerRunning}
+                  className={`flex items-center justify-center ${
+                    anyTimerRunning ? "cursor-not-allowed" : "cursor-pointer"
+                  }`}
+                >
+                  <FaCirclePlay className="h-6 w-6  text-sky-500 hover:text-sky-600 " />
+                </button>
+              )}
+            </div>
+            {isRunning && (
+              <div className="text-[13px] text-gray-800 font-semibold ">
+                {Math.floor(elapsedTime / 3600)
+                  .toString()
+                  .padStart(2, "0")}
+                :
+                {Math.floor((elapsedTime % 3600) / 60)
+                  .toString()
+                  .padStart(2, "0")}
+                :{(elapsedTime % 60).toString().padStart(2, "0")}
+              </div>
+            )}
+          </div>
+        </div>
+      </>
+    );
+  }
+);

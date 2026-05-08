@@ -206,7 +206,7 @@ export const loginCrmUser = async (req, res) => {
         .send({ success: false, message: "Invalid Password!" });
 
     // Send OTP via Gmail
-    if (user?.email !== "admin@gmail.com") {
+    if (user?.email !== "admin@gmail.com" && process.env.NODE_ENV !== "development") {
       // Generate 4-digit OTP
       const otp = Math.floor(1000 + Math.random() * 9000).toString();
       const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
@@ -216,13 +216,7 @@ export const loginCrmUser = async (req, res) => {
       user.otpExpiry = otpExpiry;
       await user.save();
 
-      await sendOtpEmail({
-        to: user.email,
-        // to: `info@affotax.com`,
-        userName: user.name,
-        otp,
-        expiryMinutes: 5,
-      });
+      await sendOtpEmail({ to: user.email, userName: user.name, otp, expiryMinutes: 5, });
     }
 
     // Issue a short-lived temp token (carries only the user ID, not full access)
@@ -298,10 +292,14 @@ export const verifyOtp = async (req, res) => {
           message: "OTP has expired. Please login again.",
         });
 
-    // Clear OTP fields after successful verification
-    user.otp = null;
-    user.otpExpiry = null;
-    await user.save();
+
+        if(user?.email !== "admin@gmail.com" && process.env.NODE_ENV !== "development") {
+          // Clear OTP fields after successful verification
+            user.otp = null;
+            user.otpExpiry = null;
+            await user.save();
+        }
+   
 
     // Issue full auth token
     const token = jwt.sign({ id: user._id, user }, process.env.JWT_SECRET, {

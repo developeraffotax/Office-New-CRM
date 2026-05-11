@@ -54,7 +54,7 @@ export default function GlobalTimer() {
   };
 
  
-  useKeyboardShortcut({ shift: true, key: "s" }, () => setShowPopup(true), !!timer);
+  // useKeyboardShortcut({ shift: true, key: "s" }, () => setShowPopup(true), !!timer);
   useEscapeKey(() => { if (showPopup) closePopup(); });
   useClickOutside(popupRef, () => setShowPopup(false));
 

@@ -1,12 +1,10 @@
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import Loader from "../../utlis/Loader";
 import { FaEdit } from "react-icons/fa";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { RiLoaderFill } from "react-icons/ri";
-import { ImSpinner9 } from "react-icons/im";
 import { CgSpinner } from "react-icons/cg";
 import { Timer } from "../../utlis/Timer";
 import { useSelector } from "react-redux";

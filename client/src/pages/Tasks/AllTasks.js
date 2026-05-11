@@ -9,8 +9,6 @@ import TaskDetail from "./TaskDetail";
 import QuickAccess from "../../utlis/QuickAccess";
 import SubtasksForNote from "./SubtasksForNote";
 import AddTaskDepartmentModal from "../../components/Tasks/AddTaskDepartmentModal";
-import ProjectDropdown from "./components/ProjectsDropdown/ProjectDropdown";
-import DepartmentDropdown from "./components/DepartmentsDropdown/DepartmentDropdown";
 import DraggableFilterTabs from "./DraggableFilterTabs";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import OutsideFilter from "../Jobs/utils/OutsideFilter";
@@ -18,16 +16,14 @@ import SelectedUsers from "../../components/SelectedUsers";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { style } from "../../utlis/CommonStyle";
-import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { IoBriefcaseOutline, IoClose } from "react-icons/io5";
 import { MdOutlineModeEdit } from "react-icons/md";
-import { TbLoader, TbLoader2 } from "react-icons/tb";
+import {  TbLoader2 } from "react-icons/tb";
 import { useMaterialReactTable } from "material-react-table";
 import { format } from "date-fns";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { generateCsv, download } from "export-to-csv";
 import { GrUpdate } from "react-icons/gr";
-import { LuImport } from "react-icons/lu";
 import { useDispatch, useSelector } from "react-redux";
 import { setFilterId, setSearchValue } from "../../redux/slices/authSlice";
 import { useSocket } from "../../context/socketProvider";
@@ -39,13 +35,7 @@ import { isAdmin } from "../../utlis/isAdmin";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import { openModal } from "../../redux/slices/globalModalSlice";
 import { convertTasksArrayToObject } from "./utils";
-import {
-  colVisibility,
-  csvConfig,
-  dotColors,
-  statusArr,
-  textColors,
-} from "./constants";
+import { colVisibility, csvConfig, dotColors, statusArr, textColors, } from "./constants";
 import { useTaskFilters } from "./hooks/useTaskFilters";
 import { useTasksData } from "./hooks/useTasksData";
 import { useTaskStats } from "./hooks/useTaskStats";

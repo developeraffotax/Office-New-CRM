@@ -14,17 +14,17 @@ import {  format, formatISO } from "date-fns";
  
 import toast from "react-hot-toast";
  
-import Loader from "../../utlis/Loader";
+ 
 import {   TbLoader2 } from "react-icons/tb";
 import { IoClose } from "react-icons/io5";
 import JobDetail from "./JobDetail";
 import { IoBriefcaseOutline } from "react-icons/io5";
  
 import JobCommentModal from "./JobCommentModal";
-import { MdAutoGraph } from "react-icons/md";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { TbLoader } from "react-icons/tb";
-import { Box, Button, CircularProgress, LinearProgress,   } from "@mui/material";
+ 
+import {  useLocation, useNavigate, useSearchParams } from "react-router-dom";
+ 
+import { Box, Button,  LinearProgress,   } from "@mui/material";
 import { MdOutlineModeEdit } from "react-icons/md";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import { IoMdDownload } from "react-icons/io";
@@ -36,7 +36,7 @@ import CompletedJobs from "./CompletedJobs";
  
 import { GrUpdate } from "react-icons/gr";
 import AddLabel from "../../components/Modals/AddLabel";
-import { LuImport } from "react-icons/lu";
+ 
 import AddDataLabel from "../../components/Modals/AddDataLabel";
 import InactiveClients from "./InactiveClients";
 import Swal from "sweetalert2";
@@ -45,7 +45,7 @@ import HandleQualityModal from "../../components/Modals/HandleQualityModal";
  
 import { BsPersonCheckFill } from "react-icons/bs";
 import QuickAccess from "../../utlis/QuickAccess";
-import { filterByRowId } from "../../utlis/filterByRowId";
+ 
  
  
 import NewTicketModal from "../../utlis/NewTicketModal";
@@ -62,9 +62,9 @@ import OutsideFilter from "./utils/OutsideFilter";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import SelectedUsers from "../../components/SelectedUsers";
 import { openModal } from "../../redux/slices/globalModalSlice";
-import { columnData, dateStatus, departments,   statusInit } from "./constants";
+import { columnData,   departments,   statusInit } from "./constants";
 import { buildFilters } from "./utils/utils";
-import { rowMatchesSearch } from "./utils/rowMatchesSearch";
+ 
 import JobHeaderActions from "./JobHeaderActions";
  
  
@@ -770,7 +770,7 @@ const getJobsStats = useCallback(async () => {
     // HANDLE RESPONSE
     // ======================================================
 
-    console.log("THE RESULT OF HTE API CALL FROM JOB STATS", data)
+ 
 
       if (data?.success) {
             setJobStats(data.data); // ✅ IMPORTANT FIX

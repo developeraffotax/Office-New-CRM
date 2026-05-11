@@ -2,10 +2,8 @@ import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { GoClockFill, GoGoal } from "react-icons/go";
-import { MdDateRange } from "react-icons/md";
 import { RiTimerLine } from "react-icons/ri";
 import { format } from "date-fns";
-import Loader from "../../utlis/Loader";
 import { Timer } from "../../utlis/Timer";
 
 import { FaRegUser } from "react-icons/fa";

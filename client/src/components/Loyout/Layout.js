@@ -120,8 +120,8 @@ export default function Layout() {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/quicklist/get/quicklist`
       );
-      setQuickListData(data.quickList.description);
-      setEditId(data.quickList._id);
+      setQuickListData(data?.quickList?.description);
+      setEditId(data?.quickList?._id);
     } catch (err) {
       console.log(err);
     }

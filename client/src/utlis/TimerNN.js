@@ -203,13 +203,7 @@ export const Timer = forwardRef(
         setIsRunning(true);
         setStartTime(new Date());
         dispatch(setAnyTimerRunning(true));
-        // Send Socket Timer
-        // socketId.emit("timer", {
-        //   clientId: clientId,
-        //   jobId: jobId,
-        //   note: "Started work on job",
-        // });
-
+ 
          dispatch(fetchGlobalTimer());
 
       } catch (error) {

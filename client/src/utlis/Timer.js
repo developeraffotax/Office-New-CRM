@@ -71,24 +71,41 @@ export const Timer = forwardRef(
       note,
     });
 
-    const start = () => {
+const start = async () => {
+  try {
+    const timer = await dispatch(
+      startTimer({
+        clientId,
+        jobId,
+        task,
+        clientName,
+        companyName,
+        department,
+        entityType,
+        metadata,
+        pageName,
+        taskLink,
+      })
+    ).unwrap();
+
+    // ✅ timer is response.data.timer
+    console.log(timer);
+
+    if (entityType === "task") {
       dispatch(
-        startTimer({
-          clientId,
+        startCountdown(
+          allocatedTime,
           jobId,
-
           task,
-          clientName,
-          companyName,
-          department,
-          entityType,
-          metadata,
-
-          pageName,
-          taskLink,
-        }),
+          timer._id // ✅ here
+        )
       );
-    };
+    }
+  } catch (err) {
+    console.error(err);
+    toast.error(err);
+  }
+};
 
     return (
       <div className="w-full h-full relative">

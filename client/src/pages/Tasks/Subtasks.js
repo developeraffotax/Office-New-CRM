@@ -298,7 +298,7 @@ export default function Subtasks({ taskId }) {
 
 
                                             metadata={{  parentTaskId: taskId, }}
-                                            // allocatedTime={task.hours}
+                                              allocatedTime={task?.hours}
                                             // taskName={task.project.projectName}
                                              
                                              

@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { startCountdown } from "./timerSlice";
 
 
 
@@ -58,6 +59,7 @@ export const startTimer = createAsyncThunk(
 
         dispatch(fetchGlobalTimer());
 
+        
       // broadcast to other tabs
       globalTimerChannel.postMessage({
         type: "GLOBAL_TIMER_UPDATED",

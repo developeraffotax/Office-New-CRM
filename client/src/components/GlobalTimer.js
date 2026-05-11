@@ -10,6 +10,7 @@ import { useEscapeKey } from "../utlis/useEscapeKey";
 import { useClickOutside } from "../utlis/useClickOutside";
 import toast from "react-hot-toast";
 import { openModal } from "../redux/slices/globalModalSlice";
+import { stopCountdown } from "../redux/slices/timerSlice";
 
 function formatTime(ms) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -61,6 +62,7 @@ export default function GlobalTimer() {
     try {
       setStopping(true);
       await dispatch(stopTimer({ timerId: timer?._id, note: stopNote, activity: stopActivity })).unwrap();
+      dispatch(stopCountdown());
       toast.success("Timer stopped successfully");
     } catch (err) {
       toast.error(err || "Failed to stop timer");

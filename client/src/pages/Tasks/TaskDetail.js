@@ -446,6 +446,41 @@ export default function TaskDetail({
                                   </div>
 
                                   <div className="flex items-center gap-1">
+
+                                        <span>
+
+                                           <Timer 
+                                          
+                                            
+                                            clientId={auth?.user?.id}
+                                            jobId={_id}
+                                            
+                                            taskLink={"/tasks"}
+                                            pageName={"Tasks"}
+                                            
+                                            task={`${subTask} - ${taskDetal?.task}`}
+
+
+                                            department={taskDetal?.project?.projectName}
+                                            clientName={taskDetal?.project?.projectName}
+                                            companyName={taskDetal?.project?.projectName}
+                                            JobHolderName={taskDetal?.jobHolder}
+
+
+                                            entityType="subtask"
+                                            metadata={{  parentTaskId: taskId, }}
+                                            
+                                             
+                                             
+                                            
+                                            
+                                          
+                                          />
+                                          
+
+                                        </span>
+
+
                                     <span
                                       className="p-1 cursor-pointer"
                                       onClick={() => setSubtask(subTask)}

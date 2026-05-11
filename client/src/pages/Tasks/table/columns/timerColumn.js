@@ -70,6 +70,7 @@ export const timerColumn = (ctx) => {
                 taskIdForNote={ctx.taskIdForNote}
                 setIsSubmitting={ctx.setIsSubmitting}
                 stateSetter={ctx.setTasksData}
+                entityType={"task"}
               />
             </span>
           </div>

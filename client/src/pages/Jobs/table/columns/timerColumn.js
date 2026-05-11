@@ -67,6 +67,8 @@ export const timerColumn = ({auth, timerRef, timerId ,jid, play, setPlay, setIsS
                     setIsSubmitting={setIsSubmitting}
 
                     stateSetter={setTableData}
+                    
+                    entityType={"job"}
                       
                    
                   />

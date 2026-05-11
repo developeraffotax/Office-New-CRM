@@ -9,6 +9,7 @@ import { useKeyboardShortcut } from "../utlis/useKeyboardShortcut";
 import { useEscapeKey } from "../utlis/useEscapeKey";
 import { useClickOutside } from "../utlis/useClickOutside";
 import toast from "react-hot-toast";
+import { openModal } from "../redux/slices/globalModalSlice";
 
 function formatTime(ms) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -83,6 +84,38 @@ const startedAtFormatted = `${dateObj.toLocaleTimeString("en-US", {
   year: "numeric",
 })}`;
 
+const handleTaskClick = () => {
+
+  if(timer?.entityType === "subtask") {
+     dispatch(
+        openModal({
+          modal: "task",
+          data: { taskId: timer?.metadata?.parentTaskId   }, 
+        })
+      );
+
+  } 
+  
+  if(timer?.entityType === "task") {
+     dispatch(
+        openModal({
+          modal: "task",
+          data: { taskId: timer.jobId   }, 
+        })
+      );
+  } 
+
+  if(timer?.entityType === "job") {
+     dispatch(
+        openModal({
+          modal: "job",
+          data: { clientId: timer.jobId   }, 
+        })
+      );
+  } 
+ 
+}
+
   return (
     <div className="relative font-google">
       {/* Pill */}
@@ -141,12 +174,12 @@ const startedAtFormatted = `${dateObj.toLocaleTimeString("en-US", {
             {/* Task / Client */}
             <div className="grid grid-cols-1 gap-2">
               {timer?.task ? (
-                <div className="bg-gray-50 rounded-lg px-3 py-2">
+                <div className="bg-gray-50 rounded-lg px-3 py-2 cursor-pointer hover:bg-gray-100" onClick={handleTaskClick}>
                   <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-1">Task</p>
                   <p className="text-[13px] text-gray-800 font-semibold">{timer.task}</p>
                 </div>
               ) : (
-                <div className="bg-gray-50 rounded-lg px-3 py-2">
+                <div className="bg-gray-50 rounded-lg px-3 py-2 cursor-pointer hover:bg-gray-100" onClick={handleTaskClick}>
                   <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-1">Client</p>
                   <p className="text-[13px] text-gray-800 font-semibold">{timer?.clientName || "N/A"}</p>
                 </div>

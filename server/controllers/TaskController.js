@@ -2227,6 +2227,9 @@ export const getTasks = async (req, res) => {
     const tasks = result[0]?.data || [];
     const total = result[0]?.metadata[0]?.total || 0;
 
+
+    console.log("tasks:", tasks);
+
     res.status(200).send({
       success: true,
       message: "Tasks fetched successfully",

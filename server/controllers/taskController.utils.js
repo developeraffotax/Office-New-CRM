@@ -424,6 +424,8 @@ console.log("REQ.QUERY🧡", queryParams)
   }
 
   
+
+  
   
 
   /*
@@ -432,19 +434,19 @@ console.log("REQ.QUERY🧡", queryParams)
   ==========================================
   */
     if (_id) {
-    query._id =  _id;
+    query._id =  new mongoose.Types.ObjectId(_id);
     
   }
   
 
     if (taskRef) {
-      const cleaned = jobRef.toString().replace(/[^0-9]/g, "");
+      const cleaned = taskRef.toString().replace(/[^0-9]/g, "");
 
       if (cleaned) {
         const numericRef = Number(cleaned);
 
         if (!isNaN(numericRef)) {
-          query.jobRef = numericRef;
+          query.taskRef = numericRef;
         }
       }
     }

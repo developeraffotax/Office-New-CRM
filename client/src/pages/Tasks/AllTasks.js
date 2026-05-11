@@ -47,8 +47,9 @@ const AllTasks = ({ justShowTable = false }) => {
   const location = useLocation();
   const socket = useSocket();
   const currentPath = location.pathname;
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const comment_taskId = searchParams.get("comment_taskId");
+  const taskIdQueryParam = searchParams.get("taskId");
 
   const { auth, anyTimerRunning, searchValue, jid } = useSelector(
     (state) => state.auth,
@@ -150,19 +151,21 @@ const AllTasks = ({ justShowTable = false }) => {
 
     const filters = [];
 
-    filters.push({ id: "taskStatus", value: "Progress" });
+ 
+          filters.push({ id: "taskStatus", value: "Progress" });
     // ✅ FIXED: taskDate default filter
 
-    if (!isAdmin(auth)) {
-      filters.push({ id: "jobHolder", value: userName });
-    }
+          if (!isAdmin(auth)) {
+            filters.push({ id: "jobHolder", value: userName });
+          }
 
-    if (isAdmin(auth)) {
-      filters.push({
-        id: "taskDate",
-        value: { type: "preset", value: "Today" },
-      });
-    }
+          if (isAdmin(auth)) {
+            filters.push({
+              id: "taskDate",
+              value: { type: "preset", value: "Today" },
+            });
+          }
+ 
 
     return filters;
   });
@@ -174,7 +177,7 @@ const AllTasks = ({ justShowTable = false }) => {
     taskStatusFilter,
   } = useTaskFilters(columnFilters);
   const { tasksData, loading, refetchTasks, rowCount, setTasksData } =
-    useTasksData({ pagination, searchValue, columnFilters, status });
+    useTasksData({ pagination, searchValue, columnFilters, status, taskIdQueryParam });
   const {
     refetchStats,
     taskStats,
@@ -582,6 +585,10 @@ const AllTasks = ({ justShowTable = false }) => {
   const handleClearFilters = () => {
     table.setColumnFilters([]);
     table.setGlobalFilter("");
+    if (taskIdQueryParam) {
+    searchParams.delete("taskId");
+    setSearchParams(searchParams, { replace: true });
+    }
   };
 
   const table = useMaterialReactTable({

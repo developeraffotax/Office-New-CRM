@@ -10,9 +10,8 @@ import { FaCirclePlay } from "react-icons/fa6";
 import { IoSettingsOutline, IoStopCircle } from "react-icons/io5";
 import toast from "react-hot-toast";
 
-import { useDispatch, useSelector } from "react-redux";
-import { setAnyTimerRunning, setJid } from "../redux/slices/authSlice";
-import { startCountdown, stopCountdown } from "../redux/slices/timerSlice";
+import { useDispatch, useSelector } from "react-redux"; 
+import { startCountdown,  } from "../redux/slices/timerSlice";
 import {
   fetchGlobalTimer,
   startTimer,
@@ -88,8 +87,7 @@ const start = async () => {
       })
     ).unwrap();
 
-    // ✅ timer is response.data.timer
-    console.log(timer);
+     
 
     if (entityType === "task") {
       dispatch(
@@ -103,7 +101,7 @@ const start = async () => {
     }
   } catch (err) {
     console.error(err);
-    toast.error(err);
+     toast.error(err, { style: { borderRadius: '8px', background: '#333', color: '#fff', }, iconTheme: { primary: '#ff4b4b', secondary: '#fff', }, });
   }
 };
 

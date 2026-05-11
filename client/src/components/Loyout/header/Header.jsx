@@ -174,7 +174,7 @@ export default function Header({
             )}
 
             {/* Timer Status */}
-            <div className="relative" ref={timerStatusRef}>
+            {/* <div className="relative" ref={timerStatusRef}>
               <div className="flex items-center">
                 <div
                   className="relative cursor-pointer m-2"
@@ -215,7 +215,7 @@ export default function Header({
                   setShowTimerStatus={setShowTimerStatus}
                 />
               )}
-            </div>
+            </div> */}
 
             {/* Quick Lists */}
             <span

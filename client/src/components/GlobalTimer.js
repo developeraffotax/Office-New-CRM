@@ -176,13 +176,19 @@ const handleTaskClick = () => {
             {/* Task / Client */}
             <div className="grid grid-cols-1 gap-2">
               {timer?.task ? (
-                <div className="bg-gray-50 rounded-lg px-3 py-2 cursor-pointer hover:bg-gray-100" onClick={handleTaskClick}>
-                  <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-1">Task</p>
+                <div className="bg-gray-50 rounded-lg px-3 py-2 " >
+                  <div className="w-full flex justify-between items-center gap-2 ">
+                    <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-1">Task</p>
+                  <p className="text-[10px] text-blue-400 font-medium uppercase tracking-wide mb-1  cursor-pointer" onClick={handleTaskClick}>View</p>
+                  </div>
                   <p className="text-[13px] text-gray-800 font-semibold">{timer.task}</p>
                 </div>
               ) : (
-                <div className="bg-gray-50 rounded-lg px-3 py-2 cursor-pointer hover:bg-gray-100" onClick={handleTaskClick}>
+                <div className="bg-gray-50 rounded-lg px-3 py-2  ">
+                   <div className="w-full flex justify-between items-center gap-2 ">
                   <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-1">Client</p>
+                  <p className="text-[10px] text-blue-400 font-medium uppercase tracking-wide mb-1 cursor-pointer" onClick={handleTaskClick}>View</p>
+                  </div>
                   <p className="text-[13px] text-gray-800 font-semibold">{timer?.clientName || "N/A"}</p>
                 </div>
               )}

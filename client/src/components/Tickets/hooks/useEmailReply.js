@@ -141,9 +141,7 @@ export function useEmailReply({
   const [loading, setLoading] = useState(false);
 
   /* ---------- auto population ---------- */
-
-  console.log("THE EMAIL DETAIL IS ❤️❤️", emailDetail);
-  console.log("THE TICKET ID IS ✔️✔️✔️✔️", ticketId)
+ 
   useEffect(() => {
     if (!emailDetail?.decryptedMessages?.length) return;
 

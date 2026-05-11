@@ -79,7 +79,7 @@ export default function Template() {
     userList: [],
     userMode: "replace",
   });
-  // console.log("templateData:", templateData);
+ 
 
 
 
@@ -148,8 +148,7 @@ export default function Template() {
         .filter((role) => role.permission === "Templates")
         .flatMap((jobRole) => jobRole.subRoles);
 
-      console.log("FILTER ACCES IS 🧡💛", filterAccess);
-      console.log("FILTER ACCES IS auth 🧡💛", auth);
+
       setAccess(filterAccess);
     }
   }, [auth]);
@@ -162,7 +161,7 @@ export default function Template() {
         `${process.env.REACT_APP_API_URL}/api/v1/templates/get/all/template`,
       );
       if (auth.user.role.name === "Admin") {
-        console.log(data?.templates);
+ 
         setTemplateData(data?.templates);
       } else {
         const filteredTemplate = data?.templates.filter((template) =>

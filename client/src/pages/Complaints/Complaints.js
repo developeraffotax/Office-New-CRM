@@ -644,7 +644,7 @@ export default function Complaints() {
       {
         accessorKey: "lead",
         Header: ({ column }) => {
-          console.log("users", users);
+ 
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -695,7 +695,7 @@ export default function Complaints() {
       {
         accessorKey: "assign",
         Header: ({ column }) => {
-          console.log("users", users);
+         
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -805,7 +805,7 @@ export default function Complaints() {
         Cell: ({ cell, row }) => {
           const createdAt = row.original.createdAt;
 
-          console.log("createdAt", createdAt);
+ 
           return (
             <div className="w-full flex  ">
               <p>{format(new Date(createdAt), "dd-MMM-yyyy")}</p>
@@ -886,7 +886,7 @@ export default function Complaints() {
       {
         accessorKey: "createdBy",
         Header: ({ column }) => {
-          console.log("users", users);
+ 
           return (
             <div className=" flex flex-col gap-[2px]">
               <span
@@ -1343,7 +1343,7 @@ export default function Complaints() {
   const setColumnFromOutsideTable = (colKey, filterVal) => {
     const col = table.getColumn(colKey);
 
-    //console.log(col, "THE COLUMN 💚")
+ 
     return col.setFilterValue(filterVal);
   };
 

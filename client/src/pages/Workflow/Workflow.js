@@ -40,8 +40,7 @@ export default function Workflow() {
     "Address",
   ];
 
-  // console.log("workFlowData:", workFlowData);
-  // console.log("clients:", clients);
+ 
 
   // ---------------All Client_Job Data----------->
   const allClientJobData = async () => {

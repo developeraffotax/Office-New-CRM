@@ -403,7 +403,7 @@ const Subscriptions = forwardRef(
         .getFilteredRowModel()
         .rows.map((row) => row.original);
 
-      console.log("Filtered Data:", filteredRows);
+ 
       setFilterData(filteredRows);
       // eslint-disable-next-line
     }, [table.getFilteredRowModel().rows]);

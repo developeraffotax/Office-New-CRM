@@ -153,7 +153,7 @@ const CompletedTasks = ({
 
   const status = ["Todo", "Progress", "Review", "Onhold"];
 
-  console.log("projects:", projects);
+ 
  
   //---------- Get All Departments-----------
   const getAllDepartments = async () => {
@@ -243,7 +243,7 @@ const CompletedTasks = ({
 
 
 
-    console.log("tasksData 🤎🤎🖤💜💜💙💙💚💚💛💛🧡🧡❤ DATA:", tasksData, );
+ 
 
   // -------Get All Tasks----->
   const getAllTasks = async () => {
@@ -479,7 +479,7 @@ const CompletedTasks = ({
         item._id === value
     );
 
-    console.log("FilterData", filteredData);
+ 
 
     setFilterData([...filteredData]);
   };
@@ -670,7 +670,7 @@ const CompletedTasks = ({
       }
     );
     if (data) {
-      console.log("Copied Task:", data.task);
+ 
 
       setTasksData((prevData) => [...prevData, data.task]);
     }
@@ -724,7 +724,7 @@ const CompletedTasks = ({
 
   // ----------------------Table Data--------->
 
-  console.log("TAKS DATA:", tasksData);
+ 
  
    // ----------------------------
    // 🔑 Authentication & User Data

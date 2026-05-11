@@ -51,7 +51,7 @@ export default function Dashboard() {
 
 const handleFeatureFilter = (value) => {
   setFeatureFilter(value);
-  console.log("Selected💜💜💜:", value);
+ 
 
   // const now = new Date();
 
@@ -177,7 +177,7 @@ const handleFeatureFilter = (value) => {
         `${process.env.REACT_APP_API_URL}/api/v1/user/dashboard/users`
       );
       setUserData(data?.users);
-      console.log("users", data?.users);
+ 
     } catch (error) {
       console.log(error);
     }

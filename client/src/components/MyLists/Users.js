@@ -46,7 +46,7 @@ const Users = forwardRef(({childRef, setIsload}, ref) => {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all`
       );
       setUserData(data?.users);
-      console.log("users", data?.users);
+ 
       setLoading(false);
     } catch (error) {
       console.log(error);
@@ -119,7 +119,7 @@ const Users = forwardRef(({childRef, setIsload}, ref) => {
 
   //   Update Role
   const handleChange = (e, id) => {
-    console.log("ROle", e.target.value, id);
+ 
     UpdateRole(e.target.value, id);
   };
 
@@ -255,7 +255,7 @@ const Users = forwardRef(({childRef, setIsload}, ref) => {
   const setColumnFromOutsideTable = (colKey, filterVal) => {
     const col = table.getColumn(colKey);
 
-    //console.log(col, "THE COLUMN 💚")
+ 
     return col.setFilterValue(filterVal);
   };
 
@@ -283,7 +283,7 @@ const Users = forwardRef(({childRef, setIsload}, ref) => {
         },
         Cell: ({ cell, row }) => {
           const avatar = row.original.avatar;
-          console.log(row.original);
+ 
 
           return (
             <div className="w-full h-[2.4rem] flex items-center justify-center ">

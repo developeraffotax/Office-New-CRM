@@ -28,7 +28,7 @@ export default function UDashboard() {
   const [ticketCount, setTicketCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  console.log("completedTasks:", tasksData);
+ 
 
   //   Get ALl Projects(Progress)
   const getAllTasks = async () => {
@@ -44,7 +44,7 @@ export default function UDashboard() {
         (item) => item?.jobHolder.trim() === auth?.user?.name.trim()
       );
 
-      console.log("filteredTasks:", filteredTasks, data?.tasks);
+ 
 
       setProjects(filteredTasks.length || 0);
     } catch (error) {

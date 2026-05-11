@@ -184,7 +184,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
         (acc, item) => acc + Number(item.value || 0),
         0
       );
-      console.log("totalvalue:", totalvalue);
+ 
       setValueTotal(totalvalue);
     }, [filteredData]);
   
@@ -222,9 +222,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
     e.preventDefault();
     setIsUpdating(true);
 
-    console.log("Row Selection",rowSelection);
-    console.log("Updates",updates)
-
+ 
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/leads/update/bulk/leads`,
@@ -616,7 +614,7 @@ const Leads = forwardRef(({ childRef, setIsload }, ref) => {
       return;
     }
 
-    console.log("updateData", updateData);
+ 
 
     try {
       const { data } = await axios.put(
@@ -853,7 +851,7 @@ useEffect(() => {
       .getFilteredRowModel()
       .rows.map((row) => row.original);
 
-    console.log("Filtered Data:", filteredRows);
+ 
     setFilteredData(filteredRows);
   }, [table.getFilteredRowModel().rows]);
 

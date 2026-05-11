@@ -51,7 +51,7 @@ const Templates = forwardRef(
     const templateDetailref = useRef(null);
     const [access, setAccess] = useState([]);
 
-    console.log("templateData:", templateData);
+ 
 
     useEffect(() => {
       setTemplates(templateData);

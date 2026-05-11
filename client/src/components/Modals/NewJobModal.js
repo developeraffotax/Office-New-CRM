@@ -142,7 +142,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
 
   const [jobs, setJobs] = useState([]);
   const [users, setUsers] = useState([]);
-  console.log("Jobs:", jobs);
+ 
 
   const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
@@ -190,7 +190,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
           user?.role?.access?.some((item) => item?.permission?.includes("Jobs"))
         )
       );
-      console.log("users", data?.users);
+     
     } catch (error) {
       console.log(error);
     }
@@ -242,7 +242,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
   };
 
 
-  console.log("Jobs:", jobs);
+ 
   //   Add Job
   const handleSubmit = async (e) => {
     e.preventDefault();

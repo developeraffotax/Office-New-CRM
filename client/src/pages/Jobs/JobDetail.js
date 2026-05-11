@@ -75,7 +75,7 @@ export default function JobDetail({
   const [qualities, setQualities] = useState([]);
   const [showQuality, setShowQuality] = useState(false);
 
-  // console.log(clientDetail.workPlan);
+ 
 
   // ---------Stop Timer ----------->
   const handleStopTimer = () => {
@@ -145,7 +145,7 @@ export default function JobDetail({
     return accessObject?.subRoles?.includes(subRole) || false;
   };
 
-  console.log("AUTH", auth);
+ 
   // ---------------Handle Status Change---------->
   // const handleStatusChange = async (rowId, newStatus) => {
   //   if (!rowId) {

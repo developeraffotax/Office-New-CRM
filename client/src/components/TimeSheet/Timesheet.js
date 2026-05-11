@@ -109,9 +109,9 @@ const TimeSheet = forwardRef(
     const [access, setAccess] = useState([]);
     const [isRunning, setIsRunning] = useState(false);
 
-    console.log("TableFilterData:", tableFilterData);
+ 
 
-    // console.log("auth:", auth.user);
+ 
     useEffect(() => {
       if (auth.user) {
         const filterAccess = auth.user.role.access
@@ -629,7 +629,7 @@ const TimeSheet = forwardRef(
       const filteredData = tableFilterData.filter((item) => {
         const itemDate = item.date ? normalizeDate(new Date(item.date)) : null;
 
-        console.log("Filter Date:", itemDate);
+ 
 
         // Check if the item date falls within the startDate and endDate range
         const matchDate =
@@ -816,7 +816,7 @@ const TimeSheet = forwardRef(
           Cell: ({ cell, row }) => {
             const date = row.original.date;
             const [allocateDate, setAllocateDate] = useState(date);
-            // console.log("date", date);
+ 
 
             useEffect(() => {
               setAllocateDate(row.original.date);

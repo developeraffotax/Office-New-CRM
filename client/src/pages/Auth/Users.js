@@ -43,7 +43,7 @@ export default function Users() {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all`
       );
       setUserData(data?.users);
-      console.log("users", data?.users);
+ 
       setLoading(false);
     } catch (error) {
       console.log(error);
@@ -108,7 +108,7 @@ export default function Users() {
 
   //   Update Role
   const handleChange = (e, id) => {
-    console.log("ROle", e.target.value, id);
+ 
     UpdateRole(e.target.value, id);
   };
 
@@ -253,7 +253,7 @@ export default function Users() {
 
     const col = table.getColumn(colKey);
 
-    //console.log(col, "THE COLUMN 💚")
+ 
     return col.setFilterValue(filterVal);
   }
 
@@ -286,7 +286,7 @@ export default function Users() {
         },
         Cell: ({ cell, row }) => {
           const avatar = row.original.avatar;
-          console.log(row.original);
+ 
 
           return (
             <div className="w-full h-[2.4rem] flex items-center justify-center ">

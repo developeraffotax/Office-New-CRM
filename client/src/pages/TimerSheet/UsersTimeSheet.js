@@ -7,7 +7,7 @@ import React, { useEffect, useMemo, useState } from "react";
 export default function UsersTimeSheet({ timerData, userData, active }) {
   const [userTimes, setUserTimes] = useState([]);
 
-  console.log("userTimes:", userTimes);
+ 
 
   // Helper function to format time
   // const formatTime = (milliseconds) => {

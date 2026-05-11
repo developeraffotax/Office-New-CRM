@@ -26,7 +26,7 @@ export default function TaskSummary({ projects, tasksData, userData }) {
     jobStatus: "",
   });
 
-  // console.log("filterTasks:", filterTasks);
+ 
 
   // ---------Total Hours-------->
 

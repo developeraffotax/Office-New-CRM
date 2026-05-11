@@ -37,8 +37,7 @@ export default function EmailDetail() {
 
     const [users, setUsers] = useState([]);
 
-  console.log("Ticket Detail:", ticketDetail);
-  console.log("Email Detail:", emailDetail);
+ 
 
 
 
@@ -110,7 +109,7 @@ export default function EmailDetail() {
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/ticket/${params.id}`
       );
       if (data) {
-        console.log("SINGLE TICKET DATA >>>>>>>>>>>>>>>>>", data);
+ 
         setTicketDetail(data?.ticket);
         setIsCompleted(data?.ticket?.state === "complete");
         getEmailDetail(data?.ticket?.mailThreadId, data?.ticket?.company);
@@ -134,7 +133,7 @@ export default function EmailDetail() {
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/email/detail/${mailThreadId}/${company}/${params.id}`
       );
       if (data) {
-        console.log("EMAIL DATA SINGLE>>>>>>>>>>>>>>>>>>>>>>>>", data);
+ 
         setLoading(false);
         setEmailDetail(data.emailDetails);
         //
@@ -398,7 +397,7 @@ export default function EmailDetail() {
     });
   };
 
-  console.log("TICKET DETAIL💛💛🧡🧡❤❤", ticketDetail?.state);
+ 
 
   return (
     <>
@@ -463,7 +462,7 @@ export default function EmailDetail() {
             {emailDetail?.decryptedMessages &&
               emailDetail?.decryptedMessages?.map((message, i) => (
                 <div className="flex flex-col gap-4" key={i}>
-                  {console.log("THE MESSAGE >>", message)}
+             
 
                   {/* || message?.labelIds?.includes('SENT') */}
                   {message?.payload?.body?.sentByMe ||
@@ -654,10 +653,7 @@ export default function EmailDetail() {
                           <div className="flex items-center flex-wrap gap-4 py-3">
                             {message?.payload.body?.messageAttachments?.map(
                               (item) => {
-                                console.log(
-                                  "ATTACHMENT HEADEERS",
-                                  item.attachmentHeaders
-                                );
+                                
 
                                 const contentDispositionHeader =
                                   item.attachmentHeaders.find(

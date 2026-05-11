@@ -61,7 +61,7 @@ export default function HandleGoalModal({
         `${process.env.REACT_APP_API_URL}/api/v1/goals/fetch/single/goals/${goalId}`
       );
 
-      console.log("Single data:", data);
+ 
       const formattedStartDate = new Date(
         data.goal.startDate
       ).toLocaleDateString("en-CA");

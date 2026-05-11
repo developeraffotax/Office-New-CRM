@@ -19,9 +19,7 @@ export default function ActivityLogs({
   const [userwiseActiviesCount, setUserwiseActiviesCount] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  console.log("userwiseActiviesCount:", userwiseActiviesCount);
-  console.log("filteredActivities:", filteredActivities);
-  console.log("userData:", userData);
+ 
 
   const today = formatDate(new Date());
   const yesterday = formatDate(

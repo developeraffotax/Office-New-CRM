@@ -12,7 +12,7 @@ export default function AddErrorType({ setShowlabel, getLabels }) {
   const [loading, setLoading] = useState(false);
   const [labelData, setLabelData] = useState([]);
   const [labelId, setlabelId] = useState("");
-  console.log("labelData", labelData);
+ 
 
   //   Get All Labels
   const getlabel = async () => {

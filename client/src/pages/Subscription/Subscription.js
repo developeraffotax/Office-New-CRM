@@ -57,7 +57,7 @@ export default function Subscription() {
   const [fee, setFee] = useState("");
   const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
 
-  console.log("rowSelection:", rowSelection);
+ 
 
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
   const [clientCompanyName, setClientCompanyName] = useState("");
@@ -154,7 +154,7 @@ export default function Subscription() {
 
   // Update data Label
   const addDatalabel = async (id, labelId) => {
-    // console.log("Data:", id, labelId);
+ 
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/lable/${id}`,
@@ -265,7 +265,7 @@ export default function Subscription() {
       }, 0);
     };
 
-    console.log("TOTAL FEEE💛🧡:", calculateTotalHours(subscriptionData));
+ 
 
     if (filterData) {
       setTotalFee(calculateTotalHours(filterData).toFixed(0));

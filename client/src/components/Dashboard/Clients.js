@@ -360,8 +360,7 @@ if (!selectedYear && !selectedMonth) {
 
   //   // eslint-disable-next-line
   // }, [workFlowData]);
-
-  // console.log("workFlowData:", workFlowData);
+ 
 
   useEffect(() => {
     const departmentTotals = departments.map((department) => {
@@ -1192,10 +1191,7 @@ let monthsForLeadsArr = Object.keys(filledLeadsMonthData).sort(sortMonths);
 const jobCountSeries = buildSeries(monthData, months, "Total Jobs");
 const feeSeries = buildSeries(monthData, months, "Total Fee");
 const totalLeadCountSeries = buildSeries(leadsMonthData, monthsForLeadsArr, "Total Leads");
-
-console.log("jobCountSeries", jobCountSeries);
-console.log("feeSeries", feeSeries);
-console.log("totalLeadCountSeries", totalLeadCountSeries);
+ 
  
 
 

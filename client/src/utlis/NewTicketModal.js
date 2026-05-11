@@ -258,7 +258,7 @@ export default function NewTicketModal({
         emailData.append("files", file);
       });
 
-      // return console.log("Email Data:", emailData.getAll("trustPilotBcc"))
+ 
 
       const { data } = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/send/email`,

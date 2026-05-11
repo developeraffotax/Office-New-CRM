@@ -67,7 +67,7 @@ const settingsSlice = createSlice({
 export const initSettingsListener = () => (dispatch) => {
   settingsChannel.onmessage = (msg) => {
 
-    console.log("Received settings message in other tab:🤎💙💛", msg.data);
+ 
 
   if (msg.data.type === "SETTINGS_UPDATED") {
     dispatch({

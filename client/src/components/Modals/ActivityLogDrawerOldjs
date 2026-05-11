@@ -12,7 +12,7 @@ const ActivityLogDrawer = ({ onClose, ticketId }) => {
       setLoading(true);
       try {
         const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/tickets/activity/${ticketId}`);
-        console.log("Fetched logs:", res.data);
+ 
         setLogs(res.data);
       } catch (err) {
         console.error("Error fetching activity logs", err);

@@ -337,7 +337,7 @@ export default function DetailComments({
           `${process.env.REACT_APP_API_URL}/api/v1/client/job/comments/${jobId}`
         );
         if (data) {
-          console.log("data", data);
+ 
           setCommentData(data?.comments?.comments);
         }
       } else if (type === "Task") {

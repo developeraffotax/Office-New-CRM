@@ -56,19 +56,7 @@ export const Timer = forwardRef(
     const auth = useSelector((state) => state.auth.auth);
     const timer = useSelector((state) => state.globalTimer.timer);
 
-    console.log("TImer", {
-      taskName,
-      taskLink,
-      setNote,
-      clientName,
-      companyName,
-      department,
-      JobHolderName,
-      projectName,
-      task,
-      pageName,
-      note,
-    });
+ 
 
 const start = async () => {
   try {

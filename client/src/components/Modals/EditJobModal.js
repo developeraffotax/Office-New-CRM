@@ -221,7 +221,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
 
   
 
-  console.log("jobs:", jobs);
+ 
 
   const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
@@ -245,7 +245,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
       );
 
       const clientDetail = data.clientJob;
-      console.log("JobDetails", clientDetail);
+ 
       const formattedDate = new Date(
         clientDetail.currentDate
       ).toLocaleDateString("en-CA");
@@ -532,7 +532,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
           user?.role?.access?.some((item) => item?.permission?.includes("Jobs"))
         )
       );
-      console.log("users", data?.users);
+ 
     } catch (error) {
       console.log(error);
     }

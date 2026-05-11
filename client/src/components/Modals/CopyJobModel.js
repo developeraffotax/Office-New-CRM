@@ -133,7 +133,7 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
   const [jobs, setJobs] = useState([]);
   const [users, setUsers] = useState([]);
 
-  console.log("jobs:", jobs);
+ 
 
   const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
@@ -157,7 +157,7 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
       );
 
       const clientDetail = data.clientJob;
-      console.log("JobDetails", clientDetail);
+ 
       // const formattedDate = new Date(
       //   clientDetail.currentDate
       // ).toLocaleDateString("en-CA");
@@ -453,7 +453,7 @@ export default function CopyJobModel({ setIsOpen, allClientJobData, jobId }) {
           user?.role?.access?.some((item) => item?.permission?.includes("Jobs"))
         )
       );
-      console.log("users", data?.users);
+ 
     } catch (error) {
       console.log(error);
     }

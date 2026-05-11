@@ -59,8 +59,7 @@ const HR = forwardRef(({taskData, loading, setTaskData, childRef, setIsload}, re
     const currentMonthIndex = new Date().getMonth();
     const [month, setMonth] = useState(currentMonthIndex);
     const [hrRoleData, setHrRoleData] = useState([]);
-    console.log("copyDescription:", copyDescription);
-  
+ 
     // ----------Fetch All Roles-------->
     const fetchAllHrRoles = async () => {
       try {
@@ -347,8 +346,7 @@ const HR = forwardRef(({taskData, loading, setTaskData, childRef, setIsload}, re
           if (!filterValue) return true;
           if (!cellValue) return false;
 
-          console.log("cellValue:", cellValue);
-          console.log("filterValue:", filterValue);
+ 
           return (
             cellValue.toString().toLowerCase() === filterValue.toLowerCase()
           );
@@ -596,7 +594,7 @@ const HR = forwardRef(({taskData, loading, setTaskData, childRef, setIsload}, re
               (u) => u?.user?.name === name
             );
 
-            console.log("matchedUser:", matchedUser);
+ 
 
             const [isShow, setIsShow] = useState(false);
             const [status, setStatus] = useState(matchedUser?.status || "");

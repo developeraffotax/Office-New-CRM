@@ -29,7 +29,7 @@ const DraggableUserList = ({
 
   function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
     const savedSet = new Set(savedOrder);
-    console.log("savedSET>>>>", savedSet);
+ 
     // Preserve the order from savedOrder, but only if the username still exists in the fetched data
     const ordered = savedOrder.filter((name) =>
       fetchedUsernames.includes(name)
@@ -66,14 +66,14 @@ const DraggableUserList = ({
   }, [updateJobHolderCountMapFn]);
 
   const getJobHolderCount = (userName) => {
-    console.log("THE MAP IS 💚💜💙💙💚💚💛💛🧡🧡", jobHolderCountMap);
+ 
     return jobHolderCountMap.get(userName) || 0;
   };
 
   const setColumnFromOutsideTable = (colKey, filterVal) => {
     const col = table.getColumn(colKey);
 
-    console.log("WELL THE COLUMN IS💚💛", col);
+ 
     return col.setFilterValue(filterVal);
   };
 

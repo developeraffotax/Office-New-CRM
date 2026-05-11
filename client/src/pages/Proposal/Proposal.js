@@ -62,7 +62,7 @@ export default function Proposal() {
 
   const [showJobHolderFilter, setShowJobHolderFilter] = useState(true)
 
-  // console.log("filteredData:", filteredData);
+ 
 
   // -------Get All Proposal-------
   const getAllProposal = async () => {
@@ -1915,7 +1915,7 @@ export default function Proposal() {
          {auth?.user?.role?.name === "Admin" && showJobHolderFilter && <DraggableUserList table={table} usersArray={users.map(el => el.name)} updateJobHolderCountMapFn={(map, totalCount) => {
           
                             for (const item of proposalData || []) {
-                              console.log("ITEM", item)
+             
                                 const holder = item.jobHolder ;
                                 map.set(holder, (map.get(holder) || 0) + 1);
                                 totalCount++;

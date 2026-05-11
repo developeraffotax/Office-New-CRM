@@ -34,7 +34,7 @@ export default function OverviewDropdown({ setShowDropdown }) {
         `${process.env.REACT_APP_API_URL}/api/v1/overview`
       );
 
-      console.log(data, "the overview data");
+ 
 
       if (data?.success) {
         setData(data);

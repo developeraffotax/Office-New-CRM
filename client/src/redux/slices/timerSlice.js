@@ -6,20 +6,20 @@ const channel = new BroadcastChannel("task-timer-channel");
 let timeoutRef = null;
 
 const scheduleTimeout = (dispatch, endTime) => {
-  console.log("Scheduling timeout for endTime:", endTime);
+ 
   const duration = endTime - new Date();
 
-  console.log("Duration until timeout:", duration);
+ 
 
   if (duration <= 0) {
     dispatch(setShowModal(true));
-    console.log("Task is overdue immediately!💛💛💛💛💛");
+ 
     return;
   }
 
   timeoutRef = setTimeout(() => {
     dispatch(setShowModal(true));
-    console.log("Task is overdue!💛💛💛💛💛💛💛💛💛💛💛");
+ 
   }, duration);
 };
 
@@ -91,7 +91,7 @@ export const updateCountdown = (newAllocatedTimeInHours) => (dispatch) => {
   //   endTime: newEndTime.toISOString(),
   // });
 
-  console.log("Timer updated with new allocated time:", newAllocatedTimeInHours);
+ 
 };
 
 export const snooze = (SNOOZE_TIME) => (dispatch) => {
@@ -147,7 +147,7 @@ export const initTimerListener = () => (dispatch) => {
     const now = new Date();
     if (now.getTime() > endTime.getTime()) {
       dispatch(setShowModal(true));
-      console.log("Task is overdue!💛💛💛💛💛💛💛💛 💛");
+ 
     } else {
       scheduleTimeout(dispatch, endTime);
     }
@@ -187,7 +187,7 @@ export const initTimerListener = () => (dispatch) => {
       clearTimeout(timeoutRef);
       scheduleTimeout(dispatch, updatedEndTime);
       dispatch(setShowModal(false));
-      console.log("[Broadcast] Timer updated with new end time");
+ 
     }
   };
 };

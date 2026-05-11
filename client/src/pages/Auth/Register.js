@@ -120,7 +120,7 @@ export default function Register({
     getUser();
   }, [userId]);
 
-  console.log("JUNIORS 🧡🧡🧡", userData);
+  "JUNIORS 🧡🧡🧡", userData);
 
   // Design Constants
   const labelStyle = "text-sm font-medium text-gray-700 mb-1.5";

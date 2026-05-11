@@ -17,7 +17,7 @@ export default function AssignToUserModal({
   const [userName, setUserName] = useState([]);
   const [selectedUser, setSelectUser] = useState("");
   const [loading, setLoading] = useState(false);
-  // console.log("singleEmail:", singleEmail);
+ 
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
@@ -70,7 +70,7 @@ export default function AssignToUserModal({
     // Clean the email address
     const cleanedEmail = emailAddress ? emailAddress.trim() : "";
 
-    console.log("Email:", name.trim(), cleanedEmail);
+ 
     // ----->
 
     try {

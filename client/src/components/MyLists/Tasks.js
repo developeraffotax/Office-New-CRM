@@ -95,9 +95,9 @@ const Tasks = forwardRef(
   const [taskIdForNote, setTaskIdForNote] = useState("");
  
 
-    console.log("filterData", filterData);
+ 
 
-    console.log("jid:", jid);
+ 
 
 
 
@@ -421,7 +421,7 @@ const Tasks = forwardRef(
     const copyTask = async (originalTask) => {
       const taskCopy = { ...originalTask };
       taskCopy.task = "";
-      console.log("taskCopy", taskCopy);
+ 
 
       const { data } = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/tasks/create/task`,
@@ -1138,11 +1138,7 @@ Cell: ({ cell, row }) => {
               const cellDate = new Date(cell.getValue());
               return cellDate.toISOString().split("T")[0];
             });
-            // console.log(
-            //   "Deadline Date:",
-            //   format(new Date(date), "dd-MMM-yyyy"),
-            //   format(new Date(deadline), "dd-MMM-yyyy")
-            // );
+            
             const [allocateDate, setAllocateDate] = useState(date);
 
             useEffect(() => {
@@ -1520,7 +1516,7 @@ Cell: ({ cell, row }) => {
           },
 
           Cell: ({ cell, row }) => {
-            // console.log("rowTask", row.original);
+ 
             return (
               <div
                 className="flex items-center justify-center gap-1 w-full h-full "
@@ -1553,7 +1549,7 @@ Cell: ({ cell, row }) => {
 
           filterFn: (row, columnId, filterValue) => {
             const cellValue = row.original._id;
-            console.log("T_ID:", filterValue, cellValue);
+ 
             return cellValue === filterValue;
           },
           filterVariant: "select",
@@ -1601,7 +1597,7 @@ Cell: ({ cell, row }) => {
           accessorKey: "actions",
           header: "Actions",
           Cell: ({ cell, row }) => {
-            // console.log("Id:", row.original._id);
+ 
             return (
               <div className="flex items-center justify-center gap-3 w-full h-full">
                 <span

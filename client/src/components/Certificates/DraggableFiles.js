@@ -35,7 +35,7 @@ const DraggableFiles = ({ files, isSelected, onSelect, setFiles }) => {
       // Convert canvas to an image data URL
       const imageUrl = canvas.toDataURL();
 
-      console.log("imageUrl:", imageUrl);
+ 
 
       // Set the image URL as the state to display in Konva
       const img = new window.Image();

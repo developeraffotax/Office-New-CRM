@@ -110,7 +110,7 @@ export const snoozeReminder = createAsyncThunk(
   "reminders/snoozeReminder",
   async ({ reminderId, minutes }, { dispatch, rejectWithValue }) => {
 
-    console.log("Snoozing reminder:", reminderId, "for", minutes, "minutes");
+ 
 
     if (!reminderId) return;
 

@@ -153,7 +153,7 @@ const applyFilter = (e) => {
   
   function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
     const savedSet = new Set(savedOrder);
-    console.log("savedSET>>>>", savedSet)
+ 
     // Preserve the order from savedOrder, but only if the username still exists in the fetched data
     const ordered = savedOrder.filter(name => fetchedUsernames.includes(name));
     
@@ -1309,7 +1309,7 @@ const applyFilter = (e) => {
   // --------------Job_Holder Length---------->
 
   const getJobHolderCount = (user, status) => {
-    console.log("Tickets DATA", emailData)
+ 
     if(user === "All") {
       return emailData.length;
     }
@@ -1464,7 +1464,7 @@ const applyFilter = (e) => {
 
                             {userName.map((user, index) => {
 
-                                console.log("THE USER IS", user)
+               
 
                                 return (
                                   <Draggable

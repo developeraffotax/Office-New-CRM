@@ -80,7 +80,7 @@ export const Timer = forwardRef(
             }
           );
           const { _id, startTime, endTime, isRunning, activity: fetchedActivity } = response.data.timer;
-          // console.log("Timer:", response.data.timer);
+ 
 
           
 

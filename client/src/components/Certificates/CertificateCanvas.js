@@ -32,7 +32,7 @@ const CertificateCanvas = ({
   const [containerWidth, setContainerWidth] = useState(750);
   const [containerHeight, setContainerHeight] = useState(520);
 
-  console.log("files:", files);
+   
 
   useEffect(() => {
     const updateDimensions = () => {

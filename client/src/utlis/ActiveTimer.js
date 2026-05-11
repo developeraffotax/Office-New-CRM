@@ -29,7 +29,7 @@ export const ActiveTimer = () => {
   
         const { _id, startTime, endTime, isRunning } = data.timer;
   
-        console.log("Timer:", data.timer);
+   
   
         if (startTime && !endTime) {
           setIsRunning(isRunning);

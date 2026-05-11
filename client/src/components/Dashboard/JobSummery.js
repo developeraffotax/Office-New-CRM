@@ -48,9 +48,7 @@ export default function JobSummery({
   });
   const [totalHours, setTotalHours] = useState("0");
   const [totalFee, setTotalFee] = useState(0);
-
-  console.log("workFlowData:", workFlowData);
-  console.log("filterClient:", filterClient);
+ 
 
   //   Client Type Length
   useEffect(() => {

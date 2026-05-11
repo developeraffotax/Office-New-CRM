@@ -79,7 +79,7 @@ const Jobs = forwardRef(
 
    const [clientCompanyName, setClientCompanyName] = useState("");
 
-    console.log("filterData:", filterData);
+ 
 
     // Extract the current path
     const currentPath = location.pathname;

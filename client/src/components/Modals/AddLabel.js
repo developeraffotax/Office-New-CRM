@@ -11,7 +11,7 @@ export default function AddLabel({ setShowlabel, type, getLabels }) {
   const [loading, setLoading] = useState(false);
   const [labelData, setLabelData] = useState([]);
   const [labelId, setlabelId] = useState("");
-  console.log("labelData", labelData);
+ 
 
   //   Get All Labels
   const getlabel = async () => {

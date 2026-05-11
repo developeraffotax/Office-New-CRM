@@ -327,7 +327,7 @@ const getMessageUsers = async () => {
     );
 
     if (data?.success) {
-      console.log("DATA RECEIVED", data)
+     
       setMessageUsers(data.data || {});
     }
   } catch (error) {

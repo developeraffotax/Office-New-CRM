@@ -14,7 +14,7 @@ export const fetchInboxUnreadCounts = createAsyncThunk(
         return rejectWithValue("Failed to fetch unread counts");
       }
 
-      console.log(" THES RESULT ", data)
+ 
 
       return data.counts; // { affotax: 12, outsource: 5 }
     } catch (err) {

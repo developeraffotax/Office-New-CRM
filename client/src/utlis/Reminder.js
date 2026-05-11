@@ -23,7 +23,7 @@ export default function Reminder({ setShowReminder, taskId, link }) {
   const [userData, setUserData] = useState([]);
   const [usersList, setUserList] = useState([]);
 
-  console.log("usersList", usersList);
+ 
 
   // -------Get All Users-------->
 
@@ -35,7 +35,7 @@ export default function Reminder({ setShowReminder, taskId, link }) {
       setUserData(
         data?.users.map((user) => ({ _id: user._id, name: user.name }))
       );
-      console.log("users", data?.users);
+ 
     } catch (error) {
       console.log(error);
     }

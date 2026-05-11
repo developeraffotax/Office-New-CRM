@@ -61,7 +61,7 @@ const Proposals = forwardRef(
     const [mail, setMail] = useState("");
     const mailDetailref = useRef(null);
 
-    console.log("filteredData:", filteredData);
+ 
 
     useEffect(() => {
 
@@ -378,7 +378,7 @@ const Proposals = forwardRef(
         .getFilteredRowModel()
         .rows.map((row) => row.original);
 
-      console.log("Filtered Data:", filteredRows);
+ 
       setFilteredData(filteredRows);
     }, [table.getFilteredRowModel().rows]);
 

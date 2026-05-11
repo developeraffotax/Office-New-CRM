@@ -54,7 +54,7 @@ export default function TaskDetail({
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("subtasks");
 
-  console.log("THE TASK DETAIL:💚", taskDetal);
+ 
 
   const [isOpen, setIsOpen] = useState(false);
   const [isShow, setIsShow] = useState(false);
@@ -77,9 +77,7 @@ export default function TaskDetail({
   }, []);
 
   const moveSubtask = async (subtask, fromTask, toTask, subTaskIdToDlt) => {
-    console.log("subtask:", subtask);
-    console.log("fromTask:", fromTask);
-    console.log("toTask:", toTask);
+
 
     try {
       const createPromise = axios.post(
@@ -95,8 +93,7 @@ export default function TaskDetail({
         deletePromise,
       ]);
 
-      console.log("createRes:", createRes, "deleteRes:", deleteRes);
-      if (createRes.status === 200 && deleteRes.status === 200) {
+       if (createRes.status === 200 && deleteRes.status === 200) {
         toast.success("Subtask moved successfully!");
         setSubtask("");
         getSingleTask();
@@ -143,7 +140,7 @@ export default function TaskDetail({
   };
 
   useEffect(() => {
-    // console.log("tasksData:", tasksData);
+ 
     getSingleTask();
     // eslint-disable-next-line
   }, [taskId]);

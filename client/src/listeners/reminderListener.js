@@ -4,7 +4,7 @@ export const registerReminderListener = (socket, dispatch) => {
   if (!socket) return;
 
   socket.on("receive_reminder", (data) => {
-    console.log("Reminder received:", data);
+ 
     dispatch(setShowReminder(true));
     dispatch(setReminderData(data));
     dispatch(incrementUnreadCount());

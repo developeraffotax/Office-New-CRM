@@ -30,7 +30,7 @@ export default function InboxDetail({
   const [showReplay, setShowReply] = useState(false);
   const [sendToEmail, setSendToEmail] = useState("");
 
-  console.log("emailDetail:", emailDetail);
+ 
 
   //   Email Detail
   const getTicketDetail = async () => {
@@ -237,7 +237,7 @@ export default function InboxDetail({
 
   // Mark as Read
   const markAsRead = async (messageId) => {
-    console.log("MessageId:", messageId);
+  
     if (!messageId) {
       return;
     }

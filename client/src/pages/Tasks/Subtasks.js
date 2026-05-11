@@ -28,7 +28,7 @@ export default function Subtasks({ taskId }) {
   const initialLoad = useRef(true);
 
 
-  console.log("SUBTASKS DATA 🧡🧡🧡🧡🧡🧡🧡", subTaskData)
+ 
 
 
 
@@ -47,7 +47,7 @@ export default function Subtasks({ taskId }) {
       if (data) {
 
 
-        console.log("SINGLE TASK DATA 🧡🧡🧡🧡🧡🧡🧡", data)
+ 
         setSubTaskData(data?.task?.subtasks);
         setTask(data?.task);
       }

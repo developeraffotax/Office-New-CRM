@@ -36,8 +36,7 @@ const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState([]);
 
-  console.log("message:", message);
-  console.log("emailSendTo:", emailSendTo);
+ 
 
 
     const [users, setUsers] = useState([]);

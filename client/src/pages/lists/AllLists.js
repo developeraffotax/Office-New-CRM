@@ -79,7 +79,7 @@ export default function AllLists() {
           `${process.env.REACT_APP_API_URL}/api/v1/hr/all/tasks`
         );
 
-        console.log("hr tasks",data);
+ 
         setHrTasks(data?.tasks);
       } catch (error) {
         console.log(error);

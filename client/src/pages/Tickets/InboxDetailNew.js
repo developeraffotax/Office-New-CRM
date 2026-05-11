@@ -48,7 +48,7 @@ export default function InboxDetailNew({
       if (data) {
         setLoading(false);
         setEmailDetail(data.emailDetails);
-        console.log("THE EMAIL DETAILS ARE<<<<<<<", data.emailDetails)
+ 
         //
         // markAsRead(
         //   data.emailDetails.threadData.messages[
@@ -208,7 +208,7 @@ export default function InboxDetailNew({
 
   // Mark as Read
   const markAsRead = async (messageId) => {
-    console.log("MessageId:", messageId);
+ 
     if (!messageId) {
       return;
     }

@@ -269,8 +269,7 @@ const applyFilter = (e) => {
     e.preventDefault();
     setIsUpdating(true);
 
-    console.log("Row Selection",rowSelection);
-    console.log("Updates",updates)
+ 
 
     try {
       const { data } = await axios.put(
@@ -302,7 +301,7 @@ const applyFilter = (e) => {
   // --------------Job_Holder Length---------->
 
   const getJobHolderCount = (user, status) => {
-    console.log("L:LEADS DATA", leadData)
+ 
     if(user === "All") {
       return leadData.filter((lead) =>
         lead?.status === status
@@ -480,7 +479,7 @@ const renderColumnControls = () => (
 
 
 
-  console.log("filteredData:", filteredData);
+ 
 
   // -------Get All Leads-------
   const getAllLeads = async () => {
@@ -593,7 +592,7 @@ const renderColumnControls = () => (
   
   function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
     const savedSet = new Set(savedOrder);
-    console.log("savedSET>>>>", savedSet)
+ 
     // Preserve the order from savedOrder, but only if the username still exists in the fetched data
     const ordered = savedOrder.filter(name => fetchedUsernames.includes(name));
     
@@ -1410,7 +1409,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
 
                             {selectedUsers.filter(uName => getJobHolderCount(uName, selectedTab) > 0).map((user, index) => {
 
-                                console.log("THE USER IS", user)
+                          
 
                                 return (
                                   <Draggable

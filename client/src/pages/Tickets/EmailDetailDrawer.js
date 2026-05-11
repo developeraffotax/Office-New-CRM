@@ -54,7 +54,7 @@ const getActivityMap = async () => {
       `${process.env.REACT_APP_API_URL}/api/v1/tickets/activity/map/${id}`
     );
 
-    console.log("Activity data received:", data);
+ 
     setActivityMap(data); // { messageId: { user, action } }
   } catch (err) {
     console.log("Failed to get activity map:", err);
@@ -62,7 +62,7 @@ const getActivityMap = async () => {
 };
 
 
-  console.log("ACTIVTY IS 🤎💜💜💜💜💜💜", activityMap)
+ 
 
 useEffect(() => {
   if (id) getActivityMap();
@@ -132,7 +132,7 @@ useEffect(() => {
       );
 
 
-      console.log("THE RECEIVED EMAIL💛💛💚💛💛",data);
+ 
       //  return;
       if (data?.emailDetails) {
         setEmailDetail(data.emailDetails);

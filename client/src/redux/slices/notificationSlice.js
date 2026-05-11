@@ -76,7 +76,7 @@ export const dismissNotification = createAsyncThunk(
       );
 
 
-      console.log("Dismiss data:", data);
+ 
       if (data) {
         dispatch(getNotifications(userId));
         if(data.notification?.status === "dismissed"){

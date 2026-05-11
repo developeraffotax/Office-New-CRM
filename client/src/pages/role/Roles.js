@@ -29,7 +29,7 @@ export default function Roles() {
     },
   ]);
 
-  console.log("subRoles", subRoles);
+ 
 
   const pages = [
     "Dashboard",
@@ -65,9 +65,9 @@ export default function Roles() {
   const [users, setUsers] = useState([]);
   const [pageName, setPageName] = useState("");
 
-  console.log("subRoles:", subRoles);
+   
 
-  // console.log("roleData:", roleData);
+ 
 
   // Get All Roles
   const handleGetRole = async () => {

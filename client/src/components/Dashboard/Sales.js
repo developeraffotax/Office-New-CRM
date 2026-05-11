@@ -17,7 +17,7 @@ export default function Sales({
   isSales,
   lastDays,
 }) {
-  // console.log("salesData", salesData);
+ 
   const [filteredTotalLeads, setFilteredTotalLeads] = useState(0);
   const [filteredTotalProposals, setFilteredTotalProposals] = useState(0);
   const [filteredTotalLeadProposal, setFilteredTotalLeadProposal] = useState(0);
@@ -39,7 +39,7 @@ export default function Sales({
     setVisibility(updatedVisibility);
   };
 
-  console.log("SALES DATA>>>>>>>>>>>>>>>>>>", salesData)
+ 
 
   const visibleCount = visibility.filter(Boolean).length;
 
@@ -128,7 +128,7 @@ export default function Sales({
     });
     setProposalClient(filteredData);
 
-    console.log("Filtered Proposal Client:", filteredData);
+ 
   }, [selectedMonth, selectedYear, salesData, lastDays]);
 
   //---------------Filter PPC------->
@@ -179,7 +179,7 @@ export default function Sales({
   const progressleadTotal = progressLead?.length;
   const wonleadTotal = wonLead?.length;
 
-  console.log("PPC Conversion:", progressLead, wonLead);
+ 
 
   // --------------CLient Filter------------->
   const [inactiveClient, setInactiveClient] = useState([]);
@@ -273,7 +273,7 @@ export default function Sales({
 
 
         // if(!year && !month) {
-        //   console.log("!INSIDE THE SELECTED YEAR BLOCK")
+       
         //   const leadDate2 = new Date(itemYear, itemMonth - 1, 1); // month -1 because JS months are 0-indexed
         //   return (
         //     (!selectedMonth || itemMonth === parseInt(selectedMonth)) &&
@@ -692,7 +692,7 @@ export default function Sales({
 
 
         if(!selectedYear && !selectedMonth && !lastDays) {
-          console.log("!INSIDE THE SELECTED YEAR BLOCK")
+ 
           const leadDate2 = new Date(leadDate.year(), leadDate.month() - 1, 1); // month -1 because JS months are 0-indexed
           return (
             (!selectedMonth || leadDate.month() === parseInt(selectedMonth)) &&
@@ -717,13 +717,7 @@ export default function Sales({
       leadsByMonth[month] += 1;
     });
 
-    console.log(selectedYear)
-    console.error("FILTERED LEADS IN USEEFFECT", filteredLeads)
-    console.info("leadsByMonth IN USEEFFECT leadsByMonth", leadsByMonth)
-
-
-
-
+ 
 
 
 
@@ -776,7 +770,7 @@ export default function Sales({
 
 
         if(!selectedYear && !selectedMonth && !lastDays) {
-          console.log("!INSIDE THE SELECTED YEAR BLOCK")
+ 
           const leadDate2 = new Date(proposalDate.year(), proposalDate.month() - 1, 1); // month -1 because JS months are 0-indexed
           return (
             (!selectedMonth || proposalDate.month() === parseInt(selectedMonth)) &&
@@ -844,7 +838,7 @@ export default function Sales({
 
 
         if(!selectedYear && !selectedMonth && !lastDays) {
-          console.log("!INSIDE THE SELECTED YEAR BLOCK")
+ 
           const leadDate2 = new Date(proposalDate.year(), proposalDate.month() - 1, 1); // month -1 because JS months are 0-indexed
           return (
             (!selectedMonth || proposalDate.month() === parseInt(selectedMonth)) &&
@@ -910,7 +904,7 @@ export default function Sales({
 
 
         if(!selectedYear && !selectedMonth && !lastDays) {
-          console.log("!INSIDE THE SELECTED YEAR BLOCK")
+ 
           const leadDate2 = new Date(ppcLeadDate.year(), ppcLeadDate.month() - 1, 1); // month -1 because JS months are 0-indexed
           return (
             (!selectedMonth || ppcLeadDate.month() === parseInt(selectedMonth)) &&
@@ -1048,7 +1042,7 @@ export default function Sales({
 
   // // ------------------------>Format Months<--------------------->
 
-  // //console.log("MONTH DATA>>>", monthData)
+ 
 
   // const monthOrder = [
   //   "Jan",
@@ -1109,7 +1103,7 @@ export default function Sales({
 
   //     const rotatedArr = shiftArrFromThisMonth([...jobCountSeries[0].data])
 
-  //     console.log(rotatedArr)
+ 
 
   //     jobCountSeriesForPastOneYear.push({
   //       name: "Total Jobs",

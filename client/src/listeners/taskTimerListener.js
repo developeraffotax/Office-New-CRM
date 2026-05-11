@@ -1,14 +1,13 @@
- 
 import { updateCountdown } from "../redux/slices/timerSlice";
 
+
+
+// task over due timer listener
 export const registerTaskTimerListener = (socket, dispatch) => {
   if (!socket) return;
 
   socket.on("update_task_timer", (data) => {
-   // console.log("update_task_timer received💜💜💜💜💜💜:", data);
-     
-      dispatch(updateCountdown(data.newAllocatedTimeInHours))
-     
+    dispatch(updateCountdown(data.newAllocatedTimeInHours));
   });
 
   return () => {

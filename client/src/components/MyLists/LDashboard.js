@@ -64,7 +64,7 @@ export default function Dashboard({ workFlowData, uniqueClients }) {
         `${process.env.REACT_APP_API_URL}/api/v1/user/dashboard/users`
       );
       setUserData(data?.users);
-      console.log("users", data?.users);
+ 
     } catch (error) {
       console.log(error);
     }

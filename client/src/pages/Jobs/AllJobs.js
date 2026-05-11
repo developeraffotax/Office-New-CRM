@@ -371,7 +371,7 @@ const [rowCount, setRowCount] = useState(0);
 
   const handleJobUpdate = () => {
 
-    console.log("Socket refresh with latest filters");
+ 
 
     fetchRef.current?.(); // ✅ uses latest filters
 
@@ -1533,7 +1533,7 @@ const getJobsStats = useCallback(async () => {
       );
       if (data) {
         const clientJob = data.job;
-        // console.log("ClientJob:", clientJob);
+ 
 
         // if (filterId || active || active1) {
         //   setFilterData((prevData) =>

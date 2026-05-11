@@ -35,7 +35,7 @@
     
 //     children.forEach((el) => {
 
-//       console.log("EL", el)
+ 
 
 //       // Check if this element or any nested child is a reply marker
 //       const isMarker = markers.some(selector => 
@@ -62,12 +62,7 @@
 //       };
 //     }
     
-
-//     console.log("RESULT ", {
-//       visible: visibleParts.join(''),
-//       hidden: hiddenParts.join(''),
-//       hasThread: hiddenParts.length > 0
-//     })
+ 
 //     return {
 //       visible: visibleParts.join(''),
 //       hidden: hiddenParts.join(''),

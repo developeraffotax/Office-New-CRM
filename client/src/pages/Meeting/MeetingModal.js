@@ -31,7 +31,7 @@ export default function MeetingModal({
   const [userData, setUserData] = useState([]);
   const [usersList, setUserList] = useState([]);
 
-  console.log("userData:", userData);
+ 
 
 
   // Convert UTC string to local datetime-local format
@@ -53,7 +53,7 @@ const formatDateForInput = (dateString) => {
         `${process.env.REACT_APP_API_URL}/api/v1/meetings/meeting/detail/${meetingId}`
       );
       if (data) {
-        console.log("THE METTING DATA IS",data)
+ 
         const meeting = data.meeting;
         setTitle(meeting.title);
         setDescription(meeting.description);
@@ -89,7 +89,7 @@ const formatDateForInput = (dateString) => {
       setUserData(
         data?.users.map((user) => ({ _id: user._id, name: user.name }))
       );
-      console.log("users", data?.users);
+ 
     } catch (error) {
       console.log(error);
     }

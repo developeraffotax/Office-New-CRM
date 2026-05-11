@@ -314,7 +314,7 @@ const globalTimerSlice = createSlice({
 export const initGlobalTimerListener = () => (dispatch) => {
   globalTimerChannel.onmessage = (msg) => {
 
-    console.log("Received global timer message in other tab:🤎💙💛", msg.data);
+ 
 
   if (msg.data.type === "GLOBAL_TIMER_UPDATED") {
     dispatch({

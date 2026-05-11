@@ -34,7 +34,7 @@ export default function AllUsers() {
         `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
       );
       setUsers(data?.users);
-      console.log("users", data?.users);
+ 
       setLoading(false);
     } catch (error) {
       console.log(error);
@@ -67,7 +67,7 @@ export default function AllUsers() {
   }, []);
 
   const handleChange = (e, id) => {
-    console.log("ROle", e.target.value, id);
+ 
     UpdateRole(e.target.value, id);
   };
 
@@ -77,7 +77,7 @@ export default function AllUsers() {
       headerName: "Avatar",
       flex: 0.2,
       renderCell: (params) => {
-        console.log(params);
+ 
         return (
           <>
             <div className="relative w-[3rem] h-[3rem] object-fill p-1">
@@ -105,7 +105,7 @@ export default function AllUsers() {
       headerName: "Role",
       flex: 0.3,
       renderCell: (params) => {
-        console.log(params);
+ 
         return (
           <>
             <select

@@ -221,7 +221,7 @@ export default function Goals() {
 
   function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
     const savedSet = new Set(savedOrder);
-    console.log("savedSET>>>>", savedSet);
+ 
     // Preserve the order from savedOrder, but only if the username still exists in the fetched data
     const ordered = savedOrder.filter((name) =>
       fetchedUsernames.includes(name),
@@ -447,7 +447,7 @@ export default function Goals() {
       }
     } catch (error) {
       setIsUpdate(false);
-      console.log(error?.response?.data?.message);
+ 
       toast.error("Something went wrong!");
     } finally {
       setIsUpdate(false);
@@ -683,10 +683,7 @@ export default function Goals() {
 
   useEffect(() => {
     if (comment_taskId) {
-      console.log(
-        comment_taskId,
-        "The comment taskid is 🤎💜💜💙💙💚💚💛💛🧡🧡❤",
-      );
+ 
       filterByRowId(table, comment_taskId, setCommentTaskId, setIsComment);
 
       // searchParams.delete("comment_taskId");

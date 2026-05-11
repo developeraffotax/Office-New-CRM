@@ -62,7 +62,7 @@ const ReminderNotifications = ({ setShowReminderNotificationPanel }) => {
   const [filter, setFilter] = useState("today");
   const [now, setNow] = useState(new Date());
 
-  console.log("THE REMINDER ARE>>>", reminders);
+ 
   const [editReminder, setEditReminder] = useState(null);
 
   const [deleteReminderData, setDeleteReminderData] = useState(null);

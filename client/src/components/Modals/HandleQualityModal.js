@@ -22,7 +22,7 @@ export default function HandleQualityModal({ setShowQuickList, getQuickList }) {
     "Company Sec",
     "Address",
   ];
-  console.log("qualityData", qualityData);
+ 
 
   //   Get All Labels
   const getlabel = async () => {
@@ -31,7 +31,7 @@ export default function HandleQualityModal({ setShowQuickList, getQuickList }) {
         `${process.env.REACT_APP_API_URL}/api/v1/quicklist/get/all`
       );
       if (data) {
-        console.log("data", data);
+     
         setQualityData(data.qualityChecks);
       }
     } catch (error) {
@@ -89,7 +89,7 @@ export default function HandleQualityModal({ setShowQuickList, getQuickList }) {
     return acc;
   }, {});
 
-  console.log("groupedData", groupedData);
+ 
 
   return (
     <div className="flex flex-col w-[21rem] sm:w-[38rem] bg-white shadow-md rounded-md ">

@@ -126,7 +126,7 @@ export const taskColumn = (ctx) => {
 
           {showSubtaskId === row.original._id && (
             <div
-              className={`  w-full h-full bg-gradient-to-br from-orange-200  rounded-lg shadow-md text-black `}
+              className={`  w-full  h-[28rem] bg-gradient-to-br from-orange-200  rounded-lg shadow-md text-black `}
             >
               <Subtasks taskId={showSubtaskId} />
             </div>

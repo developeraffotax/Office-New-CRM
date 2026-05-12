@@ -23,6 +23,7 @@ import {
   updateAlocateTask,
   updateJobHolderLS,
   updateMultipleTasks,
+  updateSubTask,
   updateSubTaskStaus,
   updateTask,
   updateTaskHours,
@@ -74,6 +75,10 @@ router.post("/create/subTask/:id", requiredSignIn, createSubTask);
 
 // Update Task
 router.put("/update/subtask/status/:id", requiredSignIn, updateSubTaskStaus);
+
+
+router.put( "/update/subtask/:taskId/:subTaskId", requiredSignIn, updateSubTask );
+
 
 // Delete Task
 router.delete(

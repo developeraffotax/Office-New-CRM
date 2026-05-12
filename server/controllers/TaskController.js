@@ -1069,6 +1069,221 @@ export const deleteSubTask = async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Update Subtask (name / status / both)
+export const updateSubTask = async (req, res) => {
+  try {
+    const { taskId, subTaskId } = req.params;
+    const { subTask, status } = req.body;
+
+    // -----------------------------
+    // Validations
+    // -----------------------------
+    if (!taskId) {
+      return res.status(400).send({
+        success: false,
+        message: "Task Id is required!",
+      });
+    }
+
+    if (!subTaskId) {
+      return res.status(400).send({
+        success: false,
+        message: "Subtask Id is required!",
+      });
+    }
+
+    // At least one field required
+    if (
+      subTask === undefined &&
+      status === undefined
+    ) {
+      return res.status(400).send({
+        success: false,
+        message: "Nothing to update!",
+      });
+    }
+
+    // Validate status if provided
+    const allowedStatus = ["process", "complete"];
+
+    if (
+      status !== undefined &&
+      !allowedStatus.includes(status)
+    ) {
+      return res.status(400).send({
+        success: false,
+        message: "Invalid subtask status!",
+      });
+    }
+
+    // Validate subtask text if provided
+    if (
+      subTask !== undefined &&
+      (!subTask || !subTask.trim())
+    ) {
+      return res.status(400).send({
+        success: false,
+        message: "Subtask cannot be empty!",
+      });
+    }
+
+    // -----------------------------
+    // Find Task
+    // -----------------------------
+    const task = await taskModel.findById(taskId);
+
+    if (!task) {
+      return res.status(404).send({
+        success: false,
+        message: "Task not found!",
+      });
+    }
+
+    // -----------------------------
+    // Find Subtask
+    // -----------------------------
+    const subtask = task.subtasks.id(subTaskId);
+
+    if (!subtask) {
+      return res.status(404).send({
+        success: false,
+        message: "Subtask not found!",
+      });
+    }
+
+    // -----------------------------
+    // Store old values
+    // -----------------------------
+    const oldSubtaskName = subtask.subTask;
+    const oldStatus = subtask.status;
+
+    const activityMessages = [];
+
+    // -----------------------------
+    // Update subtask name
+    // -----------------------------
+    if (
+      subTask !== undefined &&
+      subTask.trim() !== oldSubtaskName
+    ) {
+      subtask.subTask = subTask.trim();
+
+      activityMessages.push(
+        `${req.user.user.name} updated subtask name from "${oldSubtaskName}" to "${subTask.trim()}".`
+      );
+    }
+
+    // -----------------------------
+    // Update status
+    // -----------------------------
+    if (
+      status !== undefined &&
+      status !== oldStatus
+    ) {
+      subtask.status = status;
+
+      activityMessages.push(
+        `${req.user.user.name} updated subtask "${subtask.subTask}" status from "${oldStatus}" to "${status}".`
+      );
+    }
+
+    // Nothing changed
+    if (activityMessages.length === 0) {
+      return res.status(400).send({
+        success: false,
+        message: "No changes detected!",
+      });
+    }
+
+    // -----------------------------
+    // Push Activities
+    // -----------------------------
+    activityMessages.forEach((activity) => {
+      task.activities.push({
+        user: req.user.user._id,
+        activity,
+      });
+    });
+
+    // -----------------------------
+    // Save Task
+    // -----------------------------
+    await task.save();
+
+    // -----------------------------
+    // Emit Notification
+    // -----------------------------
+    if (req.user?.user?.name !== task?.jobHolder) {
+      const notiUser = await userModel
+        .findOne({ name: task?.jobHolder })
+        .select("_id");
+
+      if (notiUser) {
+        emitTaskUpdate(true, {
+          userId: notiUser._id,
+          updated_task: null,
+        });
+      }
+    }
+
+ 
+
+    // -----------------------------
+    // Response
+    // -----------------------------
+    return res.status(200).send({
+      success: true,
+      message: "Subtask updated successfully!",
+      task,
+    });
+  } catch (error) {
+    console.log("Update Subtask Error:", error);
+
+    return res.status(500).send({
+      success: false,
+      message: "Error while updating subtask!",
+      error: error.message,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Get ALl Tasks
 export const getAllCompletedTasks = async (req, res) => {
   try {

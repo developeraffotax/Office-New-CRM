@@ -112,7 +112,7 @@ export const generateEmailReplies = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: "Failed to generate AI reply",
+      message: err?.message || "Failed to generate AI reply",
     });
   }
 };

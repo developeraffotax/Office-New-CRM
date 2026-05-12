@@ -90,12 +90,12 @@ const {savedFilters, fetchSavedFilters, saveFilter, loadingSaved, deleteFilter} 
             const isActive = activeFilter?._id === f._id;
             return (
               <div
-                onClick={() => handleApply(f)}
+                
                 key={f._id}
-                className={`group flex items-center gap-3 px-4 py-2.5 transition cursor-pointer ${isActive ? 'bg-orange-50/70' : 'hover:bg-slate-50'}`}
+                className={`group flex items-center gap-3 px-4 py-2.5 transition  ${isActive ? 'bg-orange-50/70' : 'hover:bg-slate-50'}`}
               >
                 {/* Meta Info */}
-                <div className="flex-1 min-w-0">
+                <div onClick={() => handleApply(f)} className="flex-1 min-w-0 cursor-pointer">
                   <div className="flex items-center gap-2 mb-0.5 truncate">
                     <span className={`text-[12px] font-semibold truncate ${isActive ? 'text-orange-700' : 'text-slate-800'}`}>
                       {f.name}
@@ -113,7 +113,7 @@ const {savedFilters, fetchSavedFilters, saveFilter, loadingSaved, deleteFilter} 
                 </div>
 
                 {/* Inline Actions (Hidden on mobile/default, visible on hover) */}
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition  ">
                   {/* <button
                     onClick={() => handleApply(f.filters)}
                     className="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:border-slate-300 transition"
@@ -125,7 +125,7 @@ const {savedFilters, fetchSavedFilters, saveFilter, loadingSaved, deleteFilter} 
                     className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition"
                     title="Delete view"
                   >
-                    <TbTrash className="text-sm" />
+                    <TbTrash className="w-5 h-5 " />
                   </button>
                 </div>
               </div>

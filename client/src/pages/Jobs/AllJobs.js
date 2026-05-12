@@ -2523,6 +2523,7 @@ useEffect(() => {
     {/* Your Filter Button Container */}
     <div className="relative z-[50] ">
       <button 
+        title="Saved Filters"
         className={`p-1 shadow-sm rounded-md border hover:bg-gray-100 transition-colors duration-150 ${showSavedFilters ? 'bg-gray-100' : 'bg-gray-50'}`} 
         onClick={() => setShowSavedFilters(!showSavedFilters)}
       >
@@ -2540,7 +2541,7 @@ useEffect(() => {
               setPagination((prev) => ({ ...prev, pageIndex: 0 }));
               setShowSavedFilters(false); // Optional: close panel on apply
             }}
-            //  
+            setShowSavedFilters={setShowSavedFilters}
             activeFilter={activeFilter}
           />
         </div>

@@ -1,16 +1,21 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { IoClose, IoAddOutline } from "react-icons/io5";
 import { TbLoader2, TbDeviceFloppy, TbFilter, TbCheck, TbPencil, TbTrash } from "react-icons/tb";
 import toast from "react-hot-toast";
 import { formatDistanceToNow } from "date-fns";
 import { useSavedFilters } from "./useSavedFilters";
+import { useClickOutside } from "../../utlis/useClickOutside";
 
 // Enterprise Light Design
-export default function SavedFiltersPanelLight({ page, columnFilters, onLoad,   activeFilter }) {
-const {savedFilters, fetchSavedFilters, saveFilter, loadingSaved, deleteFilter} = useSavedFilters();
+export default function SavedFiltersPanel({ page, columnFilters, onLoad,   activeFilter, setShowSavedFilters }) {
+const {savedFilters, fetchSavedFilters, saveFilter, loadingSaved, deleteFilter} = useSavedFilters(page);
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
- 
+  
+  const ref =  useRef()
+  useClickOutside(ref, () => {
+    setShowSavedFilters(false);
+  })
 
   const handleSave = async () => {
     if (!name.trim()) return toast.error("Enter a filter name");
@@ -36,7 +41,7 @@ const {savedFilters, fetchSavedFilters, saveFilter, loadingSaved, deleteFilter} 
 
 
   return (
-    <div className="w-[350px] font-google bg-white border   rounded-lg overflow-hidden shadow-lg shadow-slate-950/20">
+    <div ref={ref} className="w-[350px] font-google bg-white border   rounded-lg overflow-hidden shadow-lg shadow-slate-950/20">
       
       {/* Header - Minimal and clear */}
       <div className="px-4 py-3 bg-slate-100 border-b border-slate-100 flex items-center justify-between">

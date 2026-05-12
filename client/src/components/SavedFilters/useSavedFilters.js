@@ -4,18 +4,18 @@ import axios from "axios";
 
 const API = `${process.env.REACT_APP_API_URL}/api/v1/saved-filters`;
 
-export function useSavedFilters() {
+export function useSavedFilters(page) {
   const [savedFilters, setSavedFilters] = useState([]);
   const [loadingSaved, setLoadingSaved] = useState(false);
 
   const fetchSavedFilters = useCallback(async () => {
     try {
-      const { data } = await axios.get(API);
+      const { data } = await axios.get(`${API}?page=${page}`);
       if (data.success) setSavedFilters(data.filters);
     } catch (e) {
       console.error(e);
     }
-  }, []);
+  }, [page]);
 
   useEffect(() => { fetchSavedFilters(); }, [fetchSavedFilters]);
 

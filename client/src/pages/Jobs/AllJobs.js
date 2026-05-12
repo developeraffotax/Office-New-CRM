@@ -66,6 +66,9 @@ import { columnData,   departments,   statusInit } from "./constants";
 import { buildFilters } from "./utils/utils";
  
 import JobHeaderActions from "./JobHeaderActions";
+import { useSavedFilters } from "../../components/SavedFilters/useSavedFilters";
+import SavedFiltersPanel from "../../components/SavedFilters/SavedFiltersPanel";
+import { CiFilter } from "react-icons/ci";
  
  
  
@@ -202,6 +205,20 @@ const [jobStats, setJobStats] = useState({
 
 
  
+
+
+
+
+const {savedFilters, fetchSavedFilters, saveFilter, loadingSaved, deleteFilter} = useSavedFilters();
+
+const [showSavedFilters, setShowSavedFilters] = useState(false);
+const [activeFilter, setActiveFilter] = useState(null);
+
+ 
+
+
+
+
 
 const getuserJobCounts = (userName) => {
   return jobStats?.userJobCounts?.find(
@@ -387,7 +404,7 @@ const [rowCount, setRowCount] = useState(0);
 
 
  
-
+console.log("COL FILTERS JOBS,", columnFilters)
 
 
   // Extract the current path
@@ -1770,6 +1787,7 @@ const ctx = useMemo(() => {
   const handleClearFilters = () => {
     table.setColumnFilters([]);
     table.setGlobalFilter("");
+    setActiveFilter(null)
 
     if (comment_taskId) {
     searchParams.delete("comment_taskId");
@@ -2017,29 +2035,7 @@ const ctx = useMemo(() => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
@@ -2409,18 +2405,7 @@ useEffect(() => {
 
 
 
-
-
-  
-  // useEffect(() => {
-  //   if (show_completed) {
-
-  //     setActiveBtn("completed");
-  //             setShowCompleted(true);
-  //             setActive("");
-  //   }
-  // }, [show_completed]);
-
+ 
 
   return (
     <>
@@ -2483,6 +2468,13 @@ useEffect(() => {
 
                 {  <span className="w-[1px] h-8 bg-gray-200 rounded "></span>}
 
+
+
+      
+
+
+
+
              {  (
               <div className="flex gap-1 w-fit font-google font-medium ">
                   {[
@@ -2515,6 +2507,71 @@ useEffect(() => {
                   })}
                 </div>
               )}
+
+
+
+
+
+
+
+
+
+    <div className="flex items-center gap-2 font-google"> {/* Container to keep pill and button together */}
+    
+   
+
+    {/* Your Filter Button Container */}
+    <div className="relative z-[50] ">
+      <button 
+        className={`p-1 shadow-sm rounded-md border hover:bg-gray-100 transition-colors duration-150 ${showSavedFilters ? 'bg-gray-100' : 'bg-gray-50'}`} 
+        onClick={() => setShowSavedFilters(!showSavedFilters)}
+      >
+        <CiFilter  className={`h-6 w-6  cursor-pointer ${showSavedFilters ? ' ' : ''}`}  />
+      </button>
+
+      {showSavedFilters && (
+        <div className="absolute top-full left-0 mt-1">
+          <SavedFiltersPanel
+            page="jobs"
+            columnFilters={columnFilters}
+            onLoad={(filters, savedFilter) => {
+              setColumnFilters(filters);
+              setActiveFilter(savedFilter);
+              setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+              setShowSavedFilters(false); // Optional: close panel on apply
+            }}
+            //  
+            activeFilter={activeFilter}
+          />
+        </div>
+      )}
+    </div>
+
+     {/* The Pill - Only shows when a saved filter is active */}
+    {activeFilter && (
+      <div className="flex items-center gap-1  px-2 py-1 bg-orange-50 border border-orange-200 rounded-full animate-in fade-in zoom-in duration-200">
+        <span className="text-[10px] font-bold text-orange-400 uppercase tracking-wider">Filter:</span>
+        <span className="text-sm font-medium text-orange-600">{activeFilter.name}</span>
+        <button 
+          onClick={() => {
+            handleClearFilters();
+          }}
+          className="ml-1 p-0.5 hover:bg-orange-200 rounded-full text-orange-500 transition-colors"
+        >
+          <IoClose size={14} />
+        </button>
+      </div>
+    )}
+
+
+  </div>
+
+
+
+
+
+
+
 
 
 

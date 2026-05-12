@@ -359,7 +359,7 @@ export default function Subtasks({ taskId }) {
                                     </div>
 
                                     <div className="flex justify-end items-center gap-1 w-[20%]">
-                                      {status === "process" && (
+                                      {  (
                                         <span className="p-1 cursor-pointer">
                                           <Timer
                                             clientId={auth?.user?.id}

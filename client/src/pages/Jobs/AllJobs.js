@@ -15,7 +15,7 @@ import {  format, formatISO } from "date-fns";
 import toast from "react-hot-toast";
  
  
-import {   TbLoader2 } from "react-icons/tb";
+import {   TbCheck, TbLoader2 } from "react-icons/tb";
 import { IoClose } from "react-icons/io5";
 import JobDetail from "./JobDetail";
 import { IoBriefcaseOutline } from "react-icons/io5";
@@ -209,7 +209,8 @@ const [jobStats, setJobStats] = useState({
 
 
 
-const {savedFilters, fetchSavedFilters, saveFilter, loadingSaved, deleteFilter} = useSavedFilters();
+const savedFiltersHook = useSavedFilters("jobs");
+const {savedFilters, fetchSavedFilters, saveFilter, loadingSaved, deleteFilter} = savedFiltersHook;
 
 const [showSavedFilters, setShowSavedFilters] = useState(false);
 const [activeFilter, setActiveFilter] = useState(null);
@@ -2512,61 +2513,81 @@ useEffect(() => {
 
 
 
+ {  <span className="w-[1px] h-8 bg-gray-200 rounded "></span>}
 
 
+<div className="flex items-center gap-0 font-google">
 
+  {/* Filter Button */}
+  <div className="relative z-[50]">
+    <button
+      title="Saved Filters"
+      onClick={() => setShowSavedFilters(!showSavedFilters)}
+      className={`flex items-center justify-center w-8 h-8 rounded-lg border transition-colors duration-150
+        ${showSavedFilters
+          ? 'bg-slate-100 border-slate-300 text-slate-700'
+          : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600 hover:border-slate-300'
+        }`}
+    >
+      <CiFilter className="h-[18px] w-[18px]" />
+    </button>
 
-    <div className="flex items-center gap-2 font-google"> {/* Container to keep pill and button together */}
-    
-   
-
-    {/* Your Filter Button Container */}
-    <div className="relative z-[50] ">
-      <button 
-        title="Saved Filters"
-        className={`p-1 shadow-sm rounded-md border hover:bg-gray-100 transition-colors duration-150 ${showSavedFilters ? 'bg-gray-100' : 'bg-gray-50'}`} 
-        onClick={() => setShowSavedFilters(!showSavedFilters)}
-      >
-        <CiFilter  className={`h-6 w-6  cursor-pointer ${showSavedFilters ? ' ' : ''}`}  />
-      </button>
-
-      {showSavedFilters && (
-        <div className="absolute top-full left-0 mt-1">
-          <SavedFiltersPanel
-            page="jobs"
-            columnFilters={columnFilters}
-            onLoad={(filters, savedFilter) => {
-              setColumnFilters(filters);
-              setActiveFilter(savedFilter);
-              setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-              setShowSavedFilters(false); // Optional: close panel on apply
-            }}
-            setShowSavedFilters={setShowSavedFilters}
-            activeFilter={activeFilter}
-          />
-        </div>
-      )}
-    </div>
-
-     {/* The Pill - Only shows when a saved filter is active */}
-    {activeFilter && (
-      <div className="flex items-center gap-1  px-2 py-1 bg-orange-50 border border-orange-200 rounded-full animate-in fade-in zoom-in duration-200">
-        <span className="text-[10px] font-bold text-orange-400 uppercase tracking-wider">Filter:</span>
-        <span className="text-sm font-medium text-orange-600">{activeFilter.name}</span>
-        <button 
-          onClick={() => {
-            handleClearFilters();
+    {showSavedFilters && (
+      <div className="absolute top-full left-0 mt-1">
+        <SavedFiltersPanel
+          page="jobs"
+          columnFilters={columnFilters}
+          onLoad={(filters, savedFilter) => {
+            setColumnFilters(filters);
+            setActiveFilter(savedFilter);
+            setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+            setShowSavedFilters(false);
           }}
-          className="ml-1 p-0.5 hover:bg-orange-200 rounded-full text-orange-500 transition-colors"
-        >
-          <IoClose size={14} />
-        </button>
+          setShowSavedFilters={setShowSavedFilters}
+          activeFilter={activeFilter}
+          savedFiltersHook={savedFiltersHook}
+        />
       </div>
     )}
-
-
   </div>
 
+  {/* Divider — only when pills exist */}
+  {savedFilters.length > 0 && (
+    <div className="w-px h-4 bg-slate-200 mx-2 flex-shrink-0" />
+  )}
+
+  {/* Quick-apply pills */}
+  <div className="flex items-center gap-1.5 flex-wrap">
+    {savedFilters.map((f) => {
+      const isActive = activeFilter?._id === f._id;
+      return (
+        <button
+          key={f._id}
+          onClick={() => {
+            if (isActive) {
+              handleClearFilters();
+            } else {
+              setColumnFilters(f.filters);
+              setActiveFilter(f);
+              setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+            }
+          }}
+          className={`flex items-center gap-1.5 px-2.5 h-[26px] rounded-md border text-[11px] font-medium tracking-wide transition-all duration-150
+            ${isActive
+              ? 'bg-orange-50 border-orange-200 text-orange-600'
+              : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700 hover:bg-slate-50'
+            }`}
+        >
+          {isActive && (
+            <span className="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0" />
+          )}
+          {f.name}
+        </button>
+      );
+    })}
+  </div>
+
+</div>
 
 
 

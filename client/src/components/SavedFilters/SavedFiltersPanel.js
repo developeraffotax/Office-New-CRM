@@ -2,13 +2,12 @@ import { useRef, useState } from "react";
 import { IoClose, IoAddOutline } from "react-icons/io5";
 import { TbLoader2, TbDeviceFloppy, TbFilter, TbCheck, TbPencil, TbTrash } from "react-icons/tb";
 import toast from "react-hot-toast";
-import { formatDistanceToNow } from "date-fns";
-import { useSavedFilters } from "./useSavedFilters";
+ 
 import { useClickOutside } from "../../utlis/useClickOutside";
 
 // Enterprise Light Design
-export default function SavedFiltersPanel({ page, columnFilters, onLoad,   activeFilter, setShowSavedFilters }) {
-const {savedFilters, fetchSavedFilters, saveFilter, loadingSaved, deleteFilter} = useSavedFilters(page);
+export default function SavedFiltersPanel({ page, columnFilters, onLoad,   activeFilter, setShowSavedFilters, savedFiltersHook }) {
+const {savedFilters, fetchSavedFilters, saveFilter, loadingSaved, deleteFilter} = savedFiltersHook;
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
   
@@ -23,6 +22,7 @@ const {savedFilters, fetchSavedFilters, saveFilter, loadingSaved, deleteFilter} 
     setSaving(true);
     try {
       await saveFilter(name.trim(), page, columnFilters);
+       
       toast.success("Filter view created");
       setName("");
     } catch {

@@ -38,7 +38,7 @@ router.get("/status", requiredSignIn, timerStatus);
 router.get("/running-timer/:userId", requiredSignIn, getRunningTimer);
 
 // Total time
-router.get("/total_time/:id", requiredSignIn, totalTime);
+router.put("/total_time/:id", requiredSignIn, totalTime);
 
 // Add Timer Status
 router.post("/timer_task/status", requiredSignIn, addTimerStatus);

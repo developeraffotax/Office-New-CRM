@@ -11,6 +11,7 @@ import { useClickOutside } from "../utlis/useClickOutside";
 import toast from "react-hot-toast";
 import { openModal } from "../redux/slices/globalModalSlice";
 import { stopCountdown } from "../redux/slices/timerSlice";
+import axios from "axios";
 
 function formatTime(ms) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -58,11 +59,36 @@ export default function GlobalTimer() {
   useEscapeKey(() => { if (showPopup) closePopup(); });
   useClickOutside(popupRef, () => setShowPopup(false));
 
+
+
+
+const updateConsumedTime = async () => {
+  try {
+    const jobId = timer?.entityType === "subtask" ? timer?.metadata?.parentTaskId : timer?.jobId;
+
+    await axios.put(
+      `${process.env.REACT_APP_API_URL}/api/v1/timer/total_time/${timer?._id}`,
+      {},
+      { params: { jobId } }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+
+
+
+
+
+
   const handleConfirmStop = async () => {
     try {
       setStopping(true);
       await dispatch(stopTimer({ timerId: timer?._id, note: stopNote, activity: stopActivity })).unwrap();
       dispatch(stopCountdown());
+      updateConsumedTime();
       toast.success("Timer stopped successfully");
     } catch (err) {
       toast.error(err || "Failed to stop timer");

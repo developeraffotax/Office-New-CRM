@@ -272,7 +272,7 @@ export const getAllEmails = async (ticketsList) => {
  * ---------------------------
  */
 
-const getDetailedThreads = async (threadId, accessToken, ) => {
+const getDetailedThreads = async (companyName, threadId, accessToken, ) => {
   const { data: threadData } = await axios.get(`https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}?format=full`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
@@ -282,7 +282,7 @@ const getDetailedThreads = async (threadId, accessToken, ) => {
   const latestMessage = threadData.messages[threadData.messages.length - 1];
   const date = new Date(parseInt(latestMessage.internalDate));
   // console.log("Latest Message latestMessagelatestMessagelatestMessagelatestMessagelatestMessage:", latestMessage);
-  const decryptedMessages = await Promise.all(threadData.messages.map(msg => processMessage(msg, accessToken)));
+  const decryptedMessages = await Promise.all(threadData.messages.map(msg => processMessage(msg, accessToken, companyName)));
 
   // Determine status
   const ourEmails = ["info@affotax.com", "admin@outsourceaccountings.co.uk"];
@@ -461,9 +461,10 @@ export const getSingleEmail = async (ticketDetail) => {
     let response;
 
     if (ticketDetail.companyName === "Affotax" || ticketDetail.companyName === "affotax") {
-      response = await getDetailedThreads(ticketDetail.threadId, accessToken, ticketDetail.page, ticketDetail.limit);
+      response = await getDetailedThreads(ticketDetail.companyName, ticketDetail.threadId, accessToken, ticketDetail.page, ticketDetail.limit);
     } else {
       response = await getDetailedThreads(
+        ticketDetail.companyName,
         ticketDetail.threadId,
         outSourcingAccessToken,
          ticketDetail.page,
@@ -538,7 +539,8 @@ export const getInlineImage = async (req, res) => {
       process.env.JWT_SECRET
     );
 
-     
+
+    
     const { messageId, attachmentId, companyName, } = decoded;
 
     // Get Gmail access token

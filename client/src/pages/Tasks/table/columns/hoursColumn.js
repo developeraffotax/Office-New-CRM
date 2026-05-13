@@ -25,7 +25,7 @@ export const hoursColumn = (ctx) => {
     },
     Cell: ({ cell, row }) => {
       const [showEditor, setShowEditor] = useState(false);
-      const [value, setValue] = useState(cell.getValue());
+      const value= cell.getValue() || 0;
       const anchorRef = useRef(null);
 
       const formatDuration = (val) => {
@@ -38,23 +38,23 @@ export const hoursColumn = (ctx) => {
         return "0m";
       };
 
-      const handleApply = async (newHours) => {
-        try {
-          const { data } = await axios.put(
-            `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/hours/${row.original._id}`,
-            { hours: newHours },
-          );
-          if (data) {
-            setValue(newHours);
-            toast.success("Hours updated");
+      // const handleApply = async (newHours) => {
+      //   try {
+      //     const { data } = await axios.put(
+      //       `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/hours/${row.original._id}`,
+      //       { hours: newHours },
+      //     );
+      //     if (data) {
+      //       setValue(newHours);
+      //       toast.success("Hours updated");
              
              
-          }
-        } catch (err) {
-          toast.error("Update failed");
-          console.error(err);
-        }
-      };
+      //     }
+      //   } catch (err) {
+      //     toast.error("Update failed");
+      //     console.error(err);
+      //   }
+      // };
 
       return (
         <div ref={anchorRef} className="relative flex items-center gap-1">
@@ -66,7 +66,7 @@ export const hoursColumn = (ctx) => {
             <TimeEditor
               anchorRef={anchorRef}
               initialValue={value}
-              onApply={handleApply}
+              onApply={(newHours) => ctx.updateAllocatedTime(newHours, row.original?._id)}
               onClose={() => setShowEditor(false)}
             />
           )}

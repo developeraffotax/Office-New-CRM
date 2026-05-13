@@ -197,6 +197,7 @@ const AllTasks = ({ justShowTable = false }) => {
     updateAlocateTask,
     addlabelTask,
     handleStatusComplete,
+    updateAllocatedTime
   } = useTaskActions({ refetchStats, refetchTasks });
 
   const userTaskCountMap = useMemo(() => {
@@ -531,6 +532,7 @@ const AllTasks = ({ justShowTable = false }) => {
       handleDeleteTaskConfirmation,
       updateTaskProject,
       updateTaskJLS,
+      updateAllocatedTime,
       updateAlocateTask,
       addlabelTask,
     }),
@@ -542,7 +544,7 @@ const AllTasks = ({ justShowTable = false }) => {
       columnFilters,
       searchValue,
       status,
-    ],
+     ],
   );
 
   // ----------------------------

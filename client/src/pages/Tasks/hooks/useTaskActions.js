@@ -66,6 +66,50 @@ export const useTaskActions = ({
   };
 
 
+
+
+      const updateAllocatedTime = async (newHours, taskId) => {
+        try {
+          const { data } = await axios.put(
+            `${process.env.REACT_APP_API_URL}/api/v1/tasks/update/hours/${taskId}`,
+            { hours: newHours },
+          );
+          if (data) {
+            refetchTasks();
+            refetchStats();
+            toast.success("Hours updated");
+             
+             
+          }
+        } catch (err) {
+          toast.error("Update failed");
+          console.error(err);
+        }
+      };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // -----------------------------
   // 🆕 Update Allocate Task
   // -----------------------------
@@ -269,8 +313,8 @@ export const useTaskActions = ({
     copyTask,
     deleteTask,
     addlabelTask,
-    handleStatusComplete
-
+    handleStatusComplete,
+    updateAllocatedTime
 
 
   }), [

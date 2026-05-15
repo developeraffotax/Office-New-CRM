@@ -29,7 +29,7 @@ router.put("/edit/task/:id", requiredSignIn, updateHrTask);
 router.get("/all/tasks", requiredSignIn, allHrTask);
 
 // Task Detail
-router.get("/task/detail/:id", requiredSignIn, hrTaskDetail);
+router.get("/task/detail/:id",   hrTaskDetail);
 
 // Delete
 router.delete("/remove/task/:id", requiredSignIn, deleteHrTask);

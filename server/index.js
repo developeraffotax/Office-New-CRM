@@ -64,6 +64,8 @@ const startServer = async () => {
     // 2️⃣ Express setup
     const app = express();
 
+    app.set("trust proxy", 1); // if behind a proxy (e.g., Heroku, Nginx)
+
     // 3️⃣ Middleware
     app.use(express.json({ limit: "20mb" }));
     app.use(cors());

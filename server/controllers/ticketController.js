@@ -834,7 +834,7 @@ export async function getSentReceivedCountsPerThread() {
     
    } catch (error) {
     console.log("Error occured while getting number of replies", error);
-    res.status(500).send({ success: true, message: "Number of Replies!!", error: error, });
+    //res.status(500).send({ success: true, message: "Number of Replies!!", error: error, });
    }
 
 

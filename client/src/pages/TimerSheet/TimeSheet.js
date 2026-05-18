@@ -38,9 +38,10 @@ import {
 import { MdOutlineWatchLater } from "react-icons/md";
 import { useWorkdayStats } from "./useWorkdayStats";
 import { useSelector } from "react-redux";
-import { isAdmin } from "../../utlis/isAdmin";
+ 
 import OverviewForPages from "../../utlis/overview/OverviewForPages"; 
 import ShiftStatus from "./ShiftStatus";
+import { hasSubrole, isAdmin } from "../../utlis/checkPermission";
 
 // Optional icons per day
 const dayIcons = [
@@ -144,6 +145,19 @@ export default function TimeSheet() {
 
   const { weekdayCounts, totalWorkdays, requiredHours } =
     useWorkdayStats(active);
+
+
+    const hasPermission = useMemo(() => {
+      return {
+        edit: isAdmin(auth?.user) || hasSubrole(auth?.user, "Timesheet", "Edit") || false,
+        delete: isAdmin(auth?.user) || hasSubrole(auth?.user, "Timesheet", "Delete") || false,
+        jobHolders: isAdmin(auth?.user) || hasSubrole(auth?.user, "Timesheet", "Job-holder") || false,
+         
+      };
+}, [auth ]);
+
+
+
 
   const daysData = [
     {
@@ -1982,7 +1996,7 @@ export default function TimeSheet() {
                 <span className="mt-2">
                   <QuickAccess />
                 </span>
-                {isAdmin(auth) && (
+                {isAdmin(auth?.user) && (
                   <span className=" ">
                     {" "}
                     <OverviewForPages />{" "}
@@ -2193,7 +2207,7 @@ export default function TimeSheet() {
               Multiple
             </button>
           </div>
-          {auth?.user?.role?.name === "Admin" && (
+          {hasPermission.jobHolders && (
             <span
               className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${
                 showExternalFilters && "bg-orange-500 text-white "
@@ -2217,7 +2231,7 @@ export default function TimeSheet() {
         )}
 
         {/* --------------External Filter---------------- */}
-        {auth?.user?.role?.name === "Admin" && showExternalFilters && (
+        {hasPermission.jobHolders && showExternalFilters && (
           <div className="w-full flex flex-row items-start justify-start gap-4 mt-4">
             
 
@@ -2358,6 +2372,7 @@ export default function TimeSheet() {
               timerId={timerId}
               setTimerId={setTimerId}
               getAllTimeSheetData={getAllTimeSheetData}
+              hasPermission={hasPermission}
             />
           </div>
         )}

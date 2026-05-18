@@ -724,9 +724,10 @@ export const addTimerMannually = async (req, res) => {
       note,
       companyName,
       activity,
+      jobHolderName,
     } = req.body;
 
-    const user = req.user.user.name;
+    const user = jobHolderName || req.user.user.name;
 
     const timer = await timerModel.create({
       date,

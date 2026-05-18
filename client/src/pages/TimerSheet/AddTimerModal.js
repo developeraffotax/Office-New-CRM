@@ -12,6 +12,7 @@ export default function AddTimerModal({
   timerId,
   setTimerId,
   getAllTimeSheetData,
+  hasPermission
 }) {
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -22,6 +23,9 @@ export default function AddTimerModal({
   const [projectName, setProjectName] = useState("");
   const [task, setTask] = useState("");
   const [note, setNote] = useState("");
+
+  const [jobHolderName, setJobHolderName] = useState("");
+
   const [loading, setLoading] = useState(false);
   const deparments = [
     "Bookkeeping",
@@ -148,6 +152,7 @@ export default function AddTimerModal({
             note,
             activity,
             companyName,
+            jobHolderName,
           }
         );
 
@@ -285,6 +290,31 @@ export default function AddTimerModal({
             </select>
           </div>
         </div>
+
+
+        {/* Job Holder - Admin Only */}
+{hasPermission.jobHolders && users?.length > 0 && (
+  <div className="inputBox mt-4">
+    <select
+      value={jobHolderName}
+      onChange={(e) => setJobHolderName(e.target.value)}
+      className={`${style.input} w-full`}
+    >
+      <option value="">Select Job Holder</option>
+
+      {users?.map((user) => (
+        <option key={user._id} value={user.name}>
+          {user.name}
+        </option>
+      ))}
+    </select>
+
+     
+  </div>
+)}
+
+
+
         <div className="inputBox mt-4">
           <textarea
             type="text"

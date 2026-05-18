@@ -285,6 +285,9 @@ export const getTicketClients = async (req, res) => {
       {
         $match: { status: { $ne: "completed" } },
       },
+       {
+    $sort: { _id: 1 },  // ← sort first, so $first is always the oldest doc
+  },
       {
         $group: {
           _id: "$companyName",
@@ -2755,7 +2758,7 @@ export const getClientId = async (req, res) => {
 
     const client = await jobsModel.findOne({
       companyName: companyName
-    })
+    }).sort({ _id: 1 });
 
     if (!client) {
       return res.status(404).send({

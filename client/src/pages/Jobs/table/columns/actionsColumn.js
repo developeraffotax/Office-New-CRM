@@ -10,6 +10,8 @@ import { MdOutlineFolder } from "react-icons/md";
 import toast from "react-hot-toast";
 import { PiSpinnerGap } from "react-icons/pi";
 import { hasSubrole } from "../../../../utlis/checkPermission";
+import { getClientIdFromCompanyName } from "../../../../utlis/apiGetters/apiGetters";
+import { TbLoader2 } from "react-icons/tb";
 
 export const actionsColumn = ({
   setJobId,
@@ -32,6 +34,8 @@ export const actionsColumn = ({
     header: "Actions",
 
     Cell: ({ cell, row }) => {
+
+        const [creatingTicket, setCreatingTicket] = useState(false);
 
       const hasAddComplainPermission = hasSubrole( auth.user, "Jobs", "Complain", );
       const [isLoading, setIsLoading] = useState(false);
@@ -71,20 +75,57 @@ export const actionsColumn = ({
         }
       };
 
+
+
+
+
+
+
+
+      
+          const handleCreateTicket = async () => {
+        try {
+          setCreatingTicket(true);
+      
+       
+      
+           const clientId = await getClientIdFromCompanyName( row?.original?.companyName );
+      
+            if (clientId) {
+              setClientCompanyId(clientId);
+              setShowNewTicketModal(true);
+            }
+       
+        } catch (error) {
+          console.log(error);
+          
+        } finally {
+          setCreatingTicket(false);
+        }
+      };
+
+
+
+
+
       return (
         <div className="flex items-center justify-center gap-2 w-full h-full ">
           {isProgress && (<div>
             <span
               title="Create New Ticket"
-              onClick={() => {
-                //setClientCompanyId(row?.original?.companyId);
-                setClientCompanyId(row?.original?._id);
-                setShowNewTicketModal(true);
-              }}
+              // onClick={() => {
+                    // setClientCompanyName(row?.original?.companyName);
+              //   setClientCompanyId(row?.original?._id);
+              //   setShowNewTicketModal(true);
+              // }}
+              onClick = {handleCreateTicket}
               className="text-xl text-orange-500 cursor-pointer"
             >
-              {" "}
-              <FiPlusSquare />
+               {creatingTicket ? (
+                 <TbLoader2 className="animate-spin" />
+               ) : (
+                 <FiPlusSquare />
+               )}
             </span>
           </div>)}
 

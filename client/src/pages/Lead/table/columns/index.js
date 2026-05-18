@@ -25,16 +25,14 @@ export const getLeadColumns = (ctx) => {
     valueTotal,
     ActionsCell,
     selectedTab,
-    setClientCompanyName,
-    setClientEmail,
-    setShowNewTicketModal,
+ 
+ 
     handleCopyLead,
     handleLeadStatus,
     handleDeleteLeadConfirmation,
     stages,
 
-    setClientName,
-    setCompanyName,
+    setNewTicket,
 
     setEmailPopup,
     ticketMap
@@ -1987,15 +1985,12 @@ export const getLeadColumns = (ctx) => {
       Cell: ({ row }) => (
         <ActionsCell
           row={row}
-          setClientCompanyName={setClientCompanyName}
-          setClientEmail={setClientEmail}
-          setShowNewTicketModal={setShowNewTicketModal}
+          setNewTicket={setNewTicket}
           handleCopyLead={handleCopyLead}
           handleLeadStatus={handleLeadStatus}
           handleDeleteLeadConfirmation={handleDeleteLeadConfirmation}
           selectedTab={selectedTab}
-          setClientName={setClientName}
-          setCompanyName={setCompanyName}
+           
 
           ticketMap={ticketMap}
         />

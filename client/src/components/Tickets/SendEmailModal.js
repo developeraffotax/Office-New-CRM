@@ -11,7 +11,7 @@ import { filterOption, HighlightedOption, sortOptions } from "./HighlightedOptio
 import { useEscapeKey } from "../../utlis/useEscapeKey";
 import { hasSubrole, isAdmin } from "../../utlis/checkPermission";
 
-export default function SendEmailModal({ onClose, onSuccess, defaults = {} }) {
+export default function SendEmailModal({ onClose, onSuccess, defaults = {}, meta = {} }) {
   const auth = useSelector((state) => state.auth.auth);
 
  
@@ -39,6 +39,9 @@ export default function SendEmailModal({ onClose, onSuccess, defaults = {} }) {
 
 
 
+
+
+
   const [company, setCompany] = useState(initialState.company);
   const [clientId, setClientId] = useState(initialState.clientId);
   const [subject, setSubject] = useState(initialState.subject);
@@ -57,13 +60,13 @@ export default function SendEmailModal({ onClose, onSuccess, defaults = {} }) {
 
 
   const [inputValue, setInputValue] = useState("");
+
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [selectedSignature, setSelectedSignature] = useState(null);
   const [loading, setLoading] = useState(false);
 
   
-  
-
-
+ 
  
 
 
@@ -99,6 +102,38 @@ export default function SendEmailModal({ onClose, onSuccess, defaults = {} }) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   const allClientJobData = async () => {
     try {
       const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/client/tickets/clients`);
@@ -110,16 +145,72 @@ export default function SendEmailModal({ onClose, onSuccess, defaults = {} }) {
 
   useEffect(() => { allClientJobData(); }, []);
 
-  const options = jobData.map((item) => ({
-    value: item.id,
-    label: `${item.companyName} - ${item.clientName}`,
-  }));
+const options = useMemo(
+  () =>
+    jobData.map((item) => ({
+      value: item.id,
+      label: `${item.companyName} - ${item.clientName}`,
+    })),
+  [jobData]
+);
 
-  const selectedOption = options.find((option) => option.value === clientId);
+const selectedOption = useMemo(() => {
+  if (!clientId || options.length === 0) return null;
+  return options.find(
+    (option) => {
+         
+      return option.value.toString() === clientId.toString()
+    }
+  ) ?? null;
+}, [options, clientId]);
 
-  const handleChange = (selectedOption) => {
-    setClientId(selectedOption ? selectedOption.value : "");
-  };
+
+ 
+
+
+  console.log("THE JOB HERE IS :", jobData.find(j =>j.companyName === "Noa Payments Limited"));
+ 
+
+
+  console.log("options.includes(clientId)", options.some(option => option.value.toString() === clientId.toString()));
+  console.log("Selected Client Option:", selectedOption);
+  console.log("Current Client ID State:", clientId);
+
+const handleChange = (selectedOption) => {
+  setClientId(selectedOption?.value || "");
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   const customStyles = {
     control: (provided) => ({
@@ -149,11 +240,15 @@ export default function SendEmailModal({ onClose, onSuccess, defaults = {} }) {
     description: item.template,
   }));
 
-  const selectedTemplateOption = templateOptions.find((option) => option.value === clientId);
+
+
+
+ // const selectedTemplateOption = templateOptions.find((option) => option.value === clientId);
 
   const handleTemplateChange = (selectedOption) => {
+    setSelectedTemplate(selectedOption || null);
     if (selectedOption) setMessage(selectedOption.description);
-    else setClientId("");
+    // else setClientId("");
   };
 
   const signatureOptions = signatures.map((sig) => ({
@@ -170,7 +265,16 @@ export default function SendEmailModal({ onClose, onSuccess, defaults = {} }) {
   const sendEmail = async (e) => {
     e.preventDefault();
     if (!company) return toast.error("Company is required!");
+
+
+    console.log("Sending Email with State:", { company, clientId,   });
+
+
+    return 
     setLoading(true);
+
+
+
     try {
       const finalMessage = selectedSignature?.html ? `${message}<br/><br/>${selectedSignature.html}` : message;
       const emailData = new FormData();
@@ -179,6 +283,11 @@ export default function SendEmailModal({ onClose, onSuccess, defaults = {} }) {
       emailData.append("subject", subject);
       emailData.append("message", finalMessage);
       emailData.append("email", email);
+       if (email && type === "manual") {
+        emailData.append("clientName", meta?.clientName );
+        emailData.append("companyName", meta?.companyName);
+      }
+
       if (company === "Affotax" && trustPilotBcc) emailData.append("trustPilotBcc", "true");
       if (jobHolder) emailData.append("jobHolder", jobHolder);
       files.forEach((file) => emailData.append("files", file));
@@ -258,7 +367,7 @@ export default function SendEmailModal({ onClose, onSuccess, defaults = {} }) {
                 )}
               </div>
 
-              {/* Settings Section */}
+               
               <div className="space-y-3 pt-2">
                 <label className="text-[11px] font-bold text-slate-500 uppercase">Email Configuration</label>
                 <select className="w-full h-9 px-2 text-sm rounded-lg border border-slate-200 bg-white" value={company} required onChange={(e) => setCompany(e.target.value)}>
@@ -267,7 +376,7 @@ export default function SendEmailModal({ onClose, onSuccess, defaults = {} }) {
                   {hasPermission.outsource && <option value="Outsource">Outsource</option>}
                 </select>
 
-                <Select className="text-sm" value={selectedTemplateOption} onChange={handleTemplateChange} options={sortOptions(templateOptions, inputValue)} placeholder="Templates" styles={customStyles} isClearable onInputChange={(val) => setInputValue(val)} />
+                <Select className="text-sm" value={selectedTemplate} onChange={handleTemplateChange} options={sortOptions(templateOptions, inputValue)} placeholder="Templates" styles={customStyles} isClearable  />
                 <Select className="text-sm" value={selectedSignature} onChange={handleSignatureChange} options={signatureOptions} placeholder="Signatures" styles={customStyles} isClearable />
                 
                 {auth?.user?.role?.name === "Admin" && (
@@ -278,7 +387,7 @@ export default function SendEmailModal({ onClose, onSuccess, defaults = {} }) {
                 )}
               </div>
 
-              {/* Attachments & Options */}
+              
               <div className="space-y-3 border-t border-slate-200 pt-4">
                 <div className="flex items-center justify-between">
                    <label className="flex items-center gap-2 cursor-pointer group">

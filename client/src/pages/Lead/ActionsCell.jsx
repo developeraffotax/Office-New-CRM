@@ -12,8 +12,14 @@ import { FiPlusSquare } from "react-icons/fi";
 
  
 import { FiMoreHorizontal } from "react-icons/fi"; // modern icon
+import axios from "axios";
+import { TbLoader2 } from "react-icons/tb";
+import toast from "react-hot-toast";
+import { getClientIdFromCompanyName } from "../../utlis/apiGetters/apiGetters";
 
-export const ActionsCell = ({ row, setClientCompanyName, setClientEmail, setShowNewTicketModal, handleCopyLead, handleLeadStatus, handleDeleteLeadConfirmation,  selectedTab, setClientName, setCompanyName, ticketMap  }) => {
+export const ActionsCell = ({ row,  setNewTicket,  handleCopyLead, handleLeadStatus, handleDeleteLeadConfirmation,  selectedTab, setClientName, setCompanyName, ticketMap  }) => {
+
+  const [creatingTicket, setCreatingTicket] = useState(false);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -32,31 +38,80 @@ const ticketCount =
 const hasTickets = ticketCount > 0;
 
 
+ 
+
+ 
+
+
+    const handleCreateTicket = async () => {
+  try {
+    setCreatingTicket(true);
+
+ 
+
+    if (row?.original?.email) {
+       
+
+      setNewTicket((prev) => ({
+        ...prev,
+        open: true,
+         type: "manual",
+
+        email: row?.original?.email,
+        clientName: row?.original?.clientName,
+        companyName: row?.original?.companyName,
+      }));
+
+
+    } else {
+      const clientId = await getClientIdFromCompanyName( row?.original?.companyName );
+
+      if (clientId) {
+         setNewTicket((prev) => ({
+        ...prev,
+        open: true,
+        type: "client",
+
+        clientId: clientId,
+         
+      }));
+      }
+    }
+
+ 
+  } catch (error) {
+    console.log(error);
+    
+  } finally {
+    setCreatingTicket(false);
+  }
+};
+
+
+
+
+
+
+
   return (
     <div className="flex items-center justify-center gap-4 w-full h-full">
       <div>
         <span
-          title="Create New Ticket"
-          onClick={() => {
-            setClientCompanyName(row?.original?.companyName);
-            setClientEmail(row?.original?.email);
-            setShowNewTicketModal(true);
-
-            if(row?.original?.email) {
-              setClientName(row?.original?.clientName);
-              setCompanyName(row?.original?.companyName)
-            }
-          }}
-          className="text-xl text-orange-500 cursor-pointer"
-        >
-          {" "}
-          <FiPlusSquare />
-        </span>
+  title="Create New Ticket"
+  onClick={handleCreateTicket}
+  className="text-xl text-orange-500 cursor-pointer"
+>
+  {creatingTicket ? (
+    <TbLoader2 className="animate-spin" />
+  ) : (
+    <FiPlusSquare />
+  )}
+</span>
       </div>
       <div>
         
 
-        {/* TICKET ICON WITH COUNT BADGE */}
+         
 <div className="relative">
   <span
     title={`Tickets (${ticketCount})`}
@@ -67,15 +122,7 @@ const hasTickets = ticketCount > 0;
     <IoTicketOutline />
   </span>
 
-  {/* BADGE COUNT */}
-  {/* {ticketCount > 0 && (
-    <span
-      className="absolute -top-2 -right-2 bg-sky-600 text-white text-[10px]
-                 font-bold px-[6px] py-[1px] rounded-full shadow-md"
-    >
-      {ticketCount}
-    </span>
-  )} */}
+ 
 </div>
 
 

@@ -89,12 +89,25 @@ export default function Lead() {
   const [valueTotal, setValueTotal] = useState(0);
 
 
-    const [showNewTicketModal, setShowNewTicketModal] = useState(false);
-    const [clientCompanyName, setClientCompanyName] = useState("");
-    const [clientEmail, setClientEmail] = useState("");
+    // const [showNewTicketModal, setShowNewTicketModal] = useState(false);
+    // const [clientCompanyName, setClientCompanyName] = useState("");
+    // const [clientCompanyId, setClientCompanyId] = useState("");
+ 
+    // const [clientEmail, setClientEmail] = useState("");
 
-    const [clientName, setClientName] = useState("");   // for creating the new ticket
-    const [companyName, setCompanyName] = useState("");
+    // const [clientName, setClientName] = useState("");    
+    // const [companyName, setCompanyName] = useState("");
+
+    const [newTicket, setNewTicket] = useState({
+      open: false,
+
+      clientId: "",
+      email: "",
+      type: "client",
+
+      clientName: "",
+      companyName: ""
+    });
 
 
     const [showSendModal, setShowSendModal] = useState(false);
@@ -909,16 +922,13 @@ const allColumns = getLeadColumns({
   valueTotal,
   ActionsCell,
   selectedTab,
-  setClientCompanyName,
-  setClientEmail,
-  setShowNewTicketModal,
+setNewTicket,
   handleCopyLead,
   handleLeadStatus,
   handleDeleteLeadConfirmation,
   stages,
 
-  setClientName,
-  setCompanyName,
+ 
 
   setEmailPopup,
   ticketMap
@@ -1786,9 +1796,9 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
 
 
        {/* ---------------New Ticket Modal------------- */}
-            {showNewTicketModal && (
+            {newTicket.open && (
               <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
-                <NewTicketModal
+                {/* <NewTicketModal
                   setShowSendModal={setShowNewTicketModal}
                   
                   clientCompanyName={clientCompanyName}
@@ -1797,7 +1807,40 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
 
                   clientName={clientName}
                   companyName={companyName}
-                />
+                /> */}
+
+
+
+
+                 <SendEmailModal
+                                        onClose={() => setNewTicket((prev) => ({ ...prev, open: false, email: "", clientId: "", type: "", clientName: "", companyName: "" })) }
+                                        onSuccess={() =>  setNewTicket((prev) => ({ ...prev, open: false,  email: "", clientId: "", type: "", clientName: "", companyName: "" })) }
+                
+                                        defaults={{
+                                          clientId: newTicket.clientId,
+                                          email: newTicket.email,
+                                          type: newTicket.type,
+                                           
+                                        }}
+
+                                        meta = {{clientName: newTicket.clientName, companyName: newTicket.companyName}}
+                                         
+                
+                
+                
+                                      />
+
+
+
+
+
+
+
+
+
+
+
+
               </div>
             )}
 

@@ -1262,9 +1262,9 @@ const toggleColumnVisibility = (column) => {
         {showSendModal && (
           <div className="fixed top-0 left-0 z-[999] w-full h-full py-1 bg-gray-700/70 flex items-center justify-center">
             <SendEmailModal
-              setShowSendModal={setShowSendModal}
-              getEmails={getEmails}
-              access={access}
+              onClose={() => setShowSendModal(false)}
+              onSuccess={getEmails}
+               
             />
           </div>
         )}

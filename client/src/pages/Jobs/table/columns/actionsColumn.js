@@ -15,6 +15,7 @@ export const actionsColumn = ({
   setJobId,
   setIsComment,
   setClientCompanyName,
+  setClientCompanyId,
   setShowNewTicketModal,
   moveJobToLead,
   createComplaint,
@@ -76,7 +77,8 @@ export const actionsColumn = ({
             <span
               title="Create New Ticket"
               onClick={() => {
-                setClientCompanyName(row?.original?.companyName);
+                //setClientCompanyId(row?.original?.companyId);
+                setClientCompanyId(row?.original?._id);
                 setShowNewTicketModal(true);
               }}
               className="text-xl text-orange-500 cursor-pointer"

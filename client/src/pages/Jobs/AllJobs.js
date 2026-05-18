@@ -69,6 +69,7 @@ import JobHeaderActions from "./JobHeaderActions";
 import { useSavedFilters } from "../../components/SavedFilters/useSavedFilters";
 import SavedFiltersPanel from "../../components/SavedFilters/SavedFiltersPanel";
 import { CiFilter } from "react-icons/ci";
+import SendEmailModal from "../../components/Tickets/SendEmailModal";
  
  
  
@@ -183,6 +184,7 @@ export default function AllJobs() {
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
 
    const [clientCompanyName, setClientCompanyName] = useState("");
+   const [clientCompanyId, setClientCompanyId] = useState("");
  
  
 
@@ -1711,6 +1713,7 @@ const jobCtx = useMemo(() => {
     updateActiveClient, 
     handleUpdateDates,  
     setClientCompanyName, 
+    setClientCompanyId,
     setShowNewTicketModal, 
     moveJobToLead,      
     handleUpdateLead,  
@@ -3528,11 +3531,36 @@ useEffect(() => {
       {/* ---------------New Ticket Modal------------- */}
       {showNewTicketModal && (
         <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
-          <NewTicketModal
+          {/* <NewTicketModal
             setShowSendModal={setShowNewTicketModal}
             
             clientCompanyName={clientCompanyName}
-          />
+          /> */}
+
+
+
+
+
+           <SendEmailModal
+                        onClose={() => setShowNewTicketModal(false)}
+                        onSuccess={() =>  setShowNewTicketModal(false) }
+
+                        defaults={{
+                          clientId: clientCompanyId,
+                        }}
+                         
+
+
+
+                      />
+
+
+
+
+
+
+
+
         </div>
       )}
 

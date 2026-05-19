@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import AIReplySelectorNew from "../../ai/AIReplySelectorNew";
 import { HiChatAlt2, HiOutlineOfficeBuilding } from "react-icons/hi";
 import { useEscapeKey } from "../../../utlis/useEscapeKey";
+import CustomSelect from "../../../utlis/CustomSelect";
 
 export default function Reply({
   company,
@@ -22,7 +23,7 @@ export default function Reply({
   getEmailDetail,
   setShowReplyEditor,
 
-  ticketId
+  ticketId,
 }) {
   const {
     mode,
@@ -40,27 +41,29 @@ export default function Reply({
     removeFile,
     send,
     loading,
+    signature,
+    setSignature,
   } = useEmailReply({ companyName: company, emailDetail, ticketId });
 
   const [templates, setTemplates] = useState([]);
   const [templateId, setTemplateId] = useState("");
-  const [inputValue, setInputValue] = useState("");
 
   // States to control visibility of CC and BCC fields
   const [showCcField, setShowCcField] = useState(false);
   const [showBccField, setShowBccField] = useState(false);
 
   useEscapeKey(() => {
-    setShowReplyEditor(false)
-  })
+    setShowReplyEditor(false);
+  });
 
   const handleSend = async (e) => {
     e.preventDefault();
     if (message?.trim()?.length === 0) {
       return toast.error("Message can't be empty!");
     }
+
     await send();
-    setShowReplyEditor(false)
+    setShowReplyEditor(false);
     getEmailDetail();
   };
 
@@ -85,18 +88,52 @@ export default function Reply({
     }
   }, [mode, cc]);
 
+  const [signatures, setSignatures] = useState([]);
+  const [signatureId, setSignatureId] = useState("");
 
+  const getAllSignatures = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/signatures`,
+        { params: { company } },
+      );
+      setSignatures(data?.data || []);
+    } catch (error) {
+      toast.error("Failed to load signatures");
+    }
+  };
+
+  useEffect(() => {
+    getAllSignatures();
+  }, [company]);
+
+  const signatureOptions = useMemo(
+    () =>
+      signatures.map((sig) => ({
+        value: sig._id,
+        label: sig.name,
+        html: sig.html,
+      })),
+    [signatures],
+  );
+
+  const selectedSignature = useMemo(() => {
+    if (!signatureId || signatureOptions.length === 0) return null;
+
+    return (
+      signatureOptions.find((option) => option.value === signatureId) ?? null
+    );
+  }, [signatureOptions, signatureId]);
 
   return (
     <div className="w-[60%] max-w-[80vw]   items-stretch flex gap-4">
-
       <ReplyingFrom companyName={company} />
-      
+
       <div className="  w-[70%]  bg-white border   border-red-200 rounded-xl shadow-2xl flex flex-col overflow-hidden animate-pop  ">
         {/* Header Area */}
         <div className="px-4 pt-3 pb-1 space-y-1 bg-white w-full ">
           {/* Reply Mode Toggle */}
-          
+
           <div className="flex items-center gap-3 px-4 pt-3 text-xs font-medium">
             <button
               type="button"
@@ -180,45 +217,51 @@ export default function Reply({
           )}
 
           {/* Template Selector - Integrated into Header */}
-          <div className="flex items-center text-sm py-1">
-            <span className="w-20 text-gray-400 text-[10px] font-bold uppercase tracking-wider">
-              Template
-            </span>
-            <div className="flex-1">
-              <Select
-                placeholder="Select a response template..."
-                value={templateOptions.find((opt) => opt.value === templateId)}
-                options={sortOptions(templateOptions, inputValue)}
-                onChange={(opt) => {
-                  setTemplateId(opt.value);
-                  setMessage(opt.description);
-                }}
-                onInputChange={(val) => setInputValue(val)}
-                components={{ Option: HighlightedOption }}
-                styles={{
-                  control: (base) => ({
-                    ...base,
-                    background: "transparent",
-                    border: "none",
-                    boxShadow: "none",
-                    fontSize: "13px",
-                    minHeight: "30px",
-                    cursor: "pointer",
-                  }),
-                  menu: (base) => ({ ...base, zIndex: 9999 }),
-                  placeholder: (base) => ({ ...base, color: "#9ca3af" }),
-                }}
-              />
-            </div>
+          <div className="w-full flex items-center justify-between gap-3  text-sm py-1">
+             
+              <div className="flex-1">
+                <CustomSelect
+                  value={templateId}
+                  options={templateOptions}
+                  placeholder="Select a response template..."
+                  onChange={(opt) => {
+                    setTemplateId(opt?.value);
+                    setMessage(opt?.description);
+                  }}
+                />
+              </div>
+             
+
+             
+              <div className="flex-1">
+                <CustomSelect
+                  value={signatureId}
+                  options={signatureOptions}
+                  placeholder="Select Signature..."
+                  onChange={(selectedOption) => {
+                    setSignatureId(selectedOption?.value || "");
+                    setSignature(selectedOption?.html || "");
+                  }}
+                />
+              </div>
+             
           </div>
-
-
-          
         </div>
 
         {/* Editor Body */}
         <div className="px-4 py-2 w-full  ">
           <CustomEditorNew template={message} setTemplate={setMessage} />
+          {selectedSignature?.html && (
+            <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-100 relative group">
+              <span className="absolute -top-2 left-3 bg-white px-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Signature Preview
+              </span>
+              <div
+                className="text-xs opacity-70 italic pointer-events-none"
+                dangerouslySetInnerHTML={{ __html: selectedSignature.html }}
+              />
+            </div>
+          )}
         </div>
 
         {/* Attachment Chips */}
@@ -270,8 +313,6 @@ export default function Reply({
             </label>
           </div>
 
-          
-
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowReplyEditor(false)}
@@ -294,23 +335,6 @@ export default function Reply({
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

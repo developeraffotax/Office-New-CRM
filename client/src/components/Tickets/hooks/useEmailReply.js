@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { set } from "date-fns";
 
 const myEmailMap = {
   affotax: "info@affotax.com",
@@ -140,6 +141,8 @@ export function useEmailReply({
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const [signature, setSignature] = useState("");
+
   /* ---------- auto population ---------- */
  
   useEffect(() => {
@@ -209,6 +212,15 @@ export function useEmailReply({
 
     setLoading(true);
 
+
+    const finalMessage = signature
+        ? `${message}<br/><br/>${signature}`
+        : message;
+
+
+
+
+
     try {
       const attachments = await Promise.all(files.map(fileToBase64));
 
@@ -220,7 +232,7 @@ export function useEmailReply({
         cc,
         bcc,
         replyTo,
-        html: message,
+        html: finalMessage,
         quotedHtml,
         headers,
         attachments,
@@ -257,5 +269,8 @@ export function useEmailReply({
     removeFile,
     send,
     loading,
+
+    signature,
+    setSignature,
   };
 }

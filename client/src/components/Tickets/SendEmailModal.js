@@ -412,19 +412,20 @@ export default function SendEmailModal({
           <div className="px-8 py-4 bg-slate-100 border-t border-slate-300 flex items-center justify-start gap-5">
 
             {/* Right aligned action block */}
-            <button
-              disabled={loading}
-              className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-md active:scale-95 disabled:opacity-50"
-              type="submit"
-            >
-              {loading ? (
-                <TbLoader2 className="animate-spin" size={16} />
-              ) : (
-                <>
-                  <IoSend size={14} /> Send
-                </>
-              )}
-            </button>
+           <button
+  disabled={loading}
+  className="w-[100px] h-[36px] bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-1 transition-all shadow-sm active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none select-none"
+  type="submit"
+>
+  {loading ? (
+    <TbLoader2 className="animate-spin" size={16} />
+  ) : (
+    <>
+      <IoSend size={14} className="shrink-0" /> 
+      <span>Send</span>
+    </>
+  )}
+</button>
 
 
             {/* Left aligned footer block */}

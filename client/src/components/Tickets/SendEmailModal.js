@@ -14,6 +14,7 @@ import {
 } from "./HighlightedOption";
 import { useEscapeKey } from "../../utlis/useEscapeKey";
 import { hasSubrole, isAdmin } from "../../utlis/checkPermission";
+import CustomSelect from "../../utlis/CustomSelect";
 
 export default function SendEmailModal({
   onClose,
@@ -43,13 +44,10 @@ export default function SendEmailModal({
     jobHolder: defaults.jobHolder || "",
   };
 
-  
   const [users, setUsers] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [jobData, setJobData] = useState([]);
   const [signatures, setSignatures] = useState([]);
-
-
 
   const [files, setFiles] = useState([]);
 
@@ -59,18 +57,16 @@ export default function SendEmailModal({
   const [type, setType] = useState(initialState.type);
   const [email, setEmail] = useState(initialState.email);
   const [jobHolder, setJobHolder] = useState(initialState.jobHolder);
-  const [trustPilotBcc, setTrustPilotBcc] = useState( initialState.trustPilotBcc, );
+  const [trustPilotBcc, setTrustPilotBcc] = useState(
+    initialState.trustPilotBcc,
+  );
   const [clientId, setClientId] = useState(initialState.clientId);
-  
+
   const [templateId, setTemplateId] = useState("");
   const [signatureId, setSignatureId] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [inputValue, setInputValue] = useState("");
-
-
-
-
 
   useEscapeKey(() => onClose?.());
 
@@ -124,10 +120,7 @@ export default function SendEmailModal({
     allClientJobData();
   }, []);
 
-
-
-
- const getAllTemplates = async () => {
+  const getAllTemplates = async () => {
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/templates/get/all/template`,
@@ -140,28 +133,6 @@ export default function SendEmailModal({
     getAllTemplates();
   }, []);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   const options = useMemo(
     () =>
       jobData.map((job) => ({
@@ -171,134 +142,65 @@ export default function SendEmailModal({
     [jobData],
   );
 
-  const selectedOption = useMemo(() => {
-    if (!clientId || options.length === 0) return null;
-    return (
-      options.find((option) => {
-        return option.value === clientId;
-      }) ?? null
-    );
-  }, [options, clientId]);
-
  
 
   const handleChange = (selectedOption) => {
     setClientId(selectedOption?.value || "");
   };
 
-
-
-
+  const templateOptions = useMemo(
+    () =>
+      templates.map((template) => ({
+        value: template._id,
+        label: `${template.name} - ${template.description}`,
+        description: template.template,
+      })),
+    [templates],
+  );
 
  
 
-  const templateOptions = useMemo(
-  () =>
-    templates.map((template) => ({
-      value: template._id,
-    label: `${template.name} - ${template.description}`,
-    description: template.template,
-    })),
-  [templates]
-);
+  const handleTemplateChange = (selectedOption) => {
+    setTemplateId(selectedOption?.value || "");
 
-const selectedTemplate = useMemo(() => {
-  if (!templateId || templateOptions.length === 0) return null;
+    if (selectedOption) {
+      setMessage(selectedOption.description || "");
+    }
+  };
 
-  return (
-    templateOptions.find(
-      (option) => option.value === templateId
-    ) ?? null
+
+
+
+  const signatureOptions = useMemo(
+    () =>
+      signatures.map((sig) => ({
+        value: sig._id,
+        label: sig.name,
+        html: sig.html,
+      })),
+    [signatures],
   );
-}, [templateOptions, templateId]);
 
+  const selectedSignature = useMemo(() => {
+    if (!signatureId || signatureOptions.length === 0) return null;
 
-const handleTemplateChange = (selectedOption) => {
-  setTemplateId(selectedOption?.value || "");
+    return (
+      signatureOptions.find((option) => option.value === signatureId) ?? null
+    );
+  }, [signatureOptions, signatureId]);
 
-  if (selectedOption) {
-    setMessage(selectedOption.description || "");
-  }
-};
+  const handleSignatureChange = (selectedOption) => {
+    setSignatureId(selectedOption?.value || "");
+  };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const signatureOptions = useMemo(
-  () =>
-    signatures.map((sig) => ({
-      value: sig._id,
-      label: sig.name,
-      html: sig.html,
-    })),
-  [signatures]
-);
-
-const selectedSignature = useMemo(() => {
-  if (!signatureId || signatureOptions.length === 0) return null;
-
-  return (
-    signatureOptions.find(
-      (option) => option.value === signatureId
-    ) ?? null
-  );
-}, [signatureOptions, signatureId]);
-
-const handleSignatureChange = (selectedOption) => {
-  setSignatureId(selectedOption?.value || "");
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- const handleSelectedFile = (e) =>
+  const handleSelectedFile = (e) =>
     setFiles([...files, ...Array.from(e.target.files)]);
   const removeSelectFile = (name) =>
     setFiles(files.filter((item) => item.name !== name));
 
-
-
-
-
-
-
-
   const sendEmail = async (e) => {
     e.preventDefault();
     if (!company) return toast.error("Company is required!");
-
-    console.log("Sending Email with State:", { company, clientId });
 
     setLoading(true);
 
@@ -340,56 +242,19 @@ const handleSignatureChange = (selectedOption) => {
     }
   };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    const customStyles = {
-    control: (provided) => ({
-      ...provided,
-      border: "1px solid #e5e7eb",
-      borderRadius: "0.5rem",
-      boxShadow: "none",
-      minHeight: "36px",
-      fontSize: "14px",
-      "&:hover": { border: "1px solid #f97316" },
-    }),
-    menu: (provided) => ({ ...provided, zIndex: 9999 }),
-  };
-
-
-
-
-
-
-
-
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4">
-      <div className="w-full max-w-5xl  h-[85vh] overflow-hidden rounded-md border border-slate-200 bg-white flex flex-col shadow-2xl font-google">
-        {/* Header - More Compact */}
-        <div className="flex items-center justify-between px-5 py-3 bg-slate-50 border-b border-slate-200">
-          <div>
-            <h1 className="text-base font-bold font-google text-slate-800">
-              New Ticket
-            </h1>
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 font-google">
+      <div className="w-full max-w-5xl h-[85vh] overflow-hidden rounded-md border border-slate-300 bg-white flex flex-col shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-2.5 bg-slate-100 border-b border-slate-300">
+          <h1 className="text-sm font-bold text-slate-800 tracking-wide">
+            New Ticket
+          </h1>
           <button
             onClick={() => onClose?.()}
-            className="p-1.5 hover:bg-slate-200 rounded-full transition-colors text-slate-400 hover:text-slate-700"
+            className="p-1 hover:bg-slate-300 rounded transition-colors text-slate-500 hover:text-slate-800"
           >
-            <IoClose size={20} />
+            <IoClose size={18} />
           </button>
         </div>
 
@@ -397,51 +262,42 @@ const handleSignatureChange = (selectedOption) => {
           className="flex flex-col flex-1 overflow-hidden"
           onSubmit={sendEmail}
         >
-          <div className="flex flex-1 overflow-hidden">
-            {/* Main Composer Area */}
-            <div className="w-[60%] flex-1 overflow-y-auto p-5 space-y-4 border-r border-slate-100">
-              <input
-                type="text"
-                placeholder="Subject"
-                required
-                className={`w-full ${style.input}`}
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-              />
-
-              <div className="shadow-sm ">
-                <CustomEditor template={message} setTemplate={setMessage} />
+          {/* Main Content Area - Single Column Flow */}
+          <div className="flex-1 overflow-y-auto px-8 py-4 space-y-4 flex flex-col bg-slate-50">
+            {/* Top Configuration Grid: Left Aligned Recipients & Templates */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-2  ">
+              <div className="col-span-2 space-y-1">
+                {hasPermission.client && type === "client" ? (
+                  <CustomSelect
+                    value={clientId}
+                    onChange={handleChange}
+                    options={options}
+                    placeholder="Search Client..."
+                    isClearable
+                  />
+                ) : (
+                  <input
+                    type="email"
+                    placeholder="Enter manual email address"
+                    required
+                    className="w-full  h-[36px] px-2 text-sm rounded-lg border border-slate-300 bg-white outline-none focus:border-orange-500 transition-all"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                )}
               </div>
 
-              {selectedSignature?.html && (
-                <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-100 relative group">
-                  <span className="absolute -top-2 left-3 bg-white px-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Signature Preview
-                  </span>
-                  <div
-                    className="text-xs opacity-70 italic pointer-events-none"
-                    dangerouslySetInnerHTML={{ __html: selectedSignature.html }}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Sidebar Controls - Modern Compact Sidebar */}
-            <div className="w-[40%] bg-slate-50/50 p-4 overflow-y-auto space-y-5 ">
-              {/* Recipient Section */}
-              <div className="space-y-2">
-                <label className="text-[11px] font-bold text-slate-500 uppercase">
-                  Recipients
-                </label>
-                <div className="flex bg-slate-200 p-1 rounded-lg mb-2">
+              {/* Row 1: Recipient Controls */}
+              <div className="col-span-1 space-y-1">
+                <div className="flex bg-slate-200 p-1 rounded-lg ">
                   {hasPermission.client && (
                     <button
                       type="button"
                       onClick={() => setType("client")}
-                      className={`flex-1 text-xs py-1 rounded-md transition-all ${
+                      className={`flex-1 text-[12px] py-1 rounded-md transition-all ${
                         type === "client"
-                          ? "bg-white shadow-sm font-semibold"
-                          : "text-slate-500"
+                          ? "bg-white shadow-sm font-semibold text-slate-800"
+                          : "text-slate-500 hover:text-slate-700"
                       }`}
                     >
                       Client
@@ -450,44 +306,21 @@ const handleSignatureChange = (selectedOption) => {
                   <button
                     type="button"
                     onClick={() => setType("manual")}
-                    className={`flex-1 text-xs py-1 rounded-md transition-all ${
+                    className={`flex-1 text-[12px] py-1 rounded-md transition-all ${
                       type === "manual"
-                        ? "bg-white shadow-sm font-semibold"
-                        : "text-slate-500"
+                        ? "bg-white shadow-sm font-semibold text-slate-800"
+                        : "text-slate-500 hover:text-slate-700"
                     }`}
                   >
                     Manual
                   </button>
                 </div>
-
-                {hasPermission.client && type === "client" ? (
-                  <Select
-                    className="text-sm"
-                    value={selectedOption}
-                    onChange={handleChange}
-                    options={options}
-                    placeholder="Select Client..."
-                    styles={customStyles}
-                    isClearable
-                  />
-                ) : (
-                  <input
-                    type="email"
-                    placeholder="Email Address"
-                    required
-                    className="w-full h-9 px-3 text-sm rounded-lg border border-slate-200 outline-none focus:border-orange-500 transition-all"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                )}
               </div>
 
-              <div className="space-y-3 pt-2">
-                <label className="text-[11px] font-bold text-slate-500 uppercase">
-                  Email Configuration
-                </label>
+              {/* Row 2: Company, Templates, Signatures, JobHolder */}
+              <div className="col-span-1 space-y-1">
                 <select
-                  className="w-full h-9 px-2 text-sm rounded-lg border border-slate-200 bg-white"
+                  className="w-full h-[36px] px-2 text-sm text-gray-500 rounded-lg border border-slate-300 bg-white outline-none focus:border-orange-500"
                   value={company}
                   required
                   onChange={(e) => setCompany(e.target.value)}
@@ -500,116 +333,157 @@ const handleSignatureChange = (selectedOption) => {
                     <option value="Outsource">Outsource</option>
                   )}
                 </select>
+              </div>
 
-                
-                <Select
-                  className="text-sm"
-                  value={selectedTemplate}
+              <div className="col-span-2 space-y-1">
+                <CustomSelect
+                  value={templateId}
                   components={{ Option: HighlightedOption }}
                   filterOption={filterOption}
                   onChange={handleTemplateChange}
                   options={sortOptions(templateOptions, inputValue)}
-                  placeholder="Templates"
-                  styles={customStyles}
-                  isClearable
-                  onInputChange={(val) => setInputValue(val)}
+                  placeholder="Select Template..."
                 />
+              </div>
 
-                <Select
-                  className="text-sm"
-                  value={selectedSignature}
+              <div className="col-span-1 space-y-1">
+                <CustomSelect
+                  value={signatureId}
                   onChange={handleSignatureChange}
                   options={signatureOptions}
-                  placeholder="Signatures"
-                  styles={customStyles}
+                  placeholder="Select Signature..."
                   isClearable
                 />
+              </div>
 
-                {auth?.user?.role?.name === "Admin" && (
+              {auth?.user?.role?.name === "Admin" && (
+                <div className="col-span-1 space-y-1">
                   <select
                     value={jobHolder}
-                    className="w-full h-9 px-2 text-sm rounded-lg border border-slate-200 bg-white"
+                    className="w-full h-[36px] px-2 text-sm text-gray-500 rounded-lg border border-slate-300 bg-white outline-none focus:border-orange-500"
                     onChange={(e) => setJobHolder(e.target.value)}
                   >
-                    <option value="">Assigned Jobholder</option>
+                    <option value="">Assign Jobholder...</option>
                     {users?.map((u, i) => (
                       <option value={u.name} key={i}>
                         {u.name}
                       </option>
                     ))}
                   </select>
+                </div>
+              )}
+            </div>
+
+            {/* Middle Section: Subject & Editor Left Aligned (Full Width in single column) */}
+            <div className="flex flex-col flex-1 space-y-3">
+              <div className="flex items-center gap-3 px-3 py-1.5 bg-white border border-slate-300 rounded-md shadow-sm focus-within:bg-white focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500/20 transition-all">
+                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider select-none shrink-0 border-r border-slate-200 pr-3">
+                  Subject
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter email subject..."
+                  required
+                  className="w-full bg-transparent text-sm   font-semibold text-gray-600 outline-none placeholder:text-slate-400 placeholder:font-normal py-0.5"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                />
+              </div>
+
+              <div className="flex-1   ">
+                <CustomEditor template={message} setTemplate={setMessage} />
+              </div>
+
+              {selectedSignature?.html && (
+                <div className="mt-2 p-3 bg-slate-50 border border-slate-200 rounded">
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">
+                    Signature Preview
+                  </span>
+                  <div
+                    className="text-xs opacity-70 pointer-events-none"
+                    dangerouslySetInnerHTML={{ __html: selectedSignature.html }}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Footer: Attachments strictly on the Left, Send on the Right */}
+          <div className="px-8 py-4 bg-slate-100 border-t border-slate-300 flex items-center justify-start gap-5">
+
+            {/* Right aligned action block */}
+            <button
+              disabled={loading}
+              className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-md active:scale-95 disabled:opacity-50"
+              type="submit"
+            >
+              {loading ? (
+                <TbLoader2 className="animate-spin" size={16} />
+              ) : (
+                <>
+                  <IoSend size={14} /> Send
+                </>
+              )}
+            </button>
+
+
+            {/* Left aligned footer block */}
+            <div className="flex flex-col gap-2 max-w-[75%]">
+              <div className="flex items-center gap-6">
+                <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-600 hover:text-orange-600 transition-colors">
+                  <input
+                    type="file"
+                    id="file"
+                    multiple
+                    className="hidden"
+                    onChange={handleSelectedFile}
+                  />
+                  <TbPaperclip size={18} /> Attach Files
+                </label>
+
+                {hasPermission.trustPilot && (
+                  <label
+                    className={`flex items-center gap-1.5 text-[11px] font-semibold ${
+                      company === "Affotax"
+                        ? "text-slate-700 cursor-pointer"
+                        : "text-slate-400"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={trustPilotBcc}
+                      disabled={company !== "Affotax"}
+                      onChange={(e) => setTrustPilotBcc(e.target.checked)}
+                      className="accent-orange-500 w-3.5 h-3.5"
+                    />
+                    BCC Trustpilot
+                  </label>
                 )}
               </div>
 
-              <div className="space-y-3 border-t border-slate-200 pt-4">
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer group">
-                    <input
-                      type="file"
-                      id="file"
-                      multiple
-                      className="hidden"
-                      onChange={handleSelectedFile}
-                    />
-                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 group-hover:text-orange-600">
-                      <TbPaperclip size={18} /> Attach Files
-                    </div>
-                  </label>
-                  {hasPermission.trustPilot && (
-                    <label
-                      className={`flex items-center gap-2 text-[11px] font-medium ${
-                        company === "Affotax"
-                          ? "text-slate-600 cursor-pointer"
-                          : "text-slate-300"
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={trustPilotBcc}
-                        disabled={company !== "Affotax"}
-                        onChange={(e) => setTrustPilotBcc(e.target.checked)}
-                        className="accent-orange-500"
-                      />
-                      BCC Trustpilot
-                    </label>
-                  )}
-                </div>
-
-                <div className="flex flex-wrap gap-2">
+              {/* File list directly under the attachment button in footer */}
+              {files.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
                   {files.map((item) => (
                     <div
                       key={item.name}
-                      className="flex items-center gap-1 bg-white border border-slate-200 px-2 py-1 rounded text-[10px] text-slate-600"
+                      className="flex items-center gap-1 bg-white border border-slate-300 px-2 py-0.5 rounded shadow-sm text-[10px] text-slate-700 font-medium"
                     >
-                      <span className="truncate max-w-[100px]">
+                      <span className="truncate max-w-[120px]">
                         {item.name}
                       </span>
                       <IoClose
-                        className="cursor-pointer hover:text-red-500"
+                        className="cursor-pointer text-slate-400 hover:text-red-500"
                         onClick={() => removeSelectFile(item.name)}
+                        size={12}
                       />
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer Action */}
-          <div className="px-6 py-3 bg-white border-t border-slate-100 flex justify-end">
-            <button
-              disabled={loading}
-              className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all shadow-md active:scale-95 disabled:opacity-50"
-              type="submit"
-            >
-              {loading ? (
-                <TbLoader2 className="animate-spin" size={18} />
-              ) : (
-                <>
-                  <IoSend /> Send
-                </>
               )}
-            </button>
+            </div>
+
+            
           </div>
         </form>
       </div>

@@ -41,7 +41,7 @@ import { getTicketsColumns } from "./table/columns";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { isAdmin } from "../../utlis/isAdmin";
 import DetailComments from "../Tasks/TaskDetailComments";
- 
+
 import { useClickOutside } from "../../utlis/useClickOutside";
 import { GoEye, GoEyeClosed } from "react-icons/go";
 import { useSocket } from "../../context/socketProvider";
@@ -84,7 +84,7 @@ const colVisibility = {
   lastMessageSentTime: true,
 
   actions: true,
-  displayEmail: true
+  displayEmail: true,
 };
 
 export default function Tickets() {
@@ -96,7 +96,7 @@ export default function Tickets() {
   const comment_taskId = searchParams.get("comment_taskId");
 
   const [showSendModal, setShowSendModal] = useState(false);
-  
+
   const [emailData, setEmailData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -109,9 +109,7 @@ export default function Tickets() {
   const commentStatusRef = useRef(null);
   const [commentTicketId, setCommentTicketId] = useState("");
 
-
-    const [showUserTicketChart, setShowUserTicketChart] = useState(false);
-
+  const [showUserTicketChart, setShowUserTicketChart] = useState(false);
 
   const [showJobHolder, setShowJobHolder] = useState(true);
   const [active1, setActive1] = useState("");
@@ -140,9 +138,8 @@ export default function Tickets() {
 
   const [ticketSubject, setTicketSubject] = useState("");
 
-
-        const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsers("tickets:selected_users", userName);
-
+  const { selectedUsers, setSelectedUsers, toggleUser, resetUsers } =
+    usePersistedUsers("tickets:selected_users", userName);
 
   const socket = useSocket();
 
@@ -169,7 +166,7 @@ export default function Tickets() {
   useEffect(() => {
     // Load saved column visibility from localStorage
     const savedVisibility = JSON.parse(
-      localStorage.getItem("visibileTicketsColumn")
+      localStorage.getItem("visibileTicketsColumn"),
     );
 
     if (savedVisibility) {
@@ -266,7 +263,7 @@ export default function Tickets() {
   const mergeWithSavedOrder = (fetchedUsernames, savedOrder) => {
     const savedSet = new Set(savedOrder);
     const ordered = savedOrder.filter((name) =>
-      fetchedUsernames.includes(name)
+      fetchedUsernames.includes(name),
     );
     const newOnes = fetchedUsernames.filter((name) => !savedSet.has(name));
     return [...ordered, ...newOnes];
@@ -295,7 +292,7 @@ export default function Tickets() {
     const items = reorder(
       selectedUsers,
       result.source.index,
-      result.destination.index
+      result.destination.index,
     );
     localStorage.setItem("tickets_usernamesOrder", JSON.stringify(items));
     setSelectedUsers(items);
@@ -319,13 +316,13 @@ export default function Tickets() {
     e.preventDefault();
     setIsUpdating(true);
     const selectedIds = Object.keys(rowSelection).filter(
-      (id) => rowSelection[id]
+      (id) => rowSelection[id],
     );
 
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/bulk/tickets`,
-        { rowSelection: selectedIds, updates }
+        { rowSelection: selectedIds, updates },
       );
       if (data) {
         setUpdates(updates_object_init);
@@ -344,7 +341,7 @@ export default function Tickets() {
     setIsLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets`,
       );
       if (data) {
         setEmailData(data.emails);
@@ -359,7 +356,7 @@ export default function Tickets() {
   const getEmails = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets`,
       );
       if (data) {
         setEmailData(data.emails);
@@ -372,27 +369,27 @@ export default function Tickets() {
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
       );
       setUsers(
         data?.users?.filter((user) =>
           user.role?.access?.some((item) =>
-            item?.permission?.includes("Tickets")
-          )
-        ) || []
+            item?.permission?.includes("Tickets"),
+          ),
+        ) || [],
       );
 
       const userNameArr = data?.users
         ?.filter((user) =>
           user.role?.access.some((item) =>
-            item?.permission?.includes("Tickets")
-          )
+            item?.permission?.includes("Tickets"),
+          ),
         )
         .map((user) => user.name);
       setUserName(userNameArr);
 
       const savedOrder = JSON.parse(
-        localStorage.getItem("tickets_usernamesOrder") || "null"
+        localStorage.getItem("tickets_usernamesOrder") || "null",
       );
       if (savedOrder) setUserName(mergeWithSavedOrder(userNameArr, savedOrder));
     } catch (error) {
@@ -420,7 +417,7 @@ export default function Tickets() {
   const handleDeleteTicket = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/tickets/delete/ticket/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/delete/ticket/${id}`,
       );
       if (data) {
         const filteredData = emailData?.filter((item) => item._id !== id);
@@ -444,7 +441,7 @@ export default function Tickets() {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
-        { jobStatus: status }
+        { jobStatus: status },
       );
       if (data) {
         const updateTicket = data?.ticket;
@@ -454,7 +451,7 @@ export default function Tickets() {
           setFilteredData((prevData) => {
             if (Array.isArray(prevData)) {
               return prevData.map((item) =>
-                item._id === updateTicket._id ? updateTicket : item
+                item._id === updateTicket._id ? updateTicket : item,
               );
             } else {
               return [updateTicket];
@@ -465,7 +462,7 @@ export default function Tickets() {
         setEmailData((prevData) => {
           if (Array.isArray(prevData)) {
             return prevData.map((item) =>
-              item._id === updateTicket._id ? updateTicket : item
+              item._id === updateTicket._id ? updateTicket : item,
             );
           } else {
             return [updateTicket];
@@ -482,7 +479,7 @@ export default function Tickets() {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
-        { jobHolder }
+        { jobHolder },
       );
       if (data) {
         const updateTicket = data?.ticket;
@@ -491,7 +488,7 @@ export default function Tickets() {
           setFilteredData((prevData) => {
             if (Array.isArray(prevData)) {
               return prevData.map((item) =>
-                item._id === updateTicket._id ? updateTicket : item
+                item._id === updateTicket._id ? updateTicket : item,
               );
             } else {
               return [updateTicket];
@@ -502,7 +499,7 @@ export default function Tickets() {
         setEmailData((prevData) => {
           if (Array.isArray(prevData)) {
             return prevData.map((item) =>
-              item._id === updateTicket._id ? updateTicket : item
+              item._id === updateTicket._id ? updateTicket : item,
             );
           } else {
             return [updateTicket];
@@ -521,7 +518,7 @@ export default function Tickets() {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
-        { jobDate }
+        { jobDate },
       );
       if (data) {
         const updateTicket = data?.ticket;
@@ -530,7 +527,7 @@ export default function Tickets() {
           setFilteredData((prevData) => {
             if (Array.isArray(prevData)) {
               return prevData.map((item) =>
-                item._id === updateTicket._id ? updateTicket : item
+                item._id === updateTicket._id ? updateTicket : item,
               );
             } else {
               return [updateTicket];
@@ -541,7 +538,7 @@ export default function Tickets() {
         setEmailData((prevData) => {
           if (Array.isArray(prevData)) {
             return prevData.map((item) =>
-              item._id === updateTicket._id ? updateTicket : item
+              item._id === updateTicket._id ? updateTicket : item,
             );
           } else {
             return [updateTicket];
@@ -571,7 +568,7 @@ export default function Tickets() {
         Swal.fire(
           "Complete!",
           "Your ticket completed successfully!",
-          "success"
+          "success",
         );
       }
     });
@@ -585,14 +582,14 @@ export default function Tickets() {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
-        { state: "complete" }
+        { state: "complete" },
       );
       if (data?.success) {
         const updateTicket = data?.ticket;
         toast.success("Status completed successfully!");
 
         setEmailData((prevData) =>
-          prevData.filter((item) => item._id !== updateTicket._id)
+          prevData.filter((item) => item._id !== updateTicket._id),
         );
       }
     } catch (error) {
@@ -605,7 +602,7 @@ export default function Tickets() {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
-        update
+        update,
       );
 
       if (data) {
@@ -613,15 +610,15 @@ export default function Tickets() {
 
         setEmailData((prevData) =>
           prevData.map((item) =>
-            item._id === updatedTicket._id ? updatedTicket : item
-          )
+            item._id === updatedTicket._id ? updatedTicket : item,
+          ),
         );
 
         if (filteredData)
           setFilteredData((prevData) =>
             prevData.map((item) =>
-              item._id === updatedTicket._id ? updatedTicket : item
-            )
+              item._id === updatedTicket._id ? updatedTicket : item,
+            ),
           );
 
         toast.success("Ticket updated successfully!");
@@ -640,7 +637,7 @@ export default function Tickets() {
       auth,
       users,
     }),
-    [auth, users]
+    [auth, users],
   );
 
   // ----------------------------
@@ -650,7 +647,7 @@ export default function Tickets() {
     () => ({
       companyData,
     }),
-    [companyData]
+    [companyData],
   );
 
   // ----------------------------
@@ -677,7 +674,7 @@ export default function Tickets() {
       handleUpdateTicketStatusConfirmation,
       handleDeleteTicketConfirmation,
     }),
-    [status, jobStatusOptions]
+    [status, jobStatusOptions],
   );
 
   // ----------------------------
@@ -691,7 +688,7 @@ export default function Tickets() {
       ...ticketCtx,
       ...companyCtx,
     }),
-    [authCtx, ticketCtx, companyCtx]
+    [authCtx, ticketCtx, companyCtx],
   );
 
   // ----------------------------
@@ -774,26 +771,7 @@ export default function Tickets() {
     },
   });
 
-  // ===== Side-effects =====
-
-  // Close Comment Box to click anywhere
-  //   useEffect(() => {
-  //      const handleClickOutside = (event) => {
-
-  //   const clickInside =
-  //     commentStatusRef.current?.contains(event.target) ||
-  //     document.querySelector(".MuiPopover-root")?.contains(event.target) || // for MUI Menu
-  //     document.querySelector(".EmojiPickerReact")?.contains(event.target) || // for emoji picker
-  //     document.querySelector(".MuiDialog-root")?.contains(event.target); // ✅ For Dialog
-
-  //   if (!clickInside) {
-  //     setIsComment(false);
-  //   }
-  // };
-
-  //     document.addEventListener("mousedown", handleClickOutside);
-  //     return () => document.removeEventListener("mousedown", handleClickOutside);
-  //   }, []);
+ 
 
   useEffect(() => {
     getAllUsers();
@@ -813,11 +791,7 @@ export default function Tickets() {
     }
   }, [auth]);
 
-  // useEffect(() => {
-  //   if (comment_taskId) {
-  //     filterByRowId(table, comment_taskId, setCommentTicketId, setIsComment);
-  //   }
-  // }, [comment_taskId, searchParams, navigate, table]);
+ 
 
   useEffect(() => {
     if (comment_taskId) {
@@ -831,109 +805,83 @@ export default function Tickets() {
     }
   }, [comment_taskId, searchParams, navigate, table]);
 
+  const toggleColumnVisibility = (column) => {
+    const updatedVisibility = {
+      ...columnVisibility,
+      [column]: !columnVisibility[column],
+    };
+    setColumnVisibility(updatedVisibility);
+    localStorage.setItem(
+      `visibileTicketsColumn`,
+      JSON.stringify(updatedVisibility),
+    );
+  };
 
-
-
-
-
-const toggleColumnVisibility = (column) => {
-          const updatedVisibility = {
-              ...columnVisibility,
-              [column]: !columnVisibility[column],
-          };
-          setColumnVisibility(updatedVisibility);
-          localStorage.setItem(
-              `visibileTicketsColumn`,
-              JSON.stringify(updatedVisibility)
-          );
-      };
-
-
-
-
-    const user_tickets_count_map = useMemo(() => {
+  const user_tickets_count_map = useMemo(() => {
     return Object.fromEntries(
-      userName.map((user) => [user, getJobHolderCount(user)])
+      userName.map((user) => [user, getJobHolderCount(user)]),
     );
   }, [userName, getJobHolderCount]);
 
-
-
-
-
-
-
-
-
   const renderColumnControls = () => {
-  
-  
-  
-   
-  
-  
-      
-  
-  
-      return (
-           <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
-      {/* Header */}
-      <header className="px-5 py-3 border-b">
-        <h3 className="text-sm font-semibold text-slate-800">
-          View settings
-        </h3>
-      </header>
-  
-      {/* Content */}
-      <div className="grid grid-cols-2 divide-x">
-        {/* LEFT — Columns */}
-        <section className="px-5 py-4">
-          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-            Columns
-          </h4>
-  
-          <ul className="space-y-1 list-decimal">
-            {Object.keys(colVisibility)?.map((column) => (
-              <li key={column}>
-                <label
-                  className="flex items-center justify-between rounded-md px-2 py-1.5
+    return (
+      <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
+        {/* Header */}
+        <header className="px-5 py-3 border-b">
+          <h3 className="text-sm font-semibold text-slate-800">
+            View settings
+          </h3>
+        </header>
+
+        {/* Content */}
+        <div className="grid grid-cols-2 divide-x">
+          {/* LEFT — Columns */}
+          <section className="px-5 py-4">
+            <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+              Columns
+            </h4>
+
+            <ul className="space-y-1 list-decimal">
+              {Object.keys(colVisibility)?.map((column) => (
+                <li key={column}>
+                  <label
+                    className="flex items-center justify-between rounded-md px-2 py-1.5
                              text-sm text-slate-700 cursor-pointer
                              hover:bg-slate-50 transition"
-                >
-                  <span className="capitalize">{column}</span>
-                  <input
-                    type="checkbox"
-                    checked={columnVisibility[column]}
-                    onChange={() => toggleColumnVisibility(column)}
-                    className="h-4 w-4 accent-orange-600"
-                  />
-                </label>
-              </li>
-            ))}
-          </ul>
-        </section>
-  
-        {/* RIGHT — Users */}
-        <section className="px-5 py-4">
-          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-            Users
-          </h4>
-  
-          <div className="h-full overflow-y-auto space-y-1 pr-1">
-            <SelectedUsers
-              selectedUsers={selectedUsers}
-              setSelectedUsers={setSelectedUsers}
-              userNameArr={userName}
-              countMap={user_tickets_count_map}
-              label= {"ticket"}
-            />
-          </div>
-        </section>
-      </div>
-    </section>
-      )
+                  >
+                    <span className="capitalize">{column}</span>
+                    <input
+                      type="checkbox"
+                      checked={columnVisibility[column]}
+                      onChange={() => toggleColumnVisibility(column)}
+                      className="h-4 w-4 accent-orange-600"
+                    />
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </section>
 
-    }
+          {/* RIGHT — Users */}
+          <section className="px-5 py-4">
+            <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+              Users
+            </h4>
+
+            <div className="h-full overflow-y-auto space-y-1 pr-1">
+              <SelectedUsers
+                selectedUsers={selectedUsers}
+                setSelectedUsers={setSelectedUsers}
+                userNameArr={userName}
+                countMap={user_tickets_count_map}
+                label={"ticket"}
+              />
+            </div>
+          </section>
+        </div>
+      </section>
+    );
+  };
 
   return (
     <>
@@ -1020,23 +968,19 @@ const toggleColumnVisibility = (column) => {
               )}
             </div>
 
-
-                 <div className="flex justify-center items-center     ">
-                                  <span
-                                      className={` p-1 rounded-md hover:shadow-md  bg-gray-50 cursor-pointer border ${
-                                          showUserTicketChart && "bg-orange-500 text-white"
-                                            }`}
-                                      onClick={() => {
-                                        setShowUserTicketChart(prev => !prev);
-                                      }}
-                                      title="Show User Ticket Chart"
-                                  > 
-                                  
-                                    <BsGraphUpArrow className="h-6 w-6  cursor-pointer" />
-                                  </span>
-                              </div>
-
-
+            <div className="flex justify-center items-center     ">
+              <span
+                className={` p-1 rounded-md hover:shadow-md  bg-gray-50 cursor-pointer border ${
+                  showUserTicketChart && "bg-orange-500 text-white"
+                }`}
+                onClick={() => {
+                  setShowUserTicketChart((prev) => !prev);
+                }}
+                title="Show User Ticket Chart"
+              >
+                <BsGraphUpArrow className="h-6 w-6  cursor-pointer" />
+              </span>
+            </div>
 
             {auth?.user?.role?.name === "Admin" && (
               <div className="flex justify-center items-center  gap-2">
@@ -1086,7 +1030,6 @@ const toggleColumnVisibility = (column) => {
                       className="absolute top-8 left-[50%] z-[9999]    w-[14rem] "
                     >
                       {renderColumnControls()}
-                      
                     </div>
                   )}
                 </div>
@@ -1124,36 +1067,38 @@ const toggleColumnVisibility = (column) => {
                             All ({getJobHolderCount("All")})
                           </div>
 
-                          {selectedUsers.filter(uName => getJobHolderCount(uName) > 0).map((user, index) => {
-                            return (
-                              <Draggable
-                                key={user}
-                                draggableId={user}
-                                index={index}
-                              >
-                                {(provided) => (
-                                  <div
-                                    className={`py-1   px-2 !cursor-pointer font-[500] text-[14px]   ${
-                                      active1 === user &&
-                                      "  border-b-2 text-orange-600 border-orange-600"
-                                    }`}
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    onClick={() => {
-                                      setActive1(user);
-                                      setColumnFromOutsideTable(
-                                        "jobHolder",
-                                        user
-                                      );
-                                    }}
-                                  >
-                                    {user} ({getJobHolderCount(user)})
-                                  </div>
-                                )}
-                              </Draggable>
-                            );
-                          })}
+                          {selectedUsers
+                            .filter((uName) => getJobHolderCount(uName) > 0)
+                            .map((user, index) => {
+                              return (
+                                <Draggable
+                                  key={user}
+                                  draggableId={user}
+                                  index={index}
+                                >
+                                  {(provided) => (
+                                    <div
+                                      className={`py-1   px-2 !cursor-pointer font-[500] text-[14px]   ${
+                                        active1 === user &&
+                                        "  border-b-2 text-orange-600 border-orange-600"
+                                      }`}
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                      onClick={() => {
+                                        setActive1(user);
+                                        setColumnFromOutsideTable(
+                                          "jobHolder",
+                                          user,
+                                        );
+                                      }}
+                                    >
+                                      {user} ({getJobHolderCount(user)})
+                                    </div>
+                                  )}
+                                </Draggable>
+                              );
+                            })}
                           {provided.placeholder}
                         </div>
                       )}
@@ -1249,10 +1194,8 @@ const toggleColumnVisibility = (column) => {
               <div className="h-full hidden1 overflow-y-auto relative">
                 {/* <MaterialReactTable table={table} /> */}
 
-                     {showUserTicketChart &&<UserTicketChart auth={auth}/> }
-                                { !showUserTicketChart && <MaterialReactTable table={table} /> }
-
-
+                {showUserTicketChart && <UserTicketChart auth={auth} />}
+                {!showUserTicketChart && <MaterialReactTable table={table} />}
               </div>
             </div>
           )}
@@ -1264,7 +1207,6 @@ const toggleColumnVisibility = (column) => {
             <SendEmailModal
               onClose={() => setShowSendModal(false)}
               onSuccess={getEmails}
-               
             />
           </div>
         )}
@@ -1287,26 +1229,7 @@ const toggleColumnVisibility = (column) => {
             />
           </div>
         )}
-
-        {/* ---------------------Activity Log Drawer------------------ */}
-        {/* {isActivityDrawerOpen && (
-          <ActivityLogDrawer isOpen={isActivityDrawerOpen} onClose={() => setIsActivityDrawerOpen(false)} ticketId={activityDrawerTicketId} />
-)}
-
-
-
-
-   <Drawer open={open} onClose={() => {toggleDrawer(false); } } anchor="right"   sx={{zIndex: 1400, '& .MuiDrawer-paper': {
-        width: 600, // Set your custom width here (px, %, etc.)
-      },}}  >
-                
-                  <div className="  " >
-
-                       <ActivityLogDrawer isOpen={isActivityDrawerOpen} onClose={() => setIsActivityDrawerOpen(false)} ticketId={activityDrawerTicketId} />
-                    <EmailDetailDrawer id={ticketId} toggleDrawer={toggleDrawer} />
-                  </div>
-  
-              </Drawer> */}
+ 
 
         {open && (
           <div className="fixed inset-0 z-[499] flex items-center justify-center bg-black/30 backdrop-blur-sm  h-full     ">
@@ -1331,20 +1254,14 @@ const toggleColumnVisibility = (column) => {
 
                 <div className=" w-full h-full flex justify-center items-center gap-8 px-8 py-4 overflow-hidden ">
                   <div className="w-1/2  h-full">
-
                     <EmailDetailDrawer
-                    id={ticketId}
-                    setTicketSubject={setTicketSubject}
-                    isReplyModalOpenCb={isReplyModalOpenCb}
-                    setEmailData={setEmailData}
-                  />
+                      id={ticketId}
+                      setTicketSubject={setTicketSubject}
+                      isReplyModalOpenCb={isReplyModalOpenCb}
+                      setEmailData={setEmailData}
+                    />
+                  </div>
 
-                 
-
-
-
-                    </div>
-                  
                   <div className="w-1/2 h-full flex flex-col justify-start items-start gap-5 ">
                     <div className="max-w-lg w-full h-[50%] px-3">
                       <ActivityLogDrawer
@@ -1380,9 +1297,6 @@ const toggleColumnVisibility = (column) => {
           />
         )}
       </div>
-
-
-      
     </>
   );
 }

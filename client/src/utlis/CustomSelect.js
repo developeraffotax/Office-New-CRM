@@ -1,5 +1,6 @@
 // components/shared/CustomSelect.jsx
 
+import { max } from "date-fns";
 import React from "react";
 import Select, { components } from "react-select";
 
@@ -66,10 +67,11 @@ const defaultStyles = {
       borderRadius: "0.5rem",
       boxShadow: "none",
       minHeight: "36px",
+      maxHeight: "36px",
       fontSize: "14px",
       "&:hover": { border: "1px solid #f97316" },
     }),
-    menu: (provided) => ({ ...provided, zIndex: 9999 }),
+    menu: (provided) => ({ ...provided, zIndex: 9999, fontSize: "13px" }),
   placeholder: (base) => ({
     ...base,
     color: "#9ca3af",

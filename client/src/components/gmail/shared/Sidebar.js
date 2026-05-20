@@ -65,6 +65,7 @@ const WorkspaceGroup = ({
   unreadCount,
   children,
   defaultOpen = true,
+  showUnreadCount = true
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
@@ -79,7 +80,7 @@ const WorkspaceGroup = ({
           <div
             className={`w-7 h-7 rounded-xl flex items-center justify-center transition-all duration-300
             ${
-              unreadCount > 0
+              (showUnreadCount && unreadCount > 0)
                 ? "bg-blue-100 text-blue-600"
                 : "bg-slate-100 text-slate-400"
             }`}
@@ -101,7 +102,7 @@ const WorkspaceGroup = ({
         </button>
 
         {/* Workspace total badge */}
-        {unreadCount > 0 && (
+        {(showUnreadCount && unreadCount > 0) && (
           <div className="min-w-[20px] h-5 px-1.5 text-[10px] font-bold rounded-full bg-blue-600 text-white shadow-sm flex justify-center items-center tabular-nums leading-none">
             {unreadCount}
           </div>
@@ -129,6 +130,11 @@ export default function Sidebar() {
     (state) => state.inboxUnread?.companies?.outsource?.inboxUnread || 0,
   );
 
+  const { settings } = useSelector((state) => state.settings);
+  const { inboxConfig: { inboxUnreadCount = true, } = {} } = settings || {};
+
+
+
   return (
     <div className="w-56 min-w-56 h-full border-r border-slate-100 bg-gradient-to-b from-slate-50 via-white to-slate-50 flex flex-col font-sans antialiased">
       {/* Header */}
@@ -145,7 +151,7 @@ export default function Sidebar() {
 
       {/* Scroll Area */}
       <div className="flex-1 overflow-y-auto scrollbar-hide pt-2 pb-10">
-        <WorkspaceGroup title="Affotax" unreadCount={affotaxUnread}>
+        <WorkspaceGroup title="Affotax" unreadCount={affotaxUnread} showUnreadCount={inboxUnreadCount}>
           <NavItem
             icon={<FiInbox />}
             label="Inbox"
@@ -161,7 +167,7 @@ export default function Sidebar() {
           />
         </WorkspaceGroup>
 
-        <WorkspaceGroup title="Outsource" unreadCount={outsourceUnread}>
+        <WorkspaceGroup title="Outsource" unreadCount={outsourceUnread} showUnreadCount={inboxUnreadCount}>
           <NavItem
             icon={<FiInbox />}
             label="Inbox"

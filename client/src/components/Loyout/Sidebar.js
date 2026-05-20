@@ -46,10 +46,18 @@ export default function Sidebar({ hide, setHide }) {
   const active = useSelector((state) => state.auth.active);
   const { settings } = useSelector((state) => state.settings);
 
-  const {
-    showCrmNotifications = true,
-    showEmailNotifications = true,
-  } = settings || {};
+const {
+  showCrmNotifications = true,
+  showEmailNotifications = true,
+
+  // 1. Open the nested pattern to pull out inner values
+  inboxConfig: {
+    inboxUnreadCount = true,
+    sidebarUnreadCount = true,
+    showUnreadCountFor = "all"
+  } = {}  
+
+} = settings || {};
 
 
   const isNotificationAllowed = (notificationType) => {
@@ -68,6 +76,14 @@ export default function Sidebar({ hide, setHide }) {
 
   const threadAssignedCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "thread_assigned" && n.status === "unread" && isNotificationAllowed(n.type)).length);
 
+
+   const affotaxUnread = useSelector(
+    (state) => state.inboxUnread?.companies?.affotax?.inboxUnread || 0,
+  );
+
+  const outsourceUnread = useSelector(
+    (state) => state.inboxUnread?.companies?.outsource?.inboxUnread || 0,
+  );
 
 
 
@@ -514,29 +530,24 @@ export default function Sidebar({ hide, setHide }) {
                       className="text-[14px] font-[400] "
                       style={{ color: active === "mail" && "#fff" }}
                     >
-                      Inbox
+                      Inbox 
                     </span>
+
+                    
                   </div>
+                  
                 )}
+
+                
 
 
                 <div className="flex items-center gap-1 ">
-                  {/* {threadAssignedCount > 0 && (
-                    <span
-                      title="New Received Tickets"
-                      className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${active === "tickets"
-                          ? "bg-white text-blue-500"
-                          : "bg-blue-500 text-white"
-                        }`}
-                    >
-                      {threadAssignedCount || 0}
-                    </span>
-                  )} */}
+                   
 
-                  {threadAssignedCount > 0 && (
+
+                     {threadAssignedCount > 0 && (
                     <span
-                      title="New Assigned Tickets"
+                      title="New Assigned Threads"
                       className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
                     ${active === "mail"
                           ? "bg-white text-orange-600"
@@ -546,6 +557,38 @@ export default function Sidebar({ hide, setHide }) {
                       {threadAssignedCount || 0}
                     </span>
                   )}
+
+
+
+                   {/* {(sidebarUnreadCount && affotaxUnread > 0) &&  (
+                    <span
+                      title="New Received Emails | Affotax"
+                      className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
+                    ${active === "mail"
+                          ? "bg-white text-amber-500"
+                          : "bg-amber-500 text-white"
+                        }`}
+                    >
+                      {affotaxUnread}
+                    </span>
+                  )}
+
+                  {(sidebarUnreadCount && outsourceUnread > 0) && (
+                    <span
+                      title="New Received Emails | Outsource"
+                      className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
+                    ${active === "mail"
+                          ? "bg-white text-sky-500"
+                          : "bg-sky-500 text-white"
+                        }`}
+                    >
+                      {outsourceUnread}
+                    </span>
+                  )}
+
+ */}
+
+                 
                 </div>
 
 

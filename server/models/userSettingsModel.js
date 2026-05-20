@@ -30,8 +30,14 @@ const userSettingsSchema = new Schema(
     },
 
     inboxConfig: {
-      inboxUnreadCount: Boolean,
-      sidebarUnreadCount: Boolean,
+      inboxUnreadCount: {
+        type: Boolean,
+        default: true
+      },
+      sidebarUnreadCount: {
+        type: Boolean,
+        default: true
+      },
       showUnreadCountFor: {
         type: String,
         enum: ["all", "unassigned",  ],

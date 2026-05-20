@@ -215,8 +215,8 @@ export default function SendEmailModal({
       emailData.append("message", finalMessage);
       emailData.append("email", email);
       if (email && type === "manual") {
-        emailData.append("clientName", meta?.clientName);
-        emailData.append("companyName", meta?.companyName);
+        emailData.append("clientName", meta?.clientName || "");
+        emailData.append("companyName", meta?.companyName || "");
       }
 
       if (company === "Affotax" && trustPilotBcc)

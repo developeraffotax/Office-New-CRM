@@ -158,6 +158,7 @@ export const getUnreadCounts = async (req, res) => {
     const user = req?.user?.user;
     const userId = new mongoose.Types.ObjectId(user?._id);
     const isAdmin = user?.role?.name === "Admin";
+    const filterType = req.query?.filterType || "all";
 
     const baseMatch = {
       hasInboxMessage: true,
@@ -166,7 +167,15 @@ export const getUnreadCounts = async (req, res) => {
     
     if (!isAdmin) {
       baseMatch.userId = userId;
-    }  
+    }
+
+    if (isAdmin && filterType === "unassigned"  ) {
+  // Matches documents where userId is null OR the userId field doesn't exist at all
+        baseMatch.$or = [
+          { userId: null },
+          { userId: { $exists: false } }
+        ];
+      }
 
     const buildPipeline = (companyName) => [
       {

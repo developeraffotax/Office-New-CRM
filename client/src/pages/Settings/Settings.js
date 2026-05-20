@@ -1,29 +1,31 @@
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate} from "react-router-dom";
- 
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { getUserSettings, updateUserSettings } from "../../redux/slices/settingsSlice";
 
- 
 export default function SettingsPage() {
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.auth.auth.user?.id);
   const { settings, isLoading } = useSelector((state) => state.settings);
   const navigate = useNavigate();
+
   const [localSettings, setLocalSettings] = useState({
     theme: "light",
     showSidebar: true,
     showCrmNotifications: true,
     showEmailNotifications: true,
+    inboxConfig: {
+      inboxUnreadCount: true,
+      sidebarUnreadCount: true,
+      showUnreadCountFor: "all",
+    },
   });
 
-  // Load settings
   useEffect(() => {
     if (userId) dispatch(getUserSettings(userId));
   }, [userId, dispatch]);
 
-  // Sync after load
   useEffect(() => {
     if (settings) {
       setLocalSettings({
@@ -31,16 +33,29 @@ export default function SettingsPage() {
         showSidebar: settings.showSidebar ?? true,
         showCrmNotifications: settings.showCrmNotifications ?? true,
         showEmailNotifications: settings.showEmailNotifications ?? true,
+        inboxConfig: {
+          inboxUnreadCount: settings.inboxConfig?.inboxUnreadCount ?? true,
+          sidebarUnreadCount: settings.inboxConfig?.sidebarUnreadCount ?? true,
+          showUnreadCountFor: settings.inboxConfig?.showUnreadCountFor ?? "all",
+        },
       });
     }
   }, [settings]);
 
-  const toggle = (key) => {
+  const toggle = (key) =>
+    setLocalSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  const toggleInbox = (key) =>
     setLocalSettings((prev) => ({
       ...prev,
-      [key]: !prev[key],
+      inboxConfig: { ...prev.inboxConfig, [key]: !prev.inboxConfig[key] },
     }));
-  };
+
+  const setInboxFilter = (value) =>
+    setLocalSettings((prev) => ({
+      ...prev,
+      inboxConfig: { ...prev.inboxConfig, showUnreadCountFor: value },
+    }));
 
   const handleSave = () => {
     dispatch(updateUserSettings(localSettings))
@@ -52,9 +67,7 @@ export default function SettingsPage() {
   return (
     <div className="w-full">
       <div className="w-full max-w-2xl bg-white p-8">
-        <h1 className="text-2xl font-semibold mb-6 text-gray-800">
-          User Settings
-        </h1>
+        <h1 className="text-2xl font-semibold mb-6 text-gray-800">User Settings</h1>
 
         {isLoading ? (
           <p className="text-gray-500">Loading settings...</p>
@@ -62,17 +75,11 @@ export default function SettingsPage() {
           <>
             {/* Theme */}
             <div className="mb-8">
-              <label className="block text-gray-700 font-medium mb-2">
-                Theme
-              </label>
-
+              <label className="block text-gray-700 font-medium mb-2">Theme</label>
               <select
                 value={localSettings.theme}
                 onChange={(e) =>
-                  setLocalSettings((prev) => ({
-                    ...prev,
-                    theme: e.target.value,
-                  }))
+                  setLocalSettings((prev) => ({ ...prev, theme: e.target.value }))
                 }
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
               >
@@ -90,30 +97,64 @@ export default function SettingsPage() {
             />
 
             {/* Notifications */}
-            <div className="mt-8">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">
-                Notifications
-              </h2>
-
+            <Section title="Notifications">
               <ToggleRow
                 label="CRM Notifications"
                 enabled={localSettings.showCrmNotifications}
                 onChange={() => toggle("showCrmNotifications")}
               />
-
               <ToggleRow
                 label="Email Notifications"
                 enabled={localSettings.showEmailNotifications}
                 onChange={() => toggle("showEmailNotifications")}
               />
-
-               <button onClick={() => navigate("/settings/signatures")} className="    text-orange-500 font-medium py-2 rounded-lg transition max-w-[200px]">
+              <button
+                onClick={() => navigate("/settings/signatures")}
+                className="text-orange-500 font-medium py-2 rounded-lg transition max-w-[200px]"
+              >
                 Manage Signatures
               </button>
-            </div>
+            </Section>
 
-             
+            {/* Inbox Config */}
+            <Section title="Inbox">
+              <ToggleRow
+                label="Show Unread Count in Inbox"
+                enabled={localSettings.inboxConfig.inboxUnreadCount}
+                onChange={() => toggleInbox("inboxUnreadCount")}
+              />
+              <ToggleRow
+                label="Show Unread Count in Sidebar"
+                enabled={localSettings.inboxConfig.sidebarUnreadCount}
+                onChange={() => toggleInbox("sidebarUnreadCount")}
+              />
 
+              {/* showUnreadCountFor — only relevant when at least one count is enabled */}
+              {(localSettings.inboxConfig.inboxUnreadCount ||
+                localSettings.inboxConfig.sidebarUnreadCount) && (
+                <div className="mb-6">
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Show Unread Count For
+                  </label>
+                  <div className="flex gap-3">
+                    {["all", "unassigned"].map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => setInboxFilter(option)}
+                        className={`px-4 py-2 rounded-lg border text-sm font-medium capitalize transition
+                          ${
+                            localSettings.inboxConfig.showUnreadCountFor === option
+                              ? "bg-orange-600 text-white border-orange-600"
+                              : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"
+                          }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </Section>
 
             <button
               onClick={handleSave}
@@ -128,15 +169,19 @@ export default function SettingsPage() {
   );
 }
 
+function Section({ title, children }) {
+  return (
+    <div className="mt-8">
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">{title}</h2>
+      {children}
+    </div>
+  );
+}
 
-// ----------------------------------------------------
-// Tailwind Toggle Component (NO HEADLESS UI)
-// ----------------------------------------------------
 function ToggleRow({ label, enabled, onChange }) {
   return (
     <div className="flex items-center justify-between mb-6">
       <span className="text-gray-700 font-medium">{label}</span>
-
       <button
         role="switch"
         aria-checked={enabled}

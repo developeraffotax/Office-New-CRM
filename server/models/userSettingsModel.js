@@ -28,6 +28,16 @@ const userSettingsSchema = new Schema(
       type: Boolean,
       default: true,
     },
+
+    inboxConfig: {
+      inboxUnreadCount: Boolean,
+      sidebarUnreadCount: Boolean,
+      showUnreadCountFor: {
+        type: String,
+        enum: ["all", "unassigned",  ],
+        default: "all",
+      },
+    }
   },
   { timestamps: true }
 );

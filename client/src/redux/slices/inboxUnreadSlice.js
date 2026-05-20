@@ -4,10 +4,23 @@ import axios from "axios";
 // ✅ Async thunk to fetch unread counts
 export const fetchInboxUnreadCounts = createAsyncThunk(
   "inboxUnread/fetchCounts",
-  async (_, { rejectWithValue }) => {
+  async (_, {getState , rejectWithValue }) => {
+
+    // 2. Extract the user settings from your settings slice
+      const globalState = getState();
+      const userSettings = globalState.settings?.settings; 
+      
+      // 3. Drill down to get your specific inboxConfig choices
+      const showUnreadCountFor = userSettings?.inboxConfig?.showUnreadCountFor || "all";
+ 
+
+
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/gmail/unread-counts`
+        `${process.env.REACT_APP_API_URL}/api/v1/gmail/unread-counts`,
+        {params: {
+          filterType: showUnreadCountFor
+        }}
       );
 
       if (!data.success) {

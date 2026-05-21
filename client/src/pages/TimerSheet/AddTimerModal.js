@@ -83,9 +83,17 @@ export default function AddTimerModal({
   const handleAddTimer = async (e) => {
     e.preventDefault();
     if (!date || !startTime || !endTime) {
-      toast.error("Date, Start time & End time is required!");
-      return;
+      return toast.error("Date, Start time & End time is required!");
+      
     }
+
+     if(!timerId && (hasPermission?.jobHolders && !jobHolderName) ) {
+          return toast.error("Job Holder Name is Required!");
+          
+        }
+    
+
+
     setLoading(true);
 
     const startDateTime = new Date(`${date}T${startTime}`);
@@ -138,6 +146,8 @@ export default function AddTimerModal({
         // const endDateTimes = new Date(
         //   `${date}T${endTime}:00.000Z`
         // ).toISOString();
+
+       
 
         const { data } = await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/timer/add/timer/manually`,
@@ -293,7 +303,7 @@ export default function AddTimerModal({
 
 
         {/* Job Holder - Admin Only */}
-{hasPermission.jobHolders && users?.length > 0 && (
+{!timerId && (hasPermission?.jobHolders && users?.length > 0) && (
   <div className="inputBox mt-4">
     <select
       value={jobHolderName}

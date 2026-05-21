@@ -759,6 +759,7 @@ const getJobsStats = useCallback(async () => {
     const params = {
 
         status,
+        jobHolder: filters?.jobHolder
       // ...filters,
 
        

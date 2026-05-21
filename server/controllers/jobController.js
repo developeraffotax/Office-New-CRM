@@ -3045,218 +3045,329 @@ export const getAllClientJobs = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
 export const getJobsStats = async (req, res) => {
   try {
+    const { jobName, jobHolder, ...restQuery } = req.query;
 
-    // Clone query params and REMOVE dueStatus
-    const query = req.query;
-    
-    const { jobName, ...restQuery } = query;
-    
-    
-    // Build base match WITHOUT dueStatus
-    const baseMatch = buildJobsQuery(query);
-    const baseMatchWithoutJobName = buildJobsQuery({...restQuery});
+    // 1. Build Matches
+    // Removed the unused `baseMatchWithoutJobName` to save CPU cycles
+    const baseMatch = buildJobsQuery(req.query);
+    const baseMatchWithoutJobHolder = buildJobsQuery({ ...restQuery, jobName });
+    const restQueryMatch = buildJobsQuery(restQuery);
 
+    // 2. Standardize Date
+    // Creates a clean date object set exactly to local midnight
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
+    // 3. Extract Complex Logic
+    // Moving the massive $switch statement outside the pipeline array makes 
+    // the aggregation immensely easier to read and maintain.
+    const dueStatusSwitchLogic = {
+      $switch: {
+        branches: [
+          // OVERDUE: deadline < today
+          {
+            case: { $lt: ["$job.jobDeadline", today] },
+            then: "overdue"
+          },
+          // DUE: (yearEnd <= today AND deadline > today) OR (deadline === today)
+          {
+            case: {
+              $or: [
+                {
+                  $and: [
+                    { $lte: ["$job.yearEnd", today] },
+                    { $gt: ["$job.jobDeadline", today] }
+                  ]
+                },
+                {
+                  $eq: [
+                    { $dateTrunc: { date: "$job.jobDeadline", unit: "day" } },
+                    today
+                  ]
+                }
+              ]
+            },
+            then: "due"
+          },
+          // UPCOMING: deadline > today AND yearEnd > today
+          {
+            case: {
+              $and: [
+                { $gt: ["$job.jobDeadline", today] },
+                { $gt: ["$job.yearEnd", today] }
+              ]
+            },
+            then: "upcoming"
+          }
+        ],
+        default: "other"
+      }
+    };
+
+    // 4. Execute Aggregation
     const stats = await jobsModel.aggregate([
-      
-      // { $match: match },
-      
       {
         $facet: {
-          
-          // =========================
-          // TOTAL JOB COUNT
-          // =========================
           allJobsCount: [
-             { $match: baseMatchWithoutJobName },
-             { $count: "count" }
+            { $match: restQueryMatch },
+            { $count: "count" }
           ],
-
-          // =========================
-          // USER WISE JOB COUNT
-          // =========================
           userJobCounts: [
-             { $match: baseMatch },
-             {
-              $group: {
-                _id: "$job.jobHolder",
-                count: { $sum: 1 }
-              }
-            }
+            { $match: baseMatchWithoutJobHolder },
+            { $group: { _id: "$job.jobHolder", count: { $sum: 1 } } }
           ],
-          
-          // =========================
-          // DEPARTMENT COUNT
-          // =========================
           departmentJobCounts: [
-             { $match: baseMatchWithoutJobName },
-             {
-               $group: {
-                _id: "$job.jobName",
-                count: { $sum: 1 }
-              }
-            }
+            { $match: restQueryMatch },
+            { $group: { _id: "$job.jobName", count: { $sum: 1 } } }
           ],
-
-          // =========================
-          // STATUS COUNT
-          // =========================
           jobStatusJobCounts: [
             { $match: baseMatch },
-            {
-              $group: {
-                _id: "$job.jobStatus",
-                count: { $sum: 1 }
-              }
-            }
+            { $group: { _id: "$job.jobStatus", count: { $sum: 1 } } }
           ],
-          
-          // =========================
-          // DUE STATUS COUNTS
-          // =========================
           dueStatusCounts: [
             { $match: baseMatch },
-            
-            {
-              $group: {
-                
-                _id: {
-                  $switch: {
-                    
-                    branches: [
-                      
-                      // =====================
-                      // OVERDUE
-                      // deadline < today
-                      // =====================
-                      {
-                        case: {
-                          $lt: [
-                            "$job.jobDeadline",
-                            today
-                          ]
-                        },
-                        then: "overdue"
-                      },
-                      
-                      // =====================
-                      // DUE
-                      // (yearEnd <= today AND deadline > today)
-                      // OR (deadline === today)
-                      // =====================
-                      {
-                        case: {
-                          $or: [
-
-                            {
-                              $and: [
-                                {
-                                  $lte: [
-                                    "$job.yearEnd",
-                                    today
-                                  ]
-                                },
-                                {
-                                  $gt: [
-                                    "$job.jobDeadline",
-                                    today
-                                  ]
-                                }
-                              ]
-                            },
-
-                            {
-                              $eq: [
-
-                                {
-                                  $dateTrunc: {
-                                    date: "$job.jobDeadline",
-                                    unit: "day"
-                                  }
-                                },
-
-                                today
-                              ]
-                            }
-                            
-                          ]
-                        },
-                        then: "due"
-                      },
-
-                      // =====================
-                      // UPCOMING
-                      // deadline > today
-                      // AND yearEnd > today
-                      // =====================
-                      {
-                        case: {
-                          $and: [
-                            {
-                              $gt: [
-                                "$job.jobDeadline",
-                                today
-                              ]
-                            },
-                            {
-                              $gt: [
-                                "$job.yearEnd",
-                                today
-                              ]
-                            }
-                          ]
-                        },
-                        then: "upcoming"
-                      }
-
-                    ],
-                    
-                    default: "other"
-                    
-                  }
-                },
-                
-                count: { $sum: 1 }
-                
-              }
-            }
-
+            { $group: { _id: dueStatusSwitchLogic, count: { $sum: 1 } } }
           ]
-          
         }
       }
-      
     ]);
-    
-    res.status(200).send({
+
+    // 5. Send Response
+    // Using .json() is best practice over .send() for APIs.
+    // stats[0] is guaranteed to exist with $facet, but fallback to {} is safer.
+    return res.status(200).json({
       success: true,
-      data: stats[0]
+      data: stats[0] || {}
     });
 
   } catch (error) {
-    
-    console.log(error);
-    
-    res.status(500).send({
-      success: false,
-      message: "Error fetching stats",
-      error
-    });
+    // Enterprise Error Handling: Use console.error (or a logger like Pino/Winston)
+    console.error(`[JobsController] getJobsStats Error:`, error);
 
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching job statistics.",
+      
+    });
   }
 };
+
+
+
+
+
+
+
+// export const getJobsStats = async (req, res) => {
+//   try {
+
+//     // Clone query params and REMOVE dueStatus
+//     const query = req.query;
+    
+//     const { jobName, jobHolder,  ...restQuery } = query;
+    
+    
+//     // Build base match WITHOUT dueStatus
+//     const baseMatch = buildJobsQuery(query);
+
+//     const baseMatchWithoutJobHolder = buildJobsQuery({...restQuery, jobName});
+//     const baseMatchWithoutJobName = buildJobsQuery({...restQuery, jobHolder});
+
+//     const restQueryMatch = buildJobsQuery({...restQuery});
+
+//     const today = new Date();
+//     today.setHours(0, 0, 0, 0);
+    
+//     const stats = await jobsModel.aggregate([
+      
+//       // { $match: match },
+      
+//       {
+//         $facet: {
+          
+//           // =========================
+//           // TOTAL JOB COUNT
+//           // =========================
+//           allJobsCount: [
+//              { $match: restQueryMatch },
+//              { $count: "count" }
+//           ],
+
+//           // =========================
+//           // USER WISE JOB COUNT
+//           // =========================
+//           userJobCounts: [
+//              { $match: baseMatchWithoutJobHolder },
+//              {
+//               $group: {
+//                 _id: "$job.jobHolder",
+//                 count: { $sum: 1 }
+//               }
+//             }
+//           ],
+          
+//           // =========================
+//           // DEPARTMENT COUNT
+//           // =========================
+//           departmentJobCounts: [
+//              { $match: restQueryMatch },
+//              {
+//                $group: {
+//                 _id: "$job.jobName",
+//                 count: { $sum: 1 }
+//               }
+//             }
+//           ],
+
+//           // =========================
+//           // STATUS COUNT
+//           // =========================
+//           jobStatusJobCounts: [
+//             { $match: baseMatch },
+//             {
+//               $group: {
+//                 _id: "$job.jobStatus",
+//                 count: { $sum: 1 }
+//               }
+//             }
+//           ],
+          
+//           // =========================
+//           // DUE STATUS COUNTS
+//           // =========================
+//           dueStatusCounts: [
+//             { $match: baseMatch },
+            
+//             {
+//               $group: {
+                
+//                 _id: {
+//                   $switch: {
+                    
+//                     branches: [
+                      
+//                       // =====================
+//                       // OVERDUE
+//                       // deadline < today
+//                       // =====================
+//                       {
+//                         case: {
+//                           $lt: [
+//                             "$job.jobDeadline",
+//                             today
+//                           ]
+//                         },
+//                         then: "overdue"
+//                       },
+                      
+//                       // =====================
+//                       // DUE
+//                       // (yearEnd <= today AND deadline > today)
+//                       // OR (deadline === today)
+//                       // =====================
+//                       {
+//                         case: {
+//                           $or: [
+
+//                             {
+//                               $and: [
+//                                 {
+//                                   $lte: [
+//                                     "$job.yearEnd",
+//                                     today
+//                                   ]
+//                                 },
+//                                 {
+//                                   $gt: [
+//                                     "$job.jobDeadline",
+//                                     today
+//                                   ]
+//                                 }
+//                               ]
+//                             },
+
+//                             {
+//                               $eq: [
+
+//                                 {
+//                                   $dateTrunc: {
+//                                     date: "$job.jobDeadline",
+//                                     unit: "day"
+//                                   }
+//                                 },
+
+//                                 today
+//                               ]
+//                             }
+                            
+//                           ]
+//                         },
+//                         then: "due"
+//                       },
+
+//                       // =====================
+//                       // UPCOMING
+//                       // deadline > today
+//                       // AND yearEnd > today
+//                       // =====================
+//                       {
+//                         case: {
+//                           $and: [
+//                             {
+//                               $gt: [
+//                                 "$job.jobDeadline",
+//                                 today
+//                               ]
+//                             },
+//                             {
+//                               $gt: [
+//                                 "$job.yearEnd",
+//                                 today
+//                               ]
+//                             }
+//                           ]
+//                         },
+//                         then: "upcoming"
+//                       }
+
+//                     ],
+                    
+//                     default: "other"
+                    
+//                   }
+//                 },
+                
+//                 count: { $sum: 1 }
+                
+//               }
+//             }
+
+//           ]
+          
+//         }
+//       }
+      
+//     ]);
+    
+//     res.status(200).send({
+//       success: true,
+//       data: stats[0]
+//     });
+
+//   } catch (error) {
+    
+//     console.log(error);
+    
+//     res.status(500).send({
+//       success: false,
+//       message: "Error fetching stats",
+//       error
+//     });
+
+//   }
+// };
 
 
 

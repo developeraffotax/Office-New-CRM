@@ -63,7 +63,7 @@ export const statusInit = [
   "Missing Info",
 ];
 
-export const statusArr = ["To do", "Progress", "Review", "Onhold"];
+export const statusArr = ["To do", "Progress", "Review", "On hold"];
 
 
 

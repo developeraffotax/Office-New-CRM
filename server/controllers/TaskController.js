@@ -2472,23 +2472,44 @@ export const getTasks = async (req, res) => {
   }
 };
 
-
-
-
-
-
+ 
 
 export const getTaskStats = async (req, res) => {
   try {
+    /*
+    ==========================================
+    BASE FILTERS & SCOPES
+    ==========================================
+    */
+    const globalQuery = buildTasksQuery(req.query);
+    const { departmentId } = req.query;
+
+    // Department stats should NOT react to user filter
+    const departmentQuery = { ...globalQuery };
+    delete departmentQuery.jobHolder;
 
     /*
     ==========================================
-    BASE FILTER (REUSE EXISTING LOGIC)
+    OPTIMIZED DEPARTMENT FILTER (PRE-FETCH)
     ==========================================
     */
+    let departmentMatch = null;
+    
+    if (departmentId && mongoose.Types.ObjectId.isValid(departmentId)) {
+      // Fetch only the IDs of projects belonging to this department
+      const matchingProjectIds = await mongoose.model("Projects")
+        .find({ departments: new mongoose.Types.ObjectId(departmentId) })
+        .distinct("_id");
 
-    const matchQuery = buildTasksQuery(req.query);
+      // Filter directly on the task's project field (utilizes index)
+      departmentMatch = { project: { $in: matchingProjectIds } };
+    }
 
+    /*
+    ==========================================
+    DATE HELPERS
+    ==========================================
+    */
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
 
@@ -2497,62 +2518,50 @@ export const getTaskStats = async (req, res) => {
 
     /*
     ==========================================
-    MAIN PIPELINE
+    CONDITIONAL EXTRA FILTERS FOR INNER FACETS
     ==========================================
     */
+    // statusStats and dueStats need to respect jobHolder + departmentMatch
+    const extraMatchForStatusAndDue = {};
+    if (globalQuery.jobHolder) {
+      extraMatchForStatusAndDue.jobHolder = globalQuery.jobHolder;
+    }
+    if (departmentMatch) {
+      Object.assign(extraMatchForStatusAndDue, departmentMatch);
+    }
 
+    /*
+    ==========================================
+    MAIN OPTIMIZED PIPELINE
+    ==========================================
+    */
     const pipeline = [
-
+      /*
+      STEP 1: Filter everything first using collection indexes.
+      departmentQuery is the least restrictive common denominator.
+      */
       {
-        $match: matchQuery,
+        $match: departmentQuery,
       },
 
       /*
-      ==========================================
-      PROJECT LOOKUP (FOR DEPARTMENTS)
-      ==========================================
+      STEP 2: Split into facets on a highly reduced document set.
       */
-
-      {
-        $lookup: {
-          from: "projects",
-          localField: "project",
-          foreignField: "_id",
-          as: "project",
-        },
-      },
-
-      {
-        $unwind: {
-          path: "$project",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-
-      /*
-      ==========================================
-      FACET - ALL STATS
-      ==========================================
-      */
-
       {
         $facet: {
-
           /*
           ==========================================
           USER STATS
           ==========================================
           */
-
           userStats: [
-
+            ...(departmentMatch ? [{ $match: departmentMatch }] : []),
             {
               $group: {
                 _id: "$jobHolder",
                 totalTasks: { $sum: 1 },
               },
             },
-
             {
               $lookup: {
                 from: "users",
@@ -2561,14 +2570,12 @@ export const getTaskStats = async (req, res) => {
                 as: "user",
               },
             },
-
             {
               $unwind: {
                 path: "$user",
                 preserveNullAndEmptyArrays: true,
               },
             },
-
             {
               $project: {
                 _id: 0,
@@ -2578,35 +2585,43 @@ export const getTaskStats = async (req, res) => {
                 totalTasks: 1,
               },
             },
-
             {
-              $sort: { totalTasks: -1 }
-            }
-
+              $sort: { totalTasks: -1 },
+            },
           ],
 
           /*
           ==========================================
-          DEPARTMENT STATS
+          DEPARTMENT STATS (Lookup isolated here)
           ==========================================
           */
-
           departmentStats: [
-
+            {
+              $lookup: {
+                from: "projects",
+                localField: "project",
+                foreignField: "_id",
+                as: "project",
+              },
+            },
+            {
+              $unwind: {
+                path: "$project",
+                preserveNullAndEmptyArrays: true,
+              },
+            },
             {
               $unwind: {
                 path: "$project.departments",
                 preserveNullAndEmptyArrays: true,
               },
             },
-
             {
               $group: {
                 _id: "$project.departments",
                 totalTasks: { $sum: 1 },
               },
             },
-
             {
               $lookup: {
                 from: "taskdepartments",
@@ -2615,14 +2630,12 @@ export const getTaskStats = async (req, res) => {
                 as: "department",
               },
             },
-
             {
               $unwind: {
                 path: "$department",
                 preserveNullAndEmptyArrays: true,
               },
             },
-
             {
               $project: {
                 _id: 0,
@@ -2631,115 +2644,91 @@ export const getTaskStats = async (req, res) => {
                 totalTasks: 1,
               },
             },
-
             {
-              $sort: { totalTasks: -1 }
-            }
-
+              $sort: { totalTasks: -1 },
+            },
           ],
 
           /*
           ==========================================
-          STATUS COUNTS
+          STATUS STATS
           ==========================================
           */
-
           statusStats: [
-
+            ...(Object.keys(extraMatchForStatusAndDue).length > 0
+              ? [{ $match: extraMatchForStatusAndDue }]
+              : []),
             {
               $group: {
                 _id: "$status",
                 totalTasks: { $sum: 1 },
               },
-            }
-
+            },
+            {
+              $sort: { totalTasks: -1 },
+            },
           ],
 
           /*
           ==========================================
-          DUE STATUS COUNTS
+          DUE STATUS STATS
           ==========================================
           */
-
           dueStats: [
-
+            ...(Object.keys(extraMatchForStatusAndDue).length > 0
+              ? [{ $match: extraMatchForStatusAndDue }]
+              : []),
             {
               $group: {
-
                 _id: {
-
                   $switch: {
-
                     branches: [
-
                       {
-                        case: {
-                          $lt: ["$deadline", startOfToday]
-                        },
+                        case: { $lt: ["$deadline", startOfToday] },
                         then: "overdue",
                       },
-
                       {
                         case: {
                           $and: [
                             { $lte: ["$startDate", endOfToday] },
-                            { $gte: ["$deadline", startOfToday] }
-                          ]
+                            { $gte: ["$deadline", startOfToday] },
+                          ],
                         },
                         then: "due",
                       },
-
                       {
-                        case: {
-                          $gt: ["$startDate", endOfToday]
-                        },
+                        case: { $gt: ["$startDate", endOfToday] },
                         then: "upcoming",
                       },
-
                     ],
-
                     default: "unknown",
-
                   },
-
                 },
-
                 totalTasks: { $sum: 1 },
-
               },
-
-            }
-
+            },
           ],
 
           /*
           ==========================================
-          TOTAL TASK COUNT
+          TOTAL TASKS
           ==========================================
           */
-
           totalTasks: [
-
             {
-              $count: "total"
-            }
-
-          ]
-
+              $count: "total",
+            },
+          ],
         },
-
       },
-
     ];
 
     const result = await taskModel.aggregate(pipeline);
-
     const stats = result[0] || {};
 
     res.status(200).send({
       success: true,
       message: "Task stats fetched successfully",
-
       stats: {
         totalTasks: stats.totalTasks?.[0]?.total || 0,
         userStats: stats.userStats || [],
@@ -2747,21 +2736,317 @@ export const getTaskStats = async (req, res) => {
         statusStats: stats.statusStats || [],
         dueStats: stats.dueStats || [],
       },
-
     });
-
   } catch (error) {
-
     console.log(error);
-
     res.status(500).send({
       success: false,
       message: "Error fetching task stats",
       error,
     });
-
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// export const getTaskStats = async (req, res) => {
+//   try {
+
+//     /*
+//     ==========================================
+//     BASE FILTER (REUSE EXISTING LOGIC)
+//     ==========================================
+//     */
+
+//     const matchQuery = buildTasksQuery(req.query);
+
+//     const startOfToday = new Date();
+//     startOfToday.setHours(0, 0, 0, 0);
+
+//     const endOfToday = new Date();
+//     endOfToday.setHours(23, 59, 59, 999);
+
+//     /*
+//     ==========================================
+//     MAIN PIPELINE
+//     ==========================================
+//     */
+
+//     const pipeline = [
+
+//       {
+//         $match: matchQuery,
+//       },
+
+//       /*
+//       ==========================================
+//       PROJECT LOOKUP (FOR DEPARTMENTS)
+//       ==========================================
+//       */
+
+//       {
+//         $lookup: {
+//           from: "projects",
+//           localField: "project",
+//           foreignField: "_id",
+//           as: "project",
+//         },
+//       },
+
+//       {
+//         $unwind: {
+//           path: "$project",
+//           preserveNullAndEmptyArrays: true,
+//         },
+//       },
+
+//       /*
+//       ==========================================
+//       FACET - ALL STATS
+//       ==========================================
+//       */
+
+//       {
+//         $facet: {
+
+//           /*
+//           ==========================================
+//           USER STATS
+//           ==========================================
+//           */
+
+//           userStats: [
+
+//             {
+//               $group: {
+//                 _id: "$jobHolder",
+//                 totalTasks: { $sum: 1 },
+//               },
+//             },
+
+//             {
+//               $lookup: {
+//                 from: "users",
+//                 localField: "_id",
+//                 foreignField: "_id",
+//                 as: "user",
+//               },
+//             },
+
+//             {
+//               $unwind: {
+//                 path: "$user",
+//                 preserveNullAndEmptyArrays: true,
+//               },
+//             },
+
+//             {
+//               $project: {
+//                 _id: 0,
+//                 userId: "$_id",
+//                 userName: "$user.name",
+//                 profileImage: "$user.profileImage",
+//                 totalTasks: 1,
+//               },
+//             },
+
+//             {
+//               $sort: { totalTasks: -1 }
+//             }
+
+//           ],
+
+//           /*
+//           ==========================================
+//           DEPARTMENT STATS
+//           ==========================================
+//           */
+
+//           departmentStats: [
+
+//             {
+//               $unwind: {
+//                 path: "$project.departments",
+//                 preserveNullAndEmptyArrays: true,
+//               },
+//             },
+
+//             {
+//               $group: {
+//                 _id: "$project.departments",
+//                 totalTasks: { $sum: 1 },
+//               },
+//             },
+
+//             {
+//               $lookup: {
+//                 from: "taskdepartments",
+//                 localField: "_id",
+//                 foreignField: "_id",
+//                 as: "department",
+//               },
+//             },
+
+//             {
+//               $unwind: {
+//                 path: "$department",
+//                 preserveNullAndEmptyArrays: true,
+//               },
+//             },
+
+//             {
+//               $project: {
+//                 _id: 0,
+//                 departmentId: "$_id",
+//                 departmentName: "$department.name",
+//                 totalTasks: 1,
+//               },
+//             },
+
+//             {
+//               $sort: { totalTasks: -1 }
+//             }
+
+//           ],
+
+//           /*
+//           ==========================================
+//           STATUS COUNTS
+//           ==========================================
+//           */
+
+//           statusStats: [
+
+//             {
+//               $group: {
+//                 _id: "$status",
+//                 totalTasks: { $sum: 1 },
+//               },
+//             }
+
+//           ],
+
+//           /*
+//           ==========================================
+//           DUE STATUS COUNTS
+//           ==========================================
+//           */
+
+//           dueStats: [
+
+//             {
+//               $group: {
+
+//                 _id: {
+
+//                   $switch: {
+
+//                     branches: [
+
+//                       {
+//                         case: {
+//                           $lt: ["$deadline", startOfToday]
+//                         },
+//                         then: "overdue",
+//                       },
+
+//                       {
+//                         case: {
+//                           $and: [
+//                             { $lte: ["$startDate", endOfToday] },
+//                             { $gte: ["$deadline", startOfToday] }
+//                           ]
+//                         },
+//                         then: "due",
+//                       },
+
+//                       {
+//                         case: {
+//                           $gt: ["$startDate", endOfToday]
+//                         },
+//                         then: "upcoming",
+//                       },
+
+//                     ],
+
+//                     default: "unknown",
+
+//                   },
+
+//                 },
+
+//                 totalTasks: { $sum: 1 },
+
+//               },
+
+//             }
+
+//           ],
+
+//           /*
+//           ==========================================
+//           TOTAL TASK COUNT
+//           ==========================================
+//           */
+
+//           totalTasks: [
+
+//             {
+//               $count: "total"
+//             }
+
+//           ]
+
+//         },
+
+//       },
+
+//     ];
+
+//     const result = await taskModel.aggregate(pipeline);
+
+//     const stats = result[0] || {};
+
+//     res.status(200).send({
+//       success: true,
+//       message: "Task stats fetched successfully",
+
+//       stats: {
+//         totalTasks: stats.totalTasks?.[0]?.total || 0,
+//         userStats: stats.userStats || [],
+//         departmentStats: stats.departmentStats || [],
+//         statusStats: stats.statusStats || [],
+//         dueStats: stats.dueStats || [],
+//       },
+
+//     });
+
+//   } catch (error) {
+
+//     console.log(error);
+
+//     res.status(500).send({
+//       success: false,
+//       message: "Error fetching task stats",
+//       error,
+//     });
+
+//   }
+// };
 
 
 

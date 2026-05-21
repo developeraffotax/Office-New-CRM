@@ -39,9 +39,14 @@ export const useTaskStats = ({ status, columnFilters }) => {
     try {
       const filters = buildFilters(columnFilters);
 
+
+      console.log("FILTERS", filters)
+
       const params = {
         status,
-        jobName: filters?.jobName,
+        departmentId: filters?.departmentId,
+        jobHolder: filters?.jobHolder,
+        // jobName: filters?.jobName,
       };
 
       const { data } = await axios.get(

@@ -9,15 +9,15 @@ export const hoursColumn = (ctx) => {
 
     Header: ({ column }) => {
       return (
-        <div className=" flex flex-col items-center justify-center  w-[4rem] pr-2  gap-[2px]">
+        <div className=" flex flex-col items-center justify-center  w-[60px]  gap-[2px]">
           <span
-            className="cursor-pointer w-full text-center"
+            className="cursor-pointer w-full text-start px-2"
              
              
           >
             Hrs
           </span>
-          <span className="font-medium w-full text-center px-1 py-1 ml-1 rounded-md bg-gray-50 text-black">
+          <span className="font-medium w-full text-start p-1  px-2 rounded-md bg-gray-50 text-black">
             {ctx.totalHours}
           </span>
         </div>

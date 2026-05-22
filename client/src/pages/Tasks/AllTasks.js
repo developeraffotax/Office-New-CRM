@@ -1303,11 +1303,11 @@ const AllTasks = ({ justShowTable = false }) => {
                   className={`
                                          py-1 px-3 rounded-full cursor-pointer
                                          font-[400] text-[14px] text-gray-900 font-google
-                                         border shadow-sm transition-all duration-150
+                                         border-2 shadow-sm transition-all duration-150  
                    
                                          ${
                                            taskStatusFilter === stat
-                                             ? "text-white border-orange-600 bg-orange-600"
+                                             ? "text-orange-600 border-orange-500   bg-orange-50  "
                                              : "hover:bg-gray-100"
                                          }
                                        `}

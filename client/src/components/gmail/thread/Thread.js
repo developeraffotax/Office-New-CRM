@@ -641,7 +641,7 @@ useOverlayStack({
 
                   {/* Body Content - Visible Part */}
                   <div
-                    className="text-gray-700 leading-relaxed text-[15px] prose max-w-none"
+                    className="text-gray-700 leading-relaxed text-[15px] max-w-none"
                     dangerouslySetInnerHTML={{
                       __html: parsedEmail.visible || message?.snippet || "",
                     }}

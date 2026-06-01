@@ -6,49 +6,18 @@ const conversationSchema = new mongoose.Schema(
   {
     companyName: { type: String, required: true },
     category: { type: String, default: "" },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "Users", default: null, },
+    status: { type: String, enum: ["progress", "completed"], default: "progress", },
 
     // Customer whatsapp number
-    phone: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    phone: { type: String, required: true, trim: true },
+    profileName: { type: String, default: "" },
+    profilePicture: { type: String, default: "" },
 
-    profileName: { type: String, default: "" }, 
-    profilePicture: { type: String, default: "" },  
+    lastMessage: { type: String, default: "", trim: true },
+    lastMessageAt: { type: Date, default: Date.now },
 
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Users",
-      default: null,
-    },
-
-    // Conversation state
-    status: {
-      type: String,
-      enum: ["progress", "completed"],
-      default: "progress",
-    },
-
-    // Last message preview
-    lastMessage: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-
-    // Last activity timestamp
-    lastMessageAt: {
-      type: Date,
-      default: Date.now,
-    },
-
-    // Unread messages count
-    unreadCount: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
+    // unreadCount: { type: Number, default: 0, min: 0 },
 
     readBy: {
       type: [

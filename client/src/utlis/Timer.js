@@ -43,7 +43,9 @@ export const Timer = ({
 
       console.log("Started Timer:🧡🧡🧡🧡🧡", { allocatedTime, jobId, task, timerId: startedTimer._id });
 
-      if (entityType === "task") {
+      console.log("entityType: ", entityType);
+
+      if (entityType === "task" || entityType === "subtask") {
         dispatch(
           startCountdown(
             allocatedTime,

@@ -3,10 +3,13 @@ import path from "path";
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
 import { Worker } from "bullmq";
-import { connection as redisConnection } from "../utils/ioredis.js";
-import { connectDB, disconnectDB } from "../config/db.js";
-import { processInboundMessage, processStatusUpdate } from "../services/whatsappService.js";
+import { connection as redisConnection } from "../../../utils/ioredis.js";
+import { connectDB, disconnectDB } from "../../../config/db.js";
+ 
 import logger from "../utils/logger.js";
+import { processReactionUpdate } from "../../services/reaction.service.js";
+import { processInboundMessage } from "../../services/message.service.js";
+import { processStatusUpdate } from "../../services/status.service.js";
 
 // ─────────────────────────────────────────────────────────────────
 // Worker handle — kept in module scope for graceful shutdown

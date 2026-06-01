@@ -1,3 +1,6 @@
+import { whatsappQueue } from "../jobs/queues/whatsappQueue.js";
+import logger from "../utils/logger.js";
+
  
 /**
  * GET /webhook

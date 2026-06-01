@@ -43,7 +43,8 @@ import threadCategoryRoutes from "../emailModule/routes/threadCategory.routes.js
 import threadCommentsRoutes from "../emailModule/routes/comment.routes.js";
 import threadActivityRoutes from "../emailModule/routes/threadActivity.routes.js";
 
- 
+
+import whatsappRoutes from "../whatsappModule/routes/whatsapp.routes.js"
  
 
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
@@ -106,4 +107,30 @@ export const registerRoutes = (app) => {
   app.use("/api/v1/gmail/category", requiredSignIn , threadCategoryRoutes);
   app.use("/api/v1/gmail/comments", requiredSignIn , threadCommentsRoutes);
   app.use("/api/v1/gmail/activity", requiredSignIn , threadActivityRoutes);
+
+
+
+
+
+
+
+
+
+
+
+
+  app.use("/api/v1/whatsapp", requiredSignIn , whatsappRoutes);
+
+
+
+
+
+
+
+
+
+
+
+
+
 };

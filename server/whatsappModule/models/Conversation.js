@@ -15,6 +15,8 @@ const conversationSchema = new mongoose.Schema(
     profilePicture: { type: String, default: "" },
 
     lastMessage: { type: String, default: "", trim: true },
+    lastMessageType: { type: String, enum: [ "text", "image", "document", "audio", "video", "sticker", "location", ], default: "text", },
+    lastMessageId: { type: mongoose.Schema.Types.ObjectId, ref: "WhatsappMessage", default: null, },
     lastMessageAt: { type: Date, default: Date.now },
 
     // unreadCount: { type: Number, default: 0, min: 0 },

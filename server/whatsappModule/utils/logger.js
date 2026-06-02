@@ -2,7 +2,8 @@ import winston from "winston";
 
 const { combine, timestamp, printf, colorize, json } = winston.format;
 
-const isProduction = process.env.NODE_ENV === "production";
+ const isProduction = process.env.NODE_ENV === "production";
+ 
 
 const devFormat = combine(
   colorize(),

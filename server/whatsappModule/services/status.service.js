@@ -1,5 +1,5 @@
  
-import Conversation    from "../models/Conversation.js";
+import Conversation    from "../models/WhatsappConversation.js";
 import WhatsappMessage from "../models/WhatsappMessage.js";
  
 import logger          from "../utils/logger.js";

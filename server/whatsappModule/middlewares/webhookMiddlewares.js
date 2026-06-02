@@ -43,6 +43,8 @@ export const verifySignature = (req, res, next) => {
     Buffer.from(expected)
   );
 
+  console.log("[SignatureVerify] Signature check", { signature, expected, isValid });
+
   if (!isValid) {
     logger.warn("[SignatureVerify] Signature mismatch", { signature, expected });
     return res.status(401).json({ error: "Invalid signature" });

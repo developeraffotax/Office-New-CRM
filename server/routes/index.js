@@ -45,7 +45,7 @@ import threadActivityRoutes from "../emailModule/routes/threadActivity.routes.js
 
 
 import whatsappRoutes from "../whatsappModule/routes/whatsapp.routes.js"
- 
+
 
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import { sendDatatoGoogleSheet } from "../utils/googleSheet.js";
@@ -54,6 +54,10 @@ import { aiPerMinuteLimiter } from "../utils/rateLimiter.js";
 
 
 export const registerRoutes = (app) => {
+  
+
+
+
   app.use("/api/v1/user", userRoute);
   app.use("/api/v1/client", jobRoute);
   app.use("/api/v1/timer", timerRoute);
@@ -114,12 +118,11 @@ export const registerRoutes = (app) => {
 
 
 
+      app.use("/api/v1/whatsapp", requiredSignIn, whatsappRoutes);
 
 
 
 
-
-  app.use("/api/v1/whatsapp", requiredSignIn , whatsappRoutes);
 
 
 

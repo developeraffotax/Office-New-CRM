@@ -1,9 +1,96 @@
-import Conversation    from "../models/Conversation.js";
+import Conversation    from "../models/WhatsappConversation.js";
 import WhatsappMessage from "../models/WhatsappMessage.js";
  
 import logger          from "../utils/logger.js";
+import { buildPreview, parseMessage } from "../utils/message.js";
+import { getCompanyByPhoneNumber,  } from "../utils/config.js";
 
  
+
+
+import { sendWhatsappPayload } from "../utils/whatsappApi.js";
+ 
+export const sendMessage = async ({
+  conversationId,
+  phoneNumberId,
+  to,
+  type,
+  body,
+  media,
+  template,
+  context,
+  userId,
+}) => {
+  // Build the payload for Meta API
+  let apiPayload = { to, type };
+
+   // Add quoted reply context if provided
+  if (context?.whatsappMessageId) {
+    apiPayload.context = { message_id: context.whatsappMessageId };
+  }
+
+  if (type === "text") {
+    apiPayload.text = { body, preview_url: false };
+  } else if (["image", "document", "audio", "video"].includes(type)) {
+    apiPayload[type] = {
+      link: media.url,
+      ...(media.caption  && { caption:  media.caption  }),
+      ...(media.filename && { filename: media.filename }),
+    };
+  } else if (type === "template") {
+    apiPayload.template = template;
+  }
+
+  // ── Send to Meta ─────────────────────────────────────────────────
+  const apiResponse = await sendWhatsappPayload(phoneNumberId, apiPayload);
+  const whatsappMessageId = apiResponse.messages?.[0]?.id;
+
+  if (!whatsappMessageId) {
+    throw new Error("No message ID returned from WhatsApp API");
+  }
+
+  // ── Persist to DB ─────────────────────────────────────────────────
+  const saved = await saveOutboundMessage({
+    conversationId,
+    whatsappMessageId,
+    from: phoneNumberId,
+    to,
+    type,
+    body: body ?? "",
+    media: media ?? undefined,
+    userId: userId ?? null,
+  });
+
+  return saved;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /** Paginated messages for a conversation */
 export const getMessages = async ({ conversationId, page = 1, limit = 50 }) => {
@@ -56,7 +143,7 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
         lastMessageAt:   timestamp,
       },
       $setOnInsert: {
-        companyName: process.env.COMPANY_NAME ?? "Default",
+         companyName: getCompanyByPhoneNumber(metadata?.display_phone_number) ?? "Default",
         phone,
       },
     },
@@ -69,7 +156,7 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
     whatsappMessageId,
     direction:         "inbound",
     from:              rawMessage.from,
-    to:                metadata?.phone_number_id ?? "",
+    to:                metadata?.display_phone_number ?? "",
     type,
     body,
     media:             media ?? undefined,

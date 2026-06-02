@@ -6,10 +6,11 @@ import { Worker } from "bullmq";
 import { connection as redisConnection } from "../../../utils/ioredis.js";
 import { connectDB, disconnectDB } from "../../../config/db.js";
  
-import logger from "../utils/logger.js";
+ 
 import { processReactionUpdate } from "../../services/reaction.service.js";
 import { processInboundMessage } from "../../services/message.service.js";
 import { processStatusUpdate } from "../../services/status.service.js";
+import logger from "../../utils/logger.js";
 
 // ─────────────────────────────────────────────────────────────────
 // Worker handle — kept in module scope for graceful shutdown
@@ -29,6 +30,9 @@ let worker;
  */
 const processJob = async (job) => {
   const { name, data, id, attemptsMade } = job;
+
+
+  
 
   logger.info(`[Worker] Processing job`, { jobId: id, name, attempt: attemptsMade + 1 });
 

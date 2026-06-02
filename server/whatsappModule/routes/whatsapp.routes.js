@@ -1,30 +1,21 @@
 import { Router } from "express";
+import { listConversations, listMessages, markRead, sendMessage, assignConversation, resolveConversation,  } from "../controllers/whatsapp.controller.js";
  
  
-import { receiveWebhook, verifyWebhook } from "../controllers/whatsapp.controller.js";
-import { captureRawBody, verifySignature } from "../middlewares/whatsappMiddlewares.js";
+ 
+ 
 
 const router = Router();
 
-// Meta webhook verification (GET)
-//router.get("/webhook", verifyWebhook);
+ 
+router.post ("/conversations/:id/messages", sendMessage);
 
-// Inbound events (POST)
-// captureRawBody replaces express.json() for this route
-// verifySignature validates the Meta HMAC header
-//router.post("/webhook",  verifySignature, receiveWebhook);
-
-
-
-
-
-
-
-
-
-
-
-
+// Conversations (add authMiddleware as needed)
+router.get  ("/conversations",              listConversations);
+router.get  ("/conversations/:id/messages", listMessages);
+router.patch("/conversations/:id/assign",   assignConversation);
+router.patch("/conversations/:id/resolve",  resolveConversation);
+router.patch("/conversations/:id/read",     markRead);
 
 
 

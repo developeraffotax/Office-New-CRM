@@ -24,6 +24,13 @@ import { ExpressAdapter } from "@bull-board/express";
 import { gmailSyncQueue } from "./emailModule/jobs/queues/gmailSyncQueue.js";
  import cron from "node-cron";
 import { checkRunningTimers } from "./cron/jobs/checkRunnningTimers.js";
+
+
+
+import whatsappWebhookRoutes from "./whatsappModule/routes/webhook.routes.js"
+import { whatsappQueue } from "./whatsappModule/jobs/queues/whatsappQueue.js";
+
+
 dotenv.config();
 
 // --------------------------------------------
@@ -47,7 +54,7 @@ const serverAdapter = new ExpressAdapter();
 serverAdapter.setBasePath("/admin/queues");
 
 createBullBoard({
-  queues: [new BullMQAdapter(gmailSyncQueue)],
+  queues: [new BullMQAdapter(whatsappQueue), new BullMQAdapter(gmailSyncQueue)],
   serverAdapter,
 });
 
@@ -66,6 +73,11 @@ const startServer = async () => {
 
     app.set("trust proxy", 1); // if behind a proxy (e.g., Heroku, Nginx)
 
+
+
+    app.use("/api/v1/whatsapp/webhook", whatsappWebhookRoutes);
+
+
     // 3️⃣ Middleware
     app.use(express.json({ limit: "20mb" }));
     app.use(cors());
@@ -75,7 +87,7 @@ const startServer = async () => {
  
 
     // Bull Board route
-    // app.use("/admin/queues", serverAdapter.getRouter());
+    app.use("/admin/queues", serverAdapter.getRouter());
 
     // 4️⃣ HTTP & Socket server
     const server = http.createServer(app);

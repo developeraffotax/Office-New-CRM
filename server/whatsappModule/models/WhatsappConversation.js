@@ -49,6 +49,7 @@ const conversationSchema = new mongoose.Schema(
 INDEXES
 ==========================================
 */
+conversationSchema.index({ companyName: 1, phone: 1 }, { unique: true });
 
 // Fast inbox sorting
 conversationSchema.index({ lastMessageAt: -1 });
@@ -57,8 +58,7 @@ conversationSchema.index({ lastMessageAt: -1 });
 conversationSchema.index({ userId: 1, status: 1 });
 
 // One conversation per phone
-conversationSchema.index({ phone: 1 }, { unique: true });
 
-const Conversation = mongoose.model("Conversation", conversationSchema);
+const WhatsappConversation = mongoose.model("WhatsappConversation", conversationSchema);
 
-export default Conversation;
+export default WhatsappConversation;

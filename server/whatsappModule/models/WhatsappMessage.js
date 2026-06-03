@@ -67,15 +67,27 @@ const whatsappMessageSchema = new mongoose.Schema(
       default: "",
     },
 
-    // Media information
-    media: {
-      id: String,       // whatsapp media id
-      url: String,      // your stored file url
-      mimeType: String,
-      filename: String,
-      caption: String,
-      size: Number,
-    },
+    // Media information (image, video, audio, document, sticker)
+media: {
+  id:       String,   // WhatsApp media_id (for reference)
+  s3Key:      String,   // Wasabi object key  e.g. "whatsapp-media/923001234567/2024-01-15/abc123.jpg"
+ 
+  mimeType: String,   // e.g. "image/jpeg"
+  filename: String,   // documents only
+  caption:  String,   // image/video/document
+  size:     Number,   // bytes
+  voice:    Boolean,  // audio only — true if recorded voice note
+  animated: Boolean,  // sticker only
+},
+
+// Location (type === "location")
+location: {
+  latitude:  Number,
+  longitude: Number,
+  name:      String,  // e.g. "Eiffel Tower"     — optional
+  address:   String,  // e.g. "Champ de Mars..."  — optional
+  url:       String,  // Google Maps link          — optional
+},
 
     // Delivery state
     status: {

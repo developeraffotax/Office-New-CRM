@@ -60,6 +60,7 @@ import Mailbox from "./components/gmail/pages/Mailbox";
 import { fetchInboxUnreadCounts } from "./redux/slices/inboxUnreadSlice";
 import SignaturesModule from "./components/Signatures/SignaturesModule";
 import VerifyOtp from "./pages/Auth/VerifyOtp";
+import WhatsAppBox from "./components/whatsapp/pages/WhatsAppBox";
 
 function App() {
   const navigate = useNavigate();
@@ -122,6 +123,7 @@ function App() {
           <Route path="/tickets/complete" element={<CompleteTickets />} />
           <Route path="/ticket/detail/:id" element={<EmailDetail />} />
           <Route path="/mail" element={<Mailbox />} />
+          <Route path="/whatsapp" element={<WhatsAppBox />} />
           {/* <Route path="/tickets/sent" element={<Sent />} /> */}
         </>
       ),

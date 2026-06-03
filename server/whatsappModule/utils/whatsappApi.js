@@ -1,3 +1,4 @@
+import axios from "axios";
 /**
  * Thin wrapper around the Meta WhatsApp Cloud API.
  * No DB logic here — just HTTP.
@@ -7,36 +8,46 @@ const BASE_URL = "https://graph.facebook.com/v25.0";
 
 const headers = () => ({
   "Content-Type": "application/json",
-  Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+  Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
 });
 
 /**
  * Send any message payload to a recipient.
  * Returns the raw Meta response { messages: [{ id }], contacts: [...] }
  */
+
 export const sendWhatsappPayload = async (phoneNumberId, payload) => {
   const url = `${BASE_URL}/${phoneNumberId}/messages`;
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: headers(),
-    body: JSON.stringify({
-      messaging_product: "whatsapp",
-      recipient_type: "individual",
-      ...payload,
-    }),
-  });
+  console.log("url:", url);
+  console.log("payload:", payload);
 
-  const data = await res.json();
+  try {
+    const { data } = await axios.post(
+      url,
+      {
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        ...payload,
+      },
+      {
+        headers: headers(),
+      }
+    );
 
-  if (!res.ok) {
-    const err = new Error(data?.error?.message ?? "WhatsApp API error");
-    err.code = data?.error?.code;
-    err.meta = data;
+    return data; // { messages: [{ id: "wamid.xxx" }] }
+  } catch (error) {
+    const apiError = error.response?.data;
+
+    const err = new Error(
+      apiError?.error?.message ?? error.message ?? "WhatsApp API error"
+    );
+
+    err.code = apiError?.error?.code;
+    err.meta = apiError;
+
     throw err;
   }
-
-  return data; // { messages: [{ id: "wamid.xxx" }] }
 };
 
 /** Send a plain text message */

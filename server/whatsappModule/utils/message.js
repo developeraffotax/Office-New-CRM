@@ -47,40 +47,41 @@ export const parseMessage = (raw) => {
       };
 
     case "location":
-      return {
-        type: "location",
-        body: raw.location?.name ?? "",
-        media: {
-          latitude:  raw.location?.latitude,
-          longitude: raw.location?.longitude,
-          name:      raw.location?.name,
-          address:   raw.location?.address,
-          url:       raw.location?.url,
-        },
-      };
+        return {
+          type:     "location",
+          body:     raw.location?.name ?? "",
+          media:    null,                        // ← no media
+          location: {
+            latitude:  raw.location?.latitude,
+            longitude: raw.location?.longitude,
+            name:      raw.location?.name,
+            address:   raw.location?.address,
+            url:       raw.location?.url,
+          },
+        };
 
-    case "interactive": {
-      const replyType = raw.interactive?.type;                    // button_reply | list_reply
-      const reply     = raw.interactive?.[replyType] ?? {};
-      return {
-        type: "text",
-        body: reply.title ?? reply.description ?? JSON.stringify(raw.interactive),
-        media: null,
-      };
-    }
+    // case "interactive": {
+    //   const replyType = raw.interactive?.type;                 
+    //   const reply     = raw.interactive?.[replyType] ?? {};
+    //   return {
+    //     type: "text",
+    //     body: reply.title ?? reply.description ?? JSON.stringify(raw.interactive),
+    //     media: null,
+    //   };
+    // }
 
-    case "button":
-      return { type: "text", body: raw.button?.text ?? "", media: null };
+    // case "button":
+    //   return { type: "text", body: raw.button?.text ?? "", media: null };
 
-    case "order":
-      return {
-        type: "text",
-        body: `🛒 Order (${raw.order?.product_items?.length ?? 0} items)`,
-        media: null,
-      };
+    // case "order":
+    //   return {
+    //     type: "text",
+    //     body: `🛒 Order (${raw.order?.product_items?.length ?? 0} items)`,
+    //     media: null,
+    //   };
 
-    case "system":
-      return { type: "text", body: raw.system?.body ?? "System message", media: null };
+    // case "system":
+    //   return { type: "text", body: raw.system?.body ?? "System message", media: null };
 
     default:
       return { type: "unknown", body: "", media: null };

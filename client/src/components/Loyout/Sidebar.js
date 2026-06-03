@@ -601,6 +601,73 @@ const {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    { (user?.role?.name === "Admin" || hasAccess("Whatsapp")) && (
+            <div
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "whatsapp"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+                }   filter   overflow-hidden`}
+              onClick={() => {
+                router(user?.role?.name === "Admin" ? `/whatsapp?companyName=affotax` : `/whatsapp?companyName=affotax `);
+                 dispatch(setActive("whatsapp"));
+              }}
+            >
+              <div className="relative w-full h-full flex items-center justify-between px-3 z-30 bg-transparent">
+                {hide ? (
+                  <IoMailUnreadOutline
+                    className="h-5 w-5 cursor-pointer ml-2"
+                    style={{ color: active === "whatsapp" && "#fff" }}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <IoMailUnreadOutline
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "whatsapp" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400] "
+                      style={{ color: active === "whatsapp" && "#fff" }}
+                    >
+                      WhatsApp 
+                    </span>
+
+                    
+                  </div>
+                  
+                )}
+
+                
+
+ 
+
+
+              </div>
+            </div>
+          )}
+
+
+
+
+
+
+
  
 
 

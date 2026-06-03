@@ -8,8 +8,13 @@ import { getCompanyByPhoneNumber,  } from "../utils/config.js";
  
 
 
-import { sendWhatsappPayload } from "../utils/whatsappApi.js";
+import { sendWhatsappPayload } from "../utils/whatsappApi.js"; 
+import { downloadAndStoreMedia } from "./media.service.js";
  
+
+const MEDIA_TYPES = new Set(["image", "video", "audio", "document", "sticker"]);
+
+
 export const sendMessage = async ({
   conversationId,
   phoneNumberId,
@@ -20,26 +25,37 @@ export const sendMessage = async ({
   template,
   context,
   userId,
+
+  presignedUrl,
+ 
 }) => {
-  // Build the payload for Meta API
+  // Build the baseline payload for Meta API
   let apiPayload = { to, type };
 
-   // Add quoted reply context if provided
+  // Add quoted reply context if provided
   if (context?.whatsappMessageId) {
     apiPayload.context = { message_id: context.whatsappMessageId };
   }
 
+  // Handle specific message types
   if (type === "text") {
     apiPayload.text = { body, preview_url: false };
-  } else if (["image", "document", "audio", "video"].includes(type)) {
+  } 
+  else if (["image", "document", "audio", "video"].includes(type)) {
     apiPayload[type] = {
-      link: media.url,
-      ...(media.caption  && { caption:  media.caption  }),
-      ...(media.filename && { filename: media.filename }),
+      link: presignedUrl,
+      ...(media.caption && { caption: media.caption }),
+      // WhatsApp requires filename specifically for documents
+      ...(media.filename && type === "document" && { filename: media.filename }),
     };
-  } else if (type === "template") {
+  } 
+  else if (type === "template") {
     apiPayload.template = template;
   }
+
+
+    console.log("MEIDA 👍👍👍", media)
+
 
   // ── Send to Meta ─────────────────────────────────────────────────
   const apiResponse = await sendWhatsappPayload(phoneNumberId, apiPayload);
@@ -59,12 +75,11 @@ export const sendMessage = async ({
     body: body ?? "",
     media: media ?? undefined,
     userId: userId ?? null,
+ 
   });
 
   return saved;
 };
-
-
 
 
 
@@ -107,6 +122,8 @@ export const getMessages = async ({ conversationId, page = 1, limit = 50 }) => {
 };
 
 
+
+
 /**
  * Called by the webhook controller for every inbound WhatsApp message.
  * Idempotent — safe to call multiple times (deduplication via unique index).
@@ -123,7 +140,34 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
 
   const phone       = rawMessage.from;
   const profileName = contact?.profile?.name ?? "";
-  const { type, body, media } = parseMessage(rawMessage);
+  const { type, body, media, location } = parseMessage(rawMessage);
+
+   // ── NEW: Download & store media before persisting ─────────────────
+  let resolvedMedia = media ?? undefined;
+
+  if (MEDIA_TYPES.has(type) && media?.id) {
+    try {
+      const { key } = await downloadAndStoreMedia(
+        media.id,
+        media.mimeType,
+        phone
+      );
+      resolvedMedia = { ...media, s3Key: key };
+    } catch (err) {
+
+      console.error("Media download/store failed", { err: err });
+      // Don't fail the whole message — store media_id as fallback
+      logger.error("[Service] Media download failed", {
+        whatsappMessageId,
+        mediaId: media.id,
+        err: err.message,
+      });
+      resolvedMedia = { ...media, s3Key: null }; // still saves the id
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────
+
+
   const preview     = buildPreview(type, body, media);
   const timestamp   = new Date(Number(rawMessage.timestamp) * 1000);
 
@@ -143,7 +187,7 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
         lastMessageAt:   timestamp,
       },
       $setOnInsert: {
-         companyName: getCompanyByPhoneNumber(metadata?.display_phone_number) ?? "Default",
+         companyName: getCompanyByPhoneNumber(metadata?.display_phone_number) ?? "default",
         phone,
       },
     },
@@ -159,7 +203,8 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
     to:                metadata?.display_phone_number ?? "",
     type,
     body,
-    media:             media ?? undefined,
+    media:             resolvedMedia ?? undefined,
+    location:          location ?? undefined,
     status:            "received",
     statusUpdatedAt:   new Date(),
     context:           rawMessage.context
@@ -201,6 +246,7 @@ export const saveOutboundMessage = async ({
   body,
   media,
   userId,
+ 
 }) => {
   const conversation = await Conversation.findById(conversationId);
   if (!conversation) throw new Error("Conversation not found");
@@ -221,6 +267,7 @@ export const saveOutboundMessage = async ({
     type,
     body:            body ?? "",
     media:           media ?? undefined,
+   
     status:          "sent",
     statusUpdatedAt: now,
     timestamp:       now,

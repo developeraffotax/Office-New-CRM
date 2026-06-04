@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 
 export function useWhatsAppConversations({ endpoint }) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -48,18 +49,113 @@ export function useWhatsAppConversations({ endpoint }) {
     // Socket listeners for real-time updates would go here
   }, [fetchConversations]);
 
-  const handleUpdateStatus = async (id, action) => {
+
+
+
+
+  // const handleUpdateStatus = async (id, action) => {
+  //   try {
+  //     setLoading(prev => ({ ...prev, updating: true }));
+  //     await axios.put(`${endpoint}/${id}/${action}`);
+  //     toast.success(`Conversation ${action}d`);
+  //     fetchConversations();
+  //   } catch (err) {
+  //     toast.error(`Failed to ${action} conversation`);
+  //   } finally {
+  //     setLoading(prev => ({ ...prev, updating: false }));
+  //   }
+  // };
+
+
+
+  
+// ---------------- Update single thread via API ----------------
+const updateConversation = async (_id, updateData) => {
+  try {
+    setLoading(prev => ({...prev, updating: true}))
+    const { data } = await axios.put(
+      `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/update-conversation/${_id}`,
+      updateData
+    );
+
+    if (!data?.success || !data?.thread) {
+      toast.error("Conversation update failed!");
+      return;
+    }
+
+    
+
+    fetchConversations();
+
+  } catch (err) {
+    toast.error("Failed to update Conversation!");
+    console.error("Failed to update Conversation:", err);
+  } finally {
+    setLoading(prev => ({...prev, updating: false}))
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const deleteConversation = async (
+    _id,
+    companyName,
+    includeConfirmation = true,
+  ) => {
+    if (!_id) return;
+
+    // ✅ Only show Swal if confirmation is required
+    if (includeConfirmation) {
+      const { isConfirmed } = await Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+      });
+
+      if (!isConfirmed) return;
+    }
+
     try {
-      setLoading(prev => ({ ...prev, updating: true }));
-      await axios.patch(`${endpoint}/${id}/${action}`);
-      toast.success(`Conversation ${action}d`);
+ 
+    setLoading((prev) => ({ ...prev, deleting: true }));
+      const { data } = await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/conversations/delete/${_id}`,
+        {
+          data: { companyName },
+        },
+      );
+
       fetchConversations();
-    } catch (err) {
-      toast.error(`Failed to ${action} conversation`);
+       
+    } catch (error) {
+      console.error("Failed to delete thread:", error);
+      toast.error("Failed to delete thread!");
     } finally {
-      setLoading(prev => ({ ...prev, updating: false }));
+      setLoading((prev) => ({ ...prev, deleting: false }));
     }
   };
+
+
+
+
 
   const markAsRead = async (id) => {
     try {
@@ -76,8 +172,9 @@ export function useWhatsAppConversations({ endpoint }) {
     pagination,
     filters,
     setFilters: updateFilters,
-    handleUpdateStatus,
+    updateConversation,
     markAsRead,
-    fetchConversations
+    fetchConversations,
+    deleteConversation
   };
 }

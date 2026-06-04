@@ -4,24 +4,70 @@ import axios from "axios";
 import WhatsAppLayout from "../layout/WhatsAppLayout";
 
 export default function WhatsAppBox() {
+    const [users, setUsers] = useState([]);
   const [team, setTeam] = useState([]);
+  const [categories, setCategories] = useState([]);
 
   const chatData = useWhatsAppConversations({
     endpoint: `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/conversations`,
   });
 
-  const getTeam = async () => {
+  const getAllUsers = async () => {
     try {
-      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/user/get/active/team`);
-      setTeam(data?.users || []);
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+      );
+      setUsers(
+        data?.users?.filter((user) =>
+          user.role?.access?.some((item) =>
+            item?.permission?.includes("Tickets")
+          )
+        ) || []
+      );
+
+
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
   };
 
+
+
+    const getTeam = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get/active/team`
+      );
+      setTeam( data?.users);
+
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+ 
+
+    const getCategories = async () => {
+    try {
+       
+      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/whatsapp/category`);
+      setCategories(data);
+
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
+
+
   useEffect(() => {
+    getCategories();
+    getAllUsers();
     getTeam();
   }, []);
 
-  return <WhatsAppLayout team={team} {...chatData} />;
+  return <WhatsAppLayout users={users}  team={team}  categories={categories}  {...chatData} />;
 }

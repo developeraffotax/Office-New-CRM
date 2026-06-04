@@ -43,11 +43,12 @@ import AutorenewIcon from "@mui/icons-material/Autorenew";
 import PersonPinIcon from "@mui/icons-material/PersonPin";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 
-import ManageCategoriesModal from "../categories/ManageCategoriesModal";
+ 
 import InboxUserTabs from "./ui/InboxUserTabs";
 import UserTabToggleButton from "./ui/UserTabToggleButton";
 import ContextMenu from "./ui/ContextMenu";
 import UnifiedThreadFilters from "./ui/LastMessageByDropdown";
+import ManageCategoriesModal from "./ui/ManageCategoriesModal";
 
 export default function Filters({
   filters,
@@ -160,35 +161,35 @@ export default function Filters({
     setFilters({ ...updates, page: 1 });
   };
 
-  useEffect(() => {
-    // Check if user is Admin OR Team Lead, AND the feature is enabled
+  // useEffect(() => {
+   
 
-    if (!hasPermission || !isInboxUserTabs) return;
+  //   if (!hasPermission || !isInboxUserTabs) return;
 
-    const fetchUserCounts = async () => {
-      try {
-        const res = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/gmail/mailbox-user-counts`,
-          {
-            params: {
-              companyName: companyName,
-              folder: folder,
-              ...filters,
-            },
-          },
-        );
+  //   const fetchUserCounts = async () => {
+  //     try {
+  //       const res = await axios.get(
+  //         `${process.env.REACT_APP_API_URL}/api/v1/gmail/mailbox-user-counts`,
+  //         {
+  //           params: {
+  //             companyName: companyName,
+  //             folder: folder,
+  //             ...filters,
+  //           },
+  //         },
+  //       );
 
-        if (res.data?.success) {
-          setInboxStats(res.data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch user counts", err);
-      }
-    };
+  //       if (res.data?.success) {
+  //         setInboxStats(res.data);
+  //       }
+  //     } catch (err) {
+  //       console.error("Failed to fetch user counts", err);
+  //     }
+  //   };
 
-    fetchUserCounts();
-    // Added isTeamLead to the dependency array
-  }, [filters, folder, companyName, isAdmin, isTeamLead, isInboxUserTabs]);
+  //   fetchUserCounts();
+  //   // Added isTeamLead to the dependency array
+  // }, [filters, folder, companyName, isAdmin, isTeamLead, isInboxUserTabs]);
 
   useEffect(() => {
     const trimmed = searchInput.trim();

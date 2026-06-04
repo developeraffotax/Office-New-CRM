@@ -3,27 +3,42 @@ import { useState } from "react";
 import ChatWindow from "../chat/ChatWindow";
 import ChatList from "../chat/ChatList";
 import Sidebar from "../shared/Sidebar";
+import Filters from "../shared/Filters";
  
 
 export default function WhatsAppLayout({
   team,
+  users,
+  categories,
   conversations,
   loading,
   filters,
   setFilters,
-  handleUpdateStatus,
+  updateConversation,
   markAsRead,
+  deleteConversation
 }) {
+
+
   const [activeChatId, setActiveChatId] = useState(null);
 
   const activeChat = conversations.find(c => c._id === activeChatId);
+
+ 
 
   return (
     <div className="flex h-[105vh] bg-[#f0f2f5] overflow-hidden text-gray-800 font-sans">
       <Sidebar />
 
-      {/* Left Pane: Conversation List */}
-      <div className="w-[380px] flex-shrink-0 border-r border-gray-200 bg-white flex flex-col z-10 shadow-sm">
+      <div className="flex-1 min-w-0 flex flex-col">
+
+          <Filters filters={filters} setFilters={setFilters} categories={categories} users={users} team={team} />
+
+              {/* Left Pane: Conversation List */}
+      <div className="flex-1 flex overflow-hidden">
+
+
+        <div className="w-[800px] flex-shrink-0 border-r border-gray-200 bg-white flex flex-col z-10 shadow-sm">
         <ChatList 
           conversations={conversations}
           loading={loading}
@@ -34,6 +49,15 @@ export default function WhatsAppLayout({
             setActiveChatId(id);
             markAsRead(id);
           }}
+
+          users={users}
+          categories={categories}
+          updateConversation={updateConversation}
+          deleteConversation={deleteConversation}
+
+
+
+          
         />
       </div>
 
@@ -46,7 +70,7 @@ export default function WhatsAppLayout({
           <ChatWindow 
             chat={activeChat} 
             team={team}
-            handleUpdateStatus={handleUpdateStatus}
+            updateConversation={updateConversation}
           />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center z-10">
@@ -56,6 +80,16 @@ export default function WhatsAppLayout({
           </div>
         )}
       </div>
+
+
+
+      </div>
+
+
+
+
+      </div>
+
     </div>
   );
 }

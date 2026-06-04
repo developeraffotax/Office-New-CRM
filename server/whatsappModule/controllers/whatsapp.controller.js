@@ -1,6 +1,8 @@
 import * as messageService      from "../services/message.service.js";
 import * as conversationService from "../services/conversation.service.js";
 import { serveMedia, uploadMediaBuffer } from "../services/media.service.js";
+import WhatsappConversation from "../models/WhatsappConversation.js";
+import mongoose from "mongoose";
 
 /** GET /conversations */
 export const listConversations = async (req, res) => {
@@ -151,7 +153,107 @@ export const sendMessage = async (req, res) => {
 
 
 
+export const updateConversationMetadata = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
 
+    /**
+     * 1️⃣ Whitelist validation
+     */
+    const allowedUpdates = ["category", "userId", "status"];
+    const updateKeys = Object.keys(updates);
+
+    const isValidUpdate = updateKeys.every((key) =>
+      allowedUpdates.includes(key),
+    );
+
+    if (!isValidUpdate) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid fields in update!",
+      });
+    }
+
+    /**
+     * 2️⃣ Fetch old thread
+     */
+    const oldConversation = await WhatsappConversation.findById(id);
+    if (!oldConversation) {
+      return res.status(404).json({
+        success: false,
+        message: "Conversation not found!",
+      });
+    }
+
+    if (updates?.userId) {
+      updates.userId = new mongoose.Types.ObjectId(updates.userId);
+    }
+
+
+    /**
+     * 3️⃣ Update thread
+     */
+    const updatedConversation = await WhatsappConversation.findOneAndUpdate({_id: id}, {$set: {...updates}}, {
+      new: true,
+      runValidators: true,
+      //  updatedBy: req?.user?.user?._id
+    })
+
+    // console.log("UPDATED THREAD✔️", updatedConversation)
+
+    /**
+     * 4️⃣ Assignment diff
+     */
+    // const oldUserId = oldConversation.userId?.toString() || null;
+    // const newUserId = updatedConversation.userId?.toString() || null;
+
+    // const selfAssign = isSelfAssignment(req?.user?.user, newUserId);
+
+    /**
+     * 5️⃣ Notifications (skip self-assign)
+     */
+    // if (updateKeys.includes("userId") && !selfAssign) {
+    //   await createNotification(req, updatedConversation);
+    // }
+
+    /**
+     * 6️⃣ Socket emits (skip self-assign)
+     */
+
+    // const eventName = `metadata:updated-${updatedConversation.companyName}`;
+
+    // Assigned → Unassigned OR Reassigned
+    // if (oldUserId && !isSelfAssignment(req?.user?.user, oldUserId)) {
+    //   emitToUser(oldUserId, eventName, {});
+    // }
+
+    // Unassigned → Assigned OR Reassigned
+    // if (
+    //   newUserId &&
+    //   newUserId !== oldUserId &&
+    //   !isSelfAssignment(req?.user?.user, newUserId)
+    // ) {
+    //   emitToUser(newUserId, eventName, {});
+    // }
+
+    /**
+     * 7️⃣ Response
+     */
+    res.status(200).json({
+      success: true,
+      message: "Conversation updated successfully!",
+      thread: updatedConversation,
+    });
+  } catch (error) {
+    console.error("Error updating thread:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while updating thread.",
+      error: error.message,
+    });
+  }
+};
 
 
 
@@ -189,5 +291,45 @@ export const markRead = async (req, res) => {
     res.sendStatus(204);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+
+
+
+
+
+
+ 
+export const deleteConversation = async (req, res) => {
+  try {
+    const { id } = req.params; // MongoDB _id
+    const { companyName } = req.body;
+
+    // Find the conversation in local DB
+    const conversation = await WhatsappConversation.findOneAndDelete({ _id: id, companyName });
+
+    console.log("RESULT IS", conversation)
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: "Conversation not found",
+      });
+    }
+
+ 
+ 
+
+    res.status(200).json({
+      success: true,
+      message: "Conversation deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting thread:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete thread",
+      error: error.message,
+    });
   }
 };

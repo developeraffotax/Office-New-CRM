@@ -5,7 +5,7 @@ import { HiOutlineUserAdd, HiOutlineCheckCircle, HiOutlineDocumentDownload, HiOu
 import { FiHeadphones, FiFilm } from "react-icons/fi";
 import { format } from "date-fns";
 
-export default function ChatWindow({ chat, team, handleUpdateStatus }) {
+export default function ChatWindow({ chat, team, updateConversation }) {
   const [messages, setMessages] = useState([]);
   const [inputMsg, setInputMsg] = useState("");
   
@@ -31,7 +31,7 @@ export default function ChatWindow({ chat, team, handleUpdateStatus }) {
       }
     };
     fetchMessages();
-  }, [chat._id]);
+  }, [chat?._id]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -256,19 +256,19 @@ export default function ChatWindow({ chat, team, handleUpdateStatus }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* <div className="flex items-center gap-2">
           {chat.status !== "completed" && (
             <button 
-              onClick={() => handleUpdateStatus(chat._id, "resolve")}
+              onClick={() => updateConversation(chat._id, { status: "completed" })}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-emerald-50 hover:text-emerald-600 rounded-md transition-colors"
             >
-              <HiOutlineCheckCircle size={18} /> Resolve
+              <HiOutlineCheckCircle size={18} /> Complete
             </button>
           )}
           <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 border border-orange-100 rounded-md transition-colors">
             <HiOutlineUserAdd size={18} /> Assign
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* Message Streaming Area */}

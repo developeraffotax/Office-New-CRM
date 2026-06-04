@@ -25,7 +25,7 @@ export const getConversations = async ({ status, userId, page = 1, limit = 20, s
       .sort({ lastMessageAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      .populate("userId", "name email")
+      // .populate("userId", "name email")
       .populate("lastMessageId")
       .lean(),
     Conversation.countDocuments(filter),

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { listConversations, listMessages, markRead, sendMessage, assignConversation, resolveConversation, getMedia,  } from "../controllers/whatsapp.controller.js";
+import { listConversations, listMessages, markRead, sendMessage, assignConversation, resolveConversation, getMedia, updateConversationMetadata, deleteConversation,  } from "../controllers/whatsapp.controller.js";
 import multer from "multer";
  
  
@@ -14,9 +14,32 @@ router.post ("/conversations/:id/messages",  upload.array("files"), sendMessage)
 // Conversations (add authMiddleware as needed)
 router.get  ("/conversations",              listConversations);
 router.get  ("/conversations/:id/messages", listMessages);
+
+
+router.put("/update-conversation/:id",   updateConversationMetadata);
+
+
+
 router.patch("/conversations/:id/assign",   assignConversation);
 router.patch("/conversations/:id/resolve",  resolveConversation);
 router.patch("/conversations/:id/read",     markRead);
+
+
+
+
+
+router.delete("/conversations/delete/:id",     deleteConversation);
+
+
+
+
+
+
+
+
+
+
+
 
 
 router.get  ("/media/:messageId", getMedia);

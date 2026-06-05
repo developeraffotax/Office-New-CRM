@@ -24,15 +24,16 @@ export default function ChatWindow({ chat, team, updateConversation }) {
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
 
+  
   // Fetch Messages for active chat
   useEffect(() => {
     if (!chat?._id) return;
     const fetchMessages = async () => {
       try {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/conversations/${chat._id}/messages?limit=50`,
+          `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/conversations/${chat._id}/messages`,
         );
-        setMessages(data.messages || data.docs || data);
+        setMessages(data.messages || []);
       } catch (err) {
         console.error("Failed to fetch messages", err);
       }
@@ -40,9 +41,25 @@ export default function ChatWindow({ chat, team, updateConversation }) {
     fetchMessages();
   }, [chat?._id]);
 
+// Track if it's the initial load for the active chat
+  const isInitialScroll = useRef(true);
+
+  // Reset the initial scroll tracker when switching chats
+  useEffect(() => {
+    isInitialScroll.current = true;
+  }, [chat?._id]);
+
   // Auto-scroll to bottom
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ 
+        // "auto" instantly snaps, "smooth" animates
+        behavior: isInitialScroll.current ? "auto" : "smooth" 
+      });
+      
+      // After the first scroll, set to false so new messages scroll smoothly
+      isInitialScroll.current = false;
+    }
   }, [messages]);
 
   // Handle Multi-File Attachment selection
@@ -150,12 +167,12 @@ export default function ChatWindow({ chat, team, updateConversation }) {
         return (
           <div className="flex flex-col max-w-[280px]">
             <img
-              src={`${process.env.REACT_APP_API_URL}/api/v1/whatsapp/media/${msg._id}`}
+              src={`${msg?.url}`}
               alt={msg.media?.filename || "WhatsApp Image"}
               className="rounded-md max-h-64 object-cover cursor-pointer w-full border border-black/5"
               onClick={() =>
                 window.open(
-                  `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/media/${msg._id}`,
+                  `${msg?.url}`,
                   "_blank",
                 )
               }
@@ -173,7 +190,7 @@ export default function ChatWindow({ chat, team, updateConversation }) {
           <div className="flex flex-col max-w-[280px]">
             <div className="relative rounded-md overflow-hidden border border-black/5 bg-black flex items-center justify-center">
               <video
-                src={`${process.env.REACT_APP_API_URL}/api/v1/whatsapp/media/${msg._id}`}
+                src={`${msg?.url}`}
                 controls
                 className="max-h-64 w-full"
               />
@@ -204,7 +221,7 @@ export default function ChatWindow({ chat, team, updateConversation }) {
               />
             </div>
             <audio
-              src={`${process.env.REACT_APP_API_URL}/api/v1/whatsapp/media/${msg._id}`}
+              src={`${msg?.url}`}
               controls
               className="w-full h-8 custom-audio-player compact"
             />
@@ -214,7 +231,7 @@ export default function ChatWindow({ chat, team, updateConversation }) {
       case "document":
         return (
           <a
-            href={`${process.env.REACT_APP_API_URL}/api/v1/whatsapp/media/${msg._id}`}
+            href={`${msg?.url}`}
             target="_blank"
             rel="noreferrer"
             className={`flex items-center gap-3 p-2.5 rounded-lg border text-inherit no-underline hover:opacity-90 transition-opacity min-w-[240px] ${
@@ -244,7 +261,7 @@ export default function ChatWindow({ chat, team, updateConversation }) {
         return (
           <div className="w-32 h-32 py-1">
             <img
-              src={`${process.env.REACT_APP_API_URL}/api/v1/whatsapp/media/${msg._id}`}
+              src={`${msg?.url}`}
               alt="Sticker"
               className="w-full h-full object-contain"
             />
@@ -315,14 +332,14 @@ export default function ChatWindow({ chat, team, updateConversation }) {
       <div className="h-16 px-4 py-2 bg-white/80 backdrop-blur-md border-b border-gray-200 flex items-center justify-between shadow-sm">
         <div className="flex items-center">
           <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold border border-orange-200 shadow-sm">
-            {chat.contactName?.charAt(0).toUpperCase() || "#"}
+            {chat?.profileName?.charAt(0).toUpperCase() || "#"}
           </div>
           <div className="ml-3">
             <h2 className="text-base font-semibold text-gray-900">
-              {chat.profileName || chat.phone}
+              {chat?.profileName || chat?.phone}
             </h2>
             <p className="text-xs text-gray-500">
-              {chat.status === "progress" ? "In Progress" : "Completed"}
+              {chat?.status === "progress" ? "In Progress" : "Completed"}
             </p>
           </div>
         </div>
@@ -532,18 +549,44 @@ export default function ChatWindow({ chat, team, updateConversation }) {
                 e.target.style.height = "auto";
                 e.target.style.height = `${e.target.scrollHeight}px`;
               }}
+              onKeyDown={(e) => {
+                if ( e.shiftKey && e.key === "Enter" ) {
+                  handleSend(e);
+                }
+              }}
               disabled={loadingMsg}
             />
 
             <button
-              type="submit"
-              disabled={
-                (!inputMsg.trim() && selectedFiles.length === 0) || loadingMsg
-              }
-              className="text-white bg-orange-500 p-2 mb-1.5 rounded-lg hover:bg-orange-600 disabled:opacity-50 transition-colors shadow-sm flex-shrink-0"
-            >
-              <IoMdSend size={20} className="ml-0.5" />
-            </button>
+  type="submit"
+  disabled={(!inputMsg.trim() && selectedFiles.length === 0) || loadingMsg}
+  className="text-white bg-orange-500 p-2 mb-1.5 rounded-lg hover:bg-orange-600 disabled:opacity-50 transition-colors shadow-sm flex-shrink-0 flex items-center justify-center min-w-[36px] min-h-[36px]"
+>
+  {loadingMsg ? (
+    <svg
+      className="animate-spin h-5 w-5 text-white"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
+  ) : (
+    <IoMdSend size={20} className="ml-0.5" />
+  )}
+</button>
           </form>
         </div>
       ) : (

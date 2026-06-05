@@ -32,6 +32,9 @@ export const serveMedia = async (req, res) => {
       .select("media conversationId type")
       .lean();
 
+
+      console.log("Message from DB:", message); // Debug log
+
     if (!message) {
       return res.status(404).json({ error: "Message not found" });
     }

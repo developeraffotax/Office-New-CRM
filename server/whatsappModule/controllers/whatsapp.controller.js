@@ -27,8 +27,7 @@ export const listMessages = async (req, res, next) => {
       page: +page || 1,
       limit: +limit || 50,
     });
-
-    //throw new Error("Test error handling in listMessages");
+ 
     res.json(result);
   } catch (err) {
     //res.status(500).json({ error: err.message });
@@ -103,7 +102,7 @@ export const sendMessage = async (req, res) => {
             caption: (body && msgType === "image") ? body : undefined, // Fixed logic
           },
           context,
-          userId,
+          // userId,
 
           presignedUrl
           
@@ -121,7 +120,7 @@ export const sendMessage = async (req, res) => {
         type: type || "text",
         body,
         context,
-        userId,
+        // userId,
       });
       
       responses.push(plainMsg);

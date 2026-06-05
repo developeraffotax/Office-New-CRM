@@ -13,7 +13,7 @@ const router = Router();
 router.post ("/conversations/:id/messages",  upload.array("files"), sendMessage);
 
 // Conversations (add authMiddleware as needed)
-router.get  ("/conversations",           requiredSignIn,   listConversations);
+router.get  ("/conversations",               listConversations);
 router.get  ("/conversations/:id/messages", listMessages);
 
 
@@ -43,7 +43,7 @@ router.delete("/conversations/delete/:id",     deleteConversation);
 
 
 
-router.get  ("/media/:messageId", getMedia);
+// router.get  ("/media/:messageId",  requiredSignIn,   getMedia);
 
 
 

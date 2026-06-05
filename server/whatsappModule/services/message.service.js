@@ -10,6 +10,7 @@ import { getCompanyByPhoneNumber,  } from "../utils/config.js";
 
 import { sendWhatsappPayload } from "../utils/whatsappApi.js"; 
 import { downloadAndStoreMedia } from "./media.service.js";
+import { getFileUrl } from "../../utils/s3/s3Actions.js";
  
 
 const MEDIA_TYPES = new Set(["image", "video", "audio", "document", "sticker"]);
@@ -118,7 +119,23 @@ export const getMessages = async ({ conversationId, page = 1, limit = 50 }) => {
     WhatsappMessage.countDocuments({ conversationId }),
   ]);
 
-  return { messages: messages.reverse(), total, page, limit };
+
+  const messagesWithUrls = await Promise.all(
+    messages.map(async (msg) => {
+      if (!msg.media?.s3Key) return msg;
+
+      const mediaUrl = await getFileUrl(msg.media.s3Key);
+
+      return {
+        ...msg,
+        url: mediaUrl,
+      };
+    })
+  );
+
+  
+
+  return { messages: messagesWithUrls.reverse(), pagination: { page, limit, total } };
 };
 
 

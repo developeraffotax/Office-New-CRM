@@ -31,10 +31,12 @@ export const getConversations = async (req) => {
 
   return {
     conversations,
-    total,
+    pagination: {total,
     page,
     limit,
-    pages: Math.ceil(total / limit),
+    pages: Math.ceil(total / limit),}
+
+    
   };
 };
 

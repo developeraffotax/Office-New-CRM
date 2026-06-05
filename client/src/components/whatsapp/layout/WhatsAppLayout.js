@@ -11,6 +11,7 @@ export default function WhatsAppLayout({
   users,
   categories,
   conversations,
+  pagination,
   loading,
   filters,
   setFilters,
@@ -41,6 +42,7 @@ export default function WhatsAppLayout({
         <div className="w-[800px] flex-shrink-0 border-r border-gray-200 bg-white flex flex-col z-10 shadow-sm">
         <ChatList 
           conversations={conversations}
+          pagination={pagination}
           loading={loading}
           filters={filters}
           setFilters={setFilters}

@@ -57,7 +57,7 @@ import { aiPerMinuteLimiter } from "../utils/rateLimiter.js";
 export const registerRoutes = (app) => {
   
   
-  app.use("/api/v1/whatsapp", requiredSignIn, whatsappRoutes);
+  app.use("/api/v1/whatsapp", whatsappRoutes);
 
 
   app.use("/api/v1/user", userRoute);

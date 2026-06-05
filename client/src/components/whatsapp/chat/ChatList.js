@@ -2,12 +2,16 @@ import { IoMdSearch, IoMdOptions } from "react-icons/io";
 import { format } from "date-fns";
 import { ConversationTime } from "../shared/ui/ConversationTime";
 import ChatRow from "./ChatRow";
+import { useMemo } from "react";
 
-export default function ChatList({ conversations, loading, filters, setFilters, activeChatId, setActiveChatId, users, categories, updateConversation, deleteConversation }) {
+export default function ChatList({ conversations, pagination, loading, filters, setFilters, activeChatId, setActiveChatId, users, categories, updateConversation, deleteConversation }) {
 
   console.log("Rendering ChatList with conversations:", conversations);
+ 
 
 
+const hasNextPage = useMemo(() => pagination.page < pagination.pages, [pagination]);
+const hasPrevPage = useMemo(() => pagination.page > 1, [pagination]);
   return (
     <div className="flex flex-col h-full font-inter">
       {/* Header */}
@@ -54,6 +58,48 @@ export default function ChatList({ conversations, loading, filters, setFilters, 
           ))
         )}
       </div>
+
+
+      <div className="border-t border-gray-200 bg-white px-4 py-3">
+  <div className="flex items-center justify-between">
+    
+    <div className="text-sm text-gray-500">
+      {pagination.total || 0} conversations
+      {" • "}
+      Page {pagination.page || 1} of {pagination.pages || 1}
+    </div>
+
+    <div className="flex items-center gap-2">
+      
+      <button
+        disabled={!hasPrevPage}
+        onClick={() =>
+          setFilters({
+            page: pagination.page - 1,
+          })
+        }
+        className="px-3 py-1 rounded border disabled:opacity-50"
+      >
+        Prev
+      </button>
+
+      <button
+        disabled={!hasNextPage}
+        onClick={() =>
+          setFilters({
+            page: pagination.page + 1,
+          })
+        }
+        className="px-3 py-1 rounded border disabled:opacity-50"
+      >
+        Next
+      </button>
+
+    </div>
+  </div>
+</div>
+
+
     </div>
   );
 }

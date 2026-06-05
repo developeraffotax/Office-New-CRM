@@ -11,16 +11,11 @@ const headers = () => ({
   Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
 });
 
-/**
- * Send any message payload to a recipient.
- * Returns the raw Meta response { messages: [{ id }], contacts: [...] }
- */
-
+ 
 export const sendWhatsappPayload = async (phoneNumberId, payload) => {
   const url = `${BASE_URL}/${phoneNumberId}/messages`;
 
-  console.log("url:", url);
-  console.log("payload:", payload);
+ 
 
   try {
     const { data } = await axios.post(

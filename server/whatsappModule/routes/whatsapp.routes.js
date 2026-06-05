@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { listConversations, listMessages, markRead, sendMessage, assignConversation, resolveConversation, getMedia, updateConversationMetadata, deleteConversation,  } from "../controllers/whatsapp.controller.js";
+import { listConversations, listMessages, markRead, sendMessage,  getMedia, updateConversationMetadata, deleteConversation,  } from "../controllers/whatsapp.controller.js";
 import multer from "multer";
  
  
@@ -20,8 +20,8 @@ router.put("/update-conversation/:id",   updateConversationMetadata);
 
 
 
-router.patch("/conversations/:id/assign",   assignConversation);
-router.patch("/conversations/:id/resolve",  resolveConversation);
+// router.patch("/conversations/:id/assign",   assignConversation);
+// router.patch("/conversations/:id/resolve",  resolveConversation);
 router.patch("/conversations/:id/read",     markRead);
 
 

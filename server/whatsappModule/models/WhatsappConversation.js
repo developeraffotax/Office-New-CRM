@@ -18,26 +18,31 @@ const conversationSchema = new mongoose.Schema(
     lastMessageType: { type: String, enum: [ "text", "image", "document", "audio", "video", "sticker", "location", ], default: "text", },
     lastMessageId: { type: mongoose.Schema.Types.ObjectId, ref: "WhatsappMessage", default: null, },
     lastMessageAt: { type: Date, default: Date.now },
+    lastMessageBy: {
+      type: String,
+      enum: ["me", "client"],
+      default: "client",
+    },
 
-    // unreadCount: { type: Number, default: 0, min: 0 },
+    isStarred: { type: Boolean, default: false },
+
+    totalInboundMessages: {
+    type: Number,
+    default: 0
+  },
 
     readBy: {
       type: [
         {
           userId: { type: mongoose.Schema.Types.ObjectId, ref: "Users" },
           lastReadAt: Date,
+          readInboundCount: { type: Number, default: 0 },
         },
       ],
       default: [],
     },
 
-    // Labels / tags
-    tags: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
+ 
   },
   {
     timestamps: true,

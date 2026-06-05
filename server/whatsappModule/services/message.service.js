@@ -54,7 +54,7 @@ export const sendMessage = async ({
   }
 
 
-    console.log("MEIDA 👍👍👍", media)
+ 
 
 
   // ── Send to Meta ─────────────────────────────────────────────────
@@ -185,11 +185,13 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
         lastMessage:     preview,
         lastMessageType: safeLastType,
         lastMessageAt:   timestamp,
+        lastMessageBy:   "client",
       },
       $setOnInsert: {
          companyName: getCompanyByPhoneNumber(metadata?.display_phone_number) ?? "default",
         phone,
       },
+      $inc: { totalInboundMessages: 1 },
     },
     { upsert: true, new: true }
   );
@@ -280,6 +282,7 @@ export const saveOutboundMessage = async ({
         lastMessage:     preview,
         lastMessageType: safeLastType,
         lastMessageAt:   now,
+        lastMessageBy:   "me",
         lastMessageId:   message._id,
       },
     }

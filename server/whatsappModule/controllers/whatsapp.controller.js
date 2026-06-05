@@ -3,22 +3,23 @@ import * as conversationService from "../services/conversation.service.js";
 import { serveMedia, uploadMediaBuffer } from "../services/media.service.js";
 import WhatsappConversation from "../models/WhatsappConversation.js";
 import mongoose from "mongoose";
+import logger from "../utils/logger.js";
 
 /** GET /conversations */
-export const listConversations = async (req, res) => {
+export const listConversations = async (req, res, next) => {
   try {
     const { status, userId, page, limit, search } = req.query;
-    const result = await conversationService.getConversations({
-      status, userId, page: +page, limit: +limit, search,
-    });
+    const result = await conversationService.getConversations(req);
+
+     
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+     next(err)
   }
 };
 
 /** GET /conversations/:id/messages */
-export const listMessages = async (req, res) => {
+export const listMessages = async (req, res, next) => {
   try {
     const { page, limit } = req.query;
     const result = await messageService.getMessages({
@@ -26,9 +27,12 @@ export const listMessages = async (req, res) => {
       page: +page || 1,
       limit: +limit || 50,
     });
+
+    //throw new Error("Test error handling in listMessages");
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    //res.status(500).json({ error: err.message });
+    next(err)
   }
 };
 
@@ -127,7 +131,13 @@ export const sendMessage = async (req, res) => {
     res.status(201).json(responses);
 
   } catch (err) {
-    console.error("Error in sendMessage controller:", err);
+        logger.error("Send message controller failed", {
+      error: err.message,
+      stack: err.stack,
+      conversationId: req.params.id,
+      userId: req.user?.user?._id,
+    });
+
     res.status(500).json({ error: err.message });
   }
 };
@@ -161,7 +171,7 @@ export const updateConversationMetadata = async (req, res) => {
     /**
      * 1️⃣ Whitelist validation
      */
-    const allowedUpdates = ["category", "userId", "status"];
+    const allowedUpdates = ["category", "userId", "status", "isStarred",];
     const updateKeys = Object.keys(updates);
 
     const isValidUpdate = updateKeys.every((key) =>
@@ -246,43 +256,25 @@ export const updateConversationMetadata = async (req, res) => {
       thread: updatedConversation,
     });
   } catch (error) {
-    console.error("Error updating thread:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error while updating thread.",
+    
+
+     logger.error("Error updating thread", {
       error: error.message,
+      stack: error.stack,
+      conversationId: req.params.id,
+      userId: req.user?.user?._id,
     });
+
+    res.status(500).json({   error: error.message,   });
+
+
+ 
   }
 };
 
 
 
-
-
-/** PATCH /conversations/:id/assign */
-export const assignConversation = async (req, res) => {
-  try {
-    const { agentId } = req.body;
-    const result = await conversationService.assignConversation(
-      req.params.id, agentId, req.user?.user?._id
-    );
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-/** PATCH /conversations/:id/resolve */
-export const resolveConversation = async (req, res) => {
-  try {
-    const result = await conversationService.resolveConversation(
-      req.params.id, req.user?.user?._id
-    );
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+ 
 
 /** PATCH /conversations/:id/read */
 export const markRead = async (req, res) => {
@@ -306,7 +298,7 @@ export const deleteConversation = async (req, res) => {
     const { id } = req.params; // MongoDB _id
     const { companyName } = req.body;
 
-    // Find the conversation in local DB
+ 
     const conversation = await WhatsappConversation.findOneAndDelete({ _id: id, companyName });
 
     console.log("RESULT IS", conversation)
@@ -325,11 +317,13 @@ export const deleteConversation = async (req, res) => {
       message: "Conversation deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting thread:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to delete thread",
+     logger.error("Error updating thread", {
       error: error.message,
+      stack: error.stack,
+      conversationId: req.params.id,
+      userId: req.user?.user?._id,
     });
+
+    res.status(500).json({   error: error.message,   });
   }
 };

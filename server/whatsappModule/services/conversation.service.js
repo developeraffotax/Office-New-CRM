@@ -3,58 +3,130 @@ import Conversation    from "../models/WhatsappConversation.js";
 import WhatsappMessage from "../models/WhatsappMessage.js";
  
 import logger          from "../utils/logger.js";
+import { buildWhatsappFilterQuery } from "../utils/utils.js";
 
  
 
- 
- 
-/** Paginated inbox query */
-export const getConversations = async ({ status, userId, page = 1, limit = 20, search } = {}) => {
-  const filter = {};
-  if (status) filter.status = status;
-  if (userId) filter.userId = userId;
-  if (search) {
-    filter.$or = [
-      { phone:       { $regex: search, $options: "i" } },
-      { profileName: { $regex: search, $options: "i" } },
-    ];
-  }
+
+
+
+
+
+export const getConversations = async (req) => {
+  const filter = buildWhatsappFilterQuery(req);
+
+  const page = Number(req.query.page || 1);
+  const limit = Number(req.query.limit || 20);
 
   const [conversations, total] = await Promise.all([
     Conversation.find(filter)
       .sort({ lastMessageAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
-      // .populate("userId", "name email")
       .populate("lastMessageId")
       .lean(),
+
     Conversation.countDocuments(filter),
   ]);
 
-  return { conversations, total, page, limit, pages: Math.ceil(total / limit) };
+  return {
+    conversations,
+    total,
+    page,
+    limit,
+    pages: Math.ceil(total / limit),
+  };
 };
- 
 
-/* ═══════════════════════════════════════════════════════════════
-   SECTION 5 — CONVERSATION HELPERS
-   ═══════════════════════════════════════════════════════════════ */
 
-/** Mark a conversation as read by a specific agent */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export const markConversationRead = async (conversationId, userId) => {
+  const conversation = await Conversation.findById(
+    conversationId,
+    "totalInboundMessages"
+  );
+
+  if (!conversation) {
+    throw new Error("Conversation not found");
+  }
+
   const now = new Date();
 
-  // Replace existing readBy entry for this user atomically
-  await Conversation.updateOne(
-    { _id: conversationId },
-    { $pull: { readBy: { userId } } }
-  );
-  await Conversation.updateOne(
-    { _id: conversationId },
-    { $push: { readBy: { userId, lastReadAt: now } } }
+  const result = await Conversation.updateOne(
+    {
+      _id: conversationId,
+      "readBy.userId": userId,
+    },
+    {
+      $set: {
+        "readBy.$.lastReadAt": now,
+        "readBy.$.readInboundCount":
+          conversation.totalInboundMessages,
+      },
+    }
   );
 
-
+  if (!result.matchedCount) {
+    await Conversation.updateOne(
+      { _id: conversationId },
+      {
+        $push: {
+          readBy: {
+            userId,
+            lastReadAt: now,
+            readInboundCount:
+              conversation.totalInboundMessages,
+          },
+        },
+      }
+    );
+  }
 };
+
+
+
+
 
 /** Assign a conversation to an agent */
 export const assignConversation = async (conversationId, agentId, assignedBy) => {

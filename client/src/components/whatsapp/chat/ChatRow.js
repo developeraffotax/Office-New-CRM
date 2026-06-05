@@ -3,7 +3,8 @@ import AssignCategory from "../shared/ui/AssignCategory";
 import AssignUser from "../shared/ui/AssignUser";
 import { ConversationTime } from "../shared/ui/ConversationTime";
 import { MdDeleteOutline } from "react-icons/md";
-import { FaCheckCircle, FaUndoAlt } from "react-icons/fa";
+import { FaCheckCircle, FaRegStar, FaStar, FaUndoAlt } from "react-icons/fa";
+import { useSelector } from "react-redux";
 
 export default function ChatRow({
   chat,
@@ -15,6 +16,25 @@ export default function ChatRow({
   updateConversation,
   deleteConversation
 }) {
+
+
+  const { auth } = useSelector((state) => state.auth);
+const currentUserId = auth?.user?.id;
+
+  console.log("Rendering ChatRow for chat:❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️", chat);
+
+ const userReadEntry = chat?.readBy?.find(
+  (r) =>
+    (r?.userId?._id || r?.userId)?.toString() ===
+    currentUserId?.toString()
+);
+
+
+const unreadCount = Math.max(
+  0,
+  (chat?.totalInboundMessages || 0) -
+    (userReadEntry?.readInboundCount || 0)
+);
   return (
     <div
       key={chat?._id}
@@ -35,6 +55,29 @@ export default function ChatRow({
           </h3>
 
           <div className="flex items-center gap-2 ">
+            <button
+              className={`rounded-md transition-colors ${
+                chat?.isStarred
+                  ? "text-yellow-500 hover:text-yellow-600"
+                  : "text-gray-500 hover:text-yellow-500"
+              }`}
+              title={chat?.isStarred ? "Unstar Chat" : "Star Chat"}
+              onClick={(e) => {
+                
+
+                updateConversation(chat?._id, {
+                  isStarred: !chat?.isStarred,
+                });
+              }}
+            >
+              {chat?.isStarred ? (
+                <FaStar className="size-4" />
+              ) : (
+                <FaRegStar className="size-4" />
+              )}
+            </button>
+
+
             <button
               className="rounded-md   text-gray-500  hover:text-orange-500"
               title="Set Reminder"
@@ -102,11 +145,11 @@ export default function ChatRow({
           <p className="text-sm text-gray-500 truncate pr-2">
             {chat?.lastMessage || "No messages yet"}
           </p>
-          {chat?.unreadCount > 0 && (
-            <span className="bg-orange-500 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center flex-shrink-0">
-              {chat?.unreadCount}
-            </span>
-          )}
+          {unreadCount > 0 && (
+              <span className="bg-orange-500 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center flex-shrink-0">
+                {unreadCount}
+              </span>
+            )}
         </div>
       </div>
     </div>

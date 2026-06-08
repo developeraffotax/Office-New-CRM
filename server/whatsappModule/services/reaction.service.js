@@ -1,4 +1,6 @@
+import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
 import WhatsappMessage from "../models/WhatsappMessage.js";
+import logger from "../utils/logger.js";
 
  
 
@@ -55,6 +57,16 @@ export const processReactionUpdate = async (
   const updatedMessage = await WhatsappMessage.findById(
     message._id
   ).lean();
+
+  const io = await getSocketEmitter();
+
+  io.to(`conversation:${updatedMessage.conversationId.toString()}`).emit(
+  "whatsapp:reaction-updated",
+  {
+    messageId: message._id,
+    reaction,
+  }
+);
 
   logger.info("[Service] Reaction updated", {
     conversationId: message.conversationId,

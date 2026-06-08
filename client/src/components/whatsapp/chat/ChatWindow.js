@@ -9,8 +9,10 @@ import {
 } from "react-icons/hi";
 import { FiHeadphones, FiFilm } from "react-icons/fi";
 import { format, isToday, isYesterday } from "date-fns"; // Added isToday and isYesterday
+import { useSocket } from "../../../context/socketProvider";
 
 export default function ChatWindow({ chat, team, updateConversation }) {
+      const socket = useSocket();
   const [messages, setMessages] = useState([]);
   const [inputMsg, setInputMsg] = useState("");
 
@@ -23,6 +25,108 @@ export default function ChatWindow({ chat, team, updateConversation }) {
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
+
+
+
+  useEffect(() => {
+  if (!chat?._id || !socket) return;
+
+  socket.emit("whatsapp:join-conversation", {
+    conversationId: chat._id,
+  });
+
+  return () => {
+    socket.emit("whatsapp:leave-conversation", {
+      conversationId: chat._id,
+    });
+  };
+}, [chat?._id, socket]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+useEffect(() => {
+    if (!chat?._id || !socket) return;
+  const handleMessage = ({ conversationId, message }) => {
+    if (conversationId !== chat?._id) return;
+
+    setMessages(prev => {
+      const exists = prev.some(m => m._id === message._id);
+      if (exists) return prev;
+
+      return [...prev, message];
+    });
+  };
+
+  const handleStatus = ({messageId,
+    status,
+    statusUpdatedAt,}) => {
+
+
+      
+    setMessages(prev =>
+      prev.map(msg =>
+        msg._id === messageId
+          ? {
+              ...msg,
+              status,
+              statusUpdatedAt,
+            }
+          : msg
+      )
+    );
+
+
+
+  }
+
+
+const handleReaction = ({ messageId, reaction }) => {
+  setMessages(prev =>
+    prev.map(msg => {
+      if (msg._id !== messageId) return msg;
+
+      const existingReactions = msg.reactions || [];
+
+      const filtered = existingReactions.filter(
+        r => r.from !== reaction.from
+      );
+
+      return {
+        ...msg,
+        reactions: [...filtered, reaction],
+      };
+    })
+  );
+};
+  
+
+  socket.on("whatsapp:message-created", handleMessage);
+    socket.on( "whatsapp:message-status-updated", handleStatus );
+    socket.on( "whatsapp:reaction-updated", handleReaction );
+
+  return () => {
+    socket.off("whatsapp:message-created", handleMessage);
+    socket.off("whatsapp:message-status-updated", handleStatus);
+    socket.off("whatsapp:reaction-updated", handleReaction);
+  };
+}, [chat?._id, socket]);
+
+
+ 
+ 
+
+ 
+
 
   
   // Fetch Messages for active chat

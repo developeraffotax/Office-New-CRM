@@ -1,4 +1,5 @@
  
+import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
 import Conversation    from "../models/WhatsappConversation.js";
 import WhatsappMessage from "../models/WhatsappMessage.js";
  
@@ -44,6 +45,17 @@ export const processStatusUpdate = async (statusPayload) => {
     logger.warn("[Service] Status for unknown message", { whatsappMessageId, status });
     return;
   }
+
+    const io = await getSocketEmitter();
+
+  io.to(`conversation:${updated.conversationId.toString()}`).emit(
+  "whatsapp:message-status-updated",
+  {
+    messageId: updated._id,
+    status: updated.status,
+    statusUpdatedAt: updated.statusUpdatedAt,
+  }
+);
 
   logger.info("[Service] Status updated", { whatsappMessageId, status: normalised });
  

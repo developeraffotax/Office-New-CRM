@@ -5,8 +5,12 @@ import { useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { buildConversationQuery } from "../utils/buildConversationQuery";
+import { useSocket } from "../../../context/socketProvider";
 
 export function useWhatsAppConversations({ endpoint }) {
+    const socket = useSocket();
+
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [loading, setLoading] = useState({ fetching: false, updating: false });
@@ -69,6 +73,16 @@ export function useWhatsAppConversations({ endpoint }) {
 
 
 
+    // ---------------- Socket listener for meta updates ----------------
+  useEffect(() => {
+    if (!socket) return;
+
+    const metadataUpdateHandler = () => fetchConversations();
+    //const metadataUpdateHandler = (d) => console.log("Metadata updated:", d);
+    socket.on(`whatsapp:conversation-update-${filters.companyName}`, metadataUpdateHandler);
+    return () => socket.off(`whatsapp:conversation-update-${filters.companyName}`, metadataUpdateHandler);
+
+  }, [socket, filters.companyName, fetchConversations]);
 
  
 

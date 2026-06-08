@@ -193,6 +193,35 @@ const processNotificationJob = async (job) => {
       break;
     }
 
+
+    case "whatsapp": {
+      const { _id, companyName, phone, profileName, lastMessage, userId, } = payload;
+
+      if (!userId) return true;
+
+      const notification = await notificationModel.create({
+        title: "New Whatsapp Message Received",
+        redirectLink: `/whatsapp/${_id}?companyName=${companyName}&search=${phone}`,
+        description: `New Message | ${companyName}
+                    ✔ From: ${profileName || phone || "N/A"}
+                    ✔ Message: ${lastMessage || "No messages yet"}
+              `,
+        taskId: `${phone}`,
+        userId: userId,
+        type: "conversation_assigned",
+        entityType: `whatsapp`,
+      });
+
+      await sendSocketNotification(
+        notification,
+        payload,
+        userId,
+        "whatsapp"
+      );
+
+      break;
+    }
+
     default:
       console.warn(`⚠️ Unknown notification type: ${type}`);
   }

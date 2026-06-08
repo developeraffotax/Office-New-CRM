@@ -11,7 +11,7 @@ import { connectDB, disconnectDB } from "../../../config/db.js";
  
  
 import { processReactionUpdate } from "../../services/reaction.service.js";
-import { processInboundMessage } from "../../services/message.service.js";
+import { processInboundMessage } from "../../services/webhook.service.js";
 import { processStatusUpdate } from "../../services/status.service.js";
 import logger from "../../utils/logger.js";
 

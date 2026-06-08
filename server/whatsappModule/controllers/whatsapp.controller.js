@@ -7,6 +7,7 @@ import logger from "../utils/logger.js";
 import { emitToUser } from "../../utils/socketEmitter.js";
 import { isSelfAssignment } from "../utils/utils.js";
 import { createNotification } from "../utils/createNotification.js";
+import { io } from "../../index.js";
  
 
 
@@ -212,7 +213,7 @@ export const updateConversationMetadata = async (req, res) => {
       new: true,
       runValidators: true,
       //  updatedBy: req?.user?.user?._id
-    })
+    }).lean();
 
     // console.log("UPDATED THREAD✔️", updatedConversation)
 
@@ -239,7 +240,10 @@ export const updateConversationMetadata = async (req, res) => {
 
     // Assigned → Unassigned OR Reassigned
     if (oldUserId && !isSelfAssignment(req?.user?.user, oldUserId)) {
-      emitToUser(oldUserId, eventName, {});
+      io.to(`user:${oldUserId}`).emit(`whatsapp:conversation-update-${updatedConversation.companyName}`, {
+            action: "updated",
+            thread: updatedConversation
+          });
     }
 
     // Unassigned → Assigned OR Reassigned
@@ -248,7 +252,10 @@ export const updateConversationMetadata = async (req, res) => {
       newUserId !== oldUserId &&
       !isSelfAssignment(req?.user?.user, newUserId)
     ) {
-      emitToUser(newUserId, eventName, {});
+      io.to(`user:${newUserId}`).emit(`whatsapp:conversation-update-${updatedConversation.companyName}`, {
+            action: "updated",
+            thread: updatedConversation
+          });
     }
 
     /**

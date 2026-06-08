@@ -97,6 +97,12 @@ export const useNotifications = () => {
     }
 
 
+    if (item.entityType === "whatsapp"  ) {
+        setOpen(false);
+      return navigate(`${item.redirectLink}`);
+    }
+
+
 
 
  

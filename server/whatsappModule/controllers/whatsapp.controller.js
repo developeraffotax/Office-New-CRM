@@ -4,6 +4,11 @@ import { serveMedia, uploadMediaBuffer } from "../services/media.service.js";
 import WhatsappConversation from "../models/WhatsappConversation.js";
 import mongoose from "mongoose";
 import logger from "../utils/logger.js";
+import { emitToUser } from "../../utils/socketEmitter.js";
+import { isSelfAssignment } from "../utils/utils.js";
+import { createNotification } from "../utils/createNotification.js";
+ 
+
 
 /** GET /conversations */
 export const listConversations = async (req, res, next) => {
@@ -214,37 +219,37 @@ export const updateConversationMetadata = async (req, res) => {
     /**
      * 4️⃣ Assignment diff
      */
-    // const oldUserId = oldConversation.userId?.toString() || null;
-    // const newUserId = updatedConversation.userId?.toString() || null;
+    const oldUserId = oldConversation.userId?.toString() || null;
+    const newUserId = updatedConversation.userId?.toString() || null;
 
-    // const selfAssign = isSelfAssignment(req?.user?.user, newUserId);
+    const selfAssign = isSelfAssignment(req?.user?.user, newUserId);
 
     /**
      * 5️⃣ Notifications (skip self-assign)
      */
-    // if (updateKeys.includes("userId") && !selfAssign) {
-    //   await createNotification(req, updatedConversation);
-    // }
+    if (updateKeys.includes("userId") && !selfAssign) {
+      await createNotification(req, updatedConversation);
+    }
 
     /**
      * 6️⃣ Socket emits (skip self-assign)
      */
 
-    // const eventName = `metadata:updated-${updatedConversation.companyName}`;
+     const eventName = `whatsappmetadata:updated-${updatedConversation.companyName}`;
 
     // Assigned → Unassigned OR Reassigned
-    // if (oldUserId && !isSelfAssignment(req?.user?.user, oldUserId)) {
-    //   emitToUser(oldUserId, eventName, {});
-    // }
+    if (oldUserId && !isSelfAssignment(req?.user?.user, oldUserId)) {
+      emitToUser(oldUserId, eventName, {});
+    }
 
     // Unassigned → Assigned OR Reassigned
-    // if (
-    //   newUserId &&
-    //   newUserId !== oldUserId &&
-    //   !isSelfAssignment(req?.user?.user, newUserId)
-    // ) {
-    //   emitToUser(newUserId, eventName, {});
-    // }
+    if (
+      newUserId &&
+      newUserId !== oldUserId &&
+      !isSelfAssignment(req?.user?.user, newUserId)
+    ) {
+      emitToUser(newUserId, eventName, {});
+    }
 
     /**
      * 7️⃣ Response

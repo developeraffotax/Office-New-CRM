@@ -4,6 +4,7 @@ import ChatWindow from "../chat/ChatWindow";
 import ChatList from "../chat/ChatList";
 import Sidebar from "../shared/Sidebar";
 import Filters from "../shared/Filters";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
  
 
 export default function WhatsAppLayout({
@@ -21,11 +22,21 @@ export default function WhatsAppLayout({
 }) {
 
 
-  const [activeChatId, setActiveChatId] = useState(null);
+  const { chatId: activeChatId } = useParams();
 
-  const activeChat = conversations.find(c => c._id === activeChatId);
+  const navigate = useNavigate();
+  const location = useLocation();
 
- 
+  const activeChat = conversations.find(
+    (c) => c._id === activeChatId
+  );
+
+  const setActiveChatId = (id) => {
+    navigate({
+      pathname: `/whatsapp/${id}`,
+      search: location.search, // preserve filters
+    });
+  };
 
   return (
     <div className="flex h-[105vh] bg-[#f0f2f5] overflow-hidden text-gray-800 font-sans">

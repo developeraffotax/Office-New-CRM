@@ -50,6 +50,7 @@ export default function Roles() {
     "Meeting",
     "HR",
     "Users",
+    "Whatsapp",
   ];
 
   const subRolesMapping = {
@@ -58,6 +59,7 @@ export default function Roles() {
     Tickets: ["Inbox", "Affotax", "OutSource", "TrustPilot", "Clients"],
     Templates: ["Template", "FAQ"],
     Timesheet: ["Job-holder", "Edit", "Delete", "Tracker"],
+    Whatsapp: [  "Edit", "Delete",],
     // Add other pages and subroles as necessary
   };
 

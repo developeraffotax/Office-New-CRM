@@ -221,3 +221,287 @@ if (filters.unreadOnly === "true") {
     $and: andFilters,
   };
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const normalizeEmail = (raw = "") => {
+  if (!raw) return "";
+
+  // Match email inside < > OR plain email
+  const match = raw.match(
+    /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/
+  );
+
+  return match ? match[1].toLowerCase().trim() : "";
+};
+
+
+
+
+export const getOtherParticipantEmail = (
+  participants = [],
+  myEmail = "info@affotax.com"
+) => {
+  if (!Array.isArray(participants)) return null;
+
+  const normalizedMyEmail = normalizeEmail(myEmail);
+
+  for (const p of participants) {
+    const email = normalizeEmail(p?.email);
+
+    if (email && email !== normalizedMyEmail) {
+      return email;
+    }
+  }
+
+  return null;
+};
+
+
+
+
+ 
+export const isSelfAssignment = (user, newUserId) => {
+  if (!user?._id) return false;
+  if (!newUserId) return false;
+
+  return user._id.toString() === newUserId.toString();
+};
+
+
+
+
+
+
+
+
+
+
+
+export const addParticipant = (map, participant) => {
+  if (!participant?.email) return;
+
+  const email = participant.email.toLowerCase();
+
+  const existing = map.get(email);
+
+  if (existing) {
+    map.set(email, {
+      email,
+      name: existing.name || participant.name || "",
+    });
+  } else {
+    map.set(email, {
+      email,
+      name: participant.name || "",
+    });
+  }
+}

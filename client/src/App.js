@@ -123,7 +123,7 @@ function App() {
           <Route path="/tickets/complete" element={<CompleteTickets />} />
           <Route path="/ticket/detail/:id" element={<EmailDetail />} />
           <Route path="/mail" element={<Mailbox />} />
-          <Route path="/whatsapp" element={<WhatsAppBox />} />
+          <Route path="/whatsapp/:chatId?" element={<WhatsAppBox />} />
           {/* <Route path="/tickets/sent" element={<Sent />} /> */}
         </>
       ),

@@ -326,6 +326,17 @@ export default function ChatWindow({ chat, team, updateConversation }) {
     }
   };
 
+
+
+
+  if (!chat) {
+  return (
+    <div className="flex-1 flex items-center justify-center">
+      Select a conversation
+    </div>
+  );
+}
+
   return (
     <div className="flex flex-col h-full z-10 font-inter">
       {/* Header Panel */}

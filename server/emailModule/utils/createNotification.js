@@ -7,6 +7,10 @@ import { getOtherParticipantEmail, isSelfAssignment } from "./utils.js";
 
 
 export const createNotification = async (req, updatedThread) => {
+
+
+
+
   const payload = {
     title: "New Thread Assigned",
     redirectLink: `/mail?folder=inbox&companyName=${updatedThread?.companyName}`,

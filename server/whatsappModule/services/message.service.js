@@ -14,6 +14,7 @@ import { getFileUrl } from "../../utils/s3/s3Actions.js";
 import { addNotificationJob } from "../../jobs/queues/notificationQueue.js";
 import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
 import { emitToUser } from "../../utils/socketEmitter.js";
+import { io } from "../../index.js";
  
 
 
@@ -190,7 +191,7 @@ export const saveOutboundMessage = async ({
     timestamp:       now,
   });
 
-  await Conversation.updateOne(
+  const updatedConversation =  await Conversation.updateOne(
     { _id: conversationId },
     {
       $set: {
@@ -200,8 +201,29 @@ export const saveOutboundMessage = async ({
         lastMessageBy:   "me",
         lastMessageId:   message._id,
       },
+    },{
+      new : true
     }
   );
+
+
+  io.emit(`whatsapp:conversation-update-${conversation.companyName}`, {
+              action: "updated",
+              thread: updatedConversation
+            });
+
+
+
+  // also sending to myself
+            // io.to(`conversation:${conversationId}`).emit(
+            // "whatsapp:message-created",
+            // {
+            //     conversationId: conversationId,
+            //     message,
+            // }
+            // );
+
+
 
   
   return message;

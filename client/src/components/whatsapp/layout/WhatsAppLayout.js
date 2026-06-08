@@ -60,8 +60,9 @@ export default function WhatsAppLayout({
           activeChatId={activeChatId}
           setActiveChatId={(id) => {
             setActiveChatId(id);
-            markAsRead(id);
+            
           }}
+          markAsRead={markAsRead}
 
           users={users}
           categories={categories}

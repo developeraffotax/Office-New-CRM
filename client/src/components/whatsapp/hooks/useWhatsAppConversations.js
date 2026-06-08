@@ -51,12 +51,14 @@ export function useWhatsAppConversations({ endpoint }) {
 
 
 
-  const fetchConversations = useCallback(async () => {
-    setLoading((prev) => ({ ...prev, fetching: true }));
+  const fetchConversations = useCallback(async ({withLoading = true} = {}) => {
+    if (withLoading) {
+      setLoading((prev) => ({ ...prev, fetching: true }));
+    }
     try {
       const { data } = await axios.get(endpoint, { params: buildConversationQuery(filters) });
 
-      console.log("Fetched conversations:", data);
+ 
       setConversations(data.conversations || data);
       setPagination(data.pagination || {});
     } catch (err) {
@@ -77,7 +79,7 @@ export function useWhatsAppConversations({ endpoint }) {
   useEffect(() => {
     if (!socket) return;
 
-    const metadataUpdateHandler = () => fetchConversations();
+    const metadataUpdateHandler = () => fetchConversations({ withLoading: false });
     //const metadataUpdateHandler = (d) => console.log("Metadata updated:", d);
     socket.on(`whatsapp:conversation-update-${filters.companyName}`, metadataUpdateHandler);
     return () => socket.off(`whatsapp:conversation-update-${filters.companyName}`, metadataUpdateHandler);
@@ -103,7 +105,7 @@ const updateConversation = async (_id, updateData) => {
 
     
 
-    fetchConversations();
+    fetchConversations({ withLoading: false });
 
   } catch (err) {
     toast.error("Failed to update Conversation!");
@@ -161,7 +163,7 @@ const updateConversation = async (_id, updateData) => {
         },
       );
 
-      fetchConversations();
+      fetchConversations({ withLoading: false });
        
     } catch (error) {
       console.error("Failed to delete thread:", error);
@@ -179,7 +181,7 @@ const updateConversation = async (_id, updateData) => {
     try {
       await axios.patch(`${endpoint}/${id}/read`);
       //setConversations(prev => prev.map(c => c._id === id ? { ...c, unreadCount: 0 } : c));
-
+      fetchConversations({ withLoading: false });
       toast.success("Conversation marked as read");
     } catch (err) {
       console.error("Failed to mark read", err);

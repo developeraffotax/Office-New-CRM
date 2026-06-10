@@ -32,7 +32,9 @@ export const getAllLabelsByJob = async (req, res) => {
   try {
     const labels = await labelModel
       .find({ type: "job" })
-      .sort({ createdAt: -1 });
+      .sort({ name: 1 })
+      .lean();
+ 
 
     res.status(200).send({
       success: true,
@@ -75,7 +77,10 @@ export const getDataLabels = async (req, res) => {
   try {
     const labels = await labelModel
       .find({ type: "data" })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+
+      
 
     res.status(200).send({
       success: true,

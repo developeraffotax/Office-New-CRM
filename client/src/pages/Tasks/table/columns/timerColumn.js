@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Timer } from "../../../../utlis/Timer";
+import { useSelector } from "react-redux";
 
 export const timerColumn = (ctx) => {
 
@@ -8,34 +9,39 @@ export const timerColumn = (ctx) => {
       accessorKey: "timertracker",
       header: "Timer",
       Header: ({ column }) => {
-        const [isRunning, setIsRunning] = useState(false);
+        const { timer } = useSelector((state) => state.globalTimer);
 
-        // const handleCheckboxChange = () => {
-        //   const newIsRunning = !isRunning;
-        //   setIsRunning(newIsRunning);
+      // derive from table filters
+      const isRunning = ctx?.columnFilters.some((f) => f.id === "Timer");
 
-        //   if (newIsRunning) {
-        //     column.setFilterValue(ctx.timerId || ctx.jid);
-        //   } else {
-        //     column.setFilterValue(undefined);
-        //   }
-        //   ctx.setReload((prev) => !prev);
-        // };
+      const handleCheckboxChange = () => {
+        if (!isRunning) {
+          ctx?.setColumnFilters((old) => [
+            ...old.filter((f) => f.id !== "Timer"),
+            {
+              id: "Timer",
+              value: timer?.jobId,
+            },
+          ]);
+        } else {
+          ctx?.setColumnFilters((old) => old.filter((f) => f.id !== "Timer"));
+        }
+      };
         return (
-          <div className=" flex flex-col gap-[2px] w-[5rem]">
-            <span className="ml-1 cursor-pointer w-full text-center">
-              Timer
-            </span>
-            {/* <div className="w-full flex items-center justify-center">
-              <input
-                type="checkbox"
-                className="cursor-pointer h-5 w-5 ml-3 accent-orange-600 "
-                checked={isRunning}
-                onChange={handleCheckboxChange}
-              />
-              <label className="ml-2 text-sm cursor-pointer"></label>
-            </div> */}
+           <div className="flex flex-col gap-[2px] w-[5rem]">
+          <span className="w-full text-center">Timer</span>
+
+          <div className="w-full flex items-center justify-center">
+            <input
+              type="checkbox"
+              className="cursor-pointer h-5 w-5 ml-3 accent-orange-600"
+              checked={isRunning}
+              onChange={handleCheckboxChange}
+            />
+
+            <label className="ml-2 text-sm cursor-pointer"></label>
           </div>
+        </div>
         );
       },
 

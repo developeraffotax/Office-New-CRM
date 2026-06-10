@@ -40,7 +40,7 @@ export const receiveWebhook = async (req, res) => {
  
   const jobs = [];
 
-  console.log("Received WhatsApp webhook", JSON.stringify(body, null, 2)); 
+  console.log("Received WhatsApp webhook🧡🧡🧡🧡", JSON.stringify(body, null, 2)); 
  
   for (const entry of body.entry ?? []) {
     for (const change of entry.changes ?? []) {

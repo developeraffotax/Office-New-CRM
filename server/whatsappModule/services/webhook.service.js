@@ -33,6 +33,10 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
 
   const phone       = rawMessage.from;
   const profileName = contact?.profile?.name ?? "";
+
+  const wa_id = contact?.wa_id;
+  const wa_user_id = contact?.user_id;
+
   const { type, body, media, location } = parseMessage(rawMessage);
 
    // ── NEW: Download & store media before persisting ─────────────────
@@ -83,6 +87,8 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
       $setOnInsert: {
          companyName: getCompanyByPhoneNumber(metadata?.display_phone_number) ?? "default",
         phone,
+        wa_id,
+        wa_user_id
       },
       $inc: { totalInboundMessages: 1 },
     },

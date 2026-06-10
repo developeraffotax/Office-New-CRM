@@ -14,6 +14,9 @@ const conversationSchema = new mongoose.Schema(
     profileName: { type: String, default: "" },
     profilePicture: { type: String, default: "" },
 
+    wa_id: { type: String,  trim: true },
+    wa_user_id: { type: String,  trim: true },
+
     lastMessage: { type: String, default: "", trim: true },
     lastMessageType: { type: String, enum: [ "text", "image", "document", "audio", "video", "sticker", "location", ], default: "text", },
     lastMessageId: { type: mongoose.Schema.Types.ObjectId, ref: "WhatsappMessage", default: null, },

@@ -9,6 +9,8 @@ export const colVisibility = {
   hours: true,
   startDate: true,
   deadline: true,
+  deadlineIn: true,
+
   taskDate: true,
   datestatus: true,
 

@@ -7,6 +7,7 @@ export const columnData = [
   "Hrs",
   "Year_End",
   "Deadline",
+  "deadlineIn",
   "Job_Date",
   "Status",
   "Job_Status",

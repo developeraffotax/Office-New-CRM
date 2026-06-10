@@ -2,6 +2,9 @@ import { format } from "date-fns";
 import DateRangePopover from "../../../../utlis/DateRangePopover";
 import { useEffect, useMemo, useRef, useState, memo } from "react";
 import toast from "react-hot-toast";
+import { differenceInCalendarDays, startOfDay } from "date-fns";
+
+
 
 const START_DATE_FILTERS = [
   "Expired",
@@ -158,3 +161,63 @@ const StartDateCell = memo(({ cell, row, ctx }) => {
 
 
  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const deadlineInColumn = () => ({
+  id: "deadlineIn",
+
+  header: "Deadline In",
+
+  accessorFn: (row) => {
+    if (!row.deadline) return null;
+
+    const deadline = startOfDay(new Date(row.deadline));
+    const today = startOfDay(new Date());
+
+    return differenceInCalendarDays(deadline, today);
+  },
+
+  Cell: ({ cell }) => {
+    const days = cell.getValue();
+
+    if (days === null) {
+      return <span className="text-gray-400">-</span>;
+    }
+
+    return (
+      <span
+        className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+          days > 0
+            ? "bg-green-100 text-green-700"
+            : days === 0
+            ? "bg-orange-100 text-orange-700"
+            : "bg-red-100 text-red-700"
+        }`}
+      >
+        {days > 0
+          ? `${days}d left`
+          : days === 0
+          ? "Today"
+          : `${Math.abs(days)}d overdue`}
+      </span>
+    );
+  },
+
+  size: 110,
+  minSize: 100,
+  maxSize: 130,
+  grow: false,
+});

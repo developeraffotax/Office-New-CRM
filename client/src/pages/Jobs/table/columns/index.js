@@ -8,7 +8,7 @@ import { companyNameColumn } from "./companyNameColumn"
 import { completedJobFiledColumn } from "./completedJobFiledColumn"
 import { completedJobPreparedColumn } from "./completedJobPreparedColumn"
 import { completedJobReviewColumn } from "./completedJobReviewColumn"
-import { deadlineColumn } from "./deadlineColumn"
+import { deadlineColumn, deadlineInColumn } from "./deadlineColumn"
 import { departmentsColumn } from "./departmentsColumn"
 import { emailColumn } from "./emailColumn"
 import { feeColumn } from "./feeColumn"
@@ -53,6 +53,7 @@ export const getJobsColumns = (ctx) => {
    hrsColumn(ctx),
   yearEndColumn(ctx),
    deadlineColumn(ctx),
+   deadlineInColumn(ctx),
   jobDateColumn(ctx),
  statusColumn(ctx),
    jobStatusColumn(ctx),
@@ -138,6 +139,7 @@ export const getJobsColumnsCompleted = (ctx) => {
     hrsColumn(ctx),
     yearEndColumn(ctx),
     deadlineColumn(ctx),
+    deadlineInColumn(ctx),
     jobDateColumn(ctx),
     statusColumn(ctx),
     jobStatusColumn(ctx),
@@ -223,6 +225,7 @@ export const getJobsColumnsInactive = (ctx) => {
     hrsColumn(ctx),
     yearEndColumn(ctx),
     deadlineColumn(ctx),
+    deadlineInColumn(ctx),
     jobDateColumn(ctx),
     statusColumn(ctx),
     jobStatusColumn(ctx),

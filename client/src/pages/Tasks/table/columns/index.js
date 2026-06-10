@@ -1,7 +1,7 @@
 import { actionsColumn } from "./actionsColumn";
  
 import { dateStatusColumn } from "./dateStatusColumn";
-import { deadlineColumn } from "./deadlineColumn";
+import { deadlineInColumn, deadlineColumn } from "./deadlineColumn";
 import { departmentColumn } from "./departmentColumn";
 import { budgetColumn } from "./budgetColumn";
 import { hoursColumn } from "./hoursColumn";
@@ -17,6 +17,7 @@ import { timerColumn } from "./timerColumn";
 import { recurringColumn } from "./recurringColumn";
 import { taskDateColumn, taskDateColumnCompleted } from "./taskDateColumn";
 import { refColumn } from "./refColumn";
+ 
 
  
 
@@ -32,6 +33,7 @@ export const getTaskColumns = (ctx) => {
     hoursColumn(ctx),
     startDateColumn(ctx),
     deadlineColumn(ctx),
+    deadlineInColumn(ctx),
     taskDateColumn(ctx),
     dateStatusColumn(ctx),
     statusColumn(ctx),
@@ -70,6 +72,7 @@ export const getCompletedTaskColumns = (ctx) => [
   hoursColumn(ctx),
   startDateColumn(ctx),
   deadlineColumn(ctx),
+  deadlineInColumn(ctx),
   // taskDateColumnCompleted(ctx),
   dateStatusColumn(ctx),
   statusColumnCompleted(ctx),

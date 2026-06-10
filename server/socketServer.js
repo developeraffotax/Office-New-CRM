@@ -1,149 +1,150 @@
-// socketServer.js
-import { Server as SocketIOServer } from "socket.io";
-import { createRedisClient, connection as redis } from "./utils/ioredis.js";
-import { createAdapter } from "@socket.io/redis-adapter";
-import { cleanupOnline } from "./utils/cleanupRedis.js";
-
-const isClusterPrimary = process.env.pm_id === "0";
-
-export const initSocketServer = (server) => {
-  const io = new SocketIOServer(server, { cors: { origin: "*" } });
-
-  // ---------------------------
-  // REDIS ADAPTER FOR MULTI-INSTANCE
-  // ---------------------------
-  const pubClient = createRedisClient();
-  const subClient = createRedisClient();
-
-  const checkAdapterReady = async () => {
-    await Promise.all([
-      new Promise((res) => pubClient.once("ready", res)),
-      new Promise((res) => subClient.once("ready", res)),
-    ]);
-
-    if (isClusterPrimary) {
-      await cleanupOnline(io);
-    }
-
-    io.adapter(createAdapter(pubClient, subClient));
-    console.log("🔗 Socket.IO Redis Adapter Enabled");
-  };
-  checkAdapterReady();
+// // socketServer.js
+// import { Server as SocketIOServer } from "socket.io";
+// import { createRedisClient, connection as redis } from "./utils/ioredis.js";
+// import { createAdapter } from "@socket.io/redis-adapter";
+// import { cleanupOnline } from "./utils/cleanupRedis.js";
+
+// const isClusterPrimary = process.env.pm_id === "0";
+
+// export const initSocketServer = (server) => {
+//   const io = new SocketIOServer(server, { cors: { origin: "*" } });
+
+//   // ---------------------------
+//   // REDIS ADAPTER FOR MULTI-INSTANCE
+//   // ---------------------------
+//   const pubClient = createRedisClient();
+//   const subClient = createRedisClient();
+
+//   const checkAdapterReady = async () => {
+//     await Promise.all([
+//       new Promise((res) => pubClient.once("ready", res)),
+//       new Promise((res) => subClient.once("ready", res)),
+//     ]);
+
+//     if (isClusterPrimary) {
+//       await cleanupOnline(io);
+//     }
+
+//     io.adapter(createAdapter(pubClient, subClient));
+//     console.log("🔗 Socket.IO Redis Adapter Enabled");
+//   };
+//   checkAdapterReady();
 
-  // ---------------------------
-  // SOCKET CONNECTION HANDLER
-  // ---------------------------
-  io.on("connection", (socket) => {
-    console.log("⚡ Socket connected:", socket.id);
-
-    // -----------------------
-    // USER CONNECTED
-    // -----------------------
-    socket.on("userConnected", async (userId) => {
-      if (!userId) return;
+//   // ---------------------------
+//   // SOCKET CONNECTION HANDLER
+//   // ---------------------------
+//   io.on("connection", (socket) => {
+//     console.log("⚡ Socket connected:", socket.id);
+
+//     // -----------------------
+//     // USER CONNECTED
+//     // -----------------------
+//     socket.on("userConnected", async (userId) => {
+//       if (!userId) return;
 
-      socket.data.userId = userId; // store on socket
-      socket.join(`user:${userId}`);
+//       socket.data.userId = userId; // store on socket
+//       socket.join(`user:${userId}`);
 
-      try {
-        await redis.sadd(`sockets:user:${userId}`, socket.id);
-        const isOnline = await redis.sismember("onlineUsers", userId);
-        if (!isOnline) await redis.sadd("onlineUsers", userId);
-        // io.emit("runningTimersUpdate");
-        console.log(`🟢 User online → ${userId}`);
-      } catch (err) {
-        console.error("❌ Failed to mark user online in Redis:", err.message);
-      }
-    });
+//       try {
+//         await redis.sadd(`sockets:user:${userId}`, socket.id);
+//         const isOnline = await redis.sismember("onlineUsers", userId);
+//         if (!isOnline) await redis.sadd("onlineUsers", userId);
+//         // io.emit("runningTimersUpdate");
+//         console.log(`🟢 User online → ${userId}`);
+//       } catch (err) {
+//         console.error("❌ Failed to mark user online in Redis:", err.message);
+//       }
+//     });
 
-    // -----------------------
-    // AGENT CONNECTED
-    // -----------------------
-    socket.on("agent:subscribe", async ({ id }) => {
-      if (!id) return;
+//     // -----------------------
+//     // AGENT CONNECTED
+//     // -----------------------
+//     socket.on("agent:subscribe", async ({ id }) => {
+//       if (!id) return;
 
-      socket.data.agentId = id; // store on socket
-      socket.join(`agent:${id}`);
+//       socket.data.agentId = id; // store on socket
+//       socket.join(`agent:${id}`);
 
-      try {
-        await redis.sadd(`sockets:agent:${id}`, socket.id);
-        const isOnline = await redis.sismember("onlineAgents", id);
-        if (!isOnline) await redis.sadd("onlineAgents", id);
+//       try {
+//         await redis.sadd(`sockets:agent:${id}`, socket.id);
+//         const isOnline = await redis.sismember("onlineAgents", id);
+//         if (!isOnline) await redis.sadd("onlineAgents", id);
 
-        io.emit("runningTimersUpdate");
+//         io.emit("runningTimersUpdate");
 
-        console.log(`💻 Agent online → ${id}`);
-      } catch (err) {
-        console.error("❌ Failed to mark agent online in Redis:", err.message);
-      }
-    });
+//         console.log(`💻 Agent online → ${id}`);
+//       } catch (err) {
+//         console.error("❌ Failed to mark agent online in Redis:", err.message);
+//       }
+//     });
 
-    socket.on("whatsapp:join-conversation", ({ conversationId }) => {
-      const currentRoom = socket.data.activeConversation;
+//     socket.on("whatsapp:join-conversation", ({ conversationId }) => {
+//       const currentRoom = socket.data.activeConversation;
 
-      if (currentRoom) {
-        socket.leave(currentRoom);
-      }
+//       if (currentRoom) {
+//         socket.leave(currentRoom);
+//       }
 
-      const room = `conversation:${conversationId}`;
+//       const room = `conversation:${conversationId}`;
 
-      socket.join(room);
+//       socket.join(room);
 
-      socket.data.activeConversation = room;
-    });
+//       socket.data.activeConversation = room;
+//     });
 
-    // -----------------------
-    // DISCONNECT
-    // -----------------------
+//     // -----------------------
+//     // DISCONNECT
+//     // -----------------------
 
-    socket.on("disconnect", async () => {
-      console.log(`🔴 Socket disconnected: ${socket.id}`);
+//     socket.on("disconnect", async () => {
+//       console.log(`🔴 Socket disconnected: ${socket.id}`);
 
-      try {
-        const { userId, agentId } = socket.data;
+//       try {
+//         const { userId, agentId } = socket.data;
 
-        if (userId) {
-          const userKey = `sockets:user:${userId}`;
+//         if (userId) {
+//           const userKey = `sockets:user:${userId}`;
 
-          await redis.srem(userKey, socket.id);
+//           await redis.srem(userKey, socket.id);
 
-          const remaining = await redis.scard(userKey);
+//           const remaining = await redis.scard(userKey);
 
-          if (remaining === 0) {
-            await redis.srem("onlineUsers", userId);
-            console.log(`⚪ User offline → ${userId}`);
-          }
-        }
+//           if (remaining === 0) {
+//             await redis.srem("onlineUsers", userId);
+//             console.log(`⚪ User offline → ${userId}`);
+//           }
+//         }
 
-        if (agentId) {
-          const agentKey = `sockets:agent:${agentId}`;
+//         if (agentId) {
+//           const agentKey = `sockets:agent:${agentId}`;
 
-          await redis.srem(agentKey, socket.id);
+//           await redis.srem(agentKey, socket.id);
 
-          const remaining = await redis.scard(agentKey);
+//           const remaining = await redis.scard(agentKey);
 
-          if (remaining === 0) {
-            io.emit("runningTimersUpdate");
+//           if (remaining === 0) {
+//             io.emit("runningTimersUpdate");
 
-            await redis.srem("onlineAgents", agentId);
+//             await redis.srem("onlineAgents", agentId);
 
-            console.log(`⚪ Agent offline → ${agentId}`);
-          }
-        }
-      } catch (err) {
-        console.error("❌ Disconnect cleanup error:", err.message);
-      }
-    });
-  });
+//             console.log(`⚪ Agent offline → ${agentId}`);
+//           }
+//         }
+//       } catch (err) {
+//         console.error("❌ Disconnect cleanup error:", err.message);
+//       }
+//     });
+//   });
 
-  return io;
-};
+//   return io;
+// };
 
 
 
 
 
 
+ 
 
 
 
@@ -151,43 +152,17 @@ export const initSocketServer = (server) => {
 
 
 
+// // ---------------------------
+// // SAFE CLUSTER COMPATIBLE EMIT
+// // ---------------------------
+// export const emitTimerState = (io, email, running) => {
+//   io.to(`agent:${email}`).emit("timer:state", { running });
+//   console.log(`⏱ Emitted timer state to agent:${email}`);
+// };
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ---------------------------
-// SAFE CLUSTER COMPATIBLE EMIT
-// ---------------------------
-export const emitTimerState = (io, email, running) => {
-  io.to(`agent:${email}`).emit("timer:state", { running });
-  console.log(`⏱ Emitted timer state to agent:${email}`);
-};
-
-
-
-export const Skey = "salman@affotax";
+// export const Skey = "salman@affotax";
 
 
 
@@ -285,208 +260,178 @@ export const Skey = "salman@affotax";
 // working version
 
 // socketServer.js
-// import { Server as SocketIOServer } from "socket.io";
-// import { createRedisClient, connection as redis } from "./utils/ioredis.js";
-// import { createAdapter } from "@socket.io/redis-adapter";
-// import { cleanupOnline } from "./utils/cleanupRedis.js";
+import { Server as SocketIOServer } from "socket.io";
+import { createRedisClient, connection as redis } from "./utils/ioredis.js";
+import { createAdapter } from "@socket.io/redis-adapter";
+import { cleanupOnline } from "./utils/cleanupRedis.js";
 
-// const isClusterPrimary = process.env.pm_id === "0";
+const isClusterPrimary = process.env.pm_id === "0";
 
-// // ---------------------------
-// // INITIALIZE SOCKET SERVER
-// // ---------------------------
-// export const initSocketServer = (server) => {
-//   const io = new SocketIOServer(server, { cors: { origin: "*" } });
+// ---------------------------
+// INITIALIZE SOCKET SERVER
+// ---------------------------
+export const initSocketServer = (server) => {
+  const io = new SocketIOServer(server, { cors: { origin: "*" } });
 
-//   // ---------------------------
-//   // REDIS ADAPTER FOR MULTI-INSTANCE
-//   // ---------------------------
-//   const pubClient = createRedisClient();
-//   const subClient = createRedisClient();
+  // ---------------------------
+  // REDIS ADAPTER FOR MULTI-INSTANCE
+  // ---------------------------
+  const pubClient = createRedisClient();
+  const subClient = createRedisClient();
 
-//   const checkAdapterReady = async () => {
-//     await Promise.all([
-//       new Promise((res) => pubClient.once("ready", res)),
-//       new Promise((res) => subClient.once("ready", res)),
-//     ]);
+  const checkAdapterReady = async () => {
+    await Promise.all([
+      new Promise((res) => pubClient.once("ready", res)),
+      new Promise((res) => subClient.once("ready", res)),
+    ]);
 
-//     if (isClusterPrimary) {
-//       // Cleanup any stale online users/agents
-//       await cleanupOnline(io);
+    if (isClusterPrimary) {
+      // Cleanup any stale online users/agents
+      await cleanupOnline(io);
 
-//     }
+    }
 
-//     io.adapter(createAdapter(pubClient, subClient));
-//     console.log("🔗 Socket.IO Redis Adapter Enabled");
-//   };
-//   checkAdapterReady();
+    io.adapter(createAdapter(pubClient, subClient));
+    console.log("🔗 Socket.IO Redis Adapter Enabled");
+  };
+  checkAdapterReady();
 
-//   // ---------------------------
-//   // SOCKET CONNECTION HANDLER
-//   // ---------------------------
-//   io.on("connection", (socket) => {
-//     console.log("⚡ Socket connected:", socket.id);
+  // ---------------------------
+  // SOCKET CONNECTION HANDLER
+  // ---------------------------
+  io.on("connection", (socket) => {
+    console.log("⚡ Socket connected:", socket.id);
 
-//     // -----------------------
-//     // USER CONNECTED
-//     // -----------------------
-//     socket.on("userConnected", async (userId) => {
-//       if (!userId) return;
+    // -----------------------
+    // USER CONNECTED
+    // -----------------------
+    socket.on("userConnected", async (userId) => {
+      if (!userId) return;
 
-//       socket.data.userId = userId; // store on socket
-//       socket.join(`user:${userId}`);
+      socket.data.userId = userId; // store on socket
+      socket.join(`user:${userId}`);
 
-//        // ✅ ADD THIS HERE
-//       await redis.set(`socket:user:${socket.id}`, userId);
+       // ✅ ADD THIS HERE
+      await redis.set(`socket:user:${socket.id}`, userId);
 
-//       try {
-//         await redis.sadd(`sockets:user:${userId}`, socket.id);
-//         const isOnline = await redis.sismember("onlineUsers", userId);
-//         if (!isOnline) await redis.sadd("onlineUsers", userId);
-//         // io.emit("runningTimersUpdate");
-//         console.log(`🟢 User online → ${userId}`);
-//       } catch (err) {
-//         console.error("❌ Failed to mark user online in Redis:", err.message);
-//       }
-//     });
+      try {
+        await redis.sadd(`sockets:user:${userId}`, socket.id);
+        const isOnline = await redis.sismember("onlineUsers", userId);
+        if (!isOnline) await redis.sadd("onlineUsers", userId);
+        // io.emit("runningTimersUpdate");
+        console.log(`🟢 User online → ${userId}`);
+      } catch (err) {
+        console.error("❌ Failed to mark user online in Redis:", err.message);
+      }
+    });
 
-//     // -----------------------
-//     // AGENT CONNECTED
-//     // -----------------------
-//     socket.on("agent:subscribe", async ({ id }) => {
-//       if (!id) return;
+    // -----------------------
+    // AGENT CONNECTED
+    // -----------------------
+    socket.on("agent:subscribe", async ({ id }) => {
+      if (!id) return;
 
-//       socket.data.agentId = id; // store on socket
-//       socket.join(`agent:${id}`);
+      socket.data.agentId = id; // store on socket
+      socket.join(`agent:${id}`);
 
-//        // ✅ ADD THIS HERE
-//       await redis.set(`socket:agent:${socket.id}`, id);
+       // ✅ ADD THIS HERE
+      await redis.set(`socket:agent:${socket.id}`, id);
 
-//       try {
-//         await redis.sadd(`sockets:agent:${id}`, socket.id);
-//         const isOnline = await redis.sismember("onlineAgents", id);
-//         if (!isOnline) await redis.sadd("onlineAgents", id);
+      try {
+        await redis.sadd(`sockets:agent:${id}`, socket.id);
+        const isOnline = await redis.sismember("onlineAgents", id);
+        if (!isOnline) await redis.sadd("onlineAgents", id);
 
-//         io.emit("runningTimersUpdate");
+        io.emit("runningTimersUpdate");
 
-//         console.log(`💻 Agent online → ${id}`);
-//       } catch (err) {
-//         console.error("❌ Failed to mark agent online in Redis:", err.message);
-//       }
-//     });
+        console.log(`💻 Agent online → ${id}`);
+      } catch (err) {
+        console.error("❌ Failed to mark agent online in Redis:", err.message);
+      }
+    });
 
-//   socket.on("whatsapp:join-conversation", ({ conversationId }) => {
+    socket.on("whatsapp:join-conversation", ({ conversationId }) => {
+      const currentRoom = socket.data.activeConversation;
 
-//       for (const room of socket.rooms) {
-//         if (room.startsWith("conversation:")) {
-//           socket.leave(room);
-//         }
-//       }
+      if (currentRoom) {
+        socket.leave(currentRoom);
+      }
 
-//       socket.join(`conversation:${conversationId}`);
-//     });
+      const room = `conversation:${conversationId}`;
 
-//     // socket.on("whatsapp:leave-conversation", ({ conversationId }) => {
-//     //   socket.leave(`conversation:${conversationId}`);
-//     // });
+      socket.join(room);
 
-//     // -----------------------
-//     // DISCONNECT
-//     // -----------------------
+      socket.data.activeConversation = room;
+    });
 
-//     socket.on("disconnect", async () => {
-//       console.log(`🔴 Socket disconnected: ${socket.id}`);
+    // socket.on("whatsapp:leave-conversation", ({ conversationId }) => {
+    //   socket.leave(`conversation:${conversationId}`);
+    // });
 
-//   try {
-//     const userId = await redis.get(`socket:user:${socket.id}`);
-//     const agentId = await redis.get(`socket:agent:${socket.id}`);
+    // -----------------------
+    // DISCONNECT
+    // -----------------------
 
-//     // delete mapping first (IMPORTANT)
-//     await redis.del(`socket:user:${socket.id}`);
-//     await redis.del(`socket:agent:${socket.id}`);
+    socket.on("disconnect", async () => {
+      console.log(`🔴 Socket disconnected: ${socket.id}`);
 
-//     // ---------------- USER CLEANUP ----------------
-//     if (userId) {
-//       const userKey = `sockets:user:${userId}`;
+  try {
+    const userId = await redis.get(`socket:user:${socket.id}`);
+    const agentId = await redis.get(`socket:agent:${socket.id}`);
 
-//       await redis.srem(userKey, socket.id);
+    // delete mapping first (IMPORTANT)
+    await redis.del(`socket:user:${socket.id}`);
+    await redis.del(`socket:agent:${socket.id}`);
 
-//       const remaining = await redis.scard(userKey);
+    // ---------------- USER CLEANUP ----------------
+    if (userId) {
+      const userKey = `sockets:user:${userId}`;
 
-//       if (remaining === 0) {
-//         await redis.srem("onlineUsers", userId);
-//         console.log(`⚪ User offline → ${userId}`);
-//       }
-//     }
+      await redis.srem(userKey, socket.id);
 
-//     // ---------------- AGENT CLEANUP ----------------
-//     if (agentId) {
-//       const agentKey = `sockets:agent:${agentId}`;
+      const remaining = await redis.scard(userKey);
 
-//       await redis.srem(agentKey, socket.id);
+      if (remaining === 0) {
+        await redis.srem("onlineUsers", userId);
+        console.log(`⚪ User offline → ${userId}`);
+      }
+    }
 
-//       const remaining = await redis.scard(agentKey);
+    // ---------------- AGENT CLEANUP ----------------
+    if (agentId) {
+      const agentKey = `sockets:agent:${agentId}`;
 
-//       if (remaining === 0) {
+      await redis.srem(agentKey, socket.id);
 
-//         io.emit("runningTimersUpdate");
+      const remaining = await redis.scard(agentKey);
 
-//         await redis.srem("onlineAgents", agentId);
-//         console.log(`⚪ Agent offline → ${agentId}`);
-//       }
-//     }
+      if (remaining === 0) {
 
-//   } catch (err) {
-//     console.error("❌ Disconnect cleanup error:", err.message);
-//   }
-// });
+        io.emit("runningTimersUpdate");
 
-//     // socket.on("disconnect", async () => {
-//     //   console.log(`🔴 Socket disconnected: ${socket.id}`);
+        await redis.srem("onlineAgents", agentId);
+        console.log(`⚪ Agent offline → ${agentId}`);
+      }
+    }
 
-//     //   try {
-//     //     // -------------------
-//     //     // Handle user disconnect
-//     //     // -------------------
-//     //     if (socket?.data?.userId) {
-//     //       const userKey = `sockets:user:${socket.data.userId}`;
-//     //       await redis.srem(userKey, socket.id);
-//     //       const remainingSockets = await redis.scard(userKey);
-//     //       if (remainingSockets === 0) {
-//     //         //io.emit("runningTimersUpdate");
-//     //         await redis.srem("onlineUsers", socket.data.userId);
-//     //         console.log(`⚪ User offline → ${socket.data.userId}`);
-//     //       }
-//     //     }
+  } catch (err) {
+    console.error("❌ Disconnect cleanup error:", err.message);
+  }
+});
 
-//     //     // -------------------
-//     //     // Handle agent disconnect
-//     //     // -------------------
-//     //     if (socket?.data?.agentId) {
-//     //       const agentKey = `sockets:agent:${socket.data.agentId}`;
-//     //       await redis.srem(agentKey, socket.id);
-//     //       const remainingSockets = await redis.scard(agentKey);
-//     //       if (remainingSockets === 0) {
-//     //         io.emit("runningTimersUpdate");
-//     //         await redis.srem("onlineAgents", socket.data.agentId);
-//     //         console.log(`⚪ Agent offline → ${socket.data.agentId}`);
-//     //       }
-//     //     }
-//     //   } catch (err) {
-//     //     console.error("❌ Error updating Redis on disconnect:", err.message);
-//     //   }
-//     // });
-//   });
+     
+ 
+  });
 
-//   return io;
-// };
+  return io;
+};
 
-// // ---------------------------
-// // SAFE CLUSTER COMPATIBLE EMIT
-// // ---------------------------
-// export const emitTimerState = (io, email, running) => {
-//   io.to(`agent:${email}`).emit("timer:state", { running });
-//   console.log(`⏱ Emitted timer state to agent:${email}`);
-// };
+// ---------------------------
+// SAFE CLUSTER COMPATIBLE EMIT
+// ---------------------------
+export const emitTimerState = (io, email, running) => {
+  io.to(`agent:${email}`).emit("timer:state", { running });
+  console.log(`⏱ Emitted timer state to agent:${email}`);
+};
 
-// export const Skey = "salman@affotax";
+export const Skey = "salman@affotax";

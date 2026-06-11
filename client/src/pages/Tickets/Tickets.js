@@ -71,6 +71,7 @@ const colVisibility = {
   company: true,
 
   jobHolder: true,
+  leadUser: true,
   jobStatus: true,
 
   subject: true,
@@ -514,6 +515,51 @@ export default function Tickets() {
     }
   };
 
+
+
+
+    const updateLeadUser = async (ticketId, leadUser) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/update/ticket/${ticketId}`,
+        { leadUser },
+      );
+      if (data) {
+        const updateTicket = data?.ticket;
+        toast.success("Job Holder updated successfully!");
+        if (filteredData) {
+          setFilteredData((prevData) => {
+            if (Array.isArray(prevData)) {
+              return prevData.map((item) =>
+                item._id === updateTicket._id ? updateTicket : item,
+              );
+            } else {
+              return [updateTicket];
+            }
+          });
+        }
+
+        setEmailData((prevData) => {
+          if (Array.isArray(prevData)) {
+            return prevData.map((item) =>
+              item._id === updateTicket._id ? updateTicket : item,
+            );
+          } else {
+            return [updateTicket];
+          }
+        });
+
+        getEmails();
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response?.data?.message || "An error occurred");
+    }
+  };
+
+
+
+
   const updateJobDate = async (ticketId, jobDate) => {
     try {
       const { data } = await axios.put(
@@ -663,6 +709,7 @@ export default function Tickets() {
       updateJobStatus,
       updateTicketSingleField,
       updateJobHolder,
+      updateLeadUser,
       updateJobDate,
       toggleDrawer,
       setTicketId,

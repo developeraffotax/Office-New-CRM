@@ -14,6 +14,7 @@ import { lastRepliedColumn } from "./lastRepliedColumn";
 import { actionsColumn } from "./actionsColumn";
 import { refColumn } from "./refColumn";
 import { emailColumn } from "./emailColumn";
+import { leadUserColumn } from "./leadUserColumn";
 
  
 
@@ -25,6 +26,7 @@ export const getTicketsColumns = (ctx) => [
   clientNameColumn(ctx),
   companyColumn(ctx),
   jobHolderColumn(ctx),
+  leadUserColumn(ctx),
   jobStatusColumn(ctx),
   subjectColumn(ctx),
   receivedColumn(ctx),

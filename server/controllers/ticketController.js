@@ -934,7 +934,7 @@ export const getAllSendTickets = async (req, res, next) => {
 
     
     
-    const tickets = await ticketModel.find(filter).lean().select( "ticketRef sent received jobStatus email clientId companyName clientName company jobHolder subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy lastMessageSentTime createdAt" );
+    const tickets = await ticketModel.find(filter).lean().select( "ticketRef sent received jobStatus email clientId companyName clientName company jobHolder leadUser subject status jobDate comments._id mailThreadId isOpen lastMessageSentBy lastMessageSentTime createdAt" );
 
 
 
@@ -1180,7 +1180,7 @@ export const updateTickets = async (req, res) => {
     const ticketId = req.params.id;
     //const { jobDate, state, jobHolder, jobStatus } = req.body;
      const updates = req.body; // Dynamic fields from client
-    const allowedUpdates = ['jobDate', 'state', 'jobHolder', 'jobStatus', 'clientName', 'companyName']; // Whitelist of allowed fields
+    const allowedUpdates = ['jobDate', 'state', 'jobHolder', 'leadUser', 'jobStatus', 'clientName', 'companyName']; // Whitelist of allowed fields
     const updateKeys = Object.keys(updates);
 
       // Optional: Validate fields

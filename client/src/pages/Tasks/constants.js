@@ -16,7 +16,7 @@ export const colVisibility = {
   datestatus: true,
 
   taskStatus: true,
-  lead: true,
+  owner: true,
   estimate_Time: true,
   timertracker: true,
   comments: true,
@@ -146,7 +146,7 @@ export const columnFieldMap = {
   
   jobHolder: "jobHolder",
   leadUser: "leadUser",
-  lead: "lead",
+  owner: "lead",
   startDate: "startDate",
   deadline: "deadline",
   taskDate: "taskDate",

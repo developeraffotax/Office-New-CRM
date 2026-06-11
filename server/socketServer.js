@@ -334,7 +334,7 @@ export const initSocketServer = (server) => {
       socket.data.agentId = id; // store on socket
       socket.join(`agent:${id}`);
 
-       // ✅ ADD THIS HERE
+
       await redis.set(`socket:agent:${socket.id}`, id);
 
       try {

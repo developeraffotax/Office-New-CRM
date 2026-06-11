@@ -1284,15 +1284,7 @@ const getJobsStats = useCallback(async () => {
         }
       );
       if (data) {
-        // if (filterId || active || active1) {
-        //   setFilterData((prevData) =>
-        //     prevData?.map((item) =>
-        //       item._id === rowId
-        //         ? { ...item, job: { ...item.job, lead: lead } }
-        //         : item
-        //     )
-        //   );
-        // }
+         
         setTableData((prevData) =>
           prevData?.map((item) =>
             item._id === rowId
@@ -1300,13 +1292,47 @@ const getJobsStats = useCallback(async () => {
               : item
           )
         );
-        toast.success("Job lead updated!");
+        toast.success("Job Owner updated!");
         
       }
     } catch (error) {
       console.error("Error updating status", error);
     }
   };
+
+
+
+
+    // ---------------Handle Update Lead User---------->
+  const handleUpdateLeadUser = async (rowId, leadUser) => {
+    if (!rowId) {
+      return toast.error("Job id is required!");
+    }
+    try {
+      const { data } = await axios.patch(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/update/leadUser/${rowId}`,
+        {
+          leadUser: leadUser,
+        }
+      );
+      if (data) {
+         
+        setTableData((prevData) =>
+          prevData?.map((item) =>
+            item._id === rowId
+              ? { ...item, job: { ...item.job, leadUser: leadUser } }
+              : item
+          )
+        );
+        toast.success("Job Lead User updated!");
+        
+      }
+    } catch (error) {
+      console.error("Error updating status", error);
+    }
+  };
+
+
 
   // ---------------Handle Update Job Holder ---------->
   const handleUpdateJobHolder = async (rowId, jobHolder) => {
@@ -1718,6 +1744,7 @@ const jobCtx = useMemo(() => {
     setShowNewTicketModal, 
     moveJobToLead,      
     handleUpdateLead,  
+    handleUpdateLeadUser,  
     handleUpdateTicketStatusConfirmation, 
     handleUpdateJobHolder,
     createComplaint,

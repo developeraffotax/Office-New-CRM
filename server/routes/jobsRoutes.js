@@ -40,6 +40,7 @@ import {
   updateFee,
   updateJobHolder,
   updateLead,
+  updateLeadUser,
   updateQuality,
   updateStatus,
   updateSubTaskStaus,
@@ -76,6 +77,7 @@ router.patch("/update/status/:id", requiredSignIn, updateStatus);
 
 // Update Lead
 router.patch("/update/lead/:id", requiredSignIn, updateLead);
+router.patch("/update/leadUser/:id", requiredSignIn, updateLeadUser);
 
 // Update ActiveClient
 router.patch("/update/activeClient/:id", requiredSignIn, updateActiveClient);

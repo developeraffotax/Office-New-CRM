@@ -839,6 +839,114 @@ export const updateJobHolder = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+// Update Client Lead
+export const updateLeadUser = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const { leadUser } = req.body;
+    if (!leadUser) {
+      return res.status(400).send({
+        success: false,
+        message: "Lead user is required!",
+      });
+    }
+
+    if (!jobId) {
+      return res.status(400).send({
+        success: false,
+        message: "Job id is required!",
+      });
+    }
+
+    // Fetch the job first to get the old fee
+    const clientJobBeforeUpdate = await jobsModel.findById(jobId);
+
+    if (!clientJobBeforeUpdate) {
+      // Handle case where job is not found
+      return res.status(404).json({ message: "Job not found." });
+    }
+
+    const oldLeadUser = clientJobBeforeUpdate?.job?.leadUser || "empty";
+
+    const clientJob = await jobsModel.findByIdAndUpdate(
+      { _id: jobId },
+      { $set: { "job.leadUser": leadUser } },
+      { new: true }
+    );
+
+    // Push activity to activities array
+    clientJob.activities.push({
+      user: req.user.user._id,
+      activity: `${req.user.user.name} has updated job owner from "${oldLeadUser ? oldLeadUser : "empty"}" to "${leadUser}"  .`,
+    });
+
+    await clientJob.save();
+    // await redisClient.del('all_jobs');
+
+
+    
+     if (req.user?.user?.name !== clientJob?.job?.jobHolder) {
+          const notiUser = await userModel
+            .findOne({ name: clientJob?.job?.jobHolder })
+            .select("_id");
+          if (notiUser) {
+            emitJobUpdate(true, { userId: notiUser._id, updated_job: null });
+          }
+        }
+
+
+
+    res.status(200).send({
+      success: true,
+      message: "Lead user updated successfully!",
+      clientJob: clientJob,
+    });
+
+    // Add Activity Log
+    const user = req.user.user;
+    if (clientJob) {
+      activityModel.create({
+        user: user._id,
+        action: `${user.name.trim()} is update a Job Lead.`,
+        entity: "Jobs",
+        details: `Job Details:
+          - Company Name: ${clientJob.companyName}
+          - Job Client: ${clientJob.clientName || "No client provided"}
+          - Created At: ${currentDateTime}`,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in update job lead !",
+      error: error,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Delete Client Jobs
 export const deleteClientJob = async (req, res) => {
   try {
@@ -2993,7 +3101,7 @@ export const getAllClientJobs = async (req, res) => {
     const clients = await jobsModel
       .find(query)
       .select(
-        "clientName companyName regNumber email phone fee currentDate totalHours totalTime jobRef job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.jobHolder comments._id comments.status label source data activeClient clientType partner clientPaidFee"
+        "clientName companyName regNumber email phone fee currentDate totalHours totalTime jobRef job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.leadUser job.jobHolder comments._id comments.status label source data activeClient clientType partner clientPaidFee"
       )
       .populate("data")
       // .sort({ [sortField]: sortOrder })

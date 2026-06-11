@@ -386,6 +386,7 @@ export const buildJobsQuery = (queryParams) => {
 
     jobHolder,
     lead,
+    leadUser,
     jobName,
     jobStatus,
     yearEnd,
@@ -475,6 +476,10 @@ export const buildJobsQuery = (queryParams) => {
 
   if (lead) {
     query["job.lead"] = lead;
+  }
+
+  if (leadUser) {
+    query["job.leadUser"] = leadUser;
   }
 
   if (jobName) {

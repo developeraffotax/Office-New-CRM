@@ -40,6 +40,10 @@ const ticketSchema = new mongoose.Schema(
     jobHolder: {
       type: String,
     },
+     leadUser: {
+      type: String,
+    },
+    
     subject: {
       type: String,
     },

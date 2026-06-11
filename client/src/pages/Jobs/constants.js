@@ -11,6 +11,7 @@ export const columnData = [
   "Job_Date",
   "Status",
   "Job_Status",
+  "Lead",
   "Owner",
   "Budget",
   "Timer",
@@ -111,6 +112,7 @@ export const columnFieldMap = {
   
   Assign: "jobHolder",
   Owner: "lead",
+  Lead: "leadUser",
   Year_End: "yearEnd",
   Deadline: "deadline",
   Job_Date: "jobDate",

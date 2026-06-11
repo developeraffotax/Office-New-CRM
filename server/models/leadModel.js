@@ -12,6 +12,10 @@ const leadSchema = new mongoose.Schema(
     jobHolder: {
       type: String,
     },
+     leadUser: {
+      type: String,
+    },
+    
     department: {
       type: String,
     },

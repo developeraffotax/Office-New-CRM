@@ -20,6 +20,7 @@ import { jobPreparedColumn } from "./jobPreparedColumn"
 import { jobReviewColumn } from "./jobReviewColumn"
 import { jobStatusColumn } from "./jobStatusColumn"
 import {   labelsColumn } from "./labelsColumn"
+import { leadUserColumn } from "./leadUserColumn"
 import { ownerColumn } from "./ownerColumn"
 import { paidFeeColumn } from "./paidFeeColumn"
 import { partnerColumn } from "./partnerColumn"
@@ -58,6 +59,7 @@ export const getJobsColumns = (ctx) => {
  statusColumn(ctx),
    jobStatusColumn(ctx),
   ownerColumn(ctx),
+  leadUserColumn(ctx),
     budgetColumn(ctx),
    (status === "progress" && timerColumn(ctx)),
     actionsColumn(ctx),
@@ -143,6 +145,7 @@ export const getJobsColumnsCompleted = (ctx) => {
     jobDateColumn(ctx),
     statusColumn(ctx),
     jobStatusColumn(ctx),
+    leadUserColumn(ctx),
     ownerColumn(ctx),
     budgetColumn(ctx),
 
@@ -229,6 +232,7 @@ export const getJobsColumnsInactive = (ctx) => {
     jobDateColumn(ctx),
     statusColumn(ctx),
     jobStatusColumn(ctx),
+        leadUserColumn(ctx),
     ownerColumn(ctx),
     budgetColumn(ctx),
   

@@ -35,6 +35,7 @@ import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { Link } from "react-router-dom";
 import { FiExternalLink } from "react-icons/fi";
 import { formatRef, refFilterFn } from "../../utlis/formatRef";
+import { Button, Checkbox, FormControlLabel, MenuItem, Popover, Select } from "@mui/material";
 
 const months = [
   "January",
@@ -50,6 +51,16 @@ const months = [
   "November",
   "December",
 ];
+
+const availableSorts = [
+  { label: "Position", value: "position" },
+  { label: "Created Date", value: "createdAt" },
+  { label: "Category", value: "category" },
+  { label: "Title", value: "title" },
+  { label: "Software", value: "software" },
+];
+
+
 
 const updates_object_init = {
   title: "",
@@ -85,6 +96,60 @@ export default function HR() {
   const [copyLoad, setCopyLoad] = useState(false);
   const currentMonthIndex = new Date().getMonth();
   const [month, setMonth] = useState(currentMonthIndex);
+
+const [open, setOpen] = useState(false);
+
+ 
+  const [sortFields, setSortFields] = useState([
+  // Example:
+  { field: "position", direction: "asc" }
+]);
+
+
+
+const handleFieldToggle = (field) => {
+  setSortFields((prev) => {
+    const exists = prev.find((x) => x.field === field);
+
+    if (exists) {
+      return prev.filter((x) => x.field !== field);
+    }
+
+    return [
+      ...prev,
+      {
+        field,
+        direction: "asc",
+      },
+    ];
+  });
+};
+
+
+const handleDirectionChange = (field, direction) => {
+  setSortFields((prev) =>
+    prev.map((item) =>
+      item.field === field
+        ? { ...item, direction }
+        : item
+    )
+  );
+};
+
+
+
+
+const buildSortQuery = () => {
+  return sortFields
+    .map(
+      (item) =>
+        `${item.field}:${item.direction}`
+    )
+    .join(",");
+};
+
+
+
 
   // const [activeBtn, setActiveBtn] = useState("");
   const [showJobHolder, setShowJobHolder] = useState(true);
@@ -137,8 +202,12 @@ export default function HR() {
       setIsLoading(true);
     }
     try {
+
+        const sort = buildSortQuery();
+
+
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/hr/all/tasks`
+        `${process.env.REACT_APP_API_URL}/api/v1/hr/all/tasks?sort=${sort}`
       );
 
       const rawTasks = data?.tasks;
@@ -959,6 +1028,40 @@ export default function HR() {
     columns,
     data: taskData || [],
 
+
+     enableRowOrdering: true,
+  enableSorting: false,
+
+  muiRowDragHandleProps: ({ table }) => ({
+    onDragEnd: async () => {
+      const { draggingRow, hoveredRow } = table.getState();
+
+      if (!draggingRow || !hoveredRow) return;
+
+      const updatedData = [...taskData];
+
+      updatedData.splice(
+        hoveredRow.index,
+        0,
+        updatedData.splice(draggingRow.index, 1)[0]
+      );
+
+      setTaskData(updatedData);
+
+      try {
+        await axios.put(`${process.env.REACT_APP_API_URL}/api/v1/hr/reorder`, {
+          taskIds: updatedData.map((row) => row._id),
+        });
+        toast.success("Reordered Successfully!")
+      } catch (error) {
+        console.error(error);
+      }
+    },
+  }),
+
+
+
+
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     state: { rowSelection, columnVisibility },
@@ -972,7 +1075,7 @@ export default function HR() {
     muiTableContainerProps: { sx: { maxHeight: "850px" } },
     enableColumnActions: false,
     enableColumnFilters: false,
-    enableSorting: false,
+ 
     enableGlobalFilter: true,
     enableRowNumbers: true,
     enableColumnResizing: true,
@@ -1189,6 +1292,104 @@ const getJobHolderCount = (name) => {
 
           {/* ---------Template Buttons */}
           <div className="flex items-center gap-4 sm:w-fit w-full justify-end sm:justify-normal">
+
+
+          <div>
+
+
+
+<div className="relative">
+  <button
+   onClick={() => setOpen(true)}
+    className="px-3 py-2 border rounded-lg"
+  >
+    Sort
+  </button>
+
+{open && (
+  <div
+    className="absolute top-full left-0 mt-2 w-[320px] bg-white rounded-xl shadow-xl border border-gray-200 z-50"
+  >
+    <div className="p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold text-gray-800">
+          Sort By
+        </h3>
+
+        <button
+          onClick={() => setOpen(false)}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        {availableSorts.map((item) => {
+          const selected = sortFields.find(
+            (x) => x.field === item.value
+          );
+
+          return (
+            <div
+              key={item.value}
+              className="flex items-center justify-between"
+            >
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={!!selected}
+                  onChange={() =>
+                    handleFieldToggle(item.value)
+                  }
+                  className="h-4 w-4"
+                />
+
+                <span className="text-sm text-gray-700">
+                  {item.label}
+                </span>
+              </label>
+
+              {selected && (
+                <select
+                  value={selected.direction}
+                  onChange={(e) =>
+                    handleDirectionChange(
+                      item.value,
+                      e.target.value
+                    )
+                  }
+                  className="border rounded-md px-2 py-1 text-sm"
+                >
+                  <option value="asc">
+                    Asc
+                  </option>
+
+                  <option value="desc">
+                    Desc
+                  </option>
+                </select>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <button
+        onClick={() => {
+          getAllTasks();
+           
+        }}
+        className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 text-sm font-medium"
+      >
+        Apply
+      </button>
+    </div>
+  </div>
+)}
+</div>
+
+          </div>
             {/* Hide & Show */}
             <div className=" hidden sm:flex relative">
               <div

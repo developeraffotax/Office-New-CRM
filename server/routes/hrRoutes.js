@@ -7,6 +7,7 @@ import {
   deleteHrTask,
   hrTaskDetail,
   importData,
+  reorderHrTasks,
   updateBulkHRs,
   updateHrTask,
   updateUserStatus,
@@ -27,6 +28,10 @@ router.put("/edit/task/:id", requiredSignIn, updateHrTask);
 
 // Fetch All
 router.get("/all/tasks", requiredSignIn, allHrTask);
+
+
+//reordering the postition
+router.put("/reorder", requiredSignIn, reorderHrTasks);
 
 // Task Detail
 router.get("/task/detail/:id",   hrTaskDetail);

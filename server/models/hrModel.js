@@ -35,6 +35,15 @@ const hrSchema = new mongoose.Schema(
       trim: true,
     },
 
+
+    position: {
+  type: Number,
+  default: 0,
+  index: true,
+},
+
+
+
     users: [
       {
         user: {
@@ -47,6 +56,9 @@ const hrSchema = new mongoose.Schema(
         },
       },
     ],
+
+
+
 
 
   },

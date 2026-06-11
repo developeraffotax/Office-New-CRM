@@ -112,27 +112,63 @@ export const updateHrTask = async (req, res) => {
   }
 };
 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
 // Fetch All
 export const allHrTask = async (req, res) => {
-    const userId = req.user?.user?._id;
+  const userId = req.user?.user?._id;
   const role = req.user?.user?.role?.name;
 
   try {
-
-     const filters = {};
+    const filters = {};
 
     if (role !== "Admin") {
       filters.users = {
         $elemMatch: {
           user: new mongoose.Types.ObjectId(userId),
           status: "Yes",
-        }
-  }
+        },
+      };
     }
 
+    // Example:
+    // ?sort=position:asc
+    // ?sort=position:asc,name:desc
+    // ?sort=createdAt:desc
+    let sort = { };
+
+    if (req.query.sort) {
+      sort = {};
+
+      req.query.sort.split(",").forEach((item) => {
+        const [field, direction = "asc"] = item.split(":");
+
+        if (!field) return;
+
+        sort[field] = direction.toLowerCase() === "desc" ? -1 : 1;
+      });
+
+      // fallback if query was malformed
+      if (Object.keys(sort).length === 0) {
+        sort = { position: 1 };
+      }
+    }
 
     const tasks = await hrModel
-      .find(filters).select("-description")
+      .find(filters)
+      .sort(sort)
+      .select("-description")
       .populate("hrRole")
       .populate({
         path: "users.user",
@@ -145,26 +181,85 @@ export const allHrTask = async (req, res) => {
           path: "users.user",
           select: "name email",
         },
-      }).lean()
-      ;
+      })
+      .lean();
 
-      console.log("TASKS LENGTH 🎈🎈🎈", tasks.length)
-
+    console.log("TASKS LENGTH 🎈🎈🎈", tasks.length);
+    console.log("SORT 🎈🎈🎈", sort);
 
     res.status(200).send({
       success: true,
       message: "HR tasks list!",
-      tasks: tasks,
+      tasks,
     });
   } catch (error) {
     console.log(error);
+
     res.status(500).json({
       success: false,
       message: "Error occur while get hr tasks!",
-      error: error,
+      error,
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const reorderHrTasks = async (req, res) => {
+  try {
+    const { taskIds } = req.body;
+
+    if (!Array.isArray(taskIds)) {
+      return res.status(400).json({
+        success: false,
+        message: "taskIds must be an array",
+      });
+    }
+
+    const bulkOps = taskIds.map((id, index) => ({
+      updateOne: {
+        filter: { _id: id },
+        update: {
+          $set: {
+            position: index + 1,
+          },
+        },
+      },
+    }));
+
+    await hrModel.bulkWrite(bulkOps);
+
+    res.status(200).json({
+      success: true,
+      message: "Tasks reordered successfully",
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Error reordering tasks",
+      error,
+    });
+  }
+};
+
+
+
+
+
+
+
 
 
 

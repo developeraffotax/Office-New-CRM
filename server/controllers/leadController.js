@@ -90,7 +90,7 @@ export const updateLead = async (req, res) => {
 
     const updates = req.body;
 
-     const allowedUpdates = ['leadCreatedAt', 'companyName', 'clientName', 'jobHolder', 'department', 'source', 'brand', 'lead_Source', 'followUpDate', 'JobDate', 'Note', 'stage', 'status', 'value', 'number', 'yearEnd', 'jobDeadline', 'email']; // Whitelist of allowed fields
+     const allowedUpdates = ['leadCreatedAt', 'companyName', 'clientName', 'jobHolder',  'leadUser', 'department', 'source', 'brand', 'lead_Source', 'followUpDate', 'JobDate', 'Note', 'stage', 'status', 'value', 'number', 'yearEnd', 'jobDeadline', 'email']; // Whitelist of allowed fields
     const updateKeys = Object.keys(updates);
 
       // Optional: Validate fields
@@ -158,7 +158,7 @@ export const getAllProgressLead = async (req, res) => {
 
     const filter = await buildLeadFilter(req, "progress");
 
-    console.log("THE FILTER IS ", filter)
+ 
     const leads = await leadModel.find(filter);
 
     res.status(200).send({

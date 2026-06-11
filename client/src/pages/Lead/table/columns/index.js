@@ -534,6 +534,110 @@ export const getLeadColumns = (ctx) => {
       grow: false,
     },
 
+
+
+    
+    {
+      accessorKey: "leadUser",
+       
+      Header: ({ column }) => {
+        
+
+        
+        return (
+          <div className=" flex flex-col gap-[2px]">
+            <span
+              className="ml-1 cursor-pointer"
+              title="Clear Filter"
+              onClick={() => {
+                column.setFilterValue("");
+                setSelectFilter("");
+              }}
+            >
+              Lead
+            </span>
+            <select
+              value={column.getFilterValue() || ""}
+              onChange={(e) => {
+                column.setFilterValue(e.target.value);
+                setSelectFilter(e.target.value);
+              }}
+              className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+            >
+              <option value="">Select</option>
+              {users?.map((jobhold, i) => (
+                <option key={i} value={jobhold?.name}>
+                  {jobhold?.name}
+                </option>
+              ))}
+              <option value="empty">Empty</option>
+            </select>
+          </div>
+        );
+      },
+      Cell: ({ row }) => {
+        const leadUser = row.original.leadUser;
+        const [localLeadUser, setLocalLeadUser] = useState(leadUser || "");
+        const [show, setShow] = useState(false);
+
+        const handleChange = (e) => {
+          const selectedValue = e.target.value;
+          setLocalLeadUser(selectedValue);
+
+          setFormData((prevData) => ({
+            ...prevData,
+            leadUser: localLeadUser,
+          }));
+
+          handleUpdateData(row.original._id, {
+            leadUser: selectedValue,
+          });
+          setShow(false);
+        };
+
+        return (
+          <div className="w-full">
+            {show ? (
+              <select
+                value={localLeadUser || ""}
+                className="w-full h-[2rem] rounded-md border-none  outline-none"
+                onChange={handleChange}
+              >
+                <option value="empty"></option>
+                {users?.map((jobHold, i) => (
+                  <option value={jobHold?.name} key={i}>
+                    {jobHold.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div
+                className="w-full cursor-pointer"
+                onDoubleClick={() => setShow(true)}
+              >
+                {leadUser ? <span>{leadUser}</span> : <div className="text-white w-full">.</div>}
+              </div>
+            )}
+          </div>
+        );
+      },
+      filterFn: (row, columnId, filterValue) => {
+        const cellValue = row.getValue(columnId);
+        if (filterValue === "empty") {
+          return !cellValue || cellValue === "empty";
+        }
+        return String(cellValue ?? "") === String(filterValue);
+      },
+      filterSelectOptions: users.map((jobhold) => jobhold.name),
+      filterVariant: "select",
+      size: 110,
+      minSize: 80,
+      maxSize: 130,
+      grow: false,
+    },
+
+
+
     {
       accessorKey: "department",
       minSize: 100,

@@ -237,6 +237,7 @@ const applyFilter = (e) => {
   const [formData, setFormData] = useState({
     companyName: "",
     clientName: "",
+    leadUser: "",
     jobHolder: "",
     department: "",
     source: "",
@@ -372,6 +373,7 @@ useEffect(() => {
     "companyName",
     "clientName",
     "jobHolder",
+    "leadUser",
     "department",
     "source",
     "brand",

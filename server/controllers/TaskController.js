@@ -329,7 +329,7 @@ export const updatetaskProject = async (req, res) => {
 export const updateJobHolderLS = async (req, res) => {
   try {
     const taskId = req.params.id;
-    const { jobHolder, lead, status } = req.body;
+    const { jobHolder, lead, status, leadUser } = req.body;
 
     const task = await taskModel.findById(taskId);
     if (!task) {
@@ -366,6 +366,18 @@ export const updateJobHolderLS = async (req, res) => {
       updateTask.activities.push({
         user: req.user.user._id,
         activity: `${req.user.user.name} has updated task owner from "${task.lead}" to "${updateTask.lead}".`,
+      });
+    } else if (leadUser) {
+      updateTask = await taskModel.findByIdAndUpdate(
+        task._id,
+        { leadUser: leadUser },
+        { new: true }
+      );
+
+      // Push activity to activities array
+      updateTask.activities.push({
+        user: req.user.user._id,
+        activity: `${req.user.user.name} has updated task lead from "${task?.leadUser || "empty"}" to "${updateTask?.leadUser || "empty"}".`,
       });
     } else {
       if (status === "completed") {

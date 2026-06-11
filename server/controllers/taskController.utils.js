@@ -385,6 +385,7 @@ export const buildTasksQuery = (queryParams) => {
     task,
 
     jobHolder,
+    leadUser,
     lead,
     startDate,
     deadline,
@@ -403,7 +404,7 @@ export const buildTasksQuery = (queryParams) => {
   const query = {};
 
   
-console.log("REQ.QUERY🧡", queryParams)
+ 
 
   if (status === "progress") {
     query.status =  { $ne: "completed" }
@@ -460,6 +461,11 @@ if (projectId && mongoose.Types.ObjectId.isValid(projectId)) {
   if (jobHolder) {
     query.jobHolder = jobHolder;
   }
+
+    if (leadUser) {
+    query.leadUser = leadUser;
+  }
+
 
   if (lead) {
     query.lead = lead;

@@ -5,6 +5,7 @@ export const colVisibility = {
   departmentName: true,
   projectName: true,
   jobHolder: true,
+  leadUser: true,
   task: true,
   hours: true,
   startDate: true,
@@ -144,6 +145,7 @@ export const columnFieldMap = {
   task: "task",
   
   jobHolder: "jobHolder",
+  leadUser: "leadUser",
   lead: "lead",
   startDate: "startDate",
   deadline: "deadline",

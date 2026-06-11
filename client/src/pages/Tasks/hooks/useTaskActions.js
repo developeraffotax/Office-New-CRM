@@ -39,7 +39,8 @@ export const useTaskActions = ({
     taskId,
     jobHolder,
     lead,
-    status
+    status,
+    leadUser
   ) => {
 
     try {
@@ -50,6 +51,7 @@ export const useTaskActions = ({
           jobHolder,
           lead,
           status,
+          leadUser
         }
       );
 

@@ -2409,6 +2409,7 @@ export const getTasks = async (req, res) => {
         $project: {
           project: 1,
           jobHolder: 1,
+          leadUser: 1,
           task: 1,
           hours: 1,
           startDate: 1,

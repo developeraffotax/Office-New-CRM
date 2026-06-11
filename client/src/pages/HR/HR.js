@@ -70,6 +70,10 @@ const updates_object_init = {
 };
 
 const initialColumnVisibility = {
+  move: true,
+  selection: true,
+  numbering: true,
+
   hrTaskRef: true,
   role: true,
   department: true,
@@ -104,6 +108,9 @@ export default function HR() {
 
   const [showcolumn, setShowColumn] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState({...initialColumnVisibility});
+
+  const [enableRowOrdering, setEnableRowOrdering] = useState(true);
+
   const [copyLoad, setCopyLoad] = useState(false);
   const currentMonthIndex = new Date().getMonth();
   const [month, setMonth] = useState(currentMonthIndex);
@@ -1043,9 +1050,40 @@ const buildSortQuery = () => {
     data: taskData || [],
 
 
-     enableRowOrdering: true,
+     enableRowOrdering: columnVisibility.move,
+         enableRowNumbers: columnVisibility.numbering,
+         enableRowSelection: columnVisibility.selection,
   enableSorting: false,
 
+
+
+  
+    onRowSelectionChange: setRowSelection,
+    state: { rowSelection, columnVisibility },
+    onColumnVisibilityChange: setColumnVisibility,
+    enableBatchRowSelection: true,
+
+    getRowId: (row) => row._id,
+
+    enableStickyHeader: true,
+    enableStickyFooter: true,
+    muiTableContainerProps: { sx: { maxHeight: "850px" } },
+    enableColumnActions: false,
+    enableColumnFilters: false,
+ 
+    enableGlobalFilter: true,
+
+    enableColumnResizing: true,
+    enableTopToolbar: true,
+    enableBottomToolbar: true,
+    enablePagination: true,
+    initialState: {
+      pagination: { pageSize: 20 },
+      pageSize: 20,
+      density: "compact",
+    },
+
+    
   muiRowDragHandleProps: ({ table }) => ({
     onDragEnd: async () => {
       const { draggingRow, hoveredRow } = table.getState();
@@ -1075,32 +1113,6 @@ const buildSortQuery = () => {
   
 
 
-  
-    enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
-    state: { rowSelection, columnVisibility },
-    onColumnVisibilityChange: setColumnVisibility,
-    enableBatchRowSelection: true,
-
-    getRowId: (row) => row._id,
-
-    enableStickyHeader: true,
-    enableStickyFooter: true,
-    muiTableContainerProps: { sx: { maxHeight: "850px" } },
-    enableColumnActions: false,
-    enableColumnFilters: false,
- 
-    enableGlobalFilter: true,
-    enableRowNumbers: true,
-    enableColumnResizing: true,
-    enableTopToolbar: true,
-    enableBottomToolbar: true,
-    enablePagination: true,
-    initialState: {
-      pagination: { pageSize: 20 },
-      pageSize: 20,
-      density: "compact",
-    },
 
     muiTableHeadCellProps: {
       style: {

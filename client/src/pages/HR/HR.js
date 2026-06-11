@@ -69,6 +69,17 @@ const updates_object_init = {
   software: "",
 };
 
+const initialColumnVisibility = {
+  hrTaskRef: true,
+  role: true,
+  department: true,
+  category: true,
+  software: true,
+
+
+
+}
+
 export default function HR() {
   const auth = useSelector((state) => state.auth.auth);
 
@@ -92,7 +103,7 @@ export default function HR() {
   const [showDescription, setShowDescription] = useState(false);
 
   const [showcolumn, setShowColumn] = useState(false);
-  const [columnVisibility, setColumnVisibility] = useState({});
+  const [columnVisibility, setColumnVisibility] = useState({...initialColumnVisibility});
   const [copyLoad, setCopyLoad] = useState(false);
   const currentMonthIndex = new Date().getMonth();
   const [month, setMonth] = useState(currentMonthIndex);
@@ -105,6 +116,8 @@ const [open, setOpen] = useState(false);
   { field: "position", direction: "asc" }
 ]);
 
+
+console.log("COLUMN VISIBILITY", columnVisibility)
 
 
 const handleFieldToggle = (field) => {
@@ -178,11 +191,11 @@ const buildSortQuery = () => {
       if (savedVisibility) {
         setColumnVisibility(savedVisibility);
       } else {
-        const initialVisibility = userName.reduce((acc, col) => {
+        const usersColumns = userName.reduce((acc, col) => {
           acc[col] = true;
           return acc;
         }, {});
-        setColumnVisibility(initialVisibility);
+        setColumnVisibility({...initialColumnVisibility, ...usersColumns});
       }
     }
   }, [userName]);
@@ -594,6 +607,7 @@ const buildSortQuery = () => {
 
       {
         accessorKey: "hrRole.roleName",
+        id: "role",
         minSize: 100,
         maxSize: 200,
         size: 170,
@@ -1058,10 +1072,10 @@ const buildSortQuery = () => {
       }
     },
   }),
+  
 
 
-
-
+  
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     state: { rowSelection, columnVisibility },
@@ -1294,8 +1308,30 @@ const getJobHolderCount = (name) => {
           <div className="flex items-center gap-4 sm:w-fit w-full justify-end sm:justify-normal">
 
 
-          <div>
-
+ 
+             {/* Hide & Show */}
+            <div className=" hidden sm:flex relative">
+              <div
+                className={` p-1 rounded-md hover:shadow-md bg-gray-50 cursor-pointer border ${
+                  showcolumn && "bg-orange-500 text-white"
+                }`}
+                onClick={() => setShowColumn(!showcolumn)}
+              >
+                {showcolumn ? (
+                  <GoEyeClosed className="text-[22px]" />
+                ) : (
+                  <GoEye className="text-[22px]" />
+                )}
+              </div>
+              {showcolumn && (
+                <div
+                  ref={closeProject}
+                  className="absolute top-10 right-8 z-50 w-[12rem]"
+                >
+                  {renderColumnControls()}
+                </div>
+              )}
+            </div>
 
 
 <div className="relative">
@@ -1389,30 +1425,8 @@ const getJobHolderCount = (name) => {
 )}
 </div>
 
-          </div>
-            {/* Hide & Show */}
-            <div className=" hidden sm:flex relative">
-              <div
-                className={` p-1 rounded-md hover:shadow-md bg-gray-50 cursor-pointer border ${
-                  showcolumn && "bg-orange-500 text-white"
-                }`}
-                onClick={() => setShowColumn(!showcolumn)}
-              >
-                {showcolumn ? (
-                  <GoEyeClosed className="text-[22px]" />
-                ) : (
-                  <GoEye className="text-[22px]" />
-                )}
-              </div>
-              {showcolumn && (
-                <div
-                  ref={closeProject}
-                  className="absolute top-10 right-8 z-50 w-[12rem]"
-                >
-                  {renderColumnControls()}
-                </div>
-              )}
-            </div>
+ 
+           
 
 { isAdmin(auth) &&
   <div className="flex items-center justify-end gap-2">

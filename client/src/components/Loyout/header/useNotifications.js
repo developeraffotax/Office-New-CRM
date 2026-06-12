@@ -41,79 +41,137 @@ export const useNotifications = () => {
     (n) => n.status === "unread" && isNotificationAllowed(n.type)
   ).length;
 
-  const handleNotificationClick = (item) => {
+
+
+
+
+
+
+
+
+
+
+const handleNotificationClick = (e, item) => {
+  dispatch(
+    updateNotification({
+      id: item._id,
+      userId: auth.user.id,
+      status: item.status,
+    })
+  );
+
+  const isNewTab =
+    e?.ctrlKey || // Windows/Linux Ctrl+Click
+    e?.metaKey || // Mac Cmd+Click
+    e?.button === 1; // Middle mouse click
+
+  // Ticket
+  if (item.entityType === "ticket") {
+    // if (isNewTab) {
+    //   window.open(`/tickets/${item.taskId}`, "_blank");
+    //   return;
+    // }
+
     dispatch(
-      updateNotification({
-        id: item._id,
-        userId: auth.user.id,
-        status: item.status,
+      openModal({
+        modal: "ticket",
+        data: { ticketId: item.taskId },
       })
     );
 
-
-
- // Open ticket modal if entityType is ticket
-    if (item.entityType === "ticket") {
-      dispatch(
-        openModal({
-          modal: "ticket",
-          data: { ticketId: item.taskId   }, // adjust field if needed
-        })
-      );
-      setOpen(false);
-      return;
-    }
-
-    // Open job modal if entityType is job (optional)
-    if (item.entityType === "job" && item.type !== "job_assigned") {
-      dispatch(
-        openModal({
-          modal: "job",
-          data: { clientId: item.taskId },
-        })
-      );
-      setOpen(false);
-      return;
-    }
-
-
-     if (item.entityType === "task") {
-      dispatch(
-        openModal({
-          modal: "task",
-          data: { taskId: item.taskId },
-        })
-      );
-      setOpen(false);
-      return;
-    }
-
-
-
-
-    if (item.entityType === "mailbox"  ) {
-        setOpen(false);
-      return navigate(`${item.redirectLink}&mailThreadId=${item.taskId}`);
-    }
-
-
-    if (item.entityType === "whatsapp"  ) {
-        setOpen(false);
-      return navigate(`${item.redirectLink}`);
-    }
-
-
-
-
- 
-
-
-
- 
-    navigate(`${item.redirectLink}?comment_taskId=${item.taskId}`);
-    dispatch(setFilterId(item.taskId));
     setOpen(false);
-  };
+    return;
+  }
+
+  // Job
+  if (item.entityType === "job" && item.type !== "job_assigned") {
+    // if (isNewTab) {
+    //   window.open(`/jobs/${item.taskId}`, "_blank");
+    //   return;
+    // }
+
+    dispatch(
+      openModal({
+        modal: "job",
+        data: { clientId: item.taskId },
+      })
+    );
+
+    setOpen(false);
+    return;
+  }
+
+  // Task
+  if (item.entityType === "task") {
+    // if (isNewTab) {
+    //   window.open(`/tasks/${item.taskId}`, "_blank");
+    //   return;
+    // }
+
+    dispatch(
+      openModal({
+        modal: "task",
+        data: { taskId: item.taskId },
+      })
+    );
+
+    setOpen(false);
+    return;
+  }
+
+  // Mailbox
+  if (item.entityType === "mailbox") {
+    const url = `${item.redirectLink}&mailThreadId=${item.taskId}`;
+
+    if (isNewTab) {
+      window.open(url, "_blank");
+      return;
+    }
+
+    setOpen(false);
+    return navigate(url);
+  }
+
+  // WhatsApp
+  if (item.entityType === "whatsapp") {
+    const url = item.redirectLink;
+
+    if (isNewTab) {
+      window.open(url, "_blank");
+      return;
+    }
+
+    setOpen(false);
+    return navigate(url);
+  }
+
+  // Default behaviour
+  const url = `${item.redirectLink}?comment_taskId=${item.taskId}`;
+
+  if (isNewTab) {
+    window.open(url, "_blank");
+    return;
+  }
+
+  navigate(url);
+  dispatch(setFilterId(item.taskId));
+  setOpen(false);
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   const handleDismissNotification = (item) => {
     dispatch(

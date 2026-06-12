@@ -90,7 +90,7 @@ const NotificationPanel = ({
                 {/* Content */}
                 <div className="block px-4 pb-4 pt-2">
                   <div
-                    onClick={() => handleNotificationClick(item)}
+                    onClick={(e) => handleNotificationClick(e, item)}
                     className="cursor-pointer"
                   >
                     <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">

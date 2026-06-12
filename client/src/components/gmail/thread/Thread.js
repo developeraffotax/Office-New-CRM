@@ -19,7 +19,7 @@ import { gmailParser } from "../utils/gmailParser.js";
 import EmailHeaderDetails from "./EmailHeaderDetails.js";
 import AssignUser from "../shared/ui/AssignUser.js";
 import AssignCategory from "../shared/ui/AssignCategory.js";
-import { FiClock, FiMessageSquare } from "react-icons/fi";
+import { FiClock, FiInfo, FiMessageSquare } from "react-icons/fi";
 import IconButtonWithBadge from "../shared/ui/IconButtonWithBadge.js";
 import { useOverlayStack } from "../hooks/useOverlayStack.js";
 import Swal from "sweetalert2";
@@ -28,6 +28,7 @@ import { MdDeleteOutline } from "react-icons/md";
 import ThreadActivityPanel from "../shared/ui/ThreadActivityPanel.js";
 import { LiaUndoAltSolid } from "react-icons/lia";
 import { useSelector } from "react-redux";
+import EmailSummaryDrawer from "./EmailSummaryDrawer.js";
 export default function Thread({
   company,
   threadId,
@@ -57,7 +58,7 @@ const [loadingMore, setLoadingMore] = useState(false);
   const isReminderPopupOpen = useSelector((state) => state?.reminder?.showReminder);  
 
 
- 
+  const [summaryDrawer, setSummaryDrawer] = useState({open: false,  })
 
   const [swalOpen, setSwalOpen] = useState(false);
 
@@ -405,7 +406,11 @@ useOverlayStack({
 
           <div className=" flex justify-center items-center gap-4 ">
 
-
+                <IconButtonWithBadge
+              icon={FiInfo}
+              title="Show Summary"
+              onClick={() => setSummaryDrawer({open: true})}
+            />
 
       
               <IconButtonWithBadge
@@ -847,6 +852,17 @@ useOverlayStack({
     })
   }
 />}
+
+
+{/* The Right Side Drawer Hook */}
+      <EmailSummaryDrawer 
+        isOpen={summaryDrawer.open} 
+        onClose={() => setSummaryDrawer({open: false})} 
+        threadId={threadId}
+        companyName={company}
+      />
+
+
     </div>
   );
 }

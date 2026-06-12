@@ -486,6 +486,42 @@ export const getDueReminders = async (req, res) => {
 
 
 
+export const getRemindersByTaskId = async (req, res) => {
+  try {
+    const userId = req.user?.user?._id;
+    const { taskId } = req.params;
+    const now = new Date();
+
+    const reminders = await reminderModel
+      .find({
+        userId,
+        taskId,
+        isCompleted: false,
+        scheduledAt: { $gte: now },
+      })
+      .sort({ scheduledAt: -1 })
+      .lean();
+
+
+  
+    res.status(200).send({
+      success: true,
+      reminders: reminders,
+    });
+  } catch (error) {
+    console.log("Error occured in getRemindersByTaskId", error)
+    res.status(500).send({
+      success: false,
+      message: "Error occurred while fetching reminders!",
+      error: error.message,
+    });
+  }
+};
+
+
+
+
+
 
 
 // export const getDueRemindersCount = async (req, res) => {

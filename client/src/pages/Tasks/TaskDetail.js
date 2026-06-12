@@ -27,6 +27,7 @@ import { FiClock } from "react-icons/fi";
 import { BsCalendarDate, BsCalendarDateFill } from "react-icons/bs";
 import DetailComments from "./TaskDetailComments";
 import Subtasks from "./Subtasks";
+import TaskReminders from "../../utlis/TaskReminders";
 
 export default function TaskDetail({
   taskId,
@@ -53,7 +54,7 @@ export default function TaskDetail({
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("subtasks");
 
- 
+ const [reminderRefreshKey, setReminderRefreshKey] = useState(0);
 
   const [isOpen, setIsOpen] = useState(false);
   const [isShow, setIsShow] = useState(false);
@@ -488,6 +489,8 @@ export default function TaskDetail({
               <BiSolidBellPlus className="h-7 w-7 cursor-pointer " />
             </span>
           </div>
+
+          <TaskReminders taskId={taskDetal?._id} refreshKey={reminderRefreshKey} />
           {/*  */}
         </div>
       </div>
@@ -653,6 +656,7 @@ export default function TaskDetail({
             setShowReminder={setShowReminder}
             taskId={taskId}
             link={"/tasks"}
+             onReminderAdded={() => setReminderRefreshKey(prev => prev + 1)} // 👈 add this
           />
         </div>
       )}

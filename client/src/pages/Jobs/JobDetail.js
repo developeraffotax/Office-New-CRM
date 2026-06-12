@@ -36,6 +36,7 @@ import { LoginInfoTab } from "./detailComponents/LoginInfoTab";
 import { DepartmentTab } from "./detailComponents/DepartmentTab";
 import DetailComments from "../Tasks/TaskDetailComments";
 import { useEscapeKey } from "../../utlis/useEscapeKey";
+import TaskReminders from "../../utlis/TaskReminders";
  
 
 export default function JobDetail({
@@ -75,7 +76,7 @@ export default function JobDetail({
   const [qualities, setQualities] = useState([]);
   const [showQuality, setShowQuality] = useState(false);
 
- 
+  const [reminderRefreshKey, setReminderRefreshKey] = useState(0);
 
   // ---------Stop Timer ----------->
   const handleStopTimer = () => {
@@ -629,6 +630,8 @@ export default function JobDetail({
               </span>
             </div>
 
+             <TaskReminders taskId={clientDetail?._id} refreshKey={reminderRefreshKey} />
+
             {/*  */}
           </div>
         </div>
@@ -850,6 +853,7 @@ export default function JobDetail({
               setShowReminder={setShowReminder}
               taskId={clientId}
               link={"/job-planning"}
+              onReminderAdded={() => setReminderRefreshKey(prev => prev + 1)}
             />
           </div>
         )}

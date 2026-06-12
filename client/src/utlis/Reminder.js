@@ -9,7 +9,7 @@ import { TbLoader2 } from "react-icons/tb";
 
  
 
-export default function Reminder({ setShowReminder, taskId, link }) {
+export default function Reminder({ setShowReminder, taskId, link, onReminderAdded = () => {} }) {
  
   const auth = useSelector((state) => state.auth.auth);
 
@@ -86,6 +86,7 @@ export default function Reminder({ setShowReminder, taskId, link }) {
       if (data) {
         toast.success(data?.message);
         setShowReminder(false);
+        onReminderAdded()
         // socketId.emit("reminder", {
         //   note: "New Reminder Added",
         // });

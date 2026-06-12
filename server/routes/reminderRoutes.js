@@ -8,6 +8,8 @@ import {
  
   getDueRemindersCount,
  
+  getRemindersByTaskId,
+ 
   markAllAsRead,
  
   markAsReadReminder,
@@ -27,6 +29,9 @@ router.put("/update/reminder/:reminderId", requiredSignIn, updateReminder);
 
 // Get Reminder
 router.get("/fetch/reminder", requiredSignIn, getDueReminders);
+
+// get reminders by taskid
+router.get("/fetch/reminders/:taskId", requiredSignIn, getRemindersByTaskId);
 
 router.get("/fetch/remindersCount", requiredSignIn, getDueRemindersCount);
 

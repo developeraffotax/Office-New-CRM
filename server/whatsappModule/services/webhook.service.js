@@ -6,6 +6,8 @@ import logger from "../utils/logger.js";
 import { buildPreview, parseMessage } from "../utils/message.js";
 import { downloadAndStoreMedia } from "./media.service.js";
 import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
+import { getFileUrl } from "../utils/s3.js";
+ 
 
 
 
@@ -85,7 +87,7 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
         lastMessageBy:   "client",
       },
       $setOnInsert: {
-         companyName: getCompanyByPhoneNumber(metadata?.display_phone_number) ?? "default",
+         companyName: getCompanyByPhoneNumber(metadata?.phone_number_id) ?? "default",
         phone,
         wa_id,
         wa_user_id
@@ -94,6 +96,8 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
     },
     { upsert: true, new: true }
   );
+
+  console.log("Resolved Media❤️❤️❤️❤️", resolvedMedia)
 
   // ── Persist message ──────────────────────────────────────────────
   const message = await WhatsappMessage.create({
@@ -130,12 +134,17 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
             // ---------------- Emit socket update ----------------
     const io = await getSocketEmitter();
    
+ 
+   
         // if(conversation?.userId){
         //   io.to(`user:${conversation.userId.toString()}`).emit(`whatsapp:conversation-update-${conversation.companyName}`, {
         //     action: "updated",
         //     thread: conversation.toObject()
         //   });
         // }  
+
+
+
    
         io.emit(`whatsapp:conversation-update-${conversation.companyName}`, {
             action: "updated",
@@ -144,18 +153,239 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
 
  
 
-            io.to(`conversation:${conversation._id}`).emit(
-            "whatsapp:message-created",
-            {
-                conversationId: conversation._id,
-                message,
-            }
-            );
+                  const socketMessage = message.toObject();
+
+if (socketMessage?.media?.s3Key) {
+  socketMessage.media.url = await getFileUrl( socketMessage.media.s3Key );
+}
+
+
+console.log("THE SOCKET MESSAGE IS THIS  >>>>>>>>>>>>>>>>>>>", socketMessage)
+
+io.to(`conversation:${conversation._id}`).emit(
+  "whatsapp:message-created",
+  {
+    conversationId: conversation._id,
+    message: socketMessage,
+  }
+);
+
+            
 
 
   logger.info("[Service] Inbound saved", { conversationId: conversation._id, type });
 
  
+
+  return message;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const processMessageEcho = async (echo, metadata) => {
+  const whatsappMessageId = echo.id;
+
+  // ─────────────────────────────────────────────
+  // Deduplication
+  // ─────────────────────────────────────────────
+  const existing = await WhatsappMessage.findOne({
+    whatsappMessageId,
+  }).lean();
+
+  if (existing) {
+    logger.info("[Echo] Duplicate ignored", {
+      whatsappMessageId,
+    });
+
+    return existing;
+  }
+
+  const phone = echo.to;
+
+  const type = echo.type || "text";
+
+  let body = "";
+
+  switch (type) {
+    case "text":
+      body = echo.text?.body || "";
+      break;
+
+    default:
+      body = "";
+  }
+
+  const preview = buildPreview(type, body);
+
+  const timestamp = new Date(
+    Number(echo.timestamp) * 1000
+  );
+
+  // ─────────────────────────────────────────────
+  // Conversation
+  // ─────────────────────────────────────────────
+  const safeLastType = [
+    "text",
+    "image",
+    "document",
+    "audio",
+    "video",
+    "sticker",
+    "location",
+  ].includes(type)
+    ? type
+    : "text";
+
+  const conversation =
+    await Conversation.findOneAndUpdate(
+      { phone },
+
+      {
+        $set: {
+          lastMessage: preview,
+          lastMessageType: safeLastType,
+          lastMessageAt: timestamp,
+          lastMessageBy: "me",
+        },
+
+        $setOnInsert: {
+          companyName:
+            getCompanyByPhoneNumber(
+              metadata?.phone_number_id
+            ) ?? "default",
+
+          phone,
+        },
+      },
+
+      {
+        upsert: true,
+        new: true,
+      }
+    );
+
+  // ─────────────────────────────────────────────
+  // Persist Message
+  // ─────────────────────────────────────────────
+  const message =
+    await WhatsappMessage.create({
+      conversationId: conversation._id,
+
+      whatsappMessageId,
+
+      direction: "outbound",
+
+      from: echo.from,
+      to: echo.to,
+
+      type,
+      body,
+
+      status: "sent",
+      statusUpdatedAt: new Date(),
+
+      timestamp,
+
+      meta: echo,
+    });
+
+  // ─────────────────────────────────────────────
+  // Update Conversation
+  // ─────────────────────────────────────────────
+  await Conversation.updateOne(
+    {
+      _id: conversation._id,
+    },
+    {
+      $set: {
+        lastMessageId: message._id,
+      },
+    }
+  );
+
+  // ─────────────────────────────────────────────
+  // Socket Updates
+  // ─────────────────────────────────────────────
+  const io = await getSocketEmitter();
+
+  io.emit(
+    `whatsapp:conversation-update-${conversation.companyName}`,
+    {
+      action: "updated",
+      thread: {
+        ...conversation.toObject(),
+        lastMessageId: message._id,
+      },
+    }
+  );
+
+  io.to(`conversation:${conversation._id}`).emit(
+    "whatsapp:message-created",
+    {
+      conversationId: conversation._id,
+      message,
+    }
+  );
+
+  logger.info(
+    "[Echo] Outbound WhatsApp Business App message saved",
+    {
+      conversationId: conversation._id,
+      whatsappMessageId,
+      type,
+    }
+  );
 
   return message;
 };

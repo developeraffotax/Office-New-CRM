@@ -33,67 +33,105 @@ export const verifyWebhook = (req, res) => {
  * Never does DB work here — the worker handles everything.
  */
 export const receiveWebhook = async (req, res) => {
-  // res.sendStatus(200); // ← Meta needs this before 20s — always first
- 
+  res.sendStatus(200);
+
   const body = req.body;
+
   if (body?.object !== "whatsapp_business_account") return;
- 
+
   const jobs = [];
 
-  console.log("Received WhatsApp webhook🧡🧡🧡🧡", JSON.stringify(body, null, 2)); 
- 
+  console.log(
+    "Received WhatsApp webhook 🧡",
+    JSON.stringify(body, null, 2)
+  );
+
   for (const entry of body.entry ?? []) {
     for (const change of entry.changes ?? []) {
-      if (change.field !== "messages") continue;
- 
-      const { value }  = change;
-      const metadata   = value.metadata; // { phone_number_id, display_phone_number }
- 
-      // ── Inbound messages ─────────────────────────────────────────
-      for (const message of value.messages ?? []) {
-        const contact = value.contacts?.find((c) => c.wa_id === message.from);
- 
-        jobs.push(
-          whatsappQueue
-            .add(
-              "inbound",
-              { message, contact, metadata },
-              // Use whatsapp message ID as job ID → automatic deduplication at queue level
-              { jobId: `inbound_${message.id}` }
-            )
-            .catch((err) =>
-              logger.error("[Webhook] Failed to enqueue inbound message", {
-                whatsappMessageId: message.id,
-                err: err.message,
-              })
-            )
-        );
+      const { value } = change;
+
+      // ============================================================
+      // NORMAL MESSAGE WEBHOOKS
+      // ============================================================
+      if (change.field === "messages") {
+        const metadata = value.metadata;
+
+        // Inbound messages
+        for (const message of value.messages ?? []) {
+          const contact = value.contacts?.find( (c) => c.wa_id === message.from );
+
+          jobs.push(
+            whatsappQueue
+              .add(
+                "inbound",
+                { message, contact, metadata, },
+                { jobId: `inbound_${message.id}`, }
+              )
+              .catch((err) =>
+                logger.error(
+                  "[Webhook] Failed to enqueue inbound message",
+                  {
+                    whatsappMessageId: message.id,
+                    err: err.message,
+                  }
+                )
+              )
+          );
+        }
+
+        // Status updates
+        for (const status of value.statuses ?? []) {
+          jobs.push(
+            whatsappQueue
+              .add(
+                "status",
+                { status, metadata, },
+                { jobId: `status_${status.id}_${status.status}`, }
+              )
+              .catch((err) =>
+                logger.error(
+                  "[Webhook] Failed to enqueue status update",
+                  {
+                    whatsappMessageId: status.id,
+                    err: err.message,
+                  }
+                )
+              )
+          );
+        }
       }
- 
-      // ── Status updates ────────────────────────────────────────────
-      for (const status of value.statuses ?? []) {
-        jobs.push(
-          whatsappQueue
-            .add(
-              "status",
-              { status, metadata },
-              // status webhooks for the same message can arrive multiple times — dedupe by id+status
-              { jobId: `status_${status.id}_${status.status}` }
-            )
-            .catch((err) =>
-              logger.error("[Webhook] Failed to enqueue status update", {
-                whatsappMessageId: status.id,
-                err: err.message,
-              })
-            )
-        );
+
+      // ============================================================
+      // SMB MESSAGE ECHOES
+      // ============================================================
+      else if (change.field === "smb_message_echoes") {
+        const metadata = value.metadata;
+
+        for (const echo of value.message_echoes ?? []) {
+          jobs.push(
+            whatsappQueue
+              .add(
+                "echo",
+                { echo, metadata, },
+                { jobId: `echo_${echo.id}`, }
+              )
+              .catch((err) =>
+                logger.error(
+                  "[Webhook] Failed to enqueue SMB echo",
+                  {
+                    whatsappMessageId: echo.id,
+                    err: err.message,
+                  }
+                )
+              )
+          );
+        }
       }
     }
   }
- 
+
   await Promise.allSettled(jobs);
 
-  res.sendStatus(200);
 
   
 };

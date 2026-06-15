@@ -11,7 +11,7 @@ import { connectDB, disconnectDB } from "../../../config/db.js";
  
  
 import { processReactionUpdate } from "../../services/reaction.service.js";
-import { processInboundMessage } from "../../services/webhook.service.js";
+import { processInboundMessage, processMessageEcho } from "../../services/webhook.service.js";
 import { processStatusUpdate } from "../../services/status.service.js";
 import logger from "../../utils/logger.js";
 
@@ -96,6 +96,30 @@ const processJob = async (job) => {
         whatsappMessageId: status.id,
         status:            status.status,
       });
+      break;
+    }
+
+
+    case "echo": {
+      const { echo, metadata } = data;
+
+      if (!echo?.id) {
+        logger.warn("[Worker] Echo job missing echo.id", {
+          jobId: id,
+        });
+        return;
+      }
+
+      await processMessageEcho(echo, metadata);
+
+      logger.info("[Worker] SMB message echo processed", {
+        jobId: id,
+        whatsappMessageId: echo.id,
+        from: echo.from,
+        to: echo.to,
+        type: echo.type,
+      });
+
       break;
     }
 

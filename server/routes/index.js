@@ -45,6 +45,7 @@ import threadActivityRoutes from "../emailModule/routes/threadActivity.routes.js
 
 
 import whatsappRoutes from "../whatsappModule/routes/whatsapp.routes.js"
+import whatsappWebhookRoutes from "../whatsappModule/routes/webhook.routes.js"
 import whatsappCategoryRoutes from "../whatsappModule/routes/whatsappCategory.routes.js"
 
 
@@ -57,7 +58,13 @@ import { aiPerMinuteLimiter } from "../utils/rateLimiter.js";
 export const registerRoutes = (app) => {
   
   
+
+   app.use("/api/v1/whatsapp/webhook", whatsappWebhookRoutes);
+
+
   app.use("/api/v1/whatsapp", requiredSignIn, whatsappRoutes);
+
+
 
 
   app.use("/api/v1/user", userRoute);

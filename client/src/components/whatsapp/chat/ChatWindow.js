@@ -57,6 +57,8 @@ export default function ChatWindow({ chat, team, updateConversation }) {
 useEffect(() => {
     if (!chat?._id || !socket) return;
   const handleMessage = ({ conversationId, message }) => {
+
+    console.log("THE NEW MESSAGE IS ", message)
     if (conversationId !== chat?._id) return;
 
     setMessages(prev => {
@@ -271,12 +273,12 @@ const handleReaction = ({ messageId, reaction }) => {
         return (
           <div className="flex flex-col max-w-[280px]">
             <img
-              src={`${msg?.url}`}
+              src={`${msg?.media?.url}`}
               alt={msg.media?.filename || "WhatsApp Image"}
               className="rounded-md max-h-64 object-cover cursor-pointer w-full border border-black/5"
               onClick={() =>
                 window.open(
-                  `${msg?.url}`,
+                  `${msg?.media?.url}`,
                   "_blank",
                 )
               }
@@ -294,7 +296,7 @@ const handleReaction = ({ messageId, reaction }) => {
           <div className="flex flex-col max-w-[280px]">
             <div className="relative rounded-md overflow-hidden border border-black/5 bg-black flex items-center justify-center">
               <video
-                src={`${msg?.url}`}
+                src={`${msg?.media?.url}`}
                 controls
                 className="max-h-64 w-full"
               />
@@ -325,7 +327,7 @@ const handleReaction = ({ messageId, reaction }) => {
               />
             </div>
             <audio
-              src={`${msg?.url}`}
+              src={`${msg?.media?.url}`}
               controls
               className="w-full h-8 custom-audio-player compact"
             />
@@ -335,7 +337,7 @@ const handleReaction = ({ messageId, reaction }) => {
       case "document":
         return (
           <a
-            href={`${msg?.url}`}
+            href={`${msg?.media?.url}`}
             target="_blank"
             rel="noreferrer"
             className={`flex items-center gap-3 p-2.5 rounded-lg border text-inherit no-underline hover:opacity-90 transition-opacity min-w-[240px] ${
@@ -365,7 +367,7 @@ const handleReaction = ({ messageId, reaction }) => {
         return (
           <div className="w-32 h-32 py-1">
             <img
-              src={`${msg?.url}`}
+              src={`${msg?.media?.url}`}
               alt="Sticker"
               className="w-full h-full object-contain"
             />
@@ -451,7 +453,7 @@ const handleReaction = ({ messageId, reaction }) => {
           </div>
           <div className="ml-3">
             <h2 className="text-base font-semibold text-gray-900">
-              {chat?.profileName || chat?.phone}
+              {chat?.profileName} | {chat?.phone}
             </h2>
             <p className="text-xs text-gray-500">
               {chat?.status === "progress" ? "In Progress" : "Completed"}

@@ -75,7 +75,7 @@ const startServer = async () => {
 
 
 
-    app.use("/api/v1/whatsapp/webhook", whatsappWebhookRoutes);
+   
 
 
     // 3️⃣ Middleware

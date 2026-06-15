@@ -10,11 +10,12 @@ import { getCompanyByPhoneNumber,  } from "../utils/config.js";
 
 import { sendWhatsappPayload } from "../utils/whatsappApi.js"; 
 import { downloadAndStoreMedia } from "./media.service.js";
-import { getFileUrl } from "../../utils/s3/s3Actions.js";
+ 
 import { addNotificationJob } from "../../jobs/queues/notificationQueue.js";
 import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
 import { emitToUser } from "../../utils/socketEmitter.js";
 import { io } from "../../index.js";
+import { getFileUrl } from "../utils/s3.js";
  
 
 
@@ -132,7 +133,10 @@ export const getMessages = async ({ conversationId, page = 1, limit = 50 }) => {
 
       return {
         ...msg,
+         media: {
+        ...msg.media,
         url: mediaUrl,
+      },
       };
     })
   );

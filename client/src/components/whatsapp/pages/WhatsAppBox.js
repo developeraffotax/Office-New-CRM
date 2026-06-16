@@ -20,7 +20,7 @@ export default function WhatsAppBox() {
       setUsers(
         data?.users?.filter((user) =>
           user.role?.access?.some((item) =>
-            item?.permission?.includes("Tickets")
+            item?.permission?.includes("Whatsapp")
           )
         ) || []
       );

@@ -181,7 +181,7 @@ export default function Filters({
 
         if (res.data?.success) {
 
-          console.log("THE INBOX STATS ARE 🧡🧡🧡❤️❤️❤️❤️🧡🧡🧡🧡", res.data)
+           
           setInboxStats(res.data);
         }
       } catch (err) {
@@ -639,8 +639,10 @@ export default function Filters({
         {isInboxUserTabs && hasPermission && (
           <div className="w-full animate-pop mt-3   ">
             <InboxUserTabs
-              droppableId="inbox_users"
+              droppableId="whatsapp_users"
               users={team.filter((u) => visibleTabs.includes(u._id))}
+              // users={users}
+              
               showAll={isAdmin && visibleTabs.includes("all")}
               showUnassigned={isAdmin && visibleTabs.includes("unassigned")}
               activeValue={filters.userId || ""}

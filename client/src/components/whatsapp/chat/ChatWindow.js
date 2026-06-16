@@ -219,24 +219,28 @@ export default function ChatWindow({ chat, team, updateConversation }) {
     switch (msg.type) {
       case "image":
         return (
-          <div className="flex flex-col max-w-[280px]">
+          <div className="flex flex-col max-w-[380px]">
             <img
               src={`${msg?.media?.url}`}
               alt={msg.media?.filename || "WhatsApp Image"}
               className="rounded-md max-h-64 object-cover cursor-pointer w-full border border-black/5"
               onClick={() => window.open(`${msg?.media?.url}`, "_blank")}
             />
-            {(msg.media?.caption || msg.body) && (
-              <p className={`text-sm mt-1.5 ${textStyle}`}>
-                {msg.media?.caption || msg.body}
+           <div>
+
+             {(msg.body || msg.media?.caption) && (
+              <p className={`text-sm mt-1.5  whitespace-pre-wrap break-words ${textStyle}`}>
+                {msg.body || msg.media?.caption}
               </p>
             )}
+
+            </div>
           </div>
         );
 
       case "video":
         return (
-          <div className="flex flex-col max-w-[280px]">
+          <div className="flex flex-col max-w-[380px]">
             <div className="relative rounded-md overflow-hidden border border-black/5 bg-black flex items-center justify-center">
               <video
                 src={`${msg?.media?.url}`}
@@ -244,9 +248,9 @@ export default function ChatWindow({ chat, team, updateConversation }) {
                 className="max-h-64 w-full"
               />
             </div>
-            {(msg.media?.caption || msg.body) && (
-              <p className={`text-sm mt-1.5 ${textStyle}`}>
-                {msg.media?.caption || msg.body}
+            {(msg.body || msg.media?.caption) && (
+              <p className={`text-sm mt-1.5   whitespace-pre-wrap break-words ${textStyle}`}>
+                {msg.body || msg.media?.caption}
               </p>
             )}
           </div>
@@ -279,7 +283,8 @@ export default function ChatWindow({ chat, team, updateConversation }) {
 
       case "document":
         return (
-          <a
+          <div className="flex flex-col  max-w-[380px]">
+                      <a
             href={`${msg?.media?.url}`}
             target="_blank"
             rel="noreferrer"
@@ -298,12 +303,26 @@ export default function ChatWindow({ chat, team, updateConversation }) {
                 {msg.media?.filename || "Attachment Document"}
               </p>
               <p className={`text-xs opacity-75 truncate ${subTextStyle}`}>
-                {msg.media?.size
+                 {msg.media?.size
                   ? `${(msg.media.size / 1024 / 1024).toFixed(2)} MB`
                   : msg.media?.mimeType || "File"}
               </p>
             </div>
+              
+            
           </a>
+
+
+                 <div>
+                     {(  msg.body || msg.media?.caption ) && (
+              <p className={`text-sm mt-1.5 whitespace-pre-wrap break-words ${textStyle} `}>
+                { msg.body ||msg.media?.caption }
+              </p>
+            )}
+                  </div>
+               
+          </div>
+
         );
 
       case "sticker":
@@ -1023,7 +1042,7 @@ export default function ChatWindow({ chat, team, updateConversation }) {
 //     switch (msg.type) {
 //       case "image":
 //         return (
-//           <div className="flex flex-col max-w-[280px]">
+//           <div className="flex flex-col max-w-[380px]">
 //             <img
 //               src={`${msg?.media?.url}`}
 //               alt={msg.media?.filename || "WhatsApp Image"}
@@ -1045,7 +1064,7 @@ export default function ChatWindow({ chat, team, updateConversation }) {
 
 //       case "video":
 //         return (
-//           <div className="flex flex-col max-w-[280px]">
+//           <div className="flex flex-col max-w-[380px]">
 //             <div className="relative rounded-md overflow-hidden border border-black/5 bg-black flex items-center justify-center">
 //               <video
 //                 src={`${msg?.media?.url}`}

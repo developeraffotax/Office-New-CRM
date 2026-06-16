@@ -69,6 +69,9 @@ export const listMessages = async (req, res, next) => {
 export const sendMessage = async (req, res, next) => {
   try {
     const { to, phoneNumberId, body, type, context } = req.body;
+
+    console.log(req.body)
+
     const userId = req.user?.user?._id;
     const conversationId = req.params.id;
 
@@ -92,6 +95,7 @@ export const sendMessage = async (req, res, next) => {
           conversationId,
           phoneNumberId: finalPhoneNumberId,
           to,
+          body,
           type: msgType,
           media: {
             

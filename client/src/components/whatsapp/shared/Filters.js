@@ -332,6 +332,7 @@ export default function Filters({
               { label: "Y", title: "Yesterday", value: -1 },
               { label: "3D", title: "Last 3 Days", value: 3 },
               { label: "7D", title: "Last 7 Days", value: 7 },
+               { label: "30D", title: "Last 30 Days", value: 30 },
             ].map((range) => {
               const isActive = (() => {
                 if (!filters.startDate) return false;

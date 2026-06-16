@@ -64,7 +64,7 @@ createBullBoard({
 const startServer = async () => {
   try {
     // 1️⃣ Connect to MongoDB
-    console.log("MONGO STARTING>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+     
     await connectDB();
     console.log("✅ MongoDB connected");
 
@@ -132,21 +132,21 @@ const startServer = async () => {
     });
 
     // 9️⃣ Redis interval logging
-    setInterval(async () => {
-      try {
-        if (redis && redis.status === "ready") {
-          const users = await redis.smembers("onlineUsers");
-          const agents = await redis.smembers("onlineAgents");
-          console.log("Users💜", users);
-          console.log("Agents💛", agents);
-        }
-      } catch (redisError) {
-        console.error(
-          "⚠ Failed to get onlineUsers/onlineAgents via Redis:",
-          redisError.message
-        );
-      }
-    }, 60000);
+    // setInterval(async () => {
+    //   try {
+    //     if (redis && redis.status === "ready") {
+    //       const users = await redis.smembers("onlineUsers");
+    //       const agents = await redis.smembers("onlineAgents");
+    //       console.log("Users💜", users);
+    //       console.log("Agents💛", agents);
+    //     }
+    //   } catch (redisError) {
+    //     console.error(
+    //       "⚠ Failed to get onlineUsers/onlineAgents via Redis:",
+    //       redisError.message
+    //     );
+    //   }
+    // }, 60000);
 
   } catch (error) {
     console.error("❌ Server failed to start:", error.message || error);

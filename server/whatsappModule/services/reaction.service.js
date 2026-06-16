@@ -2,27 +2,14 @@ import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
 import WhatsappMessage from "../models/WhatsappMessage.js";
 import logger from "../utils/logger.js";
 
- 
-
-
-
 export const processReactionUpdate = async (
   from,
   targetWhatsappMessageId,
-  emoji
+  emoji,
 ) => {
-  const message = await WhatsappMessage.findOne({
-    whatsappMessageId: targetWhatsappMessageId,
-  });
+  const message = await WhatsappMessage.findOne({ whatsappMessageId: targetWhatsappMessageId, });
 
-  if (!message) {
-    logger.warn("[Service] Reaction target not found", {
-      targetWhatsappMessageId,
-      from,
-    });
-
-    return null;
-  }
+   if (!message) throw new Error("message not found");
 
   // Remove any existing reaction from this user
   await WhatsappMessage.updateOne(
@@ -31,7 +18,7 @@ export const processReactionUpdate = async (
       $pull: {
         reactions: { from },
       },
-    }
+    },
   );
 
   let reaction = null;
@@ -50,31 +37,23 @@ export const processReactionUpdate = async (
         $push: {
           reactions: reaction,
         },
-      }
+      },
     );
   }
 
-  const updatedMessage = await WhatsappMessage.findById(
-    message._id
-  ).lean();
+  const updatedMessage = await WhatsappMessage.findById(message._id).lean();
 
   const io = await getSocketEmitter();
 
   io.to(`conversation:${updatedMessage.conversationId.toString()}`).emit(
-  "whatsapp:reaction-updated",
-  {
-    messageId: message._id,
-    reaction,
-  }
-);
-
-  logger.info("[Service] Reaction updated", {
-    conversationId: message.conversationId,
-    whatsappMessageId: targetWhatsappMessageId,
-    from,
-    emoji: emoji || "REMOVED",
-  });
+    "whatsapp:reaction-updated",
+    {
+      messageId: message._id,
+      reaction,
+    },
+  );
 
  
+
   return updatedMessage;
 };

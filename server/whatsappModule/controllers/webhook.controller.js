@@ -2,17 +2,10 @@ import { whatsappQueue } from "../jobs/queues/whatsappQueue.js";
 import logger from "../utils/logger.js";
 
  
-/**
- * GET /webhook
- * Meta verification handshake
- */
 export const verifyWebhook = (req, res) => {
   const mode      = req.query["hub.mode"];
   const token     = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
-
-
-  console.log("Received webhook verification request",  process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN);
 
   if (mode === "subscribe" && token === process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN) {
     logger.info("[Webhook] Verified");
@@ -27,11 +20,8 @@ export const verifyWebhook = (req, res) => {
 
 
 
-/**
- * POST /webhook
- * Receives all WhatsApp events, ACKs Meta immediately, enqueues for processing.
- * Never does DB work here — the worker handles everything.
- */
+
+ 
 export const receiveWebhook = async (req, res) => {
   res.sendStatus(200);
 
@@ -41,18 +31,13 @@ export const receiveWebhook = async (req, res) => {
 
   const jobs = [];
 
-  console.log(
-    "Received WhatsApp webhook 🧡",
-    JSON.stringify(body, null, 2)
-  );
+  
 
   for (const entry of body.entry ?? []) {
     for (const change of entry.changes ?? []) {
-      const { value } = change;
 
-      // ============================================================
-      // NORMAL MESSAGE WEBHOOKS
-      // ============================================================
+      const { value } = change;
+ 
       if (change.field === "messages") {
         const metadata = value.metadata;
 
@@ -101,9 +86,9 @@ export const receiveWebhook = async (req, res) => {
         }
       }
 
-      // ============================================================
-      // SMB MESSAGE ECHOES
-      // ============================================================
+       
+
+      
       else if (change.field === "smb_message_echoes") {
         const metadata = value.metadata;
 

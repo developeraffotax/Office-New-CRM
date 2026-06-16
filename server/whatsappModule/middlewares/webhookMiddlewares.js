@@ -10,12 +10,12 @@ export const verifySecret = (req, res, next) => {
     const webhookSecret = process.env.WEBHOOK_SECRET;
 
     if (!webhookSecret) {
-      logger.error("[WebhookVerify] WEBHOOK_SECRET env var not set");
+      logger.error("[verifySecret] WEBHOOK_SECRET env var not set");
       return res.status(500).json({ error: "Server misconfigured" });
     }
 
     if (req.params.secret !== webhookSecret) {
-      logger.warn("[WebhookVerify] Invalid secret token", {
+      logger.warn("[verifySecret] Invalid secret token", {
         ip: req.ip,
       });
       return res.status(401).json({ error: "Unauthorized" });
@@ -25,7 +25,7 @@ export const verifySecret = (req, res, next) => {
     const body = req.body;
 
     if (body?.object !== "whatsapp_business_account") {
-      logger.warn("[WebhookVerify] Invalid object", {
+      logger.warn("[verifySecret] Invalid object", {
         object: body?.object,
       });
       return res.status(400).json({ error: "Invalid webhook payload" });
@@ -34,7 +34,7 @@ export const verifySecret = (req, res, next) => {
     const entries = body.entry || [];
 
     if (!entries.length) {
-      logger.warn("[WebhookVerify] Missing entries");
+      logger.warn("[verifySecret] Missing entries");
       return res.status(400).json({ error: "Missing entries" });
     }
 
@@ -42,7 +42,7 @@ export const verifySecret = (req, res, next) => {
 
     next();
   } catch (error) {
-    logger.error("[WebhookVerify] Unexpected error", error);
+    logger.error("[verifySecret] Unexpected error", error);
     return res.status(500).json({ error: "Webhook verification failed" });
   }
 };

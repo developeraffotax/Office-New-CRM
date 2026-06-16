@@ -1,6 +1,6 @@
 import * as messageService      from "../services/message.service.js";
 import * as conversationService from "../services/conversation.service.js";
-import { serveMedia, uploadMediaBuffer } from "../services/media.service.js";
+import {   uploadMediaBuffer } from "../services/media.service.js";
 import WhatsappConversation from "../models/WhatsappConversation.js";
 import mongoose from "mongoose";
 import logger from "../utils/logger.js";
@@ -11,7 +11,7 @@ import { io } from "../../index.js";
  
 
 
-/** GET /conversations */
+ 
 export const listConversations = async (req, res, next) => {
   try {
     const { status, userId, page, limit, search } = req.query;
@@ -24,7 +24,7 @@ export const listConversations = async (req, res, next) => {
   }
 };
 
-/** GET /conversations/:id/messages */
+ 
 export const listMessages = async (req, res, next) => {
   try {
     const { page, limit } = req.query;
@@ -36,29 +36,21 @@ export const listMessages = async (req, res, next) => {
  
     res.json(result);
   } catch (err) {
-    //res.status(500).json({ error: err.message });
+     
     next(err)
   }
 };
 
 
 
-export const getMedia = async (req, res) => {
-  try {
-    await serveMedia(req, res);
-  } catch (err) {
-    logger.error("[Controller] Unhandled error in getMedia", {
-      messageId: req.params.messageId,
-      userId:    req.user?.user?._id,
-      err:       err.message,
-      stack:     err.stack,
-    });
-
-    if (!res.headersSent) {
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-};
+// export const getMedia = async (req, res, next) => {
+//   try {
+//     await serveMedia(req, res);
+//   } catch (err) {
+     
+//   next(err)
+//   }
+// };
 
 
 
@@ -74,7 +66,7 @@ export const getMedia = async (req, res) => {
 
 
 
-export const sendMessage = async (req, res) => {
+export const sendMessage = async (req, res, next) => {
   try {
     const { to, phoneNumberId, body, type, context } = req.body;
     const userId = req.user?.user?._id;
@@ -136,14 +128,7 @@ export const sendMessage = async (req, res) => {
     res.status(201).json(responses);
 
   } catch (err) {
-        logger.error("Send message controller failed", {
-      error: err.message,
-      stack: err.stack,
-      conversationId: req.params.id,
-      userId: req.user?.user?._id,
-    });
-
-    res.status(500).json({ error: err.message });
+      next(err)
   }
 };
 
@@ -168,7 +153,7 @@ export const sendMessage = async (req, res) => {
 
 
 
-export const updateConversationMetadata = async (req, res) => {
+export const updateConversationMetadata = async (req, res, next) => {
   try {
     const { id } = req.params;
     const updates = req.body;
@@ -268,16 +253,7 @@ export const updateConversationMetadata = async (req, res) => {
     });
   } catch (error) {
     
-
-     logger.error("Error updating thread", {
-      error: error.message,
-      stack: error.stack,
-      conversationId: req.params.id,
-      userId: req.user?.user?._id,
-    });
-
-    res.status(500).json({   error: error.message,   });
-
+    next(error)
 
  
   }
@@ -288,12 +264,13 @@ export const updateConversationMetadata = async (req, res) => {
  
 
 /** PATCH /conversations/:id/read */
-export const markRead = async (req, res) => {
+export const markRead = async (req, res, next) => {
   try {
     await conversationService.markConversationRead(req.params.id, req.user?.user?._id);
     res.sendStatus(204);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    next(err)
+     
   }
 };
 
@@ -304,7 +281,7 @@ export const markRead = async (req, res) => {
 
 
  
-export const deleteConversation = async (req, res) => {
+export const deleteConversation = async (req, res, next) => {
   try {
     const { id } = req.params; // MongoDB _id
     const { companyName } = req.body;
@@ -312,7 +289,7 @@ export const deleteConversation = async (req, res) => {
  
     const conversation = await WhatsappConversation.findOneAndDelete({ _id: id, companyName });
 
-    console.log("RESULT IS", conversation)
+    
     if (!conversation) {
       return res.status(404).json({
         success: false,
@@ -328,13 +305,6 @@ export const deleteConversation = async (req, res) => {
       message: "Conversation deleted successfully",
     });
   } catch (error) {
-     logger.error("Error updating thread", {
-      error: error.message,
-      stack: error.stack,
-      conversationId: req.params.id,
-      userId: req.user?.user?._id,
-    });
-
-    res.status(500).json({   error: error.message,   });
+     next(err)
   }
 };

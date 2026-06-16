@@ -2,7 +2,18 @@ import logger from "../whatsappModule/utils/logger.js";
 
  
 
+
 export const errorHandler = (err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  const body = { ...req.body };
+
+  if (body.password) body.password = "[REDACTED]";
+  if (body.token) body.token = "[REDACTED]";
+  if (body.refreshToken) body.refreshToken = "[REDACTED]";
+
   logger.error("Unhandled API Error", {
     method: req.method,
     path: req.originalUrl,
@@ -11,9 +22,9 @@ export const errorHandler = (err, req, res, next) => {
     error: err.message,
     stack: err.stack,
 
-    body: req.body,
     query: req.query,
     params: req.params,
+    body,
   });
 
   const statusCode = err.statusCode || 500;
@@ -22,7 +33,37 @@ export const errorHandler = (err, req, res, next) => {
     success: false,
     message:
       process.env.NODE_ENV === "production"
-        ? "Internal server error"
+        ? statusCode >= 500
+          ? "Internal server error"
+          : err.message
         : err.message,
   });
 };
+
+
+
+
+// export const errorHandler = (err, req, res, next) => {
+//   logger.error("Unhandled API Error", {
+//     method: req.method,
+//     path: req.originalUrl,
+//     userId: req.user?.user?._id,
+
+//     error: err.message,
+//     stack: err.stack,
+
+//     body: req.body,
+//     query: req.query,
+//     params: req.params,
+//   });
+
+//   const statusCode = err.statusCode || 500;
+
+//   res.status(statusCode).json({
+//     success: false,
+//     message:
+//       process.env.NODE_ENV === "production"
+//         ? "Internal server error"
+//         : err.message,
+//   });
+// };

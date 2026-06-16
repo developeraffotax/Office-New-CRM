@@ -1,11 +1,8 @@
- 
-import Conversation    from "../models/WhatsappConversation.js";
+import Conversation from "../models/WhatsappConversation.js";
 import WhatsappMessage from "../models/WhatsappMessage.js";
- 
-import logger          from "../utils/logger.js";
-import { buildWhatsappFilterQuery } from "../utils/utils.js";
 
- 
+import logger from "../utils/logger.js";
+import { buildWhatsappFilterQuery } from "../utils/utils.js";
 
 
 
@@ -29,65 +26,15 @@ export const getConversations = async (req) => {
     Conversation.countDocuments(filter),
   ]);
 
-  return {
-    conversations,
-    pagination: {total,
-    page,
-    limit,
-    pages: Math.ceil(total / limit),}
-
-    
-  };
+  return { conversations, pagination: { total, page, limit, pages: Math.ceil(total / limit) }, };
 };
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const markConversationRead = async (conversationId, userId) => {
-  const conversation = await Conversation.findById(
-    conversationId,
-    "totalInboundMessages"
-  );
+  const conversation = await Conversation.findById( conversationId, "totalInboundMessages", );
 
   if (!conversation) {
     throw new Error("Conversation not found");
@@ -103,10 +50,9 @@ export const markConversationRead = async (conversationId, userId) => {
     {
       $set: {
         "readBy.$.lastReadAt": now,
-        "readBy.$.readInboundCount":
-          conversation.totalInboundMessages,
+        "readBy.$.readInboundCount": conversation.totalInboundMessages,
       },
-    }
+    },
   );
 
   if (!result.matchedCount) {
@@ -117,11 +63,10 @@ export const markConversationRead = async (conversationId, userId) => {
           readBy: {
             userId,
             lastReadAt: now,
-            readInboundCount:
-              conversation.totalInboundMessages,
+            readInboundCount: conversation.totalInboundMessages,
           },
         },
-      }
+      },
     );
   }
 };
@@ -131,44 +76,37 @@ export const markConversationRead = async (conversationId, userId) => {
 
 
 /** Assign a conversation to an agent */
-export const assignConversation = async (conversationId, agentId, assignedBy) => {
+export const assignConversation = async (
+  conversationId,
+  agentId,
+  assignedBy,
+) => {
   const conversation = await Conversation.findByIdAndUpdate(
     conversationId,
     { $set: { userId: agentId, status: "progress" } },
-    { new: true }
+    { new: true },
   ).populate("userId", "name email");
 
   if (!conversation) throw new Error("Conversation not found");
 
-
-
   return conversation;
 };
+
+
+
+
+
+
 
 /** Mark a conversation as completed */
 export const resolveConversation = async (conversationId, resolvedBy) => {
   const conversation = await Conversation.findByIdAndUpdate(
     conversationId,
     { $set: { status: "completed" } },
-    { new: true }
+    { new: true },
   );
 
   if (!conversation) throw new Error("Conversation not found");
 
-
-
   return conversation;
 };
-
-
-
-
-
-
-
-
-
-
-
-
- 

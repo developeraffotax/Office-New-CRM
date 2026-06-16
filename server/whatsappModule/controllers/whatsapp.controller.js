@@ -308,3 +308,33 @@ export const deleteConversation = async (req, res, next) => {
      next(err)
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getWhatsappUserCounts = async (req, res, next) => {
+  try {
+    const {allCount, unassignedCount, userCounts} = await conversationService.getWhatsappUserCounts(req, res)
+    res.json({ success: true, userCounts, unassignedCount, allCount: allCount, });
+  } catch (error) {
+      next(error)
+  }
+};

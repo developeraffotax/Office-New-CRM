@@ -68,7 +68,7 @@ export default function Filters({
  
 
   const [searchParams] = useSearchParams();
-  const folder = searchParams.get("folder") || "inbox";
+  // const folder = searchParams.get("folder") || "inbox";
   const companyName = searchParams.get("companyName") || "affotax";
 
   const [inboxStats, setInboxStats] = useState(null);
@@ -161,35 +161,37 @@ export default function Filters({
     setFilters({ ...updates, page: 1 });
   };
 
-  // useEffect(() => {
+  useEffect(() => {
    
 
-  //   if (!hasPermission || !isInboxUserTabs) return;
+    if (!hasPermission || !isInboxUserTabs) return;
 
-  //   const fetchUserCounts = async () => {
-  //     try {
-  //       const res = await axios.get(
-  //         `${process.env.REACT_APP_API_URL}/api/v1/gmail/mailbox-user-counts`,
-  //         {
-  //           params: {
-  //             companyName: companyName,
-  //             folder: folder,
-  //             ...filters,
-  //           },
-  //         },
-  //       );
+    const fetchUserCounts = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/conversations/user-counts`,
+          {
+            params: {
+              companyName: companyName,
+ 
+              ...filters,
+            },
+          },
+        );
 
-  //       if (res.data?.success) {
-  //         setInboxStats(res.data);
-  //       }
-  //     } catch (err) {
-  //       console.error("Failed to fetch user counts", err);
-  //     }
-  //   };
+        if (res.data?.success) {
 
-  //   fetchUserCounts();
-  //   // Added isTeamLead to the dependency array
-  // }, [filters, folder, companyName, isAdmin, isTeamLead, isInboxUserTabs]);
+          console.log("THE INBOX STATS ARE 🧡🧡🧡❤️❤️❤️❤️🧡🧡🧡🧡", res.data)
+          setInboxStats(res.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user counts", err);
+      }
+    };
+
+    fetchUserCounts();
+    // Added isTeamLead to the dependency array
+  }, [filters,   companyName, isAdmin, isTeamLead, isInboxUserTabs]);
 
   useEffect(() => {
     const trimmed = searchInput.trim();

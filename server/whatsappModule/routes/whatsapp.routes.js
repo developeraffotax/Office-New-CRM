@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { listConversations, listMessages, markRead, sendMessage,  updateConversationMetadata, deleteConversation,  } from "../controllers/whatsapp.controller.js";
+import { listConversations, listMessages, markRead, sendMessage,  updateConversationMetadata, deleteConversation, getWhatsappUserCounts,  } from "../controllers/whatsapp.controller.js";
 import multer from "multer";
 import { requiredSignIn } from "../../middlewares/authMiddleware.js";
  
@@ -38,7 +38,7 @@ router.delete("/conversations/delete/:id",     deleteConversation);
 
 
 
-
+router.get("/conversations/user-counts",   getWhatsappUserCounts);
 
  
 

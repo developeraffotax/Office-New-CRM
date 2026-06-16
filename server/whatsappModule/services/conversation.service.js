@@ -110,3 +110,79 @@ export const resolveConversation = async (conversationId, resolvedBy) => {
 
   return conversation;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getWhatsappUserCounts = async (req, res) => {
+ 
+    const query = buildWhatsappFilterQuery(req);
+
+    // 🔥 Deep clone to avoid mutation
+    const countQuery = structuredClone(query);
+
+    // --------------------------------------------------
+    // Remove userId filter from $and
+    // --------------------------------------------------
+    if (countQuery.$and) {
+      countQuery.$and = countQuery.$and.filter((condition) => {
+        if (condition.userId) return false;
+
+        if (condition.$or) {
+          const containsUserId = condition.$or.some(
+            (c) => c.userId !== undefined,
+          );
+          if (containsUserId) return false;
+        }
+
+        return true;
+      });
+
+      if (countQuery.$and.length === 0) {
+        delete countQuery.$and;
+      }
+    }
+
+    // --------------------------------------------------
+    // Aggregate User Counts
+    // --------------------------------------------------
+    const userCountsAgg = await Conversation.aggregate([
+      { $match: countQuery },
+      {
+        $group: {
+          _id: "$userId",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const userCounts = userCountsAgg.map((item) => ({
+      userId: item._id ? item._id.toString() : "unassigned",
+      count: item.count,
+    }));
+
+    const unassignedCount = await Conversation.countDocuments({
+      ...countQuery,
+      $or: [{ userId: { $exists: false } }, { userId: null }],
+    });
+
+    const total = await Conversation.countDocuments(countQuery);
+
+    return { userCounts, unassignedCount, allCount: total, }
+ 
+};

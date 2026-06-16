@@ -222,6 +222,61 @@ const processNotificationJob = async (job) => {
       break;
     }
 
+
+
+
+    case "whatsapp_lead": {
+        const {
+          _id,
+          companyName,
+          phone,
+          profileName,
+          lastMessage,
+        } = payload;
+
+        const adminRole = await roleModel.findOne({ name: "Admin" });
+        if (!adminRole) return true;
+
+        const admins = await userModel
+          .find({
+            role: adminRole._id,
+            isActive: true,
+          })
+          .select("_id");
+
+        if (!admins.length) return true;
+
+        const notifications = await Promise.all(
+          admins.map((admin) =>
+            notificationModel.create({
+              title: "🔥 New WhatsApp Lead",
+              redirectLink: `/whatsapp/${_id}?companyName=${companyName}&search=${phone}`,
+              description: `📱 New WhatsApp Lead
+      ✔ Name: ${profileName || "Unknown"}
+      ✔ Phone: ${phone || "N/A"}
+      ✔ Message: ${lastMessage || "No message"}`,
+              taskId: phone,
+              userId: admin._id,
+              type: "whatsapp_lead",
+              entityType: "whatsapp",
+            }),
+          ),
+        );
+
+        await Promise.all(
+          notifications.map((notification) =>
+            sendSocketNotification(
+              notification,
+              payload,
+              notification.userId,
+              "whatsapp",
+            ),
+          ),
+        );
+
+        break;
+      }
+
     default:
       console.warn(`⚠️ Unknown notification type: ${type}`);
   }

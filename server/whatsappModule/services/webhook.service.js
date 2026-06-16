@@ -70,6 +70,8 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
     ? type
     : "text";
 
+  const existingConversation = await Conversation.findOne({ phone }).select("_id").lean();
+
   const conversation = await Conversation.findOneAndUpdate(
     { phone },
     {
@@ -89,7 +91,7 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
       },
       $inc: { totalInboundMessages: 1 },
     },
-    { upsert: true, new: true },
+    { upsert: true, new: true,   },
   );
 
   // ── Persist message ──────────────────────────────────────────────
@@ -118,17 +120,31 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
     { $set: { lastMessageId: message._id } },
   );
 
+  // await addNotificationJob({
+  //   type: "whatsapp",
+  //   payload: {
+  //     _id: conversation._id,
+  //     companyName: conversation.companyName,
+  //     phone: conversation.phone,
+  //     profileName: conversation.profileName,
+  //     lastMessage: conversation.lastMessage,
+  //     userId: conversation.userId,
+  //   },
+  // });
+ 
+  
+if (!existingConversation) {
   await addNotificationJob({
-    type: "whatsapp",
+    type: "whatsapp_lead",
     payload: {
       _id: conversation._id,
       companyName: conversation.companyName,
       phone: conversation.phone,
       profileName: conversation.profileName,
       lastMessage: conversation.lastMessage,
-      userId: conversation.userId,
     },
   });
+}
 
   // ---------------- Emit socket update ----------------
   const io = await getSocketEmitter();

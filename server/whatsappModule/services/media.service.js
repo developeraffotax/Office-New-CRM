@@ -37,7 +37,7 @@ export const uploadMediaBuffer = async (file, phone) => {
     });
 
     const presignedUrl = await getSignedUrl(s3Client, command, {
-      expiresIn: 900,
+      expiresIn: 3600,
     });
 
     logger.info("[Media] Outbound file uploaded", { key });

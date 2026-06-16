@@ -70,7 +70,7 @@ export const sendMessage = async (req, res, next) => {
   try {
     const { to, phoneNumberId, body, type, context } = req.body;
 
-    console.log(req.body)
+
 
     const userId = req.user?.user?._id;
     const conversationId = req.params.id;
@@ -109,8 +109,11 @@ export const sendMessage = async (req, res, next) => {
           presignedUrl
           
         });
-        
-        responses.push(mediaMsg);
+
+        const updatedMessage = mediaMsg.toObject();
+        updatedMessage.media.url = presignedUrl;
+
+        responses.push(updatedMessage);
       }
     } 
     // 2. Fallback: No files, just a plain text/template message

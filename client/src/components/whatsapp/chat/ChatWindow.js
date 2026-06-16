@@ -13,6 +13,7 @@ import {
 import { FiHeadphones, FiFilm } from "react-icons/fi";
 import { format, isToday, isYesterday } from "date-fns";
 import { useSocket } from "../../../context/socketProvider";
+import toast from "react-hot-toast";
 
 export default function ChatWindow({ chat, team, updateConversation }) {
   const socket = useSocket();
@@ -178,6 +179,8 @@ export default function ChatWindow({ chat, team, updateConversation }) {
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
+
+        console.log("THE MESSAGE IS ❤️❤️❤️❤️❤️❤️❤️❤️",response)
         data = response.data;
       } else {
         const payload = {
@@ -201,6 +204,7 @@ export default function ChatWindow({ chat, team, updateConversation }) {
       }
     } catch (err) {
       console.error("Failed to send message sequence:", err);
+      toast.error(err?.message || "Failed to send message")
     } finally {
       setLoadingMsg(false);
     }

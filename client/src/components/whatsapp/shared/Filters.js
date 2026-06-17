@@ -1,6 +1,6 @@
 import axios from "axios";
 import dayjs from "dayjs";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
@@ -49,6 +49,7 @@ import UserTabToggleButton from "./ui/UserTabToggleButton";
 import ContextMenu from "./ui/ContextMenu";
 import UnifiedThreadFilters from "./ui/LastMessageByDropdown";
 import ManageCategoriesModal from "./ui/ManageCategoriesModal";
+import { hasSubrole } from "../../../utlis/checkPermission";
 
 export default function Filters({
   filters,
@@ -60,11 +61,16 @@ export default function Filters({
   const {
     auth: { user },
   } = useSelector((state) => state.auth);
+
   const isAdmin = user?.role?.name === "Admin";
   const isTeamLead = user?.isTeamLead;
+  
+  const hasUnassignedPermission = useMemo(() => hasSubrole(user, "Whatsapp", "Unassigned"), [user])
 
   const hasPermission = isAdmin || isTeamLead;
 
+
+   
  
 
   const [searchParams] = useSearchParams();
@@ -645,7 +651,7 @@ export default function Filters({
               // users={users}
               
               showAll={isAdmin && visibleTabs.includes("all")}
-              showUnassigned={isAdmin && visibleTabs.includes("unassigned")}
+              showUnassigned={(isAdmin || hasUnassignedPermission) && visibleTabs.includes("unassigned")}
               activeValue={filters.userId || ""}
               // showAll={true}
               onChange={(userId) =>
@@ -956,7 +962,7 @@ export default function Filters({
           </Box>
 
           {/* Main Categories */}
-          {isAdmin && (
+          {(isAdmin || hasUnassignedPermission) && (
             <Stack spacing={0.5} sx={{ px: 1 }}>
               {[
                 { id: "all", label: "All Conversations" },

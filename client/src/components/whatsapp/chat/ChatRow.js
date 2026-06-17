@@ -7,6 +7,8 @@ import { ConversationTime } from "../shared/ui/ConversationTime";
 import { MdDeleteOutline } from "react-icons/md";
 import { FaCheckCircle, FaRegStar, FaStar, FaUndoAlt } from "react-icons/fa";
 import { useSelector } from "react-redux";
+import { useMemo } from "react";
+import { hasSubrole } from "../../../utlis/checkPermission";
 
 export default function ChatRow({
   chat,
@@ -20,6 +22,7 @@ export default function ChatRow({
   deleteConversation,
 }) {
   const { auth } = useSelector((state) => state.auth);
+  const user = auth?.user;
   const currentUserId = auth?.user?.id;
 
   const userReadEntry = chat?.readBy?.find(
@@ -33,6 +36,18 @@ export default function ChatRow({
   );
 
   const isLastFromMe = chat?.lastMessageBy === "me";
+
+
+
+  const scope = useMemo(() => {
+
+    const hasEditAccess =  hasSubrole(user, "Whatsapp", "Edit") || false;
+    const hasDeleteAccess =  hasSubrole(user, "Whatsapp", "Delete") || false;
+
+    return {edit: hasEditAccess, delete: hasDeleteAccess}
+  }, [user])
+  
+ 
 
   return (
     <div
@@ -75,7 +90,7 @@ export default function ChatRow({
           <div className="flex items-center gap-1.5 flex-shrink-0">
             {/* Actions: hidden until hover */}
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-              <button
+              {scope.edit && <button
                 className={`w-6 h-6 rounded flex items-center justify-center transition-colors ${
                   chat?.isStarred
                     ? "text-amber-400 hover:text-amber-500"
@@ -92,7 +107,7 @@ export default function ChatRow({
                 ) : (
                   <FaRegStar className="size-3.5" />
                 )}
-              </button>
+              </button>}
 
               <button
                 className="w-6 h-6 rounded flex items-center justify-center text-gray-400 hover:text-orange-500 transition-colors"
@@ -102,31 +117,32 @@ export default function ChatRow({
                 <PiBell className="size-4" />
               </button>
 
-              {chat?.status === "progress" ? (
-                <button
-                  className="w-6 h-6 rounded flex items-center justify-center text-gray-400 hover:text-green-500 transition-colors"
-                  title="Complete"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    updateConversation(chat?._id, { status: "completed" });
-                  }}
-                >
-                  <FaCheckCircle className="size-3.5" />
-                </button>
-              ) : (
-                <button
-                  className="w-6 h-6 rounded flex items-center justify-center text-green-500 hover:text-gray-400 transition-colors"
-                  title="Undo Complete"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    updateConversation(chat?._id, { status: "progress" });
-                  }}
-                >
-                  <FaUndoAlt className="size-3.5" />
-                </button>
+              {scope.edit && (
+                chat?.status === "progress" ? (
+                  <button
+                    className="w-6 h-6 rounded flex items-center justify-center text-gray-400 hover:text-green-500 transition-colors"
+                    title="Complete"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateConversation(chat?._id, { status: "completed" });
+                    }}
+                  >
+                    <FaCheckCircle className="size-3.5" />
+                  </button>
+                ) : (
+                  <button
+                    className="w-6 h-6 rounded flex items-center justify-center text-green-500 hover:text-gray-400 transition-colors"
+                    title="Undo Complete"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateConversation(chat?._id, { status: "progress" });
+                    }}
+                  >
+                    <FaUndoAlt className="size-3.5" />
+                  </button>
+                )
               )}
-
-              <button
+             {scope.delete && <button
                 className="w-6 h-6 rounded flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
                 title="Delete"
                 onClick={(e) => {
@@ -136,12 +152,12 @@ export default function ChatRow({
                 }}
               >
                 <MdDeleteOutline className="size-4" />
-              </button>
+              </button>}
             </div>
 
             {/* Always visible: category, user, time — stop propagation so
                 their own dropdowns/pickers don't also open the chat */}
-            <div
+            {scope.edit && <div
               className="flex items-center gap-1.5"
               onClick={(e) => e.stopPropagation()}   // ← added
             >
@@ -150,15 +166,17 @@ export default function ChatRow({
                 conversationId={chat._id}
                 currentCategory={chat?.category}
                 updateConversation={updateConversation}
+                buttonStyle="w-[100px]"
               />
               <AssignUser
                 users={users}
                 conversationId={chat?._id}
                 currentUserId={chat?.userId}
                 updateConversation={updateConversation}
+                buttonStyle="w-[120px]"
               />
               <ConversationTime lastMessageAt={chat?.lastMessageAt} index={index} />
-            </div>
+            </div>}
           </div>
         </div>
 

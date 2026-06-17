@@ -50,6 +50,7 @@ export default function Roles() {
     "Meeting",
     "HR",
     "Users",
+    "Inbox",
     "Whatsapp",
   ];
 
@@ -59,7 +60,8 @@ export default function Roles() {
     Tickets: ["Inbox", "Affotax", "OutSource", "TrustPilot", "Clients"],
     Templates: ["Template", "FAQ"],
     Timesheet: ["Job-holder", "Edit", "Delete", "Tracker"],
-    Whatsapp: [  "Edit", "Delete",],
+    Inbox: [  "Edit", "Delete", "Unassigned"],
+    Whatsapp: [  "Edit", "Delete", "Unassigned"],
     // Add other pages and subroles as necessary
   };
 

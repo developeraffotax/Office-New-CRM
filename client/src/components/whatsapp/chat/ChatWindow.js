@@ -180,7 +180,7 @@ export default function ChatWindow({ chat, team, updateConversation }) {
           { headers: { "Content-Type": "multipart/form-data" } }
         );
 
-        console.log("THE MESSAGE IS ❤️❤️❤️❤️❤️❤️❤️❤️",response)
+ 
         data = response.data;
       } else {
         const payload = {

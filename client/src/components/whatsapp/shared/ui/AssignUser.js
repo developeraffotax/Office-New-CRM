@@ -97,7 +97,7 @@ export default function AssignUser({
               : "border-gray-200 bg-white text-gray-400 hover:border-gray-300"
           )}
         >
-          {currentUser && <Avatar user={currentUser} size="sm" />}
+          {/* {currentUser && <Avatar user={currentUser} size="sm" />} */}
 
           <span className="truncate flex-1 text-left">
             {currentUser ? currentUser.name : "Unassigned"}

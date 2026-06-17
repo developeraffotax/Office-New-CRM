@@ -173,7 +173,7 @@ export default function ChatRow({
                 conversationId={chat?._id}
                 currentUserId={chat?.userId}
                 updateConversation={updateConversation}
-                buttonStyle="w-[120px]"
+                buttonStyle="w-[100px]"
               />
               <ConversationTime lastMessageAt={chat?.lastMessageAt} index={index} />
             </div>}

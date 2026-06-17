@@ -1,6 +1,3 @@
-
-
-
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { IoMdSend, IoMdAttach, IoMdCheckmark, IoMdClose } from "react-icons/io";
@@ -14,8 +11,9 @@ import { FiHeadphones, FiFilm } from "react-icons/fi";
 import { format, isToday, isYesterday } from "date-fns";
 import { useSocket } from "../../../context/socketProvider";
 import toast from "react-hot-toast";
+import { getSenderLabel } from "../utils/getSenderLabel";
 
-export default function ChatWindow({ chat, team, updateConversation }) {
+export default function ChatWindow({ users, chat, team, updateConversation }) {
   const socket = useSocket();
   const [messages, setMessages] = useState([]);
   const [inputMsg, setInputMsg] = useState("");
@@ -45,7 +43,7 @@ export default function ChatWindow({ chat, team, updateConversation }) {
 
   useEffect(() => {
     if (!chat?._id || !socket) return;
-    
+
     const handleMessage = ({ conversationId, message }) => {
       console.log("THE NEW MESSAGE IS ", message);
       if (conversationId !== chat?._id) return;
@@ -67,8 +65,8 @@ export default function ChatWindow({ chat, team, updateConversation }) {
                 status,
                 statusUpdatedAt,
               }
-            : msg
-        )
+            : msg,
+        ),
       );
     };
 
@@ -79,14 +77,14 @@ export default function ChatWindow({ chat, team, updateConversation }) {
 
           const existingReactions = msg.reactions || [];
           const filtered = existingReactions.filter(
-            (r) => r.from !== reaction.from
+            (r) => r.from !== reaction.from,
           );
 
           return {
             ...msg,
             reactions: [...filtered, reaction],
           };
-        })
+        }),
       );
     };
 
@@ -107,7 +105,7 @@ export default function ChatWindow({ chat, team, updateConversation }) {
     const fetchMessages = async () => {
       try {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/conversations/${chat._id}/messages`
+          `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/conversations/${chat._id}/messages`,
         );
         setMessages(data.messages || []);
       } catch (err) {
@@ -177,10 +175,9 @@ export default function ChatWindow({ chat, team, updateConversation }) {
         const response = await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/conversations/${chat._id}/messages`,
           formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
+          { headers: { "Content-Type": "multipart/form-data" } },
         );
 
- 
         data = response.data;
       } else {
         const payload = {
@@ -190,7 +187,7 @@ export default function ChatWindow({ chat, team, updateConversation }) {
         };
         const response = await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/conversations/${chat._id}/messages`,
-          payload
+          payload,
         );
         data = response.data;
       }
@@ -204,7 +201,7 @@ export default function ChatWindow({ chat, team, updateConversation }) {
       }
     } catch (err) {
       console.error("Failed to send message sequence:", err);
-      toast.error(err?.message || "Failed to send message")
+      toast.error(err?.message || "Failed to send message");
     } finally {
       setLoadingMsg(false);
     }
@@ -213,11 +210,11 @@ export default function ChatWindow({ chat, team, updateConversation }) {
   const renderMessageContent = (msg) => {
     const textStyle =
       msg.direction === "outbound" || msg.userId
-        ? "text-white"
+        ? "text-gray-800"
         : "text-gray-800";
     const subTextStyle =
       msg.direction === "outbound" || msg.userId
-        ? "text-orange-100"
+        ? "text-gray-500"
         : "text-gray-500";
 
     switch (msg.type) {
@@ -230,14 +227,14 @@ export default function ChatWindow({ chat, team, updateConversation }) {
               className="rounded-md max-h-64 object-cover cursor-pointer w-full border border-black/5"
               onClick={() => window.open(`${msg?.media?.url}`, "_blank")}
             />
-           <div>
-
-             {(msg.body || msg.media?.caption) && (
-              <p className={`text-sm mt-1.5  whitespace-pre-wrap break-words ${textStyle}`}>
-                {msg.body || msg.media?.caption}
-              </p>
-            )}
-
+            <div>
+              {(msg.body || msg.media?.caption) && (
+                <p
+                  className={`text-sm mt-1.5  whitespace-pre-wrap break-words ${textStyle}`}
+                >
+                  {msg.body || msg.media?.caption}
+                </p>
+              )}
             </div>
           </div>
         );
@@ -253,7 +250,9 @@ export default function ChatWindow({ chat, team, updateConversation }) {
               />
             </div>
             {(msg.body || msg.media?.caption) && (
-              <p className={`text-sm mt-1.5   whitespace-pre-wrap break-words ${textStyle}`}>
+              <p
+                className={`text-sm mt-1.5   whitespace-pre-wrap break-words ${textStyle}`}
+              >
                 {msg.body || msg.media?.caption}
               </p>
             )}
@@ -288,45 +287,42 @@ export default function ChatWindow({ chat, team, updateConversation }) {
       case "document":
         return (
           <div className="flex flex-col  max-w-[380px]">
-                      <a
-            href={`${msg?.media?.url}`}
-            target="_blank"
-            rel="noreferrer"
-            className={`flex items-center gap-3 p-2.5 rounded-lg border text-inherit no-underline hover:opacity-90 transition-opacity min-w-[240px] ${
-              msg.direction === "outbound"
-                ? "bg-orange-600/40 border-orange-400/30"
-                : "bg-gray-50 border-gray-100"
-            }`}
-          >
-            <HiOutlineDocumentDownload
-              size={28}
-              className="text-orange-500 flex-shrink-0"
-            />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate mb-0.5">
-                {msg.media?.filename || "Attachment Document"}
-              </p>
-              <p className={`text-xs opacity-75 truncate ${subTextStyle}`}>
-                 {msg.media?.size
-                  ? `${(msg.media.size / 1024 / 1024).toFixed(2)} MB`
-                  : msg.media?.mimeType || "File"}
-              </p>
+            <a
+              href={`${msg?.media?.url}`}
+              target="_blank"
+              rel="noreferrer"
+              className={`flex items-center gap-3 p-2.5 rounded-lg border text-inherit no-underline hover:opacity-90 transition-opacity min-w-[240px] ${
+                msg.direction === "outbound"
+                  ? "bg-gray-50 border-gray-100"
+                  : "bg-gray-50 border-gray-100"
+              }`}
+            >
+              <HiOutlineDocumentDownload
+                size={28}
+                className="text-orange-500 flex-shrink-0"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate mb-0.5">
+                  {msg.media?.filename || "Attachment Document"}
+                </p>
+                <p className={`text-xs opacity-75 truncate ${subTextStyle}`}>
+                  {msg.media?.size
+                    ? `${(msg.media.size / 1024 / 1024).toFixed(2)} MB`
+                    : msg.media?.mimeType || "File"}
+                </p>
+              </div>
+            </a>
+
+            <div>
+              {(msg.body || msg.media?.caption) && (
+                <p
+                  className={`text-sm mt-1.5 whitespace-pre-wrap break-words ${textStyle} `}
+                >
+                  {msg.body || msg.media?.caption}
+                </p>
+              )}
             </div>
-              
-            
-          </a>
-
-
-                 <div>
-                     {(  msg.body || msg.media?.caption ) && (
-              <p className={`text-sm mt-1.5 whitespace-pre-wrap break-words ${textStyle} `}>
-                { msg.body ||msg.media?.caption }
-              </p>
-            )}
-                  </div>
-               
           </div>
-
         );
 
       case "sticker":
@@ -346,7 +342,7 @@ export default function ChatWindow({ chat, team, updateConversation }) {
         const mapsUrl = hasCoords
           ? `https://maps.google.com/?q=${loc.latitude},${loc.longitude}`
           : `https://maps.google.com/?q=${encodeURIComponent(
-              loc?.name || loc?.address || "Location"
+              loc?.name || loc?.address || "Location",
             )}`;
 
         return (
@@ -472,54 +468,61 @@ export default function ChatWindow({ chat, team, updateConversation }) {
                   }`}
                 >
                   <div
-                    className={`max-w-[70%] rounded-xl shadow-sm relative ${
+                    className={`max-w-[70%]  rounded-xl shadow-sm relative ${
                       isSticker
                         ? "bg-transparent shadow-none"
                         : isOutgoing
-                        ? "bg-slate-500 text-white rounded-tr-none px-4 py-3"
+                        ? "bg-[#D9FDD3] text-gray-800 rounded-tr-none px-4 py-3"
                         : "bg-white text-gray-800 border border-gray-100 rounded-tl-none px-4 py-3"
                     }`}
                   >
                     {renderMessageContent(msg)}
 
-                    <div
-                      className={`text-[11px] flex items-center justify-end gap-1 mt-1 ${
-                        isOutgoing ? "text-orange-100" : "text-gray-400"
-                      }`}
-                    >
-                      {format(new Date(msg.timestamp || msg.createdAt), "hh:mm a").toLowerCase()}
+                    <div className="w-full flex justify-between items-center gap-4 mt-1 text-[11px] text-gray-500">
+                      <div className="">
+                        {isOutgoing && (
+                          <p className="  ">{getSenderLabel(msg, users)}</p>
+                        )}
+                      </div>
 
-                      {isOutgoing && (
-                        <div
-                          className="flex items-center ml-0.5"
-                          title={
-                            msg.status === "read"
-                              ? "Seen"
-                              : msg.status === "delivered"
-                              ? "Delivered"
-                              : "Sent"
-                          }
-                        >
-                          <IoMdCheckmark
-                            size={16}
-                            className={
+                      <div className={` flex items-center justify-end gap-1`}>
+                        {format(
+                          new Date(msg.timestamp || msg.createdAt),
+                          "hh:mm a",
+                        ).toLowerCase()}
+
+                        {isOutgoing && (
+                          <div
+                            className="flex items-center ml-0.5"
+                            title={
                               msg.status === "read"
-                                ? "text-sky-400"
-                                : "text-gray-100"
+                                ? "Seen"
+                                : msg.status === "delivered"
+                                ? "Delivered"
+                                : "Sent"
                             }
-                          />
-                          {msg.status !== "sent" && (
+                          >
                             <IoMdCheckmark
                               size={16}
-                              className={`-ml-2 ${
+                              className={
                                 msg.status === "read"
-                                  ? "text-sky-400"
-                                  : "text-gray-100"
-                              }`}
+                                  ? "text-sky-500"
+                                  : "text-gray-400"
+                              }
                             />
-                          )}
-                        </div>
-                      )}
+                            {msg.status !== "sent" && (
+                              <IoMdCheckmark
+                                size={16}
+                                className={`-ml-2 ${
+                                  msg.status === "read"
+                                    ? "text-sky-500"
+                                    : "text-gray-400"
+                                }`}
+                              />
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {msg.reactions && msg.reactions.length > 0 && (
@@ -647,7 +650,9 @@ export default function ChatWindow({ chat, team, updateConversation }) {
 
             <button
               type="submit"
-              disabled={(!inputMsg.trim() && selectedFiles.length === 0) || loadingMsg}
+              disabled={
+                (!inputMsg.trim() && selectedFiles.length === 0) || loadingMsg
+              }
               className="text-white bg-orange-500 p-2 mb-1.5 rounded-lg hover:bg-orange-600 disabled:opacity-50 transition-colors shadow-sm flex-shrink-0 flex items-center justify-center min-w-[36px] min-h-[36px]"
             >
               {loadingMsg ? (
@@ -712,67 +717,6 @@ export default function ChatWindow({ chat, team, updateConversation }) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // import React, { useEffect, useState, useRef } from "react";
 // import axios from "axios";
 // import { IoMdSend, IoMdAttach, IoMdCheckmark, IoMdClose } from "react-icons/io";
@@ -801,8 +745,6 @@ export default function ChatWindow({ chat, team, updateConversation }) {
 //   const fileInputRef = useRef(null);
 //   const textareaRef = useRef(null);
 
-
-
 //   useEffect(() => {
 //   if (!chat?._id || !socket) return;
 
@@ -816,18 +758,6 @@ export default function ChatWindow({ chat, team, updateConversation }) {
 //     });
 //   };
 // }, [chat?._id, socket]);
-
-
-
-
-
-
-
-
-
-
-
-
 
 // useEffect(() => {
 //     if (!chat?._id || !socket) return;
@@ -848,8 +778,6 @@ export default function ChatWindow({ chat, team, updateConversation }) {
 //     status,
 //     statusUpdatedAt,}) => {
 
-
-      
 //     setMessages(prev =>
 //       prev.map(msg =>
 //         msg._id === messageId
@@ -862,10 +790,7 @@ export default function ChatWindow({ chat, team, updateConversation }) {
 //       )
 //     );
 
-
-
 //   }
-
 
 // const handleReaction = ({ messageId, reaction }) => {
 //   setMessages(prev =>
@@ -885,7 +810,6 @@ export default function ChatWindow({ chat, team, updateConversation }) {
 //     })
 //   );
 // };
-  
 
 //   socket.on("whatsapp:message-created", handleMessage);
 //     socket.on( "whatsapp:message-status-updated", handleStatus );
@@ -898,14 +822,6 @@ export default function ChatWindow({ chat, team, updateConversation }) {
 //   };
 // }, [chat?._id, socket]);
 
-
- 
- 
-
- 
-
-
-  
 //   // Fetch Messages for active chat
 //   useEffect(() => {
 //     if (!chat?._id) return;
@@ -933,11 +849,11 @@ export default function ChatWindow({ chat, team, updateConversation }) {
 //   // Auto-scroll to bottom
 //   useEffect(() => {
 //     if (messages.length > 0) {
-//       messagesEndRef.current?.scrollIntoView({ 
+//       messagesEndRef.current?.scrollIntoView({
 //         // "auto" instantly snaps, "smooth" animates
-//         behavior: isInitialScroll.current ? "auto" : "smooth" 
+//         behavior: isInitialScroll.current ? "auto" : "smooth"
 //       });
-      
+
 //       // After the first scroll, set to false so new messages scroll smoothly
 //       isInitialScroll.current = false;
 //     }
@@ -1206,9 +1122,6 @@ export default function ChatWindow({ chat, team, updateConversation }) {
 //         );
 //     }
 //   };
-
-
-
 
 //   if (!chat) {
 //   return (

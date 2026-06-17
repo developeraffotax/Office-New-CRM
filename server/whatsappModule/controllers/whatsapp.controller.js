@@ -104,7 +104,7 @@ export const sendMessage = async (req, res, next) => {
             caption: (body && msgType === "image") ? body : undefined, // Fixed logic
           },
           context,
-          // userId,
+            userId,
 
           presignedUrl
           
@@ -125,7 +125,7 @@ export const sendMessage = async (req, res, next) => {
         type: type || "text",
         body,
         context,
-        // userId,
+          userId,
       });
       
       responses.push(plainMsg);

@@ -276,6 +276,7 @@ export const processMessageEcho = async (echo, metadata) => {
     statusUpdatedAt: new Date(),
     timestamp,
     meta: echo,
+    sentFrom: "external"
   });
 
   // ── Update conversation ──────────────────────────────────────────

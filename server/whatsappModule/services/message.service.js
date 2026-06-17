@@ -81,8 +81,8 @@ export const getMessages = async ({ conversationId, page = 1, limit = 50 }) => {
   const [messages, total] = await Promise.all([
     WhatsappMessage.find({ conversationId })
       .sort({ timestamp: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
+      // .skip((page - 1) * limit)
+      // .limit(limit)
       .lean(),
     WhatsappMessage.countDocuments({ conversationId }),
   ]);
@@ -147,14 +147,17 @@ export const saveOutboundMessage = async ({
     direction: "outbound",
     from,
     to,
-    userId: userId ?? null,
     type,
     body: body ?? "",
     media: media ?? undefined,
-
+    
     status: "sent",
     statusUpdatedAt: now,
     timestamp: now,
+    
+    
+    userId: userId ?? null,
+    sentFrom: "crm"
   });
 
   const updatedConversation = await Conversation.updateOne(

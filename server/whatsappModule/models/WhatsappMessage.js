@@ -38,12 +38,7 @@ const whatsappMessageSchema = new mongoose.Schema(
       required: true,
     },
 
-    // Agent who sent the message
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Users",
-      default: null,
-    },
+   
 
     type: {
       type: String,
@@ -135,6 +130,21 @@ location: {
     meta: {
       type: mongoose.Schema.Types.Mixed,
       default: null,
+    },
+
+ 
+
+     // Agent who sent the message
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Users",
+      default: null,
+    },
+
+
+    sentFrom: {
+      type: String, 
+      enum: [ "crm", "external", ],
     },
 
     timestamp: {

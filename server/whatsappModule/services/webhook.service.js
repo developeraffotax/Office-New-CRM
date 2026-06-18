@@ -215,6 +215,8 @@ if (!existingConversation) {
 export const processMessageEcho = async (echo, metadata) => {
   const whatsappMessageId = echo.id;
 
+  console.log("EHCO ❤️❤️❤️❤️❤️❤️❤️❤️", echo)
+
   // ── Deduplication ────────────────────────────────────────────────
   const existing = await WhatsappMessage.findOne({ whatsappMessageId }).lean();
   if (existing) { logger.info("[Echo] Duplicate ignored", { whatsappMessageId }); return existing; }
@@ -279,20 +281,20 @@ export const processMessageEcho = async (echo, metadata) => {
 
 
   
-  let context;
+//   let context;
 
-if (rawMessage.context?.id) {
-  const repliedMessage = await WhatsappMessage.findOne({
-    whatsappMessageId: rawMessage.context.id,
-  })
-    .select("_id")
-    .lean();
+// if (rawMessage.context?.id) {
+//   const repliedMessage = await WhatsappMessage.findOne({
+//     whatsappMessageId: rawMessage.context.id,
+//   })
+//     .select("_id")
+//     .lean();
 
-  context = {
-    whatsappMessageId: rawMessage.context.id,
-    messageId: repliedMessage?._id ?? null,
-  };
-}
+//   context = {
+//     whatsappMessageId: rawMessage.context.id,
+//     messageId: repliedMessage?._id ?? null,
+//   };
+// }
 
   // ── Persist message ──────────────────────────────────────────────
   const message = await WhatsappMessage.create({
@@ -310,7 +312,7 @@ if (rawMessage.context?.id) {
     timestamp,
     meta: echo,
     sentFrom: "external",
-    context,
+    // context,
   });
 
   // ── Update conversation ──────────────────────────────────────────

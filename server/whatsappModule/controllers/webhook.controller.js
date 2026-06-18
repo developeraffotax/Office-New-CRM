@@ -91,6 +91,7 @@ export const receiveWebhook = async (req, res) => {
       
       else if (change.field === "smb_message_echoes") {
         const metadata = value.metadata;
+    
 
         for (const echo of value.message_echoes ?? []) {
           jobs.push(

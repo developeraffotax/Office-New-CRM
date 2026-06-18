@@ -57,6 +57,10 @@ const processJob = async (job) => {
       }
 
       await processStatusUpdate(status);
+      
+      // setTimeout(async() => {
+        
+      // }, 5000)
 
       break;
     }

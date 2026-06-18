@@ -16,7 +16,7 @@ export const processStatusUpdate = async (statusPayload) => {
 
   const normalised = STATUS_MAP[status];
   if (!normalised) {
-  throw new Error(`[Service] Unknown status type: ${status}`);
+  throw new Error(`[Status Service] Unknown status type: ${status}`);
   }
 
   const updated = await WhatsappMessage.findOneAndUpdate(
@@ -34,7 +34,7 @@ export const processStatusUpdate = async (statusPayload) => {
   if (!updated) {
     // Can happen if the message hasn't been saved yet (race condition).
     // In production: push to a retry queue (BullMQ) instead.
-    throw new Error(`[Service] Unknown status type: ${status} | Whatsapp Message Id: ${whatsappMessageId}`);
+    throw new Error(`[Status Service] Into not updated block | race condition | Whatsapp Message Id: ${whatsappMessageId}`);
   }
 
   const io = await getSocketEmitter();
@@ -48,7 +48,7 @@ export const processStatusUpdate = async (statusPayload) => {
     },
   );
 
-  logger.info("[Service] Status updated", { whatsappMessageId, status: normalised, });
+  logger.info("[Status Service] Status updated", { whatsappMessageId, status: normalised, });
 
   return updated;
 };

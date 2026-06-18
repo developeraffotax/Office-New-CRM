@@ -17,6 +17,7 @@ import { getFileUrl } from "../utils/s3.js";
 export const sendMessage = async ({
   conversationId,
   phoneNumberId,
+  phoneNumber,
   to,
   type,
   body,
@@ -68,6 +69,7 @@ export const sendMessage = async ({
     body: body ?? "",
     media: media ?? undefined,
     userId: userId ?? null,
+    context: context
   });
 
   return saved;
@@ -76,10 +78,23 @@ export const sendMessage = async ({
 
 
 
- 
-export const getMessages = async ({ conversationId, page = 1, limit = 50 }) => {
+
+
+
+
+
+export const getMessages = async ({
+  conversationId,
+  page = 1,
+  limit = 50,
+}) => {
   const [messages, total] = await Promise.all([
     WhatsappMessage.find({ conversationId })
+      .populate({
+        path: "context.messageId",
+        select:
+          "_id body type media location from to direction timestamp userId",
+      })
       .sort({ timestamp: -1 })
       // .skip((page - 1) * limit)
       // .limit(limit)
@@ -89,26 +104,33 @@ export const getMessages = async ({ conversationId, page = 1, limit = 50 }) => {
 
   const messagesWithUrls = await Promise.all(
     messages.map(async (msg) => {
-      if (!msg.media?.s3Key) return msg;
+      const result = { ...msg };
 
-      const mediaUrl = await getFileUrl(msg.media.s3Key);
+      // Current message media
+      if (result.media?.s3Key) {
+        result.media.url = await getFileUrl(result.media.s3Key);
+      }
 
-      return {
-        ...msg,
-        media: {
-          ...msg.media,
-          url: mediaUrl,
-        },
-      };
+      // Replied-to message media
+      if (result.context?.messageId?.media?.s3Key) {
+        result.context.messageId.media.url = await getFileUrl(
+          result.context.messageId.media.s3Key,
+        );
+      }
+
+      return result;
     }),
   );
 
   return {
     messages: messagesWithUrls.reverse(),
-    pagination: { page, limit, total },
+    pagination: {
+      page,
+      limit,
+      total,
+    },
   };
 };
-
  
 
 
@@ -123,6 +145,7 @@ export const saveOutboundMessage = async ({
   body,
   media,
   userId,
+  context
 }) => {
   const conversation = await Conversation.findById(conversationId);
   if (!conversation) throw new Error("Conversation not found");
@@ -150,6 +173,7 @@ export const saveOutboundMessage = async ({
     type,
     body: body ?? "",
     media: media ?? undefined,
+    context,
     
     status: "sent",
     statusUpdatedAt: now,

@@ -8,6 +8,8 @@ import { emitToUser } from "../../utils/socketEmitter.js";
 import { isSelfAssignment } from "../utils/utils.js";
 import { createNotification } from "../utils/createNotification.js";
 import { io } from "../../index.js";
+import { getCompanies } from "../utils/config.js";
+import { handleMessageReaction } from "../services/reaction.service.js";
  
 
 
@@ -68,14 +70,16 @@ export const listMessages = async (req, res, next) => {
 
 export const sendMessage = async (req, res, next) => {
   try {
-    const { to, phoneNumberId, body, type, context } = req.body;
+    const { to, companyName, body, type, context } = req.body;
 
-
+console.log("COMPANY", companyName)
 
     const userId = req.user?.user?._id;
     const conversationId = req.params.id;
 
-    const finalPhoneNumberId = phoneNumberId ?? process.env.WHATSAPP_AFFOTAX_PHONE_NUMBER_ID;
+    const phoneNumber = getCompanies()[companyName].phoneNumber;
+    const phoneNumberId = getCompanies()[companyName].phoneNumberId;
+    
     const responses = [];
 
     // 1. Handle files if they exist
@@ -93,7 +97,8 @@ export const sendMessage = async (req, res, next) => {
         // Transmit the payload with the fileUrl to your message service
         const mediaMsg = await messageService.sendMessage({
           conversationId,
-          phoneNumberId: finalPhoneNumberId,
+          phoneNumberId,
+          phoneNumber,
           to,
           body,
           type: msgType,
@@ -120,7 +125,8 @@ export const sendMessage = async (req, res, next) => {
     else {
       const plainMsg = await messageService.sendMessage({
         conversationId,
-        phoneNumberId: finalPhoneNumberId,
+        phoneNumberId,
+        phoneNumber,
         to,
         type: type || "text",
         body,
@@ -146,8 +152,49 @@ export const sendMessage = async (req, res, next) => {
 
 
 
+ 
+export const addReactionToMessage = async (req, res) => {
+  try {
+    const { conversationId, messageId, } = req.params;
+    const { emoji, companyName } = req.body;
+ 
+
+    if (!conversationId || !messageId) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing conversationId or messageId query context parameters",
+      });
+    }
 
 
+       const phoneNumber = getCompanies()[companyName].phoneNumber;
+    const phoneNumberId = getCompanies()[companyName].phoneNumberId;
+    
+
+
+    const updatedMessage = await handleMessageReaction({
+      phoneNumberId,
+      phoneNumber,
+
+      conversationId,
+      messageId,
+      emoji,
+ 
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Reaction state logged successfully",
+      data: updatedMessage,
+    });
+  } catch (error) {
+    console.error("Error setting reaction context line execution:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Internal Server Error executing reaction state.",
+    });
+  }
+};
 
 
 

@@ -82,6 +82,7 @@ export default function WhatsAppLayout({
         
         {activeChatId ? (
           <ChatWindow 
+             
             users={users}
             chat={activeChat} 
             team={team}

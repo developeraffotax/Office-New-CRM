@@ -105,6 +105,10 @@ location: {
     // If customer replied to a specific message
     context: {
       whatsappMessageId: String,
+       messageId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "WhatsappMessage",
+      },
     },
 
     // Array tracking emojis reacted to this message

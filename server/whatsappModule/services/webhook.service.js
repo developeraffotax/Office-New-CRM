@@ -94,6 +94,24 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
     { upsert: true, new: true,   },
   );
 
+
+  let context;
+
+if (rawMessage.context?.id) {
+  const repliedMessage = await WhatsappMessage.findOne({
+    whatsappMessageId: rawMessage.context.id,
+  })
+    .select("_id")
+    .lean();
+
+  context = {
+    whatsappMessageId: rawMessage.context.id,
+    messageId: repliedMessage?._id ?? null,
+  };
+}
+
+
+
   // ── Persist message ──────────────────────────────────────────────
   const message = await WhatsappMessage.create({
     conversationId: conversation._id,
@@ -107,9 +125,7 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
     location: location ?? undefined,
     status: "received",
     statusUpdatedAt: new Date(),
-    context: rawMessage.context
-      ? { whatsappMessageId: rawMessage.context.id }
-      : undefined,
+    context,
     timestamp,
     meta: rawMessage,
   });
@@ -261,6 +277,23 @@ export const processMessageEcho = async (echo, metadata) => {
     { upsert: true, new: true },
   );
 
+
+  
+  let context;
+
+if (rawMessage.context?.id) {
+  const repliedMessage = await WhatsappMessage.findOne({
+    whatsappMessageId: rawMessage.context.id,
+  })
+    .select("_id")
+    .lean();
+
+  context = {
+    whatsappMessageId: rawMessage.context.id,
+    messageId: repliedMessage?._id ?? null,
+  };
+}
+
   // ── Persist message ──────────────────────────────────────────────
   const message = await WhatsappMessage.create({
     conversationId: conversation._id,
@@ -276,7 +309,8 @@ export const processMessageEcho = async (echo, metadata) => {
     statusUpdatedAt: new Date(),
     timestamp,
     meta: echo,
-    sentFrom: "external"
+    sentFrom: "external",
+    context,
   });
 
   // ── Update conversation ──────────────────────────────────────────

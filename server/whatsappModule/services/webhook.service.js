@@ -130,6 +130,10 @@ if (rawMessage.context?.id) {
     meta: rawMessage,
   });
 
+
+
+  const populatedMessage = await WhatsappMessage.findById(message._id).populate({ path: "context.messageId", select: "body type media from to timestamp", }).lean();
+
   // Update lastMessageId reference
   await Conversation.updateOne(
     { _id: conversation._id },
@@ -177,15 +181,15 @@ if (!existingConversation) {
     thread: conversation.toObject(),
   });
 
-  const socketMessage = message.toObject();
+ // const socketMessage = message.toObject();
 
-  if (socketMessage?.media?.s3Key) {
-    socketMessage.media.url = await getFileUrl(socketMessage.media.s3Key);
+  if (populatedMessage?.media?.s3Key) {
+    populatedMessage.media.url = await getFileUrl(populatedMessage.media.s3Key);
   }
 
   io.to(`conversation:${conversation._id}`).emit("whatsapp:message-created", {
     conversationId: conversation._id,
-    message: socketMessage,
+    message: populatedMessage,
   });
 
   logger.info("[Service] Inbound saved", { conversationId: conversation._id, type, });

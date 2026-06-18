@@ -229,8 +229,10 @@ const handleSelectReaction = async (messageId, emoji) => {
           payload
         );
         data = response.data;
-      }
 
+        
+      }
+      
       setMessages((prev) => [...prev, ...data]);
       setInputMsg("");
       setReplyingTo(null);

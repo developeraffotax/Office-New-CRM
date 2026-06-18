@@ -200,6 +200,11 @@ export const saveOutboundMessage = async ({
     },
   );
 
+
+
+  const populatedMessage = await WhatsappMessage.findById(message._id) .populate({ path: "context.messageId", select: "body type media from to timestamp", }) .lean();
+
+
   io.emit(`whatsapp:conversation-update-${conversation.companyName}`, {
     action: "updated",
     thread: updatedConversation,
@@ -207,5 +212,5 @@ export const saveOutboundMessage = async ({
 
  
 
-  return message;
+  return populatedMessage;
 };

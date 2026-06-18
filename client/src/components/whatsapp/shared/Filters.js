@@ -324,7 +324,7 @@ export default function Filters({
 
                 {categories.map(({ name }) => {
                   return (
-                    <MenuItem value={name}>
+                    <MenuItem value={name} key={`key-${name}`}>
                       {" "}
                       {name.charAt(0).toUpperCase() + name.slice(1)}{" "}
                     </MenuItem>

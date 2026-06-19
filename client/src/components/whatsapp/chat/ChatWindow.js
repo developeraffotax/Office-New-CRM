@@ -31,6 +31,13 @@ export default function ChatWindow({ users, chat, team, updateConversation }) {
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
 
+
+  const messagesContainerRef = useRef(null);
+const loadMoreSentinelRef = useRef(null);
+
+const [pagination, setPagination] = useState({ hasMore: false, nextCursor: null });
+const [loadingMore, setLoadingMore] = useState(false);
+
  
 
  
@@ -84,22 +91,82 @@ export default function ChatWindow({ users, chat, team, updateConversation }) {
     };
   }, [chat?._id, socket]);
 
-  // Fetch Messages
-  useEffect(() => {
-    if (!chat?._id) return;
-    const fetchMessages = async () => {
-      try {
-        const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/conversations/${chat._id}/messages`
-        );
-        setMessages(data.messages || []);
-        setReplyingTo(null); // Clear context states on channel switch
-      } catch (err) {
-        console.error("Failed to fetch messages", err);
+
+
+  // Fetch Messages (initial page on chat switch)
+useEffect(() => {
+  if (!chat?._id) return;
+
+  const fetchMessages = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/conversations/${chat._id}/messages`,
+        { params: { limit: 5 } }
+      );
+      setMessages(data.messages || []);
+      setPagination({
+        hasMore: data.pagination?.hasMore || false,
+        nextCursor: data.pagination?.nextCursor || null,
+      });
+      setReplyingTo(null);
+    } catch (err) {
+      console.error("Failed to fetch messages", err);
+    }
+  };
+
+  fetchMessages();
+}, [chat?._id]);
+
+
+
+const loadMoreMessages = async () => {
+  if (loadingMore || !pagination.hasMore || !pagination.nextCursor || !chat?._id) return;
+
+  setLoadingMore(true);
+  try {
+    const { data } = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/conversations/${chat._id}/messages`,
+      {
+        params: {
+          limit: 5,
+          cursorTimestamp: pagination.nextCursor.timestamp,
+          cursorId: pagination.nextCursor.id,
+        },
       }
-    };
-    fetchMessages();
-  }, [chat?._id]);
+    );
+
+    setMessages((prev) => [...(data.messages || []), ...prev]); // prepend older batch
+    setPagination({
+      hasMore: data.pagination?.hasMore || false,
+      nextCursor: data.pagination?.nextCursor || null,
+    });
+  } catch (err) {
+    console.error("Failed to load older messages", err);
+    toast.error("Failed to load older messages");
+  } finally {
+    setLoadingMore(false);
+  }
+};
+
+
+useEffect(() => {
+  if (!pagination.hasMore) return;
+  const sentinel = loadMoreSentinelRef.current;
+  const container = messagesContainerRef.current;
+  if (!sentinel || !container) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0]?.isIntersecting) loadMoreMessages();
+    },
+    { root: container, threshold: 0.1 }
+  );
+
+  observer.observe(sentinel);
+  return () => observer.disconnect();
+}, [pagination.hasMore, pagination.nextCursor, chat?._id]);
+
+
 
   // Smooth Scroll-to-Message Context Anchor
   const scrollToMessage = (targetId) => {
@@ -271,7 +338,7 @@ const handleSelectReaction = async (messageId, emoji) => {
       </div>
 
       {/* Message Streaming Area */}
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col-reverse gap-4 custom-scrollbar bg-opacity-40 relative">
+      <div  ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 flex flex-col-reverse gap-4 custom-scrollbar bg-opacity-40 relative">
         {(() => {
           const reversedMessages = [...messages].reverse();
 
@@ -297,7 +364,7 @@ const handleSelectReaction = async (messageId, emoji) => {
 
             // Find full historical context message matching structural references 
             const parentContextMessage = msg?.context?.messageId  
-
+            
             return (
               <React.Fragment key={msg._id || idx}>
                 {/* Render Main Message Structure */}
@@ -435,6 +502,13 @@ const handleSelectReaction = async (messageId, emoji) => {
             );
           });
         })()}
+
+         {(pagination.hasMore || loadingMore) && (
+    <div ref={loadMoreSentinelRef} className="flex justify-center py-2 flex-shrink-0">
+      {loadingMore && <span className="text-xs text-gray-500">Loading older messages…</span>}
+    </div>
+  )}
+
       </div>
 
       {/* Input Action Panels & Context Bars */}

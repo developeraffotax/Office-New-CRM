@@ -77,13 +77,64 @@ export const sendMessage = async ({
 
 
 
+export const getMessages = async ({ conversationId, limit = 50, cursor = null }) => {
+  const query = { conversationId };
+
+  // cursor = oldest message currently loaded on the client; we want everything older
+  if (cursor?.timestamp && cursor?.id) {
+    query.$or = [
+      { timestamp: { $lt: cursor.timestamp } },
+      { timestamp: cursor.timestamp, _id: { $lt: cursor.id } },
+    ];
+  }
+
+  const docs = await WhatsappMessage.find(query)
+    .populate({
+      path: "context.messageId",
+      select: "_id body type media location from to direction timestamp userId",
+    })
+    .sort({ timestamp: -1, _id: -1 }) // newest first, _id breaks timestamp ties
+    .limit(limit + 1)
+    .lean();
+
+  const hasMore = docs.length > limit;
+  const pageDocs = hasMore ? docs.slice(0, limit) : docs;
+
+  const messagesWithUrls = await Promise.all(
+    pageDocs.map(async (msg) => {
+      const result = { ...msg };
+
+      if (result.media?.s3Key) {
+        result.media.url = await getFileUrl(result.media.s3Key);
+      }
+      if (result.context?.messageId?.media?.s3Key) {
+        result.context.messageId.media.url = await getFileUrl(
+          result.context.messageId.media.s3Key,
+        );
+      }
+      return result;
+    }),
+  );
+
+  const oldest = pageDocs[pageDocs.length - 1];
+
+  return {
+    messages: messagesWithUrls.reverse(), // oldest -> newest, same shape as before
+    pagination: {
+      limit,
+      hasMore,
+      nextCursor: hasMore && oldest
+        ? { timestamp: oldest.timestamp, id: String(oldest._id) }
+        : null,
+    },
+  };
+};
 
 
 
 
 
-
-export const getMessages = async ({
+export const getMessages2 = async ({
   conversationId,
   page = 1,
   limit = 50,
@@ -131,6 +182,13 @@ export const getMessages = async ({
     },
   };
 };
+
+
+
+
+
+
+
  
 
 

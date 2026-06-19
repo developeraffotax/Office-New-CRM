@@ -29,17 +29,20 @@ export const listConversations = async (req, res, next) => {
  
 export const listMessages = async (req, res, next) => {
   try {
-    const { page, limit } = req.query;
+    const { limit, cursorTimestamp, cursorId } = req.query;
+
     const result = await messageService.getMessages({
       conversationId: req.params.id,
-      page: +page || 1,
       limit: +limit || 50,
+      cursor:
+        cursorTimestamp && cursorId
+          ? { timestamp: new Date(cursorTimestamp), id: cursorId }
+          : null,
     });
- 
+
     res.json(result);
   } catch (err) {
-     
-    next(err)
+    next(err);
   }
 };
 

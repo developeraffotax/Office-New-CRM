@@ -101,7 +101,7 @@ useEffect(() => {
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/conversations/${chat._id}/messages`,
-        { params: { limit: 5 } }
+        { params: { limit: 50 } }
       );
       setMessages(data.messages || []);
       setPagination({
@@ -111,6 +111,7 @@ useEffect(() => {
       setReplyingTo(null);
     } catch (err) {
       console.error("Failed to fetch messages", err);
+      toast.error(err?.response?.data?.message || err?.message || "Failed to fetch messages")
     }
   };
 
@@ -128,7 +129,7 @@ const loadMoreMessages = async () => {
       `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/conversations/${chat._id}/messages`,
       {
         params: {
-          limit: 5,
+          limit: 50,
           cursorTimestamp: pagination.nextCursor.timestamp,
           cursorId: pagination.nextCursor.id,
         },
@@ -308,7 +309,8 @@ const handleSelectReaction = async (messageId, emoji) => {
       if (textareaRef.current) textareaRef.current.style.height = "auto";
     } catch (err) {
       console.error("Failed to send message sequence:", err);
-      toast.error(err?.message || "Failed to send message");
+      toast.error(err?.response?.data?.message || err?.message || "Failed to send message")
+       
     } finally {
       setLoadingMsg(false);
     }

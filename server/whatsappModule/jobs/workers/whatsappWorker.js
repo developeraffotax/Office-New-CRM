@@ -26,7 +26,7 @@ const processJob = async (job) => {
       const { message, contact, metadata } = data;
 
       if (!message?.id) {
-        logger.warn("[Worker] Inbound job missing message.id — skipping", { jobId: id, });
+        logger.warn("[WhatsappWorker] Inbound job missing message.id — skipping", { jobId: id, });
         return;
       }
 
@@ -52,7 +52,7 @@ const processJob = async (job) => {
       const { status } = data;
 
       if (!status?.id) {
-        logger.warn("[Worker] Status job missing status.id — skipping", { jobId: id, });
+        logger.warn("[WhatsappWorker] Status job missing status.id — skipping", { jobId: id, });
         return;
       }
 
@@ -69,7 +69,7 @@ const processJob = async (job) => {
       const { echo, metadata } = data;
 
       if (!echo?.id) {
-        logger.warn("[Worker] Echo job missing echo.id", { jobId: id, });
+        logger.warn("[WhatsappWorker] Echo job missing echo.id", { jobId: id, });
         return;
       }
 
@@ -79,7 +79,7 @@ const processJob = async (job) => {
     }
 
     default:
-      logger.warn("[Worker] Unknown job name — skipping", { jobId: id, name });
+      logger.warn("[WhatsappWorker] Unknown job name — skipping", { jobId: id, name });
   }
 };
 
@@ -108,18 +108,18 @@ const startWorker = async () => {
   // 1. Connect MongoDB
   try {
     await connectDB();
-    logger.info("[Worker] MongoDB connected");
+    logger.info("[WhatsappWorker] MongoDB connected");
   } catch (err) {
-    logger.error("[Worker] MongoDB connection failed", { err: err.message });
+    logger.error("[WhatsappWorker] MongoDB connection failed", { err: err.message });
     process.exit(1);
   }
 
   // 2. Wait for Redis
   if (redisConnection.status !== "ready") {
-    logger.info("[Worker] Waiting for Redis...");
+    logger.info("[WhatsappWorker] Waiting for Redis...");
     await new Promise((resolve) => redisConnection.once("ready", resolve));
   }
-  logger.info("[Worker] Redis ready");
+  logger.info("[WhatsappWorker] Redis ready");
 
   // 3. Create BullMQ worker
   worker = new Worker("whatsapp-messages", processJob, {
@@ -130,48 +130,48 @@ const startWorker = async () => {
 
   // ── Worker events ────────────────────────────────────────────────
   worker.on("completed", (job) => {
-    logger.info("[Worker] Job completed", { jobId: job.id, name: job.name });
+    logger.info("[WhatsappWorker] Job completed", { jobId: job.id, name: job.name });
   });
 
   worker.on("failed", (job, err) => {
-    logger.error("[Worker] Job failed", { jobId: job?.id, name: job?.name, attempt: job?.attemptsMade, maxAttempts: job?.opts?.attempts, err: err.message, });
+    logger.error("[WhatsappWorker] Job failed", { jobId: job?.id, name: job?.name, attempt: job?.attemptsMade, maxAttempts: job?.opts?.attempts, err: err.message, });
   });
 
   worker.on("error", (err) => {
-    logger.error("[Worker] Worker error", { err: err.message });
+    logger.error("[WhatsappWorker] Worker error", { err: err.message });
   });
 
   worker.on("stalled", (jobId) => {
-    logger.warn("[Worker] Job stalled (will be retried)", { jobId });
+    logger.warn("[WhatsappWorker] Job stalled (will be retried)", { jobId });
   });
 
 
 
-  logger.info("[Worker] WhatsApp message worker started ✅");
+  logger.info("[WhatsappWorker] WhatsApp message worker started ✅");
 };
 
 
  
 const gracefulShutdown = async (signal) => {
-  logger.info(`[Worker] ${signal} received — shutting down gracefully...`);
+  logger.info(`[WhatsappWorker] ${signal} received — shutting down gracefully...`);
 
   try {
     if (worker) {
       await worker.close();
-      logger.info("[Worker] BullMQ worker closed");
+      logger.info("[WhatsappWorker] BullMQ worker closed");
     }
 
     if (redisConnection) {
       await redisConnection.quit();
-      logger.info("[Worker] Redis connection closed");
+      logger.info("[WhatsappWorker] Redis connection closed");
     }
 
     await disconnectDB();
-    logger.info("[Worker] MongoDB disconnected");
+    logger.info("[WhatsappWorker] MongoDB disconnected");
 
     process.exit(0);
   } catch (err) {
-    logger.error("[Worker] Error during shutdown", { err: err.message });
+    logger.error("[WhatsappWorker] Error during shutdown", { err: err.message });
     process.exit(1);
   }
 };
@@ -181,12 +181,12 @@ process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 
  
 process.on("uncaughtException", (err) => {
-  logger.error("[Worker] Uncaught exception", { err: err.message, stack: err.stack, });
+  logger.error("[WhatsappWorker] Uncaught exception", { err: err.message, stack: err.stack, });
   gracefulShutdown("uncaughtException");
 });
 
 process.on("unhandledRejection", (reason) => {
-  logger.error("[Worker] Unhandled rejection", { reason });
+  logger.error("[WhatsappWorker] Unhandled rejection", { reason });
   gracefulShutdown("unhandledRejection");
 });
  

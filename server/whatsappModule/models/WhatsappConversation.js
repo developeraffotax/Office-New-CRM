@@ -21,6 +21,7 @@ const conversationSchema = new mongoose.Schema(
     lastMessageType: { type: String, enum: [ "text", "image", "document", "audio", "video", "sticker", "location", ], default: "text", },
     lastMessageId: { type: mongoose.Schema.Types.ObjectId, ref: "WhatsappMessage", default: null, },
     lastMessageAt: { type: Date, default: Date.now },
+    lastInboundAt: { type: Date, default: null, },
     lastMessageBy: {
       type: String,
       enum: ["me", "client"],

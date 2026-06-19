@@ -13,6 +13,7 @@ import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
 import { emitToUser } from "../../utils/socketEmitter.js";
 import { io } from "../../index.js";
 import { getFileUrl } from "../utils/s3.js";
+import { is24hWindowOpen } from "../utils/is24hWindowOpen.js";
 
 export const sendMessage = async ({
   conversationId,
@@ -28,7 +29,16 @@ export const sendMessage = async ({
 
   presignedUrl,
 }) => {
- 
+  
+
+  const conversation = await Conversation.findById(conversationId);
+
+    if (!is24hWindowOpen(conversation) && type !== "template") {
+      throw new Error("24h window expired");
+    }
+
+
+
   let apiPayload = { to, type };
 
  
@@ -53,6 +63,8 @@ export const sendMessage = async ({
 
  
   const apiResponse = await sendWhatsappPayload(phoneNumberId, apiPayload);
+
+  console.log("THE API RESPONSE ", apiResponse)
   const whatsappMessageId = apiResponse.messages?.[0]?.id;
 
   if (!whatsappMessageId) {
@@ -61,6 +73,7 @@ export const sendMessage = async ({
 
  
   const saved = await saveOutboundMessage({
+    companyName: conversation.companyName,
     conversationId,
     whatsappMessageId,
     from: phoneNumberId,
@@ -195,6 +208,7 @@ export const getMessages2 = async ({
 
 
 export const saveOutboundMessage = async ({
+  companyName,
   conversationId,
   whatsappMessageId,
   from,
@@ -205,8 +219,8 @@ export const saveOutboundMessage = async ({
   userId,
   context
 }) => {
-  const conversation = await Conversation.findById(conversationId);
-  if (!conversation) throw new Error("Conversation not found");
+  // const conversation = await Conversation.findById(conversationId);
+  // if (!conversation) throw new Error("Conversation not found");
 
   const preview = buildPreview(type, body, media);
   const now = new Date();
@@ -263,7 +277,7 @@ export const saveOutboundMessage = async ({
   const populatedMessage = await WhatsappMessage.findById(message._id) .populate({ path: "context.messageId", select: "body type media from to timestamp", }) .lean();
 
 
-  io.emit(`whatsapp:conversation-update-${conversation.companyName}`, {
+  io.emit(`whatsapp:conversation-update-${companyName}`, {
     action: "updated",
     thread: updatedConversation,
   });

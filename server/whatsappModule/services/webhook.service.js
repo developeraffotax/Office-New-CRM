@@ -80,6 +80,7 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
         lastMessage: preview,
         lastMessageType: safeLastType,
         lastMessageAt: timestamp,
+        lastInboundAt: timestamp,
         lastMessageBy: "client",
       },
       $setOnInsert: {
@@ -128,6 +129,7 @@ if (rawMessage.context?.id) {
     context,
     timestamp,
     meta: rawMessage,
+
   });
 
 

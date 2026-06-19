@@ -38,7 +38,6 @@ const loadMoreSentinelRef = useRef(null);
 const [pagination, setPagination] = useState({ hasMore: false, nextCursor: null });
 const [loadingMore, setLoadingMore] = useState(false);
 
- 
 
  
 
@@ -316,9 +315,29 @@ const handleSelectReaction = async (messageId, emoji) => {
     }
   };
 
+
+  
+useEffect(() => {
+  if (!chat?._id) return;
+
+  setInputMsg("");
+  setReplyingTo(null);
+  clearAllSelectedFiles();
+
+  requestAnimationFrame(() => {
+    textareaRef.current?.focus();
+  });
+}, [chat?._id]);
+
+
+
+
   if (!chat) {
     return <div className="flex-1 flex items-center justify-center text-gray-500">Select a conversation</div>;
   }
+
+
+
 
   return (
     <div className="flex flex-col h-full z-10 font-inter bg-[#efeae2]">

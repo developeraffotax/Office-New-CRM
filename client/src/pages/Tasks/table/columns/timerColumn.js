@@ -28,19 +28,16 @@ export const timerColumn = (ctx) => {
         }
       };
         return (
-           <div className="flex flex-col gap-[2px] w-[5rem]">
+           <div className="flex flex-col  items-center gap-[2px] w-[2rem]">
           <span className="w-full text-center">Timer</span>
 
-          <div className="w-full flex items-center justify-center">
             <input
               type="checkbox"
-              className="cursor-pointer h-5 w-5 ml-3 accent-orange-600"
+              className="cursor-pointer h-4 w-4   accent-orange-600"
               checked={isRunning}
               onChange={handleCheckboxChange}
             />
-
-            <label className="ml-2 text-sm cursor-pointer"></label>
-          </div>
+           
         </div>
         );
       },
@@ -88,6 +85,6 @@ export const timerColumn = (ctx) => {
       //   return cellValue === filterValue;
       // },
  
-      size: 90,
+      size: 50,
     }
 }

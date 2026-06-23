@@ -30,7 +30,6 @@ export const getTaskColumns = (ctx) => {
     departmentColumn(ctx),
     projectColumn(ctx),
     jobHolderColumn(ctx),
-    leadUserColumn(ctx),
     taskColumn(ctx),
     hoursColumn(ctx),
     startDateColumn(ctx),
@@ -40,6 +39,7 @@ export const getTaskColumns = (ctx) => {
     dateStatusColumn(ctx),
     statusColumn(ctx),
     leadColumn(ctx),
+    leadUserColumn(ctx),
     budgetColumn(ctx),
  
   ];
@@ -70,7 +70,6 @@ export const getCompletedTaskColumns = (ctx) => [
   departmentColumn(ctx),
   projectColumn(ctx),
   jobHolderColumn(ctx),
-      leadUserColumn(ctx),
   taskColumn(ctx),
   hoursColumn(ctx),
   startDateColumn(ctx),
@@ -80,6 +79,7 @@ export const getCompletedTaskColumns = (ctx) => [
   dateStatusColumn(ctx),
   statusColumnCompleted(ctx),
   leadColumn(ctx),
+  leadUserColumn(ctx),
   budgetColumn(ctx),
  
    

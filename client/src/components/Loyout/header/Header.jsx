@@ -56,6 +56,14 @@ export default function Header({
     handleMarkAllAsRead,
  
     isNotificationAllowed,
+
+        categorizedNotifications,    // NEW — list to render
+  activeTab,                   // NEW
+  setActiveTab,                // NEW
+  tabCounts,                   // NEW
+  tabs,                        // NEW
+
+
  
   } = useNotifications();
 
@@ -137,6 +145,12 @@ export default function Header({
                 openTicketId={openTicketId}
                 setOpen={setOpen}
                 ticketRef={ticketRef}
+
+                        categorizedNotifications={categorizedNotifications}
+  activeTab={activeTab}                  
+  setActiveTab={setActiveTab}             
+  tabCounts={tabCounts}               
+  tabs={tabs} 
               />
             )}
           </div>

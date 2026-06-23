@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
@@ -10,6 +10,12 @@ import {
 } from "../../../redux/slices/notificationSlice";
 import { setFilterId } from "../../../redux/slices/authSlice";
 import { openJobModal, openModal, openTicketModal } from "../../../redux/slices/globalModalSlice";
+import { getNotificationCategory,  } from "./getNotificationCategory";
+import { hasPermission } from "../../../utlis/checkPermission";
+
+
+ 
+
 
 export const useNotifications = () => {
   const dispatch = useDispatch();
@@ -20,25 +26,56 @@ export const useNotifications = () => {
     (state) => state.notifications.notificationData
   );
 
+  const NOTIFICATION_TABS = useMemo(() => {
+    const list = [
+      { key: "all", label: "All" },
+      { key: "crm", label: "CRM" },
+    ];
+
+    if (hasPermission(auth.user, "Inbox" )) {
+      list.push({ key: "inbox", label: "Inbox" });
+    }
+
+    if (hasPermission(auth.user, "Whatsapp")) {
+      list.push({ key: "whatsapp", label: "WhatsApp" });
+    }
+
+    return list;
+  }, [auth]);
+
+
   const [open, setOpen] = useState(false);
   const [openTicketId, setOpenTicketId] = useState(null);
+    const [activeTab, setActiveTab] = useState("all"); // NEW
+
 
   const { showCrmNotifications = true, showEmailNotifications = true, showWhatsappNotifications } =
     settings || {};
 
 
     //whatsapp_lead
-  const isNotificationAllowed = (notificationType) => {
-    if (notificationType === "ticket_received" || notificationType === "email_received") {
-      return showEmailNotifications;
-    }
+  // const isNotificationAllowed = (notificationType) => {
+  //   if (notificationType === "ticket_received" || notificationType === "email_received") {
+  //     return showEmailNotifications;
+  //   }
 
-    if (notificationType === "whatsapp_lead" ) {
-      return showWhatsappNotifications;
-    }
+  //   if (notificationType === "whatsapp_lead" ) {
+  //     return showWhatsappNotifications;
+  //   }
 
+  //   return showCrmNotifications;
+  // };
+
+
+    const isNotificationAllowed = (notificationType, entityType) => {
+    const category = getNotificationCategory({ type: notificationType, entityType });
+
+    if (category === "inbox") return showEmailNotifications;
+    if (category === "whatsapp") return showWhatsappNotifications;
     return showCrmNotifications;
   };
+
+
 
   const visibleNotifications = notificationData.filter((item) =>
     isNotificationAllowed(item.type)
@@ -51,9 +88,30 @@ export const useNotifications = () => {
 
 
 
+  // NEW: notifications for the currently active tab
+const categorizedNotifications =
+  activeTab === "all"
+    ? visibleNotifications
+    : visibleNotifications.filter(
+        (item) => getNotificationCategory(item) === activeTab
+      );
 
 
+ // NEW: total + unread counts per tab, for badges
+const tabCounts = NOTIFICATION_TABS.reduce((acc, tab) => {
+  const itemsInTab =
+    tab.key === "all"
+      ? visibleNotifications
+      : visibleNotifications.filter(
+          (item) => getNotificationCategory(item) === tab.key
+        );
 
+  acc[tab.key] = {
+    total: itemsInTab.length,
+    unread: itemsInTab.filter((item) => item.status === "unread").length,
+  };
+  return acc;
+}, {});
 
 
 
@@ -217,5 +275,13 @@ const handleNotificationClick = (e, item) => {
     handleMarkAllAsRead,
  
     isNotificationAllowed,
+
+        categorizedNotifications, // NEW
+    activeTab,                // NEW
+    setActiveTab,             // NEW
+    tabCounts,                // NEW
+    tabs: NOTIFICATION_TABS,  // NEW
+
+
   };
 };

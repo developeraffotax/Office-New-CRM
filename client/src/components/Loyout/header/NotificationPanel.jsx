@@ -8,9 +8,15 @@ import { setFilterId } from "../../../redux/slices/authSlice";
 import { updateNotification } from "../../../redux/slices/notificationSlice";
 // import { openTicketModal } from "../../redux/slices/ticketModalSlice";
 import EmailDetailDrawer from "../../../pages/Tickets/EmailDetailDrawer";
+import { hasPermission } from "../../../utlis/checkPermission";
 
 const NotificationPanel = ({
   visibleNotifications,
+    categorizedNotifications,    // NEW — list to render
+  activeTab,                   // NEW
+  setActiveTab,                // NEW
+  tabCounts,                   // NEW
+  tabs,                        // NEW
   handleNotificationClick,
   handleDismissNotification,
   handleDismissAll,
@@ -23,6 +29,9 @@ const NotificationPanel = ({
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth.auth);
 
+
+ 
+ 
   return (
     <div className="shadow-xl bg-gray-100 absolute z-[999] top-[2rem] left-[1.6rem] rounded-lg">
       <div className="border-b border-orange-500 px-8 py-3 flex items-center justify-between rounded-t-lg bg-gradient-to-r from-orange-600 to-orange-400 shadow-md">
@@ -47,9 +56,46 @@ const NotificationPanel = ({
         </button>
       </div>
 
+      {/* NEW: category tabs */}
+      { (hasPermission(auth.user, "Inbox", ) || hasPermission(auth.user, "Whatsapp",)) && 
+        <div className="flex border-b border-gray-200 bg-white">
+        {tabs?.map((tab) => {
+          const isActive = activeTab === tab.key;
+          const unread = tabCounts?.[tab.key]?.unread || 0;
+
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-medium border-b-2 transition-colors ${
+                isActive
+                  ? "border-orange-500 text-orange-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {tab.label}
+              {unread > 0 && (
+                <span
+                  className={`text-[10px] leading-none px-1.5 py-0.5 rounded-full ${
+                    isActive
+                      ? "bg-orange-100 text-orange-600"
+                      : "bg-gray-200 text-gray-600"
+                  }`}
+                >
+                  {unread}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      
+      }
+
       <div className="w-[380px] h-[50vh] overflow-y-auto bg-white shadow-lg border border-gray-200 rounded-b-lg">
-        {visibleNotifications?.length > 0 ? (
-          visibleNotifications.map((item) => {
+        {categorizedNotifications?.length > 0 ? (
+          categorizedNotifications.map((item) => {
             const isRead = item.status === "read";
 
             return (

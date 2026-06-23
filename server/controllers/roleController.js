@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import roleModel from "../models/roleModel.js";
+import userModel from "../models/userModel.js";
+import { io } from "../index.js";
 
 // Create Roles
 export const postRole = async (req, res) => {
@@ -169,6 +171,17 @@ export const updateRole = async (req, res) => {
       },
       { new: true }
     );
+
+
+
+
+      const affected = await userModel.find({ role: updatedRole._id }).select("_id");
+      affected.forEach(({ _id }) => {
+        io.to(`user:${_id}`).emit("permissions:updated");
+      });
+
+
+
 
     res.status(200).send({
       success: true,

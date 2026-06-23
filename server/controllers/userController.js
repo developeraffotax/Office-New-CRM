@@ -1,9 +1,10 @@
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 import { comparePassword, hashPassword } from "../helper/encryption.js";
 import userModel from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import labelModel from "../models/labelModel.js";
 import { sendOtpEmail } from "../utils/sendOtpEmail.js";
+import { io } from "../index.js";
 
 // Create User
 export const registerUser = async (req, res) => {
@@ -386,7 +387,8 @@ export const getAllActiveUsers = async (req, res) => {
 // Get Single User
 export const singleUser = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.user.user._id;
+
 
     if (!userId) {
       return res.status(400).send({
@@ -395,9 +397,10 @@ export const singleUser = async (req, res) => {
       });
     }
     const user = await userModel
-      .findOne({ _id: userId })
+      .findOne({ _id: new mongoose.Types.ObjectId(userId) })
       .select("-password")
-      .populate("role");
+      .populate("role")
+      .lean();
     if (!user) {
       return res.status(400).send({
         success: false,
@@ -561,9 +564,11 @@ export const updateRole = async (req, res) => {
       });
     }
 
-    const updateRole = await userModel
-      .findByIdAndUpdate({ _id: user._id }, { role: role }, { new: true })
-      .select("-password");
+    
+    const updateRole = await userModel .findByIdAndUpdate({ _id: user._id }, { role: role }, { new: true }) .select("-password");
+    
+    io.to(`user:${userId}`).emit("permissions:updated");
+
 
     res.status(200).send({
       success: true,

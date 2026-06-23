@@ -7,6 +7,7 @@ import { Toaster } from "react-hot-toast";
 import {
   loadAuthFromLocalStorage,
   checkTokenExpiry,
+  getUserDetail,
 } from "./redux/slices/authSlice";
 
 // Components
@@ -73,12 +74,26 @@ function App() {
 
   // Load auth from storage & check token expiry
   useEffect(() => {
+    
+
+       
     dispatch(loadAuthFromLocalStorage());
     dispatch(checkTokenExpiry());
 
      dispatch(fetchInboxUnreadCounts());
     dispatch(getUserSettings());
+
+    
   }, [dispatch]);
+
+
+  useEffect(() => {
+  if (token) {
+    dispatch(getUserDetail());
+  }
+}, [token, dispatch]);
+
+
 
   // Clear caches on load (safe wrapped)
   useEffect(() => {

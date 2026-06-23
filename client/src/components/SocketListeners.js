@@ -5,6 +5,7 @@ import { registerReminderListener } from "../listeners/reminderListener";
 import { useDispatch } from "react-redux";
 import { useSocket } from "../context/socketProvider";
 import { registerShiftEndListener } from "../listeners/shiftEndListener";
+import { registerPermissionListener } from "../listeners/permissionListener";
 
 export default function SocketListeners() {
   const socket = useSocket();
@@ -16,11 +17,13 @@ export default function SocketListeners() {
     // ✅ Register all socket event listeners here
     const cleanupReminder = registerReminderListener(socket, dispatch);
     const cleanupShiftEnd = registerShiftEndListener(socket, dispatch);
+    const cleanupPermission = registerPermissionListener(socket, dispatch);
 
     // ✅ Cleanup all listeners on unmount or socket change
     return () => {
       cleanupReminder?.();
       cleanupShiftEnd?.();
+      cleanupPermission?.();
     };
   }, [socket, dispatch]); // include dispatch so it's always the latest
 

@@ -49,13 +49,13 @@ export const ReplyPopup = ({ threadId, companyName, onClose }) => {
         top-8
         right-0
         z-50
-        w-[520px]
+        w-[620px]
         bg-white
         border
         border-gray-200
         rounded-lg
         shadow-2xl
-        animate-in fade-in zoom-in
+        animate-badge-pop
       "
       onClick={(e) => e.stopPropagation()}
     >
@@ -74,7 +74,7 @@ export const ReplyPopup = ({ threadId, companyName, onClose }) => {
       </div>
 
       {/* Body */}
-      <div className="p-0 max-h-[500px] overflow-y-auto">
+      <div className="  ">
         {loading ? (
           <div className="flex items-center justify-center py-10">
             <TbLoader2 className="animate-spin text-blue-500" size={20} />

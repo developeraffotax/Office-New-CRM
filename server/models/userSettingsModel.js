@@ -24,6 +24,11 @@ const userSettingsSchema = new Schema(
       default: true,
     },
 
+    showWhatsappNotifications: {
+      type: Boolean,
+      default: true,
+    },
+
     showEmailNotifications: {
       type: Boolean,
       default: true,

@@ -23,13 +23,20 @@ export const useNotifications = () => {
   const [open, setOpen] = useState(false);
   const [openTicketId, setOpenTicketId] = useState(null);
 
-  const { showCrmNotifications = true, showEmailNotifications = true } =
+  const { showCrmNotifications = true, showEmailNotifications = true, showWhatsappNotifications } =
     settings || {};
 
+
+    //whatsapp_lead
   const isNotificationAllowed = (notificationType) => {
     if (notificationType === "ticket_received" || notificationType === "email_received") {
       return showEmailNotifications;
     }
+
+    if (notificationType === "whatsapp_lead" ) {
+      return showWhatsappNotifications;
+    }
+
     return showCrmNotifications;
   };
 

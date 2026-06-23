@@ -208,7 +208,7 @@ const processNotificationJob = async (job) => {
               `,
         taskId: `${phone}`,
         userId: userId,
-        type: "conversation_assigned",
+        type: "message_received",
         entityType: `whatsapp`,
       });
 

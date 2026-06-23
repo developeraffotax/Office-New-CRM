@@ -15,6 +15,7 @@ export default function SettingsPage() {
     showSidebar: true,
     showCrmNotifications: true,
     showEmailNotifications: true,
+    showWhatsappNotifications: true,
     inboxConfig: {
       inboxUnreadCount: true,
       sidebarUnreadCount: true,
@@ -33,6 +34,7 @@ export default function SettingsPage() {
         showSidebar: settings.showSidebar ?? true,
         showCrmNotifications: settings.showCrmNotifications ?? true,
         showEmailNotifications: settings.showEmailNotifications ?? true,
+        showWhatsappNotifications: settings.showWhatsappNotifications ?? true,
         inboxConfig: {
           inboxUnreadCount: settings.inboxConfig?.inboxUnreadCount ?? true,
           sidebarUnreadCount: settings.inboxConfig?.sidebarUnreadCount ?? true,
@@ -108,6 +110,14 @@ export default function SettingsPage() {
                 enabled={localSettings.showEmailNotifications}
                 onChange={() => toggle("showEmailNotifications")}
               />
+
+               <ToggleRow
+                label="Whatsapp Notifications"
+                enabled={localSettings.showWhatsappNotifications}
+                onChange={() => toggle("showWhatsappNotifications")}
+              />
+
+
               <button
                 onClick={() => navigate("/settings/signatures")}
                 className="text-orange-500 font-medium py-2 rounded-lg transition max-w-[200px]"

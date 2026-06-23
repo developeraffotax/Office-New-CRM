@@ -177,7 +177,7 @@ export const updateRole = async (req, res) => {
 
       const affected = await userModel.find({ role: updatedRole._id }).select("_id");
       affected.forEach(({ _id }) => {
-        io.to(`user:${_id}`).emit("permissions:updated");
+        io.to(`user:${_id}`).emit("permissions:updated", {userId: _id});
       });
 
 

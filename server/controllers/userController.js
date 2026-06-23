@@ -387,7 +387,8 @@ export const getAllActiveUsers = async (req, res) => {
 // Get Single User
 export const singleUser = async (req, res) => {
   try {
-    const userId = req.user.user._id;
+    const userId = req.params.id;
+   // const userId = req.user.user._id;
 
 
     if (!userId) {
@@ -567,7 +568,7 @@ export const updateRole = async (req, res) => {
     
     const updateRole = await userModel .findByIdAndUpdate({ _id: user._id }, { role: role }, { new: true }) .select("-password");
     
-    io.to(`user:${userId}`).emit("permissions:updated");
+    io.to(`user:${userId}`).emit("permissions:updated", {userId: user._id});
 
 
     res.status(200).send({

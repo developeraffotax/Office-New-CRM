@@ -38,6 +38,9 @@ router.get("/get_all/users", requiredSignIn, getAllActiveUsers);
 // Get Single User
 router.get("/get_user/:id", requiredSignIn, singleUser);
 
+
+// router.get("/get_user/:id", requiredSignIn, singleUser);
+
 // Update Profile
 router.put("/update/Profile/:id", requiredSignIn, updateUserProfile);
 

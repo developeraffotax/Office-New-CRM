@@ -88,8 +88,10 @@ function App() {
 
 
   useEffect(() => {
+
+    console.log("THE REQUEST IN USEEFFECT ❤️❤️❤️❤️❤️👍👍👍👍👍👍👍")
   if (token) {
-    dispatch(getUserDetail());
+    dispatch(getUserDetail(user.id));
   }
 }, [token, dispatch]);
 

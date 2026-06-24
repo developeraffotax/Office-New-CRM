@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchInboxUnreadCounts } from "../../../redux/slices/inboxUnreadSlice";
+import { hasPermission, hasSubrole } from "../../../utlis/checkPermission";
 // ----------------- Filter matcher -----------------
 function matchesFilters(thread, filters, user) {
   if (!thread || !filters) return false;
@@ -58,7 +59,8 @@ function matchesFilters(thread, filters, user) {
 
     // User filter – only apply if not admin
       const isAdmin = user?.role?.name === "Admin";
-  if (!isAdmin &&  thread.userId !== user?.id) return false;
+      const hasUnassignedPermission = hasSubrole(user, "Inbox", "Unassigned");
+  if (!isAdmin && !hasUnassignedPermission &&  thread.userId !== user?.id) return false;
 
 
   return true;

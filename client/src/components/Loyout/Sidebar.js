@@ -36,6 +36,7 @@ import {
   selectTicketReceivedCount,
 } from "../../redux/slices/notificationSlice";
 import { IoMailUnreadOutline } from "react-icons/io5";
+import { hasPermission } from "../../utlis/checkPermission";
 
 
 export default function Sidebar({ hide, setHide }) {
@@ -502,7 +503,7 @@ const {
 
 
  
-          { (user?.role?.name === "Admin" || hasSubAccess(user, "Tickets", "Inbox") ) && (
+          { (user?.role?.name === "Admin" || hasPermission(user, "Inbox") ) && (
             <div
               className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "mail"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
@@ -618,7 +619,7 @@ const {
 
 
 
-                    { (user?.role?.name === "Admin" || hasAccess("Whatsapp")) && (
+                    { (user?.role?.name === "Admin" || hasPermission(user,"Whatsapp")) && (
             <div
               className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "whatsapp"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"

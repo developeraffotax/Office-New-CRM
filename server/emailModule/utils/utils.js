@@ -1,9 +1,16 @@
+ 
 import mongoose from "mongoose";
+
+// ─── Helpers ───────────────────────────────────────────────────────────────
+
+const toObjectId = (id) => new mongoose.Types.ObjectId(id);
+const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
+const unassignedFilter = () => ({ $or: [{ userId: { $exists: false } }, { userId: null }] });
+
+// ─── Email parsing helpers (unchanged) ─────────────────────────────────────
 
 export const getHeader = (headers, name) =>
   headers.find(h => h.name === name)?.value || "";
-
-
 
 export function extractAttachments(payload) {
   const attachments = [];
@@ -25,23 +32,6 @@ export function extractAttachments(payload) {
   return attachments;
 }
 
-
-
-
-// export function categorizeEmail({ from, subject, to }) {
-//   const s = subject.toLowerCase();
-
-//   if (to.some(e => e.email.includes("support@")) || s.includes("help"))
-//     return "support";
-
-//   if (s.includes("pricing") || s.includes("quote") || s.includes("demo"))
-//     return "lead";
-
-//   return "other";
-// }
-
-
-
 export function parseEmail(headerValue) {
   if (!headerValue) return { name: "", email: "" };
 
@@ -61,10 +51,6 @@ export function parseEmail(headerValue) {
   }
 }
 
-
-
- 
-
 export function parseEmailList(headerValue) {
   if (!headerValue) return [];
 
@@ -75,6 +61,189 @@ export function parseEmailList(headerValue) {
     .filter(e => e.email); // remove empty
 }
 
+// ─── Filter builders ───────────────────────────────────────────────────────
+
+const applyScalarFilters = (filters) => {
+  const clauses = [];
+
+  if (filters.companyName)   clauses.push({ companyName: filters.companyName });
+  if (filters.status)        clauses.push({ status: filters.status });
+  if (filters.lastMessageBy) clauses.push({ lastMessageBy: filters.lastMessageBy });
+  if (filters.starred === "true") clauses.push({ labels: "STARRED" });
+  if (filters.mailThreadId)  clauses.push({ threadId: filters.mailThreadId });
+
+  return clauses;
+};
+
+const applyCategoryFilter = (filters) => {
+  if (!filters.category) return null;
+
+  if (filters.category === "unassigned") {
+    return { $or: [{ category: { $exists: false } }, { category: null }, { category: "" }] };
+  }
+
+  return { category: filters.category };
+};
+
+const applyFolderFilter = (filters) => {
+  if (filters.folder === "inbox") return { hasInboxMessage: true };
+  if (filters.folder === "sent")  return { hasSentMessage: true, labels: { $nin: ["TRASH"] } };
+  return null;
+};
+
+const applyUnreadFilter = (filters, userId) => {
+  if (filters.unreadOnly !== "true") return null;
+
+  const userIdObj = toObjectId(userId);
+  const lastMessageField = filters.folder === "sent" ? "$lastMessageAtSent" : "$lastMessageAtInbox";
+
+  return {
+    $expr: {
+      $or: [
+        // Case 1: user never read → unread
+        {
+          $eq: [
+            {
+              $size: {
+                $filter: {
+                  input: "$readBy",
+                  as: "r",
+                  cond: { $eq: ["$$r.userId", userIdObj] },
+                },
+              },
+            },
+            0,
+          ],
+        },
+
+        // Case 2: lastReadAt < lastMessageAt → unread
+        {
+          $lt: [
+            {
+              $let: {
+                vars: {
+                  userRead: {
+                    $first: {
+                      $filter: {
+                        input: "$readBy",
+                        as: "r",
+                        cond: { $eq: ["$$r.userId", userIdObj] },
+                      },
+                    },
+                  },
+                },
+                in: "$$userRead.lastReadAt",
+              },
+            },
+            lastMessageField,
+          ],
+        },
+      ],
+    },
+  };
+};
+
+const applyDateFilter = (filters) => {
+  if (!filters.startDate && !filters.endDate) return null;
+
+  const dateField = filters.folder === "sent" ? "lastMessageAtSent" : "lastMessageAtInbox";
+  const dateQuery = {};
+  if (filters.startDate) dateQuery.$gte = new Date(filters.startDate);
+  if (filters.endDate)   dateQuery.$lte = new Date(filters.endDate);
+
+  return { [dateField]: dateQuery };
+};
+
+const applySearchFilter = (filters) => {
+  if (!filters.search?.trim()) return null;
+
+  const searchRegex = new RegExp(filters.search.trim(), "i");
+  return {
+    $or: [
+      { subject: searchRegex },
+      { "participants.email": searchRegex },
+      { "participants.name": searchRegex },
+    ],
+  };
+};
+
+// ─── User assignment filter (role-aware) ──────────────────────────────────
+
+const applyUserAssignmentFilter = (filters, { isAdmin, isTeamLead, user, hasUnassignedPermission, juniors }) => {
+  const selfId = toObjectId(user._id);
+  const requestingUnassigned = filters.userId === "unassigned";
+
+  if (isAdmin) {
+    if (requestingUnassigned) return unassignedFilter();
+    if (isValidId(filters.userId)) return { userId: toObjectId(filters.userId) };
+    return null;
+  }
+
+  // Non-admin requesting unassigned
+  if (requestingUnassigned) {
+    if (!hasUnassignedPermission) throw new Error("Unauthorized");
+    return unassignedFilter();
+  }
+
+  if (isTeamLead) {
+    const juniorIds = juniors
+      .filter(isValidId)
+      .map(toObjectId);
+
+    // Team lead filtered to a specific user
+    if (filters.userId && isValidId(filters.userId)) {
+      return { userId: toObjectId(filters.userId) };
+    }
+
+    // Team lead default view
+    const visibleUsers = [selfId, ...juniorIds];
+
+    if (hasUnassignedPermission) {
+      return {
+        $or: [
+          { userId: { $in: visibleUsers } },
+          { userId: null },
+          { userId: { $exists: false } },
+        ],
+      };
+    }
+
+    return { userId: { $in: visibleUsers } };
+  }
+
+  // Regular user — own conversations only
+  return { userId: selfId };
+};
+
+// ─── Main export ──────────────────────────────────────────────────────────
+
+export const buildFilterQuery = (req) => {
+  const user = req?.user?.user;
+
+  const inboxPermission = user.role?.access?.find(
+    (a) => a.permission === "Inbox",
+  );
+  const hasUnassignedPermission = inboxPermission?.subRoles?.includes("Unassigned");
+  const isAdmin    = user?.role?.name === "Admin";
+  const isTeamLead = user?.isTeamLead;
+  const juniors    = user?.juniors || [];
+
+  const filters = req.query;
+
+  const andFilters = [
+    ...applyScalarFilters(filters),
+    applyUserAssignmentFilter(filters, { isAdmin, isTeamLead, user, hasUnassignedPermission, juniors }),
+    applyCategoryFilter(filters),
+    applyFolderFilter(filters),
+    applyUnreadFilter(filters, user._id),
+    applyDateFilter(filters),
+    applySearchFilter(filters),
+  ].filter(Boolean);
+
+  if (andFilters.length === 0) return {};
+  if (andFilters.length === 1) return andFilters[0];
+  return { $and: andFilters };
+};
 
 
 
@@ -84,31 +253,14 @@ export function parseEmailList(headerValue) {
 
 
 
-// export const buildUnassignedFilter = (field) => {
-//   if (field === "userId") {
-//     return [
-//       { userId: { $exists: false } },
-//       { userId: null },
-//     ];
-//   }
-
-//   if (field === "category") {
-//     return [
-//       { category: { $exists: false } },
-//       { category: null },
-//       { category: "" },
-//     ];
-//   }
-
-//   return [];
-// };
 
 
+ 
 
 
 
 // filters.js
-export const buildFilterQuery = (req) => {
+export const buildFilterQuery2 = (req) => {
 
   const user = req?.user?.user;
 

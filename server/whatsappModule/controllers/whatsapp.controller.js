@@ -118,10 +118,10 @@ console.log("COMPANY", companyName)
           
         });
 
-        const updatedMessage = mediaMsg.toObject();
-        updatedMessage.media.url = presignedUrl;
+        // const updatedMessage = mediaMsg.toObject();
+        mediaMsg.media.url = presignedUrl;
 
-        responses.push(updatedMessage);
+        responses.push(mediaMsg);
       }
     } 
     // 2. Fallback: No files, just a plain text/template message

@@ -61,7 +61,8 @@ const updates_object_init = {
       stage: '',
       status: '',
       value: '',
-      number: ''
+      number: '',
+      leadUser: ''
 }
 
 
@@ -1562,6 +1563,24 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                    
                 >
                   <option value="empty">Job Holder</option>
+                  {users.map((jobHold, i) => (
+                    <option value={jobHold.name} key={i}>
+                      {jobHold.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="w-full">
+                <select
+                  name="leadUser"
+                  value={updates.leadUser}
+                  
+                  onChange={handle_on_change_update}
+                  className={`${style.input} w-full`}
+                   
+                >
+                  <option value="empty">Lead</option>
                   {users.map((jobHold, i) => (
                     <option value={jobHold.name} key={i}>
                       {jobHold.name}

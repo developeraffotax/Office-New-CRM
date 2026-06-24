@@ -155,6 +155,7 @@ export default function AllJobs() {
   const [showEdit, setShowEdit] = useState(false);
   const [jobHolder, setJobHolder] = useState("");
   const [lead, setLead] = useState("");
+  const [leadUser, setLeadUser] = useState("");
   const [yearEnd, setYearEnd] = useState("");
   const [jobDeadline, setJobDeadline] = useState("");
   const [currentDate, setCurrentDate] = useState("");
@@ -2103,6 +2104,7 @@ const ctx = useMemo(() => {
           ),
           jobHolder,
           lead,
+          leadUser,
           yearEnd,
           jobDeadline,
           currentDate,
@@ -2948,6 +2950,21 @@ useEffect(() => {
                   style={{ width: "7rem" }}
                 >
                   <option value="empty">Owner</option>
+                  {users.map((jobHold, i) => (
+                    <option value={jobHold} key={i}>
+                      {jobHold}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="">
+                <select
+                  value={leadUser}
+                  onChange={(e) => setLeadUser(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "7rem" }}
+                >
+                  <option value="empty">Lead</option>
                   {users.map((jobHold, i) => (
                     <option value={jobHold} key={i}>
                       {jobHold}

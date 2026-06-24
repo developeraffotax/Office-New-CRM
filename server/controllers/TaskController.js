@@ -1989,6 +1989,7 @@ export const updateMultipleTasks = async (req, res) => {
       deadline,
       taskDate,
       lead,
+      leadUser,
       status,
     } = req.body;
 
@@ -2027,6 +2028,7 @@ export const updateMultipleTasks = async (req, res) => {
     if (deadline) updateData["deadline"] = deadline;
     if (taskDate) updateData["taskDate"] = taskDate;
     if (lead) updateData["lead"] = lead;
+    if (leadUser) updateData["leadUser"] = leadUser;
     if (status) updateData["status"] = status;
 
     const updatedTasks = await taskModel.updateMany(

@@ -2144,6 +2144,7 @@ export const updateBulkJob = async (req, res) => {
       activeClient,
       qualities,
       clientType,
+      leadUser,
     } = req.body;
 
     console.log("qualities:", qualities);
@@ -2171,6 +2172,7 @@ export const updateBulkJob = async (req, res) => {
     let updateData = {};
     if (jobHolder) updateData["job.jobHolder"] = jobHolder;
     if (lead) updateData["job.lead"] = lead;
+    if (leadUser) updateData["job.leadUser"] = leadUser;
     if (yearEnd) updateData["job.yearEnd"] = yearEnd;
     if (jobDeadline) updateData["job.jobDeadline"] = jobDeadline;
     if (currentDate) updateData.currentDate = currentDate;

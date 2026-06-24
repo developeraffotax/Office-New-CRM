@@ -51,7 +51,7 @@ import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import SelectedUsers from "../../components/SelectedUsers";
 import Thread from "../../components/gmail/thread/Thread";
 
-const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "" };
+const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "", leadUser: "" };
 const jobStatusOptions = [
   "Quote",
   "Data",
@@ -61,6 +61,7 @@ const jobStatusOptions = [
   "Submission",
   "Billing",
   "Feedback",
+  
 ];
 const companyData = ["Affotax", "Outsource"];
 const status = ["Read", "Unread", "Send"];
@@ -1176,6 +1177,24 @@ export default function Tickets() {
                         ))}
                       </select>
                     </div>
+
+                     <div className="w-full">
+                      <select
+                        name="leadUser"
+                        value={updates.leadUser}
+                        onChange={handle_on_change_update}
+                        className={`${style.input} w-full`}
+                      >
+                        <option value="empty">Lead</option>
+                        {users.map((jobHolder, i) => (
+                          <option value={jobHolder.name} key={i}>
+                            {jobHolder.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+
 
                     <div className="">
                       <select

@@ -102,6 +102,7 @@ const AllTasks = ({ justShowTable = false }) => {
   const [project, setProject] = useState("");
   const [jobHolder, setJobHolder] = useState("");
   const [lead, setLead] = useState("");
+  const [leadUser, setLeadUser] = useState("");
   const [hours, setHours] = useState("");
   const [startDate, setStartDate] = useState("");
   const [deadline, setDeadline] = useState("");
@@ -428,6 +429,7 @@ const AllTasks = ({ justShowTable = false }) => {
           projectId: project,
           jobHolder,
           lead,
+          leadUser,
           hours,
           startDate,
           deadline,
@@ -1379,6 +1381,24 @@ const AllTasks = ({ justShowTable = false }) => {
                   ))}
                 </select>
               </div>
+
+              <div className="">
+                <select
+                  value={leadUser}
+                  onChange={(e) => setLeadUser(e.target.value)}
+                  className={`${style.input} w-full`}
+                  style={{ width: "7rem" }}
+                >
+                  <option value="empty">Lead </option>
+                  {users.map((jobHold, i) => (
+                    <option value={jobHold.name} key={i}>
+                      {jobHold.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+
               <div className="inputBox" style={{ width: "8.5rem" }}>
                 <input
                   type="date"

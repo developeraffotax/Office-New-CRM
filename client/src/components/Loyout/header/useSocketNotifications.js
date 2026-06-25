@@ -65,7 +65,7 @@ export const useSocketNotifications = (
       const notification = payload?.notification;
       if (!notification) return;
 
-      if (!isNotificationAllowed(notification.type)) return;
+      if (!isNotificationAllowed(notification.type, settings)) return;
 
       // Always sync redux in ALL tabs
       dispatch(getNotifications(auth.user.id));

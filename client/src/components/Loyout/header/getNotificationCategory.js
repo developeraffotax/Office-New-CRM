@@ -14,3 +14,19 @@ export const getNotificationCategory = (item) => {
   return "crm";
 };
 
+
+
+
+export   const isNotificationAllowed = (notificationType,  settings) => {
+
+  
+  const { showCrmNotifications = true, showEmailNotifications = true, showWhatsappNotifications = true } =
+    settings || {};
+
+
+    const category = getNotificationCategory({ type: notificationType,   });
+
+    if (category === "inbox") return showEmailNotifications;
+    if (category === "whatsapp") return showWhatsappNotifications;
+    return showCrmNotifications;
+  };

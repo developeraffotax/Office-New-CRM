@@ -19,6 +19,7 @@ import {
   initGlobalTimerListener,
 } from "../../redux/slices/globalTimerSlice";
 import { QuickList } from "./QuickList";
+import { isNotificationAllowed } from "./header/getNotificationCategory";
 
 /* ---------------- helpers ---------------- */
 
@@ -55,17 +56,12 @@ export default function Layout() {
  
   /* Settings */
   const { settings } = useSelector((state) => state.settings);
-  const { showCrmNotifications = true, showEmailNotifications = true } =
-    settings || {};
-
+ 
   /* Notifications */
   const unread_notifications_count = useSelector((state) =>
     state.notifications.notificationData.filter(
       (n) =>
-        n.status === "unread" &&
-        (n.type === "ticket_received" || n.type === "email_received"
-          ? showEmailNotifications
-          : showCrmNotifications)
+        n.status === "unread" && isNotificationAllowed(n.type, settings)
     ).length
   );
 
@@ -103,7 +99,7 @@ export default function Layout() {
     }
 
     if( unread_notifications_count > 0 ) {
-      document.title = `(${unread_notifications_count})🔔 ${mainTitle})`
+      document.title = `(${unread_notifications_count})🔔 ${mainTitle}`
         
     } else {
       document.title = mainTitle;

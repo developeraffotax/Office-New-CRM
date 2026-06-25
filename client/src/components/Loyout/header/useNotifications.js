@@ -10,7 +10,7 @@ import {
 } from "../../../redux/slices/notificationSlice";
 import { setFilterId } from "../../../redux/slices/authSlice";
 import { openJobModal, openModal, openTicketModal } from "../../../redux/slices/globalModalSlice";
-import { getNotificationCategory,  } from "./getNotificationCategory";
+import { getNotificationCategory, isNotificationAllowed,  } from "./getNotificationCategory";
 import { hasPermission } from "../../../utlis/checkPermission";
 
 
@@ -49,8 +49,8 @@ export const useNotifications = () => {
     const [activeTab, setActiveTab] = useState("all"); // NEW
 
 
-  const { showCrmNotifications = true, showEmailNotifications = true, showWhatsappNotifications } =
-    settings || {};
+  // const { showCrmNotifications = true, showEmailNotifications = true, showWhatsappNotifications = true } =
+  //   settings || {};
 
 
     //whatsapp_lead
@@ -67,22 +67,14 @@ export const useNotifications = () => {
   // };
 
 
-    const isNotificationAllowed = (notificationType, entityType) => {
-    const category = getNotificationCategory({ type: notificationType, entityType });
-
-    if (category === "inbox") return showEmailNotifications;
-    if (category === "whatsapp") return showWhatsappNotifications;
-    return showCrmNotifications;
-  };
-
 
 
   const visibleNotifications = notificationData.filter((item) =>
-    isNotificationAllowed(item.type)
+    isNotificationAllowed(item.type, settings)
   );
 
   const unread_notifications_count = notificationData.filter(
-    (n) => n.status === "unread" && isNotificationAllowed(n.type)
+    (n) => n.status === "unread" && isNotificationAllowed(n.type, settings)
   ).length;
 
 

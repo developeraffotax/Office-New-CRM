@@ -142,7 +142,7 @@ const processNotificationJob = async (job) => {
     }
 
     case "quote": {
-      const { threadId, senderEmail, subject, companyName } = payload;
+      const { threadId, senderEmail, subject, companyName, _id } = payload;
 
       const adminRole = await roleModel.findOne({ name: "Admin" });
       if (!adminRole) return true;
@@ -174,6 +174,7 @@ const processNotificationJob = async (job) => {
             userId: admin._id,
             type: "email_received",
             entityType: "mailbox",
+            entityId: threadId // threadId id
           }),
         ),
       );
@@ -246,6 +247,9 @@ const processNotificationJob = async (job) => {
 
         if (!admins.length) return true;
 
+
+        console.log("THE _ID IS", _id)
+
         const notifications = await Promise.all(
           admins.map((admin) =>
             notificationModel.create({
@@ -259,6 +263,7 @@ const processNotificationJob = async (job) => {
               userId: admin._id,
               type: "whatsapp_lead",
               entityType: "whatsapp",
+              entityId: _id
             }),
           ),
         );

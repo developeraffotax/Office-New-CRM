@@ -2,7 +2,7 @@
 
 import express from "express";
 import { isAdmin, requiredSignIn } from "../../middlewares/authMiddleware.js";
-import {    bulkUpdateThreadMetadata, deleteThread, getMailbox, getMailboxUserCounts, getSentItems, getThreadMessageUsers, getUnreadCounts, markThreadAsRead, markThreadAsUnread, toggleStarredThread, updateThreadMetadata } from "../controllers/email.controller.js";
+import {    bulkUpdateThreadMetadata, deleteThread, getMailbox, getMailboxUserCounts, getSentItems, getThreadMessageUsers, getUnreadCounts, markThreadAsRead, markThreadAsUnread, toggleStarredThread, updateThreadMetadata, updateThreadMetadataViaThreadId } from "../controllers/email.controller.js";
 import { reply } from "../controllers/reply.controller.js";
 import { forward } from "../controllers/forward.controller.js";
  
@@ -20,6 +20,7 @@ router.get("/get-sent", requiredSignIn,   getSentItems);
 
  
 router.put("/update-thread/:id", requiredSignIn,    updateThreadMetadata);
+router.put("/update-thread-via-thread-id/:threadId", requiredSignIn,    updateThreadMetadataViaThreadId);
 router.patch("/bulk-update-thread", requiredSignIn,    bulkUpdateThreadMetadata);
 
 

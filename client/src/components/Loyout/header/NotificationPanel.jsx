@@ -9,6 +9,8 @@ import { updateNotification } from "../../../redux/slices/notificationSlice";
 // import { openTicketModal } from "../../redux/slices/ticketModalSlice";
 import EmailDetailDrawer from "../../../pages/Tickets/EmailDetailDrawer";
 import { hasPermission } from "../../../utlis/checkPermission";
+import { getNotificationCategory } from "./getNotificationCategory";
+import { UsersList } from "./UsersList";
 
 const NotificationPanel = ({
   visibleNotifications,
@@ -21,6 +23,14 @@ const NotificationPanel = ({
   handleDismissNotification,
   handleDismissAll,
   handleMarkAllAsRead,
+
+   assigningId,
+  toggleAssignDropdown,
+  handleAssignUser,
+  assignableUsers, // 
+  users,
+
+
  
   openTicketId,
   setOpen,
@@ -29,8 +39,7 @@ const NotificationPanel = ({
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth.auth);
 
-
- 
+console.log("THE CATEGORIZED NOTIFICATIONS ARE>>>", "❤️❤️❤️❤️❤️❤️❤️❤️", categorizedNotifications)
  
   return (
     <div className="shadow-xl bg-gray-100 absolute z-[999] top-[2rem] left-[1.6rem] rounded-lg">
@@ -151,6 +160,11 @@ const NotificationPanel = ({
                         {item.clientName}
                       </p>
                     )}
+
+
+
+
+                   
                   </div>
 
                   <div className="w-full flex justify-between items-center gap-4 mt-2">
@@ -158,7 +172,38 @@ const NotificationPanel = ({
                       {format(item.createdAt)}
                     </p>
 
-                    <div className="flex items-center gap-2">
+
+
+
+                    <div className="flex items-center gap-3">
+
+                    
+{ (item?.entityId) && (
+  <div className="relative  font-google">
+    <button
+      onClick={(e) => {
+        e.stopPropagation(); // critical — parent div navigates on click
+        toggleAssignDropdown(item._id);
+      }}
+      className={`text-xs px-2 py-1 rounded-full transition ${
+        item.currentAssignee
+          ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          : "bg-orange-100 text-orange-700 hover:bg-orange-200"
+      }`}
+    >
+      {item.currentAssignee
+        ? `Assigned: ${users.find(u => u._id === item.currentAssignee)?.name}`
+        : "Unassigned — Assign"}
+    </button>
+
+   {assigningId === item._id && (
+<UsersList  handleAssignUser={handleAssignUser} notification={item} users={users} onClose={() => toggleAssignDropdown(item._id)} />
+)}
+  </div>
+)}
+
+                       
+
                       <span
                         title="Dismiss Notification"
                         onClick={() => handleDismissNotification(item)}

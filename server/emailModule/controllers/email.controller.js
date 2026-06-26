@@ -543,6 +543,114 @@ export const updateThreadMetadata = async (req, res) => {
 
 
 
+export const updateThreadMetadataViaThreadId = async (req, res) => {
+  try {
+    const { threadId } = req.params;
+    const updates = req.body;
+
+    /**
+     * 1️⃣ Whitelist validation
+     */
+    const allowedUpdates = ["category", "userId", "status"];
+    const updateKeys = Object.keys(updates);
+
+    const isValidUpdate = updateKeys.every((key) =>
+      allowedUpdates.includes(key),
+    );
+
+    if (!isValidUpdate) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid fields in update!",
+      });
+    }
+
+    /**
+     * 2️⃣ Fetch old thread
+     */
+    const oldThread = await EmailThread.findOne({threadId});
+    if (!oldThread) {
+      return res.status(404).json({
+        success: false,
+        message: "Conversation not found!",
+      });
+    }
+
+    if (updates?.userId) {
+      updates.userId = new mongoose.Types.ObjectId(updates.userId);
+    }
+
+
+    /**
+     * 3️⃣ Update thread
+     */
+    const updatedThread = await EmailThread.findOneAndUpdate({threadId}, {$set: {...updates}}, {
+      new: true,
+      runValidators: true,
+       updatedBy: req?.user?.user?._id
+    })
+
+    // console.log("UPDATED THREAD✔️", updatedThread)
+
+    /**
+     * 4️⃣ Assignment diff
+     */
+    const oldUserId = oldThread.userId?.toString() || null;
+    const newUserId = updatedThread.userId?.toString() || null;
+
+    const selfAssign = isSelfAssignment(req?.user?.user, newUserId);
+
+    /**
+     * 5️⃣ Notifications (skip self-assign)
+     */
+    if (updateKeys.includes("userId") && !selfAssign) {
+      await createNotification(req, updatedThread);
+    }
+
+    /**
+     * 6️⃣ Socket emits (skip self-assign)
+     */
+
+    const eventName = `metadata:updated-${updatedThread.companyName}`;
+
+    // Assigned → Unassigned OR Reassigned
+    if (oldUserId && !isSelfAssignment(req?.user?.user, oldUserId)) {
+      emitToUser(oldUserId, eventName, {});
+    }
+
+    // Unassigned → Assigned OR Reassigned
+    if (
+      newUserId &&
+      newUserId !== oldUserId &&
+      !isSelfAssignment(req?.user?.user, newUserId)
+    ) {
+      emitToUser(newUserId, eventName, {});
+    }
+
+    /**
+     * 7️⃣ Response
+     */
+    res.status(200).json({
+      success: true,
+      message: "Thread updated successfully!",
+      thread: updatedThread,
+    });
+  } catch (error) {
+    console.error("Error updating thread:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while updating thread.",
+      error: error.message,
+    });
+  }
+};
+
+
+
+
+
+
+
 
 
 

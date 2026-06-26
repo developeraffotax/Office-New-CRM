@@ -1,8 +1,9 @@
 import notificationModel from "../models/notificationModel.js";
+import Conversation from "../whatsappModule/models/WhatsappConversation.js";
+import Thread from "../emailModule/models/EmailThread.js";
 
 import moment from "moment";
-
-
+import { getNotificationCategory } from "../utils/getNotificationCategory.js";
 
 
 
@@ -50,7 +51,72 @@ import moment from "moment";
 // };
 
 
+const ASSIGNEE_LOOKUPS = {
+  whatsapp: {
+    fetch: (ids) =>
+      Conversation.find(
+        { _id: { $in: ids } },
+        { userId: 1 }
+      )
+        // .populate("userId", "name avatar")
+        .lean(),
 
+    getKey: (doc) => String(doc._id),
+  },
+
+  inbox: {
+    fetch: (ids) =>
+      Thread.find(
+        { threadId: { $in: ids } },
+        { userId: 1, threadId: 1 }
+      )
+        // .populate("userId", "name avatar")
+        .lean(),
+
+    getKey: (doc) => String(doc.threadId),
+  },
+};
+
+async function enrichWithAssignee(notifications) {
+  const idsByType = {};
+
+  for (const n of notifications) {
+    const category = getNotificationCategory(n);
+
+    if (!n.entityId || !ASSIGNEE_LOOKUPS[category]) continue;
+
+    idsByType[category] ??= new Set();
+    idsByType[category].add(String(n.entityId));
+  }
+
+  const assigneeMaps = {};
+
+  await Promise.all(
+    Object.entries(idsByType).map(async ([category, ids]) => {
+      const { fetch, getKey } = ASSIGNEE_LOOKUPS[category];
+
+      const docs = await fetch([...ids]);
+
+      assigneeMaps[category] = new Map(
+        docs.map((doc) => [
+          getKey(doc),
+          doc.userId ?? null,
+        ])
+      );
+    })
+  );
+
+  return notifications.map((notification) => {
+    const category = getNotificationCategory(notification);
+
+    return {
+      ...notification,
+      currentAssignee: notification.entityId
+        ? assigneeMaps[category]?.get(String(notification.entityId)) ?? null
+        : null,
+    };
+  });
+}
 
 
 
@@ -77,12 +143,17 @@ export const getNotification = async (req, res) => {
           $lte: endOfDay,
         },
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 }).lean();
+
+
+      const enrichedNotifications = await enrichWithAssignee(notifications);
+
+
 
     res.status(200).send({
       success: true,
       message: "Today's user notifications.",
-      notifications,
+      notifications: enrichedNotifications,
     });
   } catch (error) {
     console.error(error);
@@ -239,3 +310,38 @@ export const ticketNotification = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

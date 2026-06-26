@@ -54,6 +54,11 @@ export default function Header({
     handleDismissNotification,
     handleDismissAll,
     handleMarkAllAsRead,
+
+        assigningId,
+toggleAssignDropdown,
+handleAssignUser,
+users,
  
     isNotificationAllowed,
 
@@ -141,6 +146,12 @@ export default function Header({
                 handleDismissNotification={handleDismissNotification}
                 handleDismissAll={handleDismissAll}
                 handleMarkAllAsRead={handleMarkAllAsRead}
+
+                  // ...existing props
+  assigningId={assigningId}
+  toggleAssignDropdown={toggleAssignDropdown}
+  handleAssignUser={handleAssignUser}
+   users = {users}
                
                 openTicketId={openTicketId}
                 setOpen={setOpen}

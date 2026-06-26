@@ -12,6 +12,8 @@ import { setFilterId } from "../../../redux/slices/authSlice";
 import { openJobModal, openModal, openTicketModal } from "../../../redux/slices/globalModalSlice";
 import { getNotificationCategory, isNotificationAllowed,  } from "./getNotificationCategory";
 import { hasPermission } from "../../../utlis/checkPermission";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 
  
@@ -226,6 +228,96 @@ const handleNotificationClick = (e, item) => {
 
 
 
+const ASSIGN_ENDPOINTS = {
+  whatsapp: (_id) => `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/update-conversation/${_id}`,
+  mailbox: (threadId) =>  `${process.env.REACT_APP_API_URL}/api/v1/gmail/update-thread-via-thread-id/${threadId}`,
+};
+
+const assignFromNotification = async(notification, userId) => {
+  const buildUrl = ASSIGN_ENDPOINTS[notification.entityType];
+  if (!buildUrl) return; // type doesn't support inline assignment
+  return axios.put(buildUrl(notification.entityId), { userId: userId });
+}
+ 
+
+
+
+
+
+
+ const [assigningId, setAssigningId] = useState(null);
+ 
+const [users, setUsers] = useState([]);
+
+const toggleAssignDropdown = (notificationId) => {
+  setAssigningId((prev) => (prev === notificationId ? null : notificationId));
+};
+
+const handleAssignUser = async (notification, userId) => {
+
+  console.log({
+    notification,
+    userId
+  })
+  try {
+ 
+    setAssigningId(null);
+    toast.success('Updated!');
+    await assignFromNotification(notification, userId);
+    // simplest correct approach: refetch so the panel reflects the
+    // server-confirmed assignee (same "read-time enrichment" idea as before).
+    // If you'd rather avoid the refetch, add a small reducer to patch
+    // the matching notification by taskId/entityId instead.
+     dispatch(getNotifications(auth.user.id));
+  } catch (err) {
+    console.log("ERROR", err)
+     
+  }
+};
+
+
+
+  const getAllUsers = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+      );
+      // setUsers(
+      //   data?.users?.filter((user) =>
+      //     user.role?.access?.some((item) =>
+      //       item?.permission?.includes("Whatsapp")
+      //     )
+      //   ) || []
+      // );
+
+      setUsers(data?.users)
+
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
+
+
+
+useEffect(() => {
+getAllUsers()
+}, [])
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -254,6 +346,33 @@ const handleNotificationClick = (e, item) => {
     }
   }, [auth.user, dispatch, settings]);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   return {
     open,
     setOpen,
@@ -274,6 +393,11 @@ const handleNotificationClick = (e, item) => {
     tabCounts,                // NEW
     tabs: NOTIFICATION_TABS,  // NEW
 
+    assigningId,
+toggleAssignDropdown,
+handleAssignUser,
+users
+ 
 
   };
 };

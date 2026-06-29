@@ -8,7 +8,7 @@ const hrSchema = new mongoose.Schema(
       required: true,
     },
     
-    hrTaskRef: { type: Number, unique: true },
+    hrTaskRef: { type: Number, unique: true, index: true  },
 
     department: {
       type: mongoose.Schema.Types.ObjectId,

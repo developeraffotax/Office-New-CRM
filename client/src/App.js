@@ -89,8 +89,7 @@ function App() {
 
   useEffect(() => {
 
-    console.log("THE REQUEST IN USEEFFECT ❤️❤️❤️❤️❤️👍👍👍👍👍👍👍")
-  if (token) {
+   if (token) {
     dispatch(getUserDetail(user.id));
   }
 }, [token, dispatch]);
@@ -146,6 +145,8 @@ function App() {
       ),
       Templates: <Route path="/templates" element={<Template />} />,
       Subscription: <Route path="/subscriptions" element={<Subscription />} />,
+      Activity: <Route path="/activity" element={<ScreenshotDashboard />} />
+
     }),
     []
   );
@@ -190,7 +191,6 @@ function App() {
             <Route path="/employee/dashboard" element={<UDashboard />} />
             <Route path="/editor/templates" element={<TemplateEditor />} />
             <Route path="/pdf/editor" element={<PDFEditor />} />
-            <Route path="/activity" element={<ScreenshotDashboard />} />
             <Route path="/leads/create" element={<AutoCreateLeadFromURL user={user}/>} />
             <Route path="/settings" element={<SettingsPage  />} />
             <Route path="/settings/signatures" element={<SignaturesModule  />} />

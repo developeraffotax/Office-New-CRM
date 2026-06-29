@@ -293,7 +293,7 @@ export default function SendEmailModal({
                   {hasPermission.client && (
                     <button
                       type="button"
-                      onClick={() => setType("client")}
+                      onClick={() => {setType("client"); setEmail("")}}
                       className={`flex-1 text-[12px] py-1 rounded-md transition-all ${
                         type === "client"
                           ? "bg-white shadow-sm font-semibold text-slate-800"
@@ -305,7 +305,7 @@ export default function SendEmailModal({
                   )}
                   <button
                     type="button"
-                    onClick={() => setType("manual")}
+                    onClick={() => {setType("manual"); setClientId("")}}
                     className={`flex-1 text-[12px] py-1 rounded-md transition-all ${
                       type === "manual"
                         ? "bg-white shadow-sm font-semibold text-slate-800"

@@ -6,8 +6,21 @@ import Summary from "./Summary";
 import Activity from "./Activity";
 import ScreenshotGallery from "./ScreenshotGallery";
 import Filters from "./Filters";
+import { useSelector } from "react-redux";
+import { useMemo } from "react";
+import { hasSubrole, isAdmin } from "../../utlis/checkPermission";
 
 export default function ScreenshotDashboard() {
+
+    const {
+    auth: { user },
+  } = useSelector((state) => state.auth);
+
+const { isUserAdmin, hasAllPermission } = useMemo(() => ({
+  isUserAdmin: isAdmin(user) || false,
+  hasAllPermission: hasSubrole(user, "Activity", "All Users") || false
+}), [user]);
+
   const [timers, setTimers] = useState([]);
   const [totalWorkedTimeInMins, setTotalWorkedTimeInMins] = useState(0);
 
@@ -25,11 +38,20 @@ export default function ScreenshotDashboard() {
   const [startDate, setStartDate] = useState(dayjs().startOf("day"));
   const [endDate, setEndDate] = useState(dayjs().endOf("day"));
 
+
+
+
   // ---------- Fetch All Users ----------
   const getAllUsers = async () => {
+
+    let url = `${process.env.REACT_APP_API_URL}/api/v1/user/get/active/team`;
+    if(isUserAdmin || hasAllPermission) {
+      url = `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`;
+    }
+
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        url
       );
 
       setUsers(data.users);
@@ -40,6 +62,8 @@ export default function ScreenshotDashboard() {
       console.error("❌ Failed to load users:", error);
     }
   };
+
+ 
 
   // ---------- Fetch Timers ----------
   const fetchTimers = async () => {

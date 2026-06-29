@@ -1105,7 +1105,7 @@ const {
 
 
           {/*  */}
-          {isSettingsOpen && (auth?.user?.role?.name === "Admin") && (
+          {isSettingsOpen && (auth?.user?.role?.name === "Admin" || hasAccess("Activity")) && (
             <>
               <div
                 className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "activity"

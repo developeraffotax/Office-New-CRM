@@ -88,7 +88,7 @@ export default function Filters({
   const [anchorTeamEl, setAnchorTeamEl] = useState(null);
 
   const [visibleTabs, setVisibleTabs] = useState(() => {
-    const saved = localStorage.getItem("visible_inbox_tabs");
+    const saved = localStorage.getItem("visible_whatsapp_tabs");
 
     if (saved) return JSON.parse(saved);
 
@@ -118,7 +118,7 @@ export default function Filters({
 
     setVisibleTabs(updated);
 
-    localStorage.setItem("visible_inbox_tabs", JSON.stringify(updated));
+    localStorage.setItem("visible_whatsapp_tabs", JSON.stringify(updated));
   };
 
   const applyPreset = (days) => {

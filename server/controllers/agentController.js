@@ -25,11 +25,11 @@ export const takeScreenshot = async (req, res) => {
 
      const userId = req.user?.user?._id;
     
-     console.log("THE ACTIFVE WINDOW IS 💚💚💚", activeWindow)
-     console.log("THE ACTIVITY IS 💜💜💜", activity)
+     //console.log("THE ACTIFVE WINDOW IS 💚💚💚", activeWindow)
+     //console.log("THE ACTIVITY IS 💜💜💜", activity)
 
     const s3Url = await getFileUrl(s3Key);
-    console.log("THE USER ID IS ", userId)
+    // console.log("THE USER ID IS ", userId)
     const data = {
       s3Key,
       s3Url,
@@ -56,7 +56,7 @@ export const getPresignedUrl = async (req, res) => {
   try {
     const { fileName, fileType } = req.query;
     const userId = req.user?.user?._id || "unknown";
-console.log("THE USER ID IS>> ", userId)
+ 
     if (!fileName || !fileType)
       return res.status(400).json({ error: "Missing fileName or fileType" });
 

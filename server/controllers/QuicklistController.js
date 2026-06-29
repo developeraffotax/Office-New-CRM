@@ -37,7 +37,7 @@ export const createQuickList = async (req, res) => {
 export const getAllQuickLists = async (req, res) => {
   try {
     const userId = req.user.user._id;
-    console.log("userId:", userId);
+ 
     const quickList = await QuickListModel.findOne({
       user: req.user.user._id,
     });

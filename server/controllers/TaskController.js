@@ -119,8 +119,7 @@ export const createTask = async (req, res) => {
       ? new Date(nextRecurringDate)
       : calculateStartDate(new Date(now), recurring);
 
-    console.log("Updated Next Recurring Date:💚", updatedNextRecurringDate);
-
+ 
     const tasks = await taskModel.create({
       project: projectId,
       jobHolder,
@@ -1647,8 +1646,7 @@ export const autoCreateRecurringTasks = async (req, res) => {
       },
     });
 
-    console.log("TASK LENGTH", tasks.length)
-
+ 
     for (const task of tasks) {
       let newStartDate = calculateStartDate(task.startDate, task.recurring);
       let newDeadline = calculateStartDate(task.deadline, task.recurring);
@@ -1659,8 +1657,7 @@ export const autoCreateRecurringTasks = async (req, res) => {
         status: "process",
       }));
 
-      console.log(subtasksIncludingCompleted, "SUBTASKS INC COMPLETED");
-
+ 
       const subtasksNotIncludingCompleted = task.subtasks
         ?.filter((el) => el.status !== "complete")
         .map((subtask) => ({
@@ -1844,8 +1841,7 @@ export const reordering = async (req, res) => {
     const taskId = req.params.id;
     const { subtasks } = req.body;
 
-    console.log("Received subtasks:", subtasks);
-
+ 
     if (!taskId) {
       return res.status(400).json({
         success: false,
@@ -1952,8 +1948,7 @@ export const importData = async (req, res) => {
 
     const data = parseData(file.buffer);
 
-    console.log("data:", data);
-
+ 
     const clients = data.map((task) => ({
       task: task.task || "",
       jobHolder: task.jobHolder || "",
@@ -1993,8 +1988,7 @@ export const updateMultipleTasks = async (req, res) => {
       status,
     } = req.body;
 
-    console.log("rowSelection:", rowSelection);
-
+ 
     if (
       !rowSelection ||
       !Array.isArray(rowSelection) ||
@@ -2458,8 +2452,7 @@ export const getTasks = async (req, res) => {
     const total = result[0]?.metadata[0]?.total || 0;
 
 
-    console.log("tasks:", tasks);
-
+ 
     res.status(200).send({
       success: true,
       message: "Tasks fetched successfully",

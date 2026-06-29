@@ -100,7 +100,7 @@ export const updateLead = async (req, res) => {
     }
      
 
-    console.log("Updates💚💚", updates);
+ 
 
 
 
@@ -600,8 +600,7 @@ export const updateBulkLeads = async (req, res) => {
       
     } = req.body;
 
-    console.log("Updates",updates)
-    console.log("rowSelection",rowSelection)
+ 
     if (
       !rowSelection ||
       !Array.isArray(rowSelection) ||
@@ -1486,7 +1485,7 @@ export const getWonLeadData = async (req, res) => {
 
     const filters = { status: "won" };
 
-    console.log("USER >>>", user)
+ 
 
     let fetchedUser = null;
     let teamLeads = [];
@@ -1664,7 +1663,7 @@ export const getWonLeadData = async (req, res) => {
           };
 
 
-          console.log("GOAL MATCH", goalMatch)
+ 
 
     if (startDate && endDate) goalMatch.startDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
 
@@ -1682,7 +1681,7 @@ export const getWonLeadData = async (req, res) => {
 
     
 
-    console.log("GOALS ARE" , goals)
+   
 
     // Map goals to label index
     goals.forEach((goal) => {
@@ -1718,7 +1717,7 @@ export const getWonLeadData = async (req, res) => {
     });
     
     
-    console.log("GOALS ARE❤️❤️❤️",{ labels, counts, values, targetCounts, targetValues })
+ 
 
     return res.json({ labels, counts, values, targetCounts, targetValues });
   } catch (error) {
@@ -1779,7 +1778,7 @@ export const getWonLeadStats = async (req, res) => {
     const filters = { status: "won" };
 
 
-    console.log("USER", user)
+ 
 
     let fetchedUser = null;
     let teamLeads = [];
@@ -1826,9 +1825,7 @@ export const getWonLeadStats = async (req, res) => {
           const allNames = [...teamLeadsNames, ...juniorsNames];
 
           
-          console.log("TEAM LEADS 🌹", teamLeadsNames);
-          console.log("JUNIORS 🌿", juniorsNames);
-          console.log("ALL USERS ✅", allNames);
+
 
           filters.jobHolder = {
             $in: allNames,

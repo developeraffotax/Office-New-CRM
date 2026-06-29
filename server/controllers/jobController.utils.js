@@ -429,7 +429,7 @@ export const buildJobsQuery = (queryParams) => {
   }
 
 
-  console.log(queryParams);
+ 
 
 
   /*
@@ -705,7 +705,7 @@ if (search) {
 }
 
 
-  console.log("THE QUERY 🌹🧡🧡", query);
+ 
   return query;
 };
 

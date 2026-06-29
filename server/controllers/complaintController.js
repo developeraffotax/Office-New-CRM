@@ -73,8 +73,7 @@ export const updateComplain = async (req, res) => {
       note,
       createdAt,
     } = req.body;
-
-    console.log("createdAt:", createdAt);
+ 
 
     const complain = await complainModel.findById({ _id: complainId });
     if (!complain) {

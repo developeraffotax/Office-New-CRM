@@ -640,8 +640,7 @@ if (search) {
 }
 
 
-  console.log("THE TASK QUERY 🌹🧡🧡", query);
-  return query;
+   return query;
 };
 
 

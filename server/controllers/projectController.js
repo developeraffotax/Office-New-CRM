@@ -6,9 +6,7 @@ export const createProject = async (req, res) => {
   try {
     const { projectName, users_list, departments } = req.body;
 
-    console.log("Project Name:", projectName);
-    console.log("Users List:", users_list);
-    console.log("Department IDs:", departments);
+
 
     if (!projectName) {
       return res.status(400).send({

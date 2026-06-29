@@ -77,7 +77,7 @@ export const updateProposal = async (req, res) => {
       value,
     } = req.body;
 
-    console.log(new Date(createdAt));
+
 
     const existingProposal = await proposalModel.findById(proposalId);
     if (!existingProposal) {
@@ -221,7 +221,7 @@ export const copyProposal = async (req, res) => {
 export const fetchSingleProposal = async (req, res) => {
   try {
     const proposalId = req.params.id;
-    console.log("PropId:", proposalId);
+
 
     const proposal = await proposalModel.findById({ _id: proposalId });
 
@@ -402,8 +402,7 @@ export const getWonProposalData = async (req, res) => {
         }
       });
  
-    console.log({ counts, values, targetValues, targetCounts })
-    res.json({ counts, values, targetValues, targetCounts });
+     res.json({ counts, values, targetValues, targetCounts });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server Error" });

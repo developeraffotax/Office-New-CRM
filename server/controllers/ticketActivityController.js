@@ -81,8 +81,7 @@ export const getThreadSenders = async (req, res) => {
     );  
 
 
-    console.log("THE MAP IS , ", map)
-
+ 
     res.json(map);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch thread senders" });

@@ -17,7 +17,7 @@ export const createHrTask = async (req, res) => {
     }
 
 
-    console.log("hrRole", hrRole)
+ 
 
     const task = await hrModel.create({
       title,
@@ -184,8 +184,7 @@ export const allHrTask = async (req, res) => {
       })
       .lean();
 
-    console.log("TASKS LENGTH 🎈🎈🎈", tasks.length);
-    console.log("SORT 🎈🎈🎈", sort);
+ 
 
     res.status(200).send({
       success: true,
@@ -466,9 +465,7 @@ export const updateUserStatus = async (req, res) => {
 export const updateBulkHRs = async (req, res) => {
   try {
     const { rowSelection, updates } = req.body;
-
-    console.log("Updates",updates)
-    console.log("rowSelection",rowSelection)
+ 
     if ( !rowSelection || !Array.isArray(rowSelection) || rowSelection.length === 0 ) {
       return res.status(400).send({ success: false, message: "No jobs selected for update.", });
     }
@@ -689,7 +686,7 @@ export const importData = async (req, res) => {
 
     const data = parseData(file.buffer);
 
-    console.log("data:", data);
+ 
 
     const errors = {};
     const keys = ['title', 'department', 'category', 'software']
@@ -725,8 +722,7 @@ export const importData = async (req, res) => {
 
       const departmentDoc = await departmentModel.findOne({departmentName: el.department });
 
-      console.log(departmentDoc)
-      console.log("the element is", departmentDoc)
+ 
 
 
       if(el && 'title' in el) {
@@ -745,10 +741,10 @@ export const importData = async (req, res) => {
 
     }));
 
-    console.log(hr_tasks)
+ 
     const cleanArray = hr_tasks.filter(Boolean);
 
-    console.log("CLEANED ARR:", cleanArray)
+    
 
 
     

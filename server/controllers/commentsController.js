@@ -51,8 +51,7 @@ export const createComment = async (req, res) => {
     const { comment, jobId, type, mentionUser } = req.body;
 
 
-
-    console.log("THE MENTIONED USER IS >> ", mentionUser)
+ 
 
     if (type === "Jobs") {
       const job = await jobsModel.findById(jobId);
@@ -75,14 +74,14 @@ export const createComment = async (req, res) => {
       job.comments.push(newComment);
 
       await job.save();
-      console.log("mentionUser:", mentionUser);
+   
 
       // Create Notification
       const user = await userModel.findOne({
         name: mentionUser ? mentionUser.trim() : job?.job?.jobHolder,
       });
 
-      console.log("userData:", user);
+   
 
       // const notification = await notificationModel.create({
       //   title: "New comment received!",
@@ -126,7 +125,7 @@ export const createComment = async (req, res) => {
         });
       }
 
-      console.log("task:", task);
+     
 
       const newComment = {
         user: req.user.user,
@@ -141,13 +140,13 @@ export const createComment = async (req, res) => {
       await task.save();
 
       const taskHolderName = task.jobHolder;
-      console.log("Task User Name:", taskHolderName);
+  
 
       // Create Notification
       const user = await userModel.findOne({ name: mentionUser ? mentionUser.trim() : taskHolderName });
 
       if (!user) {
-        console.log("Task User: null");
+        //console.log("Task User: null");
         return res.status(404).json({ error: "Task holder not found" });
       }
  
@@ -200,7 +199,7 @@ export const createComment = async (req, res) => {
       await goal.save();
 
       const jobHolderId = goal.jobHolder;
-      console.log("jobHolderId:", jobHolderId);
+ 
 
       // Create Notification
       const user = await userModel.findOne(

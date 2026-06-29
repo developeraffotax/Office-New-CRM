@@ -160,7 +160,7 @@ export const autoCreateRecurringTasks = async (req, res) => {
       }
 
 
-      console.log(res)
+      
     
 
        

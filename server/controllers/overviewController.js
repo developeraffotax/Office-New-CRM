@@ -19,7 +19,7 @@ export const getOverview = async (req, res) => {
       });
     }
 
-      console.log( req.user.user, "the name from overview💚");
+   
 
 
 
@@ -79,7 +79,7 @@ export const getOverview = async (req, res) => {
 
      
 
-      console.log("Leads Length", leadsLength)
+   
 
 
 

@@ -37,7 +37,7 @@ export const startTimer = async (req, res) => {
     const user = req.user.user.name;
     const role = req.user.user.role?.name;
 
-    console.log("role 👍👍👍👍👍👍👍", role);
+ 
 
     // Prevent multiple running timers
     const isTimerRunning = await timerModel.findOne({
@@ -139,7 +139,7 @@ export const startTimer = async (req, res) => {
             io.to(socketId).emit("timer:state", timerPayload);
           });
 
-          console.log(`⏱ Sent timer update to agent:${clientId}`, agentSockets);
+ 
         } else {
           console.log(`⚪ Agent ${clientId} is offline. No sockets found.`);
         }
@@ -905,7 +905,7 @@ export const runningTimers = async (req, res) => {
     // Convert to Set (⚡ O(1) lookup)
     const onlineAgentsSet = new Set(onlineAgents);
 
-    console.log(onlineAgentsSet);
+    // console.log(onlineAgentsSet);
 
     // 3️⃣ Attach online status
     const timersWithStatus = timers.map((timer) => ({

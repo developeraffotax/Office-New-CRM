@@ -68,7 +68,7 @@ export const createJob = async (req, res) => {
     const createdJobs = await Promise.all(
       jobs.map(async (job) => {
 
-        console.log("TASK TEMPLATE💚:", job.subtaskTemplate);
+ 
         // 🟠 Step 1: Fetch Subtask Template
         let subtasksFromTemplate = [];
         if (job.subtaskTemplate) {
@@ -378,8 +378,7 @@ export const updateFee = async (req, res) => {
       });
     }
 
-      console.log("Updating fee for client ID:", clientId);
-      console.log("New fee value:", fee);
+ 
 
     // Fetch the job first to get the old fee
     const clientJobBeforeUpdate = await jobsModel.findById(clientId);
@@ -1072,7 +1071,7 @@ export const getClientWithJobs = async (req, res) => {
       .find({ companyName: companyName, status: { $ne: "completed" } })
       .select("job");
 
-    console.log("clientJobs", clientJobs);
+ 
 
     if (!clientJobs) {
       return res.status(400).send({
@@ -1147,7 +1146,7 @@ export const updateClientJob = async (req, res) => {
       });
     }
 
-    console.log("JOBS ARE HTESE>>>>", jobs);
+ 
 
     for (const jobData of jobs) {
       if (jobData.clientId) {
@@ -2030,7 +2029,7 @@ export const addDatalabel = async (req, res) => {
 
     const job = await jobsModel.findById(jobId).populate("data");
 
-    console.log("Job:", job.data);
+ 
 
     if (!job) {
       return res.status(400).send({
@@ -2147,7 +2146,7 @@ export const updateBulkJob = async (req, res) => {
       leadUser,
     } = req.body;
 
-    console.log("qualities:", qualities);
+ 
 
     if (
       !rowSelection ||
@@ -2332,7 +2331,7 @@ export const getWorkflowClients = async (req, res) => {
 export const getDashboardClients = async (req, res) => {
   try {
     const type = req.params.type;
-    console.log("type:", type);
+ 
 
     const clients = await jobsModel
       .find({ status: { $ne: type } })
@@ -2864,7 +2863,7 @@ export const getClientId = async (req, res) => {
       });
     } 
 
-    console.log("companyName:", companyName);
+ 
 
     const client = await jobsModel.findOne({
       companyName: companyName

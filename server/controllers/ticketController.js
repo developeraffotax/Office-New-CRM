@@ -152,8 +152,7 @@ export const sendEmail = async (req, res) => {
     const { clientId, company, subject, message, email, jobHolder, clientName, companyName, trustPilotBcc } = req.body;
     
 
-    console.log("Subject💙💚💛", subject)
-    const normalizedSubject = normalizeDashes(subject)
+     const normalizedSubject = normalizeDashes(subject)
     
     const userName = req.user.user.name;
 
@@ -171,8 +170,7 @@ export const sendEmail = async (req, res) => {
       });
     }
 
-    console.log("email:", email);
-
+ 
     var company_email = "";
     if (company === "Affotax") {
       company_email = "info@affotax.com";
@@ -205,8 +203,7 @@ export const sendEmail = async (req, res) => {
 
     const threadId = resp.data.threadId;
 
-    console.log("MESSAGE IS IS 💚", resp)
-
+ 
     const sendEmail = await ticketModel.create({
       clientId: clientId || "",
       companyName: (clientId && client?.companyName) || companyName || "",
@@ -480,13 +477,12 @@ export const getTicketsByClientName = async (req, res, next) => {
   // complete progress all
   const state = req.query.state?.trim();
 
-  console.log("Client Name:", clientName);
-  console.log("Client Email:", clientEmail);
+ 
 
 
   try {
 
-    console.log("THE STATE IS ", state)
+ 
 
     // const state = state
 
@@ -511,7 +507,7 @@ export const getTicketsByClientName = async (req, res, next) => {
       "clientId companyName clientName company jobHolder subject status jobDate mailThreadId sent received"
     );
 
-    console.log("EMAILs", emails)
+ 
 
     
     
@@ -591,8 +587,7 @@ export const updateReadUnreadTickets = async (req, res, next) => {
           
           includedUsersArr = includedUsersArr.concat(juniorsNamesArr)
         }
-
-        console.log("INCLUDED USERS 🧡🧡❤", includedUsersArr)
+ 
       filter.jobHolder = { $in: includedUsersArr };
     }
 
@@ -743,7 +738,7 @@ export async function getSentReceivedCountsPerThread() {
     let filter = { state: { $ne: "complete" } };
   
    const threadIds = await ticketModel.find(filter).select( "mailThreadId" );
-    // console.log(threadIds)
+ 
 
 
 
@@ -803,7 +798,7 @@ export async function getSentReceivedCountsPerThread() {
       }
     }
   
-    console.log("RESULT:",results)
+ 
 
 
     // element structure { threadId: '19528fe4bffd55b6', totalSent: 4, totalReceived: 1 },
@@ -926,7 +921,7 @@ export const getAllSendTickets = async (req, res, next) => {
           includedUsersArr = includedUsersArr.concat(juniorsNamesArr)
         }
 
-        console.log("INCLUDED USERS 🧡🧡❤", includedUsersArr)
+ 
       filter.jobHolder = { $in: includedUsersArr };
     }
 
@@ -1817,7 +1812,7 @@ export const sendTicketReply = async (req, res) => {
 
     const response = await emailReply(emailData);
 
-    console.log("THE RESPONSE AFTER REPLY IS💛", response.data)
+ 
 
         let updatedTicket = null;
 
@@ -1828,7 +1823,7 @@ export const sendTicketReply = async (req, res) => {
         }
 
 
-        console.log("THE UPDATE Object", update)
+ 
 
     if (ticketId && mongoose.Types.ObjectId.isValid(ticketId)) {
        updatedTicket = await ticketModel.findByIdAndUpdate(
@@ -2087,8 +2082,7 @@ export const getCompleteTickets = async (req, res) => {
 export const getAllInbox = async (req, res) => {
   try {
     const { selectedCompany, pageNo, type } = req.params;
-    console.log(selectedCompany, pageNo, type);
-    const reponse = await getAllEmailInbox(selectedCompany, pageNo, type);
+     const reponse = await getAllEmailInbox(selectedCompany, pageNo, type);
 
     res.status(200).send({
       success: true,
@@ -2471,8 +2465,7 @@ export const updateBulkTickets = async (req, res) => {
       
     } = req.body;
 
-    console.log("Updates",updates)
-    console.log("rowSelection",rowSelection)
+ 
     if (
       !rowSelection ||
       !Array.isArray(rowSelection) ||

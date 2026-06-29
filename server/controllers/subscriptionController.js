@@ -234,8 +234,7 @@ export const updateSingleField = async (req, res) => {
       });
     }
 
-    console.log("Updated Subscription Data:💜💜💜 ", updatedSubscription);
-    res.status(200).send({
+     res.status(200).send({
       success: true,
       message: "Subscription updated successfully!",
       subscription: updatedSubscription,
@@ -470,18 +469,7 @@ export const updateBulkSubscription = async (req, res) => {
       fee,
     } = req.body;
 
-    console.log(
-      "Data:",
-      jobHolder,
-      lead,
-      billingStart,
-      billingEnd,
-      deadline,
-      jobStatus,
-      dataLabelId,
-      source,
-      fee
-    );
+ 
 
     if (
       !rowSelection ||
@@ -505,8 +493,7 @@ export const updateBulkSubscription = async (req, res) => {
     if (source) updateData.source = source;
     if (fee) updateData["job.fee"] = fee;
 
-    console.log(updateData);
-
+ 
     const updatedJobs = await subscriptionModel.updateMany(
       {
         _id: { $in: rowSelection },

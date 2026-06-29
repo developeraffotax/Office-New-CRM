@@ -97,7 +97,7 @@ const get_lead_count_and_value_for_team = async (goal) => {
       return { count: 0, totalValue: 0 };
     }
 
-    console.log("JUNIORS", juniorNames)
+    
 
     const start = new Date(goal.startDate);
     start.setHours(0, 0, 0, 0);
@@ -140,7 +140,7 @@ const get_lead_count_and_value_for_team = async (goal) => {
       },
     ]);
 
-    console.log("THE RESULT", result)
+ 
 
     return {
       count: result[0]?.count || 0,
@@ -169,7 +169,7 @@ export const createGoal = async (req, res) => {
       usersList,
     } = req.body;
 
-    console.log(achievedCount);
+    // console.log(achievedCount);
 
     const goal = await goalModel.create({
       subject,
@@ -214,7 +214,7 @@ export const updateGoal = async (req, res) => {
       usersList,
     } = req.body;
 
-    console.log("usersList:", usersList);
+ 
 
     const isGoal = await goalModel.findById(goalId);
     if (!isGoal) {
@@ -816,7 +816,7 @@ export const updateBulkGoals = async (req, res) => {
   try {
     const { rowSelection, status } = req.body;
 
-    console.log(rowSelection, status);
+    
 
     // Validate rowSelection
     if (

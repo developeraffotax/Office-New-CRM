@@ -467,7 +467,7 @@ export const updateUserProfile = async (req, res) => {
       });
     }
 
-    console.log("userinfo:", isExisting);
+    
 
     // Update user profile
     const updatedUser = await userModel.findByIdAndUpdate(
@@ -675,7 +675,7 @@ export const reordering = async (req, res) => {
 export const getAllTeamMembers = async (req, res) => {
   const userId = req.user.user._id;
 
-  console.log("Logged-in User ID:", userId);
+ 
 
   try {
     // assume req.user is set by auth middleware (decoded JWT)

@@ -374,6 +374,7 @@ export const copyHrTask = async (req, res) => {
     delete taskData.createdAt;
     delete taskData.updatedAt;
     delete taskData.productLink;
+    delete taskData.hrTaskRef;
 
     const copyTask = await hrModel.create(taskData);
 

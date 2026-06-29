@@ -861,11 +861,13 @@ const {
           {/*  */}
           {(hasAccess("Workflow") ||
             hasAccess("Roles") ||
+            hasAccess("Activity") ||
             hasAccess("Users")) && <hr className="my-1" />}
           {hide ? (
             <>
               {(hasAccess("Workflow") ||
                 hasAccess("Roles") ||
+                hasAccess("Activity") ||
                 hasAccess("Users")) && (
                   <h4 className="text-[16] font-semibold px-2 flex items-center gap-1">
                     {" "}
@@ -879,6 +881,7 @@ const {
             <>
               {(hasAccess("Workflow") ||
                 hasAccess("Roles") ||
+                hasAccess("Activity") ||
                 hasAccess("Users")) && (
                   <h4
                     className={`text-[16px] font-semibold px-4 py-2 flex items-center justify-between transition-all cursor-pointer rounded-e-3xl ${isSettingsOpen

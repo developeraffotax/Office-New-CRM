@@ -147,9 +147,13 @@ export default function Filters({
   };
 
   const clearFilters = () => {
-    setFilters({
-      category: "",
-      userId: "",
+
+     const hasAll = visibleTabs.includes("all");
+  const hasUnassigned = visibleTabs.includes("unassigned");
+
+  const filters = {
+    category: "",
+      userId: hasAll ? "" : hasUnassigned ? "unassigned" : "",
       unreadOnly: false,
       startDate: "",
       endDate: "",
@@ -158,8 +162,9 @@ export default function Filters({
       lastMessageBy: "",
       starred: false,
       mailThreadId: "",
-    });
+  }
 
+    setFilters(filters);
     setSearchInput("");
   };
 

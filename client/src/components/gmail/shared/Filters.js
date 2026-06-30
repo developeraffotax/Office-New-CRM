@@ -140,26 +140,36 @@ export default function Filters({
     setAnchorEl(null);
   };
 
-  const clearFilters = () => {
-    setFilters({
-      category: "",
-      userId: "",
-      unreadOnly: false,
-      startDate: "",
-      endDate: "",
-      page: 1,
-      search: "",
-      lastMessageBy: "",
-      starred: false,
-      mailThreadId: "",
-    });
 
-    setSearchInput("");
+
+const clearFilters = () => {
+  const hasAll = visibleTabs.includes("all");
+  const hasUnassigned = visibleTabs.includes("unassigned");
+
+  const filters = {
+    category: "",
+    userId: hasAll ? "" : hasUnassigned ? "unassigned" : "",
+    unreadOnly: false,
+    startDate: "",
+    endDate: "",
+    page: 1,
+    search: "",
+    lastMessageBy: "",
+    starred: false,
+    mailThreadId: "",
   };
+
+  setFilters(filters);
+  setSearchInput("");
+};
+
 
   const handleUpdate = (updates) => {
     setFilters({ ...updates, page: 1 });
   };
+
+
+console.log("VISIBLE TABS ✔️✔️✔️", visibleTabs)
 
   useEffect(() => {
     // Check if user is Admin OR Team Lead, AND the feature is enabled

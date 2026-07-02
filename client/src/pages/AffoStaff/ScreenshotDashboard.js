@@ -117,8 +117,6 @@ export default function ScreenshotDashboard() {
       setLoading(false);
     }
   };
- 
-
 
   const handleExportActivity = async () => {
     if (isExporting) {
@@ -139,7 +137,7 @@ export default function ScreenshotDashboard() {
         `${process.env.REACT_APP_API_URL}/api/v1/agent/export-activity/${selectedUser}`,
         { params, responseType: "blob" },
       );
- 
+
       // Try to pull the filename the backend set, fall back to a default
       const disposition = response.headers["content-disposition"];
       const match = disposition?.match(/filename="([^"]+)"/);
@@ -154,12 +152,23 @@ export default function ScreenshotDashboard() {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      toast.error(
-        err?.response?.data?.message ||
-          err?.message ||
-          "❌ Failed to export activity report. Please try again.",
-      );
-      //console.error("Error while exporting", err);
+      try {
+        if (
+          err.response?.data instanceof Blob &&
+          err.response.data.type.includes("application/json")
+        ) {
+          const text = await err.response.data.text();
+          const json = JSON.parse(text);
+
+          toast.error(json.message || "Failed to export activity report.");
+        } else {
+          toast.error(err.message || "Failed to export activity report.");
+        }
+      } catch {
+        toast.error("Failed to export activity report.");
+      }
+
+      // console.error("Error while exporting activity report:", err);
     } finally {
       setIsExporting(false);
     }
@@ -218,8 +227,6 @@ export default function ScreenshotDashboard() {
           <ScreenshotGallery screenshots={screenshots} loading={loading} />
         </>
       )}
-
- 
 
       {screenshots.length === 0 && (
         <div className="flex justify-center items-center h-64">

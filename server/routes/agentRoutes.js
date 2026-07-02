@@ -24,7 +24,7 @@ router.get("/timers/:userId", requiredSignIn, getUserTimers);
 
 
 
-router.get("/export-activity/:userId", exportActivityReport);
+router.get("/export-activity/:userId", requiredSignIn, exportActivityReport);
 
 
 

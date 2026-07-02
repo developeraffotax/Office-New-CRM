@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import React from "react";
 import Chart from "react-apexcharts";
 
-const Activity = ({ screenshots, loading }) => {
+const Activity = ({ screenshots, loading, filterType }) => {
   if (!screenshots.length) return null;
 
   // -----------------------------
@@ -13,64 +13,91 @@ const Activity = ({ screenshots, loading }) => {
   );
 
   // -----------------------------
-  // 2) GROUP INTO 30-MIN WINDOWS
+  // 2A) GROUP INTO 30-MIN WINDOWS (single day view)
   // -----------------------------
-  const grouped = [];
-  let windowStart = dayjs(sorted[0].timestamp);
-  let windowEnd = windowStart.add(30, "minute");
+  const groupByWindow = () => {
+    const grouped = [];
+    let windowStart = dayjs(sorted[0].timestamp);
+    let windowEnd = windowStart.add(30, "minute");
+    let buffer = [];
 
-  let buffer = [];
+    sorted.forEach((shot) => {
+      const time = dayjs(shot.timestamp);
 
-  sorted.forEach((shot) => {
-    const time = dayjs(shot.timestamp);
+      if (time.isBefore(windowEnd)) {
+        buffer.push(shot);
+      } else {
+        if (buffer.length > 0) grouped.push(buffer);
 
-    if (time.isBefore(windowEnd)) {
-      buffer.push(shot);
-    } else {
-      if (buffer.length > 0) {
-        grouped.push(buffer);
+        while (time.isAfter(windowEnd)) {
+          windowStart = windowStart.add(30, "minute");
+          windowEnd = windowStart.add(30, "minute");
+        }
+
+        buffer = [shot];
       }
+    });
 
-      // move the window
-      while (time.isAfter(windowEnd)) {
-        windowStart = windowStart.add(30, "minute");
-        windowEnd = windowStart.add(30, "minute");
-      }
+    if (buffer.length > 0) grouped.push(buffer);
 
-      buffer = [shot];
-    }
-  });
+    return grouped
+      .map((chunk) => {
+        const valid = chunk.filter((s) => s.activity);
+        if (valid.length === 0) return null;
 
-  // push the last buffer
-  if (buffer.length > 0) grouped.push(buffer);
+        const avg = (key) =>
+          valid.reduce((sum, s) => sum + s.activity[key], 0) / valid.length;
 
-  // -----------------------------
-  // 3) AVERAGE ACTIVITY PER WINDOW
-  // -----------------------------
-  const windowData = grouped.map((chunk) => {
-    const valid = chunk.filter((s) => s.activity);
-    if (valid.length === 0) return null;
-
-    const avg = (key) =>
-      valid.reduce((sum, s) => sum + s.activity[key], 0) / valid.length;
-
-    const firstTime = dayjs(chunk[0].timestamp).format("hh:mm A");
-
-    return {
-      time: firstTime,
-      overall: Math.round(avg("overallActivityPercent")),
-      keyboard: Math.round(avg("keyboardActivityPercent")),
-      mouse: Math.round(avg("mouseActivityPercent")),
-    };
-  }).filter(Boolean);
+        return {
+          label: dayjs(chunk[0].timestamp).format("hh:mm A"),
+          overall: Math.round(avg("overallActivityPercent")),
+          keyboard: Math.round(avg("keyboardActivityPercent")),
+          mouse: Math.round(avg("mouseActivityPercent")),
+        };
+      })
+      .filter(Boolean);
+  };
 
   // -----------------------------
-  // 4) CHART DATA
+  // 2B) GROUP BY DAY (range view)
   // -----------------------------
-  const times = windowData.map((w) => w.time);
+  const groupByDay = () => {
+    const dayMap = {};
+
+    sorted.forEach((shot) => {
+      if (!shot.activity) return;
+      const dayKey = dayjs(shot.timestamp).format("YYYY-MM-DD");
+
+      if (!dayMap[dayKey]) dayMap[dayKey] = [];
+      dayMap[dayKey].push(shot);
+    });
+
+    return Object.keys(dayMap)
+      .sort((a, b) => new Date(a) - new Date(b))
+      .map((dayKey) => {
+        const valid = dayMap[dayKey];
+
+        const avg = (key) =>
+          valid.reduce((sum, s) => sum + s.activity[key], 0) / valid.length;
+
+        return {
+          label: dayjs(dayKey).format("MMM D"),
+          overall: Math.round(avg("overallActivityPercent")),
+          keyboard: Math.round(avg("keyboardActivityPercent")),
+          mouse: Math.round(avg("mouseActivityPercent")),
+        };
+      });
+  };
+
+  const windowData = filterType === "range" ? groupByDay() : groupByWindow();
+
+  // -----------------------------
+  // 3) CHART DATA
+  // -----------------------------
+  const labels = windowData.map((w) => w.label);
   const overall = windowData.map((w) => w.overall);
-  const keyboard = windowData.map((w) => w.keyboard);
-  const mouse = windowData.map((w) => w.mouse);
+  // const keyboard = windowData.map((w) => w.keyboard);
+  // const mouse = windowData.map((w) => w.mouse);
 
   const chartOptions = {
     chart: {
@@ -93,8 +120,10 @@ const Activity = ({ screenshots, loading }) => {
     },
     colors: ["#2563eb", "#f59e0b", "#10b981"],
     xaxis: {
-      categories: times,
-      title: { text: "Time (30-minute windows)" },
+      categories: labels,
+      title: {
+        text: filterType === "range" ? "Date" : "Time (30-minute windows)",
+      },
     },
     yaxis: {
       title: { text: "Activity (%)" },
@@ -114,50 +143,29 @@ const Activity = ({ screenshots, loading }) => {
     },
   };
 
-  const chartSeries = [
-    { name: "Overall", data: overall },
-    // { name: "Keyboard", data: keyboard },
-    // { name: "Mouse", data: mouse },
-  ];
+  const chartSeries = [{ name: "Overall", data: overall }];
 
-return (
-  <div className="w-[70%] bg-white p-4 rounded-xl shadow border max-w-6xl min-h-[400px]">
+  return (
+    <div className="w-[70%] bg-white p-4 rounded-xl shadow border max-w-6xl min-h-[400px]">
+      <h3 className="font-semibold mb-2">
+        {filterType === "range" ? "Activity (Per Day)" : "Activity (30-Minute Windows)"}
+      </h3>
 
-    <h3 className="font-semibold mb-2">Activity (30-Minute Windows)</h3>
-
-    {loading ? (
-      // -----------------------
-      // PREMIUM SKELETON LOADER
-      // -----------------------
-      <div className="animate-pulse mt-6">
-
-        {/* Chart area placeholder */}
-        <div className="w-full h-64 bg-gray-200 rounded-lg"></div>
-
-        {/* Fake X-axis labels */}
-        <div className="flex justify-between mt-4">
-          <div className="w-10 h-3 bg-gray-200 rounded"></div>
-          <div className="w-10 h-3 bg-gray-200 rounded"></div>
-          <div className="w-10 h-3 bg-gray-200 rounded"></div>
-          <div className="w-10 h-3 bg-gray-200 rounded"></div>
+      {loading ? (
+        <div className="animate-pulse mt-6">
+          <div className="w-full h-64 bg-gray-200 rounded-lg"></div>
+          <div className="flex justify-between mt-4">
+            <div className="w-10 h-3 bg-gray-200 rounded"></div>
+            <div className="w-10 h-3 bg-gray-200 rounded"></div>
+            <div className="w-10 h-3 bg-gray-200 rounded"></div>
+            <div className="w-10 h-3 bg-gray-200 rounded"></div>
+          </div>
         </div>
-
-      </div>
-    ) : (
-      // -----------------------
-      // REAL CHART
-      // -----------------------
-      <Chart
-        options={chartOptions}
-        series={chartSeries}
-        type="area"
-        height={320}
-      />
-    )}
-
-  </div>
-);
-
+      ) : (
+        <Chart options={chartOptions} series={chartSeries} type="area" height={320} />
+      )}
+    </div>
+  );
 };
 
 export default Activity;

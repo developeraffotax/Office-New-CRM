@@ -9,17 +9,20 @@ import Filters from "./Filters";
 import { useSelector } from "react-redux";
 import { useMemo } from "react";
 import { hasSubrole, isAdmin } from "../../utlis/checkPermission";
+import toast from "react-hot-toast";
 
 export default function ScreenshotDashboard() {
-
-    const {
+  const {
     auth: { user },
   } = useSelector((state) => state.auth);
 
-const { isUserAdmin, hasAllPermission } = useMemo(() => ({
-  isUserAdmin: isAdmin(user) || false,
-  hasAllPermission: hasSubrole(user, "Activity", "All Users") || false
-}), [user]);
+  const { isUserAdmin, hasAllPermission } = useMemo(
+    () => ({
+      isUserAdmin: isAdmin(user) || false,
+      hasAllPermission: hasSubrole(user, "Activity", "All Users") || false,
+    }),
+    [user],
+  );
 
   const [timers, setTimers] = useState([]);
   const [totalWorkedTimeInMins, setTotalWorkedTimeInMins] = useState(0);
@@ -38,21 +41,17 @@ const { isUserAdmin, hasAllPermission } = useMemo(() => ({
   const [startDate, setStartDate] = useState(dayjs().startOf("day"));
   const [endDate, setEndDate] = useState(dayjs().endOf("day"));
 
-
-
+  const [isExporting, setIsExporting] = useState(false);
 
   // ---------- Fetch All Users ----------
   const getAllUsers = async () => {
-
     let url = `${process.env.REACT_APP_API_URL}/api/v1/user/get/active/team`;
-    if(isUserAdmin || hasAllPermission) {
+    if (isUserAdmin || hasAllPermission) {
       url = `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`;
     }
 
     try {
-      const { data } = await axios.get(
-        url
-      );
+      const { data } = await axios.get(url);
 
       setUsers(data.users);
 
@@ -62,8 +61,6 @@ const { isUserAdmin, hasAllPermission } = useMemo(() => ({
       console.error("❌ Failed to load users:", error);
     }
   };
-
- 
 
   // ---------- Fetch Timers ----------
   const fetchTimers = async () => {
@@ -81,7 +78,7 @@ const { isUserAdmin, hasAllPermission } = useMemo(() => ({
 
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/agent/timers/${selectedUser}?includeRunning=true`,
-        { params }
+        { params },
       );
 
       if (data.success) {
@@ -110,7 +107,7 @@ const { isUserAdmin, hasAllPermission } = useMemo(() => ({
 
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/agent/screenshot/${selectedUser}`,
-        { params }
+        { params },
       );
 
       setScreenshots(data);
@@ -118,6 +115,53 @@ const { isUserAdmin, hasAllPermission } = useMemo(() => ({
       console.error("❌ Failed to load screenshots:", err);
     } finally {
       setLoading(false);
+    }
+  };
+ 
+
+
+  const handleExportActivity = async () => {
+    if (isExporting) {
+      return;
+    }
+    setIsExporting(true);
+    try {
+      const params =
+        filterType === "day"
+          ? { filterType, date: selectedDate.format("YYYY-MM-DD") }
+          : {
+              filterType,
+              startDate: startDate.format("YYYY-MM-DD"),
+              endDate: endDate.format("YYYY-MM-DD"),
+            };
+
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/agent/export-activity/${selectedUser}`,
+        { params, responseType: "blob" },
+      );
+ 
+      // Try to pull the filename the backend set, fall back to a default
+      const disposition = response.headers["content-disposition"];
+      const match = disposition?.match(/filename="([^"]+)"/);
+      const filename = match?.[1] || "Activity_Report.xlsx";
+
+      const url = window.URL.createObjectURL(response.data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          "❌ Failed to export activity report. Please try again.",
+      );
+      //console.error("Error while exporting", err);
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -135,7 +179,6 @@ const { isUserAdmin, hasAllPermission } = useMemo(() => ({
   // ---------- Render Dashboard ----------
   return (
     <div className="space-y-6 bg-slate-50 min-h-full">
-
       <Filters
         users={users}
         selectedUser={selectedUser}
@@ -148,6 +191,8 @@ const { isUserAdmin, hasAllPermission } = useMemo(() => ({
         setStartDate={setStartDate}
         endDate={endDate}
         setEndDate={setEndDate}
+        handleExportActivity={handleExportActivity}
+        isExporting={isExporting}
       />
 
       {screenshots.length > 0 && (
@@ -162,14 +207,19 @@ const { isUserAdmin, hasAllPermission } = useMemo(() => ({
               startDate={startDate}
               endDate={endDate}
               filterType={filterType}
-              
             />
-            <Activity screenshots={screenshots} loading={loading} />
+            <Activity
+              screenshots={screenshots}
+              loading={loading}
+              filterType={filterType}
+            />
           </div>
 
           <ScreenshotGallery screenshots={screenshots} loading={loading} />
         </>
       )}
+
+ 
 
       {screenshots.length === 0 && (
         <div className="flex justify-center items-center h-64">
@@ -184,7 +234,6 @@ const { isUserAdmin, hasAllPermission } = useMemo(() => ({
           )}
         </div>
       )}
-
     </div>
   );
 }

@@ -8,7 +8,6 @@
     "start": "nodemon index.js",
     "screenshotWorker": "node worker.js",
     "notificationWorker": "node jobs/workers/notificationWorker.js",
-    
     "gmailWorker": "node emailModule/jobs/workers/historySync.worker.js",
     "whatsappWorker": "node whatsappModule/jobs/workers/whatsappWorker.js"
   },
@@ -38,6 +37,7 @@
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "entities": "^7.0.1",
+    "exceljs": "^4.4.0",
     "express": "^4.19.2",
     "express-formidable": "^1.2.0",
     "express-rate-limit": "^8.2.1",

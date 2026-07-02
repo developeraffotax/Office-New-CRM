@@ -2,6 +2,7 @@ import express from "express";
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
 
 import { getPresignedUrl, getUserDailyActivity, getUserScreenshots, getUserTimers, takeScreenshot } from "../controllers/agentController.js";
+import { exportActivityReport } from "../controllers/agentController.export.js";
 
 
 const router = express.Router();
@@ -23,7 +24,7 @@ router.get("/timers/:userId", requiredSignIn, getUserTimers);
 
 
 
-
+router.get("/export-activity/:userId", exportActivityReport);
 
 
 

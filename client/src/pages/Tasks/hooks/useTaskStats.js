@@ -40,7 +40,7 @@ export const useTaskStats = ({ status, columnFilters }) => {
       const filters = buildFilters(columnFilters);
 
 
-      console.log("FILTERS", filters)
+ 
 
       const params = {
         status,

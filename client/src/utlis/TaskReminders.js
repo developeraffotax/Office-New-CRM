@@ -15,7 +15,7 @@ const TaskReminders = ({ taskId, refreshKey }) => {
           `${process.env.REACT_APP_API_URL}/api/v1/reminders/fetch/reminders/${taskId}`
         );
 
-        console.log("REMINDERS", reminders)
+ 
         if (data.success) setReminders(data.reminders);
       } catch (err) {
         console.error(err);

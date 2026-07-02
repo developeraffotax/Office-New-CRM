@@ -544,7 +544,7 @@ const renderColumnControls = () => (
       (acc, item) => acc + Number(item.value || 0),
       0
     );
-    console.log("totalvalue:", totalvalue);
+    
     setValueTotal(totalvalue);
   }, [filteredData]);
 

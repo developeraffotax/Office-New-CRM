@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 
 import CustomEditor from "../../../utlis/CustomEditor";
 import { useEmailForward } from "../hooks/useEmailForward";
+import toast from "react-hot-toast";
 
 /* ---------------- helper ---------------- */
 const EmailField = ({ label, value, onChange, placeholder }) => (
@@ -69,6 +70,7 @@ export default function Forward({
       
 
     } catch (error) {
+      toast.error("Error while forwarding message");
       console.log("Error while forwarding message", error)
     }
 

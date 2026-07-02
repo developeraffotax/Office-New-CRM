@@ -39,7 +39,7 @@ const NotificationPanel = ({
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth.auth);
 
-console.log("THE CATEGORIZED NOTIFICATIONS ARE>>>", "❤️❤️❤️❤️❤️❤️❤️❤️", categorizedNotifications)
+ 
  
   return (
     <div className="shadow-xl bg-gray-100 absolute z-[999] top-[2rem] left-[1.6rem] rounded-lg">

@@ -86,7 +86,7 @@ const {savedFilters, fetchSavedFilters, saveFilter, loadingSaved, deleteFilter} 
           </div>
         ) : (
           savedFilters.map((f) => {
-            console.log("Applied Filter ID:", activeFilter?.id, "Current Filter ID:", f._id);
+            
             const isActive = activeFilter?._id === f._id;
             return (
               <div

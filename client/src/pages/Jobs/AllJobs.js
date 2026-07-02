@@ -408,7 +408,7 @@ const [rowCount, setRowCount] = useState(0);
 
 
  
-console.log("COL FILTERS JOBS,", columnFilters)
+ 
 
 
   // Extract the current path

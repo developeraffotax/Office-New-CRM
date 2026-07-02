@@ -41,9 +41,7 @@ export const Timer = ({
         })
       ).unwrap();
 
-      console.log("Started Timer:🧡🧡🧡🧡🧡", { allocatedTime, jobId, task, timerId: startedTimer._id });
-
-      console.log("entityType: ", entityType);
+ 
 
       if (entityType === "task" || entityType === "subtask") {
         dispatch(

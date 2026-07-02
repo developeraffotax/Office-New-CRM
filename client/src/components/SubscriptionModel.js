@@ -81,7 +81,7 @@ export default function SubscriptionModel({
         `${process.env.REACT_APP_API_URL}/api/v1/client/single/client/${clientId}`
       );
       if (data) {
-        console.log("Client Detail:", data?.clientJob);
+
         setClientName(data?.clientJob?.clientName);
         setRegNumber(data?.clientJob?.regNumber);
         setCompanyName(data?.clientJob?.companyName);

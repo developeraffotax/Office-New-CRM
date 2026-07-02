@@ -158,7 +158,7 @@ useEffect(() => {
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/email/detail/${ticketDetail.mailThreadId}/${ticketDetail.company}/${id}`
       );
       if (data?.emailDetails) setEmailDetail(data.emailDetails);
-      console.log("emailData called💛", data);
+ 
     } catch (error) {
       console.log("emailData error", error);
     }

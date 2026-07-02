@@ -1827,7 +1827,7 @@ export default function Proposal() {
         toast.success("Copied!");
       },
       (err) => {
-        console.log("Failed to copy the template!:", err);
+        // console.log("Failed to copy the template!:", err);
         toast.error("Failed to copy the template!");
       }
     );

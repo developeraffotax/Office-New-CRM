@@ -459,7 +459,7 @@ export default function Template() {
         toast.success("Copied!");
       },
       (err) => {
-        console.log("Failed to copy the template!:", err);
+        // console.log("Failed to copy the template!:", err);
         toast.error("Failed to copy the template!");
       },
     );

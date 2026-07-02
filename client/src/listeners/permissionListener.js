@@ -6,7 +6,7 @@ export const registerPermissionListener = (socket, dispatch) => {
   socket.on("permissions:updated", (data) => {
     
 
-    console.log("PERMISSIONS UPDATED 🧡🧡🧡", data)
+ 
  
     dispatch(getUserDetail(data.userId));
 

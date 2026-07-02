@@ -169,7 +169,7 @@ const clearFilters = () => {
   };
 
 
-console.log("VISIBLE TABS ✔️✔️✔️", visibleTabs)
+ 
 
   useEffect(() => {
     // Check if user is Admin OR Team Lead, AND the feature is enabled

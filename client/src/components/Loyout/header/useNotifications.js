@@ -255,10 +255,7 @@ const toggleAssignDropdown = (notificationId) => {
 
 const handleAssignUser = async (notification, userId) => {
 
-  console.log({
-    notification,
-    userId
-  })
+  
   try {
  
     setAssigningId(null);

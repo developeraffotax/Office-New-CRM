@@ -50,7 +50,7 @@ export default function Leads({ selectedLead, selectedDepartment }) {
           (job) => job.job.jobName === department
         );
 
-        console.log("departmentJobs:", departmentJobs);
+    
 
         // If selectedLead  is provided
         const filteredJobs = selectedLead

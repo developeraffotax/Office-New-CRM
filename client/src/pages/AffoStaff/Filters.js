@@ -28,7 +28,10 @@ export default function Filters({
   setEndDate,
 
   handleExportActivity,
-  isExporting
+  isExporting,
+
+  isUserAdmin,
+  hasAllPermission
 }) {
   const handlePrevDay = () =>
     setSelectedDate(selectedDate.subtract(1, "day"));
@@ -248,7 +251,7 @@ const applyPreset = (preset) => {
         {/* RIGHT SIDE */}
        <div className="flex gap-2 items-center">
 
-<button
+{(isUserAdmin || hasAllPermission) && <button
   onClick={handleExportActivity}
   disabled={isExporting}
   className="group flex items-center justify-center px-4 py-2 bg-white hover:bg-neutral-50 disabled:hover:bg-white text-neutral-700 hover:text-neutral-900 disabled:text-neutral-400 text-sm font-medium rounded-xl border border-neutral-200 hover:border-neutral-300 disabled:border-neutral-200 shadow-sm transition-all duration-200 ease-in-out outline-none disabled:cursor-not-allowed disabled:opacity-70"
@@ -277,7 +280,7 @@ const applyPreset = (preset) => {
     </svg>
   )}
   <span>{isExporting ? 'Exporting...' : 'Export'}</span>
-</button>
+</button>}
          <h1 className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-xl shadow font-semibold text-gray-900">
 
              

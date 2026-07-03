@@ -202,6 +202,9 @@ export default function ScreenshotDashboard() {
         setEndDate={setEndDate}
         handleExportActivity={handleExportActivity}
         isExporting={isExporting}
+
+        isUserAdmin={isUserAdmin}
+        hasAllPermission={hasAllPermission}
       />
 
       {screenshots.length > 0 && (

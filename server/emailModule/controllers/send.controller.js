@@ -37,6 +37,7 @@ export async function sendEmail(req, res) {
     }
 
     const userName = req.user.user.name;
+    const userId = req.user.user._id;
 
     // Get Gmail client
     const gmail = await getGmailClient(companyName);

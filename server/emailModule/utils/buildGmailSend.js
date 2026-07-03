@@ -38,6 +38,19 @@ function formatReplyHtml(message = "") {
 
 
 
+function encodeSubject(subject = "") {
+  // Printable ASCII only
+  if (/^[\x20-\x7E]*$/.test(subject)) {
+    return subject;
+  }
+
+  return `=?UTF-8?B?${Buffer.from(subject, "utf8").toString("base64")}?=`;
+}
+
+
+
+
+
 export function buildGmailSend({
   to = [],
   cc = [],
@@ -58,7 +71,7 @@ export function buildGmailSend({
     cc.length ? `Cc: ${cc.join(", ")}` : "",
     bcc.length ? `Bcc: ${bcc.join(", ")}` : "",
  
-    `Subject: ${subject ? buildReplySubject(subject) : ""}`,
+    `Subject: ${subject ? encodeSubject(subject) : ""}`,
     // `In-Reply-To: ${headers["Message-Id"]}`,
     // `References: ${[
     //   headers.References,

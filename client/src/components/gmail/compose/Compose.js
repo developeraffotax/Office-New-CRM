@@ -24,6 +24,8 @@ import EmailChipInput from "./EmailChipInput.js";
 import axios from "axios";
 import toast from "react-hot-toast";
 import CustomSelect from "../../../utlis/CustomSelect.js";
+import { useClickOutside } from "../../../utlis/useClickOutside.js";
+import { useEscapeKey } from "../../../utlis/useEscapeKey.js";
 
 /**
  * Gmail-style compose window.
@@ -50,6 +52,7 @@ export default function ComposeWindow({ open, onClose, companyName, onSent }) {
     setBcc,
     subject,
     setSubject,
+    message,
     setMessage,
     files,
     addFiles,
@@ -59,12 +62,17 @@ export default function ComposeWindow({ open, onClose, companyName, onSent }) {
     setSignature,
   } = useEmailCompose({ companyName });
 
+  
   const [error, setError] = useState("");
-
+  
+  const mainRef = useRef(null);
   const bodyRef = useRef(null);
   const fileInputRef = useRef(null);
   const signatureBtnRef = useRef(null);
   const signaturePopoverRef = useRef(null);
+
+  useClickOutside(mainRef, onClose)
+  useEscapeKey(onClose)
 
   const [signatures, setSignatures] = useState([]);
   const [signatureId, setSignatureId] = useState("");
@@ -99,6 +107,18 @@ export default function ComposeWindow({ open, onClose, companyName, onSent }) {
     if (!signatureId || signatureOptions.length === 0) return null;
     return signatureOptions.find((option) => option.value === signatureId) ?? null;
   }, [signatureOptions, signatureId]);
+
+ 
+useEffect(() => {
+  if (open && !minimized && bodyRef.current) {
+    if (bodyRef.current.innerHTML !== message) {
+      bodyRef.current.innerHTML = message || "";
+    }
+  }
+}, [open, minimized]);
+
+
+
 
   // close signature popover on outside click
   useEffect(() => {
@@ -175,7 +195,7 @@ export default function ComposeWindow({ open, onClose, companyName, onSent }) {
   };
 
   return (
-    <div className={`${fullscreen ? "fixed inset-16" : "fixed bottom-0 right-6"} z-50`}>
+    <div className={`${fullscreen ? "fixed inset-16" : "fixed bottom-0 right-6"} z-50`} ref={mainRef}>
       <div
         className={`${
           fullscreen ? "w-full h-full" : minimized ? "w-[360px]" : "w-[660px] h-[760px]"
@@ -285,7 +305,7 @@ export default function ComposeWindow({ open, onClose, companyName, onSent }) {
                 contentEditable
                 suppressContentEditableWarning
                 onInput={handleBodyInput}
-                dangerouslySetInnerHTML={{ __html: "" }}
+                // dangerouslySetInnerHTML={{ __html: "" }}
                 className="min-h-[140px] text-sm text-gray-800 outline-none"
                 data-placeholder="Compose your message..."
               />

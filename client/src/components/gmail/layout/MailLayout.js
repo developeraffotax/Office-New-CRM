@@ -53,7 +53,7 @@ export default function MailLayout({
     auth: { user },
   } = useSelector((state) => state.auth);
 
-  const [isComposeOpen, setIsComposeOpen] = useState(true);
+  const [isComposeOpen, setIsComposeOpen] = useState(false);
 
   const [createTicketModal, setCreateTicketModal] = useState({
     _id: "",

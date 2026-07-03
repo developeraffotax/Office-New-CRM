@@ -5,6 +5,7 @@ import { isAdmin, requiredSignIn } from "../../middlewares/authMiddleware.js";
 import {    bulkUpdateThreadMetadata, deleteThread, getMailbox, getMailboxUserCounts, getSentItems, getThreadMessageUsers, getUnreadCounts, markThreadAsRead, markThreadAsUnread, toggleStarredThread, updateThreadMetadata, updateThreadMetadataViaThreadId } from "../controllers/email.controller.js";
 import { reply } from "../controllers/reply.controller.js";
 import { forward } from "../controllers/forward.controller.js";
+import { sendEmail } from "../controllers/send.controller.js";
  
  
  
@@ -27,6 +28,8 @@ router.patch("/bulk-update-thread", requiredSignIn,    bulkUpdateThreadMetadata)
 
 
 
+
+router.post("/send", requiredSignIn,  sendEmail);
 
 router.post("/reply", requiredSignIn,  reply);
 

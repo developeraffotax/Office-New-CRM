@@ -49,6 +49,7 @@ import UserTabToggleButton from "./ui/UserTabToggleButton";
 import ContextMenu from "./ui/ContextMenu";
 import UnifiedThreadFilters from "./ui/LastMessageByDropdown";
 import { hasSubrole } from "../../../utlis/checkPermission";
+import { MdOutlineCreate } from "react-icons/md";
 
 export default function Filters({
   filters,
@@ -56,6 +57,8 @@ export default function Filters({
   users = [],
   team = [],
   categories = [],
+
+  setIsComposeOpen
 }) {
   const {
     auth: { user },
@@ -626,6 +629,26 @@ const clearFilters = () => {
           </Stack>
 
           <Stack direction="row" spacing={1} alignItems="center">
+             <button
+                onClick={() =>  setIsComposeOpen(true)}
+                className="
+                  flex items-center justify-center md:justify-start gap-2
+                  bg-[#C2E7FF] hover:bg-[#B3D7EF] text-[#001D35] 
+                  font-medium text-base rounded-2xl 
+                  p-4 md:py-4 md:px-6 shadow-sm hover:shadow-md
+                  transition-all duration-200 ease-in-out
+                  w-[40px] h-[46px] md:w-auto
+                "
+              >
+                {/* Material Design Edit/Compose Icon */}
+                <MdOutlineCreate className="text-2xl flex-shrink-0" />
+                
+                {/* Button Text (Hidden on mobile, visible on desktop) */}
+                <span className="hidden md:inline  font-google tracking-wide">
+                  Compose
+                </span>
+              </button>
+
             <ContextMenu
               trigger={
                 <button className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-100 transition">
@@ -960,6 +983,10 @@ const clearFilters = () => {
               Team Visibility
             </Typography>
           </Box>
+
+         
+
+
 
           {/* Main Categories */}
           {(isAdmin || hasUnassignedPermission) && (

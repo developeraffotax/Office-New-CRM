@@ -12,6 +12,8 @@ import { SelectionHeader } from "../shared/FloatingSelectionToolbar";
 import CommentList from "../comments/CommentList";
 import { useSelector } from "react-redux";
 import Reminder from "../../../utlis/Reminder";
+import ComposeWindow from "../compose/Compose";
+import { MdOutlineCreate } from "react-icons/md";
 
 export default function MailLayout({
   users,
@@ -50,6 +52,8 @@ export default function MailLayout({
   const {
     auth: { user },
   } = useSelector((state) => state.auth);
+
+  const [isComposeOpen, setIsComposeOpen] = useState(true);
 
   const [createTicketModal, setCreateTicketModal] = useState({
     _id: "",
@@ -111,6 +115,7 @@ export default function MailLayout({
   return (
     <div className="flex h-[105vh] bg-white overflow-hidden">
       <Sidebar />
+      <ComposeWindow open={isComposeOpen} onClose={() => setIsComposeOpen(false)} companyName={companyName}  />
 
       <div className="flex-1 min-w-0 flex flex-col">
         <Filters
@@ -119,6 +124,9 @@ export default function MailLayout({
           users={users}
           team={team}
           categories={categories}
+
+          setIsComposeOpen={setIsComposeOpen}
+
         />
 
         {/* The Selection Component fits here */}
@@ -133,6 +141,7 @@ export default function MailLayout({
           handleBulkUpdateThreads={handleBulkUpdateThreads}
           clearSelection={clearSelection}
         />
+
 
         <List
           loading={loading}

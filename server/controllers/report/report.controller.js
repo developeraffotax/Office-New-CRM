@@ -1,5 +1,6 @@
 import moment from "moment";
 import userModel from "../../models/userModel.js";
+import roleModel from "../../models/roleModel.js";
 import * as reportService from "./report.service.js";
 
 const sendWorkbook = async (res, workbook, filename) => {
@@ -140,7 +141,8 @@ const buildWeeklyTeamWorkbook = async (req, res) => {
   const reportDate = `${rangeStart.format("DD MMM YYYY")} - ${rangeEnd.format("DD MMM YYYY")}`;
 
   // NOTE: scope this filter (role/isActive/team) so it doesn't pull every account in the DB
-  const users = await reportService.fetchAllUsers({isActive:true});
+  const adminRole = await roleModel.findOne({ name: "Admin" }).select("_id").lean();
+  const users = await reportService.fetchAllUsers({isActive:true, role: { $ne: adminRole._id }});
   if (!users.length) return res.status(404).json({ message: "No users found" });
 
   const userBlocks = [];

@@ -9,7 +9,6 @@ import Filters from "./Filters";
 import { useSelector } from "react-redux";
 import { useMemo } from "react";
 import { hasSubrole, isAdmin } from "../../utlis/checkPermission";
-import toast from "react-hot-toast";
 
 export default function ScreenshotDashboard() {
   const {
@@ -33,15 +32,13 @@ export default function ScreenshotDashboard() {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState("");
 
-  // ---- NEW FILTER SYSTEM ----
+  // ---- FILTER SYSTEM (dashboard view only — export has its own dialog now) ----
   const [filterType, setFilterType] = useState("day"); // "day" | "range"
 
   const [selectedDate, setSelectedDate] = useState(dayjs());
 
   const [startDate, setStartDate] = useState(dayjs().startOf("day"));
   const [endDate, setEndDate] = useState(dayjs().endOf("day"));
-
-  const [isExporting, setIsExporting] = useState(false);
 
   // ---------- Fetch All Users ----------
   const getAllUsers = async () => {
@@ -118,62 +115,6 @@ export default function ScreenshotDashboard() {
     }
   };
 
-  const handleExportActivity = async () => {
-    if (isExporting) {
-      return;
-    }
-    setIsExporting(true);
-    try {
-      const params =
-        filterType === "day"
-          ? { filterType, date: selectedDate.format("YYYY-MM-DD") }
-          : {
-              filterType,
-              startDate: startDate.format("YYYY-MM-DD"),
-              endDate: endDate.format("YYYY-MM-DD"),
-            };
-
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/agent/export-activity/${selectedUser}`,
-        { params, responseType: "blob" },
-      );
-
-      // Try to pull the filename the backend set, fall back to a default
-      const disposition = response.headers["content-disposition"];
-      const match = disposition?.match(/filename="([^"]+)"/);
-      const filename = match?.[1] || "Activity_Report.xlsx";
-
-      const url = window.URL.createObjectURL(response.data);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", filename);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      try {
-        if (
-          err.response?.data instanceof Blob &&
-          err.response.data.type.includes("application/json")
-        ) {
-          const text = await err.response.data.text();
-          const json = JSON.parse(text);
-
-          toast.error(json.message || "Failed to export activity report.");
-        } else {
-          toast.error(err.message || "Failed to export activity report.");
-        }
-      } catch {
-        toast.error("Failed to export activity report.");
-      }
-
-      // console.error("Error while exporting activity report:", err);
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
   // ---------- Initial Load ----------
   useEffect(() => {
     getAllUsers();
@@ -200,9 +141,6 @@ export default function ScreenshotDashboard() {
         setStartDate={setStartDate}
         endDate={endDate}
         setEndDate={setEndDate}
-        handleExportActivity={handleExportActivity}
-        isExporting={isExporting}
-
         isUserAdmin={isUserAdmin}
         hasAllPermission={hasAllPermission}
       />

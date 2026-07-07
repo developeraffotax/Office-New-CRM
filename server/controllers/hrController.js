@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import departmentModel from "../models/departmentModel.js";
 import hrModel from "../models/hrModel.js";
 import XLSX from "xlsx";
+import { getUserAndJuniorIds } from "../utils/getUserAndJuniorIds.js";
 
 // Create
 export const createHrTask = async (req, res) => {
@@ -120,7 +121,78 @@ export const updateHrTask = async (req, res) => {
 
 
 
+export const allHrTask2 = async (req, res) => {
+  const userId = req.user?.user?._id;
+  const role = req.user?.user?.role?.name;
 
+  try {
+    const filters = {};
+
+    if (role !== "Admin") {
+      const userIds = await getUserAndJuniorIds(userId);
+      console.log("User IDs:", userIds);
+      filters.users = {
+        $elemMatch: {
+          user: { $in: userIds },
+          status: "Yes",
+        },
+      };
+    }
+
+    let sort = {};
+
+    if (req.query.sort) {
+      sort = {};
+
+      req.query.sort.split(",").forEach((item) => {
+        const [field, direction = "asc"] = item.split(":");
+
+        if (!field) return;
+
+        sort[field] = direction.toLowerCase() === "desc" ? -1 : 1;
+      });
+
+      if (Object.keys(sort).length === 0) {
+        sort = { position: 1 };
+      }
+    }
+
+    const tasks = await hrModel
+      .find(filters)
+      .sort(sort)
+      .select("-description")
+      .populate("hrRole")
+      .populate({
+        path: "users.user",
+        select: "name email",
+      })
+      .populate("department")
+      .populate({
+        path: "department",
+        populate: {
+          path: "users.user",
+          select: "name email",
+        },
+      })
+      .lean();
+
+      console.log("Fetched tasks length:", tasks.length);
+
+    res.status(200).send({
+      success: true,
+      message: "HR tasks list!",
+      tasks,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Error occur while get hr tasks!",
+      error,
+    });
+  }
+};
 
 
 

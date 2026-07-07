@@ -11,8 +11,9 @@ export default function AssignmentRules() {
   const [assignmentRules, setAssignmentRules] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Users allowed to be assigned WhatsApp leads
-  const whatsappUsers = useMemo(() => {
+
+  
+   const whatsappUsers = useMemo(() => {
     return users
       .filter(
         (u) =>
@@ -26,8 +27,7 @@ export default function AssignmentRules() {
       }));
   }, [users]);
 
-  // Users allowed to be assigned email/quote leads (Inbox permission)
-  const inboxUsers = useMemo(() => {
+   const inboxUsers = useMemo(() => {
     return users
       .filter(
         (u) =>
@@ -44,9 +44,6 @@ export default function AssignmentRules() {
 
 
 
-
-  console.log("whatsappUsers", whatsappUsers);
-  console.log("inboxUsers", inboxUsers);
 
 
 

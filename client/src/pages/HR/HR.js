@@ -307,10 +307,22 @@ const buildSortQuery = () => {
 
   //---------- Get All Users-----------
   const getAllUsers = async () => {
+
+
+     
+    let URL = `${process.env.REACT_APP_API_URL}/api/v1/user/get/active/team`;
+
+
+    
+    if (isAdmin(auth)) {
+      URL = `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+    }
+
+
+
+
     try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
-      );
+      const { data } = await axios.get( URL );
 
       setUsers(
         data?.users?.filter((user) =>

@@ -36,6 +36,7 @@ import onedriveRoutes from "./onedriveRoutes.js";
 import agentRoutes from "./agentRoutes.js";
 
 import userSettingsRoutes from "./userSettingsRoutes.js";
+import assignmentRuleRoutes from "./assignmentRuleRoutes.js";
 
 import aiRoutes from "../aiModule/routes/ai.routes.js";
 import emailRoutes from "../emailModule/routes/email.routes.js";
@@ -112,6 +113,7 @@ export const registerRoutes = (app) => {
 
 
   app.use("/api/v1/settings", userSettingsRoutes);
+  app.use("/api/v1/assignment-rules", assignmentRuleRoutes);
 
 
   app.use("/api/v1/ai",  aiRoutes);

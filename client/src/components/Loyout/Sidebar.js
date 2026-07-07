@@ -205,7 +205,7 @@ const {
             </div>
           )}
           {/* 2 */}
-          {hasAccess("MyList") && (
+          {/* {hasAccess("MyList") && (
             <div
               className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "all"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
@@ -238,7 +238,7 @@ const {
                 )}
               </div>
             </div>
-          )}
+          )} */}
           {/* 3 */}
           {hasAccess("Tasks") && (
             <div

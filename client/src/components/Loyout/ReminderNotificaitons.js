@@ -223,7 +223,7 @@ const ReminderNotifications = ({ setShowReminderNotificationPanel }) => {
                                 Open
                               </button>
                             )}{" "}
-                            {isUpcoming && (
+                            { (
                               <button
                                 onClick={() => setEditReminder(reminder)}
                                 className="p-1 hover:bg-gray-100 rounded-full transition"
@@ -232,7 +232,7 @@ const ReminderNotifications = ({ setShowReminderNotificationPanel }) => {
                                 <MdEdit className="h-4 w-4 text-blue-500" />
                               </button>
                             )}
-                            {isUpcoming && (
+                            { (
                               <button
                                 onClick={() => setDeleteReminderData(reminder)}
                                 className="p-1 hover:bg-gray-100 rounded-full transition"

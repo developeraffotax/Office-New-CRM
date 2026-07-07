@@ -2,24 +2,58 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import Select from "react-select";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { FiLoader, FiCheck } from "react-icons/fi";
+import { FiLoader, FiCheck, FiTrash2 } from "react-icons/fi";
+import Swal from "sweetalert2";
+
 
 export default function AssignmentRules() {
   const [users, setUsers] = useState([]);
   const [assignmentRules, setAssignmentRules] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Memoized user formatting: only recalculates if the raw 'users' array changes
-  const formattedUsers = useMemo(() => {
+  // Users allowed to be assigned WhatsApp leads
+  const whatsappUsers = useMemo(() => {
     return users
-      .filter((u) => u.isActive) // Optional: only list active accounts
+      .filter(
+        (u) =>
+          u.role?.access?.some((item) =>
+            item?.permission?.includes("Whatsapp")
+          )
+      )
       .map((user) => ({
         value: user._id,
         label: user.name,
       }));
   }, [users]);
 
-  // useCallback prevents recreating the function on every render
+  // Users allowed to be assigned email/quote leads (Inbox permission)
+  const inboxUsers = useMemo(() => {
+    return users
+      .filter(
+        (u) =>
+          u.role?.access?.some((item) =>
+            item?.permission?.includes("Inbox")
+          )
+      )
+      .map((user) => ({
+        value: user._id,
+        label: user.name,
+      }));
+  }, [users]);
+
+
+
+
+
+  console.log("whatsappUsers", whatsappUsers);
+  console.log("inboxUsers", inboxUsers);
+
+
+
+
+
+
+
   const handleSaveAssignmentRules = useCallback(async (updatedRule) => {
     try {
       const response = await axios.put(
@@ -29,6 +63,17 @@ export default function AssignmentRules() {
 
       if (response.data?.success) {
         toast.success("Assignment rule updated.");
+        setAssignmentRules((prev) => {
+          const existingIndex = prev.findIndex(
+            (r) => r.type === updatedRule.type
+          );
+          if (existingIndex !== -1) {
+            const updatedRules = [...prev];
+            updatedRules[existingIndex] = { ...updatedRules[existingIndex], ...updatedRule };
+            return updatedRules;
+          }
+          return [...prev, updatedRule];
+        });
         return response.data.data;
       }
 
@@ -44,10 +89,35 @@ export default function AssignmentRules() {
     }
   }, []);
 
+  // NEW: delete handler
+  const handleDeleteAssignmentRule = useCallback(async (type) => {
+    try {
+      const response = await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/v1/assignment-rules/${type}`
+      );
+
+      if (response.data?.success) {
+        toast.success("Assignment rule removed.");
+        // Remove it from local state so the card resets to defaults
+        setAssignmentRules((prev) => prev.filter((r) => r.type !== type));
+        return true;
+      }
+
+      throw new Error(response.data?.message || "Failed to remove.");
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to remove assignment rule."
+      );
+      throw error;
+    }
+  }, []);
+
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Fetch both endpoints simultaneously for better load times
       const [rulesRes, usersRes] = await Promise.all([
         axios.get(`${process.env.REACT_APP_API_URL}/api/v1/assignment-rules`),
         axios.get(`${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`),
@@ -57,7 +127,6 @@ export default function AssignmentRules() {
         setAssignmentRules(rulesRes.data.data);
       }
 
-      // Just setting the raw users as requested
       if (usersRes.data?.users) {
         setUsers(usersRes.data.users);
       }
@@ -97,31 +166,35 @@ export default function AssignmentRules() {
       <AssignmentCard
         title="New Email Quote Handler"
         type="quote"
-        users={formattedUsers}
+        users={inboxUsers}
         initialRule={assignmentRules.find((r) => r.type === "quote")}
         onSave={handleSaveAssignmentRules}
+        onDelete={handleDeleteAssignmentRule}
       />
 
       <AssignmentCard
         title="New WhatsApp Lead Handler"
         type="whatsapp_lead"
-        users={formattedUsers}
+        users={whatsappUsers}
         initialRule={assignmentRules.find((r) => r.type === "whatsapp_lead")}
         onSave={handleSaveAssignmentRules}
+        onDelete={handleDeleteAssignmentRule}
       />
     </div>
   );
 }
 
-function AssignmentCard({ title, type, users, initialRule, onSave }) {
+function AssignmentCard({ title, type, users, initialRule, onSave, onDelete }) {
   const [strategy, setStrategy] = useState("fixed");
   const [assignedUsers, setAssignedUsers] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  // Sync state when async props finish loading
   useEffect(() => {
     if (initialRule?.strategy) {
       setStrategy(initialRule.strategy);
+    } else {
+      setStrategy("fixed");
     }
   }, [initialRule?.strategy]);
 
@@ -131,8 +204,10 @@ function AssignmentCard({ title, type, users, initialRule, onSave }) {
         initialRule.assignedUsers.includes(u.value)
       );
       setAssignedUsers(matched);
+    } else if (!initialRule) {
+      setAssignedUsers([]);
     }
-  }, [users, initialRule?.assignedUsers]);
+  }, [users, initialRule]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -149,7 +224,36 @@ function AssignmentCard({ title, type, users, initialRule, onSave }) {
     }
   };
 
-  // Modern react-select custom styles
+  // NEW: delete flow with confirmation
+  const handleDelete = async () => {
+    
+
+   const {isConfirmed} = await Swal.fire({
+  title: "Are you sure?",
+  text: "You won't be able to revert this!",
+  icon: "warning",
+  showCancelButton: true,
+  confirmButtonColor: "#3085d6",
+  cancelButtonColor: "#d33",
+  confirmButtonText: "Yes, delete it!"
+})
+
+
+    if (!isConfirmed) return;
+
+    setIsDeleting(true);
+    try {
+      await onDelete?.(type);
+      // Reset local UI back to defaults after successful delete
+      setStrategy("fixed");
+      setAssignedUsers([]);
+    } catch (err) {
+      // Error handled inside parent function
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const customSelectStyles = {
     control: (base, state) => ({
       ...base,
@@ -182,32 +286,34 @@ function AssignmentCard({ title, type, users, initialRule, onSave }) {
     }),
   };
 
+  const hasExistingRule = Boolean(initialRule);
+
   return (
     <div className="border border-gray-200/80 bg-gray-50/30 rounded-xl p-6 mb-6 transition-all  ">
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-base font-semibold text-gray-800">{title}</h2>
-      </div>
 
-      {/* <div className="mb-5">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Assignment Strategy
-        </label>
-        <select
-          value={strategy}
-          onChange={(e) => {
-            const val = e.target.value;
-            setStrategy(val);
-            if (val === "fixed" && assignedUsers.length > 1) {
-              setAssignedUsers([assignedUsers[0]]);
-            }
-          }}
-          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-shadow"
-        >
-          <option value="fixed">Fixed User</option>
-          <option value="round_robin">Round Robin</option>
-          <option value="random">Random</option>
-        </select>
-      </div> */}
+        {/* NEW: only show remove option if a rule actually exists */}
+        {hasExistingRule && (
+          <button
+            onClick={handleDelete}
+            disabled={isDeleting || isSaving}
+            className="flex items-center gap-1.5 text-red-600 hover:text-red-700 disabled:text-red-300 text-sm font-medium transition-colors"
+          >
+            {isDeleting ? (
+              <>
+                <FiLoader className="animate-spin h-3.5 w-3.5" />
+                Removing...
+              </>
+            ) : (
+              <>
+                <FiTrash2 className="h-3.5 w-3.5" />
+                Remove rule
+              </>
+            )}
+          </button>
+        )}
+      </div>
 
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -228,6 +334,7 @@ function AssignmentCard({ title, type, users, initialRule, onSave }) {
           placeholder="Search and select user..."
           styles={customSelectStyles}
           className="text-sm"
+          isDisabled={isDeleting}
         />
       </div>
 
@@ -242,7 +349,7 @@ function AssignmentCard({ title, type, users, initialRule, onSave }) {
 
         <button
           onClick={handleSave}
-          disabled={isSaving}
+          disabled={isSaving || isDeleting}
           className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-400 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/40"
         >
           {isSaving ? (

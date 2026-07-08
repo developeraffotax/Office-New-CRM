@@ -1,11 +1,12 @@
 // services/persistThread.js
+import { getAssignedUsers } from "../../utils/getAssignedUsers.js";
 import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
 import EmailThread from "../models/EmailThread.js";
 import { getHeader, parseEmail, parseEmailList, extractAttachments, addParticipant } from "../utils/utils.js";
 import { getGmailClient } from "./gmail.service.js";
 import { decode } from "entities";
 
-export async function persistThread({ threadId, companyName, }) {
+export async function persistThread({ threadId, companyName, type }) {
   try {
     const gmail = await getGmailClient(companyName);
     const res = await gmail.users.threads.get({
@@ -94,6 +95,18 @@ export async function persistThread({ threadId, companyName, }) {
     const subject = getHeader(messages[0].payload.headers, "Subject");
     const labelArray = Array.from(labels);
 
+
+
+     // ---------------- Auto-assign user only for new threads ----------------
+    let autoAssignedUserId;
+
+    if (type === "quote") {
+      const automaticAssignedUsers = await getAssignedUsers("quote");
+      autoAssignedUserId = automaticAssignedUsers?.[0];
+    }
+
+
+
     // ---------------- Upsert thread ----------------
     const threadDoc = await EmailThread.findOneAndUpdate(
       { companyName, threadId },
@@ -114,7 +127,8 @@ export async function persistThread({ threadId, companyName, }) {
         lastMessageAt: lastMessageAt,
         lastMessageSnippet: lastMessageSnippet,
 
-        lastMessageBy: lastMessageBy   // ✅ NEW
+        lastMessageBy: lastMessageBy,   // ✅ NEW
+        ...(autoAssignedUserId && { $setOnInsert: { userId: autoAssignedUserId } }),
       },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );

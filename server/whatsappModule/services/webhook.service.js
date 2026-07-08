@@ -7,6 +7,7 @@ import { buildPreview, parseMessage } from "../utils/message.js";
 import { downloadAndStoreMedia } from "./media.service.js";
 import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
 import { getFileUrl } from "../utils/s3.js";
+import { getAssignedUsers } from "../../utils/getAssignedUsers.js";
 
 const MEDIA_TYPES = new Set(["image", "video", "audio", "document", "sticker"]);
 
@@ -72,6 +73,30 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
 
   const existingConversation = await Conversation.findOne({ phone }).select("_id").lean();
 
+
+  // Only auto-assign when this is a brand new conversation
+let autoAssignedUserId;
+
+if (!existingConversation) {
+  const automaticAssignedUsers = await getAssignedUsers("whatsapp_lead");
+  autoAssignedUserId = automaticAssignedUsers?.[0]; // pick first (round_robin/random already return 1)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   const conversation = await Conversation.findOneAndUpdate(
     { phone },
     {
@@ -89,6 +114,7 @@ export const processInboundMessage = async (rawMessage, contact, metadata) => {
         phone,
         wa_id,
         wa_user_id,
+        ...(autoAssignedUserId && { userId: autoAssignedUserId }),
       },
       $inc: { totalInboundMessages: 1 },
     },

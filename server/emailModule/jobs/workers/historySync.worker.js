@@ -37,7 +37,7 @@ const startWorker = async () => {
   worker = new Worker(
     "gmail-sync-all",
     async ({ data }) => {
-      const { companyName, threadIds = [] } = data;
+      const { companyName, threadIds = [], type = "" } = data;
 
       if (!companyName || !threadIds.length) {
         console.warn("⚠️ Missing companyName or threadIds in job data");
@@ -50,7 +50,7 @@ const startWorker = async () => {
 
       for (const threadId of threadIds) {
         try {
-          await persistThread({ threadId, companyName });
+          await persistThread({ threadId, companyName, type });
           processedCount++;
           console.log(`✅ Thread persisted: ${threadId}`);
         } catch (err) {

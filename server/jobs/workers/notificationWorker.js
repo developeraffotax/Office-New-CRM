@@ -11,6 +11,8 @@ import { connectDB } from "../../config/db.js";
 import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
 import EmailThread from "../../emailModule/models/EmailThread.js";
 import roleModel from "../../models/roleModel.js";
+import { getAssignedUsers } from "../../utils/getAssignedUsers.js";
+import { getRecipientIds } from "../../utils/getRecipientIds.js";
 
 // ---------------------------
 // CONNECT MONGO
@@ -144,17 +146,8 @@ const processNotificationJob = async (job) => {
     case "quote": {
       const { threadId, senderEmail, subject, companyName, _id } = payload;
 
-      const adminRole = await roleModel.findOne({ name: "Admin" });
-      if (!adminRole) return true;
 
-      const admins = await userModel
-        .find({
-          role: adminRole._id,
-          isActive: true,
-        })
-        .select("_id");
-
-      if (!admins.length) return true;
+      const recipientIds = await getRecipientIds("quote");
 
       const now = new Date();
 
@@ -163,7 +156,7 @@ const processNotificationJob = async (job) => {
 
       // 🔥 Create notifications in parallel
       const notifications = await Promise.all(
-        admins.map((admin) =>
+        recipientIds.map((userId) =>
           notificationModel.create({
             title: `New Quote Request!`,
             redirectLink: `/mail?folder=inbox&companyName=${companyName}`,
@@ -171,7 +164,7 @@ const processNotificationJob = async (job) => {
               📩 Subject  : ${subject || "No Subject"}
               📅 Received : ${time} | ${date}`,
             taskId: threadId,
-            userId: admin._id,
+            userId: userId,
             type: "email_received",
             entityType: "mailbox",
             entityId: threadId // threadId id
@@ -235,23 +228,17 @@ const processNotificationJob = async (job) => {
           lastMessage,
         } = payload;
 
-        const adminRole = await roleModel.findOne({ name: "Admin" });
-        if (!adminRole) return true;
+ 
 
-        const admins = await userModel
-          .find({
-            role: adminRole._id,
-            isActive: true,
-          })
-          .select("_id");
+           const recipientIds = await getRecipientIds("whatsapp_lead");
 
-        if (!admins.length) return true;
 
+ 
 
         console.log("THE _ID IS", _id)
 
         const notifications = await Promise.all(
-          admins.map((admin) =>
+          recipientIds.map((userId) =>
             notificationModel.create({
               title: "🔥 New WhatsApp Lead",
               redirectLink: `/whatsapp/${_id}?companyName=${companyName}&search=${phone}`,
@@ -260,7 +247,7 @@ const processNotificationJob = async (job) => {
       ✔ Phone: ${phone || "N/A"}
       ✔ Message: ${lastMessage || "No message"}`,
               taskId: phone,
-              userId: admin._id,
+              userId: userId,
               type: "whatsapp_lead",
               entityType: "whatsapp",
               entityId: _id

@@ -52,6 +52,14 @@ export default function AssignmentRules() {
 
 
   const handleSaveAssignmentRules = useCallback(async (updatedRule) => {
+
+    
+
+    if(!updatedRule?.assignedUsers || updatedRule?.assignedUsers.length === 0) {
+      toast.error("Please select at least one user.");
+      return;
+    }
+    
     try {
       const response = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/assignment-rules`,

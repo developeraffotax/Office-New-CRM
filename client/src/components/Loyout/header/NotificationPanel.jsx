@@ -8,7 +8,7 @@ import { setFilterId } from "../../../redux/slices/authSlice";
 import { updateNotification } from "../../../redux/slices/notificationSlice";
 // import { openTicketModal } from "../../redux/slices/ticketModalSlice";
 import EmailDetailDrawer from "../../../pages/Tickets/EmailDetailDrawer";
-import { hasPermission } from "../../../utlis/checkPermission";
+import { hasPermission, isAdmin } from "../../../utlis/checkPermission";
 import { getNotificationCategory } from "./getNotificationCategory";
 import { UsersList } from "./UsersList";
 
@@ -38,6 +38,7 @@ const NotificationPanel = ({
 }) => {
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth.auth);
+   
 
  
  
@@ -178,7 +179,7 @@ const NotificationPanel = ({
                     <div className="flex items-center gap-3">
 
                     
-{ (item?.entityId) && (
+{ (item?.entityId && isAdmin(auth.user)) && (
   <div className="relative  font-google">
     <button
       onClick={(e) => {

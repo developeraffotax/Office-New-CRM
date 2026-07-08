@@ -161,7 +161,7 @@ async function getSenderEmail(gmail, messageId) {
 
 
 
-async function processMessageAdded(gmail, msg, yourEmail, companyName) {
+async function processMessageAdded(gmail, msg, yourEmail, companyName, cb) {
   const { id: messageId, threadId } = msg;
 
   const { data } = await gmail.users.messages.get({
@@ -197,6 +197,7 @@ async function processMessageAdded(gmail, msg, yourEmail, companyName) {
         type: "quote",
         payload: { threadId, senderEmail, subject, companyName }
       });
+      cb && cb({ type: "quote",  });
     }
     return threadId;
   }
@@ -251,11 +252,12 @@ function collectThreadIds(item) {
 /**
  * Add Gmail sync job for all threadIds
  */
-async function addGmailSyncJob(threadIds, companyName) {
+async function addGmailSyncJob(threadIds, companyName, type) {
   if (threadIds.size === 0) return;
   await gmailSyncQueue.add("addGmailThread", {
     companyName: companyName,
     threadIds: Array.from(threadIds),
+    type: type,
   });
 }
 
@@ -309,14 +311,20 @@ export async function gmailWebhookHandlerForAffotax(req, res) {
     const allThreadIds = new Set();
     const notificationPromises = [];
 
+    let emailType;
+
     for (const item of history) {
       console.log("THE ITEM IS ", item)
       if (!item.messagesAdded && !item.messagesDeleted && !item.labelsAdded && !item.labelsRemoved) continue;
 
+
+
       // Process new messages
       if (item.messagesAdded) {
         item.messagesAdded.forEach(({ message: msg }) => {
-          notificationPromises.push(processMessageAdded(gmail, msg, yourEmail, companyName).then(threadId => {
+          notificationPromises.push(processMessageAdded(gmail, msg, yourEmail, companyName, (data) => {
+            emailType = data?.type; // Capture the type for later use
+          } ).then(threadId => {
             if (threadId) allThreadIds.add(threadId);
           }));
         });
@@ -335,7 +343,7 @@ export async function gmailWebhookHandlerForAffotax(req, res) {
     await Promise.all(notificationPromises);
 
     // Add Gmail sync job
-    await addGmailSyncJob(allThreadIds, companyName);
+    await addGmailSyncJob(allThreadIds, companyName, emailType);
 
     res.status(200).send("Webhook processed");
   } catch (err) {
@@ -383,6 +391,9 @@ export async function gmailWebhookHandlerForOutsource(req, res) {
     const allThreadIds = new Set();
     const notificationPromises = [];
 
+
+      let emailType;
+
     for (const item of history) {
       console.log("THE ITEM IS ", item)
       if (!item.messagesAdded && !item.messagesDeleted && !item.labelsAdded && !item.labelsRemoved) continue;
@@ -390,7 +401,9 @@ export async function gmailWebhookHandlerForOutsource(req, res) {
       // Process new messages
       if (item.messagesAdded) {
         item.messagesAdded.forEach(({ message: msg }) => {
-          notificationPromises.push(processMessageAdded(gmail, msg, yourEmail, companyName).then(threadId => {
+          notificationPromises.push(processMessageAdded(gmail, msg, yourEmail, companyName, (data) => {
+            emailType = data?.type; // Capture the type for later use
+          }).then(threadId => {
             if (threadId) allThreadIds.add(threadId);
           }));
         });
@@ -409,7 +422,7 @@ export async function gmailWebhookHandlerForOutsource(req, res) {
     await Promise.all(notificationPromises);
 
     // Add Gmail sync job
-    await addGmailSyncJob(allThreadIds, companyName);
+    await addGmailSyncJob(allThreadIds, companyName, emailType);
 
     res.status(200).send("Webhook processed");
   } catch (err) {

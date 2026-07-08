@@ -10,7 +10,7 @@ const assignmentRuleSchema = new mongoose.Schema({
 
   strategy: {
     type: String,
-    enum: ["fixed", "round_robin", "random"],
+    enum: ["fixed", "all_users", "random"],
     default: "fixed",
   },
 

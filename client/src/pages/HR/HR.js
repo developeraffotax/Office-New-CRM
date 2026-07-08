@@ -125,6 +125,7 @@ const [open, setOpen] = useState(false);
 
 
 console.log("COLUMN VISIBILITY", columnVisibility)
+console.log("deparmentsData🎈🎈🎈", deparmentsData, )
 
 
 const handleFieldToggle = (field) => {
@@ -259,16 +260,34 @@ const buildSortQuery = () => {
   }, []);
 
   // ----------Fetch All Departments-------->
-  const fetchAllDepartments = async () => {
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/department/all`
+const fetchAllDepartments = async () => {
+  try {
+    const { data } = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/v1/department/all`
+    );
+
+    let departments = data.departments;
+
+    if (!isAdmin(auth)) {
+      departments = departments.filter((dpt) =>
+        dpt.users.some((user) => user?.user._id === auth?.user?.id)
       );
-      setDepartmentData(data.departments);
-    } catch (error) {
-      console.log(error);
     }
-  };
+
+
+    console.log("🧡🧡🧡🧡🧡🧡 Departments:", departments);
+
+    setDepartmentData(departments);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+
+
+
+
 
   useEffect(() => {
     fetchAllDepartments();

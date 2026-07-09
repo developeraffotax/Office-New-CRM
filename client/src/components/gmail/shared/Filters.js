@@ -92,6 +92,16 @@ export default function Filters({
     return ["all", "unassigned", ...users.map((u) => u._id)];
   });
 
+
+
+
+  console.log("USERS IN INBOX", users)
+
+
+
+
+
+
   useEffect(() => {
     if (!users.length) return;
 

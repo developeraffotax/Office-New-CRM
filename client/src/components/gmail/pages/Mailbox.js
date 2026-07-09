@@ -9,27 +9,23 @@ export default function Mailbox() {
   const [team, setTeam] = useState([]);
   const [categories, setCategories] = useState([]);
 
-
   const mail = useMailThreads({
     endpoint: `${process.env.REACT_APP_API_URL}/api/v1/gmail/get-mailbox`,
   });
 
-  
-  
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
       );
-      setUsers(
+      const filteredUsers =
         data?.users?.filter((user) =>
           user.role?.access?.some((item) =>
-            item?.permission?.includes("Tickets")
-          )
-        ) || []
-      );
+            item?.permission?.includes("Inbox"),
+          ),
+        ) || [];
 
-
+      setUsers(filteredUsers);
     } catch (error) {
       console.log(error);
     }
@@ -37,28 +33,41 @@ export default function Mailbox() {
 
 
 
-    const getTeam = async () => {
+
+
+
+
+  const getTeam = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get/active/team`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get/active/team`,
       );
-      setTeam( data?.users);
 
+      const filteredUsers =
+        data?.users?.filter((user) =>
+          user.role?.access?.some((item) =>
+            item?.permission?.includes("Inbox"),
+          ),
+        ) || [];
 
+      setTeam(filteredUsers);
     } catch (error) {
       console.log(error);
     }
   };
+
 
 
   
- 
-    useEffect(() => {
-      getAllUsers();
-getTeam()      
 
-      fetchCategories().then(res => setCategories(res.data));
+  useEffect(() => {
+    getAllUsers();
+    getTeam();
+
+    fetchCategories().then((res) => setCategories(res.data));
   }, []);
 
-  return <MailLayout users={users}  team={team}  categories={categories} {...mail} />;
+  return (
+    <MailLayout users={users} team={team} categories={categories} {...mail} />
+  );
 }

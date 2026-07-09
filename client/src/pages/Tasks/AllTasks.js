@@ -305,7 +305,7 @@ const AllTasks = ({ justShowTable = false }) => {
       setUserName(
         data?.users
           ?.filter((user) =>
-            user?.role?.access?.map((item) =>
+            user?.role?.access?.some((item) =>
               item.permission.includes("Tasks"),
             ),
           )

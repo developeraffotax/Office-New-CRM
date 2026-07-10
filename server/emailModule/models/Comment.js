@@ -23,13 +23,13 @@ const commentSchema = new Schema(
     entity: {
       type: String, // "EmailThread", "Ticket", "Task"
       required: true,
-      index: true,
+      
     },
    
      entityId: {
       type: Types.ObjectId,
       required: true,
-      index: true,
+      
     },
     /**
      * 👤 Author
@@ -38,7 +38,7 @@ const commentSchema = new Schema(
       type: Types.ObjectId,
       ref: "Users",
       required: true,
-      index: true,
+      
     },
 
     /**
@@ -56,7 +56,7 @@ const commentSchema = new Schema(
     isInternal: {
       type: Boolean,
       default: false,
-      index: true,
+      
     },
 
     /**
@@ -66,7 +66,7 @@ const commentSchema = new Schema(
       {
         type: Types.ObjectId,
         ref: "Users",
-        index: true,
+        
       },
     ],
 
@@ -92,7 +92,7 @@ const commentSchema = new Schema(
     parentComment: {
       type: Types.ObjectId,
       ref: "Comment",
-      index: true,
+      
       default: null,
     },
 
@@ -113,7 +113,8 @@ const commentSchema = new Schema(
 );
 
 
-
+// Unique index per company + thread
+commentSchema.index({ entity: 1, entityId: 1 } );
 
 
   export default mongoose.model("Comment", commentSchema);

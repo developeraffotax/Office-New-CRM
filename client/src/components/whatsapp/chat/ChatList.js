@@ -4,7 +4,7 @@ import { ConversationTime } from "../shared/ui/ConversationTime";
 import ChatRow from "./ChatRow";
 import { useMemo } from "react";
 
-export default function ChatList({ conversations, pagination, loading, filters, setFilters, activeChatId, setActiveChatId, markAsRead,  users, categories, updateConversation, deleteConversation }) {
+export default function ChatList({ conversations, pagination, loading, filters, setFilters, activeChatId, setActiveChatId, markAsRead,  users, categories, updateConversation, deleteConversation, setComment }) {
 
  
  
@@ -55,6 +55,7 @@ const hasPrevPage = useMemo(() => pagination.page > 1, [pagination]);
               categories={categories}
               updateConversation={updateConversation}
               deleteConversation={deleteConversation}
+              setComment={setComment}
             />
           ))
         )}

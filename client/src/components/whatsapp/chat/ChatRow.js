@@ -9,6 +9,9 @@ import { FaCheckCircle, FaRegStar, FaStar, FaUndoAlt } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { useMemo } from "react";
 import { hasSubrole } from "../../../utlis/checkPermission";
+import { FiMessageSquare } from "react-icons/fi";
+import IconButtonWithBadge from "../shared/ui/IconButtonWithBadge";
+ 
 
 export default function ChatRow({
   chat,
@@ -20,6 +23,8 @@ export default function ChatRow({
   categories,
   updateConversation,
   deleteConversation,
+  setComment,
+
 }) {
   const { auth } = useSelector((state) => state.auth);
   const user = auth?.user;
@@ -89,71 +94,94 @@ export default function ChatRow({
 
           <div className="flex items-center gap-1.5 flex-shrink-0">
             {/* Actions: hidden until hover */}
-            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-              {scope.edit && <button
-                className={`w-6 h-6 rounded flex items-center justify-center transition-colors ${
-                  chat?.isStarred
-                    ? "text-amber-400 hover:text-amber-500"
-                    : "text-gray-400 hover:text-amber-400"
-                }`}
-                title={chat?.isStarred ? "Unstar" : "Star"}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  updateConversation(chat?._id, { isStarred: !chat?.isStarred });
-                }}
-              >
-                {chat?.isStarred ? (
-                  <FaStar className="size-3.5" />
-                ) : (
-                  <FaRegStar className="size-3.5" />
-                )}
-              </button>}
+             <div className="flex items-center gap-0.5 opacity-100 group-hover:opacity-100 transition-opacity duration-150">
+  
+  {/* View Comments Action */}
+  <IconButtonWithBadge
+    icon={FiMessageSquare}
+    unreadCount={chat?.unreadComments || 0}
+    title="View Comments"
+    className="w-6 h-6 text-slate-500 hover:text-blue-600 hover:bg-blue-50"
+    iconClassName="size-3.5"
+    onClick={(e) => {
+      e.stopPropagation();
+      setComment({
+        show: true,
+        conversationId: chat._id,
+      });
+    }}
+  />
 
-              <button
-                className="w-6 h-6 rounded flex items-center justify-center text-gray-400 hover:text-orange-500 transition-colors"
-                title="Set Reminder"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <PiBell className="size-4" />
-              </button>
+  {/* Star / Unstar Action */}
+  {scope.edit && (
+    <IconButtonWithBadge
+      icon={chat?.isStarred ? FaStar : FaRegStar}
+      title={chat?.isStarred ? "Unstar" : "Star"}
+      className={`w-6 h-6 ${
+        chat?.isStarred
+          ? "text-amber-400 hover:text-amber-500"
+          : "text-gray-400 hover:text-amber-400"
+      }`}
+      iconClassName="size-3.5"
+      onClick={(e) => {
+        e.stopPropagation();
+        updateConversation(chat?._id, { isStarred: !chat?.isStarred });
+      }}
+    />
+  )}
 
-              {scope.edit && (
-                chat?.status === "progress" ? (
-                  <button
-                    className="w-6 h-6 rounded flex items-center justify-center text-gray-400 hover:text-green-500 transition-colors"
-                    title="Complete"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      updateConversation(chat?._id, { status: "completed" });
-                    }}
-                  >
-                    <FaCheckCircle className="size-3.5" />
-                  </button>
-                ) : (
-                  <button
-                    className="w-6 h-6 rounded flex items-center justify-center text-green-500 hover:text-gray-400 transition-colors"
-                    title="Undo Complete"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      updateConversation(chat?._id, { status: "progress" });
-                    }}
-                  >
-                    <FaUndoAlt className="size-3.5" />
-                  </button>
-                )
-              )}
-             {scope.delete && <button
-                className="w-6 h-6 rounded flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
-                title="Delete"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActiveChatId(null);
-                  deleteConversation(chat?._id, chat?.companyName);
-                }}
-              >
-                <MdDeleteOutline className="size-4" />
-              </button>}
-            </div>
+  {/* Set Reminder Action */}
+  <IconButtonWithBadge
+    icon={PiBell}
+    title="Set Reminder"
+    className="w-6 h-6 text-gray-400 hover:text-orange-500"
+    iconClassName="size-4"
+    onClick={(e) => e.stopPropagation()}
+  />
+
+  {/* Complete / Undo Complete Action */}
+  {scope.edit && (
+    chat?.status === "progress" ? (
+      <IconButtonWithBadge
+        icon={FaCheckCircle}
+        title="Complete"
+        className="w-6 h-6 text-gray-400 hover:text-green-500"
+        iconClassName="size-3.5"
+        onClick={(e) => {
+          e.stopPropagation();
+          updateConversation(chat?._id, { status: "completed" });
+        }}
+      />
+    ) : (
+      <IconButtonWithBadge
+        icon={FaUndoAlt}
+        title="Undo Complete"
+        className="w-6 h-6 text-green-500 hover:text-gray-400"
+        iconClassName="size-3.5"
+        onClick={(e) => {
+          e.stopPropagation();
+          updateConversation(chat?._id, { status: "progress" });
+        }}
+      />
+    )
+  )}
+
+  {/* Delete Action */}
+  {scope.delete && (
+    <IconButtonWithBadge
+      icon={MdDeleteOutline}
+      title="Delete"
+      className="w-6 h-6 text-gray-400 hover:text-red-500"
+      iconClassName="size-4"
+      onClick={(e) => {
+        e.stopPropagation();
+        setActiveChatId(null);
+        deleteConversation(chat?._id, chat?.companyName);
+      }}
+    />
+  )}
+
+</div>
 
             {/* Always visible: category, user, time — stop propagation so
                 their own dropdowns/pickers don't also open the chat */}

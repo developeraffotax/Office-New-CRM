@@ -76,7 +76,7 @@ export const addComment = async (req, res) => {
 
     const eventName = `wa-comments:updated-${conversation.companyName}`;
  
-    emitToAll(eventName, { threadIds: [conversationId] });
+    emitToAll(eventName, { conversationIds: [conversationId] });
 
     res.status(201).json({
       success: true,
@@ -113,6 +113,7 @@ export const getUnreadCounts = async (req, res) => {
     const unreadCounts = await Comment.aggregate([
       {
         $match: {
+          // entity: "Whatsapp", can also add this
           entityId: {
             $in: conversationIds.map((id) => new mongoose.Types.ObjectId(id)),
           },
@@ -131,6 +132,9 @@ export const getUnreadCounts = async (req, res) => {
     unreadCounts.forEach((u) => {
       unreadMap[u._id.toString()] = u.unreadCount;
     });
+
+    console.log("UNREAD MAP🔐🔐🔐", unreadMap)
+
 
     res.json({ success: true, unreadCounts: unreadMap });
   } catch (err) {
@@ -158,12 +162,12 @@ export const getUnreadCounts = async (req, res) => {
 
 export const getComments = async (req, res) => {
   try {
-    const { conversationIds } = req.params;
+    const { conversationId } = req.params;
     const { page = 1, limit = 20 } = req.query;
     const userId = req.user.user._id;
 
 
-     const thread = await WhatsappConversation.findById(conversationIds);
+     const thread = await WhatsappConversation.findById(conversationId);
     if (!thread) {
       return res.status(404).json({ message: "Thread not found" });
     }
@@ -171,7 +175,7 @@ export const getComments = async (req, res) => {
 
     const query = {
       entity: "Whatsapp",
-      entityId: new mongoose.Types.ObjectId(conversationIds),
+      entityId: new mongoose.Types.ObjectId(conversationId),
     };
 
     const comments = await Comment.find(query)
@@ -213,7 +217,7 @@ export const getComments = async (req, res) => {
 
     const eventName = `wa-comments:updated-${thread?.companyName}`;
 
-    emitToUser(userId ,eventName, { threadIds: [conversationIds] });
+    emitToUser(userId ,eventName, { conversationIds: [conversationId] });
 
     res.json({
       data: comments,

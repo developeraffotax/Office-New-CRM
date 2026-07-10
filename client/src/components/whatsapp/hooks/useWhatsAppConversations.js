@@ -18,23 +18,48 @@ export function useWhatsAppConversations({ endpoint }) {
   const [pagination, setPagination] = useState({});
 
 
-  
-  const filters = useMemo(() => ({
-    companyName: searchParams.get("companyName") || "",
-    status: searchParams.get("status") || "",
-    userId: searchParams.get("userId") || "",
-    category: searchParams.get("category") || "",
-    search: searchParams.get("search") || "",
-    lastMessageBy: searchParams.get("lastMessageBy") || "",
-    unreadOnly: searchParams.get("unreadOnly") || "",
-    starred: searchParams.get("starred") || "",
+// 1. Extract the primitives from searchParams first
+const companyNameParam = searchParams.get("companyName") || "";
+const statusParam = searchParams.get("status") || "";
+const userIdParam = searchParams.get("userId") || "";
+const categoryParam = searchParams.get("category") || "";
+const searchParam = searchParams.get("search") || "";
+const lastMessageByParam = searchParams.get("lastMessageBy") || "";
+const unreadOnlyParam = searchParams.get("unreadOnly") || "";
+const starredParam = searchParams.get("starred") || "";
+const startDateParam = searchParams.get("startDate") || "";
+const endDateParam = searchParams.get("endDate") || "";
+const pageParam = searchParams.get("page") || "1";
+const limitParam = searchParams.get("limit") || "20";
 
-    startDate: searchParams.get("startDate") || "",
-    endDate: searchParams.get("endDate") || "",
-
-    page: Number(searchParams.get("page") || 1),
-    limit: Number(searchParams.get("limit") || 20),
-  }), [searchParams]);
+// 2. Only depend on those specific string/number primitives
+const filters = useMemo(() => ({
+  companyName: companyNameParam,
+  status: statusParam,
+  userId: userIdParam,
+  category: categoryParam,
+  search: searchParam,
+  lastMessageBy: lastMessageByParam,
+  unreadOnly: unreadOnlyParam,
+  starred: starredParam,
+  startDate: startDateParam,
+  endDate: endDateParam,
+  page: Number(pageParam),
+  limit: Number(limitParam),
+}), [
+  companyNameParam,
+  statusParam,
+  userIdParam,
+  categoryParam,
+  searchParam,
+  lastMessageByParam,
+  unreadOnlyParam,
+  starredParam,
+  startDateParam,
+  endDateParam,
+  pageParam,
+  limitParam
+]);
 
 
 
@@ -188,6 +213,102 @@ const updateConversation = async (_id, updateData) => {
     }
   };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  // ---------------- Fetch unread counts separately ----------------
+const fetchUnreadCounts = useCallback(async (conversationIds) => {
+  if (!conversationIds || conversationIds.length === 0) return;
+
+  try {
+    const { data } = await axios.post(
+      `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/comments/unread`,
+      { conversationIds }
+    );
+
+    setConversations(prev =>
+      prev.map(t =>
+        conversationIds.includes(t._id)
+          ? { ...t, unreadComments: data.unreadCounts[t._id] || 0 }
+          : t
+      )
+    );
+  } catch (err) {
+    console.error("Failed to fetch unread counts:", err);
+  }
+}, []);
+
+  // ---------------- Fetch unread counts when threads are loaded ----------------
+  useEffect(() => {
+    if (conversations.length > 0) {
+      const threadIds = conversations.map((t) => t._id);
+      fetchUnreadCounts(threadIds);
+    }
+  }, [conversations.map((t) => t._id).join(","), fetchUnreadCounts]); // stable dependency
+
+
+
+
+
+      // ---------------- Socket listener for meta updates ----------------
+useEffect(() => {
+  if (!socket) return;
+
+  const handleCommentsUpdated = ({ conversationIds }) => {
+
+    
+    if (!conversationIds || conversationIds.length === 0) return;
+    fetchUnreadCounts(conversationIds);
+  };
+
+  socket.on(`wa-comments:updated-${filters.companyName}`, handleCommentsUpdated);
+  return () => socket.off(`wa-comments:updated-${filters.companyName}`, handleCommentsUpdated);
+}, [socket, filters.companyName, fetchUnreadCounts]);
+
+
+
+// Inside useWhatsAppConversations hook:
+
+const commentState = useMemo(() => ({
+  show: searchParams.get("comments") === "true",
+  conversationId: searchParams.get("commentId") || null,
+}), [searchParams]);
+
+const setComment = useCallback(({ show, conversationId }) => {
+  // Always read fresh params to ensure filters aren't wiped out
+  setSearchParams((prevParams) => {
+    const nextParams = new URLSearchParams(prevParams);
+    if (show) {
+      nextParams.set("comments", "true");
+      if (conversationId) nextParams.set("commentId", conversationId);
+    } else {
+      nextParams.delete("comments");
+      nextParams.delete("commentId");
+    }
+    return nextParams; // React Router updates this atomically
+  });
+}, [setSearchParams]);
+
+
   return {
     conversations,
     loading,
@@ -197,6 +318,9 @@ const updateConversation = async (_id, updateData) => {
     updateConversation,
     markAsRead,
     fetchConversations,
-    deleteConversation
+    deleteConversation,
+
+    setComment,
+    commentState
   };
 }

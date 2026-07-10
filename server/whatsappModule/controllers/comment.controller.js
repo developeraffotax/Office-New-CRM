@@ -57,8 +57,8 @@ export const addComment = async (req, res) => {
  
 
         const payload = {
-          title: "New Comment 💬",
-          redirectLink: `/whatsapp/${conversation?._id}?companyName=${conversation?.companyName}`,
+          title: "New Comment 💬 | Whatsapp",
+          redirectLink: `/whatsapp/${conversation?._id}?companyName=${conversation?.companyName}&comments=true&commentId=${conversation?._id}`,
           description: `${req.user.user.name} added a new comment!
           ✔ Phone: ${conversation?.phone}
           ✔ Last Message: ${conversation?.lastMessage}

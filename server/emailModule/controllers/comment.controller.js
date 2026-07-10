@@ -55,7 +55,7 @@ export const addComment = async (req, res) => {
  
 
         const payload = {
-          title: "New Comment 💬",
+          title: "New Comment 💬 | Mailbox",
           redirectLink: `/mail?folder=inbox&companyName=${thread?.companyName}`,
           description: `${req.user.user.name} added a new comment!
           ✔ Subject: ${thread?.subject}

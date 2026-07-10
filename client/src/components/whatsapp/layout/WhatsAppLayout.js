@@ -126,13 +126,13 @@ export default function WhatsAppLayout({
       
       {/* Render comment pane based directly on URL parameters provided by the hook */}
  
-        <CommentList
+       { commentState.show && <CommentList
           users={users}
           currentUserId={user.id}
           show={commentState.show}
           conversationId={commentState.conversationId}
           onClose={() => setComment({ show: false })}
-        />
+        />}
  
 
 

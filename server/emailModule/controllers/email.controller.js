@@ -1296,9 +1296,14 @@ export const getMailboxUserCounts = async (req, res) => {
   }
 };
 
+
+
+
 export const getThreadMessageUsers = async (req, res) => {
   try {
     const { threadId, companyName } = req.query;
+
+    console.log("QUERY", req.query)
 
     if (!threadId || !companyName) {
       return res.status(400).json({

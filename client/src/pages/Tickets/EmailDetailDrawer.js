@@ -33,6 +33,7 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
   const [showReplay, setShowReply] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [users, setUsers] = useState([]);
+    const [messageUsers, setMessageUsers] = useState({});
     // Multiple replies open state
   const [openReplies, setOpenReplies] = useState({});
 
@@ -43,30 +44,30 @@ export default function EmailDetailDrawer({ id, setTicketSubject, isReplyModalOp
     }));
   };
 
+
+  console.log("MessageUsers", messageUsers)
   
 
+ 
+// const [activityMap, setActivityMap] = useState({});
 
-const [activityMap, setActivityMap] = useState({});
-
-const getActivityMap = async () => {
-  try {
-    const { data } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/tickets/activity/map/${id}`
-    );
+// const getActivityMap = async () => {
+//   try {
+//     const { data } = await axios.get(
+//       `${process.env.REACT_APP_API_URL}/api/v1/tickets/activity/map/${id}`
+//     );
 
  
-    setActivityMap(data); // { messageId: { user, action } }
-  } catch (err) {
-    console.log("Failed to get activity map:", err);
-  }
-};
-
-
+//     setActivityMap(data); // { messageId: { user, action } }
+//   } catch (err) {
+//     console.log("Failed to get activity map:", err);
+//   }
+// };
  
 
-useEffect(() => {
-  if (id) getActivityMap();
-}, [id]);
+// useEffect(() => {
+//   if (id) getActivityMap();
+// }, [id]);
 
 
 
@@ -89,8 +90,47 @@ useEffect(() => {
     }
   };
 
+
+
+  
+          
+const getMessageUsers = async () => {
+  try {
+    const { data } = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/v1/gmail/thread-message-users`,
+      {
+        params: {
+          threadId: ticketDetail.mailThreadId,
+          companyName: ticketDetail.company?.trim().toLowerCase(),
+        },
+      }
+    );
+
+    console.log("THE MESSAGE USRESSSSSS", data)
+
+    if (data?.success) {
+     
+      setMessageUsers(data.data || {});
+    }
+  } catch (error) {
+    console.error("Failed to fetch message users", error);
+  }
+};
+
+
+useEffect(() => {
+
+  if(ticketDetail) {
+    getMessageUsers()
+  }
+
+
+}, [ticketDetail])
+
+
   useEffect(() => {
     getAllUsers();
+     
     // eslint-disable-next-line
   }, []);
 
@@ -117,8 +157,16 @@ useEffect(() => {
     }
   };
 
+
+
+
+
+
+
+
   useEffect(() => {
     if (id) getSingleTicket();
+   
     // eslint-disable-next-line
   }, [id]);
 
@@ -540,10 +588,9 @@ function splitMessage(html = "") {
 
 
   // Get CRM user info if exists
-  const senderInfo = activityMap[message?.id];
+  const senderName = messageUsers[message?.id];
 
-  const senderName = senderInfo?.user?.name || 
-                     "";
+   
 
                      const isSentByMe =
               message?.payload?.body?.sentByMe ||

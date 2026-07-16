@@ -1303,8 +1303,6 @@ export const getThreadMessageUsers = async (req, res) => {
   try {
     const { threadId, companyName } = req.query;
 
-    console.log("QUERY", req.query)
-
     if (!threadId || !companyName) {
       return res.status(400).json({
         success: false,
@@ -1312,17 +1310,18 @@ export const getThreadMessageUsers = async (req, res) => {
       });
     }
 
-    // get messages
     const messages = await EmailMessage.find({
       gmailThreadId: threadId,
       companyName: companyName,
     });
 
-    // build map
     const messageUserMap = {};
 
     messages.forEach((msg) => {
-      messageUserMap[msg.gmailMessageId] = msg.senderName || "";
+      messageUserMap[msg.gmailMessageId] = {
+        senderName: msg.senderName || "",
+        sentFrom: msg.sentFrom || "",
+      };
     });
 
     return res.status(200).json({

@@ -588,7 +588,8 @@ function splitMessage(html = "") {
 
 
   // Get CRM user info if exists
-  const senderName = messageUsers[message?.id];
+  const senderName = messageUsers[message?.id]?.senderName || "";
+  const sentFrom = messageUsers[message?.id]?.sentFrom || "";
 
    
 
@@ -623,14 +624,7 @@ return (
                       </div>
                       <div className="flex flex-col gap-0">
                         {separate(message?.payload?.headers?.find((h) => h.name === "From")?.value)}
-                        {/* <span className="text-[12px] text-gray-600 flex items-center gap-2 ">
-                          to{" "}
-                          {message?.payload?.headers?.find((h) => h.name === "To")?.value}
-                          <span>
-                            <FaCaretDown className="h-4 w-4 cursor-pointer" />
-                          </span>
-                        </span> */}
-
+                        
                         <EmailHeaderDetails details={headerDetails} />
 
 
@@ -638,7 +632,19 @@ return (
                     </div>
                     <div>
                       <EmailTimeDisplay internalDate={message?.internalDate} />
-                      {senderName && <h3 className=" text-[12px] text-gray-700">Sent by {senderName}</h3>}
+                     
+
+                      {senderName && (
+  <span className="text-gray-500 text-xs p-1 inline-flex items-center gap-1.5">
+    <span>Sent by {senderName}</span>
+    {sentFrom && (
+      <>
+        <span className="text-gray-400 text-base">•</span>
+        <span>{sentFrom}</span>
+      </>
+    )}
+  </span>
+)}
                     </div>
                   </div>
 
@@ -760,15 +766,7 @@ return (
                     </div>
                   </div>
 
-                  {/* <div
-                    className=" ml-10 text-[13px]"
-                    style={{ lineHeight: "1.2rem" }}
-                    dangerouslySetInnerHTML={{
-                      __html: message?.payload?.body?.data
-                        ? cleanMessageHtmlAggressive(stripReplies(extractMessage(message.payload.body.data)))
-                        : message?.snippet || "",
-                    }}
-                  ></div> */}
+               
 
 
                     <div className="ml-10 text-[13px]" style={{ lineHeight: "1.2rem" }}>

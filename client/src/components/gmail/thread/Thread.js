@@ -565,7 +565,8 @@ useOverlayStack({
             const isLast = i === messages.decryptedMessages.length - 1;
 
 
-            const crmUserName = messageUsers[message.id];
+            const senderName = messageUsers[message.id]?.senderName || "";
+            const sentFrom = messageUsers[message.id]?.sentFrom || "";
 
             // Inside your map loop where you find fromHeader and toHeader:
             const headersArr = message?.payload?.headers || [];
@@ -637,7 +638,17 @@ useOverlayStack({
                          
                     </div>
 
-                       {crmUserName && ( <span className="  text-gray-400 text-xs  ">Sent by {crmUserName} </span> ) }
+                         {senderName && (
+  <span className="text-gray-500 text-xs p-1 inline-flex items-center gap-1.5">
+    <span>Sent by {senderName}</span>
+    {sentFrom && (
+      <>
+        <span className="text-gray-400 text-base">•</span>
+        <span>{sentFrom}</span>
+      </>
+    )}
+  </span>
+)}
 
                     </div>
 

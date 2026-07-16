@@ -5,14 +5,16 @@ export const saveEmailMessage = async ({
   gmailThreadId,
   gmailMessageId,
   userName,
-  companyName
+  companyName,
+  sentFrom
 }) => {
   try {
     await EmailMessage.create({
       gmailThreadId,
       gmailMessageId,
       senderName: userName,
-      companyName
+      companyName,
+      sentFrom
     });
   } catch (error) {
     console.error("Error saving email message:", error.message);

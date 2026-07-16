@@ -68,7 +68,17 @@ export async function forward(req, res) {
 
     if (threadId) payload.requestBody.threadId = threadId;
 
-    await gmail.users.messages.send(payload);
+    const response = await gmail.users.messages.send(payload);
+
+    
+        // Save message reference
+    await saveEmailMessage({
+      gmailThreadId: response?.data?.threadId,
+      gmailMessageId: response?.data?.id,
+      userName,
+      companyName,
+      sentFrom: "CRM-Inbox"
+    });
 
     res.json({ success: true });
   } catch (err) {

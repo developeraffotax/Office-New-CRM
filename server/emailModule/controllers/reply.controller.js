@@ -56,6 +56,7 @@ export async function reply(req, res) {
       gmailMessageId: response?.data?.id,
       userName,
       companyName,
+      sentFrom: "CRM-Inbox"
     });
 
     // If linked to ticket → update ticket

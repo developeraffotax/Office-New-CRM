@@ -9,6 +9,11 @@ const EmailMessageSchema = new mongoose.Schema(
     },
     gmailMessageId: String,
     senderName: String,
+
+    sentFrom: {
+      type: String,
+      enum: ["CRM-Tickets", "CRM-Inbox"]
+    }
    
   },
   { timestamps: true },

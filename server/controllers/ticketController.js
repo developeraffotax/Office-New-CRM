@@ -31,6 +31,7 @@ import { buildGmailReply } from "../emailModule/utils/buildGmailReply.js";
 import EmailThread from "../emailModule/models/EmailThread.js";
 import ThreadCategory from "../emailModule/models/ThreadCategory.js";
 import { base64UrlToBase64 } from "../utils/gmailApiHelpers/utility.js";
+import { saveEmailMessage } from "../emailModule/utils/saveEmailMessage.js";
 
 
 
@@ -202,6 +203,10 @@ export const sendEmail = async (req, res) => {
     const resp = await sendEmailWithAttachments(emailData);
 
     const threadId = resp.data.threadId;
+    const messageId = resp?.data?.id || "";
+    
+
+    console.log("THE RESPONSE IN TICKETS❤️❤️❤️", resp)
 
  
     const sendEmail = await ticketModel.create({
@@ -229,6 +234,17 @@ export const sendEmail = async (req, res) => {
       userId: user._id,
       // category: "ticket"
     })
+
+
+
+
+            await saveEmailMessage({
+          gmailThreadId: threadId,
+          gmailMessageId: messageId,
+          userName,
+          companyName:company?.trim().toLowerCase(),
+          sentFrom: "CRM-Tickets"
+        });
 
 
 
@@ -1846,6 +1862,19 @@ export const sendTicketReply = async (req, res) => {
         message: "Invalid ticketId. Email was sent, but ticket update did not occur.",
       });
     }
+
+
+
+
+        // Save message reference
+        await saveEmailMessage({
+          gmailThreadId: threadId,
+          gmailMessageId: messageId,
+          userName,
+          companyName:company?.trim().toLowerCase(),
+          sentFrom: "CRM-Tickets"
+        });
+    
 
 
 

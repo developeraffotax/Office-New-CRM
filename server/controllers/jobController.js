@@ -10,7 +10,7 @@ import { emitJobUpdate } from "../utils/customFns/emitJobUpdate.js";
 import subtaskListModel from "../models/subtaskListModel.js";
 import { buildJobsQuery, } from "./jobController.utils.js";
 import { getAuthUser } from "../utils/getAuthUser.js";
-import { isAdmin } from "../utils/checkPermission.js";
+import { hasPermission, isAdmin } from "../utils/checkPermission.js";
 import { maskEmail, maskPhone } from "../utils/mask.js";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -1037,9 +1037,12 @@ export const singleClientJob = async (req, res) => {
     // to generate the masked/blurred versions for non-admins.
     let selectString = "-comments";
 
-    // if(!isAdmin(req)) {
-    //   selectString += " -email -phone"
-    // }
+    console.log("HAS PERMISSSON", hasPermission(req, "Jobs", "Edit"));
+
+
+    if(!isAdmin(req) && !hasPermission(req, "Jobs", "Edit")) {
+      selectString += " -email -phone"
+    }
 
     const clientJob = await jobsModel
       .findById(jobId) // findById accepts the string ID directly
@@ -3083,7 +3086,7 @@ const getDatePresetRange = (preset) => {
 
 
 
-const applyEmailAndPhoneMasking = (clients = []) => {
+const applyEmailMasking = (clients = []) => {
   return clients.map((client) => {
     // 1. Shallow copy the original client
     const maskedClient = { ...client };
@@ -3092,6 +3095,21 @@ const applyEmailAndPhoneMasking = (clients = []) => {
     if ('email' in maskedClient) {
       maskedClient.email = maskEmail(maskedClient.email);
     }
+  
+
+    return maskedClient;
+  });
+};
+
+
+
+
+
+const applyPhoneMasking = (clients = []) => {
+  return clients.map((client) => {
+    // 1. Shallow copy the original client
+    const maskedClient = { ...client };
+ 
     
     if ('phone' in maskedClient) {
       maskedClient.phone = maskPhone(maskedClient.phone);
@@ -3100,6 +3118,7 @@ const applyEmailAndPhoneMasking = (clients = []) => {
     return maskedClient;
   });
 };
+
 
 
 
@@ -3142,8 +3161,12 @@ export const getAllClientJobs = async (req, res) => {
       .lean();
 
     
-    if(!isAdmin(req)) {
-      clients = applyEmailAndPhoneMasking(clients)
+    if(!isAdmin(req) && !hasPermission(req, "Jobs", "Email") ) {
+      clients = applyEmailMasking(clients)
+    }
+
+    if(!isAdmin(req) && !hasPermission(req, "Jobs", "Phone") ) {
+      clients = applyPhoneMasking(clients)
     }
 
     // Count total
@@ -3612,7 +3635,7 @@ export const getUniqueClientJobs = async (req, res) => {
 
     ];
 
-    const clients =
+    let clients =
       await jobsModel.aggregate(pipeline);
 
     // Populate (after aggregation)
@@ -3644,6 +3667,17 @@ export const getUniqueClientJobs = async (req, res) => {
       totalResult.length
         ? totalResult[0].total
         : 0;
+
+
+
+        
+    if(!isAdmin(req) && !hasPermission(req, "Jobs", "Email") ) {
+      clients = applyEmailMasking(clients)
+    }
+
+    if(!isAdmin(req) && !hasPermission(req, "Jobs", "Phone") ) {
+      clients = applyPhoneMasking(clients)
+    }
 
     res.status(200).send({
       success: true,

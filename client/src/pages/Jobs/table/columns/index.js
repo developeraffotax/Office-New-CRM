@@ -78,12 +78,12 @@ export const getJobsColumns = (ctx) => {
   // Conditionally push extra columns
 
     // Conditionally push extra columns
-  if ((auth?.user?.role?.name === "Admin" || access.includes("Email"))) {
+  if ((auth?.user?.role?.name === "Admin") || (access.includes("Email")) || (access.includes("Masked Email")) ) {
     columns.push(emailColumn(ctx));
   }
 
     // Conditionally push extra columns
-  if ((auth?.user?.role?.name === "Admin" || access.includes("Phone"))) {
+  if ((auth?.user?.role?.name === "Admin") || (access.includes("Phone")) || (access.includes("Masked Phone"))) {
     columns.push(phoneColumn(ctx));
   }
 

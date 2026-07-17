@@ -63,8 +63,8 @@ export const getJobsColumns = (ctx) => {
     budgetColumn(ctx),
    (status === "progress" && timerColumn(ctx)),
     actionsColumn(ctx),
-     emailColumn(ctx),
-   phoneColumn(ctx),
+  //    emailColumn(ctx),
+  //  phoneColumn(ctx),
 
    (status === "completed" && jobPreparedColumn(ctx)),
    (status === "completed" && jobReviewColumn(ctx)),
@@ -76,6 +76,18 @@ export const getJobsColumns = (ctx) => {
   let columns = [...baseColumns];
 
   // Conditionally push extra columns
+
+    // Conditionally push extra columns
+  if ((auth?.user?.role?.name === "Admin" || access.includes("Email"))) {
+    columns.push(emailColumn(ctx));
+  }
+
+    // Conditionally push extra columns
+  if ((auth?.user?.role?.name === "Admin" || access.includes("Phone"))) {
+    columns.push(phoneColumn(ctx));
+  }
+
+
   if ((auth?.user?.role?.name === "Admin" || access.includes("Fee")) && !showUniqueClients) {
     columns.push(feeColumn(ctx));
   }

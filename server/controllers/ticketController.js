@@ -1829,7 +1829,6 @@ export const sendTicketReply = async (req, res) => {
     const response = await emailReply(emailData);
 
  
-
         let updatedTicket = null;
 
         const update =  { lastMessageSentBy: userName, lastMessageSentTime: new Date(), status: "Sent" };
@@ -1868,8 +1867,8 @@ export const sendTicketReply = async (req, res) => {
 
         // Save message reference
         await saveEmailMessage({
-          gmailThreadId: threadId,
-          gmailMessageId: messageId,
+          gmailThreadId: response?.data?.threadId || "",
+          gmailMessageId: response?.data?.id || "",
           userName,
           companyName:company?.trim().toLowerCase(),
           sentFrom: "CRM-Tickets"

@@ -1037,12 +1037,12 @@ export const singleClientJob = async (req, res) => {
     // to generate the masked/blurred versions for non-admins.
     let selectString = "-comments";
 
-    console.log("HAS PERMISSSON", hasPermission(req, "Jobs", "Edit"));
+    // console.log("HAS PERMISSSON", hasPermission(req, "Jobs", "Edit"));
 
 
-    if(!isAdmin(req) && !hasPermission(req, "Jobs", "Edit")) {
-      selectString += " -email -phone"
-    }
+    // if(!isAdmin(req) && !hasPermission(req, "Jobs", "Edit")) {
+    //   selectString += " -email -phone"
+    // }
 
     const clientJob = await jobsModel
       .findById(jobId) // findById accepts the string ID directly

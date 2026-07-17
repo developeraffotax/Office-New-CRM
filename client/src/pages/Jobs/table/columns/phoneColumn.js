@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
+import { HiCheck, HiOutlineClipboardCopy } from "react-icons/hi";
 
 export const phoneColumn = (ctx) => {
   return {
@@ -58,18 +60,57 @@ export const phoneColumn = (ctx) => {
       );
     },
 
-    Cell: ({ row }) => {
-      const phone = row.original.phone;
+Cell: ({ row }) => {
+  const phone = row.original.phone;
+  const [copied, setCopied] = useState(false);
+  
+  // Check if a valid phone number exists
+  const hasPhone = !!phone && phone.trim() !== "";
+  
+  // Extract only the last 4 digits for display
+  const lastFour = hasPhone ? phone.slice(-4) : "";
 
-      return (
-        <div className="w-full">
-          <span>{phone}</span>
-        </div>
-      );
-    },
+  const handleCopy = () => {
+    // Exit early if there's no phone number to copy
+    if (!hasPhone) return;
 
-    minSize: 80,
-    maxSize: 150,
-    grow: true,
+    // We still copy the FULL phone number to the clipboard
+    navigator.clipboard.writeText(phone);
+    setCopied(true);
+    toast.success("Phone copied!");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div
+      onClick={handleCopy}
+      // Changed to w-full & justify-center for centering, reduced padding & gap for compactness
+      className={`group relative w-full flex items-center justify-center gap-1.5 px-1 py-1 transition-all ${
+        hasPhone ? "cursor-pointer active:scale-[0.98]" : "cursor-default"
+      }`}
+    >
+      <span
+        // Removed text-right, added tracking to make the dots/numbers look clean
+        className={`text-xs tracking-widest transition-colors ${
+          copied 
+            ? "text-orange-600 font-medium" 
+            : hasPhone 
+              ? "text-slate-600 group-hover:text-slate-900" 
+              : "text-slate-400 italic tracking-normal" 
+        }`}
+      >
+        {/* Prepended with dots to indicate it's truncated */}
+        {hasPhone ? `${lastFour}` : ""}
+      </span>
+
+       
+    </div>
+  );
+},
+
+    minSize: 60,
+    maxSize: 160,
+    size: 60,
+    grow: false,
   };
 };

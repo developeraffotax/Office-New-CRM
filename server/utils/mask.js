@@ -22,6 +22,7 @@ export const maskPhone = (phone) => {
   if (str.length <= 6) {
     return "***-***";
   }
-  // Keeps the first 3 digits and the last 3 digits, masking everything in between
-  return `${str.slice(0, 3)}*****${str.slice(-3)}`;
+  // Keeps the first 3 digits and the last 4 digits, masking everything in between
+  return `${str.slice(0, 3)}****${str.slice(-4)}`;
+  //return `${str.slice(0, 3)}*****${str.slice(-3)}`;
 };

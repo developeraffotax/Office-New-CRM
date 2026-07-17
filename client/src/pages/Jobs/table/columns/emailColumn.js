@@ -66,7 +66,11 @@ Cell: ({ row }) => {
   const email = row.original.email;
   const [copied, setCopied] = useState(false);
 
+   // Check if a valid phone number exists
+  const hasEmail = !!email && email.trim() !== "";
+
   const handleCopy = () => {
+    if (!hasEmail) return;
     navigator.clipboard.writeText(email);
     setCopied(true);
     toast.success("Email copied!");
@@ -88,7 +92,9 @@ Cell: ({ row }) => {
         {highlightText(email, activeSearch)}
       </span>
 
-      <div className="flex items-center justify-center shrink-0 w-5 h-5">
+      {
+        hasEmail && (
+          <div className="flex items-center justify-center shrink-0 w-5 h-5">
         {copied ? (
           <div className="flex items-center justify-center w-full h-full bg-orange-100 text-orange-600 rounded-full animate-in zoom-in duration-200">
             <HiCheck size={12} strokeWidth={2} />
@@ -100,12 +106,15 @@ Cell: ({ row }) => {
           />
         )}
       </div>
+        )
+      }
     </div>
   );
 },
 
+    size: 220,
     minSize: 100,
-    maxSize: 220,
-    grow: true,
+    maxSize: 400,
+    grow: false,
   };
 };

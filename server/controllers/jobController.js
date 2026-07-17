@@ -9,6 +9,9 @@ import { scheduleNotification } from "../utils/customFns/scheduleNotification.js
 import { emitJobUpdate } from "../utils/customFns/emitJobUpdate.js";
 import subtaskListModel from "../models/subtaskListModel.js";
 import { buildJobsQuery, } from "./jobController.utils.js";
+import { getAuthUser } from "../utils/getAuthUser.js";
+import { isAdmin } from "../utils/checkPermission.js";
+import { maskEmail, maskPhone } from "../utils/mask.js";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
@@ -1029,28 +1032,54 @@ export const singleClientJob = async (req, res) => {
       });
     }
 
+    // 1. We always exclude comments.
+    // Note: We DO NOT exclude email and phone here because we need them on the server 
+    // to generate the masked/blurred versions for non-admins.
+    let selectString = "-comments";
+
+    // if(!isAdmin(req)) {
+    //   selectString += " -email -phone"
+    // }
+
     const clientJob = await jobsModel
-      .findById({ _id: jobId })
+      .findById(jobId) // findById accepts the string ID directly
       .populate({ path: "activities.user", select: "name avatar" })
-      .populate({ path: "quality_Check.user", select: "name" });
+      .populate({ path: "quality_Check.user", select: "name" })
+      .select(selectString)
+      .lean();
 
     if (!clientJob) {
-      return res.status(400).send({
+      return res.status(404).send({
         success: false,
         message: "Job not found!",
       });
-    } else {
-      res.status(200).send({
-        success: true,
-        clientJob: clientJob,
-      });
     }
+
+    // 2. Convert to a plain JavaScript object so we can modify its properties
+    const jobResponse = clientJob;
+
+    // 3. Check permissions and apply masking if the user is not an Admin
+    // if (!isAdmin(req)) {
+    //   if (jobResponse.email) {
+    //     jobResponse.email = maskEmail(jobResponse.email);
+    //   }
+    //   if (jobResponse.phone) {
+    //     jobResponse.phone = maskPhone(jobResponse.phone);
+    //   }
+    // }
+
+    // 4. Return the cleaned data
+    return res.status(200).send({
+      success: true,
+      clientJob: jobResponse,
+    });
+
   } catch (error) {
-    console.log(error);
-    res.status(500).send({
+    console.error("Error in get single job:", error);
+    return res.status(500).send({
       success: false,
       message: "Error in get single job!",
-      error: error,
+      error: error.message, // Send error.message instead of raw error object to prevent leaks
     });
   }
 };
@@ -3054,26 +3083,27 @@ const getDatePresetRange = (preset) => {
 
 
 
+const applyEmailAndPhoneMasking = (clients = []) => {
+  return clients.map((client) => {
+    // 1. Shallow copy the original client
+    const maskedClient = { ...client };
 
+    // 2. Only modify the key if it actually exists on the copy
+    if ('email' in maskedClient) {
+      maskedClient.email = maskEmail(maskedClient.email);
+    }
+    
+    if ('phone' in maskedClient) {
+      maskedClient.phone = maskPhone(maskedClient.phone);
+    }
 
-
-
-
-
+    return maskedClient;
+  });
+};
 
 
 
  
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -3099,7 +3129,7 @@ export const getAllClientJobs = async (req, res) => {
     const query = buildJobsQuery(req.query);
 
     // Fetch clients
-    const clients = await jobsModel
+    let clients = await jobsModel
       .find(query)
       .select(
         "clientName companyName regNumber email phone fee currentDate totalHours totalTime jobRef job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.leadUser job.jobHolder comments._id comments.status label source data activeClient clientType partner clientPaidFee"
@@ -3111,6 +3141,11 @@ export const getAllClientJobs = async (req, res) => {
       .limit(limit)
       .lean();
 
+    
+    if(!isAdmin(req)) {
+      clients = applyEmailAndPhoneMasking(clients)
+    }
+
     // Count total
     const total = await jobsModel.countDocuments(query);
 
@@ -3118,7 +3153,7 @@ export const getAllClientJobs = async (req, res) => {
       success: true,
       message: "All clients",
 
-      clients,
+      clients: clients,
 
       pagination: {
         total,

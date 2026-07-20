@@ -691,6 +691,11 @@ const allClientJobData = useCallback(async () => {
         data?.pagination?.total || 0
       );
 
+
+      setTotalHours(data.summary.totalHours);
+setTotalFee(data.summary.totalFee);
+setTotalClientPaidFee(data.summary.totalClientPaidFee);
+
     }
 
   } catch (error) {
@@ -2280,29 +2285,29 @@ const renderColumnControls = () => (
 
 
 
-  const tableColumnFilters = table.getState().columnFilters;
-useEffect(() => {
-  const filteredRows = table.getFilteredRowModel().rows;
-  const totalHours = filteredRows.reduce((acc, row) => acc + Number(row.original.totalHours), 0);
-  setTotalHours(totalHours.toFixed(0));
+//   const tableColumnFilters = table.getState().columnFilters;
+// useEffect(() => {
+//   const filteredRows = table.getFilteredRowModel().rows;
+//   const totalHours = filteredRows.reduce((acc, row) => acc + Number(row.original.totalHours), 0);
+//   setTotalHours(totalHours.toFixed(0));
   
 
-  if(!showUniqueClients) {
-    const filteredRows = table.getFilteredRowModel().rows;
-   const totalFee = filteredRows.reduce((acc, row) => acc + Number(row.original.fee), 0);
-    setTotalFee(totalFee.toFixed(0));
-  }
+//   if(!showUniqueClients) {
+//     const filteredRows = table.getFilteredRowModel().rows;
+//    const totalFee = filteredRows.reduce((acc, row) => acc + Number(row.original.fee), 0);
+//     setTotalFee(totalFee.toFixed(0));
+//   }
 
 
-  if(showUniqueClients) {
-    const filteredRows = table.getFilteredRowModel().rows;
-    const totalClientPaidFee = filteredRows.reduce((acc, row) => acc + Number(row.original.clientPaidFee || '0'), 0);
-    setTotalClientPaidFee(totalClientPaidFee.toFixed(0))
-  }
+//   if(showUniqueClients) {
+//     const filteredRows = table.getFilteredRowModel().rows;
+//     const totalClientPaidFee = filteredRows.reduce((acc, row) => acc + Number(row.original.clientPaidFee || '0'), 0);
+//     setTotalClientPaidFee(totalClientPaidFee.toFixed(0))
+//   }
 
   
 
-}, [tableColumnFilters, table, showUniqueClients, tableData]);
+// }, [tableColumnFilters, table, showUniqueClients, tableData]);
 
  
 

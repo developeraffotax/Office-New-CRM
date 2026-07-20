@@ -3124,13 +3124,122 @@ const applyPhoneMasking = (clients = []) => {
 
  
 
-
-
-
-
-
-
 export const getAllClientJobs = async (req, res) => {
+  try {
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+
+    // Sorting
+    const sortField = req.query.sortField || "currentDate";
+    const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+
+    // Build query dynamically
+    const query = buildJobsQuery(req.query);
+
+    const [clients, summaryResult] = await Promise.all([
+      jobsModel
+        .find(query)
+        .select(
+          "clientName companyName regNumber email phone fee currentDate totalHours totalTime jobRef job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.leadUser job.jobHolder comments._id comments.status label source data activeClient clientType partner clientPaidFee"
+        )
+        .populate("data")
+        .sort({ _id: 1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+
+      // Totals over ALL matching docs — no skip/limit here
+      jobsModel.aggregate([
+        { $match: query },
+        {
+          $facet: {
+            totalCount: [{ $count: "count" }],
+
+            overall: [
+              {
+                $group: {
+                  _id: null,
+                  totalHours: {
+                    $sum: { $convert: { input: "$totalHours", to: "double", onError: 0, onNull: 0 } },
+                  },
+                  totalFee: {
+                    $sum: { $convert: { input: "$fee", to: "double", onError: 0, onNull: 0 } },
+                  },
+                },
+              },
+            ],
+
+            // One row per client, so a client with several job entries
+            // isn't double-counted in the "paid fee" total
+            uniqueClients: [
+              { $sort: { currentDate: -1 } },
+              {
+                $group: {
+                  _id: "$companyName",
+                  clientPaidFee: { $first: "$clientPaidFee" },
+                },
+              },
+              {
+                $group: {
+                  _id: null,
+                  totalClientPaidFee: {
+                    $sum: { $convert: { input: "$clientPaidFee", to: "double", onError: 0, onNull: 0 } },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      ]),
+    ]);
+
+    let clientsResult = clients;
+
+    if (!isAdmin(req) && !hasPermission(req, "Jobs", "Email")) {
+      clientsResult = applyEmailMasking(clientsResult);
+    }
+
+    if (!isAdmin(req) && !hasPermission(req, "Jobs", "Phone")) {
+      clientsResult = applyPhoneMasking(clientsResult);
+    }
+
+    const total = summaryResult[0]?.totalCount[0]?.count || 0;
+    const overall = summaryResult[0]?.overall[0] || {};
+    const uniqueClients = summaryResult[0]?.uniqueClients[0] || {};
+
+    res.status(200).send({
+      success: true,
+      message: "All clients",
+      clients: clientsResult,
+      summary: {
+        totalHours: Math.round(overall.totalHours || 0),
+        totalFee: Math.round(overall.totalFee || 0),
+        totalClientPaidFee: Math.round(uniqueClients.totalClientPaidFee || 0),
+      },
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get all job!",
+      error,
+    });
+  }
+};
+
+
+
+
+
+export const getAllClientJobsW = async (req, res) => {
 
   try {
 
@@ -3561,21 +3670,119 @@ export const getJobsStats = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const getUniqueClientJobs = async (req, res) => {
+  try {
+    // Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+
+    // Build query
+    const query = buildJobsQuery(req.query);
+
+    const pipeline = [
+      // Step 1: Apply filters
+      { $match: query },
+
+      // Step 2: Sort BEFORE grouping — decides WHICH job is kept
+      { $sort: { _id: 1 } },
+
+      // Step 3: Group by company, keep FIRST document
+      {
+        $group: {
+          _id: "$companyName",
+          doc: { $first: "$$ROOT" },
+        },
+      },
+
+      // Step 4: Restore original document shape
+      { $replaceRoot: { newRoot: "$doc" } },
+
+      // Step 5: fan out into page / count / totals in one pass
+      {
+        $facet: {
+          paginated: [{ $skip: skip }, { $limit: limit }],
+
+          totalCount: [{ $count: "total" }],
+
+          summary: [
+            {
+              $group: {
+                _id: null,
+                totalHours: {
+                  $sum: { $convert: { input: "$totalHours", to: "double", onError: 0, onNull: 0 } },
+                },
+                totalFee: {
+                  $sum: { $convert: { input: "$fee", to: "double", onError: 0, onNull: 0 } },
+                },
+                totalClientPaidFee: {
+                  $sum: { $convert: { input: "$clientPaidFee", to: "double", onError: 0, onNull: 0 } },
+                },
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    const [result] = await jobsModel.aggregate(pipeline);
+
+    let clients = result?.paginated || [];
+
+    // Populate (after aggregation)
+    await jobsModel.populate(clients, { path: "data" });
+
+    if (!isAdmin(req) && !hasPermission(req, "Jobs", "Email")) {
+      clients = applyEmailMasking(clients);
+    }
+
+    if (!isAdmin(req) && !hasPermission(req, "Jobs", "Phone")) {
+      clients = applyPhoneMasking(clients);
+    }
+
+    const total = result?.totalCount[0]?.total || 0;
+    const summary = result?.summary[0] || {};
+
+    res.status(200).send({
+      success: true,
+      message: "Unique clients",
+      clients,
+      summary: {
+        totalHours: Math.round(summary.totalHours || 0),
+        totalFee: Math.round(summary.totalFee || 0),
+        totalClientPaidFee: Math.round(summary.totalClientPaidFee || 0),
+      },
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).send({
+      success: false,
+      message: "Error while get all job!",
+      error,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getUniqueClientJobs2 = async (req, res) => {
 
   try {
 

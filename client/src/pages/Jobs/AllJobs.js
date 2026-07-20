@@ -70,6 +70,7 @@ import { useSavedFilters } from "../../components/SavedFilters/useSavedFilters";
 import SavedFiltersPanel from "../../components/SavedFilters/SavedFiltersPanel";
 import { CiFilter } from "react-icons/ci";
 import SendEmailModal from "../../components/Tickets/SendEmailModal";
+import { isTeamLead } from "../../utlis/checkPermission";
  
  
  
@@ -2368,7 +2369,7 @@ const setColumnFromOutsideTable = (colKey, filterVal) => {
   useEffect(() => {
 
 
-    if(auth.user?.role?.name === "Admin") {
+    if(isAdmin(auth) || isTeamLead(auth?.user)) {
 
    
       setShowJobHolder(true);

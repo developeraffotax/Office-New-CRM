@@ -4,6 +4,13 @@ export const isAdmin = (user) => {
 
 
 
+export const isTeamLead = (user) => {
+  return user?.isTeamLead || false;
+};
+
+
+
+
 
 export const hasPermission = (user, permissionName) => {
   if (!user?.role?.access) return false;

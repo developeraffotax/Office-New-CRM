@@ -44,6 +44,7 @@ import TaskHeaderActions from "./TaskActions";
 import { useSavedFilters } from "../../components/SavedFilters/useSavedFilters";
 import { CiFilter } from "react-icons/ci";
 import SavedFiltersPanel from "../../components/SavedFilters/SavedFiltersPanel";
+import { isTeamLead } from "../../utlis/checkPermission";
 
 const AllTasks = ({ justShowTable = false }) => {
   const dispatch = useDispatch();
@@ -1183,7 +1184,7 @@ const AllTasks = ({ justShowTable = false }) => {
 
           {/*  */}
           {/* -------------Filter Open Buttons-------- */}
-          {isAdmin(auth) && (
+          {(isAdmin(auth) || isTeamLead(auth?.user)) && (
             <span
               className={` p-1 rounded-md hover:shadow-md    cursor-pointer border  ${
                 showJobHolder && "bg-gray-200"
@@ -1262,7 +1263,7 @@ const AllTasks = ({ justShowTable = false }) => {
         </div>
 
         {/* ----------Job_Holder Summery Filters---------- */}
-        {isAdmin(auth) && showJobHolder && (
+        {(isAdmin(auth) ||  isTeamLead(auth?.user)) && showJobHolder && (
           <div className="flex items-center flex-wrap gap-4  py-1.5 border-t  max-lg:hidden">
             <DraggableFilterTabs
               droppableId={"users"}

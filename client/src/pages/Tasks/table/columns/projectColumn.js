@@ -16,7 +16,8 @@ export const projectColumn = (ctx) => {
           title="Clear Filter"
           onClick={() => column.setFilterValue("")}
         >
-          Project
+          Department 
+        
         </span>
         <select
           value={column.getFilterValue() || ""}

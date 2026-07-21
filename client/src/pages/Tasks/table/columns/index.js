@@ -27,7 +27,7 @@ export const getTaskColumns = (ctx) => {
   const columns = [
     idColumn(),
     refColumn(),
-    departmentColumn(ctx),
+    // departmentColumn(ctx),
     projectColumn(ctx),
     jobHolderColumn(ctx),
     taskColumn(ctx),
@@ -67,7 +67,7 @@ export const getTaskColumns = (ctx) => {
 export const getCompletedTaskColumns = (ctx) => [
   idColumn(),
   refColumn(),
-  departmentColumn(ctx),
+  // departmentColumn(ctx),
   projectColumn(ctx),
   jobHolderColumn(ctx),
   taskColumn(ctx),

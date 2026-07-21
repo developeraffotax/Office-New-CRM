@@ -2657,6 +2657,42 @@ export const getTaskStats = async (req, res) => {
             },
           ],
 
+
+
+          projectStats: [
+              {
+                $group: {
+                  _id: "$project",
+                  totalTasks: { $sum: 1 },
+                },
+              },
+              {
+                $lookup: {
+                  from: "projects",
+                  localField: "_id",
+                  foreignField: "_id",
+                  as: "project",
+                },
+              },
+              {
+                $unwind: {
+                  path: "$project",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+              {
+                $project: {
+                  _id: 0,
+                  projectId: "$_id",
+                  projectName: "$project.projectName",
+                  totalTasks: 1,
+                },
+              },
+              {
+                $sort: { totalTasks: -1 },
+              },
+            ],
+
           /*
           ==========================================
           STATUS STATS
@@ -2743,6 +2779,7 @@ export const getTaskStats = async (req, res) => {
         departmentStats: stats.departmentStats || [],
         statusStats: stats.statusStats || [],
         dueStats: stats.dueStats || [],
+        projectStats: stats.projectStats || [],
       },
     });
   } catch (error) {

@@ -20,6 +20,18 @@ export const useTaskStats = ({ status, columnFilters }) => {
           ?.totalTasks || 0
       );
     };
+
+
+
+        const getProjectTaskCounts  = (projectId) => {
+      
+      return (
+         taskStats?.projectStats?.find((p) => p.projectId === projectId)?.totalTasks || 0
+      );
+    };
+
+
+
   
     const getTaskStatusTaskCounts = (taskStatus) => {
       return (
@@ -74,6 +86,8 @@ export const useTaskStats = ({ status, columnFilters }) => {
     getdepartmentTaskCounts,
     getTaskStatusTaskCounts,
     getdueStatusCounts,
+
+    getProjectTaskCounts
 
   };
 };

@@ -180,6 +180,7 @@ const AllTasks = ({ justShowTable = false }) => {
     dueStatusFilter,
     jobHolderFilter,
     taskStatusFilter,
+    projectFilter
   } = useTaskFilters(columnFilters);
   const { tasksData, loading, refetchTasks, rowCount, setTasksData } =
     useTasksData({ pagination, searchValue, columnFilters, status, taskIdQueryParam });
@@ -190,6 +191,7 @@ const AllTasks = ({ justShowTable = false }) => {
     getdepartmentTaskCounts,
     getTaskStatusTaskCounts,
     getdueStatusCounts,
+    getProjectTaskCounts
   } = useTaskStats({ columnFilters, status });
   const {
     deleteTask,
@@ -228,14 +230,14 @@ const AllTasks = ({ justShowTable = false }) => {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/projects/get_all/project`,
       );
-      setAllProjects(data?.projects);
       if (auth.user.role.name === "Admin") {
+        setAllProjects(data?.projects);
         setProjects(data?.projects);
       } else {
         const filteredProjects = data.projects.filter((project) =>
           project.users_list.some((user) => user._id === auth?.user?.id),
         );
-
+        setAllProjects(filteredProjects);
         setProjects(filteredProjects);
       }
     } catch (error) {
@@ -712,11 +714,11 @@ const AllTasks = ({ justShowTable = false }) => {
     getlabel();
   }, [auth]);
 
-  useEffect(() => {
-    if (auth) {
-      getAllDepartments();
-    }
-  }, [auth, allProjects]);
+  // useEffect(() => {
+  //   if (auth) {
+  //     getAllDepartments();
+  //   }
+  // }, [auth, allProjects]);
 
   useEffect(() => {
     const savedVisibility = JSON.parse(
@@ -1129,13 +1131,13 @@ const AllTasks = ({ justShowTable = false }) => {
           <div className="flex items-center flex-row overflow-x-auto hidden1 gap-1  ">
             {/* --- Aligned "All" Tab --- */}
             <div
-              onClick={() => setColumnFromOutsideTable("departmentName", "")}
+              onClick={() => setColumnFromOutsideTable("projectName", "")}
               className={`
                       relative flex items-center gap-1 px-2 py-1.5 cursor-pointer
                       text-[13px] font-[400] whitespace-nowrap  
                       rounded-t-md border-b-2 font-google
                       ${
-                        !departmentFilter
+                        !projectFilter
                           ? "text-orange-600 border-orange-500 bg-orange-50"
                           : "text-gray-800 border-transparent hover:text-gray-900 hover:bg-gray-50"
                       }
@@ -1145,41 +1147,39 @@ const AllTasks = ({ justShowTable = false }) => {
                 All ({taskStats?.totalTasks})
               </span>
 
-              {!departmentFilter && (
+              {!projectFilter && (
                 <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-orange-500 rounded-full" />
               )}
             </div>
 
             {/* --- Department Tabs --- */}
-            {[...departments]?.map(({ departmentName, _id }, i) => {
-              const isActive = departmentFilter === _id;
-              return (
-                <div
-                  key={i}
-                  onClick={() =>
-                    setColumnFromOutsideTable("departmentName", _id)
+             {[...projects]?.map(({ projectName, _id }, i) => {
+      const isActive = projectFilter === _id;
+      return (
+        <div
+          key={i}
+          onClick={() => setColumnFromOutsideTable("projectName", _id)}
+          className={`
+                  relative flex items-center gap-1 px-2 py-1.5 cursor-pointer
+                  text-[13px] font-[400] whitespace-nowrap  
+                  rounded-t-md border-b-2 font-google
+                  ${
+                    isActive
+                      ? "text-orange-600 border-orange-500 bg-orange-50"
+                      : "text-gray-800 border-transparent hover:text-gray-900 hover:bg-gray-50"
                   }
-                  className={`
-                          relative flex items-center gap-1 px-2 py-1.5 cursor-pointer
-                          text-[13px] font-[400] whitespace-nowrap  
-                          rounded-t-md border-b-2 font-google
-                          ${
-                            isActive
-                              ? "text-orange-600 border-orange-500 bg-orange-50"
-                              : "text-gray-800 border-transparent hover:text-gray-900 hover:bg-gray-50"
-                          }
-                        `}
-                >
-                  <span className="tracking-wide">
-                    {departmentName} ({getdepartmentTaskCounts(_id)})
-                  </span>
+                `}
+        >
+          <span className="tracking-wide">
+            {projectName} ({getProjectTaskCounts(_id)})
+          </span>
 
-                  {isActive && (
-                    <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-orange-500 rounded-full" />
-                  )}
-                </div>
-              );
-            })}
+          {isActive && (
+            <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-orange-500 rounded-full" />
+          )}
+        </div>
+      );
+    })}
           </div>
 
           {/*  */}
@@ -1479,7 +1479,7 @@ const AllTasks = ({ justShowTable = false }) => {
       </div>
 
       {/* ----------------Add Task Department-------- */}
-      {openAddDepartment && (
+      {/* {openAddDepartment && (
         <div className="fixed top-0 left-0 w-full h-screen z-[999] bg-gray-100/70 flex items-center justify-center py-6  px-4">
           <AddTaskDepartmentModal
             users={users}
@@ -1490,7 +1490,7 @@ const AllTasks = ({ justShowTable = false }) => {
             getTasks1={refetchTasks}
           />
         </div>
-      )}
+      )} */}
 
       {/* ----------------Add Project-------- */}
       {openAddProject && (

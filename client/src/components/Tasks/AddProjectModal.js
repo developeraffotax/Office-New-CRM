@@ -115,7 +115,7 @@ export default function AddProjectModal({
     <div className="w-[21rem] sm:w-[34rem] rounded-md shadow border flex flex-col gap-4 bg-white">
       <div className="flex items-center justify-between px-4 pt-2">
         <h1 className="text-[20px] font-semibold text-black">
-          {projectId ? "Update Project" : "Add Project"}
+          {projectId ? "Update Department" : "Add Department"}
         </h1>
         <span
           className="cursor-pointer"
@@ -141,7 +141,7 @@ export default function AddProjectModal({
           />
 
           {/* Departments */}
-          {departmentsList?.length > 0 && (
+          {/* {departmentsList?.length > 0 && (
             <div className="w-full flex items-center gap-2 flex-wrap border py-2 px-2 rounded-md border-gray-400">
               {departmentsList.map((deptId) => {
                 const dept = departments.find((d) => d._id === deptId);
@@ -163,9 +163,9 @@ export default function AddProjectModal({
                 );
               })}
             </div>
-          )}
+          )} */}
 
-          <select
+          {/* <select
             value=""
             className={`${style.input}`}
             onChange={(e) => handleAddDepartment(e.target.value)}
@@ -176,7 +176,7 @@ export default function AddProjectModal({
                 {dept.departmentName}
               </option>
             ))}
-          </select>
+          </select> */}
 
           {/* Users */}
           {usersList?.length > 0 && (

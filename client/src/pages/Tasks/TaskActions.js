@@ -61,7 +61,7 @@ export default function TaskHeaderActions({
   return (
     <div className="flex items-center justify-between gap-3 w-full font-inter ">
       <div className="flex items-center gap-3">
-        {isAdmin(auth) && (
+        {/* {isAdmin(auth) && (
           <div className="relative">
             <button
               onClick={() => setShowDepartment(!showDepartment)}
@@ -84,7 +84,7 @@ export default function TaskHeaderActions({
               setOpenAddDepartment={setOpenAddDepartment}
             />
           </div>
-        )}
+        )} */}
 
         {isAdmin(auth) && (
           <div className="relative">
@@ -93,7 +93,7 @@ export default function TaskHeaderActions({
               className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all"
             >
               <FiFolder className="text-gray-400" />
-              Projects
+              Departments
               <FiChevronDown
                 className={`transition-transform ${
                   showProject ? "rotate-180" : ""
@@ -178,13 +178,13 @@ export default function TaskHeaderActions({
                       icon: <LuTag />,
                       action: () => setShowlabel(true),
                     },
+                    // {
+                    //   label: "Add Department",
+                    //   icon: <LuUsers />,
+                    //   action: () => setOpenAddDepartment(true),
+                    // },
                     {
                       label: "Add Department",
-                      icon: <LuUsers />,
-                      action: () => setOpenAddDepartment(true),
-                    },
-                    {
-                      label: "Add Project",
                       icon: <LuPlusCircle />,
                       action: () => setOpenAddProject(true),
                     },

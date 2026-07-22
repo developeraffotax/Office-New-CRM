@@ -1,6 +1,13 @@
 import mongoose from "mongoose";
 import { generateRef } from "../../utils/generateRef.js";
 
+
+const labelSchema = new mongoose.Schema({
+  name: { type: String },
+  color: { type: String },
+});
+
+
 const templateSchema = new mongoose.Schema(
   {
     name: {
@@ -15,6 +22,8 @@ const templateSchema = new mongoose.Schema(
     category: {
       type: String,
     },
+
+     label: labelSchema,
 
     templateRef: { type: Number, unique: true },
     userList: [Object],

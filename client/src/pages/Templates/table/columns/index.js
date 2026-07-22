@@ -5,6 +5,7 @@ import createCopyColumn from "./CopyColumn";
 import createActionsColumn from "./ActionsColumn";
 import createUserListColumn from "./UserListColumn";
 import { refColumn } from "./refColumn";
+import createLabelColumn from "./LabelsColumn";
 
 export const createTemplateColumns = ({
   categoryData,
@@ -16,6 +17,9 @@ export const createTemplateColumns = ({
   setAddTemplate,
   handleDeleteTemplateConfirmation,
   userName,
+  labelData,
+  updateTemplateLabel
+
 }) => [
   refColumn(),
   createCategoryColumn({ categoryData }),
@@ -29,6 +33,7 @@ export const createTemplateColumns = ({
     handleDeleteTemplateConfirmation,
   }),
   createUserListColumn({ userName }),
+  createLabelColumn({labelData, updateTemplateLabel})
 ];
 
 export {
@@ -38,6 +43,7 @@ export {
   createCopyColumn,
   createActionsColumn,
   createUserListColumn,
+  createLabelColumn
 };
 
 export default createTemplateColumns;

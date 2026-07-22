@@ -99,7 +99,7 @@ export const getSingleTemplate = async (req, res) => {
 export const updateTemplate = async (req, res) => {
   try {
     const templateId = req.params.id;
-    const { name, description, template, category, userList } = req.body;
+    const { name, description, template, category, userList, label } = req.body;
 
     if (!templateId) {
       return res.status(400).send({
@@ -125,6 +125,7 @@ export const updateTemplate = async (req, res) => {
         template,
         category,
         userList,
+        label,
       },
       { new: true },
     );

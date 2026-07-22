@@ -27,11 +27,39 @@ export const createLabel = async (req, res) => {
   }
 };
 
+
+
 // Get Labels
 export const getAllLabelsByJob = async (req, res) => {
   try {
     const labels = await labelModel
       .find({ type: "job" })
+      .sort({ name: 1 })
+      .lean();
+ 
+
+    res.status(200).send({
+      success: true,
+      message: "All label list!",
+      labels: labels,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(400).send({
+      success: false,
+      message: "Error in get labels!",
+      error,
+    });
+  }
+};
+
+
+
+// Get Labels
+export const getAllLabelsForTemplate = async (req, res) => {
+  try {
+    const labels = await labelModel
+      .find({ type: "template" })
       .sort({ name: 1 })
       .lean();
  

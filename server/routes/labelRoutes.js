@@ -5,6 +5,7 @@ import {
   deleteLabel,
   getAllLabelsByJob,
   getAllLabelsByTask,
+  getAllLabelsForTemplate, 
   getComplaintLabels,
   getDataLabels,
   getSubscriptionLabels,
@@ -18,7 +19,13 @@ const router = express.Router();
 router.post("/create/label", requiredSignIn, createLabel);
 
 // Get Job
+
+
 router.get("/get/labels", getAllLabelsByJob);
+
+
+
+router.get("/get/labels/template", getAllLabelsForTemplate);
 
 // Task Lable
 router.get("/get/labels/task", getAllLabelsByTask);

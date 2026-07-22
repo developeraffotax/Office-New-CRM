@@ -18,7 +18,7 @@ import {
 } from "material-react-table";
 import Loader from "../../utlis/Loader";
 import { GrCopy } from "react-icons/gr";
- 
+
 import QuickAccess from "../../utlis/QuickAccess";
 import DraggableUserList from "../../utlis/DraggableUserList";
 import { useSelector } from "react-redux";
@@ -30,7 +30,9 @@ import { useClickOutside } from "../../utlis/useClickOutside";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import SelectedUsers from "../../components/SelectedUsers";
 import { GoEye, GoEyeClosed } from "react-icons/go";
-
+import { BiCategory } from "react-icons/bi";
+import DraggableFilterTabs from "../Tasks/DraggableFilterTabs";
+import AddLabel from "../../components/Modals/AddLabel";
 
 export const colVisibility = {
   templateRef: true,
@@ -40,10 +42,7 @@ export const colVisibility = {
   template: true,
   userList: true,
   actions: true,
-  
- 
 };
-
 
 export default function Template() {
   const auth = useSelector((state) => state.auth.auth);
@@ -69,8 +68,16 @@ export default function Template() {
 
   const [showJobHolderFilter, setShowJobHolderFilter] = useState(true);
 
+
+    const [labelData, setLabelData] = useState([]);
+    const [showlabel, setShowlabel] = useState(false);
+
+
+  const [showCategories, setShowCategories] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [rowSelection, setRowSelection] = useState({});
+
+  const [categoryFilter, setCategoryFilter] = useState("");
 
   const [bulkForm, setBulkForm] = useState({
     name: "",
@@ -79,46 +86,35 @@ export default function Template() {
     userList: [],
     userMode: "replace",
   });
- 
 
+  const { selectedUsers, setSelectedUsers } = usePersistedUsers(
+    "templates:selected_users",
+    userName,
+  );
 
+  // ==========================================
+  // COLUMN VISIBILITY
+  // ==========================================
+  const [showcolumn, setShowColumn] = useState(false);
+  const [columnVisibility, setColumnVisibility] = useState({
+    _id: false,
+    ...colVisibility,
+  });
 
+  const showColumnRef = useRef(false);
+  useClickOutside(showColumnRef, () => setShowColumn(false));
 
-  
-    const { selectedUsers, setSelectedUsers } = usePersistedUsers(
-      "templates:selected_users",
-      userName,
-    );
-    
-
- 
-
-
-    // ==========================================
-    // COLUMN VISIBILITY
-    // ==========================================
-    const [showcolumn, setShowColumn] = useState(false);
-    const [columnVisibility, setColumnVisibility] = useState({
-      _id: false,
-      ...colVisibility,
-    });
-  
-    const showColumnRef = useRef(false);
-    useClickOutside(showColumnRef, () => setShowColumn(false));
-  
-    const toggleColumnVisibility = (column) => {
-      const updatedVisibility = {
-        ...columnVisibility,
-        [column]: !columnVisibility[column],
-      };
-      setColumnVisibility(updatedVisibility);
-      localStorage.setItem(
-        "visibleTemplatesColumn",
-        JSON.stringify(updatedVisibility),
-      );
+  const toggleColumnVisibility = (column) => {
+    const updatedVisibility = {
+      ...columnVisibility,
+      [column]: !columnVisibility[column],
     };
-
-
+    setColumnVisibility(updatedVisibility);
+    localStorage.setItem(
+      "visibleTemplatesColumn",
+      JSON.stringify(updatedVisibility),
+    );
+  };
 
   useEscapeKey(() => {
     setAddTemplate(false);
@@ -148,7 +144,6 @@ export default function Template() {
         .filter((role) => role.permission === "Templates")
         .flatMap((jobRole) => jobRole.subRoles);
 
-
       setAccess(filterAccess);
     }
   }, [auth]);
@@ -161,7 +156,6 @@ export default function Template() {
         `${process.env.REACT_APP_API_URL}/api/v1/templates/get/all/template`,
       );
       if (auth.user.role.name === "Admin") {
- 
         setTemplateData(data?.templates);
       } else {
         const filteredTemplate = data?.templates.filter((template) =>
@@ -315,6 +309,47 @@ export default function Template() {
       toast.error(error?.response?.data?.message);
     }
   };
+
+
+    const getlabel = async () => {
+      try {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels/template`
+        );
+        if (data.success) {
+          setLabelData(data.labels);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+  
+    useEffect(() => {
+      getlabel();
+    }, []);
+
+
+  const updateTemplateLabel = async (templateId, label) => {
+  try {
+    const { data } = await axios.put(
+      `${process.env.REACT_APP_API_URL}/api/v1/templates/update/template/${templateId}`,
+      { label },
+    );
+    if (data?.success) {
+      setTemplateData((prev) =>
+        prev.map((t) =>
+          t._id === templateId ? { ...t, label: data.template.label } : t,
+        ),
+      );
+      toast.success("Label updated");
+    }
+  } catch (error) {
+    console.log(error);
+    toast.error("Failed to update label");
+  }
+};
+
+
   // -----------------------Templates------------------>
   const handleDeleteTemplateConfirmation = (tempId) => {
     Swal.fire({
@@ -427,8 +462,6 @@ export default function Template() {
   };
 
   const convertQuillHtmlToPlainText = (html) => {
- 
-
     html = html.replace(/<br\s*\/?>/gi, "\n");
     html = html.replace(/<\/p>/gi, "\n");
 
@@ -448,8 +481,6 @@ export default function Template() {
     // Trim leading/trailing whitespace
     return html.trim();
   };
-
- 
 
   const copyTemplate = (template) => {
     const cleanText = convertQuillHtmlToPlainText(template);
@@ -478,6 +509,8 @@ export default function Template() {
         setAddTemplate,
         handleDeleteTemplateConfirmation,
         userName,
+        labelData,
+        updateTemplateLabel
       }),
     [categoryData, userName],
   );
@@ -487,6 +520,7 @@ export default function Template() {
     table.setColumnFilters([]);
 
     table.setGlobalFilter("");
+    setCategoryFilter("");
     // table.resetColumnFilters();
   };
 
@@ -521,7 +555,6 @@ export default function Template() {
     state: {
       rowSelection,
       columnVisibility,
-
     },
 
     muiTableHeadCellProps: {
@@ -553,90 +586,89 @@ export default function Template() {
     },
   });
 
-const buildJobHolderCountMap = (data = []) => {
-  const map = {};
-  let totalCount = 0;
+  const buildJobHolderCountMap = (data = []) => {
+    const map = {};
+    let totalCount = 0;
 
-  for (const { userList = [] } of data) {
-    for (const { name } of userList) {
-      if (!name) continue;
-      map[name] = (map[name] ?? 0) + 1;
+    for (const { userList = [] } of data) {
+      for (const { name } of userList) {
+        if (!name) continue;
+        map[name] = (map[name] ?? 0) + 1;
+      }
+
+      totalCount++;
     }
 
-    totalCount++;
-  }
+    map.All = totalCount;
 
-  map.All = totalCount;
+    return map;
+  };
 
-  return map;
-};
+  const countMap = useMemo(() => {
+    return buildJobHolderCountMap(templateData);
+  }, [templateData]);
 
+  const renderColumnControls = () => (
+    <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm animate-pop">
+      {/* Header */}
+      <header className="px-5 py-3 border-b">
+        <h3 className="text-sm font-semibold text-slate-800">View settings</h3>
+      </header>
 
-const countMap = useMemo(() => {
-  return buildJobHolderCountMap(templateData);
-}, [templateData]);
+      {/* Content */}
+      <div className="grid grid-cols-2 divide-x">
+        {/* LEFT — Columns */}
+        <section className="px-5 py-4">
+          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+            Columns
+          </h4>
 
-
-    const renderColumnControls = () => (
-      <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm animate-pop">
-        {/* Header */}
-        <header className="px-5 py-3 border-b">
-          <h3 className="text-sm font-semibold text-slate-800">View settings</h3>
-        </header>
-  
-        {/* Content */}
-        <div className="grid grid-cols-2 divide-x">
-          {/* LEFT — Columns */}
-          <section className="px-5 py-4">
-            <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-              Columns
-            </h4>
-  
-            <ul className="space-y-1 list-decimal">
-              {Object.keys(colVisibility)?.map((column) => (
-                <li key={column}>
-                  <label
-                    className="flex items-center justify-between rounded-md px-2 py-1.5
+          <ul className="space-y-1 list-decimal">
+            {Object.keys(colVisibility)?.map((column) => (
+              <li key={column}>
+                <label
+                  className="flex items-center justify-between rounded-md px-2 py-1.5
                              text-sm text-slate-700 cursor-pointer
                              hover:bg-slate-50 transition"
-                  >
-                    <span className="capitalize">{column}</span>
-                    <input
-                      type="checkbox"
-                      checked={columnVisibility[column]}
-                      onChange={() => toggleColumnVisibility(column)}
-                      className="h-4 w-4 accent-orange-600"
-                    />
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </section>
-  
-          {/* RIGHT — Users */}
-          <section className="px-5 py-4">
-            <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-              Users
-            </h4>
-  
-            <div className="h-full overflow-y-auto space-y-1 pr-1">
-              <SelectedUsers
-                selectedUsers={selectedUsers}
-                setSelectedUsers={setSelectedUsers}
-                userNameArr={userName}
-                countMap={countMap}
-                label={"template"}
-              />
-            </div>
-          </section>
-        </div>
-      </section>
-    );
+                >
+                  <span className="capitalize">{column}</span>
+                  <input
+                    type="checkbox"
+                    checked={columnVisibility[column]}
+                    onChange={() => toggleColumnVisibility(column)}
+                    className="h-4 w-4 accent-orange-600"
+                  />
+                </label>
+              </li>
+            ))}
+          </ul>
+        </section>
 
+        {/* RIGHT — Users */}
+        <section className="px-5 py-4">
+          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+            Users
+          </h4>
 
+          <div className="h-full overflow-y-auto space-y-1 pr-1">
+            <SelectedUsers
+              selectedUsers={selectedUsers}
+              setSelectedUsers={setSelectedUsers}
+              userNameArr={userName}
+              countMap={countMap}
+              label={"template"}
+            />
+          </div>
+        </section>
+      </div>
+    </section>
+  );
 
+  const setColumnFromOutsideTable = (colKey, filterVal) => {
+    const col = table.getColumn(colKey);
 
-
+    return col.setFilterValue(filterVal);
+  };
 
   return (
     <>
@@ -725,6 +757,16 @@ const countMap = useMemo(() => {
               >
                 <LuImport className="h-6 w-6 " />
               </button>
+
+               <button
+                className={`${style.button1} text-[15px] `}
+                onClick={() => setShowlabel(true)}
+                style={{ padding: ".4rem 1rem" }}
+              >
+                Add Labels
+              </button>
+
+
               <button
                 className={`${style.button1} text-[15px] `}
                 onClick={() => setShowCategory(true)}
@@ -747,7 +789,7 @@ const countMap = useMemo(() => {
         {selectedTab === "templates" && (
           <>
             <div className="w-full flex flex-row justify-start items-center gap-2 mt-2 ">
-              <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden transition-all duration-300 w-fit">
+              <div className="flex items-center  border-2 border-orange-500 rounded-sm overflow-hidden transition-all duration-300  ">
                 <button
                   className={`py-1 px-2 w-[6.5rem] outline-none transition-all duration-300 ${
                     selectedTab === "templates"
@@ -771,7 +813,7 @@ const countMap = useMemo(() => {
               </div>
 
               {auth?.user?.role?.name === "Admin" && (
-                <div className="w-full flex justify-start items-center gap-2">
+                <div className=" flex justify-start items-center gap-2">
                   <span
                     className={`p-[6px] rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
                       showJobHolderFilter && "bg-orange-500 text-white"
@@ -796,37 +838,112 @@ const countMap = useMemo(() => {
                     <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
                   </span>
 
+                  <div className="relative">
+                    <div
+                      className={`  p-[6px] rounded-md hover:shadow-md  cursor-pointer border ${
+                        showcolumn && "bg-orange-500 text-white"
+                      }`}
+                      onClick={() => setShowColumn(!showcolumn)}
+                    >
+                      {" "}
+                      {showcolumn ? (
+                        <GoEyeClosed className="h-5 w-5" />
+                      ) : (
+                        <GoEye className="h-5 w-5" />
+                      )}{" "}
+                    </div>
+                    {showcolumn && (
+                      <div
+                        ref={showColumnRef}
+                        className="fixed top-32 left-[50%] z-[9999]    w-[12rem]"
+                      >
+                        {renderColumnControls()}
+                      </div>
+                    )}
+                  </div>
 
-
-                   <div className="relative">
-                              <div
-                                className={`  p-[6px] rounded-md hover:shadow-md  cursor-pointer border ${
-                                  showcolumn && "bg-orange-500 text-white"
-                                }`}
-                                onClick={() => setShowColumn(!showcolumn)}
-                              >
-                                {" "}
-                                {showcolumn ? (
-                                  <GoEyeClosed className="h-5 w-5" />
-                                ) : (
-                                  <GoEye className="h-5 w-5" />
-                                )}{" "}
-                              </div>
-                              {showcolumn && (
-                                <div
-                                  ref={showColumnRef}
-                                  className="fixed top-32 left-[50%] z-[9999]    w-[12rem]"
-                                >
-                                  {renderColumnControls()}
-                                </div>
-                              )}
-                            </div>
-                  
-
-
-
+                  <span
+                    className={`hidden sm:block p-1 rounded-md hover:shadow-md   cursor-pointer border ${
+                      showCategories && "bg-orange-500 text-white"
+                    }`}
+                    onClick={() => {
+                      setShowCategories(!showCategories);
+                    }}
+                    title="Show Categories"
+                  >
+                    <BiCategory className="h-6 w-6  cursor-pointer" />
+                  </span>
                 </div>
               )}
+
+              {/* ---------- Filter By Category ---------- */}
+              {auth?.user?.role?.name === "Admin" &&
+                (
+                  <div className=" ml-4 flex items-center flex-row overflow-x-auto hidden1 gap-1 py-1.5 max-lg:hidden">
+                {/* --- All Tab --- */}
+                <div
+                  onClick={() => {
+                    setColumnFromOutsideTable("category", "");
+                    setCategoryFilter("");
+                  }}
+                  className={`
+                      relative flex items-center gap-1 px-2 py-1.5 cursor-pointer
+                      text-[13px] font-[400] whitespace-nowrap  
+                      rounded-t-md border-b-2 font-google
+                      ${
+                        !categoryFilter
+                          ? "text-orange-600 border-orange-500 bg-orange-50"
+                          : "text-gray-800 border-transparent hover:text-gray-900 hover:bg-gray-50"
+                      }
+                    `}
+                >
+                  <span className="tracking-wide">
+                    All ({templateData?.length || 0})
+                  </span>
+
+                  {!categoryFilter && (
+                    <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-orange-500 rounded-full" />
+                  )}
+                </div>
+
+                {/* --- Category Tabs --- */}
+                {categoryData?.map(({ name, _id }, i) => {
+                  const isActive = categoryFilter === name;
+                  const count =
+                    templateData?.filter((t) => t.category === name).length ||
+                    0;
+
+                  return (
+                    <div
+                      key={_id || i}
+                      onClick={() => {
+                        setColumnFromOutsideTable("category", name);
+                        setCategoryFilter(name);
+                      }}
+                      className={`
+                  relative flex items-center gap-1 px-2 py-1.5 cursor-pointer
+                  text-[13px] font-[400] whitespace-nowrap  
+                  rounded-t-md border-b-2 font-google
+                  ${
+                    isActive
+                      ? "text-orange-600 border-orange-500 bg-orange-50"
+                      : "text-gray-800 border-transparent hover:text-gray-900 hover:bg-gray-50"
+                  }
+                `}
+                    >
+                      <span className="tracking-wide">
+                        {name} ({count})
+                      </span>
+
+                      {isActive && (
+                        <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-orange-500 rounded-full" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+                )
+              }
             </div>
 
             {showEdit && (
@@ -1009,7 +1126,6 @@ const countMap = useMemo(() => {
                   table={table}
                   usersArray={selectedUsers.map((el) => el)}
                   updateJobHolderCountMapFn={(map, totalCount) => {
-                     
                     for (const item of templateData || []) {
                       const holders = item.userList || [];
 
@@ -1023,7 +1139,6 @@ const countMap = useMemo(() => {
 
                     map.set("All", totalCount);
                     countMap.current = map;
-
                   }}
                   listName={"templates"}
                   filterColName="userList"
@@ -1175,6 +1290,24 @@ const countMap = useMemo(() => {
           </div>
         )}
       </div>
+
+
+
+
+
+      {/* ---------------Add label------------- */}
+            {showlabel && (
+              <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
+                <AddLabel
+                  setShowlabel={setShowlabel}
+                  type={"template"}
+                  getLabels={getlabel}
+                />
+              </div>
+            )}
     </>
   );
 }
+
+
+

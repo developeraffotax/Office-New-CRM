@@ -24,6 +24,17 @@ export default function AddLabel({ setShowlabel, type, getLabels }) {
           setLabelData(data.labels);
           getLabels();
         }
+      } else if (type === "template") {
+
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels/template`
+        );
+        if (data.success) {
+          setLabelData(data.labels);
+          getLabels();
+        }
+
+
       } else {
         const { data } = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels/task`

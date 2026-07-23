@@ -1131,7 +1131,7 @@ const AllTasks = ({ justShowTable = false }) => {
           <div className="flex items-center flex-row overflow-x-auto hidden1 gap-1  ">
             {/* --- Aligned "All" Tab --- */}
             <div
-              onClick={() => setColumnFromOutsideTable("projectName", "")}
+              onClick={() => setColumnFromOutsideTable("departmentName", "")}
               className={`
                       relative flex items-center gap-1 px-2 py-1.5 cursor-pointer
                       text-[13px] font-[400] whitespace-nowrap  
@@ -1158,7 +1158,7 @@ const AllTasks = ({ justShowTable = false }) => {
       return (
         <div
           key={i}
-          onClick={() => setColumnFromOutsideTable("projectName", _id)}
+          onClick={() => setColumnFromOutsideTable("departmentName", _id)}
           className={`
                   relative flex items-center gap-1 px-2 py-1.5 cursor-pointer
                   text-[13px] font-[400] whitespace-nowrap  

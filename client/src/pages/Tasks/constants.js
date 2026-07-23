@@ -3,7 +3,7 @@ import { mkConfig } from "export-to-csv";
 export const colVisibility = {
   taskRef: true,
   departmentName: true,
-  projectName: true,
+  // projectName: true,
   jobHolder: true,
   leadUser: true,
   task: true,
@@ -140,8 +140,8 @@ export const columnFieldMap = {
   _id: "_id",
 
   taskRef: "taskRef",
-  projectName: "projectId",
-  departmentName: "departmentId",
+  departmentName: "projectId",
+  // departmentName: "departmentId",
   task: "task",
   
   jobHolder: "jobHolder",

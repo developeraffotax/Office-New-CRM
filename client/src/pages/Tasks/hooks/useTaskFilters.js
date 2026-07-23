@@ -5,13 +5,13 @@ export const useTaskFilters = (columnFilters) => {
     return columnFilters.find((f) => f.id === "jobHolder")?.value || null;
   }, [columnFilters]);
 
-  const departmentFilter = useMemo(() => {
-    return columnFilters.find((f) => f.id === "departmentName")?.value || null;
-  }, [columnFilters]);
+  // const departmentFilter = useMemo(() => {
+  //   return columnFilters.find((f) => f.id === "departmentName")?.value || null;
+  // }, [columnFilters]);
 
 
     const projectFilter  = useMemo(() => {
-    return columnFilters.find((f) => f.id === "projectName")?.value || null;
+    return columnFilters.find((f) => f.id === "departmentName")?.value || null;
   }, [columnFilters]);
 
   const taskStatusFilter = useMemo(() => {
@@ -24,7 +24,7 @@ export const useTaskFilters = (columnFilters) => {
 
   return {
     jobHolderFilter,
-    departmentFilter,
+    // departmentFilter,
     taskStatusFilter,
     dueStatusFilter,
     projectFilter

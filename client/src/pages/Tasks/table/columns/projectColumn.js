@@ -3,7 +3,7 @@ import React from "react";
 export const projectColumn = (ctx) => {
   return {
     accessorFn: (row) => row.project?.projectName || "",
-    id: "projectName",
+    id: "departmentName",
     minSize: 150,
     maxSize: 200,
     size: 160,

@@ -40,6 +40,7 @@ export const colVisibility = {
   category: true,
   description: true,
   template: true,
+  label: true,
   userList: true,
   actions: true,
 };
@@ -877,7 +878,7 @@ export default function Template() {
               )}
 
               {/* ---------- Filter By Category ---------- */}
-              {auth?.user?.role?.name === "Admin" &&
+              {auth?.user?.role?.name === "Admin" && showCategories &&
                 (
                   <div className=" ml-4 flex items-center flex-row overflow-x-auto hidden1 gap-1 py-1.5 max-lg:hidden">
                 {/* --- All Tab --- */}

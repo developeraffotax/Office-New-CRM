@@ -1,6 +1,8 @@
 import { useEffect } from "react";
+import { hasSubrole } from "../../../../utlis/checkPermission";
 
 export const jobStatusColumn = ({
+  auth,
   comment_taskId,
   handleUpdateTicketStatusConfirmation,
 }) => {
@@ -16,6 +18,9 @@ export const jobStatusColumn = ({
         "Feedback",
         "Missing Info",
       ];
+
+
+      const hasInactivePermission = hasSubrole(auth?.user, "Jobs", "Inactive" )
 
 
   return {
@@ -107,7 +112,7 @@ export const jobStatusColumn = ({
             Missing Info
           </option>
 
-          <option value="Inactive">Inactive</option>
+          {hasInactivePermission && <option value="Inactive">Inactive</option>}
         </select>
       );
     },

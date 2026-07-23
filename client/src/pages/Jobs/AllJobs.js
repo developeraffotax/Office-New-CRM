@@ -70,7 +70,7 @@ import { useSavedFilters } from "../../components/SavedFilters/useSavedFilters";
 import SavedFiltersPanel from "../../components/SavedFilters/SavedFiltersPanel";
 import { CiFilter } from "react-icons/ci";
 import SendEmailModal from "../../components/Tickets/SendEmailModal";
-import { hasSubrole, isTeamLead } from "../../utlis/checkPermission";
+import { isTeamLead } from "../../utlis/checkPermission";
  
  
  
@@ -221,16 +221,7 @@ const [activeFilter, setActiveFilter] = useState(null);
 
  
 
-const Tabs = useMemo(() => {
 
-    const tabs = [{label: "In-Progress", value: "progress"}, {label: "Completed", value: "completed"},]
-
-    if(hasSubrole(auth.user, "Jobs", "Inactive")) {
-      tabs.push( {label: "Inactive", value: "inactive"})
-    }
-
-  return tabs;  
-}, [auth])
 
 
 
@@ -2494,7 +2485,7 @@ useEffect(() => {
               <span className="w-[1px] h-8 bg-gray-200 rounded "></span>
            
               <div className="flex gap-2 w-fit font-google font-medium ">
-                {Tabs.map(({ label, value }) => (
+                {[{label: "In-Progress", value: "progress"}, {label: "Completed", value: "completed"}, {label: "Inactive", value: "inactive"}].map(({ label, value }) => (
                   <button
                     key={value}
                     onClick={() => setStatus(value)}

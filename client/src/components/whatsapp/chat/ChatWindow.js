@@ -10,6 +10,9 @@ import { getSenderLabel } from "../utils/getSenderLabel";
 import { renderMessageContent, renderReplyPreview } from "./utils";
 import { SubmitLogo } from "./ui";
 import { useParams } from "react-router-dom";
+import Select from "react-select";
+import { style } from "../../../utlis/CommonStyle";
+import { filterOption, HighlightedOption, sortOptions } from "./HighlightedOption";
 
 const COMMON_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
 
@@ -39,7 +42,96 @@ const [pagination, setPagination] = useState({ hasMore: false, nextCursor: null 
 const [loadingMore, setLoadingMore] = useState(false);
 
 
+const [templates, setTemplates] = useState([])
+ const [inputValue, setInputValue] = useState("");
+ const [selectedTemplateId, setSelectedTemplateId] = useState(null);
+
  
+const handleClearSelect = () => {
+  setSelectedTemplateId(null);
+  setInputValue("");
+ }
+
+  // --------------Get All Templates---------->
+  const getAllTemplates = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/templates/get/all/template`
+      );
+      setTemplates(data?.templates);
+
+      console.log("TEMPLATES 🌹🎈🎈🎈🎈🧡🧡❤️❤️❤️", data)
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllTemplates();
+    // eslint-disable-next-line
+  }, []);
+
+
+  
+  const templateOptions = templates.map((item) => ({
+    value: item._id,
+    label: `${item.name} - ${item.description} `,
+    description: item.template,
+  }));
+
+const selectedTemplateOption = templateOptions.find(
+  (option) => option.value === selectedTemplateId
+);
+
+
+
+// HTML → plain text, preserving line breaks (Quill-style <p>/<br> content)
+const htmlTemplateToPlainText = (html) => {
+  if (!html) return "";
+  const container = document.createElement("div");
+  container.innerHTML = html;
+
+  container.querySelectorAll("br").forEach((br) => br.replaceWith("\n"));
+  container.querySelectorAll("p, div").forEach((el) => el.append("\n"));
+
+  return (container.textContent || "")
+    .replace(/\u00A0/g, " ")   // &nbsp; -> normal space
+    .replace(/\n{3,}/g, "\n\n") // collapse extra blank lines
+    .trim();
+};
+
+const handleTemplateChange = (selectedOption) => {
+  if (selectedOption) {
+    setSelectedTemplateId(selectedOption.value);
+    setInputMsg(htmlTemplateToPlainText(selectedOption.description));
+
+    requestAnimationFrame(() => {
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      }
+    });
+  } else {
+    handleClearSelect()
+  }
+};
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   useEffect(() => {
     if (!chat?._id || !socket) return;
@@ -115,6 +207,10 @@ useEffect(() => {
   };
 
   fetchMessages();
+
+
+   
+ 
 }, [chat?._id]);
 
 
@@ -304,6 +400,7 @@ const handleSelectReaction = async (messageId, emoji) => {
       setInputMsg("");
       setReplyingTo(null);
       clearAllSelectedFiles();
+      // handleClearSelect()
 
       if (textareaRef.current) textareaRef.current.style.height = "auto";
     } catch (err) {
@@ -323,6 +420,7 @@ useEffect(() => {
   setInputMsg("");
   setReplyingTo(null);
   clearAllSelectedFiles();
+  handleClearSelect()
 
   requestAnimationFrame(() => {
     textareaRef.current?.focus();
@@ -330,6 +428,34 @@ useEffect(() => {
 }, [chat?._id]);
 
 
+
+  const customStyles = {
+    control: (provided) => ({
+      ...provided,
+      border: "none",
+      boxShadow: "none",
+      width: "100%",
+    }),
+    menu: (provided) => ({
+      ...provided,
+      border: "1px solid #ccc",
+    }),
+    menuList: (provided) => ({
+      ...provided,
+      padding: 0,
+    }),
+     option: (provided, state) => ({
+        ...provided,
+        backgroundColor: state.isSelected
+          ? "#f0f0f0" // selected
+          : state.isFocused
+          ? "#e6f0ff" // hover/focus
+          : "white",
+        color: "black",
+        cursor: "pointer",
+      }),
+  };
+  // -
 
 
   if (!chat) {
@@ -342,8 +468,8 @@ useEffect(() => {
   return (
     <div className="flex flex-col h-full z-10 font-inter bg-[#efeae2]">
       {/* Header Panel */}
-      <div className="h-16 px-4 py-2 bg-white border-b border-gray-200 flex items-center justify-between shadow-sm z-30">
-        <div className="flex items-center">
+      <div className="h-16  px-4 py-2 bg-white border-b border-gray-200 flex items-center justify-between shadow-sm z-30">
+        <div className="flex-1 flex items-center">
           <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold border border-orange-200 shadow-sm">
             {chat?.profileName?.charAt(0).toUpperCase() || "#"}
           </div>
@@ -355,6 +481,23 @@ useEffect(() => {
               {chat?.status === "progress" ? "In Progress" : "Completed"}
             </p>
           </div>
+        </div>
+
+        <div className="flex-1">
+          
+               <Select
+                // key={chat?._id}   
+            className={`${style.input} w-full h-[2.6rem] flex items-center justify-center px-0 py-0`}
+            value={selectedTemplateOption}
+            onChange={handleTemplateChange}
+            options={sortOptions(templateOptions, inputValue)} // sorted each render
+            placeholder="Template"
+            components={{ Option: HighlightedOption }}
+            filterOption={filterOption} // keep react-select filtering
+            isClearable
+            styles={customStyles}
+            onInputChange={(val) => setInputValue(val)}
+          />
         </div>
       </div>
 
@@ -626,6 +769,9 @@ useEffect(() => {
                 }}
                 disabled={loadingMsg}
               />
+
+
+
 
               <button
   type="submit"

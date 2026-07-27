@@ -4,11 +4,12 @@ import axios from "axios";
  * No DB logic here — just HTTP.
  */
 
-const BASE_URL = "https://graph.facebook.com/v25.0";
+const BASE_URL = "https://api.dualhook.com/v25.0";
+// const BASE_URL = "https://graph.facebook.com/v25.0";
 
 const headers = () => ({
   "Content-Type": "application/json",
-  Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+  Authorization: `Bearer ${process.env.DUALHOOK_OUTBOUND_API_KEY}`,
 });
 
  

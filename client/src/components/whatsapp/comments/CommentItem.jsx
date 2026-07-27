@@ -55,42 +55,39 @@ export default function CommentItem({ comment, currentUserId }) {
       </div>
 
       {/* Message Bubble Block */}
-      <div className={`flex flex-col ${isMe ? "items-end" : "items-start"} max-w-[85%]`}>
-        <div className={`px-4 py-3 rounded-2xl text-[14px] shadow-sm relative transition-all ${
-          isMe 
-            ? "bg-orange-600 text-white rounded-tr-none" 
-            
-              : "bg-white border border-slate-200 text-slate-800 rounded-tl-none"
-        }`}>
-           
+     <div className={`flex flex-col ${isMe ? "items-end" : "items-start"} max-w-[80%]`}>
+  <div className={`px-4 py-2.5 text-sm leading-relaxed rounded-xl transition-all ${
+    isMe 
+      ? "bg-zinc-100 text-zinc-900 border-l-2 rounded-br-xs" 
+      : "bg-zinc-100 text-zinc-900 border-r-2 rounded-br-xs"
+  }`}>
+    <p className="whitespace-pre-wrap break-words font-normal">
+      {renderContent(comment.content)}
+    </p>
+  </div>
 
-          <p className="leading-relaxed whitespace-pre-wrap">
-            {renderContent(comment.content)}
-          </p>
-        </div>
-
-        {/* Footer: Seen By Avatars */}
-        {readers.length > 0 && isMe && (
-          <div className={`flex items-center gap-2 mt-2 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
-            <div className="flex -space-x-1.5 hover:space-x-1 transition-all">
-              {readers.map(({ readAt, userId }) => (
-                <div 
-                  key={userId?._id}
-                  className="w-4 h-4 rounded-full bg-white border border-slate-200 flex items-center justify-center overflow-hidden"
-                  title={`Seen by ${userId?.name} at ${formatDateTime(readAt)}`}
-                >
-                  {userId?.avatar ? (
-                    <img src={userId.avatar} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-[6px] font-bold text-slate-400 uppercase">{userId?.name?.charAt(0)}</span>
-                  )}
-                </div>
-              ))}
-            </div>
-            {isMe && <FiCheckCircle size={11} className="text-orange-500" />}
+  {/* Footer */}
+  {readers.length > 0 && isMe && (
+    <div className="flex items-center gap-1 mt-1 px-1">
+      <div className="flex -space-x-1 hover:-space-x-0.5 transition-all duration-200">
+        {readers.map(({ readAt, userId }) => (
+          <div 
+            key={userId?._id}
+            className="w-3.5 h-3.5 rounded-full ring-1 ring-white bg-zinc-200 overflow-hidden flex items-center justify-center"
+            title={`Seen by ${userId?.name} at ${formatDateTime(readAt)}`}
+          >
+            {userId?.avatar ? (
+              <img src={userId.avatar} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-[6px] font-bold text-zinc-500 uppercase">{userId?.name?.charAt(0)}</span>
+            )}
           </div>
-        )}
+        ))}
       </div>
+      <FiCheckCircle size={10} className="text-emerald-500" />
+    </div>
+  )}
+</div>
     </div>
   );
 }

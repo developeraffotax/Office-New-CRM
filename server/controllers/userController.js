@@ -5,6 +5,8 @@ import jwt from "jsonwebtoken";
 import labelModel from "../models/labelModel.js";
 import { sendOtpEmail } from "../utils/sendOtpEmail.js";
 import { io } from "../index.js";
+import { getUsersOrderedForModule } from "../services/user.service.js.js";
+import { isAdmin } from "../utils/checkPermission.js";
 
 // Create User
 export const registerUser = async (req, res) => {
@@ -361,19 +363,45 @@ export const getAllUsers = async (req, res) => {
 };
 
 // Get All Users(wothout InActive)
+// export const getAllActiveUsers = async (req, res) => {
+//   try {
+//     const users = await userModel
+//       .find({ isActive: { $ne: false }, name: { $ne: "Admin" } })
+//       .select("-password")
+//       .populate("role")
+//       .sort({ order: 1 });
+
+//     res.status(200).send({
+//       total: users.length,
+//       success: true,
+//       message: "All users list",
+//       users: users,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).send({
+//       success: false,
+//       message: "Error while get all users!",
+//     });
+//   }
+// };
+
+
+
+
 export const getAllActiveUsers = async (req, res) => {
   try {
-    const users = await userModel
-      .find({ isActive: { $ne: false }, name: { $ne: "Admin" } })
-      .select("-password")
-      .populate("role")
-      .sort({ order: 1 });
+    const { module } = req.query;
+    const ownerId = req.user?.user?._id; // from your auth middleware
+
+ 
+    const users = await getUsersOrderedForModule(ownerId, module, isAdmin(req));
 
     res.status(200).send({
       total: users.length,
       success: true,
       message: "All users list",
-      users: users,
+      users,
     });
   } catch (error) {
     console.log(error);

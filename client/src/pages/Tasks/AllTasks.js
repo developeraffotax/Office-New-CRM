@@ -295,7 +295,7 @@ const AllTasks = ({ justShowTable = false }) => {
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users?module=task`,
       );
       setUsers(
         data?.users?.filter((user) =>

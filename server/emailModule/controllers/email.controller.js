@@ -11,6 +11,7 @@ import { createNotification } from "../utils/createNotification.js";
 import { emitToAll, emitToUser } from "../../utils/socketEmitter.js";
 import Comment from "../models/Comment.js";
 import EmailMessage from "../models/EmailMessage.js";
+import { trackUserUsageById } from "../../services/user.service.js.js";
 
 /**
  * GET /api/email/inbox
@@ -472,6 +473,8 @@ export const updateThreadMetadata = async (req, res) => {
 
     if (updates?.userId) {
       updates.userId = new mongoose.Types.ObjectId(updates.userId);
+
+      await trackUserUsageById(req, updates?.userId, "inbox")
     }
 
 

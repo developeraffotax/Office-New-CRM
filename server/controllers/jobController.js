@@ -12,6 +12,7 @@ import { buildJobsQuery, } from "./jobController.utils.js";
 import { getAuthUser } from "../utils/getAuthUser.js";
 import { hasPermission, isAdmin } from "../utils/checkPermission.js";
 import { maskEmail, maskPhone } from "../utils/mask.js";
+import { trackUserUsageByName } from "../services/user.service.js.js";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
@@ -748,6 +749,8 @@ export const updateJobHolder = async (req, res) => {
       });
     }
 
+
+    
     // Fetch the job first to get the old fee
     const clientJobBeforeUpdate = await jobsModel.findById(jobId);
 
@@ -774,7 +777,7 @@ export const updateJobHolder = async (req, res) => {
     // await redisClient.del('all_jobs');
 
  
-
+    await trackUserUsageByName(req, jobHolder, "job")
 
 
      if (req.user?.user?.name !== clientJob?.job?.jobHolder) {

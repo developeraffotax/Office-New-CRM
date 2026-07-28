@@ -10,6 +10,7 @@ import { createNotification } from "../utils/createNotification.js";
 import { io } from "../../index.js";
 import { getCompanies } from "../utils/config.js";
 import { handleMessageReaction } from "../services/reaction.service.js";
+import { trackUserUsageById } from "../../services/user.service.js.js";
  
 
 
@@ -245,6 +246,8 @@ export const updateConversationMetadata = async (req, res, next) => {
 
     if (updates?.userId) {
       updates.userId = new mongoose.Types.ObjectId(updates.userId);
+
+      await trackUserUsageById(req, updates?.userId, "whatsapp")
     }
 
 

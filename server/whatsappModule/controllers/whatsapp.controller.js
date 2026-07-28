@@ -10,7 +10,7 @@ import { createNotification } from "../utils/createNotification.js";
 import { io } from "../../index.js";
 import { getCompanies } from "../utils/config.js";
 import { handleMessageReaction } from "../services/reaction.service.js";
-import { trackUserUsageById } from "../../services/user.service.js.js";
+import { trackUserUsageById } from "../../services/user.service.js";
  
 
 

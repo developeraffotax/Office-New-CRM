@@ -12,7 +12,7 @@ import { io } from "../index.js";
 import { emitTaskHoursUpdate } from "../utils/customFns/emitTaskHoursUpdate.js";
 import { buildTasksQuery } from "./taskController.utils.js";
 import mongoose from "mongoose";
-import { getUserIdByName, trackUserUsage, trackUserUsageByName } from "../services/user.service.js.js";
+import { getUserIdByName, trackUserUsage, trackUserUsageByName } from "../services/user.service.js";
  
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");

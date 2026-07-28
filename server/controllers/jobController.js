@@ -12,7 +12,7 @@ import { buildJobsQuery, } from "./jobController.utils.js";
 import { getAuthUser } from "../utils/getAuthUser.js";
 import { hasPermission, isAdmin } from "../utils/checkPermission.js";
 import { maskEmail, maskPhone } from "../utils/mask.js";
-import { trackUserUsageByName } from "../services/user.service.js.js";
+import { trackUserUsageByName } from "../services/user.service.js";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 

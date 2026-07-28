@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import labelModel from "../models/labelModel.js";
 import { sendOtpEmail } from "../utils/sendOtpEmail.js";
 import { io } from "../index.js";
-import { getUsersOrderedForModule } from "../services/user.service.js.js";
+import { getUsersOrderedForModule } from "../services/user.service.js";
 import { isAdmin } from "../utils/checkPermission.js";
 
 // Create User

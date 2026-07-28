@@ -11,7 +11,7 @@ import { createNotification } from "../utils/createNotification.js";
 import { emitToAll, emitToUser } from "../../utils/socketEmitter.js";
 import Comment from "../models/Comment.js";
 import EmailMessage from "../models/EmailMessage.js";
-import { trackUserUsageById } from "../../services/user.service.js.js";
+import { trackUserUsageById } from "../../services/user.service.js";
 
 /**
  * GET /api/email/inbox

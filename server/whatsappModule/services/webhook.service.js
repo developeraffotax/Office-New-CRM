@@ -8,6 +8,8 @@ import { downloadAndStoreMedia } from "./media.service.js";
 import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
 import { getFileUrl } from "../utils/s3.js";
 import { getAssignedUsers } from "../../utils/getAssignedUsers.js";
+import { websiteLeadQueue } from "../jobs/queues/websiteLeadQueue.js";
+import { sendWhatsappLead } from "../utils/sendWhatsappLead.js";
 
 const MEDIA_TYPES = new Set(["image", "video", "audio", "document", "sticker"]);
 
@@ -191,6 +193,16 @@ if (!existingConversation) {
       profileName: conversation.profileName,
       lastMessage: conversation.lastMessage,
     },
+  });
+
+   sendWhatsappLead({
+    phoneNumber: phone,
+    firstMessage: body,
+  }).catch((err) => {
+    logger.error("[WhatsappLead] Failed to sync website", {
+      phone,
+      error: err.message,
+    });
   });
 }
 

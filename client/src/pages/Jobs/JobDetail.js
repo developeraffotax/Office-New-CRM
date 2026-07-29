@@ -110,16 +110,19 @@ export default function JobDetail({
 
         setLoading(false);
         setClientDetail(data.clientJob);
+
+        
         setSubTaskData(
-          data?.clientJob?.subtasks?.sort(
+          (data?.clientJob?.subtasks || []).sort(
             (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
           ),
         );
-        // setQualityData(data?.clientJob?.quality_Check);
-        const sortedData = [...data.clientJob.quality_Check].sort(
-          (a, b) => a.order - b.order,
+        const sortedData = [...(data?.clientJob?.quality_Check || [])].sort(
+          (a, b) => a?.order - b?.order,
         );
         setQualityData(sortedData);
+
+
       }
     } catch (error) {
       console.log(error);
@@ -231,10 +234,10 @@ export default function JobDetail({
       if (data) {
         setClientDetail(data?.job);
         setSubTaskData(
-          data?.job?.subtasks?.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-          ),
-        );
+        (data?.job?.subtasks || []).sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+        ),
+      );
         setSubtask("");
         toast.success("Subtask added successfully!");
         setSubTaskLoading(false);
@@ -257,10 +260,10 @@ export default function JobDetail({
       if (data) {
         setClientDetail(data?.job);
         setSubTaskData(
-          data?.job?.subtasks?.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-          ),
-        );
+        (data?.job?.subtasks || []).sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+        ),
+      );
         setSubtask("");
         toast.success("Subtask added successfully!");
         setSubTaskLoading(false);
@@ -295,7 +298,7 @@ export default function JobDetail({
       if (data) {
         setClientDetail(data?.job);
         setSubTaskData(
-          data?.job?.subtasks?.sort(
+          (data?.job?.subtasks || []).sort(
             (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
           ),
         );
@@ -313,11 +316,11 @@ export default function JobDetail({
       );
       if (data.success) {
         setClientDetail(data?.job);
-        setSubTaskData(
-          data?.job?.subtasks?.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-          ),
-        );
+       setSubTaskData(
+        (data?.job?.subtasks || []).sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+        ),
+      );
       }
     } catch (error) {
       console.log(error);

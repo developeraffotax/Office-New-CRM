@@ -470,9 +470,20 @@ export const buildJobsQuery = (queryParams) => {
       }
   }
 
-  if (jobHolder) {
-    query["job.jobHolder"] = jobHolder;
+  // if (jobHolder) {
+  //   query["job.jobHolder"] = jobHolder;
+  // }
+
+
+   if (jobHolder === "empty") {
+    // Matches if jobHolder is null, undefined (missing), or an empty string
+     query["job.jobHolder"] = { $in: [null, "", "empty"] };
+  } else if (jobHolder) {
+    // Normal search for a specific jobHolder ID/string
+     query["job.jobHolder"] = jobHolder;
   }
+
+
 
   if (lead) {
     query["job.lead"] = lead;

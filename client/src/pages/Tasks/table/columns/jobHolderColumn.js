@@ -31,6 +31,8 @@ export const jobHolderColumn = (ctx) => {
               </option>
             ))}
 
+            <option value="empty">Empty</option>
+
           </select>
         </div>
       );
@@ -60,6 +62,8 @@ export const jobHolderColumn = (ctx) => {
                 {user?.name}
               </option>
             ))}
+
+            
 
           </select>
         </div>

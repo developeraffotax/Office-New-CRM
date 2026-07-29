@@ -37,6 +37,8 @@ export const assignColumn = ({
               {jobhold}
             </option>
           ))}
+
+          <option value="empty">Empty</option>
         </select>
 
       </div>

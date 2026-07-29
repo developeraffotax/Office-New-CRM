@@ -458,7 +458,11 @@ if (projectId && mongoose.Types.ObjectId.isValid(projectId)) {
 }
 
  
-  if (jobHolder) {
+ if (jobHolder === "empty") {
+    // Matches if jobHolder is null, undefined (missing), or an empty string
+    query.jobHolder = { $in: [null, "", "empty"] };
+  } else if (jobHolder) {
+    // Normal search for a specific jobHolder ID/string
     query.jobHolder = jobHolder;
   }
 

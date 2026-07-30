@@ -35,6 +35,7 @@ import DraggableFilterTabs from "../Tasks/DraggableFilterTabs";
 import AddLabel from "../../components/Modals/AddLabel";
 
 export const colVisibility = {
+  move: true,
   templateRef: true,
   name: true,
   category: true,
@@ -116,6 +117,21 @@ export default function Template() {
       JSON.stringify(updatedVisibility),
     );
   };
+
+
+  useEffect(() => {
+  const savedVisibility = JSON.parse(
+    localStorage.getItem("visibleTemplatesColumn")
+  );
+
+  if (savedVisibility) {
+    setColumnVisibility({
+      _id: false,
+      ...colVisibility,      // defaults (covers any new columns added later)
+      ...savedVisibility,    // saved values override defaults, incl. move: false
+    });
+  }
+}, []); // run once on mount
 
   useEscapeKey(() => {
     setAddTemplate(false);
@@ -497,6 +513,10 @@ export default function Template() {
     );
   };
 
+
+
+  
+
   // ---------------------Table Data-------------------->
   const columns = useMemo(
     () =>
@@ -531,6 +551,9 @@ export default function Template() {
     enableStickyHeader: true,
     enableStickyFooter: true,
     muiTableContainerProps: { sx: { maxHeight: "850px" } },
+
+      getRowId: (row) => row._id,        // 👈 ADD THIS
+  enableRowOrdering: columnVisibility.move,           // 👈 ADD THIS
 
     enableRowSelection: true, // ✅ ADD THIS
     enableMultiRowSelection: true,
@@ -585,6 +608,56 @@ export default function Template() {
         },
       },
     },
+
+
+
+
+    muiRowDragHandleProps: ({ table }) => ({
+  onDragEnd: async () => {
+    const { draggingRow, hoveredRow } = table.getState();
+
+    if (!draggingRow || !hoveredRow) return;
+
+    const updatedData = [...templateData];
+
+    updatedData.splice(
+      hoveredRow.index,
+      0,
+      updatedData.splice(draggingRow.index, 1)[0]
+    );
+
+    setTemplateData(updatedData);
+
+    try {
+      await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/templates/reorder`,
+        {
+          templateIds: updatedData.map((row) => row._id),
+        }
+      );
+      toast.success("Reordered Successfully!");
+    } catch (error) {
+      console.error(error);
+    }
+  },
+}),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   });
 
   const buildJobHolderCountMap = (data = []) => {

@@ -50,7 +50,7 @@ export const getAllTemplate = async (req, res) => {
       filters["userList._id"] = userId;
     }
 
-    const templates = await templateModel.find(filters).lean();
+    const templates = await templateModel.find(filters).sort({ position: 1 }).lean();
 
     res.status(200).send({
       success: true,
@@ -380,6 +380,73 @@ export const bulkUpdateTemplates = async (req, res) => {
       success: false,
       message: "Error in bulk update",
       error: error.message,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const reorderTemplates = async (req, res) => {
+  try {
+    const { templateIds } = req.body;
+
+    if (!Array.isArray(templateIds)) {
+      return res.status(400).json({
+        success: false,
+        message: "templateIds must be an array",
+      });
+    }
+
+    const bulkOps = templateIds.map((id, index) => ({
+      updateOne: {
+        filter: { _id: id },
+        update: {
+          $set: {
+            position: index + 1,
+          },
+        },
+      },
+    }));
+
+    await templateModel.bulkWrite(bulkOps);
+
+    res.status(200).json({
+      success: true,
+      message: "Templates reordered successfully",
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Error reordering Templates",
+      error,
     });
   }
 };

@@ -6,6 +6,7 @@ import {
   deleteTemplate,
   getAllTemplate,
   getSingleTemplate,
+  reorderTemplates,
   updateTemplate,
 } from "../../controllers/templates/templateController.js";
 
@@ -29,5 +30,10 @@ router.delete("/delete/template/:id", requiredSignIn, deleteTemplate);
 
 router.put("/bulk-update-templates", bulkUpdateTemplates);
 
+
+
+
+
+router.put("/reorder", requiredSignIn, reorderTemplates);
 
 export default router;

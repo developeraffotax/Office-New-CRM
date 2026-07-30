@@ -23,6 +23,13 @@ const templateSchema = new mongoose.Schema(
       type: String,
     },
 
+     position: {
+  type: Number,
+  default: 0,
+  index: true,
+},
+
+
      label: labelSchema,
 
     templateRef: { type: Number, unique: true },

@@ -62,6 +62,7 @@ import { fetchInboxUnreadCounts } from "./redux/slices/inboxUnreadSlice";
 import SignaturesModule from "./components/Signatures/SignaturesModule";
 import VerifyOtp from "./pages/Auth/VerifyOtp";
 import WhatsAppBox from "./components/whatsapp/pages/WhatsAppBox";
+import DashboardComponent from "./components/AffotaxDashboard/DashboardComponent";
 
 function App() {
   const navigate = useNavigate();
@@ -133,6 +134,7 @@ function App() {
       Complaints: <Route path="/complaints" element={<Complaints />} />,
       Meeting: <Route path="/meetings" element={<Meeting />} />,
       HR: <Route path="/hr/tasks" element={<HR />} />,
+      "Affotax-Analytics": <Route path="/affotax-analytics" element={<DashboardComponent /> } />,
       Tickets: (
         <>
           <Route path="/tickets" element={<Tickets />} />
@@ -194,6 +196,8 @@ function App() {
             <Route path="/leads/create" element={<AutoCreateLeadFromURL user={user}/>} />
             <Route path="/settings" element={<SettingsPage  />} />
             <Route path="/settings/signatures" element={<SignaturesModule  />} />
+            
+            
           </Route>
         ) : (
           // If no token, redirect any private route access to login

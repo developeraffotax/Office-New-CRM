@@ -49,6 +49,7 @@ export default function Roles() {
     "Editor",
     "Meeting",
     "HR",
+    "Affotax-Analytics",
     "Users",
     "Activity",
     "Inbox",

@@ -16,8 +16,9 @@ import axios from "axios";
 import { TbLoader2 } from "react-icons/tb";
 import toast from "react-hot-toast";
 import { getClientIdFromCompanyName } from "../../utlis/apiGetters/apiGetters";
+import { hasSubrole } from "../../utlis/checkPermission";
 
-export const ActionsCell = ({ row,  setNewTicket,  handleCopyLead, handleLeadStatus, handleDeleteLeadConfirmation,  selectedTab, setClientName, setCompanyName, ticketMap  }) => {
+export const ActionsCell = ({auth, row,  setNewTicket,  handleCopyLead, handleLeadStatus, handleDeleteLeadConfirmation,  selectedTab, setClientName, setCompanyName, ticketMap  }) => {
 
   const [creatingTicket, setCreatingTicket] = useState(false);
 
@@ -227,14 +228,18 @@ const hasTickets = ticketCount > 0;
           <GiBrokenHeart className="h-6 w-6 cursor-pointer text-red-500 hover:text-red-600" />
         </span>
       )}
-
-      <span
+        {
+            hasSubrole(auth.user, "Leads", "Delete") && (
+                <span
         className="text-[1rem] cursor-pointer"
         onClick={() => handleDeleteLeadConfirmation(row.original._id)}
         title="Delete Lead!"
       >
         <AiTwotoneDelete className="h-5 w-5 text-pink-500 hover:text-pink-600 " />
       </span>
+            )
+        }
+      
     </div>
   );
 };

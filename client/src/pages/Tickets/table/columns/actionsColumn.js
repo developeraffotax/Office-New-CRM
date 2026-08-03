@@ -3,8 +3,11 @@ import { useEffect, useState } from "react";
 import { AiTwotoneDelete } from "react-icons/ai";
 import { MdCheckCircle, MdInsertComment, MdRemoveRedEye } from "react-icons/md";
 import { TbLogs } from "react-icons/tb";
+import { hasSubrole } from "../../../../utlis/checkPermission";
 
 export const actionsColumn = (ctx) => {
+
+
 
 
     return            {
@@ -83,13 +86,19 @@ export const actionsColumn = (ctx) => {
                   >
                     <MdCheckCircle className="h-6 w-6 cursor-pointer text-green-500 hover:text-green-600" />
                   </span>
-                  <span
+
+                  {
+                    hasSubrole(ctx.auth.user, "Tickets", "Delete") && (
+                      <span
                     className="text-[1rem] cursor-pointer"
                     onClick={() => ctx.handleDeleteTicketConfirmation(row.original._id)}
                     title="Delete Ticket!"
                   >
                     <AiTwotoneDelete className="h-5 w-5 text-red-500 hover:text-red-600 " />
                   </span>
+                    )
+                  }
+                  
                 </div>
               );
             },

@@ -29,6 +29,7 @@ import ThreadActivityPanel from "../shared/ui/ThreadActivityPanel.js";
 import { LiaUndoAltSolid } from "react-icons/lia";
 import { useSelector } from "react-redux";
 import EmailSummaryDrawer from "./EmailSummaryDrawer.js";
+import { hasSubrole } from "../../../utlis/checkPermission.js";
 export default function Thread({
   company,
   threadId,
@@ -49,6 +50,9 @@ export default function Thread({
   unreadComments,
   show
 }) {
+
+   const { auth } = useSelector((state) => state.auth);
+
 
   const [page, setPage] = useState(1);
 const [hasMore, setHasMore] = useState(false);
@@ -94,6 +98,18 @@ const [activityPanel, setActivityPanel] = useState({
   show: false,
   threadId: null,
 });
+
+
+
+
+
+  const scope = useMemo(() => {
+    const hasEditAccess = hasSubrole(auth.user, "Inbox", "Edit") || false;
+    const hasDeleteAccess = hasSubrole(auth.user, "Inbox", "Delete") || false;
+
+    return { edit: hasEditAccess, delete: hasDeleteAccess };
+  }, [auth]);
+
 
 
 
@@ -447,7 +463,7 @@ useOverlayStack({
 
 <span className="w-[1px] h-8 bg-slate-300 rounded-full"></span>
 
-         <button
+{       scope.delete &&  (<button
               className="p-2 rounded-lg hover:bg-gray-200 text-gray-500  hover:text-red-500"
               title="Delete Thread"
               onClick={(e) => {
@@ -455,7 +471,7 @@ useOverlayStack({
               }}
             >
               <MdDeleteOutline className="size-5   " />
-            </button>
+            </button>)}
 
      {
                 status === "progress" ? (

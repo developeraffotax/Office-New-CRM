@@ -2088,6 +2088,7 @@ export const getLeadColumns = (ctx) => {
       header: "Actions",
       Cell: ({ row }) => (
         <ActionsCell
+          auth={auth}
           row={row}
           setNewTicket={setNewTicket}
           handleCopyLead={handleCopyLead}

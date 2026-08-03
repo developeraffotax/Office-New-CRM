@@ -8,6 +8,7 @@ import ticketModel from "../models/ticketModel.js";
 import getJobHolderNames from "../utils/getJobHolderNames.js";
 import { buildLeadFilter } from "../utils/buildFilter.js";
 import { getAuthUser } from "../utils/getAuthUser.js";
+import { buildBucketKeysAndLabels, dateFormatMap, resolveGroupBy } from "./leadController.utils.js";
 
 // Create Lead
 export const createLead = async (req, res) => {
@@ -764,9 +765,14 @@ export const updateBulkLeads = async (req, res) => {
 
  
 
+ 
+
+
+ 
+
 export const getLeadStats = async (req, res) => {
   try {
-    const { start, end, status, lead_Source, department } = req.query;
+    const { start, end, status, lead_Source, department, groupBy } = req.query;
 
     if (!start || !end) {
       return res.status(400).json({
@@ -777,20 +783,18 @@ export const getLeadStats = async (req, res) => {
 
     const startDate = moment(start).startOf("day");
     const endDate = moment(end).endOf("day");
+    const groupUnit = resolveGroupBy(groupBy, startDate, endDate);
 
     let matchQuery = {
       leadCreatedAt: { $gte: startDate.toDate(), $lte: endDate.toDate() },
     };
 
-    // Status filter
     if (status && status !== "all") {
       matchQuery.status = status;
     }
 
-    // Lead Source filter
     if (lead_Source && lead_Source !== "all") {
       if (lead_Source === "Other") {
-        // Match leads where lead_Source is missing or not in the predefined list
         matchQuery.$or = [
           { lead_Source: { $exists: false } },
           { lead_Source: { $nin: leadSources.filter((src) => src !== "Other") } },
@@ -802,57 +806,72 @@ export const getLeadStats = async (req, res) => {
       }
     }
 
-    if(department && department !== "all") {
+    if (department && department !== "all") {
       matchQuery.department = department;
     }
 
-    // Aggregation: group by day
+   
+
     const stats = await leadModel.aggregate([
       { $match: matchQuery },
       {
         $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$leadCreatedAt" } },
+          _id: {
+            $dateToString: { format: dateFormatMap[groupUnit], date: "$leadCreatedAt" },
+          },
           count: { $sum: 1 },
         },
       },
       { $sort: { _id: 1 } },
     ]);
 
-    // Convert to object for quick lookup
     const statsMap = {};
     stats.forEach((s) => {
       statsMap[s._id] = s.count;
     });
 
-    // Generate all dates between start & end
+    // Walk the range in the same unit, building matching keys + display labels
+    const keys = [];
     const labels = [];
-    const data = [];
-
     let current = startDate.clone();
-    while (current.isSameOrBefore(endDate, "day")) {
-      const dateStr = current.format("YYYY-MM-DD");
-      labels.push(dateStr);
-      data.push(statsMap[dateStr] || 0);
-      current.add(1, "day");
+
+    if (groupUnit === "day") {
+      while (current.isSameOrBefore(endDate, "day")) {
+        keys.push(current.format("YYYY-MM-DD"));
+        labels.push(current.format("DD MMM"));
+        current.add(1, "day");
+      }
+    } else if (groupUnit === "week") {
+      current = current.clone().startOf("isoWeek");
+      while (current.isSameOrBefore(endDate, "day")) {
+        keys.push(`${current.isoWeekYear()}-W${String(current.isoWeek()).padStart(2, "0")}`);
+        const weekEnd = current.clone().endOf("isoWeek");
+        labels.push(`${current.format("DD MMM")} - ${weekEnd.format("DD MMM")}`);
+        current.add(1, "week");
+      }
+    } else {
+      // month
+      current = current.clone().startOf("month");
+      while (current.isSameOrBefore(endDate, "day")) {
+        keys.push(current.format("YYYY-MM"));
+        labels.push(current.format("MMM YYYY"));
+        current.add(1, "month");
+      }
     }
+
+    const data = keys.map((k) => statsMap[k] || 0);
 
     res.json({
       success: true,
-      filters: { start, end, status: status || "all" },
+      filters: { start, end, status: status || "all", groupBy: groupUnit },
       labels,
-      series: [
-        {
-          name: "Leads",
-          data,
-        },
-      ],
+      series: [{ name: "Leads", data }],
     });
   } catch (error) {
     console.error("Error fetching lead stats:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 
 
 
@@ -990,10 +1009,9 @@ export const getLeadStatusStats = async (req, res) => {
 
 
  
-
 export const getLeadStatsWonLost = async (req, res) => {
   try {
-    const { start, end, lead_Source, department  } = req.query;
+    const { start, end, lead_Source, department, groupBy } = req.query;
 
     if (!start || !end) {
       return res.status(400).json({
@@ -1004,16 +1022,14 @@ export const getLeadStatsWonLost = async (req, res) => {
 
     const startDate = moment(start).startOf("day");
     const endDate = moment(end).endOf("day");
+    const groupUnit = resolveGroupBy(groupBy, startDate, endDate);
 
     const matchQuery = {
       leadCreatedAt: { $gte: startDate.toDate(), $lte: endDate.toDate() },
     };
 
-
-        // Lead Source filter
     if (lead_Source && lead_Source !== "all") {
       if (lead_Source === "Other") {
-        // Match leads where lead_Source is missing or not in the predefined list
         matchQuery.$or = [
           { lead_Source: { $exists: false } },
           { lead_Source: { $nin: leadSources.filter((src) => src !== "Other") } },
@@ -1025,12 +1041,11 @@ export const getLeadStatsWonLost = async (req, res) => {
       }
     }
 
-    if(department && department !== "all") {
+    if (department && department !== "all") {
       matchQuery.department = department;
     }
 
-
-    // Group by date + status
+    // Always aggregate at daily granularity first — we roll up to week/month after
     const stats = await leadModel.aggregate([
       { $match: matchQuery },
       {
@@ -1045,35 +1060,49 @@ export const getLeadStatsWonLost = async (req, res) => {
       { $sort: { "_id.date": 1 } },
     ]);
 
-    // Prepare maps for won/lost counts by date
-    const wonMap = {};
-    const lostMap = {};
+    const wonDailyMap = {};
+    const lostDailyMap = {};
 
     stats.forEach((s) => {
-      if (s._id.status === "won") {
-        wonMap[s._id.date] = s.count;
-      } else if (s._id.status === "lost") {
-        lostMap[s._id.date] = s.count;
-      }
+      if (s._id.status === "won") wonDailyMap[s._id.date] = s.count;
+      else if (s._id.status === "lost") lostDailyMap[s._id.date] = s.count;
     });
 
-    // Build labels + aligned data arrays
-    const labels = [];
-    const wonData = [];
-    const lostData = [];
+    const { keys, labels } = buildBucketKeysAndLabels(startDate, endDate, groupUnit);
 
-    let current = startDate.clone();
-    while (current.isSameOrBefore(endDate, "day")) {
-      const dateStr = current.format("YYYY-MM-DD");
-      labels.push(dateStr);
-      wonData.push(wonMap[dateStr] || 0);
-      lostData.push(lostMap[dateStr] || 0);
-      current.add(1, "day");
+    let wonData, lostData;
+
+    if (groupUnit === "day") {
+      wonData = keys.map((k) => wonDailyMap[k] || 0);
+      lostData = keys.map((k) => lostDailyMap[k] || 0);
+    } else {
+      // Roll daily counts up into week/month buckets by checking which
+      // bucket each individual day falls into
+      wonData = new Array(keys.length).fill(0);
+      lostData = new Array(keys.length).fill(0);
+
+      const bucketRanges = keys.map((_, i) => {
+        if (groupUnit === "week") {
+          const bucketStart = startDate.clone().startOf("isoWeek").add(i, "week");
+          return { start: bucketStart, end: bucketStart.clone().endOf("isoWeek") };
+        }
+        const bucketStart = startDate.clone().startOf("month").add(i, "month");
+        return { start: bucketStart, end: bucketStart.clone().endOf("month") };
+      });
+
+      const allDates = new Set([...Object.keys(wonDailyMap), ...Object.keys(lostDailyMap)]);
+      allDates.forEach((dateStr) => {
+        const day = moment(dateStr, "YYYY-MM-DD");
+        const idx = bucketRanges.findIndex((r) => day.isBetween(r.start, r.end, "day", "[]"));
+        if (idx === -1) return;
+        wonData[idx] += wonDailyMap[dateStr] || 0;
+        lostData[idx] += lostDailyMap[dateStr] || 0;
+      });
     }
 
     res.json({
       success: true,
-      filters: { start, end },
+      filters: { start, end, groupBy: groupUnit },
       labels,
       series: [
         { name: "Won", data: wonData },
@@ -1085,8 +1114,6 @@ export const getLeadStatsWonLost = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
-
 
 
 

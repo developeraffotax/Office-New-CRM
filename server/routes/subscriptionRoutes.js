@@ -2,10 +2,13 @@ import express from "express";
 import { requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
   addDatalabel,
+  copySubscription,
   createSubscription,
   deleteSubscription,
   fetchAllSubscription,
   fetchSingleSubscription,
+  markSubscriptionCompleted,
+  markSubscriptionInProgress,
   updateBulkSubscription,
   updateSingleField,
   updateSubscription,
@@ -34,5 +37,12 @@ router.delete("/delete/:id", requiredSignIn, deleteSubscription);
 router.put("/lable/:id", requiredSignIn, addDatalabel);
 //
 router.put("/multiple/updates", requiredSignIn, updateBulkSubscription);
+
+
+
+
+router.patch("/:id/in-progress", requiredSignIn, markSubscriptionInProgress);
+router.patch("/:id/completed", requiredSignIn,  markSubscriptionCompleted);
+router.post("/:id/copy", requiredSignIn,  copySubscription);
 
 export default router;

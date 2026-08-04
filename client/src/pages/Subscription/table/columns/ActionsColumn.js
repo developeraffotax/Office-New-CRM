@@ -1,7 +1,7 @@
 import React from "react";
 import ActionsCell from "../../ActionsCell";
 
-export const createActionsColumn = ({ auth, setSubscriptionId, setShow, handleDeleteConfirmation, setClientCompanyName, setShowNewTicketModal }) => (
+export const createActionsColumn = ({ auth, setSubscriptionId, setShow, handleDeleteConfirmation, setClientCompanyName, setShowNewTicketModal, handleMarkInProgress, handleMarkCompleted, handleCopySubscription }) => (
   
    {
         accessorKey: "actions",
@@ -14,9 +14,12 @@ export const createActionsColumn = ({ auth, setSubscriptionId, setShow, handleDe
             handleDeleteConfirmation={handleDeleteConfirmation}
             setClientCompanyName={setClientCompanyName}
             setShowNewTicketModal={setShowNewTicketModal}
+            handleMarkInProgress={handleMarkInProgress}
+            handleMarkCompleted={handleMarkCompleted}
+            handleCopySubscription={handleCopySubscription}
           />
         ),
-        size: 160,
+        size: 200,
       }
      
 );

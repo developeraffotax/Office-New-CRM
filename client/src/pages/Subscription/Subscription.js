@@ -29,6 +29,9 @@ import OverviewForPages from "../../utlis/overview/OverviewForPages";
 
 export default function Subscription() {
   const auth = useSelector((state) => state.auth.auth);
+
+  const [status, setStatus] = useState("in_progress");
+
   const [show, setShow] = useState(false);
   const [subscriptionData, setSubscriptionData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -57,8 +60,6 @@ export default function Subscription() {
   const [fee, setFee] = useState("");
   const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
 
- 
-
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
   const [clientCompanyName, setClientCompanyName] = useState("");
 
@@ -72,7 +73,7 @@ export default function Subscription() {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/fetch/all`
+        `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/fetch/all?progressStatus=${status}`,
       );
       if (data) {
         setSubscriptionData(data.subscriptions);
@@ -86,12 +87,12 @@ export default function Subscription() {
 
   useEffect(() => {
     getAllSubscriptions();
-  }, []);
+  }, [status]);
 
   const fetchSubscriptions = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/fetch/all`
+        `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/fetch/all?progressStatus=${status}`,
       );
       if (data) {
         setSubscriptionData(data.subscriptions);
@@ -105,24 +106,24 @@ export default function Subscription() {
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
       );
       setUsers(
         data?.users?.filter((user) =>
           user.role?.access.some((item) =>
-            item.permission.includes("Subscription")
-          )
-        ) || []
+            item.permission.includes("Subscription"),
+          ),
+        ) || [],
       );
 
       setUserName(
         data?.users
           ?.filter((user) =>
             user.role?.access.some((item) =>
-              item.permission.includes("Subscription")
-            )
+              item.permission.includes("Subscription"),
+            ),
           )
-          .map((user) => user.name)
+          .map((user) => user.name),
       );
     } catch (error) {
       console.log(error);
@@ -138,7 +139,7 @@ export default function Subscription() {
   const getDatalable = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/label/subscription/labels`
+        `${process.env.REACT_APP_API_URL}/api/v1/label/subscription/labels`,
       );
       if (data.success) {
         setDataLabel(data.labels);
@@ -154,11 +155,10 @@ export default function Subscription() {
 
   // Update data Label
   const addDatalabel = async (id, labelId) => {
- 
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/lable/${id}`,
-        { labelId }
+        { labelId },
       );
       if (data) {
         fetchSubscriptions();
@@ -195,7 +195,7 @@ export default function Subscription() {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/update/single/${id}`,
-        updateObj
+        updateObj,
       );
       if (data) {
         fetchSubscriptions();
@@ -207,49 +207,12 @@ export default function Subscription() {
     }
   };
 
-  // --------------Update JobHolder------------>
-  // const handleUpdateSubscription = async (id, value, type) => {
-
-  //   try {
-  //     const { data } = await axios.put(
-  //       `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/update/single/${id}`,
-  //       {
-  //         jobHolder: type === "jobholder" && value,
-  //         billingStart: type === "billingStart" && value,
-  //         billingEnd: type === "billingEnd" && value,
-  //         deadline: type === "deadline" && value,
-  //         lead: type === "lead" && value,
-  //         fee: type === "fee" && value,
-  //         note: type === "note" && value,
-  //         status: type === "status" && value,
-  //         subscription: type === "subscription" && value,
-  //       }
-  //     );
-  //     if (data) {
-  //       fetchSubscriptions();
-  //       toast.success("Subscription updated.");
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //     toast.error(error?.response?.data?.message);
-  //   }
-  // };
-
-
+ 
 
   // Get Total Fee
 
   useEffect(() => {
-    // const calculateTotalHours = (data) => {
-    //   return data.reduce((sum, client) => {
-
-    //     if(!client.job || !client.job.fee) {
-    //       return sum; // Skip if job or fee is not available
-    //     }
-    //     return sum + Number(client.job.fee)
-
-    //   }, 0);
-    // };
+ 
 
     const calculateTotalHours = (data) => {
       return data.reduce((sum, client) => {
@@ -264,8 +227,6 @@ export default function Subscription() {
         return sum;
       }, 0);
     };
-
- 
 
     if (filterData) {
       setTotalFee(calculateTotalHours(filterData).toFixed(0));
@@ -296,7 +257,7 @@ export default function Subscription() {
   const handleDeleteSubscription = async (id) => {
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/delete/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/delete/${id}`,
       );
       if (data) {
         fetchSubscriptions();
@@ -308,36 +269,99 @@ export default function Subscription() {
     }
   };
 
+
+
+
+
+
+
+
+
+// --------------Mark Subscription In Progress------------>
+const handleMarkInProgress = async (id) => {
+  try {
+    const { data } = await axios.patch(
+      `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/${id}/in-progress`,
+    );
+    if (data) {
+      fetchSubscriptions();
+      toast.success("Subscription marked as in progress!");
+    }
+  } catch (error) {
+    console.log(error);
+    toast.error(error?.response?.data?.message || "Something went wrong!");
+  }
+};
+
+// --------------Mark Subscription Completed------------>
+const handleMarkCompleted = async (id) => {
+  try {
+    const { data } = await axios.patch(
+      `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/${id}/completed`,
+    );
+    if (data) {
+      fetchSubscriptions();
+      toast.success("Subscription marked as completed!");
+    }
+  } catch (error) {
+    console.log(error);
+    toast.error(error?.response?.data?.message || "Something went wrong!");
+  }
+};
+
+// --------------Copy Subscription------------>
+const handleCopySubscription = async (id) => {
+  try {
+    const { data } = await axios.post(
+      `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/${id}/copy`,
+    );
+    if (data) {
+      fetchSubscriptions();
+      toast.success("Subscription copied successfully!");
+    }
+  } catch (error) {
+    console.log(error);
+    toast.error(error?.response?.data?.message || "Something went wrong!");
+  }
+};
+
+
+
+
+
+
+
+
+
+
   //  --------------Table Columns Data--------->
-  const columns = useMemo(() => getSubscriptionColumns({
+  const columns = useMemo(
+    () =>
+      getSubscriptionColumns({
+        auth,
+        users,
+        subscriptions,
 
-    
-    auth,
-    users,
-    subscriptions,
+        userName,
+        totalFee,
+        states,
+        dataLable,
 
-    userName,
-    totalFee,
-    states,
-    dataLable,
-
-
-
-    
-    
-    
-    addDatalabel,
-     setSubscriptionId,
-      setShow,
-       handleDeleteConfirmation,
+        addDatalabel,
+        setSubscriptionId,
+        setShow,
+        handleDeleteConfirmation,
         setClientCompanyName,
-         setShowNewTicketModal,
+        setShowNewTicketModal,
 
-    handleUpdateSubscription,
-     
-  }), [ auth, users, subscriptions, userName, totalFee, states, dataLable]);
+        handleUpdateSubscription,
 
-
+        handleMarkInProgress,
+        handleMarkCompleted,
+        handleCopySubscription,
+      }),
+    [auth, users, subscriptions, userName, totalFee, states, dataLable],
+  );
 
   // Clear table Filter
   const handleClearFilters = () => {
@@ -426,7 +450,7 @@ export default function Subscription() {
         `${process.env.REACT_APP_API_URL}/api/v1/subscriptions/multiple/updates`,
         {
           rowSelection: Object.keys(rowSelection).filter(
-            (id) => rowSelection[id] === true
+            (id) => rowSelection[id] === true,
           ),
           jobHolder,
           lead,
@@ -437,7 +461,7 @@ export default function Subscription() {
           dataLabelId,
           source,
           fee,
-        }
+        },
       );
 
       if (data) {
@@ -466,12 +490,9 @@ export default function Subscription() {
 
   const col = table.getColumn("subscription");
 
- 
-
   const setColumnFromOutsideTable = (colKey, filterVal) => {
     const col = table.getColumn(colKey);
 
-     
     return col.setFilterValue(filterVal);
   };
 
@@ -496,7 +517,12 @@ export default function Subscription() {
             <span className="mt-2">
               <QuickAccess />
             </span>
-              {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
+            {isAdmin(auth) && (
+              <span className=" ">
+                {" "}
+                <OverviewForPages />{" "}
+              </span>
+            )}
 
             <span
               className={` p-1 rounded-md hover:shadow-md bg-gray-50 mb-1  cursor-pointer border ${
@@ -511,6 +537,39 @@ export default function Subscription() {
             >
               <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
             </span>
+
+            <div className="flex gap-2 w-fit font-google font-medium ">
+              {[
+                { label: "In-Progress", value: "in_progress" },
+                { label: "Completed", value: "completed" },
+              ].map(({ label, value }) => (
+                <button
+                  key={value}
+                  onClick={() => setStatus(value)}
+                  className={`flex items-center gap-[7px] px-[14px] py-[6px] text-[13px] rounded-xl  border cursor-pointer  transition-all duration-200
+                                  ${
+                                    status === value
+                                      ? "border-gray-300 bg-gray-50 text-gray-900"
+                                      : "border-gray-200 bg-white text-gray-400 hover:text-gray-700"
+                                  }`}
+                >
+                  <span
+                    className={`w-[7px] h-[7px] rounded-full flex-shrink-0 ${
+                      status === value
+                        ? value === "in_progress"
+                          ? "bg-blue-500"
+                          : value === "completed"
+                          ? "bg-green-500"
+                          : value === "inactive"
+                          ? "bg-red-500"
+                          : "bg-gray-300"
+                        : "bg-gray-300"
+                    }`}
+                  />
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* ---------Buttons ------*/}

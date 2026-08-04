@@ -65,8 +65,15 @@ const subScriptionSchema = new mongoose.Schema(
     source: {
       type: String,
     },
-    status: {
+    status: { 
       type: String,
+    },
+
+    progressStatus: {
+      type: String,
+      enum: ["pending", "in_progress", "completed"],
+      default: "in_progress",
+
     },
     clientType: {
       type: String,
@@ -126,5 +133,12 @@ const subScriptionSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+
+
+
+subScriptionSchema.index({ progressStatus: 1, subscription: 1 }) 
+
+
 
 export default mongoose.model("Subscription", subScriptionSchema);

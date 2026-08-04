@@ -259,94 +259,22 @@ export const updateSingleField = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // Update Single field
-// export const updateSingleField = async (req, res) => {
-//   try {
-//     const subId = req.params.id;
-//     const {
-//       jobHolder,
-//       billingStart,
-//       billingEnd,
-//       deadline,
-//       lead,
-//       fee,
-//       note,
-//       status,
-//       subscription,
-//     } = req.body;
-
-//     const existingSub = await subscriptionModel.findById(subId);
-//     console.log("BODY OF REQ> 💚:", req.body);
-//     if (!existingSub) {
-//       return res.status(200).send({
-//         success: false,
-//         message: "Subscription not found!",
-//       });
-//     }
-
-//     const subscriptionData = await subscriptionModel.findByIdAndUpdate(
-//       { _id: existingSub._id },
-//       {
-//         "job.jobHolder": jobHolder || existingSub.job.jobHolder,
-//         "job.billingStart": billingStart || existingSub.job.billingStart,
-//         "job.billingEnd": billingEnd || existingSub.job.billingEnd,
-//         "job.deadline": deadline || existingSub.job.deadline,
-//         "job.lead": lead || existingSub.job.lead,
-//         "job.fee": fee || existingSub.job.fee,
-//         note: note || existingSub.note,
-//         status: status || existingSub.status,
-//         subscription: subscription || existingSub.subscription,
-//       },
-//       { new: true }
-//     );
-
-
-//     console.log("Updated Subscription Data:💜💜💜 ", subscriptionData);
-//     res.status(200).send({
-//       success: true,
-//       message: "Subscription update successfully!",
-//       subscription: subscriptionData,
-//     });
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).send({
-//       success: false,
-//       message: "Error while update subscription!",
-//       error: error,
-//     });
-//   }
-// };
+ 
 
 // Get All Subcription
 export const fetchAllSubscription = async (req, res) => {
+
+   const { progressStatus="in_progress" } = req.query;
+
+  const filters = {};
+
+  if (progressStatus) {
+    filters.progressStatus = progressStatus;
+  }
+
   try {
     const subscriptions = await subscriptionModel
-      .find({})
+      .find(filters)
       .sort({ createdAt: -1 })
       .populate("data");
 
@@ -520,6 +448,140 @@ export const updateBulkSubscription = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error in update bulk jobs !",
+      error: error,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Mark Subscription as In Progress
+export const markSubscriptionInProgress = async (req, res) => {
+  try {
+    const subId = req.params.id;
+
+    const existingSub = await subscriptionModel.findById(subId);
+
+    if (!existingSub) {
+      return res.status(404).send({
+        success: false,
+        message: "Subscription not found!",
+      });
+    }
+
+    const subscription = await subscriptionModel.findByIdAndUpdate(
+      { _id: existingSub._id },
+      { progressStatus: "in_progress" },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Subscription marked as in progress!",
+      subscription: subscription,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while marking subscription as in progress!",
+      error: error,
+    });
+  }
+};
+
+// Mark Subscription as Completed
+export const markSubscriptionCompleted = async (req, res) => {
+  try {
+    const subId = req.params.id;
+
+    const existingSub = await subscriptionModel.findById(subId);
+
+    if (!existingSub) {
+      return res.status(404).send({
+        success: false,
+        message: "Subscription not found!",
+      });
+    }
+
+    const subscription = await subscriptionModel.findByIdAndUpdate(
+      { _id: existingSub._id },
+      { progressStatus: "completed" },
+      { new: true }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Subscription marked as completed!",
+      subscription: subscription,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while marking subscription as completed!",
+      error: error,
+    });
+  }
+};
+
+// Copy Subscription
+export const copySubscription = async (req, res) => {
+  try {
+    const subId = req.params.id;
+
+    const existingSub = await subscriptionModel.findById(subId);
+
+    if (!existingSub) {
+      return res.status(404).send({
+        success: false,
+        message: "Subscription not found!",
+      });
+    }
+
+    const subData = existingSub.toObject();
+
+    delete subData._id;
+    delete subData.createdAt;
+    delete subData.updatedAt;
+    delete subData.__v;
+
+    if (subData.job) {
+      delete subData.job._id;
+    }
+
+    const copiedSubscription = await subscriptionModel.create({
+      ...subData,
+      clientName: `${subData.clientName} (Copy)`,
+      progressStatus: "in_progress",
+    });
+
+    res.status(200).send({
+      success: true,
+      message: "Subscription copied successfully!",
+      subscription: copiedSubscription,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while copying subscription!",
       error: error,
     });
   }

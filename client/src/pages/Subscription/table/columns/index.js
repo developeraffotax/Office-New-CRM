@@ -32,6 +32,8 @@ export const getSubscriptionColumns = (ctx) => {
     createOwnerColumn(ctx),
     createSubscriptionTypeColumn(ctx),
     createDataLabelColumn(ctx),
+
+    
      
   ];
 

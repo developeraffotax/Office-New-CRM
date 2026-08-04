@@ -56,10 +56,13 @@ import { sendDatatoGoogleSheet } from "../utils/googleSheet.js";
 import { aiPerMinuteLimiter } from "../utils/rateLimiter.js";
 
 
+import dashboardRoutes from "../dashboardModule/routes/dashboard.routes.js";
+
+
 
 export const registerRoutes = (app) => {
   
-  
+  app.use("/api/v1/dashboard",   dashboardRoutes);
 
    app.use("/api/v1/whatsapp/webhook", whatsappWebhookRoutes);
 
@@ -137,6 +140,12 @@ export const registerRoutes = (app) => {
 
   app.use("/api/v1/whatsapp/category", whatsappCategoryRoutes);
    app.use("/api/v1/whatsapp/comments",  whatsappCommentsRoutes);
+
+
+
+
+
+   
 
 
 

@@ -1,5 +1,7 @@
 import labelModel from "../models/labelModel.js";
 import subscriptionModel from "../models/subscriptionModel.js";
+import { isAdmin, isTeamLead } from "../utils/checkPermission.js";
+import { getUserAndJuniorIds, getUserAndJuniorNames } from "../utils/getUserAndJuniorIds.js";
 
 // Create Subscription
 export const createSubscription = async (req, res) => {
@@ -266,7 +268,37 @@ export const fetchAllSubscription = async (req, res) => {
 
    const { progressStatus="in_progress" } = req.query;
 
+   const isUserAdmin = isAdmin(req);
+   const isUserTeamLead = isTeamLead(req);
+
+
+  //  const userIds = await getUserAndJuniorIds(req.user.user._id);
+
   const filters = {};
+
+
+  if(!isUserAdmin) {
+
+
+    if(isUserTeamLead) {
+      const leadAndJuniorsNamesArr = await getUserAndJuniorNames(req.user.user._id);
+      filters["job.jobHolder"] = {$in: leadAndJuniorsNamesArr}
+
+
+    }else  {
+
+      filters["job.jobHolder"] = req.user.user.name
+    }
+    
+    
+
+
+
+
+  }
+
+   
+  // console.log("REQ >>>>>>>>>>>>>>>>>>>>", req?.user?.user)
 
   if (progressStatus) {
     filters.progressStatus = progressStatus;

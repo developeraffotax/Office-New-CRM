@@ -26,7 +26,7 @@ router.put("/update/subscription/:id", requiredSignIn, updateSubscription);
 router.put("/update/single/:id", requiredSignIn, updateSingleField);
 
 // Get All Scubscription
-router.get("/fetch/all", fetchAllSubscription);
+router.get("/fetch/all", requiredSignIn, fetchAllSubscription);
 
 // Get Single Scubscription
 router.get("/fetch/single/:id", fetchSingleSubscription);

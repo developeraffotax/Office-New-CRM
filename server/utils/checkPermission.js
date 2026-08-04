@@ -13,6 +13,16 @@ export const isAdmin = (req) => {
   return user?.role?.name?.toLowerCase() === 'admin';
 };
 
+
+
+
+export const isTeamLead = (req) => {
+  const user = getUser(req);
+  return user?.isTeamLead || false;
+};
+
+
+
 /**
  * Checks if the user has top-level access to a specific module (e.g., 'Inbox', 'Tasks')
  */

@@ -62,6 +62,7 @@ export default function Roles() {
     Leads: [ "Delete"],
     Tickets: ["Inbox", "Affotax", "OutSource", "TrustPilot", "Clients", "Delete"],
     Templates: ["Template", "FAQ"],
+    Subscription: ["Edit", "Copy", "Delete", "Mark Completed", "Mark In-Progress"],
     Timesheet: ["Job-holder", "Edit", "Delete", "Tracker"],
     Activity: [  "All Users",  ],
     Inbox: [  "Edit", "Delete", "Unassigned"],

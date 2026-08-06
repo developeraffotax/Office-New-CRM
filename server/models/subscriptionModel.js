@@ -62,9 +62,7 @@ const subScriptionSchema = new mongoose.Schema(
       type: Date,
       default: () => new Date(),
     },
-    source: {
-      type: String,
-    },
+    
     status: { 
       type: String,
     },
@@ -130,6 +128,25 @@ const subScriptionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Lable",
     },
+
+
+    completedAt: { type: Date },
+    completedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
+    progressedAt: { type: Date },
+    progressedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
+    source: {
+      type: String,
+      enum: ["FIV", "UPW", "PPH", "Website", "Direct", "Partner", ]
+    },
+
+
+
+    // source: {
+    //   type: String,
+    //   enum: ["Upwork", "Fiverr", "PPH", "Referral", "Partner", "Google", "Facebook", "LinkedIn", "CRM", "Existing", "Other",]
+    // },
   },
   { timestamps: true }
 );

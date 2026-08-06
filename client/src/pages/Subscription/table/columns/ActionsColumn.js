@@ -9,6 +9,7 @@ export const createActionsColumn = ({ auth, setSubscriptionId, setShow, handleDe
         Cell: ({ row }) => (
           <ActionsCell
             row={row}
+            auth={auth}
             setSubscriptionId={setSubscriptionId}
             setShow={setShow}
             handleDeleteConfirmation={handleDeleteConfirmation}

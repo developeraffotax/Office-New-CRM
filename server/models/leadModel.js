@@ -25,9 +25,7 @@ const leadSchema = new mongoose.Schema(
     brand: {
       type: String,
     },
-    lead_Source: {
-      type: String,
-    },
+   
     leadCreatedAt: {
       type: Date,
       default: Date.now,
@@ -76,13 +74,18 @@ const leadSchema = new mongoose.Schema(
       default: 0,
     },
 
-    wonAt: {
-      type: Date,
-    },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 
-    lostAt: {
-      type: Date,
+    wonAt: { type: Date },
+    wonBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    lostAt: { type: Date },
+    lostBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+
+     lead_Source: {
+      type: String,
+      enum: ["Upwork", "Fiverr", "PPH", "Referral", "Partner", "Google", "Facebook", "LinkedIn", "CRM", "Existing", "Other",]
     },
+     
 
     leadRef: { type: Number, unique: true },
   },

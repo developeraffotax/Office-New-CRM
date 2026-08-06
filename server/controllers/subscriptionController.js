@@ -201,6 +201,7 @@ export const updateSingleField = async (req, res) => {
   note: "note",
   status: "status",
   subscription: "subscription",
+  source: "source",
 };
 
 
@@ -519,7 +520,7 @@ export const markSubscriptionInProgress = async (req, res) => {
 
     const subscription = await subscriptionModel.findByIdAndUpdate(
       { _id: existingSub._id },
-      { progressStatus: "in_progress" },
+      { progressStatus: "in_progress", progressedBy: req.user.user._id, progressedAt: new Date() },
       { new: true }
     );
 
@@ -542,6 +543,7 @@ export const markSubscriptionInProgress = async (req, res) => {
 export const markSubscriptionCompleted = async (req, res) => {
   try {
     const subId = req.params.id;
+    const userId = req.user.user._id;
 
     const existingSub = await subscriptionModel.findById(subId);
 
@@ -554,7 +556,7 @@ export const markSubscriptionCompleted = async (req, res) => {
 
     const subscription = await subscriptionModel.findByIdAndUpdate(
       { _id: existingSub._id },
-      { progressStatus: "completed" },
+      { progressStatus: "completed", completedBy: userId, completedAt: new Date() },
       { new: true }
     );
 

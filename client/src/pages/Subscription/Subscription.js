@@ -58,7 +58,13 @@ export default function Subscription() {
   const [dataLabelId, setDataLabelId] = useState("");
   const [source, setSource] = useState("");
   const [fee, setFee] = useState("");
-  const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
+
+
+ // const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
+  const sources = [
+    "FIV", "UPW", "PPH", "Website", "Direct", "Partner"
+  ];
+
 
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
   const [clientCompanyName, setClientCompanyName] = useState("");
@@ -182,6 +188,7 @@ export default function Subscription() {
       "note",
       "status",
       "subscription",
+      "source",
     ];
 
     if (!allowedFields.includes(type)) {
@@ -346,6 +353,8 @@ const handleCopySubscription = async (id) => {
         totalFee,
         states,
         dataLable,
+        sources,
+        status,
 
         addDatalabel,
         setSubscriptionId,
@@ -360,7 +369,7 @@ const handleCopySubscription = async (id) => {
         handleMarkCompleted,
         handleCopySubscription,
       }),
-    [auth, users, subscriptions, userName, totalFee, states, dataLable],
+    [auth, users, subscriptions, userName, totalFee, states, dataLable, sources, status],
   );
 
   // Clear table Filter

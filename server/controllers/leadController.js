@@ -65,6 +65,7 @@ export const createLead = async (req, res) => {
 
       yearEnd,
       jobDeadline,
+      createdBy: user._id,
       
     });
 
@@ -110,7 +111,7 @@ export const updateLead = async (req, res) => {
       updates.lostBy = userId;
     }
  
-console.log("UPDATES🧡🧡🧡", updates)
+ 
 
 
     const lead = await leadModel.findById(leadId);

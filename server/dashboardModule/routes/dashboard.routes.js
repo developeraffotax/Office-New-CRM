@@ -1,5 +1,6 @@
 import express from "express";
 import { getChartData, getMultiChartData } from "../controllers/dashboard.controller.js";
+import { getStats, getUniqueClientJobsStats } from "../controllers/stats.controller.js";
 
 const router = express.Router();
 
@@ -10,6 +11,10 @@ const router = express.Router();
 // Usage: GET /api/v1/chart/multi/leads.conversion
 router.get("/single/:chartKey", getChartData);
 router.get("/multi/:chartKey", getMultiChartData);
+
+
+router.get("/stats", getStats);
+router.get("/stats/unique-clients", getUniqueClientJobsStats);
 
 
 
@@ -32,6 +37,21 @@ router.get("/leads/chart/conversion", setChartKey("leads.conversion", true));
 // Sales Routes
 router.get("/sales/chart/new_sales", setChartKey("sales.new"));
 router.get("/sales/chart/subscriptions", setChartKey("sales.subscription"));
-router.get("/sales/chart/total", setChartKey("sales.overview", true));
+router.get("/sales/chart/total", setChartKey("sales.total", true));
+
+
+
+// Subscriptions Routes
+router.get("/subscriptions/chart/count", setChartKey("subscriptions.count"));
+router.get("/subscriptions/chart/value", setChartKey("subscriptions.value"));
+
+
+
+
+
+
+
+
+
 
 export default router;

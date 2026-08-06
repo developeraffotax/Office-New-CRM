@@ -15,7 +15,49 @@ const LEAD_FILTERS = [
  * Key = the ?chartKey or route param used to request data.
  */
 export const chartRegistry = {
-  // --- LEAD CHARTS ---
+
+
+
+
+
+
+  // --- SALES CHARTS ---
+  "sales.new": {
+    label: "New Sales",
+    Model: leadModel,
+    dateField: "wonAt",
+    valueConfig: { type: "sum", field: "value" },
+    baseMatch: {
+      status: { $eq: "won" },
+    },
+    allowedFilters: LEAD_FILTERS,
+  },
+
+  "sales.subscription": {
+    label: "Subscription Sales",
+    Model: subscriptionModel,
+    dateField: "completedAt",
+    // dateEndField: "job.billingEnd",
+    // rangeOverlap: true,
+    valueConfig: { type: "sum", field: "job.fee" },
+    baseMatch: { progressStatus: "completed" },
+    allowedFilters: [
+      ["source", "source"],
+      ["jobHolder", "job.jobHolder"],
+    ],
+  },
+
+
+
+
+
+
+
+
+
+
+
+    // --- LEAD CHARTS ---
   "leads.total": {
     label: "Total Leads",
     Model: leadModel,
@@ -24,15 +66,7 @@ export const chartRegistry = {
     baseMatch: {},
     allowedFilters: [...LEAD_FILTERS, ["status", "status"]],
   },
-
-  // "leads.won": {
-  //   label: "Won Leads",
-  //   Model: leadModel,
-  //   dateField: "wonAt",
-  //   valueConfig: { type: "count" },
-  //   baseMatch: { status: "won" },
-  //   allowedFilters: LEAD_FILTERS,
-  // },
+ 
 
   "leads.won": {
     label: "Won Leads",
@@ -47,49 +81,53 @@ export const chartRegistry = {
 
 
 
-  // --- SALES CHARTS ---
-  "sales.new": {
-    label: "New Sales",
-    Model: clientModel,
-    dateField: "currentDate",
-    valueConfig: { type: "sum", field: "fee" },
-    baseMatch: {
-      status: { $eq: "process" },
-      "job.jobStatus": { $ne: "Inactive" },
-    },
+
+
+
+
+
+
+
+    // --- SUBSCRIPTIONS CHARTS ---
+"subscriptions.count": {
+    label: "Subscription Count",
+    Model: subscriptionModel,
+    dateField: "job.billingStart",
+    dateEndField: "job.billingEnd",
+    rangeOverlap: true,
+    valueConfig: { type: "count",   },
+    baseMatch: { },
     allowedFilters: [
-      ["department", "job.jobName"],
+      ["source", "source"],
       ["jobHolder", "job.jobHolder"],
     ],
   },
+ 
 
-  "sales.subscription": {
-    label: "Subscription Sales",
+"subscriptions.value": {
+    label: "Subscription Value",
     Model: subscriptionModel,
     dateField: "job.billingStart",
     dateEndField: "job.billingEnd",
     rangeOverlap: true,
     valueConfig: { type: "sum", field: "job.fee" },
-    baseMatch: { progressStatus: "completed" },
+    baseMatch: { },
     allowedFilters: [
       ["source", "source"],
       ["jobHolder", "job.jobHolder"],
     ],
   },
 
-  // "orders.count": {
-  //   label: "Orders",
-  //   Model: clientModel,
-  //   dateField: "currentDate",
-  //   valueConfig: { type: "count" },
-  //   baseMatch: { status: { $ne: "completed" } },
-  //   allowedFilters: [
-  //     ["source", "source"],
-  //     ["clientType", "clientType"],
-  //     ["partner", "partner"],
-  //     ["department", "job.jobHolder"],
-  //   ],
-  // },
+
+
+
+
+
+
+
+
+
+ 
 };
 
 
@@ -104,17 +142,36 @@ export const chartRegistry = {
  * Composite charts — overlaying or computing several registry entries.
  */
 export const multiChartRegistry = {
-  "sales.overview": {
-    label: "Sales Overview",
-    series: [
-      { name: "Total Sales", chartKey: "sales.new" },
-      {
-        name: "Subscription Sales",
-        chartKey: "sales.subscription",
-        overrides: { dateField: "currentDate", rangeOverlap: false, dateEndField: undefined },
-      },
-    ],
+  "sales.total": {
+  label: "Sales Overview",
+  series: [
+    { name: "New Sales", chartKey: "sales.new" },
+    {
+      name: "Subscription Sales",
+      chartKey: "sales.subscription",
+      // overrides: { dateField: "currentDate", rangeOverlap: false, dateEndField: undefined },
+    },
+  ],
+  transform: ({ labels, groupUnit, series }) => {
+    const newSalesData = series.find((s) => s.name === "New Sales")?.data || [];
+    const subscriptionData = series.find((s) => s.name === "Subscription Sales")?.data || [];
+
+    const totalSalesData = newSalesData.map((value, i) => {
+      return (value || 0) + (subscriptionData[i] || 0);
+    });
+
+    return {
+      labels,
+      groupUnit,
+      series: [
+        { name: "Total Sales", data: totalSalesData },
+        // Uncomment if you also want the individual series alongside the total:
+        // { name: "New Sales", data: newSalesData },
+        // { name: "Subscription Sales", data: subscriptionData },
+      ],
+    };
   },
+},
 
   "leads.conversion": {
     label: "Lead Conversion Rate",

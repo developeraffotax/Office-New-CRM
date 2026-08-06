@@ -83,7 +83,7 @@ const leadSchema = new mongoose.Schema(
 
      lead_Source: {
       type: String,
-      enum: ["Upwork", "Fiverr", "PPH", "Referral", "Partner", "Google", "Facebook", "LinkedIn", "CRM", "Existing", "Other",]
+      // enum: ["Upwork", "Fiverr", "PPH", "Referral", "Partner", "Google", "Facebook", "LinkedIn", "CRM", "Existing", "Other",]
     },
      
 

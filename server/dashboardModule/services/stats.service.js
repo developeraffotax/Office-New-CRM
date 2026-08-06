@@ -13,6 +13,7 @@ async function runStat({
   valueConfig,
   start,
   end,
+  buildPipeline,
 }) {
   const query = {
     ...matchQuery,
@@ -21,6 +22,20 @@ async function runStat({
       $lte: end.toDate(),
     },
   };
+
+  // Custom pipeline
+  if (typeof buildPipeline === "function") {
+    const pipeline = buildPipeline({
+      query,
+      start,
+      end,
+      matchQuery,
+    });
+
+    const result = await Model.aggregate(pipeline);
+
+    return result?.[0]?.value || 0;
+  }
 
   switch (valueConfig.type) {
     case "count":

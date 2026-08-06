@@ -1,3 +1,4 @@
+import jobsModel from "../../models/jobsModel.js";
 import leadModel from "../../models/leadModel.js";
 import subscriptionModel from "../../models/subscriptionModel.js";
 
@@ -133,4 +134,54 @@ export const statsRegistry = {
     baseMatch: {},
     allowedFilters: SUBSCRIPTION_FILTERS,
   },
+
+
+
+
+
+
+
+
+
+
+
+
+
+  "clients.unique": {
+    label: "Unique Clients",
+    Model: jobsModel,
+    dateField: "currentDate",
+
+    baseMatch: {
+        status: "process",
+        "job.jobStatus": { $ne: "Inactive" },
+    },
+
+    allowedFilters: [
+        ["jobHolder", "job.jobHolder"],
+        ["source", "source"],
+    ],
+
+    buildPipeline: ({ query }) => [
+        {
+            $match: query,
+        },
+        {
+            $group: {
+                _id: "$companyName",
+            },
+        },
+        {
+            $count: "value",
+        },
+    ],
+},
+
+
+
+
+
+
+
+
 };

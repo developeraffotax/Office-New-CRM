@@ -23,10 +23,12 @@ const definitions = Object.entries(statsRegistry).map(([key, definition]) => {
   return {
     key,
     definition,
+    
     params: {
       Model: definition.Model,
       dateField: definition.dateField,
       valueConfig: definition.valueConfig,
+        buildPipeline: definition.buildPipeline,
       start,
       end,
       matchQuery: applyFilters(

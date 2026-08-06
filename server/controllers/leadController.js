@@ -87,6 +87,7 @@ export const createLead = async (req, res) => {
 export const updateLead = async (req, res) => {
   try {
     const leadId = req.params.id;
+    const userId = req.user.user._id
     // const { companyName, clientName, jobHolder, department, source, brand, lead_Source, followUpDate, JobDate, Note, stage, status, value, number, yearEnd, jobDeadline } = req.body;
 
     const updates = req.body;
@@ -100,9 +101,16 @@ export const updateLead = async (req, res) => {
         return res.status(400).json({ success: false, message: "Invalid fields in update!"});
     }
      
-
+    if(updates.status === "won") {
+      updates.wonAt = new Date();
+      updates.wonBy = userId;
+    }
+      if(updates.status === "lost") {
+      updates.lostAt = new Date();
+      updates.lostBy = userId;
+    }
  
-
+console.log("UPDATES🧡🧡🧡", updates)
 
 
     const lead = await leadModel.findById(leadId);

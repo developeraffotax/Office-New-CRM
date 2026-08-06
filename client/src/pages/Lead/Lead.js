@@ -391,7 +391,11 @@ useEffect(() => {
     "yearEnd",
     "email",
     "received",
-    "sent"
+    "sent",
+    "wonAt",
+    "wonBy",
+    "lostAt",
+    "lostBy",
     // "Fee",
     // "Source",
     // "ClientType",

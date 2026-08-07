@@ -6,6 +6,7 @@ import { BsFileEarmarkText } from "react-icons/bs";
 import { BsBriefcase } from "react-icons/bs";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { GrDocumentPerformance } from "react-icons/gr";
 import { LiaClipboardListSolid } from "react-icons/lia";
 import ProfileModal from "../Modals/ProfileModal";
 import { FaUsers, FaWhatsapp } from "react-icons/fa";
@@ -39,7 +40,6 @@ import { IoMailUnreadOutline } from "react-icons/io5";
 import { hasPermission } from "../../utlis/checkPermission";
 import { TbDeviceDesktopAnalytics } from "react-icons/tb";
 
-
 export default function Sidebar({ hide, setHide }) {
   const router = useNavigate();
 
@@ -48,19 +48,17 @@ export default function Sidebar({ hide, setHide }) {
   const active = useSelector((state) => state.auth.active);
   const { settings } = useSelector((state) => state.settings);
 
-const {
-  showCrmNotifications = true,
-  showEmailNotifications = true,
+  const {
+    showCrmNotifications = true,
+    showEmailNotifications = true,
 
-  // 1. Open the nested pattern to pull out inner values
-  inboxConfig: {
-    inboxUnreadCount = true,
-    sidebarUnreadCount = true,
-    showUnreadCountFor = "all"
-  } = {}  
-
-} = settings || {};
-
+    // 1. Open the nested pattern to pull out inner values
+    inboxConfig: {
+      inboxUnreadCount = true,
+      sidebarUnreadCount = true,
+      showUnreadCountFor = "all",
+    } = {},
+  } = settings || {};
 
   const isNotificationAllowed = (notificationType) => {
     if (notificationType === "ticket_received") {
@@ -69,34 +67,60 @@ const {
     return showCrmNotifications;
   };
 
+  const taskCount = useSelector(
+    (state) =>
+      state.notifications.notificationData.filter(
+        (n) =>
+          n.type === "task_assigned" &&
+          n.status === "unread" &&
+          isNotificationAllowed(n.type),
+      ).length,
+  );
+  const jobCount = useSelector(
+    (state) =>
+      state.notifications.notificationData.filter(
+        (n) =>
+          n.type === "job_assigned" &&
+          n.status === "unread" &&
+          isNotificationAllowed(n.type),
+      ).length,
+  );
+  const ticketAssignedCount = useSelector(
+    (state) =>
+      state.notifications.notificationData.filter(
+        (n) =>
+          n.type === "ticket_assigned" &&
+          n.status === "unread" &&
+          isNotificationAllowed(n.type),
+      ).length,
+  );
+  const ticketReceivedCount = useSelector(
+    (state) =>
+      state.notifications.notificationData.filter(
+        (n) =>
+          n.type === "ticket_received" &&
+          n.status === "unread" &&
+          isNotificationAllowed(n.type),
+      ).length,
+  );
 
+  const threadAssignedCount = useSelector(
+    (state) =>
+      state.notifications.notificationData.filter(
+        (n) =>
+          n.type === "thread_assigned" &&
+          n.status === "unread" &&
+          isNotificationAllowed(n.type),
+      ).length,
+  );
 
-  const taskCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "task_assigned" && n.status === "unread" && isNotificationAllowed(n.type)).length)
-  const jobCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "job_assigned" && n.status === "unread" && isNotificationAllowed(n.type)).length)
-  const ticketAssignedCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "ticket_assigned" && n.status === "unread" && isNotificationAllowed(n.type)).length)
-  const ticketReceivedCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "ticket_received" && n.status === "unread" && isNotificationAllowed(n.type)).length);
-
-  const threadAssignedCount = useSelector((state) => state.notifications.notificationData.filter((n) => n.type === "thread_assigned" && n.status === "unread" && isNotificationAllowed(n.type)).length);
-
-
-   const affotaxUnread = useSelector(
+  const affotaxUnread = useSelector(
     (state) => state.inboxUnread?.companies?.affotax?.inboxUnread || 0,
   );
 
   const outsourceUnread = useSelector(
     (state) => state.inboxUnread?.companies?.outsource?.inboxUnread || 0,
   );
-
-
-
-
-
-
- 
-
-
-
-
 
   // const taskCount = useSelector(selectTaskAssignedCount);
   // const jobCount = useSelector(selectJobAssignedCount);
@@ -108,7 +132,7 @@ const {
   const [isActive, setIsActive] = useState(false);
   const user = auth?.user;
   const [ticketNitification, setTicketNotification] = useState([]);
- 
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const location = useLocation();
@@ -125,12 +149,12 @@ const {
     return user?.role?.access?.some((item) => item.permission === section);
   };
 
-
-  const hasSubAccess = (user, permission, subRole ) => {
-    const accessObject = user?.role?.access?.find(role =>  role?.permission === permission);
+  const hasSubAccess = (user, permission, subRole) => {
+    const accessObject = user?.role?.access?.find(
+      (role) => role?.permission === permission,
+    );
     return accessObject?.subRoles?.includes(subRole) || false;
-
-  }
+  };
 
   const fetchTicketNotification = async () => {
     if (!auth) {
@@ -138,7 +162,7 @@ const {
     }
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/notification/ticket/notification/${auth.user.id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/notification/ticket/notification/${auth.user.id}`,
       );
       if (data) {
         setTicketNotification(data.notifications);
@@ -173,10 +197,11 @@ const {
           {/* 1 */}
           {hasAccess("Dashboard") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "dashboard"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "dashboard"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black  hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden `}
+              }   filter   overflow-hidden `}
               onClick={() => {
                 router("/dashboard");
                 dispatch(setActive("dashboard"));
@@ -205,48 +230,53 @@ const {
               </div>
             </div>
           )}
-          {/* 2 */}
-          {/* {hasAccess("MyList") && (
+
+          {/* ---------Kpi-Dashboard-------- */}
+          {hasAccess("Kpi-Dashboard") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "all"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "kpi-dashboard"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+              }   filter   overflow-hidden`}
               onClick={() => {
-                router("/all/lists");
-                dispatch(setActive("all"));
+                router("/kpi-dashboard");
+                dispatch(setActive("kpi-dashboard"));
               }}
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
-                  <LiaClipboardListSolid
+                  <GrDocumentPerformance
                     className="h-6 w-6 cursor-pointer ml-2"
-                    style={{ color: active === "all" && "#fff" }}
+                    style={{ color: active === "kpi-dashboard" && "#fff" }}
                   />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <LiaClipboardListSolid
+                    <GrDocumentPerformance
                       className="h-5 w-5 cursor-pointer ml-2"
-                      style={{ color: active === "all" && "#fff" }}
+                      style={{ color: active === "kpi-dashboard" && "#fff" }}
                     />
                     <span
-                      className="text-[14px] font-[400]"
-                      style={{ color: active === "all" && "#fff" }}
+                      className="text-[14px] font-[400] "
+                      style={{ color: active === "kpi-dashboard" && "#fff" }}
                     >
-                      My Lists
+                      Kpi Dashboard
                     </span>
                   </div>
                 )}
               </div>
             </div>
-          )} */}
+          )}
+
+          
           {/* 3 */}
           {hasAccess("Tasks") && (
             <div
               className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  
-                ${active === "tasks"
-                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
-                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+                ${
+                  active === "tasks"
+                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
                 } filter overflow-hidden`}
               onClick={() => {
                 router("/tasks");
@@ -280,10 +310,11 @@ const {
                   <span
                     title="New Assigned Tasks"
                     className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${active === "tasks"
+                    ${
+                      active === "tasks"
                         ? "bg-white text-orange-600"
                         : "bg-orange-600 text-white"
-                      }`}
+                    }`}
                   >
                     {taskCount || 0}
                   </span>
@@ -294,10 +325,11 @@ const {
           {/* 4 */}
           {hasAccess("Jobs") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "job-planning"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "job-planning"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/job-planning");
                 dispatch(setActive("job-planning"));
@@ -329,10 +361,11 @@ const {
                   <span
                     title="New Assigned Jobs"
                     className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${active === "job-planning"
+                    ${
+                      active === "job-planning"
                         ? "bg-white text-orange-600"
                         : "bg-orange-600 text-white"
-                      }`}
+                    }`}
                   >
                     {jobCount || 0}
                   </span>
@@ -341,15 +374,14 @@ const {
             </div>
           )}
 
-
-
           {/* ---------Lead-------- */}
           {hasAccess("Leads") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "leads"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "leads"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/leads");
                 dispatch(setActive("leads"));
@@ -379,17 +411,14 @@ const {
             </div>
           )}
 
-
-
-
-
           {/* --------Template------ */}
           {hasAccess("Templates") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "templates"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "templates"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/templates");
                 dispatch(setActive("templates"));
@@ -419,15 +448,14 @@ const {
             </div>
           )}
 
-
-
           {/* ------Ticket------ */}
           {hasAccess("Tickets") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "tickets"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "tickets"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/tickets");
                 dispatch(setActive("tickets"));
@@ -451,7 +479,6 @@ const {
                     >
                       Tickets
                     </span>
-
                   </div>
                 )}
 
@@ -462,10 +489,11 @@ const {
                     <span
                       title="New Received Tickets"
                       className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${active === "tickets"
-                          ? "bg-white text-blue-500"
-                          : "bg-blue-500 text-white"
-                        }`}
+                    ${
+                      active === "tickets"
+                        ? "bg-white text-blue-500"
+                        : "bg-blue-500 text-white"
+                    }`}
                     >
                       {ticketReceivedCount || 0}
                     </span>
@@ -475,10 +503,11 @@ const {
                     <span
                       title="New Assigned Tickets"
                       className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${active === "tickets"
-                          ? "bg-white text-orange-600"
-                          : "bg-orange-600 text-white"
-                        }`}
+                    ${
+                      active === "tickets"
+                        ? "bg-white text-orange-600"
+                        : "bg-orange-600 text-white"
+                    }`}
                     >
                       {ticketAssignedCount || 0}
                     </span>
@@ -488,30 +517,19 @@ const {
             </div>
           )}
 
-
-
-
-
-
-
-
- 
-
-
-
-
-
-
-
- 
-          { (user?.role?.name === "Admin" || hasPermission(user, "Inbox") ) && (
+          {(user?.role?.name === "Admin" || hasPermission(user, "Inbox")) && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "mail"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "mail"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+              }   filter   overflow-hidden`}
               onClick={() => {
-                router(user?.role?.name === "Admin" ? `/mail?folder=inbox&companyName=affotax&userId=unassigned&status=progress` : `/mail?folder=inbox&companyName=affotax&userId=${user?.id}&status=progress`);
+                router(
+                  user?.role?.name === "Admin"
+                    ? `/mail?folder=inbox&companyName=affotax&userId=unassigned&status=progress`
+                    : `/mail?folder=inbox&companyName=affotax&userId=${user?.id}&status=progress`,
+                );
                 // router(user?.role?.name === "Admin" ? "/mail?folder=inbox&companyName=affotax&category=unassigned&userId=unassigned" : "/mail?folder=inbox&companyName=affotax");
                 dispatch(setActive("mail"));
               }}
@@ -532,103 +550,47 @@ const {
                       className="text-[14px] font-[400] "
                       style={{ color: active === "mail" && "#fff" }}
                     >
-                      Inbox 
+                      Inbox
                     </span>
-
-                    
                   </div>
-                  
                 )}
 
-                
-
-
                 <div className="flex items-center gap-1 ">
-                   
-
-
-                     {threadAssignedCount > 0 && (
+                  {threadAssignedCount > 0 && (
                     <span
                       title="New Assigned Threads"
                       className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${active === "mail"
-                          ? "bg-white text-orange-600"
-                          : "bg-orange-600 text-white"
-                        }`}
+                    ${
+                      active === "mail"
+                        ? "bg-white text-orange-600"
+                        : "bg-orange-600 text-white"
+                    }`}
                     >
                       {threadAssignedCount || 0}
                     </span>
                   )}
 
-
-
-                   {/* {(sidebarUnreadCount && affotaxUnread > 0) &&  (
-                    <span
-                      title="New Received Emails | Affotax"
-                      className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${active === "mail"
-                          ? "bg-white text-amber-500"
-                          : "bg-amber-500 text-white"
-                        }`}
-                    >
-                      {affotaxUnread}
-                    </span>
-                  )}
-
-                  {(sidebarUnreadCount && outsourceUnread > 0) && (
-                    <span
-                      title="New Received Emails | Outsource"
-                      className={`w-[20px] h-[20px] text-[12px]  font-semibold rounded-full flex items-center justify-center
-                    ${active === "mail"
-                          ? "bg-white text-sky-500"
-                          : "bg-sky-500 text-white"
-                        }`}
-                    >
-                      {outsourceUnread}
-                    </span>
-                  )}
-
- */}
-
-                 
+                  
                 </div>
-
-
-
               </div>
             </div>
           )}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    { (user?.role?.name === "Admin" || hasPermission(user,"Whatsapp")) && (
+          {(user?.role?.name === "Admin" ||
+            hasPermission(user, "Whatsapp")) && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "whatsapp"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "whatsapp"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+              }   filter   overflow-hidden`}
               onClick={() => {
-                router(user?.role?.name === "Admin" ? `/whatsapp?companyName=affotax` : `/whatsapp?companyName=affotax `);
-                 dispatch(setActive("whatsapp"));
+                router(
+                  user?.role?.name === "Admin"
+                    ? `/whatsapp?companyName=affotax`
+                    : `/whatsapp?companyName=affotax `,
+                );
+                dispatch(setActive("whatsapp"));
               }}
             >
               <div className="relative w-full h-full flex items-center justify-between px-3 z-30 bg-transparent">
@@ -647,46 +609,22 @@ const {
                       className="text-[14px] font-[400] "
                       style={{ color: active === "whatsapp" && "#fff" }}
                     >
-                      WhatsApp 
+                      WhatsApp
                     </span>
-
-                    
                   </div>
-                  
                 )}
-
-                
-
- 
-
-
               </div>
             </div>
           )}
 
-
-
-
-
-
-
- 
-
-
-
-
-
-
-
-
-
           {/* ---------Proposal----- */}
           {hasAccess("Proposals") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "proposals"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "proposals"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/proposals");
                 dispatch(setActive("proposals"));
@@ -718,10 +656,11 @@ const {
           {/* ---------Goals----- */}
           {hasAccess("Goals") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "goals"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "goals"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/goals");
                 dispatch(setActive("goals"));
@@ -753,10 +692,11 @@ const {
           {/* Timer Sheet */}
           {hasAccess("Timesheet") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "timesheet"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "timesheet"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/timesheet");
                 dispatch(setActive("timesheet"));
@@ -788,10 +728,11 @@ const {
           {/* Subscription */}
           {hasAccess("Subscription") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "subscriptions"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "subscriptions"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/subscriptions");
                 dispatch(setActive("subscriptions"));
@@ -825,10 +766,11 @@ const {
           {hasAccess("HR") && (
             <>
               <div
-                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "hr"
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                  active === "hr"
                     ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                     : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                  }   filter   overflow-hidden`}
+                }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/hr/tasks");
                   dispatch(setActive("hr"));
@@ -859,16 +801,14 @@ const {
             </>
           )}
 
-
-
-
-           {hasAccess("Affotax-Analytics") && (
+          {hasAccess("Affotax-Analytics") && (
             <>
               <div
-                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "affotax-analytics"
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                  active === "affotax-analytics"
                     ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                     : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                  }   filter   overflow-hidden`}
+                }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/affotax-analytics");
                   dispatch(setActive("affotax-analytics"));
@@ -878,19 +818,25 @@ const {
                   {hide ? (
                     <TbDeviceDesktopAnalytics
                       className="h-6 w-6 cursor-pointer ml-2"
-                      style={{ color: active === "affotax-analytics" && "#fff" }}
+                      style={{
+                        color: active === "affotax-analytics" && "#fff",
+                      }}
                     />
                   ) : (
                     <div className="flex items-center gap-2">
                       <TbDeviceDesktopAnalytics
                         className="h-5 w-5 cursor-pointer ml-2"
-                        style={{ color: active === "affotax-analytics" && "#fff" }}
+                        style={{
+                          color: active === "affotax-analytics" && "#fff",
+                        }}
                       />
                       <span
                         className="text-[14px] font-[400] "
-                        style={{ color: active === "affotax-analytics" && "#fff" }}
+                        style={{
+                          color: active === "affotax-analytics" && "#fff",
+                        }}
                       >
-                        Affotax 
+                        Affotax
                       </span>
                     </div>
                   )}
@@ -898,9 +844,6 @@ const {
               </div>
             </>
           )}
-
-
-
 
           {/*  */}
           {(hasAccess("Workflow") ||
@@ -913,13 +856,13 @@ const {
                 hasAccess("Roles") ||
                 hasAccess("Activity") ||
                 hasAccess("Users")) && (
-                  <h4 className="text-[16] font-semibold px-2 flex items-center gap-1">
-                    {" "}
-                    <span>
-                      <RiSettings4Fill className="h-7 w-7 text-gray-900" />
-                    </span>
-                  </h4>
-                )}
+                <h4 className="text-[16] font-semibold px-2 flex items-center gap-1">
+                  {" "}
+                  <span>
+                    <RiSettings4Fill className="h-7 w-7 text-gray-900" />
+                  </span>
+                </h4>
+              )}
             </>
           ) : (
             <>
@@ -927,35 +870,38 @@ const {
                 hasAccess("Roles") ||
                 hasAccess("Activity") ||
                 hasAccess("Users")) && (
-                  <h4
-                    className={`text-[16px] font-semibold px-4 py-2 flex items-center justify-between transition-all cursor-pointer rounded-e-3xl ${isSettingsOpen
-                        ? "bg-orange-200"
-                        : "bg-gray-100 hover:bg-orange-200 text-gray-800"
-                      }`}
-                    onClick={() => setIsSettingsOpen((prev) => !prev)}
-                  >
-                    <div className="flex items-center gap-2">
-                      <RiSettings4Fill className="h-6 w-6 text-gray-900" />
-                      <span>Settings</span>
-                    </div>
+                <h4
+                  className={`text-[16px] font-semibold px-4 py-2 flex items-center justify-between transition-all cursor-pointer rounded-e-3xl ${
+                    isSettingsOpen
+                      ? "bg-orange-200"
+                      : "bg-gray-100 hover:bg-orange-200 text-gray-800"
+                  }`}
+                  onClick={() => setIsSettingsOpen((prev) => !prev)}
+                >
+                  <div className="flex items-center gap-2">
+                    <RiSettings4Fill className="h-6 w-6 text-gray-900" />
+                    <span>Settings</span>
+                  </div>
 
-                    {/* Rotating Arrow */}
-                    <IoIosArrowDown
-                      className={`h-4 w-4 text-gray-700 transform transition-transform duration-300 ${isSettingsOpen ? "rotate-180" : "rotate-0"
-                        }`}
-                    />
-                  </h4>
-                )}
+                  {/* Rotating Arrow */}
+                  <IoIosArrowDown
+                    className={`h-4 w-4 text-gray-700 transform transition-transform duration-300 ${
+                      isSettingsOpen ? "rotate-180" : "rotate-0"
+                    }`}
+                  />
+                </h4>
+              )}
             </>
           )}
 
           {/* Meeting */}
           {isSettingsOpen && hasAccess("Meeting") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "meetings"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "meetings"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden `}
+              }   filter   overflow-hidden `}
               onClick={() => {
                 router("/meetings");
                 dispatch(setActive("meetings"));
@@ -987,10 +933,11 @@ const {
           {/* Workflow */}
           {isSettingsOpen && hasAccess("Workflow") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "workflow"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "workflow"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/workflow");
                 dispatch(setActive("workflow"));
@@ -1022,10 +969,11 @@ const {
           {/* Complaints */}
           {isSettingsOpen && hasAccess("Complaints") && (
             <div
-              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "complaints"
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                active === "complaints"
                   ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                   : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
+              }   filter   overflow-hidden`}
               onClick={() => {
                 router("/complaints");
                 dispatch(setActive("complaints"));
@@ -1058,10 +1006,11 @@ const {
           {isSettingsOpen && hasAccess("Roles") && (
             <>
               <div
-                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "roles"
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                  active === "roles"
                     ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                     : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                  }   filter   overflow-hidden`}
+                }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/roles");
                   dispatch(setActive("roles"));
@@ -1096,10 +1045,11 @@ const {
           {isSettingsOpen && hasAccess("Users") && (
             <>
               <div
-                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "users"
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                  active === "users"
                     ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                     : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                  }   filter   overflow-hidden`}
+                }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/users");
                   dispatch(setActive("users"));
@@ -1130,71 +1080,48 @@ const {
             </>
           )}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           {/*  */}
-          {isSettingsOpen && (auth?.user?.role?.name === "Admin" || hasAccess("Activity")) && (
-            <>
-              <div
-                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "activity"
-                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
-                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
+          {isSettingsOpen &&
+            (auth?.user?.role?.name === "Admin" || hasAccess("Activity")) && (
+              <>
+                <div
+                  className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                    active === "activity"
+                      ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                      : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
                   }   filter   overflow-hidden`}
-                onClick={() => {
-                  router("/activity");
-                  dispatch(setActive("activity"));
-                }}
-              >
-                <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-                  <div className="flex items-center gap-2">
-
-                    <LuClock2
-                      className="h-5 w-5 cursor-pointer ml-2"
-                      style={{ color: active === "activity" && "#fff" }}
-                    />
-                    <span
-                      className="text-[14px] font-[400] "
-                      style={{ color: active === "activity" && "#fff" }}
-                    >
-                      Activity
-                    </span>
+                  onClick={() => {
+                    router("/activity");
+                    dispatch(setActive("activity"));
+                  }}
+                >
+                  <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
+                    <div className="flex items-center gap-2">
+                      <LuClock2
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "activity" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{ color: active === "activity" && "#fff" }}
+                      >
+                        Activity
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </>
-          )}
-
-
-
-
+              </>
+            )}
 
           {/*  */}
-          {isSettingsOpen && (auth?.user?.role?.name === "Admin") && (
+          {isSettingsOpen && auth?.user?.role?.name === "Admin" && (
             <>
               <div
-                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${active === "settings"
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
+                  active === "settings"
                     ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
                     : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
-                  }   filter   overflow-hidden`}
+                }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/settings");
                   dispatch(setActive("settings"));
@@ -1202,7 +1129,6 @@ const {
               >
                 <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                   <div className="flex items-center gap-2">
-
                     <VscSettings
                       className="h-5 w-5 cursor-pointer ml-2"
                       style={{ color: active === "settings" && "#fff" }}
@@ -1219,60 +1145,7 @@ const {
             </>
           )}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-          {/* Template Editor */}
-          {/* {hasAccess("Editor") && (
-            <>
-              <div
-                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
-                  active === "editor"
-                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
-                    : "bg-gray-100 text-black  hover:bg-orange-200 transition-all duration-300"
-                }   filter   overflow-hidden`}
-                onClick={() => {
-                  router("/editor/templates");
-                }}
-              >
-                <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
-                  {hide ? (
-                    <MdDesignServices
-                      className="h-6 w-6 cursor-pointer ml-2"
-                      style={{ color: active === "editor" && "#fff" }}
-                    />
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <MdDesignServices
-                        className="h-5 w-5 cursor-pointer ml-2"
-                        style={{ color: active === "editor" && "#fff" }}
-                      />
-                      <span
-                        className="text-[14px] font-[400] "
-                        style={{ color: active === "editor" && "#fff" }}
-                      >
-                        Editor
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
-          )} */}
-
-          {/* End */}
+          
         </div>
       </div>
       {/* Profile Modal */}

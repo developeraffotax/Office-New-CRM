@@ -33,6 +33,7 @@ export default function Roles() {
 
   const pages = [
     "Dashboard",
+    "Kpi-Dashboard",
     "Tasks",
     "Jobs",
     "Tickets",

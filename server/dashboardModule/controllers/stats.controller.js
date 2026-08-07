@@ -94,44 +94,44 @@ const definitions = Object.entries(statsRegistry).map(([key, definition]) => {
  
  
 
-export const getUniqueClientJobsStats = async (req, res) => {
-  try {
-  const { start, end } = parseDateRange(req.query);
- const matchQuery= applyFilters( { }, req.query, [["jobHolder", "job.jobHolder"], ["source", "source"]], );
+// export const getUniqueClientJobsStats = async (req, res) => {
+//   try {
+//   const { start, end } = parseDateRange(req.query);
+//  const matchQuery= applyFilters( { }, req.query, [["jobHolder", "job.jobHolder"], ["source", "source"]], );
 
 
- console.log("matchQuery", matchQuery);
-    const [result] = await jobsModel.aggregate([
-      {
-        $match: {
-            ...matchQuery,
-            status :  { $eq: "process" },
-            "job.jobStatus": { $ne: "Inactive" },
-            currentDate: {$lte: new Date(end), $gte: new Date(start)},
+//  console.log("matchQuery", matchQuery);
+//     const [result] = await jobsModel.aggregate([
+//       {
+//         $match: {
+//             ...matchQuery,
+//             status :  { $eq: "process" },
+//             "job.jobStatus": { $ne: "Inactive" },
+//             currentDate: {$lte: new Date(end), $gte: new Date(start)},
 
-        },
-      },
-      {
-        $group: {
-          _id: "$companyName",
-        },
-      },
-      {
-        $count: "count",
-      },
-    ]);
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: "$companyName",
+//         },
+//       },
+//       {
+//         $count: "count",
+//       },
+//     ]);
 
-    res.status(200).json({
-      success: true,
-      uniqueClients: result?.count || 0,
-    });
-  } catch (error) {
-    console.error(error);
+//     res.status(200).json({
+//       success: true,
+//       uniqueClients: result?.count || 0,
+//     });
+//   } catch (error) {
+//     console.error(error);
 
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch unique client count.",
-      error: error.message,
-    });
-  }
-};
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to fetch unique client count.",
+//       error: error.message,
+//     });
+//   }
+// };

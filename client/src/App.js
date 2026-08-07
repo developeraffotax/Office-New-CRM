@@ -63,6 +63,7 @@ import SignaturesModule from "./components/Signatures/SignaturesModule";
 import VerifyOtp from "./pages/Auth/VerifyOtp";
 import WhatsAppBox from "./components/whatsapp/pages/WhatsAppBox";
 import DashboardComponent from "./components/AffotaxDashboard/DashboardComponent";
+import KpiDashboard from "./components/KpiDashboard/KpiDashboard";
 
 function App() {
   const navigate = useNavigate();
@@ -135,6 +136,7 @@ function App() {
       Meeting: <Route path="/meetings" element={<Meeting />} />,
       HR: <Route path="/hr/tasks" element={<HR />} />,
       "Affotax-Analytics": <Route path="/affotax-analytics" element={<DashboardComponent /> } />,
+      "Kpi-Dashboard": <Route path="/kpi-dashboard" element={<KpiDashboard /> } />,
       Tickets: (
         <>
           <Route path="/tickets" element={<Tickets />} />
@@ -147,7 +149,7 @@ function App() {
       ),
       Templates: <Route path="/templates" element={<Template />} />,
       Subscription: <Route path="/subscriptions" element={<Subscription />} />,
-      Activity: <Route path="/activity" element={<ScreenshotDashboard />} />
+      Activity: <Route path="/activity" element={<KpiDashboard />} />
 
     }),
     []
@@ -196,6 +198,7 @@ function App() {
             <Route path="/leads/create" element={<AutoCreateLeadFromURL user={user}/>} />
             <Route path="/settings" element={<SettingsPage  />} />
             <Route path="/settings/signatures" element={<SignaturesModule  />} />
+            
             
             
           </Route>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Box,
   Stack,
@@ -9,6 +10,10 @@ import {
   Tab,
   ToggleButton,
   ToggleButtonGroup,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -22,16 +27,11 @@ import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
 
-
 import ChartPanel from "./charts/ChartPanel";
 import PerformanceStats from "./PerformanceStats";
 import ManualRangePicker from "./ManualRangePicker";
 import QuickFilterMenu from "./QuickFilterMenu";
 
-
-// ---- Chart groups, mirroring your router's chartKeys 1:1 ----
-// group.key + tab.key together are only used for UI state; the actual
-// API call uses tab.chartKey against /api/v1/chart/{single|multi}/:chartKey
 const TAB_GROUPS = [
   {
     key: "sales",
@@ -50,8 +50,6 @@ const TAB_GROUPS = [
     tabs: [
       { chartKey: "leads.total", label: "Total Leads", isMulti: false, valueType: "count" },
       { chartKey: "leads.won", label: "Won Leads", isMulti: false, valueType: "count" },
-      // If your multi endpoint for this returns raw totalLeads/wonLeads
-      // arrays rather than a computed rate, switch valueType to "count".
       { chartKey: "leads.conversion", label: "Leads Conversion", isMulti: true, valueType: "percent" },
     ],
   },
@@ -66,9 +64,8 @@ const TAB_GROUPS = [
   },
 ];
 
-// Keeps a tab's chart mounted (hidden via CSS) once it's been visited,
-// instead of unmounting on every switch, so charts don't re-fetch on
-// every tab click.
+const SOURCES = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
+
 function TabPanel({ children, active }) {
   return (
     <Box sx={{ display: active ? "block" : "none" }}>
@@ -80,26 +77,52 @@ function TabPanel({ children, active }) {
 }
 
 export default function KpiDashboard() {
-const defaultDateRange = [
-  dayjs().startOf("year"),
-  dayjs().endOf("year"),
-];
+  const defaultDateRange = [
+    dayjs().startOf("year"),
+    dayjs().endOf("year"),
+  ];
 
-const [dateRange, setDateRange] = useState(defaultDateRange);
-const [activeLabel, setActiveLabel] = useState("This Year");
+  // Date Filters
+  const [dateRange, setDateRange] = useState(defaultDateRange);
+  const [activeLabel, setActiveLabel] = useState("This Year");
 
+  // Dropdown Filters
+  const [selectedSource, setSelectedSource] = useState("");
+  const [selectedUser, setSelectedUser] = useState("");
+  const [users, setUsers] = useState([]);
+
+  // UI State
   const [chartType, setChartType] = useState("bar");
- 
-
   const [activeGroup, setActiveGroup] = useState(TAB_GROUPS[0].key);
   const [activeTab, setActiveTab] = useState(TAB_GROUPS[0].tabs[0].chartKey);
   const [visitedTabs, setVisitedTabs] = useState(new Set([TAB_GROUPS[0].tabs[0].chartKey]));
 
+  // Fetch Users
+  useEffect(() => {
+    const getAllUsers = async () => {
+      try {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users?module=whatsapp`
+        );
+        setUsers(data?.users || []);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+      }
+    };
+
+    getAllUsers();
+  }, []);
+
+  // Track Visited Tabs
   useEffect(() => {
     setVisitedTabs((prev) => new Set(prev).add(activeTab));
   }, [activeTab]);
 
-  const isFilterActive = dateRange !== defaultDateRange || activeLabel !== "This Year";
+  const isFilterActive =
+    dateRange !== defaultDateRange ||
+    activeLabel !== "This Year" ||
+    selectedSource !== "" ||
+    selectedUser !== "";
 
   const handleQuickFilterSelect = (label, range) => {
     setActiveLabel(label);
@@ -109,6 +132,8 @@ const [activeLabel, setActiveLabel] = useState("This Year");
   const handleClearFilters = () => {
     setDateRange(defaultDateRange);
     setActiveLabel("This Year");
+    setSelectedSource("");
+    setSelectedUser("");
   };
 
   const handleGroupChange = (e, newGroupKey) => {
@@ -131,6 +156,7 @@ const [activeLabel, setActiveLabel] = useState("This Year");
           gap={2}
           sx={{ pb: 0.5 }}
         >
+          {/* Left Controls: Date Pickers & Reset */}
           <Stack direction="row" spacing={1.5} flexWrap="wrap" alignItems="center" useFlexGap>
             <ManualRangePicker value={dateRange} onChange={setDateRange} />
             <QuickFilterMenu activeLabel={activeLabel} onSelect={handleQuickFilterSelect} />
@@ -142,31 +168,81 @@ const [activeLabel, setActiveLabel] = useState("This Year");
             )}
           </Stack>
 
-          {/* Global chart type toggle — applies to whichever tab is active */}
-          <ToggleButtonGroup
-            value={chartType}
-            exclusive
-            onChange={(e, newValue) => newValue && setChartType(newValue)}
-            size="small"
-          >
-            <ToggleButton value="bar">
-              <BarChartIcon fontSize="small" sx={{ mr: 1 }} />
-              Bar View
-            </ToggleButton>
-            <ToggleButton value="area">
-              <StackedLineChartIcon fontSize="small" sx={{ mr: 1 }} />
-              Area View
-            </ToggleButton>
-            <ToggleButton value="line">
-              <ShowChartIcon fontSize="small" sx={{ mr: 1 }} />
-              Line View
-            </ToggleButton>
-          </ToggleButtonGroup>
+          {/* Right Controls: Source & User Filters + Chart View Toggle */}
+          <Stack direction="row" spacing={1.5} flexWrap="wrap" alignItems="center" useFlexGap>
+            {/* Source Filter */}
+            <FormControl size="small" sx={{ minWidth: 120 }}  >
+              <InputLabel id="source-select-label">Source</InputLabel>
+              <Select
+                labelId="source-select-label"
+                value={selectedSource}
+                
+                
+                 
+                label="Source"
+                onChange={(e) => setSelectedSource(e.target.value)}
+              >
+                <MenuItem value="">
+                  <em>All</em>
+                </MenuItem>
+                {SOURCES.map((src) => (
+                  <MenuItem key={src} value={src}>
+                    {src}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* User Filter */}
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel id="user-select-label">User</InputLabel>
+              <Select
+                labelId="user-select-label"
+                value={selectedUser}
+                label="User"
+                onChange={(e) => setSelectedUser(e.target.value)}
+              >
+                <MenuItem value="">
+                  <em>All</em>
+                </MenuItem>
+                {users.map((user) => (
+                  <MenuItem key={user._id} value={user.name}>
+                    {user.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            {/* Global chart type toggle */}
+            <ToggleButtonGroup
+              value={chartType}
+              exclusive
+              onChange={(e, newValue) => newValue && setChartType(newValue)}
+              size="small"
+            >
+              <ToggleButton value="bar">
+                <BarChartIcon fontSize="small" sx={{ mr: 1 }} />
+                Bar View
+              </ToggleButton>
+              <ToggleButton value="area">
+                <StackedLineChartIcon fontSize="small" sx={{ mr: 1 }} />
+                Area View
+              </ToggleButton>
+              <ToggleButton value="line">
+                <ShowChartIcon fontSize="small" sx={{ mr: 1 }} />
+                Line View
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Stack>
         </Stack>
 
         {/* Stat cards */}
         <Box sx={{ width: "100%" }}>
-          <PerformanceStats dateRange={dateRange} />
+          <PerformanceStats
+            dateRange={dateRange}
+            source={selectedSource}
+            user={selectedUser}
+          />
         </Box>
 
         <Card variant="outlined" sx={{ background: "#F9FAFB" }}>
@@ -220,6 +296,8 @@ const [activeLabel, setActiveLabel] = useState("This Year");
                       valueType={tab.valueType}
                       dateRange={dateRange}
                       type={chartType}
+                      source={selectedSource}
+                      user={selectedUser}
                     />
                   </TabPanel>
                 )
@@ -230,8 +308,3 @@ const [activeLabel, setActiveLabel] = useState("This Year");
     </LocalizationProvider>
   );
 }
-
-
-
-
-

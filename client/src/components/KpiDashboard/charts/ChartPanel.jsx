@@ -67,7 +67,7 @@ const extractSeries = (payload) => {
   return arrayFields.map(([key, value]) => ({ name: humanizeKey(key), data: value }));
 };
 
-export default function ChartPanel({ chartKey, isMulti, valueType = "count", dateRange, type }) {
+export default function ChartPanel({ chartKey, isMulti, valueType = "count", dateRange, type, source, user }) {
   const [categories, setCategories] = useState([]);
   const [series, setSeries] = useState([]);
   const [interval, setIntervalLabel] = useState("");
@@ -86,6 +86,14 @@ export default function ChartPanel({ chartKey, isMulti, valueType = "count", dat
         params.start = startDate.toISOString();
         params.end = endDate.toISOString();
       }
+
+      if(source) {
+      params.source = source;
+    }
+
+    if(user) {
+      params.jobHolder = user;
+    }
 
       const endpoint = `/api/v1/dashboard/${isMulti ? "multi" : "single"}/${chartKey}`;
 
@@ -107,7 +115,7 @@ export default function ChartPanel({ chartKey, isMulti, valueType = "count", dat
     return () => {
       cancelled = true;
     };
-  }, [chartKey, isMulti, dateRange]);
+  }, [chartKey, isMulti, dateRange, source, user]);
 
   const formatValue = useMemo(() => formatByType(valueType), [valueType]);
 

@@ -149,7 +149,7 @@ function App() {
       ),
       Templates: <Route path="/templates" element={<Template />} />,
       Subscription: <Route path="/subscriptions" element={<Subscription />} />,
-      Activity: <Route path="/activity" element={<KpiDashboard />} />
+      Activity: <Route path="/activity" element={<ScreenshotDashboard />} />
 
     }),
     []

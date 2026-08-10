@@ -43,17 +43,21 @@ const formatValue = (value, valueType) => {
 };
 
 const StatCard = ({ label, value, change, dateRange, iconBg, icon }) => (
-  <div className="rounded-md p-4 bg-gray-50 border border-gray-200 shadow-sm flex items-center justify-between transition-all hover:shadow-md hover:-translate-y-0.5">
-    <div>
-      <p className="text-sm text-gray-500">{label}</p>
+  <div className="rounded-md p-4 bg-gray-50 border border-gray-200 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
+    <div className="w-full flex items-start justify-between ">
+      <p className="text-base   text-gray-500">{label}</p>
+      <div className={`p-1.5 rounded-md text-white ${iconBg}`}>{icon}</div>
+    </div>
       <h3 className="text-2xl font-bold text-gray-800">{value}</h3>
       <span className="flex items-center text-sm font-medium mt-1">
         <ChangeLabel percent={change} dateRange={dateRange} />
       </span>
-    </div>
-    <div className={`p-3 rounded-full text-white ${iconBg}`}>{icon}</div>
+    
   </div>
 );
+
+ 
+
 
 const PerformanceStats = ({ dateRange, source, user }) => {
   const [stats, setStats] = useState({});
@@ -92,7 +96,7 @@ const PerformanceStats = ({ dateRange, source, user }) => {
   }, [getStats]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 2xl:grid-cols-6 gap-3 font-outfit">
+    <div className="grid grid-cols-1 md:grid-cols-3 2xl:grid-cols-6 min-[2000px]:grid-cols-9 gap-4 font-inter">
       {STAT_CARDS.map(({ key, label, valueType, icon, iconBg }) => {
         const entry = stats[key]; // { value, change } | undefined
         return (

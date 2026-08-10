@@ -14,6 +14,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Divider,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -40,9 +41,24 @@ const TAB_GROUPS = [
     label: "Sales",
     icon: <AttachMoneyIcon />,
     tabs: [
-      { chartKey: "sales.total", label: "Total Sales", isMulti: true, valueType: "currency" },
-      { chartKey: "sales.new", label: "New Sales", isMulti: false, valueType: "currency" },
-      { chartKey: "sales.subscription", label: "Subscription Sales", isMulti: false, valueType: "currency" },
+      {
+        chartKey: "sales.total",
+        label: "Total Sales",
+        isMulti: true,
+        valueType: "currency",
+      },
+      {
+        chartKey: "sales.new",
+        label: "New Sales",
+        isMulti: false,
+        valueType: "currency",
+      },
+      {
+        chartKey: "sales.subscription",
+        label: "Subscription Sales",
+        isMulti: false,
+        valueType: "currency",
+      },
     ],
   },
   {
@@ -50,9 +66,24 @@ const TAB_GROUPS = [
     label: "Leads",
     icon: <GroupsIcon />,
     tabs: [
-      { chartKey: "leads.total", label: "Total Leads", isMulti: false, valueType: "count" },
-      { chartKey: "leads.won", label: "Won Leads", isMulti: false, valueType: "count" },
-      { chartKey: "leads.conversion", label: "Leads Conversion", isMulti: true, valueType: "percent" },
+      {
+        chartKey: "leads.total",
+        label: "Total Leads",
+        isMulti: false,
+        valueType: "count",
+      },
+      {
+        chartKey: "leads.won",
+        label: "Won Leads",
+        isMulti: false,
+        valueType: "count",
+      },
+      {
+        chartKey: "leads.conversion",
+        label: "Leads Conversion",
+        isMulti: true,
+        valueType: "percent",
+      },
     ],
   },
   {
@@ -60,8 +91,18 @@ const TAB_GROUPS = [
     label: "Subscriptions",
     icon: <SubscriptionsIcon />,
     tabs: [
-      { chartKey: "subscriptions.count", label: "Subscription Count", isMulti: false, valueType: "count" },
-      { chartKey: "subscriptions.value", label: "Subscription Value", isMulti: false, valueType: "currency" },
+      {
+        chartKey: "subscriptions.count",
+        label: "Subscription Count",
+        isMulti: false,
+        valueType: "count",
+      },
+      {
+        chartKey: "subscriptions.value",
+        label: "Subscription Value",
+        isMulti: false,
+        valueType: "currency",
+      },
     ],
   },
 ];
@@ -71,7 +112,14 @@ const SOURCES = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
 function TabPanel({ children, active }) {
   return (
     <Box sx={{ display: active ? "block" : "none" }}>
-      <Box sx={{ p: 0.5, minHeight: 400, display: "flex", flexDirection: "column" }}>
+      <Box
+        sx={{
+          p: 0.5,
+          minHeight: 400,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         {children}
       </Box>
     </Box>
@@ -79,10 +127,7 @@ function TabPanel({ children, active }) {
 }
 
 export default function KpiDashboard() {
-  const defaultDateRange = [
-    dayjs().startOf("year"),
-    dayjs().endOf("year"),
-  ];
+  const defaultDateRange = [dayjs().startOf("year"), dayjs().endOf("year")];
 
   // Date Filters
   const [dateRange, setDateRange] = useState(defaultDateRange);
@@ -97,7 +142,9 @@ export default function KpiDashboard() {
   const [chartType, setChartType] = useState("bar");
   const [activeGroup, setActiveGroup] = useState(TAB_GROUPS[0].key);
   const [activeTab, setActiveTab] = useState(TAB_GROUPS[0].tabs[0].chartKey);
-  const [visitedTabs, setVisitedTabs] = useState(new Set([TAB_GROUPS[0].tabs[0].chartKey]));
+  const [visitedTabs, setVisitedTabs] = useState(
+    new Set([TAB_GROUPS[0].tabs[0].chartKey]),
+  );
   const [showStats, setShowStats] = useState(true);
 
   // Fetch Users
@@ -105,7 +152,7 @@ export default function KpiDashboard() {
     const getAllUsers = async () => {
       try {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users?module=whatsapp`
+          `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users?module=whatsapp`,
         );
         setUsers(data?.users || []);
       } catch (error) {
@@ -160,28 +207,60 @@ export default function KpiDashboard() {
           sx={{ pb: 0.5 }}
         >
           {/* Left Controls: Date Pickers & Reset */}
-          <Stack direction="row" spacing={1.5} flexWrap="wrap" alignItems="center" useFlexGap>
+          <Stack
+            direction="row"
+            spacing={1.5}
+            flexWrap="wrap"
+            alignItems="center"
+            useFlexGap
+          >
             <ManualRangePicker value={dateRange} onChange={setDateRange} />
-            <QuickFilterMenu activeLabel={activeLabel} onSelect={handleQuickFilterSelect} />
+            <QuickFilterMenu
+              activeLabel={activeLabel}
+              onSelect={handleQuickFilterSelect}
+            />
 
             {isFilterActive && (
-              <Button color="error" startIcon={<CancelIcon />} onClick={handleClearFilters}>
+              <Button
+                color="error"
+                startIcon={<CancelIcon />}
+                onClick={handleClearFilters}
+              >
                 Clear Filters
               </Button>
             )}
+            <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+            <Button
+              color="info"
+              //  size="medium"
+              variant="text"
+              startIcon={
+                showStats ? (
+                  <VisibilityOffIcon fontSize="" />
+                ) : (
+                  <VisibilityIcon fontSize="" />
+                )
+              }
+              onClick={() => setShowStats((prev) => !prev)}
+            >
+              {showStats ? "Hide Stats" : "Show Stats"}
+            </Button>
           </Stack>
 
           {/* Right Controls: Source & User Filters + Stats Toggle + Chart View Toggle */}
-          <Stack direction="row" spacing={1.5} flexWrap="wrap" alignItems="center" useFlexGap>
+          <Stack
+            direction="row"
+            spacing={1.5}
+            flexWrap="wrap"
+            alignItems="center"
+            useFlexGap
+          >
             {/* Source Filter */}
-            <FormControl size="small" sx={{ minWidth: 120 }}  >
+            <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel id="source-select-label">Source</InputLabel>
               <Select
                 labelId="source-select-label"
                 value={selectedSource}
-                
-                
-                 
                 label="Source"
                 onChange={(e) => setSelectedSource(e.target.value)}
               >
@@ -215,17 +294,6 @@ export default function KpiDashboard() {
                 ))}
               </Select>
             </FormControl>
-
-            {/* Stats visibility toggle */}
-            <Button
-              variant="outlined"
-              color="inherit"
-              size="small"
-              startIcon={showStats ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
-              onClick={() => setShowStats((prev) => !prev)}
-            >
-              {showStats ? "Hide Stats" : "Show Stats"}
-            </Button>
 
             {/* Global chart type toggle */}
             <ToggleButtonGroup
@@ -271,7 +339,13 @@ export default function KpiDashboard() {
             sx={{ borderBottom: 1, borderColor: "divider", px: 1 }}
           >
             {TAB_GROUPS.map((group) => (
-              <Tab key={group.key} value={group.key} icon={group.icon} iconPosition="start" label={group.label} />
+              <Tab
+                key={group.key}
+                value={group.key}
+                icon={group.icon}
+                iconPosition="start"
+                label={group.label}
+              />
             ))}
           </Tabs>
 
@@ -305,7 +379,10 @@ export default function KpiDashboard() {
             {TAB_GROUPS.flatMap((group) => group.tabs).map(
               (tab) =>
                 visitedTabs.has(tab.chartKey) && (
-                  <TabPanel key={tab.chartKey} active={activeTab === tab.chartKey}>
+                  <TabPanel
+                    key={tab.chartKey}
+                    active={activeTab === tab.chartKey}
+                  >
                     <ChartPanel
                       chartKey={tab.chartKey}
                       isMulti={tab.isMulti}
@@ -316,7 +393,7 @@ export default function KpiDashboard() {
                       user={selectedUser}
                     />
                   </TabPanel>
-                )
+                ),
             )}
           </CardContent>
         </Card>

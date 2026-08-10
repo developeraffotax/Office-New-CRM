@@ -162,7 +162,7 @@ export default function ChartPanel({ chartKey, isMulti, valueType = "count", dat
   if (error) return <p style={{ color: "#dc2626" }}>{error}</p>;
 
   return (
-    <div className="w-full" style={{ overflowX: "auto"  }}>
+    <div className="w-full" style={{ overflowX: "hidden", overflowY: "hidden" }}>
       <Chart
         key={`${chartKey}-${type}-${categories.length}`}
         options={options}

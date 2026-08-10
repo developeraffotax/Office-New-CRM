@@ -100,7 +100,7 @@ export default function ChartPanel({ chartKey, isMulti, valueType = "count", dat
       try {
         const { data } = await dashboardApi.get(endpoint, { params });
         if (cancelled) return;
-        setCategories(data.categories || []);
+        setCategories(data.labels || []);
         setSeries(extractSeries(data));
         setIntervalLabel(data.interval || "");
       } catch (err) {
@@ -125,14 +125,14 @@ export default function ChartPanel({ chartKey, isMulti, valueType = "count", dat
   // Turning that off means every category from the backend renders, but
   // it needs room to do so without the labels smashing into each other,
   // hence the scrollable, count-driven width below.
-  const MIN_PX_PER_CATEGORY = 56;
-  const hasManyCategories = categories.length > 12;
-  const chartWidth = hasManyCategories
-    ? categories.length * MIN_PX_PER_CATEGORY
-    : "100%";
+  // const MIN_PX_PER_CATEGORY = 56;
+  // const hasManyCategories = categories.length > 12;
+  // const chartWidth = hasManyCategories
+  //   ? categories.length * MIN_PX_PER_CATEGORY
+  //   : "100%";
 
   const options = {
-    chart: { type, toolbar: { show: false }, width: chartWidth },
+    chart: { type, toolbar: { show: false }, width: "100%" },
     xaxis: {
       categories,
       title: { text: interval === "daily" ? "Days" : "Months" },
@@ -162,13 +162,13 @@ export default function ChartPanel({ chartKey, isMulti, valueType = "count", dat
   if (error) return <p style={{ color: "#dc2626" }}>{error}</p>;
 
   return (
-    <div className="w-full" style={{ overflowX: hasManyCategories ? "auto" : "visible" }}>
+    <div className="w-full" style={{ overflowX: "auto"  }}>
       <Chart
         key={`${chartKey}-${type}-${categories.length}`}
         options={options}
         series={series}
         type={type}
-        width={chartWidth}
+        width={"100%"}
         height={400}
       />
     </div>

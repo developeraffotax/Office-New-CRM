@@ -26,6 +26,8 @@ import ShowChartIcon from "@mui/icons-material/ShowChart";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import GroupsIcon from "@mui/icons-material/Groups";
 import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 import ChartPanel from "./charts/ChartPanel";
 import PerformanceStats from "./PerformanceStats";
@@ -96,6 +98,7 @@ export default function KpiDashboard() {
   const [activeGroup, setActiveGroup] = useState(TAB_GROUPS[0].key);
   const [activeTab, setActiveTab] = useState(TAB_GROUPS[0].tabs[0].chartKey);
   const [visitedTabs, setVisitedTabs] = useState(new Set([TAB_GROUPS[0].tabs[0].chartKey]));
+  const [showStats, setShowStats] = useState(true);
 
   // Fetch Users
   useEffect(() => {
@@ -168,7 +171,7 @@ export default function KpiDashboard() {
             )}
           </Stack>
 
-          {/* Right Controls: Source & User Filters + Chart View Toggle */}
+          {/* Right Controls: Source & User Filters + Stats Toggle + Chart View Toggle */}
           <Stack direction="row" spacing={1.5} flexWrap="wrap" alignItems="center" useFlexGap>
             {/* Source Filter */}
             <FormControl size="small" sx={{ minWidth: 120 }}  >
@@ -213,6 +216,17 @@ export default function KpiDashboard() {
               </Select>
             </FormControl>
 
+            {/* Stats visibility toggle */}
+            <Button
+              variant="outlined"
+              color="inherit"
+              size="small"
+              startIcon={showStats ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+              onClick={() => setShowStats((prev) => !prev)}
+            >
+              {showStats ? "Hide Stats" : "Show Stats"}
+            </Button>
+
             {/* Global chart type toggle */}
             <ToggleButtonGroup
               value={chartType}
@@ -237,13 +251,15 @@ export default function KpiDashboard() {
         </Stack>
 
         {/* Stat cards */}
-        <Box sx={{ width: "100%" }}>
-          <PerformanceStats
-            dateRange={dateRange}
-            source={selectedSource}
-            user={selectedUser}
-          />
-        </Box>
+        {showStats && (
+          <Box sx={{ width: "100%" }}>
+            <PerformanceStats
+              dateRange={dateRange}
+              source={selectedSource}
+              user={selectedUser}
+            />
+          </Box>
+        )}
 
         <Card variant="outlined" sx={{ background: "#F9FAFB" }}>
           {/* Level 1: Sales / Leads / Subscriptions */}

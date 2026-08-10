@@ -8,19 +8,28 @@ import ticketModel from "../models/ticketModel.js";
 import getJobHolderNames from "../utils/getJobHolderNames.js";
 import { buildLeadFilter } from "../utils/buildFilter.js";
 import { getAuthUser } from "../utils/getAuthUser.js";
-import { buildBucketKeysAndLabels, dateFormatMap, resolveGroupBy } from "./leadController.utils.js";
+import {
+  applyStatusTransition,
+  buildBucketKeysAndLabels,
+  dateFormatMap,
+  logLeadUpdate,
+  resolveGroupBy,
+} from "./leadController.utils.js";
+import {
+  recordBulkActivity,
+  snapshotEntities,
+} from "../services/activityLog/bulkActivityService.js";
 
 // Create Lead
 export const createLead = async (req, res) => {
+  const user = getAuthUser(req);
 
- const user = getAuthUser(req);
-
- if(!user) {
-  return res.status(401).send({
+  if (!user) {
+    return res.status(401).send({
       success: false,
       message: "Invalid User!",
-  })
- }
+    });
+  }
 
   try {
     const {
@@ -41,10 +50,8 @@ export const createLead = async (req, res) => {
       email,
 
       yearEnd,
-      jobDeadline
+      jobDeadline,
     } = req.body;
-
-
 
     const lead = await leadModel.create({
       companyName,
@@ -66,7 +73,6 @@ export const createLead = async (req, res) => {
       yearEnd,
       jobDeadline,
       createdBy: user._id,
-      
     });
 
     res.status(200).send({
@@ -88,31 +94,43 @@ export const createLead = async (req, res) => {
 export const updateLead = async (req, res) => {
   try {
     const leadId = req.params.id;
-    const userId = req.user.user._id
+    const userId = req.user.user._id;
     // const { companyName, clientName, jobHolder, department, source, brand, lead_Source, followUpDate, JobDate, Note, stage, status, value, number, yearEnd, jobDeadline } = req.body;
 
     const updates = req.body;
 
-     const allowedUpdates = ['leadCreatedAt', 'companyName', 'clientName', 'jobHolder',  'leadUser', 'department', 'source', 'brand', 'lead_Source', 'followUpDate', 'JobDate', 'Note', 'stage', 'status', 'value', 'number', 'yearEnd', 'jobDeadline', 'email']; // Whitelist of allowed fields
+    const allowedUpdates = [
+      "leadCreatedAt",
+      "companyName",
+      "clientName",
+      "jobHolder",
+      "leadUser",
+      "department",
+      "source",
+      "brand",
+      "lead_Source",
+      "followUpDate",
+      "JobDate",
+      "Note",
+      "stage",
+      "status",
+      "value",
+      "number",
+      "yearEnd",
+      "jobDeadline",
+      "email",
+    ]; // Whitelist of allowed fields
     const updateKeys = Object.keys(updates);
 
-      // Optional: Validate fields
-    const isValidUpdate = updateKeys.every(key => allowedUpdates.includes(key));
+    // Optional: Validate fields
+    const isValidUpdate = updateKeys.every((key) =>
+      allowedUpdates.includes(key),
+    );
     if (!isValidUpdate) {
-        return res.status(400).json({ success: false, message: "Invalid fields in update!"});
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid fields in update!" });
     }
-     
-    if(updates.status === "won") {
-      updates.wonAt = new Date();
-      updates.wonBy = userId;
-    }
-      if(updates.status === "lost") {
-      updates.lostAt = new Date();
-      updates.lostBy = userId;
-    }
- 
- 
-
 
     const lead = await leadModel.findById(leadId);
 
@@ -122,7 +140,9 @@ export const updateLead = async (req, res) => {
         message: "Lead not found!",
       });
     }
- 
+
+    const beforeSnapshot = lead.toObject();
+
     // Only update tickets if lead status is being changed to 'won' or 'lost'
     // if (updates.status && (updates.status === 'won' || updates.status === 'lost')) {
     //   await ticketModel.updateMany(
@@ -138,12 +158,23 @@ export const updateLead = async (req, res) => {
     //   );
     // }
 
-
+    if (updates.status) {
+      applyStatusTransition(updates, userId);
+    }
 
     const updataLead = await leadModel.findByIdAndUpdate(
       { _id: leadId },
       updates,
-      { new: true }
+      { new: true },
+    );
+
+    const updatedKeys = Object.keys(updates);
+    await logLeadUpdate(
+      leadId,
+      beforeSnapshot,
+      updataLead.toObject(),
+      updatedKeys,
+      userId,
     );
 
     res.status(200).send({
@@ -163,12 +194,9 @@ export const updateLead = async (req, res) => {
 
 // Get All Progress Leads
 export const getAllProgressLead = async (req, res) => {
-
   try {
-
     const filter = await buildLeadFilter(req, "progress");
 
- 
     const leads = await leadModel.find(filter);
 
     res.status(200).send({
@@ -188,14 +216,11 @@ export const getAllProgressLead = async (req, res) => {
 
 // Get All Won Leads
 export const getAllWonLead = async (req, res) => {
-   
   try {
-        const filter = await buildLeadFilter(req, "won");
-
-
+    const filter = await buildLeadFilter(req, "won");
 
     const leads = await leadModel.find(filter);
-    
+
     res.status(200).send({
       success: true,
       message: "All won lead list!",
@@ -214,11 +239,10 @@ export const getAllWonLead = async (req, res) => {
 // Get All Lost Leads
 export const getAlllostLead = async (req, res) => {
   const role = req.user?.user?.role?.name;
-  const userName =  req.user?.user?.name;
+  const userName = req.user?.user?.name;
   try {
     const filter = await buildLeadFilter(req, "lost");
 
-    
     const leads = await leadModel.find(filter);
 
     res.status(200).send({
@@ -276,7 +300,7 @@ export const deleteLead = async (req, res) => {
     // Update related tickets to 'complete'
     await ticketModel.updateMany(
       { clientName: lead.clientName, state: { $ne: "complete" } },
-      { $set: { state: "complete" } }
+      { $set: { state: "complete" } },
     );
 
     // Delete the lead
@@ -295,7 +319,6 @@ export const deleteLead = async (req, res) => {
     });
   }
 };
-
 
 // <------------Dashboard---------->
 export const getdashboardLead = async (req, res) => {
@@ -345,21 +368,6 @@ export const getdashboardLead = async (req, res) => {
     });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Get Available Tickets Number (name + email aware)
 
@@ -433,59 +441,45 @@ export const getdashboardLead = async (req, res) => {
 //   }
 // };
 
-
-
-
 // Get Available Tickets Number (name aware)
- 
+
 export const getAvailableTicketsNum = async (req, res) => {
   const status = req.query.status || "progress";
 
   try {
     // 1. Get unique client names from leads
-    const leads = await leadModel
-      .find({ status })
-      .select("clientName -_id");
+    const leads = await leadModel.find({ status }).select("clientName -_id");
 
-    const clientNames = [...new Set(leads
-      .map(l => l.clientName)
-      .filter(Boolean)
-    )];
+    const clientNames = [
+      ...new Set(leads.map((l) => l.clientName).filter(Boolean)),
+    ];
 
-
-
-    
     // 2. Group tickets by clientName in one fast query
- 
-       
 
     const match = {
       clientName: { $in: clientNames },
+    };
+
+    if (status === "progress") {
+      match.state = { $eq: "progress" };
     }
-
-    if(status === "progress") {
-      match.state =  { $eq: "progress" }
-    }
-
-
 
     const ticketCounts = await ticketModel.aggregate([
       {
-        $match: match
+        $match: match,
       },
       {
         $group: {
           _id: "$clientName",
           count: { $sum: 1 },
-        }
-      }
+        },
+      },
     ]);
 
-    
     // 3. Convert aggregation to a lookup map
     const ticketMap = {};
-    clientNames.forEach(name => {
-      const found = ticketCounts.find(tc => tc._id === name);
+    clientNames.forEach((name) => {
+      const found = ticketCounts.find((tc) => tc._id === name);
       ticketMap[name] = found ? found.count : 0;
     });
 
@@ -494,7 +488,6 @@ export const getAvailableTicketsNum = async (req, res) => {
       message: "Client ticket counts",
       ticketMap,
     });
-
   } catch (error) {
     console.error(error);
     return res.status(500).send({
@@ -527,136 +520,67 @@ export const getAvailableTicketsNum = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      // companyName,
-      // clientName,
-      // jobHolder,
-      // department,
-      // source,
-      // brand,
-      // lead_Source,
-      // followUpDate,
-      // JobDate,
-      // Note,
-      // stage,
-      // status,
-      // value,
-      // number,
-
-
+// companyName,
+// clientName,
+// jobHolder,
+// department,
+// source,
+// brand,
+// lead_Source,
+// followUpDate,
+// JobDate,
+// Note,
+// stage,
+// status,
+// value,
+// number,
 
 // Update Bulk Leads
 export const updateBulkLeads = async (req, res) => {
   try {
-    const {
-      rowSelection,
-      updates  // object which contains all the updates values 
-      
-    } = req.body;
+    const userId = req.user.user._id;
+    const { rowSelection, updates } = req.body;
 
- 
-    if (
-      !rowSelection ||
-      !Array.isArray(rowSelection) ||
-      rowSelection.length === 0
-    ) {
-      return res.status(400).send({
-        success: false,
-        message: "No jobs selected for update.",
-      });
+    if (!rowSelection || !Array.isArray(rowSelection) || rowSelection.length === 0) {
+      return res.status(400).send({ success: false, message: "No jobs selected for update." });
     }
-
-
- 
 
     let updateData = {};
-
     Object.entries(updates).forEach(([key, value]) => {
-      if (value) {
-        updateData[key] = value;
-      }
+      if (value) updateData[key] = value;
     });
 
+    if (updateData.status) {
+      applyStatusTransition(updateData, userId);
+    }
+    const updatedKeys = Object.keys(updateData);
+
+    const beforeLeads = await snapshotEntities(leadModel, rowSelection);
+
     const updatedLeads = await leadModel.updateMany(
-      {
-        _id: { $in: rowSelection },
-      },
-      { $set: updateData },
-       
+      { _id: { $in: rowSelection } },
+      { $set: updateData }
     );
 
- 
-
-    // Check if any leads were updated
     if (updatedLeads.modifiedCount === 0) {
-      return res.status(404).send({
-        success: false,
-        message: "No leads were updated.",
-      });
+      return res.status(404).send({ success: false, message: "No leads were updated." });
     }
+
+    const afterLeads = await snapshotEntities(leadModel, rowSelection);
+
+    await recordBulkActivity({
+      entityType: "Lead",
+      beforeDocs: beforeLeads,
+      afterDocs: afterLeads,
+      updatedKeys,
+      performedBy: userId,
+    });
 
     res.status(200).send({
       success: true,
       message: "Leads updated successfully!",
       updatedLeads,
     });
-
   } catch (error) {
     console.log(error);
     res.status(500).send({
@@ -667,117 +591,19 @@ export const updateBulkLeads = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  const leadSources = [
-    "Upwork",
-    "Fiverr",
-    "PPH",
-    "Referral",
-    "Partner",
-    "Google",
-    "Facebook",
-    "LinkedIn",
-    "CRM",
-    "Existing",
-    "Other",
-  ];
-
-
-
-
- 
-
- 
-
-
- 
+const leadSources = [
+  "Upwork",
+  "Fiverr",
+  "PPH",
+  "Referral",
+  "Partner",
+  "Google",
+  "Facebook",
+  "LinkedIn",
+  "CRM",
+  "Existing",
+  "Other",
+];
 
 export const getLeadStats = async (req, res) => {
   try {
@@ -806,7 +632,9 @@ export const getLeadStats = async (req, res) => {
       if (lead_Source === "Other") {
         matchQuery.$or = [
           { lead_Source: { $exists: false } },
-          { lead_Source: { $nin: leadSources.filter((src) => src !== "Other") } },
+          {
+            lead_Source: { $nin: leadSources.filter((src) => src !== "Other") },
+          },
           { lead_Source: "" },
           { lead_Source: null },
         ];
@@ -819,14 +647,15 @@ export const getLeadStats = async (req, res) => {
       matchQuery.department = department;
     }
 
-   
-
     const stats = await leadModel.aggregate([
       { $match: matchQuery },
       {
         $group: {
           _id: {
-            $dateToString: { format: dateFormatMap[groupUnit], date: "$leadCreatedAt" },
+            $dateToString: {
+              format: dateFormatMap[groupUnit],
+              date: "$leadCreatedAt",
+            },
           },
           count: { $sum: 1 },
         },
@@ -853,9 +682,13 @@ export const getLeadStats = async (req, res) => {
     } else if (groupUnit === "week") {
       current = current.clone().startOf("isoWeek");
       while (current.isSameOrBefore(endDate, "day")) {
-        keys.push(`${current.isoWeekYear()}-W${String(current.isoWeek()).padStart(2, "0")}`);
+        keys.push(
+          `${current.isoWeekYear()}-W${String(current.isoWeek()).padStart(2, "0")}`,
+        );
         const weekEnd = current.clone().endOf("isoWeek");
-        labels.push(`${current.format("DD MMM")} - ${weekEnd.format("DD MMM")}`);
+        labels.push(
+          `${current.format("DD MMM")} - ${weekEnd.format("DD MMM")}`,
+        );
         current.add(1, "week");
       }
     } else {
@@ -882,23 +715,9 @@ export const getLeadStats = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
 export const getLeadStatusStats = async (req, res) => {
   try {
-    const { start, end,  lead_Source, department  } = req.query;
+    const { start, end, lead_Source, department } = req.query;
 
     if (!start || !end) {
       return res.status(400).json({
@@ -915,14 +734,15 @@ export const getLeadStatusStats = async (req, res) => {
       leadCreatedAt: { $gte: startDate, $lte: endDate },
     };
 
-   
     // Lead Source filter
     if (lead_Source && lead_Source !== "all") {
       if (lead_Source === "Other") {
         // Match leads where lead_Source is missing or not in the predefined list
         matchQuery.$or = [
           { lead_Source: { $exists: false } },
-          { lead_Source: { $nin: leadSources.filter((src) => src !== "Other") } },
+          {
+            lead_Source: { $nin: leadSources.filter((src) => src !== "Other") },
+          },
           { lead_Source: "" },
           { lead_Source: null },
         ];
@@ -930,10 +750,9 @@ export const getLeadStatusStats = async (req, res) => {
         matchQuery.lead_Source = lead_Source;
       }
     }
-    if(department && department !== "all") {
+    if (department && department !== "all") {
       matchQuery.department = department;
     }
-
 
     // Aggregate by status
     const stats = await leadModel.aggregate([
@@ -968,56 +787,6 @@ export const getLeadStatusStats = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
 export const getLeadStatsWonLost = async (req, res) => {
   try {
     const { start, end, lead_Source, department, groupBy } = req.query;
@@ -1041,7 +810,9 @@ export const getLeadStatsWonLost = async (req, res) => {
       if (lead_Source === "Other") {
         matchQuery.$or = [
           { lead_Source: { $exists: false } },
-          { lead_Source: { $nin: leadSources.filter((src) => src !== "Other") } },
+          {
+            lead_Source: { $nin: leadSources.filter((src) => src !== "Other") },
+          },
           { lead_Source: "" },
           { lead_Source: null },
         ];
@@ -1060,7 +831,9 @@ export const getLeadStatsWonLost = async (req, res) => {
       {
         $group: {
           _id: {
-            date: { $dateToString: { format: "%Y-%m-%d", date: "$leadCreatedAt" } },
+            date: {
+              $dateToString: { format: "%Y-%m-%d", date: "$leadCreatedAt" },
+            },
             status: "$status",
           },
           count: { $sum: 1 },
@@ -1077,7 +850,11 @@ export const getLeadStatsWonLost = async (req, res) => {
       else if (s._id.status === "lost") lostDailyMap[s._id.date] = s.count;
     });
 
-    const { keys, labels } = buildBucketKeysAndLabels(startDate, endDate, groupUnit);
+    const { keys, labels } = buildBucketKeysAndLabels(
+      startDate,
+      endDate,
+      groupUnit,
+    );
 
     let wonData, lostData;
 
@@ -1092,17 +869,28 @@ export const getLeadStatsWonLost = async (req, res) => {
 
       const bucketRanges = keys.map((_, i) => {
         if (groupUnit === "week") {
-          const bucketStart = startDate.clone().startOf("isoWeek").add(i, "week");
-          return { start: bucketStart, end: bucketStart.clone().endOf("isoWeek") };
+          const bucketStart = startDate
+            .clone()
+            .startOf("isoWeek")
+            .add(i, "week");
+          return {
+            start: bucketStart,
+            end: bucketStart.clone().endOf("isoWeek"),
+          };
         }
         const bucketStart = startDate.clone().startOf("month").add(i, "month");
         return { start: bucketStart, end: bucketStart.clone().endOf("month") };
       });
 
-      const allDates = new Set([...Object.keys(wonDailyMap), ...Object.keys(lostDailyMap)]);
+      const allDates = new Set([
+        ...Object.keys(wonDailyMap),
+        ...Object.keys(lostDailyMap),
+      ]);
       allDates.forEach((dateStr) => {
         const day = moment(dateStr, "YYYY-MM-DD");
-        const idx = bucketRanges.findIndex((r) => day.isBetween(r.start, r.end, "day", "[]"));
+        const idx = bucketRanges.findIndex((r) =>
+          day.isBetween(r.start, r.end, "day", "[]"),
+        );
         if (idx === -1) return;
         wonData[idx] += wonDailyMap[dateStr] || 0;
         lostData[idx] += lostDailyMap[dateStr] || 0;
@@ -1124,31 +912,9 @@ export const getLeadStatsWonLost = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
 export const getLeadConversionStats = async (req, res) => {
   try {
-    const { start, end, lead_Source, department  } = req.query;
+    const { start, end, lead_Source, department } = req.query;
 
     // Optional filters
     const matchQuery = {};
@@ -1165,7 +931,9 @@ export const getLeadConversionStats = async (req, res) => {
         // Match leads where lead_Source is missing or not in the predefined list
         matchQuery.$or = [
           { lead_Source: { $exists: false } },
-          { lead_Source: { $nin: leadSources.filter((src) => src !== "Other") } },
+          {
+            lead_Source: { $nin: leadSources.filter((src) => src !== "Other") },
+          },
           { lead_Source: "" },
           { lead_Source: null },
         ];
@@ -1174,10 +942,9 @@ export const getLeadConversionStats = async (req, res) => {
       }
     }
 
-    if(department && department !== "all") {
+    if (department && department !== "all") {
       matchQuery.department = department;
     }
-
 
     // Count total, won, lost
     const [stats] = await leadModel.aggregate([
@@ -1188,8 +955,10 @@ export const getLeadConversionStats = async (req, res) => {
           total: { $sum: 1 },
           won: { $sum: { $cond: [{ $eq: ["$status", "won"] }, 1, 0] } },
           lost: { $sum: { $cond: [{ $eq: ["$status", "lost"] }, 1, 0] } },
-          progress: { $sum: { $cond: [{ $eq: ["$status", "progress"] }, 1, 0] } },
-                // Average conversion time
+          progress: {
+            $sum: { $cond: [{ $eq: ["$status", "progress"] }, 1, 0] },
+          },
+          // Average conversion time
           avgConversionMs: {
             $avg: {
               $cond: [
@@ -1200,14 +969,10 @@ export const getLeadConversionStats = async (req, res) => {
                 null,
               ],
             },
-
-
           },
         },
       },
     ]);
-
-    
 
     if (!stats) {
       return res.json({
@@ -1217,15 +982,13 @@ export const getLeadConversionStats = async (req, res) => {
     }
 
     // Conversion = Won / Total * 100
-    const conversionRate = stats.total > 0 ? ((stats.won / stats.total) * 100).toFixed(2) : 0;
+    const conversionRate =
+      stats.total > 0 ? ((stats.won / stats.total) * 100).toFixed(2) : 0;
 
- 
-// Convert ms → days
-const avgConversionDays =
-  stats.avgConversionMs
-    ? (stats.avgConversionMs / (1000 * 60 * 60 * 24)).toFixed(1)
-    : 0;
-
+    // Convert ms → days
+    const avgConversionDays = stats.avgConversionMs
+      ? (stats.avgConversionMs / (1000 * 60 * 60 * 24)).toFixed(1)
+      : 0;
 
     res.json({
       success: true,
@@ -1245,56 +1008,7 @@ const avgConversionDays =
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // export const getWonLeadData = async ( req, res) => {
-
-
 
 //     try {
 //     const { user, startDate, endDate } = req.query;
@@ -1337,7 +1051,6 @@ const avgConversionDays =
 //         { $sort: { "_id": 1 } },
 //       ]);
 
-
 //     // Initialize arrays for 12 months
 //     const counts = Array(12).fill(0);
 //     const values = Array(12).fill(0);
@@ -1353,24 +1066,7 @@ const avgConversionDays =
 //     res.status(500).json({ error: "Server Error" });
 //   }
 
-
 // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
 
 // export const getWonLeadData = async (req, res) => {
 //   try {
@@ -1428,10 +1124,9 @@ const avgConversionDays =
 //       values[item._id - 1] = item.totalValue;
 //     });
 
-
 //     // if(!fetchedUser) {
 //     //   return res.json({ counts, values, targetValues, targetCounts  });
-//     // } 
+//     // }
 //     // --- Fetch goals (monthly goals) ---
 //     const goalFilters = { goalType: "Target Lead Value"};
 //     if (user) {
@@ -1461,54 +1156,6 @@ const avgConversionDays =
 //   }
 // };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
 const getWeekRangeLabel = (year, week) => {
   const monday = moment().isoWeekYear(year).isoWeek(week).startOf("isoWeek");
   const sunday = moment(monday).endOf("isoWeek");
@@ -1520,8 +1167,6 @@ export const getWonLeadData = async (req, res) => {
     const { user, startDate, endDate, view = "monthly" } = req.query;
 
     const filters = { status: "won" };
-
- 
 
     let fetchedUser = null;
     let teamLeads = [];
@@ -1535,8 +1180,7 @@ export const getWonLeadData = async (req, res) => {
 
       if (fetchedUser) {
         if (fetchedUser.isTeamLead) {
-          const juniorNames =
-            fetchedUser.juniors?.map(j => j.name) || [];
+          const juniorNames = fetchedUser.juniors?.map((j) => j.name) || [];
 
           filters.jobHolder = {
             $in: [fetchedUser.name, ...juniorNames],
@@ -1547,32 +1191,28 @@ export const getWonLeadData = async (req, res) => {
       }
     }
 
-        if (user && user === "All") {
+    if (user && user === "All") {
+      teamLeads = await userModel
+        .find({ isTeamLead: true })
+        .select("name isTeamLead juniors")
+        .populate("juniors", "name")
+        .lean();
 
-          teamLeads = await userModel
-            .find({ isTeamLead: true })
-            .select("name isTeamLead juniors")
-            .populate("juniors", "name")
-            .lean();
+      // Team lead names
+      const teamLeadsNames = teamLeads.map((user) => user.name);
 
-          // Team lead names
-          const teamLeadsNames = teamLeads.map(user => user.name);
+      // Juniors names (flattened)
+      const juniorsNames = teamLeads
+        .flatMap((user) => user.juniors || [])
+        .map((junior) => junior.name);
 
-          // Juniors names (flattened)
-          const juniorsNames = teamLeads
-            .flatMap(user => user.juniors || [])
-            .map(junior => junior.name);
+      // Combine both
+      const allNames = [...teamLeadsNames, ...juniorsNames];
 
-          // Combine both
-          const allNames = [...teamLeadsNames, ...juniorsNames];
-
-          
-
-          filters.jobHolder = {
-            $in: allNames,
-          };
-
-        }
+      filters.jobHolder = {
+        $in: allNames,
+      };
+    }
 
     if (startDate && endDate) {
       filters.leadCreatedAt = {
@@ -1588,10 +1228,16 @@ export const getWonLeadData = async (req, res) => {
     let sortStage;
 
     if (view === "weekly") {
-      groupId = { year: { $isoWeekYear: "$leadCreatedAt" }, week: { $isoWeek: "$leadCreatedAt" } };
+      groupId = {
+        year: { $isoWeekYear: "$leadCreatedAt" },
+        week: { $isoWeek: "$leadCreatedAt" },
+      };
       sortStage = { "_id.year": 1, "_id.week": 1 };
     } else {
-      groupId = { year: { $year: "$leadCreatedAt" }, month: { $month: "$leadCreatedAt" } };
+      groupId = {
+        year: { $year: "$leadCreatedAt" },
+        month: { $month: "$leadCreatedAt" },
+      };
       sortStage = { "_id.year": 1, "_id.month": 1 };
     }
 
@@ -1663,8 +1309,12 @@ export const getWonLeadData = async (req, res) => {
       // Monthly view: 12 months between start and end
       const monthMap = {};
       let monthIndex = 0;
-      const start = startDate ? moment(startDate).startOf("month") : moment().startOf("year");
-      const end = endDate ? moment(endDate).endOf("month") : moment().endOf("year");
+      const start = startDate
+        ? moment(startDate).startOf("month")
+        : moment().startOf("year");
+      const end = endDate
+        ? moment(endDate).endOf("month")
+        : moment().endOf("year");
       let current = start.clone();
       while (current.isSameOrBefore(end)) {
         const key = `${current.year()}-${current.month() + 1}`; // month 0-indexed
@@ -1692,32 +1342,52 @@ export const getWonLeadData = async (req, res) => {
     // -------------------------
     // Fetch Goals
     // -------------------------
-    const goalMatch = { goalType: { $in: ["Target Lead Value", "Target Lead Count", "Target Lead Value (Team Lead)", "Target Lead Count (Team Lead)"] } };
+    const goalMatch = {
+      goalType: {
+        $in: [
+          "Target Lead Value",
+          "Target Lead Count",
+          "Target Lead Value (Team Lead)",
+          "Target Lead Count (Team Lead)",
+        ],
+      },
+    };
     if (fetchedUser) goalMatch.jobHolder = fetchedUser._id;
-    if (user === "All") goalMatch.jobHolder = {
-            $in: teamLeads.map(user => user._id),
-          };
+    if (user === "All")
+      goalMatch.jobHolder = {
+        $in: teamLeads.map((user) => user._id),
+      };
 
-
- 
-
-    if (startDate && endDate) goalMatch.startDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
+    if (startDate && endDate)
+      goalMatch.startDate = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
 
     let goalGroupId;
     if (view === "weekly") {
-      goalGroupId = { year: { $isoWeekYear: "$startDate" }, week: { $isoWeek: "$startDate" }, type: "$goalType" };
+      goalGroupId = {
+        year: { $isoWeekYear: "$startDate" },
+        week: { $isoWeek: "$startDate" },
+        type: "$goalType",
+      };
     } else {
-      goalGroupId = { year: { $year: "$startDate" }, month: { $month: "$startDate" }, type: "$goalType" };
+      goalGroupId = {
+        year: { $year: "$startDate" },
+        month: { $month: "$startDate" },
+        type: "$goalType",
+      };
     }
 
     const goals = await goalModel.aggregate([
       { $match: goalMatch },
-      { $group: { _id: goalGroupId, total: { $sum: { $ifNull: ["$achievement", 0] } } } },
+      {
+        $group: {
+          _id: goalGroupId,
+          total: { $sum: { $ifNull: ["$achievement", 0] } },
+        },
+      },
     ]);
-
-    
-
-   
 
     // Map goals to label index
     goals.forEach((goal) => {
@@ -1727,33 +1397,43 @@ export const getWonLeadData = async (req, res) => {
       } else {
         labelKey = `${goal._id.year}-${goal._id.month}`;
       }
-      
+
       const index = labels.findIndex((_, idx) => {
-        if (view === "weekly") return labels[idx] === getWeekRangeLabel(goal._id.year, goal._id.week);
-        else return labels[idx] === moment(`${goal._id.year}-${goal._id.month}-01`).format("MMM YYYY");
+        if (view === "weekly")
+          return (
+            labels[idx] === getWeekRangeLabel(goal._id.year, goal._id.week)
+          );
+        else
+          return (
+            labels[idx] ===
+            moment(`${goal._id.year}-${goal._id.month}-01`).format("MMM YYYY")
+          );
       });
-      
+
       if (index !== -1) {
-
-        if(user === "All") {
-
-          if  (goal._id.type === "Target Lead Value (Team Lead)" ) targetValues[index] = goal.total;
-          if  (goal._id.type === "Target Lead Count (Team Lead)" ) targetCounts[index] = goal.total;
-
-
-
+        if (user === "All") {
+          if (goal._id.type === "Target Lead Value (Team Lead)")
+            targetValues[index] = goal.total;
+          if (goal._id.type === "Target Lead Count (Team Lead)")
+            targetCounts[index] = goal.total;
         } else {
-          if ((goal._id.type === "Target Lead Value" && !fetchedUser?.isTeamLead) || (goal._id.type === "Target Lead Value (Team Lead)" && fetchedUser?.isTeamLead)) targetValues[index] = goal.total;
-          if ((goal._id.type === "Target Lead Count" && !fetchedUser?.isTeamLead) || (goal._id.type === "Target Lead Count (Team Lead)" && fetchedUser?.isTeamLead)) targetCounts[index] = goal.total;
-           
-
+          if (
+            (goal._id.type === "Target Lead Value" &&
+              !fetchedUser?.isTeamLead) ||
+            (goal._id.type === "Target Lead Value (Team Lead)" &&
+              fetchedUser?.isTeamLead)
+          )
+            targetValues[index] = goal.total;
+          if (
+            (goal._id.type === "Target Lead Count" &&
+              !fetchedUser?.isTeamLead) ||
+            (goal._id.type === "Target Lead Count (Team Lead)" &&
+              fetchedUser?.isTeamLead)
+          )
+            targetCounts[index] = goal.total;
         }
-
       }
     });
-    
-    
- 
 
     return res.json({ labels, counts, values, targetCounts, targetValues });
   } catch (error) {
@@ -1762,59 +1442,11 @@ export const getWonLeadData = async (req, res) => {
   }
 };
 
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const getWonLeadStats = async (req, res) => {
   try {
     const { user, startDate, endDate } = req.query;
 
     const filters = { status: "won" };
-
-
- 
 
     let fetchedUser = null;
     let teamLeads = [];
@@ -1828,8 +1460,7 @@ export const getWonLeadStats = async (req, res) => {
 
       if (fetchedUser) {
         if (fetchedUser.isTeamLead) {
-          const juniorNames =
-            fetchedUser.juniors?.map(j => j.name) || [];
+          const juniorNames = fetchedUser.juniors?.map((j) => j.name) || [];
 
           filters.jobHolder = {
             $in: [fetchedUser.name, ...juniorNames],
@@ -1840,37 +1471,28 @@ export const getWonLeadStats = async (req, res) => {
       }
     }
 
-    
-        if (user && user === "All") {
+    if (user && user === "All") {
+      teamLeads = await userModel
+        .find({ isTeamLead: true })
+        .select("name isTeamLead juniors")
+        .populate("juniors", "name")
+        .lean();
 
-          teamLeads = await userModel
-            .find({ isTeamLead: true })
-            .select("name isTeamLead juniors")
-            .populate("juniors", "name")
-            .lean();
+      // Team lead names
+      const teamLeadsNames = teamLeads.map((user) => user.name);
 
-          // Team lead names
-          const teamLeadsNames = teamLeads.map(user => user.name);
+      // Juniors names (flattened)
+      const juniorsNames = teamLeads
+        .flatMap((user) => user.juniors || [])
+        .map((junior) => junior.name);
 
-          // Juniors names (flattened)
-          const juniorsNames = teamLeads
-            .flatMap(user => user.juniors || [])
-            .map(junior => junior.name);
+      // Combine both
+      const allNames = [...teamLeadsNames, ...juniorsNames];
 
-          // Combine both
-          const allNames = [...teamLeadsNames, ...juniorsNames];
-
-          
-
-
-          filters.jobHolder = {
-            $in: allNames,
-          };
-
-        }
-
-
-
+      filters.jobHolder = {
+        $in: allNames,
+      };
+    }
 
     if (startDate && endDate) {
       filters.leadCreatedAt = {
@@ -1900,25 +1522,26 @@ export const getWonLeadStats = async (req, res) => {
             },
           },
 
-           totalCount: { $sum: 1 }, // ✅ count of leads
+          totalCount: { $sum: 1 }, // ✅ count of leads
         },
       },
     ]);
 
     const totalValues = leadsAgg.length > 0 ? leadsAgg[0].totalValue : 0;
-     const totalCount = leadsAgg.length > 0 ? leadsAgg[0].totalCount : 0;
+    const totalCount = leadsAgg.length > 0 ? leadsAgg[0].totalCount : 0;
 
     // --- Total targeted values (goals) ---
     let targetValues = 0;
     let targetCount = 0;
 
-     const goalFilters = {};
+    const goalFilters = {};
     if (user && user !== "All") {
       goalFilters.jobHolder = fetchedUser._id;
     }
 
-    if (user === "All") goalFilters.jobHolder = {
-        $in: teamLeads.map(user => user._id),
+    if (user === "All")
+      goalFilters.jobHolder = {
+        $in: teamLeads.map((user) => user._id),
       };
 
     if (startDate && endDate) {
@@ -1931,49 +1554,42 @@ export const getWonLeadStats = async (req, res) => {
     // fetch both types of goals
     const goals = await goalModel.find(goalFilters).lean();
 
+    if (user === "All") {
+      targetValues = goals
+        .filter((g) => g.goalType === "Target Lead Value (Team Lead)")
+        .reduce((acc, g) => acc + (g.achievement || 0), 0);
 
-    if(user === "All") {
+      targetCount = goals
+        .filter((g) => g.goalType === "Target Lead Count (Team Lead)")
+        .reduce((acc, g) => acc + (g.achievement || 0), 0);
+    } else {
+      targetValues = goals
+        .filter(
+          (g) =>
+            (g.goalType === "Target Lead Value" && !fetchedUser?.isTeamLead) ||
+            (g.goalType === "Target Lead Value (Team Lead)" &&
+              fetchedUser?.isTeamLead),
+        )
+        .reduce((acc, g) => acc + (g.achievement || 0), 0);
 
-         
-          
-          targetValues = goals
-      .filter((g) =>  (g.goalType === "Target Lead Value (Team Lead)"))
-      .reduce((acc, g) => acc + (g.achievement || 0), 0);
-
-    targetCount = goals
-      .filter((g) =>  (g.goalType === "Target Lead Count (Team Lead)"))
-      .reduce((acc, g) => acc + (g.achievement || 0), 0);
-
-
-        } else {
-
-
-          targetValues = goals
-      .filter((g) => (g.goalType === "Target Lead Value" && !fetchedUser?.isTeamLead) || (g.goalType === "Target Lead Value (Team Lead)" && fetchedUser?.isTeamLead))
-      .reduce((acc, g) => acc + (g.achievement || 0), 0);
-
-    targetCount = goals
-      .filter((g) => (g.goalType === "Target Lead Count" && !fetchedUser?.isTeamLead) || (g.goalType === "Target Lead Count (Team Lead)" && fetchedUser?.isTeamLead))
-      .reduce((acc, g) => acc + (g.achievement || 0), 0);
-
-
-
-
-        }
-
-
-    
-      
+      targetCount = goals
+        .filter(
+          (g) =>
+            (g.goalType === "Target Lead Count" && !fetchedUser?.isTeamLead) ||
+            (g.goalType === "Target Lead Count (Team Lead)" &&
+              fetchedUser?.isTeamLead),
+        )
+        .reduce((acc, g) => acc + (g.achievement || 0), 0);
+    }
 
     return res.json({
       totalValues,
       targetValues,
-      
+
       totalCount,
       targetCount,
       // percentage calculations are better done in frontend
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server Error" });

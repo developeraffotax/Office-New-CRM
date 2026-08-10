@@ -103,76 +103,76 @@ leadSchema.pre("save", async function (next) {
    (Works with findByIdAndUpdate)
 =============================== */
 
-leadSchema.pre("findOneAndUpdate", function (next) {
-  try {
-    let update = this.getUpdate();
+// leadSchema.pre("findOneAndUpdate", function (next) {
+//   try {
+//     let update = this.getUpdate();
 
-    if (!update) return next();
+//     if (!update) return next();
 
-    // Ensure $set exists
-    if (!update.$set) {
-      update.$set = {};
-    }
+//     // Ensure $set exists
+//     if (!update.$set) {
+//       update.$set = {};
+//     }
 
-    // Ensure $unset exists
-    if (!update.$unset) {
-      update.$unset = {};
-    }
+//     // Ensure $unset exists
+//     if (!update.$unset) {
+//       update.$unset = {};
+//     }
 
-    // Get status from update
-    const status =
-      update.status || update.$set.status;
+//     // Get status from update
+//     const status =
+//       update.status || update.$set.status;
 
-    // Get manually provided timestamps
-    const manualWonAt =
-      update.wonAt || update.$set.wonAt;
+//     // Get manually provided timestamps
+//     const manualWonAt =
+//       update.wonAt || update.$set.wonAt;
 
-    const manualLostAt =
-      update.lostAt || update.$set.lostAt;
+//     const manualLostAt =
+//       update.lostAt || update.$set.lostAt;
 
-    if (!status) {
-      this.setUpdate(update);
-      return next();
-    }
+//     if (!status) {
+//       this.setUpdate(update);
+//       return next();
+//     }
 
-    /* ===============================
-       STATUS LOGIC
-    =============================== */
+//     /* ===============================
+//        STATUS LOGIC
+//     =============================== */
 
-    if (status === "won") {
+//     if (status === "won") {
 
-      // Only auto-set if frontend did NOT send wonAt
-      if (!manualWonAt) {
-        update.$set.wonAt = new Date();
-      }
+//       // Only auto-set if frontend did NOT send wonAt
+//       if (!manualWonAt) {
+//         update.$set.wonAt = new Date();
+//       }
 
-      // Remove lostAt
-      update.$unset.lostAt = "";
-    }
+//       // Remove lostAt
+//       update.$unset.lostAt = "";
+//     }
 
-    if (status === "lost") {
+//     if (status === "lost") {
 
-      if (!manualLostAt) {
-        update.$set.lostAt = new Date();
-      }
+//       if (!manualLostAt) {
+//         update.$set.lostAt = new Date();
+//       }
 
-      update.$unset.wonAt = "";
-    }
+//       update.$unset.wonAt = "";
+//     }
 
-    if (status === "progress") {
+//     if (status === "progress") {
 
-      update.$unset.wonAt = "";
-      update.$unset.lostAt = "";
-    }
+//       update.$unset.wonAt = "";
+//       update.$unset.lostAt = "";
+//     }
 
-    this.setUpdate(update);
+//     this.setUpdate(update);
 
-    next();
+//     next();
 
-  } catch (error) {
-    next(error);
-  }
-});
+//   } catch (error) {
+//     next(error);
+//   }
+// });
 
 
 

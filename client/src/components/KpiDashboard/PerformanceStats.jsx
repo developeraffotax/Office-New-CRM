@@ -98,6 +98,8 @@ const PerformanceStats = ({ dateRange, source, user }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 2xl:grid-cols-6 min-[2000px]:grid-cols-9 gap-4 font-inter">
       {STAT_CARDS.map(({ key, label, valueType, icon, iconBg }) => {
+
+        
         const entry = stats[key]; // { value, change } | undefined
         return (
           <StatCard

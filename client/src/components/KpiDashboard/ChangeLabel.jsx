@@ -22,7 +22,7 @@ export default function ChangeLabel({ percent, dateRange }) {
       </Typography>
       {dateRange && (
         <Typography component="span" variant="caption" color="text.secondary">
-          vs previous period
+          vs. prior
         </Typography>
       )}
     </Box>

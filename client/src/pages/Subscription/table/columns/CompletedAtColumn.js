@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { getCurrentMonthYear } from "../../utils/utils";
 import toast from "react-hot-toast";
 
-export const createCompletedAtColumn = ({handleUpdateSubscription}) => ({
+export const createCompletedAtColumn = ({ handleUpdateSubscription }) => ({
   accessorKey: "completedAt",
   header: "Completed At",
   Header: ({ column }) => {
@@ -62,7 +62,8 @@ export const createCompletedAtColumn = ({handleUpdateSubscription}) => ({
       </div>
     );
   },
-Cell: ({ cell, row }) => {
+
+  Cell: ({ cell, row }) => {
     const completedAt = cell.getValue();
 
     // Helper to extract YYYY-MM-DD safely for input[type="date"]
@@ -93,11 +94,7 @@ Cell: ({ cell, row }) => {
       }
 
       setDate(newDate);
-      handleUpdateSubscription(
-        row?.original?._id,
-        newDate,
-        "completedAt"
-      );
+      handleUpdateSubscription(row?.original?._id, newDate, "completedAt");
       setShowEdit(false);
     };
 
@@ -182,7 +179,7 @@ Cell: ({ cell, row }) => {
     "Last 30 days",
     "Last 60 days",
     "Last 12 months",
-    
+    "Custom date",
   ],
   filterVariant: "custom",
   size: 115,

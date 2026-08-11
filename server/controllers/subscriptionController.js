@@ -603,7 +603,7 @@ export const copySubscription = async (req, res) => {
 
     const copiedSubscription = await subscriptionModel.create({
       ...subData,
-      clientName: `${subData.clientName} (Copy)`,
+      clientName: `${subData.clientName}`,
       progressStatus: "in_progress",
     });
 

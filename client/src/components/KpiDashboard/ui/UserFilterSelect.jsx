@@ -86,7 +86,7 @@ export default function UserFilterSelect({ users, selected, onChange }) {
 
         <Divider />
 
-        <List dense sx={{ maxHeight: 280, overflowY: "auto", py: 0.5 }}>
+        <List dense sx={{ maxHeight: 480, overflowY: "auto", py: 0.5 }}>
           {filtered.length === 0 && (
             <Typography variant="body2" color="text.secondary" sx={{ px: 2, py: 1.5 }}>No users match "{query}"</Typography>
           )}

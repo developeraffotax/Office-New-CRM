@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { getCurrentMonthYear } from "../../utils/utils";
+import toast from "react-hot-toast";
 
-export const createCompletedAtColumn = () => ({
+export const createCompletedAtColumn = ({handleUpdateSubscription}) => ({
   accessorKey: "completedAt",
   header: "Completed At",
   Header: ({ column }) => {
@@ -61,14 +62,67 @@ export const createCompletedAtColumn = () => ({
       </div>
     );
   },
-  Cell: ({ cell }) => {
+Cell: ({ cell, row }) => {
     const completedAt = cell.getValue();
+
+    // Helper to extract YYYY-MM-DD safely for input[type="date"]
+    const getValidIsoDate = (val) => {
+      if (!val) return "";
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? "" : d.toISOString().split("T")[0];
+    };
+
+    const [date, setDate] = useState(() => getValidIsoDate(completedAt));
+    const [showEdit, setShowEdit] = useState(false);
+
+    // Sync input state if table cell data updates externally
+    useEffect(() => {
+      setDate(getValidIsoDate(completedAt));
+    }, [completedAt]);
+
+    const handleDateChange = (newDate) => {
+      if (!newDate) {
+        setShowEdit(false);
+        return;
+      }
+
+      const dateObj = new Date(newDate);
+      if (isNaN(dateObj.getTime())) {
+        toast.error("Please enter a valid date.");
+        return;
+      }
+
+      setDate(newDate);
+      handleUpdateSubscription(
+        row?.original?._id,
+        newDate,
+        "completedAt"
+      );
+      setShowEdit(false);
+    };
+
+    // Safely format display text
+    const displayFormattedDate = () => {
+      if (!completedAt) return "";
+      const dateObj = new Date(completedAt);
+      return isNaN(dateObj.getTime()) ? "" : format(dateObj, "dd-MMM-yyyy");
+    };
 
     return (
       <div className="w-full">
-        <p className="px-1">
-          {completedAt ? format(new Date(completedAt), "dd-MMM-yyyy") : "-"}
-        </p>
+        {!showEdit ? (
+          <p onDoubleClick={() => setShowEdit(true)} className="cursor-pointer">
+            {displayFormattedDate()}
+          </p>
+        ) : (
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            onBlur={(e) => handleDateChange(e.target.value)}
+            className="h-[2rem] cursor-pointer w-full text-center rounded-md border border-gray-200 outline-none"
+          />
+        )}
       </div>
     );
   },

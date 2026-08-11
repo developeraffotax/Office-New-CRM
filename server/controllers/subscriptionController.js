@@ -202,6 +202,7 @@ export const updateSingleField = async (req, res) => {
   status: "status",
   subscription: "subscription",
   source: "source",
+  completedAt: "completedAt",
 };
 
 

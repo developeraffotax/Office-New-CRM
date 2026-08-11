@@ -190,6 +190,7 @@ export default function Subscription() {
       "status",
       "subscription",
       "source",
+      "completedAt",
     ];
 
     if (!allowedFields.includes(type)) {

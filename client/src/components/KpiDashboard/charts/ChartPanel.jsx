@@ -1,24 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import Chart from "react-apexcharts";
 import dashboardApi from "../api/dashboardApi";
+import { colorsForSeries } from "../utils/userColors";
 
-const COLOR_PALETTE = [
-  "#1461de", "#059669", "#DB2777", "#6366F1",
-  "#EA580C", "#0891B2", "#7C3AED", "#CA8A04",
-  "#DC2626", "#16A34A", "#2563EB", "#0D9488",
-];
-
-
-const hashToIndex = (str, mod) => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
-  return hash % mod;
-};
-
-const colorsForSeries = (series, fallback = COLOR_PALETTE) =>
-  series.length > 1
-    ? series.map((s) => fallback[hashToIndex(s.name, fallback.length)])
-    : fallback; // single series: keep original palette order/behavior
+ 
 
 // Fields the API returns that describe the response, not a data series.
 // Everything else that's an array gets turned into a chart series
@@ -170,7 +155,7 @@ export default function ChartPanel({ chartKey, isMulti, valueType = "count", dat
     },
     stroke: { curve: "smooth" },
     markers: { size: 4 },
-    colors: COLOR_PALETTE,
+    colors: colorsForSeries(series),
     dataLabels: { enabled: true, formatter: formatValue },
     tooltip: { y: { formatter: formatValue } },
     legend: { show: series.length > 1 },

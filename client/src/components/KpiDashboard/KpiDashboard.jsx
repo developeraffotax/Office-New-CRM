@@ -38,6 +38,7 @@ import PerformanceStats from "./PerformanceStats";
 import ManualRangePicker from "./ManualRangePicker";
 import QuickFilterMenu from "./QuickFilterMenu";
 import { LEADS_SOURCES } from "../../constants/constants";
+import UserFilterSelect from "./ui/UserFilterSelect";
 
 const TAB_GROUPS = [
   {
@@ -260,6 +261,14 @@ const isFilterActive =
             alignItems="center"
             useFlexGap
           >
+
+
+                        {/* User Filter */}
+<FormControl size="small" sx={{ minWidth: 200 }}>
+<UserFilterSelect users={users} selected={selectedUsers} onChange={setSelectedUsers} />
+</FormControl>
+
+
             {/* Source Filter */}
             <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel id="source-select-label">Source</InputLabel>
@@ -280,35 +289,7 @@ const isFilterActive =
               </Select>
             </FormControl>
 
-            {/* User Filter */}
-<FormControl size="small" sx={{ minWidth: 200 }}>
-  <InputLabel id="user-select-label">Users</InputLabel>
-  <Select
-    labelId="user-select-label"
-    multiple
-    value={selectedUsers}
-    onChange={(e) => {
-      const { value } = e.target;
-      setSelectedUsers(typeof value === "string" ? value.split(",") : value);
-    }}
-    input={<OutlinedInput label="Users" />}
-    renderValue={(selected) =>
-      selected.length === 0
-        ? "All"
-        : selected.length <= 2
-        ? selected.join(", ")
-        : `${selected.length} users selected`
-    }
-    MenuProps={{ PaperProps: { style: { maxHeight: 320 } } }}
-  >
-    {users.map((user) => (
-      <MenuItem key={user._id} value={user.name}>
-        <Checkbox checked={selectedUsers.indexOf(user.name) > -1} />
-        <ListItemText primary={user.name} />
-      </MenuItem>
-    ))}
-  </Select>
-</FormControl>
+
 
             {/* Global chart type toggle */}
             <ToggleButtonGroup

@@ -34,6 +34,7 @@ import ChartPanel from "./charts/ChartPanel";
 import PerformanceStats from "./PerformanceStats";
 import ManualRangePicker from "./ManualRangePicker";
 import QuickFilterMenu from "./QuickFilterMenu";
+import { LEADS_SOURCES } from "../../constants/constants";
 
 const TAB_GROUPS = [
   {
@@ -107,7 +108,7 @@ const TAB_GROUPS = [
   },
 ];
 
-const SOURCES = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
+// const SOURCES = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
 
 function TabPanel({ children, active }) {
   return (
@@ -267,7 +268,7 @@ export default function KpiDashboard() {
                 <MenuItem value="">
                   <em>All</em>
                 </MenuItem>
-                {SOURCES.map((src) => (
+                {LEADS_SOURCES.map((src) => (
                   <MenuItem key={src} value={src}>
                     {src}
                   </MenuItem>

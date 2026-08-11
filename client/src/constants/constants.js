@@ -1,15 +1,20 @@
 
+// ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
+
 
 export  const LEADS_SOURCES = [
+    "Website",
     "Upwork",
     "Fiverr",
     "PPH",
+    "Direct",
     "Referral",
     "Partner",
-    "Google",
-    "Facebook",
-    "LinkedIn",
     "CRM",
     "Existing",
-    "Other",
+    "Outreach",
+    "Others",
   ];
+
+
+

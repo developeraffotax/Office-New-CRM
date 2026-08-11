@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { generateRef } from "../utils/generateRef.js";
+ 
 
 // Job Schema
 const jobSchema = new mongoose.Schema(
@@ -154,7 +155,7 @@ const clientSchema = new mongoose.Schema(
       default: () => new Date(),
     },
     source: {
-      type: String,
+      type: String, 
     },
     status: {
       type: String,

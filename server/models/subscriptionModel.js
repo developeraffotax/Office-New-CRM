@@ -138,7 +138,7 @@ const subScriptionSchema = new mongoose.Schema(
 
     source: {
       type: String,
-      enum: ["FIV", "UPW", "PPH", "Website", "Direct", "Partner", ]
+      // enum: ["FIV", "UPW", "PPH", "Website", "Direct", "Partner", ]
     },
 
 

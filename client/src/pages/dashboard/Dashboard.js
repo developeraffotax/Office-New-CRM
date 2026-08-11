@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Layout from "../../components/Loyout/Layout";
 import Clients from "../../components/Dashboard/Clients";
 import Tasks from "../../components/Dashboard/Tasks";
@@ -16,6 +16,7 @@ import { FiZoomIn, FiZoomOut, FiRefreshCw } from "react-icons/fi";
 import QuickAccess from "../../utlis/QuickAccess";
 import FilterSelect from "../../utlis/FilterSelect";
 import { subMonths, startOfMonth, startOfQuarter, isAfter } from "date-fns";
+import { LEADS_SOURCES } from "../../constants/constants";
 
 export default function Dashboard() {
   // Client
@@ -103,7 +104,15 @@ const handleFeatureFilter = (value) => {
     "Company Sec",
     "Address",
   ];
-  const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
+  // const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
+
+    const sources = useMemo(() => {
+        return [...LEADS_SOURCES]
+  
+    }, [])
+  
+
+
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
   const partners = ["Affotax", "Outsource", "OTL"];
   // Sales

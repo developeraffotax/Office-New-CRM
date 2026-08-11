@@ -2,7 +2,23 @@ import { useEffect, useMemo, useState } from "react";
 import Chart from "react-apexcharts";
 import dashboardApi from "../api/dashboardApi";
 
-const COLOR_PALETTE = [  "#1461de", "#059669", "#DB2777", "#6366F1"];
+const COLOR_PALETTE = [
+  "#1461de", "#059669", "#DB2777", "#6366F1",
+  "#EA580C", "#0891B2", "#7C3AED", "#CA8A04",
+  "#DC2626", "#16A34A", "#2563EB", "#0D9488",
+];
+
+
+const hashToIndex = (str, mod) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+  return hash % mod;
+};
+
+const colorsForSeries = (series, fallback = COLOR_PALETTE) =>
+  series.length > 1
+    ? series.map((s) => fallback[hashToIndex(s.name, fallback.length)])
+    : fallback; // single series: keep original palette order/behavior
 
 // Fields the API returns that describe the response, not a data series.
 // Everything else that's an array gets turned into a chart series
@@ -67,7 +83,7 @@ const extractSeries = (payload) => {
   return arrayFields.map(([key, value]) => ({ name: humanizeKey(key), data: value }));
 };
 
-export default function ChartPanel({ chartKey, isMulti, valueType = "count", dateRange, type, source, user }) {
+export default function ChartPanel({ chartKey, isMulti, valueType = "count", dateRange, type, source, users }) {
   const [categories, setCategories] = useState([]);
   const [series, setSeries] = useState([]);
   const [interval, setIntervalLabel] = useState("");
@@ -91,8 +107,13 @@ export default function ChartPanel({ chartKey, isMulti, valueType = "count", dat
       params.source = source;
     }
 
-    if(user) {
-      params.jobHolder = user;
+    if (users.length > 0) {
+      params.jobHolder = users.join(",");
+      if (users.length > 1) {
+        // tell backend to break the series out by user instead of
+        // by its normal isMulti metric split
+        params.breakdown = "user";
+      }
     }
 
       const endpoint = `/api/v1/dashboard/${isMulti ? "multi" : "single"}/${chartKey}`;
@@ -115,7 +136,7 @@ export default function ChartPanel({ chartKey, isMulti, valueType = "count", dat
     return () => {
       cancelled = true;
     };
-  }, [chartKey, isMulti, dateRange, source, user]);
+  }, [chartKey, isMulti, dateRange, source, users]);
 
   const formatValue = useMemo(() => formatByType(valueType), [valueType]);
 

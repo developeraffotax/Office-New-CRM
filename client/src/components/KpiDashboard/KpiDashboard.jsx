@@ -15,6 +15,9 @@ import {
   Select,
   MenuItem,
   Divider,
+  OutlinedInput,
+  Checkbox,
+  ListItemText,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -136,7 +139,7 @@ export default function KpiDashboard() {
 
   // Dropdown Filters
   const [selectedSource, setSelectedSource] = useState("");
-  const [selectedUser, setSelectedUser] = useState("");
+const [selectedUsers, setSelectedUsers] = useState([]);
   const [users, setUsers] = useState([]);
 
   // UI State
@@ -169,11 +172,12 @@ export default function KpiDashboard() {
     setVisitedTabs((prev) => new Set(prev).add(activeTab));
   }, [activeTab]);
 
-  const isFilterActive =
-    dateRange !== defaultDateRange ||
-    activeLabel !== "This Year" ||
-    selectedSource !== "" ||
-    selectedUser !== "";
+// isFilterActive
+const isFilterActive =
+  dateRange !== defaultDateRange ||
+  activeLabel !== "This Year" ||
+  selectedSource !== "" ||
+  selectedUsers.length > 0;
 
   const handleQuickFilterSelect = (label, range) => {
     setActiveLabel(label);
@@ -184,7 +188,7 @@ export default function KpiDashboard() {
     setDateRange(defaultDateRange);
     setActiveLabel("This Year");
     setSelectedSource("");
-    setSelectedUser("");
+    setSelectedUsers([]);
   };
 
   const handleGroupChange = (e, newGroupKey) => {
@@ -277,24 +281,34 @@ export default function KpiDashboard() {
             </FormControl>
 
             {/* User Filter */}
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel id="user-select-label">User</InputLabel>
-              <Select
-                labelId="user-select-label"
-                value={selectedUser}
-                label="User"
-                onChange={(e) => setSelectedUser(e.target.value)}
-              >
-                <MenuItem value="">
-                  <em>All</em>
-                </MenuItem>
-                {users.map((user) => (
-                  <MenuItem key={user._id} value={user.name}>
-                    {user.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+<FormControl size="small" sx={{ minWidth: 200 }}>
+  <InputLabel id="user-select-label">Users</InputLabel>
+  <Select
+    labelId="user-select-label"
+    multiple
+    value={selectedUsers}
+    onChange={(e) => {
+      const { value } = e.target;
+      setSelectedUsers(typeof value === "string" ? value.split(",") : value);
+    }}
+    input={<OutlinedInput label="Users" />}
+    renderValue={(selected) =>
+      selected.length === 0
+        ? "All"
+        : selected.length <= 2
+        ? selected.join(", ")
+        : `${selected.length} users selected`
+    }
+    MenuProps={{ PaperProps: { style: { maxHeight: 320 } } }}
+  >
+    {users.map((user) => (
+      <MenuItem key={user._id} value={user.name}>
+        <Checkbox checked={selectedUsers.indexOf(user.name) > -1} />
+        <ListItemText primary={user.name} />
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
 
             {/* Global chart type toggle */}
             <ToggleButtonGroup
@@ -325,7 +339,7 @@ export default function KpiDashboard() {
             <PerformanceStats
               dateRange={dateRange}
               source={selectedSource}
-              user={selectedUser}
+              users={selectedUsers}
             />
           </Box>
         )}
@@ -391,7 +405,7 @@ export default function KpiDashboard() {
                       dateRange={dateRange}
                       type={chartType}
                       source={selectedSource}
-                      user={selectedUser}
+                      users={selectedUsers}
                     />
                   </TabPanel>
                 ),

@@ -100,13 +100,14 @@ export const getTimeSeriesData = async ({
   groupBy,
   valueConfig = { type: "count" },
   buildPipeline,
+  breakdownField,   // NEW: e.g. "jobHolder" or "job.jobHolder" — also group by this
+  breakdownValues,  // NEW: expected values, so a user with zero rows still gets a zero-filled series
 }) => {
   const startDate = moment(start).startOf("day");
   const endDate = moment(end).endOf("day");
   const groupUnit = resolveGroupBy(groupBy, startDate, endDate);
   const dateFormat = dateFormatMap[groupUnit];
 
-  // Auto-build date match filter if dateField is present
   const finalMatch = {
     ...matchQuery,
     ...(dateField ? { [dateField]: { $gte: startDate.toDate(), $lte: endDate.toDate() } } : {}),
@@ -114,59 +115,62 @@ export const getTimeSeriesData = async ({
 
   let pipeline;
 
-  // 1. IF CUSTOM PIPELINE GENERATOR IS PROVIDED: Delegate pipeline creation
   if (typeof buildPipeline === "function") {
-    pipeline = buildPipeline({
-      matchQuery,
-      finalMatch,
-      startDate,
-      endDate,
-      groupUnit,
-      dateFormat,
-      dateField,
-    });
-  } 
-  // 2. STANDARD PIPELINE BUILDER
-  else {
-    const groupStage = {
-      _id: { $dateToString: { format: dateFormat, date: `$${dateField}` } },
-    };
+    pipeline = buildPipeline({ matchQuery, finalMatch, startDate, endDate, groupUnit, dateFormat, dateField });
+  } else {
+    const groupStage = breakdownField
+      ? {
+          _id: {
+            date: { $dateToString: { format: dateFormat, date: `$${dateField}` } },
+            group: `$${breakdownField}`,
+          },
+        }
+      : {
+          _id: { $dateToString: { format: dateFormat, date: `$${dateField}` } },
+        };
 
     if (valueConfig.type === "sum") {
-      // Fee/totalHours stored as String: safely convert to double
       groupStage.value = {
-        $sum: {
-          $convert: {
-            input: `$${valueConfig.field}`,
-            to: "double",
-            onError: 0,
-            onNull: 0,
-          },
-        },
+        $sum: { $convert: { input: `$${valueConfig.field}`, to: "double", onError: 0, onNull: 0 } },
       };
     } else if (valueConfig.type === "custom" && valueConfig.accumulator) {
-      // Pass raw MongoDB group accumulators ($avg, $min, $max, conditional $sum, etc.)
       groupStage.value = valueConfig.accumulator;
     } else {
       groupStage.value = { $sum: 1 };
     }
 
-    pipeline = [{ $match: finalMatch }, { $group: groupStage }, { $sort: { _id: 1 } }];
+    pipeline = [
+      { $match: finalMatch },
+      { $group: groupStage },
+      { $sort: breakdownField ? { "_id.date": 1 } : { _id: 1 } },
+    ];
   }
 
-  // Execute aggregation
   const results = await Model.aggregate(pipeline);
-
-  // Map results back to statsMap (_id must be formatted date string: "YYYY-MM-DD", value: number)
-  const statsMap = {};
-  results.forEach((r) => {
-    statsMap[r._id] = r.value;
-  });
-
-  // Zero-fill missing dates for aligned charts
   const { keys, labels } = buildDateBuckets(startDate, endDate, groupUnit);
-  const data = keys.map((k) => Number((statsMap[k] || 0).toFixed(2)));
 
+  // --- NEW: grouped/multi-series reshape ---
+  if (breakdownField) {
+    const byGroup = {};
+    results.forEach((r) => {
+      const groupKey = String(r._id.group ?? "Unassigned");
+      (byGroup[groupKey] ??= {})[r._id.date] = r.value;
+    });
+
+    const groupKeys = breakdownValues?.length ? breakdownValues.map(String) : Object.keys(byGroup);
+
+    const series = groupKeys.map((groupKey) => ({
+      name: groupKey,
+      data: keys.map((k) => Number((byGroup[groupKey]?.[k] || 0).toFixed(2))),
+    }));
+
+    return { labels, series, groupUnit };
+  }
+
+  // --- existing single-series path, unchanged ---
+  const statsMap = {};
+  results.forEach((r) => { statsMap[r._id] = r.value; });
+  const data = keys.map((k) => Number((statsMap[k] || 0).toFixed(2)));
   return { labels, data, groupUnit };
 };
 
@@ -189,7 +193,38 @@ export const getMultiSeriesData = async (seriesDefs) => {
 };
 
 
+/**
+ * Like getMultiSeriesData, but when a breakdownField is given, computes
+ * each sub-chart already grouped by that field, then re-groups by value
+ * (e.g. by user) so composite.transform can run once per group against
+ * an unmodified { labels, groupUnit, series } bundle — exactly the shape
+ * it already expects.
+ */
+export const getMultiSeriesDataByUser = async (seriesDefs, breakdownValues) => {
+  const results = await Promise.all(
+    seriesDefs.map(({ params, breakdownField }) =>
+      getTimeSeriesData({ ...params, breakdownField, breakdownValues })
+    )
+  );
 
+  const labels = results[0]?.labels || [];
+  const groupUnit = results[0]?.groupUnit;
+  const groupKeys = breakdownValues?.length
+    ? breakdownValues.map(String)
+    : Array.from(new Set(results.flatMap((r) => r.series.map((s) => s.name))));
+
+  return groupKeys.map((groupKey) => ({
+    groupKey,
+    bundle: {
+      labels,
+      groupUnit,
+      series: seriesDefs.map(({ name }, i) => {
+        const s = results[i].series.find((s) => s.name === groupKey);
+        return { name, data: s ? s.data : labels.map(() => 0) };
+      }),
+    },
+  }));
+};
 
 
 

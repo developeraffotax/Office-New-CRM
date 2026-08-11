@@ -59,7 +59,7 @@ const StatCard = ({ label, value, change, dateRange, iconBg, icon }) => (
  
 
 
-const PerformanceStats = ({ dateRange, source, user }) => {
+const PerformanceStats = ({ dateRange, source, users }) => {
   const [stats, setStats] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -75,8 +75,8 @@ const PerformanceStats = ({ dateRange, source, user }) => {
       params.source = source;
     }
 
-    if(user) {
-      params.jobHolder = user;
+    if (users && users.length > 0) {
+      params.jobHolder = users.join(",");
     }
 
     setIsLoading(true);
@@ -89,7 +89,7 @@ const PerformanceStats = ({ dateRange, source, user }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [dateRange, source, user]);
+  }, [dateRange, source, users]);
 
   useEffect(() => {
     getStats();

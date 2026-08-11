@@ -95,7 +95,8 @@ export const applyFilters = (matchQuery, query, filterMap) => {
   filterMap.forEach(([queryKey, matchKey]) => {
     const value = query[queryKey];
     if (value && value !== "all") {
-      matchQuery[matchKey] = value;
+      const values = String(value).split(",").map((v) => v.trim()).filter(Boolean);
+      matchQuery[matchKey] = values.length > 1 ? { $in: values } : values[0];
     }
   });
   return matchQuery;

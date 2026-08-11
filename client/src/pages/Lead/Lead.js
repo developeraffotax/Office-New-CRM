@@ -46,6 +46,7 @@ import EmailDetailDrawerNewWrapper from "../../components/shared/EmailDetailDraw
 import FollowupDateFilter from "./ui/FollowupDateFilter";
 import SelectedUsers from "../../components/SelectedUsers";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
+import { LEADS_SOURCES } from "../../constants/constants";
 
 const updates_object_init = {
       companyName: '',
@@ -209,19 +210,25 @@ const applyFilter = (e) => {
 
 
   
-  const leadSource = [
-    "Upwork",
-    "Fiverr",
-    "PPH",
-    "Referral",
-    "Partner",
-    "Google",
-    "Facebook",
-    "LinkedIn",
-    "CRM",
-    "Existing",
-    "Other",
-  ];
+  // const leadSource2 = [
+  //   "Upwork",
+  //   "Fiverr",
+  //   "PPH",
+  //   "Referral",
+  //   "Partner",
+  //   "Google",
+  //   "Facebook",
+  //   "LinkedIn",
+  //   "CRM",
+  //   "Existing",
+  //   "Other",
+  // ];
+
+  const leadSource = useMemo(() => {
+    return [...LEADS_SOURCES];
+  }, []);
+
+
   const stages = ["Interest", "Decision", "Action"];
   const brands = ["Affotax", "Outsource", "OTL"];
   const sources = ["Invitation", "Proposal", "Website"];

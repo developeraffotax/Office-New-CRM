@@ -26,6 +26,7 @@ import ActionsCell from "./ActionsCell";
 import getSubscriptionColumns from "./table/columns";
 import { isAdmin } from "../../utlis/isAdmin";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
+import { LEADS_SOURCES } from "../../constants/constants";
 
 export default function Subscription() {
   const auth = useSelector((state) => state.auth.auth);
@@ -61,9 +62,9 @@ export default function Subscription() {
 
 
  // const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
-  const sources = [
-    "FIV", "UPW", "PPH", "Website", "Direct", "Partner"
-  ];
+  // const sources = [
+  //   "FIV", "UPW", "PPH", "Website", "Direct", "Partner"
+  // ];
 
 
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
@@ -353,7 +354,7 @@ const handleCopySubscription = async (id) => {
         totalFee,
         states,
         dataLable,
-        sources,
+        sources:LEADS_SOURCES,
         status,
 
         addDatalabel,
@@ -369,7 +370,7 @@ const handleCopySubscription = async (id) => {
         handleMarkCompleted,
         handleCopySubscription,
       }),
-    [auth, users, subscriptions, userName, totalFee, states, dataLable, sources, status],
+    [auth, users, subscriptions, userName, totalFee, states, dataLable, status],
   );
 
   // Clear table Filter

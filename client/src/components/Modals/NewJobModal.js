@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { style } from "../../utlis/CommonStyle";
 import { BiLoaderCircle } from "react-icons/bi";
 import axios from "axios";
 import { CompactSelect } from "../../pages/Jobs/utils/CompactSelect";
 import { trimPayload } from "../../pages/Jobs/utils/utils";
+import { LEADS_SOURCES } from "../../constants/constants";
  
 
  
@@ -144,7 +145,13 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
   const [users, setUsers] = useState([]);
  
 
-  const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
+  //const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
+
+
+   const sources = useMemo(() => {
+        return [...LEADS_SOURCES]
+  
+    }, [])
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
   const partners = ["Affotax", "Outsource", "OTL"];
 

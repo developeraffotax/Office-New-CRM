@@ -1,7 +1,9 @@
+import { LEADS_SOURCES } from "../../../../constants/constants";
+
 export const sourceColumn = (ctx) => {
 
   
-  const sources = [ "FIV", "UPW", "PPH", "Website", "Direct", "Partner", "No Source", ];
+  const sources = [...LEADS_SOURCES];
 
   return {
     id: "Source",

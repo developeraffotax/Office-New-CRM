@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { style } from "../../utlis/CommonStyle";
 import { BiLoaderCircle } from "react-icons/bi";
 import axios from "axios";
 import StatusPills from "../../utlis/StatusPills";
 import { trimPayload } from "../../pages/Jobs/utils/utils";
+import { LEADS_SOURCES } from "../../constants/constants";
 
 
 const jobStatuses = [ "Quote", "Data", "Progress",  "Revision", "Approval", "Submission", "Billing", "Feedback", "Missing Info", "Inactive"]
@@ -223,7 +224,15 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
 
  
 
-  const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
+  // const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
+
+  
+     const sources = useMemo(() => {
+          return [...LEADS_SOURCES]
+    
+      }, [])
+
+
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
   const partners = ["Affotax", "Outsource", "OTL"];
 

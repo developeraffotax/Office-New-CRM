@@ -71,6 +71,7 @@ import SavedFiltersPanel from "../../components/SavedFilters/SavedFiltersPanel";
 import { CiFilter } from "react-icons/ci";
 import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import { isTeamLead } from "../../utlis/checkPermission";
+import { LEADS_SOURCES } from "../../constants/constants";
  
  
  
@@ -170,15 +171,19 @@ export default function AllJobs() {
   const [hours, setHours] = useState("");
   const [activeClient, setActiveClient] = useState("");
   const [qualities, setQualities] = useState([]);
-  const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
   const ctypes = ["Limited", "LLP", "Individual", "Non UK"];
   const [timerId, setTimerId] = useState("");
   const [showInactive, setShowInactive] = useState(false);
-
-
+  
+  
   const [showUniqueClients, setShowUniqueClients] = useState(false);
   const [isLoad, setIsLoad] = useState(false);
+  
+  //const sources2 = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
+  const sources = useMemo(() => {
+      return [...LEADS_SOURCES]
 
+  }, [])
 
 
 

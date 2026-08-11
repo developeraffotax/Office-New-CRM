@@ -2,10 +2,11 @@ import jobsModel from "../../models/jobsModel.js";
 import leadModel from "../../models/leadModel.js";
 import subscriptionModel from "../../models/subscriptionModel.js";
 
+
 const LEAD_FILTERS = [
   ["jobHolder", "jobHolder"],
-  ["source", "source"],
-  ["lead_Source", "lead_Source"],
+  // ["source", "source"],
+  ["source", "lead_Source"],
   ["department", "department"],
 ];
 

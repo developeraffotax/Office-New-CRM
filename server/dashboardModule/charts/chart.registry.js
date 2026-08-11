@@ -5,8 +5,8 @@ import leadModel from "../../models/leadModel.js";
 // Common filter mappings for Lead queries
 const LEAD_FILTERS = [
   ["jobHolder", "jobHolder"],
-  ["source", "source"],
-  ["lead_Source", "lead_Source"],
+  // ["source", "source"],
+  ["source", "lead_Source"],
   ["department", "department"],
 ];
 

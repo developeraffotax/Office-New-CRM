@@ -117,6 +117,7 @@ export default function UserLeadChart({ auth, active1 }) {
   const [view, setView] = useState("monthly");
   const [categories, setCategories] = useState([]);
   const [rawSeries, setRawSeries] = useState([]); // [{ user, counts, values, targetCounts, targetValues }]
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   const clearFilter = () => {
     setDateFilter("thisYear");
@@ -163,6 +164,7 @@ export default function UserLeadChart({ auth, active1 }) {
 
       setCategories(data.labels);
       setRawSeries(data.series || []);
+      setHasLoadedOnce(true);
     } catch (err) {
       console.error(err);
     }
@@ -248,7 +250,11 @@ export default function UserLeadChart({ auth, active1 }) {
     const fillOpacity = chartSeries.map((s) => (s._isTarget ? 0.35 : 1));
 
     return {
-      chart: { toolbar: { show: true }, type: chartType },
+      chart: {
+        toolbar: { show: true },
+        type: chartType,
+        animations: { enabled: false },
+      },
       plotOptions: {
         bar: {
           horizontal: false,
@@ -547,14 +553,23 @@ export default function UserLeadChart({ auth, active1 }) {
             </ToggleButtonGroup>
           </Stack>
 
-          <Chart
-            key={`${chartType}-${metric}-${rawSeries.map((s) => s.user).join("|")}`}
-            ref={chartRef}
-            options={options}
-            series={chartSeries}
-            type={chartType}
-            height={500}
-          />
+          {hasLoadedOnce ? (
+            <Chart
+              key={`${chartType}-${metric}-${rawSeries.map((s) => s.user).join("|")}`}
+              ref={chartRef}
+              options={options}
+              series={chartSeries}
+              type={chartType}
+              height={500}
+            />
+          ) : (
+            <div
+              className="w-full flex items-center justify-center text-sm text-slate-500 font-medium"
+              style={{ height: 500 }}
+            >
+              Loading chart…
+            </div>
+          )}
         </CardContent>
       </Card>
     </LocalizationProvider>

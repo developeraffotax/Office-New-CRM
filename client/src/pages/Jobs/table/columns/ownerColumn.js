@@ -15,7 +15,7 @@ export const ownerColumn = ({users, handleUpdateLead}) => {
                     column.setFilterValue("");
                   }}
                 >
-                  Owner
+                  CL.Owner
                 </span>
                 <select
                   value={column.getFilterValue() || ""}

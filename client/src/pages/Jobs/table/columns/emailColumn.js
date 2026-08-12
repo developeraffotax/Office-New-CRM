@@ -82,17 +82,18 @@ Cell: ({ row }) => {
   return (
     <div
       onClick={handleCopy}
-      className="group relative flex items-center justify-between gap-2 px-2 py-1.5    transition-all cursor-pointer active:scale-[0.98]"
-    >
-      <span
-        className={`text-sm    transition-colors ${
-          copied ? "text-orange-600" : "text-slate-600 group-hover:text-slate-900"
-        }`}
-      >
+className="group w-full relative flex items-center justify-between gap-2 px-1.5 py-1.5 transition-all cursor-pointer active:scale-[0.98]"    >
+     <span
+            title={email} // Added title so the full email shows on hover
+            // ADDED flex-1, min-w-0, and truncate to force ellipsis on long emails
+            className={`text-sm flex-1 min-w-0 truncate transition-colors ${
+              copied ? "text-orange-600" : "text-slate-600 group-hover:text-slate-900"
+            }`}
+          >
         {highlightText(email, activeSearch)}
       </span>
 
-      {
+      {/* {
         hasEmail && (
           <div className="flex items-center justify-center shrink-0 w-5 h-5">
         {copied ? (
@@ -107,12 +108,12 @@ Cell: ({ row }) => {
         )}
       </div>
         )
-      }
+      } */}
     </div>
   );
 },
 
-    size: 220,
+    size: 140,
     minSize: 100,
     maxSize: 400,
     grow: false,

@@ -2,13 +2,106 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-export default function WonLeadStats({ user, dateRange }) {
-  const [stats, setStats] = useState({
-    totalValues: 0,
-    targetValues: 0,
-    totalCount: 0,
-    targetCount: 0,
-  });
+// Keep in sync with the palette in UserLeadChart.jsx — indices line up
+// because the backend returns `stats` in the same order as the selected
+// `users` list, so card N always matches series N in the chart.
+const PALETTE = [
+  "#008FFB", "#14B8A6", "#F59E0B", "#EF4444", "#8B5CF6",
+  "#EC4899", "#22C55E", "#3B82F6", "#F97316", "#06B6D4",
+  "#A855F7", "#84CC16",
+];
+const getUserColor = (index) => PALETTE[index % PALETTE.length];
+
+function pillStyle(pct) {
+  if (pct >= 100) return { bg: "#DCFCE7", fg: "#15803D" };
+  if (pct >= 50) return { bg: "#FEF9C3", fg: "#A16207" };
+  return { bg: "#FEE2E2", fg: "#B91C1C" };
+}
+
+function StatCard({ stat, color }) {
+  const valuePercentage =
+    stat.targetValues > 0
+      ? ((stat.totalValues / stat.targetValues) * 100).toFixed(2)
+      : 0;
+
+  const countPercentage =
+    stat.targetCount > 0
+      ? ((stat.totalCount / stat.targetCount) * 100).toFixed(2)
+      : 0;
+
+  const countPill = pillStyle(countPercentage);
+  const valuePill = pillStyle(valuePercentage);
+
+  return (
+    <div
+      className="min-w-[270px] shrink-0 rounded-xl bg-white overflow-hidden"
+      style={{
+        border: "1px solid rgba(15,23,42,0.08)",
+        boxShadow: "0 1px 2px rgba(15,23,42,0.04)",
+        borderLeft: `3px solid ${color}`,
+      }}
+    >
+      <div className="flex items-center gap-2 px-3.5 pt-3 pb-2">
+        <span
+          className="inline-block rounded-full"
+          style={{ width: 8, height: 8, backgroundColor: color }}
+        />
+        <span className="text-[13px] font-semibold text-slate-700 truncate">
+          {stat.user}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2.5 px-3.5 pb-3.5">
+        <div className="flex flex-col gap-1.5 p-2.5 rounded-lg bg-slate-50">
+          <div className="flex justify-between items-baseline gap-2">
+            <span className="text-[11px] text-slate-500 font-medium">Count</span>
+            <span className="text-sm font-bold text-slate-800">{stat.totalCount}</span>
+          </div>
+          <div className="flex justify-between items-baseline gap-2 pb-1 border-b border-slate-200/80">
+            <span className="text-[11px] text-slate-500 font-medium">Target</span>
+            <span className="text-sm font-semibold text-slate-500">{stat.targetCount}</span>
+          </div>
+          <div className="flex justify-end">
+            <span
+              className="px-1.5 py-0.5 rounded text-[11px] font-bold"
+              style={{ backgroundColor: countPill.bg, color: countPill.fg }}
+            >
+              {countPercentage}%
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1.5 p-2.5 rounded-lg bg-slate-50">
+          <div className="flex justify-between items-baseline gap-2">
+            <span className="text-[11px] text-slate-500 font-medium">Value</span>
+            <span className="text-sm font-bold text-slate-800">
+              £{stat.totalValues.toLocaleString()}
+            </span>
+          </div>
+          <div className="flex justify-between items-baseline gap-2 pb-1 border-b border-slate-200/80">
+            <span className="text-[11px] text-slate-500 font-medium">Target</span>
+            <span className="text-sm font-semibold text-slate-500">
+              £{stat.targetValues.toLocaleString()}
+            </span>
+          </div>
+          <div className="flex justify-end">
+            <span
+              className="px-1.5 py-0.5 rounded text-[11px] font-bold"
+              style={{ backgroundColor: valuePill.bg, color: valuePill.fg }}
+            >
+              {valuePercentage}%
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// `users` is an array of selected user names (or ["All"]) — one card is
+// fetched and rendered per user.
+export default function WonLeadStats({ users, dateRange }) {
+  const [stats, setStats] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,15 +114,14 @@ export default function WonLeadStats({ user, dateRange }) {
           `${process.env.REACT_APP_API_URL}/api/v1/leads/userchart/won/stats`,
           {
             params: {
-              // user: user !== "All" ? user : null,
-              user: user,
+              users: users.join(","),
               startDate: start ? start.toISOString() : null,
               endDate: end ? end.toISOString() : null,
             },
           }
         );
 
-        setStats(res.data);
+        setStats(res.data.stats || []);
       } catch (err) {
         console.error("Error fetching stats:", err);
       } finally {
@@ -37,99 +129,27 @@ export default function WonLeadStats({ user, dateRange }) {
       }
     };
 
-    if (user && dateRange?.[0] && dateRange?.[1]) {
+    if (users?.length && dateRange?.[0] && dateRange?.[1]) {
       fetchStats();
     }
-  }, [user, dateRange]);
+  }, [users, dateRange]);
 
   if (loading) {
     return (
-      <div className="  w-[25%] h-full   flex  justify-center items-center gap-2 p-3 border rounded-md shadow-sm text-sm text-gray-600">
-        Loading stats...
+      <div
+        className="w-full flex justify-center items-center gap-2 p-3 rounded-xl text-sm text-slate-500 font-medium"
+        style={{ border: "1px dashed rgba(15,23,42,0.15)" }}
+      >
+        Loading stats…
       </div>
     );
   }
 
-  // Calculate percentages safely
-  const valuePercentage =
-    stats.targetValues > 0
-      ? ((stats.totalValues / stats.targetValues) * 100).toFixed(2)
-      : 0;
-
-  const countPercentage =
-    stats.targetCount > 0
-      ? ((stats.totalCount / stats.targetCount) * 100).toFixed(2)
-      : 0;
-
   return (
-    <div className=" w-[25%] flex items-end justify-end  h-full">
-      <div className="w-full grid grid-cols-2 gap-4   rounded-xl shadow-sm">
-        {/* Counts Section */}
-        <div className="flex flex-col gap-2 p-3 bg-white rounded-lg border shadow-md">
-          {/* <h3 className="text-sm font-semibold text-gray-700 border-b pb-1">
-          Counts
-        </h3> */}
-          <div className="flex justify-between gap-2 text-sm">
-            <span className="text-gray-600">Count</span>
-            <span className="text-blue-600 font-bold">{stats.totalCount}</span>
-          </div>
-          <div className="flex justify-between gap-2 text-sm  border-b pb-1 ">
-            <span className="text-gray-600">Target</span>
-            <span className="text-green-600 font-bold">
-              {stats.targetCount}
-            </span>
-          </div>
-          <div className="flex justify-between gap-2 text-sm">
-            <span className="text-gray-600">% Achieved</span>
-            <span
-              className={`px-2 py-0.5 rounded-md text-xs font-bold
-      ${
-        countPercentage >= 100
-          ? "bg-green-100 text-green-700"
-          : countPercentage >= 50
-          ? "bg-yellow-100 text-yellow-700"
-          : "bg-red-100 text-red-700"
-      }`}
-            >
-              {countPercentage}%
-            </span>
-          </div>
-        </div>
-
-        {/* Values Section */}
-        <div className="flex flex-col gap-2 p-3 bg-white rounded-lg border shadow-md">
-          {/* <h3 className="text-sm font-semibold text-gray-700 border-b pb-1">
-          Values
-        </h3> */}
-          <div className="flex justify-between gap-2 text-sm">
-            <span className="text-gray-600">Value</span>
-            <span className="text-[#F59E0B] font-bold">
-              £{stats.totalValues.toLocaleString()}
-            </span>
-          </div>
-          <div className="flex justify-between gap-2 text-sm  border-b pb-1">
-            <span className="text-gray-600">Target</span>
-            <span className="text-[#EF4444] font-bold">
-              £{stats.targetValues.toLocaleString()}
-            </span>
-          </div>
-          <div className="flex justify-between gap-2 text-sm">
-            <span className="text-gray-600">% Achieved</span>
-            <span
-              className={`px-2 py-0.5 rounded-md text-xs font-bold
-      ${
-        valuePercentage >= 100
-          ? "bg-green-100 text-green-700"
-          : valuePercentage >= 50
-          ? "bg-yellow-100 text-yellow-700"
-          : "bg-red-100 text-red-700"
-      }`}
-            >
-              {valuePercentage}%
-            </span>
-          </div>
-        </div>
-      </div>
+    <div className="w-full flex gap-3 overflow-x-auto pb-1">
+      {stats.map((stat, i) => (
+        <StatCard key={stat.user} stat={stat} color={getUserColor(i)} />
+      ))}
     </div>
   );
 }

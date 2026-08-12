@@ -12,6 +12,13 @@ import {
   FormControl,
   InputLabel,
   Button,
+  Checkbox,
+  ListItemText,
+  Chip,
+  Stack,
+  Divider,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -22,22 +29,41 @@ import WonLeadStats from "./WonLeadStats";
 
 dayjs.extend(quarterOfYear);
 
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+// A distinct color per selected user. Cycles if more users are picked than
+// colors defined here — add more hex values if you expect >12 at once.
+const PALETTE = [
+  "#008FFB", "#14B8A6", "#F59E0B", "#EF4444", "#8B5CF6",
+  "#EC4899", "#22C55E", "#3B82F6", "#F97316", "#06B6D4",
+  "#A855F7", "#84CC16",
 ];
-//const SERIES_COLORS = ["#008FFB", "#14B8A6", "#F59E0B"];
-const SERIES_COLORS = [ "#14B8A6","#008FFB",  "#EF4444", "#F59E0B"];
+const getUserColor = (index) => PALETTE[index % PALETTE.length];
+
+// Shared look for every ToggleButtonGroup in the toolbar (period / metric /
+// chart type) so the three read as one consistent control style.
+const toggleGroupSx = {
+  bgcolor: "#fff",
+  border: "1px solid rgba(15,23,42,0.12)",
+  borderRadius: 2,
+  p: 0.25,
+  "& .MuiToggleButton-root": {
+    textTransform: "none",
+    fontWeight: 600,
+    fontSize: 13,
+    lineHeight: 1,
+    px: 1.75,
+    py: 0.85,
+    border: "none",
+    borderRadius: "6px !important",
+    color: "#64748b",
+  },
+  "& .MuiToggleButton-root.Mui-selected": {
+    bgcolor: "#EEF2FF",
+    color: "#4338CA",
+  },
+  "& .MuiToggleButton-root.Mui-selected:hover": {
+    bgcolor: "#E0E7FF",
+  },
+};
 
 // Utility: get start and end dates for filters
 const getDateRange = (filter) => {
@@ -71,33 +97,32 @@ const getDateRange = (filter) => {
 
 export default function UserLeadChart({ auth, active1 }) {
   const chartRef = useRef(null);
-  const initialHideDone = useRef(false);
   const [chartType, setChartType] = useState("bar");
 
-  const [user, setUser] = useState("");
+  // Metric being charted. With multiple users on screen at once, plotting
+  // count AND value together (like the old dual-axis version) gets unreadable
+  // fast, so this picks one measure at a time; both are still available in
+  // WonLeadStats and in the raw series data.
+  const [metric, setMetric] = useState("value"); // "count" | "value"
+
+  const defaultUsers = () =>
+    isAdmin(auth) ? ["All"] : [auth?.user?.name].filter(Boolean);
+
+  const [selectedUsers, setSelectedUsers] = useState(defaultUsers());
   const [users, setUsers] = useState([]);
 
   const [dateFilter, setDateFilter] = useState("thisYear");
   const [dateRange, setDateRange] = useState(getDateRange("thisYear"));
-  const [tableData, setTableData] = useState([]);
 
   const [view, setView] = useState("monthly");
-const [categories, setCategories] = useState([]);
-
-
-  const [series, setSeries] = useState([
-    { name: "Target Count", data: [] },
-    { name: "Count", data: [] },
-
-    { name: "Target Value", data: [] },
-    { name: "Value", data: [] },
-  ]);
+  const [categories, setCategories] = useState([]);
+  const [rawSeries, setRawSeries] = useState([]); // [{ user, counts, values, targetCounts, targetValues }]
 
   const clearFilter = () => {
     setDateFilter("thisYear");
     setView("monthly");
     setDateRange(getDateRange("thisYear"));
-    setUser((prev) => (isAdmin(auth) ? "All" : auth?.user?.name));
+    setSelectedUsers(defaultUsers());
   };
 
   const getAllUsers = useCallback(async () => {
@@ -121,33 +146,27 @@ const [categories, setCategories] = useState([]);
   }, []);
 
   const fetchData = useCallback(async () => {
+    if (!selectedUsers.length) return;
     try {
       let [start, end] = dateRange;
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/leads/userchart/won`,
         {
           params: {
-            // user: user !== "All" ? user : null,
-            user: user,
+            users: selectedUsers.join(","),
             startDate: start ? start.toISOString() : null,
             endDate: end ? end.toISOString() : null,
-            view, // 👈 important
+            view,
           },
         }
       );
 
-      setCategories(data.labels); // 👈 dynamic labels from backend
-
-      setSeries([
-        { name: "Target Count", data: data.targetCounts, hidden: true },
-        { name: "Count", data: data.counts, hidden: true },
-        { name: "Target Value", data: data.targetValues },
-        { name: "Value", data: data.values },
-      ]);
+      setCategories(data.labels);
+      setRawSeries(data.series || []);
     } catch (err) {
       console.error(err);
     }
-  }, [user, dateRange, view]);
+  }, [selectedUsers, dateRange, view]);
 
   useEffect(() => {
     getAllUsers();
@@ -159,18 +178,74 @@ const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     const active = active1 || "All";
-    setUser((prev) => (isAdmin(auth) ? active : auth?.user?.name));
+    setSelectedUsers(isAdmin(auth) ? [active] : [auth?.user?.name].filter(Boolean));
   }, [active1, auth]);
- 
 
-const options = useMemo(() => {
+  // "All" is exclusive — picking it clears any other selection, and picking
+  // a specific user while "All" is active drops "All" from the selection.
+  const handleUserChange = (e) => {
+    const val = e.target.value;
+
+    if (val.includes("All") && !selectedUsers.includes("All")) {
+      setSelectedUsers(["All"]);
+      return;
+    }
+    if (selectedUsers.includes("All") && val.length > 1) {
+      setSelectedUsers(val.filter((v) => v !== "All"));
+      return;
+    }
+    setSelectedUsers(val.length ? val : ["All"]);
+  };
+
+  // Build [{ user, target: [...], actual: [...] }] pairs into the flat
+  // ApexCharts series list: target series first (hidden by default, same
+  // color, dashed/faded), then the actual series, per user — mirrors the
+  // original Target/Actual ordering.
+  const chartSeries = useMemo(() => {
+    const metricKey = metric === "count" ? "counts" : "values";
+    const targetKey = metric === "count" ? "targetCounts" : "targetValues";
+
+    const out = [];
+    rawSeries.forEach((s, idx) => {
+      // Defensive fallbacks — a response missing one of these keys (e.g. a
+      // partially-failed request) used to hand ApexCharts an `undefined`
+      // data array and crash deep inside its internals.
+      const targetData = Array.isArray(s[targetKey])
+        ? s[targetKey]
+        : new Array(categories.length).fill(0);
+      const actualData = Array.isArray(s[metricKey])
+        ? s[metricKey]
+        : new Array(categories.length).fill(0);
+
+      out.push({
+        name: `${s.user} (Target)`,
+        data: targetData,
+        hidden: true,
+        _color: getUserColor(idx),
+        _isTarget: true,
+      });
+      out.push({
+        name: s.user,
+        data: actualData,
+        _color: getUserColor(idx),
+        _isTarget: false,
+      });
+    });
+    return out;
+  }, [rawSeries, metric, categories]);
+
+  const options = useMemo(() => {
     const isBar = chartType === "bar";
-    const width = isBar ? 0 : 3; 
-    
+
     const dataCount = categories.length;
     let dynamicWidth = "50%";
     if (dataCount === 1) dynamicWidth = "10%";
     else if (dataCount === 2) dynamicWidth = "25%";
+
+    const colors = chartSeries.map((s) => s._color);
+    const strokeWidth = chartSeries.map(() => (isBar ? 0 : 3));
+    const dashArray = chartSeries.map((s) => (s._isTarget ? 6 : 0));
+    const fillOpacity = chartSeries.map((s) => (s._isTarget ? 0.35 : 1));
 
     return {
       chart: { toolbar: { show: true }, type: chartType },
@@ -179,142 +254,134 @@ const options = useMemo(() => {
           horizontal: false,
           columnWidth: dynamicWidth,
           borderRadius: 0,
-          dataLabels: {
-            position: 'top', // puts the label on top of the bar
-          },
+          dataLabels: { position: "top" },
         },
       },
-      stroke: {
-        width: [width, width, width, width],
-        curve: "smooth",
+      stroke: { width: strokeWidth, dashArray, curve: "smooth" },
+      fill: { opacity: fillOpacity },
+      xaxis: { categories },
+      yaxis: {
+        title: { text: metric === "count" ? "Lead Count" : "Total Value (£)" },
+        labels: {
+          formatter: (val) => {
+            if (val === undefined || val === null || Number.isNaN(val)) return "";
+            return metric === "count" ? val.toFixed(0) : `£${val.toLocaleString()}`;
+          },
+        },
+        min: 0,
       },
-      xaxis: { categories: categories },
-      yaxis: [
-        {
-          seriesName: "Count",
-          title: { text: "Lead Count" },
-          labels: {
-            formatter: (val) => val.toFixed(0),
-            style: { colors: SERIES_COLORS[0] },
-          },
-          min: 0,
-        },
-        { seriesName: "Count", show: false },
-        {
-          seriesName: "Value",
-          opposite: true,
-          title: { text: "Total Value (£)" },
-          labels: {
-            formatter: (val) => `£${val.toLocaleString()}`,
-            style: { colors: SERIES_COLORS[1] },
-          },
-          min: 0,
-        },
-        { seriesName: "Value", show: false },
-      ],
-      colors: SERIES_COLORS,
+      colors,
       legend: { position: "top" },
       dataLabels: {
         enabled: true,
-        offsetY: isBar ? -20 : 0, // Lift labels up if it's a bar chart
+        offsetY: isBar ? -20 : 0,
         style: {
-          colors: isBar ? ["#333"] : SERIES_COLORS, // Dark text for bars to be readable above them
+          colors: isBar ? ["#333"] : colors,
           fontSize: "12px",
           fontWeight: "bold",
         },
-        background: {
-          enabled: !isBar, 
-        },
+        background: { enabled: !isBar },
         formatter: function (val, opts) {
-          const seriesIndex = opts.seriesIndex;
-          const dataPointIndex = opts.dataPointIndex;
-          const w = opts.w;
-
-          // Logic for Count Percentage (Actual vs Target)
-          // Index 1 is "Count", Index 0 is "Target Count"
-          if (seriesIndex === 1) {
-            const target = w.config.series[0].data[dataPointIndex];
-            if (target && target !== 0) {
-              const percent = ((val / target) * 100).toFixed(0);
+          const { seriesIndex, dataPointIndex, w } = opts;
+          // Series are laid out in [target, actual] pairs per user, so every
+          // odd index is an "actual" series and its target sits right before it.
+          const isTargetSeries = seriesIndex % 2 === 0;
+          if (!isTargetSeries) {
+            const targetVal = w.config.series[seriesIndex - 1]?.data[dataPointIndex];
+            if (targetVal) {
+              const percent = ((val / targetVal) * 100).toFixed(0);
               return `${val} (${percent}%)`;
             }
           }
-
-          // Logic for Value Percentage (Actual vs Target)
-          // Index 3 is "Value", Index 2 is "Target Value"
-          if (seriesIndex === 3) {
-            const target = w.config.series[2].data[dataPointIndex];
-            if (target && target !== 0) {
-              const percent = ((val / target) * 100).toFixed(0);
-              return `${val} (${percent}%)`;
-            }
-          }
-
-          // For target bars (Index 0 and 2), just show the number
           return val;
         },
       },
     };
-  }, [chartType, categories]);
+  }, [chartType, categories, chartSeries, metric]);
+
+  const headerLabel =
+    selectedUsers.length === 1
+      ? selectedUsers[0]
+      : `${selectedUsers.length} users`;
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Card
-        sx={{ py: 4, px: 4, boxShadow: 4, borderRadius: 3, bgcolor: "#f9f9f9" }}
+        sx={{
+          p: { xs: 2.5, md: 4 },
+          bgcolor: "#fafafa",
+          border: "1px solid rgba(15,23,42,0.06)",
+          borderRadius: 3,
+          boxShadow: "0 1px 2px rgba(15,23,42,0.06), 0 12px 24px -12px rgba(15,23,42,0.12)",
+        }}
       >
-        <div className="mb-2 w-full  h-[100px]   flex justify-between items-end  gap-5 ">
-          {/* Filters */}
-           
-         
-
-          <select
-            value={view}
-            onChange={(e) => setView(e.target.value)}
-            className="border rounded px-3 py-1 text-sm"
+        <Stack spacing={2.5} sx={{ mb: 3 }}>
+          <Stack
+            direction={{ xs: "column", lg: "row" }}
+            justifyContent="space-between"
+            alignItems={{ xs: "stretch", lg: "flex-end" }}
+            spacing={2.5}
           >
-            <option value="monthly">Monthly</option>
-            <option value="weekly">Weekly</option>
-          </select>
-            
-           
+            {/* Left: period / metric */}
+            <Stack direction="row" spacing={2} flexWrap="wrap" rowGap={2}>
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{ fontWeight: 700, color: "#94a3b8", letterSpacing: 0.4, textTransform: "uppercase", display: "block", mb: 0.75 }}
+                >
+                  Period
+                </Typography>
+                <ToggleButtonGroup
+                  size="small"
+                  exclusive
+                  value={view}
+                  onChange={(e, val) => val && setView(val)}
+                  sx={toggleGroupSx}
+                >
+                  <ToggleButton value="monthly">Monthly</ToggleButton>
+                  <ToggleButton value="weekly">Weekly</ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
 
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{ fontWeight: 700, color: "#94a3b8", letterSpacing: 0.4, textTransform: "uppercase", display: "block", mb: 0.75 }}
+                >
+                  Metric
+                </Typography>
+                <ToggleButtonGroup
+                  size="small"
+                  exclusive
+                  value={metric}
+                  onChange={(e, val) => val && setMetric(val)}
+                  sx={toggleGroupSx}
+                >
+                  <ToggleButton value="value">Value</ToggleButton>
+                  <ToggleButton value="count">Count</ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
+            </Stack>
 
-
-
- 
-
-            
-
-
-            <div className="flex gap-5 w-[75%]  justify-end items-end  h-full px-4 py-2 ">
-              {/* Custom Date Pickers */}
+            {/* Right: date + user filters */}
+            <Stack direction="row" spacing={1.5} flexWrap="wrap" rowGap={1.5} justifyContent="flex-end">
               {dateFilter === "custom" && (
                 <>
                   <DatePicker
                     label="Start Date"
                     value={dateRange[0]}
-                    onChange={(newValue) =>
-                      setDateRange([newValue, dateRange[1]])
-                    }
-                    slotProps={{
-                      textField: { size: "small", variant: "outlined" },
-                    }}
-                     
+                    onChange={(newValue) => setDateRange([newValue, dateRange[1]])}
+                    slotProps={{ textField: { size: "small", variant: "outlined" } }}
                   />
                   <DatePicker
                     label="End Date"
                     value={dateRange[1]}
-                    onChange={(newValue) =>
-                      setDateRange([dateRange[0], newValue])
-                    }
-                    slotProps={{
-                      textField: { size: "small", variant: "outlined" },
-                    }}
+                    onChange={(newValue) => setDateRange([dateRange[0], newValue])}
+                    slotProps={{ textField: { size: "small", variant: "outlined" } }}
                   />
                 </>
               )}
 
-              {/* Date Filter Dropdown */}
               <FormControl size="small">
                 <InputLabel>Date Filter</InputLabel>
                 <Select
@@ -329,7 +396,7 @@ const options = useMemo(() => {
                       setDateRange([null, null]);
                     }
                   }}
-                  sx={{ minWidth: 180,   }}
+                  sx={{ minWidth: 170, bgcolor: "#fff", borderRadius: 2 }}
                 >
                   <MenuItem value="thisYear">This Year</MenuItem>
                   <MenuItem value="lastYear">Last Year</MenuItem>
@@ -341,86 +408,150 @@ const options = useMemo(() => {
                 </Select>
               </FormControl>
 
-
-                  <div>
               <FormControl size="small">
                 <InputLabel>User Filter</InputLabel>
                 <Select
-                  value={user}
+                  multiple
+                  value={selectedUsers}
                   label="User Filter"
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setUser(val);
-                  }}
-                  sx={{ minWidth: 180 }}
+                  onChange={handleUserChange}
+                  renderValue={(selected) =>
+                    selected.includes("All") ? (
+                      "All Users"
+                    ) : (
+                      <Stack direction="row" spacing={0.5} flexWrap="wrap" rowGap={0.5}>
+                        {selected.map((name, i) => (
+                          <Chip
+                            key={name}
+                            size="small"
+                            label={name}
+                            sx={{
+                              height: 20,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              bgcolor: `${getUserColor(i)}1f`,
+                              color: getUserColor(i),
+                              "& .MuiChip-label": { px: 1 },
+                            }}
+                          />
+                        ))}
+                      </Stack>
+                    )
+                  }
+                  sx={{ minWidth: 240, bgcolor: "#fff", borderRadius: 2 }}
                 >
-                  {isAdmin(auth) && <MenuItem value="All">All Users</MenuItem>}
+                  {isAdmin(auth) && (
+                    <MenuItem value="All">
+                      <Checkbox checked={selectedUsers.includes("All")} size="small" />
+                      <ListItemText primary="All Users" />
+                    </MenuItem>
+                  )}
                   {users.map((u) => (
-                  <MenuItem key={u._id || u.name} value={u.name} className="flex justify-between items-center w-full">
-                    <span>{u.name}</span>
-                    {u?.isTeamLead && (
-                      <span className="ml-2 px-1.5 py-0.5 text-[10px] font-bold uppercase rounded bg-blue-100 text-blue-600 border border-blue-200 shadow-sm">
-                        Lead
-                      </span>
-                    )}
-                  </MenuItem>
-                ))}
+                    <MenuItem key={u._id || u.name} value={u.name}>
+                      <Checkbox checked={selectedUsers.includes(u.name)} size="small" />
+                      <ListItemText primary={u.name} />
+                      {u?.isTeamLead && (
+                        <Chip
+                          label="Lead"
+                          size="small"
+                          sx={{
+                            ml: 1,
+                            height: 18,
+                            fontSize: 10,
+                            fontWeight: 700,
+                            bgcolor: "#DBEAFE",
+                            color: "#2563EB",
+                          }}
+                        />
+                      )}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
-               </div>
 
-
-              {/* Apply Button */}
               <Button
-                variant="contained"
-                color="info"
+                variant="outlined"
                 onClick={clearFilter}
-                sx={{   height: 40 }}
+                sx={{
+                  height: 40,
+                  borderRadius: 2,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  borderColor: "rgba(15,23,42,0.15)",
+                  color: "#334155",
+                  bgcolor: "#fff",
+                  "&:hover": { bgcolor: "#f8fafc", borderColor: "rgba(15,23,42,0.25)" },
+                }}
               >
                 Reset
               </Button>
-            </div>
-        
+            </Stack>
+          </Stack>
 
-          <WonLeadStats user={user} dateRange={dateRange} />
-        </div>
+          <WonLeadStats users={selectedUsers} dateRange={dateRange} />
+        </Stack>
 
-        {/* Chart */}
+        <Divider sx={{ mb: 3, borderColor: "rgba(15,23,42,0.06)" }} />
+
         <CardContent
           sx={{
-            backgroundColor: "#ffffff",
-            borderRadius: 1,
-            boxShadow: 3,
+            bgcolor: "#ffffff",
+            borderRadius: 2,
+            border: "1px solid rgba(15,23,42,0.06)",
+            boxShadow: "0 1px 2px rgba(15,23,42,0.04)",
+            p: { xs: 2, sm: 3 },
           }}
         >
-          <div className="flex justify-between  px-8 mb-2  ">
-<h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2 mb-4">
-  <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm">
-    Stats
-  </span>
-  <span>
-    User Lead Statistics <span className="text-gray-500 font-normal">(Won Leads)</span> – {user}
-  </span>
-</h2>
-            <div>
-              <select
-              value={chartType}
-              onChange={(e) => setChartType(e.target.value)}
-              className="border rounded px-3 py-1 text-sm"
-            >
-              <option value="bar">Bar</option>
-              <option value="line">Line</option>
-              <option value="area">Area</option>
-            </select>
-            </div>
-          </div>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            justifyContent="space-between"
+            alignItems={{ xs: "flex-start", sm: "center" }}
+            spacing={1.5}
+            sx={{ mb: 3 }}
+          >
+            <Box>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+                <Chip
+                  label="Stats"
+                  size="small"
+                  sx={{
+                    height: 20,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#fff",
+                    background: "linear-gradient(90deg, #3B82F6, #8B5CF6)",
+                  }}
+                />
+                <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600 }}>
+                  {view === "monthly" ? "Monthly" : "Weekly"} · {metric === "value" ? "Value" : "Count"}
+                </Typography>
+              </Stack>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: "#1e293b", lineHeight: 1.3 }}>
+                Won Leads{" "}
+                <Box component="span" sx={{ color: "#64748b", fontWeight: 500 }}>
+                  – {headerLabel}
+                </Box>
+              </Typography>
+            </Box>
 
-          
+            <ToggleButtonGroup
+              size="small"
+              exclusive
+              value={chartType}
+              onChange={(e, val) => val && setChartType(val)}
+              sx={toggleGroupSx}
+            >
+              <ToggleButton value="bar">Bar</ToggleButton>
+              <ToggleButton value="line">Line</ToggleButton>
+              <ToggleButton value="area">Area</ToggleButton>
+            </ToggleButtonGroup>
+          </Stack>
 
           <Chart
+            key={`${chartType}-${metric}-${rawSeries.map((s) => s.user).join("|")}`}
             ref={chartRef}
             options={options}
-            series={series}
+            series={chartSeries}
             type={chartType}
             height={500}
           />

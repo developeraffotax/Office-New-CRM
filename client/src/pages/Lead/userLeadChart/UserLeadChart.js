@@ -1,5 +1,11 @@
 "use client";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import axios from "axios";
 import Chart from "react-apexcharts";
 import {
@@ -26,15 +32,25 @@ import dayjs from "dayjs";
 import quarterOfYear from "dayjs/plugin/quarterOfYear";
 import { isAdmin } from "../../../utlis/isAdmin";
 import WonLeadStats from "./WonLeadStats";
+import ToggleStatsButton from "../ui/ToggleStatsButton";
 
 dayjs.extend(quarterOfYear);
 
 // A distinct color per selected user. Cycles if more users are picked than
 // colors defined here — add more hex values if you expect >12 at once.
 const PALETTE = [
-  "#008FFB", "#14B8A6", "#F59E0B", "#EF4444", "#8B5CF6",
-  "#EC4899", "#22C55E", "#3B82F6", "#F97316", "#06B6D4",
-  "#A855F7", "#84CC16",
+  "#008FFB",
+  "#14B8A6",
+  "#F59E0B",
+  "#EF4444",
+  "#8B5CF6",
+  "#EC4899",
+  "#22C55E",
+  "#3B82F6",
+  "#F97316",
+  "#06B6D4",
+  "#A855F7",
+  "#84CC16",
 ];
 const getUserColor = (index) => PALETTE[index % PALETTE.length];
 
@@ -98,6 +114,7 @@ const getDateRange = (filter) => {
 export default function UserLeadChart({ auth, active1 }) {
   const chartRef = useRef(null);
   const [chartType, setChartType] = useState("bar");
+  const [showStats, setShowStats] = useState(true);
 
   // Metric being charted. With multiple users on screen at once, plotting
   // count AND value together (like the old dual-axis version) gets unreadable
@@ -129,15 +146,15 @@ export default function UserLeadChart({ auth, active1 }) {
   const getAllUsers = useCallback(async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get/active/team`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get/active/team`,
       );
 
       setUsers((prev) => {
         return (
           data?.users?.filter((user) =>
             user.role?.access?.some((item) =>
-              item?.permission.includes("Leads")
-            )
+              item?.permission.includes("Leads"),
+            ),
           ) || []
         );
       });
@@ -159,7 +176,7 @@ export default function UserLeadChart({ auth, active1 }) {
             endDate: end ? end.toISOString() : null,
             view,
           },
-        }
+        },
       );
 
       setCategories(data.labels);
@@ -180,7 +197,9 @@ export default function UserLeadChart({ auth, active1 }) {
 
   useEffect(() => {
     const active = active1 || "All";
-    setSelectedUsers(isAdmin(auth) ? [active] : [auth?.user?.name].filter(Boolean));
+    setSelectedUsers(
+      isAdmin(auth) ? [active] : [auth?.user?.name].filter(Boolean),
+    );
   }, [active1, auth]);
 
   // "All" is exclusive — picking it clears any other selection, and picking
@@ -270,8 +289,11 @@ export default function UserLeadChart({ auth, active1 }) {
         title: { text: metric === "count" ? "Lead Count" : "Total Value (£)" },
         labels: {
           formatter: (val) => {
-            if (val === undefined || val === null || Number.isNaN(val)) return "";
-            return metric === "count" ? val.toFixed(0) : `£${val.toLocaleString()}`;
+            if (val === undefined || val === null || Number.isNaN(val))
+              return "";
+            return metric === "count"
+              ? val.toFixed(0)
+              : `£${val.toLocaleString()}`;
           },
         },
         min: 0,
@@ -293,7 +315,8 @@ export default function UserLeadChart({ auth, active1 }) {
           // odd index is an "actual" series and its target sits right before it.
           const isTargetSeries = seriesIndex % 2 === 0;
           if (!isTargetSeries) {
-            const targetVal = w.config.series[seriesIndex - 1]?.data[dataPointIndex];
+            const targetVal =
+              w.config.series[seriesIndex - 1]?.data[dataPointIndex];
             if (targetVal) {
               const percent = ((val / targetVal) * 100).toFixed(0);
               return `${val} (${percent}%)`;
@@ -318,72 +341,63 @@ export default function UserLeadChart({ auth, active1 }) {
           bgcolor: "#fafafa",
           border: "1px solid rgba(15,23,42,0.06)",
           borderRadius: 3,
-          boxShadow: "0 1px 2px rgba(15,23,42,0.06), 0 12px 24px -12px rgba(15,23,42,0.12)",
+          boxShadow:
+            "0 1px 2px rgba(15,23,42,0.06), 0 12px 24px -12px rgba(15,23,42,0.12)",
         }}
       >
         <Stack spacing={2.5} sx={{ mb: 3 }}>
           <Stack
             direction={{ xs: "column", lg: "row" }}
             justifyContent="space-between"
-            alignItems={{ xs: "stretch", lg: "flex-end" }}
+            alignItems={{ xs: "stretch", lg: "flex-start" }}
             spacing={2.5}
+            
           >
-            {/* Left: period / metric */}
-            <Stack direction="row" spacing={2} flexWrap="wrap" rowGap={2}>
-              <Box>
-                <Typography
-                  variant="caption"
-                  sx={{ fontWeight: 700, color: "#94a3b8", letterSpacing: 0.4, textTransform: "uppercase", display: "block", mb: 0.75 }}
-                >
-                  Period
-                </Typography>
-                <ToggleButtonGroup
-                  size="small"
-                  exclusive
-                  value={view}
-                  onChange={(e, val) => val && setView(val)}
-                  sx={toggleGroupSx}
-                >
-                  <ToggleButton value="monthly">Monthly</ToggleButton>
-                  <ToggleButton value="weekly">Weekly</ToggleButton>
-                </ToggleButtonGroup>
-              </Box>
 
-              <Box>
-                <Typography
-                  variant="caption"
-                  sx={{ fontWeight: 700, color: "#94a3b8", letterSpacing: 0.4, textTransform: "uppercase", display: "block", mb: 0.75 }}
-                >
-                  Metric
-                </Typography>
-                <ToggleButtonGroup
-                  size="small"
-                  exclusive
-                  value={metric}
-                  onChange={(e, val) => val && setMetric(val)}
-                  sx={toggleGroupSx}
-                >
-                  <ToggleButton value="value">Value</ToggleButton>
-                  <ToggleButton value="count">Count</ToggleButton>
-                </ToggleButtonGroup>
-              </Box>
-            </Stack>
 
-            {/* Right: date + user filters */}
-            <Stack direction="row" spacing={1.5} flexWrap="wrap" rowGap={1.5} justifyContent="flex-end">
+            <div>
+              {showStats && <WonLeadStats users={selectedUsers} dateRange={dateRange} />}
+            </div>
+          
+            <Stack
+              direction="row"
+              spacing={1.5}
+              flexWrap="wrap"
+              rowGap={1.5}
+              justifySelf={"end"}
+              justifyContent="flex-end"
+            >
+
+
+              <ToggleStatsButton 
+                showStats={showStats}
+                onToggle={() => setShowStats(!showStats)}
+              />
+
+
               {dateFilter === "custom" && (
                 <>
+
+
                   <DatePicker
                     label="Start Date"
                     value={dateRange[0]}
-                    onChange={(newValue) => setDateRange([newValue, dateRange[1]])}
-                    slotProps={{ textField: { size: "small", variant: "outlined" } }}
+                    onChange={(newValue) =>
+                      setDateRange([newValue, dateRange[1]])
+                    }
+                    slotProps={{
+                      textField: { size: "small", variant: "outlined" },
+                    }}
                   />
                   <DatePicker
                     label="End Date"
                     value={dateRange[1]}
-                    onChange={(newValue) => setDateRange([dateRange[0], newValue])}
-                    slotProps={{ textField: { size: "small", variant: "outlined" } }}
+                    onChange={(newValue) =>
+                      setDateRange([dateRange[0], newValue])
+                    }
+                    slotProps={{
+                      textField: { size: "small", variant: "outlined" },
+                    }}
                   />
                 </>
               )}
@@ -425,7 +439,12 @@ export default function UserLeadChart({ auth, active1 }) {
                     selected.includes("All") ? (
                       "All Users"
                     ) : (
-                      <Stack direction="row" spacing={0.5} flexWrap="wrap" rowGap={0.5}>
+                      <Stack
+                        direction="row"
+                        spacing={0.5}
+                        flexWrap="wrap"
+                        rowGap={0.5}
+                      >
                         {selected.map((name, i) => (
                           <Chip
                             key={name}
@@ -448,13 +467,19 @@ export default function UserLeadChart({ auth, active1 }) {
                 >
                   {isAdmin(auth) && (
                     <MenuItem value="All">
-                      <Checkbox checked={selectedUsers.includes("All")} size="small" />
+                      <Checkbox
+                        checked={selectedUsers.includes("All")}
+                        size="small"
+                      />
                       <ListItemText primary="All Users" />
                     </MenuItem>
                   )}
                   {users.map((u) => (
                     <MenuItem key={u._id || u.name} value={u.name}>
-                      <Checkbox checked={selectedUsers.includes(u.name)} size="small" />
+                      <Checkbox
+                        checked={selectedUsers.includes(u.name)}
+                        size="small"
+                      />
                       <ListItemText primary={u.name} />
                       {u?.isTeamLead && (
                         <Chip
@@ -486,7 +511,10 @@ export default function UserLeadChart({ auth, active1 }) {
                   borderColor: "rgba(15,23,42,0.15)",
                   color: "#334155",
                   bgcolor: "#fff",
-                  "&:hover": { bgcolor: "#f8fafc", borderColor: "rgba(15,23,42,0.25)" },
+                  "&:hover": {
+                    bgcolor: "#f8fafc",
+                    borderColor: "rgba(15,23,42,0.25)",
+                  },
                 }}
               >
                 Reset
@@ -494,7 +522,7 @@ export default function UserLeadChart({ auth, active1 }) {
             </Stack>
           </Stack>
 
-          <WonLeadStats users={selectedUsers} dateRange={dateRange} />
+         
         </Stack>
 
         <Divider sx={{ mb: 3, borderColor: "rgba(15,23,42,0.06)" }} />
@@ -516,7 +544,12 @@ export default function UserLeadChart({ auth, active1 }) {
             sx={{ mb: 3 }}
           >
             <Box>
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                sx={{ mb: 0.5 }}
+              >
                 <Chip
                   label="Stats"
                   size="small"
@@ -528,34 +561,70 @@ export default function UserLeadChart({ auth, active1 }) {
                     background: "linear-gradient(90deg, #3B82F6, #8B5CF6)",
                   }}
                 />
-                <Typography variant="caption" sx={{ color: "#94a3b8", fontWeight: 600 }}>
-                  {view === "monthly" ? "Monthly" : "Weekly"} · {metric === "value" ? "Value" : "Count"}
+                <Typography
+                  variant="caption"
+                  sx={{ color: "#94a3b8", fontWeight: 600 }}
+                >
+                  {view === "monthly" ? "Monthly" : "Weekly"} ·{" "}
+                  {metric === "value" ? "Value" : "Count"}
                 </Typography>
               </Stack>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: "#1e293b", lineHeight: 1.3 }}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: 700, color: "#1e293b", lineHeight: 1.3 }}
+              >
                 Won Leads{" "}
-                <Box component="span" sx={{ color: "#64748b", fontWeight: 500 }}>
+                <Box
+                  component="span"
+                  sx={{ color: "#64748b", fontWeight: 500 }}
+                >
                   – {headerLabel}
                 </Box>
               </Typography>
             </Box>
 
-            <ToggleButtonGroup
-              size="small"
-              exclusive
-              value={chartType}
-              onChange={(e, val) => val && setChartType(val)}
-              sx={toggleGroupSx}
-            >
-              <ToggleButton value="bar">Bar</ToggleButton>
-              <ToggleButton value="line">Line</ToggleButton>
-              <ToggleButton value="area">Area</ToggleButton>
-            </ToggleButtonGroup>
+            <Stack direction="row" spacing={2} flexWrap="wrap" rowGap={2}>
+              <ToggleButtonGroup
+                size="small"
+                exclusive
+                value={metric}
+                onChange={(e, val) => val && setMetric(val)}
+                sx={toggleGroupSx}
+              >
+                <ToggleButton value="value">Value</ToggleButton>
+                <ToggleButton value="count">Count</ToggleButton>
+              </ToggleButtonGroup>
+
+              <ToggleButtonGroup
+                size="small"
+                exclusive
+                value={view}
+                onChange={(e, val) => val && setView(val)}
+                sx={toggleGroupSx}
+              >
+                <ToggleButton value="monthly">Monthly</ToggleButton>
+                <ToggleButton value="weekly">Weekly</ToggleButton>
+              </ToggleButtonGroup>
+
+              <ToggleButtonGroup
+                size="small"
+                exclusive
+                value={chartType}
+                onChange={(e, val) => val && setChartType(val)}
+                sx={toggleGroupSx}
+              >
+                <ToggleButton value="bar">Bar</ToggleButton>
+                <ToggleButton value="line">Line</ToggleButton>
+                <ToggleButton value="area">Area</ToggleButton>
+              </ToggleButtonGroup>
+            </Stack>
           </Stack>
 
           {hasLoadedOnce ? (
             <Chart
-              key={`${chartType}-${metric}-${rawSeries.map((s) => s.user).join("|")}`}
+              key={`${chartType}-${metric}-${rawSeries
+                .map((s) => s.user)
+                .join("|")}`}
               ref={chartRef}
               options={options}
               series={chartSeries}
@@ -564,7 +633,7 @@ export default function UserLeadChart({ auth, active1 }) {
             />
           ) : (
             <div
-              className="w-full flex items-center justify-center text-sm text-slate-500 font-medium"
+              className="w-full flex items-center justify-center text-sm text-slate-500 font-medium animate-pulse"
               style={{ height: 500 }}
             >
               Loading chart…

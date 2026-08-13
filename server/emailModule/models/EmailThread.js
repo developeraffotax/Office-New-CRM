@@ -78,6 +78,19 @@ EmailThreadSchema.index(
 
 
 
+// when creating new tickets
+EmailThreadSchema.pre("save", async function (next) {
+  try {
+    if (this.isNew && !this.ref) {
+      this.ref = await generateRef("emailThread");
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
+// when persistThread runs
 EmailThreadSchema.pre("findOneAndUpdate", async function (next) {
   try {
     const options = this.getOptions();

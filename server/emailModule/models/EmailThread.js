@@ -53,12 +53,16 @@ const EmailThreadSchema = new mongoose.Schema(
       default: [],
     },
 
-    ref: { type: Number, unique: true },
+    ref: { type: Number},
   },
   { timestamps: true },
 );
 
 // Unique index per company + thread
+
+EmailThreadSchema.index({ ref: 1 }, { unique: true });
+
+
 EmailThreadSchema.index({ companyName: 1, threadId: 1 }, { unique: true });
 
 EmailThreadSchema.index(

@@ -26,6 +26,7 @@ import ThreadDateTime from "./ui/ThreadDateTime";
 import { BiSolidBellPlus } from "react-icons/bi";
 import { PiBell } from "react-icons/pi";
 import { hasSubrole } from "../../../utlis/checkPermission";
+import RefBadge from "./ui/RefBadge";
 
 function parseEmail(str) {
   if (!str) return "";
@@ -548,9 +549,10 @@ export default function Row({
         </div>
 
         {/* Final Column: Star + Date/Time */}
-        <div className="flex items-center flex-r justify-end gap-3 min-w-[80px]">
+        <div className="flex flex-col   items-center flex-r justify-end gap-1 min-w-[80px]">
           {/* Date Component */}
           <ThreadDateTime thread={thread} folder={folder} index={index} />
+           <RefBadge number={thread?.ref} />
         </div>
       </div>
 

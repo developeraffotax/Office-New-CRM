@@ -157,14 +157,25 @@ const applyDateFilter = (filters) => {
 const applySearchFilter = (filters) => {
   if (!filters.search?.trim()) return null;
 
-  const searchRegex = new RegExp(filters.search.trim(), "i");
-  return {
-    $or: [
-      { subject: searchRegex },
-      { "participants.email": searchRegex },
-      { "participants.name": searchRegex },
-    ],
-  };
+  const trimmedSearch = filters.search.trim();
+  const searchRegex = new RegExp(trimmedSearch, "i");
+
+  const orClauses = [
+    { subject: searchRegex },
+    { "participants.email": searchRegex },
+    { "participants.name": searchRegex },
+  ];
+
+  // Match ref-style searches: "E-19266", "E19266", "e-19266", or plain "19266"
+  const refMatch = trimmedSearch.match(/^[a-zA-Z]*-?(\d+)$/);
+  if (refMatch) {
+    const refNumber = Number(refMatch[1]);
+    if (!Number.isNaN(refNumber)) {
+      orClauses.push({ ref: refNumber });
+    }
+  }
+
+  return { $or: orClauses };
 };
 
 // ─── User assignment filter (role-aware) ──────────────────────────────────

@@ -12,6 +12,7 @@ import { emitToAll, emitToUser } from "../../utils/socketEmitter.js";
 import Comment from "../models/Comment.js";
 import EmailMessage from "../models/EmailMessage.js";
 import { trackUserUsageById } from "../../services/user.service.js";
+import { logThreadActivity } from "../services/threadActivity.service.js";
 
 /**
  * GET /api/email/inbox
@@ -484,8 +485,12 @@ export const updateThreadMetadata = async (req, res) => {
     const updatedThread = await EmailThread.findOneAndUpdate({_id: id}, {$set: {...updates}}, {
       new: true,
       runValidators: true,
-       updatedBy: req?.user?.user?._id
+      //  updatedBy: req?.user?.user?._id
     })
+
+
+
+     await logThreadActivity(oldThread, updates, req?.user?.user?._id);
 
     // console.log("UPDATED THREAD✔️", updatedThread)
 
@@ -590,8 +595,11 @@ export const updateThreadMetadataViaThreadId = async (req, res) => {
     const updatedThread = await EmailThread.findOneAndUpdate({threadId}, {$set: {...updates}}, {
       new: true,
       runValidators: true,
-       updatedBy: req?.user?.user?._id
+      //  updatedBy: req?.user?.user?._id
     })
+
+
+     await logThreadActivity(oldThread, updates, req?.user?.user?._id);
 
     // console.log("UPDATED THREAD✔️", updatedThread)
 

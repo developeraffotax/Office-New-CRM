@@ -64,6 +64,7 @@ import VerifyOtp from "./pages/Auth/VerifyOtp";
 import WhatsAppBox from "./components/whatsapp/pages/WhatsAppBox";
 import DashboardComponent from "./components/AffotaxDashboard/DashboardComponent";
 import KpiDashboard from "./components/KpiDashboard/KpiDashboard";
+import TeamsPage from "./pages/Auth/Team/TeamsPage";
 
 function App() {
   const navigate = useNavigate();
@@ -198,6 +199,7 @@ function App() {
             <Route path="/leads/create" element={<AutoCreateLeadFromURL user={user}/>} />
             <Route path="/settings" element={<SettingsPage  />} />
             <Route path="/settings/signatures" element={<SignaturesModule  />} />
+            <Route path="/teams" element={<TeamsPage  />} />
             
             
             

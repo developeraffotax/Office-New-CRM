@@ -20,6 +20,8 @@ import QuickAccess from "../../utlis/QuickAccess";
 import { LuFilter } from "react-icons/lu";
 import { isAdmin } from "../../utlis/isAdmin";
 import OverviewForPages from "../../utlis/overview/OverviewForPages";
+import { Link } from "react-router-dom";
+import { HiOutlineUserGroup } from "react-icons/hi";
 
 export default function Users() {
   const auth = useSelector((state) => state.auth.auth);
@@ -34,6 +36,8 @@ export default function Users() {
 
   const [showDepartmentFilter, setShowDepartmentFilter] = useState(false);
   const [departmentFilter, setDepartmentFilter] = useState("");
+
+  const [teamsData, setTeamsData] = useState([]);
 
   // All Users
   const getAllUsers = async () => {
@@ -106,6 +110,26 @@ export default function Users() {
     // eslint-disable-next-line
   }, []);
 
+  // Get All Teams
+  const getAllTeams = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/team/get_all`
+      );
+      if (data) {
+        setTeamsData(data.teams);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllTeams();
+
+    // eslint-disable-next-line
+  }, []);
+
   //   Update Role
   const handleChange = (e, id) => {
  
@@ -130,6 +154,30 @@ export default function Users() {
       console.log(error);
       toast.error("Something went wrong!");
     } finally {
+    }
+  };
+
+  // Update User Team
+  const handleUserTeam = async (userId, teamId) => {
+    if (!userId) return toast.error("User id is missing!");
+    try {
+      const { data } = teamId
+        ? await axios.put(
+            `${process.env.REACT_APP_API_URL}/api/v1/team/add_user/${userId}`,
+            { teamId }
+          )
+        : await axios.put(
+            `${process.env.REACT_APP_API_URL}/api/v1/team/remove_user/${userId}`
+          );
+      if (data?.success) {
+        getUsers();
+        toast.success(data?.message, { duration: 2000 });
+      } else {
+        toast.error(data?.message, { duration: 2000 });
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong!");
     }
   };
 
@@ -648,6 +696,72 @@ export default function Users() {
           return (cellValue || "").toString() === filterValue.toString();
         },
         filterSelectOptions: userRoles?.map((role) => role.name),
+        filterVariant: "select",
+      },
+      //   Team
+      {
+        id: "Team",
+        accessorKey: "team",
+        minSize: 120,
+        maxSize: 220,
+        size: 180,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className=" flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => {
+                  column.setFilterValue("");
+                }}
+              >
+                Team
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => {
+                  column.setFilterValue(e.target.value);
+                }}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {teamsData?.map((team) => (
+                  <option value={team.name} key={team._id}>
+                    {team.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const team = row.original.team;
+
+          return (
+            <div className="w-full ">
+              <select
+                className={`${style.input} h-[2.5rem] w-full border border-orange-200`}
+                onChange={(e) =>
+                  handleUserTeam(row.original?._id, e.target.value)
+                }
+                value={team?._id || ""}
+              >
+                <option value="">No Team</option>
+                {teamsData?.map((team) => (
+                  <option value={team?._id} key={team._id}>
+                    {team.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const teamName = row.original?.team?.name || "";
+          return teamName === filterValue;
+        },
+        filterSelectOptions: teamsData?.map((team) => team.name),
         filterVariant: "select",
       },
       {
@@ -1208,7 +1322,7 @@ export default function Users() {
       },
     ],
     // eslint-disable-next-line
-    [auth, userData, labelData]
+    [auth, userData, labelData, teamsData]
   );
 
   // Clear table Filter
@@ -1306,6 +1420,14 @@ export default function Users() {
 
           {/* ---------Template Buttons */}
           <div className="flex items-center gap-4">
+            <Link
+              to="/teams"
+              className={`${style.button1} text-[15px] flex items-center gap-1`}
+              style={{ padding: ".4rem 1rem" }}
+            >
+              <HiOutlineUserGroup className="h-4 w-4" />
+              Manage Teams
+            </Link>
             <button
               className={`${style.button1} text-[15px] `}
               onClick={() => setShowLabel(true)}

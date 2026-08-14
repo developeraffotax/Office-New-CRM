@@ -1,4 +1,5 @@
 import userRoute from "./userRoutes.js";
+import teamRoutes from "./teamRoutes.js";
 import jobRoute from "./jobsRoutes.js";
 import timerRoute from "./timerRoutes.js";
 import commentRoute from "./commentRoutes.js";
@@ -73,6 +74,7 @@ export const registerRoutes = (app) => {
 
 
   app.use("/api/v1/user", userRoute);
+  app.use("/api/v1/team", teamRoutes);
   app.use("/api/v1/client", jobRoute);
   app.use("/api/v1/timer", timerRoute);
   app.use("/api/v1/comments", commentRoute);

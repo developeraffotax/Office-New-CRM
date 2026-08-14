@@ -345,6 +345,7 @@ export const getAllUsers = async (req, res) => {
       .select("-password")
       .populate("role")
       .populate("data")
+      .populate("team")
       .sort({ order: 1 });
 
     res.status(200).send({

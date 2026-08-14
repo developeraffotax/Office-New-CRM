@@ -45,14 +45,7 @@ const userSchema = new mongoose.Schema(
       type: String,
     },
     access: [String],
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
-    updatedAt: {
-      type: Date,
-      default: Date.now,
-    },
+
     data: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Lable",
@@ -67,17 +60,24 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
+    team: {
+      type: Schema.Types.ObjectId,
+      ref: "Team",
+      default: null,
+      index: true, // makes Users.find({ team }) fast
+    },
+
     otp: { type: String, default: null },
     otpExpiry: { type: Date, default: null },
 
     juniors: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'Users'  // Refers to the same User model
-      }
-    ]
+        ref: "Users", // Refers to the same User model
+      },
+    ],
   },
-  { timestamps: false }
+  { timestamps: true },
 );
 
 export default mongoose.model("Users", userSchema);

@@ -200,7 +200,7 @@ const visibleStatsUsers = useMemo(
     const getAllUsers = async () => {
       try {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users?module=whatsapp`,
+          `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
         );
         setUsers(data?.users || []);
       } catch (error) {

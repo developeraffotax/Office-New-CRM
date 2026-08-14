@@ -1,16 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
 import { Box, Stack, Typography, Chip } from "@mui/material";
 
-export default function ChartLegend({ series = [], colors = [], userTeamMap = {}, chartRef }) {
-  const [hidden, setHidden] = useState(() => new Set());
+
+
+
+
+export default function ChartLegend({ series = [], colors = [], userTeamMap = {}, chartRef , hidden,           
+  onToggleOne,     
+  onToggleGroup   }) {
+
+
+  // const [hidden, setHidden] = useState(() => new Set());
 
   // Reset toggle state whenever the actual set of series changes
   // (new chartKey, user selection, breakdown switch, etc.) — stale
   // names in `hidden` would otherwise silently no-op on toggleSeries.
-  const seriesSignature = series.map((s) => s.name).join("|");
-  useEffect(() => {
-    setHidden(new Set());
-  }, [seriesSignature]);
+  // const seriesSignature = series.map((s) => s.name).join("|");
+  // useEffect(() => {
+  //   setHidden(new Set());
+  // }, [seriesSignature]);
 
   // Group by team the same way UserFilterSelect does. Series with no
   // match in userTeamMap (e.g. metric series like "New Sales") fall
@@ -41,31 +49,15 @@ export default function ChartLegend({ series = [], colors = [], userTeamMap = {}
 
   const isGrouped = groups.some((g) => g.teamName !== null);
 
+   
+
+
   const toggleOne = (name) => {
-    chartRef?.current?.chart?.toggleSeries(name);
-    setHidden((prev) => {
-      const next = new Set(prev);
-      next.has(name) ? next.delete(name) : next.add(name);
-      return next;
-    });
+    onToggleOne(name); // ChartPanel's effect handles the chart's showSeries/hideSeries
   };
 
-  // Clicking a team header toggles every member together, same
-  // all-or-nothing behavior as UserFilterSelect's toggleTeam.
   const toggleGroup = (members) => {
-    const names = members.map((m) => m.name);
-    const allHidden = names.every((n) => hidden.has(n));
-
-    names.forEach((n) => {
-      const isHidden = hidden.has(n);
-      if (allHidden === isHidden) chartRef?.current?.chart?.toggleSeries(n);
-    });
-
-    setHidden((prev) => {
-      const next = new Set(prev);
-      allHidden ? names.forEach((n) => next.delete(n)) : names.forEach((n) => next.add(n));
-      return next;
-    });
+    onToggleGroup(members.map((m) => m.name));
   };
 
   if (series.length === 0) return null;

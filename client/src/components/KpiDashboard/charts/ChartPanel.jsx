@@ -69,7 +69,11 @@ const extractSeries = (payload) => {
   return arrayFields.map(([key, value]) => ({ name: humanizeKey(key), data: value }));
 };
 
-export default function ChartPanel({ chartKey, isMulti, valueType = "count", dateRange, type, source, users,  userTeamMap = {}, }) {
+
+
+export default function ChartPanel({ chartKey, isMulti, valueType = "count", dateRange, type, source, users,  userTeamMap = {}, hiddenUsers,     
+  onToggleUser,     
+  onToggleGroup,    active = true,   }) {
   const [categories, setCategories] = useState([]);
   const [series, setSeries] = useState([]);
   const [interval, setIntervalLabel] = useState("");
@@ -125,6 +129,26 @@ export default function ChartPanel({ chartKey, isMulti, valueType = "count", dat
       cancelled = true;
     };
   }, [chartKey, isMulti, dateRange, source, users]);
+
+
+
+
+ 
+// after your existing fetch effect, add:
+useEffect(() => {
+   if (!active) return; // chart is display:none — ApexCharts can't safely touch it
+  const chart = chartRef.current?.chart;
+  if (!chart) return;
+  series.forEach((s) => {
+    if (hiddenUsers.has(s.name)) {
+      chart.hideSeries(s.name);
+    } else {
+      chart.showSeries(s.name);
+    }
+  });
+}, [hiddenUsers, series,active]);
+
+
 
   const formatValue = useMemo(() => formatByType(valueType), [valueType]);
     const colors = useMemo(() => colorsForSeries(series), [series]);
@@ -182,7 +206,15 @@ export default function ChartPanel({ chartKey, isMulti, valueType = "count", dat
         width={"100%"}
         height={400}
       />
-      <ChartLegend series={series} colors={colors} userTeamMap={userTeamMap} chartRef={chartRef} />
+      <ChartLegend
+        series={series}
+        colors={colors}
+        userTeamMap={userTeamMap}
+        chartRef={chartRef}
+        hidden={hiddenUsers}
+        onToggleOne={onToggleUser}
+        onToggleGroup={onToggleGroup}
+      />
     </div>
   );
 }

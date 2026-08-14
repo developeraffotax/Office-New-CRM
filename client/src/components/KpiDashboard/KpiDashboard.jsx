@@ -40,6 +40,12 @@ import QuickFilterMenu from "./QuickFilterMenu";
 import { LEADS_SOURCES } from "../../constants/constants";
 import UserFilterSelect from "./ui/UserFilterSelect";
 
+
+
+  // add near TAB_GROUPS, module-level so the reference is stable across renders
+const EMPTY_SET = new Set();
+
+
 const TAB_GROUPS = [
   {
     key: "sales",
@@ -152,6 +158,42 @@ const [selectedUsers, setSelectedUsers] = useState([]);
     new Set([TAB_GROUPS[0].tabs[0].chartKey]),
   );
   const [showStats, setShowStats] = useState(true);
+
+
+
+
+
+// ...inside the component, alongside your other state:
+const [hiddenLegendUsers, setHiddenLegendUsers] = useState(() => new Set());
+
+// Selecting different users invalidates any prior toggles
+useEffect(() => {
+  setHiddenLegendUsers(new Set());
+}, [selectedUsers]);
+
+const toggleLegendUser = (name) => {
+  setHiddenLegendUsers((prev) => {
+    const next = new Set(prev);
+    next.has(name) ? next.delete(name) : next.add(name);
+    return next;
+  });
+};
+
+const toggleLegendGroup = (names) => {
+  setHiddenLegendUsers((prev) => {
+    const next = new Set(prev);
+    const allHidden = names.every((n) => next.has(n));
+    allHidden ? names.forEach((n) => next.delete(n)) : names.forEach((n) => next.add(n));
+    return next;
+  });
+};
+
+const visibleStatsUsers = useMemo(
+  () => selectedUsers.filter((n) => !hiddenLegendUsers.has(n)),
+  [selectedUsers, hiddenLegendUsers]
+);
+
+
 
   // Fetch Users
   useEffect(() => {
@@ -353,7 +395,7 @@ const isFilterActive =
             <PerformanceStats
               dateRange={dateRange}
               source={selectedSource}
-              users={selectedUsers}
+               users={visibleStatsUsers}
             />
           </Box>
         )}
@@ -412,16 +454,20 @@ const isFilterActive =
                     key={tab.chartKey}
                     active={activeTab === tab.chartKey}
                   >
-                    <ChartPanel
-                      chartKey={tab.chartKey}
-                      isMulti={tab.isMulti}
-                      valueType={tab.valueType}
-                      dateRange={dateRange}
-                      type={chartType}
-                      source={selectedSource}
-                      users={selectedUsers}
-                      userTeamMap={userTeamMap}
-                    />
+                   <ChartPanel
+  chartKey={tab.chartKey}
+  isMulti={tab.isMulti}
+  valueType={tab.valueType}
+  dateRange={dateRange}
+  type={chartType}
+  source={selectedSource}
+  users={selectedUsers}
+  userTeamMap={userTeamMap}
+  hiddenUsers={hiddenLegendUsers} 
+  onToggleUser={toggleLegendUser}
+  onToggleGroup={toggleLegendGroup}
+   active={activeTab === tab.chartKey}
+/>
                   </TabPanel>
                 ),
             )}

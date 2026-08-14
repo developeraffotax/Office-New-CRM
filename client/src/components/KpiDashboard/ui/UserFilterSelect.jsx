@@ -13,18 +13,75 @@ import { getUserColor } from "../utils/userColors";
 const initials = (name = "") =>
   name.trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("");
 
-export default function UserFilterSelect({ users, selected, onChange }) {
+export default function UserFilterSelect({ users, teams = [], selected, onChange }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [query, setQuery] = useState("");
   const open = Boolean(anchorEl);
 
-  const filtered = useMemo(
-    () => users.filter((u) => u.name.toLowerCase().includes(query.toLowerCase())),
-    [users, query]
-  );
+  // Group users by team. A user can show up here whether `user.team` came
+  // back populated ({_id, name, ...}) or as a raw id — either way we
+  // resolve it against the `teams` list. Users with no team (or a team
+  // that isn't in the `teams` list, e.g. inactive) fall into "No Team".
+  const groups = useMemo(() => {
+    const teamNameById = Object.fromEntries(teams.map((t) => [t._id, t.name]));
+    const byTeamId = {};
+    const noTeam = [];
+
+    users.forEach((u) => {
+      const teamId = typeof u.team === "object" ? u.team?._id : u.team;
+      const teamName = teamId ? teamNameById[teamId] : null;
+
+      if (teamId && teamName) {
+        if (!byTeamId[teamId]) {
+          byTeamId[teamId] = { teamId, teamName, members: [] };
+        }
+        byTeamId[teamId].members.push(u);
+      } else {
+        noTeam.push(u);
+      }
+    });
+
+    const sorted = Object.values(byTeamId).sort((a, b) =>
+      a.teamName.localeCompare(b.teamName)
+    );
+    if (noTeam.length > 0) {
+      sorted.push({ teamId: null, teamName: "No Team", members: noTeam });
+    }
+    return sorted;
+  }, [users, teams]);
+
+  // Search matches either a team name (showing all its members) or an
+  // individual member's name (showing just the matches within that team).
+  const filteredGroups = useMemo(() => {
+    const q = query.toLowerCase();
+    if (!q) return groups;
+
+    return groups
+      .map((g) => {
+        const teamMatches = g.teamName.toLowerCase().includes(q);
+        const members = teamMatches
+          ? g.members
+          : g.members.filter((u) => u.name.toLowerCase().includes(q));
+        return { ...g, members };
+      })
+      .filter((g) => g.members.length > 0);
+  }, [groups, query]);
 
   const toggle = (name) =>
     onChange(selected.includes(name) ? selected.filter((n) => n !== name) : [...selected, name]);
+
+  // Clicking a team selects every member of that team; clicking again
+  // (once all are already selected) clears just that team's members,
+  // leaving any other selections from outside the team untouched.
+  const toggleTeam = (members) => {
+    const memberNames = members.map((u) => u.name);
+    const allSelected = memberNames.every((n) => selected.includes(n));
+    onChange(
+      allSelected
+        ? selected.filter((n) => !memberNames.includes(n))
+        : [...new Set([...selected, ...memberNames])]
+    );
+  };
 
   const selectedUsers = users.filter((u) => selected.includes(u.name));
 
@@ -70,7 +127,7 @@ export default function UserFilterSelect({ users, selected, onChange }) {
       >
         <Box sx={{ p: 1.25, pb: 0.75 }}>
           <TextField
-            autoFocus size="small" fullWidth placeholder="Search users…"
+            autoFocus size="small" fullWidth placeholder="Search users or teams…"
             value={query} onChange={(e) => setQuery(e.target.value)}
             InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 18, color: "text.secondary" }} /></InputAdornment> }}
           />
@@ -87,20 +144,57 @@ export default function UserFilterSelect({ users, selected, onChange }) {
         <Divider />
 
         <List dense sx={{ maxHeight: 480, overflowY: "auto", py: 0.5 }}>
-          {filtered.length === 0 && (
+          {filteredGroups.length === 0 && (
             <Typography variant="body2" color="text.secondary" sx={{ px: 2, py: 1.5 }}>No users match "{query}"</Typography>
           )}
-          {filtered.map((u) => (
-            <ListItemButton key={u._id} onClick={() => toggle(u.name)} sx={{ borderRadius: 1, mx: 0.5, py: 0.5 }}>
-              <ListItemIcon sx={{ minWidth: 30 }}>
-                <Checkbox edge="start" size="small" checked={selected.includes(u.name)} tabIndex={-1} disableRipple />
-              </ListItemIcon>
-              <Avatar sx={{ width: 22, height: 22, fontSize: 10, fontWeight: 700, bgcolor: getUserColor(u.name), mr: 1 }}>
-                {initials(u.name)}
-              </Avatar>
-              <ListItemText primaryTypographyProps={{ variant: "body2" }} primary={u.name} />
-            </ListItemButton>
-          ))}
+
+          {filteredGroups.map((group) => {
+            const memberNames = group.members.map((u) => u.name);
+            const selectedCount = memberNames.filter((n) => selected.includes(n)).length;
+            const allSelected = selectedCount === memberNames.length;
+            const someSelected = selectedCount > 0 && !allSelected;
+
+            return (
+              <Box key={group.teamId ?? "no-team"}>
+                <ListItemButton
+                  onClick={() => toggleTeam(group.members)}
+                  sx={{ borderRadius: 1, mx: 0.5, py: 0.25, bgcolor: "rgba(20,97,222,0.05)" }}
+                >
+                  <ListItemIcon sx={{ minWidth: 30 }}>
+                    <Checkbox
+                      edge="start" size="small"
+                      checked={allSelected}
+                      indeterminate={someSelected}
+                      tabIndex={-1} disableRipple
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    primaryTypographyProps={{
+                      variant: "caption",
+                      sx: { fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3, color: "text.secondary" },
+                    }}
+                    primary={`${group.teamName} (${group.members.length})`}
+                  />
+                </ListItemButton>
+
+                {group.members.map((u) => (
+                  <ListItemButton
+                    key={u._id}
+                    onClick={() => toggle(u.name)}
+                    sx={{ borderRadius: 1, mx: 0.5, ml: 2, py: 0.5, width: "calc(100% - 16px)" }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 30 }}>
+                      <Checkbox edge="start" size="small" checked={selected.includes(u.name)} tabIndex={-1} disableRipple />
+                    </ListItemIcon>
+                    <Avatar sx={{ width: 22, height: 22, fontSize: 10, fontWeight: 700, bgcolor: getUserColor(u.name), mr: 1 }}>
+                      {initials(u.name)}
+                    </Avatar>
+                    <ListItemText primaryTypographyProps={{ variant: "body2" }} primary={u.name} />
+                  </ListItemButton>
+                ))}
+              </Box>
+            );
+          })}
         </List>
       </Popover>
     </>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import {
   Box,
@@ -142,6 +142,7 @@ export default function KpiDashboard() {
   const [selectedSource, setSelectedSource] = useState("");
 const [selectedUsers, setSelectedUsers] = useState([]);
   const [users, setUsers] = useState([]);
+  const [teams, setTeams] = useState([]);
 
   // UI State
   const [chartType, setChartType] = useState("bar");
@@ -167,6 +168,38 @@ const [selectedUsers, setSelectedUsers] = useState([]);
 
     getAllUsers();
   }, []);
+
+  // Fetch Teams
+  useEffect(() => {
+    const getAllTeams = async () => {
+      try {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/team/get_all`,
+        );
+        setTeams(data?.teams || []);
+      } catch (error) {
+        console.error("Failed to fetch teams:", error);
+      }
+    };
+
+    getAllTeams();
+  }, []);
+
+  // name -> team name lookup, used by the user filter (grouping) and the
+  // charts (legend/color grouping). Handles `user.team` whether the users
+  // endpoint returns it populated ({_id, name}) or as a raw id — if it's
+  // unpopulated we resolve it against the teams list fetched above.
+  const userTeamMap = useMemo(() => {
+    const teamNameById = Object.fromEntries(teams.map((t) => [t._id, t.name]));
+    const map = {};
+    users.forEach((u) => {
+      if (!u.team) return;
+      const teamName =
+        typeof u.team === "object" ? u.team.name : teamNameById[u.team];
+      if (teamName) map[u.name] = teamName;
+    });
+    return map;
+  }, [users, teams]);
 
   // Track Visited Tabs
   useEffect(() => {
@@ -265,7 +298,7 @@ const isFilterActive =
 
                         {/* User Filter */}
 <FormControl size="small" sx={{ minWidth: 200 }}>
-<UserFilterSelect users={users} selected={selectedUsers} onChange={setSelectedUsers} />
+<UserFilterSelect users={users} teams={teams} selected={selectedUsers} onChange={setSelectedUsers} />
 </FormControl>
 
 
@@ -387,6 +420,7 @@ const isFilterActive =
                       type={chartType}
                       source={selectedSource}
                       users={selectedUsers}
+                      userTeamMap={userTeamMap}
                     />
                   </TabPanel>
                 ),

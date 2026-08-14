@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Chart from "react-apexcharts";
 import dashboardApi from "../api/dashboardApi";
 import { colorsForSeries } from "../utils/userColors";
+import ChartLegend from "../ui/ChartLegend";
 
  
 
@@ -68,12 +69,14 @@ const extractSeries = (payload) => {
   return arrayFields.map(([key, value]) => ({ name: humanizeKey(key), data: value }));
 };
 
-export default function ChartPanel({ chartKey, isMulti, valueType = "count", dateRange, type, source, users }) {
+export default function ChartPanel({ chartKey, isMulti, valueType = "count", dateRange, type, source, users,  userTeamMap = {}, }) {
   const [categories, setCategories] = useState([]);
   const [series, setSeries] = useState([]);
   const [interval, setIntervalLabel] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+    const chartRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -124,6 +127,7 @@ export default function ChartPanel({ chartKey, isMulti, valueType = "count", dat
   }, [chartKey, isMulti, dateRange, source, users]);
 
   const formatValue = useMemo(() => formatByType(valueType), [valueType]);
+    const colors = useMemo(() => colorsForSeries(series), [series]);
 
   // ApexCharts silently drops x-axis labels that don't fit
   // (hideOverlappingLabels defaults to true) — that's almost always why
@@ -155,10 +159,10 @@ export default function ChartPanel({ chartKey, isMulti, valueType = "count", dat
     },
     stroke: { curve: "smooth" },
     markers: { size: 4 },
-    colors: colorsForSeries(series),
+    colors,
     dataLabels: { enabled: true, formatter: formatValue },
     tooltip: { y: { formatter: formatValue } },
-    legend: { show: series.length > 1 },
+    legend: { show: false }, // replaced by <ChartLegend />
     plotOptions: {
       bar: { columnWidth: series.length > 1 ? "55%" : "40%" },
     },
@@ -168,8 +172,9 @@ export default function ChartPanel({ chartKey, isMulti, valueType = "count", dat
   if (error) return <p style={{ color: "#dc2626" }}>{error}</p>;
 
   return (
-    <div className="w-full" style={{ overflowX: "hidden", overflowY: "hidden" }}>
+     <div className="w-full" style={{ overflowX: "hidden", overflowY: "hidden" }}>
       <Chart
+        ref={chartRef}
         key={`${chartKey}-${type}-${categories.length}`}
         options={options}
         series={series}
@@ -177,6 +182,7 @@ export default function ChartPanel({ chartKey, isMulti, valueType = "count", dat
         width={"100%"}
         height={400}
       />
+      <ChartLegend series={series} colors={colors} userTeamMap={userTeamMap} chartRef={chartRef} />
     </div>
   );
 }

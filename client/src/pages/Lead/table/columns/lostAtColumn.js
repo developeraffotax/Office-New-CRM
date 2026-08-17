@@ -1,84 +1,89 @@
 // createWonAtColumn.js
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { format } from "date-fns";
- 
-  // -----------Handle Custom date filter------
-  export const getCurrentMonthYear = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = (today.getMonth() + 1).toString().padStart(2, "0");
-    return `${year}-${month}`;
-  };
+import DateRangePopover from "../../../../utlis/DateRangePopover";
 
-
+// Make sure to import your DateRangePopover component here
+// import DateRangePopover from "path/to/DateRangePopover";
 
 export const createLostAtColumn = () => ({
   accessorKey: "lostAt",
   header: "Lost At",
   Header: ({ column }) => {
     const [filterValue, setFilterValue] = useState("");
-    const [customDate, setCustomDate] = useState(getCurrentMonthYear());
+    const [dateRange, setDateRange] = useState({ from: "", to: "" });
+    const [showPopover, setShowPopover] = useState(false);
+    const selectRef = useRef(null);
 
     useEffect(() => {
-      if (filterValue === "Custom date") {
-        column.setFilterValue(customDate);
+      if (filterValue === "Custom Range") {
+        column.setFilterValue(dateRange);
+      } else {
+        column.setFilterValue(filterValue);
       }
       //eslint-disable-next-line
-    }, [customDate, filterValue]);
+    }, [dateRange, filterValue]);
 
     const handleFilterChange = (e) => {
-      setFilterValue(e.target.value);
-      column.setFilterValue(e.target.value);
+      const val = e.target.value;
+      setFilterValue(val);
+      if (val === "Custom Range") {
+        setShowPopover(true);
+      } else {
+        setShowPopover(false);
+      }
     };
 
-    const handleCustomDateChange = (e) => {
-      setCustomDate(e.target.value);
-      column.setFilterValue(e.target.value);
+    const handleRangeChange = (key, value) => {
+      setDateRange((prev) => ({ ...prev, [key]: value }));
     };
 
     return (
-      <div className="flex flex-col gap-[2px]">
+      <div className="flex flex-col gap-[2px] relative">
         <span
           className="ml-1 cursor-pointer"
           title="Clear Filter"
           onClick={() => {
             setFilterValue("");
+            setDateRange({ from: "", to: "" });
             column.setFilterValue("");
           }}
         >
           Lost At
         </span>
-        {filterValue === "Custom date" ? (
-          <input
-            type="month"
-            value={customDate}
-            onChange={handleCustomDateChange}
-            className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
+
+        <select
+          ref={selectRef}
+          value={filterValue}
+          onChange={handleFilterChange}
+          className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
+        >
+          <option value="">Select</option>
+          {column.columnDef.filterSelectOptions.map((option, idx) => (
+            <option key={idx} value={option}>
+              {option}
+            </option>
+          ))}
+          <option value="Custom Range">Custom Date</option>
+        </select>
+
+        {showPopover && (
+          <DateRangePopover
+            anchorRef={selectRef}
+            onChange={handleRangeChange}
+            onClose={() => setShowPopover(false)}
           />
-        ) : (
-          <select
-            value={filterValue}
-            onChange={handleFilterChange}
-            className="h-[1.8rem] font-normal w-full cursor-pointer rounded-md border border-gray-200 outline-none"
-          >
-            <option value="">Select</option>
-            {column.columnDef.filterSelectOptions.map((option, idx) => (
-              <option key={idx} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
         )}
       </div>
     );
   },
   Cell: ({ cell }) => {
-    const wonAt = cell.getValue();
+    const lostAt = cell.getValue();
 
     return (
       <div className="w-full">
         <p className="px-1">
-          {wonAt ? format(new Date(wonAt), "dd-MMM-yyyy") : "-"}
+          {lostAt ? format(new Date(lostAt), "dd-MMM-yyyy") : "-"}
         </p>
       </div>
     );
@@ -87,12 +92,20 @@ export const createLostAtColumn = () => ({
     const cellValue = row.getValue(columnId);
     if (!cellValue) return false;
     const cellDate = new Date(cellValue);
-    if (filterValue.includes("-")) {
-      const [year, month] = filterValue.split("-");
-      const cellYear = cellDate.getFullYear().toString();
-      const cellMonth = (cellDate.getMonth() + 1).toString().padStart(2, "0");
-      return year === cellYear && month === cellMonth;
+
+    // Handle Custom Date Range
+    if (typeof filterValue === "object" && filterValue !== null) {
+      if (filterValue.from && filterValue.to) {
+        const fromDate = new Date(filterValue.from);
+        const toDate = new Date(filterValue.to);
+        // Set toDate to the end of the day to ensure inclusive filtering
+        toDate.setHours(23, 59, 59, 999);
+        return cellDate >= fromDate && cellDate <= toDate;
+      }
+      return true; // If custom range is selected but dates aren't picked yet, show all
     }
+
+    // Handle standard dropdown options
     const today = new Date();
     switch (filterValue) {
       case "Today":

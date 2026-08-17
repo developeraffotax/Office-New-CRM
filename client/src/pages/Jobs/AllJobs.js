@@ -1678,32 +1678,47 @@ const getJobsStats = useCallback(async () => {
 
 
 
+  const handleUpdateUser = async (jobId, userRoles = {}) => {
+  if (!jobId) {
+    toast.error("Invalid job context.");
+    return false;
+  }
 
-const handleUpdateUser = async (jobId, users) => {
+  const payload = {};
+
+  if(userRoles.prepared) {
+    payload.prepared = userRoles.prepared;
+  }
+  if(userRoles.review) {
+    payload.review = userRoles.review;
+  }
+  if(userRoles.filed) {
+    payload.filed = userRoles.filed;
+  }
+
   try {
-    const { prepared, review, filed } = users;
+    const { data } = await axios.put(`${process.env.REACT_APP_API_URL}/api/v1/client/job/users/${jobId}`, payload);
 
-    const { data } = await axios.put(
-      `${process.env.REACT_APP_API_URL}/api/v1/client/job/users/${jobId}`,
-      { prepared, review, filed }
-    );
- 
-    if(data) {
-
+    if (data) {
       toast.success("Job updated successfully.");
+      allClientJobData()
+      return true;
     }
 
-  } catch (error) {
-    console.error("Update Job Users Error:", error);
 
-    toast.error(
+    return false;
+  } catch (error) {
+    console.error("[JobService.handleUpdateUser] Error:", error);
+
+    const errorMessage =
       error?.response?.data?.message ||
-      error.message ||
-      "Failed to update job"
-    );
+      error?.message ||
+      "Failed to update job assignments.";
+
+    toast.error(errorMessage);
+    return false;
   }
 };
-
 
 // ----------------------------
 // 🔑 Authentication Context

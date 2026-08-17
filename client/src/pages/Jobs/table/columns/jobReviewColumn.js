@@ -31,14 +31,14 @@ export const jobReviewColumn = ({ handleUpdateUser, users }) => {
       );
     },
     Cell: ({ cell, row }) => {
-      const prepared = cell.getValue();
+      const review = cell.getValue();
 
       return (
         <div className="w-full flex items-center justify-center">
           <select
-            value={prepared || ""}
+            value={review || ""}
             onChange={(e) =>
-              handleUpdateUser(row.original._id, "", e.target.value,  "")
+              handleUpdateUser(row.original._id, { review: e.target.value })
             }
             className="w-full h-[2rem] rounded-md border-none outline-none"
           >

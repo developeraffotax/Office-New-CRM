@@ -403,7 +403,12 @@ export const buildJobsQuery = (queryParams) => {
 
     activeClient,
     pocId,
-    signupDate
+    signupDate,
+
+    jobPrepared,
+    jobReview,
+    jobFiled
+
 
   } = queryParams;
 
@@ -527,6 +532,17 @@ export const buildJobsQuery = (queryParams) => {
     query.data = pocId;
   }
 
+  if (jobPrepared) {
+    query.prepared = jobPrepared;
+  }
+
+  if (jobReview) {
+    query.review = jobReview;
+  }
+
+  if (jobFiled) {
+    query.filed = jobFiled;
+  }
 
   /*
   ==========================================

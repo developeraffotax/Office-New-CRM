@@ -32,13 +32,13 @@ export const jobPreparedColumn = ({ handleUpdateUser, users }) => {
     },
     Cell: ({ cell, row }) => {
       const prepared = cell.getValue();
-
+      
       return (
         <div className="w-full flex items-center justify-center">
           <select
             value={prepared || ""}
             onChange={(e) =>
-              handleUpdateUser(row.original._id, e.target.value, "", "")
+              handleUpdateUser(row.original._id, { prepared: e.target.value })
             }
             className="w-full h-[2rem] rounded-md border-none outline-none"
           >

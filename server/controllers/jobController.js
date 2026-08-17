@@ -16,6 +16,12 @@ import { trackUserUsageByName } from "../services/user.service.js";
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
 
+
+
+const PROGRESS_SELECT_STRING =
+  "clientName companyName regNumber email phone fee currentDate totalHours totalTime jobRef job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.leadUser job.jobHolder comments._id comments.status label source data activeClient clientType partner clientPaidFee";
+
+const COMPLETED_SELECT_STRING = `prepared review filed ${PROGRESS_SELECT_STRING}`;
 // Create Job
 export const createJob = async (req, res) => {
   try {
@@ -2456,6 +2462,9 @@ export const updateUsers = async (req, res) => {
     const jobId = req.params.id;
     const { prepared, review, filed } = req.body;
 
+
+    console.log("Prepared:", prepared, "Review:", review, "Filed:", filed);
+
     const job = await jobsModel.findById(jobId);
 
     if (!job) {
@@ -3141,11 +3150,17 @@ export const getAllClientJobs = async (req, res) => {
     // Build query dynamically
     const query = buildJobsQuery(req.query);
 
+    let select_string = PROGRESS_SELECT_STRING;
+
+    if(req.query.status === "completed") {
+      select_string = COMPLETED_SELECT_STRING;
+    }
+
     const [clients, summaryResult] = await Promise.all([
       jobsModel
         .find(query)
         .select(
-          "clientName companyName regNumber email phone fee currentDate totalHours totalTime jobRef job.jobName job.yearEnd job.jobDeadline job.workDeadline job.jobStatus job.lead job.leadUser job.jobHolder comments._id comments.status label source data activeClient clientType partner clientPaidFee"
+          select_string
         )
         .populate("data")
         .sort({ _id: 1 })

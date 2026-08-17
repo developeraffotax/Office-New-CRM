@@ -8,8 +8,11 @@ import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"; // 👈 Import the presigner
 import { buildS3Key, extensionFromMime } from "../utils/mediaKeyBuilder.js";
 
-const GRAPH_API_VERSION = "v25.0";
-const GRAPH_BASE = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
+// const GRAPH_API_VERSION = "v25.0";
+// const GRAPH_BASE = `https://graph.facebook.com/${GRAPH_API_VERSION}`;
+
+const DUALHOOK_API_VERSION = "v25.0";
+const DUALHOOK_BASE = `https://api.dualhook.com/${DUALHOOK_API_VERSION}`;
 
 
 export const uploadMediaBuffer = async (file, phone) => {
@@ -53,19 +56,29 @@ export const uploadMediaBuffer = async (file, phone) => {
 
 
 export const downloadAndStoreMedia = async (mediaId, mimeType, phone) => {
-  const token = process.env.WHATSAPP_ACCESS_TOKEN;
+  const dualhookKey = process.env.DUALHOOK_OUTBOUND_API_KEY; // 👈 rename from WHATSAPP_ACCESS_TOKEN
 
  
-  const { data: mediaMeta } = await axios.get(`${GRAPH_BASE}/${mediaId}`, {
-    headers: { Authorization: `Bearer ${token}` },
+  const { data: mediaMeta } = await axios.get(`${DUALHOOK_BASE}/${mediaId}`, {
+    headers: { Authorization: `Bearer ${dualhookKey}` },
   });
+
+
+//   {
+//   "id": "1718920359415722",
+//   "url": "https://api.dualhook.com/v25.0/1718920359415722/content",
+//   "mime_type": "application/pdf",
+//   "sha256": "50527a124068d106606df1b2e966adbcd85a28fac1cbfa8f814da5ad6647321b",
+//   "file_size": 377188,
+//   "messaging_product": "whatsapp"
+// }
  
   const { url: tempUrl, file_size } = mediaMeta;
 
  
   const { data: fileBuffer, headers } = await axios.get(tempUrl, {
-    headers: { Authorization: `Bearer ${token}` },
-    responseType: "arraybuffer",
+    headers: { Authorization: `Bearer ${dualhookKey}` },
+    // responseType: "arraybuffer",
   });
 
   const contentType = headers["content-type"] || mimeType;

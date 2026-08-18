@@ -26,6 +26,7 @@ export default function MailLayout({
   setFilters,
   handleUpdateThread,
   handleBulkUpdateThreads,
+  fetchThreads,
   markAsRead,
   markAsUnread,
   deleteThread,
@@ -124,6 +125,7 @@ export default function MailLayout({
           users={users}
           team={team}
           categories={categories}
+          fetchThreads={fetchThreads}
 
           setIsComposeOpen={setIsComposeOpen}
 

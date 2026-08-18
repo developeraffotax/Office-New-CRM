@@ -57,6 +57,7 @@ export default function Filters({
   users = [],
   team = [],
   categories = [],
+  fetchThreads,
 
   setIsComposeOpen
 }) {
@@ -634,6 +635,30 @@ const clearFilters = () => {
               filters={filters}
               handleUpdate={handleUpdate}
             />
+
+
+            
+  <IconButton
+    onClick={() => fetchThreads?.()}
+    sx={{
+      width: 32,
+      height: 32,
+      borderRadius: "8px",
+      border: "1px solid rgba(0,0,0,0.15)",
+      color: "text.secondary",
+      "&:hover": {
+        bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
+        borderColor: "primary.main",
+        color: "primary.main",
+      },
+    }}
+  >
+    <AutorenewIcon fontSize="small" />
+  </IconButton>
+ 
+
+
+
 
             {/* <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: "center" }} /> */}
           </Stack>

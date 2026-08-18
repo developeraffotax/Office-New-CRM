@@ -27,9 +27,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import StackedLineChartIcon from "@mui/icons-material/StackedLineChart";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import GroupsIcon from "@mui/icons-material/Groups";
-import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
+
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
@@ -39,84 +37,12 @@ import ManualRangePicker from "./ManualRangePicker";
 import QuickFilterMenu from "./QuickFilterMenu";
 import { LEADS_SOURCES } from "../../constants/constants";
 import UserFilterSelect from "./ui/UserFilterSelect";
+import { useSelector } from "react-redux";
+import { getVisibleTabGroups } from "./utils/tabGroups";
+import { TAB_GROUPS } from "./constants";
 
-
-
-  // add near TAB_GROUPS, module-level so the reference is stable across renders
+// add near visibleTabGroups, module-level so the reference is stable across renders
 const EMPTY_SET = new Set();
-
-
-const TAB_GROUPS = [
-  {
-    key: "sales",
-    label: "Sales",
-    icon: <AttachMoneyIcon />,
-    tabs: [
-      {
-        chartKey: "sales.total",
-        label: "Total Sales",
-        isMulti: true,
-        valueType: "currency",
-      },
-      {
-        chartKey: "sales.new",
-        label: "New Sales",
-        isMulti: false,
-        valueType: "currency",
-      },
-      {
-        chartKey: "sales.subscription",
-        label: "Subscription Sales",
-        isMulti: false,
-        valueType: "currency",
-      },
-    ],
-  },
-  {
-    key: "leads",
-    label: "Leads",
-    icon: <GroupsIcon />,
-    tabs: [
-      {
-        chartKey: "leads.total",
-        label: "Total Leads",
-        isMulti: false,
-        valueType: "count",
-      },
-      {
-        chartKey: "leads.won",
-        label: "Won Leads",
-        isMulti: false,
-        valueType: "count",
-      },
-      {
-        chartKey: "leads.conversion",
-        label: "Leads Conversion",
-        isMulti: true,
-        valueType: "percent",
-      },
-    ],
-  },
-  {
-    key: "subscriptions",
-    label: "Subscriptions",
-    icon: <SubscriptionsIcon />,
-    tabs: [
-      {
-        chartKey: "subscriptions.count",
-        label: "Subscription Count",
-        isMulti: false,
-        valueType: "count",
-      },
-      {
-        chartKey: "subscriptions.value",
-        label: "Subscription Value",
-        isMulti: false,
-        valueType: "currency",
-      },
-    ],
-  },
-];
 
 // const SOURCES = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
 
@@ -146,54 +72,56 @@ export default function KpiDashboard() {
 
   // Dropdown Filters
   const [selectedSource, setSelectedSource] = useState("");
-const [selectedUsers, setSelectedUsers] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
   const [users, setUsers] = useState([]);
   const [teams, setTeams] = useState([]);
 
+  const { auth } = useSelector((state) => state.auth);
+  const currentUser = auth?.user;
+  const visibleTabGroups = getVisibleTabGroups(currentUser, TAB_GROUPS);
+
   // UI State
   const [chartType, setChartType] = useState("bar");
-  const [activeGroup, setActiveGroup] = useState(TAB_GROUPS[0].key);
-  const [activeTab, setActiveTab] = useState(TAB_GROUPS[0].tabs[0].chartKey);
+  const [activeGroup, setActiveGroup] = useState(visibleTabGroups[0]?.key);
+  const [activeTab, setActiveTab] = useState(
+    visibleTabGroups[0]?.tabs[0]?.chartKey,
+  );
   const [visitedTabs, setVisitedTabs] = useState(
-    new Set([TAB_GROUPS[0].tabs[0].chartKey]),
+    new Set([visibleTabGroups[0]?.tabs[0]?.chartKey]),
   );
   const [showStats, setShowStats] = useState(true);
 
+  // ...inside the component, alongside your other state:
+  const [hiddenLegendUsers, setHiddenLegendUsers] = useState(() => new Set());
 
+  // Selecting different users invalidates any prior toggles
+  useEffect(() => {
+    setHiddenLegendUsers(new Set());
+  }, [selectedUsers]);
 
+  const toggleLegendUser = (name) => {
+    setHiddenLegendUsers((prev) => {
+      const next = new Set(prev);
+      next.has(name) ? next.delete(name) : next.add(name);
+      return next;
+    });
+  };
 
+  const toggleLegendGroup = (names) => {
+    setHiddenLegendUsers((prev) => {
+      const next = new Set(prev);
+      const allHidden = names.every((n) => next.has(n));
+      allHidden
+        ? names.forEach((n) => next.delete(n))
+        : names.forEach((n) => next.add(n));
+      return next;
+    });
+  };
 
-// ...inside the component, alongside your other state:
-const [hiddenLegendUsers, setHiddenLegendUsers] = useState(() => new Set());
-
-// Selecting different users invalidates any prior toggles
-useEffect(() => {
-  setHiddenLegendUsers(new Set());
-}, [selectedUsers]);
-
-const toggleLegendUser = (name) => {
-  setHiddenLegendUsers((prev) => {
-    const next = new Set(prev);
-    next.has(name) ? next.delete(name) : next.add(name);
-    return next;
-  });
-};
-
-const toggleLegendGroup = (names) => {
-  setHiddenLegendUsers((prev) => {
-    const next = new Set(prev);
-    const allHidden = names.every((n) => next.has(n));
-    allHidden ? names.forEach((n) => next.delete(n)) : names.forEach((n) => next.add(n));
-    return next;
-  });
-};
-
-const visibleStatsUsers = useMemo(
-  () => selectedUsers.filter((n) => !hiddenLegendUsers.has(n)),
-  [selectedUsers, hiddenLegendUsers]
-);
-
-
+  const visibleStatsUsers = useMemo(
+    () => selectedUsers.filter((n) => !hiddenLegendUsers.has(n)),
+    [selectedUsers, hiddenLegendUsers],
+  );
 
   // Fetch Users
   useEffect(() => {
@@ -250,12 +178,12 @@ const visibleStatsUsers = useMemo(
     setVisitedTabs((prev) => new Set(prev).add(activeTab));
   }, [activeTab]);
 
-// isFilterActive
-const isFilterActive =
-  dateRange !== defaultDateRange ||
-  activeLabel !== "This Year" ||
-  selectedSource !== "" ||
-  selectedUsers.length > 0;
+  // isFilterActive
+  const isFilterActive =
+    dateRange !== defaultDateRange ||
+    activeLabel !== "This Year" ||
+    selectedSource !== "" ||
+    selectedUsers.length > 0;
 
   const handleQuickFilterSelect = (label, range) => {
     setActiveLabel(label);
@@ -271,11 +199,13 @@ const isFilterActive =
 
   const handleGroupChange = (e, newGroupKey) => {
     setActiveGroup(newGroupKey);
-    const firstTab = TAB_GROUPS.find((g) => g.key === newGroupKey).tabs[0];
+    const firstTab = visibleTabGroups.find((g) => g.key === newGroupKey)
+      .tabs[0];
     setActiveTab(firstTab.chartKey);
   };
 
-  const currentGroup = TAB_GROUPS.find((g) => g.key === activeGroup);
+  const currentGroup =
+    visibleTabGroups?.find((g) => g.key === activeGroup) || [];
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -338,13 +268,15 @@ const isFilterActive =
             alignItems="center"
             useFlexGap
           >
-
-
-                        {/* User Filter */}
-<FormControl size="small" sx={{ minWidth: 200 }}>
-<UserFilterSelect users={users} teams={teams} selected={selectedUsers} onChange={setSelectedUsers} />
-</FormControl>
-
+            {/* User Filter */}
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <UserFilterSelect
+                users={users}
+                teams={teams}
+                selected={selectedUsers}
+                onChange={setSelectedUsers}
+              />
+            </FormControl>
 
             {/* Source Filter */}
             <FormControl size="small" sx={{ minWidth: 120 }}>
@@ -365,8 +297,6 @@ const isFilterActive =
                 ))}
               </Select>
             </FormControl>
-
-
 
             {/* Global chart type toggle */}
             <ToggleButtonGroup
@@ -397,84 +327,99 @@ const isFilterActive =
             <PerformanceStats
               dateRange={dateRange}
               source={selectedSource}
-               users={visibleStatsUsers}
+              users={visibleStatsUsers}
             />
           </Box>
         )}
 
-        <Card variant="outlined" sx={{ background: "#F9FAFB" }}>
-          {/* Level 1: Sales / Leads / Subscriptions */}
-          <Tabs
-            value={activeGroup}
-            onChange={handleGroupChange}
-            variant="standard"
-            TabIndicatorProps={{ style: { display: "none" } }}
-            sx={{ borderBottom: 1, borderColor: "divider", px: 1 }}
+        {visibleTabGroups.length === 0 ? (
+          <Card
+            variant="outlined"
+            sx={{ background: "#F9FAFB", p: 4, textAlign: "center" }}
           >
-            {TAB_GROUPS.map((group) => (
-              <Tab
-                key={group.key}
-                value={group.key}
-                icon={group.icon}
-                iconPosition="start"
-                label={group.label}
-              />
-            ))}
-          </Tabs>
+            You don't have access to any KPI Dashboard sections yet.
+          </Card>
+        ) : (
+          <Card variant="outlined" sx={{ background: "#F9FAFB" }}>
+            {/* Level 1: Sales / Leads / Subscriptions */}
+            <Tabs
+              value={activeGroup}
+              onChange={handleGroupChange}
+              variant="standard"
+              TabIndicatorProps={{ style: { display: "none" } }}
+              sx={{ borderBottom: 1, borderColor: "divider", px: 1 }}
+            >
+              {visibleTabGroups.map((group) => (
+                <Tab
+                  key={group.key}
+                  value={group.key}
+                  icon={group.icon}
+                  iconPosition="start"
+                  label={group.label}
+                />
+              ))}
+            </Tabs>
 
-          {/* Level 2: the specific metric within the selected group */}
-          <Tabs
-            value={activeTab}
-            onChange={(e, newValue) => setActiveTab(newValue)}
-            variant="scrollable"
-            scrollButtons="auto"
-            TabIndicatorProps={{ style: { display: "none" } }}
-            sx={{
-              minHeight: 40,
-              px: 1,
-              "& .MuiTab-root": {
+            {/* Level 2: the specific metric within the selected group */}
+            <Tabs
+              value={activeTab}
+              onChange={(e, newValue) => setActiveTab(newValue)}
+              variant="scrollable"
+              scrollButtons="auto"
+              TabIndicatorProps={{ style: { display: "none" } }}
+              sx={{
                 minHeight: 40,
-                borderRadius: 1.5,
-                mx: 0.5,
-                my: 0.75,
-              },
-              "& .Mui-selected": {
-                backgroundColor: "rgba(227, 227, 227, 0.7)",
-              },
-            }}
-          >
-            {currentGroup.tabs.map((tab) => (
-              <Tab key={tab.chartKey} value={tab.chartKey} label={tab.label} />
-            ))}
-          </Tabs>
+                px: 1,
+                "& .MuiTab-root": {
+                  minHeight: 40,
+                  borderRadius: 1.5,
+                  mx: 0.5,
+                  my: 0.75,
+                },
+                "& .Mui-selected": {
+                  backgroundColor: "rgba(227, 227, 227, 0.7)",
+                },
+              }}
+            >
+              {currentGroup?.tabs?.map((tab) => (
+                <Tab
+                  key={tab.chartKey}
+                  value={tab.chartKey}
+                  label={tab.label}
+                />
+              ))}
+            </Tabs>
 
-          <CardContent>
-            {TAB_GROUPS.flatMap((group) => group.tabs).map(
-              (tab) =>
-                visitedTabs.has(tab.chartKey) && (
-                  <TabPanel
-                    key={tab.chartKey}
-                    active={activeTab === tab.chartKey}
-                  >
-                   <ChartPanel
-  chartKey={tab.chartKey}
-  isMulti={tab.isMulti}
-  valueType={tab.valueType}
-  dateRange={dateRange}
-  type={chartType}
-  source={selectedSource}
-  users={selectedUsers}
-  userTeamMap={userTeamMap}
-  hiddenUsers={hiddenLegendUsers} 
-  onToggleUser={toggleLegendUser}
-  onToggleGroup={toggleLegendGroup}
-   active={activeTab === tab.chartKey}
-/>
-                  </TabPanel>
-                ),
-            )}
-          </CardContent>
-        </Card>
+            <CardContent>
+              {visibleTabGroups
+                .flatMap((group) => group.tabs)
+                .map(
+                  (tab) =>
+                    visitedTabs.has(tab.chartKey) && (
+                      <TabPanel
+                        key={tab.chartKey}
+                        active={activeTab === tab.chartKey}
+                      >
+                        <ChartPanel
+                          chartKey={tab.chartKey}
+                          isMulti={tab.isMulti}
+                          valueType={tab.valueType}
+                          dateRange={dateRange}
+                          type={chartType}
+                          source={selectedSource}
+                          users={selectedUsers}
+                          userTeamMap={userTeamMap}
+                          hiddenUsers={hiddenLegendUsers}
+                          onToggleUser={toggleLegendUser}
+                          onToggleGroup={toggleLegendGroup}
+                          active={activeTab === tab.chartKey}
+                        />
+                      </TabPanel>
+                    ),
+                )}
+            </CardContent>
+          </Card>
+        )}
       </Stack>
     </LocalizationProvider>
   );

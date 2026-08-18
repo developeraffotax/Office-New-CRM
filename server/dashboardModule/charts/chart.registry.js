@@ -127,6 +127,58 @@ export const chartRegistry = {
 
 
 
+
+
+
+
+
+
+
+
+
+  "jobs.prepared": {
+    label: "Jobs Prepared",
+    Model: clientModel,
+    dateField: "currentDate",
+     
+    valueConfig: { type: "count",   },
+    baseMatch: {status :  { $eq: "completed" }, prepared: {$exists: true} },
+    allowedFilters: [
+      ["source", "source"],
+      ["jobHolder", "prepared"],
+    ],
+  },
+
+    "jobs.filed": {
+    label: "Jobs Filed",
+    Model: clientModel,
+    dateField: "currentDate",
+     
+    valueConfig: { type: "count",   },
+    baseMatch: {status :  { $eq: "completed" }, filed: {$exists: true} },
+    allowedFilters: [
+      ["source", "source"],
+      ["jobHolder", "filed"],
+    ],
+  },
+
+
+    "jobs.review": {
+    label: "Jobs Review",
+    Model: clientModel,
+    dateField: "currentDate",
+     
+    valueConfig: { type: "count",   },
+    baseMatch: {status :  { $eq: "completed" }, review: {$exists: true} },
+    allowedFilters: [
+      ["source", "source"],
+      ["jobHolder", "review"],
+    ],
+  },
+
+
+
+
  
 };
 

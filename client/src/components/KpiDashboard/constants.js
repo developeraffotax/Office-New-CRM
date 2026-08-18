@@ -1,5 +1,6 @@
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import GroupsIcon from "@mui/icons-material/Groups";
+import WorkIcon from '@mui/icons-material/Work';
 import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
 
 export const KPI_DASHBOARD_PERMISSION = "Kpi-Dashboard";
@@ -72,6 +73,34 @@ export const TAB_GROUPS = [
         label: "Subscription Value",
         isMulti: false,
         valueType: "currency",
+      },
+    ],
+  },
+
+
+
+   {
+    key: "jobs",
+    label: "Jobs",
+    icon: <WorkIcon />,
+    tabs: [
+      {
+        chartKey: "jobs.prepared",
+        label: "Prepared",
+        isMulti: false,
+        valueType: "count",
+      },
+      {
+        chartKey: "jobs.filed",
+        label: "Filed",
+        isMulti: false,
+        valueType: "count",
+      },
+      {
+        chartKey: "jobs.review",
+        label: "Review",
+        isMulti: false,
+        valueType: "count",
       },
     ],
   },

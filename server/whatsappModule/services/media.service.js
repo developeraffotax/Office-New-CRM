@@ -78,7 +78,8 @@ export const downloadAndStoreMedia = async (mediaId, mimeType, phone) => {
  
   const { data: fileBuffer, headers } = await axios.get(tempUrl, {
     headers: { Authorization: `Bearer ${dualhookKey}` },
-    // responseType: "arraybuffer",
+    responseType: "arraybuffer",
+    
   });
 
   const contentType = headers["content-type"] || mimeType;

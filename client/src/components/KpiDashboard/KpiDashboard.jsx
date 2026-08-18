@@ -200,7 +200,7 @@ const visibleStatsUsers = useMemo(
     const getAllUsers = async () => {
       try {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
+          `${process.env.REACT_APP_API_URL}/api/v1/user/get/users-list`,
         );
         setUsers(data?.users || []);
       } catch (error) {
@@ -218,6 +218,8 @@ const visibleStatsUsers = useMemo(
         const { data } = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/v1/team/get_all`,
         );
+
+        console.log("Fetched teams:", data?.teams);
         setTeams(data?.teams || []);
       } catch (error) {
         console.error("Failed to fetch teams:", error);

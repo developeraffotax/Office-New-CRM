@@ -7,6 +7,7 @@ import { sendOtpEmail } from "../utils/sendOtpEmail.js";
 import { io } from "../index.js";
 import { getUsersOrderedForModule } from "../services/user.service.js";
 import { isAdmin } from "../utils/checkPermission.js";
+import teamModel from "../models/teamModel.js";
 
 // Create User
 export const registerUser = async (req, res) => {
@@ -742,6 +743,95 @@ export const getAllTeamMembers = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Error while getting users!",
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+// Get All Users (without InActive) — scoped by role
+export const getUsersList = async (req, res) => {
+  try {
+    const currentUser = req?.user?.user;
+
+    if (!currentUser?._id) {
+      return res.status(401).send({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    // Base filter: active, non-admin users
+    let filter = { isActive: { $ne: false }, name: { $ne: "Admin" } };
+
+    if (isAdmin(req)) {
+      // Admin -> all active users, base filter is enough
+
+    } else {
+      // Team-lead status derived from the Team schema itself, not the
+      // isTeamLead flag on the user doc.
+      const ledTeams = await teamModel
+        .find({ teamLead: currentUser._id, isActive: { $ne: false } })
+        .select("_id");
+
+      if (ledTeams.length > 0) {
+        const teamIds = ledTeams.map((t) => t._id);
+        // Team lead -> his team members + himself
+        filter.$or = [{ team: { $in: teamIds } }, { _id: currentUser._id }];
+      } else {
+        // Regular user -> only himself
+        filter._id = currentUser._id;
+      }
+    }
+
+    const users = await userModel
+      .find(filter)
+      .select("-password")
+      .populate("role")
+      .sort({ order: 1 });
+
+    res.status(200).send({
+      total: users.length,
+      success: true,
+      message: "All users list",
+      users: users,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while get all users!",
     });
   }
 };

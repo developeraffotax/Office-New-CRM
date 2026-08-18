@@ -1,5 +1,6 @@
 // UserFilterSelect.jsx
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSelector } from "react-redux";
 import {
   Box, Popover, Stack, TextField, InputAdornment, Checkbox,
   Avatar, AvatarGroup, Typography, Button, Divider, List,
@@ -8,15 +9,44 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
 import { getUserColor } from "../utils/userColors";
- 
+
 
 const initials = (name = "") =>
   name.trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("");
 
 export default function UserFilterSelect({ users, teams = [], selected, onChange }) {
+  const { auth } = useSelector((state) => state.auth);
+  const currentUserName = auth?.user?.name;
+  const isAdmin = auth?.user?.role?.name?.toLowerCase() === "admin";
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [query, setQuery] = useState("");
   const open = Boolean(anchorEl);
+
+  // Non-admins (regular users + team leads) must always have at least one
+  // user selected. Every place that used to call `onChange` directly now
+  // goes through this instead, so an empty selection can't slip through.
+  const handleChange = (next) => {
+    if (!isAdmin && next.length === 0) {
+      onChange(currentUserName ? [currentUserName] : next);
+      return;
+    }
+    onChange(next);
+  };
+
+  // Default a non-admin's selection to themselves as soon as their
+  // scoped user list is available.
+  useEffect(() => {
+    if (
+      !isAdmin &&
+      selected.length === 0 &&
+      currentUserName &&
+      users.some((u) => u.name === currentUserName)
+    ) {
+      onChange([currentUserName]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin, currentUserName, users, selected.length]);
 
   // Group users by team. A user can show up here whether `user.team` came
   // back populated ({_id, name, ...}) or as a raw id — either way we
@@ -68,7 +98,9 @@ export default function UserFilterSelect({ users, teams = [], selected, onChange
   }, [groups, query]);
 
   const toggle = (name) =>
-    onChange(selected.includes(name) ? selected.filter((n) => n !== name) : [...selected, name]);
+    handleChange(
+      selected.includes(name) ? selected.filter((n) => n !== name) : [...selected, name]
+    );
 
   // Clicking a team selects every member of that team; clicking again
   // (once all are already selected) clears just that team's members,
@@ -76,7 +108,7 @@ export default function UserFilterSelect({ users, teams = [], selected, onChange
   const toggleTeam = (members) => {
     const memberNames = members.map((u) => u.name);
     const allSelected = memberNames.every((n) => selected.includes(n));
-    onChange(
+    handleChange(
       allSelected
         ? selected.filter((n) => !memberNames.includes(n))
         : [...new Set([...selected, ...memberNames])]
@@ -136,8 +168,15 @@ export default function UserFilterSelect({ users, teams = [], selected, onChange
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ px: 1.5, py: 0.5 }}>
           <Typography variant="caption" color="text.secondary">{selected.length} of {users.length} selected</Typography>
           <Stack direction="row" spacing={1}>
-            <Button size="small" sx={{ minWidth: 0, p: 0, fontSize: 12 }} onClick={() => onChange(users.map((u) => u.name))}>Select all</Button>
-            <Button size="small" sx={{ minWidth: 0, p: 0, fontSize: 12 }} onClick={() => onChange([])} disabled={selected.length === 0}>Clear</Button>
+            <Button size="small" sx={{ minWidth: 0, p: 0, fontSize: 12 }} onClick={() => handleChange(users.map((u) => u.name))}>Select all</Button>
+            <Button
+              size="small"
+              sx={{ minWidth: 0, p: 0, fontSize: 12 }}
+              onClick={() => handleChange([])}
+              disabled={isAdmin ? selected.length === 0 : selected.every((n) => n === currentUserName)}
+            >
+              Clear
+            </Button>
           </Stack>
         </Stack>
 
@@ -177,21 +216,35 @@ export default function UserFilterSelect({ users, teams = [], selected, onChange
                   />
                 </ListItemButton>
 
-                {group.members.map((u) => (
-                  <ListItemButton
-                    key={u._id}
-                    onClick={() => toggle(u.name)}
-                    sx={{ borderRadius: 1, mx: 0.5, ml: 2, py: 0.5, width: "calc(100% - 16px)" }}
-                  >
-                    <ListItemIcon sx={{ minWidth: 30 }}>
-                      <Checkbox edge="start" size="small" checked={selected.includes(u.name)} tabIndex={-1} disableRipple />
-                    </ListItemIcon>
-                    <Avatar sx={{ width: 22, height: 22, fontSize: 10, fontWeight: 700, bgcolor: getUserColor(u.name), mr: 1 }}>
-                      {initials(u.name)}
-                    </Avatar>
-                    <ListItemText primaryTypographyProps={{ variant: "body2" }} primary={u.name} />
-                  </ListItemButton>
-                ))}
+                {group.members.map((u) => {
+                  const isLastRequired =
+                    !isAdmin &&
+                    u.name === currentUserName &&
+                    selected.length === 1 &&
+                    selected[0] === currentUserName;
+
+                  return (
+                    <ListItemButton
+                      key={u._id}
+                      onClick={() => !isLastRequired && toggle(u.name)}
+                      disabled={isLastRequired}
+                      sx={{ borderRadius: 1, mx: 0.5, ml: 2, py: 0.5, width: "calc(100% - 16px)" }}
+                    >
+                      <ListItemIcon sx={{ minWidth: 30 }}>
+                        <Checkbox
+                          edge="start" size="small"
+                          checked={selected.includes(u.name)}
+                          disabled={isLastRequired}
+                          tabIndex={-1} disableRipple
+                        />
+                      </ListItemIcon>
+                      <Avatar sx={{ width: 22, height: 22, fontSize: 10, fontWeight: 700, bgcolor: getUserColor(u.name), mr: 1 }}>
+                        {initials(u.name)}
+                      </Avatar>
+                      <ListItemText primaryTypographyProps={{ variant: "body2" }} primary={u.name} />
+                    </ListItemButton>
+                  );
+                })}
               </Box>
             );
           })}

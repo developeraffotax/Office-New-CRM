@@ -6,6 +6,7 @@ import {
   getAllTeamMembers,
   getAllUsers,
   getDashboardUsers,
+  getUsersList,
   loginCrmUser,
   loginUser,
   registerUser,
@@ -69,5 +70,21 @@ router.put("/reordering", requiredSignIn, reordering);
 
 // Get All Team Members
 router.get("/get/active/team",requiredSignIn, getAllTeamMembers);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Get Allowed Users List
+router.get("/get/users-list",requiredSignIn, getUsersList);
 
 export default router;

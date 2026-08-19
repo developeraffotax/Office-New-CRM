@@ -63,17 +63,18 @@ export const TAB_GROUPS = [
     icon: <SubscriptionsIcon />,
     tabs: [
       {
-        chartKey: "subscriptions.count",
-        label: "Subscription Count",
-        isMulti: false,
-        valueType: "count",
-      },
-      {
         chartKey: "subscriptions.value",
         label: "Subscription Value",
         isMulti: false,
         valueType: "currency",
       },
+      {
+        chartKey: "subscriptions.count",
+        label: "Subscription Count",
+        isMulti: false,
+        valueType: "count",
+      },
+      
     ],
   },
 
@@ -91,17 +92,18 @@ export const TAB_GROUPS = [
         valueType: "count",
       },
       {
-        chartKey: "jobs.filed",
-        label: "Filed",
-        isMulti: false,
-        valueType: "count",
-      },
-      {
         chartKey: "jobs.review",
         label: "Review",
         isMulti: false,
         valueType: "count",
       },
+      {
+        chartKey: "jobs.filed",
+        label: "Filed",
+        isMulti: false,
+        valueType: "count",
+      },
+      
     ],
   },
 ];

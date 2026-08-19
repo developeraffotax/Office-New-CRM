@@ -57,24 +57,26 @@ export const generateEmailReplies = async (req, res) => {
     const projectContext = buildProjectContext(project);
 
     const systemPrompt = createSystemPrompt(
-      actionType,
-      projectContext,
-      customInstructions
-    );
+        actionType,
+        projectContext,
+        !!customInstructions?.trim()
+      );
 
-    const userPrompt = createUserPrompt(
-      contextMessages,
-      actionType,
-      optionNumber
-    );
+      const userPrompt = createUserPrompt(
+        contextMessages,
+        actionType,
+        optionNumber,
+        customInstructions
+      );
 
   // ---------------- PERFORMANCE HOOK START ----------------
     const startTime = performance.now();
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      temperature: 0.6,
-      max_tokens: 400,
+      model: "gpt-5.6-luna",
+      max_completion_tokens: 800,
+      // temperature: 0.5,
+      // max_tokens: 800,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },

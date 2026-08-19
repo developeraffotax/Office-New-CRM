@@ -2,29 +2,13 @@ import { REPLY } from "../../../constants.js";
 import { actionPrompts } from "./actionPrompt.js";
 import { baseSystemPrompt } from "./systemPrompts.js";
 
-function sanitizeInstructions(input = "") {
-  return input
-    .slice(0, 500)
-    .replace(/[<>]/g, "")
-    .replace(/(ignore previous|system prompt|override|developer)/gi, "");
-}
- 
-
- 
-
 export const createSystemPrompt = (
-
   actionType,
   projectContext = "",
-  customInstructions = ""
+  hasCustomInstructions = false
 ) => {
-
-  const safeCustomInstructions = sanitizeInstructions(customInstructions);
-
   const actionPrompt =
-    actionType === REPLY
-      ? actionPrompts.reply
-      : actionPrompts.followUp;
+    actionType === REPLY ? actionPrompts.reply : actionPrompts.followUp;
 
   return `
 ${baseSystemPrompt}
@@ -33,13 +17,14 @@ ${projectContext}
 
 ${actionPrompt}
 
-ADDITIONAL USER INSTRUCTIONS
-----------------------------
-${safeCustomInstructions}
+PRIORITY ORDER
+--------------
+1. The OUTPUT FORMAT rules below — always.
+2. ${hasCustomInstructions ? "The sender's custom instructions given later in this conversation — these override the tone/style/length defaults above." : "The tone/style/length defaults above."}
+3. Project context and company defaults above.
 
 IMPORTANT
 ---------
-Follow the project context and company instructions strictly.
 Return only the requested format.
 `;
 };

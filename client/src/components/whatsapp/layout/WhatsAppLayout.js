@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import ChatWindow from "../chat/ChatWindow";
+import ChatWindow from "../chat/ChatWindow/ChatWindow";
 import ChatList from "../chat/ChatList";
 import Sidebar from "../shared/Sidebar";
 import Filters from "../shared/Filters";

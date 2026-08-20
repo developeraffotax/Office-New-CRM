@@ -7,7 +7,7 @@ import Draggable from "react-draggable";
 import toast from "react-hot-toast";
 import axios from "axios";
 
-import Sidebar from "./Sidebar";
+import Sidebar from "./sidebar/Sidebar";
 import Header from "./header/Header";
 import Spinner from "../../utlis/Spinner";
 import OverdueModal from "../../utlis/OverdueModal";
@@ -163,7 +163,7 @@ export default function Layout() {
           {/* Desktop Sidebar */}
           <div
             className={`hidden sm:flex transition-all duration-200 ${
-              hideSidebar ? "w-[5rem]" : "w-[13rem]"
+              hideSidebar ? "w-[5rem]" : "w-[14rem]"
             }`}
           >
             <Sidebar hide={hideSidebar} setHide={setHideSidebar} />

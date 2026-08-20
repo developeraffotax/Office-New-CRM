@@ -6,7 +6,8 @@ import { BsFileEarmarkText } from "react-icons/bs";
 import { BsBriefcase } from "react-icons/bs";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { GrDocumentPerformance } from "react-icons/gr"; 
+import { GrDocumentPerformance } from "react-icons/gr";
+import { LiaClipboardListSolid } from "react-icons/lia";
 import ProfileModal from "../Modals/ProfileModal";
 import { FaUsers, FaWhatsapp } from "react-icons/fa";
 import { SlCalender } from "react-icons/sl";
@@ -29,7 +30,12 @@ import { IoIosArrowDown } from "react-icons/io";
 import { FaUserTie } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
 import { setActive } from "../../redux/slices/authSlice";
- 
+import {
+  selectJobAssignedCount,
+  selectTaskAssignedCount,
+  selectTicketAssignedCount,
+  selectTicketReceivedCount,
+} from "../../redux/slices/notificationSlice";
 import { IoMailUnreadOutline } from "react-icons/io5";
 import { hasPermission } from "../../utlis/checkPermission";
 import { TbDeviceDesktopAnalytics } from "react-icons/tb";
@@ -171,7 +177,7 @@ export default function Sidebar({ hide, setHide }) {
   }, [auth]);
 
   return (
-    <div className="w-full h-full py-2 bg-[#f9f9f9] ">
+    <div className="w-full h-screen py-2 ">
       <div className=" hidden sm:flex items-center justify-end pr-1 ">
         {hide ? (
           <AiOutlineMenuUnfold
@@ -186,15 +192,15 @@ export default function Sidebar({ hide, setHide }) {
         )}
       </div>
       {/*  */}
-      <div className="relative w-full  py-3 h-full pb-[2rem] overflow-y-auto message border-r ">
-        <div className="relative w-full pb-[5rem]  h-full flex flex-col gap-1 px-2  overflow-y-auto allMessages   message">
+      <div className="relative w-full  py-3 h-screen pb-[2rem] overflow-y-auto message">
+        <div className="relative w-full pb-[5rem]  flex flex-col gap-4 overflow-y-auto allMessages py-1 pr-1 message">
           {/* 1 */}
           {hasAccess("Dashboard") && (
             <div
-              className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "dashboard"
-                  ? "bg-white border-black/20 "
-                  : "   hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black  hover:bg-orange-200 transition-all duration-300"
               }   filter   overflow-hidden `}
               onClick={() => {
                 router("/dashboard");
@@ -205,17 +211,17 @@ export default function Sidebar({ hide, setHide }) {
                 {hide ? (
                   <LuLayoutDashboard
                     className="h-6 w-6 cursor-pointer ml-2"
-                    
+                    style={{ color: active === "dashboard" && "#fff" }}
                   />
                 ) : (
                   <div className="flex items-center gap-2">
                     <LuLayoutDashboard
                       className="h-5 w-5 cursor-pointer ml-2"
-                       
+                      style={{ color: active === "dashboard" && "#fff" }}
                     />
                     <span
                       className="text-[14px] font-[400]"
-                       
+                      style={{ color: active === "dashboard" && "#fff" }}
                     >
                       Dashboard
                     </span>
@@ -228,10 +234,10 @@ export default function Sidebar({ hide, setHide }) {
           {/* ---------Kpi-Dashboard-------- */}
           {hasAccess("Kpi-Dashboard") && (
             <div
-              className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "kpi-dashboard"
-                  ? "bg-white border-black/20  "
-                  : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/kpi-dashboard");
@@ -240,11 +246,20 @@ export default function Sidebar({ hide, setHide }) {
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
-                  <GrDocumentPerformance className="h-6 w-6 cursor-pointer ml-2" />
+                  <GrDocumentPerformance
+                    className="h-6 w-6 cursor-pointer ml-2"
+                    style={{ color: active === "kpi-dashboard" && "#fff" }}
+                  />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <GrDocumentPerformance className="h-5 w-5 cursor-pointer ml-2" />
-                    <span className="text-[14px] font-[400] ">
+                    <GrDocumentPerformance
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "kpi-dashboard" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400] "
+                      style={{ color: active === "kpi-dashboard" && "#fff" }}
+                    >
                       Kpi Dashboard
                     </span>
                   </div>
@@ -253,14 +268,15 @@ export default function Sidebar({ hide, setHide }) {
             </div>
           )}
 
+          
           {/* 3 */}
           {hasAccess("Tasks") && (
             <div
-              className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  
                 ${
                   active === "tasks"
-                    ? "bg-white border-black/20 "
-                    : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
                 } filter overflow-hidden`}
               onClick={() => {
                 router("/tasks");
@@ -270,11 +286,22 @@ export default function Sidebar({ hide, setHide }) {
               <div className="relative w-full h-full flex items-center justify-between px-3 z-30 bg-transparent">
                 {/* Left side - Icon & Text */}
                 {hide ? (
-                  <FaTasks className="h-6 w-6 cursor-pointer" />
+                  <FaTasks
+                    className="h-6 w-6 cursor-pointer"
+                    style={{ color: active === "tasks" && "#fff" }}
+                  />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <FaTasks className="h-5 w-5 cursor-pointer" />
-                    <span className="text-[14px] font-[400]">Tasks</span>
+                    <FaTasks
+                      className="h-5 w-5 cursor-pointer"
+                      style={{ color: active === "tasks" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400]"
+                      style={{ color: active === "tasks" && "#fff" }}
+                    >
+                      Tasks
+                    </span>
                   </div>
                 )}
 
@@ -286,7 +313,7 @@ export default function Sidebar({ hide, setHide }) {
                     ${
                       active === "tasks"
                         ? "bg-white text-orange-600"
-                        : "bg-white border-black/20 text-black"
+                        : "bg-orange-600 text-white"
                     }`}
                   >
                     {taskCount || 0}
@@ -298,10 +325,10 @@ export default function Sidebar({ hide, setHide }) {
           {/* 4 */}
           {hasAccess("Jobs") && (
             <div
-              className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "job-planning"
-                  ? "bg-white border-black/20 "
-                  : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/job-planning");
@@ -310,11 +337,22 @@ export default function Sidebar({ hide, setHide }) {
             >
               <div className="relative w-full h-full flex items-center justify-between px-3 z-30 bg-transparent">
                 {hide ? (
-                  <BsBriefcase className="h-6 w-6 cursor-pointer ml-2" />
+                  <BsBriefcase
+                    className="h-6 w-6 cursor-pointer ml-2"
+                    style={{ color: active === "job-planning" && "#fff" }}
+                  />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <BsBriefcase className="h-5 w-5 cursor-pointer ml-2" />
-                    <span className="text-[14px] font-[400]">Jobs</span>
+                    <BsBriefcase
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "job-planning" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400]"
+                      style={{ color: active === "job-planning" && "#fff" }}
+                    >
+                      Jobs
+                    </span>
                   </div>
                 )}
 
@@ -326,7 +364,7 @@ export default function Sidebar({ hide, setHide }) {
                     ${
                       active === "job-planning"
                         ? "bg-white text-orange-600"
-                        : "bg-white border-black/20 text-black"
+                        : "bg-orange-600 text-white"
                     }`}
                   >
                     {jobCount || 0}
@@ -339,10 +377,10 @@ export default function Sidebar({ hide, setHide }) {
           {/* ---------Lead-------- */}
           {hasAccess("Leads") && (
             <div
-              className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "leads"
-                  ? "bg-white border-black/20 "
-                  : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/leads");
@@ -351,11 +389,22 @@ export default function Sidebar({ hide, setHide }) {
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
-                  <BiLayer className="h-6 w-6 cursor-pointer ml-2" />
+                  <BiLayer
+                    className="h-6 w-6 cursor-pointer ml-2"
+                    style={{ color: active === "leads" && "#fff" }}
+                  />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <BiLayer className="h-5 w-5 cursor-pointer ml-2" />
-                    <span className="text-[14px] font-[400] ">Leads</span>
+                    <BiLayer
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "leads" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400] "
+                      style={{ color: active === "leads" && "#fff" }}
+                    >
+                      Leads
+                    </span>
                   </div>
                 )}
               </div>
@@ -365,10 +414,10 @@ export default function Sidebar({ hide, setHide }) {
           {/* --------Template------ */}
           {hasAccess("Templates") && (
             <div
-              className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "templates"
-                  ? "bg-white border-black/20 "
-                  : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/templates");
@@ -377,11 +426,22 @@ export default function Sidebar({ hide, setHide }) {
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
-                  <GoRepoTemplate className="h-6 w-6 cursor-pointer ml-2" />
+                  <GoRepoTemplate
+                    className="h-6 w-6 cursor-pointer ml-2"
+                    style={{ color: active === "templates" && "#fff" }}
+                  />
                 ) : (
                   <div className=" relative flex items-center gap-2">
-                    <GoRepoTemplate className="h-5 w-5 cursor-pointer ml-2" />
-                    <span className="text-[14px] font-[400] ">Templates</span>
+                    <GoRepoTemplate
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "templates" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400] "
+                      style={{ color: active === "templates" && "#fff" }}
+                    >
+                      Templates
+                    </span>
                   </div>
                 )}
               </div>
@@ -391,10 +451,10 @@ export default function Sidebar({ hide, setHide }) {
           {/* ------Ticket------ */}
           {hasAccess("Tickets") && (
             <div
-              className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "tickets"
-                  ? "bg-white border-black/20 "
-                  : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/tickets");
@@ -403,11 +463,22 @@ export default function Sidebar({ hide, setHide }) {
             >
               <div className="relative w-full h-full flex items-center justify-between px-2 z-30 bg-transparent">
                 {hide ? (
-                  <BsFileEarmarkText className="h-6 w-6 cursor-pointer ml-2" />
+                  <BsFileEarmarkText
+                    className="h-6 w-6 cursor-pointer ml-2"
+                    style={{ color: active === "tickets" && "#fff" }}
+                  />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <BsFileEarmarkText className="h-5 w-5 cursor-pointer ml-2" />
-                    <span className="text-[14px] font-[400]">Tickets</span>
+                    <BsFileEarmarkText
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "tickets" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400]"
+                      style={{ color: active === "tickets" && "#fff" }}
+                    >
+                      Tickets
+                    </span>
                   </div>
                 )}
 
@@ -435,7 +506,7 @@ export default function Sidebar({ hide, setHide }) {
                     ${
                       active === "tickets"
                         ? "bg-white text-orange-600"
-                        : "bg-white border-black/20 text-black"
+                        : "bg-orange-600 text-white"
                     }`}
                     >
                       {ticketAssignedCount || 0}
@@ -448,10 +519,10 @@ export default function Sidebar({ hide, setHide }) {
 
           {(user?.role?.name === "Admin" || hasPermission(user, "Inbox")) && (
             <div
-              className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "mail"
-                  ? "bg-white border-black/20 "
-                  : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
               }   filter   overflow-hidden`}
               onClick={() => {
                 router(
@@ -465,11 +536,22 @@ export default function Sidebar({ hide, setHide }) {
             >
               <div className="relative w-full h-full flex items-center justify-between px-3 z-30 bg-transparent">
                 {hide ? (
-                  <IoMailUnreadOutline className="h-5 w-5 cursor-pointer ml-2" />
+                  <IoMailUnreadOutline
+                    className="h-5 w-5 cursor-pointer ml-2"
+                    style={{ color: active === "mail" && "#fff" }}
+                  />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <IoMailUnreadOutline className="h-5 w-5 cursor-pointer ml-2" />
-                    <span className="text-[14px] font-[400] ">Inbox</span>
+                    <IoMailUnreadOutline
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "mail" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400] "
+                      style={{ color: active === "mail" && "#fff" }}
+                    >
+                      Inbox
+                    </span>
                   </div>
                 )}
 
@@ -481,12 +563,14 @@ export default function Sidebar({ hide, setHide }) {
                     ${
                       active === "mail"
                         ? "bg-white text-orange-600"
-                        : "bg-white border-black/20 text-black"
+                        : "bg-orange-600 text-white"
                     }`}
                     >
                       {threadAssignedCount || 0}
                     </span>
                   )}
+
+                  
                 </div>
               </div>
             </div>
@@ -495,10 +579,10 @@ export default function Sidebar({ hide, setHide }) {
           {(user?.role?.name === "Admin" ||
             hasPermission(user, "Whatsapp")) && (
             <div
-              className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "whatsapp"
-                  ? "bg-white border-black/20 "
-                  : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
               }   filter   overflow-hidden`}
               onClick={() => {
                 router(
@@ -511,11 +595,22 @@ export default function Sidebar({ hide, setHide }) {
             >
               <div className="relative w-full h-full flex items-center justify-between px-3 z-30 bg-transparent">
                 {hide ? (
-                  <FaWhatsapp className="h-5 w-5 cursor-pointer ml-2" />
+                  <FaWhatsapp
+                    className="h-5 w-5 cursor-pointer ml-2"
+                    style={{ color: active === "whatsapp" && "#fff" }}
+                  />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <FaWhatsapp className="h-5 w-5 cursor-pointer ml-2" />
-                    <span className="text-[14px] font-[400] ">WhatsApp</span>
+                    <FaWhatsapp
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "whatsapp" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400] "
+                      style={{ color: active === "whatsapp" && "#fff" }}
+                    >
+                      WhatsApp
+                    </span>
                   </div>
                 )}
               </div>
@@ -525,10 +620,10 @@ export default function Sidebar({ hide, setHide }) {
           {/* ---------Proposal----- */}
           {hasAccess("Proposals") && (
             <div
-              className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "proposals"
-                  ? "bg-white border-black/20 "
-                  : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/proposals");
@@ -537,11 +632,22 @@ export default function Sidebar({ hide, setHide }) {
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
-                  <LuClipboardSignature className="h-6 w-6 cursor-pointer ml-2" />
+                  <LuClipboardSignature
+                    className="h-6 w-6 cursor-pointer ml-2"
+                    style={{ color: active === "proposals" && "#fff" }}
+                  />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <LuClipboardSignature className="h-5 w-5 cursor-pointer ml-2" />
-                    <span className="text-[14px] font-[400] ">Proposals</span>
+                    <LuClipboardSignature
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "proposals" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400] "
+                      style={{ color: active === "proposals" && "#fff" }}
+                    >
+                      Proposals
+                    </span>
                   </div>
                 )}
               </div>
@@ -550,10 +656,10 @@ export default function Sidebar({ hide, setHide }) {
           {/* ---------Goals----- */}
           {hasAccess("Goals") && (
             <div
-              className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "goals"
-                  ? "bg-white border-black/20 "
-                  : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/goals");
@@ -562,11 +668,22 @@ export default function Sidebar({ hide, setHide }) {
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
-                  <GoGoal className="h-5 w-5 cursor-pointer ml-2" />
+                  <GoGoal
+                    className="h-5 w-5 cursor-pointer ml-2"
+                    style={{ color: active === "goals" && "#fff" }}
+                  />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <GoGoal className="h-5 w-5 cursor-pointer ml-2" />
-                    <span className="text-[14px] font-[400] ">Goals</span>
+                    <GoGoal
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "goals" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400] "
+                      style={{ color: active === "goals" && "#fff" }}
+                    >
+                      Goals
+                    </span>
                   </div>
                 )}
               </div>
@@ -575,10 +692,10 @@ export default function Sidebar({ hide, setHide }) {
           {/* Timer Sheet */}
           {hasAccess("Timesheet") && (
             <div
-              className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "timesheet"
-                  ? "bg-white border-black/20 "
-                  : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/timesheet");
@@ -587,11 +704,22 @@ export default function Sidebar({ hide, setHide }) {
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
-                  <SlCalender className="h-6 w-6 cursor-pointer ml-2" />
+                  <SlCalender
+                    className="h-6 w-6 cursor-pointer ml-2"
+                    style={{ color: active === "timesheet" && "#fff" }}
+                  />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <SlCalender className="h-5 w-5 cursor-pointer ml-2" />
-                    <span className="text-[14px] font-[400]">TimeSheet</span>
+                    <SlCalender
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "timesheet" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400]"
+                      style={{ color: active === "timesheet" && "#fff" }}
+                    >
+                      TimeSheet
+                    </span>
                   </div>
                 )}
               </div>
@@ -600,10 +728,10 @@ export default function Sidebar({ hide, setHide }) {
           {/* Subscription */}
           {hasAccess("Subscription") && (
             <div
-              className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "subscriptions"
-                  ? "bg-white border-black/20 "
-                  : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/subscriptions");
@@ -612,11 +740,22 @@ export default function Sidebar({ hide, setHide }) {
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
-                  <FaRegCreditCard className="h-6 w-6 cursor-pointer ml-2" />
+                  <FaRegCreditCard
+                    className="h-6 w-6 cursor-pointer ml-2"
+                    style={{ color: active === "subscriptions" && "#fff" }}
+                  />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <FaRegCreditCard className="h-5 w-5 cursor-pointer ml-2" />
-                    <span className="text-[14px] font-[400]">Subscription</span>
+                    <FaRegCreditCard
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "subscriptions" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400]"
+                      style={{ color: active === "subscriptions" && "#fff" }}
+                    >
+                      Subscription
+                    </span>
                   </div>
                 )}
               </div>
@@ -627,10 +766,10 @@ export default function Sidebar({ hide, setHide }) {
           {hasAccess("HR") && (
             <>
               <div
-                className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                   active === "hr"
-                    ? "bg-white border-black/20 "
-                    : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
                 }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/hr/tasks");
@@ -639,11 +778,22 @@ export default function Sidebar({ hide, setHide }) {
               >
                 <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                   {hide ? (
-                    <FaUserTie className="h-6 w-6 cursor-pointer ml-2" />
+                    <FaUserTie
+                      className="h-6 w-6 cursor-pointer ml-2"
+                      style={{ color: active === "hr" && "#fff" }}
+                    />
                   ) : (
                     <div className="flex items-center gap-2">
-                      <FaUserTie className="h-5 w-5 cursor-pointer ml-2" />
-                      <span className="text-[14px] font-[400] ">HR</span>
+                      <FaUserTie
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "hr" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{ color: active === "hr" && "#fff" }}
+                      >
+                        HR
+                      </span>
                     </div>
                   )}
                 </div>
@@ -654,10 +804,10 @@ export default function Sidebar({ hide, setHide }) {
           {hasAccess("Affotax-Analytics") && (
             <>
               <div
-                className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                   active === "affotax-analytics"
-                    ? "bg-white border-black/20 "
-                    : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
                 }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/affotax-analytics");
@@ -666,11 +816,28 @@ export default function Sidebar({ hide, setHide }) {
               >
                 <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                   {hide ? (
-                    <TbDeviceDesktopAnalytics className="h-6 w-6 cursor-pointer ml-2" />
+                    <TbDeviceDesktopAnalytics
+                      className="h-6 w-6 cursor-pointer ml-2"
+                      style={{
+                        color: active === "affotax-analytics" && "#fff",
+                      }}
+                    />
                   ) : (
                     <div className="flex items-center gap-2">
-                      <TbDeviceDesktopAnalytics className="h-5 w-5 cursor-pointer ml-2" />
-                      <span className="text-[14px] font-[400] ">Affotax</span>
+                      <TbDeviceDesktopAnalytics
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{
+                          color: active === "affotax-analytics" && "#fff",
+                        }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{
+                          color: active === "affotax-analytics" && "#fff",
+                        }}
+                      >
+                        Affotax
+                      </span>
                     </div>
                   )}
                 </div>
@@ -707,7 +874,7 @@ export default function Sidebar({ hide, setHide }) {
                   className={`text-[16px] font-semibold px-4 py-2 flex items-center justify-between transition-all cursor-pointer rounded-e-3xl ${
                     isSettingsOpen
                       ? "bg-orange-200"
-                      : " hover:bg-white   text-gray-800"
+                      : "bg-gray-100 hover:bg-orange-200 text-gray-800"
                   }`}
                   onClick={() => setIsSettingsOpen((prev) => !prev)}
                 >
@@ -730,10 +897,10 @@ export default function Sidebar({ hide, setHide }) {
           {/* Meeting */}
           {isSettingsOpen && hasAccess("Meeting") && (
             <div
-              className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "meetings"
-                  ? "bg-white border-black/20 "
-                  : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
               }   filter   overflow-hidden `}
               onClick={() => {
                 router("/meetings");
@@ -742,11 +909,22 @@ export default function Sidebar({ hide, setHide }) {
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
-                  <MdCalendarMonth className="h-6 w-6 cursor-pointer ml-2" />
+                  <MdCalendarMonth
+                    className="h-6 w-6 cursor-pointer ml-2"
+                    style={{ color: active === "meetings" && "#fff" }}
+                  />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <MdCalendarMonth className="h-6 w-6 cursor-pointer ml-2" />
-                    <span className="text-[14px] font-[400]">Meeting</span>
+                    <MdCalendarMonth
+                      className="h-6 w-6 cursor-pointer ml-2"
+                      style={{ color: active === "meetings" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400]"
+                      style={{ color: active === "meetings" && "#fff" }}
+                    >
+                      Meeting
+                    </span>
                   </div>
                 )}
               </div>
@@ -755,10 +933,10 @@ export default function Sidebar({ hide, setHide }) {
           {/* Workflow */}
           {isSettingsOpen && hasAccess("Workflow") && (
             <div
-              className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "workflow"
-                  ? "bg-white border-black/20 "
-                  : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/workflow");
@@ -767,11 +945,22 @@ export default function Sidebar({ hide, setHide }) {
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
-                  <LiaNetworkWiredSolid className="h-6 w-6 cursor-pointer ml-2" />
+                  <LiaNetworkWiredSolid
+                    className="h-6 w-6 cursor-pointer ml-2"
+                    style={{ color: active === "workflow" && "#fff" }}
+                  />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <LiaNetworkWiredSolid className="h-6 w-6 cursor-pointer ml-2" />
-                    <span className="text-[14px] font-[400]">Workflow</span>
+                    <LiaNetworkWiredSolid
+                      className="h-6 w-6 cursor-pointer ml-2"
+                      style={{ color: active === "workflow" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400]"
+                      style={{ color: active === "workflow" && "#fff" }}
+                    >
+                      Workflow
+                    </span>
                   </div>
                 )}
               </div>
@@ -780,10 +969,10 @@ export default function Sidebar({ hide, setHide }) {
           {/* Complaints */}
           {isSettingsOpen && hasAccess("Complaints") && (
             <div
-              className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+              className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                 active === "complaints"
-                  ? "bg-white border-black/20 "
-                  : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                  ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                  : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
               }   filter   overflow-hidden`}
               onClick={() => {
                 router("/complaints");
@@ -792,11 +981,22 @@ export default function Sidebar({ hide, setHide }) {
             >
               <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                 {hide ? (
-                  <BiMessageError className="h-6 w-6 cursor-pointer ml-2" />
+                  <BiMessageError
+                    className="h-6 w-6 cursor-pointer ml-2"
+                    style={{ color: active === "complaints" && "#fff" }}
+                  />
                 ) : (
                   <div className="flex items-center gap-2">
-                    <BiMessageError className="h-6 w-6 cursor-pointer ml-2" />
-                    <span className="text-[14px] font-[400]">Complaints</span>
+                    <BiMessageError
+                      className="h-6 w-6 cursor-pointer ml-2"
+                      style={{ color: active === "complaints" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400]"
+                      style={{ color: active === "complaints" && "#fff" }}
+                    >
+                      Complaints
+                    </span>
                   </div>
                 )}
               </div>
@@ -806,10 +1006,10 @@ export default function Sidebar({ hide, setHide }) {
           {isSettingsOpen && hasAccess("Roles") && (
             <>
               <div
-                className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                   active === "roles"
-                    ? "bg-white border-black/20 "
-                    : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
                 }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/roles");
@@ -818,11 +1018,22 @@ export default function Sidebar({ hide, setHide }) {
               >
                 <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                   {hide ? (
-                    <MdSecurity className="h-6 w-6 cursor-pointer ml-2" />
+                    <MdSecurity
+                      className="h-6 w-6 cursor-pointer ml-2"
+                      style={{ color: active === "roles" && "#fff" }}
+                    />
                   ) : (
                     <div className="flex items-center gap-2">
-                      <MdSecurity className="h-5 w-5 cursor-pointer ml-2" />
-                      <span className="text-[14px] font-[400] ">Roles</span>
+                      <MdSecurity
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "roles" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{ color: active === "roles" && "#fff" }}
+                      >
+                        Roles
+                      </span>
                     </div>
                   )}
                 </div>
@@ -834,10 +1045,10 @@ export default function Sidebar({ hide, setHide }) {
           {isSettingsOpen && hasAccess("Users") && (
             <>
               <div
-                className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                   active === "users"
-                    ? "bg-white border-black/20 "
-                    : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
                 }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/users");
@@ -846,11 +1057,22 @@ export default function Sidebar({ hide, setHide }) {
               >
                 <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                   {hide ? (
-                    <FaUsers className="h-6 w-6 cursor-pointer ml-2" />
+                    <FaUsers
+                      className="h-6 w-6 cursor-pointer ml-2"
+                      style={{ color: active === "users" && "#fff" }}
+                    />
                   ) : (
                     <div className="flex items-center gap-2">
-                      <FaUsers className="h-5 w-5 cursor-pointer ml-2" />
-                      <span className="text-[14px] font-[400] ">Users</span>
+                      <FaUsers
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "users" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{ color: active === "users" && "#fff" }}
+                      >
+                        Users
+                      </span>
                     </div>
                   )}
                 </div>
@@ -863,10 +1085,10 @@ export default function Sidebar({ hide, setHide }) {
             (auth?.user?.role?.name === "Admin" || hasAccess("Activity")) && (
               <>
                 <div
-                  className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+                  className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                     active === "activity"
-                      ? "bg-white border-black/20 "
-                      : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                      ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                      : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
                   }   filter   overflow-hidden`}
                   onClick={() => {
                     router("/activity");
@@ -875,8 +1097,16 @@ export default function Sidebar({ hide, setHide }) {
                 >
                   <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                     <div className="flex items-center gap-2">
-                      <LuClock2 className="h-5 w-5 cursor-pointer ml-2" />
-                      <span className="text-[14px] font-[400] ">Activity</span>
+                      <LuClock2
+                        className="h-5 w-5 cursor-pointer ml-2"
+                        style={{ color: active === "activity" && "#fff" }}
+                      />
+                      <span
+                        className="text-[14px] font-[400] "
+                        style={{ color: active === "activity" && "#fff" }}
+                      >
+                        Activity
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -887,10 +1117,10 @@ export default function Sidebar({ hide, setHide }) {
           {isSettingsOpen && auth?.user?.role?.name === "Admin" && (
             <>
               <div
-                className={` relative h-[2.4rem] border  rounded-lg cursor-pointer  ${
+                className={`mainbtn relative h-[2.6rem] rounded-r-3xl cursor-pointer  ${
                   active === "settings"
-                    ? "bg-white border-black/20 "
-                    : "  hover:bg-white  hover:border-black/20 border-transparent transition-all duration-100"
+                    ? "bg-orange-600 text-white drop-shadow-md shadow-md shadow-gray-300"
+                    : "bg-gray-100 text-black hover:bg-orange-200 transition-all duration-300"
                 }   filter   overflow-hidden`}
                 onClick={() => {
                   router("/settings");
@@ -899,8 +1129,14 @@ export default function Sidebar({ hide, setHide }) {
               >
                 <div className="relative w-full h-full flex items-center px-2 z-30 bg-transparent">
                   <div className="flex items-center gap-2">
-                    <VscSettings className="h-5 w-5 cursor-pointer ml-2" />
-                    <span className="text-[14px] font-[400] ">
+                    <VscSettings
+                      className="h-5 w-5 cursor-pointer ml-2"
+                      style={{ color: active === "settings" && "#fff" }}
+                    />
+                    <span
+                      className="text-[14px] font-[400] "
+                      style={{ color: active === "settings" && "#fff" }}
+                    >
                       Personalized
                     </span>
                   </div>
@@ -908,6 +1144,8 @@ export default function Sidebar({ hide, setHide }) {
               </div>
             </>
           )}
+
+          
         </div>
       </div>
       {/* Profile Modal */}

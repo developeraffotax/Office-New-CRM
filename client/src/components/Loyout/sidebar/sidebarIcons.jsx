@@ -1,0 +1,16 @@
+export { LuLayoutDashboard } from "react-icons/lu";
+export { BsFileEarmarkText, BsBriefcase } from "react-icons/bs";
+export { GrDocumentPerformance } from "react-icons/gr";
+export { FaTasks, FaUsers, FaWhatsapp } from "react-icons/fa";
+export { SlCalender } from "react-icons/sl";
+export { GoRepoTemplate, GoGoal } from "react-icons/go";
+export { BiLayer, BiMessageError } from "react-icons/bi";
+export { FaRegCreditCard, FaUserTie } from "react-icons/fa6";
+export { LuClipboardSignature, LuClock2 } from "react-icons/lu";
+export { MdSecurity, MdCalendarMonth } from "react-icons/md";
+export { RiSettings4Fill } from "react-icons/ri";
+export { LiaNetworkWiredSolid } from "react-icons/lia";
+export { TbDeviceDesktopAnalytics } from "react-icons/tb";
+export { VscSettings } from "react-icons/vsc";
+export { IoMailUnreadOutline } from "react-icons/io5";
+export { IoIosArrowDown } from "react-icons/io";

@@ -6,7 +6,7 @@ import { buildPreview, parseMessage } from "../utils/message.js";
 import { getCompanyByPhoneNumber } from "../utils/config.js";
 
 import { sendWhatsappPayload } from "../utils/whatsappApi.js";
-import { downloadAndStoreMedia } from "./media.service.js";
+import { downloadAndStoreMedia, uploadMediaBuffer } from "./media.service.js";
 
 import { addNotificationJob } from "../../jobs/queues/notificationQueue.js";
 import { getSocketEmitter } from "../../utils/getSocketEmitter.js";
@@ -14,6 +14,7 @@ import { emitToUser } from "../../utils/socketEmitter.js";
 import { io } from "../../index.js";
 import { getFileUrl } from "../utils/s3.js";
 import { is24hWindowOpen } from "../utils/is24hWindowOpen.js";
+import { buildTemplateComponents } from "../utils/buildTemplateComponents.js";
 
 export const sendMessage = async ({
   conversationId,
@@ -217,7 +218,8 @@ export const saveOutboundMessage = async ({
   body,
   media,
   userId,
-  context
+  context,
+  initialStatus,
 }) => {
   // const conversation = await Conversation.findById(conversationId);
   // if (!conversation) throw new Error("Conversation not found");
@@ -232,6 +234,7 @@ export const saveOutboundMessage = async ({
     "video",
     "sticker",
     "location",
+    "template",
   ].includes(type)
     ? type
     : "text";
@@ -247,7 +250,7 @@ export const saveOutboundMessage = async ({
     media: media ?? undefined,
     context,
     
-    status: "sent",
+    status: initialStatus ??"sent",
     statusUpdatedAt: now,
     timestamp: now,
     
@@ -286,3 +289,76 @@ export const saveOutboundMessage = async ({
 
   return populatedMessage;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const sendTemplateMessage = async ({
+  conversationId, phoneNumberId, phoneNumber, to,
+  template, // { name, language, bodyParams, buttonParams, previewText }
+  headerFile, context, userId,
+}) => {
+  const conversation = await Conversation.findById(conversationId);
+  // no 24h-window check — templates are the mechanism for messaging outside it
+
+  let headerMedia, media;
+  if (headerFile) {
+    const { s3Key, presignedUrl } = await uploadMediaBuffer(headerFile, to);
+    const mediaType = headerFile.mimetype.startsWith("image/") ? "image"
+      : headerFile.mimetype.startsWith("video/") ? "video" : "document";
+    headerMedia = { type: mediaType, link: presignedUrl, filename: headerFile.originalname };
+    media = { s3Key, filename: headerFile.originalname };
+  }
+
+  const components = buildTemplateComponents({
+    bodyParams: template.bodyParams,
+    headerMedia,
+    buttonParams: template.buttonParams,
+  });
+
+  const apiPayload = {
+    to,
+    type: "template",
+    template: { name: template.name, language: { code: template.language }, components },
+  };
+
+    console.log("THE API apiPayload IS ❤️ ", apiPayload)
+  if (context?.whatsappMessageId) apiPayload.context = { message_id: context.whatsappMessageId };
+
+  const apiResponse = await sendWhatsappPayload(phoneNumberId, apiPayload);
+  console.log("THE API RESPONSE IS 🧡 ", apiResponse)
+  const whatsappMessageId = apiResponse.messages?.[0]?.id;
+  if (!whatsappMessageId) throw new Error("No message ID returned from WhatsApp API");
+
+
+  const initialStatus = "pending";
+
+
+  return saveOutboundMessage({
+    companyName: conversation.companyName,
+    conversationId, whatsappMessageId, from: phoneNumberId, to,
+    type: "template",
+    body: template.previewText ?? "",
+    media, 
+    userId: userId ?? null, 
+    context,
+    // initialStatus
+  });
+};
+ 

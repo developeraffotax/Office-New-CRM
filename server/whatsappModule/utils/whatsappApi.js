@@ -81,3 +81,36 @@ export const sendTemplateMessage = (phoneNumberId, to, templateName, languageCod
       components,
     },
   });
+
+
+
+
+
+
+
+
+
+
+
+
+  /** List approved templates for a WABA — for a template picker */
+export const getWhatsappTemplates = async (wabaId) => {
+  const url = `${BASE_URL}/${wabaId}/message_templates`;
+  try {
+    const { data } = await axios.get(url, {
+      headers: headers(),
+      params: { fields: "id,name,language,status,category,rejected_reason,components", limit: 100, status: "APPROVED" },
+    });
+    return data;
+  } catch (error) {
+    const apiError = error.response?.data;
+    const err = new Error(apiError?.error?.message ?? error.message ?? "WhatsApp API error");
+    err.code = apiError?.error?.code;
+    err.meta = apiError;
+    throw err;
+  }
+};
+
+
+
+ 

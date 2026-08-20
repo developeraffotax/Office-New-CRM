@@ -2,11 +2,13 @@ export const getCompanies = () => ({
   affotax: {
     phoneNumber: process.env.WHATSAPP_AFFOTAX_PHONE_NUMBER,
     phoneNumberId: process.env.WHATSAPP_AFFOTAX_PHONE_NUMBER_ID,
+    wabaId: process.env.WHATSAPP_AFFOTAX_WABA_ID,
   },
 
   outsource: {
     phoneNumber: process.env.WHATSAPP_OUTSOURCE_PHONE_NUMBER,
     phoneNumberId: process.env.WHATSAPP_OUTSOURCE_PHONE_NUMBER_ID,
+    wabaId: process.env.WHATSAPP_OUTSOURCE_WABA_ID,
   },
 });
 

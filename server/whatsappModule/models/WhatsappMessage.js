@@ -93,6 +93,7 @@ location: {
         "delivered",
         "read",
         "failed",
+        "pending",
       ],
       default: "received",
     },

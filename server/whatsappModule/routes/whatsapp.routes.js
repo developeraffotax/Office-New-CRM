@@ -2,6 +2,7 @@ import { Router } from "express";
 import { listConversations, listMessages, markRead, sendMessage,  updateConversationMetadata, deleteConversation, getWhatsappUserCounts, addReactionToMessage,  } from "../controllers/whatsapp.controller.js";
 import multer from "multer";
 import { requiredSignIn } from "../../middlewares/authMiddleware.js";
+import { getAllTemplates } from "../controllers/templates.controller.js";
  
  
  
@@ -42,6 +43,13 @@ router.delete("/conversations/delete/:id",     deleteConversation);
 
 
 router.get("/conversations/user-counts",   getWhatsappUserCounts);
+
+
+
+
+
+
+router.get("/templates",   getAllTemplates);
 
  
 

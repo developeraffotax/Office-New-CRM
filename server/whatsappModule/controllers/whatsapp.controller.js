@@ -74,7 +74,7 @@ export const listMessages = async (req, res, next) => {
 
 export const sendMessage = async (req, res, next) => {
   try {
-    const { to, companyName, body, type, context } = req.body;
+    const { to, companyName, body, type, context, template  } = req.body;
 
 console.log("COMPANY", companyName)
 
@@ -85,6 +85,27 @@ console.log("COMPANY", companyName)
     const phoneNumberId = getCompanies()[companyName].phoneNumberId;
     
     const responses = [];
+
+
+      // 0. Approved WhatsApp template (variables / media header / buttons) — bypasses the 24h window
+      if (type === "template") {
+        const headerFile = req.files?.[0]; // optional media header file
+
+        const templateMsg = await messageService.sendTemplateMessage({
+          conversationId,
+          phoneNumberId,
+          phoneNumber,
+          to,
+          template: typeof template === "string" ? JSON.parse(template) : template,
+          headerFile,
+          context,
+          userId,
+        });
+
+        return res.status(201).json([templateMsg]);
+      }
+
+
 
     // 1. Handle files if they exist
     if (req.files && req.files.length > 0) {

@@ -13,6 +13,7 @@ import { useParams } from "react-router-dom";
 import Select from "react-select";
 import { style } from "../../../utlis/CommonStyle";
 import { filterOption, HighlightedOption, sortOptions } from "./HighlightedOption";
+import { getTemplateBodyText, getTemplateVariableCount, interpolateTemplate } from "../utils/chat";
 
 const COMMON_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
 
@@ -45,6 +46,86 @@ const [loadingMore, setLoadingMore] = useState(false);
 const [templates, setTemplates] = useState([])
  const [inputValue, setInputValue] = useState("");
  const [selectedTemplateId, setSelectedTemplateId] = useState(null);
+
+
+ const [waTemplates, setWaTemplates] = useState([]);
+const [selectedWaTemplate, setSelectedWaTemplate] = useState(null); // full template object
+const [waTemplateVars, setWaTemplateVars] = useState([]); // one string per {{n}}
+
+
+
+const getAllWaTemplates = async () => {
+  try {
+    const { data } = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/templates`,
+      { params: { companyName: chat?.companyName } }
+    );
+    setWaTemplates((data?.templates));
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+useEffect(() => {
+  if (!chat?.companyName) return;
+  getAllWaTemplates();
+  // eslint-disable-next-line
+}, [chat?.companyName]);
+
+
+
+const waTemplateOptions = waTemplates.map((t) => ({
+  value: t.id,
+  label: `${t.name} (${t.category})`,
+  template: t,
+}));
+
+const handleWaTemplateChange = (selectedOption) => {
+  if (!selectedOption) {
+    setSelectedWaTemplate(null);
+    setWaTemplateVars([]);
+    return;
+  }
+  const tpl = selectedOption.template;
+  setSelectedWaTemplate(tpl);
+  setWaTemplateVars(Array(getTemplateVariableCount(tpl)).fill(""));
+};
+
+const handleSendWaTemplate = async () => {
+  if (!selectedWaTemplate) return;
+  try {
+    setLoadingMsg(true);
+    const previewText = interpolateTemplate(getTemplateBodyText(selectedWaTemplate), waTemplateVars);
+
+    const payload = {
+      to: chat.phone,
+      type: "template",
+      companyName: chat.companyName,
+      template: JSON.stringify({
+        name: selectedWaTemplate.name,
+        language: selectedWaTemplate.language, // e.g. "en"
+        bodyParams: waTemplateVars,
+        previewText,
+      }),
+    };
+
+    const { data } = await axios.post(
+      `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/conversations/${chat._id}/messages`,
+      payload
+    );
+
+    setMessages((prev) => [...prev, ...data]);
+    setSelectedWaTemplate(null);
+    setWaTemplateVars([]);
+  } catch (err) {
+    console.error("Failed to send template:", err);
+    toast.error(err?.response?.data?.message || err?.message || "Failed to send template");
+  } finally {
+    setLoadingMsg(false);
+  }
+};
+
+
 
  
 const handleClearSelect = () => {
@@ -484,6 +565,17 @@ useEffect(() => {
         </div>
 
         <div className="flex-1">
+  <Select
+    value={waTemplateOptions.find((o) => o.value === selectedWaTemplate?.id) || null}
+    onChange={handleWaTemplateChange}
+    options={waTemplateOptions}
+    placeholder="WA Template"
+    isClearable
+    styles={customStyles}
+  />
+</div>
+
+        <div className="flex-1">
           
                <Select
                 // key={chat?._id}   
@@ -731,6 +823,51 @@ useEffect(() => {
               ))}
             </div>
           )}
+
+
+
+          {selectedWaTemplate && (
+  <div className="px-4 py-3 bg-orange-50 border-b border-orange-100 space-y-2">
+    <div className="text-xs font-semibold text-orange-700 flex items-center justify-between">
+      <span>Sending template: {selectedWaTemplate.name}</span>
+      <button
+        type="button"
+        onClick={() => { setSelectedWaTemplate(null); setWaTemplateVars([]); }}
+        className="text-gray-400 hover:text-gray-700"
+      >
+        <IoMdClose size={16} />
+      </button>
+    </div>
+
+    {waTemplateVars.map((val, idx) => (
+      <input
+        key={idx}
+        type="text"
+        placeholder={`Variable {{${idx + 1}}}`}
+        value={val}
+        onChange={(e) => {
+          const next = [...waTemplateVars];
+          next[idx] = e.target.value;
+          setWaTemplateVars(next);
+        }}
+        className="w-full text-sm border border-gray-200 rounded-lg px-3 py-1.5 outline-none focus:border-orange-400"
+      />
+    ))}
+
+    <p className="text-xs text-gray-500 whitespace-pre-wrap bg-white rounded-lg p-2 border border-gray-100">
+      {interpolateTemplate(getTemplateBodyText(selectedWaTemplate), waTemplateVars)}
+    </p>
+
+    <button
+      type="button"
+      onClick={handleSendWaTemplate}
+      disabled={loadingMsg || waTemplateVars.some((v) => !v.trim())}
+      className="w-full bg-[#169444] hover:bg-[#20bd5a] text-white text-sm font-medium rounded-lg py-2 disabled:opacity-50"
+    >
+      Send Template
+    </button>
+  </div>
+)}
 
           {/* Form Controls Input Wrapper */}
           <div className="p-3">

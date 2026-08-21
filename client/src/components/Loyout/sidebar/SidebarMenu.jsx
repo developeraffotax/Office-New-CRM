@@ -99,7 +99,7 @@ function SidebarItem({ item, active, onNavigate, compact = false }) {
       type="button"
       title={compact ? item.label : undefined}
       aria-label={compact ? item.label : undefined}
-      className={`${itemBase} ${itemState(active, item.activeKey)} w-full text-left`}
+      className={`${itemBase} ${itemState(active, item.activeKey)} w-full text-left `}
       onClick={() => onNavigate(item)}
     >
       <div

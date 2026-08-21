@@ -153,33 +153,20 @@ export default function Layout() {
         />
 
         <div className="fixed top-[3.8rem] left-0 w-full flex h-full overflow-hidden">
-          {/* Mobile Menu */}
-          {!showSidebar && (
-            <div className="absolute sm:hidden top-2 left-3 z-20">
-              <IoMenu size={25} onClick={() => setShowSidebar(true)} />
-            </div>
-          )}
+          {/* Mobile Menu trigger */}
+{!showSidebar && (
+  <div className="absolute md:hidden top-2 left-3 z-20">
+    <IoMenu size={25} onClick={() => setShowSidebar(true)} />
+  </div>
+)}
 
-          {/* Desktop Sidebar */}
-          <div
-            className={`hidden sm:flex transition-all duration-200 ${
-              hideSidebar ? "w-[5rem]" : "w-[14rem]"
-            }`}
-          >
-            <Sidebar hide={hideSidebar} setHide={setHideSidebar} />
-          </div>
-
-          {/* Mobile Sidebar */}
-          {showSidebar && (
-            <div className="absolute top-0 left-0 z-30 sm:hidden w-[13rem] bg-white border-r pt-8">
-              <IoClose
-                size={25}
-                className="absolute top-2 right-2"
-                onClick={() => setShowSidebar(false)}
-              />
-              <Sidebar />
-            </div>
-          )}
+{/* Sidebar — desktop rail + mobile overlay, both handled inside Sidebar */}
+<Sidebar
+  hide={hideSidebar}
+  setHide={setHideSidebar}
+  mobileOpen={showSidebar}
+  onMobileClose={() => setShowSidebar(false)}
+/>
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto pt-6 sm:pt-0">

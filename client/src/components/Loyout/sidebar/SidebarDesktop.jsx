@@ -15,8 +15,10 @@ export default function SidebarDesktop(props) {
 
   return (
     <aside
-      className={`relative hidden md:flex  w-full h-full py-2 bg-[#f9f9f9] border-r transition-[width] duration-200 ease-in-out `}
-    >
+  className={`relative hidden md:flex h-full py-2 bg-[#f9f9f9] border-r transition-[width] duration-200 ease-in-out ${
+    hide ? "w-[5rem]" : "w-[14rem]"
+  }`}
+>
       <div className="relative w-full h-full py-2 overflow-y-auto message">
         
 

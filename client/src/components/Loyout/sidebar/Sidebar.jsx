@@ -260,7 +260,7 @@ export default function Sidebar({
 
   return (
     <>
-      <div className="hidden md:block h-full w-full font-google">
+      <div className="h-full shrink-0 font-google">
         <SidebarDesktop
           items={items}
           active={active}

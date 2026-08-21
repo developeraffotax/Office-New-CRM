@@ -78,7 +78,7 @@ export default function QuickFilterMenu({ activeLabel, onSelect }) {
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
         {renderGroup("📆 Monthly Filters", monthlyFilters)}
         {renderGroup("📉 Quarterly Filters", quarterlyFilters)}
-        {renderGroup("📅 Yearly Filters", yearlyFilters)}
+        {/* {renderGroup("📅 Yearly Filters", yearlyFilters)} */}
       </Menu>
     </>
   );

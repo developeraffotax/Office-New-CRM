@@ -29,11 +29,16 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 import ManualRangePicker from "./ManualRangePicker";
 import QuickFilterMenu from "./QuickFilterMenu";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 dayjs.extend(isSameOrBefore);
 
 const DEFAULT_LABEL = "This Month";
-const getDefaultRange = () => [dayjs().startOf("month"), dayjs().endOf("month")];
+const getDefaultRange = () => [
+  dayjs().startOf("month"),
+  dayjs().endOf("month"),
+];
 
 // ---- fixed Y axis window: 9:00 AM -> 11:00 PM, expressed in minutes-since-midnight ----
 const Y_AXIS_MIN = 9 * 60; // 540
@@ -49,8 +54,12 @@ const timeToMinutes = (isoString) => {
 };
 
 const formatMinutesLabel = (minutes) => {
-  if (minutes === null || minutes === undefined || Number.isNaN(minutes)) return "";
-  return dayjs().startOf("day").add(Math.round(minutes), "minute").format("hh:mm A");
+  if (minutes === null || minutes === undefined || Number.isNaN(minutes))
+    return "";
+  return dayjs()
+    .startOf("day")
+    .add(Math.round(minutes), "minute")
+    .format("hh:mm A");
 };
 
 const formatDuration = (startMin, endMin) => {
@@ -98,23 +107,23 @@ const referenceYAnnotations = [
     y: REFERENCE_LINE_1,
     borderColor: "#94A3B8",
     strokeDashArray: 4,
-    label: {
-      text: "11:30 AM",
-      position: "left",
-      offsetY: -4,
-      style: { fontSize: "10px", color: "#64748B", background: "transparent" },
-    },
+    // label: {
+    //   text: "11:30 AM",
+    //   position: "left",
+    //   offsetY: -4,
+    //   style: { fontSize: "10px", color: "#64748B", background: "transparent" },
+    // },
   },
   {
     y: REFERENCE_LINE_2,
     borderColor: "#94A3B8",
     strokeDashArray: 4,
-    label: {
-      text: "8:00 PM",
-      position: "left",
-      offsetY: -4,
-      style: { fontSize: "10px", color: "#64748B", background: "transparent" },
-    },
+    // label: {
+    //   text: "8:00 PM",
+    //   position: "left",
+    //   offsetY: -4,
+    //   style: { fontSize: "10px", color: "#64748B", background: "transparent" },
+    // },
   },
 ];
 
@@ -134,12 +143,26 @@ export default function EmployeeInOutChart() {
     activeLabel !== DEFAULT_LABEL ||
     (users[0] && jobHolderName !== users[0]?.name);
 
+  const handleMonthChange = (direction) => {
+    const currentStart = dateRange?.[0] || dayjs().startOf("month");
+
+    const newMonth =
+      direction === "prev"
+        ? currentStart.subtract(1, "month")
+        : currentStart.add(1, "month");
+
+    const newRange = [newMonth.startOf("month"), newMonth.endOf("month")];
+
+    setDateRange(newRange);
+    setActiveLabel(newMonth.format("MMMM YYYY"));
+  };
+
   // Users for the dropdown
   useEffect(() => {
     const getAllUsers = async () => {
       try {
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+          `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
         );
         const list = data?.users || [];
         setUsers(list);
@@ -161,7 +184,7 @@ export default function EmployeeInOutChart() {
         const start = dateRange[0].format("YYYY-MM-DD");
         const end = dateRange[1].format("YYYY-MM-DD");
         const { data } = await axios.get(
-          `${process.env.REACT_APP_API_URL}/api/v1/timer/fetch/user-daily-attendance/${jobHolderName}/${start}/${end}`
+          `${process.env.REACT_APP_API_URL}/api/v1/timer/fetch/user-daily-attendance/${jobHolderName}/${start}/${end}`,
         );
         setAttendance(data?.attendance || []);
       } catch (error) {
@@ -187,74 +210,91 @@ export default function EmployeeInOutChart() {
   // Every day in range, real attendance or synthetic holiday
   const mergedAttendance = useMemo(
     () => buildFullDayList(attendance, dateRange?.[0], dateRange?.[1]),
-    [attendance, dateRange]
+    [attendance, dateRange],
   );
 
   // Build both the range-bar dataset and the trend dataset from the
   // merged (gap-filled) list.
-  const { rangeBarData, trendCheckIn, trendCheckOut, holidayAnnotations } = useMemo(() => {
-    const rangeBar = [];
-    const trendIn = [];
-    const trendOut = [];
-    const holidays = [];
+  const { rangeBarData, trendCheckIn, trendCheckOut, holidayAnnotations } =
+    useMemo(() => {
+      const rangeBar = [];
+      const trendIn = [];
+      const trendOut = [];
+      const holidays = [];
 
-    mergedAttendance.forEach((day) => {
-      const dayTs = dayjs(day.date).startOf("day").valueOf();
-      const label = dayjs(day.date).format("DD MMM");
+      mergedAttendance.forEach((day) => {
+        const dayTs = dayjs(day.date).startOf("day").valueOf();
+        const label = dayjs(day.date).format("DD MMM");
 
-      if (day.isHoliday) {
-        // Thin marker at the bottom of the bar chart, distinct in shape
-        // from a real work-span bar so it reads as "no attendance" at a glance.
-        rangeBar.push({
-          x: label,
-          y: [Y_AXIS_MIN, Y_AXIS_MIN + 15],
-          fillColor: "#D1D5DB",
-          meta: { date: day.date, isHoliday: true },
-        });
+        if (day.isHoliday) {
+          // Thin marker at the bottom of the bar chart, distinct in shape
+          // from a real work-span bar so it reads as "no attendance" at a glance.
+          rangeBar.push({
+            x: label,
+            y: [Y_AXIS_MIN, Y_AXIS_MIN + 15],
+            fillColor: "#D1D5DB",
+            meta: { date: day.date, isHoliday: true },
+          });
 
-        // Leave an explicit gap in the trend lines (null = break in the line)
-        trendIn.push({ x: dayTs, y: null, meta: { isHoliday: true } });
-        trendOut.push({ x: dayTs, y: null, meta: { isHoliday: true } });
+          // Leave an explicit gap in the trend lines (null = break in the line)
+          trendIn.push({ x: dayTs, y: null, meta: { isHoliday: true } });
+          trendOut.push({ x: dayTs, y: null, meta: { isHoliday: true } });
 
-        holidays.push({
-          x: dayTs,
-          borderColor: "#D1D5DB",
-          strokeDashArray: 3,
-          label: {
-            text: "Holiday",
-            orientation: "horizontal",
-            offsetY: 12,
-            style: { fontSize: "9px", color: "#6B7280", background: "#F3F4F6" },
-          },
-        });
-        return;
-      }
+          holidays.push({
+            x: dayTs,
+            borderColor: "#D1D5DB",
+            strokeDashArray: 3,
+            label: {
+              text: "Holiday",
+              orientation: "horizontal",
+              offsetY: 12,
+              style: {
+                fontSize: "9px",
+                color: "#6B7280",
+                background: "#F3F4F6",
+              },
+            },
+          });
+          return;
+        }
 
-      const inMin = timeToMinutes(day.checkIn);
-      const outMin = timeToMinutes(day.checkOut);
+        const inMin = timeToMinutes(day.checkIn);
+        const outMin = timeToMinutes(day.checkOut);
 
-      if (inMin !== null && outMin !== null) {
-        rangeBar.push({
-          x: label,
-          y: [Math.round(inMin), Math.round(outMin)],
-          meta: { date: day.date, sessions: day.sessionCount, isHoliday: false },
-        });
-      }
-      if (inMin !== null) {
-        trendIn.push({ x: dayTs, y: Math.round(inMin), meta: { sessions: day.sessionCount } });
-      }
-      if (outMin !== null) {
-        trendOut.push({ x: dayTs, y: Math.round(outMin), meta: { sessions: day.sessionCount } });
-      }
-    });
+        if (inMin !== null && outMin !== null) {
+          rangeBar.push({
+            x: label,
+            y: [Math.round(inMin), Math.round(outMin)],
+            meta: {
+              date: day.date,
+              sessions: day.sessionCount,
+              isHoliday: false,
+            },
+          });
+        }
+        if (inMin !== null) {
+          trendIn.push({
+            x: dayTs,
+            y: Math.round(inMin),
+            meta: { sessions: day.sessionCount },
+          });
+        }
+        if (outMin !== null) {
+          trendOut.push({
+            x: dayTs,
+            y: Math.round(outMin),
+            meta: { sessions: day.sessionCount },
+          });
+        }
+      });
 
-    return {
-      rangeBarData: rangeBar,
-      trendCheckIn: trendIn,
-      trendCheckOut: trendOut,
-      holidayAnnotations: holidays,
-    };
-  }, [mergedAttendance]);
+      return {
+        rangeBarData: rangeBar,
+        trendCheckIn: trendIn,
+        trendCheckOut: trendOut,
+        holidayAnnotations: holidays,
+      };
+    }, [mergedAttendance]);
 
   const isRangeView = chartType === "bar";
 
@@ -268,8 +308,12 @@ export default function EmployeeInOutChart() {
   const chartOptions = useMemo(() => {
     if (isRangeView) {
       return {
-        chart: { type: "rangeBar", toolbar: { show: true }, fontFamily: "inherit" },
-        colors: ["#6366F1"],
+        chart: {
+          type: "rangeBar",
+          toolbar: { show: true },
+          fontFamily: "inherit",
+        },
+        colors: ["#325ea8","#6366F1", ],
         plotOptions: {
           bar: {
             horizontal: false,
@@ -280,7 +324,8 @@ export default function EmployeeInOutChart() {
         dataLabels: {
           enabled: true,
           formatter: (val, opts) => {
-            const point = opts?.w?.config?.series?.[0]?.data?.[opts.dataPointIndex];
+            const point =
+              opts?.w?.config?.series?.[0]?.data?.[opts.dataPointIndex];
             if (point?.meta?.isHoliday) return "Holiday";
             return formatDuration(val[0], val[1]);
           },
@@ -296,7 +341,7 @@ export default function EmployeeInOutChart() {
         yaxis: {
           min: Y_AXIS_MIN,
           max: Y_AXIS_MAX,
-          tickAmount: 7, // ~2 hour steps across the fixed window
+          tickAmount: 14, // ~1 hour steps across the fixed window
           labels: { formatter: (val) => formatMinutesLabel(val) },
           title: { text: "Time", style: { fontWeight: 600 } },
         },
@@ -332,12 +377,23 @@ export default function EmployeeInOutChart() {
 
     // area / line trend view
     return {
-      chart: { type: chartType, toolbar: { show: true }, fontFamily: "inherit" },
+      chart: {
+        type: chartType,
+        toolbar: { show: true },
+        fontFamily: "inherit",
+      },
       colors: ["#22C55E", "#EF4444"],
-      stroke: { curve: "smooth", width: chartType === "area" ? 2 : 3, connectNulls: false },
+      stroke: {
+        curve: "smooth",
+        width: chartType === "area" ? 2 : 3,
+        connectNulls: false,
+      },
       fill:
         chartType === "area"
-          ? { type: "gradient", gradient: { opacityFrom: 0.35, opacityTo: 0.05 } }
+          ? {
+              type: "gradient",
+              gradient: { opacityFrom: 0.35, opacityTo: 0.05 },
+            }
           : { type: "solid" },
       markers: { size: 4, strokeWidth: 0, hover: { size: 6 } },
       grid: { borderColor: "#e5e7eb" },
@@ -357,12 +413,13 @@ export default function EmployeeInOutChart() {
       },
       annotations: {
         yaxis: referenceYAnnotations,
-        xaxis: holidayAnnotations,
+        // xaxis: holidayAnnotations,
       },
       legend: { position: "top" },
       tooltip: {
         custom: ({ seriesIndex, dataPointIndex, w }) => {
-          const point = w?.config?.series?.[seriesIndex]?.data?.[dataPointIndex];
+          const point =
+            w?.config?.series?.[seriesIndex]?.data?.[dataPointIndex];
           if (!point || point.y === null) return "";
           const label = w.config.series[seriesIndex].name;
           const date = dayjs(point.x).format("DD MMM YYYY");
@@ -383,47 +440,143 @@ export default function EmployeeInOutChart() {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Stack spacing={2} sx={{ width: "100%", p: 4 }}>
-        <Stack direction="row" alignItems="center" spacing={1}>
-          <Button startIcon={<ArrowBackIcon />} onClick={() => navigate("/timesheet")}>
-            Back
-          </Button>
+        {/* <Stack direction="row" alignItems="center" spacing={1}>
+          
           <Typography variant="h5" fontWeight={600}>
             Employee In / Out
           </Typography>
-        </Stack>
+        </Stack> */}
 
-        <Stack direction="row" spacing={1.5} flexWrap="wrap" alignItems="center" useFlexGap>
-          <FormControl size="small" sx={{ minWidth: 200 }}>
-            <InputLabel id="employee-select-label">Employee</InputLabel>
-            <Select
-              labelId="employee-select-label"
-              value={jobHolderName}
-              label="Employee"
-              onChange={(e) => setJobHolderName(e.target.value)}
+        <Stack
+          direction="row"
+          spacing={1.5}
+          alignItems="start"
+          justifyContent="space-between"
+        >
+          <Stack
+            direction="row"
+            spacing={1.5}
+            flexWrap="wrap"
+            alignItems="center"
+            useFlexGap
+          >
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => handleMonthChange("prev")}
+                sx={{
+                  minWidth: 40,
+                  width: 40,
+                  height: 40,
+                  p: 0,
+                }}
+              >
+                <ChevronLeftIcon />
+              </Button>
+
+              <ManualRangePicker
+                value={dateRange}
+                onChange={(range) => {
+                  setDateRange(range);
+                  setActiveLabel("Custom Range");
+                }}
+              />
+
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => handleMonthChange("next")}
+                sx={{
+                  minWidth: 40,
+                  width: 40,
+                  height: 40,
+                  p: 0,
+                }}
+              >
+                <ChevronRightIcon />
+              </Button>
+            </Stack>
+
+            <QuickFilterMenu
+              activeLabel={activeLabel}
+              onSelect={handleQuickFilterSelect}
+            />
+
+            {isFilterActive && (
+              <Button
+                color="error"
+                startIcon={<CancelIcon />}
+                onClick={handleClearFilters}
+              >
+                Clear Filters
+              </Button>
+            )}
+          </Stack>
+
+          <Stack
+            direction="row"
+            spacing={1.5}
+            flexWrap="wrap"
+            alignItems="center"
+            useFlexGap
+          >
+            <FormControl size="small" sx={{ minWidth: 200 }}>
+              <InputLabel id="employee-select-label">Employee</InputLabel>
+              <Select
+                labelId="employee-select-label"
+                value={jobHolderName}
+                label="Employee"
+                onChange={(e) => setJobHolderName(e.target.value)}
+              >
+                {users.map((u) => (
+                  <MenuItem key={u._id} value={u.name}>
+                    {u.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <ToggleButtonGroup
+              value={chartType}
+              exclusive
+              onChange={(e, newValue) => newValue && setChartType(newValue)}
+              size="small"
             >
-              {users.map((u) => (
-                <MenuItem key={u._id} value={u.name}>
-                  {u.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <ManualRangePicker value={dateRange} onChange={setDateRange} />
-          <QuickFilterMenu activeLabel={activeLabel} onSelect={handleQuickFilterSelect} />
-
-          {isFilterActive && (
-            <Button color="error" startIcon={<CancelIcon />} onClick={handleClearFilters}>
-              Clear Filters
-            </Button>
-          )}
+              <ToggleButton value="bar">
+                <BarChartIcon fontSize="small" sx={{ mr: 1 }} />
+                Bar View
+              </ToggleButton>
+              <ToggleButton value="area">
+                <StackedLineChartIcon fontSize="small" sx={{ mr: 1 }} />
+                Area View
+              </ToggleButton>
+              <ToggleButton value="line">
+                <ShowChartIcon fontSize="small" sx={{ mr: 1 }} />
+                Line View
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Stack>
         </Stack>
 
-        <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap" useFlexGap>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          flexWrap="wrap"
+          useFlexGap
+        >
           <Stack direction="row" spacing={3} flexWrap="wrap" useFlexGap>
             {chartType === "bar" ? (
               <Stack direction="row" spacing={1} alignItems="center">
-                <Box sx={{ width: 12, height: 12, borderRadius: 1, bgcolor: "#6366F1" }} />
+                <Box
+                  sx={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: 1,
+                    bgcolor: "#6366F1",
+                  }}
+                />
                 <Typography variant="body2" color="text.secondary">
                   Work Span (Check In → Check Out)
                 </Typography>
@@ -431,51 +584,74 @@ export default function EmployeeInOutChart() {
             ) : (
               <>
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <Box sx={{ width: 12, height: 12, borderRadius: "50%", bgcolor: "#22C55E" }} />
-                  <Typography variant="body2" color="text.secondary">Check In</Typography>
+                  <Box
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: "50%",
+                      bgcolor: "#22C55E",
+                    }}
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    Check In
+                  </Typography>
                 </Stack>
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <Box sx={{ width: 12, height: 12, borderRadius: "50%", bgcolor: "#EF4444" }} />
-                  <Typography variant="body2" color="text.secondary">Check Out</Typography>
+                  <Box
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: "50%",
+                      bgcolor: "#EF4444",
+                    }}
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    Check Out
+                  </Typography>
                 </Stack>
               </>
             )}
             <Stack direction="row" spacing={1} alignItems="center">
-              <Box sx={{ width: 12, height: 12, borderRadius: 1, bgcolor: "#D1D5DB" }} />
-              <Typography variant="body2" color="text.secondary">Holiday / No Attendance</Typography>
+              <Box
+                sx={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: 1,
+                  bgcolor: "#D1D5DB",
+                }}
+              />
+              <Typography variant="body2" color="text.secondary">
+                Holiday / No Attendance
+              </Typography>
             </Stack>
           </Stack>
-
-          <ToggleButtonGroup
-            value={chartType}
-            exclusive
-            onChange={(e, newValue) => newValue && setChartType(newValue)}
-            size="small"
-          >
-            <ToggleButton value="bar">
-              <BarChartIcon fontSize="small" sx={{ mr: 1 }} />
-              Bar View
-            </ToggleButton>
-            <ToggleButton value="area">
-              <StackedLineChartIcon fontSize="small" sx={{ mr: 1 }} />
-              Area View
-            </ToggleButton>
-            <ToggleButton value="line">
-              <ShowChartIcon fontSize="small" sx={{ mr: 1 }} />
-              Line View
-            </ToggleButton>
-          </ToggleButtonGroup>
         </Stack>
 
         <Card variant="outlined" sx={{ background: "#F9FAFB" }}>
           <CardContent>
             {loading ? (
-              <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: 400 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: 400,
+                }}
+              >
                 <CircularProgress size={28} />
               </Box>
             ) : mergedAttendance.length === 0 ? (
-              <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: 400 }}>
-                <Typography color="text.secondary">Select an employee and date range.</Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: 400,
+                }}
+              >
+                <Typography color="text.secondary">
+                  Select an employee and date range.
+                </Typography>
               </Box>
             ) : (
               <Chart
@@ -483,7 +659,7 @@ export default function EmployeeInOutChart() {
                 options={chartOptions}
                 series={series}
                 type={isRangeView ? "rangeBar" : chartType}
-                height={420}
+                height={600}
               />
             )}
           </CardContent>

@@ -105,8 +105,10 @@ const buildFullDayList = (attendance, start, end) => {
 const referenceYAnnotations = [
   {
     y: REFERENCE_LINE_1,
-    borderColor: "#94A3B8",
-    strokeDashArray: 4,
+    borderColor: "#7d7d7d",
+    strokeDashArray: 8,
+    borderWidth: 2,
+
     // label: {
     //   text: "11:30 AM",
     //   position: "left",
@@ -116,8 +118,9 @@ const referenceYAnnotations = [
   },
   {
     y: REFERENCE_LINE_2,
-    borderColor: "#94A3B8",
-    strokeDashArray: 4,
+    borderColor: "#7d7d7d",
+    strokeDashArray: 8,
+    borderWidth: 2,
     // label: {
     //   text: "8:00 PM",
     //   position: "left",
@@ -225,38 +228,34 @@ export default function EmployeeInOutChart() {
       mergedAttendance.forEach((day) => {
         const dayTs = dayjs(day.date).startOf("day").valueOf();
         const label = dayjs(day.date).format("DD MMM");
+if (day.isHoliday) {
+  rangeBar.push({
+    x: label,
+    y: [REFERENCE_LINE_1, REFERENCE_LINE_2],
 
-        if (day.isHoliday) {
-          // Thin marker at the bottom of the bar chart, distinct in shape
-          // from a real work-span bar so it reads as "no attendance" at a glance.
-          rangeBar.push({
-            x: label,
-            y: [Y_AXIS_MIN, Y_AXIS_MIN + 15],
-            fillColor: "#D1D5DB",
-            meta: { date: day.date, isHoliday: true },
-          });
+    // Dark red holiday bar
+    fillColor: "#7F1D1D",
 
-          // Leave an explicit gap in the trend lines (null = break in the line)
-          trendIn.push({ x: dayTs, y: null, meta: { isHoliday: true } });
-          trendOut.push({ x: dayTs, y: null, meta: { isHoliday: true } });
+    meta: {
+      date: day.date,
+      isHoliday: true,
+    },
+  });
 
-          holidays.push({
-            x: dayTs,
-            borderColor: "#D1D5DB",
-            strokeDashArray: 3,
-            label: {
-              text: "Holiday",
-              orientation: "horizontal",
-              offsetY: 12,
-              style: {
-                fontSize: "9px",
-                color: "#6B7280",
-                background: "#F3F4F6",
-              },
-            },
-          });
-          return;
-        }
+  trendIn.push({
+    x: dayTs,
+    y: null,
+    meta: { isHoliday: true },
+  });
+
+  trendOut.push({
+    x: dayTs,
+    y: null,
+    meta: { isHoliday: true },
+  });
+
+  return;
+}
 
         const inMin = timeToMinutes(day.checkIn);
         const outMin = timeToMinutes(day.checkOut);
@@ -319,19 +318,34 @@ export default function EmployeeInOutChart() {
             horizontal: false,
             borderRadius: 6,
             columnWidth: "42%",
+            dataLabels: {
+              orientation: "vertical"
+            }
+            
           },
         },
-        dataLabels: {
-          enabled: true,
-          formatter: (val, opts) => {
-            const point =
-              opts?.w?.config?.series?.[0]?.data?.[opts.dataPointIndex];
-            if (point?.meta?.isHoliday) return "Holiday";
-            return formatDuration(val[0], val[1]);
-          },
-          offsetY: -18,
-          style: { fontSize: "10px", fontWeight: 600, colors: ["#374151"] },
-        },
+       dataLabels: {
+  enabled: true,
+
+  formatter: (val, opts) => {
+    const point =
+      opts?.w?.config?.series?.[0]?.data?.[opts.dataPointIndex];
+
+    if (point?.meta?.isHoliday) {
+      return "Holiday";
+    }
+
+    return formatMinutesLabel(val);
+  },
+
+  offsetY: 0,
+
+  style: {
+    fontSize: "10px",
+    fontWeight: 600,
+    colors: ["#ffffff"],
+  },
+},
         grid: { borderColor: "#e5e7eb" },
         xaxis: {
           type: "category",

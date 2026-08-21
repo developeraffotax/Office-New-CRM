@@ -201,7 +201,7 @@ function App() {
             <Route path="/settings" element={<SettingsPage  />} />
             <Route path="/settings/signatures" element={<SignaturesModule  />} />
             <Route path="/teams" element={<TeamsPage  />} />
-            <Route path="/timesheet/chart" element={<EmployeeInOutChart  />} />
+            <Route path="/timesheet/attendance-chart" element={<EmployeeInOutChart  />} />
             
             
             

@@ -38,11 +38,11 @@ import {
 import { MdOutlineWatchLater } from "react-icons/md";
 import { useWorkdayStats } from "./useWorkdayStats";
 import { useSelector } from "react-redux";
- 
-import OverviewForPages from "../../utlis/overview/OverviewForPages"; 
+
+import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import ShiftStatus from "./ShiftStatus";
 import { hasSubrole, isAdmin } from "../../utlis/checkPermission";
-
+import { useNavigate } from "react-router-dom";
 // Optional icons per day
 const dayIcons = [
   FiCalendar,
@@ -146,18 +146,24 @@ export default function TimeSheet() {
   const { weekdayCounts, totalWorkdays, requiredHours } =
     useWorkdayStats(active);
 
+  const navigate = useNavigate();
 
-    const hasPermission = useMemo(() => {
-      return {
-        edit: isAdmin(auth?.user) || hasSubrole(auth?.user, "Timesheet", "Edit") || false,
-        delete: isAdmin(auth?.user) || hasSubrole(auth?.user, "Timesheet", "Delete") || false,
-        jobHolders: isAdmin(auth?.user) || hasSubrole(auth?.user, "Timesheet", "Job-holder") || false,
-         
-      };
-}, [auth ]);
-
-
-
+  const hasPermission = useMemo(() => {
+    return {
+      edit:
+        isAdmin(auth?.user) ||
+        hasSubrole(auth?.user, "Timesheet", "Edit") ||
+        false,
+      delete:
+        isAdmin(auth?.user) ||
+        hasSubrole(auth?.user, "Timesheet", "Delete") ||
+        false,
+      jobHolders:
+        isAdmin(auth?.user) ||
+        hasSubrole(auth?.user, "Timesheet", "Job-holder") ||
+        false,
+    };
+  }, [auth]);
 
   const daysData = [
     {
@@ -211,7 +217,7 @@ export default function TimeSheet() {
       color: "bg-orange-100 text-orange-800 border-orange-200 font-semibold",
     },
   ];
- 
+
   // Converts "HH:MM" string into decimal hours (e.g., "07:30" → 7.5)
   const parseTimeToDecimal = (timeStr) => {
     if (!timeStr || typeof timeStr !== "string") return 0;
@@ -2131,6 +2137,18 @@ export default function TimeSheet() {
             >
               <BsPieChartFill className="h-6 w-6" />
             </span>
+
+            {isAdmin(auth.user) && (
+              <button
+                onClick={() => navigate("/timesheet/attendance-chart")}
+                title="Employee In/Out Chart"
+                className="inline-flex items-center gap-2 border border-gray-300 rounded-md px-3 py-1.5 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400"
+              >
+                <FiBarChart2 className="h-4 w-4 text-gray-500" />
+                <span>Attendance Chart</span>
+              </button>
+            )}
+
             {/* ---------ApixChart------ */}
 
             {showGraph && (
@@ -2149,8 +2167,6 @@ export default function TimeSheet() {
 
           {/* ----------Add Manual Buttons---------- */}
           <div className="flex items-center gap-4 w-full justify-end  sm:w-fit">
-           
-
             <ShiftStatus />
 
             <button
@@ -2233,8 +2249,6 @@ export default function TimeSheet() {
         {/* --------------External Filter---------------- */}
         {hasPermission.jobHolders && showExternalFilters && (
           <div className="w-full flex flex-row items-start justify-start gap-4 mt-4">
-            
-
             <DraggableUserList
               table={table}
               listName="timesheet"
@@ -2276,8 +2290,6 @@ export default function TimeSheet() {
             )}
           </>
         )}
-
- 
 
         {selectedTab === "Single" && (
           <div className="w-full hidden absolute bottom-[10%] left-0 px-4 z-[20] sm:grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6  lg:grid-cols-9 gap-4 2xl:gap-5">

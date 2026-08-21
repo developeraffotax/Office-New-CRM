@@ -1024,3 +1024,150 @@ export const fetchTimersbydate = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Get all sessions for one employee in a date range (for the In/Out chart)
+export const getUserSessions = async (req, res) => {
+  try {
+    const { jobHolderName, startDate, endDate } = req.params;
+
+    if (!jobHolderName || !startDate || !endDate) {
+      return res.status(400).send({
+        success: false,
+        message: "jobHolderName, startDate and endDate are required",
+      });
+    }
+
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    const sessions = await timerModel
+      .find({
+        jobHolderName,
+        endTime: { $ne: null },
+        date: { $gte: start, $lte: end },
+      })
+      .select("date startTime endTime task activity holiday")
+      .sort({ date: 1, startTime: 1 });
+
+    res.status(200).send({
+      success: true,
+      message: "User sessions fetched!",
+      sessions,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while fetching user sessions!",
+      error,
+    });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+// Get one row per day for an employee: earliest check-in, latest
+// check-out, and how many sessions were merged into that day.
+export const getUserDailyAttendance = async (req, res) => {
+  try {
+    const { jobHolderName, startDate, endDate } = req.params;
+
+    if (!jobHolderName || !startDate || !endDate) {
+      return res.status(400).send({
+        success: false,
+        message: "jobHolderName, startDate and endDate are required",
+      });
+    }
+
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    // startTime/endTime are ISO 8601 strings, which sort correctly
+    // lexicographically — so $min/$max work directly without needing
+    // to cast to Date first.
+    const attendance = await timerModel.aggregate([
+      {
+        $match: {
+          jobHolderName,
+          endTime: { $ne: null },
+          date: { $gte: start, $lte: end },
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+          date: { $first: "$date" },
+          checkIn: { $min: "$startTime" },
+          checkOut: { $max: "$endTime" },
+          sessionCount: { $sum: 1 },
+        },
+      },
+      { $sort: { date: 1 } },
+    ]);
+
+    res.status(200).send({
+      success: true,
+      message: "Daily attendance fetched!",
+      attendance,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error while fetching daily attendance!",
+      error,
+    });
+  }
+};

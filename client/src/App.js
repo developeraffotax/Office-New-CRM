@@ -65,6 +65,7 @@ import WhatsAppBox from "./components/whatsapp/pages/WhatsAppBox";
 import DashboardComponent from "./components/AffotaxDashboard/DashboardComponent";
 import KpiDashboard from "./components/KpiDashboard/KpiDashboard";
 import TeamsPage from "./pages/Auth/Team/TeamsPage";
+import EmployeeInOutChart from "./pages/TimerSheet/chart/EmployeeInOutChart";
 
 function App() {
   const navigate = useNavigate();
@@ -200,6 +201,7 @@ function App() {
             <Route path="/settings" element={<SettingsPage  />} />
             <Route path="/settings/signatures" element={<SignaturesModule  />} />
             <Route path="/teams" element={<TeamsPage  />} />
+            <Route path="/timesheet/chart" element={<EmployeeInOutChart  />} />
             
             
             

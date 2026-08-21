@@ -11,6 +11,8 @@ import {
   getTimerStatus,
   getTimerStatusForAffoStaff,
   getTimerStatusForCrm,
+  getUserDailyAttendance,
+  getUserSessions,
   removeTimerStatus,
   runningTimers,
   singleTimer,
@@ -75,6 +77,10 @@ router.get("/fetch/holidays", getAllHolidays);
 // Get date wise timers
 router.get("/fetch/timers/:startDate/:endDate", fetchTimersbydate);
 
+
+
+router.get( "/fetch/user-sessions/:jobHolderName/:startDate/:endDate", getUserSessions );
+router.get( "/fetch/user-daily-attendance/:jobHolderName/:startDate/:endDate", getUserDailyAttendance );
 
 
 

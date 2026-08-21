@@ -294,6 +294,7 @@ export default function Sidebar({
     threadAssignedCount,
     showCrmNotifications,
     showEmailNotifications,
+
   ]);
 
   return (

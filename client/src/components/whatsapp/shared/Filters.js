@@ -204,21 +204,43 @@ export default function Filters({
     // Added isTeamLead to the dependency array
   }, [filters,   companyName, isAdmin, isTeamLead, isInboxUserTabs]);
 
+  // useEffect(() => {
+  //   const trimmed = searchInput.trim();
+  //   if (!trimmed && !prevSearchRef.current) return;
+
+  //   const timer = setTimeout(() => {
+  //     if (trimmed === prevSearchRef.current) return;
+  //     setFilters({
+  //       search: trimmed,
+  //       page: 1,
+  //     });
+  //     prevSearchRef.current = trimmed;
+  //   }, 500);
+
+  //   return () => clearTimeout(timer);
+  // }, [searchInput, setFilters]);
+
+
+
+    // 2. Sync local input state whenever URL search filter changes (URL -> State)
   useEffect(() => {
-    const trimmed = searchInput.trim();
-    if (!trimmed && !prevSearchRef.current) return;
-
+    setSearchInput(filters.search || "");
+  }, [filters.search]);
+  
+  // 3. Debounce updates from local input state to URL search params (State -> URL)
+  useEffect(() => {
     const timer = setTimeout(() => {
-      if (trimmed === prevSearchRef.current) return;
-      setFilters({
-        search: trimmed,
-        page: 1,
-      });
-      prevSearchRef.current = trimmed;
+      const trimmed = searchInput.trim();
+      if (trimmed !== (filters.search || "")) {
+        setFilters({
+          search: trimmed,
+          page: 1,
+        });
+      }
     }, 500);
-
+  
     return () => clearTimeout(timer);
-  }, [searchInput, setFilters]);
+  }, [searchInput, filters.search, setFilters]);
 
   // Common styles for a compact, modern look
   const selectStyle = {

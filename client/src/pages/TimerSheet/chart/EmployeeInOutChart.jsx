@@ -228,34 +228,38 @@ export default function EmployeeInOutChart() {
       mergedAttendance.forEach((day) => {
         const dayTs = dayjs(day.date).startOf("day").valueOf();
         const label = dayjs(day.date).format("DD MMM");
-if (day.isHoliday) {
-  rangeBar.push({
-    x: label,
-    y: [REFERENCE_LINE_1, REFERENCE_LINE_2],
+        if (day.isHoliday) {
+          const dow = dayjs(day.date).day(); // 0 = Sun, 6 = Sat
+          const isWeekend = dow === 0 || dow === 6;
 
-    // Dark red holiday bar
-    fillColor: "#7F1D1D",
+          rangeBar.push({
+            x: label,
+            y: [REFERENCE_LINE_1, REFERENCE_LINE_2],
 
-    meta: {
-      date: day.date,
-      isHoliday: true,
-    },
-  });
+            // slate for weekend off-days, dark red for actual unexplained absence
+            fillColor: isWeekend ? "#94A3B8" : "#7F1D1D",
 
-  trendIn.push({
-    x: dayTs,
-    y: null,
-    meta: { isHoliday: true },
-  });
+            meta: {
+              date: day.date,
+              isHoliday: true,
+              isWeekend,
+            },
+          });
 
-  trendOut.push({
-    x: dayTs,
-    y: null,
-    meta: { isHoliday: true },
-  });
+          trendIn.push({
+            x: dayTs,
+            y: null,
+            meta: { isHoliday: true, isWeekend },
+          });
 
-  return;
-}
+          trendOut.push({
+            x: dayTs,
+            y: null,
+            meta: { isHoliday: true, isWeekend },
+          });
+
+          return;
+        }
 
         const inMin = timeToMinutes(day.checkIn);
         const outMin = timeToMinutes(day.checkOut);
@@ -312,19 +316,18 @@ if (day.isHoliday) {
           toolbar: { show: true },
           fontFamily: "inherit",
         },
-        colors: ["#325ea8","#6366F1", ],
+        colors: ["#325ea8", "#6366F1"],
         plotOptions: {
           bar: {
             horizontal: false,
             borderRadius: 6,
             columnWidth: "42%",
             dataLabels: {
-              orientation: "vertical"
-            }
-            
+              orientation: "vertical",
+            },
           },
         },
-       dataLabels: {
+        dataLabels: {
   enabled: true,
 
   formatter: (val, opts) => {
@@ -332,7 +335,12 @@ if (day.isHoliday) {
       opts?.w?.config?.series?.[0]?.data?.[opts.dataPointIndex];
 
     if (point?.meta?.isHoliday) {
-      return "Holiday";
+      return point.meta.isWeekend ? "Off" : "Absent";
+    }
+
+    if (Array.isArray(point?.y)) {
+      const [inMin, outMin] = point.y;
+      return formatDuration(inMin, outMin);
     }
 
     return formatMinutesLabel(val);
@@ -366,13 +374,13 @@ if (day.isHoliday) {
             if (!point) return "";
             const date = dayjs(point.meta?.date).format("DD MMM YYYY");
             if (point.meta?.isHoliday) {
-              return `
-                <div class="px-3 py-2 text-xs">
-                  <div class="font-semibold">${date}</div>
-                  <div>No attendance recorded</div>
-                </div>
-              `;
-            }
+  return `
+    <div class="px-3 py-2 text-xs">
+      <div class="font-semibold">${date}</div>
+      <div>${point.meta.isWeekend ? "Weekend" : "Absent — no attendance recorded"}</div>
+    </div>
+  `;
+}
             const [inMin, outMin] = point.y;
             const sessions = point.meta?.sessions;
             return `
@@ -625,19 +633,14 @@ if (day.isHoliday) {
                 </Stack>
               </>
             )}
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Box
-                sx={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: 1,
-                  bgcolor: "#D1D5DB",
-                }}
-              />
-              <Typography variant="body2" color="text.secondary">
-                Holiday / No Attendance
-              </Typography>
-            </Stack>
+<Stack direction="row" spacing={1} alignItems="center">
+  <Box sx={{ width: 12, height: 12, borderRadius: 1, bgcolor: "#94A3B8" }} />
+  <Typography variant="body2" color="text.secondary">Weekend / Off</Typography>
+</Stack>
+<Stack direction="row" spacing={1} alignItems="center">
+  <Box sx={{ width: 12, height: 12, borderRadius: 1, bgcolor: "#7F1D1D" }} />
+  <Typography variant="body2" color="text.secondary">Absent</Typography>
+</Stack>
           </Stack>
         </Stack>
 

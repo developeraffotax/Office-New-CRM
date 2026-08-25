@@ -9,6 +9,7 @@ import globalTimerReducer from "./slices/globalTimerSlice";
 
 import globalModalReducer from "./slices/globalModalSlice";
 import inboxUnreadReducer from "./slices/inboxUnreadSlice";
+import { api } from "./api/api";
 
 
 export const store = configureStore({
@@ -22,5 +23,10 @@ export const store = configureStore({
 
     globalModal: globalModalReducer,
     inboxUnread: inboxUnreadReducer,
+
+    [api.reducerPath]: api.reducer,
   },
+
+  
+  middleware: (getDefault) => getDefault().concat(api.middleware),
 });

@@ -12,7 +12,7 @@ import { SelectionHeader } from "../shared/FloatingSelectionToolbar";
 import CommentList from "../comments/CommentList";
 import { useSelector } from "react-redux";
 import Reminder from "../../../utlis/Reminder";
-import ComposeWindow from "../compose/Compose";
+import ComposeWindow from "../compose/ComposeWindow";
 import { MdOutlineCreate } from "react-icons/md";
 
 export default function MailLayout({

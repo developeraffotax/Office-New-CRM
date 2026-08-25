@@ -66,11 +66,22 @@ Cell: ({ row }) => {
   const email = row.original.email;
   const [copied, setCopied] = useState(false);
 
-   // Check if a valid phone number exists
+  // Check if a valid email exists
   const hasEmail = !!email && email.trim() !== "";
 
-  const handleCopy = () => {
+  const handleClick = (e) => {
     if (!hasEmail) return;
+
+    // Ctrl+Click (Windows/Linux) or Cmd+Click (Mac) → open in new tab
+    if (e.ctrlKey || e.metaKey) {
+      const url = `${window.location.origin}/mail?folder=inbox&companyName=affotax&status=progress&page=1&search=${encodeURIComponent(
+  email
+)}`;
+      window.open(url, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    // Normal click → copy to clipboard
     navigator.clipboard.writeText(email);
     setCopied(true);
     toast.success("Email copied!");
@@ -81,34 +92,17 @@ Cell: ({ row }) => {
 
   return (
     <div
-      onClick={handleCopy}
-className="group w-full relative flex items-center justify-between gap-2 px-1.5 py-1.5 transition-all cursor-pointer active:scale-[0.98]"    >
-     <span
-            title={email} // Added title so the full email shows on hover
-            // ADDED flex-1, min-w-0, and truncate to force ellipsis on long emails
-            className={`text-sm flex-1 min-w-0 truncate transition-colors ${
-              copied ? "text-orange-600" : "text-slate-600 group-hover:text-slate-900"
-            }`}
-          >
+      onClick={handleClick}
+      className="group w-full relative flex items-center justify-between gap-2 px-1.5 py-1.5 transition-all cursor-pointer active:scale-[0.98]"
+    >
+      <span
+        title={email}
+        className={`text-sm flex-1 min-w-0 truncate transition-colors ${
+          copied ? "text-orange-600" : "text-slate-600 group-hover:text-slate-900"
+        }`}
+      >
         {highlightText(email, activeSearch)}
       </span>
-
-      {/* {
-        hasEmail && (
-          <div className="flex items-center justify-center shrink-0 w-5 h-5">
-        {copied ? (
-          <div className="flex items-center justify-center w-full h-full bg-orange-100 text-orange-600 rounded-full animate-in zoom-in duration-200">
-            <HiCheck size={12} strokeWidth={2} />
-          </div>
-        ) : (
-          <HiOutlineClipboardCopy 
-            size={14} 
-            className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" 
-          />
-        )}
-      </div>
-        )
-      } */}
     </div>
   );
 },

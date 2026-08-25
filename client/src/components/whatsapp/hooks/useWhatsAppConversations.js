@@ -206,7 +206,9 @@ const updateConversation = async (_id, updateData) => {
     try {
       await axios.patch(`${endpoint}/${id}/read`);
       //setConversations(prev => prev.map(c => c._id === id ? { ...c, unreadCount: 0 } : c));
-      fetchConversations({ withLoading: false });
+      if(filters.unreadOnly !== "true") {
+        fetchConversations({ withLoading: false });
+      }
       toast.success("Conversation marked as read");
     } catch (err) {
       console.error("Failed to mark read", err);

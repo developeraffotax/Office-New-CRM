@@ -74,8 +74,46 @@ export default function ComposeWindow({ open, onClose, companyName, onSent }) {
   useClickOutside(mainRef, onClose)
   useEscapeKey(onClose)
 
+
+
+
+  const [templates, setTemplates] = useState([]);
+const [templateId, setTemplateId] = useState("");
+
+const templateOptions = useMemo(
+  () =>
+    templates.map((t) => ({
+      value: t._id,
+      label: `${t.name} - ${t.description} `,
+      description: t.template,
+    })),
+  [templates]
+);
+
+
+
+  const getAllTemplates = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/templates/get/all/template`,
+        { params: { companyName } }
+      );
+      setTemplates(data?.templates || []);
+    } catch (error) {
+      toast.error("Failed to load templates");
+    }
+  };
+
+
+  useEffect(() => {
+getAllTemplates()
+}, [companyName]);
+
+ 
   const [signatures, setSignatures] = useState([]);
   const [signatureId, setSignatureId] = useState("");
+
+
 
   const getAllSignatures = async () => {
     try {
@@ -109,6 +147,15 @@ export default function ComposeWindow({ open, onClose, companyName, onSent }) {
   }, [signatureOptions, signatureId]);
 
  
+// useEffect(() => {
+//   if (open && !minimized && bodyRef.current) {
+//     if (bodyRef.current.innerHTML !== message) {
+//       bodyRef.current.innerHTML = message || "";
+//     }
+//   }
+// }, [open, minimized]);
+
+
 useEffect(() => {
   if (open && !minimized && bodyRef.current) {
     if (bodyRef.current.innerHTML !== message) {
@@ -172,6 +219,9 @@ useEffect(() => {
     setShowCc(false);
     setShowBcc(false);
     setSignaturePopoverOpen(false);
+    setTemplateId("");
+      setMessage("");                       // <-- add this
+
     if (bodyRef.current) bodyRef.current.innerHTML = "";
     onClose?.();
   };
@@ -295,7 +345,44 @@ useEffect(() => {
                   placeholder="Subject"
                   className="flex-1 text-sm outline-none placeholder:text-gray-400"
                 />
+
+
+                
               </div>
+
+
+              {/* Templates */}
+<div className="flex items-center   border-t border-gray-100"   onMouseDown={(e) => e.stopPropagation()} >
+  <div className="flex-1">
+    <CustomSelect
+      value={templateId}
+      options={templateOptions}
+      placeholder="Select a template..."
+      styles={{
+        control: (provided) => ({
+      ...provided,
+      border: "0px",
+      borderRadius: "0px",
+      boxShadow: "none",
+      minHeight: "36px",
+      maxHeight: "36px",
+      fontSize: "14px",
+      // "&:hover": { border: "1px solid #f97316" },
+    }),
+      }}
+      onChange={(opt) => {
+        setTemplateId(opt?.value || "");
+        const html = opt?.description || "";
+        setMessage(html);
+        if (bodyRef.current) {
+          bodyRef.current.innerHTML = html;
+        }
+      }}
+    />
+  </div>
+</div>
+
+
             </div>
 
             {/* Body — the only scrollable region */}

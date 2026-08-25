@@ -30,7 +30,7 @@ export const taskColumn = (ctx) => {
       }, []);
 
       return (
-        <div className=" w-[380px] flex flex-col gap-[2px]">
+        <div className=" w-[340px] flex flex-col gap-[2px]">
           <span
             className="ml-1 cursor-pointer"
             title="Clear Filter"

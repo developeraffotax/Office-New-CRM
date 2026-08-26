@@ -326,7 +326,7 @@ export default function Row({
         <div
           className={clsx(
             "flex items-center gap-1 transition-opacity",
-            isRowActive ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+            // isRowActive ? "opacity-100" : "opacity-0 group-hover:opacity-100",
           )}
         >
           {/* Reply Button Container */}
@@ -496,7 +496,7 @@ export default function Row({
                 handleMarkAsRead(thread?.threadId, thread?.companyName)
               }
               disabled={isLoading.markAsRead}
-              className="flex justify-center items-center tracking-wide px-2 py-0.5  w-[56px] min-h-[18px] text-[10px] font-inter font-semibold text-white bg-blue-500 rounded-tr-lg rounded-bl-lg animate-pop disabled:opacity-80"
+              className=" flex justify-center items-center tracking-wide px-2 py-0.5  w-[56px] min-h-[18px] text-[10px] font-inter font-semibold text-white bg-blue-500 rounded-tr-lg rounded-bl-lg animate-pop disabled:opacity-80"
             >
               {isLoading.markAsRead ? (
                 <div className="flex gap-1 items-center justify-center">

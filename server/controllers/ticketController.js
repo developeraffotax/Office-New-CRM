@@ -114,7 +114,7 @@ export const createTicket = async (req, res) => {
     res.status(200).send({
       success: true,
       message: "Email send successfully!",
-      email: sendEmail,
+      ticket: ticket,
     });
 
  

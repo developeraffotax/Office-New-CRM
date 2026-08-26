@@ -167,7 +167,12 @@ export default function CreateTicketModal({
           : [],
       });
 
-      const newTicketId = data.ticket?._id || data._id;
+
+      console.log(
+        "THE TICKET DATA IS", data
+      )
+
+      const newTicketId = data.ticket?._id ;
       const userId = users.find((u) => form.jobHolder === u.name)?._id;
 
       await handleUpdateThread(createTicketModal._id, {

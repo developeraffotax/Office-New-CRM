@@ -8,6 +8,7 @@ import {
   deleteTicket,
   getAllInbox,
   getAllSendTickets,
+  getAllTickets,
   getCompleteTickets,
   getDashboardTickets,
   getInboxDetail,
@@ -140,7 +141,7 @@ router.get("/activity/map/:ticketId",requiredSignIn, getThreadSenders)
 router.put("/update/bulk/tickets", requiredSignIn, isAdmin, updateBulkTickets);
 
 
-
+router.get("/get/all", getAllTickets); // GET /api/v1/tickets/get/all
 
 
 

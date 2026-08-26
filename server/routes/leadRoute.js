@@ -3,6 +3,7 @@ import { isAdmin, requiredSignIn } from "../middlewares/authMiddleware.js";
 import {
   createLead,
   deleteLead,
+  getAllLeads,
   getAlllostLead,
   getAllProgressLead,
   getAllWonLead,
@@ -51,7 +52,7 @@ router.get("/dashboard/lead", getdashboardLead);
 router.get("/available-tickets", getAvailableTicketsNum);
 
 
-
+router.get("/get/all", getAllLeads);
 
 
 // Update Bulk Leads

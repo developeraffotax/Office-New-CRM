@@ -32,6 +32,7 @@ import EmailThread from "../emailModule/models/EmailThread.js";
 import ThreadCategory from "../emailModule/models/ThreadCategory.js";
 import { base64UrlToBase64 } from "../utils/gmailApiHelpers/utility.js";
 import { saveEmailMessage } from "../emailModule/utils/saveEmailMessage.js";
+import { getAllTicketsService } from "../services/ticket/ticketService.js";
 
 
 
@@ -2786,5 +2787,87 @@ export const getTicketActivityStats = async (req, res) => {
   } catch (error) {
     console.error("Ticket Stats Error:", error);
     res.status(500).json({ error: "Server Error" });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+export const getAllTickets = async (req, res) => {
+  try {
+    const { company, fields, page, limit, state, search, sortBy, sortOrder } = req.query;
+    if (!company) return res.status(400).json({ message: "company is required" });
+    const result = await getAllTicketsService({ company, fields, page, limit, state, search, sortBy, sortOrder });
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error("getAllTickets error:", err);
+    return res.status(500).json({ message: "Failed to fetch tickets" });
   }
 };

@@ -27,6 +27,8 @@ import { BiSolidBellPlus } from "react-icons/bi";
 import { PiBell } from "react-icons/pi";
 import { hasSubrole } from "../../../utlis/checkPermission";
 import RefBadge from "./ui/RefBadge";
+import LeadButton from "./ui/LeadButton";
+import TicketButton from "./ui/TicketButton";
 
 function parseEmail(str) {
   if (!str) return "";
@@ -402,63 +404,36 @@ export default function Row({
           )}
           {/* Actions (hover only) */}
           <div className="flex items-center gap-1.5   transition-opacity">
-            {/* Create Ticket Button */}
-            <button
-              title="Create Ticket"
-              className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold bg-white border border-gray-200 text-blue-700 rounded-md hover:bg-blue-50 hover:border-blue-200 transition-all shadow-sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setCreateTicketModal({
-                  _id: thread._id,
-                  isOpen: true,
-                  form: {
-                    subject: thread.subject || "",
-                    clientName:
-                      thread.participants.find(
-                        (p) => p.email !== parseEmail(myEmail),
-                      )?.name || "",
-                    email:
-                      thread.participants.find(
-                        (p) => p.email !== parseEmail(myEmail),
-                      )?.email || "",
-                    mailThreadId: thread.threadId,
-                  },
-                });
-              }}
-            >
-              <span className="size-1.5 rounded-full bg-blue-500" />
-              Ticket
-            </button>
+             
+           <TicketButton
+  thread={thread}
+  myEmail={myEmail}
+  setCreateTicketModal={setCreateTicketModal}
+  parseEmail={parseEmail}
+  onViewTicket={(ticket) => {
+    console.log("View ticket:", ticket);
 
-            {/* Create Lead Button */}
-            <button
-              title="Create Lead"
-              className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-semibold bg-white border border-gray-200 text-green-700 rounded-md hover:bg-green-50 hover:border-green-200 transition-all shadow-sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setCreateLeadModal({
-                  _id: thread._id,
-                  isOpen: true,
-                  form: {
-                    clientName:
-                      thread.participants.find(
-                        (p) => p.email !== parseEmail(myEmail),
-                      )?.name || "",
-                    email:
-                      thread.participants.find(
-                        (p) => p.email !== parseEmail(myEmail),
-                      )?.email || "",
-                  },
-                  ticketBindings: {
-                    subject: thread.subject || "",
-                    mailThreadId: thread.threadId,
-                  },
-                });
-              }}
-            >
-              <span className="size-1.5 rounded-full bg-green-500" />
-              Lead
-            </button>
+    // Example:
+    // navigate(`/tickets/${lead._id}`);
+  }}
+/> 
+
+
+
+<LeadButton
+  thread={thread}
+  myEmail={myEmail}
+  setCreateLeadModal={setCreateLeadModal}
+  parseEmail={parseEmail}
+  onViewLead={(lead) => {
+    console.log("View lead:", lead);
+
+    // Example:
+    // navigate(`/leads/${lead._id}`);
+  }}
+/>
+
+           
           </div>
 
           {/* More Options */}

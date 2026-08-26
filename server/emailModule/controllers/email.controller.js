@@ -41,9 +41,18 @@ export const getMailbox = async (req, res) => {
 
     const [threads, total] = await Promise.all([
       EmailThread.find(query)
+        .populate({
+          path: "leadId",
+          select: "leadRef",
+        })
+        .populate({
+          path: "ticketId",
+          select: "ticketRef",
+        })
         .sort({ [dateField]: -1 })
         .skip(skip)
         .limit(pageSize)
+         
         .lean(),
       EmailThread.countDocuments(query),
     ]);
@@ -447,7 +456,7 @@ export const updateThreadMetadata = async (req, res) => {
     /**
      * 1️⃣ Whitelist validation
      */
-    const allowedUpdates = ["category", "userId", "status"];
+    const allowedUpdates = ["category", "userId", "status", "leadId", "ticketId"];
     const updateKeys = Object.keys(updates);
 
     const isValidUpdate = updateKeys.every((key) =>

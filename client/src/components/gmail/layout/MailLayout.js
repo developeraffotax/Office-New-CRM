@@ -67,7 +67,7 @@ export default function MailLayout({
     isOpen: false,
     form: {},
     
-    ticketBindings: {}
+    // ticketBindings: {}
   });
 
     const [createReminderModal, setCreateReminderModal] = useState({

@@ -19,6 +19,7 @@ import {
   recordBulkActivity,
   snapshotEntities,
 } from "../services/activityLog/bulkActivityService.js";
+import { getAllLeadsService } from "../services/lead/leadService.js";
 
 // Create Lead
 export const createLead = async (req, res) => {
@@ -2406,5 +2407,70 @@ export const getWonLeadStats = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server Error" });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// controllers/leadController.js — pass the new param through
+export const getAllLeads = async (req, res) => {
+  try {
+    const { brand, fields, page, limit, stage, status, search, sortBy, sortOrder } = req.query;
+
+    if (!brand) {
+      return res.status(400).json({ message: "companyName / brand is required" });
+    }
+
+    const result = await getAllLeadsService({
+      brand,
+      fields,
+      page,
+      limit,
+      stage,
+      status,
+      search,
+      sortBy,
+      sortOrder,
+    });
+
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error("getAllLeads error:", err);
+    return res.status(500).json({ message: "Failed to fetch leads" });
   }
 };

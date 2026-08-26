@@ -3,7 +3,7 @@ module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     fontFamily: {
-      sans: [ "sans-serif", "system-ui" ],
+      sans: ["sans-serif", "system-ui"],
       serif: ["Playfair Display", "serif"],
       roboto: ["Roboto", "sans-serif"],
       inter: ["Inter", "sans-serif"],
@@ -23,12 +23,14 @@ module.exports = {
         "badge-pop": "badge-pop 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
         "card-in": "cardIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both",
         "phase-in": "phaseIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "slide-down": "slideDown 0.6s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "fade-in": "fadeIn 0.6s ease-out both",
       },
       keyframes: {
-        bob:{
+        bob: {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-3px)" },
-         },
+        },
         shake: {
           "0%, 100%": { transform: "translateX(0)" },
           "20%": { transform: "translateX(-6px)" },
@@ -68,6 +70,24 @@ module.exports = {
           "100%": {
             opacity: "1",
             transform: "translateX(0)",
+          },
+        },
+        slideDown: {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(-200px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
+        fadeIn: {
+          "0%": {
+            opacity: "0",
+          },
+          "100%": {
+            opacity: "1",
           },
         },
       },

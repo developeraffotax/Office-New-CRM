@@ -54,6 +54,23 @@ const EmailThreadSchema = new mongoose.Schema(
     },
 
     ref: { type: Number},
+
+
+
+
+    leadId: { type: mongoose.Schema.Types.ObjectId, ref: "Lead", default: null, index: true },
+    ticketId: { type: mongoose.Schema.Types.ObjectId, ref: "tickets", default: null, index: true },
+
+
+
+
+
+
+
+
+
+
+
   },
   { timestamps: true },
 );
@@ -74,6 +91,11 @@ EmailThreadSchema.index(
   { companyName: 1, userId: 1, lastMessageAtSent: -1 },
   { partialFilterExpression: { hasSentMessage: true } },
 );
+
+
+
+EmailThreadSchema.index({ companyName: 1, leadId: 1, lastMessageAt: -1 });
+EmailThreadSchema.index({ companyName: 1, ticketId: 1, lastMessageAt: -1 });
 
 
 

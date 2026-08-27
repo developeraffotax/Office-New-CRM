@@ -72,6 +72,13 @@ const applyScalarFilters = (filters) => {
   if (filters.starred === "true") clauses.push({ labels: "STARRED" });
   if (filters.mailThreadId)  clauses.push({ threadId: filters.mailThreadId });
 
+  if (filters.ticketId && isValidId(filters.ticketId)) {
+    clauses.push({ ticketId: toObjectId(filters.ticketId) });
+  }
+  if (filters.leadId && isValidId(filters.leadId)) {
+    clauses.push({ leadId: toObjectId(filters.leadId) });
+  }
+
   return clauses;
 };
 
@@ -230,6 +237,12 @@ const applyUserAssignmentFilter = (filters, { isAdmin, isTeamLead, user, hasUnas
 
 export const buildFilterQuery = (req) => {
   const user = req?.user?.user;
+  const filters = req.query;
+
+
+  // Ticket/Lead lookups bypass Inbox user-assignment scoping — access here
+  // is governed by Tickets/Leads permissions, not by thread assignment.
+  const isEntityLookup = Boolean(filters.ticketId || filters.leadId);
 
   const inboxPermission = user.role?.access?.find(
     (a) => a.permission === "Inbox",
@@ -239,11 +252,13 @@ export const buildFilterQuery = (req) => {
   const isTeamLead = user?.isTeamLead;
   const juniors    = user?.juniors || [];
 
-  const filters = req.query;
 
   const andFilters = [
     ...applyScalarFilters(filters),
-    applyUserAssignmentFilter(filters, { isAdmin, isTeamLead, user, hasUnassignedPermission, juniors }),
+    // applyUserAssignmentFilter(filters, { isAdmin, isTeamLead, user, hasUnassignedPermission, juniors }),
+    isEntityLookup
+      ? null
+      : applyUserAssignmentFilter(filters, { isAdmin, isTeamLead, user, hasUnassignedPermission, juniors }),
     applyCategoryFilter(filters),
     applyFolderFilter(filters),
     applyUnreadFilter(filters, user._id),

@@ -50,6 +50,8 @@ import { BsGraphUpArrow } from "react-icons/bs";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import SelectedUsers from "../../components/SelectedUsers";
 import Thread from "../../components/gmail/thread/Thread";
+import EmailThreadsSidebar from "../../components/shared/EmailThreadsSidebar";
+import RelatedConversationsSidebar from "../../components/shared/RelatedConversationsSidebar/RelatedConversationsSidebar";
 
 const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "", leadUser: "" };
 const jobStatusOptions = [
@@ -116,6 +118,8 @@ export default function Tickets() {
   const [showJobHolder, setShowJobHolder] = useState(true);
   const [active1, setActive1] = useState("");
 
+
+
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 50, // ✅ default page size
@@ -128,6 +132,25 @@ export default function Tickets() {
 
   const [isActivityDrawerOpen, setIsActivityDrawerOpen] = useState(false);
   const [activityDrawerTicketId, setActivityDrawerTicketId] = useState("");
+
+
+
+
+
+  const [isEmailSidebarOpen, setIsEmailSidebarOpen] = useState(false);
+const [selectedEmailTicket, setSelectedEmailTicket] = useState(null);
+
+
+const openEmailSidebar = (ticket) => {
+  setSelectedEmailTicket(ticket);
+  setIsEmailSidebarOpen(true);
+};
+
+const closeEmailSidebar = () => {
+  setIsEmailSidebarOpen(false);
+  setSelectedEmailTicket(null);
+};
+
 
   const anchorRef = useRef(null);
 
@@ -721,6 +744,7 @@ export default function Tickets() {
       setIsComment,
       handleUpdateTicketStatusConfirmation,
       handleDeleteTicketConfirmation,
+      openEmailSidebar,
     }),
     [status, jobStatusOptions],
   );
@@ -1350,6 +1374,16 @@ export default function Tickets() {
             </div>
           </div>
         )}
+
+        <RelatedConversationsSidebar
+  open={isEmailSidebarOpen}
+  onClose={closeEmailSidebar}
+  id={selectedEmailTicket?._id}
+  
+  companyName={"affotax"}
+ 
+ 
+/>
 
         {filterInfo.col && anchorRef.current && (
           <NumberFilterPortal

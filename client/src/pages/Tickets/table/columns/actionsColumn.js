@@ -4,6 +4,7 @@ import { AiTwotoneDelete } from "react-icons/ai";
 import { MdCheckCircle, MdInsertComment, MdRemoveRedEye } from "react-icons/md";
 import { TbLogs } from "react-icons/tb";
 import { hasSubrole } from "../../../../utlis/checkPermission";
+import { IoMailOutline } from "react-icons/io5";
 
 export const actionsColumn = (ctx) => {
 
@@ -29,7 +30,27 @@ export const actionsColumn = (ctx) => {
               return (
                 <div className="flex items-center justify-center gap-4 w-full h-full">
     
-    
+
+                  <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        ctx.openEmailSidebar(row.original);
+      }}
+      className="
+        flex items-center justify-center
+        w-8 h-8
+        rounded-md
+        border
+        bg-white
+        hover:bg-orange-50
+        hover:border-orange-300
+        transition
+      "
+      title="View emails"
+    >
+      <IoMailOutline className="w-[18px] h-[18px] text-gray-600" />
+    </button>
     
                      <span
                     className=""

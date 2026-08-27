@@ -30,20 +30,27 @@ import { LiaUndoAltSolid } from "react-icons/lia";
 import { useSelector } from "react-redux";
 import EmailSummaryDrawer from "./EmailSummaryDrawer.js";
 import { hasSubrole } from "../../../utlis/checkPermission.js";
+import ThreadHeader from "./ThreadHeader.js";
+
+
+
 export default function Thread({
+  variant = "full",
   company,
   threadId,
   subject,
+
+  userId,
+  category,
+  status,
+
  setEmailDetail,
   markAsRead,
   deleteThread,
   users,
   handleUpdateThread,
   mongoThreadId,
-  userId,
   categories,
-  category,
-  status,
   setComment,
  
  
@@ -407,132 +414,27 @@ useOverlayStack({
       ref={threadRef}
     >
       {/* Header */}
-      <header className="sticky top-0 z-10 w-full flex items-center justify-between bg-white/80 backdrop-blur-md px-6 py-4 border-b border-gray-200">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setEmailDetail(prev => ({...prev, threadId: "", show: false, subject: "" }))}
-            className="p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-colors"
-          >
-            <IoArrowBackOutline className="h-5 w-5" />
-          </button>
-          <h2 className="text-lg font-bold text-gray-800 truncate max-w-[200px] md:max-w-md">
-            {subject}
-          </h2>
-        </div>
-
-          <div className=" flex justify-center items-center gap-4 ">
-
-                <IconButtonWithBadge
-              icon={FiInfo}
-              title="Show Summary"
-              onClick={() => setSummaryDrawer({open: true})}
-            />
-
-      
-              <IconButtonWithBadge
-              icon={FiClock}
-              title="View Activity"
-              onClick={() => {
-                setActivityPanel({
-                  show: true,
-                  threadId: mongoThreadId,
-                });
-
-                
-              }}
-            />
-
-
-
-
-
-        <IconButtonWithBadge
-          icon={FiMessageSquare}
-          unreadCount={unreadComments}
-          title="View Comments"
-          onClick={() =>
-            setComment({
-              show: true,
-              threadId: mongoThreadId,
-              threadSubject: subject,
-            })
-          }
-        />
-
-
-
-<span className="w-[1px] h-8 bg-slate-300 rounded-full"></span>
-
-{       scope.delete &&  (<button
-              className="p-2 rounded-lg hover:bg-gray-200 text-gray-500  hover:text-red-500"
-              title="Delete Thread"
-              onClick={(e) => {
-                deleteThreadHandler(threadId, company);
-              }}
-            >
-              <MdDeleteOutline className="size-5   " />
-            </button>)}
-
-     {
-                status === "progress" ? (
-                  <button
-              className="p-2 rounded-lg hover:bg-gray-200  text-gray-500  hover:text-green-500"
-              title="Complete Thread"
-              onClick={(e) => {
-                
-                updateStatus("completed");
-              }}
-            > 
-              <FaRegCircleCheck className="size-5   " />
-            </button>
-                ) : (
-                   <button
-              className="p-2 rounded-lg  hover:bg-gray-200 text-gray-500  hover:text-red-500"
-              title="Undo Complete"
-              onClick={(e) => {
-                 
-                updateStatus("progress");
-              }}
-            > 
-              <LiaUndoAltSolid className="size-5   " />
-            </button>
-                )
-              }
-
-
-
-                            
-                   
-
-        <AssignUser
-          users={users}
-          mongoThreadId={mongoThreadId}
-          currentUserId={userId}
-          handleUpdateThread={handleUpdateThread}
-          showLabel
-        />
-
-           <AssignCategory
-                    categories={categories}
-                    mongoThreadId={mongoThreadId}
-                    currentCategory={category}
-                    handleUpdateThread={handleUpdateThread}
-        
-                      
-        
-                  />
-
-
-
-
-
-
-        
-
-          </div>
-
-        
-      </header>
+<ThreadHeader
+  variant={variant}
+  subject={subject}
+  company={company}
+  threadId={threadId}
+  mongoThreadId={mongoThreadId}
+  status={status}
+  category={category}
+  categories={categories}
+  users={users}
+  userId={userId}
+  unreadComments={unreadComments}
+  scope={scope}
+  handleUpdateThread={handleUpdateThread}
+  onBack={() => setEmailDetail(prev => ({ ...prev, threadId: "", show: false, subject: "" }))}
+  onShowSummary={() => setSummaryDrawer({ open: true })}
+  onShowActivity={() => setActivityPanel({ show: true, threadId: mongoThreadId })}
+  onShowComments={() => setComment({ show: true, threadId: mongoThreadId, threadSubject: subject })}
+  onDeleteThread={() => deleteThreadHandler(threadId, company)}
+  onUpdateStatus={updateStatus}
+/>
 
       {/* Thread Content */}
       {loading ? (

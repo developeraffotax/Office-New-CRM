@@ -233,6 +233,8 @@ export const sendEmail = async (req, res) => {
       companyName: company?.trim().toLowerCase(),
       threadId: threadId,
       userId: user._id,
+      ticketId: sendEmail._id,   // <-- links this thread back to the ticket
+
       // category: "ticket"
     })
 

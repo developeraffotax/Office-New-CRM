@@ -142,6 +142,7 @@ const RelatedConversationsSidebar = ({
                   <div className="px-4 py-4 text-xs text-gray-400">No linked emails.</div>
                 ) : (
                   emailThreads.map((thread) => {
+                    console.log(" THE THREAD IS ", thread)
                     const isSelected = selected?.channel === "email" && selected.data._id === thread._id;
                     const isUnread = Number(thread.unreadComments || 0) > 0 || thread.status === "Unread";
 
@@ -245,22 +246,9 @@ const RelatedConversationsSidebar = ({
               <div className="h-full bg-white rounded-lg border shadow-sm overflow-hidden">
                 <Thread
                   variant="compact"
-                  company={selected.data.companyName}
+                  companyName={selected.data.companyName}
                   threadId={selected.data.threadId}
-                  mongoThreadId={selected.data._id}
-                  subject={selected.data.subject}
-                  status={selected.data.status}
-                  userId={selected.data.userId}
-                  category={selected.data.category}
-                  users={[]}
-                  categories={[]}
-                  unreadComments={selected.data.unreadComments || 0}
-                  show={true}
-                  setEmailDetail={() => {}}
-                  markAsRead={() => {}}
-                  deleteThread={() => {}}
-                  handleUpdateThread={() => {}}
-                  setComment={() => {}}
+                   
                 />
               </div>
             ) : (

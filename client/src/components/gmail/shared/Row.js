@@ -57,7 +57,7 @@ export default function Row({
   thread,
   users,
   handleUpdateThread,
-  setEmailDetail,
+  openThread,
   categories,
   setCreateTicketModal,
   setCreateLeadModal,
@@ -287,19 +287,21 @@ export default function Row({
         {/* Subject + Snippet */}
         <div
           className="min-w-0 flex flex-col "
-          onClick={() =>
-            setEmailDetail({
-              threadId: thread.threadId,
-              show: true,
-              subject: thread?.subject || "No Subject",
-              participants: thread.participants,
+          // onClick={() =>
+          //   setEmailDetail({
+          //     threadId: thread.threadId,
+          //     show: true,
+          //     subject: thread?.subject || "No Subject",
+          //     participants: thread.participants,
 
-              mongoThreadId: thread?._id,
-              userId: thread?.userId,
-              category: thread?.category,
-              status: thread?.status,
-            })
-          }
+          //     mongoThreadId: thread?._id,
+          //     userId: thread?.userId,
+          //     category: thread?.category,
+          //     status: thread?.status,
+          //   })
+          // }
+
+          onClick={() => openThread(thread.threadId)}
         >
           <div className="w-full flex items-center gap-2 justify-start ">
             <span

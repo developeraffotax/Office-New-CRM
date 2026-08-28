@@ -1,8 +1,10 @@
-import MailLayout from "../layout/MailLayout";
+ 
 import { useMailThreads } from "../hooks/useMailThreads";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { fetchCategories } from "../categories/categoryApi";
+ 
+import MailListPage from "./MailListPage";
 
 export default function Mailbox() {
   const [users, setUsers] = useState([]);
@@ -68,6 +70,6 @@ export default function Mailbox() {
   }, []);
 
   return (
-    <MailLayout users={users} team={team} categories={categories} {...mail} />
+    <MailListPage users={users} team={team} categories={categories} {...mail} />
   );
 }

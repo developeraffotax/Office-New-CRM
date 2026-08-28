@@ -1380,7 +1380,7 @@ const closeEmailSidebar = () => {
   onClose={closeEmailSidebar}
   id={selectedEmailTicket?._id}
   
-  companyName={"affotax"}
+  companyName={selectedEmailTicket?.company?.toLowerCase()}
  
  
 />

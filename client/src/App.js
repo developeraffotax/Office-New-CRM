@@ -66,6 +66,8 @@ import DashboardComponent from "./components/AffotaxDashboard/DashboardComponent
 import KpiDashboard from "./components/KpiDashboard/KpiDashboard";
 import TeamsPage from "./pages/Auth/Team/TeamsPage";
 import EmployeeInOutChart from "./pages/TimerSheet/chart/EmployeeInOutChart";
+import MailLayout from "./components/gmail/layout/MailLayout";
+import MailThreadPage from "./components/gmail/pages/MailThreadPage";
 
 function App() {
   const navigate = useNavigate();
@@ -144,7 +146,14 @@ function App() {
           <Route path="/tickets" element={<Tickets />} />
           <Route path="/tickets/complete" element={<CompleteTickets />} />
           <Route path="/ticket/detail/:id" element={<EmailDetail />} />
-          <Route path="/mail" element={<Mailbox />} />
+              {/* MAIL */}
+    <Route path="/mail" element={<MailLayout />}>
+      <Route index element={<Mailbox />} />
+      <Route
+        path=":threadId"
+        element={<MailThreadPage />}
+      />
+    </Route>
           <Route path="/whatsapp/:chatId?" element={<WhatsAppBox />} />
           {/* <Route path="/tickets/sent" element={<Sent />} /> */}
         </>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Row from "./Row";
 import { ReplyPopup } from "../reply/ReplyPopup";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 // A internal component for the loading state
 const ShimmerSkeleton = () => (
@@ -47,6 +48,16 @@ export default function List({
 }) {
   const [replyThread, setReplyThread] = useState(null);
 
+  const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+  const companyName = searchParams.get("companyName");
+
+
+
+const openThread = (threadId) => {
+  navigate(`/mail/${threadId}?companyName=${companyName}`);
+};
+
   if (loading.fetching) {
     return (
       <div className="flex-1 overflow-hidden">
@@ -78,7 +89,7 @@ export default function List({
            
           categories={categories}
           filters={filters}
-          setEmailDetail={setEmailDetail}
+          openThread={openThread}
           setCreateTicketModal={setCreateTicketModal}
           setCreateLeadModal={setCreateLeadModal}
           index={index}

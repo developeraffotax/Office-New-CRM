@@ -31,34 +31,53 @@ import { useSelector } from "react-redux";
 import EmailSummaryDrawer from "./EmailSummaryDrawer.js";
 import { hasSubrole } from "../../../utlis/checkPermission.js";
 import ThreadHeader from "./ThreadHeader.js";
+import { useMailThread } from "../hooks/useMailThread.js";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 
 
 export default function Thread({
   variant = "full",
-  company,
+  companyName,
   threadId,
-  subject,
+  onClose = () => {},
 
-  userId,
-  category,
-  status,
 
- setEmailDetail,
-  markAsRead,
-  deleteThread,
-  users,
-  handleUpdateThread,
-  mongoThreadId,
-  categories,
-  setComment,
  
  
-  unreadComments,
-  show
+
+ 
+ 
+  users = [],
+ 
+  categories = [],
+
+
+ 
+ 
+ 
+ 
+ 
 }) {
 
    const { auth } = useSelector((state) => state.auth);
+
+  const navigate = useNavigate()
+
+
+  const {
+    thread,
+    loading: threadLoading,
+    handleUpdateThread,
+    markAsRead,
+    deleteThread,
+  } = useMailThread({ threadId, companyName });
+
+console.log("THE THREAD IS ✔️✔️✔️✔️✔️✔️✔️", thread)
+
+
+  const { subject, userId, category, status } = thread || {};
+  const mongoThreadId = thread?._id; // check this matches what getThread names t
 
 
   const [page, setPage] = useState(1);
@@ -171,7 +190,7 @@ const getEmailDetail = async (pageNumber = 1, isLoadMore = false) => {
 
   try {
     const { data } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/inbox/detail/pagination/${threadId}/${company}?page=${pageNumber}&limit=10`
+      `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/inbox/detail/pagination/${threadId}/${companyName}?page=${pageNumber}&limit=10`
     );
 
     if (data?.emailDetails) {
@@ -213,9 +232,9 @@ const getEmailDetail = async (pageNumber = 1, isLoadMore = false) => {
 useEffect(() => {
   setPage(1);
   getEmailDetail(1, false);
-  markAsRead(threadId, company);
+  markAsRead(threadId, companyName);
    getMessageUsers();   // 👈 add this
-}, [threadId, company]);
+}, [threadId, companyName]);
 
 
 
@@ -345,7 +364,7 @@ const getMessageUsers = async () => {
       {
         params: {
           threadId,
-          companyName: company,
+          companyName: companyName,
         },
       }
     );
@@ -364,47 +383,27 @@ const getMessageUsers = async () => {
 
 
 
+ 
 
 const updateStatus = async (status) => {
-  setSwalOpen(true); // block overlay
+  setSwalOpen(true);
   const { isConfirmed } = await confirmAlert({ type: "warning" });
   setSwalOpen(false);
-
   if (!isConfirmed) return;
-  await handleUpdateThread(mongoThreadId, { status: status }, "status");
-  setEmailDetail(prev => ({...prev, status: status}))
+  await handleUpdateThread(mongoThreadId, { status }); // thread state updates itself inside the hook
 };
-
-
 
 const deleteThreadHandler = async (threadId, company) => {
-    setSwalOpen(true); // block overlay
+  setSwalOpen(true);
   const { isConfirmed } = await confirmAlert({ type: "warning" });
   setSwalOpen(false);
-   
-    if (!isConfirmed) return;
-  await deleteThread(threadId, company, false);
-  setEmailDetail(prev => ({ ...prev, threadId: "", show: false, subject: "" }))
+  if (!isConfirmed) return;
 
+  const success = await deleteThread(threadId, company, false);
+  if (success) navigate("/mail"); // back to inbox, thread no longer exists
 };
 
-
-
-// swalOpen || timeUp open
-
-
-
-
-useOverlayStack({
-  ref: threadRef,
-  onClose: () => {
-    if (swalOpen || isReminderPopupOpen) return; // prevent closing
-    setEmailDetail(prev => ({ ...prev, threadId: "", show: false, subject: "" }))
-  },
-  isOpen: show,
-});
-
-
+ 
 
  
 
@@ -417,7 +416,7 @@ useOverlayStack({
 <ThreadHeader
   variant={variant}
   subject={subject}
-  company={company}
+  company={companyName}
   threadId={threadId}
   mongoThreadId={mongoThreadId}
   status={status}
@@ -425,14 +424,14 @@ useOverlayStack({
   categories={categories}
   users={users}
   userId={userId}
-  unreadComments={unreadComments}
+  unreadComments={0}
   scope={scope}
   handleUpdateThread={handleUpdateThread}
-  onBack={() => setEmailDetail(prev => ({ ...prev, threadId: "", show: false, subject: "" }))}
+  onBack={onClose}
+  onShowComments={() => {}}
   onShowSummary={() => setSummaryDrawer({ open: true })}
   onShowActivity={() => setActivityPanel({ show: true, threadId: mongoThreadId })}
-  onShowComments={() => setComment({ show: true, threadId: mongoThreadId, threadSubject: subject })}
-  onDeleteThread={() => deleteThreadHandler(threadId, company)}
+  onDeleteThread={() => deleteThreadHandler(threadId, companyName)}
   onUpdateStatus={updateStatus}
 />
 
@@ -624,7 +623,7 @@ useOverlayStack({
                               downloadAttachments(
                                 item.attachmentId,
                                 item.attachmentMessageId,
-                                company,
+                                companyName,
                                 item.attachmentFileName,
                               )
                             }
@@ -678,7 +677,7 @@ useOverlayStack({
             {showReplyEditor && (
               <div className="w-full py-5 ">
                 <Reply
-                company={company}
+                company={companyName}
                 emailDetail={messages}
                 getEmailDetail={() => {
                   getEmailDetail();
@@ -692,26 +691,7 @@ useOverlayStack({
 
 
 
-          {/* <div
-            ref={replySectionRef}
-            className={`w-full transition-all duration-200 ${
-              showReplyEditor ? "block" : "hidden"
-            }`}
-          >
-            <div className="w-full py-5">
-             { (messages?.decryptedMessages?.length > 0) && <Reply
-                company={company}
-                emailDetail={messages}
-                getEmailDetail={() => {
-                  getEmailDetail();
-                  setShowReplyEditor(false);
-                }}
-                setShowReplyEditor={setShowReplyEditor}
-              />}
-            </div>
-          </div> */}
-
-
+ 
         </div>
       )}
 
@@ -721,7 +701,7 @@ useOverlayStack({
           <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
             <Forward
               setShowForward={setShowForward}
-              company={company}
+              company={companyName}
               emailDetail={messages}
               getEmailDetail={getEmailDetail}
               forwardMessageId={forwardMessageId}
@@ -788,7 +768,7 @@ useOverlayStack({
         isOpen={summaryDrawer.open} 
         onClose={() => setSummaryDrawer({open: false})} 
         threadId={threadId}
-        companyName={company}
+        companyName={companyName}
       />
 
 

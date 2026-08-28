@@ -105,6 +105,53 @@ export const getMailbox = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+
+export const getThread = async (req, res) => {
+  try {
+    const threadId = req.params.threadId;
+     
+    const thread = await EmailThread.findOne({threadId: threadId}).populate({
+          path: "leadId",
+          select: "leadRef",
+        })
+        .populate({
+          path: "ticketId",
+          select: "ticketRef",
+        })
+        .lean()
+
+
+
+ 
+ 
+ 
+    res.status(200).json({
+      success: true,
+      thread: thread,
+    });
+  } catch (err) {
+    console.error("❌ Thread fetch error:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch threads" });
+  }
+};
+
+
+
+
+
+
 export const getUnreadCounts2 = async (req, res) => {
   try {
     const user = req?.user?.user;

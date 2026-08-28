@@ -187,7 +187,7 @@ export default function MailListPage({
           Thread List
       ========================= */}
 
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1 h-full min-h-0 overflow-hidden">
         <List
           loading={loading}
           threads={threads}

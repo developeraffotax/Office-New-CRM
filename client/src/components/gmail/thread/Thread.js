@@ -41,15 +41,8 @@ export default function Thread({
   companyName,
   threadId,
   onClose = () => {},
-
-
- 
- 
-
- 
  
   users = [],
- 
   categories = [],
 
 

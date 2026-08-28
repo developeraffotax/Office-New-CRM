@@ -11,7 +11,7 @@ export default function MailLayout() {
       <Sidebar />
 
       {/* Page changes here */}
-      <main className="flex-1 min-w-0 min-h-0">
+      <main className="flex-1 h-full min-w-0 min-h-0">
         <Outlet />
       </main>
 

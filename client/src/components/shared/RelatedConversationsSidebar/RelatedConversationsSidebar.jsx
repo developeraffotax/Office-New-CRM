@@ -14,6 +14,7 @@ import { FaWhatsapp } from "react-icons/fa";
 
 import Thread from "../../gmail/thread/Thread";
 import ChatWindow from "../../whatsapp/chat/ChatWindow"; // adjust to real path/props
+import { useGetInboxUsersQuery } from "../../../redux/api/inboxUserApi";
 
 const API_URL = process.env.REACT_APP_API_URL;
 const MAILBOX_URL = `${API_URL}/api/v1/gmail/get-mailbox`;
@@ -36,6 +37,17 @@ const RelatedConversationsSidebar = ({
   const [loading, setLoading] = useState(false);
 
   const filterKey = type === "lead" ? "leadId" : "ticketId";
+
+    
+    const {
+    data: inboxUsers = [],
+    isLoading: usersLoading,
+    isFetching: usersFetching,
+    error: usersError,
+  } = useGetInboxUsersQuery();
+  
+  
+
 
   const fetchAll = async () => {
     if (!id) return;
@@ -248,6 +260,12 @@ const RelatedConversationsSidebar = ({
                   variant="compact"
                   companyName={selected.data.companyName}
                   threadId={selected.data.threadId}
+
+
+                  users={inboxUsers}
+
+
+                   
                    
                 />
               </div>

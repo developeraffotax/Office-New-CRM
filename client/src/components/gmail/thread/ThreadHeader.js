@@ -8,6 +8,7 @@ import { FiClock, FiInfo, FiMessageSquare } from "react-icons/fi";
 import IconButtonWithBadge from "../shared/ui/IconButtonWithBadge.js";
 import AssignUser from "../shared/ui/AssignUser.js";
 import AssignCategory from "../shared/ui/AssignCategory.js";
+import { useSelector } from "react-redux";
 
 export default function ThreadHeader({
   variant = "full", // "full" (Inbox) | "compact" (Ticket/Lead sidebar)
@@ -31,19 +32,49 @@ export default function ThreadHeader({
   onUpdateStatus,
   handleUpdateThread,
 }) {
-  if (variant === "compact") {
+
+const auth = useSelector((state) => state.auth.auth);
+  const user = auth?.user;
+
+  
+ 
+
+if (variant === "compact") {
+    const assignedUser = users?.find((u) => u._id === userId);
+    const assignedUserName = assignedUser?.name || "Unassigned";
+    const categoryName = typeof category === "object" ? category?.name : category;
     return (
-      <header className="sticky top-0 z-10 w-full flex items-center justify-between bg-white/80 backdrop-blur-md px-6 py-4 border-b border-gray-200">
-        <h2 className="text-lg font-bold text-gray-800 truncate max-w-[200px] md:max-w-md">
-          {subject}
-        </h2>
-        
-        <Link
-          to={`/mail?mailThreadId=${threadId}&companyName=${company}`}
-          className="text-sm font-medium text-orange-600 hover:text-orange-700 hover:underline whitespace-nowrap shrink-0"
-        >
-          Go to full conversation →
-        </Link>
+      <header className="sticky top-0 z-10 w-full bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-3.5 shadow-sm font-google">
+        <div className="flex flex-col gap-1.5 max-w-7xl mx-auto">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-[15px] font-semibold text-slate-900 leading-tight truncate md:max-w-2xl">
+              {subject}
+            </h2>
+            {user?.id === userId && (
+              <Link
+                to={`/mail?mailThreadId=${threadId}&companyName=${company}`}
+                className="group inline-flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors duration-150 whitespace-nowrap shrink-0"
+              >
+                Full conversation
+                <span className="transition-transform duration-150 group-hover:translate-x-0.5">&rarr;</span>
+              </Link>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 text-sm text-slate-500 min-w-0">
+            {categoryName && (
+              <>
+                <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 ring-1 ring-inset ring-blue-700/10 shrink-0">
+                  {categoryName}
+                </span>
+                <span className="w-1 h-1 rounded-full bg-slate-300 shrink-0" />
+              </>
+            )}
+
+            
+            {assignedUserName && <span className="font-medium text-slate-800">{assignedUserName}</span>}
+          </div>
+        </div>
       </header>
     );
   }

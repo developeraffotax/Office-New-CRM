@@ -13,7 +13,7 @@ import {
 import { FaWhatsapp } from "react-icons/fa";
 
 import Thread from "../../gmail/thread/Thread";
-import ChatWindow from "../../whatsapp/chat/ChatWindow"; // adjust to real path/props
+import ChatWindow from "../../whatsapp/chat/ChatWindow/ChatWindow"; // adjust to real path/props
 import { useGetInboxUsersQuery } from "../../../redux/api/inboxUserApi";
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -98,6 +98,15 @@ const RelatedConversationsSidebar = ({
     if (open && id) fetchAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, id]);
+
+
+  const handleOnClose = () => {
+    setEmailThreads([]);
+      setWhatsappChats([]);
+      setSelected(null);
+
+    onClose();
+  }
  
 
   const totalCount = emailThreads.length + whatsappChats.length;
@@ -106,7 +115,7 @@ const RelatedConversationsSidebar = ({
     <Drawer
       anchor="right"
       open={open}
-      onClose={onClose}
+      onClose={handleOnClose}
       PaperProps={{
         sx: { width: { xs: "100%", sm: "90%", md: "80%", lg: "75%", xl: "70%" }, maxWidth: "1500px" },
       }}

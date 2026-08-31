@@ -39,6 +39,7 @@ export const getLeadColumns = (ctx) => {
 
     setEmailPopup,
     ticketMap,
+    openEmailSidebar
   } = ctx;
 
 
@@ -2038,6 +2039,7 @@ export const getLeadColumns = (ctx) => {
           handleDeleteLeadConfirmation={handleDeleteLeadConfirmation}
           selectedTab={selectedTab}
           ticketMap={ticketMap}
+          openEmailSidebar={openEmailSidebar}
         />
       ),
       size: 240,

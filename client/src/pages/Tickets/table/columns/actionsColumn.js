@@ -40,16 +40,16 @@ export const actionsColumn = (ctx) => {
       className="
         flex items-center justify-center
         w-8 h-8
-        rounded-md
-        border
-        bg-white
-        hover:bg-orange-50
-        hover:border-orange-300
+        hover:text-orange-500
+         
+ 
+
+ 
         transition
       "
-      title="View emails"
+      title="View Conversations"
     >
-      <IoMailOutline className="w-[18px] h-[18px] text-gray-600" />
+      <IoMailOutline className="w-[18px] h-[18px] " />
     </button>
     
                      <span

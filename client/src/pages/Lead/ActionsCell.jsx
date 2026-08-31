@@ -1,5 +1,5 @@
-import { Popover, Typography, Box, Tooltip} from "@mui/material";
-import { IoTicketOutline } from "react-icons/io5";
+import { Popover, Typography, Box, Tooltip } from "@mui/material";
+import { IoMailOutline, IoTicketOutline } from "react-icons/io5";
 import TicketsPopUp from "../../components/shared/TicketsPopUp";
 import { GrCopy } from "react-icons/gr";
 import { RiProgress3Line } from "react-icons/ri";
@@ -9,8 +9,6 @@ import { AiTwotoneDelete } from "react-icons/ai";
 import { useState } from "react";
 import { FiPlusSquare } from "react-icons/fi";
 
-
- 
 import { FiMoreHorizontal } from "react-icons/fi"; // modern icon
 import axios from "axios";
 import { TbLoader2 } from "react-icons/tb";
@@ -18,8 +16,19 @@ import toast from "react-hot-toast";
 import { getClientIdFromCompanyName } from "../../utlis/apiGetters/apiGetters";
 import { hasSubrole } from "../../utlis/checkPermission";
 
-export const ActionsCell = ({auth, row,  setNewTicket,  handleCopyLead, handleLeadStatus, handleDeleteLeadConfirmation,  selectedTab, setClientName, setCompanyName, ticketMap  }) => {
-
+export const ActionsCell = ({
+  auth,
+  row,
+  setNewTicket,
+  handleCopyLead,
+  handleLeadStatus,
+  handleDeleteLeadConfirmation,
+  selectedTab,
+  setClientName,
+  setCompanyName,
+  ticketMap,
+  openEmailSidebar
+}) => {
   const [creatingTicket, setCreatingTicket] = useState(false);
 
   const [anchorEl, setAnchorEl] = useState(null);
@@ -29,103 +38,95 @@ export const ActionsCell = ({auth, row,  setNewTicket,  handleCopyLead, handleLe
   const handleClick = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
-
   const clientName = row?.original?.clientName;
-const email = row?.original?.email;
+  const email = row?.original?.email;
 
-const ticketCount =
-  ticketMap?.[clientName] || ticketMap?.[email] || 0;
+  const ticketCount = ticketMap?.[clientName] || ticketMap?.[email] || 0;
 
-const hasTickets = ticketCount > 0;
+  const hasTickets = ticketCount > 0;
 
+  const handleCreateTicket = async () => {
+    try {
+      setCreatingTicket(true);
 
- 
+      if (row?.original?.email) {
+        setNewTicket((prev) => ({
+          ...prev,
+          open: true,
+          type: "manual",
 
- 
+          email: row?.original?.email,
+          clientName: row?.original?.clientName,
+          companyName: row?.original?.companyName,
+        }));
+      } else {
+        const clientId = await getClientIdFromCompanyName(
+          row?.original?.companyName,
+        );
 
+        if (clientId) {
+          setNewTicket((prev) => ({
+            ...prev,
+            open: true,
+            type: "client",
 
-    const handleCreateTicket = async () => {
-  try {
-    setCreatingTicket(true);
-
- 
-
-    if (row?.original?.email) {
-       
-
-      setNewTicket((prev) => ({
-        ...prev,
-        open: true,
-         type: "manual",
-
-        email: row?.original?.email,
-        clientName: row?.original?.clientName,
-        companyName: row?.original?.companyName,
-      }));
-
-
-    } else {
-      const clientId = await getClientIdFromCompanyName( row?.original?.companyName );
-
-      if (clientId) {
-         setNewTicket((prev) => ({
-        ...prev,
-        open: true,
-        type: "client",
-
-        clientId: clientId,
-         
-      }));
+            clientId: clientId,
+          }));
+        }
       }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setCreatingTicket(false);
     }
-
- 
-  } catch (error) {
-    console.log(error);
-    
-  } finally {
-    setCreatingTicket(false);
-  }
-};
-
-
-
-
-
-
+  };
 
   return (
     <div className="flex items-center justify-center gap-4 w-full h-full">
+         <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              openEmailSidebar(row.original);
+            }}
+            className="
+              flex items-center justify-center
+              w-8 h-8
+              hover:text-orange-500
+               
+       
+      
+       
+              transition
+            "
+            title="View Conversations"
+          >
+            <IoMailOutline className="w-[18px] h-[18px] " />
+          </button>
       <div>
         <span
-  title="Create New Ticket"
-  onClick={handleCreateTicket}
-  className="text-xl text-orange-500 cursor-pointer"
->
-  {creatingTicket ? (
-    <TbLoader2 className="animate-spin" />
-  ) : (
-    <FiPlusSquare />
-  )}
-</span>
+          title="Create New Ticket"
+          onClick={handleCreateTicket}
+          className="text-xl text-orange-500 cursor-pointer"
+        >
+          {creatingTicket ? (
+            <TbLoader2 className="animate-spin" />
+          ) : (
+            <FiPlusSquare />
+          )}
+        </span>
       </div>
       <div>
-        
-
-         
-<div className="relative">
-  <span
-    title={`Tickets (${ticketCount})`}
-    onClick={handleClick}
-    id={id}
-    className={`text-2xl text-orange-500 cursor-pointer`}
-  >
-    <IoTicketOutline />
-  </span>
-
- 
-</div>
-
+        <div className="relative">
+          <span
+            title={`Tickets (${ticketCount})`}
+            onClick={handleClick}
+            id={id}
+            className={`text-2xl text-orange-500 cursor-pointer`}
+          >
+            <IoTicketOutline />
+          </span>
+        </div>
 
         <Popover
           id={id}
@@ -228,24 +229,15 @@ const hasTickets = ticketCount > 0;
           <GiBrokenHeart className="h-6 w-6 cursor-pointer text-red-500 hover:text-red-600" />
         </span>
       )}
-        {
-            hasSubrole(auth.user, "Leads", "Delete") && (
-                <span
-        className="text-[1rem] cursor-pointer"
-        onClick={() => handleDeleteLeadConfirmation(row.original._id)}
-        title="Delete Lead!"
-      >
-        <AiTwotoneDelete className="h-5 w-5 text-pink-500 hover:text-pink-600 " />
-      </span>
-            )
-        }
-      
+      {hasSubrole(auth.user, "Leads", "Delete") && (
+        <span
+          className="text-[1rem] cursor-pointer"
+          onClick={() => handleDeleteLeadConfirmation(row.original._id)}
+          title="Delete Lead!"
+        >
+          <AiTwotoneDelete className="h-5 w-5 text-pink-500 hover:text-pink-600 " />
+        </span>
+      )}
     </div>
   );
 };
-
-
-
-
-
- 

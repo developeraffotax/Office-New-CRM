@@ -47,6 +47,7 @@ import FollowupDateFilter from "./ui/FollowupDateFilter";
 import SelectedUsers from "../../components/SelectedUsers";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import { LEADS_SOURCES } from "../../constants/constants";
+import RelatedConversationsSidebar from "../../components/shared/RelatedConversationsSidebar/RelatedConversationsSidebar";
 
 const updates_object_init = {
       companyName: '',
@@ -908,6 +909,19 @@ const renderColumnControls = () => (
 
 
 
+  const [isEmailSidebarOpen, setIsEmailSidebarOpen] = useState(false);
+const [selectedEmailLead, setSelectedEmailLead] = useState(null);
+
+
+const openEmailSidebar = (ticket) => {
+  setSelectedEmailLead(ticket);
+  setIsEmailSidebarOpen(true);
+};
+
+const closeEmailSidebar = () => {
+  setIsEmailSidebarOpen(false);
+  setSelectedEmailLead(null);
+};
 
 
 
@@ -945,7 +959,8 @@ setNewTicket,
  
 
   setEmailPopup,
-  ticketMap
+  ticketMap,
+  openEmailSidebar
 });
 
  
@@ -1875,6 +1890,16 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
 
               </div>
             )}
+
+             <RelatedConversationsSidebar
+              open={isEmailSidebarOpen}
+              onClose={closeEmailSidebar}
+              id={selectedEmailLead?._id}
+               type = "lead"
+              companyName={selectedEmailLead?.brand?.toLowerCase()}
+             
+             
+            />
 
 
 

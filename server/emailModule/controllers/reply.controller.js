@@ -50,13 +50,15 @@ export async function reply(req, res) {
       },
     });
 
+    const sentFrom = ticketId ? "CRM-Tickets" : "CRM-Inbox";
+
     // Save message reference
     await saveEmailMessage({
       gmailThreadId: threadId,
       gmailMessageId: response?.data?.id,
       userName,
       companyName,
-      sentFrom: "CRM-Inbox"
+      sentFrom: sentFrom
     });
 
     // If linked to ticket → update ticket

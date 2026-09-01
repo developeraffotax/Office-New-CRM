@@ -631,7 +631,7 @@ useEffect(() => {
             )}
 
             {/* Date Picker Trigger */}
-            <Button
+            {/* <Button
               variant="outlined"
               size="medium"
               color="inherit"
@@ -653,7 +653,7 @@ useEffect(() => {
               ) : (
                 "Date Range"
               )}
-            </Button>
+            </Button> */}
 
             <UnifiedThreadFilters
               filters={filters}

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { getColumnSearchValue } from "../../utils/getColumnSearchValue";
 import { highlightText } from "../../utils/highlightText";
 import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 
 export const companyNameColumn = ({ columnFilters, searchValue }) => {
   return {
@@ -66,30 +67,50 @@ export const companyNameColumn = ({ columnFilters, searchValue }) => {
     },
 
     Cell: ({ cell, row }) => {
-      const companyName = row.original.companyName;
-      const regNo = row.original.regNumber || "";
+  const companyName = row.original.companyName;
+  const regNo = row.original.regNumber || "";
 
-      const activeSearch = getColumnSearchValue(
-        columnFilters,
-        "companyName",
-        searchValue,
-      );
+  const activeSearch = getColumnSearchValue(
+    columnFilters,
+    "companyName",
+    searchValue,
+  );
 
-      return (
-        <Link
-          to={
-            regNo
-              ? `https://find-and-update.company-information.service.gov.uk/company/${regNo}`
-              : "#"
-          }
-          target="_black"
-          className={`cursor-pointer flex items-center justify-start ${
-            regNo && "text-[#0078c8] hover:text-[#0053c8]"
-          }   w-full h-full`}
-        >
-          {highlightText(companyName, activeSearch)}
-        </Link>
-      );
-    },
+  const handleCopy = () => {
+    if (!companyName) return;
+
+    navigator.clipboard.writeText(companyName);
+    toast.success("Company Name copied!");
+  };
+
+  return (
+    <div className="flex items-center w-full h-full cursor-pointer">
+      {/* Company name */}
+      <Link
+        to={
+          regNo
+            ? `https://find-and-update.company-information.service.gov.uk/company/${regNo}`
+            : "#"
+        }
+        target="_blank"
+        onClick={(e) => e.stopPropagation()}
+        className={`flex items-center shrink-0 ${
+          regNo
+            ? "text-[#0078c8] hover:text-[#0053c8]"
+            : ""
+        }`}
+      >
+        {highlightText(companyName, activeSearch)}
+      </Link>
+
+      {/* Empty space = copy area */}
+      <span
+        onClick={handleCopy}
+        className="flex-1 h-full min-w-[20px] "
+        title="Click to copy company name"
+      />
+    </div>
+  );
+},
   };
 };

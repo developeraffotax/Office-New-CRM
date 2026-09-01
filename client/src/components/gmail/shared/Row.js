@@ -328,7 +328,7 @@ export default function Row({
         <div
           className={clsx(
             "flex items-center gap-1 transition-opacity",
-            // isRowActive ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+            isRowActive ? "opacity-100" : "opacity-0 group-hover:opacity-100",
           )}
         >
           {/* Reply Button Container */}

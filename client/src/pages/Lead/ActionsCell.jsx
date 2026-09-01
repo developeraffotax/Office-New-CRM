@@ -82,7 +82,7 @@ export const ActionsCell = ({
   };
 
   return (
-    <div className="flex items-center justify-center gap-4 w-full h-full">
+    <div className="flex items-center justify-center gap-2 w-full h-full">
          <button
             type="button"
             onClick={(e) => {

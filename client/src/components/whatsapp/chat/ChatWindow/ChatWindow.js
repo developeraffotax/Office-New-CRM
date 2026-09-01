@@ -149,7 +149,7 @@ export default function ChatWindow({ users, chat, team, updateConversation }) {
           </div>
         </div>
 
-        <div className="flex-1">
+        {/* <div className="flex-1">
           <Select
           className={`${style.input} w-full h-[2.6rem] flex items-center justify-center px-0 py-0`}
             value={
@@ -163,7 +163,7 @@ export default function ChatWindow({ users, chat, team, updateConversation }) {
             isClearable
             styles={customStyles}
           />
-        </div>
+        </div> */}
 
         <div className="flex-1">
           <Select

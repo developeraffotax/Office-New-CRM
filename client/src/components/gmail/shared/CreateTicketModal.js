@@ -177,7 +177,7 @@ export default function CreateTicketModal({
 
       await handleUpdateThread(createTicketModal._id, {
         // category: "ticket",
-        // userId,
+        userId,
         ticketId: newTicketId,
       });
 

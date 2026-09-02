@@ -171,7 +171,7 @@ export default function CreateLeadModal({
 
       await handleUpdateThread(createLeadModal._id, {
         // category: "lead",
-        // userId,
+        userId,
         leadId: newLeadId,
       });
 

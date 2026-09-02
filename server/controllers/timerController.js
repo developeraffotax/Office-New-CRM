@@ -1087,6 +1087,7 @@ export const getUserSessions = async (req, res) => {
         jobHolderName,
         endTime: { $ne: null },
         date: { $gte: start, $lte: end },
+        holiday: "",  
       })
       .select("date startTime endTime task activity holiday")
       .sort({ date: 1, startTime: 1 });
@@ -1143,6 +1144,7 @@ export const getUserDailyAttendance = async (req, res) => {
           jobHolderName,
           endTime: { $ne: null },
           date: { $gte: start, $lte: end },
+          holiday: "",  
         },
       },
       {

@@ -1,22 +1,26 @@
 import React, { useState } from "react";
+import { useMailModalActions } from "../../context/MailModalsContext";
+import { getMyEamilFromCompanyName, parseEmail } from "../../utils/utils";
 
 export default function TicketButton({
   thread,
-  myEmail,
-  setCreateTicketModal,
+ 
+  handleUpdateThread,
   onViewTicket,
-  parseEmail,
+ 
 }) {
   const [copied, setCopied] = useState(false);
+
+  const { setTicket } = useMailModalActions();
 
   const handleCreateTicket = (e) => {
     e.stopPropagation();
 
     const client = thread.participants.find(
-      (p) => p.email !== parseEmail(myEmail),
+      (p) => p.email !== parseEmail(getMyEamilFromCompanyName(thread?.companyName)),
     );
 
-    setCreateTicketModal({
+    setTicket({
       _id: thread._id,
       isOpen: true,
       form: {
@@ -25,6 +29,8 @@ export default function TicketButton({
         email: client?.email || "",
         mailThreadId: thread.threadId,
       },
+
+      onUpdate: handleUpdateThread,
     });
   };
 

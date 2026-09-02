@@ -119,32 +119,52 @@ const [loading, setLoading] = useState({
   //   }));
   // }, [folder]);
 
-
+// extract primitives first (stable when unrelated params change)
+const userId        = searchParams.get("userId") || "";
+const category      = searchParams.get("category") || "";
+const startDate     = searchParams.get("startDate") || "";
+const endDate       = searchParams.get("endDate") || "";
+const unreadOnly    = searchParams.get("unreadOnly") === "true";
+const page          = Number(searchParams.get("page") || 1);
+const limit         = Number(searchParams.get("limit") || 20);
+const search        = searchParams.get("search") || "";
+const status        = searchParams.get("status") || "";
+const lastMessageBy = searchParams.get("lastMessageBy") || "";
+const starred       = searchParams.get("starred") === "true";
+const mailThreadId  = searchParams.get("mailThreadId") || "";
   
-const filters = useMemo(() => {
-  return {
-    userId: searchParams.get("userId") || "",
-    category: searchParams.get("category") || "",
-    // userId: searchParams.get("userId") ?? (isAdmin ? "unassigned" : ""),
-    // category: searchParams.get("category") ?? (isAdmin ? "unassigned" : ""),
-    label:
-      folder === "sent"
-        ? "SENT"
-        : "INBOX",
-    startDate: searchParams.get("startDate") || "",
-    endDate: searchParams.get("endDate") || "",
-    unreadOnly: searchParams.get("unreadOnly") === "true",
-    page: Number(searchParams.get("page") || 1),
-    limit: Number(searchParams.get("limit") || 20),
-    search: searchParams.get("search") || "",
-    status: searchParams.get("status") || "",
-    lastMessageBy: searchParams.get("lastMessageBy") || "",
-    starred: searchParams.get("starred") === "true",
-
-    mailThreadId: searchParams.get("mailThreadId") || "",
-
-  };
-}, [searchParams, folder, isAdmin]);
+const filters = useMemo(
+  () => ({
+    userId,
+    category,
+    label: folder === "sent" ? "SENT" : "INBOX",
+    startDate,
+    endDate,
+    unreadOnly,
+    page,
+    limit,
+    search,
+    status,
+    lastMessageBy,
+    starred,
+    mailThreadId,
+  }),
+  [
+    userId,
+    category,
+    folder,
+    startDate,
+    endDate,
+    unreadOnly,
+    page,
+    limit,
+    search,
+    status,
+    lastMessageBy,
+    starred,
+    mailThreadId,
+  ]
+);
 
 
 

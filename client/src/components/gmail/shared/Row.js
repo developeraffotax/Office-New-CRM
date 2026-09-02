@@ -30,17 +30,6 @@ import RefBadge from "./ui/RefBadge";
 import LeadButton from "./ui/LeadButton";
 import TicketButton from "./ui/TicketButton";
 
-function parseEmail(str) {
-  if (!str) return "";
-
-  // Match anything that looks like an email
-  const emailMatch = str.match(
-    /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/,
-  );
-
-  return emailMatch ? emailMatch[0] : "";
-}
-
 function highlightText(text = "", search = "") {
   if (!search) return text;
 
@@ -406,36 +395,29 @@ export default function Row({
           )}
           {/* Actions (hover only) */}
           <div className="flex items-center gap-1.5   transition-opacity">
-             
-           <TicketButton
-  thread={thread}
-  myEmail={myEmail}
-  setCreateTicketModal={setCreateTicketModal}
-  parseEmail={parseEmail}
-  onViewTicket={(ticket) => {
-    console.log("View ticket:", ticket);
+            <TicketButton
+              thread={thread}
+ 
+              handleUpdateThread={handleUpdateThread}
+              onViewTicket={(ticket) => {
+                console.log("View ticket:", ticket);
 
-    // Example:
-    // navigate(`/tickets/${lead._id}`);
-  }}
-/> 
+                // Example:
+                // navigate(`/tickets/${lead._id}`);
+              }}
+            />
 
+            <LeadButton
+              thread={thread}
+ 
+              handleUpdateThread={handleUpdateThread}
+              onViewLead={(lead) => {
+                console.log("View lead:", lead);
 
-
-<LeadButton
-  thread={thread}
-  myEmail={myEmail}
-  setCreateLeadModal={setCreateLeadModal}
-  parseEmail={parseEmail}
-  onViewLead={(lead) => {
-    console.log("View lead:", lead);
-
-    // Example:
-    // navigate(`/leads/${lead._id}`);
-  }}
-/>
-
-           
+                // Example:
+                // navigate(`/leads/${lead._id}`);
+              }}
+            />
           </div>
 
           {/* More Options */}
@@ -529,7 +511,7 @@ export default function Row({
         <div className="flex flex-col   items-center flex-r justify-end gap-1 min-w-[80px]">
           {/* Date Component */}
           <ThreadDateTime thread={thread} folder={folder} index={index} />
-           <RefBadge number={thread?.ref} />
+          <RefBadge number={thread?.ref} />
         </div>
       </div>
 

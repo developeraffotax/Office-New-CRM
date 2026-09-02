@@ -9,6 +9,8 @@ import IconButtonWithBadge from "../shared/ui/IconButtonWithBadge.js";
 import AssignUser from "../shared/ui/AssignUser.js";
 import AssignCategory from "../shared/ui/AssignCategory.js";
 import { useSelector } from "react-redux";
+import LeadButton from "../shared/ui/LeadButton.jsx";
+import TicketButton from "../shared/ui/TicketButton.jsx";
 
 export default function ThreadHeader({
   variant = "full", // "full" (Inbox) | "compact" (Ticket/Lead sidebar)
@@ -18,6 +20,7 @@ export default function ThreadHeader({
   category,
   status,
   userId,
+  thread,
 
   mongoThreadId,
   categories,
@@ -31,6 +34,8 @@ export default function ThreadHeader({
   onDeleteThread,
   onUpdateStatus,
   handleUpdateThread,
+
+  firstMessageForPrefilling
 }) {
 
 const auth = useSelector((state) => state.auth.auth);
@@ -38,6 +43,8 @@ const auth = useSelector((state) => state.auth.auth);
 
   
  
+
+
 
 if (variant === "compact") {
     const assignedUser = users?.find((u) => u._id === userId);
@@ -94,6 +101,38 @@ if (variant === "compact") {
       </div>
 
       <div className="flex justify-center items-center gap-4">
+
+                    <TicketButton
+                      thread={thread}
+ 
+                      handleUpdateThread={handleUpdateThread}
+                      onViewTicket={(ticket) => {
+                        console.log("View ticket:", ticket);
+        
+                        // Example:
+                        // navigate(`/tickets/${lead._id}`);
+                      }}
+                    />
+        
+                    <LeadButton
+                      thread={thread}
+
+                      firstMessageForPrefilling={firstMessageForPrefilling}
+                      handleUpdateThread={handleUpdateThread}
+                      onViewLead={(lead) => {
+                        console.log("View lead:", lead);
+        
+                        // Example:
+                        // navigate(`/leads/${lead._id}`);
+                      }}
+                    />
+
+
+
+         <span className="w-[1px] h-8 bg-slate-300 rounded-full"></span>
+
+
+
         <IconButtonWithBadge icon={FiInfo} title="Show Summary" onClick={onShowSummary} />
         <IconButtonWithBadge icon={FiClock} title="View Activity" onClick={onShowActivity} />
         <IconButtonWithBadge

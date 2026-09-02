@@ -227,35 +227,7 @@ export default function MailListPage({
         pagination={pagination}
         setFilters={setFilters}
       />
-
-      {/* =========================
-          Ticket Modal
-      ========================= */}
-
-      {createTicketModal.isOpen && (
-        <CreateTicketModal
-          createTicketModal={createTicketModal}
-          setCreateTicketModal={setCreateTicketModal}
-          handleUpdateThread={handleUpdateThread}
-          users={users}
-          myCompany={companyName}
-        />
-      )}
-
-      {/* =========================
-          Lead Modal
-      ========================= */}
-
-      {createLeadModal.isOpen && (
-        <CreateLeadModal
-          createLeadModal={createLeadModal}
-          setCreateLeadModal={setCreateLeadModal}
-          handleUpdateThread={handleUpdateThread}
-          users={users}
-          myCompany={companyName}
-        />
-      )}
-
+ 
       {/* =========================
           Reminder
       ========================= */}

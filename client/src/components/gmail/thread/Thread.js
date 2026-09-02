@@ -407,6 +407,8 @@ const deleteThreadHandler = async (threadId, company) => {
     >
       {/* Header */}
 <ThreadHeader
+
+  thread={thread}
   variant={variant}
   subject={subject}
   company={companyName}
@@ -426,6 +428,8 @@ const deleteThreadHandler = async (threadId, company) => {
   onShowActivity={() => setActivityPanel({ show: true, threadId: mongoThreadId })}
   onDeleteThread={() => deleteThreadHandler(threadId, companyName)}
   onUpdateStatus={updateStatus}
+
+  firstMessageForPrefilling = {messages?.decryptedMessages?.[0] || null}
 />
 
       {/* Thread Content */}

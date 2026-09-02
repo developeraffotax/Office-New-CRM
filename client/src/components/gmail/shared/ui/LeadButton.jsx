@@ -1,34 +1,59 @@
 import React, { useState } from "react";
+import { useMailModalActions } from "../../context/MailModalsContext";
+import { getMyEamilFromCompanyName, parseEmail } from "../../utils/utils";
+import {  extractQuoteDetails } from "../../utils/extractQuoteDetails";
 
 export default function LeadButton({
   thread,
-  myEmail,
-  setCreateLeadModal,
+ 
+  handleUpdateThread,
   onViewLead,
-  parseEmail,
+
+  firstMessageForPrefilling = {}
+ 
 }) {
   const [copied, setCopied] = useState(false);
 
-  const handleCreateLead = (e) => {
-    e.stopPropagation();
+  const { setLead } = useMailModalActions();
 
-    const client = thread.participants.find(
-      (p) => p.email !== parseEmail(myEmail),
-    );
 
-    setCreateLeadModal({
-      _id: thread._id,
-      isOpen: true,
-      form: {
-        clientName: client?.name || "",
-        email: client?.email || "",
-      },
-    //   ticketBindings: {
-    //     subject: thread.subject || "",
-    //     mailThreadId: thread.threadId,
-    //   },
-    });
+  console.log("firstMessageForPrefilling thread:", firstMessageForPrefilling);
+  console.log("threadg thread:", thread);
+
+ 
+
+const handleCreateLead = (e) => {
+  e.stopPropagation();
+
+  const myEmail = parseEmail(getMyEamilFromCompanyName(thread?.companyName));
+  const client = thread.participants?.find((p) => p.email !== myEmail);
+
+  let form = {
+    clientName: client?.name || "",
+    email: client?.email || "",
+    phone: "",
   };
+
+  // Try to extract from the quote email
+  const body = firstMessageForPrefilling?.payload?.body?.data || "";
+  const quoteData = extractQuoteDetails(body, thread?.subject);
+
+  if (quoteData) {
+    form = {
+      ...form,
+      clientName: quoteData.name || form.clientName,
+      email: quoteData.email || form.email,
+      phone: quoteData.phone || form.phone,
+    };
+  }
+
+  setLead({
+    _id: thread._id,
+    isOpen: true,
+    form,
+    onUpdate: handleUpdateThread,
+  });
+};
 
   const handleViewLead = (e) => {
     e.stopPropagation();

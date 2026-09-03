@@ -81,6 +81,7 @@ export default function CreateTicketModal({
     try {
       const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/client/tickets/clients`);
       if (data) setJobData(data?.clients || []);
+
     } catch (error) {
       toast.error(error?.response?.data?.message || "Error fetching clients");
     }
@@ -90,6 +91,8 @@ export default function CreateTicketModal({
     allClientJobData();
     if (createTicketModal?.form) setForm(createTicketModal.form);
   }, [createTicketModal]);
+
+console.log("JOB DATA", jobData)
 
   useEffect(() => {
     if (activeTab !== "existing" || !company) return;
@@ -135,9 +138,13 @@ export default function CreateTicketModal({
     companyName: item.companyName,
     clientName: item.clientName,
     email: item.email,
+    phoneNumber: item.phone
   }));
 
   const selectedClient = clientOptions.find((opt) => opt.value === form.clientId) || null;
+
+
+  console.log("SELECTED CLIENT IS", selectedClient)
 
   const handleClientChange = (selectedOption) => {
     if (selectedOption) {
@@ -147,6 +154,7 @@ export default function CreateTicketModal({
         companyName: selectedOption.companyName,
         clientName: selectedOption.clientName,
         email: selectedOption.email || "",
+        phoneNumber: selectedOption.phoneNumber || "",
       }));
     } else {
       setForm((prev) => ({ ...prev, clientId: "" }));

@@ -41,7 +41,7 @@ import { getAllTicketsService } from "../services/ticket/ticketService.js";
 
 
 export const createTicket = async (req, res) => {
-   const { clientId, company, subject,  email, jobHolder, clientName, companyName,  mailThreadId, comments} = req.body;
+   const { clientId, company, subject,  email, phoneNumber, jobHolder, clientName, companyName,  mailThreadId, comments} = req.body;
     
    let client;
 
@@ -75,6 +75,7 @@ export const createTicket = async (req, res) => {
         comments: comments || [],
 
       email: email,
+      phoneNumber: phoneNumber || "",
       isManual: clientId ? false : true
     });
 

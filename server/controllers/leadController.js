@@ -49,6 +49,7 @@ export const createLead = async (req, res) => {
       value,
       number,
       email,
+      phoneNumber,
 
       yearEnd,
       jobDeadline,
@@ -70,6 +71,7 @@ export const createLead = async (req, res) => {
       value,
       number,
       email,
+      phoneNumber,
 
       yearEnd,
       jobDeadline,

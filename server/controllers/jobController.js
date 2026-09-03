@@ -302,6 +302,8 @@ export const getTicketClients = async (req, res) => {
         $group: {
           _id: "$companyName",
           clientName: { $first: "$clientName" },
+          email: { $first: "$email" },
+          phone: { $first: "$phone" },
           id: { $first: "$_id" },
         },
       },
@@ -310,6 +312,8 @@ export const getTicketClients = async (req, res) => {
           _id: 0,
           companyName: "$_id",
           clientName: 1,
+          email: 1,
+          phone: 1,
           id: 1,
         },
       },

@@ -3,6 +3,7 @@ import Thread from "../thread/Thread";
  
 import { useGetInboxUsersQuery } from "../../../redux/api/inboxUserApi";
 import { useGetCategoriesQuery } from "../../../redux/api/inboxCategoryApi";
+import { useMailModalActions } from "../context/MailModalsContext";
 
 export default function MailThreadPage() {
   const { threadId } = useParams();
@@ -33,7 +34,7 @@ export default function MailThreadPage() {
     isFetching,
   } = useGetCategoriesQuery();
   
-  
+      const { openComments, openReminder } = useMailModalActions();
   
 
 
@@ -48,6 +49,8 @@ export default function MailThreadPage() {
         
         users={users}
         categories={categories}
+
+        openComments = {openComments}
          
       />
 

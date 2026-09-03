@@ -18,6 +18,13 @@ const applyScalarFilters = (filters) => {
   if (filters.status)       clauses.push({ status: filters.status });
   if (filters.lastMessageBy) clauses.push({ lastMessageBy: filters.lastMessageBy });
 
+    if (filters.ticketId && isValidId(filters.ticketId)) {
+    clauses.push({ ticketId: toObjectId(filters.ticketId) });
+  }
+  if (filters.leadId && isValidId(filters.leadId)) {
+    clauses.push({ leadId: toObjectId(filters.leadId) });
+  }
+
   return clauses;
 };
 

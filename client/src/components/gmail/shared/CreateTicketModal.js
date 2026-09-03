@@ -43,11 +43,11 @@ export default function CreateTicketModal({
   createTicketModal,
   setCreateTicketModal,
   users,
-  myCompany,
-  handleUpdateThread,
-  categories,
+ 
+  onUpdate,
+ 
 }) {
-  const company = useMemo(() => myCompany?.charAt(0).toUpperCase() + myCompany?.slice(1), [myCompany]);
+  const company = useMemo(() => createTicketModal?.companyName?.charAt(0).toUpperCase() + createTicketModal?.companyName?.slice(1), [createTicketModal?.companyName]);
 
   const [activeTab, setActiveTab] = useState("new"); // "new" | "existing"
 
@@ -58,6 +58,7 @@ export default function CreateTicketModal({
     jobHolder: "",
     subject: "",
     email: "",
+    phoneNumber: "",
     mailThreadId: "",
   });
   const [loading, setLoading] = useState(false);
@@ -175,14 +176,14 @@ export default function CreateTicketModal({
       const newTicketId = data.ticket?._id ;
       const userId = users.find((u) => form.jobHolder === u.name)?._id;
 
-      await handleUpdateThread(createTicketModal._id, {
+      await onUpdate(createTicketModal._id, {
         // category: "ticket",
         userId,
         ticketId: newTicketId,
       });
 
       toast.success("Ticket created successfully!");
-      setForm({ clientId: "", companyName: "", clientName: "", jobHolder: "", subject: "", email: "", mailThreadId: "" });
+      setForm({ clientId: "", companyName: "", clientName: "", jobHolder: "", subject: "", email: "", phoneNumber: "", mailThreadId: "" });
       setCreateTicketModal((prev) => ({ ...prev, isOpen: false }));
     } catch (err) {
       toast.error(err.response?.data?.message || "Error creating ticket");
@@ -198,7 +199,7 @@ export default function CreateTicketModal({
     }
     setLoading(true);
     try {
-      await handleUpdateThread(createTicketModal._id, {
+      await onUpdate(createTicketModal._id, {
         // category: "ticket",
         ticketId: selectedTicket.value,
       });
@@ -233,7 +234,7 @@ export default function CreateTicketModal({
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 bg-slate-900/20 backdrop-blur-sm font-inter">
       <div className="min-h-[80vh] bg-white shadow-2xl w-full max-w-4xl mt-12 border border-gray-100 relative animate-slide-down">
         <div className="absolute bottom-6 right-6 flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-orange-600 text-xs font-semibold">
-          <FiLayers /> {myCompany}
+          <FiLayers /> {createTicketModal?.companyName}
         </div>
 
         <div className="px-8 py-4 border-b flex justify-between items-center">
@@ -278,6 +279,21 @@ export default function CreateTicketModal({
                   name="email"
                   placeholder="customer@domain.com"
                   value={form.email}
+                  onChange={handleChange}
+                  className={`${inputStyle} disabled:cursor-not-allowed disabled:bg-gray-200`}
+                  required
+                  disabled={form.clientId}
+                />
+              </div>
+
+
+              <div>
+                <label className={labelStyle}><FiMail /> Client Phone</label>
+                <input
+                  type="text"
+                  name="phoneNumber"
+                  placeholder="Enter Phone Number..."
+                  value={form.phoneNumber}
                   onChange={handleChange}
                   className={`${inputStyle} disabled:cursor-not-allowed disabled:bg-gray-200`}
                   required

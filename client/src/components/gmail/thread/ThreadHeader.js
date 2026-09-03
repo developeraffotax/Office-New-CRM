@@ -37,11 +37,12 @@ export default function ThreadHeader({
   handleUpdateThread,
 
   firstMessageForPrefilling,
+  openComments
 }) {
   const auth = useSelector((state) => state.auth.auth);
   const user = auth?.user;
 
-  const { openComments, openReminder } = useMailModalActions();
+
 
   if (variant === "compact") {
     const assignedUser = users?.find((u) => u._id === userId);

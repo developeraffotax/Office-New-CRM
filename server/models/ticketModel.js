@@ -99,6 +99,10 @@ const ticketSchema = new mongoose.Schema(
       type: String
     },
 
+    phoneNumber: {
+      type: String
+    },
+
     isManual: {
       type: Boolean,
       default: false

@@ -55,7 +55,7 @@ const hasPrevPage = useMemo(() => pagination.page > 1, [pagination]);
               categories={categories}
               updateConversation={updateConversation}
               deleteConversation={deleteConversation}
-              setComment={setComment}
+              
             />
           ))
         )}

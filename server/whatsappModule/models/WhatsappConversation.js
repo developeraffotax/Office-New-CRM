@@ -46,6 +46,11 @@ const conversationSchema = new mongoose.Schema(
       default: [],
     },
 
+
+    
+        leadId: { type: mongoose.Schema.Types.ObjectId, ref: "Lead", default: null, index: true },
+        ticketId: { type: mongoose.Schema.Types.ObjectId, ref: "tickets", default: null, index: true },
+
  
   },
   {
@@ -65,6 +70,11 @@ conversationSchema.index({ lastMessageAt: -1 });
 
 // Fast assigned chats lookup
 conversationSchema.index({ userId: 1, status: 1 });
+
+
+
+conversationSchema.index({ companyName: 1, leadId: 1, lastMessageAt: -1 });
+conversationSchema.index({ companyName: 1, ticketId: 1, lastMessageAt: -1 });
 
 // One conversation per phone
 

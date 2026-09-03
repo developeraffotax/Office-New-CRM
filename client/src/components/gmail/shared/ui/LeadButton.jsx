@@ -14,12 +14,9 @@ export default function LeadButton({
 }) {
   const [copied, setCopied] = useState(false);
 
-  const { setLead } = useMailModalActions();
+  const { openLead } = useMailModalActions();
 
-
-  console.log("firstMessageForPrefilling thread:", firstMessageForPrefilling);
-  console.log("threadg thread:", thread);
-
+ 
  
 
 const handleCreateLead = (e) => {
@@ -31,7 +28,7 @@ const handleCreateLead = (e) => {
   let form = {
     clientName: client?.name || "",
     email: client?.email || "",
-    phone: "",
+ 
   };
 
   // Try to extract from the quote email
@@ -47,9 +44,10 @@ const handleCreateLead = (e) => {
     };
   }
 
-  setLead({
+  openLead({
     _id: thread._id,
-    isOpen: true,
+    companyName: thread.companyName,
+ 
     form,
     onUpdate: handleUpdateThread,
   });

@@ -68,6 +68,7 @@ import TeamsPage from "./pages/Auth/Team/TeamsPage";
 import EmployeeInOutChart from "./pages/TimerSheet/chart/EmployeeInOutChart";
 import MailLayout from "./components/gmail/layout/MailLayout";
 import MailThreadPage from "./components/gmail/pages/MailThreadPage";
+import WhatsappLayout from "./components/whatsapp/layout/WhatsAppLayout";
 
 function App() {
   const navigate = useNavigate();
@@ -154,7 +155,17 @@ function App() {
         element={<MailThreadPage />}
       />
     </Route>
-          <Route path="/whatsapp/:chatId?" element={<WhatsAppBox />} />
+
+    <Route path="/whatsapp" element={<WhatsappLayout />}>
+       
+      <Route
+        path=":chatId?"
+        element={<WhatsAppBox />}
+      />
+    </Route>
+
+
+          {/* <Route path="/whatsapp/:chatId?" element={<WhatsAppBox />} /> */}
           {/* <Route path="/tickets/sent" element={<Sent />} /> */}
         </>
       ),

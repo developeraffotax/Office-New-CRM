@@ -21,6 +21,14 @@ export const getConversations = async (req) => {
       .skip((page - 1) * limit)
       .limit(limit)
       .populate("lastMessageId")
+      .populate({
+          path: "leadId",
+          select: "leadRef",
+        })
+      .populate({
+          path: "ticketId",
+          select: "ticketRef",
+        })
       .lean(),
 
     Conversation.countDocuments(filter),

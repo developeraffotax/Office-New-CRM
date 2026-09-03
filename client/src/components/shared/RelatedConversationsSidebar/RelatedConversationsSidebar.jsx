@@ -18,7 +18,7 @@ import { useGetInboxUsersQuery } from "../../../redux/api/inboxUserApi";
 
 const API_URL = process.env.REACT_APP_API_URL;
 const MAILBOX_URL = `${API_URL}/api/v1/gmail/get-mailbox`;
-const CHATS_URL = `${API_URL}/api/v1/whatsapp/get-chats`; // swap for your real endpoint
+const CHATS_URL = `${API_URL}/api/v1/whatsapp/conversations`; // swap for your real endpoint
 
 /**
  * type: "ticket" | "lead"
@@ -47,7 +47,7 @@ const RelatedConversationsSidebar = ({
   } = useGetInboxUsersQuery();
   
   
-
+console.log("THE CHATS ARE ", whatsappChats)
 
   const fetchAll = async () => {
     if (!id) return;
@@ -67,7 +67,7 @@ const RelatedConversationsSidebar = ({
       ]);
 
       const threads = emailRes?.data?.threads || [];
-      const chats = chatRes?.data?.chats || [];
+      const chats = chatRes?.data?.conversations || [];
 
       setEmailThreads(threads);
       setWhatsappChats(chats);
@@ -237,12 +237,12 @@ const RelatedConversationsSidebar = ({
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className={`text-sm truncate ${isUnread ? "font-semibold text-gray-800" : "font-medium text-gray-700"}`}>
-                              {chat.contactName || chat.waId || "(Unknown contact)"}
+                              {chat.profileName || chat.phone || "(Unknown contact)"}
                             </div>
                             <div className="flex items-center gap-2 mt-1">
-                              {chat.lastMessageSnippet && (
+                              {chat.lastMessage && (
                                 <span className="text-[10px] text-gray-400 truncate">
-                                  {chat.lastMessageSnippet}
+                                  {chat.lastMessage}
                                 </span>
                               )}
                               {isUnread && <span className="w-1.5 h-1.5 rounded-full bg-green-500" />}
@@ -266,6 +266,7 @@ const RelatedConversationsSidebar = ({
             ) : selected.channel === "email" ? (
               <div className="h-full bg-white rounded-lg border shadow-sm overflow-hidden">
                 <Thread
+                   key={`${selected.data.companyName || ""}-${selected.data.threadId || selected.data._id}`}
                   variant="compact"
                   companyName={selected.data.companyName}
                   threadId={selected.data.threadId}
@@ -280,12 +281,11 @@ const RelatedConversationsSidebar = ({
               </div>
             ) : (
               <div className="h-full bg-white rounded-lg border shadow-sm overflow-hidden">
-                {/* Prop names below are a guess — match to your real ChatWindow API */}
+                 
                 <ChatWindow
-                  waId={selected.data.waId}
-                  companyName={selected.data.companyName}
-                  mongoChatId={selected.data._id}
-                  embedded
+                  key={selected.data._id}
+                   chat={selected.data}
+                  users={inboxUsers}
                 />
               </div>
             )}

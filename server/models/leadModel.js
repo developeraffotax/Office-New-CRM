@@ -58,6 +58,10 @@ const leadSchema = new mongoose.Schema(
       type: String,
     },
 
+    phoneNumber: {
+      type: String
+    },
+
     yearEnd: {
       type: Date,
     },

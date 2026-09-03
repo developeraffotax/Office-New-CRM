@@ -11,7 +11,7 @@ export default function TicketButton({
 }) {
   const [copied, setCopied] = useState(false);
 
-  const { setTicket } = useMailModalActions();
+  const { openTicket } = useMailModalActions();
 
   const handleCreateTicket = (e) => {
     e.stopPropagation();
@@ -20,9 +20,10 @@ export default function TicketButton({
       (p) => p.email !== parseEmail(getMyEamilFromCompanyName(thread?.companyName)),
     );
 
-    setTicket({
+    openTicket({
       _id: thread._id,
-      isOpen: true,
+      companyName: thread.companyName,
+
       form: {
         subject: thread.subject || "",
         clientName: client?.name || "",

@@ -240,7 +240,7 @@ export const updateConversationMetadata = async (req, res, next) => {
     /**
      * 1️⃣ Whitelist validation
      */
-    const allowedUpdates = ["category", "userId", "status", "isStarred",];
+    const allowedUpdates = ["category", "userId", "status", "isStarred", "leadId", "ticketId"];
     const updateKeys = Object.keys(updates);
 
     const isValidUpdate = updateKeys.every((key) =>

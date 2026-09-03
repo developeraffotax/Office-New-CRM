@@ -1,73 +1,21 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import WhatsAppList from "./WhatsAppList";
 import { useWhatsAppConversations } from "../hooks/useWhatsAppConversations";
-import WhatsAppLayout from "../layout/WhatsAppLayout";
+import { useGetActiveWhatsappTeamQuery, useGetWhatsappUsersQuery } from "../../../redux/api/whatsappUserApi";
+import { useGetWhatsappCategoriesQuery } from "../../../redux/api/whatsappCategoryApi";
+ 
+ 
 
 export default function WhatsAppBox() {
-  const [users, setUsers] = useState([]);
-  const [team, setTeam] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const { data: users = [] } = useGetWhatsappUsersQuery();
+  const { data: team = [] } = useGetActiveWhatsappTeamQuery();
+  const { data: categories = [] } = useGetWhatsappCategoriesQuery();
 
   const chatData = useWhatsAppConversations({
     endpoint: `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/conversations`,
   });
 
-  const getAllUsers = async () => {
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users?module=whatsapp`,
-      );
-
-      const filteredUsers =
-        data?.users?.filter((user) =>
-          user.role?.access?.some((item) =>
-            item?.permission?.includes("Whatsapp"),
-          ),
-        ) || [];
-
-      setUsers(filteredUsers);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const getTeam = async () => {
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get/active/team`,
-      );
-
-      const filteredUsers =
-        data?.users?.filter((user) =>
-          user.role?.access?.some((item) =>
-            item?.permission?.includes("Whatsapp"),
-          ),
-        ) || [];
-      setTeam(filteredUsers);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const getCategories = async () => {
-    try {
-      const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/whatsapp/category`,
-      );
-      setCategories(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    getCategories();
-    getAllUsers();
-    getTeam();
-  }, []);
-
   return (
-    <WhatsAppLayout
+    <WhatsAppList
       users={users}
       team={team}
       categories={categories}

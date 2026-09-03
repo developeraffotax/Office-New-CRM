@@ -6,11 +6,11 @@ const ActionsCtx = createContext(null);
 export const MODAL_DEFAULTS = {
   ticket: { _id: "", isOpen: false, form: {} },
   lead: { _id: "", isOpen: false, form: {} },
-  reminder: { isOpen: false, threadId: "", link: "" },
-  comment: { isOpen: false, threadId: null, threadSubject: "" },
+  reminder: { isOpen: false, conversationId: "", link: "" },
+  comment: { isOpen: false, conversationId: null, },
 };
 
-export function MailModalsProvider({ children }) {
+export function WhatsappModalsProvider({ children }) {
   const [ticket, setTicket] = useState(MODAL_DEFAULTS.ticket);
   const [lead, setLead] = useState(MODAL_DEFAULTS.lead);
   const [reminder, setReminder] = useState(MODAL_DEFAULTS.reminder);
@@ -39,5 +39,5 @@ export function MailModalsProvider({ children }) {
   );
 }
 
-export const useMailModalActions = () => useContext(ActionsCtx);
-export const useMailModalState = () => useContext(StateCtx);
+export const useWhatsappModalActions = () => useContext(ActionsCtx);
+export const useWhatsappModalState = () => useContext(StateCtx);

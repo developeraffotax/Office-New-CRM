@@ -47,6 +47,7 @@ export default function Thread({
   categories = [],
 
 
+  openComments = () => {},
  
  
  
@@ -430,6 +431,7 @@ const deleteThreadHandler = async (threadId, company) => {
   onShowActivity={() => setActivityPanel({ show: true, threadId: mongoThreadId })}
   onDeleteThread={() => deleteThreadHandler(threadId, companyName)}
   onUpdateStatus={updateStatus}
+    openComments={openComments} // Pass the openComments function here
 
   firstMessageForPrefilling = {messages?.decryptedMessages?.[0] || null}
 />

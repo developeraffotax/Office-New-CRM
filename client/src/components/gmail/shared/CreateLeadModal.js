@@ -49,12 +49,12 @@ export default function CreateLeadModal({
   createLeadModal,
   setCreateLeadModal,
   users,
-  myCompany,
-  handleUpdateThread,
+
+  onUpdate,
 }) {
   const brand = useMemo(
-    () => myCompany?.charAt(0).toUpperCase() + myCompany?.slice(1),
-    [myCompany],
+    () => createLeadModal?.companyName?.charAt(0).toUpperCase() + createLeadModal?.companyName?.slice(1),
+    [createLeadModal?.companyName],
   );
 
   const [activeTab, setActiveTab] = useState("new"); // "new" | "existing"
@@ -63,6 +63,7 @@ export default function CreateLeadModal({
     companyName: "",
     clientName: "",
     email: "",
+    phoneNumber: "",
     Note: "",
     number: "",
     value: "",
@@ -169,7 +170,7 @@ export default function CreateLeadModal({
       const newLeadId = data.lead?._id || data._id;
       const userId = users.find((u) => form.jobHolder === u.name)?._id;
 
-      await handleUpdateThread(createLeadModal._id, {
+      await onUpdate(createLeadModal._id, {
         // category: "lead",
         userId,
         leadId: newLeadId,
@@ -181,6 +182,7 @@ export default function CreateLeadModal({
         companyName: "",
         clientName: "",
         email: "",
+        phoneNumber: "",
         subject: "",
         assignedTo: "",
         source: "",
@@ -200,7 +202,7 @@ export default function CreateLeadModal({
     }
     setLoading(true);
     try {
-      await handleUpdateThread(createLeadModal._id, {
+      await onUpdate(createLeadModal._id, {
         // category: "lead",
         leadId: selectedLead.value,
       });
@@ -237,7 +239,7 @@ export default function CreateLeadModal({
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 bg-slate-900/20 backdrop-blur-sm font-inter  ">
       <div className="min-h-[80vh] bg-white  shadow-2xl w-full max-w-4xl mt-12 border border-gray-100 relative animate-slide-down ">
         <div className="absolute bottom-6 right-6 flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-orange-600 text-xs font-semibold">
-          <FiLayers /> {myCompany}
+          <FiLayers /> {createLeadModal?.companyName}
         </div>
 
         <div className="px-8 py-4 border-b flex justify-between items-center">
@@ -282,6 +284,14 @@ export default function CreateLeadModal({
                 name="email"
                 placeholder="Email"
                 value={form.email}
+                onChange={handleChange}
+                className={inputStyle}
+              />
+              <input
+                type="text"
+                name="phoneNumber"
+                placeholder="Phone Number"
+                value={form.phoneNumber}
                 onChange={handleChange}
                 className={inputStyle}
               />

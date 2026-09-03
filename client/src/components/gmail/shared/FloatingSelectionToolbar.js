@@ -93,8 +93,25 @@ export const SelectionHeader = ({
   markAsUnread,
   deleteThread,
   handleBulkUpdateThreads,
+  selectAllThreads,
   clearSelection,
 }) => {
+
+
+
+  // 2. Add logic to check if all threads are currently selected
+  const isAllSelected = selectedThreads.size === threads.length && threads.length > 0;
+
+  // 3. Add toggle handler
+  const handleToggleAll = () => {
+    if (isAllSelected) {
+      clearSelection();
+    } else {
+      selectAllThreads();
+    }
+  };
+
+
 
   /**
    * 🔹 BULK UPDATE FUNCTION
@@ -136,12 +153,30 @@ export const SelectionHeader = ({
 
   }, [selectedThreads]);
 
+
+  
+
   if (selectedThreads.size === 0) return null;
 
   return (
     <div className="flex items-center justify-start w-full px-4 py-2 border-b border-gray-100 bg-white transition-all duration-200">
 
       <div className="flex items-center gap-4">
+        {/* 4. Add the Master Checkbox here */}
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            className="w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer focus:ring-blue-500"
+            checked={isAllSelected}
+            onChange={handleToggleAll}
+            ref={(el) => {
+              // This gives the checkbox a "dash" when partially selected
+              if (el) {
+                el.indeterminate = selectedThreads.size > 0 && selectedThreads.size < threads.length;
+              }
+            }}
+          />
+        </div>
 
         {/* Selected Count */}
         <div className="flex items-center gap-2">

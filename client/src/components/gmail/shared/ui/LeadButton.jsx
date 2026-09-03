@@ -83,7 +83,7 @@ const handleCreateLead = (e) => {
         className={`w-24 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg shadow-2xs  active:scale-[0.98] transition-all cursor-pointer ${
           copied
             ? "bg-slate-800 text-white"
-            : "bg-emerald-600 hover:bg-emerald-700 text-white"
+            : "bg-gray-200 hover:bg-gray-300 text-black/90"
         }`}
       >
         {copied ? (
@@ -108,7 +108,7 @@ const handleCreateLead = (e) => {
           <>
             {/* Copy / Link Icon */}
             <svg
-              className="w-3.5 h-3.5 text-emerald-100 shrink-0"
+              className="w-3.5 h-3.5 text-black shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

@@ -49,12 +49,23 @@ export default function MailModalsRenderer() {
         </div>
       )}
 
-      <CommentList
-        users={users}
-        currentUserId={user.id}
-        onClose={() => setComment(MODAL_DEFAULTS.comment)}
-        {...comment}
-      />
+
+
+
+      {comment.isOpen && (
+ 
+           <CommentList
+              users={users}
+              currentUserId={user.id}
+              onClose={() => setComment(MODAL_DEFAULTS.comment)}
+              {...comment}
+            />
+ 
+      )}
+
+
+
+     
     </>
   );
 }

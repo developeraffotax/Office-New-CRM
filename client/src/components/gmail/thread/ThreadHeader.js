@@ -11,6 +11,7 @@ import AssignCategory from "../shared/ui/AssignCategory.js";
 import { useSelector } from "react-redux";
 import LeadButton from "../shared/ui/LeadButton.jsx";
 import TicketButton from "../shared/ui/TicketButton.jsx";
+import { useMailModalActions } from "../context/MailModalsContext.js";
 
 export default function ThreadHeader({
   variant = "full", // "full" (Inbox) | "compact" (Ticket/Lead sidebar)
@@ -30,26 +31,23 @@ export default function ThreadHeader({
   onBack,
   onShowSummary,
   onShowActivity,
-  onShowComments,
+
   onDeleteThread,
   onUpdateStatus,
   handleUpdateThread,
 
-  firstMessageForPrefilling
+  firstMessageForPrefilling,
 }) {
-
-const auth = useSelector((state) => state.auth.auth);
+  const auth = useSelector((state) => state.auth.auth);
   const user = auth?.user;
 
-  
- 
+  const { openComments, openReminder } = useMailModalActions();
 
-
-
-if (variant === "compact") {
+  if (variant === "compact") {
     const assignedUser = users?.find((u) => u._id === userId);
     const assignedUserName = assignedUser?.name || "Unassigned";
-    const categoryName = typeof category === "object" ? category?.name : category;
+    const categoryName =
+      typeof category === "object" ? category?.name : category;
     return (
       <header className="sticky top-0 z-10 w-full bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-3.5 shadow-sm font-google">
         <div className="flex flex-col gap-1.5 max-w-7xl mx-auto">
@@ -63,7 +61,9 @@ if (variant === "compact") {
                 className="group inline-flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors duration-150 whitespace-nowrap shrink-0"
               >
                 Full conversation
-                <span className="transition-transform duration-150 group-hover:translate-x-0.5">&rarr;</span>
+                <span className="transition-transform duration-150 group-hover:translate-x-0.5">
+                  &rarr;
+                </span>
               </Link>
             )}
           </div>
@@ -78,8 +78,11 @@ if (variant === "compact") {
               </>
             )}
 
-            
-            {assignedUserName && <span className="font-medium text-slate-800">{assignedUserName}</span>}
+            {assignedUserName && (
+              <span className="font-medium text-slate-800">
+                {assignedUserName}
+              </span>
+            )}
           </div>
         </div>
       </header>
@@ -101,45 +104,51 @@ if (variant === "compact") {
       </div>
 
       <div className="flex justify-center items-center gap-4">
+        <TicketButton
+          thread={thread}
+          handleUpdateThread={handleUpdateThread}
+          onViewTicket={(ticket) => {
+            console.log("View ticket:", ticket);
 
-                    <TicketButton
-                      thread={thread}
- 
-                      handleUpdateThread={handleUpdateThread}
-                      onViewTicket={(ticket) => {
-                        console.log("View ticket:", ticket);
-        
-                        // Example:
-                        // navigate(`/tickets/${lead._id}`);
-                      }}
-                    />
-        
-                    <LeadButton
-                      thread={thread}
+            // Example:
+            // navigate(`/tickets/${lead._id}`);
+          }}
+        />
 
-                      firstMessageForPrefilling={firstMessageForPrefilling}
-                      handleUpdateThread={handleUpdateThread}
-                      onViewLead={(lead) => {
-                        console.log("View lead:", lead);
-        
-                        // Example:
-                        // navigate(`/leads/${lead._id}`);
-                      }}
-                    />
+        <LeadButton
+          thread={thread}
+          firstMessageForPrefilling={firstMessageForPrefilling}
+          handleUpdateThread={handleUpdateThread}
+          onViewLead={(lead) => {
+            console.log("View lead:", lead);
 
+            // Example:
+            // navigate(`/leads/${lead._id}`);
+          }}
+        />
 
+        <span className="w-[1px] h-8 bg-slate-300 rounded-full"></span>
 
-         <span className="w-[1px] h-8 bg-slate-300 rounded-full"></span>
-
-
-
-        <IconButtonWithBadge icon={FiInfo} title="Show Summary" onClick={onShowSummary} />
-        <IconButtonWithBadge icon={FiClock} title="View Activity" onClick={onShowActivity} />
+        <IconButtonWithBadge
+          icon={FiInfo}
+          title="Show Summary"
+          onClick={onShowSummary}
+        />
+        <IconButtonWithBadge
+          icon={FiClock}
+          title="View Activity"
+          onClick={onShowActivity}
+        />
         <IconButtonWithBadge
           icon={FiMessageSquare}
           unreadCount={unreadComments}
           title="View Comments"
-          onClick={onShowComments}
+          onClick={() => {
+            openComments({
+              threadId: thread?._id,
+              threadSubject: thread?.subject,
+            });
+          }}
         />
 
         <span className="w-[1px] h-8 bg-slate-300 rounded-full"></span>

@@ -29,6 +29,7 @@ import { hasSubrole } from "../../../utlis/checkPermission";
 import RefBadge from "./ui/RefBadge";
 import LeadButton from "./ui/LeadButton";
 import TicketButton from "./ui/TicketButton";
+import { useMailModalActions } from "../context/MailModalsContext";
 
 function highlightText(text = "", search = "") {
   if (!search) return text;
@@ -48,8 +49,7 @@ export default function Row({
   handleUpdateThread,
   openThread,
   categories,
-  setCreateTicketModal,
-  setCreateLeadModal,
+ 
   deleteThread,
   markAsRead,
   toggleStar,
@@ -58,10 +58,10 @@ export default function Row({
   selected,
   toggleSelect,
   index,
-  setComment,
+ 
   setReplyThread,
   replyThread,
-  setCreateReminderModal,
+ 
 }) {
   const { auth } = useSelector((state) => state.auth);
 
@@ -81,6 +81,8 @@ export default function Row({
   const extraCount = attachments.length - visibleAttachments.length;
 
   const [searchParams] = useSearchParams();
+
+    const { openComments, openReminder } = useMailModalActions();
 
   const folder = searchParams.get("folder") || "inbox";
 
@@ -394,7 +396,7 @@ export default function Row({
             />
           )}
           {/* Actions (hover only) */}
-          <div className="flex items-center gap-1.5   transition-opacity">
+          <div className="flex items-center gap-1.5  font-google transition-opacity">
             <TicketButton
               thread={thread}
  
@@ -426,8 +428,8 @@ export default function Row({
               className="p-1 rounded-md hover:bg-gray-200 text-gray-500  hover:text-amber-500"
               title="Set Reminder"
               onClick={(e) => {
-                setCreateReminderModal({
-                  isOpen: true,
+                openReminder({
+                   
                   threadId: thread?.threadId,
                   link: `/mail?folder=${folder}&companyName=${myCompanyName}&mailThreadId=${thread?.threadId}`,
                 });
@@ -498,11 +500,19 @@ export default function Row({
             unreadCount={thread?.unreadComments || 0}
             title="View Comments"
             onClick={() => {
-              setComment({
-                show: true,
+
+              openComments({
+                             
                 threadId: thread._id,
                 threadSubject: thread?.subject,
-              });
+              })
+
+              
+              // setComment({
+              //   show: true,
+              //   threadId: thread._id,
+              //   threadSubject: thread?.subject,
+              // });
             }}
           />
         </div>

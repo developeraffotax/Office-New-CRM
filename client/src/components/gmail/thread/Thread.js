@@ -33,6 +33,7 @@ import { hasSubrole } from "../../../utlis/checkPermission.js";
 import ThreadHeader from "./ThreadHeader.js";
 import { useMailThread } from "../hooks/useMailThread.js";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useMailModalActions } from "../context/MailModalsContext.js";
 
 
 
@@ -76,6 +77,7 @@ console.log("THE THREAD IS ✔️✔️✔️✔️✔️✔️✔️", thread)
   const [page, setPage] = useState(1);
 const [hasMore, setHasMore] = useState(false);
 const [loadingMore, setLoadingMore] = useState(false);
+
 
  
   const isReminderPopupOpen = useSelector((state) => state?.reminder?.showReminder);  
@@ -423,7 +425,7 @@ const deleteThreadHandler = async (threadId, company) => {
   scope={scope}
   handleUpdateThread={handleUpdateThread}
   onBack={onClose}
-  onShowComments={() => {}}
+ 
   onShowSummary={() => setSummaryDrawer({ open: true })}
   onShowActivity={() => setActivityPanel({ show: true, threadId: mongoThreadId })}
   onDeleteThread={() => deleteThreadHandler(threadId, companyName)}

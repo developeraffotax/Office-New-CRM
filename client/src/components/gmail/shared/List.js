@@ -34,8 +34,7 @@ export default function List({
   handleUpdateThread,
   setEmailDetail,
   categories,
-  setCreateTicketModal,
-  setCreateLeadModal,
+ 
   deleteThread,
   markAsRead,
   toggleStar,
@@ -43,8 +42,7 @@ export default function List({
   filters,
   selectedThreads,
   toggleThread,
-  setComment,
-  setCreateReminderModal
+ 
 }) {
   const [replyThread, setReplyThread] = useState(null);
 
@@ -90,15 +88,14 @@ const openThread = (threadId) => {
           categories={categories}
           filters={filters}
           openThread={openThread}
-          setCreateTicketModal={setCreateTicketModal}
-          setCreateLeadModal={setCreateLeadModal}
+ 
           index={index}
           selected={selectedThreads.has(thread._id)}
           toggleSelect={toggleThread}
-          setComment={setComment}
+ 
           setReplyThread={setReplyThread}
           replyThread={replyThread}
-          setCreateReminderModal={setCreateReminderModal}
+ 
         />
       ))}
 

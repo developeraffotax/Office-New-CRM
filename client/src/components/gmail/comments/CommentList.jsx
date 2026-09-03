@@ -6,7 +6,7 @@ import axios from "axios";
 import { useEscapeKey } from "../../../utlis/useEscapeKey";
 import { useOverlayStack } from "../hooks/useOverlayStack";
 
-export default function CommentList({ threadId, threadSubject, currentUserId, onClose, users, show }) {
+export default function CommentList({ threadId, threadSubject, currentUserId, onClose, users }) {
   const [comments, setComments] = useState([]);
 
 
@@ -88,18 +88,14 @@ const handleAddComment = async (data) => {
     shouldAutoScrollRef.current = isAtBottom;
   };
 
-const commentRef = useRef(null);
+ 
 
-useOverlayStack({
-  ref: commentRef,
-  onClose: () => onClose(),
-  isOpen: show,
-});
+ 
 
   if (!threadId) return null;
 
   return (
-    <div className="fixed inset-0 font-inter  z-50 pointer-events-none" ref={commentRef}>
+    <div className="fixed inset-0 font-inter  z-50 pointer-events-none" >
       {/* Background */}
       <div
         className="absolute inset-0 bg-slate-900/10 backdrop-blur-[2px] pointer-events-auto"

@@ -27,7 +27,7 @@ export function MailModalsProvider({ children }) {
     openTicket: (payload) => setTicket({ ...MODAL_DEFAULTS.ticket, isOpen: true, ...payload }),
     openLead: (payload) => setLead({ ...MODAL_DEFAULTS.lead, isOpen: true, ...payload }),
     openReminder: (payload) => setReminder({ ...MODAL_DEFAULTS.reminder, isOpen: true, ...payload }),
-    openComments: (payload) => setComment({ ...MODAL_DEFAULTS.comment, show: true, ...payload }),
+    openComments: (payload) => setComment({ ...MODAL_DEFAULTS.comment, isOpen: true, ...payload }),
   }), []); // stable reference forever — consumers of ActionsCtx never re-render on state change
 
   const state = { ticket, lead, reminder, comment };

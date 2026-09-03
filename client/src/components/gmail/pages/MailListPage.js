@@ -44,46 +44,9 @@ export default function MailListPage({
 
   const [isComposeOpen, setIsComposeOpen] = useState(false);
 
-  /* =========================
-     Ticket Modal
-  ========================= */
-
-  const [createTicketModal, setCreateTicketModal] = useState({
-    _id: "",
-    isOpen: false,
-    form: {},
-  });
-
-  /* =========================
-     Lead Modal
-  ========================= */
-
-  const [createLeadModal, setCreateLeadModal] = useState({
-    _id: "",
-    isOpen: false,
-    form: {},
-  });
-
-  /* =========================
-     Reminder
-  ========================= */
-
-  const [createReminderModal, setCreateReminderModal] = useState({
-    isOpen: false,
-    threadId: "",
-    link: "",
-  });
-
-  /* =========================
-     Comments
-  ========================= */
-
-  const [comment, setComment] = useState({
-    show: false,
-    threadId: null,
-    threadSubject: "",
-  });
-
+ 
+ 
+ 
   /* =========================
      Thread Selection
   ========================= */
@@ -92,7 +55,12 @@ export default function MailListPage({
     new Set()
   );
 
+  
   const lastSelectedIndexRef = useRef(null);
+
+  const selectAllThreads = () => {
+    setSelectedThreads(new Set(threads.map((thread) => thread._id)));
+  };
 
   const toggleThread = (threadId, index, event) => {
     setSelectedThreads((prev) => {
@@ -180,6 +148,7 @@ export default function MailListPage({
         markAsUnread={markAsUnread}
         deleteThread={deleteThread}
         handleBulkUpdateThreads={handleBulkUpdateThreads}
+        selectAllThreads={selectAllThreads}
         clearSelection={clearSelection}
       />
 
@@ -199,23 +168,13 @@ export default function MailListPage({
           toggleStar={toggleStar}
           filters={filters}
 
-          setCreateTicketModal={
-            setCreateTicketModal
-          }
-
-          setCreateLeadModal={
-            setCreateLeadModal
-          }
+           
 
           selectedThreads={selectedThreads}
 
           toggleThread={toggleThread}
 
-          setComment={setComment}
-
-          setCreateReminderModal={
-            setCreateReminderModal
-          }
+        
         />
       </div>
 
@@ -228,42 +187,13 @@ export default function MailListPage({
         setFilters={setFilters}
       />
  
-      {/* =========================
-          Reminder
-      ========================= */}
+ 
 
-      {createReminderModal.isOpen && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-gray-300/80">
-          <Reminder
-            setShowReminder={() => {
-              setCreateReminderModal({
-                isOpen: false,
-                link: "",
-                threadId: "",
-              });
-            }}
-            taskId={createReminderModal.threadId}
-            link={createReminderModal.link}
-          />
-        </div>
-      )}
 
-      {/* =========================
-          Comments
-      ========================= */}
 
-      <CommentList
-        users={users}
-        currentUserId={user.id}
-        onClose={() =>
-          setComment({
-            show: false,
-            threadId: null,
-            threadSubject: "",
-          })
-        }
-        {...comment}
-      />
+
+
+ 
 
       {/* =========================
           Deleting Indicator

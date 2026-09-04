@@ -89,7 +89,7 @@ const UserWorkedTime = () => {
   }, [open]);
 
   return (
-    <div className="relative" ref={wrapperRef}>
+    <div className="relative max-md:hidden" ref={wrapperRef}>
       {/* Main badge */}
       <div
         onClick={() => setOpen(!open)}

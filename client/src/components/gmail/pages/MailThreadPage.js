@@ -4,6 +4,8 @@ import Thread from "../thread/Thread";
 import { useGetInboxUsersQuery } from "../../../redux/api/inboxUserApi";
 import { useGetCategoriesQuery } from "../../../redux/api/inboxCategoryApi";
 import { useMailModalActions } from "../context/MailModalsContext";
+import { useIsMobile } from "../hooks/useIsMobile";
+import ThreadMobile from "../thread/ThreadMobile";
 
 export default function MailThreadPage() {
   const { threadId } = useParams();
@@ -36,23 +38,31 @@ export default function MailThreadPage() {
   
       const { openComments, openReminder } = useMailModalActions();
   
-
+const isMobile = useIsMobile(768);
 
   return (
     <div className="h-full min-w-0">
 
-      <Thread
-        variant="full"
-        threadId={threadId}
-        companyName={companyName}
-        onClose={handleClose}
-        
-        users={users}
-        categories={categories}
-
-        openComments = {openComments}
-         
-      />
+     {isMobile ? (
+        <ThreadMobile
+          threadId={threadId}
+          companyName={companyName}
+          onClose={handleClose}
+          users={users}
+          categories={categories}
+          openComments={openComments}
+        />
+      ) : (
+        <Thread
+          variant="full"
+          threadId={threadId}
+          companyName={companyName}
+          onClose={handleClose}
+          users={users}
+          categories={categories}
+          openComments={openComments}
+        />
+      )}
 
     </div>
   );

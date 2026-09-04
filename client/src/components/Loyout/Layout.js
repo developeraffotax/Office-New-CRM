@@ -155,7 +155,7 @@ export default function Layout() {
         <div className="fixed top-[3.8rem] left-0 w-full flex h-full overflow-hidden">
           {/* Mobile Menu trigger */}
 {!showSidebar && (
-  <div className="absolute md:hidden top-2 left-3 z-20">
+  <div className="fixed  md:hidden top-4 left-4 z-20">
     <IoMenu size={25} onClick={() => setShowSidebar(true)} />
   </div>
 )}
@@ -169,7 +169,7 @@ export default function Layout() {
 />
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto pt-6 sm:pt-0">
+          <div className="flex-1 overflow-y-auto pt-0 sm:pt-0">
             <Outlet />
           </div>
         </div>

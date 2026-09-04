@@ -1,7 +1,9 @@
 import { useState } from "react";
 import Row from "./Row";
+import RowMobile from "./RowMobile";
 import { ReplyPopup } from "../reply/ReplyPopup";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 // A internal component for the loading state
 const ShimmerSkeleton = () => (
@@ -50,7 +52,10 @@ export default function List({
     const [searchParams] = useSearchParams();
   const companyName = searchParams.get("companyName");
 
-
+  // Only new logic added: which presentational row to use. Everything each
+  // Row/RowMobile receives below is identical to what was already passed.
+  const isMobile = useIsMobile();
+  const RowComponent = isMobile ? RowMobile : Row;
 
 const openThread = (threadId) => {
   navigate(`/mail/${threadId}?companyName=${companyName}`);
@@ -76,7 +81,7 @@ const openThread = (threadId) => {
   return (
 <div className="flex-1 min-w-0 h-full overflow-y-auto overflow-x-visible">
       {threads.map((thread, index) => (
-        <Row
+        <RowComponent
           key={thread._id}
           thread={thread}
           users={users}

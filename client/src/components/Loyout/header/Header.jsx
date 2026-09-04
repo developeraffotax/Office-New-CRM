@@ -55,21 +55,18 @@ export default function Header({
     handleDismissAll,
     handleMarkAllAsRead,
 
-        assigningId,
-toggleAssignDropdown,
-handleAssignUser,
-users,
- 
+    assigningId,
+    toggleAssignDropdown,
+    handleAssignUser,
+    users,
+
     isNotificationAllowed,
 
-        categorizedNotifications,    // NEW — list to render
-  activeTab,                   // NEW
-  setActiveTab,                // NEW
-  tabCounts,                   // NEW
-  tabs,                        // NEW
-
-
- 
+    categorizedNotifications, // NEW — list to render
+    activeTab, // NEW
+    setActiveTab, // NEW
+    tabCounts, // NEW
+    tabs, // NEW
   } = useNotifications();
 
   const {
@@ -108,7 +105,7 @@ users,
       timerStatus: () => setShowTimerStatus(false),
       reminderNotification: () => setShowReminderNotificationPanel(false),
       ticket: () => setOpenTicketId(null),
-    }
+    },
   );
 
   const handleSearch = async (e) => {
@@ -121,14 +118,14 @@ users,
       <div className="w-full h-full flex items-center justify-between sm:px-4 px-6 py-2">
         {/* Logo/Notification */}
         <div className="flex items-center gap-4" ref={notificationRef}>
-          <Link to={"/dashboard"}>
-            <img src="/logo.png" alt="Logo" className="h-[3.3rem] w-[8rem]" />
+          <Link to={"/dashboard"} className="max-md:hidden">
+            <img src="/logo.png" alt="Logo" className="h-[3.3rem] w-[8rem] " />
           </Link>
 
           {/* Notification */}
           <div className="relative mt-1">
             <div
-              className="relative cursor-pointer m-2"
+              className="relative cursor-pointer m-2 max-md:ml-8"
               onClick={() => setOpen(!open)}
             >
               <IoNotifications className="text-2xl container text-black" />
@@ -146,22 +143,19 @@ users,
                 handleDismissNotification={handleDismissNotification}
                 handleDismissAll={handleDismissAll}
                 handleMarkAllAsRead={handleMarkAllAsRead}
-
-                  // ...existing props
-  assigningId={assigningId}
-  toggleAssignDropdown={toggleAssignDropdown}
-  handleAssignUser={handleAssignUser}
-   users = {users}
-               
+                // ...existing props
+                assigningId={assigningId}
+                toggleAssignDropdown={toggleAssignDropdown}
+                handleAssignUser={handleAssignUser}
+                users={users}
                 openTicketId={openTicketId}
                 setOpen={setOpen}
                 ticketRef={ticketRef}
-
-                        categorizedNotifications={categorizedNotifications}
-  activeTab={activeTab}                  
-  setActiveTab={setActiveTab}             
-  tabCounts={tabCounts}               
-  tabs={tabs} 
+                categorizedNotifications={categorizedNotifications}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                tabCounts={tabCounts}
+                tabs={tabs}
               />
             )}
           </div>
@@ -186,8 +180,8 @@ users,
         </div>
 
         {/* Right side */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4 ">
+          <div className="flex items-center gap-2 ">
             {/* User Worked Time */}
             <UserWorkedTime />
 
@@ -198,65 +192,23 @@ users,
               <UserActivity />
             )}
 
-            {/* Timer Status */}
-            {/* <div className="relative" ref={timerStatusRef}>
-              <div className="flex items-center">
-                <div
-                  className="relative cursor-pointer m-2"
-                  onClick={() => {
-                    setShowTimerStatus(!showTimerStatus);
-                    getTimerStatus();
-                  }}
-                >
-                  <FaStopwatch
-                    className={`text-2xl container ${
-                      timerStatus
-                        ? "text-red-500 animate-pulse"
-                        : "text-black"
-                    }`}
-                  />
-                  <span
-                    className={`absolute top-[.4rem] right-[3px] ${
-                      timerStatus ? "bg-red-500 animate-pulse" : "bg-black"
-                    } rounded-full w-[18px] h-[18px] text-[12px] text-white flex items-center justify-center`}
-                  >
-                    {timerStatus ? "1" : "0"}
-                  </span>
-                </div>
-                {timerStatus && !loading ? (
-                  <span className="text-[12px] font-semibold translate-x-[-.4rem]">
-                    {formatElapsedTime(timerStatus?.createdAt)}
-                  </span>
-                ) : (
-                  <span className="text-[12px] font-semibold translate-x-[-.4rem]">
-                    0m
-                  </span>
-                )}
-              </div>
-
-              {showTimerStatus && (
-                <TimerStatusPanel
-                  timerStatus={timerStatus}
-                  setShowTimerStatus={setShowTimerStatus}
-                />
-              )}
-            </div> */}
+ 
 
             {/* Quick Lists */}
             <span
               onClick={() => setShowQuickList(!showQuickList)}
-              className="cursor-pointer"
+              className="cursor-pointer max-md:hidden"
             >
               <CgList className="text-2xl container text-black" />
             </span>
 
             {/* Reminder Notifications */}
-            <div className="relative" ref={reminderNotificationRef}>
+            <div className="relative max-md:hidden" ref={reminderNotificationRef}>
               <div
                 className="relative cursor-pointer m-2"
                 onClick={() =>
                   setShowReminderNotificationPanel(
-                    !showReminderNotificationPanel
+                    !showReminderNotificationPanel,
                   )
                 }
               >

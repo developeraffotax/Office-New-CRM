@@ -2,6 +2,7 @@ import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import GroupsIcon from "@mui/icons-material/Groups";
 import WorkIcon from '@mui/icons-material/Work';
 import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
+import ForwardToInboxIcon from "@mui/icons-material/ForwardToInbox";
 
 export const KPI_DASHBOARD_PERMISSION = "Kpi-Dashboard";
 
@@ -106,4 +107,31 @@ export const TAB_GROUPS = [
       
     ],
   },
+
+
+
+
+  {
+    key: "emails",
+    label: "Emails",
+    icon: <ForwardToInboxIcon />,
+    tabs: [
+      {
+        chartKey: "emails.initial",
+        label: "Initial Emails",
+        isMulti: false,
+        valueType: "count",
+      },
+      {
+        chartKey: "emails.replies",
+        label: "Replies",
+        isMulti: false,
+        valueType: "count",
+      },
+    ],
+  },
+
+
+
+
 ];

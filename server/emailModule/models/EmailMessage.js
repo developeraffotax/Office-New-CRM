@@ -28,6 +28,7 @@ const EmailMessageSchema = new mongoose.Schema(
 
 
 EmailMessageSchema.index({ companyName: 1, gmailThreadId: 1 });
-EmailMessageSchema.index({ companyName: 1, senderName: 1 });
+EmailMessageSchema.index({ companyName: 1, sentFrom: 1 });
+EmailMessageSchema.index({ companyName: 1, interactionType: 1, senderName: 1 });
 
 export default mongoose.model("EmailMessage", EmailMessageSchema);

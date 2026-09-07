@@ -50,6 +50,10 @@ router.get("/subscriptions/chart/value", setChartKey("subscriptions.value"));
 
 
 
+// Email/Outreach Routes
+router.get("/emails/chart/initial", setChartKey("emails.initial"));
+router.get("/emails/chart/replies", setChartKey("emails.replies"));
+
 
 
 

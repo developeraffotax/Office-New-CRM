@@ -1,6 +1,7 @@
 import clientModel from "../../models/jobsModel.js";
 import subscriptionModel from "../../models/subscriptionModel.js";
 import leadModel from "../../models/leadModel.js";
+import EmailMessage from "../../emailModule/models/EmailMessage.js";
 
 // Common filter mappings for Lead queries
 const LEAD_FILTERS = [
@@ -174,6 +175,38 @@ export const chartRegistry = {
       ["source", "source"],
       ["jobHolder", "review"],
     ],
+  },
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+  
+    // --- EMAIL / OUTREACH CHARTS ---
+  "emails.initial": {
+    label: "Initial Emails Sent",
+    Model: EmailMessage,
+    dateField: "createdAt",
+    valueConfig: { type: "count" },
+    baseMatch: { interactionType: "initial" },
+    allowedFilters: [ ["jobHolder", "senderName"], ],
+  },
+
+  "emails.replies": {
+    label: "Replies Sent",
+    Model: EmailMessage,
+    dateField: "createdAt",
+    valueConfig: { type: "count" },
+    baseMatch: { interactionType: "reply" },
+    allowedFilters: [ ["jobHolder", "senderName"],  ],
   },
 
 

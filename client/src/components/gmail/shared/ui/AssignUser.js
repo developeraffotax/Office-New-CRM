@@ -145,7 +145,7 @@ export default function AssignUser({
           setOpen((prev) => !prev);
         }}
         className={clsx(
-          "p-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 text-gray-600 transition-all shadow-sm outline-none0",
+          "p-1.5 rounded-md     bg-orange-500 hover:bg-orange-600 text-white transition-all shadow-sm outline-none",
           buttonStyle,
         )}
       >

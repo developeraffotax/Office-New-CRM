@@ -324,6 +324,34 @@ export default function Row({
         >
           {/* Reply Button Container */}
 
+          
+
+
+           {scope.edit && (
+            <AssignUser
+              users={users}
+              mongoThreadId={thread?._id}
+              currentUserId={thread?.userId}
+              handleUpdateThread={handleUpdateThread}
+              onToggle={(isOpen) => setAssignOpen(isOpen)}
+            />
+          )}
+
+
+
+          {scope.edit && (
+            <AssignCategory
+              categories={categories}
+              mongoThreadId={thread._id}
+              currentCategory={thread?.category}
+              handleUpdateThread={handleUpdateThread}
+              onToggle={(isOpen) => setAssignOpen(isOpen)}
+            />
+          )}
+
+          
+
+
           <div className="relative group/reply flex items-center justify-end">
             <button
               onClick={(e) => {
@@ -333,7 +361,7 @@ export default function Row({
                   companyName: thread.companyName,
                 });
               }}
-              className="px-3 py-1 text-xs bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors shadow-sm"
+              className="px-3 py-1 text-xs border bg-white rounded-md hover:bg-gray-100 transition-colors shadow-sm"
             >
               Reply
             </button>
@@ -376,25 +404,13 @@ export default function Row({
             )}
           </div>
 
-          {scope.edit && (
-            <AssignCategory
-              categories={categories}
-              mongoThreadId={thread._id}
-              currentCategory={thread?.category}
-              handleUpdateThread={handleUpdateThread}
-              onToggle={(isOpen) => setAssignOpen(isOpen)}
-            />
-          )}
 
-          {scope.edit && (
-            <AssignUser
-              users={users}
-              mongoThreadId={thread?._id}
-              currentUserId={thread?.userId}
-              handleUpdateThread={handleUpdateThread}
-              onToggle={(isOpen) => setAssignOpen(isOpen)}
-            />
-          )}
+
+
+
+
+
+
           {/* Actions (hover only) */}
           <div className="flex items-center gap-1.5  font-google transition-opacity">
             <TicketButton
@@ -438,17 +454,7 @@ export default function Row({
               <PiBell className="size-5  font-semibold " />
             </button>
 
-            {scope.delete && (
-              <button
-                className="p-1 rounded-md hover:bg-gray-200 text-gray-500  hover:text-red-500"
-                title="Delete Thread"
-                onClick={(e) => {
-                  deleteThread(thread?.threadId, thread?.companyName);
-                }}
-              >
-                <MdDeleteOutline className="size-5   " />
-              </button>
-            )}
+            
 
             {scope.edit &&
               (thread?.status === "progress" ? (
@@ -472,6 +478,22 @@ export default function Row({
                   <FaUndoAlt className="size-4   " />
                 </button>
               ))}
+
+
+              {scope.delete && (
+              <button
+                className="p-1 rounded-md hover:bg-gray-200 text-gray-500  hover:text-red-500"
+                title="Delete Thread"
+                onClick={(e) => {
+                  deleteThread(thread?.threadId, thread?.companyName);
+                }}
+              >
+                <MdDeleteOutline className="size-5   " />
+              </button>
+            )}
+
+
+            
           </div>
         </div>
 

@@ -148,48 +148,41 @@ export default function ThreadHeaderMobile({
         </div>
       </div>
 
-      {/* Second row: Assign + Ticket/Lead (scrollable if needed) */}
-      <div className="mt-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
-        <div className="shrink-0">
-          <AssignUser
-            users={users}
-            mongoThreadId={mongoThreadId}
-            currentUserId={userId}
-            handleUpdateThread={handleUpdateThread}
-            showLabel={false}
-            compact
-          />
-        </div>
+ 
+{/* Second row: Assign + Ticket/Lead — wraps instead of scrolling, so dropdowns aren't clipped */}
+<div className="mt-2.5 flex flex-wrap items-center gap-2">
+  <AssignUser
+    users={users}
+    mongoThreadId={mongoThreadId}
+    currentUserId={userId}
+    handleUpdateThread={handleUpdateThread}
+    showLabel={false}
+    align="left"       // opens rightward from the button instead of off-screen left
+  />
 
-        <div className="shrink-0">
-          <AssignCategory
-            categories={categories}
-            mongoThreadId={mongoThreadId}
-            currentCategory={category}
-            handleUpdateThread={handleUpdateThread}
-            compact
-          />
-        </div>
+  <AssignCategory
+    categories={categories}
+    mongoThreadId={mongoThreadId}
+    currentCategory={category}
+    handleUpdateThread={handleUpdateThread}
+    align="left"        // same fix — only if you add the prop below to this component too
+  />
 
-        <div className="h-5 w-px bg-gray-200 shrink-0 mx-0.5" />
+  <div className="h-5 w-px bg-gray-200 shrink-0 mx-0.5" />
 
-        <div className="shrink-0">
-          <TicketButton
-            thread={thread}
-            handleUpdateThread={handleUpdateThread}
-            compact
-          />
-        </div>
+  <TicketButton
+    thread={thread}
+    handleUpdateThread={handleUpdateThread}
+    compact
+  />
 
-        <div className="shrink-0">
-          <LeadButton
-            thread={thread}
-            firstMessageForPrefilling={firstMessageForPrefilling}
-            handleUpdateThread={handleUpdateThread}
-            compact
-          />
-        </div>
-      </div>
+  <LeadButton
+    thread={thread}
+    firstMessageForPrefilling={firstMessageForPrefilling}
+    handleUpdateThread={handleUpdateThread}
+    compact
+  />
+</div>
     </header>
   );
 }

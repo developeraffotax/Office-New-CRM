@@ -12,6 +12,7 @@ export default function AssignUser({
   buttonStyle = "",
   showLabel = false,
   onToggle = () => {},
+   align = "right", // "right" keeps every existing call site unchanged
 }) {
   const [open, setOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -155,7 +156,10 @@ export default function AssignUser({
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute right-0 top-full mt-2 w-60 max-h-[500px] border border-gray-200 rounded-lg bg-white shadow-xl z-50 overflow-hidden"
+          className={clsx(
+            "absolute top-full mt-2 w-60 max-w-[calc(100vw-1.5rem)] border border-gray-200 rounded-lg bg-white shadow-xl z-50 overflow-hidden",
+            align === "left" ? "left-0" : "right-0",
+          )}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}

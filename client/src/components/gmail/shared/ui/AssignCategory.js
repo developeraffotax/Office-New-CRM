@@ -12,6 +12,7 @@ export default function AssignCategory({
   showLabel = false,
   
   onToggle = () => {},
+     align = "right", // "right" keeps every existing call site unchanged
 }) {
   const [open, setOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -88,7 +89,10 @@ export default function AssignCategory({
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute right-0 top-full mt-2 w-56 border border-gray-200 rounded-lg bg-white shadow-xl z-50 py-1"
+          className={clsx(
+            "absolute top-full mt-2 w-56 border border-gray-200 rounded-lg bg-white shadow-xl z-50 py-1",
+            align === "left" ? "left-0" : "right-0",
+          )}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">

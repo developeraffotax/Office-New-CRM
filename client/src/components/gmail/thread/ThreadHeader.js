@@ -90,6 +90,9 @@ export default function ThreadHeader({
     );
   }
 
+
+
+
   return (
     <header className="sticky top-0 z-10 w-full flex items-center justify-between bg-white/80 backdrop-blur-md px-6 py-4 border-b border-gray-200">
       <div className="flex items-center gap-4">
@@ -105,6 +108,30 @@ export default function ThreadHeader({
       </div>
 
       <div className="flex justify-center items-center gap-4">
+
+          <AssignUser
+          users={users}
+          mongoThreadId={mongoThreadId}
+          currentUserId={userId}
+          handleUpdateThread={handleUpdateThread}
+          showLabel
+        />
+
+
+
+
+         {scope.delete && (
+          <button
+            className="p-2 rounded-lg hover:bg-gray-200 text-gray-500 hover:text-red-500"
+            title="Delete Thread"
+            onClick={onDeleteThread}
+          >
+            <MdDeleteOutline className="size-5" />
+          </button>
+        )}
+
+        
+
         <TicketButton
           thread={thread}
           handleUpdateThread={handleUpdateThread}
@@ -154,15 +181,7 @@ export default function ThreadHeader({
 
         <span className="w-[1px] h-8 bg-slate-300 rounded-full"></span>
 
-        {scope.delete && (
-          <button
-            className="p-2 rounded-lg hover:bg-gray-200 text-gray-500 hover:text-red-500"
-            title="Delete Thread"
-            onClick={onDeleteThread}
-          >
-            <MdDeleteOutline className="size-5" />
-          </button>
-        )}
+       
 
         {status === "progress" ? (
           <button
@@ -182,13 +201,7 @@ export default function ThreadHeader({
           </button>
         )}
 
-        <AssignUser
-          users={users}
-          mongoThreadId={mongoThreadId}
-          currentUserId={userId}
-          handleUpdateThread={handleUpdateThread}
-          showLabel
-        />
+      
 
         <AssignCategory
           categories={categories}

@@ -5,6 +5,24 @@ import {
 import { getGmailClient } from "../services/gmail.service.js";
 import ticketActivityModel from "../../models/ticketActivityModel.js";
 import { saveEmailMessage } from "../utils/saveEmailMessage.js";
+import EmailThread from "../models/EmailThread.js";
+
+
+
+function extractParticipants(headerValue = "") {
+  return headerValue
+    .split(",")
+    .map((addr) => {
+      const match = addr.match(/(.*)<(.+)>/);
+      const name = match ? match[1].trim().replace(/^"|"$/g, "") : "";
+      const email = (match ? match[2] : addr).trim().toLowerCase();
+      return { name, email };
+    })
+    .filter((p) => p.email);
+}
+
+
+
 
 export async function reply(req, res) {
   try {
@@ -21,10 +39,40 @@ export async function reply(req, res) {
       attachments,
       ticketId,
       jobHolder,
-       interactionType = "reply", // "initial" | "reply" — comes from the frontend now
+       
     } = req.body;
 
     const userName = req.user.user.name;
+
+
+
+ 
+
+     // --- Determine interactionType from the thread's existing participants ---
+    const emailThread = await EmailThread.findOne({ companyName, threadId })
+      .select("participants")
+      .lean();
+
+    const existingParticipantEmails = new Set(
+      (emailThread?.participants || [])
+        .map((p) => p.email?.toLowerCase())
+        .filter(Boolean),
+    );
+
+    const recipients = extractParticipants(to);
+    const recipientEmails = recipients.map((r) => r.email);
+
+    // "initial" only if NONE of these recipients have ever been part of this thread before
+    const isInitial = recipientEmails.every(
+      (email) => !existingParticipantEmails.has(email),
+    );
+    const interactionType = isInitial ? "initial" : "reply";
+
+
+
+
+
+
 
     // Get Gmail client
     const gmail = await getGmailClient(companyName);

@@ -24,6 +24,7 @@ module.exports = {
         "card-in": "cardIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both",
         "phase-in": "phaseIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both",
         "slide-down": "slideDown 0.6s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "slide-up": "slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both",
         "fade-in": "fadeIn 0.6s ease-out both",
       },
       keyframes: {
@@ -82,6 +83,19 @@ module.exports = {
             transform: "translateY(0)",
           },
         },
+
+        slideUp: {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(200px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
+
+
         fadeIn: {
           "0%": {
             opacity: "0",

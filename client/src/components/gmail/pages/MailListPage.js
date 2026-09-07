@@ -46,7 +46,7 @@ export default function MailListPage({
 
   const isMobile = useIsMobile();
   const FiltersComponent = isMobile ? FiltersMobile : Filters;
-  const Compose = isMobile ? ComposeMobile : Compose;
+  const Compose = isMobile ? ComposeMobile : ComposeWindow;
 
   /* =========================
      Mobile Sidebar

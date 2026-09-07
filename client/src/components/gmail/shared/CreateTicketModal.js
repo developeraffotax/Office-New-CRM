@@ -7,6 +7,8 @@ import { IoTicketOutline } from "react-icons/io5";
 import { useSelector } from "react-redux";
 import { useEscapeKey } from "../../../utlis/useEscapeKey";
 import { formatTicketOption } from "../utils/createTicketModal.utils";
+import { useIsMobile } from "../hooks/useIsMobile"; 
+import { useSwipeToClose } from "../hooks/useSwipeToClose";
 
 const TICKET_LIST_LIMIT = 50;
 
@@ -26,6 +28,7 @@ const selectStyles = {
     overflow: "hidden",
     padding: "6px",
     boxShadow: "0 10px 30px rgba(15, 23, 42, 0.12)",
+    zIndex: 50,
   }),
   option: (base, state) => ({
     ...base,
@@ -43,11 +46,27 @@ export default function CreateTicketModal({
   createTicketModal,
   setCreateTicketModal,
   users,
- 
   onUpdate,
- 
 }) {
-  const company = useMemo(() => createTicketModal?.companyName?.charAt(0).toUpperCase() + createTicketModal?.companyName?.slice(1), [createTicketModal?.companyName]);
+  const isMobile = useIsMobile();
+
+
+    const closeModal = () => {
+    setCreateTicketModal((p) => ({ ...p, isOpen: false }));
+  };
+  
+  const { offset, isDragging, handlers } = useSwipeToClose({
+    onClose: closeModal,
+    enabled: isMobile,
+    threshold: 110,
+  });
+
+  const company = useMemo(
+    () =>
+      createTicketModal?.companyName?.charAt(0).toUpperCase() +
+      createTicketModal?.companyName?.slice(1),
+    [createTicketModal?.companyName]
+  );
 
   const [activeTab, setActiveTab] = useState("new"); // "new" | "existing"
 
@@ -79,9 +98,10 @@ export default function CreateTicketModal({
 
   const allClientJobData = async () => {
     try {
-      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/client/tickets/clients`);
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/tickets/clients`
+      );
       if (data) setJobData(data?.clients || []);
-
     } catch (error) {
       toast.error(error?.response?.data?.message || "Error fetching clients");
     }
@@ -92,7 +112,7 @@ export default function CreateTicketModal({
     if (createTicketModal?.form) setForm(createTicketModal.form);
   }, [createTicketModal]);
 
-console.log("JOB DATA", jobData)
+  console.log("JOB DATA", jobData);
 
   useEffect(() => {
     if (activeTab !== "existing" || !company) return;
@@ -138,13 +158,12 @@ console.log("JOB DATA", jobData)
     companyName: item.companyName,
     clientName: item.clientName,
     email: item.email,
-    phoneNumber: item.phone
+    phoneNumber: item.phone,
   }));
 
   const selectedClient = clientOptions.find((opt) => opt.value === form.clientId) || null;
 
-
-  console.log("SELECTED CLIENT IS", selectedClient)
+  console.log("SELECTED CLIENT IS", selectedClient);
 
   const handleClientChange = (selectedOption) => {
     if (selectedOption) {
@@ -167,21 +186,30 @@ console.log("JOB DATA", jobData)
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/tickets/create-ticket`, {
-        ...form,
-        company: company || "",
-        leadId: createTicketModal?.form?.leadId || undefined,
-        comments: initialComment
-          ? [{ user, comment: initialComment, senderId: user.id, commentReplies: [], likes: [], status: "unread" }]
-          : [],
-      });
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/create-ticket`,
+        {
+          ...form,
+          company: company || "",
+          leadId: createTicketModal?.form?.leadId || undefined,
+          comments: initialComment
+            ? [
+                {
+                  user,
+                  comment: initialComment,
+                  senderId: user.id,
+                  commentReplies: [],
+                  likes: [],
+                  status: "unread",
+                },
+              ]
+            : [],
+        }
+      );
 
+      console.log("THE TICKET DATA IS", data);
 
-      console.log(
-        "THE TICKET DATA IS", data
-      )
-
-      const newTicketId = data.ticket?._id ;
+      const newTicketId = data.ticket?._id;
       const userId = users.find((u) => form.jobHolder === u.name)?._id;
 
       await onUpdate(createTicketModal._id, {
@@ -191,7 +219,16 @@ console.log("JOB DATA", jobData)
       });
 
       toast.success("Ticket created successfully!");
-      setForm({ clientId: "", companyName: "", clientName: "", jobHolder: "", subject: "", email: "", phoneNumber: "", mailThreadId: "" });
+      setForm({
+        clientId: "",
+        companyName: "",
+        clientName: "",
+        jobHolder: "",
+        subject: "",
+        email: "",
+        phoneNumber: "",
+        mailThreadId: "",
+      });
       setCreateTicketModal((prev) => ({ ...prev, isOpen: false }));
     } catch (err) {
       toast.error(err.response?.data?.message || "Error creating ticket");
@@ -230,8 +267,10 @@ console.log("JOB DATA", jobData)
     <button
       type="button"
       onClick={() => setActiveTab(tab)}
-      className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-        activeTab === tab ? "bg-orange-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+      className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+        activeTab === tab
+          ? "bg-orange-500 text-white"
+          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
       }`}
     >
       {label}
@@ -239,14 +278,53 @@ console.log("JOB DATA", jobData)
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 bg-slate-900/20 backdrop-blur-sm font-inter">
-      <div className="min-h-[80vh] bg-white shadow-2xl w-full max-w-4xl mt-12 border border-gray-100 relative animate-slide-down">
-        <div className="absolute bottom-6 right-6 flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-orange-600 text-xs font-semibold">
+    <div
+      className={`fixed inset-0 z-50 flex justify-center bg-slate-900/30 backdrop-blur-sm font-inter ${
+        isMobile ? "items-end" : "items-start p-4"
+      }`}
+    >
+      <div
+      
+      style={
+        isMobile
+          ? {
+              transform: `translateY(${offset}px)`,
+              transition: isDragging ? "none" : "transform 0.25s ease-out",
+            }
+          : undefined
+      }
+      className={`
+        relative bg-white shadow-2xl border border-gray-100 flex flex-col overflow-hidden  min-h-[82vh] max-h-[90vh]
+        ${
+          isMobile
+            ? "w-full   rounded-t-2xl"
+            : "w-full max-w-4xl mt-12    rounded-2xl animate-slide-down"
+        }
+      `}
+    >
+        {/* Drag handle – mobile only */}
+ 
+{isMobile && (
+  <div
+    {...handlers}
+    className="flex justify-center pt-3 pb-2 flex-shrink-0 touch-none cursor-grab active:cursor-grabbing"
+  >
+    <div className="w-10 h-1.5 rounded-full bg-gray-300" />
+  </div>
+)}
+
+        {/* Company badge */}
+        <div
+          className={`absolute flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-orange-600 text-xs font-semibold z-10 ${
+            isMobile ? "top-3 left-4" : "bottom-6 right-6"
+          }`}
+        >
           <FiLayers /> {createTicketModal?.companyName}
         </div>
 
-        <div className="px-8 py-4 border-b flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-800">Link This Thread</h2>
+        {/* Header */}
+        <div className="flex-shrink-0 px-5 sm:px-8 py-3.5 sm:py-4 border-b flex justify-between items-center">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-800">Link This Thread</h2>
           <button
             onClick={() => setCreateTicketModal((p) => ({ ...p, isOpen: false }))}
             className="p-2 hover:bg-gray-100 rounded-full text-gray-400"
@@ -255,211 +333,262 @@ console.log("JOB DATA", jobData)
           </button>
         </div>
 
-        <div className="px-8 pt-4 flex gap-2">
+        {/* Tabs */}
+        <div className="flex-shrink-0 px-5 sm:px-8 pt-3 sm:pt-4 flex gap-2">
           {tabBtn("new", "Create New Ticket")}
           {tabBtn("existing", "Link Existing Ticket")}
         </div>
 
-        {activeTab === "new" && (
-          <form onSubmit={handleSubmit} className="grid lg:grid-cols-2">
-            <div className="p-8 space-y-6">
-              <h3 className="font-bold text-gray-700 flex items-center gap-2">
-                <FiInfo className="text-orange-500" /> Ticket Details
-              </h3>
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          {activeTab === "new" && (
+            <form onSubmit={handleSubmit} className="grid lg:grid-cols-2">
+              <div className="p-5 sm:p-8 space-y-5 sm:space-y-6">
+                <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                  <FiInfo className="text-orange-500" /> Ticket Details
+                </h3>
 
-              <div>
-                <label className={labelStyle}><FiTag /> Subject</label>
-                <input
-                  type="text"
-                  name="subject"
-                  placeholder="Summary of the issue..."
-                  value={form.subject}
+                <div>
+                  <label className={labelStyle}>
+                    <FiTag /> Subject
+                  </label>
+                  <input
+                    type="text"
+                    name="subject"
+                    placeholder="Summary of the issue..."
+                    value={form.subject}
+                    onChange={handleChange}
+                    className={inputStyle}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className={labelStyle}>
+                    <FiMail /> Client Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="customer@domain.com"
+                    value={form.email}
+                    onChange={handleChange}
+                    className={`${inputStyle} disabled:cursor-not-allowed disabled:bg-gray-200`}
+                    required
+                    disabled={form.clientId}
+                  />
+                </div>
+
+                <div>
+                  <label className={labelStyle}>
+                    <FiMail /> Client Phone
+                  </label>
+                  <input
+                    type="text"
+                    name="phoneNumber"
+                    placeholder="Enter Phone Number..."
+                    value={form.phoneNumber}
+                    onChange={handleChange}
+                    className={`${inputStyle} disabled:cursor-not-allowed disabled:bg-gray-200`}
+                    required
+                    disabled={form.clientId}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <input
+                    name="companyName"
+                    placeholder="Company Name"
+                    value={form.companyName}
+                    onChange={handleChange}
+                    disabled={form.clientId}
+                    className={`${inputStyle} disabled:cursor-not-allowed disabled:bg-gray-200`}
+                  />
+                  <input
+                    name="clientName"
+                    placeholder="Client Name"
+                    value={form.clientName}
+                    onChange={handleChange}
+                    disabled={form.clientId}
+                    className={`${inputStyle} disabled:cursor-not-allowed disabled:bg-gray-200`}
+                  />
+                </div>
+
+                <textarea
+                  rows={3}
+                  value={initialComment}
+                  onChange={(e) => setInitialComment(e.target.value)}
+                  placeholder="Add an initial comment..."
+                  className={`${inputStyle} resize-none`}
+                />
+              </div>
+
+              <div className="p-5 sm:p-8 space-y-5 sm:space-y-6 bg-gray-50 border-t lg:border-t-0 lg:border-l">
+                <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                  <FiUser className="text-orange-500" /> Assignment
+                </h3>
+
+                <div>
+                  <label className={labelStyle}>
+                    <FiBriefcase /> Select Client
+                  </label>
+                  <Select
+                    value={selectedClient}
+                    onChange={handleClientChange}
+                    options={clientOptions}
+                    placeholder="Find a client..."
+                    styles={selectStyles}
+                    menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+                    menuPosition="fixed"
+                  />
+                </div>
+
+                <select
+                  name="jobHolder"
+                  value={form.jobHolder}
                   onChange={handleChange}
                   className={inputStyle}
                   required
-                />
+                >
+                  <option value="">Job Holder</option>
+                  {users.map((u) => (
+                    <option key={u._id} value={u.name}>
+                      {u.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-400 italic -mt-3 sm:-mt-4">
+                  * This person will be notified of the new ticket assignment.
+                </p>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3.5 sm:py-4 rounded-xl font-bold text-white bg-gradient-to-r from-orange-600 to-orange-500 disabled:opacity-50"
+                >
+                  {loading ? "Creating..." : "Create Ticket"}
+                </button>
               </div>
+            </form>
+          )}
 
-              <div>
-                <label className={labelStyle}><FiMail /> Client Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="customer@domain.com"
-                  value={form.email}
-                  onChange={handleChange}
-                  className={`${inputStyle} disabled:cursor-not-allowed disabled:bg-gray-200`}
-                  required
-                  disabled={form.clientId}
-                />
-              </div>
-
-
-              <div>
-                <label className={labelStyle}><FiMail /> Client Phone</label>
-                <input
-                  type="text"
-                  name="phoneNumber"
-                  placeholder="Enter Phone Number..."
-                  value={form.phoneNumber}
-                  onChange={handleChange}
-                  className={`${inputStyle} disabled:cursor-not-allowed disabled:bg-gray-200`}
-                  required
-                  disabled={form.clientId}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  name="companyName"
-                  placeholder="Company Name"
-                  value={form.companyName}
-                  onChange={handleChange}
-                  disabled={form.clientId}
-                  className={`${inputStyle} disabled:cursor-not-allowed disabled:bg-gray-200`}
-                />
-                <input
-                  name="clientName"
-                  placeholder="Client Name"
-                  value={form.clientName}
-                  onChange={handleChange}
-                  disabled={form.clientId}
-                  className={`${inputStyle} disabled:cursor-not-allowed disabled:bg-gray-200`}
-                />
-              </div>
-
-              <textarea
-                rows={3}
-                value={initialComment}
-                onChange={(e) => setInitialComment(e.target.value)}
-                placeholder="Add an initial comment..."
-                className={`${inputStyle} resize-none`}
-              />
-            </div>
-
-            <div className="p-8 space-y-6 bg-gray-50 border-l">
+          {activeTab === "existing" && (
+            <div className="p-5 sm:p-8 space-y-5 sm:space-y-6">
               <h3 className="font-bold text-gray-700 flex items-center gap-2">
-                <FiUser className="text-orange-500" /> Assignment
+                <IoTicketOutline className="text-orange-500" /> Find Ticket
               </h3>
 
-              <div>
-                <label className={labelStyle}><FiBriefcase /> Select Client</label>
-                <Select
-                  value={selectedClient}
-                  onChange={handleClientChange}
-                  options={clientOptions}
-                  placeholder="Find a client..."
-                  styles={selectStyles}
-                />
-              </div>
+              <Select
+                options={ticketOptions}
+                value={selectedTicket}
+                onChange={setSelectedTicket}
+                onInputChange={(val) => setSearchTerm(val)}
+                isLoading={searchingTickets}
+                filterOption={null}
+                formatOptionLabel={formatTicketOption}
+                placeholder="Search by subject, client, company, or ref..."
+                noOptionsMessage={() =>
+                  searchingTickets ? "Loading..." : "No matching tickets"
+                }
+                styles={selectStyles}
+                menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+                menuPosition="fixed"
+              />
 
-              <select name="jobHolder" value={form.jobHolder} onChange={handleChange} className={inputStyle} required>
-                <option value="">Job Holder</option>
-                {users.map((u) => <option key={u._id} value={u.name}>{u.name}</option>)}
-              </select>
-              <p className="text-xs text-gray-400 italic -mt-4">* This person will be notified of the new ticket assignment.</p>
+              {selectedTicket && (
+                <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                  <div className="px-5 py-4 bg-gradient-to-r from-orange-50 to-white border-b border-gray-100">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-11 h-11 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                          {(
+                            selectedTicket.raw.subject ||
+                            selectedTicket.raw.clientName ||
+                            selectedTicket.raw.companyName ||
+                            "?"
+                          )
+                            .charAt(0)
+                            .toUpperCase()}
+                        </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-orange-600 to-orange-500 disabled:opacity-50"
-              >
-                {loading ? "Creating..." : "Create Ticket"}
-              </button>
-            </div>
-          </form>
-        )}
-
-        {activeTab === "existing" && (
-          <div className="p-8 space-y-6">
-            <h3 className="font-bold text-gray-700 flex items-center gap-2">
-              <IoTicketOutline className="text-orange-500" /> Find Ticket
-            </h3>
-
-            <Select
-  options={ticketOptions}
-  value={selectedTicket}
-  onChange={setSelectedTicket}
-  onInputChange={(val) => setSearchTerm(val)}
-  isLoading={searchingTickets}
-  filterOption={null}
-  formatOptionLabel={formatTicketOption}
-  placeholder="Search by subject, client, company, or ref..."
-  noOptionsMessage={() =>
-    searchingTickets ? "Loading..." : "No matching tickets"
-  }
-  styles={selectStyles}
-/>
-
-            {selectedTicket && (
-              <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-                <div className="px-5 py-4 bg-gradient-to-r from-orange-50 to-white border-b border-gray-100">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-11 h-11 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm flex-shrink-0">
-                        {(selectedTicket.raw.subject || selectedTicket.raw.clientName || selectedTicket.raw.companyName || "?")
-                          .charAt(0)
-                          .toUpperCase()}
+                        <div className="min-w-0">
+                          <h4 className="font-semibold text-gray-800 truncate">
+                            {selectedTicket.raw.subject ||
+                              selectedTicket.raw.clientName ||
+                              "Untitled Ticket"}
+                          </h4>
+                          {selectedTicket.raw.subject &&
+                            (selectedTicket.raw.clientName ||
+                              selectedTicket.raw.companyName) && (
+                              <p className="text-xs text-gray-500 truncate mt-0.5">
+                                {selectedTicket.raw.clientName}
+                                {selectedTicket.raw.clientName &&
+                                selectedTicket.raw.companyName
+                                  ? " • "
+                                  : ""}
+                                {selectedTicket.raw.companyName}
+                              </p>
+                            )}
+                        </div>
                       </div>
 
-                      <div className="min-w-0">
-                        <h4 className="font-semibold text-gray-800 truncate">
-                          {selectedTicket.raw.subject || selectedTicket.raw.clientName || "Untitled Ticket"}
-                        </h4>
-                        {selectedTicket.raw.subject && (selectedTicket.raw.clientName || selectedTicket.raw.companyName) && (
-                          <p className="text-xs text-gray-500 truncate mt-0.5">
-                            {selectedTicket.raw.clientName}
-                            {selectedTicket.raw.clientName && selectedTicket.raw.companyName ? " • " : ""}
-                            {selectedTicket.raw.companyName}
-                          </p>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {selectedTicket.raw.ticketRef && (
+                          <span className="hidden sm:inline-flex px-2 py-1 rounded-md bg-gray-100 text-[10px] font-semibold text-gray-500">
+                            T-{selectedTicket.raw.ticketRef}
+                          </span>
+                        )}
+                        {selectedTicket.raw.state && (
+                          <span className="px-2.5 py-1 rounded-full bg-orange-100 text-orange-600 text-[10px] font-semibold">
+                            {selectedTicket.raw.state}
+                          </span>
                         )}
                       </div>
                     </div>
+                  </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {selectedTicket.raw.ticketRef && (
-                        <span className="hidden sm:inline-flex px-2 py-1 rounded-md bg-gray-100 text-[10px] font-semibold text-gray-500">
-                          T-{selectedTicket.raw.ticketRef}
-                        </span>
-                      )}
-                      {selectedTicket.raw.state && (
-                        <span className="px-2.5 py-1 rounded-full bg-orange-100 text-orange-600 text-[10px] font-semibold">
-                          {selectedTicket.raw.state}
-                        </span>
-                      )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-gray-100">
+                    <div className="bg-white px-5 py-3.5">
+                      <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-1">
+                        Client
+                      </p>
+                      <p className="text-sm font-medium text-gray-700 truncate">
+                        {selectedTicket.raw.clientName || "—"}
+                      </p>
+                    </div>
+
+                    <div className="bg-white px-5 py-3.5">
+                      <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-1">
+                        Company
+                      </p>
+                      <p className="text-sm font-medium text-gray-700 truncate">
+                        {selectedTicket.raw.companyName || "—"}
+                      </p>
+                    </div>
+
+                    <div className="bg-white px-5 py-3.5 sm:col-span-2">
+                      <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-1">
+                        Email
+                      </p>
+                      <p className="text-sm font-medium text-gray-700 truncate">
+                        {selectedTicket.raw.email || "No email available"}
+                      </p>
                     </div>
                   </div>
                 </div>
+              )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-gray-100">
-                  <div className="bg-white px-5 py-3.5">
-                    <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-1">Client</p>
-                    <p className="text-sm font-medium text-gray-700 truncate">{selectedTicket.raw.clientName || "—"}</p>
-                  </div>
-
-                  <div className="bg-white px-5 py-3.5">
-                    <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-1">Company</p>
-                    <p className="text-sm font-medium text-gray-700 truncate">{selectedTicket.raw.companyName || "—"}</p>
-                  </div>
-
-                  <div className="bg-white px-5 py-3.5 sm:col-span-2">
-                    <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-1">Email</p>
-                    <p className="text-sm font-medium text-gray-700 truncate">{selectedTicket.raw.email || "No email available"}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={handleLinkExisting}
-              disabled={loading || !selectedTicket}
-              className="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-orange-600 to-orange-500 disabled:opacity-50"
-            >
-              {loading ? "Linking..." : "Link Thread to Ticket"}
-            </button>
-          </div>
-        )}
+              <button
+                type="button"
+                onClick={handleLinkExisting}
+                disabled={loading || !selectedTicket}
+                className="w-full py-3.5 sm:py-4 rounded-xl font-bold text-white bg-gradient-to-r from-orange-600 to-orange-500 disabled:opacity-50"
+              >
+                {loading ? "Linking..." : "Link Thread to Ticket"}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

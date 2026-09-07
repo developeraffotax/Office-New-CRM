@@ -8,6 +8,8 @@ import { useEscapeKey } from "../../../utlis/useEscapeKey";
 import { createTicket } from "../utils/createTicket";
 import { useMemo } from "react";
 import { formatLeadOption } from "../utils/createLeadModal.utils";
+import { useIsMobile } from "../hooks/useIsMobile"; 
+import { useSwipeToClose } from "../hooks/useSwipeToClose";
 
 const formatDate = (date) => {
   const d = new Date(date);
@@ -49,11 +51,23 @@ export default function CreateLeadModal({
   createLeadModal,
   setCreateLeadModal,
   users,
-
   onUpdate,
 }) {
+  const isMobile = useIsMobile();
+
+  const closeModal = () => {
+  setCreateLeadModal((p) => ({ ...p, isOpen: false }));
+};
+
+const { offset, isDragging, handlers } = useSwipeToClose({
+  onClose: closeModal,
+  enabled: isMobile,
+  threshold: 110,
+});
   const brand = useMemo(
-    () => createLeadModal?.companyName?.charAt(0).toUpperCase() + createLeadModal?.companyName?.slice(1),
+    () =>
+      createLeadModal?.companyName?.charAt(0).toUpperCase() +
+      createLeadModal?.companyName?.slice(1),
     [createLeadModal?.companyName],
   );
 
@@ -225,7 +239,7 @@ export default function CreateLeadModal({
     <button
       type="button"
       onClick={() => setActiveTab(tab)}
-      className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+      className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
         activeTab === tab
           ? "bg-orange-500 text-white"
           : "bg-gray-100 text-gray-500 hover:bg-gray-200"
@@ -236,14 +250,55 @@ export default function CreateLeadModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 bg-slate-900/20 backdrop-blur-sm font-inter  ">
-      <div className="min-h-[80vh] bg-white  shadow-2xl w-full max-w-4xl mt-12 border border-gray-100 relative animate-slide-down ">
-        <div className="absolute bottom-6 right-6 flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-orange-600 text-xs font-semibold">
+<div
+    className={`fixed inset-0 z-50 flex justify-center bg-slate-900/30 backdrop-blur-sm font-inter ${
+      isMobile ? "items-end" : "items-start p-4"
+    }`}
+  >
+    <div
+      
+      style={
+        isMobile
+          ? {
+              transform: `translateY(${offset}px)`,
+              transition: isDragging ? "none" : "transform 0.25s ease-out",
+            }
+          : undefined
+      }
+      className={`
+        relative bg-white shadow-2xl border border-gray-100 flex flex-col overflow-hidden  min-h-[82vh] max-h-[90vh]
+        ${
+          isMobile
+            ? "w-full   rounded-t-2xl"
+            : "w-full max-w-4xl mt-12    rounded-2xl animate-slide-down"
+        }
+      `}
+    >
+        {/* Drag handle – mobile only */}
+ 
+{isMobile && (
+  <div
+    {...handlers}
+    className="flex justify-center pt-3 pb-2 flex-shrink-0 touch-none cursor-grab active:cursor-grabbing"
+  >
+    <div className="w-10 h-1.5 rounded-full bg-gray-300" />
+  </div>
+)}
+
+        {/* Company badge */}
+        <div
+          className={`absolute flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-orange-600 text-xs font-semibold z-10 ${
+            isMobile ? "top-3 left-4" : "bottom-6 right-6"
+          }`}
+        >
           <FiLayers /> {createLeadModal?.companyName}
         </div>
 
-        <div className="px-8 py-4 border-b flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-800">Link This Thread</h2>
+        {/* Header */}
+        <div className="flex-shrink-0 px-5 sm:px-8 py-3.5 sm:py-4 border-b flex justify-between items-center">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-800">
+            Link This Thread
+          </h2>
           <button
             onClick={() => setCreateLeadModal((p) => ({ ...p, isOpen: false }))}
             className="p-2 hover:bg-gray-100 rounded-full text-gray-400"
@@ -252,355 +307,364 @@ export default function CreateLeadModal({
           </button>
         </div>
 
-        <div className="px-8 pt-4 flex gap-2">
+        {/* Tabs */}
+        <div className="flex-shrink-0 px-5 sm:px-8 pt-3 sm:pt-4 flex gap-2">
           {tabBtn("new", "Create New Lead")}
           {tabBtn("existing", "Link Existing Lead")}
         </div>
 
-        {activeTab === "new" && (
-          <form onSubmit={handleSubmit} className="grid lg:grid-cols-2">
-            <div className="p-8 space-y-6">
-              <h3 className="font-bold text-gray-700 flex items-center gap-2">
-                <FiInfo className="text-orange-500" /> Lead Details
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  name="companyName"
-                  placeholder="Company Name"
-                  value={form.companyName}
-                  onChange={handleChange}
-                  className={inputStyle}
-                />
-                <input
-                  name="clientName"
-                  placeholder="Client Name"
-                  value={form.clientName}
-                  onChange={handleChange}
-                  className={inputStyle}
-                />
-              </div>
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                value={form.email}
-                onChange={handleChange}
-                className={inputStyle}
-              />
-              <input
-                type="text"
-                name="phoneNumber"
-                placeholder="Phone Number"
-                value={form.phoneNumber}
-                onChange={handleChange}
-                className={inputStyle}
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  name="value"
-                  placeholder="Lead Value"
-                  value={form.value}
-                  onChange={handleChange}
-                  className={inputStyle}
-                />
-                <input
-                  type="number"
-                  name="number"
-                  placeholder="Number"
-                  value={form.number}
-                  onChange={handleChange}
-                  className={inputStyle}
-                />
-              </div>
-              <textarea
-                name="Note"
-                placeholder="Notes"
-                rows={3}
-                value={form.Note}
-                onChange={handleChange}
-                className={`${inputStyle} resize-none`}
-              />
-              <div className="grid grid-cols-1 gap-3">
-                <div>
-                  <label className={labelStyle}>Follow Up Date</label>
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          {activeTab === "new" && (
+            <form onSubmit={handleSubmit} className="grid lg:grid-cols-2">
+              <div className="p-5 sm:p-8 space-y-5 sm:space-y-6">
+                <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                  <FiInfo className="text-orange-500" /> Lead Details
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <input
-                    type="date"
-                    name="followUpDate"
-                    value={form.followUpDate}
+                    name="companyName"
+                    placeholder="Company Name"
+                    value={form.companyName}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  />
+                  <input
+                    name="clientName"
+                    placeholder="Client Name"
+                    value={form.clientName}
                     onChange={handleChange}
                     className={inputStyle}
                   />
                 </div>
-                <div>
-                  <label className={labelStyle}>Year End</label>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={form.email}
+                  onChange={handleChange}
+                  className={inputStyle}
+                />
+                <input
+                  type="text"
+                  name="phoneNumber"
+                  placeholder="Phone Number"
+                  value={form.phoneNumber}
+                  onChange={handleChange}
+                  className={inputStyle}
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <input
-                    type="date"
-                    name="yearEnd"
-                    value={form.yearEnd}
+                    name="value"
+                    placeholder="Lead Value"
+                    value={form.value}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  />
+                  <input
+                    type="number"
+                    name="number"
+                    placeholder="Number"
+                    value={form.number}
                     onChange={handleChange}
                     className={inputStyle}
                   />
                 </div>
-                <div>
-                  <label className={labelStyle}>Job Deadline</label>
-                  <input
-                    type="date"
-                    name="jobDeadline"
-                    value={form.jobDeadline}
-                    onChange={handleChange}
-                    className={inputStyle}
-                  />
+                <textarea
+                  name="Note"
+                  placeholder="Notes"
+                  rows={3}
+                  value={form.Note}
+                  onChange={handleChange}
+                  className={`${inputStyle} resize-none`}
+                />
+                <div className="grid grid-cols-1 gap-3">
+                  <div>
+                    <label className={labelStyle}>Follow Up Date</label>
+                    <input
+                      type="date"
+                      name="followUpDate"
+                      value={form.followUpDate}
+                      onChange={handleChange}
+                      className={inputStyle}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelStyle}>Year End</label>
+                    <input
+                      type="date"
+                      name="yearEnd"
+                      value={form.yearEnd}
+                      onChange={handleChange}
+                      className={inputStyle}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelStyle}>Job Deadline</label>
+                    <input
+                      type="date"
+                      name="jobDeadline"
+                      value={form.jobDeadline}
+                      onChange={handleChange}
+                      className={inputStyle}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="p-8 space-y-6 bg-gray-50 border-l">
-              <h3 className="font-bold text-gray-700 flex items-center gap-2">
-                <FiUser className="text-orange-500" /> Assignment
-              </h3>
-              <select
-                name="jobHolder"
-                value={form.jobHolder}
-                onChange={handleChange}
-                className={inputStyle}
-                required
-              >
-                <option value="">Job Holder</option>
-                {users.map((u) => (
-                  <option key={u._id} value={u.name}>
-                    {u.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                name="department"
-                value={form.department}
-                onChange={handleChange}
-                className={inputStyle}
-              >
-                <option value="">Select Department</option>
-                {departments.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
-
-              <h3 className="font-bold text-gray-700 flex items-center gap-2">
-                <FiUser className="text-orange-500" /> Sources
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="p-5 sm:p-8 space-y-5 sm:space-y-6 bg-gray-50 border-t lg:border-t-0 lg:border-l">
+                <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                  <FiUser className="text-orange-500" /> Assignment
+                </h3>
                 <select
-                  name="stage"
-                  value={form.stage}
+                  name="jobHolder"
+                  value={form.jobHolder}
+                  onChange={handleChange}
+                  className={inputStyle}
+                  required
+                >
+                  <option value="">Job Holder</option>
+                  {users.map((u) => (
+                    <option key={u._id} value={u.name}>
+                      {u.name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  name="department"
+                  value={form.department}
                   onChange={handleChange}
                   className={inputStyle}
                 >
-                  <option value="">Select Stage</option>
-                  {stages.map((s) => (
+                  <option value="">Select Department</option>
+                  {departments.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+
+                <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                  <FiUser className="text-orange-500" /> Sources
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <select
+                    name="stage"
+                    value={form.stage}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  >
+                    <option value="">Select Stage</option>
+                    {stages.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    name="source"
+                    value={form.source}
+                    onChange={handleChange}
+                    className={inputStyle}
+                  >
+                    <option value="">Select Source</option>
+                    {sources.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <select
+                  name="lead_Source"
+                  value={form.lead_Source}
+                  onChange={handleChange}
+                  className={inputStyle}
+                >
+                  <option value="">Select Lead Source</option>
+                  {leadSource.map((s) => (
                     <option key={s} value={s}>
                       {s}
                     </option>
                   ))}
                 </select>
-                <select
-                  name="source"
-                  value={form.source}
-                  onChange={handleChange}
-                  className={inputStyle}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3.5 sm:py-4 rounded-xl font-bold text-white bg-gradient-to-r from-orange-600 to-orange-500 disabled:opacity-50"
                 >
-                  <option value="">Select Source</option>
-                  {sources.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
+                  {loading ? "Creating..." : "Create Lead"}
+                </button>
               </div>
-              <select
-                name="lead_Source"
-                value={form.lead_Source}
-                onChange={handleChange}
-                className={inputStyle}
-              >
-                <option value="">Select Lead Source</option>
-                {leadSource.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
+            </form>
+          )}
+
+          {activeTab === "existing" && (
+            <div className="p-5 sm:p-8 space-y-5 sm:space-y-6">
+              <h3 className="font-bold text-gray-700 flex items-center gap-2">
+                <FiSearch className="text-orange-500" /> Find Lead
+              </h3>
+
+              <Select
+                options={leadOptions}
+                value={selectedLead}
+                onChange={setSelectedLead}
+                onInputChange={(val) => setSearchTerm(val)}
+                isLoading={searchingLeads}
+                filterOption={null}
+                formatOptionLabel={formatLeadOption}
+                placeholder="Search by name, company, email, or ref..."
+                noOptionsMessage={() =>
+                  searchingLeads ? "Loading..." : "No matching leads"
+                }
+                menuPortalTarget={
+                  typeof document !== "undefined" ? document.body : null
+                }
+                menuPosition="fixed"
+                styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    minHeight: "52px",
+                    borderRadius: "12px",
+                    borderColor: state.isFocused ? "#f97316" : "#e5e7eb",
+                    boxShadow: state.isFocused
+                      ? "0 0 0 3px rgba(249, 115, 22, 0.12)"
+                      : "none",
+                    backgroundColor: "#f9fafb",
+                    "&:hover": {
+                      borderColor: "#f97316",
+                    },
+                  }),
+
+                  menu: (base) => ({
+                    ...base,
+                    borderRadius: "12px",
+                    overflow: "hidden",
+                    padding: "6px",
+                    boxShadow: "0 10px 30px rgba(15, 23, 42, 0.12)",
+                    zIndex: 50,
+                  }),
+
+                  option: (base, state) => ({
+                    ...base,
+                    borderRadius: "9px",
+                    padding: "10px 12px",
+                    backgroundColor: state.isSelected
+                      ? "#fff7ed"
+                      : state.isFocused
+                      ? "#f9fafb"
+                      : "white",
+                    color: "#374151",
+                    cursor: "pointer",
+                  }),
+
+                  singleValue: (base) => ({
+                    ...base,
+                    color: "#374151",
+                  }),
+
+                  placeholder: (base) => ({
+                    ...base,
+                    color: "#9ca3af",
+                  }),
+                }}
+              />
+
+              {selectedLead && (
+                <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                  {/* Header */}
+                  <div className="px-5 py-4 bg-gradient-to-r from-orange-50 to-white border-b border-gray-100">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {/* Avatar */}
+                        <div className="w-11 h-11 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                          {(
+                            selectedLead.raw.clientName ||
+                            selectedLead.raw.companyName ||
+                            "?"
+                          )
+                            .charAt(0)
+                            .toUpperCase()}
+                        </div>
+
+                        <div className="min-w-0">
+                          <h4 className="font-semibold text-gray-800 truncate">
+                            {selectedLead.raw.clientName ||
+                              selectedLead.raw.companyName ||
+                              "Unnamed Lead"}
+                          </h4>
+
+                          {selectedLead.raw.companyName &&
+                            selectedLead.raw.clientName && (
+                              <p className="text-xs text-gray-500 truncate mt-0.5">
+                                {selectedLead.raw.companyName}
+                              </p>
+                            )}
+                        </div>
+                      </div>
+
+                      {/* Lead reference / stage */}
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {selectedLead.raw.leadRef && (
+                          <span className="hidden sm:inline-flex px-2 py-1 rounded-md bg-gray-100 text-[10px] font-semibold text-gray-500">
+                            L-{selectedLead.raw.leadRef}
+                          </span>
+                        )}
+
+                        {selectedLead.raw.stage && (
+                          <span className="px-2.5 py-1 rounded-full bg-orange-100 text-orange-600 text-[10px] font-semibold">
+                            {selectedLead.raw.stage}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Details */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-gray-100">
+                    <div className="bg-white px-5 py-3.5">
+                      <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-1">
+                        Client
+                      </p>
+                      <p className="text-sm font-medium text-gray-700 truncate">
+                        {selectedLead.raw.clientName || "—"}
+                      </p>
+                    </div>
+
+                    <div className="bg-white px-5 py-3.5">
+                      <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-1">
+                        Company
+                      </p>
+                      <p className="text-sm font-medium text-gray-700 truncate">
+                        {selectedLead.raw.companyName || "—"}
+                      </p>
+                    </div>
+
+                    <div className="bg-white px-5 py-3.5 sm:col-span-2">
+                      <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-1">
+                        Email
+                      </p>
+
+                      <p className="text-sm font-medium text-gray-700 truncate">
+                        {selectedLead.raw.email || "No email available"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-orange-600 to-orange-500 disabled:opacity-50"
+                type="button"
+                onClick={handleLinkExisting}
+                disabled={loading || !selectedLead}
+                className="w-full py-3.5 sm:py-4 rounded-xl font-bold text-white bg-gradient-to-r from-orange-600 to-orange-500 disabled:opacity-50"
               >
-                {loading ? "Creating..." : "Create Lead"}
+                {loading ? "Linking..." : "Link Thread to Lead"}
               </button>
             </div>
-          </form>
-        )}
-
-        {activeTab === "existing" && (
-          <div className="p-8 space-y-6">
-            <h3 className="font-bold text-gray-700 flex items-center gap-2">
-              <FiSearch className="text-orange-500" /> Find Lead
-            </h3>
-
-            <Select
-              options={leadOptions}
-              value={selectedLead}
-              onChange={setSelectedLead}
-              onInputChange={(val) => setSearchTerm(val)}
-              isLoading={searchingLeads}
-              filterOption={null}
-              formatOptionLabel={formatLeadOption}
-              placeholder="Search by name, company, email, or ref..."
-              noOptionsMessage={() =>
-                searchingLeads ? "Loading..." : "No matching leads"
-              }
-              styles={{
-                control: (base, state) => ({
-                  ...base,
-                  minHeight: "52px",
-                  borderRadius: "12px",
-                  borderColor: state.isFocused ? "#f97316" : "#e5e7eb",
-                  boxShadow: state.isFocused
-                    ? "0 0 0 3px rgba(249, 115, 22, 0.12)"
-                    : "none",
-                  backgroundColor: "#f9fafb",
-                  "&:hover": {
-                    borderColor: "#f97316",
-                  },
-                }),
-
-                menu: (base) => ({
-                  ...base,
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                  padding: "6px",
-                  boxShadow: "0 10px 30px rgba(15, 23, 42, 0.12)",
-                }),
-
-                option: (base, state) => ({
-                  ...base,
-                  borderRadius: "9px",
-                  padding: "10px 12px",
-                  backgroundColor: state.isSelected
-                    ? "#fff7ed"
-                    : state.isFocused
-                    ? "#f9fafb"
-                    : "white",
-                  color: "#374151",
-                  cursor: "pointer",
-                }),
-
-                singleValue: (base) => ({
-                  ...base,
-                  color: "#374151",
-                }),
-
-                placeholder: (base) => ({
-                  ...base,
-                  color: "#9ca3af",
-                }),
-              }}
-            />
-
-            {selectedLead && (
-              <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-                {/* Header */}
-                <div className="px-5 py-4 bg-gradient-to-r from-orange-50 to-white border-b border-gray-100">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      {/* Avatar */}
-                      <div className="w-11 h-11 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm flex-shrink-0">
-                        {(
-                          selectedLead.raw.clientName ||
-                          selectedLead.raw.companyName ||
-                          "?"
-                        )
-                          .charAt(0)
-                          .toUpperCase()}
-                      </div>
-
-                      <div className="min-w-0">
-                        <h4 className="font-semibold text-gray-800 truncate">
-                          {selectedLead.raw.clientName ||
-                            selectedLead.raw.companyName ||
-                            "Unnamed Lead"}
-                        </h4>
-
-                        {selectedLead.raw.companyName &&
-                          selectedLead.raw.clientName && (
-                            <p className="text-xs text-gray-500 truncate mt-0.5">
-                              {selectedLead.raw.companyName}
-                            </p>
-                          )}
-                      </div>
-                    </div>
-
-                    {/* Lead reference / stage */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {selectedLead.raw.leadRef && (
-                        <span className="hidden sm:inline-flex px-2 py-1 rounded-md bg-gray-100 text-[10px] font-semibold text-gray-500">
-                          L-{selectedLead.raw.leadRef}
-                        </span>
-                      )}
-
-                      {selectedLead.raw.stage && (
-                        <span className="px-2.5 py-1 rounded-full bg-orange-100 text-orange-600 text-[10px] font-semibold">
-                          {selectedLead.raw.stage}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Details */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-gray-100">
-                  <div className="bg-white px-5 py-3.5">
-                    <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-1">
-                      Client
-                    </p>
-                    <p className="text-sm font-medium text-gray-700 truncate">
-                      {selectedLead.raw.clientName || "—"}
-                    </p>
-                  </div>
-
-                  <div className="bg-white px-5 py-3.5">
-                    <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-1">
-                      Company
-                    </p>
-                    <p className="text-sm font-medium text-gray-700 truncate">
-                      {selectedLead.raw.companyName || "—"}
-                    </p>
-                  </div>
-
-                  <div className="bg-white px-5 py-3.5 sm:col-span-2">
-                    <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-1">
-                      Email
-                    </p>
-
-                    <p className="text-sm font-medium text-gray-700 truncate">
-                      {selectedLead.raw.email || "No email available"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={handleLinkExisting}
-              disabled={loading || !selectedLead}
-              className="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-orange-600 to-orange-500 disabled:opacity-50"
-            >
-              {loading ? "Linking..." : "Link Thread to Lead"}
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

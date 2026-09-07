@@ -390,7 +390,7 @@ export default function CreateTicketModal({
                     value={form.phoneNumber}
                     onChange={handleChange}
                     className={`${inputStyle} disabled:cursor-not-allowed disabled:bg-gray-200`}
-                    required
+ 
                     disabled={form.clientId}
                   />
                 </div>

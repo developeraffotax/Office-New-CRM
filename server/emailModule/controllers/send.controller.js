@@ -68,7 +68,9 @@ export async function sendEmail(req, res) {
       gmailMessageId: response?.data?.id,
       userName,
       companyName,
-      sentFrom: "CRM-Inbox"
+      sentFrom: "CRM-Inbox",
+      interactionType: "initial"
+
     });
 
  

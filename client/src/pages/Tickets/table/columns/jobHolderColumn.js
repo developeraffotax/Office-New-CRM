@@ -80,7 +80,13 @@ export const jobHolderColumn = (ctx) => {
                 </div>
               );
             },
-            filterFn: "equals",
+            filterFn: (row, columnId, filterValue) => {
+  const rowValue = row.getValue(columnId);
+
+  if (!filterValue) return true;
+
+  return String(rowValue ?? "") === String(filterValue);
+},
             filterSelectOptions: ctx.users.map((jobhold) => jobhold.name),
             filterVariant: "select",
             size: 100,

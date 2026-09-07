@@ -6,7 +6,8 @@ export const saveEmailMessage = async ({
   gmailMessageId,
   userName,
   companyName,
-  sentFrom
+  sentFrom,
+  interactionType
 }) => {
   try {
     await EmailMessage.create({
@@ -14,7 +15,8 @@ export const saveEmailMessage = async ({
       gmailMessageId,
       senderName: userName,
       companyName,
-      sentFrom
+      sentFrom,
+      interactionType
     });
   } catch (error) {
     console.error("Error saving email message:", error.message);

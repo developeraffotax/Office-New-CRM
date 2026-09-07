@@ -247,7 +247,8 @@ export const sendEmail = async (req, res) => {
           gmailMessageId: messageId,
           userName,
           companyName:company?.trim().toLowerCase(),
-          sentFrom: "CRM-Tickets"
+          sentFrom: "CRM-Tickets",
+          interactionType: "initial"
         });
 
 

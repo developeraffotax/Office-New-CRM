@@ -13,13 +13,21 @@ const EmailMessageSchema = new mongoose.Schema(
     sentFrom: {
       type: String,
       enum: ["CRM-Tickets", "CRM-Inbox"]
-    }
+    },
+
+
+    interactionType: {
+      type: String,
+      enum: ["initial", "reply"],
+
+    },
    
   },
   { timestamps: true },
 );
 
 
-EmailMessageSchema.index({ companyName: 1, threadgmailThreadIdId: 1 });
+EmailMessageSchema.index({ companyName: 1, gmailThreadId: 1 });
+EmailMessageSchema.index({ companyName: 1, senderName: 1 });
 
 export default mongoose.model("EmailMessage", EmailMessageSchema);

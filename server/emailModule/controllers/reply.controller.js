@@ -21,6 +21,7 @@ export async function reply(req, res) {
       attachments,
       ticketId,
       jobHolder,
+       interactionType = "reply", // "initial" | "reply" — comes from the frontend now
     } = req.body;
 
     const userName = req.user.user.name;
@@ -58,7 +59,8 @@ export async function reply(req, res) {
       gmailMessageId: response?.data?.id,
       userName,
       companyName,
-      sentFrom: sentFrom
+      sentFrom: sentFrom,
+      interactionType: interactionType,
     });
 
     // If linked to ticket → update ticket

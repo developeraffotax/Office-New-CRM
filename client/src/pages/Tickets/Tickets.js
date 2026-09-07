@@ -49,8 +49,7 @@ import UserTicketChart from "./userTicketChart/UserTicketChart";
 import { BsGraphUpArrow } from "react-icons/bs";
 import { usePersistedUsers } from "../../hooks/usePersistedUsers";
 import SelectedUsers from "../../components/SelectedUsers";
-import Thread from "../../components/gmail/thread/Thread";
-import EmailThreadsSidebar from "../../components/shared/EmailThreadsSidebar";
+ 
 import RelatedConversationsSidebar from "../../components/shared/RelatedConversationsSidebar/RelatedConversationsSidebar";
 
 const updates_object_init = { jobHolder: "", jobStatus: "", jobDate: "", leadUser: "" };
@@ -369,6 +368,7 @@ const closeEmailSidebar = () => {
         `${process.env.REACT_APP_API_URL}/api/v1/tickets/all/tickets`,
       );
       if (data) {
+        console.log("Fetched Emails:", data.emails);
         setEmailData(data.emails);
         setIsLoading(false);
       }
@@ -766,11 +766,27 @@ const closeEmailSidebar = () => {
   // ----------------------------
   // 📑 Columns
   // ----------------------------
-  const columns = useMemo(() => getTicketsColumns(ctx), [ctx]);
+ const columns = useMemo(() => {
+  const result = getTicketsColumns(ctx);
+
+  console.log("MRT COLUMNS:", result);
+
+  return Array.isArray(result) ? result.filter(Boolean) : [];
+}, [ctx]);
+
+const tableData = useMemo(() => {
+  return Array.isArray(emailData)
+    ? emailData.filter(Boolean)
+    : [];
+}, [emailData]);
+
+ 
+
 
   const table = useMaterialReactTable({
     columns,
-    data: emailData || [],
+    
+    data: tableData || [],
     enableStickyHeader: true,
     enableStickyFooter: true,
     muiTableContainerProps: { sx: { maxHeight: "850px" } },

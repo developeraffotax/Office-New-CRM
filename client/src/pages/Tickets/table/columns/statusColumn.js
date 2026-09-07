@@ -52,7 +52,13 @@ export const statusColumn = (ctx) => {
             </div>
           );
         },
-        filterFn: "equals",
+         filterFn: (row, columnId, filterValue) => {
+  const rowValue = row.getValue(columnId);
+
+  if (!filterValue) return true;
+
+  return String(rowValue ?? "") === String(filterValue);
+},
         filterSelectOptions: ctx.status.map((stat) => stat),
         filterVariant: "select",
         size: 90,

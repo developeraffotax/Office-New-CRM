@@ -9,18 +9,21 @@ import EmailThread from "../models/EmailThread.js";
 
 
 
-function extractParticipants(headerValue = "") {
-  return headerValue
-    .split(",")
+function extractParticipants(to) {
+  // normalize: array of addresses (frontend) OR comma-separated header string (legacy) OR single string
+  const addresses = Array.isArray(to)
+    ? to
+    : String(to || "").split(",");
+
+  return addresses
     .map((addr) => {
-      const match = addr.match(/(.*)<(.+)>/);
+      const match = String(addr).match(/(.*)<(.+)>/);
       const name = match ? match[1].trim().replace(/^"|"$/g, "") : "";
       const email = (match ? match[2] : addr).trim().toLowerCase();
       return { name, email };
     })
     .filter((p) => p.email);
 }
-
 
 
 

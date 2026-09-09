@@ -30,6 +30,7 @@ import { hasPermission } from "../../../utlis/checkPermission";
 import ProfileModal from "../../Modals/ProfileModal";
 import SidebarDesktop from "./SidebarDesktop";
 import SidebarMobile from "./SidebarMobile";
+import { isNotificationAllowed } from "../header/getNotificationCategory";
 
 export default function Sidebar({
   hide = false,
@@ -57,22 +58,22 @@ export default function Sidebar({
   const { showCrmNotifications = true, showEmailNotifications = true } =
     settings || {};
 
-  const isNotificationAllowed = (type) =>
-    type === "ticket_received" ? showEmailNotifications : showCrmNotifications;
-
+ 
   const getUnreadCount = (type) =>
     notifications.filter(
       (notification) =>
         notification.type === type &&
         notification.status === "unread" &&
-        isNotificationAllowed(notification.type),
+        isNotificationAllowed(notification.type, settings),
     ).length;
 
   const taskCount = getUnreadCount("task_assigned");
   const jobCount = getUnreadCount("job_assigned");
   const ticketAssignedCount = getUnreadCount("ticket_assigned");
   const ticketReceivedCount = getUnreadCount("ticket_received");
+
   const threadAssignedCount = getUnreadCount("thread_assigned");
+  const threadReceivedCount = getUnreadCount("email_received");
 
   useEffect(() => {
     const firstPathSegment = location.pathname.split("/")[1];
@@ -127,7 +128,8 @@ export default function Sidebar({
                   key: "tasks",
                   title: "New Assigned Tasks",
                   count: taskCount,
-                  className: "bg-orange-500 border-black/20 text-white",
+                  className: "bg-amber-50 text-amber-800 border border-amber-200",
+   
                   // activeClass: "bg-white text-orange-600",
                 },
               ]
@@ -141,7 +143,8 @@ export default function Sidebar({
                   key: "jobs",
                   title: "New Assigned Jobs",
                   count: jobCount,
-                  className: "bg-orange-500 border-black/20 text-white",
+                  className: "bg-amber-50 text-amber-800 border border-amber-200",
+   
                   // activeClass: "bg-white text-orange-600",
                 },
               ]
@@ -160,17 +163,24 @@ export default function Sidebar({
             : `/mail?folder=inbox&companyName=affotax&userId=${user?.id}&status=progress`,
           IoMailUnreadOutline,
           {
-            badges: threadAssignedCount
-              ? [
-                  {
-                    key: "threads",
-                    title: "New Assigned Threads",
-                    count: threadAssignedCount,
-                    className: "bg-orange-500 border-black/20 text-white",
-                    // activeClass: "bg-white text-orange-600",
-                  },
-                ]
-              : [],
+            badges: [
+            threadReceivedCount && {
+              key: "received_threads",
+              title: "New Received Emails",
+              count: threadReceivedCount,
+              className: "bg-blue-50 text-blue-700 border border-blue-200",
+              
+            },
+            threadAssignedCount && {
+              key: "assigned_threads",
+              title: "New Assigned Threads",
+              count: threadAssignedCount,
+              className: "bg-amber-50 text-amber-800 border border-amber-200",
+   
+
+
+            },
+          ].filter(Boolean),
           },
         ),
       (user?.role?.name === "Admin" || hasPermission(user, "Whatsapp")) &&
@@ -197,14 +207,14 @@ export default function Sidebar({
               key: "received",
               title: "New Received Tickets",
               count: ticketReceivedCount,
-              className: "bg-blue-500 text-white",
-              activeClass: "bg-white text-blue-500",
+              className: "bg-blue-50 text-blue-700 border border-blue-200",
+              // activeClass: "bg-blue-600 text-white",
             },
             ticketAssignedCount && {
               key: "assigned",
               title: "New Assigned Tickets",
               count: ticketAssignedCount,
-              className: "bg-orange-500 border-black/20 text-white",
+              className: "bg-amber-50 text-amber-800 border border-amber-200",
               // activeClass: "bg-white text-orange-600",
             },
           ].filter(Boolean),
@@ -292,6 +302,7 @@ export default function Sidebar({
     ticketAssignedCount,
     ticketReceivedCount,
     threadAssignedCount,
+    threadReceivedCount,
     showCrmNotifications,
     showEmailNotifications,
 

@@ -9,6 +9,7 @@ import AssignUser from "../shared/ui/AssignUser.js";
 import AssignCategory from "../shared/ui/AssignCategory.js";
 import LeadButton from "../shared/ui/LeadButton.jsx";
 import TicketButton from "../shared/ui/TicketButton.jsx";
+import RefBadge from "../shared/ui/RefBadge.js";
 
 export default function ThreadHeaderMobile({
   subject,
@@ -150,7 +151,7 @@ export default function ThreadHeaderMobile({
 
  
 {/* Second row: Assign + Ticket/Lead — wraps instead of scrolling, so dropdowns aren't clipped */}
-<div className="mt-2.5 flex flex-wrap items-center gap-2">
+<div className="mt-2.5 flex flex-wrap items-center gap-1.5">
   <AssignUser
     users={users}
     mongoThreadId={mongoThreadId}
@@ -182,6 +183,9 @@ export default function ThreadHeaderMobile({
     handleUpdateThread={handleUpdateThread}
     compact
   />
+
+    <RefBadge number={thread?.ref} className=""/>
+
 </div>
     </header>
   );

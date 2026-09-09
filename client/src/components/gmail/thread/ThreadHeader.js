@@ -12,6 +12,7 @@ import { useSelector } from "react-redux";
 import LeadButton from "../shared/ui/LeadButton.jsx";
 import TicketButton from "../shared/ui/TicketButton.jsx";
 import { useMailModalActions } from "../context/MailModalsContext.js";
+import RefBadge from "../shared/ui/RefBadge.js";
 
 export default function ThreadHeader({
   variant = "full", // "full" (Inbox) | "compact" (Ticket/Lead sidebar)
@@ -55,6 +56,7 @@ export default function ThreadHeader({
           <div className="flex items-center justify-between gap-4">
             <h2 className="text-[15px] font-semibold text-slate-900 leading-tight truncate md:max-w-2xl">
               {subject}
+              <RefBadge number={thread?.ref} className="ml-2" />
             </h2>
             {user?.id === userId && (
               <Link
@@ -105,6 +107,7 @@ export default function ThreadHeader({
         <h2 className="text-lg font-bold text-gray-800 truncate max-w-[200px] md:max-w-md">
           {subject}
         </h2>
+        <RefBadge number={thread?.ref} className="ml-2"/>
       </div>
 
       <div className="flex justify-center items-center gap-4">

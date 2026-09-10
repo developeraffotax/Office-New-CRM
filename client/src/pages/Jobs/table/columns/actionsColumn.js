@@ -187,7 +187,7 @@ export const actionsColumn = ({
             </div>
           </div>
 
-          {isProgress && (<div>
+          {/* {isProgress && (<div>
             <span
               title="Open OneDrive Folder"
               onClick={() => {
@@ -201,7 +201,7 @@ export const actionsColumn = ({
                 <MdOutlineFolder className="h-5 w-5 text-orange-600 " />
               )}
             </span>
-          </div>)}
+          </div>)} */}
 
           {isProgress && (<div
             className="relative"
@@ -251,6 +251,6 @@ export const actionsColumn = ({
         </div>
       );
     },
-    size: isProgress ? 200 :100,
+    size: isProgress ? 170 :100,
   };
 };

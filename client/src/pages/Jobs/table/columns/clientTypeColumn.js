@@ -43,6 +43,6 @@ export const clientTypeColumn = (ctx) => {
       );
     },
    
-    size: 90,
+    size: 80,
   };
 };

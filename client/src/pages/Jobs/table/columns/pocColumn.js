@@ -98,8 +98,8 @@ export const pocColumn = ({ dataLable, addDatalabel1 }) => {
       );
     },
  
-    size: 80,
-    minSize: 80,
+    size: 70,
+    minSize: 70,
     maxSize: 180,
     grow: false,
   };

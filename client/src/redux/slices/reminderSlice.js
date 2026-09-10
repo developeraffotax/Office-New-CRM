@@ -106,15 +106,30 @@ export const getRemindersCount = createAsyncThunk(
   }
 );
 
+
+
+
+
+
+
+
+
+
 export const snoozeReminder = createAsyncThunk(
   "reminders/snoozeReminder",
-  async ({ reminderId, minutes }, { dispatch, rejectWithValue }) => {
-
- 
+  async ({ reminderId, minutes, customDate }, { dispatch, rejectWithValue }) => {
 
     if (!reminderId) return;
 
-    const newTime = new Date(Date.now() + minutes * 60 * 1000);
+    const newTime = customDate
+      ? new Date(customDate)
+      : new Date(Date.now() + minutes * 60 * 1000);
+
+    // Guard against invalid/past custom dates before hitting the API
+    if (isNaN(newTime.getTime()) || newTime <= new Date()) {
+      toast.error("Please pick a valid future date & time");
+      return rejectWithValue("Invalid snooze time");
+    }
 
     try {
       const { status } = await axios.put(
@@ -123,20 +138,22 @@ export const snoozeReminder = createAsyncThunk(
       );
 
       if (status === 200) {
-        toast.success(`Snoozed for ${minutes} minutes`);
+        toast.success(
+          customDate
+            ? `Snoozed until ${newTime.toLocaleString()}`
+            : `Snoozed for ${minutes} minutes`
+        );
         dispatch(setShowReminder(false));
         dispatch(getRemindersCount());
         dispatch(fetchReminders());
 
-
-         // 🔄 Broadcast snooze event to other tabs
+        // 🔄 Broadcast snooze event to other tabs
         channel.postMessage({
           type: "SNOOZE_REMINDER",
           reminderId,
           minutes,
+          customDate: customDate ? newTime.toISOString() : undefined,
         });
-
-
       }
     } catch (err) {
       toast.error("Failed to snooze reminder");
@@ -144,6 +161,16 @@ export const snoozeReminder = createAsyncThunk(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
 
 export const markAsReadReminder = createAsyncThunk(
   "reminders/markAsReadReminder",

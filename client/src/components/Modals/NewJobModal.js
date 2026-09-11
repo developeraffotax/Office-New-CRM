@@ -6,12 +6,19 @@ import axios from "axios";
 import { CompactSelect } from "../../pages/Jobs/utils/CompactSelect";
 import { trimPayload } from "../../pages/Jobs/utils/utils";
 import { LEADS_SOURCES } from "../../constants/constants";
- 
 
- 
-
-const jobStatuses = [ "Quote", "Data", "Progress",  "Revision", "Approval", "Submission", "Billing", "Feedback", "Missing Info", "Inactive"]
-
+const jobStatuses = [
+  "Quote",
+  "Data",
+  "Progress",
+  "Revision",
+  "Approval",
+  "Submission",
+  "Billing",
+  "Feedback",
+  "Missing Info",
+  "Inactive",
+];
 
 export default function NewJobModal({ setIsOpen, allClientJobData }) {
   const [loading, setLoading] = useState(false);
@@ -56,9 +63,10 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     fee: "",
     lead: "",
     jobHolder: "",
+    leadUser: "",
 
     jobStatus: "",
-    subtaskTemplate: ""
+    subtaskTemplate: "",
   });
   const [clientPayRollFormData, setClientPayRollFormData] = useState({
     jobName: "Payroll",
@@ -69,9 +77,10 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     fee: "",
     lead: "",
     jobHolder: "",
+    leadUser: "",
 
     jobStatus: "",
-    subtaskTemplate: ""
+    subtaskTemplate: "",
   });
   const [clientVatReturnFormData, setClientVatReturnFormData] = useState({
     jobName: "Vat Return",
@@ -82,9 +91,10 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     fee: "",
     lead: "",
     jobHolder: "",
+    leadUser: "",
 
     jobStatus: "",
-    subtaskTemplate: ""
+    subtaskTemplate: "",
   });
   const [clientPersonalTaxFormData, setClientPersonalTaxFormData] = useState({
     jobName: "Personal Tax",
@@ -95,9 +105,10 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     fee: "",
     lead: "",
     jobHolder: "",
+    leadUser: "",
 
     jobStatus: "",
-    subtaskTemplate: ""
+    subtaskTemplate: "",
   });
   const [clientAccountsFormData, setClientAccountsFormData] = useState({
     jobName: "Accounts",
@@ -108,9 +119,10 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     fee: "",
     lead: "",
     jobHolder: "",
+    leadUser: "",
 
     jobStatus: "",
-    subtaskTemplate: ""
+    subtaskTemplate: "",
   });
 
   const [clientCompanySecFormData, setClientCompanySecFormData] = useState({
@@ -122,9 +134,10 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     fee: "",
     lead: "",
     jobHolder: "",
+    leadUser: "",
 
     jobStatus: "",
-    subtaskTemplate: ""
+    subtaskTemplate: "",
   });
 
   const [clientAddressFormData, setClientAddressFormData] = useState({
@@ -134,55 +147,46 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     workDeadline: "",
     hours: "",
     fee: "",
-    lead: "",
-    jobHolder: "",
+    lead: "", // CLient . owner
+    jobHolder: "", // job. assign
+    leadUser: "", // job. owner
 
     jobStatus: "",
-    subtaskTemplate: ""
+    subtaskTemplate: "",
   });
 
   const [jobs, setJobs] = useState([]);
   const [users, setUsers] = useState([]);
- 
 
   //const sources = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
 
-
-   const sources = useMemo(() => {
-        return [...LEADS_SOURCES]
-  
-    }, [])
+  const sources = useMemo(() => {
+    return [...LEADS_SOURCES];
+  }, []);
   const clients = ["Limited", "LLP", "Individual", "Non UK"];
   const partners = ["Affotax", "Outsource", "OTL"];
 
-
-
-
-
-   const isJobSelected = (jobs, jobName) => {
-  return jobs.some((job) => job.jobName === jobName);
-};
-
+  const isJobSelected = (jobs, jobName) => {
+    return jobs.some((job) => job.jobName === jobName);
+  };
 
   const getAllTemplates = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/subtask-lists`
+        `${process.env.REACT_APP_API_URL}/api/v1/subtask-lists`,
       );
-       
+
       if (data && data.success) {
         const templates = data.data;
-          if(templates?.length !== 0){
+        if (templates?.length !== 0) {
           setSubtaskTemplates((prev) => {
             return templates.map((template) => template.name);
           });
-    }
+        }
       }
-
     } catch (error) {
       console.log(error);
     }
-
   };
 
   // Get All Users
@@ -190,14 +194,15 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users`,
       );
       setUsers(
         data?.users?.filter((user) =>
-          user?.role?.access?.some((item) => item?.permission?.includes("Jobs"))
-        )
+          user?.role?.access?.some((item) =>
+            item?.permission?.includes("Jobs"),
+          ),
+        ),
       );
-     
     } catch (error) {
       console.log(error);
     }
@@ -222,7 +227,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
       setJobs((prevJobs) => [...prevJobs, formData]);
     } else {
       setJobs((prevJobs) =>
-        prevJobs.filter((job) => job.jobName !== formData.jobName)
+        prevJobs.filter((job) => job.jobName !== formData.jobName),
       );
     }
   };
@@ -234,7 +239,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
 
       setJobs((prevJobs) => {
         const jobIndex = prevJobs.findIndex(
-          (job) => job.jobName === updatedData.jobName
+          (job) => job.jobName === updatedData.jobName,
         );
         if (jobIndex !== -1) {
           const updatedJobs = [...prevJobs];
@@ -248,8 +253,6 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     });
   };
 
-
- 
   //   Add Job
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -257,36 +260,42 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     setSubmitted(true);
 
     const payload = {
-          clientName,
-          regNumber,
-          companyName,
-          email,
-          phone,
-          totalHours,
-          currentDate,
-          source,
-          clientType,
-          partner,
-          country,
-          fee,
-          ctLogin,
-          ctPassword,
-          pyeLogin,
-          pyePassword,
-          trLogin,
-          trPassword,
-          vatLogin,
-          vatPassword,
-          authCode,
-          utr,
-          personalCode,
-          clientPaidFee,
-          jobs,
-        }
+      clientName,
+      regNumber,
+      companyName,
+      email,
+      phone,
+      totalHours,
+      currentDate,
+      source,
+      clientType,
+      partner,
+      country,
+      fee,
+      ctLogin,
+      ctPassword,
+      pyeLogin,
+      pyePassword,
+      trLogin,
+      trPassword,
+      vatLogin,
+      vatPassword,
+      authCode,
+      utr,
+      personalCode,
+      clientPaidFee,
+      jobs,
+    };
 
     const trimmedPayload = trimPayload(payload);
 
-    if (!trimmedPayload.clientName.trim() || !trimmedPayload.companyName.trim() || !trimmedPayload.source.trim() || !trimmedPayload.partner.trim() || !trimmedPayload.clientPaidFee.trim() ) {
+    if (
+      !trimmedPayload.clientName.trim() ||
+      !trimmedPayload.companyName.trim() ||
+      !trimmedPayload.source.trim() ||
+      !trimmedPayload.partner.trim() ||
+      !trimmedPayload.clientPaidFee.trim()
+    ) {
       return toast.error("Fill the required fields!");
     }
 
@@ -297,21 +306,19 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
       setLoading(true);
       const { data } = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/client/create/client/job`,
-        trimmedPayload
+        trimmedPayload,
       );
       if (data) {
         allClientJobData();
         toast.success("Job added successfully!");
         setIsOpen(false);
       }
-
-      
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
     } finally {
       setLoading(false);
-      setSubmitted(false)
+      setSubmitted(false);
     }
   };
 
@@ -331,10 +338,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
     setCurrentDate(date);
   }, []);
 
-
   const isInvalid = (value) => submitted && !value?.trim();
-
-
 
   return (
     <div className="relative w-full sm:w-full lg:w-[95%] xl:w-[85%] 2xl:w-[80%] 3xl:w-[70%]    z-[50]  px-12 py-5 shadow-md shadow-black/25 rounded-xl bg-gray-200 hidden1   ">
@@ -342,8 +346,8 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
         <img src="/logo.png" alt="Logo" className="h-[3rem] w-[8rem]" />
       </div> */}
 
-               <button
-       onClick={() => setIsOpen(false)}
+      <button
+        onClick={() => setIsOpen(false)}
         className="absolute top-0 translate-x-[50%] -translate-y-[50%] z-[9999] right-0 p-2 rounded-full bg-gray-500 shadow-md hover:shadow-lg transition-all duration-200 text-white  hover:bg-orange-500 outline-none"
         aria-label="Close Modal"
       >
@@ -355,7 +359,11 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
           stroke="currentColor"
           strokeWidth={2}
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6 18L18 6M6 6l12 12"
+          />
         </svg>
       </button>
 
@@ -368,7 +376,6 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
         <form
           className="w-full h-full flex flex-col gap-8 "
           onSubmit={handleSubmit}
-
         >
           <div className="w-full max-w-[1000px] mx-auto    h-full grid grid-cols-1 gap-6 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:[grid-template-columns:1fr_1fr_1.5fr_1fr] ">
             {/* 1 */}
@@ -379,9 +386,10 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
               <input
                 type="text"
                 placeholder="Client Name"
-                className={`${style.input} ${ isInvalid(clientName) ? "border-red-500" : "" }`}
+                className={`${style.input} ${
+                  isInvalid(clientName) ? "border-red-500" : ""
+                }`}
                 value={clientName}
-                
                 onChange={(e) => setClientName(e.target.value)}
               />
               <input
@@ -394,8 +402,9 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
               <input
                 type="text"
                 placeholder="Company Name"
- 
-                className={`${style.input} ${ isInvalid(companyName) ? "border-red-500" : "" }`}
+                className={`${style.input} ${
+                  isInvalid(companyName) ? "border-red-500" : ""
+                }`}
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
               />
@@ -407,7 +416,6 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 onChange={(e) => setEmail(e.target.value)}
               />
 
-
               <input
                 type="tel"
                 placeholder="Phone Number"
@@ -415,10 +423,6 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
               />
-
-
-
-              
             </div>
             {/* 2 */}
             <div className="flex flex-col gap-3">
@@ -433,9 +437,9 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 className={`${style.input}`}
               />
               <select
- 
-                
-                className={`${style.input} h-[2.5rem] ${ isInvalid(source) ? "border-red-500" : "" }`}
+                className={`${style.input} h-[2.5rem] ${
+                  isInvalid(source) ? "border-red-500" : ""
+                }`}
                 value={source}
                 onChange={(e) => setSource(e.target.value)}
               >
@@ -460,8 +464,9 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 ))}
               </select>
               <select
- 
-                className={`${style.input} h-[2.5rem] ${ isInvalid(partner) ? "border-red-500" : "" }`}
+                className={`${style.input} h-[2.5rem] ${
+                  isInvalid(partner) ? "border-red-500" : ""
+                }`}
                 value={partner}
                 onChange={(e) => setPartner(e.target.value)}
               >
@@ -472,29 +477,26 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   </option>
                 ))}
               </select>
-              
+
               <div className="w-full flex items-center justify-between gap-2">
+                <input
+                  type="text"
+                  placeholder="Paid Fee"
+                  className={`${style.input} w-[50%] ${
+                    isInvalid(clientPaidFee) ? "border-red-500" : ""
+                  }`}
+                  value={clientPaidFee}
+                  onChange={(e) => setClientPaidFee(e.target.value)}
+                />
 
                 <input
-                type="text"
-                placeholder="Paid Fee"
-                 
-                className={`${style.input} w-[50%] ${ isInvalid(clientPaidFee) ? "border-red-500" : "" }`}
-                value={clientPaidFee}
-                onChange={(e) => setClientPaidFee(e.target.value)}
- 
-              />
-
-              <input
-                type="text"
-                placeholder="Hours"
-                className={`${style.input} w-[50%]`}
-                value={totalHours}
-                onChange={(e) => setTotalHours(e.target.value)}
-              />
-
+                  type="text"
+                  placeholder="Hours"
+                  className={`${style.input} w-[50%]`}
+                  value={totalHours}
+                  onChange={(e) => setTotalHours(e.target.value)}
+                />
               </div>
-
             </div>
             {/* 3 */}
             <div className=" flex flex-col gap-3">
@@ -615,16 +617,10 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   onChange={(e) =>
                     handleCheckboxChange(
                       clientBookKeepingFormData,
-                      e.target.checked
+                      e.target.checked,
                     )
                   }
                   style={{ width: "18px", height: "18px" }}
-
-                  
-
-
-                   
-
                 />
                 <span className="font-medium w-[10rem] bg-gray-300 rounded-md py-[5px] px-[.6rem]">
                   {clientBookKeepingFormData.jobName}
@@ -640,7 +636,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientBookKeepingFormData,
                       setClientBookKeepingFormData,
                       "yearEnd",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -657,7 +653,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientBookKeepingFormData,
                       setClientBookKeepingFormData,
                       "jobDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -674,7 +670,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientBookKeepingFormData,
                       setClientBookKeepingFormData,
                       "workDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -691,7 +687,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientBookKeepingFormData,
                       setClientBookKeepingFormData,
                       "hours",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -707,36 +703,22 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientBookKeepingFormData,
                       setClientBookKeepingFormData,
                       "fee",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full ${
-                    isJobSelected(jobs, clientBookKeepingFormData.jobName) && (clientBookKeepingFormData.fee?.length <= 0)
+                    isJobSelected(jobs, clientBookKeepingFormData.jobName) &&
+                    clientBookKeepingFormData.fee?.length <= 0
                       ? "placeholder-red-500 !border-red-500 "
                       : ""
                   }`}
-                  required={isJobSelected(jobs, clientBookKeepingFormData.jobName)}
+                  required={isJobSelected(
+                    jobs,
+                    clientBookKeepingFormData.jobName,
+                  )}
                 />
               </div>
-              <select
-                value={clientBookKeepingFormData.lead}
-                onChange={(e) =>
-                  handleFormDataChange(
-                    clientBookKeepingFormData,
-                    setClientBookKeepingFormData,
-                    "lead",
-                    e.target.value
-                  )
-                }
-                className={`${style.input} w-full `}
-              >
-                <option value="">Owner</option>
-                {users.map((lead) => (
-                  <option key={lead._id} value={lead?.name}>
-                    {lead?.name}
-                  </option>
-                ))}
-              </select>
+
               <select
                 value={clientBookKeepingFormData.jobHolder}
                 onChange={(e) =>
@@ -744,12 +726,12 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                     clientBookKeepingFormData,
                     setClientBookKeepingFormData,
                     "jobHolder",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job holder</option>
+                <option value="">Assignee</option>
                 {users.map((jh) => (
                   <option key={jh._id} value={jh.name}>
                     {jh.name}
@@ -757,14 +739,72 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 ))}
               </select>
 
-               <select
+              <select
+                value={clientBookKeepingFormData.lead}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientBookKeepingFormData,
+                    setClientBookKeepingFormData,
+                    "lead",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full ${
+                  isJobSelected(jobs, clientBookKeepingFormData.jobName) &&
+                  clientBookKeepingFormData.lead?.length <= 0
+                    ? "!border-red-500 "
+                    : ""
+                }`}
+                required={isJobSelected(
+                  jobs,
+                  clientBookKeepingFormData.jobName,
+                )}
+              >
+                <option value="">CL. Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={clientBookKeepingFormData.leadUser}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientBookKeepingFormData,
+                    setClientBookKeepingFormData,
+                    "leadUser",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full ${
+                  isJobSelected(jobs, clientBookKeepingFormData.jobName) &&
+                  clientBookKeepingFormData.leadUser?.length <= 0
+                    ? "!border-red-500 "
+                    : ""
+                }`}
+                required={isJobSelected(
+                  jobs,
+                  clientBookKeepingFormData.jobName,
+                )}
+              >
+                <option value="">Job Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
                 value={clientBookKeepingFormData.jobStatus}
                 onChange={(e) =>
                   handleFormDataChange(
                     clientBookKeepingFormData,
                     setClientBookKeepingFormData,
                     "jobStatus",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -777,8 +817,6 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 ))}
               </select>
 
-
-
               <CompactSelect
                 value={clientBookKeepingFormData.subtaskTemplate}
                 onChange={(e) =>
@@ -786,14 +824,11 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                     clientBookKeepingFormData,
                     setClientBookKeepingFormData,
                     "subtaskTemplate",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 options={subtaskTemplates}
               />
-
-
-
             </div>
 
             {/* Payroll */}
@@ -804,7 +839,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   onChange={(e) =>
                     handleCheckboxChange(
                       clientPayRollFormData,
-                      e.target.checked
+                      e.target.checked,
                     )
                   }
                   style={{ width: "18px", height: "18px" }}
@@ -823,7 +858,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientPayRollFormData,
                       setClientPayRollFormData,
                       "yearEnd",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -840,7 +875,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientPayRollFormData,
                       setClientPayRollFormData,
                       "jobDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -857,7 +892,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientPayRollFormData,
                       setClientPayRollFormData,
                       "workDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -874,7 +909,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientPayRollFormData,
                       setClientPayRollFormData,
                       "hours",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -890,37 +925,19 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientPayRollFormData,
                       setClientPayRollFormData,
                       "fee",
-                      e.target.value
+                      e.target.value,
                     )
                   }
-                   
                   className={`${style.input} w-full ${
-                    isJobSelected(jobs, clientPayRollFormData.jobName) && (clientPayRollFormData.fee?.length <= 0)
+                    isJobSelected(jobs, clientPayRollFormData.jobName) &&
+                    clientPayRollFormData.fee?.length <= 0
                       ? "placeholder-red-500 !border-red-500 "
                       : ""
                   }`}
                   required={isJobSelected(jobs, clientPayRollFormData.jobName)}
                 />
               </div>
-              <select
-                value={clientPayRollFormData.lead}
-                onChange={(e) =>
-                  handleFormDataChange(
-                    clientPayRollFormData,
-                    setClientPayRollFormData,
-                    "lead",
-                    e.target.value
-                  )
-                }
-                className={`${style.input} w-full `}
-              >
-                <option value="">Owner</option>
-                {users.map((lead) => (
-                  <option key={lead._id} value={lead?.name}>
-                    {lead?.name}
-                  </option>
-                ))}
-              </select>
+
               <select
                 value={clientPayRollFormData.jobHolder}
                 onChange={(e) =>
@@ -928,12 +945,12 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                     clientPayRollFormData,
                     setClientPayRollFormData,
                     "jobHolder",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job holder</option>
+                <option value="">Assignee</option>
                 {users.map((jh) => (
                   <option key={jh._id} value={jh.name}>
                     {jh.name}
@@ -941,14 +958,66 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 ))}
               </select>
 
-               <select
+              <select
+                value={clientPayRollFormData.lead}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientPayRollFormData,
+                    setClientPayRollFormData,
+                    "lead",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full ${
+                  isJobSelected(jobs, clientPayRollFormData.jobName) &&
+                  clientPayRollFormData.lead?.length <= 0
+                    ? "!border-red-500 "
+                    : ""
+                }`}
+                required={isJobSelected(jobs, clientPayRollFormData.jobName)}
+              >
+                <option value="">CL. Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={clientPayRollFormData.leadUser}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientPayRollFormData,
+                    setClientPayRollFormData,
+                    "leadUser",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full ${
+                  isJobSelected(jobs, clientPayRollFormData.jobName) &&
+                  clientPayRollFormData.leadUser?.length <= 0
+                    ? "!border-red-500 "
+                    : ""
+                }`}
+                required={isJobSelected(jobs, clientPayRollFormData.jobName)}
+              >
+                <option value="">Job Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
                 value={clientPayRollFormData.jobStatus}
                 onChange={(e) =>
                   handleFormDataChange(
                     clientPayRollFormData,
                     setClientPayRollFormData,
                     "jobStatus",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -961,22 +1030,18 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 ))}
               </select>
 
-
-
-               <CompactSelect
+              <CompactSelect
                 value={clientPayRollFormData.subtaskTemplate}
                 onChange={(e) =>
                   handleFormDataChange(
                     clientPayRollFormData,
                     setClientPayRollFormData,
                     "subtaskTemplate",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 options={subtaskTemplates}
               />
-
-
             </div>
 
             {/* VAT Return */}
@@ -987,7 +1052,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   onChange={(e) =>
                     handleCheckboxChange(
                       clientVatReturnFormData,
-                      e.target.checked
+                      e.target.checked,
                     )
                   }
                   style={{ width: "18px", height: "18px" }}
@@ -1006,7 +1071,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientVatReturnFormData,
                       setClientVatReturnFormData,
                       "yearEnd",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1023,7 +1088,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientVatReturnFormData,
                       setClientVatReturnFormData,
                       "jobDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1040,7 +1105,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientVatReturnFormData,
                       setClientVatReturnFormData,
                       "workDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1057,7 +1122,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientVatReturnFormData,
                       setClientVatReturnFormData,
                       "hours",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1073,36 +1138,22 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientVatReturnFormData,
                       setClientVatReturnFormData,
                       "fee",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full ${
-                    isJobSelected(jobs, clientVatReturnFormData.jobName) && (clientVatReturnFormData.fee?.length <= 0)
+                    isJobSelected(jobs, clientVatReturnFormData.jobName) &&
+                    clientVatReturnFormData.fee?.length <= 0
                       ? "placeholder-red-500 !border-red-500 "
                       : ""
                   }`}
-                  required={isJobSelected(jobs, clientVatReturnFormData.jobName)}
+                  required={isJobSelected(
+                    jobs,
+                    clientVatReturnFormData.jobName,
+                  )}
                 />
               </div>
-              <select
-                value={clientVatReturnFormData.lead}
-                onChange={(e) =>
-                  handleFormDataChange(
-                    clientVatReturnFormData,
-                    setClientVatReturnFormData,
-                    "lead",
-                    e.target.value
-                  )
-                }
-                className={`${style.input} w-full `}
-              >
-                <option value="">Owner</option>
-                {users.map((lead) => (
-                  <option key={lead._id} value={lead?.name}>
-                    {lead?.name}
-                  </option>
-                ))}
-              </select>
+
               <select
                 value={clientVatReturnFormData.jobHolder}
                 onChange={(e) =>
@@ -1110,15 +1161,67 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                     clientVatReturnFormData,
                     setClientVatReturnFormData,
                     "jobHolder",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job holder</option>
+                <option value="">Assignee</option>
                 {users.map((jh) => (
                   <option key={jh._id} value={jh.name}>
                     {jh.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={clientVatReturnFormData.lead}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientVatReturnFormData,
+                    setClientVatReturnFormData,
+                    "lead",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full ${
+                  isJobSelected(jobs, clientVatReturnFormData.jobName) &&
+                  clientVatReturnFormData.lead?.length <= 0
+                    ? "!border-red-500 "
+                    : ""
+                }`}
+                required={isJobSelected(jobs, clientVatReturnFormData.jobName)}
+              >
+                <option value="">CL. Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={clientVatReturnFormData.leadUser}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientVatReturnFormData,
+                    setClientVatReturnFormData,
+                    "leadUser",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full ${
+                  isJobSelected(jobs, clientVatReturnFormData.jobName) &&
+                  clientVatReturnFormData.leadUser?.length <= 0
+                    ? "!border-red-500 "
+                    : ""
+                }`}
+                required={isJobSelected(jobs, clientVatReturnFormData.jobName)}
+              >
+                <option value="">Job Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
                   </option>
                 ))}
               </select>
@@ -1130,7 +1233,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                     clientVatReturnFormData,
                     setClientVatReturnFormData,
                     "jobStatus",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1143,23 +1246,18 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 ))}
               </select>
 
-
-
-
-               <CompactSelect
+              <CompactSelect
                 value={clientVatReturnFormData.subtaskTemplate}
                 onChange={(e) =>
                   handleFormDataChange(
                     clientVatReturnFormData,
                     setClientVatReturnFormData,
                     "subtaskTemplate",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 options={subtaskTemplates}
               />
-
-
             </div>
             {/* 4 */}
             <div className="flex items-center gap-4">
@@ -1169,7 +1267,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   onChange={(e) =>
                     handleCheckboxChange(
                       clientPersonalTaxFormData,
-                      e.target.checked
+                      e.target.checked,
                     )
                   }
                   style={{ width: "18px", height: "18px" }}
@@ -1188,7 +1286,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientPersonalTaxFormData,
                       setClientPersonalTaxFormData,
                       "yearEnd",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1205,7 +1303,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientPersonalTaxFormData,
                       setClientPersonalTaxFormData,
                       "jobDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1222,7 +1320,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientPersonalTaxFormData,
                       setClientPersonalTaxFormData,
                       "workDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1239,7 +1337,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientPersonalTaxFormData,
                       setClientPersonalTaxFormData,
                       "hours",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1255,36 +1353,22 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientPersonalTaxFormData,
                       setClientPersonalTaxFormData,
                       "fee",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full ${
-                    isJobSelected(jobs, clientPersonalTaxFormData.jobName) && (clientPersonalTaxFormData.fee?.length <= 0)
+                    isJobSelected(jobs, clientPersonalTaxFormData.jobName) &&
+                    clientPersonalTaxFormData.fee?.length <= 0
                       ? "placeholder-red-500 !border-red-500 "
                       : ""
                   }`}
-                  required={isJobSelected(jobs, clientPersonalTaxFormData.jobName)}
+                  required={isJobSelected(
+                    jobs,
+                    clientPersonalTaxFormData.jobName,
+                  )}
                 />
               </div>
-              <select
-                value={clientPersonalTaxFormData.lead}
-                onChange={(e) =>
-                  handleFormDataChange(
-                    clientPersonalTaxFormData,
-                    setClientPersonalTaxFormData,
-                    "lead",
-                    e.target.value
-                  )
-                }
-                className={`${style.input} w-full `}
-              >
-                <option value="">Owner</option>
-                {users.map((lead) => (
-                  <option key={lead._id} value={lead?.name}>
-                    {lead?.name}
-                  </option>
-                ))}
-              </select>
+
               <select
                 value={clientPersonalTaxFormData.jobHolder}
                 onChange={(e) =>
@@ -1292,15 +1376,73 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                     clientPersonalTaxFormData,
                     setClientPersonalTaxFormData,
                     "jobHolder",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job holder</option>
+                <option value="">Assignee</option>
                 {users.map((jh) => (
                   <option key={jh._id} value={jh.name}>
                     {jh.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={clientPersonalTaxFormData.lead}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientPersonalTaxFormData,
+                    setClientPersonalTaxFormData,
+                    "lead",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full ${
+                  isJobSelected(jobs, clientPersonalTaxFormData.jobName) &&
+                  clientPersonalTaxFormData.lead?.length <= 0
+                    ? "!border-red-500 "
+                    : ""
+                }`}
+                required={isJobSelected(
+                  jobs,
+                  clientPersonalTaxFormData.jobName,
+                )}
+              >
+                <option value="">CL. Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={clientPersonalTaxFormData.leadUser}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientPersonalTaxFormData,
+                    setClientPersonalTaxFormData,
+                    "leadUser",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full ${
+                  isJobSelected(jobs, clientPersonalTaxFormData.jobName) &&
+                  clientPersonalTaxFormData.leadUser?.length <= 0
+                    ? "!border-red-500 "
+                    : ""
+                }`}
+                required={isJobSelected(
+                  jobs,
+                  clientPersonalTaxFormData.jobName,
+                )}
+              >
+                <option value="">Job Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
                   </option>
                 ))}
               </select>
@@ -1312,7 +1454,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                     clientPersonalTaxFormData,
                     setClientPersonalTaxFormData,
                     "jobStatus",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1325,24 +1467,18 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 ))}
               </select>
 
- 
-
-              
-               <CompactSelect
+              <CompactSelect
                 value={clientPersonalTaxFormData.subtaskTemplate}
                 onChange={(e) =>
                   handleFormDataChange(
                     clientPersonalTaxFormData,
                     setClientPersonalTaxFormData,
                     "subtaskTemplate",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 options={subtaskTemplates}
               />
-
-
-
             </div>
             {/* 5 */}
             <div className="flex items-center gap-4">
@@ -1352,7 +1488,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   onChange={(e) =>
                     handleCheckboxChange(
                       clientAccountsFormData,
-                      e.target.checked
+                      e.target.checked,
                     )
                   }
                   style={{ width: "18px", height: "18px" }}
@@ -1371,7 +1507,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientAccountsFormData,
                       setClientAccountsFormData,
                       "yearEnd",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1388,7 +1524,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientAccountsFormData,
                       setClientAccountsFormData,
                       "jobDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1405,7 +1541,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientAccountsFormData,
                       setClientAccountsFormData,
                       "workDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1422,7 +1558,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientAccountsFormData,
                       setClientAccountsFormData,
                       "hours",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1438,36 +1574,19 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientAccountsFormData,
                       setClientAccountsFormData,
                       "fee",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full ${
-                    isJobSelected(jobs, clientAccountsFormData.jobName) && (clientAccountsFormData.fee?.length <= 0)
+                    isJobSelected(jobs, clientAccountsFormData.jobName) &&
+                    clientAccountsFormData.fee?.length <= 0
                       ? "placeholder-red-500 !border-red-500 "
                       : ""
                   }`}
                   required={isJobSelected(jobs, clientAccountsFormData.jobName)}
                 />
               </div>
-              <select
-                value={clientAccountsFormData.lead}
-                onChange={(e) =>
-                  handleFormDataChange(
-                    clientAccountsFormData,
-                    setClientAccountsFormData,
-                    "lead",
-                    e.target.value
-                  )
-                }
-                className={`${style.input} w-full `}
-              >
-                <option value="">Owner</option>
-                {users.map((lead) => (
-                  <option key={lead._id} value={lead?.name}>
-                    {lead?.name}
-                  </option>
-                ))}
-              </select>
+
               <select
                 value={clientAccountsFormData.jobHolder}
                 onChange={(e) =>
@@ -1475,15 +1594,67 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                     clientAccountsFormData,
                     setClientAccountsFormData,
                     "jobHolder",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job holder</option>
+                <option value="">Assignee</option>
                 {users.map((jh) => (
                   <option key={jh._id} value={jh.name}>
                     {jh.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={clientAccountsFormData.lead}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientAccountsFormData,
+                    setClientAccountsFormData,
+                    "lead",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full ${
+                  isJobSelected(jobs, clientAccountsFormData.jobName) &&
+                  clientAccountsFormData.lead?.length <= 0
+                    ? "!border-red-500 "
+                    : ""
+                }`}
+                required={isJobSelected(jobs, clientAccountsFormData.jobName)}
+              >
+                <option value="">CL. Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={clientAccountsFormData.leadUser}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientAccountsFormData,
+                    setClientAccountsFormData,
+                    "leadUser",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full ${
+                  isJobSelected(jobs, clientAccountsFormData.jobName) &&
+                  clientAccountsFormData.leadUser?.length <= 0
+                    ? "!border-red-500 "
+                    : ""
+                }`}
+                required={isJobSelected(jobs, clientAccountsFormData.jobName)}
+              >
+                <option value="">Job Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
                   </option>
                 ))}
               </select>
@@ -1495,7 +1666,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                     clientAccountsFormData,
                     setClientAccountsFormData,
                     "jobStatus",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1508,24 +1679,18 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 ))}
               </select>
 
-
-
-              
-               <CompactSelect
+              <CompactSelect
                 value={clientAccountsFormData.subtaskTemplate}
                 onChange={(e) =>
                   handleFormDataChange(
                     clientAccountsFormData,
                     setClientAccountsFormData,
                     "subtaskTemplate",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 options={subtaskTemplates}
               />
-
-
-
             </div>
             {/* 6 */}
             <div className="flex items-center gap-4">
@@ -1535,7 +1700,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   onChange={(e) =>
                     handleCheckboxChange(
                       clientCompanySecFormData,
-                      e.target.checked
+                      e.target.checked,
                     )
                   }
                   style={{ width: "18px", height: "18px" }}
@@ -1554,7 +1719,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientCompanySecFormData,
                       setClientCompanySecFormData,
                       "yearEnd",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1571,7 +1736,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientCompanySecFormData,
                       setClientCompanySecFormData,
                       "jobDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1588,7 +1753,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientCompanySecFormData,
                       setClientCompanySecFormData,
                       "workDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1605,7 +1770,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientCompanySecFormData,
                       setClientCompanySecFormData,
                       "hours",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1621,36 +1786,22 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientCompanySecFormData,
                       setClientCompanySecFormData,
                       "fee",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full ${
-                    isJobSelected(jobs, clientCompanySecFormData.jobName) && (clientCompanySecFormData.fee?.length <= 0)
+                    isJobSelected(jobs, clientCompanySecFormData.jobName) &&
+                    clientCompanySecFormData.fee?.length <= 0
                       ? "placeholder-red-500 !border-red-500 "
                       : ""
                   }`}
-                  required={isJobSelected(jobs, clientCompanySecFormData.jobName)}
+                  required={isJobSelected(
+                    jobs,
+                    clientCompanySecFormData.jobName,
+                  )}
                 />
               </div>
-              <select
-                value={clientCompanySecFormData.lead}
-                onChange={(e) =>
-                  handleFormDataChange(
-                    clientCompanySecFormData,
-                    setClientCompanySecFormData,
-                    "lead",
-                    e.target.value
-                  )
-                }
-                className={`${style.input} w-full `}
-              >
-                <option value="">Owner</option>
-                {users.map((lead) => (
-                  <option key={lead._id} value={lead?.name}>
-                    {lead?.name}
-                  </option>
-                ))}
-              </select>
+
               <select
                 value={clientCompanySecFormData.jobHolder}
                 onChange={(e) =>
@@ -1658,12 +1809,12 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                     clientCompanySecFormData,
                     setClientCompanySecFormData,
                     "jobHolder",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job holder</option>
+                <option value="">Assignee</option>
                 {users.map((jh) => (
                   <option key={jh._id} value={jh.name}>
                     {jh.name}
@@ -1671,6 +1822,57 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 ))}
               </select>
 
+              <select
+                value={clientCompanySecFormData.lead}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientCompanySecFormData,
+                    setClientCompanySecFormData,
+                    "lead",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full ${
+                  isJobSelected(jobs, clientCompanySecFormData.jobName) &&
+                  clientCompanySecFormData.lead?.length <= 0
+                    ? "!border-red-500 "
+                    : ""
+                }`}
+                required={isJobSelected(jobs, clientCompanySecFormData.jobName)}
+              >
+                <option value="">CL. Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={clientCompanySecFormData.leadUser}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientCompanySecFormData,
+                    setClientCompanySecFormData,
+                    "leadUser",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full ${
+                  isJobSelected(jobs, clientCompanySecFormData.jobName) &&
+                  clientCompanySecFormData.leadUser?.length <= 0
+                    ? "!border-red-500 "
+                    : ""
+                }`}
+                required={isJobSelected(jobs, clientCompanySecFormData.jobName)}
+              >
+                <option value="">Job Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
 
               <select
                 value={clientCompanySecFormData.jobStatus}
@@ -1679,7 +1881,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                     clientAccountsFormData,
                     setClientCompanySecFormData,
                     "jobStatus",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1692,21 +1894,18 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 ))}
               </select>
 
-
-               <CompactSelect
+              <CompactSelect
                 value={clientCompanySecFormData.subtaskTemplate}
                 onChange={(e) =>
                   handleFormDataChange(
                     clientCompanySecFormData,
                     setClientCompanySecFormData,
                     "subtaskTemplate",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 options={subtaskTemplates}
               />
-
-
             </div>
             {/* 7 */}
             <div className="flex items-center gap-4">
@@ -1716,7 +1915,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                   onChange={(e) =>
                     handleCheckboxChange(
                       clientAddressFormData,
-                      e.target.checked
+                      e.target.checked,
                     )
                   }
                   style={{ width: "18px", height: "18px" }}
@@ -1735,7 +1934,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientAddressFormData,
                       setClientAddressFormData,
                       "yearEnd",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1752,7 +1951,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientAddressFormData,
                       setClientAddressFormData,
                       "jobDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1769,7 +1968,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientAddressFormData,
                       setClientAddressFormData,
                       "workDeadline",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1786,7 +1985,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientAddressFormData,
                       setClientAddressFormData,
                       "hours",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full `}
@@ -1802,36 +2001,19 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                       clientAddressFormData,
                       setClientAddressFormData,
                       "fee",
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className={`${style.input} w-full ${
-                    isJobSelected(jobs, clientAddressFormData.jobName) && (clientAddressFormData.fee?.length <= 0)
+                    isJobSelected(jobs, clientAddressFormData.jobName) &&
+                    clientAddressFormData.fee?.length <= 0
                       ? "placeholder-red-500 !border-red-500 "
                       : ""
                   }`}
                   required={isJobSelected(jobs, clientAddressFormData.jobName)}
                 />
               </div>
-              <select
-                value={clientAddressFormData.lead}
-                onChange={(e) =>
-                  handleFormDataChange(
-                    clientAddressFormData,
-                    setClientAddressFormData,
-                    "lead",
-                    e.target.value
-                  )
-                }
-                className={`${style.input} w-full `}
-              >
-                <option value="">Owner</option>
-                {users.map((lead) => (
-                  <option key={lead._id} value={lead?.name}>
-                    {lead?.name}
-                  </option>
-                ))}
-              </select>
+
               <select
                 value={clientAddressFormData.jobHolder}
                 onChange={(e) =>
@@ -1839,15 +2021,67 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                     clientAddressFormData,
                     setClientAddressFormData,
                     "jobHolder",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job holder</option>
+                <option value="">Assignee</option>
                 {users.map((jh) => (
                   <option key={jh._id} value={jh.name}>
                     {jh.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={clientAddressFormData.lead}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientAddressFormData,
+                    setClientAddressFormData,
+                    "lead",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full ${
+                  isJobSelected(jobs, clientAddressFormData.jobName) &&
+                  clientAddressFormData.lead?.length <= 0
+                    ? "!border-red-500 "
+                    : ""
+                }`}
+                required={isJobSelected(jobs, clientAddressFormData.jobName)}
+              >
+                <option value="">CL. Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={clientAddressFormData.leadUser}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientAddressFormData,
+                    setClientAddressFormData,
+                    "leadUser",
+                    e.target.value,
+                  )
+                }
+                className={`${style.input} w-full ${
+                  isJobSelected(jobs, clientAddressFormData.jobName) &&
+                  clientAddressFormData.leadUser?.length <= 0
+                    ? "!border-red-500 "
+                    : ""
+                }`}
+                required={isJobSelected(jobs, clientAddressFormData.jobName)}
+              >
+                <option value="">Job Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
                   </option>
                 ))}
               </select>
@@ -1859,7 +2093,7 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                     clientAddressFormData,
                     setClientAddressFormData,
                     "jobStatus",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className={`${style.input} w-full `}
@@ -1872,26 +2106,18 @@ export default function NewJobModal({ setIsOpen, allClientJobData }) {
                 ))}
               </select>
 
-
-
-
-              
-               <CompactSelect
+              <CompactSelect
                 value={clientAddressFormData.subtaskTemplate}
                 onChange={(e) =>
                   handleFormDataChange(
                     clientAddressFormData,
                     setClientAddressFormData,
                     "subtaskTemplate",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 options={subtaskTemplates}
               />
-
-
-
-
             </div>
           </div>
           {/*  */}

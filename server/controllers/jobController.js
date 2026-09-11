@@ -130,8 +130,9 @@ export const createJob = async (req, res) => {
             workDeadline: job.workDeadline || new Date().toISOString(),
             hours: job.hours,
             fee: job.fee,
-            lead: job.lead,
-            jobHolder: job.jobHolder,
+            lead: job.lead,         //CL.Owner
+            jobHolder: job.jobHolder,   //Assigned To
+            leadUser: job.leadUser,   //Job.Owner
 
             jobStatus: job.jobStatus || "",
           },

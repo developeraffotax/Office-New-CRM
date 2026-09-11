@@ -57,6 +57,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+        leadUser: "",
     jobStatus: "",
   });
   const [clientPayRollFormData, setClientPayRollFormData] = useState({
@@ -69,6 +70,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+        leadUser: "",
     jobStatus: "",
   });
   const [clientVatReturnFormData, setClientVatReturnFormData] = useState({
@@ -81,6 +83,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+        leadUser: "",
     jobStatus: "",
   });
   const [clientPersonalTaxFormData, setClientPersonalTaxFormData] = useState({
@@ -93,6 +96,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+        leadUser: "",
     jobStatus: "",
   });
   const [clientAccountsFormData, setClientAccountsFormData] = useState({
@@ -105,6 +109,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+        leadUser: "",
     jobStatus: "",
   });
 
@@ -118,6 +123,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+        leadUser: "",
     jobStatus: "",
   });
 
@@ -131,6 +137,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
     fee: "",
     lead: "",
     jobHolder: "",
+        leadUser: "",
     jobStatus: "",
   });
 
@@ -329,6 +336,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+                leadUser: job.leadUser || prevFormData.leadUser,
                 jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
@@ -353,6 +361,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+                leadUser: job.leadUser || prevFormData.leadUser,
                 jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
@@ -377,6 +386,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+                leadUser: job.leadUser || prevFormData.leadUser,
                 jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
@@ -401,6 +411,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+                leadUser: job.leadUser || prevFormData.leadUser,
                 jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
@@ -425,6 +436,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+                leadUser: job.leadUser || prevFormData.leadUser,
                 jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
@@ -449,6 +461,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+                leadUser: job.leadUser || prevFormData.leadUser,
                 jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
@@ -473,6 +486,7 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 fee: job.fee || prevFormData.fee,
                 lead: job.lead || prevFormData.lead,
                 jobHolder: job.jobHolder || prevFormData.jobHolder,
+                leadUser: job.leadUser || prevFormData.leadUser,
                 jobStatus: job.jobStatus || prevFormData.jobStatus,
               };
               if (Object.values(updatedFormData).some((value) => value)) {
@@ -1047,25 +1061,9 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                   className={`${style.input} w-full `}
                 />
               </div>
-              <select
-                value={clientBookKeepingFormData.lead}
-                onChange={(e) =>
-                  handleFormDataChange(
-                    clientBookKeepingFormData,
-                    setClientBookKeepingFormData,
-                    "lead",
-                    e.target.value
-                  )
-                }
-                className={`${style.input} w-full `}
-              >
-                <option value="">Owner</option>
-                {users.map((lead) => (
-                  <option key={lead._id} value={lead?.name}>
-                    {lead?.name}
-                  </option>
-                ))}
-              </select>
+
+
+
               <select
                 value={clientBookKeepingFormData.jobHolder}
                 onChange={(e) =>
@@ -1078,13 +1076,64 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job holder</option>
+                <option value="">Assignee</option>
                 {users.map((jh) => (
                   <option key={jh._id} value={jh.name}>
                     {jh.name}
                   </option>
                 ))}
               </select>
+
+
+
+              <select
+                value={clientBookKeepingFormData.lead}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientBookKeepingFormData,
+                    setClientBookKeepingFormData,
+                    "lead",
+                    e.target.value
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">CL. Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+
+
+
+                            <select
+                value={clientBookKeepingFormData.leadUser}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientBookKeepingFormData,
+                    setClientBookKeepingFormData,
+                    "leadUser",
+                    e.target.value
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">Job Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+
+
+
+
+
 
               <select
                               value={clientBookKeepingFormData.jobStatus}
@@ -1212,25 +1261,8 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                   className={`${style.input} w-full `}
                 />
               </div>
-              <select
-                value={clientPayRollFormData.lead}
-                onChange={(e) =>
-                  handleFormDataChange(
-                    clientPayRollFormData,
-                    setClientPayRollFormData,
-                    "lead",
-                    e.target.value
-                  )
-                }
-                className={`${style.input} w-full `}
-              >
-                <option value="">Owner</option>
-                {users.map((lead) => (
-                  <option key={lead._id} value={lead?.name}>
-                    {lead?.name}
-                  </option>
-                ))}
-              </select>
+
+
               <select
                 value={clientPayRollFormData.jobHolder}
                 onChange={(e) =>
@@ -1243,13 +1275,57 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job holder</option>
+                <option value="">Assignee</option>
                 {users.map((jh) => (
                   <option key={jh._id} value={jh.name}>
                     {jh.name}
                   </option>
                 ))}
               </select>
+
+
+              <select
+                value={clientPayRollFormData.lead}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientPayRollFormData,
+                    setClientPayRollFormData,
+                    "lead",
+                    e.target.value
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">CL. Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+
+
+                            <select
+                value={clientPayRollFormData.leadUser}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientPayRollFormData,
+                    setClientPayRollFormData,
+                    "leadUser",
+                    e.target.value
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">Job Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
 
 
                <select
@@ -1379,25 +1455,12 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                   className={`${style.input} w-full `}
                 />
               </div>
-              <select
-                value={clientVatReturnFormData.lead}
-                onChange={(e) =>
-                  handleFormDataChange(
-                    clientVatReturnFormData,
-                    setClientVatReturnFormData,
-                    "lead",
-                    e.target.value
-                  )
-                }
-                className={`${style.input} w-full `}
-              >
-                <option value="">Owner</option>
-                {users.map((lead) => (
-                  <option key={lead._id} value={lead?.name}>
-                    {lead?.name}
-                  </option>
-                ))}
-              </select>
+
+
+
+
+
+
               <select
                 value={clientVatReturnFormData.jobHolder}
                 onChange={(e) =>
@@ -1410,13 +1473,56 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job holder</option>
+                <option value="">Assignee</option>
                 {users.map((jh) => (
                   <option key={jh._id} value={jh.name}>
                     {jh.name}
                   </option>
                 ))}
               </select>
+
+              <select
+                value={clientVatReturnFormData.lead}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientVatReturnFormData,
+                    setClientVatReturnFormData,
+                    "lead",
+                    e.target.value
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">CL. Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+
+                            <select
+                value={clientVatReturnFormData.leadUser}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientVatReturnFormData,
+                    setClientVatReturnFormData,
+                    "leadUser",
+                    e.target.value
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">Job Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+
 
               <select
                               value={clientVatReturnFormData.jobStatus}
@@ -1543,25 +1649,11 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                   className={`${style.input} w-full `}
                 />
               </div>
-              <select
-                value={clientPersonalTaxFormData.lead}
-                onChange={(e) =>
-                  handleFormDataChange(
-                    clientPersonalTaxFormData,
-                    setClientPersonalTaxFormData,
-                    "lead",
-                    e.target.value
-                  )
-                }
-                className={`${style.input} w-full `}
-              >
-                <option value="">Owner</option>
-                {users.map((lead) => (
-                  <option key={lead._id} value={lead?.name}>
-                    {lead?.name}
-                  </option>
-                ))}
-              </select>
+
+
+
+
+
               <select
                 value={clientPersonalTaxFormData.jobHolder}
                 onChange={(e) =>
@@ -1574,13 +1666,63 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job holder</option>
+                <option value="">Assignee</option>
                 {users.map((jh) => (
                   <option key={jh._id} value={jh.name}>
                     {jh.name}
                   </option>
                 ))}
               </select>
+
+
+
+
+              <select
+                value={clientPersonalTaxFormData.lead}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientPersonalTaxFormData,
+                    setClientPersonalTaxFormData,
+                    "lead",
+                    e.target.value
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">CL. Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+
+              
+              <select
+                value={clientPersonalTaxFormData.leadUser}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientPersonalTaxFormData,
+                    setClientPersonalTaxFormData,
+                    "leadUser",
+                    e.target.value
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">Job Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+
+
+
+
 
                <select
                               value={clientPersonalTaxFormData.jobStatus}
@@ -1707,25 +1849,17 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                   className={`${style.input} w-full `}
                 />
               </div>
-              <select
-                value={clientAccountsFormData.lead}
-                onChange={(e) =>
-                  handleFormDataChange(
-                    clientAccountsFormData,
-                    setClientAccountsFormData,
-                    "lead",
-                    e.target.value
-                  )
-                }
-                className={`${style.input} w-full `}
-              >
-                <option value="">Owner</option>
-                {users.map((lead) => (
-                  <option key={lead._id} value={lead?.name}>
-                    {lead?.name}
-                  </option>
-                ))}
-              </select>
+
+
+
+
+
+
+
+
+
+
+
               <select
                 value={clientAccountsFormData.jobHolder}
                 onChange={(e) =>
@@ -1738,13 +1872,68 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job holder</option>
+                <option value="">Assignee</option>
                 {users.map((jh) => (
                   <option key={jh._id} value={jh.name}>
                     {jh.name}
                   </option>
                 ))}
               </select>
+
+
+              <select
+                value={clientAccountsFormData.lead}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientAccountsFormData,
+                    setClientAccountsFormData,
+                    "lead",
+                    e.target.value
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">CL. Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+
+
+
+              
+              <select
+                value={clientAccountsFormData.leadUser}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientAccountsFormData,
+                    setClientAccountsFormData,
+                    "leadUser",
+                    e.target.value
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">Job Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+
+
+
+
+
+
+
+
+
 
                <select
                               value={clientAccountsFormData.jobStatus}
@@ -1871,25 +2060,12 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                   className={`${style.input} w-full `}
                 />
               </div>
-              <select
-                value={clientCompanySecFormData.lead}
-                onChange={(e) =>
-                  handleFormDataChange(
-                    clientCompanySecFormData,
-                    setClientCompanySecFormData,
-                    "lead",
-                    e.target.value
-                  )
-                }
-                className={`${style.input} w-full `}
-              >
-                <option value="">Owner</option>
-                {users.map((lead) => (
-                  <option key={lead._id} value={lead?.name}>
-                    {lead?.name}
-                  </option>
-                ))}
-              </select>
+
+
+
+
+
+
               <select
                 value={clientCompanySecFormData.jobHolder}
                 onChange={(e) =>
@@ -1902,13 +2078,62 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job holder</option>
+                <option value="">Assignee</option>
                 {users.map((jh) => (
                   <option key={jh._id} value={jh.name}>
                     {jh.name}
                   </option>
                 ))}
               </select>
+
+
+
+              <select
+                value={clientCompanySecFormData.lead}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientCompanySecFormData,
+                    setClientCompanySecFormData,
+                    "lead",
+                    e.target.value
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">CL. Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+
+
+                            <select
+                value={clientCompanySecFormData.leadUser}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientCompanySecFormData,
+                    setClientCompanySecFormData,
+                    "leadUser",
+                    e.target.value
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">Job Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+
+
+
+
 
                <select
                               value={clientCompanySecFormData.jobStatus}
@@ -2036,25 +2261,13 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                   className={`${style.input} w-full `}
                 />
               </div>
-              <select
-                value={clientAddressFormData.lead}
-                onChange={(e) =>
-                  handleFormDataChange(
-                    clientAddressFormData,
-                    setClientAddressFormData,
-                    "lead",
-                    e.target.value
-                  )
-                }
-                className={`${style.input} w-full `}
-              >
-                <option value="">Owner</option>
-                {users.map((lead) => (
-                  <option key={lead._id} value={lead?.name}>
-                    {lead?.name}
-                  </option>
-                ))}
-              </select>
+
+
+
+
+
+
+
               <select
                 value={clientAddressFormData.jobHolder}
                 onChange={(e) =>
@@ -2067,13 +2280,69 @@ export default function EditJobModal({ setIsOpen, allClientJobData, jobId }) {
                 }
                 className={`${style.input} w-full `}
               >
-                <option value="">Job holder</option>
+                <option value="">Assignee</option>
                 {users.map((jh) => (
                   <option key={jh._id} value={jh.name}>
                     {jh.name}
                   </option>
                 ))}
               </select>
+
+
+
+
+              <select
+                value={clientAddressFormData.lead}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientAddressFormData,
+                    setClientAddressFormData,
+                    "lead",
+                    e.target.value
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">CL. Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+              
+              <select
+                value={clientAddressFormData.leadUser}
+                onChange={(e) =>
+                  handleFormDataChange(
+                    clientAddressFormData,
+                    setClientAddressFormData,
+                    "leadUser",
+                    e.target.value
+                  )
+                }
+                className={`${style.input} w-full `}
+              >
+                <option value="">Job Owner</option>
+                {users.map((lead) => (
+                  <option key={lead._id} value={lead?.name}>
+                    {lead?.name}
+                  </option>
+                ))}
+              </select>
+
+
+
+
+
+
+
+
+
+
+
+
 
                <select
                               value={clientAddressFormData.jobStatus}

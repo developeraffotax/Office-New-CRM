@@ -22,7 +22,7 @@ export const assignColumn = ({
           title="Clear Filter"
           onClick={() => column.setFilterValue("")}
         >
-          Assign
+          Assignee
         </span>
 
         <select

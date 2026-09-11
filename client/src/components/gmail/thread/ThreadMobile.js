@@ -5,7 +5,6 @@ import React, {
   useMemo,
   useLayoutEffect,
 } from "react";
-import { HiReply } from "react-icons/hi";
 import { Buffer } from "buffer";
 import { FaRegFileImage } from "react-icons/fa";
 import { FaRegFileLines } from "react-icons/fa6";
@@ -15,7 +14,7 @@ import { TbArrowForwardUp, TbLoader2 } from "react-icons/tb";
 import { BsThreeDots } from "react-icons/bs";
 import axios from "axios";
 import toast from "react-hot-toast";
-import Reply from "../reply/Reply.js";
+import ReplyMobile from "../reply/ReplyMobile.js";
 import Loader from "../../../utlis/Loader.js";
 import Forward from "../forward/Forward.js";
 import { gmailParser } from "../utils/gmailParser.js";
@@ -66,13 +65,13 @@ export default function ThreadMobile({
   const [showForward, setShowForward] = useState(false);
   const [forwardMessageId, setForwardMessageId] = useState("");
   const [expandedMessages, setExpandedMessages] = useState({});
+
+  // Controls whether the fixed reply bar is collapsed (peek) or expanded (full editor)
   const [showReplyEditor, setShowReplyEditor] = useState(false);
-  const [showStickyReply, setShowStickyReply] = useState(false);
   const [messageUsers, setMessageUsers] = useState({});
 
   const scrollContainerRef = useRef(null);
   const lastMessageRef = useRef(null);
-  const replySectionRef = useRef(null);
   const scrollAnchorRef = useRef(null);
 
   const [activityPanel, setActivityPanel] = useState({
@@ -105,20 +104,6 @@ export default function ThreadMobile({
       el.scrollTop = el.scrollHeight;
     }
   }, [loading]);
-
-  // Sticky reply bar
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    const handleScroll = () => {
-      if (!replySectionRef.current) return;
-      const rect = replySectionRef.current.getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
-      setShowStickyReply(rect.top > containerRect.bottom);
-    };
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [showReplyEditor]);
 
   const parsedMessages = useMemo(() => {
     return (
@@ -305,7 +290,7 @@ export default function ThreadMobile({
   };
 
   return (
-    <div className="relative w-full h-full flex flex-col bg-slate-50">
+    <div className="relative w-full h-full flex flex-col bg-slate-50 overflow-hidden">
       {/* Mobile Header */}
       <ThreadHeaderMobile
         thread={thread}
@@ -340,7 +325,7 @@ export default function ThreadMobile({
       ) : (
         <div
           ref={scrollContainerRef}
-          className="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-5"
+          className="flex-1 overflow-y-auto px-3 pt-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] flex flex-col gap-5"
         >
           {hasMore && (
             <div className="w-full flex justify-center mb-2">
@@ -529,53 +514,29 @@ export default function ThreadMobile({
                     </div>
                   )}
                 </div>
-
-                {/* Reply trigger (only after last message) */}
-                {isLast && !showReplyEditor && (
-                  <div className="w-full mt-5">
-                    <button
-                      onClick={() => {
-                        setShowReplyEditor(true);
-                        setTimeout(
-                          () =>
-                            replySectionRef.current?.scrollIntoView({
-                              behavior: "smooth",
-                            }),
-                          100
-                        );
-                      }}
-                      className="flex items-center gap-2 border border-gray-500 bg-white px-5 py-2 rounded-full text-sm font-medium text-gray-700 active:bg-gray-100"
-                    >
-                      <HiReply className="text-base" /> Reply
-                    </button>
-                  </div>
-                )}
               </div>
             );
           })}
-
-          {/* Reply editor */}
-          <div ref={replySectionRef} className="w-full">
-            {showReplyEditor && (
-              <div className="w-full py-4">
-                <Reply
-                  company={companyName}
-                  emailDetail={messages}
-                  getEmailDetail={() => {
-                    getEmailDetail();
-                    setShowReplyEditor(false);
-                  }}
-                  setShowReplyEditor={setShowReplyEditor}
-                />
-              </div>
-            )}
-          </div>
         </div>
       )}
 
+      {/* Fixed Reply Bar — always docked to the bottom, peek pill or full editor */}
+      <ReplyMobile
+        company={companyName}
+        emailDetail={messages}
+        subject={subject}
+        expanded={showReplyEditor}
+        onExpand={() => setShowReplyEditor(true)}
+        onCollapse={() => setShowReplyEditor(false)}
+        getEmailDetail={() => {
+          getEmailDetail();
+          setShowReplyEditor(false);
+        }}
+      />
+
       {/* Forward Modal */}
       {showForward && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-sm">
           <div className="w-full max-w-4xl bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[92vh]">
             <Forward
               setShowForward={setShowForward}
@@ -584,36 +545,6 @@ export default function ThreadMobile({
               getEmailDetail={getEmailDetail}
               forwardMessageId={forwardMessageId}
             />
-          </div>
-        </div>
-      )}
-
-      {/* Sticky Reply Bar */}
-      {showStickyReply && (
-        <div className="absolute bottom-0 left-0 w-full z-40 bg-white border-t border-gray-200 px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] flex justify-between items-center">
-          <button
-            onClick={() => {
-              if (!showReplyEditor) setShowReplyEditor(true);
-              setTimeout(
-                () =>
-                  replySectionRef.current?.scrollIntoView({
-                    behavior: "smooth",
-                  }),
-                100
-              );
-            }}
-            className="text-gray-700 px-5 py-2 rounded-full text-sm font-semibold flex items-center gap-2 border border-gray-500 active:bg-gray-50"
-          >
-            <HiReply /> Reply
-          </button>
-
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-7 h-7 rounded-full bg-orange-500 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
-              ME
-            </div>
-            <span className="text-xs font-medium text-gray-600 truncate max-w-[140px]">
-              {subject}
-            </span>
           </div>
         </div>
       )}

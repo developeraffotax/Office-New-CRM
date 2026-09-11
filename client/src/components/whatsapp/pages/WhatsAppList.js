@@ -62,21 +62,22 @@ export default function WhatsAppList({
     });
   };
 
-  // ========== MOBILE: full-screen chat when a conversation is open ==========
-  if (isMobile && activeChatId) {
-    return (
-      <div className="flex flex-col h-full min-w-0 bg-[#efeae2]">
-        <ChatWindowMobile
-          key={`wa-mobile-${activeChatId}`}
-          users={users}
-          chat={activeChat}
-          team={team}
-          updateConversation={updateConversation}
-          onBack={handleCloseChat}
-        />
-      </div>
-    );
-  }
+// ========== MOBILE: full-screen chat when a conversation is open ==========
+if (isMobile && activeChatId) {
+  return (
+    // FIXED full viewport – ignores parent layout height & scroll
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#efeae2]">
+      <ChatWindowMobile
+        key={`wa-mobile-${activeChatId}`}
+        users={users}
+        chat={activeChat}
+        team={team}
+        updateConversation={updateConversation}
+        onBack={handleCloseChat}
+      />
+    </div>
+  );
+}
 
   // ========== LIST VIEW (desktop always + mobile when no chat selected) ==========
   return (

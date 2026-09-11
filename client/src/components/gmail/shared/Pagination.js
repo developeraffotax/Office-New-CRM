@@ -34,9 +34,9 @@ export default function Pagination({ pagination, setFilters }) {
   const to = Math.min(page * limit, total);
 
   return (
-    <div className="flex items-center justify-between border-t border-gray-100 bg-white px-6 py-4">
+    <div className="flex items-center md:justify-between justify-end border-t border-gray-100 bg-white px-6 py-4">
       {/* Left Side: Records Info */}
-      <div className="hidden sm:block">
+      <div className="hidden md:block">
         <p className="text-sm text-gray-500">
           Showing <span className="font-semibold text-gray-900">{from}</span> to{" "}
           <span className="font-semibold text-gray-900">{to}</span> of{" "}

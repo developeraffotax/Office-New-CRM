@@ -108,10 +108,10 @@ export default function MailListPage({
           {/* Hamburger */}
           <button
             onClick={() => setSidebarOpen(true)}
-            className="absolute top-3 left-3 z-30 p-2 rounded-lg bg-white shadow-sm border border-slate-100"
+            className="absolute bottom-5 left-3 z-30 p-2 rounded-lg bg-white shadow-sm border border-slate-100"
             aria-label="Open menu"
           >
-            <FiMenu className="size-5 text-slate-600" />
+            <FiMenu className="size-4 text-slate-500" />
           </button>
 
           {/* Backdrop */}

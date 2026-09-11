@@ -228,144 +228,314 @@ export default function FiltersMobile({
         }}
       >
         {/* Top bar: search + quick actions */}
-        <Stack
-          direction="row"
-          spacing={1}
-          alignItems="center"
-          sx={{ p: 1.5, marginLeft: 6 }}
+        {/* Top bar */}
+<Box sx={{ p: 1 , marginLeft: 0 }}>
+  {/* ── Row 1: Search ── */}
+
+
+    <Stack
+    direction="row"
+    spacing={0.75}
+    alignItems="center"
+ 
+    sx={{   mb: 1  }}
+  >
+
+  <Box sx={{ position: "relative", flexGrow: 1 }}>
+    <input
+      type="text"
+      placeholder="Search subject, email…"
+      value={searchInput}
+      onChange={(e) => setSearchInput(e.target.value)}
+      style={{
+        height: 30,
+        width: "100%",
+        padding: "0 20px 0 8px",
+        borderRadius: 6,
+        border: "1px solid #e5e7eb",
+        outline: "none",
+        fontSize: "0.875rem",
+      }}
+    />
+    {searchInput.trim() && (
+      <IconButton
+        size="small"
+        onClick={() => setSearchInput("")}
+        sx={{
+          position: "absolute",
+          right: 6,
+          top: "50%",
+          transform: "translateY(-50%)",
+          color: "grey.500",
+        }}
+      >
+        <IoClose size={16} />
+      </IconButton>
+    )}
+  </Box>
+
+
+      {/* Compose */}
+    <button
+      onClick={() => setIsComposeOpen(true)}
+      className="
+        flex items-center justify-center
+        bg-[#C2E7FF] hover:bg-[#B3D7EF] text-[#001D35]
+        font-medium text-base rounded-xl
+        shadow-sm hover:shadow-md
+        transition-all duration-200 ease-in-out
+        w-[36px] h-[36px] shrink-0
+      "
+    >
+      <MdOutlineCreate className="text-lg" />
+    </button>
+
+    {/* More menu */}
+    <ContextMenu
+      trigger={
+        <button className="flex items-center justify-center w-9 h-9 rounded-md hover:bg-gray-100 transition shrink-0">
+          <FiMoreVertical className="text-gray-600 text-lg" />
+        </button>
+      }
+      items={[
+        { type: "label", label: "CATEGORIES" },
+        {
+          icon: <LabelOutlinedIcon sx={{ fontSize: 18 }} />,
+          label: "Manage Categories",
+          onClick: () => setIsCategoryModal(true),
+        },
+      ]}
+    />
+
+  </Stack>
+
+  {/* ── Row 2: Compact filters + actions ── */}
+  <Stack
+    direction="row"
+    spacing={1}
+    alignItems="center"
+    justifyContent="space-between"
+ 
+    sx={{     }}
+  >
+
+
+
+    <Stack     direction="row"
+    spacing={1}>
+
+      <IconButton
+        onClick={clearFilters}
+        title="Clear all filters"
+        sx={{
+          width: 36,
+          height: 36,
+          borderRadius: "10px",
+          border: "1px solid",
+          borderColor: "divider",
+          color: "text.secondary",
+          flexShrink: 0,
+          "&:active": {
+            borderColor: "error.main",
+            color: "error.main",
+            bgcolor: (theme) => alpha(theme.palette.error.main, 0.06),
+          },
+        }}
+      >
+        <IoClose size={16} />
+      </IconButton>
+<Divider orientation="vertical" flexItem sx={{   }} />
+
+    {/* Unassigned */}
+    {(isAdmin || hasUnassignedPermission) && (
+      <IconButton
+        title="Unassigned"
+        onClick={() =>
+          handleUpdate({
+            userId: filters.userId === "unassigned" ? "" : "unassigned",
+          })
+        }
+        sx={{
+          width: 36,
+          height: 36,
+          borderRadius: "10px",
+          border: "1px solid",
+          borderColor:
+            filters.userId === "unassigned"
+              ? "warning.main"
+              : "rgba(0,0,0,0.15)",
+          color:
+            filters.userId === "unassigned"
+              ? "warning.main"
+              : "text.secondary",
+          bgcolor:
+            filters.userId === "unassigned"
+              ? (theme) => alpha(theme.palette.warning.main, 0.1)
+              : "transparent",
+          flexShrink: 0,
+        }}
+      >
+        <Box
+          sx={{
+            width: 18,
+            height: 18,
+            borderRadius: "50%",
+            bgcolor:
+              filters.userId === "unassigned" ? "warning.main" : "grey.400",
+            color: "white",
+            fontSize: "0.65rem",
+            fontWeight: 700,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
-          {hasActiveFilters && (
-            <IconButton
-              onClick={clearFilters}
-              title="Clear all filters"
-              sx={{
-                width: 36,
-                height: 36,
-                borderRadius: "10px",
-                border: "1px solid",
-                borderColor: "divider",
-                color: "text.secondary",
-                flexShrink: 0,
-                "&:active": {
-                  borderColor: "error.main",
-                  color: "error.main",
-                  bgcolor: (theme) => alpha(theme.palette.error.main, 0.06),
-                },
-              }}
-            >
-              <IoClose size={16} />
-            </IconButton>
-          )}
+          U
+        </Box>
+      </IconButton>
+    )}
 
-          <Box sx={{ position: "relative", flex: 1 }}>
-            <input
-              type="text"
-              placeholder="Search subject, email…"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              style={{
-                height: 40,
-                width: "100%",
-                padding: "0 36px 0 12px",
-                borderRadius: 12,
-                border: "1px solid #e5e7eb",
-                outline: "none",
-                fontSize: "0.875rem",
-              }}
-            />
-            {searchInput.trim() && (
-              <IconButton
-                size="small"
-                onClick={() => setSearchInput("")}
-                sx={{
-                  position: "absolute",
-                  right: 6,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: "grey.500",
-                }}
-              >
-                <IoClose size={14} />
-              </IconButton>
-            )}
-          </Box>
+    {/* Unread Only */}
+    <IconButton
+      title="Unread only"
+      onClick={() => handleUpdate({ unreadOnly: !filters.unreadOnly })}
+      sx={{
+        width: 36,
+        height: 36,
+        borderRadius: "10px",
+        border: "1px solid",
+        borderColor: filters.unreadOnly ? "primary.main" : "rgba(0,0,0,0.15)",
+        color: filters.unreadOnly ? "primary.main" : "text.secondary",
+        bgcolor: filters.unreadOnly
+          ? (theme) => alpha(theme.palette.primary.main, 0.1)
+          : "transparent",
+        flexShrink: 0,
+      }}
+    >
+      <MarkEmailUnreadIcon sx={{ fontSize: 18 }} />
+    </IconButton>
 
-          <IconButton
-            onClick={() => setSheetOpen(true)}
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: "10px",
-              border: "1px solid",
-              borderColor: hasActiveFilters
-                ? "primary.main"
-                : "rgba(0,0,0,0.15)",
-              color: hasActiveFilters ? "primary.main" : "text.secondary",
-              bgcolor: hasActiveFilters
-                ? (theme) => alpha(theme.palette.primary.main, 0.08)
-                : "transparent",
-              position: "relative",
-            }}
-          >
-            <FiFilter size={17} />
-            {hasActiveFilters && (
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 6,
-                  right: 6,
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  bgcolor: "primary.main",
-                }}
-              />
-            )}
-          </IconButton>
+    {/* Client Replied Last */}
+    <IconButton
+      title="Client replied last"
+      onClick={() =>
+        handleUpdate({
+          lastMessageBy:
+            filters.lastMessageBy === "client" ? "" : "client",
+        })
+      }
+      sx={{
+        width: 36,
+        height: 36,
+        borderRadius: "10px",
+        border: "1px solid",
+        borderColor:
+          filters.lastMessageBy === "client"
+            ? "primary.main"
+            : "rgba(0,0,0,0.15)",
+        color:
+          filters.lastMessageBy === "client"
+            ? "primary.main"
+            : "text.secondary",
+        bgcolor:
+          filters.lastMessageBy === "client"
+            ? (theme) => alpha(theme.palette.primary.main, 0.1)
+            : "transparent",
+        flexShrink: 0,
+      }}
+    >
+      <Box
+        sx={{
+          width: 18,
+          height: 18,
+          borderRadius: "50%",
+          bgcolor:
+            filters.lastMessageBy === "client" ? "primary.main" : "grey.400",
+          color: "white",
+          fontSize: "0.65rem",
+          fontWeight: 700,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        C
+      </Box>
+    </IconButton>
 
-          <IconButton
-            onClick={() => fetchThreads?.()}
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: "10px",
-              border: "1px solid rgba(0,0,0,0.15)",
-              color: "text.secondary",
-            }}
-          >
-            <AutorenewIcon fontSize="small" />
-          </IconButton>
 
-          <button
-            onClick={() => setIsComposeOpen(true)}
-            className="
-              flex items-center justify-center
-              bg-[#C2E7FF] hover:bg-[#B3D7EF] text-[#001D35]
-              font-medium text-base rounded-2xl
-              shadow-sm hover:shadow-md
-              transition-all duration-200 ease-in-out
-              w-[40px] h-[40px] shrink-0
-            "
-          >
-            <MdOutlineCreate className="text-xl" />
-          </button>
 
-          <ContextMenu
-            trigger={
-              <button className="flex items-center justify-center w-9 h-9 rounded-md hover:bg-gray-100 transition shrink-0">
-                <FiMoreVertical className="text-gray-600 text-lg" />
-              </button>
-            }
-            items={[
-              { type: "label", label: "CATEGORIES" },
-              {
-                icon: <LabelOutlinedIcon sx={{ fontSize: 18 }} />,
-                label: "Manage Categories",
-                onClick: () => setIsCategoryModal(true),
-              },
-            ]}
-          />
+
+    </Stack>
+ 
+
+
+        <Stack     direction="row"
+    spacing={1}>
+
+          {/* Refresh */}
+    <IconButton
+      onClick={() => fetchThreads?.()}
+      title="Refresh"
+      sx={{
+        width: 36,
+        height: 36,
+        borderRadius: "10px",
+        border: "1px solid rgba(0,0,0,0.15)",
+        color: "text.secondary",
+        flexShrink: 0,
+      }}
+    >
+      <AutorenewIcon sx={{ fontSize: 18 }} />
+    </IconButton>
+
+
+    {/* Filters drawer */}
+    <IconButton
+      onClick={() => setSheetOpen(true)}
+      title="All filters"
+      sx={{
+        width: 36,
+        height: 36,
+        borderRadius: "10px",
+        border: "1px solid",
+        borderColor: hasActiveFilters ? "primary.main" : "rgba(0,0,0,0.15)",
+        color: hasActiveFilters ? "primary.main" : "text.secondary",
+        bgcolor: hasActiveFilters
+          ? (theme) => alpha(theme.palette.primary.main, 0.08)
+          : "transparent",
+        position: "relative",
+        flexShrink: 0,
+      }}
+    >
+      <FiFilter size={16} />
+      {hasActiveFilters && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 5,
+            right: 5,
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            bgcolor: "primary.main",
+          }}
+        />
+      )}
+    </IconButton>
+
+
+
+
+
+
         </Stack>
+
+  </Stack>
+
+
+ 
+</Box>
 
         {/* Active filter chips */}
         {/* {hasActiveFilters && (

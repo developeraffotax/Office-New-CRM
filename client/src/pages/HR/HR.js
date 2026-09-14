@@ -78,7 +78,7 @@ const initialColumnVisibility = {
   hrTaskRef: true,
   role: true,
   department: true,
-  category: true,
+  product: true,
   software: true,
 
 
@@ -762,6 +762,7 @@ const fetchAllDepartments = async () => {
 
       {
         accessorKey: "department.departmentName",
+        id: "department",
         minSize: 100,
         maxSize: 200,
         size: 170,
@@ -873,53 +874,53 @@ const fetchAllDepartments = async () => {
 
 
 
-      {
-        accessorKey: "category",
-        Header: ({ column }) => {
-          return (
-            <div className=" w-[130px] flex flex-col gap-[2px]">
-              <span
-                className="ml-1 cursor-pointer"
-                title="Clear Filter"
-                onClick={() => {
-                  column.setFilterValue("");
-                }}
-              >
-                Category
-              </span>
-              <input
-                type="search"
-                value={column.getFilterValue() || ""}
-                onChange={(e) => column.setFilterValue(e.target.value)}
-                className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
-              />
-            </div>
-          );
-        },
-        Cell: ({ cell, row }) => {
-          const category = row.original.category;
+      // {
+      //   accessorKey: "category",
+      //   Header: ({ column }) => {
+      //     return (
+      //       <div className=" w-[130px] flex flex-col gap-[2px]">
+      //         <span
+      //           className="ml-1 cursor-pointer"
+      //           title="Clear Filter"
+      //           onClick={() => {
+      //             column.setFilterValue("");
+      //           }}
+      //         >
+      //           Category
+      //         </span>
+      //         <input
+      //           type="search"
+      //           value={column.getFilterValue() || ""}
+      //           onChange={(e) => column.setFilterValue(e.target.value)}
+      //           className="font-normal h-[1.8rem] w-[100%] px-2 cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+      //         />
+      //       </div>
+      //     );
+      //   },
+      //   Cell: ({ cell, row }) => {
+      //     const category = row.original.category;
 
-          return (
-            <div className="w-full h-full ">
-              <div
-                className="w-full h-full flex items-center justify-start "
-                title={category}
-              >
-                <span className="cursor-pointer text-start  ">{category}</span>
-              </div>
-            </div>
-          );
-        },
-        filterFn: (row, columnId, filterValue) => {
-          const cellValue =
-            row.original[columnId]?.toString().toLowerCase() || "";
-          return cellValue.includes(filterValue.toLowerCase());
-        },
-        size: 180,
-        minSize: 120,
-        maxSize: 200,
-        grow: false,
-      },
+      //     return (
+      //       <div className="w-full h-full ">
+      //         <div
+      //           className="w-full h-full flex items-center justify-start "
+      //           title={category}
+      //         >
+      //           <span className="cursor-pointer text-start  ">{category}</span>
+      //         </div>
+      //       </div>
+      //     );
+      //   },
+      //   filterFn: (row, columnId, filterValue) => {
+      //     const cellValue =
+      //       row.original[columnId]?.toString().toLowerCase() || "";
+      //     return cellValue.includes(filterValue.toLowerCase());
+      //   },
+      //   size: 180,
+      //   minSize: 120,
+      //   maxSize: 200,
+      //   grow: false,
+      // },
       {
         accessorKey: "software",
         Header: ({ column }) => {

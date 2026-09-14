@@ -89,7 +89,7 @@ export const updateHrProduct = async (req, res) => {
 // Fetch All Products
 export const fetchHrProducts = async (req, res) => {
   try {
-    const products = await hrProductModel.find({}).sort({ createdAt: -1 });
+    const products = await hrProductModel.find({}).sort({ name: 1 }).lean();
 
     res.status(200).send({
       success: true,

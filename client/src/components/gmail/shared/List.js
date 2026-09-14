@@ -42,6 +42,7 @@ export default function List({
   toggleStar,
  
   filters,
+  setFilters,
   selectedThreads,
   toggleThread,
  
@@ -92,6 +93,7 @@ const openThread = (threadId) => {
            
           categories={categories}
           filters={filters}
+          setFilters={setFilters}
           openThread={openThread}
  
           index={index}

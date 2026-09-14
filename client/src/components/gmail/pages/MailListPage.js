@@ -186,6 +186,7 @@ export default function MailListPage({
           markAsRead={markAsRead}
           toggleStar={toggleStar}
           filters={filters}
+          setFilters={setFilters}
           selectedThreads={selectedThreads}
           toggleThread={toggleThread}
         />

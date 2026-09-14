@@ -24,5 +24,13 @@ export function getMyEamilFromCompanyName(myCompanyName) {
 }
 
 
+ 
+export function getOtherParticipantEmail(participants = [], myEmail) {
+  if (!Array.isArray(participants) || !myEmail) return null;
 
+  const other = participants.find(
+    (p) => p.email?.toLowerCase() !== myEmail.toLowerCase()
+  );
 
+  return other?.email || null;
+}

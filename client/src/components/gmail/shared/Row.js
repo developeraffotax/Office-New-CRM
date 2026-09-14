@@ -10,6 +10,7 @@ import clsx from "clsx";
 import AttachmentChip from "./attachments/AttachmentChip";
 import {
   MdDeleteOutline,
+  MdOutlineSearch,
   MdOutlineStarBorder,
   MdStarBorder,
 } from "react-icons/md";
@@ -30,6 +31,7 @@ import RefBadge from "./ui/RefBadge";
 import LeadButton from "./ui/LeadButton";
 import TicketButton from "./ui/TicketButton";
 import { useMailModalActions } from "../context/MailModalsContext";
+import { getOtherParticipantEmail } from "../utils/utils";
 
 function highlightText(text = "", search = "") {
   if (!search) return text;
@@ -55,6 +57,7 @@ export default function Row({
   toggleStar,
 
   filters,
+  setFilters,
   selected,
   toggleSelect,
   index,
@@ -101,6 +104,8 @@ export default function Row({
     myCompanyName === "affotax"
       ? "info@affotax.com"
       : "admin@outsourceaccountings.co.uk"; // your email
+
+ 
 
   let sender = thread.participants
     .slice(0, 2)
@@ -439,62 +444,75 @@ export default function Row({
           </div>
 
           {/* More Options */}
-          <div className="relative">
-            <button
-              className="p-1 rounded-md hover:bg-gray-200 text-gray-500  hover:text-amber-500"
-              title="Set Reminder"
-              onClick={(e) => {
-                openReminder({
-                   
-                  threadId: thread?.threadId,
-                  link: `/mail?folder=${folder}&companyName=${myCompanyName}&mailThreadId=${thread?.threadId}`,
-                });
-              }}
-            >
-              <PiBell className="size-5  font-semibold " />
-            </button>
+<div className="inline-flex items-center gap-1  ">
+  {/* Search Button */}
+  <button
+    className="p-1 rounded-md text-slate-500 bg-white/70 hover:bg-blue-100/70 hover:text-blue-600 transition-all duration-150 group"
+    title="Search with Email"
+    onClick={(e) => {
+      setFilters({
+        search: getOtherParticipantEmail(thread.participants, myEmail),
+        page: 1,
+      });
+    }}
+  >
+    <MdOutlineSearch className="size-4 group-hover:scale-105 transition-transform" />
+  </button>
 
-            
+  {/* Reminder Button */}
+  <button
+    className="p-1 rounded-md text-slate-500 bg-white/70 hover:bg-amber-100/70 hover:text-amber-600 transition-all duration-150 group"
+    title="Set Reminder"
+    onClick={(e) => {
+      openReminder({
+        threadId: thread?.threadId,
+        link: `/mail?folder=${folder}&companyName=${myCompanyName}&mailThreadId=${thread?.threadId}`,
+      });
+    }}
+  >
+    <PiBell className="size-4 group-hover:scale-105 transition-transform" />
+  </button>
 
-            {scope.edit &&
-              (thread?.status === "progress" ? (
-                <button
-                  className="p-1 rounded-md   text-gray-500  hover:text-green-500"
-                  title="Complete Thread"
-                  onClick={(e) => {
-                    updateStatus("completed");
-                  }}
-                >
-                  <FaCheckCircle className="size-4   " />
-                </button>
-              ) : (
-                <button
-                  className="p-1 rounded-md   text-gray-500  hover:text-red-500"
-                  title="Undo Complete"
-                  onClick={(e) => {
-                    updateStatus("progress");
-                  }}
-                >
-                  <FaUndoAlt className="size-4   " />
-                </button>
-              ))}
+  {/* Complete / Undo Status Button */}
+  {scope.edit &&
+    (thread?.status === "progress" ? (
+      <button
+        className="p-1 rounded-md text-slate-500 bg-white/70 hover:bg-emerald-100/70 hover:text-emerald-600 transition-all duration-150 group"
+        title="Complete Thread"
+        onClick={(e) => {
+          updateStatus("completed");
+        }}
+      >
+        <FaCheckCircle className="size-3.5 group-hover:scale-105 transition-transform" />
+      </button>
+    ) : (
+      <button
+        className="p-1 rounded-md text-slate-500 bg-white/70 hover:bg-rose-100/70 hover:text-rose-600 transition-all duration-150 group"
+        title="Undo Complete"
+        onClick={(e) => {
+          updateStatus("progress");
+        }}
+      >
+        <FaUndoAlt className="size-3.5 group-hover:scale-105 transition-transform" />
+      </button>
+    ))}
+
+  {/* Delete Button */}
+  {scope.delete && (
+    <button
+      className="p-1 rounded-md text-slate-500 bg-white/70 hover:bg-red-100/70 hover:text-red-600 transition-all duration-150 group"
+      title="Delete Thread"
+      onClick={(e) => {
+        deleteThread(thread?.threadId, thread?.companyName);
+      }}
+    >
+      <MdDeleteOutline className="size-4 group-hover:scale-105 transition-transform" />
+    </button>
+  )}
+</div>
 
 
-              {scope.delete && (
-              <button
-                className="p-1 rounded-md hover:bg-gray-200 text-gray-500  hover:text-red-500"
-                title="Delete Thread"
-                onClick={(e) => {
-                  deleteThread(thread?.threadId, thread?.companyName);
-                }}
-              >
-                <MdDeleteOutline className="size-5   " />
-              </button>
-            )}
 
-
-            
-          </div>
         </div>
 
         <div className="flex-1 flex justify-start items-center gap-2">

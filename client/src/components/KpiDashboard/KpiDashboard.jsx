@@ -40,6 +40,7 @@ import UserFilterSelect from "./ui/UserFilterSelect";
 import { useSelector } from "react-redux";
 import { getVisibleTabGroups } from "./utils/tabGroups";
 import { TAB_GROUPS } from "./constants";
+import QuickRangeButtons from "./QuickRangeButtons";
 
 // add near visibleTabGroups, module-level so the reference is stable across renders
 const EMPTY_SET = new Set();
@@ -229,6 +230,11 @@ export default function KpiDashboard() {
           >
             <ManualRangePicker value={dateRange} onChange={setDateRange} />
             <QuickFilterMenu
+              activeLabel={activeLabel}
+              onSelect={handleQuickFilterSelect}
+            />
+
+            <QuickRangeButtons
               activeLabel={activeLabel}
               onSelect={handleQuickFilterSelect}
             />

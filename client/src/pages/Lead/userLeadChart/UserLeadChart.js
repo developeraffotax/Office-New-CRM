@@ -25,6 +25,8 @@ import {
   Divider,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip,
+  ButtonGroup,
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -33,6 +35,7 @@ import quarterOfYear from "dayjs/plugin/quarterOfYear";
 import { isAdmin } from "../../../utlis/isAdmin";
 import WonLeadStats from "./WonLeadStats";
 import ToggleStatsButton from "../ui/ToggleStatsButton";
+import UserFilterSelect from "../../../components/KpiDashboard/ui/UserFilterSelect";
 
 dayjs.extend(quarterOfYear);
 
@@ -53,6 +56,15 @@ const PALETTE = [
   "#84CC16",
 ];
 const getUserColor = (index) => PALETTE[index % PALETTE.length];
+
+const QUICK_RANGE_FILTERS = [
+  { code: "M", label: "This Month", filter: "thisMonth" },
+  { code: "Q", label: "This Quarter", filter: "thisQuarter" },
+  { code: "Y", label: "This Year", filter: "thisYear" },
+  { code: "LM", label: "Last Month", filter: "lastMonth" },
+  { code: "LQ", label: "Last Quarter", filter: "lastQuarter" },
+  { code: "LY", label: "Last Year", filter: "lastYear" },
+];
 
 // Shared look for every ToggleButtonGroup in the toolbar (period / metric /
 // chart type) so the three read as one consistent control style.
@@ -123,11 +135,11 @@ export default function UserLeadChart({ auth, active1 }) {
   const [metric, setMetric] = useState("value"); // "count" | "value"
 
   const defaultUsers = () =>
-    isAdmin(auth) ? ["All"] : [auth?.user?.name].filter(Boolean);
+    isAdmin(auth) ? [] : [auth?.user?.name].filter(Boolean);
 
   const [selectedUsers, setSelectedUsers] = useState(defaultUsers());
   const [users, setUsers] = useState([]);
-
+  const [teams, setTeams] = useState([]);
   const [dateFilter, setDateFilter] = useState("thisYear");
   const [dateRange, setDateRange] = useState(getDateRange("thisYear"));
 
@@ -142,6 +154,17 @@ export default function UserLeadChart({ auth, active1 }) {
     setDateRange(getDateRange("thisYear"));
     setSelectedUsers(defaultUsers());
   };
+
+  useEffect(() => {
+    const active = active1 || "All";
+    setSelectedUsers(
+      isAdmin(auth)
+        ? active === "All"
+          ? []
+          : [active]
+        : [auth?.user?.name].filter(Boolean),
+    );
+  }, [active1, auth]);
 
   const getAllUsers = useCallback(async () => {
     try {
@@ -164,14 +187,14 @@ export default function UserLeadChart({ auth, active1 }) {
   }, []);
 
   const fetchData = useCallback(async () => {
-    if (!selectedUsers.length) return;
+    if (!isAdmin(auth) && !selectedUsers.length) return;
     try {
       let [start, end] = dateRange;
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/leads/userchart/won`,
         {
           params: {
-            users: selectedUsers.join(","),
+            users: selectedUsers.length ? selectedUsers.join(",") : "All",
             startDate: start ? start.toISOString() : null,
             endDate: end ? end.toISOString() : null,
             view,
@@ -187,6 +210,24 @@ export default function UserLeadChart({ auth, active1 }) {
     }
   }, [selectedUsers, dateRange, view]);
 
+  // Fetch Teams
+  useEffect(() => {
+    const getAllTeams = async () => {
+      try {
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/team/get_all`,
+        );
+
+        console.log("Fetched teams:", data?.teams);
+        setTeams(data?.teams || []);
+      } catch (error) {
+        console.error("Failed to fetch teams:", error);
+      }
+    };
+
+    getAllTeams();
+  }, []);
+
   useEffect(() => {
     getAllUsers();
   }, [getAllUsers]);
@@ -195,12 +236,12 @@ export default function UserLeadChart({ auth, active1 }) {
     fetchData();
   }, [fetchData]);
 
-  useEffect(() => {
-    const active = active1 || "All";
-    setSelectedUsers(
-      isAdmin(auth) ? [active] : [auth?.user?.name].filter(Boolean),
-    );
-  }, [active1, auth]);
+  // useEffect(() => {
+  //   const active = active1 || "All";
+  //   setSelectedUsers(
+  //     isAdmin(auth) ? [active] : [auth?.user?.name].filter(Boolean),
+  //   );
+  // }, [active1, auth]);
 
   // "All" is exclusive — picking it clears any other selection, and picking
   // a specific user while "All" is active drops "All" from the selection.
@@ -216,6 +257,11 @@ export default function UserLeadChart({ auth, active1 }) {
       return;
     }
     setSelectedUsers(val.length ? val : ["All"]);
+  };
+
+  const handleQuickRangeSelect = (filter) => {
+    setDateFilter(filter);
+    setDateRange(getDateRange(filter));
   };
 
   // Build [{ user, target: [...], actual: [...] }] pairs into the flat
@@ -328,8 +374,15 @@ export default function UserLeadChart({ auth, active1 }) {
     };
   }, [chartType, categories, chartSeries, metric]);
 
+  // const headerLabel =
+  //   selectedUsers.length === 1
+  //     ? selectedUsers[0]
+  //     : `${selectedUsers.length} users`;
+
   const headerLabel =
-    selectedUsers.length === 1
+    selectedUsers.length === 0
+      ? "All Users"
+      : selectedUsers.length === 1
       ? selectedUsers[0]
       : `${selectedUsers.length} users`;
 
@@ -351,14 +404,17 @@ export default function UserLeadChart({ auth, active1 }) {
             justifyContent="space-between"
             alignItems={{ xs: "stretch", lg: "flex-start" }}
             spacing={2.5}
-            
           >
-
-
             <div>
-              {showStats && <WonLeadStats users={selectedUsers} dateRange={dateRange} />}
+              {showStats && (
+                <WonLeadStats
+                  users={selectedUsers}
+                  dateRange={dateRange}
+                  isAdmin={isAdmin(auth)}
+                />
+              )}
             </div>
-          
+
             <Stack
               direction="row"
               spacing={1.5}
@@ -367,18 +423,13 @@ export default function UserLeadChart({ auth, active1 }) {
               justifySelf={"end"}
               justifyContent="flex-end"
             >
-
-
-              <ToggleStatsButton 
+              <ToggleStatsButton
                 showStats={showStats}
                 onToggle={() => setShowStats(!showStats)}
               />
 
-
               {dateFilter === "custom" && (
                 <>
-
-
                   <DatePicker
                     label="Start Date"
                     value={dateRange[0]}
@@ -428,76 +479,46 @@ export default function UserLeadChart({ auth, active1 }) {
                 </Select>
               </FormControl>
 
-              <FormControl size="small">
-                <InputLabel>User Filter</InputLabel>
-                <Select
-                  multiple
-                  value={selectedUsers}
-                  label="User Filter"
-                  onChange={handleUserChange}
-                  renderValue={(selected) =>
-                    selected.includes("All") ? (
-                      "All Users"
-                    ) : (
-                      <Stack
-                        direction="row"
-                        spacing={0.5}
-                        flexWrap="wrap"
-                        rowGap={0.5}
+              <ButtonGroup variant="outlined" size="small">
+                {QUICK_RANGE_FILTERS.map(({ code, label, filter }) => {
+                  const isActive = dateFilter === filter;
+                  return (
+                    <Tooltip key={filter} title={label} arrow>
+                      <Button
+                        onClick={() => handleQuickRangeSelect(filter)}
+                        sx={{
+                          minWidth: 36,
+                          width: 36,
+                          height: 36,
+                          p: 0,
+                          fontSize: 11,
+                          fontWeight: 700,
+                          letterSpacing: 0.2,
+                          ...(isActive && {
+                            bgcolor: "primary.main",
+                            color: "primary.contrastText",
+                            borderColor: "primary.main",
+                            "&:hover": {
+                              bgcolor: "primary.dark",
+                              borderColor: "primary.dark",
+                            },
+                          }),
+                        }}
                       >
-                        {selected.map((name, i) => (
-                          <Chip
-                            key={name}
-                            size="small"
-                            label={name}
-                            sx={{
-                              height: 20,
-                              fontSize: 11,
-                              fontWeight: 700,
-                              bgcolor: `${getUserColor(i)}1f`,
-                              color: getUserColor(i),
-                              "& .MuiChip-label": { px: 1 },
-                            }}
-                          />
-                        ))}
-                      </Stack>
-                    )
-                  }
-                  sx={{ minWidth: 240, bgcolor: "#fff", borderRadius: 2 }}
-                >
-                  {isAdmin(auth) && (
-                    <MenuItem value="All">
-                      <Checkbox
-                        checked={selectedUsers.includes("All")}
-                        size="small"
-                      />
-                      <ListItemText primary="All Users" />
-                    </MenuItem>
-                  )}
-                  {users.map((u) => (
-                    <MenuItem key={u._id || u.name} value={u.name}>
-                      <Checkbox
-                        checked={selectedUsers.includes(u.name)}
-                        size="small"
-                      />
-                      <ListItemText primary={u.name} />
-                      {u?.isTeamLead && (
-                        <Chip
-                          label="Lead"
-                          size="small"
-                          sx={{
-                            ml: 1,
-                            height: 18,
-                            fontSize: 10,
-                            fontWeight: 700,
-                            bgcolor: "#DBEAFE",
-                            color: "#2563EB",
-                          }}
-                        />
-                      )}
-                    </MenuItem>
-                  ))}
-                </Select>
+                        {code}
+                      </Button>
+                    </Tooltip>
+                  );
+                })}
+              </ButtonGroup>
+
+              <FormControl size="small">
+                <UserFilterSelect
+                  users={users}
+                  teams={teams}
+                  selected={selectedUsers}
+                  onChange={setSelectedUsers}
+                />
               </FormControl>
 
               <Button
@@ -521,8 +542,6 @@ export default function UserLeadChart({ auth, active1 }) {
               </Button>
             </Stack>
           </Stack>
-
-         
         </Stack>
 
         <Divider sx={{ mb: 3, borderColor: "rgba(15,23,42,0.06)" }} />

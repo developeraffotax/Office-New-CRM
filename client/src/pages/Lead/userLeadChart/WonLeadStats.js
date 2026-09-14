@@ -181,7 +181,7 @@ function EmptyState() {
 
 // `users` is an array of selected user names (or ["All"]) — one card is
 // fetched and rendered per user.
-export default function WonLeadStats({ users, dateRange }) {
+export default function WonLeadStats({ users, dateRange, isAdmin }) {
   const [stats, setStats] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -195,7 +195,7 @@ export default function WonLeadStats({ users, dateRange }) {
           `${process.env.REACT_APP_API_URL}/api/v1/leads/userchart/won/stats`,
           {
             params: {
-              users: users.join(","),
+              users: users.length ? users.join(",") : "All",
               startDate: start ? start.toISOString() : null,
               endDate: end ? end.toISOString() : null,
             },
@@ -210,10 +210,13 @@ export default function WonLeadStats({ users, dateRange }) {
       }
     };
 
-    if (users?.length && dateRange?.[0] && dateRange?.[1]) {
+    // An admin's empty selection is intentional ("all users") and should
+    // still fetch; a non-admin's empty selection only happens transiently
+    // before their name loads in, and should not.
+    if ((isAdmin || users?.length) && dateRange?.[0] && dateRange?.[1]) {
       fetchStats();
     }
-  }, [users, dateRange]);
+  }, [users, dateRange, isAdmin]);
 
   if (loading) {
     return (

@@ -5,6 +5,7 @@ import {
   Box, Popover, Stack, TextField, InputAdornment, Checkbox,
   Avatar, AvatarGroup, Typography, Button, Divider, List,
   ListItemButton, ListItemIcon, ListItemText,
+  Chip,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
@@ -242,6 +243,20 @@ export default function UserFilterSelect({ users, teams = [], selected, onChange
                         {initials(u.name)}
                       </Avatar>
                       <ListItemText primaryTypographyProps={{ variant: "body2" }} primary={u.name} />
+                      {u.isTeamLead && (
+  <Chip
+    label="Team Lead"
+    size="small"
+    sx={{
+      height: 18,
+      fontSize: 10,
+      fontWeight: 700,
+      bgcolor: "#DBEAFE",
+      color: "#2563EB",
+      ml: 0.5,
+    }}
+  />
+)}
                     </ListItemButton>
                   );
                 })}

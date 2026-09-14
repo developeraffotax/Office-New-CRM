@@ -387,279 +387,278 @@ export default function UserLeadChart({ auth, active1 }) {
       : `${selectedUsers.length} users`;
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Card
-        sx={{
-          p: { xs: 2.5, md: 4 },
-          bgcolor: "#fafafa",
-          border: "1px solid rgba(15,23,42,0.06)",
-          borderRadius: 3,
-          boxShadow:
-            "0 1px 2px rgba(15,23,42,0.06), 0 12px 24px -12px rgba(15,23,42,0.12)",
-        }}
+<LocalizationProvider dateAdapter={AdapterDayjs}>
+  <Card
+    sx={{
+      p: { xs: 1.5, md: 2 }, 
+      bgcolor: "#FAFAFA",
+      // border: "1px solid rgba(15,23,42,0.08)",
+      // borderRadius: 2.5,
+      boxShadow: "0 1px 3px rgba(15,23,42,0.06)",
+       
+    }}
+  >
+    {/* Filters row */}
+    <Stack
+      direction={{ xs: "column", lg: "row" }}
+      justifyContent="space-between"
+      // alignItems={{ xs: "stretch", lg: "center" }}
+      alignItems={{ xs: "stretch", lg: "flex-start" }}
+      spacing={1.5}
+      sx={{ mb: 2 }}
+    >
+      <Box sx={{ maxWidth: { lg: "55%" }, minWidth: 0 }}>
+        {showStats && (
+          <WonLeadStats
+            users={selectedUsers}
+            dateRange={dateRange}
+            isAdmin={isAdmin(auth)}
+          />
+        )}
+      </Box>
+
+      <Stack
+        direction="row"
+        spacing={1}
+        flexWrap="wrap"
+        useFlexGap
+        justifyContent="flex-end"
+        alignItems="center"
       >
-        <Stack spacing={2.5} sx={{ mb: 3 }}>
-          <Stack
-            direction={{ xs: "column", lg: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "stretch", lg: "flex-start" }}
-            spacing={2.5}
+        <ToggleStatsButton
+          showStats={showStats}
+          onToggle={() => setShowStats(!showStats)}
+        />
+
+        {dateFilter === "custom" && (
+          <>
+            <DatePicker
+              label="Start"
+              value={dateRange[0]}
+              onChange={(newValue) => setDateRange([newValue, dateRange[1]])}
+              slotProps={{
+                textField: { size: "small", variant: "outlined", sx: { width: 130 } },
+              }}
+            />
+            <DatePicker
+              label="End"
+              value={dateRange[1]}
+              onChange={(newValue) => setDateRange([dateRange[0], newValue])}
+              slotProps={{
+                textField: { size: "small", variant: "outlined", sx: { width: 130 } },
+              }}
+            />
+          </>
+        )}
+
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <InputLabel>Date Filter</InputLabel>
+          <Select
+            value={dateFilter}
+            label="Date Filter"
+            onChange={(e) => {
+              const val = e.target.value;
+              setDateFilter(val);
+              if (val !== "custom") {
+                setDateRange(getDateRange(val));
+              } else {
+                setDateRange([null, null]);
+              }
+            }}
+            sx={{ bgcolor: "#fff", borderRadius: 1.5 }}
           >
-            <div>
-              {showStats && (
-                <WonLeadStats
-                  users={selectedUsers}
-                  dateRange={dateRange}
-                  isAdmin={isAdmin(auth)}
-                />
-              )}
-            </div>
+            <MenuItem value="thisYear">This Year</MenuItem>
+            <MenuItem value="lastYear">Last Year</MenuItem>
+            <MenuItem value="thisMonth">This Month</MenuItem>
+            <MenuItem value="lastMonth">Last Month</MenuItem>
+            <MenuItem value="thisQuarter">This Quarter</MenuItem>
+            <MenuItem value="lastQuarter">Last Quarter</MenuItem>
+            <MenuItem value="custom">Custom Range</MenuItem>
+          </Select>
+        </FormControl>
 
-            <Stack
-              direction="row"
-              spacing={1.5}
-              flexWrap="wrap"
-              rowGap={1.5}
-              justifySelf={"end"}
-              justifyContent="flex-end"
-            >
-              <ToggleStatsButton
-                showStats={showStats}
-                onToggle={() => setShowStats(!showStats)}
-              />
-
-              {dateFilter === "custom" && (
-                <>
-                  <DatePicker
-                    label="Start Date"
-                    value={dateRange[0]}
-                    onChange={(newValue) =>
-                      setDateRange([newValue, dateRange[1]])
-                    }
-                    slotProps={{
-                      textField: { size: "small", variant: "outlined" },
-                    }}
-                  />
-                  <DatePicker
-                    label="End Date"
-                    value={dateRange[1]}
-                    onChange={(newValue) =>
-                      setDateRange([dateRange[0], newValue])
-                    }
-                    slotProps={{
-                      textField: { size: "small", variant: "outlined" },
-                    }}
-                  />
-                </>
-              )}
-
-              <FormControl size="small">
-                <InputLabel>Date Filter</InputLabel>
-                <Select
-                  value={dateFilter}
-                  label="Date Filter"
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setDateFilter(val);
-                    if (val !== "custom") {
-                      setDateRange(getDateRange(val));
-                    } else {
-                      setDateRange([null, null]);
-                    }
+        <ButtonGroup variant="outlined" size="small">
+          {QUICK_RANGE_FILTERS.map(({ code, label, filter }) => {
+            const isActive = dateFilter === filter;
+            return (
+              <Tooltip key={filter} title={label} arrow>
+                <Button
+                  onClick={() => handleQuickRangeSelect(filter)}
+                  sx={{
+                    minWidth: 32,
+                    width: 32,
+                    height: 32,
+                    p: 0,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    ...(isActive && {
+                      bgcolor: "primary.main",
+                      color: "primary.contrastText",
+                      borderColor: "primary.main",
+                      "&:hover": {
+                        bgcolor: "primary.dark",
+                        borderColor: "primary.dark",
+                      },
+                    }),
                   }}
-                  sx={{ minWidth: 170, bgcolor: "#fff", borderRadius: 2 }}
                 >
-                  <MenuItem value="thisYear">This Year</MenuItem>
-                  <MenuItem value="lastYear">Last Year</MenuItem>
-                  <MenuItem value="thisMonth">This Month</MenuItem>
-                  <MenuItem value="lastMonth">Last Month</MenuItem>
-                  <MenuItem value="thisQuarter">This Quarter</MenuItem>
-                  <MenuItem value="lastQuarter">Last Quarter</MenuItem>
-                  <MenuItem value="custom">Custom Range</MenuItem>
-                </Select>
-              </FormControl>
+                  {code}
+                </Button>
+              </Tooltip>
+            );
+          })}
+        </ButtonGroup>
 
-              <ButtonGroup variant="outlined" size="small">
-                {QUICK_RANGE_FILTERS.map(({ code, label, filter }) => {
-                  const isActive = dateFilter === filter;
-                  return (
-                    <Tooltip key={filter} title={label} arrow>
-                      <Button
-                        onClick={() => handleQuickRangeSelect(filter)}
-                        sx={{
-                          minWidth: 36,
-                          width: 36,
-                          height: 36,
-                          p: 0,
-                          fontSize: 11,
-                          fontWeight: 700,
-                          letterSpacing: 0.2,
-                          ...(isActive && {
-                            bgcolor: "primary.main",
-                            color: "primary.contrastText",
-                            borderColor: "primary.main",
-                            "&:hover": {
-                              bgcolor: "primary.dark",
-                              borderColor: "primary.dark",
-                            },
-                          }),
-                        }}
-                      >
-                        {code}
-                      </Button>
-                    </Tooltip>
-                  );
-                })}
-              </ButtonGroup>
+        <FormControl size="small">
+          <UserFilterSelect
+            users={users}
+            teams={teams}
+            selected={selectedUsers}
+            onChange={setSelectedUsers}
+          />
+        </FormControl>
 
-              <FormControl size="small">
-                <UserFilterSelect
-                  users={users}
-                  teams={teams}
-                  selected={selectedUsers}
-                  onChange={setSelectedUsers}
-                />
-              </FormControl>
-
-              <Button
-                variant="outlined"
-                onClick={clearFilter}
-                sx={{
-                  height: 40,
-                  borderRadius: 2,
-                  textTransform: "none",
-                  fontWeight: 600,
-                  borderColor: "rgba(15,23,42,0.15)",
-                  color: "#334155",
-                  bgcolor: "#fff",
-                  "&:hover": {
-                    bgcolor: "#f8fafc",
-                    borderColor: "rgba(15,23,42,0.25)",
-                  },
-                }}
-              >
-                Reset
-              </Button>
-            </Stack>
-          </Stack>
-        </Stack>
-
-        <Divider sx={{ mb: 3, borderColor: "rgba(15,23,42,0.06)" }} />
-
-        <CardContent
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={clearFilter}
           sx={{
-            bgcolor: "#ffffff",
-            borderRadius: 2,
-            border: "1px solid rgba(15,23,42,0.06)",
-            boxShadow: "0 1px 2px rgba(15,23,42,0.04)",
-            p: { xs: 2, sm: 3 },
+            height: 32,
+            px: 1.5,
+            borderRadius: 1.5,
+            textTransform: "none",
+            fontWeight: 600,
+            borderColor: "rgba(15,23,42,0.12)",
+            color: "#475569",
+            bgcolor: "#fff",
+            "&:hover": {
+              bgcolor: "#f1f5f9",
+              borderColor: "rgba(15,23,42,0.2)",
+            },
           }}
         >
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            justifyContent="space-between"
-            alignItems={{ xs: "flex-start", sm: "center" }}
-            spacing={1.5}
-            sx={{ mb: 3 }}
-          >
-            <Box>
-              <Stack
-                direction="row"
-                spacing={1}
-                alignItems="center"
-                sx={{ mb: 0.5 }}
-              >
-                <Chip
-                  label="Stats"
-                  size="small"
-                  sx={{
-                    height: 20,
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: "#fff",
-                    background: "linear-gradient(90deg, #3B82F6, #8B5CF6)",
-                  }}
-                />
-                <Typography
-                  variant="caption"
-                  sx={{ color: "#94a3b8", fontWeight: 600 }}
-                >
-                  {view === "monthly" ? "Monthly" : "Weekly"} ·{" "}
-                  {metric === "value" ? "Value" : "Count"}
-                </Typography>
-              </Stack>
-              <Typography
-                variant="h6"
-                sx={{ fontWeight: 700, color: "#1e293b", lineHeight: 1.3 }}
-              >
-                Won Leads{" "}
-                <Box
-                  component="span"
-                  sx={{ color: "#64748b", fontWeight: 500 }}
-                >
-                  – {headerLabel}
-                </Box>
-              </Typography>
-            </Box>
+          Reset
+        </Button>
+      </Stack>
+    </Stack>
 
-            <Stack direction="row" spacing={2} flexWrap="wrap" rowGap={2}>
-              <ToggleButtonGroup
-                size="small"
-                exclusive
-                value={metric}
-                onChange={(e, val) => val && setMetric(val)}
-                sx={toggleGroupSx}
-              >
-                <ToggleButton value="value">Value</ToggleButton>
-                <ToggleButton value="count">Count</ToggleButton>
-              </ToggleButtonGroup>
+    <Divider sx={{ mb: 2, borderColor: "rgba(15,23,42,0.06)" }} />
 
-              <ToggleButtonGroup
-                size="small"
-                exclusive
-                value={view}
-                onChange={(e, val) => val && setView(val)}
-                sx={toggleGroupSx}
-              >
-                <ToggleButton value="monthly">Monthly</ToggleButton>
-                <ToggleButton value="weekly">Weekly</ToggleButton>
-              </ToggleButtonGroup>
-
-              <ToggleButtonGroup
-                size="small"
-                exclusive
-                value={chartType}
-                onChange={(e, val) => val && setChartType(val)}
-                sx={toggleGroupSx}
-              >
-                <ToggleButton value="bar">Bar</ToggleButton>
-                <ToggleButton value="line">Line</ToggleButton>
-                <ToggleButton value="area">Area</ToggleButton>
-              </ToggleButtonGroup>
-            </Stack>
-          </Stack>
-
-          {hasLoadedOnce ? (
-            <Chart
-              key={`${chartType}-${metric}-${rawSeries
-                .map((s) => s.user)
-                .join("|")}`}
-              ref={chartRef}
-              options={options}
-              series={chartSeries}
-              type={chartType}
-              height={500}
+    {/* Chart card */}
+    <CardContent
+      sx={{
+        bgcolor: "#fff",
+        // borderRadius: 2,
+        // border: "1px solid rgba(15,23,42,0.06)",
+        boxShadow: "0 1px 2px rgba(15,23,42,0.04)",
+        p: { xs: 1.5, sm: 2 },
+        "&:last-child": { pb: { xs: 1.5, sm: 2 } },
+      }}
+    >
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        justifyContent="space-between"
+        alignItems={{ xs: "flex-start", sm: "center" }}
+        spacing={1}
+        sx={{ mb: 2 }}
+      >
+        <Box>
+          <Stack direction="row" spacing={0.75} alignItems="center" sx={{ mb: 0.25 }}>
+            <Chip
+              label="Stats"
+              size="small"
+              sx={{
+                height: 18,
+                fontSize: 10,
+                fontWeight: 700,
+                color: "#fff",
+                background: "linear-gradient(90deg, #3B82F6, #8B5CF6)",
+              }}
             />
-          ) : (
-            <div
-              className="w-full flex items-center justify-center text-sm text-slate-500 font-medium animate-pulse"
-              style={{ height: 500 }}
+            <Typography
+              variant="caption"
+              sx={{ color: "#94a3b8", fontWeight: 600, fontSize: 11 }}
             >
-              Loading chart…
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </LocalizationProvider>
+              {view === "monthly" ? "Monthly" : "Weekly"} ·{" "}
+              {metric === "value" ? "Value" : "Count"}
+            </Typography>
+          </Stack>
+          <Typography
+            variant="subtitle1"
+            sx={{ fontWeight: 700, color: "#1e293b", lineHeight: 1.25 }}
+          >
+            Won Leads{" "}
+            <Box component="span" sx={{ color: "#64748b", fontWeight: 500 }}>
+              – {headerLabel}
+            </Box>
+          </Typography>
+        </Box>
+
+        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={metric}
+            onChange={(e, val) => val && setMetric(val)}
+            sx={toggleGroupSx}
+          >
+            <ToggleButton value="value">Value</ToggleButton>
+            <ToggleButton value="count">Count</ToggleButton>
+          </ToggleButtonGroup>
+
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={view}
+            onChange={(e, val) => val && setView(val)}
+            sx={toggleGroupSx}
+          >
+            <ToggleButton value="monthly">Monthly</ToggleButton>
+            <ToggleButton value="weekly">Weekly</ToggleButton>
+          </ToggleButtonGroup>
+
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={chartType}
+            onChange={(e, val) => val && setChartType(val)}
+            sx={toggleGroupSx}
+          >
+            <ToggleButton value="bar">Bar</ToggleButton>
+            <ToggleButton value="line">Line</ToggleButton>
+            <ToggleButton value="area">Area</ToggleButton>
+          </ToggleButtonGroup>
+        </Stack>
+      </Stack>
+
+      {hasLoadedOnce ? (
+        <Chart
+          key={`${chartType}-${metric}-${rawSeries.map((s) => s.user).join("|")}`}
+          ref={chartRef}
+          options={options}
+          series={chartSeries}
+          type={chartType}
+          height={500}
+        />
+      ) : (
+        <Box
+          sx={{
+            width: "100%",
+            height: 500,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#64748b",
+            fontSize: 13,
+            fontWeight: 500,
+          }}
+          className="animate-pulse"
+        >
+          Loading chart…
+        </Box>
+      )}
+    </CardContent>
+  </Card>
+</LocalizationProvider>
   );
 }

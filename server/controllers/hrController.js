@@ -3,17 +3,29 @@ import departmentModel from "../models/departmentModel.js";
 import hrModel from "../models/hrModel.js";
 import XLSX from "xlsx";
 import { getUserAndJuniorIds } from "../utils/getUserAndJuniorIds.js";
+import hrProductModel from "../models/hrProductModel.js";
 
 // Create
 export const createHrTask = async (req, res) => {
   try {
-    const { title, department, category, software, description, productLink, hrRole, } = req.body;
+    const { title, department, product, category, software, description, productLink, hrRole, } = req.body;
 
     const departmentDetail = await departmentModel.findById(department);
     if (!departmentDetail) {
       return res.status(404).send({
         success: false,
         message: "Department not found!",
+      });
+    }
+
+
+
+    // Validate product
+    const productDetail = await hrProductModel.findById(product);
+    if (!productDetail) {
+      return res.status(404).send({
+        success: false,
+        message: "Product not found!",
       });
     }
 
@@ -25,6 +37,7 @@ export const createHrTask = async (req, res) => {
       hrRole,
       department,
       category,
+      product: product,
       software,
       description,
       productLink,
@@ -50,7 +63,7 @@ export const createHrTask = async (req, res) => {
 export const updateHrTask = async (req, res) => {
   try {
     const taskId = req.params.id;
-    const { title, department, category, software, description, productLink, hrRole, } = req.body;
+    const { title, department, product, category, software, description, productLink, hrRole, } = req.body;
 
     const existingTask = await hrModel.findById(taskId);
 
@@ -68,6 +81,18 @@ export const updateHrTask = async (req, res) => {
         message: "Department not found!",
       });
     }
+
+
+    
+    // Validate product
+    const productDetail = await hrProductModel.findById(product);
+    if (!productDetail) {
+      return res.status(404).send({
+        success: false,
+        message: "Product not found!",
+      });
+    }
+
 
     const existingUsersMap = new Map(
       existingTask.users.map((userObj) => [
@@ -89,6 +114,7 @@ export const updateHrTask = async (req, res) => {
         title,
         hrRole,
         department,
+        product: product,
         category,
         software,
         description,
@@ -242,6 +268,7 @@ export const allHrTask = async (req, res) => {
       .sort(sort)
       .select("-description")
       .populate("hrRole")
+      .populate("product")
       .populate({
         path: "users.user",
         select: "name email",
@@ -362,6 +389,7 @@ export const hrTaskDetail = async (req, res) => {
     const task = await hrModel
       .findById(taskId)
       .populate("hrRole")
+      .populate("product")
       .populate({
         path: "users.user",
         select: "name email",

@@ -25,6 +25,7 @@ import meetingRoute from "./meetingRoutes.js";
 import hrRoute from "./hrRoutes.js";
 import departmentRoute from "./departmentRoutes.js";
 import hrRoleRoutes from "./hrRoleRoutes.js";
+import hrProductRoutes from "./hrProductRoutes.js";
 import quickListRoute from "./quickListRoute.js";
 import qualityListRoute from "./qualityRoutes.js";
 import officeShiftRoutes from "./officeShiftRoutes.js";
@@ -100,6 +101,7 @@ export const registerRoutes = (app) => {
   app.use("/api/v1/hr", hrRoute);
   app.use("/api/v1/department", departmentRoute);
   app.use("/api/v1/hrRole", hrRoleRoutes);
+  app.use("/api/v1/hrProduct", hrProductRoutes);
   app.use("/api/v1/quicklist", quickListRoute);
   app.use("/api/v1/quicklist", qualityListRoute);
   app.use("/api/v1/officeshift", officeShiftRoutes);

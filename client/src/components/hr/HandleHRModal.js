@@ -15,11 +15,12 @@ export default function HandleHRModal({
   getAllTasks,
   deparmentsData,
   hrRoleData,
+  hrProductData,          // ← new prop
   users,
 }) {
   const [department, setDepartment] = useState("");
   const [hrRole, setHrRole] = useState("");
-  const [category, setCategory] = useState("");
+  const [product, setProduct] = useState("");     // ← renamed from category
   const [software, setSoftware] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,26 +30,27 @@ export default function HandleHRModal({
   const [showProductLink, setShowProductLink] = useState(false);
   const [productLink, setProductLink] = useState("");
 
-  //---------- Get Single Project-----------
+  //---------- Get Single Task -----------
   const getSingleTask = async () => {
+    if (!taskId) return;
     setIsLoading(true);
     try {
       const { data } = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/v1/hr/task/detail/${taskId}`
       );
 
-      setSoftware(data?.task?.software);
-      setDepartment(data?.task?.department?._id);
-      setHrRole(data?.task?.hrRole?._id);
-      setCategory(data?.task?.category);
-      setDescription(data?.task?.description);
-      setTitle(data?.task?.title);
-
+      setTitle(data?.task?.title || "");
+      setSoftware(data?.task?.software || "");
+      setDepartment(data?.task?.department?._id || "");
+      setHrRole(data?.task?.hrRole?._id || "");
+      setProduct(data?.task?.product?._id || "");   // ← now using product
+      setDescription(data?.task?.description || "");
       setProductLink(data?.task?.productLink || "");
       setShowProductLink(!!data?.task?.productLink);
-      setIsLoading(false);
     } catch (error) {
       console.log(error);
+      toast.error("Failed to load task details");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -58,62 +60,64 @@ export default function HandleHRModal({
     // eslint-disable-next-line
   }, [taskId]);
 
-  // -----------Create / Update Template-------->
+  // -----------Create / Update Task-------->
   const handleTemplate = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
+      const payload = {
+        title,
+        software,
+        department,
+        hrRole,
+        product,          // ← send product id
+        description,
+        productLink,
+      };
+
       if (taskId) {
+        // Update
         const { data } = await axios.put(
           `${process.env.REACT_APP_API_URL}/api/v1/hr/edit/task/${taskId}`,
-          {
-            software,
-            department,
-            description,
-            category,
-            title,
-            productLink,
-            hrRole,
-          }
+          payload
         );
         if (data?.success) {
-          setLoading(false);
+          toast.success("HR task updated!");
           getAllTasks();
-          setTaskId("");
-          setSoftware("");
-          setDepartment("");
-          setHrRole("");
-          setDescription("");
-          setCategory("");
-          setTitle("");
-          setProductLink("");
+          resetForm();
           setShowAddTask(false);
-          toast.success("HR tasks updated!");
         }
       } else {
+        // Create
         const { data } = await axios.post(
           `${process.env.REACT_APP_API_URL}/api/v1/hr/create/task`,
-          { software, department, description, category, title, hrRole, productLink }
+          payload
         );
-        if (data) {
-          getAllTasks();
-          setLoading(false);
+        if (data?.success) {
           toast.success("HR task created successfully!");
+          getAllTasks();
+          resetForm();
           setShowAddTask(false);
-          setSoftware("");
-          setDepartment("");
-          setHrRole("");
-          setDescription("");
-          setCategory("");
-          setTitle("");
-          setProductLink("");
         }
       }
     } catch (error) {
       console.log(error);
+      toast.error(error?.response?.data?.message || "Something went wrong");
+    } finally {
       setLoading(false);
-      toast.error(error?.response?.data?.message);
     }
+  };
+
+  const resetForm = () => {
+    setTaskId("");
+    setTitle("");
+    setSoftware("");
+    setDepartment("");
+    setHrRole("");
+    setProduct("");
+    setDescription("");
+    setProductLink("");
+    setShowProductLink(false);
   };
 
   const modules = {
@@ -152,24 +156,23 @@ export default function HandleHRModal({
           {taskId ? "Update HR Task" : "Add HR Task"}
         </h1>
         <span
-          className=" cursor-pointer"
+          className="cursor-pointer"
           onClick={() => {
-            setTaskId("");
+            resetForm();
             setShowAddTask(false);
           }}
         >
-          <IoClose className="h-6 w-6 " />
+          <IoClose className="h-6 w-6" />
         </span>
       </div>
-      <hr className="h-[1px] w-full bg-gray-400 " />
+      <hr className="h-[1px] w-full bg-gray-400" />
+
       <div className="w-full py-2 px-4">
         {isLoading ? (
           <Loader />
         ) : (
-          <form
-            onSubmit={handleTemplate}
-            className="w-full flex flex-col gap-4 "
-          >
+          <form onSubmit={handleTemplate} className="w-full flex flex-col gap-4">
+            {/* Title + Department */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <input
                 type="text"
@@ -181,32 +184,35 @@ export default function HandleHRModal({
               />
               <select
                 value={department}
+                required
                 className={`${style.input}`}
                 onChange={(e) => setDepartment(e.target.value)}
               >
-                <option>Select Department</option>
-                {deparmentsData &&
-                  deparmentsData?.map((dep, i) => (
-                    <option
-                      key={dep._id}
-                      value={dep._id}
-                      className=" flex items-center gap-1"
-                    >
-                      {dep?.departmentName}
-                    </option>
-                  ))}
+                <option value="">Select Department</option>
+                {deparmentsData?.map((dep) => (
+                  <option key={dep._id} value={dep._id}>
+                    {dep?.departmentName}
+                  </option>
+                ))}
               </select>
             </div>
 
+            {/* Product + Software */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <input
-                type="text"
-                placeholder="Category"
+              <select
+                value={product}
                 required
-                className={`${style.input} w-full`}
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              />
+                className={`${style.input}`}
+                onChange={(e) => setProduct(e.target.value)}
+              >
+                <option value="">Select Product</option>
+                {hrProductData?.map((prod) => (
+                  <option key={prod._id} value={prod._id}>
+                    {prod?.name}
+                  </option>
+                ))}
+              </select>
+
               <input
                 type="text"
                 placeholder="Software"
@@ -217,27 +223,24 @@ export default function HandleHRModal({
               />
             </div>
 
+            {/* HR Role */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <select
                 value={hrRole}
+                required
                 className={`${style.input}`}
                 onChange={(e) => setHrRole(e.target.value)}
               >
-                <option>Select Role</option>
-                {hrRoleData &&
-                  hrRoleData?.map((role, i) => (
-                    <option
-                      key={role._id}
-                      value={role._id}
-                      className=" flex items-center gap-1"
-                    >
-                      {role?.roleName}
-                    </option>
-                  ))}
+                <option value="">Select Role</option>
+                {hrRoleData?.map((role) => (
+                  <option key={role._id} value={role._id}>
+                    {role?.roleName}
+                  </option>
+                ))}
               </select>
             </div>
 
-            {/*------------ Desciption----------- */}
+            {/* Description */}
             <ReactQuill
               theme="snow"
               modules={modules}
@@ -247,9 +250,9 @@ export default function HandleHRModal({
               onChange={setDescription}
             />
 
-            {/*  */}
-            <div className="flex items-center justify-between mt-[3rem] gap-24 ">
-              <div className="flex items-center gap-2 w-full ">
+            {/* Product Link + Submit */}
+            <div className="flex items-center justify-between mt-[3rem] gap-24">
+              <div className="flex items-center gap-2 w-full">
                 {!showProductLink && (
                   <button
                     type="button"
@@ -261,31 +264,31 @@ export default function HandleHRModal({
                 )}
 
                 {showProductLink && (
-                  <input
-                    type="text"
-                    placeholder="Product Link"
-                    className={`${style.input} w-full`}
-                    value={productLink}
-                    onChange={(e) => setProductLink(e.target.value)}
-                  />
-                )}
-
-                {showProductLink && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowProductLink(false);
-                      setProductLink("");
-                    }}
-                    className="text-xs text-red-500 mt-1"
-                  >
-                    Remove
-                  </button>
+                  <>
+                    <input
+                      type="text"
+                      placeholder="Product Link"
+                      className={`${style.input} w-full`}
+                      value={productLink}
+                      onChange={(e) => setProductLink(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowProductLink(false);
+                        setProductLink("");
+                      }}
+                      className="text-xs text-red-500 mt-1"
+                    >
+                      Remove
+                    </button>
+                  </>
                 )}
               </div>
+
               <button
                 disabled={loading}
-                className={`${style.button1} text-[15px] `}
+                className={`${style.button1} text-[15px]`}
                 type="submit"
                 style={{ padding: ".4rem 1rem" }}
               >

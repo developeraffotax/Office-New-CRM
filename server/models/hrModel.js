@@ -22,6 +22,16 @@ const hrSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+
+
+    // Changed from String "category" → ObjectId "product"
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "hrProduct",
+    },
+
+
+
     software: {
       type: String,
       trim: true,

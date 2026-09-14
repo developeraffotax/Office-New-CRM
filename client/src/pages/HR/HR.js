@@ -36,6 +36,7 @@ import { Link } from "react-router-dom";
 import { FiExternalLink } from "react-icons/fi";
 import { formatRef, refFilterFn } from "../../utlis/formatRef";
 import { Button, Checkbox, FormControlLabel, MenuItem, Popover, Select } from "@mui/material";
+import HandleHrProductModal from "../../components/hr/HandleHrProductModal";
 
 const months = [
   "January",
@@ -96,13 +97,17 @@ export default function HR() {
   const [isloading, setIsLoading] = useState(false);
   const [deparmentsData, setDepartmentData] = useState([]);
   const [hrRoleData, setHrRoleData] = useState([]);
+  const [hrProductData, setHrProductData] = useState([]);
   const [ishandleDepartment, setIshandleDepartment] = useState(false);
   const [isHandleHrRole, setIsHandleHrRole] = useState(false);
+  const [isHandleHrProduct, setIsHandleHrProduct] = useState(false);
   const [departmentId, setDepartmentId] = useState("");
   const [hrRole, setHrRole] = useState(null);
+  const [hrProduct, setHrProduct] = useState(null);
   const closeProject = useRef(null);
   const [showDepartment, setShowDepartment] = useState(false);
   const [showHrRoles, setShowHrRoles] = useState(false);
+  const [showHrProducts, setShowHrProducts] = useState(false);
   const [copyDescription, setCopyDescription] = useState("");
   const [showDescription, setShowDescription] = useState(false);
 
@@ -306,8 +311,24 @@ const fetchAllDepartments = async () => {
     }
   };
 
+
+
+    // ----------Fetch All Roles-------->
+  const fetchAllHrProducts = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/hrProduct/all`
+      );
+      setHrProductData(data.products);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
   useEffect(() => {
     fetchAllHrRoles();
+    fetchAllHrProducts();
   }, []);
 
   function mergeWithSavedOrder(fetchedUsernames, savedOrder) {
@@ -468,6 +489,45 @@ const fetchAllDepartments = async () => {
       toast.error(error?.response?.data?.message);
     }
   };
+
+
+
+
+
+  
+  // ---------Delete Role-------->
+  const handleDeleteProductConfirmation = (id) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteProduct(id);
+        Swal.fire("Deleted!", "Your product has been deleted.", "success");
+      }
+    });
+  };
+  const deleteProduct = async (id) => {
+    try {
+      const { data } = await axios.delete(
+        `${process.env.REACT_APP_API_URL}/api/v1/hrProduct/delete/${id}`
+      );
+      if (data) {
+        fetchAllHrProducts();
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message);
+    }
+  };
+
+
+
 
   // ---------Delete Task-------->
   const handleDeleteTaskConfirmation = (tid) => {
@@ -696,6 +756,10 @@ const fetchAllDepartments = async () => {
         filterVariant: "select",
       },
 
+
+
+
+
       {
         accessorKey: "department.departmentName",
         minSize: 100,
@@ -751,6 +815,63 @@ const fetchAllDepartments = async () => {
         ),
         filterVariant: "select",
       },
+
+
+            {
+        accessorKey: "product.name",
+        id: "product",
+        minSize: 100,
+        maxSize: 200,
+        size: 170,
+        grow: false,
+        Header: ({ column }) => {
+          return (
+            <div className="flex flex-col gap-[2px]">
+              <span
+                className="ml-1 cursor-pointer"
+                title="Clear Filter"
+                onClick={() => column.setFilterValue("")}
+              >
+                Product
+              </span>
+              <select
+                value={column.getFilterValue() || ""}
+                onChange={(e) => column.setFilterValue(e.target.value)}
+                className="font-normal h-[1.8rem] cursor-pointer bg-gray-50 rounded-md border border-gray-200 outline-none"
+              >
+                <option value="">Select</option>
+                {hrProductData?.map((product) => (
+                  <option key={product?._id} value={product?.name || ""}>
+                    {product?.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          );
+        },
+        Cell: ({ cell, row }) => {
+          const product = row.original?.product?.name || "N/A";  
+          return (
+            <div className="w-full px-1">
+              <span>{product}</span>
+            </div>
+          );
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const cellValue = row.getValue(columnId);
+          if (!filterValue) return true;
+          if (!cellValue) return false;
+
+          return (
+            cellValue.toString().toLowerCase() === filterValue.toLowerCase()
+          );
+        },
+        filterSelectOptions: hrProductData?.map((product) => product?.name || ""),
+        filterVariant: "select",
+      },
+
+
+
 
       {
         accessorKey: "category",
@@ -811,7 +932,7 @@ const fetchAllDepartments = async () => {
                   column.setFilterValue("");
                 }}
               >
-                Software / Product
+                Task Title
               </span>
               <input
                 type="search"
@@ -1637,6 +1758,89 @@ const getJobHolderCount = (name) => {
             </button>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+                        <div
+              className="ml-5 hidden sm:flex items-center justify-between relative w-[10rem]  border-2 border-gray-200 rounded-md py-1 px-2  gap-1"
+              onClick={() => setShowHrProducts(!showHrProducts)}
+            >
+              <span className="text-[15px] text-gray-900 cursor-pointer">
+                Products
+              </span>
+              <span
+                onClick={() => setShowHrProducts(!showHrProducts)}
+                className="cursor-pointer"
+              >
+                {!showHrProducts ? (
+                  <IoIosArrowDown className="h-5 w-5 text-black cursor-pointer" />
+                ) : (
+                  <IoIosArrowUp className="h-5 w-5 text-black cursor-pointer" />
+                )}
+              </span>
+              {/* -----------Products------- */}
+              {showHrProducts && (
+                <div
+                  ref={closeProject}
+                  className="absolute top-9 right-[-3.5rem] flex flex-col gap-2 max-h-[16rem] overflow-y-auto hidden1 z-[99] border rounded-sm shadow-sm bg-gray-50 py-2 px-2 w-[14rem]"
+                >
+                  {hrProductData &&
+                    hrProductData?.map((product) => (
+                      <div
+                        key={product._id}
+                        className="w-full flex items-center justify-between gap-1 rounded-md bg-white border py-1 px-1 hover:bg-gray-100"
+                      >
+                        <p className="text-[13px] w-[8rem] ">
+                          {product?.name}
+                        </p>
+                        <div className="flex items-center gap-1">
+                          <span
+                            onClick={() => {
+                              setHrProduct(product);
+
+                              setIsHandleHrProduct(true);
+                            }}
+                            title="Edit Product"
+                          >
+                            <MdOutlineEdit className="h-5 w-5 cursor-pointer hover:text-sky-500 transition-all duration-200" />
+                          </span>
+                          <span
+                            title="Delete Product"
+                            onClick={() =>
+                              handleDeleteProductConfirmation(product._id)
+                            }
+                          >
+                            <AiTwotoneDelete className="h-5 w-5 cursor-pointer hover:text-red-500 transition-all duration-200" />
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+             
+
+            <button
+              className={`${style.button1} text-[15px] `}
+              onClick={() => setIsHandleHrProduct(true)}
+              style={{ padding: ".4rem 1rem" }}
+            >
+              Add Product
+            </button>
+
+
+
+
+
 </div>
 }
 
@@ -1872,6 +2076,7 @@ const getJobHolderCount = (name) => {
                 getAllTasks={getAllTasks}
                 deparmentsData={deparmentsData}
                 hrRoleData={hrRoleData}
+                hrProductData={hrProductData}
               />
             </div>
           </div>
@@ -1891,6 +2096,25 @@ const getJobHolderCount = (name) => {
             </div>
           </div>
         )}
+
+
+ 
+        {/* -----------------Handle HR Products--------------- */}
+          {isHandleHrProduct && (
+            <div className="fixed top-0 left-0 z-[999] w-full h-full py-4 px-4 bg-gray-300/70 flex items-center justify-center">
+              <div className="w-[32rem]">
+                <HandleHrProductModal
+                  setIsHandleHrProduct={setIsHandleHrProduct}
+                  fetchAllHrProducts={fetchAllHrProducts}
+                  hrProduct={hrProduct}
+                  setHrProduct={setHrProduct}
+                  getAllTasks={getAllTasks}
+                />
+              </div>
+            </div>
+          )}
+
+
 
         {/* -----------------Handle Departments--------------- */}
         {ishandleDepartment && (

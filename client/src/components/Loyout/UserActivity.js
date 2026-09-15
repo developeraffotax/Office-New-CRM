@@ -89,7 +89,7 @@ const UserActivity = () => {
     percent > 50 ? "#16a34a" : percent > 20 ? "#facc15" : "#ef4444";
 
   return (
-    <div ref={wrapperRef} className="relative">
+    <div ref={wrapperRef} className="relative max-md:hidden">
       {/* Main badge */}
       <div
         className="cursor-pointer px-3 py-[4px] bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold shadow hover:shadow-md transition flex justify-center items-center gap-1"

@@ -108,7 +108,7 @@ export default function OnlineUsers() {
   });
 
   return (
-    <div className="relative inline-block   " ref={wrapperRef}>
+    <div className="relative inline-block  max-md:hidden " ref={wrapperRef}>
       {/* Trigger */}
       <div
 className={` flex items-center gap-2 cursor-pointer 

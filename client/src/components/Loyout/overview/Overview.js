@@ -29,7 +29,7 @@ export default function Overview () {
   }, [showDropdown]);
 
   return (
-    <div className="relative inline-block mt-2" ref={wrapperRef}>
+    <div className="relative inline-block mt-2 max-md:hidden" ref={wrapperRef}>
       {/* Trigger Button */}
       <button
         onClick={() => setShowDropdown((prev) => !prev)}

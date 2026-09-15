@@ -10,6 +10,7 @@ import { useMemo } from "react";
 import { formatLeadOption } from "../utils/createLeadModal.utils";
 import { useIsMobile } from "../hooks/useIsMobile"; 
 import { useSwipeToClose } from "../hooks/useSwipeToClose";
+import { LEADS_SOURCES } from "../../../constants/constants";
 
 const formatDate = (date) => {
   const d = new Date(date);
@@ -19,19 +20,21 @@ const formatDate = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-const leadSource = [
-  "Upwork",
-  "Fiverr",
-  "PPH",
-  "Referral",
-  "Partner",
-  "Google",
-  "Facebook",
-  "LinkedIn",
-  "CRM",
-  "Existing",
-  "Other",
-];
+// const leadSource = [
+//   "Upwork",
+//   "Fiverr",
+//   "PPH",
+//   "Referral",
+//   "Partner",
+//   "Google",
+//   "Facebook",
+//   "LinkedIn",
+//   "CRM",
+//   "Existing",
+//   "Other",
+// ];
+
+const leadSource = LEADS_SOURCES;
 const stages = ["Interest", "Decision", "Action"];
 const sources = ["Invitation", "Proposal", "Website"];
 const departments = [
@@ -113,7 +116,7 @@ const { offset, isDragging, handlers } = useSwipeToClose({
         department: "Accounts",
         stage: "Interest",
         source: "Website",
-        lead_Source: "Google",
+        lead_Source: "Website",
         followUpDate: formatDate(new Date()),
         jobDeadline: formatDate(new Date()),
         yearEnd: formatDate(new Date()),

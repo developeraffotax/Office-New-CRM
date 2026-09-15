@@ -53,19 +53,16 @@ export default function Layout() {
   const { timer, elapsed } = useSelector((state) => state.globalTimer);
   const isRunning = timer?.isRunning;
 
- 
   /* Settings */
   const { settings } = useSelector((state) => state.settings);
- 
-  /* Notifications */
-  const unread_notifications_count = useSelector((state) =>
-    state.notifications.notificationData.filter(
-      (n) =>
-        n.status === "unread" && isNotificationAllowed(n.type, settings)
-    ).length
-  );
 
- 
+  /* Notifications */
+  const unread_notifications_count = useSelector(
+    (state) =>
+      state.notifications.notificationData.filter(
+        (n) => n.status === "unread" && isNotificationAllowed(n.type, settings),
+      ).length,
+  );
 
   /* ---------------- Init Global Timer ---------------- */
   // useEffect(() => {
@@ -89,32 +86,24 @@ export default function Layout() {
     // const timerRunningIn = localStorage.getItem("timer_in");
     // if (location.pathname === timerRunningIn) return;
 
-
     let mainTitle = isRunning ? formatTimer(elapsed) : "Affotax-CRM";
 
-
     if (timer) {
-      mainTitle = `${mainTitle} | ${ timer?.task || timer?.clientName}`
-
+      mainTitle = `${mainTitle} | ${timer?.task || timer?.clientName}`;
     }
 
-    if( unread_notifications_count > 0 ) {
-      document.title = `(${unread_notifications_count})🔔 ${mainTitle}`
-        
+    if (unread_notifications_count > 0) {
+      document.title = `(${unread_notifications_count})🔔 ${mainTitle}`;
     } else {
       document.title = mainTitle;
     }
-
-
-  }, [elapsed, isRunning, unread_notifications_count,]);
-
-
+  }, [elapsed, isRunning, unread_notifications_count]);
 
   /* ---------------- Quick List ---------------- */
   const getQuickList = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/quicklist/get/quicklist`
+        `${process.env.REACT_APP_API_URL}/api/v1/quicklist/get/quicklist`,
       );
       setQuickListData(data?.quickList?.description);
       setEditId(data?.quickList?._id);
@@ -131,7 +120,7 @@ export default function Layout() {
     try {
       await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/quicklist/update/quicklist/${editId}`,
-        { description: quickListData }
+        { description: quickListData },
       );
       getQuickList();
     } catch (err) {
@@ -145,37 +134,43 @@ export default function Layout() {
       <ReminderModal />
       <OverdueModal />
 
-      <div className="relative w-full h-[111vh] flex flex-col overflow-hidden">
+      <div className="relative w-full h-[100dvh] flex flex-col overflow-hidden">
         <Header
           setShowQuickList={setShowQuickList}
           showQuickList={showQuickList}
           getQuickList={getQuickList}
         />
 
-        <div className="fixed top-[3.8rem] left-0 w-full flex h-full overflow-hidden">
-          {/* Mobile Menu trigger */}
-{!showSidebar && (
-  <div className="fixed  md:hidden top-4 left-4 z-20">
-    <IoMenu size={25} onClick={() => setShowSidebar(true)} />
-  </div>
-)}
+        <div className=" w-full flex flex-1 overflow-hidden">
+          {!showSidebar && (
+            <div className="fixed  md:hidden top-4 left-4 z-20">
+              <IoMenu size={25} onClick={() => setShowSidebar(true)} />
+            </div>
+          )}
 
-{/* Sidebar — desktop rail + mobile overlay, both handled inside Sidebar */}
-<Sidebar
-  hide={hideSidebar}
-  setHide={setHideSidebar}
-  mobileOpen={showSidebar}
-  onMobileClose={() => setShowSidebar(false)}
-/>
+          {/* Sidebar — desktop rail + mobile overlay, both handled inside Sidebar */}
+          <Sidebar
+            hide={hideSidebar}
+            setHide={setHideSidebar}
+            mobileOpen={showSidebar}
+            onMobileClose={() => setShowSidebar(false)}
+          />
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto pt-0 sm:pt-0">
+          <main className="flex-1 overflow-y-auto pt-0 ">
             <Outlet />
-          </div>
+          </main>
         </div>
 
         {/* Quick List */}
-        {showQuickList && <QuickList quickListData={quickListData} setQuickListData={setQuickListData} setShowQuickList={setShowQuickList} updateQuickList={updateQuickList} />}
+        {showQuickList && (
+          <QuickList
+            quickListData={quickListData}
+            setQuickListData={setQuickListData}
+            setShowQuickList={setShowQuickList}
+            updateQuickList={updateQuickList}
+          />
+        )}
       </div>
     </>
   );

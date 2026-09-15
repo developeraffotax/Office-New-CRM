@@ -128,7 +128,7 @@ export default function ReplyMobile({
 
       {expanded ? (
         // ---- Expanded: full compose sheet, docked to the bottom ----
-        <div className="fixed inset-x-0 bottom-0 z-50 max-h-[92vh] bg-white rounded-t-2xl shadow-2xl flex flex-col overflow-hidden animate-pop">
+        <div className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] bg-white rounded-t-2xl shadow-2xl flex flex-col overflow-hidden animate-pop">
           {/* Drag handle */}
           <div className="pt-2 pb-1 flex justify-center shrink-0">
             <div className="w-10 h-1 rounded-full bg-gray-300" />

@@ -6,13 +6,13 @@ import MailModalsRenderer from "../modals/MailModalsRenderer";
 export default function MailLayout() {
   return (
     <MailModalsProvider>
-      <div className="flex h-[105vh] bg-white overflow-hidden relative">
+      <div className="flex h-full bg-white overflow-hidden relative">
         {/* Desktop Sidebar only */}
         <div className="hidden md:block shrink-0">
           <Sidebar />
         </div>
 
-        <main className="flex-1 h-full min-w-0 min-h-0">
+        <main className="flex-1 min-w-0 min-h-0 ">
           <Outlet />
         </main>
 

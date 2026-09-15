@@ -9,11 +9,11 @@ import WhatsappModalsRenderer from "../modals/WhatsappModalsRenderer";
 export default function WhatsappLayout() {
   return (
     <WhatsappModalsProvider>
-       <div className="flex h-[105vh] bg-[#f0f2f5] overflow-hidden text-gray-800 font-google">
+       <div className="flex h-full bg-[#f0f2f5] overflow-hidden text-gray-800 font-google">
          <div className="hidden md:block shrink-0">
           <Sidebar />
         </div>
-        <main className="flex-1 h-full min-w-0 min-h-0">
+        <main className="flex-1 h-full min-w-0 min-h-0 ">
           <Outlet />
         </main>
         <WhatsappModalsRenderer />

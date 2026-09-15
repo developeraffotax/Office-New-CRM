@@ -80,7 +80,7 @@ const openThread = (threadId) => {
   }
 
   return (
-<div className="flex-1 min-w-0 h-full overflow-y-auto overflow-x-visible">
+<div className="min-w-0 h-full overflow-y-auto overflow-x-visible">
       {threads.map((thread, index) => (
         <RowComponent
           key={thread._id}

@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchGlobalTimer, stopTimer, tick } from "../redux/slices/globalTimerSlice";
@@ -54,34 +53,23 @@ export default function GlobalTimer() {
     setStopActivity("Chargeable");
   };
 
- 
   // useKeyboardShortcut({ shift: true, key: "s" }, () => setShowPopup(true), !!timer);
   useEscapeKey(() => { if (showPopup) closePopup(); });
   useClickOutside(popupRef, () => setShowPopup(false));
 
+  const updateConsumedTime = async () => {
+    try {
+      const jobId = timer?.entityType === "subtask" ? timer?.metadata?.parentTaskId : timer?.jobId;
 
-
-
-const updateConsumedTime = async () => {
-  try {
-    const jobId = timer?.entityType === "subtask" ? timer?.metadata?.parentTaskId : timer?.jobId;
-
-    await axios.put(
-      `${process.env.REACT_APP_API_URL}/api/v1/timer/total_time/${timer?._id}`,
-      {},
-      { params: { jobId } }
-    );
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-
-
-
-
-
-
+      await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/timer/total_time/${timer?._id}`,
+        {},
+        { params: { jobId } }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleConfirmStop = async () => {
     try {
@@ -101,48 +89,44 @@ const updateConsumedTime = async () => {
   if (loading || !timer) return null;
 
   const dateObj = new Date(timer.startTime);
-const startedAtFormatted = `${dateObj.toLocaleTimeString("en-US", {
-  hour: "2-digit",
-  minute: "2-digit",
-  // second: "2-digit",
-  hour12: true,
-})} | ${dateObj.toLocaleDateString("en-US", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-})}`;
+  const startedAtFormatted = `${dateObj.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  })} | ${dateObj.toLocaleDateString("en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  })}`;
 
-const handleTaskClick = () => {
-
-  if(timer?.entityType === "subtask") {
-     dispatch(
+  const handleTaskClick = () => {
+    if (timer?.entityType === "subtask") {
+      dispatch(
         openModal({
           modal: "task",
-          data: { taskId: timer?.metadata?.parentTaskId   }, 
+          data: { taskId: timer?.metadata?.parentTaskId },
         })
       );
+    } 
 
-  } 
-  
-  if(timer?.entityType === "task") {
-     dispatch(
+    if (timer?.entityType === "task") {
+      dispatch(
         openModal({
           modal: "task",
-          data: { taskId: timer.jobId   }, 
+          data: { taskId: timer.jobId },
         })
       );
-  } 
+    } 
 
-  if(timer?.entityType === "job") {
-     dispatch(
+    if (timer?.entityType === "job") {
+      dispatch(
         openModal({
           modal: "job",
-          data: { clientId: timer.jobId   }, 
+          data: { clientId: timer.jobId },
         })
       );
-  } 
- 
-}
+    } 
+  };
 
   return (
     <div className="relative font-google">
@@ -150,7 +134,8 @@ const handleTaskClick = () => {
       <div className="bg-gray-50 border border-gray-200 rounded-full transition-all duration-200 hover:bg-gray-100 hover:shadow-sm flex items-center gap-2 px-2 py-1">
         <div 
           onClick={() => setShowPopup(!showPopup)} 
-        className="flex items-center gap-1 cursor-pointer">
+          className="flex items-center gap-1 cursor-pointer"
+        >
           <LuClock3 className="h-3 w-3 text-gray-400 shrink-0" />
           <span className="w-[60px] text-center text-[12px] font-semibold text-gray-600 leading-none tabular-nums shrink-0">
             {formatTime(elapsed)}
@@ -172,14 +157,19 @@ const handleTaskClick = () => {
         </button>
       </div>
 
+      {/* Backdrop for Mobile Only */}
+      {showPopup && (
+        <div className="fixed inset-0 bg-black/20 z-40 sm:hidden" onClick={closePopup} />
+      )}
+
       {/* Unified Popup */}
       {showPopup && (
         <div
           ref={popupRef}
-          className="absolute top-full right-0 mt-3 w-96 rounded-2xl bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.25)] z-50 overflow-hidden"
+          className="fixed inset-x-3 top-1/2 -translate-y-1/2 sm:translate-y-0 sm:absolute sm:inset-auto sm:top-full sm:right-0 sm:mt-3 w-auto sm:w-96 max-h-[90vh] overflow-y-auto rounded-2xl bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.25)] z-50"
         >
           {/* Header */}
-          <div className="px-4 pt-4 pb-3 border-b border-gray-100 flex items-center justify-between">
+          <div className="px-4 pt-4 pb-3 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
             <div className="flex items-center gap-2">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-40 animate-ping" />
@@ -187,7 +177,7 @@ const handleTaskClick = () => {
               </span>
               <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Running</span>
             </div>
-            <button onClick={closePopup} className="text-gray-300 hover:text-gray-500 transition-colors">
+            <button onClick={closePopup} className="text-gray-300 hover:text-gray-500 transition-colors p-1">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
@@ -195,27 +185,27 @@ const handleTaskClick = () => {
           {/* Timer info */}
           <div className="px-4 pt-4 pb-3 flex flex-col gap-3">
             {/* Big live timer */}
-            <div className="text-[36px] font-semibold text-gray-800 tabular-nums tracking-tight leading-none">
+            <div className="text-[32px] sm:text-[36px] font-semibold text-gray-800 tabular-nums tracking-tight leading-none">
               {formatTime(elapsed)}
             </div>
 
             {/* Task / Client */}
             <div className="grid grid-cols-1 gap-2">
               {timer?.task ? (
-                <div className="bg-gray-50 rounded-lg px-3 py-2 " >
-                  <div className="w-full flex justify-between items-center gap-2 ">
+                <div className="bg-gray-50 rounded-lg px-3 py-2">
+                  <div className="w-full flex justify-between items-center gap-2">
                     <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-1">Task</p>
-                  <p className="text-[10px] text-blue-400 font-medium uppercase tracking-wide mb-1  cursor-pointer" onClick={handleTaskClick}>View</p>
+                    <p className="text-[10px] text-blue-400 font-medium uppercase tracking-wide mb-1 cursor-pointer" onClick={handleTaskClick}>View</p>
                   </div>
-                  <p className="text-[13px] text-gray-800 font-semibold">{timer.task}</p>
+                  <p className="text-[13px] text-gray-800 font-semibold break-words">{timer.task}</p>
                 </div>
               ) : (
-                <div className="bg-gray-50 rounded-lg px-3 py-2  ">
-                   <div className="w-full flex justify-between items-center gap-2 ">
-                  <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-1">Client</p>
-                  <p className="text-[10px] text-blue-400 font-medium uppercase tracking-wide mb-1 cursor-pointer" onClick={handleTaskClick}>View</p>
+                <div className="bg-gray-50 rounded-lg px-3 py-2">
+                  <div className="w-full flex justify-between items-center gap-2">
+                    <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-1">Client</p>
+                    <p className="text-[10px] text-blue-400 font-medium uppercase tracking-wide mb-1 cursor-pointer" onClick={handleTaskClick}>View</p>
                   </div>
-                  <p className="text-[13px] text-gray-800 font-semibold">{timer?.clientName || "N/A"}</p>
+                  <p className="text-[13px] text-gray-800 font-semibold break-words">{timer?.clientName || "N/A"}</p>
                 </div>
               )}
             </div>
@@ -226,20 +216,20 @@ const handleTaskClick = () => {
                 {timer?.companyName && (
                   <div className="bg-gray-50 rounded-lg px-2.5 py-2">
                     <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-1">Company</p>
-                    <p className="text-[12px] text-gray-700 font-semibold">{timer.companyName}</p>
+                    <p className="text-[12px] text-gray-700 font-semibold truncate">{timer.companyName}</p>
                   </div>
                 )}
                 {timer?.department && (
                   <div className="bg-gray-50 rounded-lg px-2.5 py-2">
                     <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide mb-1">Department</p>
-                    <p className="text-[12px] text-gray-700 font-semibold">{timer.department}</p>
+                    <p className="text-[12px] text-gray-700 font-semibold truncate">{timer.department}</p>
                   </div>
                 )}
               </div>
             )}
 
             {/* Started at */}
-            <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+            <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 flex-wrap gap-1">
               <span className="text-[11px] text-gray-400">Started at</span>
               <span className="text-[11px] text-gray-600 font-mono">{startedAtFormatted}</span>
             </div>
@@ -304,92 +294,3 @@ const handleTaskClick = () => {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 

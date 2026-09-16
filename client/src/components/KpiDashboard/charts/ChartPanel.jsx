@@ -153,6 +153,10 @@ useEffect(() => {
   const formatValue = useMemo(() => formatByType(valueType), [valueType]);
     const colors = useMemo(() => colorsForSeries(series), [series]);
 
+
+    const isBar = useMemo(() => type === "bar", [type]);
+    const isDailyInterval = useMemo(() => interval === "daily", [interval]);
+    const isBarAndDailyInterval = isBar && isDailyInterval;
   // ApexCharts silently drops x-axis labels that don't fit
   // (hideOverlappingLabels defaults to true) — that's almost always why
   // a chart looks like it's "missing" categories the API actually sent.
@@ -184,11 +188,17 @@ useEffect(() => {
     stroke: { curve: "smooth" },
     markers: { size: 4 },
     colors,
-    dataLabels: { enabled: true, formatter: formatValue },
+    dataLabels: { enabled: true, formatter: formatValue,  offsetY:  isBar ? -20 : 0 ,  style: {
+          colors: isBar ? ["#333"] : [...colors]   ,
+           
+        },  },
     tooltip: { y: { formatter: formatValue } },
     legend: { show: false }, // replaced by <ChartLegend />
     plotOptions: {
-      bar: { columnWidth: series.length > 1 ? "55%" : "40%" },
+      bar: { columnWidth: series.length > 1 ? "55%" : "40%",  dataLabels: {
+      position:  "top",
+       
+    } },
     },
   };
 

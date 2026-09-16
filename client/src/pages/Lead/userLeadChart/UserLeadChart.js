@@ -420,7 +420,7 @@ export default function UserLeadChart({ auth, active1 }) {
           spacing={1.5}
           sx={{ mb: 2 }}
         >
-          <Box sx={{ maxWidth: { lg: "55%" }, minWidth: 0 }}>
+          <Box sx={{ maxWidth: { lg: "60%" }, minWidth: 0 }}>
             {showStats && (
               <WonLeadStats
                 users={selectedUsers}

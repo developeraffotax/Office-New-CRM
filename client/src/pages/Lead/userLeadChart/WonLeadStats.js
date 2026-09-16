@@ -30,7 +30,7 @@ function getInitials(name = "") {
     .join("");
 }
 
-function RingGauge({ pct, color, size = 56, stroke = 5 }) {
+function RingGauge({ pct, color, size = 42, stroke = 4 }) {
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const clamped = Math.min(Number(pct), 100);
@@ -62,16 +62,16 @@ function RingGauge({ pct, color, size = 56, stroke = 5 }) {
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-[10px] font-bold tabular-nums text-slate-800">
+        <span className="text-[9px] font-bold tabular-nums text-slate-800">
           {pct}%
         </span>
       </div>
       {complete && (
         <div
-          className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-white border border-slate-100 shadow-sm flex items-center justify-center"
+          className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-white border border-slate-100 shadow-sm flex items-center justify-center"
           title="Target met"
         >
-          <FiCheck size={10} color={color} strokeWidth={3} />
+          <FiCheck size={8} color={color} strokeWidth={3} />
         </div>
       )}
     </div>
@@ -81,19 +81,19 @@ function RingGauge({ pct, color, size = 56, stroke = 5 }) {
 function Metric({ label, value, target, pct, color, divider }) {
   return (
     <div
-      className={`flex items-center gap-3 ${
-        divider ? "pl-4 border-l border-slate-100" : ""
+      className={`flex items-center gap-2 min-w-0 ${
+        divider ? "pl-2.5 border-l border-slate-100" : ""
       }`}
     >
       <RingGauge pct={pct} color={color} />
       <div className="flex flex-col gap-0.5 min-w-0">
-        <span className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">
+        <span className="text-[10px] text-slate-400 font-medium leading-none">
           {label}
         </span>
-        <span className="text-[15px] font-bold text-slate-900 tabular-nums truncate">
+        <span className="text-[13px] font-bold text-slate-900 tabular-nums leading-none truncate">
           {value}
         </span>
-        <span className="text-[11px] text-slate-400 tabular-nums truncate">
+        <span className="text-[10px] text-slate-400 tabular-nums leading-none truncate">
           of {target}
         </span>
       </div>
@@ -114,27 +114,27 @@ function StatCard({ stat, color, style }) {
 
   return (
     <div
-      className="group relative min-w-[300px] shrink-0 overflow-hidden rounded-md  bg-white border border-slate-200 p-2 transition-all duration-200   hover:border-slate-300 hover:shadow-md hover:shadow-slate-200/60"
+      className="group relative min-w-[228px] shrink-0 overflow-hidden rounded-lg bg-white border border-slate-200 p-2.5 transition-all duration-200 hover:border-slate-300 hover:shadow-md hover:shadow-slate-200/60 hover:-translate-y-0.5"
       style={style}
     >
       <div
-        className="absolute top-0 left-0  h-[2px] w-full rounded-full opacity-60 transition-opacity duration-200 group-hover:opacity-100"
+        className="absolute top-0 left-0 h-[2px] w-full opacity-60 transition-opacity duration-200 group-hover:opacity-100"
         style={{ backgroundColor: color }}
       />
 
-      <div className="flex items-center gap-2.5 mb-4">
+      <div className="flex items-center gap-2 mb-2.5">
         <div
-          className="h-8 w-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
+          className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
           style={{ backgroundColor: `${color}18`, color }}
         >
           {getInitials(stat.user)}
         </div>
-        <span className="text-[13px] font-semibold text-slate-800 tracking-tight truncate">
+        <span className="text-[12px] font-semibold text-slate-800 tracking-tight truncate">
           {stat.user}
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2">
         <Metric
           label="Count"
           value={stat.totalCount}
@@ -157,14 +157,14 @@ function StatCard({ stat, color, style }) {
 
 function StatCardSkeleton() {
   return (
-    <div className="min-w-[300px] shrink-0 rounded-2xl bg-white border border-slate-200 p-4 animate-pulse">
-      <div className="flex items-center gap-2.5 mb-4">
-        <div className="h-8 w-8 rounded-full bg-slate-100" />
-        <div className="h-3 w-24 rounded bg-slate-100" />
+    <div className="min-w-[228px] shrink-0 rounded-lg bg-white border border-slate-200 p-2.5 animate-pulse">
+      <div className="flex items-center gap-2 mb-2.5">
+        <div className="h-6 w-6 rounded-full bg-slate-100" />
+        <div className="h-2.5 w-20 rounded bg-slate-100" />
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="h-14 w-14 rounded-full bg-slate-100" />
-        <div className="h-14 w-14 rounded-full bg-slate-100 ml-4" />
+      <div className="grid grid-cols-2 gap-2">
+        <div className="h-10 w-10 rounded-full bg-slate-100" />
+        <div className="h-10 w-10 rounded-full bg-slate-100 ml-2.5" />
       </div>
     </div>
   );
@@ -172,9 +172,9 @@ function StatCardSkeleton() {
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 w-full rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-slate-400">
-      <FiInbox size={20} />
-      <span className="text-[13px] font-medium">No stats for this selection</span>
+    <div className="flex flex-col items-center justify-center gap-1.5 w-full rounded-lg border border-dashed border-slate-200 bg-white p-5 text-slate-400">
+      <FiInbox size={16} />
+      <span className="text-[12px] font-medium">No stats for this selection</span>
     </div>
   );
 }
@@ -220,7 +220,7 @@ export default function WonLeadStats({ users, dateRange, isAdmin }) {
 
   if (loading) {
     return (
-      <div className="flex gap-3 overflow-hidden pb-1">
+      <div className="flex gap-2 overflow-hidden pb-1">
         {[0, 1, 2].map((i) => (
           <StatCardSkeleton key={i} />
         ))}
@@ -233,8 +233,7 @@ export default function WonLeadStats({ users, dateRange, isAdmin }) {
   }
 
   return (
-    <div className="flex gap-3 overflow-x-auto animate-badge-pop">
-      
+    <div className="flex gap-2 overflow-x-auto animate-badge-pop">
       {stats.map((stat, i) => (
         <StatCard
           key={stat.user}

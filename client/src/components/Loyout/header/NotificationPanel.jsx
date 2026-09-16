@@ -212,41 +212,7 @@ const NotificationPanel = ({
                       >
                         <MdDeleteOutline />
                       </span>
-
-                      {/* {item.type === "ticket_received" ? (
-                        <button
-                          className="cursor-pointer text-xl text-sky-500 hover:text-sky-600"
-                          onClick={() => handleTicketView(item?.taskId)}
-                        >
-                          <LuEye />
-                        </button>
-                      ) : item.redirectLink === "/job-planning" ? (
-                        <button
-                          className="cursor-pointer text-xl text-sky-500 hover:text-sky-600"
-                          onClick={() => handleJobView(item?.taskId)}
-                        >
-                          <LuEye />
-                        </button>
-                      ) : (
-                        <Link
-                          title="View Details"
-                          to={`${item?.redirectLink}?comment_taskId=${item?.taskId}`}
-                          onClick={() => {
-                            dispatch(setFilterId(item?.taskId));
-                            dispatch(
-                              updateNotification({
-                                id: item._id,
-                                userId: auth.user.id,
-                                status: item.status,
-                              })
-                            );
-                            setOpen(false);
-                          }}
-                          className="cursor-pointer text-xl text-sky-500 hover:text-sky-600"
-                        >
-                          <LuEye />
-                        </Link>
-                      )} */}
+ 
                     </div>
                   </div>
                 </div>

@@ -46,13 +46,13 @@ export default function SidebarMenu({
               }`}
               onClick={() => setIsSettingsOpen((prev) => !prev)}
             >
-              <RiSettings4Fill className="h-6 w-6 text-gray-900" />
+              <RiSettings4Fill className="h-5 w-5 text-gray-900" />
             </button>
           ) : (
             <>
               <button
                 type="button"
-                className={`text-[16px] font-semibold px-4 py-2 flex items-center justify-between transition-all rounded-lg cursor-pointer ${
+                className={`text-[14px] font-semibold px-4 py-2 flex items-center justify-between transition-all rounded-lg cursor-pointer ${
                   isSettingsOpen
                     ? "bg-white border-black/20"
                   : "hover:bg-white hover:border-black/20 border-transparent"
@@ -60,7 +60,7 @@ export default function SidebarMenu({
                 onClick={() => setIsSettingsOpen((prev) => !prev)}
               >
                 <span className="flex items-center gap-2">
-                  <RiSettings4Fill className="h-6 w-6 text-gray-900" />
+                  <RiSettings4Fill className="h-5 w-5 text-gray-900" />
                   <span>Settings</span>
                 </span>
                 <IoIosArrowDown
@@ -112,10 +112,10 @@ function SidebarItem({ item, active, onNavigate, compact = false }) {
             compact ? "justify-center" : "gap-2"
           }`}
         >
-          <Icon className="h-5 w-5 shrink-0" />
+          <Icon className="h-4 w-4 shrink-0" />
 
           {!compact && (
-            <span className={`text-[15px] font-[500] truncate `}>
+            <span className={`text-[14px] font-[500] truncate `}>
               {item.label}
             </span>
           )}

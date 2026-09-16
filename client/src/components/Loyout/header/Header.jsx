@@ -114,21 +114,22 @@ export default function Header({
   };
 
   return (
-    <div className="w-full h-[3.8rem] bg-gray-200">
-      <div className="w-full h-full flex items-center justify-between sm:px-4 px-6 py-2">
+    <div className="w-full h-[3.2rem] bg-gray-200 font-inter ">
+      <div className="w-full h-full flex items-center justify-between sm:px-4 px-6 py-2 max-md:pl-[4rem]">
         {/* Logo/Notification */}
         <div className="flex items-center gap-4" ref={notificationRef}>
-          <Link to={"/dashboard"} className="max-md:hidden">
-            <img src="/logo.png" alt="Logo" className="h-[3.3rem] w-[8rem] " />
-          </Link>
+          <div className="max-md:hidden">
+            <img src="/logo.png" alt="Logo" className="h-[2.6rem] " />
+          </div>
 
           {/* Notification */}
           <div className="relative mt-1">
             <div
-              className="relative cursor-pointer m-2 max-md:ml-8"
+              className="relative cursor-pointer "
+              title="Notifications"
               onClick={() => setOpen(!open)}
             >
-              <IoNotifications className="text-2xl container text-black" />
+              <IoNotifications className="text-xl container text-black/80 " />
               {unread_notifications_count > 0 && (
                 <span className="absolute -top-2 -right-2 bg-orange-600 rounded-full w-[20px] h-[20px] text-[12px] text-white flex items-center justify-center">
                   {unread_notifications_count}
@@ -161,17 +162,17 @@ export default function Header({
           </div>
 
           {/* Search */}
-          <div className="hidden sm:flex ml-[1rem]">
+          <div className="hidden md:flex ">
             <form onSubmit={handleSearch} className="relative">
-              <span className="absolute top-[.6rem] left-2 z-2">
-                <IoSearch className="h-5 w-5 text-orange-500" />
+              <span className="absolute top-1/2 left-3 -translate-y-1/2 z-10 pointer-events-none">
+                <IoSearch className="h-4 w-4 text-slate-500" />
               </span>
               <input
                 type="search"
                 placeholder="Search"
                 value={searchValue}
                 onChange={(e) => dispatch(setSearchValue(e.target.value))}
-                className="w-[20rem] sm:w-[32rem] h-[2.7rem] rounded-[2.5rem] pl-8 pr-3 outline-none border-[1.5px] border-gray-400 focus:border-orange-600"
+                className="w-[20rem]  h-[2rem] text-sm rounded-full pl-8 pr-4 outline-none border-none  focus:shadow-md     transition duration-200"
               />
             </form>
           </div>
@@ -180,7 +181,7 @@ export default function Header({
         </div>
 
         {/* Right side */}
-        <div className="flex items-center gap-4 ">
+        <div className="flex items-center gap-4 zoom-out">
           <div className="flex items-center gap-2 ">
             {/* User Worked Time */}
             <UserWorkedTime />
@@ -192,8 +193,6 @@ export default function Header({
               <UserActivity />
             )}
 
- 
-
             {/* Quick Lists */}
             <span
               onClick={() => setShowQuickList(!showQuickList)}
@@ -203,7 +202,10 @@ export default function Header({
             </span>
 
             {/* Reminder Notifications */}
-            <div className="relative max-md:hidden" ref={reminderNotificationRef}>
+            <div
+              className="relative max-md:hidden"
+              ref={reminderNotificationRef}
+            >
               <div
                 className="relative cursor-pointer m-2"
                 onClick={() =>

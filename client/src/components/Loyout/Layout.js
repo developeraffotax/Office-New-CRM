@@ -157,7 +157,7 @@ export default function Layout() {
           />
 
           {/* Content */}
-          <main className="flex-1 overflow-y-auto pt-0 ">
+          <main className="flex-1 overflow-y-auto pt-0  zoom-out">
             <Outlet />
           </main>
         </div>

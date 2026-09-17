@@ -13,6 +13,10 @@ import { useSwipeToClose } from "../hooks/useSwipeToClose";
 const TICKET_LIST_LIMIT = 50;
 
 const selectStyles = {
+  menuPortal: (base) => ({
+    ...base,
+    zIndex: 9999,
+  }),
   control: (base, state) => ({
     ...base,
     minHeight: "52px",

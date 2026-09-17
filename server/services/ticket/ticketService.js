@@ -12,11 +12,19 @@ export async function getAllTicketsService({
   if (state) filter.state = state;
 
   if (search && search.trim()) {
-    const safeSearch = escapeRegex(search.trim());
+    const trimmedSearch = search.trim();
+    const safeSearch = escapeRegex(trimmedSearch);
     const regex = new RegExp(safeSearch, "i");
     const orConditions = [{ subject: regex }, { clientName: regex }, { companyName: regex }, { email: regex }];
-    if (/\d/.test(safeSearch)) {
-      orConditions.push({ $expr: { $regexMatch: { input: { $toString: "$ticketRef" }, regex: safeSearch } } });
+
+    // accept "T-1234", "t1234", or plain "1234" as equivalent ticketRef searches.
+    // refMatch[1] is digits-only from the regex, so it's already safe —
+    // no need to re-escape it like safeSearch.
+    const refMatch = trimmedSearch.match(/^t-?(\d+)$/i);
+    const ticketRefSearch = refMatch ? refMatch[1] : safeSearch;
+
+    if (/\d/.test(ticketRefSearch)) {
+      orConditions.push({ $expr: { $regexMatch: { input: { $toString: "$ticketRef" }, regex: ticketRefSearch } } });
     }
     filter.$or = orConditions;
   }

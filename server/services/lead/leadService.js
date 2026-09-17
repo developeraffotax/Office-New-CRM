@@ -22,8 +22,10 @@ export async function getAllLeadsService({
   if (status) filter.status = status;
 
   // search across clientName, email, companyName, and leadRef (number field)
+  // search across clientName, email, companyName, and leadRef (number field)
   if (search && search.trim().length >= 1) {
-    const safeSearch = escapeRegex(search.trim());
+    const trimmedSearch = search.trim();
+    const safeSearch = escapeRegex(trimmedSearch);
     const regex = new RegExp(safeSearch, "i");
 
     const orConditions = [
@@ -32,14 +34,20 @@ export async function getAllLeadsService({
       { email: regex },
     ];
 
-    // only bother with the leadRef match if the search looks numeric-ish,
+    // accept "L-9040", "l9040", or plain "9040" as equivalent leadRef searches.
+    // refMatch[1] is digits-only from the regex, so it's already safe —
+    // no need to re-escape it like safeSearch.
+    const refMatch = trimmedSearch.match(/^l-?(\d+)$/i);
+    const leadRefSearch = refMatch ? refMatch[1] : safeSearch;
+
+    // only bother with the leadRef match if it looks numeric-ish,
     // avoids a pointless $expr scan when someone searches a name
-    if (/\d/.test(safeSearch)) {
+    if (/\d/.test(leadRefSearch)) {
       orConditions.push({
         $expr: {
           $regexMatch: {
             input: { $toString: "$leadRef" },
-            regex: safeSearch,
+            regex: leadRefSearch,
           },
         },
       });

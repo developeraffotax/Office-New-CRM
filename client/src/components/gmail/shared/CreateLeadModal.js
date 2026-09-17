@@ -147,6 +147,8 @@ const { offset, isDragging, handlers } = useSwipeToClose({
             },
           );
 
+          console.log("THE LEADS ARE ", data.leads)
+
           setLeadOptions(
             (data.leads || []).map((lead) => ({
               value: lead._id,
@@ -526,6 +528,10 @@ const { offset, isDragging, handlers } = useSwipeToClose({
                 }
                 menuPosition="fixed"
                 styles={{
+                   menuPortal: (base) => ({
+    ...base,
+    zIndex: 9999,
+  }),
                   control: (base, state) => ({
                     ...base,
                     minHeight: "52px",

@@ -7,7 +7,7 @@ export const MODAL_DEFAULTS = {
   ticket: { _id: "", isOpen: false, form: {} },
   lead: { _id: "", isOpen: false, form: {} },
   reminder: { isOpen: false, conversationId: "", link: "" },
-  comment: { isOpen: false, conversationId: null, },
+  comment: { isOpen: false, conversationId: null,  anchorEl: null },
 };
 
 export function WhatsappModalsProvider({ children }) {

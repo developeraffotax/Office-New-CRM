@@ -13,8 +13,8 @@ export default function CommentList({
   currentUserId,
   onClose,
   users,
-  anchored = false,   // NEW — compact popover mode
-  maxHeight = 480,    // NEW — real available space, passed from the parent
+  anchored = false,
+  maxHeight = 480,
 }) {
   const isMobile = useIsMobile();
 
@@ -33,7 +33,7 @@ export default function CommentList({
     threshold: 110,
   });
 
-  useEscapeKey(() => threadId && onClose()); // verify this hook's signature matches
+  useEscapeKey(() => threadId && onClose());
 
   useEffect(() => {
     if (threadId) fetchComments("initial");
@@ -91,43 +91,47 @@ export default function CommentList({
 
   const panelBody = (
     <>
-      {/* Header — compact */}
-      <div className="flex-shrink-0 px-3 py-2 flex items-center justify-between border-b border-slate-100 bg-slate-50/60">
+      {/* Header */}
+      <div className="flex-shrink-0 px-3 py-2 flex items-center justify-between border-b border-slate-200 bg-white">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="p-1.5 bg-orange-600 rounded-md text-white flex-shrink-0">
-            <FiMessageCircle size={12} />
+          <div className="flex h-5 w-5 items-center justify-center rounded bg-slate-800 text-white flex-shrink-0">
+            <FiMessageCircle size={15} />
           </div>
-          <div className="min-w-0 leading-tight">
-            <h3 className="text-[13px] font-bold text-slate-800">Comments</h3>
-            <p title={threadSubject} className="text-[11px] text-gray-500 truncate max-w-[220px]">
-              {threadSubject || ""}
-            </p>
+          <div className="min-w-0">
+            <h3 className="text-[15px] font-semibold text-slate-900 leading-none">Comments</h3>
+            {/* {threadSubject && (
+              <p title={threadSubject} className="mt-0.5 text-[11px] text-slate-500 truncate max-w-[200px]">
+                {threadSubject}
+              </p>
+            )} */}
           </div>
         </div>
-        <button onClick={onClose} className="p-1.5 hover:bg-slate-200 rounded-full text-slate-400 flex-shrink-0">
-          <FiX size={16} />
+        <button
+          onClick={onClose}
+          className="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors flex-shrink-0"
+        >
+          <FiX size={15} />
         </button>
       </div>
 
-      {/* Comments list — min-h-0 is the actual fix: lets this shrink and
-          scroll inside a constrained-height flex parent instead of the
-          overflow just becoming invisible past maxHeight */}
+      {/* Comments list */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 min-h-0 overflow-y-auto p-3 space-y-3 bg-white custom-scrollbar overscroll-contain"
+        className="flex-1 min-h-0 overflow-y-auto px-3 py-2.5 space-y-2.5 bg-white custom-scrollbar overscroll-contain"
       >
         {initialLoading ? (
-          <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-2 py-8">
-            <FiLoader className="animate-spin" size={20} />
-            <p className="text-xs">Loading…</p>
+          <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-1.5 py-10">
+            <FiLoader className="animate-spin" size={18} />
+            <p className="text-[11px] font-medium">Loading…</p>
           </div>
         ) : comments.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center py-8">
-            <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-3">
-              <FiMessageCircle size={22} />
+          <div className="h-full flex flex-col items-center justify-center text-center py-10">
+            <div className="mb-2.5 flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-300">
+              <FiMessageCircle size={18} />
             </div>
-            <h4 className="text-slate-700 font-semibold text-xs">No comments yet</h4>
+            <p className="text-[12px] font-medium text-slate-600">No comments yet</p>
+            <p className="mt-0.5 text-[11px] text-slate-400">Start the conversation below</p>
           </div>
         ) : (
           <>
@@ -140,7 +144,7 @@ export default function CommentList({
       </div>
 
       {/* Input */}
-      <div className="flex-shrink-0 bg-slate-50 border-t border-slate-100">
+      <div className="flex-shrink-0 border-t border-slate-200 bg-slate-50/80">
         <CommentForm threadId={threadId} onAddComment={handleAddComment} loading={sending} users={users} />
       </div>
     </>
@@ -151,7 +155,7 @@ export default function CommentList({
     return (
       <div
         style={{ width: 340, maxHeight }}
-        className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-gray-50 shadow-[0_12px_32px_rgba(15,23,42,0.20)] font-inter"
+        className="flex flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-lg shadow-slate-400/60 font-inter"
       >
         {panelBody}
       </div>
@@ -161,23 +165,35 @@ export default function CommentList({
   // ---- Fixed / bottom-sheet fallback (mobile) ----
   return (
     <div className="fixed inset-0 font-inter z-50 pointer-events-none">
-      <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-[2px] pointer-events-auto"
-           onClick={(e) => { e.stopPropagation(); onClose(); }} />
+      <div
+        className="absolute inset-0 bg-slate-900/25 backdrop-blur-[1px] pointer-events-auto"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
+      />
       <div
         onClick={(e) => e.stopPropagation()}
-        style={isMobile ? {
-          transform: `translateY(${offset}px)`,
-          transition: isDragging ? "none" : "transform 0.25s ease-out",
-        } : undefined}
-        className={`absolute bg-gray-50 border border-slate-200 flex flex-col overflow-hidden pointer-events-auto ${
+        style={
           isMobile
-            ? "inset-x-0 bottom-0 max-h-[92dvh] min-h-[80dvh] rounded-t-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.12)]"
-            : "bottom-4 right-4 w-[420px] h-[560px] rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] animate-pop"
+            ? {
+                transform: `translateY(${offset}px)`,
+                transition: isDragging ? "none" : "transform 0.25s ease-out",
+              }
+            : undefined
+        }
+        className={`absolute bg-white border border-slate-200 flex flex-col overflow-hidden pointer-events-auto ${
+          isMobile
+            ? "inset-x-0 bottom-0 max-h-[92dvh] min-h-[80dvh] rounded-t-xl shadow-[0_-8px_30px_rgba(0,0,0,0.12)]"
+            : "bottom-4 right-4 w-[400px] h-[540px] rounded-lg shadow-xl shadow-slate-300/40 animate-pop"
         }`}
       >
         {isMobile && (
-          <div {...handlers} className="flex justify-center pt-3 pb-1 flex-shrink-0 touch-none cursor-grab active:cursor-grabbing">
-            <div className="w-10 h-1.5 rounded-full bg-slate-300" />
+          <div
+            {...handlers}
+            className="flex justify-center pt-2.5 pb-1 flex-shrink-0 touch-none cursor-grab active:cursor-grabbing"
+          >
+            <div className="w-9 h-1 rounded-full bg-slate-300" />
           </div>
         )}
         {panelBody}

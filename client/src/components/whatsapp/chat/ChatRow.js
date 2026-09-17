@@ -107,6 +107,7 @@ export default function ChatRow({
 
                   openComments({
                     conversationId: chat._id,
+                    anchorEl: e.currentTarget,
                   });
                 }}
               />

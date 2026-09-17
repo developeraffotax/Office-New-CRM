@@ -7,7 +7,7 @@ export const MODAL_DEFAULTS = {
   ticket: { _id: "", isOpen: false, form: {} },
   lead: { _id: "", isOpen: false, form: {} },
   reminder: { isOpen: false, threadId: "", link: "" },
-  comment: { isOpen: false, threadId: null, threadSubject: "" },
+  comment: { isOpen: false, threadId: null, threadSubject: "", anchorEl: null },
 };
 
 export function MailModalsProvider({ children }) {

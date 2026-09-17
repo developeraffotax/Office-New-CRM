@@ -180,7 +180,13 @@ const handleNotificationClick = (e, item) => {
 
   // Mailbox
   if (item.entityType === "mailbox") {
-    const url = `${item.redirectLink}&mailThreadId=${item.taskId}`;
+    let url = `${item.redirectLink}`;
+
+    if(item.type === "thread_assigned") {
+      url = `${item.redirectLink}&mailThreadId=${item.taskId}`;
+
+    }
+
 
     if (isNewTab) {
       window.open(url, "_blank");

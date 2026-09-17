@@ -539,12 +539,13 @@ export default function Row({
             icon={FiMessageSquare}
             unreadCount={thread?.unreadComments || 0}
             title="View Comments"
-            onClick={() => {
+            onClick={(e) => {
 
               openComments({
                              
                 threadId: thread._id,
                 threadSubject: thread?.subject,
+                anchorEl: e.currentTarget, // NEW — the button itself becomes the anchor
               })
 
               

@@ -19,7 +19,7 @@ export const addComment = async (req, res) => {
  
 
     // 🔍 Validate thread
-    const thread = await EmailThread.findById(threadId);
+    const thread = await EmailThread.findById(threadId).lean();
     if (!thread) {
       return res.status(404).json({ message: "Thread not found" });
     }
@@ -56,7 +56,7 @@ export const addComment = async (req, res) => {
 
         const payload = {
           title: "New Comment 💬 | Mailbox",
-          redirectLink: `/mail?folder=inbox&companyName=${thread?.companyName}`,
+          redirectLink: `/mail?folder=inbox&companyName=${thread?.companyName}&mailThreadId=${thread?.threadId}`,
           description: `${req.user.user.name} added a new comment!
           ✔ Subject: ${thread?.subject}
           ✔ From: ${getOtherParticipantEmail(thread?.participants, thread?.companyName === "affotax" ? "info@affotax.com" : "Admin@outsourceaccountings.co.uk")}

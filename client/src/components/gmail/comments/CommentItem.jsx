@@ -21,21 +21,21 @@ export default function CommentItem({ comment, currentUserId }) {
   const readers =
     comment.readBy?.filter((user) => user?.userId?._id !== comment.author?._id) || [];
 
-  const renderContent = (text) =>
-    text.split(/(@\w+(?:\s\w+)?)/g).map((part, i) =>
-      part.startsWith("@") ? (
-        <span
-          key={i}
-          className={`font-semibold px-0.5 rounded ${
-            isMe ? "bg-slate-700/20 text-slate-800" : "text-slate-800 bg-slate-100"
-          }`}
-        >
-          {part}
-        </span>
-      ) : (
-        part
-      )
+const renderContent = (text) => {
+  const mentionClass = "font-semibold px-1 py-0.5 rounded bg-blue-50 text-blue-700";
+
+  return text.split(/(@\w+(?:\s\w+)?)/g).map((part, index) => {
+    if (!part.startsWith("@")) {
+      return part;
+    }
+
+    return (
+      <span key={index} className={mentionClass}>
+        {part}
+      </span>
     );
+  });
+};
 
   return (
     <div className={`flex flex-col w-full ${isMe ? "items-end" : "items-start"}`}>

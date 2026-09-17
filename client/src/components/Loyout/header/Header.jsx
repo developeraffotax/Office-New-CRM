@@ -122,6 +122,10 @@ export default function Header({
             <img src="/logo.png" alt="Logo" className="h-[2.6rem] " />
           </div>
 
+          {/* <div className="max-md:hidden">
+            <img src="/logo2.png" alt="Logo" className="w-[120px]  " />
+          </div> */}
+
           {/* Notification */}
           <div className="relative mt-1">
             <div

@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 
 
 
@@ -529,8 +530,11 @@ export const buildJobsQuery = (queryParams) => {
   }
 
   if (pocId) {
-    query.data = pocId;
-  }
+    if (mongoose.Types.ObjectId.isValid(pocId)) {
+      query.data = new mongoose.Types.ObjectId(pocId);
+    }
+  // else: silently ignore an invalid id, or push a 400 response upstream if you'd rather reject it
+}
 
   if (jobPrepared) {
     query.prepared = jobPrepared;

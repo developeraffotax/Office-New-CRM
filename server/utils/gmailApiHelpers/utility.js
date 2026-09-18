@@ -347,10 +347,9 @@ const inlineImages = async (
       (h) => h.name.toLowerCase() === "content-disposition"
     )?.value;
 
-    const isInline =
-      (dispHeader &&
-        dispHeader.toLowerCase().includes("inline")) ||
-      !!cidHeader;
+const isInline =
+  ((dispHeader && dispHeader.toLowerCase().includes("inline")) || !!cidHeader) &&
+  isImageReferencedInHtml(decodedMessage, cidHeader, part.filename);
 
     if (!isInline) continue;
 

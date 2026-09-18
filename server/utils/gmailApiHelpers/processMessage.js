@@ -12,46 +12,32 @@ export const processMessage = async (message, accessToken, companyName) => {
     ? flattenParts(message.payload.parts)
     : [];
 
-  // ---------------------------
-  // Decode HTML body
-  // ---------------------------
-  let decodedMessage = "";
-
+  // Decode raw HTML first
+  let rawDecodedMessage = "";
   if (message.payload.body?.data) {
-    decodedMessage = decodeBase64(
+    rawDecodedMessage = decodeBase64(
       base64UrlToBase64(message.payload.body.data || "")
     );
   } else if (parts.length) {
     for (const part of parts) {
       if (part.mimeType === "text/html" && part.body?.data) {
-        decodedMessage += decodeBase64(base64UrlToBase64(part.body.data || ""));
+        rawDecodedMessage += decodeBase64(base64UrlToBase64(part.body.data || ""));
       }
     }
   }
 
-  // ---------------------------
-  // Replace inline images (cid: or inline base64)
-  // ---------------------------
-  decodedMessage = await inlineImages(
-    decodedMessage,
+  // Extract attachments against the RAW html (before cid: refs get swapped out)
+  const attachments = await extractAttachments(parts, message.id, accessToken, rawDecodedMessage);
+
+  // Now inline the images that are actually referenced
+  const decodedMessage = await inlineImages(
+    rawDecodedMessage,
     parts,
     message.id,
     accessToken,
     companyName
   );
 
-  // ---------------------------
-  // Clean message HTML
-  // ---------------------------
-  // decodedMessage = cleanMessageHtmlAggressive(decodedMessage);
-  // ---------------------------
-  // Extract attachments (non-inline)
-  // ---------------------------
-  const attachments = await extractAttachments(parts, message.id, accessToken);
-
-  // ---------------------------
-  // Detect if message is sent by me
-  // ---------------------------
   const fromHeader =
     message.payload.headers?.find((h) => h.name.toLowerCase() === "from")
       ?.value || "";
@@ -64,9 +50,6 @@ export const processMessage = async (message, accessToken, companyName) => {
     "admin@outsourceaccountings.co.uk",
   ].includes(fromHeader);
 
-  // ---------------------------
-  // Return processed message
-  // ---------------------------
   return {
     ...message,
     payload: {

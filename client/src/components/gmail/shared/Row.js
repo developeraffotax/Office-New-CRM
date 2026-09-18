@@ -452,6 +452,7 @@ export default function Row({
     onClick={(e) => {
       setFilters({
         search: getOtherParticipantEmail(thread.participants, myEmail),
+        userId: "",
         page: 1,
       });
     }}

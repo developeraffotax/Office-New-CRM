@@ -36,6 +36,30 @@ const flattenParts = (parts = []) => {
   return out;
 };
 
+
+// ---------------------------
+// Helper: is this image actually referenced in the HTML body?
+// ---------------------------
+const escapeRegex = (str = "") => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const isImageReferencedInHtml = (html, cidHeader, filename) => {
+  if (!html) return false;
+
+  if (cidHeader) {
+    const cid = cidHeader.replace(/[<>]/g, "");
+    if (new RegExp(`cid:${escapeRegex(cid)}`, "i").test(html)) return true;
+  }
+
+  if (filename) {
+    if (new RegExp(escapeRegex(filename), "i").test(html)) return true;
+  }
+
+  return false;
+};
+
+
+
+
 // ---------------------------
 // Fetch attachment
 // ---------------------------
@@ -224,12 +248,8 @@ const cleanMessageHtmlAggressive = (html) => {
 
 
 
-
-const extractAttachments = async (parts, messageId, accessToken) => {
+const extractAttachments = async (parts, messageId, accessToken, htmlBody) => {
   const attachments = [];
-
-
- 
 
   for (const part of parts) {
     const contentIdHeader = part.headers?.find(
@@ -243,33 +263,21 @@ const extractAttachments = async (parts, messageId, accessToken) => {
     const filename = part.filename;
     const mimeType = part.mimeType;
 
-    // Must have an attachmentId and filename to be a real attachment
     if (!part.body?.attachmentId || !filename) continue;
 
     const isImage = mimeType?.startsWith("image/");
 
     let isInline = false;
 
-    if (dispositionHeader) {
-      const disp = dispositionHeader.toLowerCase();
-
-      if (disp.includes("attachment")) {
-        // Explicit attachment → never inline
-        isInline = false;
-      } else if (disp.includes("inline")) {
-        // "inline" only means skip-as-attachment for actual images
-        // PDFs, docs, etc. marked inline by Apple Mail are still real attachments
-        isInline = isImage;
-      }
-    } else {
-      // No Content-Disposition — use heuristics
-      if (contentIdHeader && isImage) {
-        // Image with CID → referenced in HTML body, skip it
-        isInline = true;
-      } else {
-        isInline = false;
-      }
+    if (isImage) {
+      // Only drop it from attachments if it's genuinely used in the HTML.
+      // "Content-Disposition: inline" alone is NOT reliable — many clients
+      // tag every photo as inline even when it's not referenced anywhere.
+      isInline = isImageReferencedInHtml(htmlBody, contentIdHeader, filename);
+    } else if (dispositionHeader?.toLowerCase().includes("attachment")) {
+      isInline = false;
     }
+    // non-image, non-explicit-attachment parts default to real attachment
 
     if (!isInline) {
       attachments.push({
@@ -282,94 +290,9 @@ const extractAttachments = async (parts, messageId, accessToken) => {
     }
   }
 
-
- 
   return attachments;
 };
-
-
-
-// ---------------------------
-// Inline ALL images (CID, FILENAME, OUTLOOK IDs, EXTERNAL)
-// ---------------------------
-// const inlineImages = async (decodedMessage, parts, messageId, accessToken) => {
-//   // 1️⃣ Gmail inline image parts
-//   for (const part of parts) {
-//     const cidHeader = part.headers?.find(
-//       (h) => h.name.toLowerCase() === "content-id"
-//     )?.value;
-
-//     const dispHeader = part.headers?.find(
-//       (h) => h.name.toLowerCase() === "content-disposition"
-//     )?.value;
-
-//     const isInline =
-//       (dispHeader && dispHeader.toLowerCase().includes("inline")) ||
-//       !!cidHeader;
-
-//     if (part.mimeType?.startsWith("image/") && part.body) {
-//       let dataUrl = null;
-
-//       if (part.body.attachmentId) {
-//         const b64 = await fetchAttachmentData(
-//           messageId,
-//           part.body.attachmentId,
-//           accessToken
-//         );
-//         if (b64) dataUrl = `data:${part.mimeType};base64,${b64}`;
-//       } else if (part.body.data) {
-//         const b64 = base64UrlToBase64(part.body.data);
-//         dataUrl = `data:${part.mimeType};base64,${b64}`;
-//       }
-
-//       if (dataUrl) {
-//         if (cidHeader) {
-//           const cid = cidHeader.replace(/[<>]/g, "");
-//           decodedMessage = decodedMessage.replace(
-//             new RegExp(`cid:${cid}`, "gi"),
-//             dataUrl
-//           );
-//         }
-
-//         if (part.filename) {
-//           decodedMessage = decodedMessage.replace(
-//             new RegExp(part.filename, "gi"),
-//             dataUrl
-//           );
-//         }
-//       }
-//     }
-//   }
-
-//   // 2️⃣ EXTERNAL SIGNATURE IMAGES (googleusercontent URLs)
-//   const externalImgRegex =
-//     /<img[^>]+src="(https:\/\/[^"]+googleusercontent\.com[^"]+)"[^>]*>/gi;
-
-//   const uniqueUrls = new Set();
-//   let match;
-
-//   while ((match = externalImgRegex.exec(decodedMessage)) !== null) {
-//     uniqueUrls.add(match[1]);
-//   }
-
-//   for (const url of uniqueUrls) {
-//     const base64 = await fetchExternalImageAsBase64(url);
-//     if (base64) {
-//       decodedMessage = decodedMessage.replace(
-//         new RegExp(url.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
-//         base64
-//       );
-//     }
-//   }
-
-//   // 3️⃣ OUTLOOK SIGNATURE ID FIX (_x0000_i1025 etc)
-//   decodedMessage = decodedMessage.replace(/id="_x0000_i\d+"/g, "");
-
-//   return decodedMessage;
-// };
-
-
-
+ 
 
   function extractEmail(str = "") {
   if (!str) return "";

@@ -201,6 +201,7 @@ export default function FiltersMobile({
       if (trimmed !== (filters.search || "")) {
         setFilters({
           search: trimmed,
+          userId: "",
           page: 1,
         });
       }

@@ -226,11 +226,15 @@ useEffect(() => {
   const timer = setTimeout(() => {
     const trimmed = searchInput.trim();
     if (trimmed !== (filters.search || "")) {
-      setFilters({
+      const searchFilters = {
         search: trimmed,
-        userId: "",
         page: 1,
-      });
+      }
+
+      if(filters?.userId === "unassigned") {
+        searchFilters.userId = "";
+      }
+      setFilters(searchFilters);
     }
   }, 500);
 

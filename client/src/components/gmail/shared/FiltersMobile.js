@@ -199,16 +199,20 @@ export default function FiltersMobile({
     const timer = setTimeout(() => {
       const trimmed = searchInput.trim();
       if (trimmed !== (filters.search || "")) {
-        setFilters({
-          search: trimmed,
-          userId: "",
-          page: 1,
-        });
+         const searchFilters = {
+        search: trimmed,
+        page: 1,
+      }
+
+      if(filters?.userId === "unassigned") {
+        searchFilters.userId = "";
+      }
+      setFilters(searchFilters);
       }
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchInput, filters.search, setFilters]);
+  }, [searchInput, filters.search,   setFilters]);
 
   const hasActiveFilters =
     filters.category ||

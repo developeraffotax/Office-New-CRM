@@ -107,10 +107,23 @@ export default function ThreadHeader({
         <h2 className="text-lg font-bold text-gray-800 truncate max-w-[200px] md:max-w-md">
           {subject}
         </h2>
+        <span className="w-[1px] h-6 bg-slate-300 rounded-full"></span>
         <RefBadge number={thread?.ref} className="ml-2"/>
+        <IconButtonWithBadge
+          icon={FiMessageSquare}
+          unreadCount={unreadComments}
+          title="View Comments"
+          onClick={(e) => {
+            openComments({
+              threadId: thread?._id,
+              threadSubject: thread?.subject,
+              anchorEl: e.currentTarget,
+            });
+          }}
+        />
       </div>
 
-      <div className="flex justify-center items-center gap-4">
+      <div className="flex justify-center items-center gap-3">
 
           <AssignUser
           users={users}
@@ -170,18 +183,7 @@ export default function ThreadHeader({
           title="View Activity"
           onClick={onShowActivity}
         />
-        {/* <IconButtonWithBadge
-          icon={FiMessageSquare}
-          unreadCount={unreadComments}
-          title="View Comments"
-          onClick={(e) => {
-            openComments({
-              threadId: thread?._id,
-              threadSubject: thread?.subject,
-              anchorEl: e.currentTarget,
-            });
-          }}
-        /> */}
+        
 
         <span className="w-[1px] h-8 bg-slate-300 rounded-full"></span>
 

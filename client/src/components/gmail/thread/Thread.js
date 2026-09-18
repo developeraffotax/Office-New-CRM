@@ -1,8 +1,19 @@
-import React, { useEffect, useRef, useState, useMemo, useLayoutEffect } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useLayoutEffect,
+} from "react";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { HiReply } from "react-icons/hi";
 import { Buffer } from "buffer";
-import { FaCaretDown, FaCheckCircle, FaRegFileImage, FaUndoAlt } from "react-icons/fa";
+import {
+  FaCaretDown,
+  FaCheckCircle,
+  FaRegFileImage,
+  FaUndoAlt,
+} from "react-icons/fa";
 import { FaRegCircleCheck, FaRegFileLines } from "react-icons/fa6";
 import { LuDownload } from "react-icons/lu";
 import { ImAttachment } from "react-icons/im";
@@ -35,30 +46,20 @@ import { useMailThread } from "../hooks/useMailThread.js";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useMailModalActions } from "../context/MailModalsContext.js";
 
-
-
 export default function Thread({
   variant = "full",
   companyName,
   threadId,
   onClose = () => {},
- 
+
   users = [],
   categories = [],
 
-
   openComments = () => {},
- 
- 
- 
- 
- 
 }) {
+  const { auth } = useSelector((state) => state.auth);
 
-   const { auth } = useSelector((state) => state.auth);
-
-  const navigate = useNavigate()
-
+  const navigate = useNavigate();
 
   const {
     thread,
@@ -68,26 +69,20 @@ export default function Thread({
     deleteThread,
   } = useMailThread({ threadId, companyName });
 
-console.log("THE THREAD IS ✔️✔️✔️✔️✔️✔️✔️", thread)
-
-
   const { subject, userId, category, status } = thread || {};
   const mongoThreadId = thread?._id; // check this matches what getThread names t
 
-
   const [page, setPage] = useState(1);
-const [hasMore, setHasMore] = useState(false);
-const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
+  const isReminderPopupOpen = useSelector(
+    (state) => state?.reminder?.showReminder,
+  );
 
- 
-  const isReminderPopupOpen = useSelector((state) => state?.reminder?.showReminder);  
-
-
-  const [summaryDrawer, setSummaryDrawer] = useState({open: false,  })
+  const [summaryDrawer, setSummaryDrawer] = useState({ open: false });
 
   const [swalOpen, setSwalOpen] = useState(false);
-
 
   const [messages, setMessages] = useState({});
   const [loading, setLoading] = useState(false);
@@ -103,27 +98,20 @@ const [loadingMore, setLoadingMore] = useState(false);
   const [showReplyEditor, setShowReplyEditor] = useState(false);
   const [showStickyReply, setShowStickyReply] = useState(false);
 
-
   const [messageUsers, setMessageUsers] = useState({});
-
 
   const scrollContainerRef = useRef(null);
   const threadRef = useRef(null);
 
   const lastMessageRef = useRef(null);
   const replySectionRef = useRef(null);
- 
-const scrollAnchorRef = useRef(null); // { previousHeight }
 
+  const scrollAnchorRef = useRef(null); // { previousHeight }
 
-const [activityPanel, setActivityPanel] = useState({
-  show: false,
-  threadId: null,
-});
-
-
-
-
+  const [activityPanel, setActivityPanel] = useState({
+    show: false,
+    threadId: null,
+  });
 
   const scope = useMemo(() => {
     const hasEditAccess = hasSubrole(auth.user, "Inbox", "Edit") || false;
@@ -132,27 +120,24 @@ const [activityPanel, setActivityPanel] = useState({
     return { edit: hasEditAccess, delete: hasDeleteAccess };
   }, [auth]);
 
-
-
+  useLayoutEffect(() => {
+    if (!loadingMore && scrollAnchorRef.current) {
+      const container = scrollContainerRef.current;
+      if (container) {
+        const newHeight = container.scrollHeight;
+        container.scrollTop =
+          newHeight - scrollAnchorRef.current.previousHeight;
+      }
+      scrollAnchorRef.current = null; // reset
+    }
+  }, [loadingMore]); // fires when loadingMore flips false
 
   useLayoutEffect(() => {
-  if (!loadingMore && scrollAnchorRef.current) {
-    const container = scrollContainerRef.current;
-    if (container) {
-      const newHeight = container.scrollHeight;
-      container.scrollTop = newHeight - scrollAnchorRef.current.previousHeight;
+    const el = scrollContainerRef.current;
+    if (el && !loading) {
+      el.scrollTop = el.scrollHeight;
     }
-    scrollAnchorRef.current = null; // reset
-  }
-}, [loadingMore]); // fires when loadingMore flips false
-
-
-useLayoutEffect(() => {
-  const el = scrollContainerRef.current;
-  if (el && !loading) {
-    el.scrollTop = el.scrollHeight;
-  }
-}, [loading]);
+  }, [loading]);
 
   // Sticky logic
   useEffect(() => {
@@ -177,85 +162,76 @@ useLayoutEffect(() => {
     );
   }, [messages?.decryptedMessages]);
 
-const getEmailDetail = async (pageNumber = 1, isLoadMore = false) => {
-  if (isLoadMore) {
-    setLoadingMore(true);
-  } else {
-    setLoading(true);
-  }
+  const getEmailDetail = async (pageNumber = 1, isLoadMore = false) => {
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
 
-  try {
-    const { data } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/inbox/detail/pagination/${threadId}/${companyName}?page=${pageNumber}&limit=10`
-    );
-
-    if (data?.emailDetails) {
-      const pagination = data.emailDetails.pagination;
-
-      /**
-       * ✅ HAS MORE FROM BACKEND PAGINATION
-       */
-      setHasMore(
-        pagination?.totalPages
-          ? pageNumber < pagination.totalPages
-          : false
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/single/inbox/detail/pagination/${threadId}/${companyName}?page=${pageNumber}&limit=10`,
       );
 
-      if (isLoadMore) {
-        // PREPEND older messages
-        setMessages((prev) => ({
-          ...data.emailDetails,
-          decryptedMessages: [
-            ...data.emailDetails.decryptedMessages,
-            ...(prev?.decryptedMessages || []),
-          ],
-        }));
-      } else {
-        setMessages(data.emailDetails);
+      if (data?.emailDetails) {
+        const pagination = data.emailDetails.pagination;
+
+        /**
+         * ✅ HAS MORE FROM BACKEND PAGINATION
+         */
+        setHasMore(
+          pagination?.totalPages ? pageNumber < pagination.totalPages : false,
+        );
+
+        if (isLoadMore) {
+          // PREPEND older messages
+          setMessages((prev) => ({
+            ...data.emailDetails,
+            decryptedMessages: [
+              ...data.emailDetails.decryptedMessages,
+              ...(prev?.decryptedMessages || []),
+            ],
+          }));
+        } else {
+          setMessages(data.emailDetails);
+        }
       }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
     }
-  } catch (error) {
-    console.log(error);
-  } finally {
-    setLoading(false);
-    setLoadingMore(false);
-  }
-};
+  };
 
- 
+  useEffect(() => {
+    setPage(1);
+    getEmailDetail(1, false);
+    markAsRead(threadId, companyName);
+    getMessageUsers(); // 👈 add this
+  }, [threadId, companyName]);
 
+  const handleLoadMore = async () => {
+    if (!hasMore || loadingMore) return;
 
-useEffect(() => {
-  setPage(1);
-  getEmailDetail(1, false);
-  markAsRead(threadId, companyName);
-   getMessageUsers();   // 👈 add this
-}, [threadId, companyName]);
+    const container = scrollContainerRef.current;
+    // Capture BEFORE any state changes
+    scrollAnchorRef.current = { previousHeight: container.scrollHeight };
 
+    const nextPage = page + 1;
+    setPage(nextPage);
+    await getEmailDetail(nextPage, true);
+  };
 
+  const separate = (email) => {
+    const emailRegex = /(.*)<(.*)>/;
+    const match = email?.match(emailRegex);
+    const name = match ? match[1]?.trim() : email || "Unknown";
+    const emailAddress = match ? match[2]?.trim() : "";
 
-const handleLoadMore = async () => {
-  if (!hasMore || loadingMore) return;
-  
-  const container = scrollContainerRef.current;
-  // Capture BEFORE any state changes
-  scrollAnchorRef.current = { previousHeight: container.scrollHeight };
-  
-  const nextPage = page + 1;
-  setPage(nextPage);
-  await getEmailDetail(nextPage, true);
-};
-
-
-
-const separate = (email) => {
-  const emailRegex = /(.*)<(.*)>/;
-  const match = email?.match(emailRegex);
-  const name = match ? match[1]?.trim() : email || "Unknown";
-  const emailAddress = match ? match[2]?.trim() : "";
-  
-  return (
-    <div className="flex flex-col">
+    return (
+      <div className="flex flex-col">
         <span className="font-semibold text-gray-900 text-sm md:text-base">
           {name.slice(0, 30)}
         </span>
@@ -267,56 +243,56 @@ const separate = (email) => {
       </div>
     );
   };
-  
+
   const EmailTimeDisplay = ({ internalDate }) => {
     const emailDate = new Date(parseInt(internalDate));
     const formattedDate = !isNaN(emailDate.getTime())
-    ? emailDate.toLocaleString([], {
-      dateStyle: "medium",
-      timeStyle: "short",
+      ? emailDate.toLocaleString([], {
+          dateStyle: "medium",
+          timeStyle: "short",
         })
-        : "Invalid Date";
-        return (
-          <span className="text-xs text-gray-400 font-medium">{formattedDate}</span>
-        );
-      };
-      
-      const downloadAttachments = async (
-        attachmentId,
-        messageId,
-        companyName,
-        fileName,
-      ) => {
-        if (!attachmentId || !messageId || !companyName) {
-          toast.error("Attachment detail missing!");
-          return;
-        }
-        setIsLoading(true);
-        setAttachmentId(attachmentId);
-        try {
-          const { data } = await axios.get(
-            `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`,
-            { responseType: "json" },
-          );
-          if (data) {
-            const decodedData = Buffer.from(data.data, "base64");
-            const blob = new Blob([new Uint8Array(decodedData.buffer)], {
-              type: "application/octet-stream",
-            });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = fileName;
-            link.click();
-            URL.revokeObjectURL(url);
-          }
-        } catch (error) {
-          toast.error("Download failed!");
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      
+      : "Invalid Date";
+    return (
+      <span className="text-xs text-gray-400 font-medium">{formattedDate}</span>
+    );
+  };
+
+  const downloadAttachments = async (
+    attachmentId,
+    messageId,
+    companyName,
+    fileName,
+  ) => {
+    if (!attachmentId || !messageId || !companyName) {
+      toast.error("Attachment detail missing!");
+      return;
+    }
+    setIsLoading(true);
+    setAttachmentId(attachmentId);
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/tickets/get/attachments/${attachmentId}/${messageId}/${companyName}`,
+        { responseType: "json" },
+      );
+      if (data) {
+        const decodedData = Buffer.from(data.data, "base64");
+        const blob = new Blob([new Uint8Array(decodedData.buffer)], {
+          type: "application/octet-stream",
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      toast.error("Download failed!");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const FileIcon = (fileName) => {
     const imageExtensions = ["jpg", "jpeg", "png", "gif", "svg"];
     const ext = fileName.split(".").pop().toLowerCase();
@@ -326,7 +302,7 @@ const separate = (email) => {
       <FaRegFileLines className="text-blue-500" />
     );
   };
-  
+
   const toggleTrimmedContent = (messageId) => {
     setExpandedMessages((prev) => ({
       ...prev,
@@ -334,74 +310,43 @@ const separate = (email) => {
     }));
   };
 
-  
-  
-  
-  
-  
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-const getMessageUsers = async () => {
-  try {
-    const { data } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/v1/gmail/thread-message-users`,
-      {
-        params: {
-          threadId,
-          companyName: companyName,
+  const getMessageUsers = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/gmail/thread-message-users`,
+        {
+          params: {
+            threadId,
+            companyName: companyName,
+          },
         },
+      );
+
+      if (data?.success) {
+        setMessageUsers(data.data || {});
       }
-    );
-
-    if (data?.success) {
-     
-      setMessageUsers(data.data || {});
+    } catch (error) {
+      console.error("Failed to fetch message users", error);
     }
-  } catch (error) {
-    console.error("Failed to fetch message users", error);
-  }
-};
+  };
 
+  const updateStatus = async (status) => {
+    setSwalOpen(true);
+    const { isConfirmed } = await confirmAlert({ type: "warning" });
+    setSwalOpen(false);
+    if (!isConfirmed) return;
+    await handleUpdateThread(mongoThreadId, { status }); // thread state updates itself inside the hook
+  };
 
+  const deleteThreadHandler = async (threadId, company) => {
+    setSwalOpen(true);
+    const { isConfirmed } = await confirmAlert({ type: "warning" });
+    setSwalOpen(false);
+    if (!isConfirmed) return;
 
-
-
-
- 
-
-const updateStatus = async (status) => {
-  setSwalOpen(true);
-  const { isConfirmed } = await confirmAlert({ type: "warning" });
-  setSwalOpen(false);
-  if (!isConfirmed) return;
-  await handleUpdateThread(mongoThreadId, { status }); // thread state updates itself inside the hook
-};
-
-const deleteThreadHandler = async (threadId, company) => {
-  setSwalOpen(true);
-  const { isConfirmed } = await confirmAlert({ type: "warning" });
-  setSwalOpen(false);
-  if (!isConfirmed) return;
-
-  const success = await deleteThread(threadId, company, false);
-  if (success) navigate("/mail"); // back to inbox, thread no longer exists
-};
-
- 
-
- 
+    const success = await deleteThread(threadId, company, false);
+    if (success) navigate("/mail"); // back to inbox, thread no longer exists
+  };
 
   return (
     <div
@@ -409,32 +354,31 @@ const deleteThreadHandler = async (threadId, company) => {
       ref={threadRef}
     >
       {/* Header */}
-<ThreadHeader
-
-  thread={thread}
-  variant={variant}
-  subject={subject}
-  company={companyName}
-  threadId={threadId}
-  mongoThreadId={mongoThreadId}
-  status={status}
-  category={category}
-  categories={categories}
-  users={users}
-  userId={userId}
-  unreadComments={0}
-  scope={scope}
-  handleUpdateThread={handleUpdateThread}
-  onBack={onClose}
- 
-  onShowSummary={() => setSummaryDrawer({ open: true })}
-  onShowActivity={() => setActivityPanel({ show: true, threadId: mongoThreadId })}
-  onDeleteThread={() => deleteThreadHandler(threadId, companyName)}
-  onUpdateStatus={updateStatus}
-    openComments={openComments} // Pass the openComments function here
-
-  firstMessageForPrefilling = {messages?.decryptedMessages?.[0] || null}
-/>
+      <ThreadHeader
+        thread={thread}
+        variant={variant}
+        subject={subject}
+        company={companyName}
+        threadId={threadId}
+        mongoThreadId={mongoThreadId}
+        status={status}
+        category={category}
+        categories={categories}
+        users={users}
+        userId={userId}
+        unreadComments={thread?.unreadComments || 0}
+        scope={scope}
+        handleUpdateThread={handleUpdateThread}
+        onBack={onClose}
+        onShowSummary={() => setSummaryDrawer({ open: true })}
+        onShowActivity={() =>
+          setActivityPanel({ show: true, threadId: mongoThreadId })
+        }
+        onDeleteThread={() => deleteThreadHandler(threadId, companyName)}
+        onUpdateStatus={updateStatus}
+        openComments={openComments} // Pass the openComments function here
+        firstMessageForPrefilling={messages?.decryptedMessages?.[0] || null}
+      />
 
       {/* Thread Content */}
       {loading ? (
@@ -443,19 +387,17 @@ const deleteThreadHandler = async (threadId, company) => {
         </div>
       ) : (
         <div
-         ref={scrollContainerRef}
-        className="flex-1   overflow-y-auto p-4 md:p-6 flex flex-col  gap-8"
-        > 
-        {hasMore && (
+          ref={scrollContainerRef}
+          className="flex-1   overflow-y-auto p-4 md:p-6 flex flex-col  gap-8"
+        >
+          {hasMore && (
             <div className="w-full flex justify-center mb-4">
               <button
                 onClick={handleLoadMore}
                 disabled={loadingMore}
                 className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition flex items-center gap-2"
               >
-                {loadingMore && (
-                  <TbLoader2 className="w-4 h-4 animate-spin" />
-                )}
+                {loadingMore && <TbLoader2 className="w-4 h-4 animate-spin" />}
                 {loadingMore ? "Loading..." : "Load older messages"}
               </button>
             </div>
@@ -482,24 +424,29 @@ const deleteThreadHandler = async (threadId, company) => {
             const showToggle = parsedEmail.hasThread;
             const isLast = i === messages.decryptedMessages.length - 1;
 
-
             const senderName = messageUsers[message.id]?.senderName || "";
             const sentFrom = messageUsers[message.id]?.sentFrom || "";
 
             // Inside your map loop where you find fromHeader and toHeader:
             const headersArr = message?.payload?.headers || [];
-           const headerDetails = {
-              from: message?.payload?.headers?.find((h) => h.name === "From")?.value || "",
-              to: message?.payload?.headers?.find((h) => h.name === "To")?.value || "",
-              cc: message?.payload?.headers?.find((h) => h.name === "Cc")?.value || "",
-              bcc: message?.payload?.headers?.find((h) => h.name === "Bcc")?.value || "",
+            const headerDetails = {
+              from:
+                message?.payload?.headers?.find((h) => h.name === "From")
+                  ?.value || "",
+              to:
+                message?.payload?.headers?.find((h) => h.name === "To")
+                  ?.value || "",
+              cc:
+                message?.payload?.headers?.find((h) => h.name === "Cc")
+                  ?.value || "",
+              bcc:
+                message?.payload?.headers?.find((h) => h.name === "Bcc")
+                  ?.value || "",
               subject: subject, // from props
               date: message.internalDate,
               // Check if current user is the recipient
-              toShort: isSentByMe ? "" : "me" 
+              toShort: isSentByMe ? "" : "me",
             };
-
-
 
             return (
               <div
@@ -528,49 +475,41 @@ const deleteThreadHandler = async (threadId, company) => {
                       </div>
                       <div className="flex flex-col">
                         {separate(fromHeader)}
-                         
-
-
 
                         <EmailHeaderDetails details={headerDetails} />
                       </div>
                     </div>
-                    
 
-                    <div  className="flex flex-col  gap-0 items-start">  
-                    <div className="flex justify-end gap-3 items-center">
-                      <EmailTimeDisplay internalDate={message?.internalDate} />
-                      <span className="border-l w-1 h-5 border-gray-400"></span>
-                      <button
-                        onClick={() => {
-                          setShowForward(true);
-                          setForwardMessageId(message.id);
-                        }}
-                        title="Forward Message"
-                        className="flex items-center font-medium text-gray-400 hover:text-gray-600 transition"
-                      >
-                        <TbArrowForwardUp className="w-5 h-5" />
-                      </button>
+                    <div className="flex flex-col  gap-0 items-start">
+                      <div className="flex justify-end gap-3 items-center">
+                        <EmailTimeDisplay
+                          internalDate={message?.internalDate}
+                        />
+                        <span className="border-l w-1 h-5 border-gray-400"></span>
+                        <button
+                          onClick={() => {
+                            setShowForward(true);
+                            setForwardMessageId(message.id);
+                          }}
+                          title="Forward Message"
+                          className="flex items-center font-medium text-gray-400 hover:text-gray-600 transition"
+                        >
+                          <TbArrowForwardUp className="w-5 h-5" />
+                        </button>
+                      </div>
 
-
-                         
+                      {senderName && (
+                        <span className="text-gray-500 text-xs p-1 inline-flex items-center gap-1.5">
+                          <span>Sent by {senderName}</span>
+                          {sentFrom && (
+                            <>
+                              <span className="text-gray-400 text-base">•</span>
+                              <span>{sentFrom}</span>
+                            </>
+                          )}
+                        </span>
+                      )}
                     </div>
-
-                         {senderName && (
-  <span className="text-gray-500 text-xs p-1 inline-flex items-center gap-1.5">
-    <span>Sent by {senderName}</span>
-    {sentFrom && (
-      <>
-        <span className="text-gray-400 text-base">•</span>
-        <span>{sentFrom}</span>
-      </>
-    )}
-  </span>
-)}
-
-                    </div>
-
-  
                   </div>
 
                   {/* Body Content - Visible Part */}
@@ -651,7 +590,7 @@ const deleteThreadHandler = async (threadId, company) => {
 
                 {/* GMAIL STYLE REPLY TRIGGER (Only after last message) */}
                 {isLast && !showReplyEditor && (
-                  <div className="w-full mt-8">
+                  <div className="w-full mt-8 flex justify-start items-center gap-3">
                     <button
                       onClick={() => {
                         setShowReplyEditor(true);
@@ -667,6 +606,18 @@ const deleteThreadHandler = async (threadId, company) => {
                     >
                       <HiReply className="text-lg" /> Reply
                     </button>
+                    <IconButtonWithBadge
+                      icon={FiMessageSquare}
+                      unreadCount={thread?.unreadComments || 0}
+                      title="View Comments"
+                      onClick={(e) => {
+                        openComments({
+                          threadId: thread?._id,
+                          threadSubject: thread?.subject,
+                          anchorEl: e.currentTarget,
+                        });
+                      }}
+                    />
                   </div>
                 )}
               </div>
@@ -678,21 +629,17 @@ const deleteThreadHandler = async (threadId, company) => {
             {showReplyEditor && (
               <div className="w-full py-5 ">
                 <Reply
-                company={companyName}
-                emailDetail={messages}
-                getEmailDetail={() => {
-                  getEmailDetail();
-                  setShowReplyEditor(false);
-                }}
-                setShowReplyEditor={setShowReplyEditor}
-              />
+                  company={companyName}
+                  emailDetail={messages}
+                  getEmailDetail={() => {
+                    getEmailDetail();
+                    setShowReplyEditor(false);
+                  }}
+                  setShowReplyEditor={setShowReplyEditor}
+                />
               </div>
             )}
           </div>
-
-
-
- 
         </div>
       )}
 
@@ -714,22 +661,35 @@ const deleteThreadHandler = async (threadId, company) => {
       {/* STICKY BAR */}
       {showStickyReply && (
         <div className="absolute bottom-0 left-0 w-full z-40 bg-gray-50 border-t border-gray-200 px-8 py-4 shadow-[0_-4px_12px_rgba(0,0,0,0.1)] flex justify-between items-center animate-pop duration-300">
-          <button
-            onClick={() => {
-              if (!showReplyEditor) setShowReplyEditor(true);
-              setTimeout(
-                () =>
-                  replySectionRef.current?.scrollIntoView({
-                    behavior: "smooth",
-                  }),
-                100,
-              );
-            }}
-            className="  text-gray-600 px-6 py-2 rounded-full text-sm font-bold flex items-center gap-2 border border-gray-600"
-          >
-            <HiReply /> Reply
-          </button>
-
+          <div className="flex justify-start items-center gap-3 ">
+            <button
+              onClick={() => {
+                if (!showReplyEditor) setShowReplyEditor(true);
+                setTimeout(
+                  () =>
+                    replySectionRef.current?.scrollIntoView({
+                      behavior: "smooth",
+                    }),
+                  100,
+                );
+              }}
+              className="  text-gray-600 px-6 py-2 rounded-full text-sm font-bold flex items-center gap-2 border border-gray-600"
+            >
+              <HiReply /> Reply
+            </button>
+            <IconButtonWithBadge
+              icon={FiMessageSquare}
+              unreadCount={thread?.unreadComments || 0}
+              title="View Comments"
+              onClick={(e) => {
+                openComments({
+                  threadId: thread?._id,
+                  threadSubject: thread?.subject,
+                  anchorEl: e.currentTarget,
+                });
+              }}
+            />
+          </div>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-[10px] font-bold">
               ME
@@ -741,38 +701,25 @@ const deleteThreadHandler = async (threadId, company) => {
         </div>
       )}
 
+      {activityPanel.show && (
+        <ThreadActivityPanel
+          threadId={activityPanel.threadId}
+          onClose={() =>
+            setActivityPanel({
+              show: false,
+              threadId: null,
+            })
+          }
+        />
+      )}
 
-
-
-
-
-
-
-
-
-
-      {activityPanel.show && <ThreadActivityPanel
-   
-   
-   threadId={activityPanel.threadId}
-    onClose={() =>
-    setActivityPanel({
-      show: false,
-      threadId: null,
-    })
-  }
-/>}
-
-
-{/* The Right Side Drawer Hook */}
-      <EmailSummaryDrawer 
-        isOpen={summaryDrawer.open} 
-        onClose={() => setSummaryDrawer({open: false})} 
+      {/* The Right Side Drawer Hook */}
+      <EmailSummaryDrawer
+        isOpen={summaryDrawer.open}
+        onClose={() => setSummaryDrawer({ open: false })}
         threadId={threadId}
         companyName={companyName}
       />
-
-
     </div>
   );
 }

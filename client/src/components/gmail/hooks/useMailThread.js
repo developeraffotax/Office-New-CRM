@@ -2,8 +2,13 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
+import { useSocket } from "../../../context/socketProvider";
 
 export function useMailThread({ threadId, companyName}) {
+
+    const socket = useSocket();
+
+
   const [thread, setThread] = useState(null);
   const [loading, setLoading] = useState({
     fetching: false,
@@ -117,6 +122,82 @@ export function useMailThread({ threadId, companyName}) {
       setLoading((prev) => ({ ...prev, deleting: false }));
     }
   };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+  // ---------------- Fetch unread counts separately ----------------
+const fetchUnreadCount = useCallback(async (threadId) => {
+  if (!threadId) return;
+
+  try {
+    const { data } = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/v1/gmail/comments/${threadId}/unread`,
+ 
+    );
+
+    setThread((prev) => {
+      return {
+        ...prev,
+        unreadComments: data?.unreadCount || 0
+      }
+    });
+  } catch (err) {
+    console.error("Failed to fetch unread count for this thread:", err);
+  }
+}, []);
+
+  // ---------------- Fetch unread counts when threads are loaded ----------------
+// Only re-run when the actual _id value changes
+useEffect(() => {
+  if (thread?._id) {
+    fetchUnreadCount(thread._id);
+  }
+}, [thread?._id, fetchUnreadCount]);
+
+
+
+
+
+      // ---------------- Socket listener for meta updates ----------------
+useEffect(() => {
+  if (!socket) return;
+
+  const handleCommentsUpdated = ({ threadIds }) => {
+
+    
+   if (threadIds && threadIds?.length > 0) {
+    fetchUnreadCount(threadIds[0]);
+  }
+  };
+
+  socket.on(`comments:updated-${companyName}`, handleCommentsUpdated);
+  return () => socket.off(`comments:updated-${companyName}`, handleCommentsUpdated);
+}, [socket, companyName, fetchUnreadCount]);
+
+
+
+
+
+
+
+
+
+
 
   return {
     thread,

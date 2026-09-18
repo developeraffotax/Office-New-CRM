@@ -170,17 +170,18 @@ export default function ThreadHeader({
           title="View Activity"
           onClick={onShowActivity}
         />
-        <IconButtonWithBadge
+        {/* <IconButtonWithBadge
           icon={FiMessageSquare}
           unreadCount={unreadComments}
           title="View Comments"
-          onClick={() => {
+          onClick={(e) => {
             openComments({
               threadId: thread?._id,
               threadSubject: thread?.subject,
+              anchorEl: e.currentTarget,
             });
           }}
-        />
+        /> */}
 
         <span className="w-[1px] h-8 bg-slate-300 rounded-full"></span>
 

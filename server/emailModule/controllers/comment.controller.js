@@ -144,7 +144,46 @@ export const getUnreadCounts = async (req, res) => {
 
 
 
+export const getUnreadCount = async (req, res) => {
+  try {
+    const { threadId } = req.params;
+    const userId = req.user.user._id;
 
+    if (!threadId) {
+      return res.status(400).json({
+        success: false,
+        message: "threadId is required",
+      });
+    }
+
+    const unreadCounts = await Comment.aggregate([
+      {
+        $match: {
+          entityId: new mongoose.Types.ObjectId(threadId),
+          "readBy.userId": { $ne: new mongoose.Types.ObjectId(userId) }, // only unread for this user
+        },
+      },
+      {
+        $group: {
+          _id: "$entityId",
+          unreadCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const unreadCount = unreadCounts.length > 0 ? unreadCounts[0].unreadCount : 0;
+
+    res.json({
+      success: true,
+      unreadCount,
+    });
+  } catch (err) {
+    console.error("❌ Unread count error:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch unread count" });
+  }
+};
 
 
 

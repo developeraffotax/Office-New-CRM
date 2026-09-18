@@ -231,9 +231,9 @@ useEffect(() => {
         page: 1,
       }
 
-      if(filters?.userId === "unassigned") {
-        searchFilters.userId = "";
-      }
+      // if(filters?.userId === "unassigned") {
+      //   searchFilters.userId = "";
+      // }
       setFilters(searchFilters);
     }
   }, 500);

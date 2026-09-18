@@ -112,7 +112,7 @@ function SidebarItem({ item, active, onNavigate, compact = false }) {
             compact ? "justify-center" : "gap-2"
           }`}
         >
-          <Icon className="h-4 w-4 shrink-0" />
+          <Icon className="h-5 w-5 shrink-0" />
 
           {!compact && (
             <span className={`text-[14px] font-[500] truncate `}>

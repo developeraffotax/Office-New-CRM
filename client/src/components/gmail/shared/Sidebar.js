@@ -136,7 +136,7 @@ export default function Sidebar() {
 
 
   return (
-    <div className="w-56 min-w-56 h-full border-r border-slate-100 bg-gradient-to-b from-slate-50 via-white to-slate-50 flex flex-col font-sans antialiased">
+    <div className="w-52 min-w-52 h-full border-r border-slate-100 bg-gradient-to-b from-slate-50 via-white to-slate-50 flex flex-col font-sans antialiased">
       {/* Header */}
       <div className="px-6 py-6 flex items-center gap-3 group cursor-default">
         <FiGrid className="size-4 text-slate-900 transition-transform duration-300 group-hover:rotate-90" />

@@ -38,7 +38,7 @@ const NotificationPanel = ({
   const auth = useSelector((state) => state.auth.auth);
 
   return (
-    <div className="shadow-xl bg-gray-100 fixed inset-x-2 top-14 sm:absolute sm:inset-auto sm:top-[2rem] sm:left-[1.6rem] z-[999] rounded-lg max-w-[380px] mx-auto sm:mx-0 w-[calc(100vw-1rem)] sm:w-[380px]">
+    <div className="zoom-out shadow-xl bg-gray-100 fixed inset-x-2 top-14 sm:absolute sm:inset-auto sm:top-[2rem] sm:left-[1.6rem] z-[999] rounded-lg max-w-[380px] mx-auto sm:mx-0 w-[calc(100vw-1rem)] sm:w-[380px]">
       {/* Header */}
       <div className="border-b border-orange-500 px-4 sm:px-8 py-3 flex items-center justify-between rounded-t-lg bg-gradient-to-r from-orange-600 to-orange-400 shadow-md">
         <button

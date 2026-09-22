@@ -6,7 +6,7 @@ import { FiMoreVertical, FiMessageSquare } from "react-icons/fi";
 import clsx from "clsx";
 import AttachmentChip from "./attachments/AttachmentChip";
 import { MdDeleteOutline } from "react-icons/md";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ReplyPopup } from "../reply/ReplyPopup";
 import { FaCheckCircle, FaRegStar, FaStar, FaUndoAlt } from "react-icons/fa";
 import AssignUser from "./ui/AssignUser";
@@ -150,9 +150,11 @@ export default function RowMobile({
           {isLastFromMe ? "A" : "C"}
         </div>
 
-        <div
+        <Link
           className="flex-1 min-w-0"
-          onClick={() => openThread(thread.threadId)}
+          to={`/mail/${thread.threadId}?companyName=${encodeURIComponent(
+            thread.companyName || "affotax",
+          )}`}
         >
           <div className="flex items-center justify-between gap-2">
             <span
@@ -209,7 +211,9 @@ export default function RowMobile({
           </div>
 
           {attachments.length > 0 && (
-            <div className={`flex items-center gap-1.5 mt-2 -mx-1 px-1 overflow-x-auto scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory`} >
+            <div
+              className={`flex items-center gap-1.5 mt-2 -mx-1 px-1 overflow-x-auto scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory`}
+            >
               {visibleAttachments.map((att, idx) => (
                 <div key={idx} className="snap-start shrink-0">
                   <AttachmentChip attachment={att} compact />
@@ -217,13 +221,15 @@ export default function RowMobile({
               ))}
 
               {extraCount > 0 && (
-                <span className={`snap-start shrink-0 text-[11px] font-semibold text-gray-500 bg-gray-100 active:bg-gray-200 px-2.5 py-1 rounded-full border border-gray-200 whitespace-nowrap`} >
+                <span
+                  className={`snap-start shrink-0 text-[11px] font-semibold text-gray-500 bg-gray-100 active:bg-gray-200 px-2.5 py-1 rounded-full border border-gray-200 whitespace-nowrap`}
+                >
                   +{extraCount}
                 </span>
               )}
             </div>
           )}
-        </div>
+        </Link>
       </div>
 
       {/* Action bar — always visible, no hover state on mobile */}

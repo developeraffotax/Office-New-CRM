@@ -1,20 +1,9 @@
 import { useMemo, useState } from "react";
-import {
-  FiPaperclip,
-  FiMoreVertical,
-  FiUserPlus,
-  FiChevronDown,
-  FiMessageSquare,
-} from "react-icons/fi";
+import { FiMessageSquare } from "react-icons/fi";
 import clsx from "clsx";
 import AttachmentChip from "./attachments/AttachmentChip";
-import {
-  MdDeleteOutline,
-  MdOutlineSearch,
-  MdOutlineStarBorder,
-  MdStarBorder,
-} from "react-icons/md";
-import { useSearchParams } from "react-router-dom";
+import { MdDeleteOutline, MdOutlineSearch } from "react-icons/md";
+import { Link, useSearchParams } from "react-router-dom";
 import { ReplyPopup } from "../reply/ReplyPopup";
 import { FaCheckCircle, FaRegStar, FaStar, FaUndoAlt } from "react-icons/fa";
 import Swal from "sweetalert2";
@@ -24,7 +13,6 @@ import IconButtonWithBadge from "./ui/IconButtonWithBadge";
 import { confirmAlert } from "./ui/Swal";
 import { useSelector } from "react-redux";
 import ThreadDateTime from "./ui/ThreadDateTime";
-import { BiSolidBellPlus } from "react-icons/bi";
 import { PiBell } from "react-icons/pi";
 import { hasSubrole } from "../../../utlis/checkPermission";
 import RefBadge from "./ui/RefBadge";
@@ -51,7 +39,7 @@ export default function Row({
   handleUpdateThread,
   openThread,
   categories,
- 
+
   deleteThread,
   markAsRead,
   toggleStar,
@@ -61,10 +49,9 @@ export default function Row({
   selected,
   toggleSelect,
   index,
- 
+
   setReplyThread,
   replyThread,
- 
 }) {
   const { auth } = useSelector((state) => state.auth);
 
@@ -85,7 +72,7 @@ export default function Row({
 
   const [searchParams] = useSearchParams();
 
-    const { openComments, openReminder } = useMailModalActions();
+  const { openComments, openReminder } = useMailModalActions();
 
   const folder = searchParams.get("folder") || "inbox";
 
@@ -104,8 +91,6 @@ export default function Row({
     myCompanyName === "affotax"
       ? "info@affotax.com"
       : "admin@outsourceaccountings.co.uk"; // your email
-
- 
 
   let sender = thread.participants
     .slice(0, 2)
@@ -281,23 +266,13 @@ export default function Row({
         </div>
 
         {/* Subject + Snippet */}
-        <div
-          className="min-w-0 flex flex-col "
-          // onClick={() =>
-          //   setEmailDetail({
-          //     threadId: thread.threadId,
-          //     show: true,
-          //     subject: thread?.subject || "No Subject",
-          //     participants: thread.participants,
+        <Link
+          to={`/mail/${thread.threadId}?companyName=${encodeURIComponent(
+            thread.companyName || "affotax",
+          )}`}
+          className="min-w-0 flex flex-col"
 
-          //     mongoThreadId: thread?._id,
-          //     userId: thread?.userId,
-          //     category: thread?.category,
-          //     status: thread?.status,
-          //   })
-          // }
-
-          onClick={() => openThread(thread.threadId)}
+          // onClick={() => openThread(thread.threadId)}
         >
           <div className="w-full flex items-center gap-2 justify-start ">
             <span
@@ -315,7 +290,7 @@ export default function Row({
           <span className="text-sm text-gray-500 truncate font-normal  font-google ">
             {thread.lastMessageSnippet}
           </span>
-        </div>
+        </Link>
 
         {/* Attachment count/icon spacer (Optional) */}
         <div className="w-4" />
@@ -329,10 +304,7 @@ export default function Row({
         >
           {/* Reply Button Container */}
 
-          
-
-
-           {scope.edit && (
+          {scope.edit && (
             <AssignUser
               users={users}
               mongoThreadId={thread?._id}
@@ -341,8 +313,6 @@ export default function Row({
               onToggle={(isOpen) => setAssignOpen(isOpen)}
             />
           )}
-
-
 
           {scope.edit && (
             <AssignCategory
@@ -353,9 +323,6 @@ export default function Row({
               onToggle={(isOpen) => setAssignOpen(isOpen)}
             />
           )}
-
-          
-
 
           <div className="relative group/reply flex items-center justify-end">
             <button
@@ -409,18 +376,10 @@ export default function Row({
             )}
           </div>
 
-
-
-
-
-
-
-
           {/* Actions (hover only) */}
           <div className="flex items-center gap-1.5  font-google transition-opacity">
             <TicketButton
               thread={thread}
- 
               handleUpdateThread={handleUpdateThread}
               onViewTicket={(ticket) => {
                 console.log("View ticket:", ticket);
@@ -432,7 +391,6 @@ export default function Row({
 
             <LeadButton
               thread={thread}
- 
               handleUpdateThread={handleUpdateThread}
               onViewLead={(lead) => {
                 console.log("View lead:", lead);
@@ -444,76 +402,76 @@ export default function Row({
           </div>
 
           {/* More Options */}
-<div className="inline-flex items-center gap-1  ">
-  {/* Search Button */}
-  <button
-    className="p-1 rounded-md text-slate-500 bg-white/70 hover:bg-blue-100/70 hover:text-blue-600 transition-all duration-150 group"
-    title="Search with Email"
-    onClick={(e) => {
-      setFilters({
-        search: getOtherParticipantEmail(thread.participants, myEmail),
-        userId: "",
-        page: 1,
-      });
-    }}
-  >
-    <MdOutlineSearch className="size-4 group-hover:scale-105 transition-transform" />
-  </button>
+          <div className="inline-flex items-center gap-1  ">
+            {/* Search Button */}
+            <button
+              className="p-1 rounded-md text-slate-500 bg-white/70 hover:bg-blue-100/70 hover:text-blue-600 transition-all duration-150 group"
+              title="Search with Email"
+              onClick={(e) => {
+                setFilters({
+                  search: getOtherParticipantEmail(
+                    thread.participants,
+                    myEmail,
+                  ),
+                  userId: "",
+                  page: 1,
+                });
+              }}
+            >
+              <MdOutlineSearch className="size-4 group-hover:scale-105 transition-transform" />
+            </button>
 
-  {/* Reminder Button */}
-  <button
-    className="p-1 rounded-md text-slate-500 bg-white/70 hover:bg-amber-100/70 hover:text-amber-600 transition-all duration-150 group"
-    title="Set Reminder"
-    onClick={(e) => {
-      openReminder({
-        threadId: thread?.threadId,
-        link: `/mail?folder=${folder}&companyName=${myCompanyName}&mailThreadId=${thread?.threadId}`,
-      });
-    }}
-  >
-    <PiBell className="size-4 group-hover:scale-105 transition-transform" />
-  </button>
+            {/* Reminder Button */}
+            <button
+              className="p-1 rounded-md text-slate-500 bg-white/70 hover:bg-amber-100/70 hover:text-amber-600 transition-all duration-150 group"
+              title="Set Reminder"
+              onClick={(e) => {
+                openReminder({
+                  threadId: thread?.threadId,
+                  link: `/mail?folder=${folder}&companyName=${myCompanyName}&mailThreadId=${thread?.threadId}`,
+                });
+              }}
+            >
+              <PiBell className="size-4 group-hover:scale-105 transition-transform" />
+            </button>
 
-  {/* Complete / Undo Status Button */}
-  {scope.edit &&
-    (thread?.status === "progress" ? (
-      <button
-        className="p-1 rounded-md text-slate-500 bg-white/70 hover:bg-emerald-100/70 hover:text-emerald-600 transition-all duration-150 group"
-        title="Complete Thread"
-        onClick={(e) => {
-          updateStatus("completed");
-        }}
-      >
-        <FaCheckCircle className="size-3.5 group-hover:scale-105 transition-transform" />
-      </button>
-    ) : (
-      <button
-        className="p-1 rounded-md text-slate-500 bg-white/70 hover:bg-rose-100/70 hover:text-rose-600 transition-all duration-150 group"
-        title="Undo Complete"
-        onClick={(e) => {
-          updateStatus("progress");
-        }}
-      >
-        <FaUndoAlt className="size-3.5 group-hover:scale-105 transition-transform" />
-      </button>
-    ))}
+            {/* Complete / Undo Status Button */}
+            {scope.edit &&
+              (thread?.status === "progress" ? (
+                <button
+                  className="p-1 rounded-md text-slate-500 bg-white/70 hover:bg-emerald-100/70 hover:text-emerald-600 transition-all duration-150 group"
+                  title="Complete Thread"
+                  onClick={(e) => {
+                    updateStatus("completed");
+                  }}
+                >
+                  <FaCheckCircle className="size-3.5 group-hover:scale-105 transition-transform" />
+                </button>
+              ) : (
+                <button
+                  className="p-1 rounded-md text-slate-500 bg-white/70 hover:bg-rose-100/70 hover:text-rose-600 transition-all duration-150 group"
+                  title="Undo Complete"
+                  onClick={(e) => {
+                    updateStatus("progress");
+                  }}
+                >
+                  <FaUndoAlt className="size-3.5 group-hover:scale-105 transition-transform" />
+                </button>
+              ))}
 
-  {/* Delete Button */}
-  {scope.delete && (
-    <button
-      className="p-1 rounded-md text-slate-500 bg-white/70 hover:bg-red-100/70 hover:text-red-600 transition-all duration-150 group"
-      title="Delete Thread"
-      onClick={(e) => {
-        deleteThread(thread?.threadId, thread?.companyName);
-      }}
-    >
-      <MdDeleteOutline className="size-4 group-hover:scale-105 transition-transform" />
-    </button>
-  )}
-</div>
-
-
-
+            {/* Delete Button */}
+            {scope.delete && (
+              <button
+                className="p-1 rounded-md text-slate-500 bg-white/70 hover:bg-red-100/70 hover:text-red-600 transition-all duration-150 group"
+                title="Delete Thread"
+                onClick={(e) => {
+                  deleteThread(thread?.threadId, thread?.companyName);
+                }}
+              >
+                <MdDeleteOutline className="size-4 group-hover:scale-105 transition-transform" />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex-1 flex justify-start items-center gap-2">
@@ -541,15 +499,12 @@ export default function Row({
             unreadCount={thread?.unreadComments || 0}
             title="View Comments"
             onClick={(e) => {
-
               openComments({
-                             
                 threadId: thread._id,
                 threadSubject: thread?.subject,
                 anchorEl: e.currentTarget, // NEW — the button itself becomes the anchor
-              })
+              });
 
-              
               // setComment({
               //   show: true,
               //   threadId: thread._id,

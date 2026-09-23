@@ -246,7 +246,7 @@ export const SelectionHeader = ({
             mongoThreadId={null}
             currentUserId={null}
             showLabel={false}
-            buttonStyle="border-none shadow-none bg-transparent hover:bg-white"
+            buttonStyle=""
 
             handleUpdateThread={(id, data) => {
               bulkUpdateThreads({

@@ -398,6 +398,8 @@ export const buildTasksQuery = (queryParams) => {
     labal,
     recurring,
 
+     allowedProjectIds, // 👈 add this
+
   
   } = queryParams;
 
@@ -453,9 +455,34 @@ export const buildTasksQuery = (queryParams) => {
     }
 
 
+let projectFilter;
+
 if (projectId && mongoose.Types.ObjectId.isValid(projectId)) {
-  query.project = new mongoose.Types.ObjectId(projectId);
+  projectFilter = new mongoose.Types.ObjectId(projectId);
 }
+
+if (allowedProjectIds) {
+  const allowedIds = allowedProjectIds
+    .filter((id) => mongoose.Types.ObjectId.isValid(id))
+    .map((id) => new mongoose.Types.ObjectId(id));
+
+  if (projectFilter) {
+    // A specific project was requested — it must also be one the user can access
+    const isAllowed = allowedIds.some((id) => id.equals(projectFilter));
+    projectFilter = isAllowed ? projectFilter : { $in: [] }; // forces zero results
+  } else {
+    projectFilter = { $in: allowedIds };
+  }
+}
+
+if (projectFilter !== undefined) {
+  query.project = projectFilter;
+}
+
+
+
+
+
 
  
  if (jobHolder === "empty") {

@@ -13,6 +13,7 @@ import { emitTaskHoursUpdate } from "../utils/customFns/emitTaskHoursUpdate.js";
 import { buildTasksQuery } from "./taskController.utils.js";
 import mongoose from "mongoose";
 import { getUserIdByName, trackUserUsage, trackUserUsageByName } from "../services/user.service.js";
+import { isAdmin } from "../utils/checkPermission.js";
  
 
 const currentDateTime = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -2326,8 +2327,24 @@ export const getTasks = async (req, res) => {
 
     const { departmentId } = req.query;
 
+     const isReqUserAdmin = isAdmin(req);
+
+    const queryParams = { ...req.query };
+
+  if (!isReqUserAdmin) {
+      const userId = req.user?.user?._id?.toString(); // users_list._id is a string, so match as a string
+
+      const memberProjects = await projectModel
+        .find({ "users_list._id": userId }, { _id: 1 })
+        .lean();
+
+      queryParams.allowedProjectIds = memberProjects.map((p) => p._id.toString());
+    }
+
+  console.log("THE Query Param are >>>>>>>>>> ", queryParams)
+
     // Base filters
-    const matchQuery = buildTasksQuery(req.query);
+       const matchQuery = buildTasksQuery(queryParams);
 
     const pipeline = [
 
@@ -2371,30 +2388,30 @@ export const getTasks = async (req, res) => {
     ==========================================
     */
 
-    if (
-      departmentId &&
-      mongoose.Types.ObjectId.isValid(departmentId)
-    ) {
+    // if (
+    //   departmentId &&
+    //   mongoose.Types.ObjectId.isValid(departmentId)
+    // ) {
 
-      pipeline.push({
-        $match: {
-          "project.departments":
-            new mongoose.Types.ObjectId(departmentId),
-        },
-      });
+    //   pipeline.push({
+    //     $match: {
+    //       "project.departments":
+    //         new mongoose.Types.ObjectId(departmentId),
+    //     },
+    //   });
 
-    }
+    // }
 
-    pipeline.push(  // Lookup Departments
-      {
-        $lookup: {
-          from: "taskdepartments",
-          localField: "project.departments",
-          foreignField: "_id",
-          as: "project.departments",
-        },
-      }
-    )
+    // pipeline.push(  // Lookup Departments
+    //   {
+    //     $lookup: {
+    //       from: "taskdepartments",
+    //       localField: "project.departments",
+    //       foreignField: "_id",
+    //       as: "project.departments",
+    //     },
+    //   }
+    // )
 
     /*
     ==========================================
@@ -2487,12 +2504,29 @@ export const getTasks = async (req, res) => {
 
 export const getTaskStats = async (req, res) => {
   try {
+
+      const isReqUserAdmin = isAdmin(req);
+
+    const queryParams = { ...req.query };
+
+      if (!isReqUserAdmin) {
+      const userId = req.user?.user?._id?.toString(); // users_list._id is a string, so match as a string
+
+      const memberProjects = await projectModel
+        .find({ "users_list._id": userId }, { _id: 1 })
+        .lean();
+
+      queryParams.allowedProjectIds = memberProjects.map((p) => p._id.toString());
+    }
+
+  console.log("THE Query Param are >>>>>>>>>> ", queryParams)
+    
     /*
     ==========================================
     BASE FILTERS & SCOPES
     ==========================================
     */
-    const globalQuery = buildTasksQuery(req.query);
+    const globalQuery = buildTasksQuery(queryParams);
     const { departmentId } = req.query;
 
     // Department stats should NOT react to user filter
@@ -2504,17 +2538,17 @@ export const getTaskStats = async (req, res) => {
     OPTIMIZED DEPARTMENT FILTER (PRE-FETCH)
     ==========================================
     */
-    let departmentMatch = null;
+    // let departmentMatch = null;
     
-    if (departmentId && mongoose.Types.ObjectId.isValid(departmentId)) {
-      // Fetch only the IDs of projects belonging to this department
-      const matchingProjectIds = await mongoose.model("Projects")
-        .find({ departments: new mongoose.Types.ObjectId(departmentId) })
-        .distinct("_id");
+    // if (departmentId && mongoose.Types.ObjectId.isValid(departmentId)) {
+    //   // Fetch only the IDs of projects belonging to this department
+    //   const matchingProjectIds = await mongoose.model("Projects")
+    //     .find({ departments: new mongoose.Types.ObjectId(departmentId) })
+    //     .distinct("_id");
 
-      // Filter directly on the task's project field (utilizes index)
-      departmentMatch = { project: { $in: matchingProjectIds } };
-    }
+    //   // Filter directly on the task's project field (utilizes index)
+    //   departmentMatch = { project: { $in: matchingProjectIds } };
+    // }
 
     /*
     ==========================================
@@ -2537,9 +2571,9 @@ export const getTaskStats = async (req, res) => {
     if (globalQuery.jobHolder) {
       extraMatchForStatusAndDue.jobHolder = globalQuery.jobHolder;
     }
-    if (departmentMatch) {
-      Object.assign(extraMatchForStatusAndDue, departmentMatch);
-    }
+    // if (departmentMatch) {
+    //   Object.assign(extraMatchForStatusAndDue, departmentMatch);
+    // }
 
     /*
     ==========================================
@@ -2566,7 +2600,7 @@ export const getTaskStats = async (req, res) => {
           ==========================================
           */
           userStats: [
-            ...(departmentMatch ? [{ $match: departmentMatch }] : []),
+            // ...(departmentMatch ? [{ $match: departmentMatch }] : []),
             {
               $group: {
                 _id: "$jobHolder",
@@ -2606,59 +2640,59 @@ export const getTaskStats = async (req, res) => {
           DEPARTMENT STATS (Lookup isolated here)
           ==========================================
           */
-          departmentStats: [
-            {
-              $lookup: {
-                from: "projects",
-                localField: "project",
-                foreignField: "_id",
-                as: "project",
-              },
-            },
-            {
-              $unwind: {
-                path: "$project",
-                preserveNullAndEmptyArrays: true,
-              },
-            },
-            {
-              $unwind: {
-                path: "$project.departments",
-                preserveNullAndEmptyArrays: true,
-              },
-            },
-            {
-              $group: {
-                _id: "$project.departments",
-                totalTasks: { $sum: 1 },
-              },
-            },
-            {
-              $lookup: {
-                from: "taskdepartments",
-                localField: "_id",
-                foreignField: "_id",
-                as: "department",
-              },
-            },
-            {
-              $unwind: {
-                path: "$department",
-                preserveNullAndEmptyArrays: true,
-              },
-            },
-            {
-              $project: {
-                _id: 0,
-                departmentId: "$_id",
-                departmentName: "$department.name",
-                totalTasks: 1,
-              },
-            },
-            {
-              $sort: { totalTasks: -1 },
-            },
-          ],
+          // departmentStats: [
+          //   {
+          //     $lookup: {
+          //       from: "projects",
+          //       localField: "project",
+          //       foreignField: "_id",
+          //       as: "project",
+          //     },
+          //   },
+          //   {
+          //     $unwind: {
+          //       path: "$project",
+          //       preserveNullAndEmptyArrays: true,
+          //     },
+          //   },
+          //   {
+          //     $unwind: {
+          //       path: "$project.departments",
+          //       preserveNullAndEmptyArrays: true,
+          //     },
+          //   },
+          //   {
+          //     $group: {
+          //       _id: "$project.departments",
+          //       totalTasks: { $sum: 1 },
+          //     },
+          //   },
+          //   {
+          //     $lookup: {
+          //       from: "taskdepartments",
+          //       localField: "_id",
+          //       foreignField: "_id",
+          //       as: "department",
+          //     },
+          //   },
+          //   {
+          //     $unwind: {
+          //       path: "$department",
+          //       preserveNullAndEmptyArrays: true,
+          //     },
+          //   },
+          //   {
+          //     $project: {
+          //       _id: 0,
+          //       departmentId: "$_id",
+          //       departmentName: "$department.name",
+          //       totalTasks: 1,
+          //     },
+          //   },
+          //   {
+          //     $sort: { totalTasks: -1 },
+          //   },
+          // ],
 
 
 

@@ -12,6 +12,7 @@ import {
   applyStatusTransition,
   buildBucketKeysAndLabels,
   dateFormatMap,
+  getWeeklyGoalTotals,
   logLeadUpdate,
   resolveGroupBy,
 } from "./leadController.utils.js";
@@ -20,6 +21,7 @@ import {
   snapshotEntities,
 } from "../services/activityLog/bulkActivityService.js";
 import { getAllLeadsService } from "../services/lead/leadService.js";
+ 
 
 // Create Lead
 export const createLead = async (req, res) => {
@@ -2112,14 +2114,13 @@ function buildLabels(view, startDate, endDate) {
   return { labels, periodKeys };
 }
 
+
 export const getWonLeadData = async (req, res) => {
   try {
     const { startDate, endDate, view = "monthly" } = req.query;
 
     const requestedUsers = parseRequestedUsers(req.query);
     const resolvedUsers = await resolveUsers(requestedUsers);
-
-    console.log("RESOLVED USERS>>>>", resolvedUsers);
 
     const { labels, periodKeys } = buildLabels(view, startDate, endDate);
 
@@ -2134,18 +2135,13 @@ export const getWonLeadData = async (req, res) => {
             month: { $month: "$leadCreatedAt" },
           };
 
-    const goalGroupId =
-      view === "weekly"
-        ? {
-            year: { $isoWeekYear: "$startDate" },
-            week: { $isoWeek: "$startDate" },
-            type: "$goalType",
-          }
-        : {
-            year: { $year: "$startDate" },
-            month: { $month: "$startDate" },
-            type: "$goalType",
-          };
+    // Only used for the monthly goals aggregate now — weekly goals are
+    // computed in JS via distributeMonthlyGoalAcrossWeeks() instead.
+    const goalGroupId = {
+      year: { $year: "$startDate" },
+      month: { $month: "$startDate" },
+      type: "$goalType",
+    };
 
     const series = await Promise.all(
       resolvedUsers.map(async (ru) => {
@@ -2155,7 +2151,8 @@ export const getWonLeadData = async (req, res) => {
         };
         if (startDate && endDate) {
           leadFilters.leadCreatedAt = {
-            $gte: new Date(startDate),$lte: new Date(endDate),
+            $gte: new Date(startDate),
+            $lte: new Date(endDate),
           };
         }
 
@@ -2166,7 +2163,8 @@ export const getWonLeadData = async (req, res) => {
               _id: groupId,
               count: { $sum: 1 },
               totalValue: {
-                $sum: {$cond: [
+                $sum: {
+                  $cond: [
                     { $and: [{ $ne: ["$value", ""] }, { $ne: ["$value", null] }] },
                     { $toDouble: "$value" },
                     0,
@@ -2202,37 +2200,44 @@ export const getWonLeadData = async (req, res) => {
         };
         if (startDate && endDate) {
           goalMatch.startDate = {
-            $gte: new Date(startDate),$lte: new Date(endDate),
+            $gte: new Date(startDate),
+            $lte: new Date(endDate),
           };
         }
-
-        const goalsAgg = await goalModel.aggregate([
-          { $match: goalMatch },
-          {
-            $group: {
-              _id: goalGroupId,
-              total: { $sum: { $ifNull: ["$achievement", 0] } },
-            },
-          },
-        ]);
 
         const targetCounts = new Array(labels.length).fill(0);
         const targetValues = new Array(labels.length).fill(0);
 
-        goalsAgg.forEach((g) => {
-          const key =
-            view === "weekly"
-              ? `${g._id.year}-W${g._id.week}`
-              : `${g._id.year}-${g._id.month}`;
-          const idx = periodKeys[key];
-          if (idx === undefined) return;
+        if (view === "weekly") {
+          const weeklyTotals = await getWeeklyGoalTotals(goalMatch);
+          Object.entries(weeklyTotals).forEach(([periodKey, byType]) => {
+            const idx = periodKeys[periodKey];
+            if (idx === undefined) return;
+            if (byType[countType]) targetCounts[idx] = byType[countType];
+            if (byType[valueType]) targetValues[idx] = byType[valueType];
+          });
+        } else {
+          const goalsAgg = await goalModel.aggregate([
+            { $match: goalMatch },
+            {
+              $group: {
+                _id: goalGroupId,
+                total: { $sum: { $ifNull: ["$achievement", 0] } },
+              },
+            },
+          ]);
 
-          if (g._id.type === countType) targetCounts[idx] = g.total;
-          if (g._id.type === valueType) targetValues[idx] = g.total;
-        });
+          goalsAgg.forEach((g) => {
+            const key = `${g._id.year}-${g._id.month}`;
+            const idx = periodKeys[key];
+            if (idx === undefined) return;
+            if (g._id.type === countType) targetCounts[idx] = g.total;
+            if (g._id.type === valueType) targetValues[idx] = g.total;
+          });
+        }
 
         return { user: ru.label, counts, values, targetCounts, targetValues };
-      })
+      }),
     );
 
     return res.json({ labels, series });
@@ -2241,7 +2246,6 @@ export const getWonLeadData = async (req, res) => {
     res.status(500).json({ error: "Server Error" });
   }
 };
-
 
 async function resolveUsers(requestedUsers) {
   const allTeamLeads = await userModel
@@ -2326,6 +2330,10 @@ function parseRequestedUsers(query) {
 
   return requested;
 }
+
+
+
+
 // -------------------------
 // Summary stats: one entry per selected user
 // -------------------------

@@ -1,5 +1,6 @@
 import moment from "moment";
 import { diffFields, recordActivity } from "../services/activityLog/activityLogService.js";
+import goalModel from "../models/goalModel.js";
 
 export const resolveGroupBy = (groupBy, startDate, endDate) => {
   const valid = ["day", "week", "month"];
@@ -119,3 +120,70 @@ export const logLeadUpdate = async (leadId, beforeDoc, afterDoc, updatedKeys, us
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Goals are one-doc-per-month. Spread that month's achievement across every
+// ISO week overlapping the month, weighted by day-overlap, so a boundary
+// week (e.g. Jan 29 - Feb 4) gets the correct slice of each month's target.
+function distributeMonthlyGoalAcrossWeeks(goal) {
+  const monthStart = moment(goal.startDate).startOf("month");
+  const monthEnd = moment(goal.startDate).endOf("month");
+  const totalDays = monthEnd.diff(monthStart, "days") + 1;
+
+  const dayCountByWeek = {}; // "isoYear-Wn" -> days of this month in that week
+  const cursor = monthStart.clone();
+  for (let i = 0; i < totalDays; i++) {
+    const key = `${cursor.isoWeekYear()}-W${cursor.isoWeek()}`;
+    dayCountByWeek[key] = (dayCountByWeek[key] || 0) + 1;
+    cursor.add(1, "day"); // mutates cursor in place, no reassignment needed
+  }
+
+  const achievement = goal.achievement || 0;
+
+  return Object.entries(dayCountByWeek).map(([periodKey, days]) => ({
+    periodKey,
+    goalType: goal.goalType,
+    amount: achievement * (days / totalDays),
+  }));
+}
+
+// Raw monthly goal docs -> weekly totals: { "year-Wweek": { [goalType]: amount } }
+export async function getWeeklyGoalTotals(goalMatch) {
+  const goals = await goalModel
+    .find(goalMatch)
+    .select("achievement startDate goalType")
+    .lean();
+
+  const totals = {};
+  goals.forEach((goal) => {
+    distributeMonthlyGoalAcrossWeeks(goal).forEach(
+      ({ periodKey, goalType, amount }) => {
+        totals[periodKey] ??= {};
+        totals[periodKey][goalType] = (totals[periodKey][goalType] || 0) + amount;
+      },
+    );
+  });
+
+  return totals;
+}

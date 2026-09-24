@@ -17,22 +17,11 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { AiOutlineCalendar, AiOutlineCloseCircle } from "react-icons/ai";
 import dayjs from "dayjs";
 import quarterOfYear from "dayjs/plugin/quarterOfYear";
+import { LEADS_SOURCES } from "../../../constants/constants";
 dayjs.extend(quarterOfYear);
 
 
-  const leadSources = [
-    "Upwork",
-    "Fiverr",
-    "PPH",
-    "Referral",
-    "Partner",
-    "Google",
-    "Facebook",
-    "LinkedIn",
-    "CRM",
-    "Existing",
-    "Other",
-  ];
+  const leadSources = [...LEADS_SOURCES];
 
     const departments = [
     "Bookkeeping",

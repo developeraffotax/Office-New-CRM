@@ -2112,95 +2112,14 @@ function buildLabels(view, startDate, endDate) {
   return { labels, periodKeys };
 }
 
-/**
- * Normalizes the "users" query param. Accepts:
- *  - ?users=Alice,Bob        (comma separated string)
- *  - ?users=Alice&users=Bob  (array, express parses repeated keys as array)
- *  - ?user=Alice             (legacy single-user param, still supported)
- * Falls back to ["All"] if nothing was sent.
- */
-function parseRequestedUsers(query) {
-  let requested = query.users ?? query.user ?? "All";
-
-  if (typeof requested === "string") {
-    requested = requested
-      .split(",")
-      .map((u) => u.trim())
-      .filter(Boolean);
-  }
-  if (!Array.isArray(requested)) requested = [requested];
-  if (requested.length === 0) requested = ["All"];
-
-  return requested;
-}
-
-/**
- * Resolves each requested name into:
- *  - label: display name for the series/card
- *  - jobHolderNames: names to match against leadModel.jobHolder
- *  - goalJobHolderIds: user _ids to match against goalModel.jobHolder
- *  - goalTypeSuffix: "" or " (Team Lead)" — picks which goalType to read
- *
- * "All" is resolved once against every team lead (+ their juniors) so it
- * behaves exactly like it did before, just now as one entry among possibly
- * several selected users.
- */
-async function resolveUsers(requestedUsers) {
-  const allTeamLeads = await userModel
-    .find({ isTeamLead: true })
-    .select("name isTeamLead juniors")
-    .populate("juniors", "name")
-    .lean();
-
-  const resolved = await Promise.all(
-    requestedUsers.map(async (name) => {
-      if (name === "All") {
-        const teamLeadNames = allTeamLeads.map((u) => u.name);
-        const juniorNames = allTeamLeads
-          .flatMap((u) => u.juniors || [])
-          .map((j) => j.name);
-
-        return {
-          label: "All",
-          jobHolderNames: [...teamLeadNames, ...juniorNames],
-          goalJobHolderIds: allTeamLeads.map((u) => u._id),
-          goalTypeSuffix: " (Team Lead)",
-        };
-      }
-
-      const fetchedUser = await userModel
-        .findOne({ name })
-        .select("name juniors isTeamLead")
-        .populate("juniors", "name")
-        .lean();
-
-      if (!fetchedUser) return null;
-
-      const juniorNames = fetchedUser.juniors?.map((j) => j.name) || [];
-
-      return {
-        label: fetchedUser.name,
-        jobHolderNames: fetchedUser.isTeamLead
-          ? [fetchedUser.name, ...juniorNames]
-          : [fetchedUser.name],
-        goalJobHolderIds: [fetchedUser._id],
-        goalTypeSuffix: fetchedUser.isTeamLead ? " (Team Lead)" : "",
-      };
-    })
-  );
-
-  return resolved.filter(Boolean);
-}
-
-// -------------------------
-// Chart data: one series per selected user
-// -------------------------
 export const getWonLeadData = async (req, res) => {
   try {
     const { startDate, endDate, view = "monthly" } = req.query;
 
     const requestedUsers = parseRequestedUsers(req.query);
     const resolvedUsers = await resolveUsers(requestedUsers);
+
+    console.log("RESOLVED USERS>>>>", resolvedUsers);
 
     const { labels, periodKeys } = buildLabels(view, startDate, endDate);
 
@@ -2236,8 +2155,7 @@ export const getWonLeadData = async (req, res) => {
         };
         if (startDate && endDate) {
           leadFilters.leadCreatedAt = {
-            $gte: new Date(startDate),
-            $lte: new Date(endDate),
+            $gte: new Date(startDate),$lte: new Date(endDate),
           };
         }
 
@@ -2248,8 +2166,7 @@ export const getWonLeadData = async (req, res) => {
               _id: groupId,
               count: { $sum: 1 },
               totalValue: {
-                $sum: {
-                  $cond: [
+                $sum: {$cond: [
                     { $and: [{ $ne: ["$value", ""] }, { $ne: ["$value", null] }] },
                     { $toDouble: "$value" },
                     0,
@@ -2275,7 +2192,7 @@ export const getWonLeadData = async (req, res) => {
           }
         });
 
-        // Goals for this specific user/team
+        // Goals for this specific series
         const countType = `Target Lead Count${ru.goalTypeSuffix}`;
         const valueType = `Target Lead Value${ru.goalTypeSuffix}`;
 
@@ -2285,8 +2202,7 @@ export const getWonLeadData = async (req, res) => {
         };
         if (startDate && endDate) {
           goalMatch.startDate = {
-            $gte: new Date(startDate),
-            $lte: new Date(endDate),
+            $gte: new Date(startDate),$lte: new Date(endDate),
           };
         }
 
@@ -2326,6 +2242,90 @@ export const getWonLeadData = async (req, res) => {
   }
 };
 
+
+async function resolveUsers(requestedUsers) {
+  const allTeamLeads = await userModel
+    .find({ isTeamLead: true })
+    .select("name isTeamLead juniors")
+    .populate("juniors", "name")
+    .lean();
+
+  const resolved = await Promise.all(
+    requestedUsers.map(async (name) => {
+      if (name === "All") {
+        const teamLeadNames = allTeamLeads.map((u) => u.name);
+        const juniorNames = allTeamLeads
+          .flatMap((u) => u.juniors || [])
+          .map((j) => j.name);
+
+        return [
+          {
+            label: "All",
+            jobHolderNames: [...teamLeadNames, ...juniorNames],
+            goalJobHolderIds: allTeamLeads.map((u) => u._id),
+            goalTypeSuffix: " (Team Lead)",
+          },
+        ];
+      }
+
+      const fetchedUser = await userModel
+        .findOne({ name })
+        .select("name juniors isTeamLead")
+        .populate("juniors", "name")
+        .lean();
+
+      if (!fetchedUser) return [];
+
+      const juniorNames = fetchedUser.juniors?.map((j) => j.name) || [];
+
+      // If user is a Team Lead, return BOTH team combined and individual series configs
+      if (fetchedUser.isTeamLead) {
+        return [
+          {
+            label: `${fetchedUser.name} & Team`,
+            jobHolderNames: [fetchedUser.name, ...juniorNames],
+            goalJobHolderIds: [fetchedUser._id],
+            goalTypeSuffix: " (Team Lead)",
+          },
+          {
+            label: `${fetchedUser.name} `,
+            jobHolderNames: [fetchedUser.name],
+            goalJobHolderIds: [fetchedUser._id],
+            goalTypeSuffix: "",
+          },
+        ];
+      }
+
+      // Standard user (Junior / Individual)
+      return [
+        {
+          label: fetchedUser.name,
+          jobHolderNames: [fetchedUser.name],
+          goalJobHolderIds: [fetchedUser._id],
+          goalTypeSuffix: "",
+        },
+      ];
+    })
+  );
+
+  return resolved.flat();
+}
+
+
+function parseRequestedUsers(query) {
+  let requested = query.users ?? query.user ?? "All";
+
+  if (typeof requested === "string") {
+    requested = requested
+      .split(",")
+      .map((u) => u.trim())
+      .filter(Boolean);
+  }
+  if (!Array.isArray(requested)) requested = [requested];
+  if (requested.length === 0) requested = ["All"];
+
+  return requested;
+}
 // -------------------------
 // Summary stats: one entry per selected user
 // -------------------------

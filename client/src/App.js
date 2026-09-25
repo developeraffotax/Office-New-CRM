@@ -69,6 +69,7 @@ import EmployeeInOutChart from "./pages/TimerSheet/chart/EmployeeInOutChart";
 import MailLayout from "./components/gmail/layout/MailLayout";
 import MailThreadPage from "./components/gmail/pages/MailThreadPage";
 import WhatsappLayout from "./components/whatsapp/layout/WhatsAppLayout";
+import UserLeadChart from "./pages/Lead/userLeadChart/UserLeadChart";
 
 function App() {
   const navigate = useNavigate();
@@ -222,6 +223,8 @@ function App() {
             <Route path="/settings/signatures" element={<SignaturesModule  />} />
             <Route path="/teams" element={<TeamsPage  />} />
             <Route path="/timesheet/attendance-chart" element={<EmployeeInOutChart  />} />
+
+            <Route path="/leads-targets" element={<UserLeadChart />} />
             
             
             

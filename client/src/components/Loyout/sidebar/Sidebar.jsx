@@ -24,7 +24,8 @@ import {
   VscSettings,
   IoMailUnreadOutline,
   FaWhatsapp,
-} from "./sidebarIcons";
+  PiTarget
+} from "./sidebarIcons"; 
 import { setActive } from "../../../redux/slices/authSlice";
 import { hasPermission } from "../../../utlis/checkPermission";
 import ProfileModal from "../../Modals/ProfileModal";
@@ -153,6 +154,9 @@ export default function Sidebar({
       hasAccess("Leads") &&
         common("Leads", "leads", "Leads", "/leads", BiLayer),
 
+      hasAccess("Leads") &&
+        common("Targets", "leads-targets", "Targets", "/leads-targets", PiTarget),
+
       (user?.role?.name === "Admin" || hasPermission(user, "Inbox")) &&
         common(
           "Inbox",
@@ -228,7 +232,7 @@ export default function Sidebar({
           "/proposals",
           LuClipboardSignature,
         ),
-      hasAccess("Goals") && common("Goals", "goals", "Goals", "/goals", GoGoal),
+
       hasAccess("Timesheet") &&
         common("Timesheet", "timesheet", "TimeSheet", "/timesheet", SlCalender),
       hasAccess("Subscription") &&
@@ -269,6 +273,7 @@ export default function Sidebar({
           "/complaints",
           BiMessageError,
         ),
+      hasAccess("Goals") && common("Goals", "goals", "Goals", "/goals", GoGoal),
       hasAccess("Roles") &&
         common("Roles", "roles", "Roles", "/roles", MdSecurity),
       hasAccess("Users") &&

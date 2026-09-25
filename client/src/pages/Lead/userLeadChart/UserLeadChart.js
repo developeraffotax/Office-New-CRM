@@ -36,6 +36,7 @@ import { isAdmin } from "../../../utlis/isAdmin";
 import WonLeadStats from "./WonLeadStats";
 import ToggleStatsButton from "../ui/ToggleStatsButton";
 import UserFilterSelect from "../../../components/KpiDashboard/ui/UserFilterSelect";
+import { useSelector } from "react-redux";
 
 dayjs.extend(quarterOfYear);
 
@@ -139,11 +140,12 @@ const getDateRange = (filter) => {
   }
 };
 
-export default function UserLeadChart({ auth, active1 }) {
+export default function UserLeadChart({  }) {
   const chartRef = useRef(null);
   const [chartType, setChartType] = useState("bar");
   const [showStats, setShowStats] = useState(true);
 
+    const  auth  = useSelector((state) => state.auth.auth);
   // Metric being charted. With multiple users on screen at once, plotting
   // count AND value together (like the old dual-axis version) gets unreadable
   // fast, so this picks one measure at a time; both are still available in
@@ -172,7 +174,7 @@ export default function UserLeadChart({ auth, active1 }) {
   };
 
   useEffect(() => {
-    const active = active1 || "All";
+    const active =  "All";
     setSelectedUsers(
       isAdmin(auth)
         ? active === "All"
@@ -180,7 +182,7 @@ export default function UserLeadChart({ auth, active1 }) {
           : [active]
         : [auth?.user?.name].filter(Boolean),
     );
-  }, [active1, auth]);
+  }, [  auth]);
 
   const getAllUsers = useCallback(async () => {
     try {

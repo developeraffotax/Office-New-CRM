@@ -1286,7 +1286,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
 
 
 
-              <div className="flex justify-center items-center  mt-[1.2rem]   ">
+              {/* <div className="flex justify-center items-center  mt-[1.2rem]   ">
                   <span
                       className={` p-2 rounded-md hover:shadow-md mb-1 bg-gray-50 cursor-pointer border ${
                           showUserLeadChart && "bg-orange-500 text-white"
@@ -1299,7 +1299,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
                   
                     <BsGraphUpArrow className="h-5 w-5  cursor-pointer" />
                   </span>
-              </div>
+              </div> */}
 
 
               
@@ -1822,7 +1822,7 @@ return allColumns.filter((col) => columnVisibility[col.accessorKey]);
         <div className="w-full h-full">
           <div className="w-full min-h-[10vh] relative ">
               <div className="h-full hidden1 overflow-y-auto relative">
-                {showUserLeadChart && <WonLeadsStats  users={users} auth={auth} active1={active1}/> }
+                {/* {showUserLeadChart && <WonLeadsStats  users={users} auth={auth} active1={active1}/> } */}
                 { !showUserLeadChart && <MaterialReactTable table={table} /> }
               </div>
             </div>

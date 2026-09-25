@@ -1,8 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
- 
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
 import { style } from "../../utlis/CommonStyle";
 import NewJobModal from "../../components/Modals/NewJobModal";
- 
+
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import axios from "axios";
@@ -10,48 +16,44 @@ import {
   MaterialReactTable,
   useMaterialReactTable,
 } from "material-react-table";
-import {  format, formatISO } from "date-fns";
- 
+import { format, formatISO } from "date-fns";
+
 import toast from "react-hot-toast";
- 
- 
-import {   TbCheck, TbLoader2 } from "react-icons/tb";
+
+import { TbCheck, TbLoader2 } from "react-icons/tb";
 import { IoClose } from "react-icons/io5";
 import JobDetail from "./JobDetail";
 import { IoBriefcaseOutline } from "react-icons/io5";
- 
+
 import JobCommentModal from "./JobCommentModal";
- 
-import {  useLocation, useNavigate, useSearchParams } from "react-router-dom";
- 
-import { Box, Button,  LinearProgress,   } from "@mui/material";
+
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+
+import { Box, Button, LinearProgress } from "@mui/material";
 import { MdOutlineModeEdit } from "react-icons/md";
 import { mkConfig, generateCsv, download } from "export-to-csv";
 import { IoMdDownload } from "react-icons/io";
-import {   GoEye } from "react-icons/go";
+import { GoEye } from "react-icons/go";
 import { GoEyeClosed } from "react-icons/go";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
- 
+
 import CompletedJobs from "./CompletedJobs";
- 
+
 import { GrUpdate } from "react-icons/gr";
 import AddLabel from "../../components/Modals/AddLabel";
- 
+
 import AddDataLabel from "../../components/Modals/AddDataLabel";
 import InactiveClients from "./InactiveClients";
 import Swal from "sweetalert2";
 import HandleQualityModal from "../../components/Modals/HandleQualityModal";
- 
- 
+
 import { BsPersonCheckFill } from "react-icons/bs";
 import QuickAccess from "../../utlis/QuickAccess";
+
  
- 
- 
-import NewTicketModal from "../../utlis/NewTicketModal";
- 
+
 import { useDispatch, useSelector } from "react-redux";
- 
+
 import { setFilterId, setSearchValue } from "../../redux/slices/authSlice";
 import { useSocket } from "../../context/socketProvider";
 import { getJobsColumns } from "./table/columns";
@@ -59,12 +61,11 @@ import OverviewForPages from "../../utlis/overview/OverviewForPages";
 import { isAdmin } from "../../utlis/isAdmin";
 import { SubtaskListManager } from "./SubtaskListManager";
 import OutsideFilter from "./utils/OutsideFilter";
-import { usePersistedUsers } from "../../hooks/usePersistedUsers";
-import SelectedUsers from "../../components/SelectedUsers";
-import { openModal } from "../../redux/slices/globalModalSlice";
-import { columnData,   departments,   statusInit } from "./constants";
-import { buildFilters } from "./utils/utils";
  
+import { openModal } from "../../redux/slices/globalModalSlice";
+import { columnData, departments, statusInit } from "./constants";
+import { buildFilters } from "./utils/utils";
+
 import JobHeaderActions from "./JobHeaderActions";
 import { useSavedFilters } from "../../components/SavedFilters/useSavedFilters";
 import SavedFiltersPanel from "../../components/SavedFilters/SavedFiltersPanel";
@@ -74,13 +75,6 @@ import { isTeamLead } from "../../utlis/checkPermission";
 import { LEADS_SOURCES } from "../../constants/constants";
 import SelectedUsersNew from "../../components/SelectedUsersNew";
 import { usePersistedUsersNew } from "../../hooks/usePersistedUsersNew";
- 
- 
- 
-
-
-
- 
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -97,7 +91,6 @@ const csvConfig = mkConfig({
 });
 
 export default function AllJobs() {
- 
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth.auth);
   const filterId = useSelector((state) => state.auth.filterId);
@@ -105,12 +98,7 @@ export default function AllJobs() {
   const jid = useSelector((state) => state.auth.jid);
   const anyTimerRunning = useSelector((state) => state.auth.anyTimerRunning);
 
-   
   const [isOpen, setIsOpen] = useState(false);
-
-
- 
-
 
   const [active, setActive] = useState("All");
   const [loading, setLoading] = useState(false);
@@ -130,13 +118,11 @@ export default function AllJobs() {
   const [isShow, setIsShow] = useState(false);
   const [note, setNote] = useState("");
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // const [active1, setActive1] = useState("");
   // const [active2, setActive2] = useState("");
 
-  
   const timerRef = useRef();
   const [showStatus, setShowStatus] = useState(false);
   const location = useLocation();
@@ -176,101 +162,77 @@ export default function AllJobs() {
   const ctypes = ["Limited", "LLP", "Individual", "Non UK"];
   const [timerId, setTimerId] = useState("");
   const [showInactive, setShowInactive] = useState(false);
-  
-  
+
   const [showUniqueClients, setShowUniqueClients] = useState(false);
   const [isLoad, setIsLoad] = useState(false);
-  
+
   //const sources2 = ["FIV", "UPW", "PPH", "Website", "Direct", "Partner"];
   const sources = useMemo(() => {
-      return [...LEADS_SOURCES]
-
-  }, [])
-
-
-
+    return [...LEADS_SOURCES];
+  }, []);
 
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
 
-   const [clientCompanyName, setClientCompanyName] = useState("");
-   const [clientCompanyId, setClientCompanyId] = useState("");
- 
- 
+  const [clientCompanyName, setClientCompanyName] = useState("");
+  const [clientCompanyId, setClientCompanyId] = useState("");
 
   //  const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsersNew("jobs:selected_users", users);
 
+  const { selectedUsers, setSelectedUsers, toggleUser, resetUsers } =
+    usePersistedUsersNew({
+      storage_key: "jobs:selected_users",
+      users: usersData,
+      current_user: auth?.user,
+    });
 
-   const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsersNew({
-    storage_key: "jobs:selected_users",
-    users: usersData,
-    current_user: auth?.user,
-   });
+  const [status, setStatus] = useState("progress");
 
+  const [jobStats, setJobStats] = useState({
+    allJobsCount: [],
+    departmentJobCounts: [],
+    userJobCounts: [],
+    jobStatusJobCounts: [],
+    dueStatusCounts: [],
+  });
 
+  const savedFiltersHook = useSavedFilters("jobs");
+  const {
+    savedFilters,
+    fetchSavedFilters,
+    saveFilter,
+    loadingSaved,
+    deleteFilter,
+  } = savedFiltersHook;
 
+  const [showSavedFilters, setShowSavedFilters] = useState(false);
+  const [activeFilter, setActiveFilter] = useState(null);
 
-   const [status, setStatus] = useState("progress")
+  const getuserJobCounts = (userName) => {
+    return jobStats?.userJobCounts?.find((u) => u._id === userName)?.count || 0;
+  };
 
+  const getdepartmentJobCounts = (departmentName) => {
+    if (departmentName === "All") return jobStats?.allJobsCount[0]?.count || 0;
+    return (
+      jobStats?.departmentJobCounts?.find((u) => u._id === departmentName)
+        ?.count || 0
+    );
+  };
 
-const [jobStats, setJobStats] = useState({
-  allJobsCount: [],
-  departmentJobCounts: [],
-  userJobCounts: [],
-  jobStatusJobCounts: [],
-  dueStatusCounts: []
-});
+  const getjobStatusJobCounts = (jobStatus) => {
+    return (
+      jobStats?.jobStatusJobCounts?.find((u) => u._id === jobStatus)?.count || 0
+    );
+  };
 
-
-
- 
-
-
-
-
-const savedFiltersHook = useSavedFilters("jobs");
-const {savedFilters, fetchSavedFilters, saveFilter, loadingSaved, deleteFilter} = savedFiltersHook;
-
-const [showSavedFilters, setShowSavedFilters] = useState(false);
-const [activeFilter, setActiveFilter] = useState(null);
-
- 
-
-
-
-
-
-const getuserJobCounts = (userName) => {
-  return jobStats?.userJobCounts?.find(
-    (u) => u._id === userName
-  )?.count || 0;
-};
-
-const getdepartmentJobCounts = (departmentName) => {
-  if(departmentName === "All") return jobStats?.allJobsCount[0]?.count || 0;
-  return jobStats?.departmentJobCounts?.find(
-    (u) => u._id === departmentName
-  )?.count || 0;
-};
-
-const getjobStatusJobCounts = (jobStatus) => {
- 
-  return jobStats?.jobStatusJobCounts?.find(
-    (u) => u._id === jobStatus
-  )?.count || 0;
-};
-
-
-const getdueStatusCounts = (dueStatus) => {
-  return jobStats?.dueStatusCounts?.find(
-    (u) => u._id === dueStatus
-  )?.count || 0;
-};
-
-
+  const getdueStatusCounts = (dueStatus) => {
+    return (
+      jobStats?.dueStatusCounts?.find((u) => u._id === dueStatus)?.count || 0
+    );
+  };
 
   const boxRef = useRef(null);
   const fetchRef = useRef(null);
-
 
   const [showcolumn, setShowColumn] = useState(false);
   const [showQuickList, setShowQuickList] = useState(false);
@@ -278,7 +240,7 @@ const getdueStatusCounts = (dueStatus) => {
 
   const [columnVisibility, setColumnVisibility] = useState(() => {
     const savedVisibility = JSON.parse(
-      localStorage.getItem("columnVisibility")
+      localStorage.getItem("columnVisibility"),
     );
     return (
       savedVisibility ||
@@ -298,157 +260,108 @@ const getdueStatusCounts = (dueStatus) => {
     localStorage.setItem("columnVisibility", JSON.stringify(updatedVisibility));
   };
 
- 
-    
-    const isFirstRender = useRef(true);
+  const isFirstRender = useRef(true);
 
-    const [searchParams, setSearchParams] = useSearchParams();
-    const comment_taskId = searchParams.get('comment_taskId');
-      const show_completed = searchParams.get("completed");
-      const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const comment_taskId = searchParams.get("comment_taskId");
+  const show_completed = searchParams.get("completed");
+  const navigate = useNavigate();
 
-  
+  // Pagination
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 20,
+  });
 
+  // Sorting
+  const [sorting, setSorting] = useState([]);
 
-      // Pagination
-const [pagination, setPagination] = useState({
-  pageIndex: 0,
-  pageSize: 20,
-});
+  // Column Filters
+  const [columnFilters, setColumnFilters] = useState(() => {
+    const userName = auth?.user?.name;
 
-// Sorting
-const [sorting, setSorting] = useState([]);
+    const filters = [];
 
+    if (comment_taskId) {
+      filters.push({ id: "_id", value: comment_taskId });
 
+      return filters;
+    }
 
-// Column Filters
-const [columnFilters, setColumnFilters] = useState(() => {
-  const userName = auth?.user?.name;
-  
+    filters.push({ id: "Job_Status", value: "Progress" });
 
-  const filters = [];
-
-    if(comment_taskId) {
-    filters.push({id: "_id", value: comment_taskId});
+    // Add Assign filter only if NOT admin
+    if (!isAdmin(auth)) {
+      filters.push({
+        id: "Assign",
+        value: userName, // filter by logged-in user
+      });
+    }
 
     return filters;
-   }
+  });
 
-
-
-  filters.push({ id: "Job_Status", value: "Progress", });
-
-  // Add Assign filter only if NOT admin
-  if (!isAdmin(auth)) {
-    filters.push({
-      id: "Assign",
-      value: userName, // filter by logged-in user
-    });
-  }
-
-  return filters;
-});
-
-
- 
-
-// Total rows
-const [rowCount, setRowCount] = useState(0);
-
-
-
+  // Total rows
+  const [rowCount, setRowCount] = useState(0);
 
   const dueStatusFilter = useMemo(() => {
-  const colFilter = columnFilters.find(
-    (f) => f.id === "Status"
-  );
+    const colFilter = columnFilters.find((f) => f.id === "Status");
 
-  return colFilter?.value || null;
-}, [columnFilters]);
-
-
+    return colFilter?.value || null;
+  }, [columnFilters]);
 
   const departmentFilter = useMemo(() => {
-  const colFilter = columnFilters.find(
-    (f) => f.id === "Department"
-  );
+    const colFilter = columnFilters.find((f) => f.id === "Department");
 
-  return colFilter?.value || null;
-}, [columnFilters]);
+    return colFilter?.value || null;
+  }, [columnFilters]);
 
-  
   const assignedJobholderFilter = useMemo(() => {
-  const colFilter = columnFilters.find(
-    (f) => f.id === "Assign"
-  );
+    const colFilter = columnFilters.find((f) => f.id === "Assign");
 
-  return colFilter?.value || null;
-}, [columnFilters]);
+    return colFilter?.value || null;
+  }, [columnFilters]);
 
   const jobStatusFilter = useMemo(() => {
-  const colFilter = columnFilters.find(
-    (f) => f.id === "Job_Status"
-  );
+    const colFilter = columnFilters.find((f) => f.id === "Job_Status");
 
-  return colFilter?.value || null;
-}, [columnFilters]);
+    return colFilter?.value || null;
+  }, [columnFilters]);
 
+  const socket = useSocket();
 
+  useEffect(() => {
+    if (!socket) return;
 
+    const handleJobUpdate = () => {
+      fetchRef.current?.(); // ✅ uses latest filters
+    };
 
+    socket.on("job_updated", handleJobUpdate);
 
-      
-          const socket  = useSocket();
-      
-      
-           useEffect(() => {
-
-  if (!socket) return;
-
-  const handleJobUpdate = () => {
-
- 
-
-    fetchRef.current?.(); // ✅ uses latest filters
-
-  };
-
-  socket.on('job_updated', handleJobUpdate);
-
-  return () => {
-    socket.off('job_updated', handleJobUpdate);
-  };
-
-}, [socket]);
-
-
- 
- 
-
+    return () => {
+      socket.off("job_updated", handleJobUpdate);
+    };
+  }, [socket]);
 
   // Extract the current path
   const currentPath = location.pathname;
 
- 
- 
-  const [isMoving, setIsMoving] = useState(false)
+  const [isMoving, setIsMoving] = useState(false);
 
   // Move to Job Handler
   const moveJobToLead = async (client) => {
-    
-
     // Get today's date
     const today = new Date();
- 
 
     // Format the new date to ISO format (including the time and timezone)
     const followUpDate = formatISO(today);
 
     try {
-      setIsMoving(true)
+      setIsMoving(true);
       const { data } = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/leads/create/lead`,
-        { 
+        {
           companyName: client.companyName,
           clientName: client.clientName,
           jobHolder: client.job?.jobHolder,
@@ -457,85 +370,57 @@ const [rowCount, setRowCount] = useState(0);
           brand: "Affotax",
           lead_Source: "CRM",
           followUpDate: followUpDate,
-          JobDate: client.job.workDeadline,   // it is actually a job date 
-          Note: '',
+          JobDate: client.job.workDeadline, // it is actually a job date
+          Note: "",
           stage: "",
           value: "",
           number: "",
 
           yearEnd: client.job.yearEnd,
-          jobDeadline: client.job.jobDeadline
-
-
-        }
+          jobDeadline: client.job.jobDeadline,
+        },
       );
 
-
       if (data) {
-        
         toast.success("Job Moved to Lead Successfully!💚");
 
-        const result = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/client/jobActivity/${client._id}`, { activityText : "moved this job to Leads!", });
-
+        const result = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/v1/client/jobActivity/${client._id}`,
+          { activityText: "moved this job to Leads!" },
+        );
 
         // Options for formatting
-        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true, };
+        const options = {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        };
         const date = new Date();
-        const formattedDate = date.toLocaleString('en-US', options);
+        const formattedDate = date.toLocaleString("en-US", options);
 
-        const result2 = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/activies/create`, {
-
-          activityText : "moved this job to Leads!",
-          entity: "Jobs",
-          details: `Job Details:
+        const result2 = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/v1/activies/create`,
+          {
+            activityText: "moved this job to Leads!",
+            entity: "Jobs",
+            details: `Job Details:
           - Company Name: ${client.companyName}
           - Job Client: ${client.clientName || "No client provided"}
-          - Created At: ${formattedDate}`
-
-        });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
+          - Created At: ${formattedDate}`,
+          },
+        );
       }
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message);
     } finally {
-      setIsMoving(false)
+      setIsMoving(false);
     }
-
-
-
-  }
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
-
-
+  };
 
   // Get Auth Access
   useEffect(() => {
@@ -551,316 +436,205 @@ const [rowCount, setRowCount] = useState(0);
   // Get Timer ID
   useEffect(() => {
     const timeId = localStorage.getItem("jobId");
-    setTimerId(JSON.parse(timeId)); 
+    setTimerId(JSON.parse(timeId));
   }, [anyTimerRunning]);
 
- 
-
-
   const getUniqueClients = (clients) => {
-
-    
-      const uniqueClientsMap = new Map();
-
-      clients.forEach(client => {
-        // Use   companyName as a unique identifier
-        const key = `${client.companyName.trim().toLowerCase()}`;
-        if (!uniqueClientsMap.has(key)) {
-
-
-          uniqueClientsMap.set(key, client);
-        }
-      });
-
-      const uniqueClients = Array.from(uniqueClientsMap.values());
-
- 
-
-      // setTableData(uniqueClients);
-      return uniqueClients;
-
-
-
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**
- * Fetch Jobs with:
- * - Pagination
- * - Sorting
- * - Column Filters
- * - Custom Filters
- */
-
-const allClientJobData = useCallback(async () => {
-
-  setLoading(true);
-
-  try {
-
-    // ======================================================
-    // BUILD SORT PARAMS
-    // ======================================================
-
-    // const sortField =
-    //   sorting?.length > 0
-    //     ? sorting[0].id
-    //     : "currentDate";
-
-    // const sortOrder =
-    //   sorting?.length > 0
-    //     ? (sorting[0].desc ? "desc" : "asc")
-    //     : "desc";
-
-
-    // ======================================================
-    // BUILD COLUMN FILTERS
-    // ======================================================
-
- 
-
-    // console.log("THE COLUMN FILTERS ", columnFilters)
-    const filters = buildFilters(columnFilters);
-
-
-    // ======================================================
-    // BUILD FINAL PARAMS
-    // ======================================================
-
-    const params = {
-
-      // Pagination
-      page: pagination.pageIndex + 1,
-      limit: pagination.pageSize,
-
-      status: status,
-      // Sorting
-      // sortField,
-      // sortOrder,
-
-      // Global Search
-      search: searchValue || "",
-      // searchParams,
-      // Custom Filters
-      // jobStatus: activeBtn || "",
-      // lead: lead || "",
-      // jobHolder: jobHolder || "",
-      // clientType: clientType || "",
-      // partner: filterId || "",
-
-      // Column Filters
-      ...filters,
-
-    };
-
-
-    // ======================================================
-    // API CALL
-    // ======================================================
-    let URL = `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/jobs`;
-
-    if(showUniqueClients) {
-       URL = `${process.env.REACT_APP_API_URL}/api/v1/client/all/unique_client/jobs`;
-    }
-
-    const { data } = await axios.get(
-     URL,
-      { params }
-    );
-
-
-    // ======================================================
-    // HANDLE RESPONSE
-    // ======================================================
-
-    if (data?.success) {
-
-      setTableData(data.clients || []);
-
-      setRowCount(
-        data?.pagination?.total || 0
-      );
-
-
-      setTotalHours(data.summary.totalHours);
-setTotalFee(data.summary.totalFee);
-setTotalClientPaidFee(data.summary.totalClientPaidFee);
-
-    }
-
-  } catch (error) {
-
-    console.log(error);
-
-    toast.error(
-      error?.response?.data?.message ||
-      "Error loading jobs"
-    );
-
-  } finally {
-
-    setLoading(false);
-
-  }
-
-}, [
-
-  // Pagination (SAFE way)
-  pagination.pageIndex,
-  pagination.pageSize,
-  status,
-  // Sorting
-  // sorting,
-
-  // Column Filters
-  columnFilters,
-
-  // Global Search
-  searchValue,
-    showUniqueClients
-  // Custom Filters
-  // activeBtn,
-  // lead,
-  // jobHolder,
-  // clientType,
-  // filterId,
-
-]);
-
-
-
-
-
-const getJobsStats = useCallback(async () => {
-
-   
-
-  try {
- 
-
-    // ======================================================
-    // BUILD COLUMN FILTERS
-    // ======================================================
-
- 
-
-    const filters = buildFilters(columnFilters);
- 
-
-    // ======================================================
-    // BUILD FINAL PARAMS
-    // ======================================================
-
-    
-    const params = {
-
-        status,
-        jobHolder: filters?.jobHolder
-      // ...filters,
-
-       
-
-    };
-
-    if(filters?.jobName) {
-      params.jobName = filters.jobName
-    }
-
-
-    // ======================================================
-    // API CALL
-    // ======================================================
-
-    let URL = `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/jobs/stats`;
-
-    if(showUniqueClients) {
-       URL = `${process.env.REACT_APP_API_URL}/api/v1/client/all/unique_client/jobs/stats`;
-    }
-
-    const { data } = await axios.get(
-      URL,
-      { params }
-    );
-
-
-    // ======================================================
-    // HANDLE RESPONSE
-    // ======================================================
-
- 
+    const uniqueClientsMap = new Map();
+
+    clients.forEach((client) => {
+      // Use   companyName as a unique identifier
+      const key = `${client.companyName.trim().toLowerCase()}`;
+      if (!uniqueClientsMap.has(key)) {
+        uniqueClientsMap.set(key, client);
+      }
+    });
+
+    const uniqueClients = Array.from(uniqueClientsMap.values());
+
+    // setTableData(uniqueClients);
+    return uniqueClients;
+  };
+
+  /**
+   * Fetch Jobs with:
+   * - Pagination
+   * - Sorting
+   * - Column Filters
+   * - Custom Filters
+   */
+
+  const allClientJobData = useCallback(async () => {
+    setLoading(true);
+
+    try {
+      // ======================================================
+      // BUILD SORT PARAMS
+      // ======================================================
+
+      // const sortField =
+      //   sorting?.length > 0
+      //     ? sorting[0].id
+      //     : "currentDate";
+
+      // const sortOrder =
+      //   sorting?.length > 0
+      //     ? (sorting[0].desc ? "desc" : "asc")
+      //     : "desc";
+
+      // ======================================================
+      // BUILD COLUMN FILTERS
+      // ======================================================
+
+      // console.log("THE COLUMN FILTERS ", columnFilters)
+      const filters = buildFilters(columnFilters);
+
+      // ======================================================
+      // BUILD FINAL PARAMS
+      // ======================================================
+
+      const params = {
+        // Pagination
+        page: pagination.pageIndex + 1,
+        limit: pagination.pageSize,
+
+        status: status,
+        // Sorting
+        // sortField,
+        // sortOrder,
+
+        // Global Search
+        search: searchValue || "",
+        // searchParams,
+        // Custom Filters
+        // jobStatus: activeBtn || "",
+        // lead: lead || "",
+        // jobHolder: jobHolder || "",
+        // clientType: clientType || "",
+        // partner: filterId || "",
+
+        // Column Filters
+        ...filters,
+      };
+
+      // ======================================================
+      // API CALL
+      // ======================================================
+      let URL = `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/jobs`;
+
+      if (showUniqueClients) {
+        URL = `${process.env.REACT_APP_API_URL}/api/v1/client/all/unique_client/jobs`;
+      }
+
+      const { data } = await axios.get(URL, { params });
+
+      // ======================================================
+      // HANDLE RESPONSE
+      // ======================================================
 
       if (data?.success) {
-            setJobStats(data.data); // ✅ IMPORTANT FIX
-          }
+        setTableData(data.clients || []);
 
+        setRowCount(data?.pagination?.total || 0);
 
-  } catch (error) {
+        setTotalHours(data.summary.totalHours);
+        setTotalFee(data.summary.totalFee);
+        setTotalClientPaidFee(data.summary.totalClientPaidFee);
+      }
+    } catch (error) {
+      console.log(error);
 
-    console.log(error);
+      toast.error(error?.response?.data?.message || "Error loading jobs");
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    // Pagination (SAFE way)
+    pagination.pageIndex,
+    pagination.pageSize,
+    status,
+    // Sorting
+    // sorting,
 
-    // toast.error(
-    //   error?.response?.data?.message ||
-    //   "Error loading jobs"
-    // );
+    // Column Filters
+    columnFilters,
 
-  } finally {
+    // Global Search
+    searchValue,
+    showUniqueClients,
+    // Custom Filters
+    // activeBtn,
+    // lead,
+    // jobHolder,
+    // clientType,
+    // filterId,
+  ]);
 
-   // setLoading(false);
+  const getJobsStats = useCallback(async () => {
+    try {
+      // ======================================================
+      // BUILD COLUMN FILTERS
+      // ======================================================
 
-  }
+      const filters = buildFilters(columnFilters);
 
-}, [
- 
-  status,
- 
+      // ======================================================
+      // BUILD FINAL PARAMS
+      // ======================================================
 
- showUniqueClients,
-  columnFilters,
+      const params = {
+        status,
+        jobHolder: filters?.jobHolder,
+        // ...filters,
+      };
 
- 
-]);
-  
+      if (filters?.jobName) {
+        params.jobName = filters.jobName;
+      }
+
+      // ======================================================
+      // API CALL
+      // ======================================================
+
+      let URL = `${process.env.REACT_APP_API_URL}/api/v1/client/all/client/jobs/stats`;
+
+      if (showUniqueClients) {
+        URL = `${process.env.REACT_APP_API_URL}/api/v1/client/all/unique_client/jobs/stats`;
+      }
+
+      const { data } = await axios.get(URL, { params });
+
+      // ======================================================
+      // HANDLE RESPONSE
+      // ======================================================
+
+      if (data?.success) {
+        setJobStats(data.data); // ✅ IMPORTANT FIX
+      }
+    } catch (error) {
+      console.log(error);
+
+      // toast.error(
+      //   error?.response?.data?.message ||
+      //   "Error loading jobs"
+      // );
+    } finally {
+      // setLoading(false);
+    }
+  }, [status, showUniqueClients, columnFilters]);
+
   useEffect(() => {
-    getJobsStats()
+    getJobsStats();
   }, [getJobsStats]);
 
+  useEffect(() => {
+    allClientJobData();
+  }, [allClientJobData]);
 
   useEffect(() => {
+    fetchRef.current = allClientJobData;
+  }, [allClientJobData]);
 
-   allClientJobData();
-
-
-  }, [allClientJobData,])
-
-            useEffect(() => {
-  fetchRef.current = allClientJobData;
-}, [allClientJobData]);
- 
   // -----------Get Client without Showing Loading-------->
   // const allClientData = async () => {
   //   setIsLoad(true);
@@ -885,12 +659,12 @@ const getJobsStats = useCallback(async () => {
   //     setIsLoad(false);
   //   }
   // };
- 
+
   //   Get All Labels
   const getlabel = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels`
+        `${process.env.REACT_APP_API_URL}/api/v1/label/get/labels`,
       );
       if (data.success) {
         setLabelData(data.labels);
@@ -908,7 +682,7 @@ const getJobsStats = useCallback(async () => {
   const getDatalable = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/label/data/labels`
+        `${process.env.REACT_APP_API_URL}/api/v1/label/data/labels`,
       );
       if (data.success) {
         setDataLabel(data.labels);
@@ -922,7 +696,6 @@ const getJobsStats = useCallback(async () => {
     getDatalable();
   }, []);
 
- 
   // ---------Stop Timer ----------->
   const handleStopTimer = () => {
     if (timerRef.current) {
@@ -1046,28 +819,28 @@ const getJobsStats = useCallback(async () => {
   //   setFilterData([...filteredData]);
   // };
 
- 
-
   //---------- Get All Users-----------
   const getAllUsers = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users?module=job`
+        `${process.env.REACT_APP_API_URL}/api/v1/user/get_all/users?module=job`,
       );
 
       setUsers(
         data?.users
           ?.filter((user) =>
             user?.role?.access?.some((item) =>
-              item?.permission?.includes("Jobs")
-            )
+              item?.permission?.includes("Jobs"),
+            ),
           )
-          .map((user) => user.name) || []
+          .map((user) => user.name) || [],
       );
       setUsersData(
         data?.users?.filter((user) =>
-          user?.role?.access?.some((item) => item?.permission?.includes("Jobs"))
-        ) || []
+          user?.role?.access?.some((item) =>
+            item?.permission?.includes("Jobs"),
+          ),
+        ) || [],
       );
     } catch (error) {
       console.log(error);
@@ -1097,7 +870,7 @@ const getJobsStats = useCallback(async () => {
           Swal.fire(
             "Inactive!",
             "Client status set to inactive successfully!",
-            "success"
+            "success",
           );
         }
       });
@@ -1117,10 +890,9 @@ const getJobsStats = useCallback(async () => {
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/status/${rowId}`,
         {
           status: newStatus,
-        }
+        },
       );
       if (data) {
-        
         // setTableData((prevData) =>
         //   prevData?.map((item) =>
         //     item._id === rowId
@@ -1129,7 +901,7 @@ const getJobsStats = useCallback(async () => {
         //   )
         // );
 
-        allClientJobData()
+        allClientJobData();
 
         // if(newStatus === "Inactive") {
         //   allClientJobData()
@@ -1137,38 +909,14 @@ const getJobsStats = useCallback(async () => {
 
         // }
         toast.success("Job status updated!");
-       
       }
     } catch (error) {
       console.error("Error updating status", error);
     }
   };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
   // ---------------Handle Update Fee ---------->
   const updateActiveClient = async (rowId, newValue) => {
-
-
     if (!rowId) {
       return toast.error("Job id is required!");
     }
@@ -1177,14 +925,12 @@ const getJobsStats = useCallback(async () => {
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/activeClient/${rowId}`,
         {
           activeClient: newValue,
-        }
+        },
       );
 
-       
       if (data) {
         // if (filterId || active || active1) {
         //   setFilterData((prevData) => {
-             
 
         //     return  prevData?.map((item) =>
         //       item._id === rowId
@@ -1192,36 +938,24 @@ const getJobsStats = useCallback(async () => {
         //         : item
         //     )
         //   }
-            
-           
+
         //   );
         // }
         setTableData((prevData) => {
-
-           
           return prevData?.map((item) =>
-            item._id === rowId
-              ? { ...item, activeClient: newValue }
-              : item
-          )
-        }
-          
-        );
+            item._id === rowId ? { ...item, activeClient: newValue } : item,
+          );
+        });
         toast.success(`Client updated to ${newValue}`);
-        
       }
     } catch (error) {
       console.error("Error updating status", error);
     }
   };
 
-
-
-
   // ---------------Handle Update Fee ---------->
   const handleUpdateFee = async (rowId, fee) => {
-
-     if (!rowId) {
+    if (!rowId) {
       return toast.error("Job id is required!");
     }
     try {
@@ -1229,13 +963,12 @@ const getJobsStats = useCallback(async () => {
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/fee/${rowId}`,
         {
           fee: fee,
-        }
+        },
       );
 
-       if (data) {
+      if (data) {
         // if (filterId || active || active1) {
         //   setFilterData((prevData) => {
-             
 
         //     return  prevData?.map((item) =>
         //       item._id === rowId
@@ -1243,54 +976,20 @@ const getJobsStats = useCallback(async () => {
         //         : item
         //     )
         //   }
-            
-           
+
         //   );
         // }
         setTableData((prevData) => {
-
-           
           return prevData?.map((item) =>
-            item._id === rowId
-              ? { ...item, fee: fee }
-              : item
-          )
-        }
-          
-        );
+            item._id === rowId ? { ...item, fee: fee } : item,
+          );
+        });
         toast.success("Job Fee updated!");
-        
       }
     } catch (error) {
       console.error("Error updating status", error);
     }
   };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   // ---------------Handle Update Lead ---------->
   const handleUpdateLead = async (rowId, lead) => {
@@ -1302,29 +1001,24 @@ const getJobsStats = useCallback(async () => {
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/lead/${rowId}`,
         {
           lead: lead,
-        }
+        },
       );
       if (data) {
-         
         setTableData((prevData) =>
           prevData?.map((item) =>
             item._id === rowId
               ? { ...item, job: { ...item.job, lead: lead } }
-              : item
-          )
+              : item,
+          ),
         );
         toast.success("Job Owner updated!");
-        
       }
     } catch (error) {
       console.error("Error updating status", error);
     }
   };
 
-
-
-
-    // ---------------Handle Update Lead User---------->
+  // ---------------Handle Update Lead User---------->
   const handleUpdateLeadUser = async (rowId, leadUser) => {
     if (!rowId) {
       return toast.error("Job id is required!");
@@ -1334,26 +1028,22 @@ const getJobsStats = useCallback(async () => {
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/leadUser/${rowId}`,
         {
           leadUser: leadUser,
-        }
+        },
       );
       if (data) {
-         
         setTableData((prevData) =>
           prevData?.map((item) =>
             item._id === rowId
               ? { ...item, job: { ...item.job, leadUser: leadUser } }
-              : item
-          )
+              : item,
+          ),
         );
         toast.success("Job Lead User updated!");
-        
       }
     } catch (error) {
       console.error("Error updating status", error);
     }
   };
-
-
 
   // ---------------Handle Update Job Holder ---------->
   const handleUpdateJobHolder = async (rowId, jobHolder) => {
@@ -1365,7 +1055,7 @@ const getJobsStats = useCallback(async () => {
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/jobholder/${rowId}`,
         {
           jobHolder: jobHolder,
-        }
+        },
       );
       if (data) {
         // if (filterId || active || active1) {
@@ -1385,9 +1075,8 @@ const getJobsStats = useCallback(async () => {
         //   )
         // );
 
-        allClientJobData()
+        allClientJobData();
         toast.success("Job holder updated!");
- 
       }
     } catch (error) {
       console.error("Error updating status", error);
@@ -1429,12 +1118,11 @@ const getJobsStats = useCallback(async () => {
 
     try {
       const { data } = await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/v1/client/delete/job/${id}`
+        `${process.env.REACT_APP_API_URL}/api/v1/client/delete/job/${id}`,
       );
       if (data) {
         setShowDetail(false);
         toast.success("Client job deleted successfully!");
-         
       }
     } catch (error) {
       console.log(error);
@@ -1453,7 +1141,7 @@ const getJobsStats = useCallback(async () => {
           ? { jobDeadline: date }
           : type === "currentDate"
           ? { currentDate: date }
-          : { workDeadline: date }
+          : { workDeadline: date },
       );
       if (data) {
         const clientJob = data.clientJob;
@@ -1470,14 +1158,11 @@ const getJobsStats = useCallback(async () => {
         // }
         setTableData((prevData) =>
           prevData?.map((item) =>
-            item._id === jobId ? { ...item, ...clientJob } : item
-          )
+            item._id === jobId ? { ...item, ...clientJob } : item,
+          ),
         );
         toast.success("Date updated successfully!");
       }
-
-
-      
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message);
@@ -1504,7 +1189,7 @@ const getJobsStats = useCallback(async () => {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       if (data) {
         allClientJobData();
@@ -1513,7 +1198,7 @@ const getJobsStats = useCallback(async () => {
     } catch (error) {
       console.error("Error importing data:", error);
       toast.error(
-        error?.response?.data?.message || "Failed to import job data"
+        error?.response?.data?.message || "Failed to import job data",
       );
     } finally {
       setFLoading(false);
@@ -1546,19 +1231,12 @@ const getJobsStats = useCallback(async () => {
     download(csvConfig)(csv);
   };
 
- 
-
-
-
-
-
-
   // Add label in Jobs
   const addJoblabel = async (id, name, color) => {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/client/add/job/labe/${id}`,
-        { name, color }
+        { name, color },
       );
       if (data) {
         const clientJob = data.job;
@@ -1571,8 +1249,8 @@ const getJobsStats = useCallback(async () => {
         // }
         setTableData((prevData) =>
           prevData?.map((item) =>
-            item._id === id ? { ...item, ...clientJob } : item
-          )
+            item._id === id ? { ...item, ...clientJob } : item,
+          ),
         );
 
         if (name) {
@@ -1597,11 +1275,10 @@ const getJobsStats = useCallback(async () => {
     try {
       const { data } = await axios.put(
         `${process.env.REACT_APP_API_URL}/api/v1/client/add/job/data/${id}`,
-        { labelId }
+        { labelId },
       );
       if (data) {
         const clientJob = data.job;
- 
 
         // if (filterId || active || active1) {
         //   setFilterData((prevData) =>
@@ -1613,8 +1290,8 @@ const getJobsStats = useCallback(async () => {
 
         setTableData((prevData) =>
           prevData?.map((item) =>
-            item._id === clientJob._id ? { ...item, ...clientJob } : item
-          )
+            item._id === clientJob._id ? { ...item, ...clientJob } : item,
+          ),
         );
 
         toast.success("Data label Updated!");
@@ -1630,280 +1307,216 @@ const getJobsStats = useCallback(async () => {
     }
   };
 
- 
-
   const createComplaint = (data) => {
-
-
     dispatch(
-        openModal({
-          modal: "complaint",
-          data: data
-        })
-      );
+      openModal({
+        modal: "complaint",
+        data: data,
+      }),
+    );
+  };
 
-
-
-
-  }
-
-
-
-
-
-
-
-  
-    const handleUpdateClientStatus = (id) => {
-      Swal.fire({
-        title: "Are you sure?",
-        text: "You want to undo this job!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, update it!",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          updateClientStatus(id);
-          Swal.fire("Updated!", "Your job status successfully!.", "success");
-        }
-      });
-    };
-    const updateClientStatus = async (id) => {
-      try {
-        const { data } = await axios.put(
-          `${process.env.REACT_APP_API_URL}/api/v1/client/update/client/status/${id}`
-        );
-        if (data) {
-          allClientJobData();
-          toast.success("Status updated!");
-        }
-      } catch (error) {
-        console.log(error);
-        toast.error(error?.response?.data?.message || "Error in client Jobs");
+  const handleUpdateClientStatus = (id) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You want to undo this job!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, update it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        updateClientStatus(id);
+        Swal.fire("Updated!", "Your job status successfully!.", "success");
       }
-    };
-
-
+    });
+  };
+  const updateClientStatus = async (id) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/update/client/status/${id}`,
+      );
+      if (data) {
+        allClientJobData();
+        toast.success("Status updated!");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message || "Error in client Jobs");
+    }
+  };
 
   const handleUpdateUser = async (jobId, userRoles = {}) => {
-  if (!jobId) {
-    toast.error("Invalid job context.");
-    return false;
-  }
-
-  const payload = {};
-
-  if(userRoles.prepared) {
-    payload.prepared = userRoles.prepared;
-  }
-  if(userRoles.review) {
-    payload.review = userRoles.review;
-  }
-  if(userRoles.filed) {
-    payload.filed = userRoles.filed;
-  }
-
-  try {
-    const { data } = await axios.put(`${process.env.REACT_APP_API_URL}/api/v1/client/job/users/${jobId}`, payload);
-
-    if (data) {
-      toast.success("Job updated successfully.");
-      allClientJobData()
-      return true;
+    if (!jobId) {
+      toast.error("Invalid job context.");
+      return false;
     }
 
+    const payload = {};
 
-    return false;
-  } catch (error) {
-    console.error("[JobService.handleUpdateUser] Error:", error);
+    if (userRoles.prepared) {
+      payload.prepared = userRoles.prepared;
+    }
+    if (userRoles.review) {
+      payload.review = userRoles.review;
+    }
+    if (userRoles.filed) {
+      payload.filed = userRoles.filed;
+    }
 
-    const errorMessage =
-      error?.response?.data?.message ||
-      error?.message ||
-      "Failed to update job assignments.";
+    try {
+      const { data } = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/v1/client/job/users/${jobId}`,
+        payload,
+      );
 
-    toast.error(errorMessage);
-    return false;
-  }
-};
+      if (data) {
+        toast.success("Job updated successfully.");
+        allClientJobData();
+        return true;
+      }
 
-// ----------------------------
-// 🔑 Authentication Context
-// ----------------------------
-const authCtx = useMemo(() => {
-  return {
-    auth,    
-    users,
-    access
-  }
-}, [auth, users, access])
+      return false;
+    } catch (error) {
+      console.error("[JobService.handleUpdateUser] Error:", error);
 
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update job assignments.";
 
-// ----------------------------
-// 💬 Comment Context
-// ----------------------------
-const commentCtx = useMemo(() => {
-  return {
-    jobId,           
-    isComment,        
-    comment_taskId,   
-    setJobId,         
-    setIsComment,     
-  }
-}, [jobId, isComment, comment_taskId])
+      toast.error(errorMessage);
+      return false;
+    }
+  };
 
+  // ----------------------------
+  // 🔑 Authentication Context
+  // ----------------------------
+  const authCtx = useMemo(() => {
+    return {
+      auth,
+      users,
+      access,
+    };
+  }, [auth, users, access]);
 
-// ----------------------------
-// 📂 Job Context
-// ----------------------------
-const jobCtx = useMemo(() => {
-  return {
-    totalFee,           
-    totalHours,         
-    dataLable,         
+  // ----------------------------
+  // 💬 Comment Context
+  // ----------------------------
+  const commentCtx = useMemo(() => {
+    return {
+      jobId,
+      isComment,
+      comment_taskId,
+      setJobId,
+      setIsComment,
+    };
+  }, [jobId, isComment, comment_taskId]);
+
+  // ----------------------------
+  // 📂 Job Context
+  // ----------------------------
+  const jobCtx = useMemo(() => {
+    return {
+      totalFee,
+      totalHours,
+      dataLable,
+      labelData,
+      totalClientPaidFee,
+      showUniqueClients,
+
+      addJoblabel,
+      setCompanyName,
+      addDatalabel1,
+      getSingleJobDetail,
+      handleUpdateFee,
+      updateActiveClient,
+      handleUpdateDates,
+      setClientCompanyName,
+      setClientCompanyId,
+      setShowNewTicketModal,
+      moveJobToLead,
+      handleUpdateLead,
+      handleUpdateLeadUser,
+      handleUpdateTicketStatusConfirmation,
+      handleUpdateJobHolder,
+      createComplaint,
+      setTableData,
+      handleUpdateClientStatus,
+      handleUpdateUser,
+      setColumnFilters,
+
+      columnFilters,
+      searchValue,
+      status,
+    };
+  }, [
+    totalFee,
+    totalHours,
+    dataLable,
     labelData,
-    totalClientPaidFee, 
-    showUniqueClients,   
-    
-    
-    addJoblabel,        
-    setCompanyName,     
-    addDatalabel1,     
-    getSingleJobDetail, 
-    handleUpdateFee,   
-    updateActiveClient, 
-    handleUpdateDates,  
-    setClientCompanyName, 
-    setClientCompanyId,
-    setShowNewTicketModal, 
-    moveJobToLead,      
-    handleUpdateLead,  
-    handleUpdateLeadUser,  
-    handleUpdateTicketStatusConfirmation, 
-    handleUpdateJobHolder,
-    createComplaint,
-    setTableData,
-    handleUpdateClientStatus,
-    handleUpdateUser,
-    setColumnFilters,
-
+    totalClientPaidFee,
+    showUniqueClients,
     columnFilters,
     searchValue,
-    status
-  }
-}, [totalFee, totalHours, dataLable, labelData, totalClientPaidFee, showUniqueClients, columnFilters, searchValue, status])
+    status,
+  ]);
 
+  // ----------------------------
+  // ⏱️ Timer Context
+  // ----------------------------
+  const timerCtx = useMemo(() => {
+    return {
+      timerRef,
+      timerId,
+      jid,
+      play,
+      setPlay,
+      setIsShow,
+      note,
+      currentPath,
+      setNote,
+      activity,
+      setActivity,
 
-// ----------------------------
-// ⏱️ Timer Context
-// ----------------------------
-const timerCtx = useMemo(() => {
-  return {
-    timerRef,    
-    timerId,      
-    jid,          
-    play,         
-    setPlay,      
-    setIsShow,   
-    note,        
-    currentPath, 
-    setNote,     
-    activity,     
-    setActivity, 
+      setIsNonChargeable,
+      setIsSubmitting,
+    };
+  }, [timerRef, timerId, jid, play, note, currentPath, activity]);
 
-    setIsNonChargeable,
-    setIsSubmitting
-  }
-}, [timerRef, timerId, jid, play, note, currentPath, activity])
-
-
-// ----------------------------
-// 🌐 Global Context (Merged)
-// ----------------------------
-const ctx = useMemo(() => {
-  return {
-    ...authCtx,     
-    ...commentCtx, 
-    ...jobCtx,     
-    ...timerCtx,    
-  }
-}, [authCtx, commentCtx, jobCtx, timerCtx])
-
-
- 
-
+  // ----------------------------
+  // 🌐 Global Context (Merged)
+  // ----------------------------
+  const ctx = useMemo(() => {
+    return {
+      ...authCtx,
+      ...commentCtx,
+      ...jobCtx,
+      ...timerCtx,
+    };
+  }, [authCtx, commentCtx, jobCtx, timerCtx]);
 
   const columns = useMemo(() => {
-
-
-
     const allColumns = getJobsColumns(ctx);
 
-    return  allColumns.filter((col) => columnVisibility[col.id] || col.accessorKey === "_id");
-
-
-
-
+    return allColumns.filter(
+      (col) => columnVisibility[col.id] || col.accessorKey === "_id",
+    );
   }, [ctx, columnVisibility]);
-
- 
-
 
   // Clear table Filter
   const handleClearFilters = () => {
     table.setColumnFilters([]);
     table.setGlobalFilter("");
-    setActiveFilter(null)
+    setActiveFilter(null);
 
     if (comment_taskId) {
-    searchParams.delete("comment_taskId");
-    setSearchParams(searchParams, { replace: true });
+      searchParams.delete("comment_taskId");
+      setSearchParams(searchParams, { replace: true });
     }
   };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   const table = useMaterialReactTable({
     columns,
@@ -1917,17 +1530,16 @@ const ctx = useMemo(() => {
     // Total rows from backend
     rowCount: rowCount,
     enablePagination: true,
-    onPaginationChange: setPagination,  
+    onPaginationChange: setPagination,
     autoResetPageIndex: false,
 
     enableFilterMatchHighlighting: false,
     enableColumnFilters: false,
-    
 
     enableStickyHeader: true,
     enableStickyFooter: true,
     columnFilterDisplayMode: "popover",
-    muiTableContainerProps: { sx: { maxHeight: "78vh",  } },
+    muiTableContainerProps: { sx: { maxHeight: "78vh" } },
     enableColumnActions: false,
     enableSorting: false,
     enableGlobalFilter: true,
@@ -1937,70 +1549,62 @@ const ctx = useMemo(() => {
     enableBottomToolbar: true,
     enableRowSelection: true,
     enableTableHead: true,
- 
- 
+
     onRowSelectionChange: setRowSelection,
- 
+
     onColumnFiltersChange: setColumnFilters,
 
     initialState: {
       columnVisibility: {
-        _id: false
-      }
+        _id: false,
+      },
     },
 
-    
-
-
     state: {
-    rowSelection,
-    pagination,
-    sorting,
-    columnFilters,
-    // globalFilter: searchValue,
-    // isLoading: loading,
-    showProgressBars: false,
-    showSkeletons: false,
-    showLoadingOverlay: false,
-    
-    density: "compact",
+      rowSelection,
+      pagination,
+      sorting,
+      columnFilters,
+      // globalFilter: searchValue,
+      // isLoading: loading,
+      showProgressBars: false,
+      showSkeletons: false,
+      showLoadingOverlay: false,
 
-  },
+      density: "compact",
+    },
 
-
-
-  renderTopToolbar:() => (
-      
-      <div style={{ width: '100%' }}>
+    renderTopToolbar: () => (
+      <div style={{ width: "100%" }}>
         {loading && (
           <LinearProgress
-             
             sx={{
-              width: '100%',
+              width: "100%",
               height: "3px",
               position: "absolute",
               top: 0,
               left: 0,
               zIndex: 99,
- 
+
               backgroundColor: "rgba(0, 0, 0, 0.05)", // Barely visible track
               "& .MuiLinearProgress-bar": {
-                backgroundColor: status === "progress" ? "#3b82f6" : status === "completed" ? "#22c55e" : "#ef4444", // Branded Blue
+                backgroundColor:
+                  status === "progress"
+                    ? "#3b82f6"
+                    : status === "completed"
+                    ? "#22c55e"
+                    : "#ef4444", // Branded Blue
                 boxShadow: "0 0 4px #007FFF", // Adds depth to a thin line
               },
-               
             }}
           />
         )}
       </div>
     ),
 
-
- 
-// #3b82f6
-// 
-//  #ef4444
-  
+    // #3b82f6
+    //
+    //  #ef4444
 
     muiTableHeadCellProps: {
       style: {
@@ -2012,31 +1616,22 @@ const ctx = useMemo(() => {
       },
     },
 
-
-
-  muiTableBodyCellProps: {
-  sx: {
-    border: "none",
-    borderBottom: "1px solid rgba(203, 201, 201, 0.5)",
-    borderRight: "1px solid rgba(203, 201, 201, 0.5)",
-  },
-},
-
- 
-
+    muiTableBodyCellProps: {
+      sx: {
+        border: "none",
+        borderBottom: "1px solid rgba(203, 201, 201, 0.5)",
+        borderRight: "1px solid rgba(203, 201, 201, 0.5)",
+      },
+    },
 
     muiTableProps: {
       sx: {
-          
         "& .MuiTableHead-root": {
           backgroundColor: "#f0f0f0",
-           
         },
-        
-        border: "1px solid rgba(203, 201, 201, 0.5)",
-     
 
-       
+        border: "1px solid rgba(203, 201, 201, 0.5)",
+
         tableLayout: "auto",
         fontSize: "13px",
         // border: "1px solid rgba(81, 81, 81, .5)",
@@ -2046,15 +1641,6 @@ const ctx = useMemo(() => {
       },
     },
 
-
-
-
-
-
-
-
-
-    
     renderTopToolbarCustomActions: ({ table }) => {
       const handleClearFilters = () => {
         table.setColumnFilters([]);
@@ -2087,35 +1673,7 @@ const ctx = useMemo(() => {
         </Box>
       );
     },
-
-
-    
   });
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
 
   // -------Update Bulk Jobs------------->
 
@@ -2124,7 +1682,7 @@ const ctx = useMemo(() => {
     setIsUpdate(true);
 
     const filteredTasks = qualityData.filter(
-      (item) => item.type === qualities.label
+      (item) => item.type === qualities.label,
     );
 
     // Map to extract labels
@@ -2135,7 +1693,7 @@ const ctx = useMemo(() => {
         `${process.env.REACT_APP_API_URL}/api/v1/client/update/bulk/job`,
         {
           rowSelection: Object.keys(rowSelection).filter(
-            (id) => rowSelection[id] === true
+            (id) => rowSelection[id] === true,
           ),
           jobHolder,
           lead,
@@ -2152,12 +1710,12 @@ const ctx = useMemo(() => {
           totalHours: hours,
           activeClient,
           // qualities: qualityLabels,
-        }
+        },
       );
 
       if (data) {
         allClientJobData();
-        getJobsStats()
+        getJobsStats();
         setIsUpdate(false);
         setShowEdit(false);
         setRowSelection({});
@@ -2185,99 +1743,93 @@ const ctx = useMemo(() => {
     }
   };
 
-
   //   const user_jobs_count_map = useMemo(() => {
   //   return Object.fromEntries(
   //     users.map((user) => [user, getuserJobCounts(user, active)])
   //   );
   // }, [users, active, getuserJobCounts]);
 
+  const renderColumnControls = () => (
+    <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
+      {/* Header */}
+      <header className="px-5 py-3 border-b">
+        <h3 className="text-sm font-semibold text-slate-800">View settings</h3>
+      </header>
 
+      {/* Content */}
+      <div className="grid grid-cols-2 divide-x">
+        {/* LEFT — Columns */}
+        <section className="px-5 py-4">
+          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+            Columns
+          </h4>
 
-const renderColumnControls = () => (
-  <section className="w-[600px] rounded-lg bg-white border border-slate-200 shadow-sm">
-    {/* Header */}
-    <header className="px-5 py-3 border-b">
-      <h3 className="text-sm font-semibold text-slate-800">
-        View settings
-      </h3>
-    </header>
-
-    {/* Content */}
-    <div className="grid grid-cols-2 divide-x">
-      {/* LEFT — Columns */}
-      <section className="px-5 py-4">
-        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-          Columns
-        </h4>
-
-        <ul className="space-y-1 list-decimal">
-          {Object.keys(columnVisibility)?.map((column) => (
-            <li key={column}>
-              <label
-                className="flex items-center justify-between rounded-md px-2 py-1.5
+          <ul className="space-y-1 list-decimal">
+            {Object.keys(columnVisibility)?.map((column) => (
+              <li key={column}>
+                <label
+                  className="flex items-center justify-between rounded-md px-2 py-1.5
                            text-sm text-slate-700 cursor-pointer
                            hover:bg-slate-50 transition"
-              >
-                <span className="capitalize">{column}</span>
-                <input
-                  type="checkbox"
-                  checked={columnVisibility[column]}
-                  onChange={() => toggleColumnVisibility(column)}
-                  className="h-4 w-4 accent-orange-600"
-                />
-              </label>
-            </li>
-          ))}
-        </ul>
-      </section>
+                >
+                  <span className="capitalize">{column}</span>
+                  <input
+                    type="checkbox"
+                    checked={columnVisibility[column]}
+                    onChange={() => toggleColumnVisibility(column)}
+                    className="h-4 w-4 accent-orange-600"
+                  />
+                </label>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-      {/* RIGHT — Users */}
-      <section className="px-5 py-4">
-        <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
-          Users
-        </h4>
+        {/* RIGHT — Users */}
+        <section className="px-5 py-4">
+          <h4 className="mb-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+            Users
+          </h4>
 
-        <div className="h-full overflow-y-auto space-y-1 pr-1">
-          <SelectedUsersNew
-            selectedUsers={selectedUsers}
-            setSelectedUsers={setSelectedUsers}
-            users={usersData}
-            current_user={auth?.user}
-          />
-        </div>
-      </section>
-    </div>
-  </section>
-);
+          <div className="h-full overflow-y-auto space-y-1 pr-1">
+            <SelectedUsersNew
+              selectedUsers={selectedUsers}
+              setSelectedUsers={setSelectedUsers}
+              users={usersData}
+              current_user={auth?.user}
+            />
+          </div>
+        </section>
+      </div>
+    </section>
+  );
 
+  // a little function to help us with reordering the result
+  const reorder = (list, startIndex, endIndex) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
 
+    return result;
+  };
 
-    // a little function to help us with reordering the result
-    const reorder = (list, startIndex, endIndex) => {
-      const result = Array.from(list);
-      const [removed] = result.splice(startIndex, 1);
-      result.splice(endIndex, 0, removed);
-    
-      return result;
-    };
-  
-  
-      //  -----------Handle drag end---------
-    const handleUserOnDragEnd = (result) => {
-   
-      const items = reorder( selectedUsers, result.source.index, result.destination.index );
-      localStorage.setItem("jobs_usernamesOrder", JSON.stringify(items));
+  //  -----------Handle drag end---------
+  const handleUserOnDragEnd = (result) => {
+    const items = reorder(
+      selectedUsers,
+      result.source.index,
+      result.destination.index,
+    );
+    localStorage.setItem("jobs_usernamesOrder", JSON.stringify(items));
 
-       setSelectedUsers(items)
-  
-    };
+    setSelectedUsers(items);
+  };
 
   // Get All Quality Check
   const getQuickList = async () => {
     try {
       const { data } = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/quicklist/get/all`
+        `${process.env.REACT_APP_API_URL}/api/v1/quicklist/get/all`,
       );
       if (data) {
         setQualityData(data.qualityChecks);
@@ -2303,121 +1855,56 @@ const renderColumnControls = () => (
     label: type,
   }));
 
+  const dotColors = {
+    progress: "bg-blue-500",
+    completed: "bg-green-500",
+    inactive: "bg-red-500",
 
+    due: " bg-green-500",
+    overdue: "  bg-red-500",
+    upcoming: " bg-gray-500",
+  };
 
+  const textColors = {
+    due: "text-green-500 ",
+    overdue: "text-red-500",
+    upcoming: "text-gray-500",
+  };
 
+  const setColumnFromOutsideTable = (colKey, filterVal) => {
+    setColumnFilters((prev) => {
+      // Remove existing filter for this column
+      const filtered = prev.filter((f) => f.id !== colKey);
 
+      // If empty → just remove filter
+      if (
+        filterVal === undefined ||
+        filterVal === null ||
+        filterVal === "" ||
+        (Array.isArray(filterVal) && filterVal.length === 0)
+      ) {
+        return filtered;
+      }
 
-
-
-
-
-
-
-//   const tableColumnFilters = table.getState().columnFilters;
-// useEffect(() => {
-//   const filteredRows = table.getFilteredRowModel().rows;
-//   const totalHours = filteredRows.reduce((acc, row) => acc + Number(row.original.totalHours), 0);
-//   setTotalHours(totalHours.toFixed(0));
-  
-
-//   if(!showUniqueClients) {
-//     const filteredRows = table.getFilteredRowModel().rows;
-//    const totalFee = filteredRows.reduce((acc, row) => acc + Number(row.original.fee), 0);
-//     setTotalFee(totalFee.toFixed(0));
-//   }
-
-
-//   if(showUniqueClients) {
-//     const filteredRows = table.getFilteredRowModel().rows;
-//     const totalClientPaidFee = filteredRows.reduce((acc, row) => acc + Number(row.original.clientPaidFee || '0'), 0);
-//     setTotalClientPaidFee(totalClientPaidFee.toFixed(0))
-//   }
-
-  
-
-// }, [tableColumnFilters, table, showUniqueClients, tableData]);
-
- 
-
-
-
-
-     const dotColors = {
-  progress:  "bg-blue-500",
-  completed: "bg-green-500",
-  inactive:  "bg-red-500",
-
-  due:  " bg-green-500",
-  overdue: "  bg-red-500",
-  upcoming:  " bg-gray-500",
-};
-
-const textColors = {
-  due:  "text-green-500 ",
-  overdue: "text-red-500",
-  upcoming:  "text-gray-500",
-
-
-
-}
-
-
-
-
-
-
-const setColumnFromOutsideTable = (colKey, filterVal) => {
-  setColumnFilters((prev) => {
-    // Remove existing filter for this column
-    const filtered = prev.filter((f) => f.id !== colKey);
-
-    // If empty → just remove filter
-    if (
-      filterVal === undefined ||
-      filterVal === null ||
-      filterVal === "" ||
-      (Array.isArray(filterVal) && filterVal.length === 0)
-    ) {
-      return filtered;
-    }
-
-    // Otherwise add updated filter
-    return [
-      ...filtered,
-      {
-        id: colKey,
-        value: filterVal,
-      },
-    ];
-  });
-};
-
+      // Otherwise add updated filter
+      return [
+        ...filtered,
+        {
+          id: colKey,
+          value: filterVal,
+        },
+      ];
+    });
+  };
 
   useEffect(() => {
-
-
-    if(isAdmin(auth) || isTeamLead(auth?.user)) {
-
-   
+    if (isAdmin(auth) || isTeamLead(auth?.user)) {
       setShowJobHolder(true);
       setActiveBtn("jobHolder");
-
     }
+  }, []);
 
-
-
-  }, [])
-
-
-
-
-
-
-
-
-
-    useEffect(() => {
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (boxRef.current && !boxRef.current.contains(event.target)) {
         setShowColumn(false);
@@ -2433,47 +1920,25 @@ const setColumnFromOutsideTable = (colKey, filterVal) => {
     };
   }, [showcolumn]);
 
+  useEffect(() => {
+    // Skip first render
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
 
+    if (comment_taskId) {
+      // Apply ONLY _id filter
+      setColumnFilters([{ id: "_id", value: comment_taskId }]);
 
-  
-
-
-
-
-
-
- 
-
-useEffect(() => {
-
-  // Skip first render
-  if (isFirstRender.current) {
-    isFirstRender.current = false;
-    return;
-  }
-
-  if (comment_taskId) {
-
-    // Apply ONLY _id filter
-    setColumnFilters([
-      { id: "_id", value: comment_taskId }
-    ]);
-
-     setPagination((prev) => ({
+      setPagination((prev) => ({
         ...prev,
         pageIndex: 0,
-  }));
+      }));
+    }
 
-  } 
-
-  // Reset pagination
- 
-
-}, [comment_taskId]);
-
-
-
- 
+    // Reset pagination
+  }, [comment_taskId]);
 
   return (
     <>
@@ -2507,212 +1972,174 @@ useEffect(() => {
               <IoClose className="h-6 w-6 text-white" />
             </span>
             <QuickAccess />
-               {isAdmin(auth) && <span className=" "> <OverviewForPages /> </span>}
+            {isAdmin(auth) && (
+              <span className=" ">
+                {" "}
+                <OverviewForPages />{" "}
+              </span>
+            )}
 
+            <span className="w-[1px] h-8 bg-gray-200 rounded "></span>
 
-              <span className="w-[1px] h-8 bg-gray-200 rounded "></span>
-           
-              <div className="flex gap-2 w-fit font-google font-medium ">
-                {[{label: "In-Progress", value: "progress"}, {label: "Completed", value: "completed"}, {label: "Inactive", value: "inactive"}].map(({ label, value }) => (
-                  <button
-                    key={value}
-                    onClick={() => setStatus(value)}
-                    className={`flex items-center gap-[7px] px-[14px] py-[6px] text-[13px] rounded-xl  border cursor-pointer  transition-all duration-200
-                      ${status === value
-                        ? "border-gray-300 bg-gray-50 text-gray-900"
-                        : "border-gray-200 bg-white text-gray-400 hover:text-gray-700"
+            <div className="flex gap-2 w-fit font-google font-medium ">
+              {[
+                { label: "In-Progress", value: "progress" },
+                { label: "Completed", value: "completed" },
+                { label: "Inactive", value: "inactive" },
+              ].map(({ label, value }) => (
+                <button
+                  key={value}
+                  onClick={() => setStatus(value)}
+                  className={`flex items-center gap-[7px] px-[14px] py-[6px] text-[13px] rounded-xl  border cursor-pointer  transition-all duration-200
+                      ${
+                        status === value
+                          ? "border-gray-300 bg-gray-50 text-gray-900"
+                          : "border-gray-200 bg-white text-gray-400 hover:text-gray-700"
                       }`}
-                  >
-                    <span className={`w-[7px] h-[7px] rounded-full flex-shrink-0  
+                >
+                  <span
+                    className={`w-[7px] h-[7px] rounded-full flex-shrink-0  
                       ${status === value ? dotColors[value] : "bg-gray-300"}`}
-                    />
+                  />
 
-              
-                    {label}
-                  </button>
-                ))}
-              </div>
+                  {label}
+                </button>
+              ))}
+            </div>
 
+            {<span className="w-[1px] h-8 bg-gray-200 rounded "></span>}
 
-                {  <span className="w-[1px] h-8 bg-gray-200 rounded "></span>}
-
-
-
-      
-
-
-
-
-             {  (
+            {
               <div className="flex gap-1 w-fit font-google font-medium ">
-                  {[
-                    { label: "Due", value: "due" },
-                    { label: "Overdue", value: "overdue" },
-                    { label: "Upcoming", value: "upcoming" },
-                  ].map(({ label, value }) => {
-                    const isActive = dueStatusFilter === value;
+                {[
+                  { label: "Due", value: "due" },
+                  { label: "Overdue", value: "overdue" },
+                  { label: "Upcoming", value: "upcoming" },
+                ].map(({ label, value }) => {
+                  const isActive = dueStatusFilter === value;
 
-                    return (
-                      <button
-                        key={value}
-                        onClick={() => setColumnFromOutsideTable("Status", value)}
-                        className={`
+                  return (
+                    <button
+                      key={value}
+                      onClick={() => setColumnFromOutsideTable("Status", value)}
+                      className={`
                           flex items-center gap-1 px-2 py-1 text-[12px] font-normal rounded-xl cursor-pointer border-none
-                          ${isActive
-                            ? `${textColors[value]} bg-gray-100`
-                            : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                          ${
+                            isActive
+                              ? `${textColors[value]} bg-gray-100`
+                              : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
                           }
                         `}
-                      >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full transition-all duration-150
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full transition-all duration-150
                             ${isActive ? dotColors[value] : "bg-transparent"}
                           `}
-                        />
-                        {label} ({getdueStatusCounts(value)})
-                      </button>
-                    );
-                  })}
-                </div>
+                      />
+                      {label} ({getdueStatusCounts(value)})
+                    </button>
+                  );
+                })}
+              </div>
+            }
+
+            {<span className="w-[1px] h-8 bg-gray-200 rounded "></span>}
+
+            <div className="flex items-center gap-0 font-google">
+              {/* Filter Button */}
+              <div className="relative z-[50]">
+                <button
+                  title="Saved Filters"
+                  onClick={() => setShowSavedFilters(!showSavedFilters)}
+                  className={`flex items-center justify-center w-8 h-8 rounded-lg border transition-colors duration-150
+        ${
+          showSavedFilters
+            ? "bg-slate-100 border-slate-300 text-slate-700"
+            : "bg-white border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600 hover:border-slate-300"
+        }`}
+                >
+                  <CiFilter className="h-[18px] w-[18px]" />
+                </button>
+
+                {showSavedFilters && (
+                  <div className="absolute top-full left-0 mt-1">
+                    <SavedFiltersPanel
+                      page="jobs"
+                      columnFilters={columnFilters}
+                      onLoad={(filters, savedFilter) => {
+                        setColumnFilters(filters);
+                        setActiveFilter(savedFilter);
+                        setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+                        setShowSavedFilters(false);
+                      }}
+                      setShowSavedFilters={setShowSavedFilters}
+                      activeFilter={activeFilter}
+                      savedFiltersHook={savedFiltersHook}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Divider — only when pills exist */}
+              {savedFilters.length > 0 && (
+                <div className="w-px h-4 bg-slate-200 mx-2 flex-shrink-0" />
               )}
 
-
-
-
-
- {  <span className="w-[1px] h-8 bg-gray-200 rounded "></span>}
-
-
-<div className="flex items-center gap-0 font-google">
-
-  {/* Filter Button */}
-  <div className="relative z-[50]">
-    <button
-      title="Saved Filters"
-      onClick={() => setShowSavedFilters(!showSavedFilters)}
-      className={`flex items-center justify-center w-8 h-8 rounded-lg border transition-colors duration-150
-        ${showSavedFilters
-          ? 'bg-slate-100 border-slate-300 text-slate-700'
-          : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600 hover:border-slate-300'
-        }`}
-    >
-      <CiFilter className="h-[18px] w-[18px]" />
-    </button>
-
-    {showSavedFilters && (
-      <div className="absolute top-full left-0 mt-1">
-        <SavedFiltersPanel
-          page="jobs"
-          columnFilters={columnFilters}
-          onLoad={(filters, savedFilter) => {
-            setColumnFilters(filters);
-            setActiveFilter(savedFilter);
-            setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-            setShowSavedFilters(false);
-          }}
-          setShowSavedFilters={setShowSavedFilters}
-          activeFilter={activeFilter}
-          savedFiltersHook={savedFiltersHook}
-        />
-      </div>
-    )}
-  </div>
-
-  {/* Divider — only when pills exist */}
-  {savedFilters.length > 0 && (
-    <div className="w-px h-4 bg-slate-200 mx-2 flex-shrink-0" />
-  )}
-
-  {/* Quick-apply pills */}
-  <div className="flex items-center gap-1.5 flex-wrap">
-    {savedFilters.map((f) => {
-      const isActive = activeFilter?._id === f._id;
-      return (
-        <button
-          key={f._id}
-          onClick={() => {
-            if (isActive) {
-              handleClearFilters();
-            } else {
-              setColumnFilters(f.filters);
-              setActiveFilter(f);
-              setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-            }
-          }}
-          className={`flex items-center gap-1.5 px-2.5 h-[26px] rounded-md border text-[11px] font-medium tracking-wide transition-all duration-150
-            ${isActive
-              ? 'bg-orange-50 border-orange-200 text-orange-600'
-              : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700 hover:bg-slate-50'
+              {/* Quick-apply pills */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {savedFilters.map((f) => {
+                  const isActive = activeFilter?._id === f._id;
+                  return (
+                    <button
+                      key={f._id}
+                      onClick={() => {
+                        if (isActive) {
+                          handleClearFilters();
+                        } else {
+                          setColumnFilters(f.filters);
+                          setActiveFilter(f);
+                          setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+                        }
+                      }}
+                      className={`flex items-center gap-1.5 px-2.5 h-[26px] rounded-md border text-[11px] font-medium tracking-wide transition-all duration-150
+            ${
+              isActive
+                ? "bg-orange-50 border-orange-200 text-orange-600"
+                : "bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700 hover:bg-slate-50"
             }`}
-        >
-          {isActive && (
-            <span className="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0" />
-          )}
-          {f.name}
-        </button>
-      );
-    })}
-  </div>
-
-</div>
-
-
-
-
-
-
-
-
-
+                    >
+                      {isActive && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0" />
+                      )}
+                      {f.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
- 
-                <JobHeaderActions
-                  auth={auth}
-                  style={style}
-                  // Data Actions
-                  importJobData={importJobData}
-                  fLoading={fLoading}
-                  handleExportData={handleExportData}
-                  // Modal/State Setters
-                  setShowSubtaskList={setShowSubtaskList}
-                  setShowDataLable={setShowDataLable}
-                  setShowlabel={setShowlabel}
-                  setIsOpen={setIsOpen} // Opens "Add Client"
-                />
-
-
-
-
-
-
-
-
-
+            <JobHeaderActions
+              auth={auth}
+              style={style}
+              // Data Actions
+              importJobData={importJobData}
+              fLoading={fLoading}
+              handleExportData={handleExportData}
+              // Modal/State Setters
+              setShowSubtaskList={setShowSubtaskList}
+              setShowDataLable={setShowDataLable}
+              setShowlabel={setShowlabel}
+              setIsOpen={setIsOpen} // Opens "Add Client"
+            />
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
         </div>
         {/*  */}
 
         {/* -----------Filters By Deparment--------- */}
         <div className="flex items-center overflow-x-auto hidden1 gap-1    py-1.5 max-lg:hidden">
-
-
-
-
-         {departments?.map((dep, i) => {
+          {departments?.map((dep, i) => {
             const activeDep = departmentFilter || "All";
             const isActive = activeDep === dep;
 
@@ -2743,112 +2170,19 @@ useEffect(() => {
                   }
                 `}
               >
-               
-                <span className="tracking-wide ">{dep} ({getdepartmentJobCounts(dep)})</span>
-                   {/* <span className={`text-[11px] ${isActive ? "text-orange-600" : "text-gray-600"}`}>
+                <span className="tracking-wide ">
+                  {dep} ({getdepartmentJobCounts(dep)})
+                </span>
+                {/* <span className={`text-[11px] ${isActive ? "text-orange-600" : "text-gray-600"}`}>
                   {getdepartmentJobCounts(dep)}
                 </span> */}
 
-                
                 {isActive && (
                   <span className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-orange-500 rounded-full" />
                 )}
               </div>
             );
           })}
-
-
-
-
-
-
-
-
-
-
-
-              {/* <div className="flex border border-gray-200 rounded-md overflow-hidden w-fit">
-                  {departments.map((dep, i) => {
-                    const isActive = active === dep;
-                    return (
-                      <div
-                        key={i}
-                        onClick={() => {
-                          setActive(dep);
-                          setShowCompleted(false);
-                          setShowInactive(false);
-                          dispatch(setFilterId(""));
-                          if (dep === "All") {
-                            setColumnFromOutsideTable("Department", "");
-                          } else {
-                            setColumnFromOutsideTable("Department", dep);
-                          }
-                        }}
-                        className={`
-                          flex items-center gap-1.5 px-4 py-2 cursor-pointer text-[13px] font-google
-                          border-r border-gray-200 last:border-r-0 transition-all duration-150 whitespace-nowrap
-                          ${isActive
-                            ? "bg-gray-700 text-white"
-                            : "bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-900"
-                          }
-                        `}
-                      >
-                        <span>{dep}</span>
-                        <span className={`text-[11px] ${isActive ? "text-white/50" : "text-gray-400"}`}>
-                          {getdepartmentJobCounts(dep)}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div> */}
-
-                       
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-          {/* <div
-            className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-              activeBtn === "completed" &&
-              showCompleted &&
-              " border-2 border-b-0 text-orange-600 border-gray-300"
-            }`}
-            onClick={() => {
-              setActiveBtn("completed");
-              setShowCompleted(true);
-              setActive("");
-            }}
-          >
-            Completed
-          </div>
-          <div
-            className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-              activeBtn === "inactive" &&
-              showInactive &&
-              " border-2 border-b-0 text-orange-600 border-gray-300"
-            }`}
-            onClick={() => {
-              setActiveBtn("inactive");
-              setShowInactive(true);
-              setActive("");
-            }}
-          >
-            Inactive
-          </div> */}
-
-
-          
-
 
           {/*  */}
           {/* -------------Filter Open Buttons-------- */}
@@ -2858,14 +2192,14 @@ useEffect(() => {
             }`}
             onClick={() => {
               setActiveBtn("jobHolder");
-              setShowJobHolder(prev => !prev);
+              setShowJobHolder((prev) => !prev);
               setShowStatus(false);
             }}
             title="Filter by Job Holder"
           >
             <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
           </span>
-          
+
           {/* <span
             className={` p-1 rounded-md hover:shadow-md mb-1 cursor-pointer border ${
               activeBtn === "status" && showStatus && "bg-orange-500 text-white"
@@ -2907,7 +2241,10 @@ useEffect(() => {
               )}
             </div>
             {showcolumn && (
-              <div className="fixed top-[11rem] right-[20%] z-[99] max-h-[80vh] overflow-y-auto hidden1  " ref={boxRef}>
+              <div
+                className="fixed top-[11rem] right-[20%] z-[99] max-h-[80vh] overflow-y-auto hidden1  "
+                ref={boxRef}
+              >
                 {renderColumnControls()}
               </div>
             )}
@@ -2917,7 +2254,7 @@ useEffect(() => {
             className={` p-[6px] rounded-md hover:shadow-md mb-1 cursor-pointer border `}
             onClick={() => {
               // allClientData();
-              allClientJobData()
+              allClientJobData();
               dispatch(setFilterId(""));
             }}
             title="Refresh Data"
@@ -2929,29 +2266,20 @@ useEffect(() => {
             />
           </span>
 
-
-
           <div
             className={` p-1 rounded-md hover:shadow-md mb-1  cursor-pointer border ${
               showUniqueClients && "bg-orange-500 text-white"
             }`}
             title="Clients"
             onClick={() => {
-
-              
-           
-              
-              setShowUniqueClients(prev => !prev);
-               
+              setShowUniqueClients((prev) => !prev);
             }}
           >
             <BsPersonCheckFill className="h-6 w-6  cursor-pointer" />
           </div>
-
-
         </div>
         {/*  */}
-        
+
         {/* <hr className="mb-1 bg-gray-200 w-full h-[1px] max-lg:hidden" /> */}
 
         {/* Update Bulk Jobs */}
@@ -3047,9 +2375,7 @@ useEffect(() => {
                       {stat}
                     </option>
                   ))}
-                  <option value={"Inactive"} >
-                      Inactive
-                    </option>
+                  <option value={"Inactive"}>Inactive</option>
                 </select>
               </div>
               <div className="">
@@ -3158,8 +2484,6 @@ useEffect(() => {
                 </select>
               </div>
 
-               
-
               <div className="flex items-center justify-end pl-4">
                 <button
                   className={`${style.button1} text-[15px] `}
@@ -3182,7 +2506,6 @@ useEffect(() => {
         {/* ----------Job_Holder Summery Filters---------- */}
         {showJobHolder && activeBtn === "jobHolder" && (
           <>
-            
             <div className="w-full  py-1.5 max-lg:hidden border-t ">
               <div className="flex items-center flex-wrap gap-4">
                 <DragDropContext onDragEnd={handleUserOnDragEnd}>
@@ -3193,69 +2516,63 @@ useEffect(() => {
                         ref={provided.innerRef}
                         className="flex items-center gap-2 overflow-x-auto hidden1"
                       >
-                        {selectedUsers
-                          ?.map((user, index) => (
-                            <Draggable
-                              key={user}
-                              draggableId={user}
-                              index={index}
-                            >
-                              {(provided) => (
-                                <div
-                                  className={`py-1 rounded-tl-md rounded-tr-md w-[5.8rem] sm:w-fit px-1 !cursor-pointer font-[400] text-[14px] text-gray-900 font-google ${
-                                    assignedJobholderFilter === user &&
-                                    "  border-b-2 text-orange-600 border-orange-600 "
-                                  }`}
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  onClick={() => {
+                        {selectedUsers?.map((user, index) => (
+                          <Draggable
+                            key={user}
+                            draggableId={user}
+                            index={index}
+                          >
+                            {(provided) => (
+                              <div
+                                className={`py-1 rounded-tl-md rounded-tr-md w-[5.8rem] sm:w-fit px-1 !cursor-pointer font-[400] text-[14px] text-gray-900 font-google ${
+                                  assignedJobholderFilter === user &&
+                                  "  border-b-2 text-orange-600 border-orange-600 "
+                                }`}
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                onClick={() => {
+                                  // setActive1(user);
+                                  //filterByDepStat(user, active);
 
-                                    // setActive1(user);
-                                    //filterByDepStat(user, active);
+                                  setColumnFromOutsideTable(
+                                    "Job_Status",
+                                    "Progress",
+                                  );
+                                  setColumnFromOutsideTable("Assign", user);
 
-                                    setColumnFromOutsideTable("Job_Status", "Progress");
-                                    setColumnFromOutsideTable("Assign", user);
-
-
-                                    // if(auth.user?.role === "Admin" && (user === auth.user?.name) ) {
-                                    //   setColumnFromOutsideTable("Job_Date", "Today");
-                                    // } else {
-                                    //    setColumnFromOutsideTable("Job_Date", "");
-                                    // }
-
-
-                                  }}
-                                >
-                                  {user} ({getuserJobCounts(user)})
-                                </div>
-                              )}
-                            </Draggable>
-                          ))}
+                                  // if(auth.user?.role === "Admin" && (user === auth.user?.name) ) {
+                                  //   setColumnFromOutsideTable("Job_Date", "Today");
+                                  // } else {
+                                  //    setColumnFromOutsideTable("Job_Date", "");
+                                  // }
+                                }}
+                              >
+                                {user} ({getuserJobCounts(user)})
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
                         {provided.placeholder}
                       </div>
                     )}
                   </Droppable>
                 </DragDropContext>
 
-
-
-
-
-
-
-
                 <div className=" border-l pl-5 ">
-
-                  <OutsideFilter setColumnFromOutsideTable={setColumnFromOutsideTable} title={"Job_Date"}  columnFilters={columnFilters}/>
+                  <OutsideFilter
+                    setColumnFromOutsideTable={setColumnFromOutsideTable}
+                    title={"Job_Date"}
+                    columnFilters={columnFilters}
+                  />
                 </div>
 
-
-             {status !== "inactive" && <div className="flex items-center gap-2 border-l px-4">
-                {statusInit?.map((stat, i) => (
-                  <div
-                    key={i}
-                    className={`
+                {status !== "inactive" && (
+                  <div className="flex items-center gap-2 border-l px-4">
+                    {statusInit?.map((stat, i) => (
+                      <div
+                        key={i}
+                        className={`
                       py-1 px-3 rounded-full cursor-pointer
                       font-[400] text-[14px] text-gray-900 font-google
                       border-2 shadow-sm transition-all duration-150
@@ -3266,42 +2583,22 @@ useEffect(() => {
                           : "hover:bg-gray-100"
                       }
                     `}
-                    onClick={() => {
-
-                      // Toggle behavior (Enterprise UX)
-                      if (jobStatusFilter === stat) {
-                        setColumnFromOutsideTable(
-                          "Job_Status",
-                          undefined
-                        );
-                      } else {
-                        setColumnFromOutsideTable(
-                          "Job_Status",
-                          stat
-                        );
-                      }
-
-                    }}
-                  >
-                    {stat} ({getjobStatusJobCounts(stat)})
- 
+                        onClick={() => {
+                          // Toggle behavior (Enterprise UX)
+                          if (jobStatusFilter === stat) {
+                            setColumnFromOutsideTable("Job_Status", undefined);
+                          } else {
+                            setColumnFromOutsideTable("Job_Status", stat);
+                          }
+                        }}
+                      >
+                        {stat} ({getjobStatusJobCounts(stat)})
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>}
-
-
-
-
-
-
+                )}
               </div>
-
-                      
-
             </div>
-
-            
-
 
             {/* <hr className="mb-1 bg-gray-300 w-full h-[1px]" /> */}
           </>
@@ -3310,35 +2607,6 @@ useEffect(() => {
         {/* ----------Date Status Summery Filters---------- */}
         {showDue && activeBtn === "due" && (
           <>
-            {/* <div className="w-full py-2">
-              <div className="flex items-center flex-wrap gap-4">
-                {dateStatus?.map((stat, i) => {
-                  const { due, overdue, upcoming } =
-                    getDueAndOverdueCountByDepartment(active);
-                  return (
-                    <div
-                      className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                        active1 === stat &&
-                        " border-b-2 text-orange-600 border-orange-600"
-                      }`}
-                      key={i}
-                      onClick={() => {
-                        setActive1(stat);
-                        filterByDepStat(stat, active);
-                      }}
-                    >
-                      {stat === "Due" ? (
-                        <span>Due {due}</span>
-                      ) : stat === "Overdue" ? (
-                        <span>Overdue {overdue}</span>
-                      ) : (
-                        <span>Upcoming {upcoming}</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div> */}
             <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
           </>
         )}
@@ -3346,52 +2614,6 @@ useEffect(() => {
         {/* ----------Status Summery Filters---------- */}
         {showStatus && activeBtn === "status" && (
           <>
-            {/* <div className="w-full py-2 flex items-center overflow-x-auto hidden1 gap-2 ">
-              <div className="flex items-center  gap-4">
-                {dateStatus?.map((stat, i) => {
-                  const { due, overdue, upcoming } =
-                    getDueAndOverdueCountByDepartment(active);
-                  return (
-                    <div
-                      className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                        active1 === stat &&
-                        " border-b-2 text-orange-600 border-orange-600"
-                      }`}
-                      key={i}
-                      onClick={() => {
-                        setActive1(stat);
-                        filterByDepStat(stat, active);
-                      }}
-                    >
-                      {stat === "Due" ? (
-                        <span>Due {due}</span>
-                      ) : stat === "Overdue" ? (
-                        <span>Overdue {overdue}</span>
-                      ) : (
-                        <span>Upcoming {upcoming}</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="flex items-center gap-4">
-                {status?.map((stat, i) => (
-                  <div
-                    className={`py-1 rounded-tl-md rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                      active1 === stat &&
-                      "  border-b-2 text-orange-600 border-orange-600"
-                    }`}
-                    key={i}
-                    onClick={() => {
-                      setActive1(stat);
-                      filterByDepStat(stat, active);
-                    }}
-                  >
-                    {stat} ({getStatusCount(stat, active)})
-                  </div>
-                ))}
-              </div>
-            </div> */}
             <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
           </>
         )}
@@ -3429,10 +2651,10 @@ useEffect(() => {
         ) : (
           <>
             <div className="w-full min-h-[20vh] relative ">
-                <div className="h-full overflow-y-auto relative">
-                  <MaterialReactTable table={table}  />
-                </div>
+              <div className="h-full overflow-y-auto relative">
+                <MaterialReactTable table={table} />
               </div>
+            </div>
           </>
         )}
       </div>
@@ -3440,8 +2662,6 @@ useEffect(() => {
       {/* ------------Add Client_Job Modal -------------*/}
       {isOpen && (
         <div className="fixed top-0 left-0 w-full min-h-full overflow-y-auto z-[999] bg-gray-100   flex items-center justify-center py-6  px-4">
-          
- 
           <NewJobModal
             setIsOpen={setIsOpen}
             allClientJobData={allClientJobData}
@@ -3452,40 +2672,32 @@ useEffect(() => {
       {/*---------------Job Details---------------*/}
 
       {showDetail && (
-   
-
-
-
-            <div className="fixed inset-0 z-[499] flex items-center justify-center bg-black/30 backdrop-blur-sm">
-              <div className="bg-gray-100 rounded-xl shadow-lg w-[95%] sm:w-[80%] md:w-[75%] lg:w-[70%] xl:w-[70%] 3xl:w-[60%]    py-4 px-5   ">
-                <div className="h-full w-full flex flex-col justify-start items-center relative">
-
-                 <div className="flex items-center justify-between border-b px-4 py-2 self-start w-full">
-            <h3 className="text-lg font-semibold">Company: {companyName}</h3>
-            <span
-              className="p-1 rounded-md bg-gray-50 border  hover:shadow-md hover:bg-gray-100"
-              onClick={() => setShowDetail(false)}
-            >
-              <IoClose className="h-5 w-5 cursor-pointer" />
-            </span>
-          </div>
-
-                  <JobDetail
-            clientId={clientId}
-            handleStatus={handleStatusChange}
-            allClientJobData={allClientJobData}
-            handleDeleteJob={handleDeleteJob}
-            users={users}
-            setShowDetail={setShowDetail}
-            
-          />
-
-                </div>
+        <div className="fixed inset-0 z-[499] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="bg-gray-100 rounded-xl shadow-lg w-[95%] sm:w-[80%] md:w-[75%] lg:w-[70%] xl:w-[70%] 3xl:w-[60%]    py-4 px-5   ">
+            <div className="h-full w-full flex flex-col justify-start items-center relative">
+              <div className="flex items-center justify-between border-b px-4 py-2 self-start w-full">
+                <h3 className="text-lg font-semibold">
+                  Company: {companyName}
+                </h3>
+                <span
+                  className="p-1 rounded-md bg-gray-50 border  hover:shadow-md hover:bg-gray-100"
+                  onClick={() => setShowDetail(false)}
+                >
+                  <IoClose className="h-5 w-5 cursor-pointer" />
+                </span>
               </div>
+
+              <JobDetail
+                clientId={clientId}
+                handleStatus={handleStatusChange}
+                allClientJobData={allClientJobData}
+                handleDeleteJob={handleDeleteJob}
+                users={users}
+                setShowDetail={setShowDetail}
+              />
             </div>
-
-
-
+          </div>
+        </div>
       )}
       {/* ------------Comment Modal---------*/}
 
@@ -3500,7 +2712,6 @@ useEffect(() => {
             setJobId={setJobId}
             users={users}
             type={"Jobs"}
-           
             getTasks1={allClientJobData}
             page={"job"}
           />
@@ -3606,7 +2817,6 @@ useEffect(() => {
         </div>
       )}
 
-
       {/* ---------------New Ticket Modal------------- */}
       {showNewTicketModal && (
         <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
@@ -3616,44 +2826,25 @@ useEffect(() => {
             clientCompanyName={clientCompanyName}
           /> */}
 
-
-
-
-
-           <SendEmailModal
-                        onClose={() => setShowNewTicketModal(false)}
-                        onSuccess={() =>  setShowNewTicketModal(false) }
-
-                        defaults={{
-                          clientId: clientCompanyId,
-                        }}
-                         
-
-
-
-                      />
-
-
-
-
-
-
-
-
+          <SendEmailModal
+            onClose={() => setShowNewTicketModal(false)}
+            onSuccess={() => setShowNewTicketModal(false)}
+            defaults={{
+              clientId: clientCompanyId,
+            }}
+          />
         </div>
       )}
 
-       {/* ---------------New Ticket Modal------------- */}
+      {/* ---------------New Ticket Modal------------- */}
       {showSubtaskList && (
         <div className="fixed top-0 left-0 z-[999] w-full h-full bg-gray-300/70 flex items-center justify-center">
           <SubtaskListManager
             onApplyList={(subtasks) => {}}
-             onClose={() => setShowSubtaskList(false)}
-            />
+            onClose={() => setShowSubtaskList(false)}
+          />
         </div>
       )}
-
-
     </>
   );
 }

@@ -807,8 +807,7 @@ const AllTasks = ({ justShowTable = false }) => {
               selectedUsers={selectedUsers}
               setSelectedUsers={setSelectedUsers}
               users={users}
-              countMap={userTaskCountMap}
-              label={"task"}
+               
               current_user={auth?.user}
             />
           </div>

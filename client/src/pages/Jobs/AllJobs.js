@@ -72,6 +72,8 @@ import { CiFilter } from "react-icons/ci";
 import SendEmailModal from "../../components/Tickets/SendEmailModal";
 import { isTeamLead } from "../../utlis/checkPermission";
 import { LEADS_SOURCES } from "../../constants/constants";
+import SelectedUsersNew from "../../components/SelectedUsersNew";
+import { usePersistedUsersNew } from "../../hooks/usePersistedUsersNew";
  
  
  
@@ -195,7 +197,14 @@ export default function AllJobs() {
  
  
 
-   const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsers("jobs:selected_users", users);
+  //  const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsersNew("jobs:selected_users", users);
+
+
+   const { selectedUsers, setSelectedUsers, toggleUser, resetUsers, } = usePersistedUsersNew({
+    storage_key: "jobs:selected_users",
+    users: usersData,
+    current_user: auth?.user,
+   });
 
 
 
@@ -2230,12 +2239,11 @@ const renderColumnControls = () => (
         </h4>
 
         <div className="h-full overflow-y-auto space-y-1 pr-1">
-          <SelectedUsers
+          <SelectedUsersNew
             selectedUsers={selectedUsers}
             setSelectedUsers={setSelectedUsers}
-            userNameArr={users}
-            countMap={{}}
-            label={"job"}
+            users={usersData}
+            current_user={auth?.user}
           />
         </div>
       </section>

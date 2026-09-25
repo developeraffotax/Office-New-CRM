@@ -1044,20 +1044,22 @@ export default function Tickets() {
               </span>
             </div>
 
+            {(auth?.user?.role?.name === "Admin" || auth?.user?.isTeamLead) && (
+              <span
+                className={` p-1 rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
+                  showJobHolder && "bg-orange-500 text-white"
+                }`}
+                onClick={() => {
+                  setShowJobHolder((prev) => !prev);
+                }}
+                title="Filter by Job Holder"
+              >
+                <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
+              </span>
+            )}
+
             {auth?.user?.role?.name === "Admin" && (
               <div className="flex justify-center items-center  gap-2">
-                <span
-                  className={` p-1 rounded-md hover:shadow-md bg-gray-50   cursor-pointer border  ${
-                    showJobHolder && "bg-orange-500 text-white"
-                  }`}
-                  onClick={() => {
-                    setShowJobHolder((prev) => !prev);
-                  }}
-                  title="Filter by Job Holder"
-                >
-                  <IoBriefcaseOutline className="h-6 w-6  cursor-pointer " />
-                </span>
-
                 <span
                   className={` p-1 rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${
                     showEdit && "bg-orange-500 text-white"
@@ -1065,198 +1067,199 @@ export default function Tickets() {
                   onClick={() => {
                     setShowEdit(!showEdit);
                   }}
-                  title="Edit Multiple Jobs"
+                  title="Edit Multiple Tickets"
                 >
                   <MdOutlineModeEdit className="h-6 w-6  cursor-pointer" />
                 </span>
 
                 <RefreshTicketsButton getAllEmails={getAllEmails} />
-
-                <div className="relative">
-                  <div
-                    className={`  p-[6px] rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${
-                      showcolumn && "bg-orange-500 text-white"
-                    }`}
-                    onClick={() => setShowColumn(!showcolumn)}
-                  >
-                    {" "}
-                    {showcolumn ? (
-                      <GoEyeClosed className="h-5 w-5" />
-                    ) : (
-                      <GoEye className="h-5 w-5" />
-                    )}{" "}
-                  </div>
-                  {showcolumn && (
-                    <div
-                      ref={showColumnRef}
-                      className="absolute top-8 left-[50%] z-[9999]    w-[14rem] "
-                    >
-                      {renderColumnControls()}
-                    </div>
-                  )}
-                </div>
               </div>
             )}
+
+            <div className="relative">
+              <div
+                className={`  p-[6px] rounded-md hover:shadow-md   bg-gray-50 cursor-pointer border ${
+                  showcolumn && "bg-orange-500 text-white"
+                }`}
+                onClick={() => setShowColumn(!showcolumn)}
+              >
+                {" "}
+                {showcolumn ? (
+                  <GoEyeClosed className="h-5 w-5" />
+                ) : (
+                  <GoEye className="h-5 w-5" />
+                )}{" "}
+              </div>
+              {showcolumn && (
+                <div
+                  ref={showColumnRef}
+                  className="absolute top-8 left-[50%] z-[9999]    w-[14rem] "
+                >
+                  {renderColumnControls()}
+                </div>
+              )}
+            </div>
           </div>
           <hr className="mb-1 bg-gray-300 w-full h-[1px] my-2 " />
 
           {/* ----------Job_Holder Summery Filters---------- */}
-          {auth?.user?.role?.name === "Admin" && showJobHolder && (
-            <>
-              <div className="w-full  py-2 ">
-                <div className="flex items-center flex-wrap gap-4">
-                  <DragDropContext onDragEnd={handleUserOnDragEnd}>
-                    <Droppable droppableId="users0" direction="horizontal">
-                      {(provided) => (
-                        <div
-                          {...provided.droppableProps}
-                          ref={provided.innerRef}
-                          className="flex items-center gap-3 overflow-x-auto hidden1"
-                        >
+          {(auth?.user?.role?.name === "Admin" || auth?.user?.isTeamLead) &&
+            showJobHolder && (
+              <>
+                <div className="w-full  py-2 ">
+                  <div className="flex items-center flex-wrap gap-4">
+                    <DragDropContext onDragEnd={handleUserOnDragEnd}>
+                      <Droppable droppableId="users0" direction="horizontal">
+                        {(provided) => (
                           <div
-                            className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
-                              active1 === "All" &&
-                              "  border-b-2 text-orange-600 border-orange-600"
-                            }`}
+                            {...provided.droppableProps}
                             ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            onClick={() => {
-                              setActive1("All");
-                              setColumnFromOutsideTable("jobHolder", "");
-                            }}
+                            className="flex items-center gap-3 overflow-x-auto hidden1"
                           >
-                            All ({getJobHolderCount("All")})
+                            <div
+                              className={`py-1 rounded-tl-md w-[6rem] sm:w-fit rounded-tr-md px-1 cursor-pointer font-[500] text-[14px] ${
+                                active1 === "All" &&
+                                "  border-b-2 text-orange-600 border-orange-600"
+                              }`}
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              onClick={() => {
+                                setActive1("All");
+                                setColumnFromOutsideTable("jobHolder", "");
+                              }}
+                            >
+                              All ({getJobHolderCount("All")})
+                            </div>
+
+                            {selectedUsers
+                              .filter((uName) => getJobHolderCount(uName) > 0)
+                              .map((user, index) => {
+                                return (
+                                  <Draggable
+                                    key={user}
+                                    draggableId={user}
+                                    index={index}
+                                  >
+                                    {(provided) => (
+                                      <div
+                                        className={`py-1   px-2 !cursor-pointer font-[500] text-[14px]   ${
+                                          active1 === user &&
+                                          "  border-b-2 text-orange-600 border-orange-600"
+                                        }`}
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        {...provided.dragHandleProps}
+                                        onClick={() => {
+                                          setActive1(user);
+                                          setColumnFromOutsideTable(
+                                            "jobHolder",
+                                            user,
+                                          );
+                                        }}
+                                      >
+                                        {user} ({getJobHolderCount(user)})
+                                      </div>
+                                    )}
+                                  </Draggable>
+                                );
+                              })}
+                            {provided.placeholder}
                           </div>
-
-                          {selectedUsers
-                            .filter((uName) => getJobHolderCount(uName) > 0)
-                            .map((user, index) => {
-                              return (
-                                <Draggable
-                                  key={user}
-                                  draggableId={user}
-                                  index={index}
-                                >
-                                  {(provided) => (
-                                    <div
-                                      className={`py-1   px-2 !cursor-pointer font-[500] text-[14px]   ${
-                                        active1 === user &&
-                                        "  border-b-2 text-orange-600 border-orange-600"
-                                      }`}
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                      onClick={() => {
-                                        setActive1(user);
-                                        setColumnFromOutsideTable(
-                                          "jobHolder",
-                                          user,
-                                        );
-                                      }}
-                                    >
-                                      {user} ({getJobHolderCount(user)})
-                                    </div>
-                                  )}
-                                </Draggable>
-                              );
-                            })}
-                          {provided.placeholder}
-                        </div>
-                      )}
-                    </Droppable>
-                  </DragDropContext>
-                </div>
-              </div>
-
-              {/* Update Bulk Jobs */}
-              {showEdit && (
-                <div className="w-full  p-4 ">
-                  <form
-                    onSubmit={updateBulkLeads}
-                    className="w-full grid grid-cols-12 gap-4 max-2xl:grid-cols-8  "
-                  >
-                    <div className="w-full">
-                      <select
-                        name="jobHolder"
-                        value={updates.jobHolder}
-                        onChange={handle_on_change_update}
-                        className={`${style.input} w-full`}
-                      >
-                        <option value="empty">Job Holder</option>
-                        {users.map((jobHolder, i) => (
-                          <option value={jobHolder.name} key={i}>
-                            {jobHolder.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="w-full">
-                      <select
-                        name="leadUser"
-                        value={updates.leadUser}
-                        onChange={handle_on_change_update}
-                        className={`${style.input} w-full`}
-                      >
-                        <option value="empty">Lead</option>
-                        {users.map((jobHolder, i) => (
-                          <option value={jobHolder.name} key={i}>
-                            {jobHolder.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="">
-                      <select
-                        name="jobStatus"
-                        value={updates.jobStatus}
-                        onChange={handle_on_change_update}
-                        className={`${style.input} w-full`}
-                      >
-                        <option value="empty">Job Status</option>
-                        {jobStatusOptions.map((el, i) => (
-                          <option value={el} key={i}>
-                            {el}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="inputBox">
-                      <input
-                        type="date"
-                        name="jobDate"
-                        value={updates.jobDate}
-                        onChange={handle_on_change_update}
-                        className={`${style.input} w-full `}
-                      />
-                      <span>Job Date</span>
-                    </div>
-
-                    <div className="w-full flex items-center justify-end  ">
-                      <button
-                        className={`${style.button1} text-[15px] w-full `}
-                        type="submit"
-                        disabled={isUpdating}
-                        style={{ padding: ".5rem  " }}
-                      >
-                        {isUpdating ? (
-                          <TbLoader2 className="h-5 w-5 animate-spin text-white" />
-                        ) : (
-                          <span>Save</span>
                         )}
-                      </button>
-                    </div>
-                  </form>
-                  <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
+                      </Droppable>
+                    </DragDropContext>
+                  </div>
                 </div>
-              )}
 
-              <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
-            </>
-          )}
+                {/* Update Bulk Jobs */}
+                {showEdit && (
+                  <div className="w-full  p-4 ">
+                    <form
+                      onSubmit={updateBulkLeads}
+                      className="w-full grid grid-cols-12 gap-4 max-2xl:grid-cols-8  "
+                    >
+                      <div className="w-full">
+                        <select
+                          name="jobHolder"
+                          value={updates.jobHolder}
+                          onChange={handle_on_change_update}
+                          className={`${style.input} w-full`}
+                        >
+                          <option value="empty">Job Holder</option>
+                          {users.map((jobHolder, i) => (
+                            <option value={jobHolder.name} key={i}>
+                              {jobHolder.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="w-full">
+                        <select
+                          name="leadUser"
+                          value={updates.leadUser}
+                          onChange={handle_on_change_update}
+                          className={`${style.input} w-full`}
+                        >
+                          <option value="empty">Lead</option>
+                          {users.map((jobHolder, i) => (
+                            <option value={jobHolder.name} key={i}>
+                              {jobHolder.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="">
+                        <select
+                          name="jobStatus"
+                          value={updates.jobStatus}
+                          onChange={handle_on_change_update}
+                          className={`${style.input} w-full`}
+                        >
+                          <option value="empty">Job Status</option>
+                          {jobStatusOptions.map((el, i) => (
+                            <option value={el} key={i}>
+                              {el}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="inputBox">
+                        <input
+                          type="date"
+                          name="jobDate"
+                          value={updates.jobDate}
+                          onChange={handle_on_change_update}
+                          className={`${style.input} w-full `}
+                        />
+                        <span>Job Date</span>
+                      </div>
+
+                      <div className="w-full flex items-center justify-end  ">
+                        <button
+                          className={`${style.button1} text-[15px] w-full `}
+                          type="submit"
+                          disabled={isUpdating}
+                          style={{ padding: ".5rem  " }}
+                        >
+                          {isUpdating ? (
+                            <TbLoader2 className="h-5 w-5 animate-spin text-white" />
+                          ) : (
+                            <span>Save</span>
+                          )}
+                        </button>
+                      </div>
+                    </form>
+                    <hr className="mb-1 bg-gray-300 w-full h-[1px] mt-4" />
+                  </div>
+                )}
+
+                <hr className="mb-1 bg-gray-300 w-full h-[1px]" />
+              </>
+            )}
         </>
 
         {/* <hr className="mb-1 bg-gray-300 w-full h-[1px] my-1" /> */}
